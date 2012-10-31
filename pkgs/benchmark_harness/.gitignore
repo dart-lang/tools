@@ -1,0 +1,7 @@
+.children
+.project
+.DS_Store
+packages
+pubspec.lock
+*.sublime-workspace
+*.sublime-project
