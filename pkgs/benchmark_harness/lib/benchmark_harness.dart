@@ -1,3 +1,3 @@
 library benchmark_harness;
 
-part 'src/BenchmarkBase.dart';
+part 'src/benchmark_base.dart';
