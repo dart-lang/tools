@@ -9,8 +9,8 @@ The Dart project benchmark harness is the recommended starting point when buildi
 
 By default, the benchmark harness calls the `run` method 10 times
 repeatedly until 2 seconds have elapsed. This means that
-the reported run time is not for a single call to `run` but an average across
-10.
+the reported run time is not for a single call to `run` but the average
+time taken invoking `run` 10 times.
 
 ## Comparing Results ##
 
