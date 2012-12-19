@@ -13,8 +13,9 @@ the reported run time is not for a single call to `run` but an average of 10.
 
 ## Comparing Results ##
 
-If you are running the same benchmark the reported run times can be carefully 
-compared across runs. Carefully because there are a variety of factors which
+If you are running the same benchmark on the same machine running the same os,
+the reported run times can be carefully compared across runs.
+Carefully because there are a variety of factors which
 could cause error in the run time, for example, the load from
 other applications running on your machine could alter the result.
 
