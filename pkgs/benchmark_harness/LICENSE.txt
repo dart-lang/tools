@@ -1,0 +1,5 @@
+Harness:
+Copyright 2012 Google Inc. All Rights Reserved.
+
+Individual benchmarks:
+Each benchmark has an author and license. See benchmark source for details.
