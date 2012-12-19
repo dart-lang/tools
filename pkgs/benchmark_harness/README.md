@@ -14,7 +14,7 @@ the reported run time is not for a single call to `run` but an average across
 
 ## Comparing Results ##
 
-If you are running the same benchmark, on the same machine, running the same os,
+If you are running the same benchmark, on the same machine, running the same OS,
 the reported run times can be carefully compared across runs.
 Carefully because there are a variety of factors which
 could cause error in the run time, for example, the load from
