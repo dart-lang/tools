@@ -59,7 +59,7 @@ class BenchmarkBase {
 
   void report() {
     double score = measure();
-    print("$name(TotalRunTime): $score us.");
+    print("$name(RunTime): $score us.");
   }
 
 }
