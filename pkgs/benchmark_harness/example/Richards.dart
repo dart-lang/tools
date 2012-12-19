@@ -37,20 +37,16 @@
 import 'package:benchmark_harness/benchmark_harness.dart';
 
 main() {
-  Richards.main();
+  new Richards().report();
 }
 
+
 /**
- * The Richards benchmark simulates the task dispatcher of an
- * operating system.
+ * Richards imulates the task dispatcher of an operating system.
  **/
 class Richards extends BenchmarkBase {
 
   const Richards() : super("Richards");
-
-  static void main() {
-    new Richards().report();
-  }
 
   void run() {
     Scheduler scheduler = new Scheduler();
@@ -78,7 +74,7 @@ class Richards extends BenchmarkBase {
 
     if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
         scheduler.holdCount != EXPECTED_HOLD_COUNT) {
-      print("Error during execution: queueCount = ${scheduler.queueCount}" +
+      print("Error during execution: queueCount = ${scheduler.queueCount}"
             ", holdCount = ${scheduler.holdCount}.");
     }
     Expect.equals(EXPECTED_QUEUE_COUNT, scheduler.queueCount);
@@ -115,7 +111,6 @@ class Richards extends BenchmarkBase {
  * A scheduler can be used to schedule a set of tasks based on their relative
  * priorities.  Scheduling is done by maintaining a list of task control blocks
  * which holds tasks and the data queue they are processing.
- * @constructor
  */
 class Scheduler {
 
@@ -124,87 +119,49 @@ class Scheduler {
   TaskControlBlock currentTcb;
   int currentId;
   TaskControlBlock list;
-  List<TaskControlBlock> blocks;
+  List<TaskControlBlock> blocks =
+    new List<TaskControlBlock>(Richards.NUMBER_OF_IDS);
 
-  Scheduler()
-      : blocks = new List<TaskControlBlock>(Richards.NUMBER_OF_IDS);
-
-  /**
-   * Add an idle task to this scheduler.
-   * @param {int} id the identity of the task
-   * @param {int} priority the task's priority
-   * @param {Packet} queue the queue of work to be processed by the task
-   * @param {int} count the number of times to schedule the task
-   */
-  void addIdleTask(id, priority, queue, count) {
+  /// Add an idle task to this scheduler.
+  void addIdleTask(int id, int priority, Packet queue, int count) {
     addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
   }
 
-  /**
-   * Add a work task to this scheduler.
-   * @param {int} id the identity of the task
-   * @param {int} priority the task's priority
-   * @param {Packet} queue the queue of work to be processed by the task
-   */
-  void addWorkerTask(id, priority, queue) {
+  /// Add a work task to this scheduler.
+  void addWorkerTask(int id, int priority, Packet queue) {
     addTask(id,
             priority,
             queue,
             new WorkerTask(this, Richards.ID_HANDLER_A, 0));
   }
 
-  /**
-   * Add a handler task to this scheduler.
-   * @param {int} id the identity of the task
-   * @param {int} priority the task's priority
-   * @param {Packet} queue the queue of work to be processed by the task
-   */
-  void addHandlerTask(id, priority, queue) {
+  /// Add a handler task to this scheduler.
+  void addHandlerTask(int id, int priority, Packet queue) {
     addTask(id, priority, queue, new HandlerTask(this));
   }
 
-  /**
-   * Add a handler task to this scheduler.
-   * @param {int} id the identity of the task
-   * @param {int} priority the task's priority
-   * @param {Packet} queue the queue of work to be processed by the task
-   */
-  addDeviceTask(id, priority, queue) {
+  /// Add a handler task to this scheduler.
+  void addDeviceTask(int id, int priority, Packet queue) {
     addTask(id, priority, queue, new DeviceTask(this));
   }
 
-  /**
-   * Add the specified task and mark it as running.
-   * @param {int} id the identity of the task
-   * @param {int} priority the task's priority
-   * @param {Packet} queue the queue of work to be processed by the task
-   * @param {Task} task the task to add
-   */
-  void addRunningTask(id, priority, queue, task) {
+  /// Add the specified task and mark it as running.
+  void addRunningTask(int id, int priority, Packet queue, Task task) {
     addTask(id, priority, queue, task);
     currentTcb.setRunning();
   }
 
-  /**
-   * Add the specified task to this scheduler.
-   * @param {int} id the identity of the task
-   * @param {int} priority the task's priority
-   * @param {Packet} queue the queue of work to be processed by the task
-   * @param {Task} task the task to add
-   */
-
-  void addTask(id, priority, queue, task) {
+  /// Add the specified task to this scheduler.
+  void addTask(int id, int priority, Packet queue, Task task) {
     currentTcb = new TaskControlBlock(list, id, priority, queue, task);
     list = currentTcb;
     blocks[id] = currentTcb;
   }
 
-  /**
-   * Execute the tasks managed by this scheduler.
-   */
+  /// Execute the tasks managed by this scheduler.
   void schedule() {
     currentTcb = list;
-    while (currentTcb !== null) {
+    while (currentTcb != null) {
       if (currentTcb.isHeldOrSuspended()) {
         currentTcb = currentTcb.link;
       } else {
@@ -214,19 +171,13 @@ class Scheduler {
     }
   }
 
-  /**
-   * Release a task that is currently blocked and return the next block to run.
-   * @param {int} id the id of the task to suspend
-   */
+  /// Release a task that is currently blocked and return the next block to run.
   TaskControlBlock release(int id) {
     TaskControlBlock tcb = blocks[id];
-    if (tcb === null) return tcb;
+    if (tcb == null) return tcb;
     tcb.markAsNotHeld();
-    if (tcb.priority > currentTcb.priority) {
-      return tcb;
-    } else {
-      return currentTcb;
-    }
+    if (tcb.priority > currentTcb.priority) return tcb;
+    return currentTcb;
   }
 
   /**
@@ -241,8 +192,8 @@ class Scheduler {
   }
 
   /**
-   * Suspend the currently executing task and return the next task control block
-   * to run.
+   * Suspend the currently executing task and return the next task
+   * control block to run.
    * If new work is added to the suspended task it will be made runnable.
    */
   TaskControlBlock suspendCurrent() {
@@ -254,11 +205,10 @@ class Scheduler {
    * Add the specified packet to the end of the worklist used by the task
    * associated with the packet and make the task runnable if it is currently
    * suspended.
-   * @param {Packet} packet the packet to add
    */
-  queue(Packet packet) {
+  TaskControlBlock queue(Packet packet) {
     TaskControlBlock t = blocks[packet.id];
-    if (t === null) return t;
+    if (t == null) return t;
     queueCount++;
     packet.link = null;
     packet.id = currentId;
@@ -270,43 +220,33 @@ class Scheduler {
 /**
  * A task control block manages a task and the queue of work packages associated
  * with it.
- * @param {TaskControlBlock} link the preceding block in the linked block list
- * @param {int} id the id of this block
- * @param {int} priority the priority of this block
- * @param {Packet} queue the queue of packages to be processed by the task
- * @param {Task} task the task
- * @constructor
  */
-
 class TaskControlBlock {
 
+  TaskControlBlock link;
+  int id;       // The id of this block.
+  int priority; // The priority of this block.
+  Packet queue; // The queue of packages to be processed by the task.
+  Task task;
+  int state;
+
   TaskControlBlock(this.link, this.id, this.priority, this.queue, this.task) {
-    if (queue === null) {
-      state = STATE_SUSPENDED;
-    } else {
-      state = STATE_SUSPENDED_RUNNABLE;
-    }
+    state = queue == null ? STATE_SUSPENDED : STATE_SUSPENDED_RUNNABLE;
   }
 
-  /**
-   * The task is running and is currently scheduled.
-   */
+  /// The task is running and is currently scheduled.
   static const int STATE_RUNNING = 0;
 
-  /**
-   * The task has packets left to process.
-   */
+  /// The task has packets left to process.
   static const int STATE_RUNNABLE = 1;
 
   /**
-   * The task is not currently running.  The task is not blocked as such and may
+   * The task is not currently running. The task is not blocked as such and may
    * be started by the scheduler.
    */
   static const int STATE_SUSPENDED = 2;
 
-  /**
-   * The task is blocked and cannot be run until it is explicitly released.
-   */
+  /// The task is blocked and cannot be run until it is explicitly released.
   static const int STATE_HELD = 4;
 
   static const int STATE_SUSPENDED_RUNNABLE = STATE_SUSPENDED | STATE_RUNNABLE;
@@ -337,19 +277,13 @@ class TaskControlBlock {
     state = state | STATE_RUNNABLE;
   }
 
-  /**
-   * Runs this task, if it is ready to be run, and returns the next task to run.
-   */
-  run() {
+  /// Runs this task, if it is ready to be run, and returns the next task to run.
+  TaskControlBlock run() {
     Packet packet;
     if (state == STATE_SUSPENDED_RUNNABLE) {
-      packet = this.queue;
+      packet = queue;
       queue = packet.link;
-      if (queue === null) {
-        state = STATE_RUNNING;
-      } else {
-        state = STATE_RUNNABLE;
-      }
+      state = queue == null ? STATE_RUNNING : STATE_RUNNABLE;
     } else {
       packet = null;
     }
@@ -361,8 +295,8 @@ class TaskControlBlock {
    * runnable if necessary, and returns the next runnable object to run
    * (the one with the highest priority).
    */
-  checkPriorityAdd(TaskControlBlock task, Packet packet) {
-    if (queue === null) {
+  TaskControlBlock checkPriorityAdd(TaskControlBlock task, Packet packet) {
+    if (queue == null) {
       queue = packet;
       markAsRunnable();
       if (priority > task.priority) return this;
@@ -372,94 +306,85 @@ class TaskControlBlock {
     return task;
   }
 
-  toString() => "tcb { ${task}@${state} }";
-
-  TaskControlBlock link;
-  int id;
-  int priority;
-  Packet queue;
-  var task;
-  int state;
+  String toString() => "tcb { ${task}@${state} }";
 }
 
+/**
+ *  Abstract task that manipulates work packets.
+ */
+abstract class Task {
+
+  Scheduler scheduler; // The scheduler that manages this task.
+
+  Task(this.scheduler);
+
+  TaskControlBlock run(Packet packet);
+}
 
 /**
  * An idle task doesn't do any work itself but cycles control between the two
  * device tasks.
- * @param {Scheduler} scheduler the scheduler that manages this task
- * @param {int} v1 a seed value that controls how the device tasks are scheduled
- * @param {int} count the number of times this task should be scheduled
- * @constructor
  */
+class IdleTask extends Task {
 
-class IdleTask {
+  int v1;    // A seed value that controls how the device tasks are scheduled.
+  int count; // The number of times this task should be scheduled.
 
-  IdleTask(this.scheduler, this.v1, this.count);
+  IdleTask(Scheduler scheduler, this.v1, this.count) : super(scheduler);
 
-  run(packet) {
+  TaskControlBlock run(Packet packet) {
     count--;
     if (count == 0) return scheduler.holdCurrent();
     if ((v1 & 1) == 0) {
       v1 = v1 >> 1;
       return scheduler.release(Richards.ID_DEVICE_A);
-    } else {
-      v1 = (v1 >> 1) ^ 0xD008;
-      return scheduler.release(Richards.ID_DEVICE_B);
     }
+    v1 = (v1 >> 1) ^ 0xD008;
+    return scheduler.release(Richards.ID_DEVICE_B);
   }
 
-  toString() => "IdleTask";
-
-  Scheduler scheduler;
-  int v1;
-  int count;
+  String toString() => "IdleTask";
 }
 
 
 /**
  * A task that suspends itself after each time it has been run to simulate
  * waiting for data from an external device.
- * @param {Scheduler} scheduler the scheduler that manages this task
- * @constructor
  */
+class DeviceTask extends Task {
 
-class DeviceTask {
+  Packet v1;
 
-  DeviceTask(this.scheduler);
+  DeviceTask(Scheduler scheduler) : super(scheduler);
 
-  run(Packet packet) {
-    if (packet === null) {
-      if (v1 === null) return scheduler.suspendCurrent();
+  TaskControlBlock run(Packet packet) {
+    if (packet == null) {
+      if (v1 == null) return scheduler.suspendCurrent();
       Packet v = v1;
       v1 = null;
-      return this.scheduler.queue(v);
+      return scheduler.queue(v);
     }
     v1 = packet;
     return scheduler.holdCurrent();
   }
 
-  toString() => "DeviceTask";
-
-  Scheduler scheduler;
-  Packet v1;
+  String toString() => "DeviceTask";
 }
 
 
 /**
  * A task that manipulates work packets.
- * @param {Scheduler} scheduler the scheduler that manages this task
- * @param {int} v1 a seed used to specify how work packets are manipulated
- * @param {int} v2 another seed used to specify how work packets are manipulated
- * @constructor
  */
+class WorkerTask extends Task {
 
-class WorkerTask {
+  int v1; // A seed used to specify how work packets are manipulated.
+  int v2; // Another seed used to specify how work packets are manipulated.
 
-  WorkerTask(this.scheduler, this.v1, this.v2);
+  WorkerTask(Scheduler scheduler, this.v1, this.v2) : super(scheduler);
 
-  run(Packet packet) {
-    if (packet === null) {
-      return this.scheduler.suspendCurrent();
+  TaskControlBlock run(Packet packet) {
+    if (packet == null) {
+      return scheduler.suspendCurrent();
     }
     if (v1 == Richards.ID_HANDLER_A) {
       v1 = Richards.ID_HANDLER_B;
@@ -476,36 +401,33 @@ class WorkerTask {
     return scheduler.queue(packet);
   }
 
-  toString() => "WorkerTask";
-
-  Scheduler scheduler;
-  int v1, v2;
+  String toString() => "WorkerTask";
 }
 
 
 /**
  * A task that manipulates work packets and then suspends itself.
- * @param {Scheduler} scheduler the scheduler that manages this task
- * @constructor
  */
+class HandlerTask extends Task {
 
-class HandlerTask {
+  Packet v1;
+  Packet v2;
 
-  HandlerTask(this.scheduler);
+  HandlerTask(Scheduler scheduler) : super(scheduler);
 
-  run(Packet packet) {
-    if (packet !== null) {
+  TaskControlBlock run(Packet packet) {
+    if (packet != null) {
       if (packet.kind == Richards.KIND_WORK) {
         v1 = packet.addTo(v1);
       } else {
         v2 = packet.addTo(v2);
       }
     }
-    if (v1 !== null) {
+    if (v1 != null) {
       int count = v1.a1;
       Packet v;
       if (count < Richards.DATA_SIZE) {
-        if (v2 !== null) {
+        if (v2 != null) {
           v = v2;
           v2 = v2.link;
           v.a1 = v1.a2[count];
@@ -521,54 +443,37 @@ class HandlerTask {
     return scheduler.suspendCurrent();
   }
 
-  toString() => "HandlerTask";
-
-  Scheduler scheduler;
-  Packet v1;
-  Packet v2;
+  String toString() => "HandlerTask";
 }
 
-/* --- *
- * P a c k e t
- * --- */
 
 /**
  * A simple package of data that is manipulated by the tasks.  The exact layout
  * of the payload data carried by a packet is not importaint, and neither is the
  * nature of the work performed on packets by the tasks.
- *
  * Besides carrying data, packets form linked lists and are hence used both as
  * data and worklists.
- * @param {Packet} link the tail of the linked list of packets
- * @param {int} id an ID for this packet
- * @param {int} kind the type of this packet
- * @constructor
  */
-
 class Packet {
 
-  Packet(this.link, this.id, this.kind)
-      : a2 = new List(Richards.DATA_SIZE);
+  Packet link; // The tail of the linked list of packets.
+  int id;      // An ID for this packet.
+  int kind;    // The type of this packet.
+  int a1 = 0;
 
-  /**
-   * Add this packet to the end of a worklist, and return the worklist.
-   * @param {Packet} queue the worklist to add this packet to
-   */
+  List<int> a2 = new List(Richards.DATA_SIZE);
+
+  Packet(this.link, this.id, this.kind);
+
+  /// Add this packet to the end of a worklist, and return the worklist.
   Packet addTo(Packet queue) {
     link = null;
-    if (queue === null) return this;
-    Packet  peek, next = queue;
-    while ((peek = next.link) !== null)
-      next = peek;
+    if (queue == null) return this;
+    Packet peek, next = queue;
+    while ((peek = next.link) != null) next = peek;
     next.link = this;
     return queue;
   }
 
-  toString() => "Packet";
-
-  Packet link;
-  int id;
-  int kind;
-  int a1 = 0;
-  List<int> a2;
+  String toString() => "Packet";
 }
