@@ -36,8 +36,7 @@ In other words, don't compare apples with oranges.
 
 ```
 dependencies:
-    benchmark_harness:
-        git: https://github.com/dart-lang/benchmark_harness.git
+    benchmark_harness: any
 ```
 
 2\. Install pub packages
