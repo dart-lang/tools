@@ -448,7 +448,7 @@ class Variable {
 
   /// Removes all traces of c from this variable.
   void removeConstraint(Constraint c) {
-    constraints = constraints.filter((e) => c != e);
+    constraints = constraints.where((e) => c != e).toList();
     if (determinedBy == c) determinedBy = null;
   }
 }
