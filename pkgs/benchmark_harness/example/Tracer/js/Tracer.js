@@ -798,4 +798,4 @@ function renderScene(){
     raytracer.renderScene(scene, null, 0);
 }
 
-Benchmark.report("RayTraceOO", renderScene, renderScene);
+Benchmark.report("Tracer", renderScene, renderScene);

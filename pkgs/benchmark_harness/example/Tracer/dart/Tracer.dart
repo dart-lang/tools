@@ -27,8 +27,8 @@ query(a) {}
 // the scene was ray traced correctly.
 var checkNumber;
 
-class RaytraceBenchmark extends BenchmarkBase {
-  const RaytraceBenchmark() : super("RayTrace");
+class TracerBenchmark extends BenchmarkBase {
+  const TracerBenchmark() : super("Tracer");
 
   void warmup() {
     renderScene(null);
@@ -40,5 +40,5 @@ class RaytraceBenchmark extends BenchmarkBase {
 }
 
 void main() {
-  new RaytraceBenchmark().report();
+  new TracerBenchmark().report();
 }
