@@ -109,6 +109,7 @@ void renderScene(event) {
                              renderDiffuse: renderDiffuse,
                              renderShadows: renderShadows,
                              renderReflections: renderReflections,
+                             renderHighlights: renderHighlights,
                              rayDepth: rayDepth
                              );
 

@@ -558,7 +558,7 @@ Flog.RayTracer.Engine.prototype = {
             	this.setPixel(x, y, color);
             }
         }
-        if (checkNumber !== 2321) {
+        if (canvas == null && checkNumber !== 2321) {
           throw new Error("Scene rendered incorrectly");
         }
     },
@@ -702,8 +702,8 @@ Flog.RayTracer.Engine.prototype = {
     }
 };
 
-
-function renderScene(){
+// 'event' null means that we are benchmarking
+function renderScene(event){
     var scene = new Flog.RayTracer.Scene();
 
     scene.camera = new Flog.RayTracer.Camera(
@@ -771,22 +771,39 @@ function renderScene(){
 
     scene.lights.push(light);
     scene.lights.push(light1);
-
-    var imageWidth = 100; // $F('imageWidth');
-    var imageHeight = 100; // $F('imageHeight');
-    var pixelSize = "5,5".split(','); //  $F('pixelSize').split(',');
-    var renderDiffuse = true; // $F('renderDiffuse');
-    var renderShadows = true; // $F('renderShadows');
-    var renderHighlights = true; // $F('renderHighlights');
-    var renderReflections = true; // $F('renderReflections');
+    
+    var imageWidth, imageHeight, pixelSize;
+    var renderDiffuse, renderShadows, renderHighlights, renderReflections;
+    var canvas;
+    
+    if (typeof(event) == 'undefined' || event == null) {
+	  imageWidth = 100;
+	  imageHeight = 100;
+	  pixelSize = "5,5".split(',');
+	  renderDiffuse = true;
+	  renderShadows = true;
+	  renderHighlights = true;
+	  renderReflections = true;
+	  canvas = null;
+	} else {
+	  imageWidth = parseInt(document.getElementById('imageWidth').value);
+	  imageHeight = parseInt(document.getElementById('imageHeight').value);
+	  pixelSize = document.getElementById('pixelSize').value.split(',');
+	  renderDiffuse = document.getElementById('renderDiffuse').checked;
+	  renderShadows = document.getElementById('renderShadows').checked;
+	  renderHighlights = document.getElementById('renderHighlights').checked;
+	  renderReflections = document.getElementById('renderReflections').checked;
+	  canvas = document.getElementById("canvas");
+	}
+    
     var rayDepth = 2;//$F('rayDepth');
 
     var raytracer = new Flog.RayTracer.Engine(
         {
             canvasWidth: imageWidth,
             canvasHeight: imageHeight,
-            pixelWidth: pixelSize[0],
-            pixelHeight: pixelSize[1],
+            pixelWidth: parseInt(pixelSize[0]),
+            pixelHeight: parseInt(pixelSize[1]),
             "renderDiffuse": renderDiffuse,
             "renderHighlights": renderHighlights,
             "renderShadows": renderShadows,
@@ -795,7 +812,5 @@ function renderScene(){
         }
     );
 
-    raytracer.renderScene(scene, null, 0);
+    raytracer.renderScene(scene, canvas, 0);
 }
-
-Benchmark.report("Tracer", renderScene, renderScene);
