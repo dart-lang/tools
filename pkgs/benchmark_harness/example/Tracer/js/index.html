@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>index</title>
+  </head>
+ 
+  <body>   
+    <canvas id="canvas" width="100" height="100" style="border:1px solid black"></canvas>
+    
+    <div>
+      Width: <input type="text" id="imageWidth" value="100">
+    </div>
+    <div>
+      Height: <input type="text" id="imageHeight" value="100">
+    </div>
+    <div>
+      Pixel Size: <input type="text" id="pixelSize" value="5,5">
+    </div>
+    <div>
+      Diffuse: <input type="checkbox" id="renderDiffuse" checked>
+    </div>
+    <div>
+      Shadows: <input type="checkbox" id="renderShadows" checked>
+    </div>
+    <div>
+      Highlights: <input type="checkbox" id="renderHighlights" checked>
+    </div>
+    <div>
+      Reflections: <input type="checkbox" id="renderReflections" checked>
+    </div>
+    <button id="render">Render</button>
+    <div>
+      Time (ms): <span id="time"></span>
+    </div>
+    <script src="Tracer.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
