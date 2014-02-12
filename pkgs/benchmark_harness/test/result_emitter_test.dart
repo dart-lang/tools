@@ -18,7 +18,7 @@ class MockResultEmitter extends Mock implements ScoreEmitter {
     when(callsTo('emit')).alwaysCall(fakeEmit);
   }
 
-  void fakeEmit(double value) {
+  void fakeEmit(String name, double value) {
     hasEmitted = true;
   }
 }
@@ -48,7 +48,6 @@ class BenchmarkWithoutResultEmitter extends BenchmarkBase {
 benchmarkHarnessTest() {
   MockResultEmitter createMockEmitter() {
     MockResultEmitter emitter = new MockResultEmitter();
-    emitter.when(callsTo('emit'));
     return emitter;
   }
 

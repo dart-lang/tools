@@ -63,7 +63,7 @@ class BenchmarkBase {
     double score = measure();
     print("$name(RunTime): $score us.");
     if( emitter != null ) {
-      emitter.emit(score);
+      emitter.emit(name, score);
     }
   }
 

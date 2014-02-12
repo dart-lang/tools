@@ -2,6 +2,6 @@ part of benchmark_harness;
 
 abstract class ScoreEmitter {
 
-  void emit(value);
+  void emit(String testName, double value);
 
 }
