@@ -5,3 +5,6 @@ description: The official Dart project benchmark harness.
 homepage: http://www.dartlang.org
 dependencies:
   browser: any
+dev_dependencies:
+  unittest: any
+  di: 0.0.32
