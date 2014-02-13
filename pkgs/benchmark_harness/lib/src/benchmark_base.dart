@@ -4,9 +4,13 @@ part of benchmark_harness;
 
 class BenchmarkBase {
   final String name;
+  final ScoreEmitter emitter;
 
   // Empty constructor.
-  const BenchmarkBase(String name) : this.name = name;
+  const BenchmarkBase(String name,
+      { ScoreEmitter emitter: const PrintEmitter() })
+      : this.name = name,
+        this.emitter = emitter;
 
   // The benchmark code.
   // This function is not used, if both [warmup] and [exercise] are overwritten.
@@ -58,8 +62,7 @@ class BenchmarkBase {
   }
 
   void report() {
-    double score = measure();
-    print("$name(RunTime): $score us.");
+    emitter.emit(name, measure());
   }
 
 }
