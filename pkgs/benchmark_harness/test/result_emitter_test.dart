@@ -2,8 +2,6 @@ library remote;
 
 import 'fixed-unittest.dart';
 import 'package:unittest/mock.dart';
-import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 
 
@@ -34,17 +32,6 @@ class BenchmarkWithResultEmitter extends BenchmarkBase {
   void teardown() { }
 }
 
-// Create a new benchmark which has no emitter
-class BenchmarkWithoutResultEmitter extends BenchmarkBase {
-  const BenchmarkWithoutResultEmitter() : super("Template");
-
-  void run() { }
-
-  void setup() { }
-
-  void teardown() { }
-}
-
 benchmarkHarnessTest() {
   MockResultEmitter createMockEmitter() {
     MockResultEmitter emitter = new MockResultEmitter();
@@ -54,26 +41,9 @@ benchmarkHarnessTest() {
   describe('ResultEmitter', () {
     it('should be called when emitter is provided', () {
       MockResultEmitter emitter = createMockEmitter();
-      Module module = new Module()..value(ScoreEmitter, emitter )
-          ..type(BenchmarkWithResultEmitter);
-      Injector i = new DynamicInjector(modules: [module]);
-
-      var testBenchmark = i.get(BenchmarkWithResultEmitter);
+      var testBenchmark = new BenchmarkWithResultEmitter(emitter);
       testBenchmark.report();
       emitter.getLogs(callsTo('emit')).verify(happenedOnce);
-    });
-  });
-
-  describe('ResultEmitter', () {
-    it('should not be called when emitter is not provided', () {
-      MockResultEmitter emitter = createMockEmitter();
-      Module module = new Module()..value(ScoreEmitter, emitter )
-          ..type(BenchmarkWithoutResultEmitter);
-      Injector i = new DynamicInjector(modules: [module]);
-
-      var testBenchmark = i.get(BenchmarkWithoutResultEmitter);
-      testBenchmark.report();
-      emitter.getLogs(callsTo('emit')).verify(neverHappened);
     });
   });
 }

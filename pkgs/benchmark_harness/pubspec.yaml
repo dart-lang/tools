@@ -7,4 +7,3 @@ dependencies:
   browser: any
 dev_dependencies:
   unittest: any
-  di: 0.0.32
