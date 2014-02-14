@@ -1,7 +1,5 @@
 # Dart Benchmark Harness
 
-## Introduction
-
 The Dart project benchmark harness is the recommended starting point when building a benchmark for Dart.
 
 ## Learning more
