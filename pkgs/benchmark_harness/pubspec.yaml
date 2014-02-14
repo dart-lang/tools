@@ -1,5 +1,5 @@
 name: benchmark_harness
-version: 1.0.3
+version: 1.0.4
 author: Dart Project <johnmccutchan@google.com>
 description: The official Dart project benchmark harness.
 homepage: http://www.dartlang.org
