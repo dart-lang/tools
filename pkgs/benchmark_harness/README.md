@@ -1,11 +1,14 @@
-# Dart Benchmark Harness #
-==========================
+# Dart Benchmark Harness
 
-## Introduction ##
+## Introduction
 
 The Dart project benchmark harness is the recommended starting point when building a benchmark for Dart.
 
-## Interpreting Results ##
+## Learning more
+
+You can read more about [Benchmarking the Dart VM](https://www.dartlang.org/articles/benchmarking/).
+
+## Interpreting Results
 
 By default, the reported runtime is not for a single call to `run()`, but for
 the average time it takes to call `run()` __10 times__. The
@@ -13,7 +16,7 @@ benchmark harness executes a 10-call timing loop repeatedly until 2 seconds
 have elapsed; the reported result is the average of the runtimes for each
 loop.
 
-## Comparing Results ##
+## Comparing Results
 
 If you are running the same benchmark, on the same machine, running the same OS,
 the reported run times can be carefully compared across runs.
@@ -24,13 +27,13 @@ other applications running on your machine could alter the result.
 Comparing the run time of different benchmarks is not recommended. 
 In other words, don't compare apples with oranges.
 
-## Features ##
+## Features
 
 * `BenchmarkBase` class that all new benchmarks should `extend`
 * Two sample benchmarks (DeltaBlue & Richards)
 * Template benchmark that you can copy and paste when building new benchmarks
 
-## Getting Started ##
+## Getting Started
 
 1\. Add the following to your project's **pubspec.yaml**
 
@@ -53,7 +56,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 
 4\. Create a benchmark class which inherits from `BenchmarkBase`
 
-## Example ##
+## Example
 
 ```
 // Import BenchmarkBase class.
