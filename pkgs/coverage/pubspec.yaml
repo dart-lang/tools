@@ -1,0 +1,5 @@
+name: coverage
+description: Coverage data manipulation and formatting
+dependencies:
+  args: any
+  path: any
