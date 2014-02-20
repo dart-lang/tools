@@ -37,52 +37,52 @@ class Resolver {
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
-  resolve(String import) {
-    if (import.startsWith(DART_PREFIX)) {
+  resolve(String uri) {
+    if (uri.startsWith(DART_PREFIX)) {
       if (_env["sdkRoot"] == null) {
         // No sdk-root given, do not resolve dart: URIs.
         return null;
       }
-      var slashPos = import.indexOf("/");
+      var slashPos = uri.indexOf("/");
       var filePath;
       if (slashPos != -1) {
-        var path = import.substring(DART_PREFIX.length, slashPos);
+        var path = uri.substring(DART_PREFIX.length, slashPos);
         // Drop patch files, since we don't have their source in the compiled
         // SDK.
         if (path.endsWith("-patch")) {
-          failed.add(import);
+          failed.add(uri);
           return null;
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll("-", "_");
         filePath = "${_env["sdkRoot"]}"
-                   "/${path}${import.substring(slashPos, import.length)}";
+                   "/${path}${uri.substring(slashPos, uri.length)}";
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.
-        var lib = import.substring(DART_PREFIX.length, import.length);
+        var lib = uri.substring(DART_PREFIX.length, uri.length);
         filePath = "${_env["sdkRoot"]}/${lib}/${lib}.dart";
       }
       return filePath;
     }
-    if (import.startsWith(PACKAGE_PREFIX)) {
+    if (uri.startsWith(PACKAGE_PREFIX)) {
       if (_env["pkgRoot"] == null) {
         // No package-root given, do not resolve package: URIs.
         return null;
       }
       var filePath =
           "${_env["pkgRoot"]}"
-          "/${import.substring(PACKAGE_PREFIX.length, import.length)}";
+          "/${uri.substring(PACKAGE_PREFIX.length, uri.length)}";
       return filePath;
     }
-    if (import.startsWith(FILE_PREFIX)) {
-      var filePath = fromUri(Uri.parse(import));
+    if (uri.startsWith(FILE_PREFIX)) {
+      var filePath = fromUri(Uri.parse(uri));
       return filePath;
     }
-    if (import.startsWith(HTTP_PREFIX)) {
-      return import;
+    if (uri.startsWith(HTTP_PREFIX)) {
+      return uri;
     }
     // We cannot deal with anything else.
-    failed.add(import);
+    failed.add(uri);
     return null;
   }
 }
@@ -149,11 +149,11 @@ Future prettyPrint(Map hitMap, List failedLoads, IOSink output) {
 
 /// Load an import resource and return a [Future] with a [List] of its lines.
 /// Returns [null] instead of a list if the resource could not be loaded.
-Future<List> loadResource(String import) {
-  if (import.startsWith("http")) {
+Future<List> loadResource(String uri) {
+  if (uri.startsWith("http")) {
     Completer c = new Completer();
     HttpClient client = new HttpClient();
-    client.getUrl(Uri.parse(import))
+    client.getUrl(Uri.parse(uri))
         .then((HttpClientRequest request) {
           return request.close();
         })
@@ -168,7 +168,7 @@ Future<List> loadResource(String import) {
         });
     return c.future;
   } else {
-    File f = new File(import);
+    File f = new File(uri);
     return f.readAsLines()
         .catchError((e) {
           return new Future.value(null);
