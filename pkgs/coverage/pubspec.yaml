@@ -1,5 +1,8 @@
 name: coverage
 description: Coverage data manipulation and formatting
+version: 0.1.0
+author: "Dart Authors <misc@dartlang.org>"
+homepage: https://github.com/dart-lang/coverage
 dependencies:
-  args: any
-  path: any
+  args: '>=0.9.0<2.0.0'
+  path: '>=0.9.0<2.0.0'
