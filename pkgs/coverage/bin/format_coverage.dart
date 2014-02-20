@@ -15,7 +15,7 @@ class Environment {
   String sdkRoot;
   String pkgRoot;
   var input;
-  var output;
+  IOSink output;
   int workers;
   bool prettyPrint;
   bool lcov;
@@ -92,7 +92,7 @@ class Resolver {
 ///
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
-Future lcov(Map hitmap) {
+Future lcov(Map hitmap, IOSink output) {
   var emitOne = (key) {
     var v = hitmap[key];
     StringBuffer entry = new StringBuffer();
@@ -103,7 +103,7 @@ Future lcov(Map hitmap) {
       entry.write("DA:${k},${v[k]}\n");
     });
     entry.write("end_of_record\n");
-    env.output.write(entry.toString());
+    output.write(entry.toString());
     return new Future.value(null);
   };
 
@@ -115,7 +115,7 @@ Future lcov(Map hitmap) {
 ///
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
-Future prettyPrint(Map hitMap, List failedLoads) {
+Future prettyPrint(Map hitMap, List failedLoads, IOSink output) {
   var emitOne = (key) {
     var v = hitMap[key];
     var c = new Completer();
@@ -125,7 +125,7 @@ Future prettyPrint(Map hitMap, List failedLoads) {
         c.complete();
         return;
       }
-      env.output.write("${key}\n");
+      output.write("${key}\n");
       for (var line = 1; line <= lines.length; line++) {
         String prefix = "       ";
         if (v.containsKey(line)) {
@@ -137,7 +137,7 @@ Future prettyPrint(Map hitMap, List failedLoads) {
           b.write(prefix);
           prefix = b.toString();
         }
-        env.output.write("${prefix}|${lines[line-1]}\n");
+        output.write("${prefix}|${lines[line-1]}\n");
       }
       c.complete();
     });
@@ -365,10 +365,10 @@ main(List<String> arguments) {
 
     Future out;
     if (env.prettyPrint) {
-      out = prettyPrint(globalHitmap, failedLoads);
+      out = prettyPrint(globalHitmap, failedLoads, env.output);
     }
     if (env.lcov) {
-      out = lcov(globalHitmap);
+      out = lcov(globalHitmap, env.output);
     }
 
     out.then((_) {
