@@ -429,7 +429,7 @@ parseArgs(List<String> arguments) {
   var args = parser.parse(arguments);
 
   printUsage() {
-    print("Usage: dart full-coverage.dart [OPTION...]\n");
+    print("Usage: dart format_coverage.dart [OPTION...]\n");
     print(parser.getUsage());
   }
 
