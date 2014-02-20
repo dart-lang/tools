@@ -292,8 +292,6 @@ class ResultMessage {
   ResultMessage(this.hitmap, this.failedResolves);
 }
 
-final env = new Environment();
-
 List<List> split(List list, int nBuckets) {
   var buckets = new List(nBuckets);
   var bucketSize = list.length ~/ nBuckets;
@@ -323,7 +321,7 @@ Future<ResultMessage> spawnWorker(name, environment, files) {
 }
 
 main(List<String> arguments) {
-  parseArgs(arguments);
+  final env = parseArgs(arguments);
 
   List files = filesToProcess(env.input);
 
@@ -400,6 +398,7 @@ main(List<String> arguments) {
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
 parseArgs(List<String> arguments) {
+  final env = new Environment();
   var parser = new ArgParser();
 
   parser.addOption("sdk-root", abbr: "s",
@@ -499,4 +498,5 @@ parseArgs(List<String> arguments) {
   }
 
   env.verbose = args["verbose"];
+  return env;
 }
