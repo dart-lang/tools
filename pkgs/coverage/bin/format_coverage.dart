@@ -10,19 +10,6 @@ import "dart:isolate";
 import "package:args/args.dart";
 import "package:path/path.dart";
 
-/// [Environment] stores gathered arguments information.
-class Environment {
-  String sdkRoot;
-  String pkgRoot;
-  var input;
-  IOSink output;
-  int workers;
-  bool prettyPrint;
-  bool lcov;
-  bool expectMarkers;
-  bool verbose;
-}
-
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
   static const DART_PREFIX = "dart:";
@@ -318,6 +305,19 @@ Future<ResultMessage> spawnWorker(name, environment, files) {
   var msg = new WorkMessage(name, environment, files, port.sendPort);
   Isolate.spawn(worker, msg);
   return completer.future;
+}
+
+/// [Environment] stores gathered arguments information.
+class Environment {
+  String sdkRoot;
+  String pkgRoot;
+  String input;
+  IOSink output;
+  int workers;
+  bool prettyPrint;
+  bool lcov;
+  bool expectMarkers;
+  bool verbose;
 }
 
 main(List<String> arguments) {
