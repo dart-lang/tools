@@ -7,16 +7,19 @@ class Resolver {
   static const FILE_PREFIX = "file://";
   static const HTTP_PREFIX = "http://";
 
-  Map _env;
+  final String pkgRoot;
+  final String sdkRoot;
   List failed = [];
 
-  Resolver(this._env);
+  Resolver({packageRoot: null, sdkRoot: null})
+      : pkgRoot = packageRoot,
+        sdkRoot = sdkRoot;
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
   resolve(String uri) {
     if (uri.startsWith(DART_PREFIX)) {
-      if (_env["sdkRoot"] == null) {
+      if (sdkRoot == null) {
         // No sdk-root given, do not resolve dart: URIs.
         return null;
       }
@@ -32,28 +35,23 @@ class Resolver {
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll("-", "_");
-        filePath = "${_env["sdkRoot"]}"
-                   "/${path}${uri.substring(slashPos, uri.length)}";
+        filePath = "$sdkRoot/${path}${uri.substring(slashPos, uri.length)}";
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.
         var lib = uri.substring(DART_PREFIX.length, uri.length);
-        filePath = "${_env["sdkRoot"]}/${lib}/${lib}.dart";
+        filePath = "$sdkRoot/$lib/${lib}.dart";
       }
       return filePath;
     }
     if (uri.startsWith(PACKAGE_PREFIX)) {
-      if (_env["pkgRoot"] == null) {
+      if (pkgRoot == null) {
         // No package-root given, do not resolve package: URIs.
         return null;
       }
-      var filePath =
-          "${_env["pkgRoot"]}"
-          "/${uri.substring(PACKAGE_PREFIX.length, uri.length)}";
-      return filePath;
+      return "$pkgRoot/${uri.substring(PACKAGE_PREFIX.length, uri.length)}";
     }
     if (uri.startsWith(FILE_PREFIX)) {
-      var filePath = fromUri(Uri.parse(uri));
-      return filePath;
+      return fromUri(Uri.parse(uri));
     }
     if (uri.startsWith(HTTP_PREFIX)) {
       return uri;

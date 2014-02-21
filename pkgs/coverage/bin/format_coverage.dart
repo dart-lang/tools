@@ -31,7 +31,8 @@ worker(WorkMessage msg) {
 
   var env = msg.environment;
   List files = msg.files;
-  Resolver resolver = new Resolver(env);
+  var resolver =
+      new Resolver(packageRoot: env["pkgRoot"], sdkRoot: env["sdkRoot"]);
   var workerHitmap = {};
   files.forEach((File fileEntry) {
     // Read file sync, as it only contains 1 object.
