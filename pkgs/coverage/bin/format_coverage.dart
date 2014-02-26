@@ -29,10 +29,9 @@ List filesToProcess(String absPath) {
 worker(WorkMessage msg) {
   final start = new DateTime.now().millisecondsSinceEpoch;
 
-  var env = msg.environment;
   List files = msg.files;
   var resolver =
-      new Resolver(packageRoot: env["pkgRoot"], sdkRoot: env["sdkRoot"]);
+      new Resolver(packageRoot: msg.pkgRoot, sdkRoot: msg.sdkRoot);
   var workerHitmap = {};
   files.forEach((File fileEntry) {
     // Read file sync, as it only contains 1 object.
@@ -42,7 +41,7 @@ worker(WorkMessage msg) {
     }
   });
 
-  if (env["verbose"]) {
+  if (msg.verbose) {
     final end = new DateTime.now().millisecondsSinceEpoch;
     print("${msg.workerName}: Finished processing ${files.length} files. "
           "Took ${end - start} ms.");
@@ -53,10 +52,12 @@ worker(WorkMessage msg) {
 
 class WorkMessage {
   final String workerName;
-  final Map environment;
+  final String sdkRoot;
+  final String pkgRoot;
   final List files;
   final SendPort replyPort;
-  WorkMessage(this.workerName, this.environment, this.files, this.replyPort);
+  final bool verbose;
+  WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files, this.replyPort, this.verbose);
 }
 
 class ResultMessage {
@@ -81,14 +82,14 @@ List<List> split(List list, int nBuckets) {
   return buckets;
 }
 
-Future<ResultMessage> spawnWorker(name, environment, files) {
+Future<ResultMessage> spawnWorker(name, pkgRoot, sdkRoot, files, verbose) {
   RawReceivePort port = new RawReceivePort();
   var completer = new Completer();
   port.handler = ((ResultMessage msg) {
     completer.complete(msg);
     port.close();
   });
-  var msg = new WorkMessage(name, environment, files, port.sendPort);
+  var msg = new WorkMessage(name, pkgRoot, sdkRoot, files, port.sendPort, verbose);
   Isolate.spawn(worker, msg);
   return completer.future;
 }
@@ -124,16 +125,11 @@ main(List<String> arguments) {
     print("  package-root: ${env.pkgRoot}");
   }
 
-  Map sharedEnv = {
-    "sdkRoot": env.sdkRoot,
-    "pkgRoot": env.pkgRoot,
-    "verbose": env.verbose,
-  };
-
   // Create workers.
   int workerId = 0;
   var results = split(files, env.workers).map((workerFiles) {
-    var result = spawnWorker("Worker ${workerId++}", sharedEnv, workerFiles);
+    var result = spawnWorker("Worker ${workerId++}", env.pkgRoot, env.sdkRoot,
+        workerFiles, env.verbose);
     return result.then((ResultMessage message) {
       mergeHitmaps(message.hitmap, globalHitmap);
       failedResolves.addAll(message.failedResolves);
