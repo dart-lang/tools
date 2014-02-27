@@ -9,13 +9,13 @@ Future lcov(Map hitmap, IOSink output) {
   var emitOne = (key) {
     var v = hitmap[key];
     StringBuffer entry = new StringBuffer();
-    entry.write("SF:${key}\n");
+    entry.write('SF:${key}\n');
     v.keys.toList()
           ..sort()
           ..forEach((k) {
-      entry.write("DA:${k},${v[k]}\n");
+      entry.write('DA:${k},${v[k]}\n');
     });
-    entry.write("end_of_record\n");
+    entry.write('end_of_record\n');
     output.write(entry.toString());
     return new Future.value(null);
   };
