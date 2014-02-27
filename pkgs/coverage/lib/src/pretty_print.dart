@@ -15,19 +15,19 @@ Future prettyPrint(Map hitMap, List failedLoads, IOSink output) {
         c.complete();
         return;
       }
-      output.write("${key}\n");
+      output.write('${key}\n');
       for (var line = 1; line <= lines.length; line++) {
-        String prefix = "       ";
+        String prefix = '       ';
         if (v.containsKey(line)) {
           prefix = v[line].toString();
           StringBuffer b = new StringBuffer();
           for (int i = prefix.length; i < 7; i++) {
-            b.write(" ");
+            b.write(' ');
           }
           b.write(prefix);
           prefix = b.toString();
         }
-        output.write("${prefix}|${lines[line-1]}\n");
+        output.write('${prefix}|${lines[line-1]}\n');
       }
       c.complete();
     });
@@ -40,7 +40,7 @@ Future prettyPrint(Map hitMap, List failedLoads, IOSink output) {
 /// Load an import resource and return a [Future] with a [List] of its lines.
 /// Returns [null] instead of a list if the resource could not be loaded.
 Future<List> _loadResource(String uri) {
-  if (uri.startsWith("http")) {
+  if (uri.startsWith('http')) {
     Completer c = new Completer();
     HttpClient client = new HttpClient();
     client.getUrl(Uri.parse(uri))
