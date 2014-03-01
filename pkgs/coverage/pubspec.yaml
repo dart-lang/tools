@@ -1,6 +1,6 @@
 name: coverage
 description: Coverage data manipulation and formatting
-version: 0.1.0
+version: 0.1.1
 author: "Dart Authors <misc@dartlang.org>"
 homepage: https://github.com/dart-lang/coverage
 dependencies:
