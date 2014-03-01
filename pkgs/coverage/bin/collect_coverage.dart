@@ -16,7 +16,10 @@ Future<List> getAllCoverage(String host, String port) {
         // flatten response lists
         var allCoverage = responses.expand((it) => it).toList();
         devTools.close();
-        return allCoverage;
+        return {
+          'type': 'CodeCoverage',
+          'coverage': allCoverage,
+        };
       });
     });
   });
