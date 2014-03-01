@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:coverage/src/devtools.dart';
 
-Future<List> getAllCoverage(String host, String port) {
+Future<Map> getAllCoverage(String host, String port) {
   return DevTools.connect(host, port).then((devTools) {
     return devTools.getIsolateIds().then((isolateIds) {
       var requests = isolateIds.map(devTools.getCoverage).toList();
