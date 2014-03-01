@@ -30,8 +30,7 @@ worker(WorkMessage msg) {
   final start = new DateTime.now().millisecondsSinceEpoch;
 
   List files = msg.files;
-  var resolver =
-      new Resolver(packageRoot: msg.pkgRoot, sdkRoot: msg.sdkRoot);
+  var resolver = new Resolver(packageRoot: msg.pkgRoot, sdkRoot: msg.sdkRoot);
   var workerHitmap = {};
   files.forEach((File fileEntry) {
     // Read file sync, as it only contains 1 object.
@@ -57,7 +56,8 @@ class WorkMessage {
   final List files;
   final SendPort replyPort;
   final bool verbose;
-  WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files, this.replyPort, this.verbose);
+  WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files,
+      this.replyPort, this.verbose);
 }
 
 class ResultMessage {
@@ -146,8 +146,7 @@ main(List<String> arguments) {
     Future out;
     if (env.prettyPrint) {
       out = prettyPrint(globalHitmap, failedLoads, env.output);
-    }
-    if (env.lcov) {
+    } else if (env.lcov) {
       out = lcov(globalHitmap, env.output);
     }
 
@@ -242,14 +241,11 @@ parseArgs(List<String> arguments) {
     }
   }
 
-  if (args['in'] == null) {
-    fail('No input files given.');
-  } else {
-    env.input = absolute(normalize(args['in']));
-    if (!FileSystemEntity.isDirectorySync(env.input) &&
-        !FileSystemEntity.isFileSync(env.input)) {
-      fail('Provided input "${args["in"]}" is neither a directory nor a file.');
-    }
+  if (args['in'] == null) fail('No input files given.');
+  env.input = absolute(normalize(args['in']));
+  if (!FileSystemEntity.isDirectorySync(env.input) &&
+      !FileSystemEntity.isFileSync(env.input)) {
+    fail('Provided input "${args["in"]}" is neither a directory nor a file.');
   }
 
   if (args['out'] == 'stdout') {
@@ -262,7 +258,8 @@ parseArgs(List<String> arguments) {
   env.lcov = args['lcov'];
   if (args['pretty-print'] && env.lcov) {
     fail('Choose one of pretty-print or lcov output');
-  } else if (!env.lcov) {
+  }
+  if (!env.lcov) {
     // Use pretty-print either explicitly or by default.
     env.prettyPrint = true;
   }
