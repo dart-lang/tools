@@ -42,12 +42,12 @@ class BenchmarkBase {
     Stopwatch watch = new Stopwatch();
     watch.start();
     int elapsed = 0;
-    while (elapsed < timeMinimum) {
+    while (elapsed < (timeMinimum * 1000)) {
       f();
-      elapsed = watch.elapsedMilliseconds;
+      elapsed = watch.elapsedMicroseconds;
       iter++;
     }
-    return 1000.0 * elapsed / iter;
+    return elapsed / iter;
   }
 
   // Measures the score for the benchmark and returns it.
