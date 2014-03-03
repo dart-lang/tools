@@ -36,18 +36,19 @@ class BenchmarkBase {
 
   // Measures the score for this benchmark by executing it repeately until
   // time minimum has been reached.
-  static double measureFor(Function f, int timeMinimum) {
+  static double measureFor(Function f, int minimumMillis) {
+    int minimumMicros = minimumMillis * 1000;
     int time = 0;
     int iter = 0;
     Stopwatch watch = new Stopwatch();
     watch.start();
     int elapsed = 0;
-    while (elapsed < timeMinimum) {
+    while (elapsed < minimumMicros) {
       f();
-      elapsed = watch.elapsedMilliseconds;
+      elapsed = watch.elapsedMicroseconds;
       iter++;
     }
-    return 1000.0 * elapsed / iter;
+    return elapsed / iter;
   }
 
   // Measures the score for the benchmark and returns it.
