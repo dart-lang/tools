@@ -43,7 +43,7 @@ class Options {
 Options parseArgs(List<String> arguments) {
   var parser = new ArgParser();
 
-  parser.addOption('host', abbr: 'H', defaultsTo: 'localhost',
+  parser.addOption('host', abbr: 'H', defaultsTo: '127.0.0.1',
       help: 'remote VM host');
   parser.addOption('port', abbr: 'p', help: 'remote VM port');
   parser.addOption('out', abbr: 'o', defaultsTo: 'stdout',
