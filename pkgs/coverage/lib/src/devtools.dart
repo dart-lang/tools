@@ -38,6 +38,10 @@ class Observatory {
           .then((resp) => resp['coverage']);
   }
 
+  Future unpin(String isolateId) {
+    return _connection.request('isolates/$isolateId/unpin');
+  }
+
   Future close() => _connection.close();
 }
 

@@ -15,7 +15,7 @@ Tools
     dart --enable-vm-service:NNNN --pin-isolates script.dart
     dart bin/collect_coverage.dart --port=NNNN -o coverage.json --unpin-isolates
 
-The `--pin-isolates` flag is used to prevent isolates from being cleaned up
+The `--pin-isolates` VM flag is used to prevent isolates from being cleaned up
 until coverage has been collected.
 
 #### Collecting coverage from Dartium
