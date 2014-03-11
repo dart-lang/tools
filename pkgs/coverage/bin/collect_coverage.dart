@@ -7,29 +7,39 @@ import 'dart:convert' show JSON;
 import 'dart:io';
 import 'package:args/args.dart';
 import 'package:coverage/src/devtools.dart';
+import 'package:http/http.dart' as http;
 
-Future<Map> getAllCoverage(String host, String port) {
-  return DevTools.connect(host, port).then((devTools) {
-    return devTools.getIsolateIds().then((isolateIds) {
-      var requests = isolateIds.map(devTools.getCoverage).toList();
-      return Future.wait(requests).then((responses) {
-        // flatten response lists
-        var allCoverage = responses.expand((it) => it).toList();
-        devTools.close();
-        return {
-          'type': 'CodeCoverage',
-          'coverage': allCoverage,
-        };
-      });
+Future<Map> getAllCoverage(Observatory observatory) {
+  return observatory.getIsolateIds().then((isolateIds) {
+    var requests = isolateIds.map(observatory.getCoverage).toList();
+    return Future.wait(requests).then((responses) {
+      // flatten response lists
+      var allCoverage = responses.expand((it) => it).toList();
+      return {
+        'type': 'CodeCoverage',
+        'coverage': allCoverage,
+      };
     });
+  });
+}
+
+Future<Observatory> connect(String host, String port) {
+  return http.get('http://$host:$port/json').then((resp) {
+    var json = JSON.decode(resp.body);
+    if (json is List) {
+      return Observatory.connectOverDevtools(host, port);
+    }
+    return Observatory.connect(host, port);
   });
 }
 
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
-  getAllCoverage(options.host, options.port).then((coverage) {
-    options.out.write(JSON.encode(coverage));
-    options.out.close();
+  connect(options.host, options.port).then((observatory) {
+    getAllCoverage(observatory).then((coverage) {
+      options.out.write(JSON.encode(coverage));
+      return options.out.close();
+    }).then((_) => observatory.close());
   });
 }
 
