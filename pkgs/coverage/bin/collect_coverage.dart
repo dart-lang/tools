@@ -42,12 +42,12 @@ Future<Observatory> connect(String host, String port) {
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
   connect(options.host, options.port).then((observatory) {
-    getAllCoverage(observatory).then((coverage) {
-      options.out.write(JSON.encode(coverage));
-      return options.out.close();
-    })
-    .then((_) => options.unpin ? unpinIsolates(observatory) : null)
-    .then((_) => observatory.close());
+    getAllCoverage(observatory)
+        .then(JSON.encode)
+        .then(options.out.write)
+        .then((_) => options.out.close())
+        .then((_) => options.unpin ? unpinIsolates(observatory) : null)
+        .then((_) => observatory.close());
   });
 }
 
