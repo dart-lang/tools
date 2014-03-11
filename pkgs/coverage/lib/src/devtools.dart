@@ -101,15 +101,15 @@ class _DevtoolsConnection implements _Connection {
   @override
   Future<Map> request(String request) {
     _pendingRequests[_requestId] = new Completer();
-        _socket.add(JSON.encode({
-          'id': _requestId,
-          'method': 'Dart.observatoryQuery',
-          'params': {
-            'id': '$_requestId',
-            'query': request,
-          },
-        }));
-        return _pendingRequests[_requestId++].future;
+    _socket.add(JSON.encode({
+      'id': _requestId,
+      'method': 'Dart.observatoryQuery',
+      'params': {
+        'id': '$_requestId',
+        'query': request,
+      },
+    }));
+    return _pendingRequests[_requestId++].future;
   }
 
   Future close() => _socket.close();
