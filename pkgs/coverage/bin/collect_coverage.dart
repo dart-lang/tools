@@ -23,6 +23,12 @@ Future<Map> getAllCoverage(Observatory observatory) {
   });
 }
 
+Future unpinIsolates(Observatory observatory) {
+  return observatory.getIsolateIds()
+      .then((isolateIds) => isolateIds.map(observatory.unpin).toList())
+      .then(Future.wait);
+}
+
 Future<Observatory> connect(String host, String port) {
   return http.get('http://$host:$port/json').then((resp) {
     var json = JSON.decode(resp.body);
@@ -39,7 +45,9 @@ void main(List<String> arguments) {
     getAllCoverage(observatory).then((coverage) {
       options.out.write(JSON.encode(coverage));
       return options.out.close();
-    }).then((_) => observatory.close());
+    })
+    .then((_) => options.unpin ? unpinIsolates(observatory) : null)
+    .then((_) => observatory.close());
   });
 }
 
@@ -47,7 +55,8 @@ class Options {
   final String host;
   final String port;
   final IOSink out;
-  Options(this.host, this.port, this.out);
+  final bool unpin;
+  Options(this.host, this.port, this.out, this.unpin);
 }
 
 Options parseArgs(List<String> arguments) {
@@ -58,6 +67,8 @@ Options parseArgs(List<String> arguments) {
   parser.addOption('port', abbr: 'p', help: 'remote VM port');
   parser.addOption('out', abbr: 'o', defaultsTo: 'stdout',
       help: 'output: may be file or stdout');
+  parser.addFlag('unpin-isolates', abbr: 'u', defaultsTo: false,
+      help: 'unpin all isolates on exit');
   parser.addFlag('help', abbr: 'h', negatable: false,
       help: 'show this help');
   var args = parser.parse(arguments);
@@ -81,5 +92,6 @@ Options parseArgs(List<String> arguments) {
   if (args['port'] == null) fail('port not specified');
 
   return new Options(args['host'], args['port'],
-      (args['out'] == 'stdout') ? stdout : new File(args['out']).openWrite());
+      (args['out'] == 'stdout') ? stdout : new File(args['out']).openWrite(),
+      args['unpin-isolates']);
 }
