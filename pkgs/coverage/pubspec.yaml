@@ -1,5 +1,5 @@
 name: coverage
-version: 0.2.0
+version: 0.2.1
 author: Dart Team <misc@dartlang.org>
 description: Coverage data manipulation and formatting
 homepage: https://github.com/dart-lang/coverage
