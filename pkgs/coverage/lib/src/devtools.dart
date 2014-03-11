@@ -5,21 +5,74 @@
 library coverage.src.devtools;
 
 import 'dart:async';
+import 'dart:convert' show JSON;
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'dart:convert' show JSON;
 
-/// An interface to the Chrome dev tools.
-class DevTools {
+/// Interface to Dart's VM Observatory
+class Observatory {
+  final _Connection _connection;
+
+  Observatory._(this._connection);
+
+  static Future<Observatory> connect(String host, String port) {
+    var uri = 'http://$host:$port';
+    var observatory = new Observatory._(new _VmConnection(uri));
+    return new Future.value(observatory);
+  }
+
+  static Future<Observatory> connectOverDevtools(String host, String port) {
+    var uri = 'http://$host:$port/json';
+    return _DevtoolsConnection.connect(uri).then((c) => new Observatory._(c));
+  }
+
+  Future<List<String>> getIsolateIds() {
+    return _connection.request('isolates')
+      .then((resp) => resp['members'])
+      .then((members) => (members == null) ? []
+          : members.map((isolate) => isolate['name']).toList());
+  }
+
+  Future<Map> getCoverage(String isolateId) {
+    return _connection.request('isolates/$isolateId/coverage')
+          .then((resp) => resp['coverage']);
+  }
+
+  Future close() => _connection.close();
+}
+
+/// Dart Observatory connection
+abstract class _Connection {
+  Future<Map> request(String request);
+  Future close();
+}
+
+/// Observatory connection over HTTP GET requests
+class _VmConnection implements _Connection {
+  final String uri;
+
+  _VmConnection(this.uri);
+
+  Future<Map> request(String request) {
+    return http.get('$uri/$request')
+        .then((resp) => resp.body)
+        .then((resp) => resp.isEmpty ? {} : JSON.decode(resp));
+  }
+
+  Future close() => new Future.value();
+}
+
+/// Observatory connection over Chrome DevTools websocket
+class _DevtoolsConnection implements _Connection {
   final WebSocket _socket;
   final Map<int, Completer> _pendingRequests = {};
   int _requestId = 1;
 
-  DevTools._(this._socket) {
+  _DevtoolsConnection(this._socket) {
     _socket.listen(_handleResponse);
   }
 
-  static Future<DevTools> connect(String host, String port) {
+  static Future<_Connection> connect(String uri) {
     _getWebsocketDebuggerUrl(response) {
       var json = JSON.decode(response.body);
       if (json.length < 1) throw new StateError('No open pages');
@@ -34,34 +87,28 @@ class DevTools {
       return debuggerUrl;
     }
 
-    var url = 'http://$host:$port/json';
-    return http.get(url).then((response) {
+    return http.get(uri).then((response) {
       var webSocketDebuggerUrl = _getWebsocketDebuggerUrl(response);
       return WebSocket.connect(webSocketDebuggerUrl)
-          .then((socket) => new DevTools._(socket));
+          .then((socket) => new _DevtoolsConnection(socket));
     });
   }
 
-  Future<List<String>> getIsolateIds() => _request('/isolates/')
-      .then((resp) => resp['members'])
-      .then((members) => (members == null) ? []
-          : members.map((isolate) => isolate['id']).toList());
-
-  Future<String> getCoverage(String isolateId) => _request('$isolateId/coverage')
-      .then((resp) => resp['coverage']);
-
-  Future<Map> _request(String query) {
+  @override
+  Future<Map> request(String request) {
     _pendingRequests[_requestId] = new Completer();
-    _socket.add(JSON.encode({
-      'id': _requestId,
-      'method': 'Dart.observatoryQuery',
-      'params': {
-        'id': '$_requestId',
-        'query': query,
-      },
-    }));
-    return _pendingRequests[_requestId++].future;
+        _socket.add(JSON.encode({
+          'id': _requestId,
+          'method': 'Dart.observatoryQuery',
+          'params': {
+            'id': '$_requestId',
+            'query': request,
+          },
+        }));
+        return _pendingRequests[_requestId++].future;
   }
+
+  Future close() => _socket.close();
 
   void _handleResponse(String response) {
     var json = JSON.decode(response);
@@ -71,6 +118,4 @@ class DevTools {
       _pendingRequests.remove(id).complete(message);
     }
   }
-
-  Future close() =>_socket.close();
 }
