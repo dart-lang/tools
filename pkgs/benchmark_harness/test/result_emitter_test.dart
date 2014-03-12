@@ -1,9 +1,9 @@
-library remote;
+library result_emitter_test;
+
+import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:unittest/mock.dart';
 
 import 'fixed-unittest.dart';
-import 'package:unittest/mock.dart';
-import 'package:benchmark_harness/benchmark_harness.dart';
-
 
 void main() {
   benchmarkHarnessTest();
