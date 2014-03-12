@@ -19,6 +19,9 @@ class MockResultEmitter extends Mock implements ScoreEmitter {
   void fakeEmit(String name, double value) {
     hasEmitted = true;
   }
+
+  // Added to quiet an analyzer warning.
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 // Create a new benchmark which has an emitter.
