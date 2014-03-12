@@ -63,60 +63,57 @@ if(typeof(scope.Flog) == 'undefined') {
 
 var Color =
 Flog.RayTracer.Color = function(r, g, b) {
-  this.red = (+r);
-  this.green = (+g);
-  this.blue = (+b);
+  this.red = r;
+  this.green = g;
+  this.blue = b;
 };
 Color.prototype = {
   add: function(c){
     return new Color(
-      +(this.red)   + +(c.red),
-      +(this.green) + +(c.green),
-      +(this.blue)  + +(c.blue)
+      this.red   + c.red,
+      this.green + c.green,
+      this.blue  + c.blue
     );
   },
 
-  addScalar_: function(s){
-    s = +s;
+  addScalar: function(s){
     var result = new Color(
-    	+(this.red) +   s,
-      +(this.green) + s,
-      +(this.blue) +  s);
+      this.red   + s,
+      this.green + s,
+      this.blue  + s);
     result.limit();
     return result;
   },
 
   subtract: function(c1, c2){
     return new Color(
-      +(c1.red)   - +(c2.red),
-      +(c1.green) - +(c2.green),
-      +(c1.blue)  - +(c2.blue)
+      c1.red   - c2.red,
+      c1.green - c2.green,
+      c1.blue  - c2.blue
     );
   },
 
-  multiply_: function(c) {
+  multiply: function(c) {
     return new Color(
-      +(this.red)   * +(c.red),
-      +(this.green) * +(c.green),
-      +(this.blue)  * +(c.blue)
+      this.red   * c.red,
+      this.green * c.green,
+      this.blue  * c.blue
     );
   },
 
   multiplyScalar: function(f) {
-    f = +f;
     return new Color(
-      +(this.red)   * f,
-      +(this.green) * f,
-      +(this.blue)  * f
+      this.red   * f,
+      this.green * f,
+      this.blue  * f
     );
   },
 
-  divideFactor : function(c1, f) {
-    f = +f;
+  divideFactor: function(c1, f) {
     return new Color(
-      +(c1.red)   / f,
-      +(c1.green) / f,
-      +(c1.blue)  / f
+      c1.red   / f,
+      c1.green / f,
+      c1.blue  / f
     );
   },
 
@@ -130,11 +127,9 @@ Color.prototype = {
   },
 
   distance : function(color) {
-    var abs = Math.abs;
-    var d = +(abs(+(this.red)   - +(color.red)) +
-              abs(+(this.green) - +(color.green)) +
-              abs(+(this.blue)  - +(color.blue)));
-    return d;
+    return  Math.abs(this.red   - color.red) +
+            Math.abs(this.green - color.green) +
+            Math.abs(this.blue  - color.blue);
   },
 
   blend: function(c, w){
@@ -142,10 +137,9 @@ Color.prototype = {
   },
 
   brightness : function() {
-    var floor = Math.floor;
-    var r = floor(this.red*255);
-    var g = floor(this.green*255);
-    var b = floor(this.blue*255);
+    var r = Math.floor(this.red*255);
+    var g = Math.floor(this.green*255);
+    var b = Math.floor(this.blue*255);
     return (r * 77 + g * 150 + b * 29) >> 8;
   },
 
@@ -166,39 +160,37 @@ Flog.RayTracer.Light = function (pos, color, intensity) {
 };
 Light.prototype = {
   toString : function () {
-    return 'Light [' + this.position.x + ','
-                     + this.position.y + ','
-                     + this.position.z + ']';
+    var pos = this.position;
+    return 'Light [' + pos.x + ','
+                     + pos.y + ','
+                     + pos.z + ']';
   }
 };
 
 var Vector =
 Flog.RayTracer.Vector = function (x, y, z) {
-  this.x = +x;
-  this.y = +y;
-  this.z = +z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 };
 Vector.prototype = {
   copy: function(v){
-    this.x = +(v.x);
-    this.y = +(v.y);
-    this.z = +(v.z);
+    this.x = v.x;
+    this.y = v.y;
+    this.z = v.z;
   },
 
   normalize : function() {
-    var m = +(this.magnitude());
+    var m = this.magnitude();
     return new Vector(
-      +(+this.x / m),
-      +(+this.y / m),
-      +(+this.z / m)
+      this.x / m,
+      this.y / m,
+      this.z / m
     );
   },
 
   magnitude : function() {
-    var x = +(this.x);
-    var y = +(this.y);
-    var z = +(this.z);
-    return +(Math.sqrt(+(x*x) + +(y*y) + +(z*z)));
+    return Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
   },
 
   cross : function(w) {
@@ -213,29 +205,15 @@ Vector.prototype = {
   },
 
   add: function(w) {
-    var vx = +(this.x);
-    var vy = +(this.y);
-    var vz = +(this.z);
-    var wx = +(w.x);
-    var wy = +(w.y);
-    var wz = +(w.z);
-    return new Vector(+(wx + vx), +(wy + vy), +(wz + vz));
+    return new Vector(w.x + this.x,
+                      w.y + this.y,
+                      w.z + this.z);
   },
 
   subtract: function(w) {
-    var vx = +(this.x);
-    var vy = +(this.y);
-    var vz = +(this.z);
-    var wx = +(w.x);
-    var wy = +(w.y);
-    var wz = +(w.z);
-    return new Vector(+(vx - wx), +(vy - wy), +(vz - wz));
-  },
-
-  multiplyVector_: function(w) {
-    return new Vector(+(this.x) * +(w.x),
-                      +(this.y) * +(w.y),
-                      +(this.z) * +(w.z));
+    return new Vector(this.x - w.x,
+                      this.y - w.y,
+                      this.z - w.z);
   },
 
   multiplyScalar: function(w) {
@@ -597,7 +575,7 @@ Engine.prototype = {
         var L = v.dot(info.normal);
         if(L > 0){
           color = color.add(
-                    info.color.multiply_(
+                    info.color.multiply(
                       light.color.multiplyScalar(L)
                     )
                   );
@@ -641,7 +619,7 @@ Engine.prototype = {
             /*&& shadowInfo.shape.type != 'PLANE'*/) {
           var vA = color.multiplyScalar(0.5);
           var dB = (0.5 * Math.pow(shadowInfo.shape.material.transparency, 0.5));
-          color = vA.addScalar_(dB);
+          color = vA.addScalar(dB);
         }
       }
 
