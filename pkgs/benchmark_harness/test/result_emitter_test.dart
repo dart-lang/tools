@@ -1,9 +1,9 @@
-library remote;
+library result_emitter_test;
+
+import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:unittest/mock.dart';
 
 import 'fixed-unittest.dart';
-import 'package:unittest/mock.dart';
-import 'package:benchmark_harness/benchmark_harness.dart';
-
 
 void main() {
   benchmarkHarnessTest();
@@ -19,6 +19,9 @@ class MockResultEmitter extends Mock implements ScoreEmitter {
   void fakeEmit(String name, double value) {
     hasEmitted = true;
   }
+
+  // Added to quiet an analyzer warning.
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 // Create a new benchmark which has an emitter.

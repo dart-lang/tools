@@ -1,4 +1,4 @@
-library unittest;
+library fixed_unittest;
 
 import 'package:unittest/unittest.dart';
 
