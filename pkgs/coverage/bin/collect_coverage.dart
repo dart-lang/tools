@@ -43,13 +43,23 @@ Future<Observatory> connect(String host, String port) {
 
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
-  connect(options.host, options.port).then((observatory) {
-    getAllCoverage(observatory)
-        .then(JSON.encode)
-        .then(options.out.write)
-        .then((_) => options.out.close())
-        .then((_) => options.unpin ? unpinIsolates(observatory) : null)
-        .then((_) => observatory.close());
+  var watch = new Stopwatch()..start();
+  new Timer.periodic(new Duration(milliseconds: 200), (timer) {
+    connect(options.host, options.port).then((observatory) {
+      timer.cancel();
+      getAllCoverage(observatory)
+          .then(JSON.encode)
+          .then(options.out.write)
+          .then((_) => options.out.close())
+          .then((_) => options.unpin ? unpinIsolates(observatory) : null)
+          .then((_) => observatory.close());
+    }, onError: (_) {
+      if ((options.timeout != null) && (watch.elapsed > options.timeout)) {
+        var timeout = options.timeout.inSeconds;
+        print('Failed to collect coverage within ${timeout}s');
+        exit(1);
+      }
+    });
   });
 }
 
@@ -57,8 +67,9 @@ class Options {
   final String host;
   final String port;
   final IOSink out;
+  final Duration timeout;
   final bool unpin;
-  Options(this.host, this.port, this.out, this.unpin);
+  Options(this.host, this.port, this.out, this.timeout, this.unpin);
 }
 
 Options parseArgs(List<String> arguments) {
@@ -69,6 +80,8 @@ Options parseArgs(List<String> arguments) {
   parser.addOption('port', abbr: 'p', help: 'remote VM port');
   parser.addOption('out', abbr: 'o', defaultsTo: 'stdout',
       help: 'output: may be file or stdout');
+  parser.addOption('connect-timeout', abbr: 't',
+      help: 'connect timeout in seconds');
   parser.addFlag('unpin-isolates', abbr: 'u', defaultsTo: false,
       help: 'unpin all isolates on exit');
   parser.addFlag('help', abbr: 'h', negatable: false,
@@ -93,7 +106,10 @@ Options parseArgs(List<String> arguments) {
 
   if (args['port'] == null) fail('port not specified');
 
-  return new Options(args['host'], args['port'],
-      (args['out'] == 'stdout') ? stdout : new File(args['out']).openWrite(),
+  var out = (args['out'] == 'stdout') ? stdout
+      : new File(args['out']).openWrite();
+  var timeout = (args['connect-timeout'] == null) ? null
+      : new Duration(seconds: int.parse(args['connect-timeout']));
+  return new Options(args['host'], args['port'], out, timeout,
       args['unpin-isolates']);
 }
