@@ -16,13 +16,20 @@ Tools
     dart bin/collect_coverage.dart --port=NNNN -o coverage.json --unpin-isolates
 
 The `--pin-isolates` VM flag is used to prevent isolates from being cleaned up
-until coverage has been collected.
+until coverage has been collected. `collect_coverage.dart` can be invoked before
+the VM from which coverage is to be collected, and will wait until it detects
+a VM observatory port. An optional `--connect-timeout` may be specified in
+in seconds.
 
 #### Collecting coverage from Dartium
 
     dartium --remote-debugging-port=NNNN
     # execute code in Dartium
     dart bin/collect_coverage.dart --port=NNNN -o coverage.json
+
+As noted above, `collect_coverage.dart` may be invoked before Dartium, in which
+case it will wait until it detects a Dartium remote debugging port, up to the
+(optional) timeout.
 
 #### Formatting coverage data
 
