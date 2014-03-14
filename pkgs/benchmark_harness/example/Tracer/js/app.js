@@ -1,12 +1,17 @@
+(function() {
+
   var button = document.getElementById('render');
   var canvas = document.getElementById('canvas');
   var time = document.getElementById('time');
-  
-  button.addEventListener('click', function (e) {
+
+  var run = function(e) {
     canvas.width = parseInt(document.getElementById('imageWidth').value);
     canvas.height = parseInt(document.getElementById('imageHeight').value);
-    var start = new Date();
+    canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height)
+    var start = performance.now();
     renderScene(e);
-    var stop = new Date();
-    time.innerHTML = (stop - start).toString();
-  });
+    var stop = performance.now();
+    time.innerHTML = Number(stop - start).toFixed(2).toString();
+  };
+  button.addEventListener('click', run);
+})();

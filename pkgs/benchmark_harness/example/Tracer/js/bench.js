@@ -1,12 +1,13 @@
 var Benchmark = {
   measureFor: function(f, timeMinimum) {
+    "use asm";
     var elapsed = 0;
     var iterations = 0;
-    var start = new Date();
+    var start = +(performance.now());
     while (elapsed < timeMinimum) {
       iterations++;
       f();
-      elapsed = new Date() - start;
+      elapsed = +(+(performance.now()) - start);
     }
     return 1000 * elapsed / iterations;
   },
@@ -25,6 +26,6 @@ var Benchmark = {
 
   report: function(name, warmup, exercise) {
     var score = this.measure(warmup, exercise);
-    print(name + "(RunTime): " + score + " us.");
+    print(name + "(RunTime): " + Number(score).toFixed(2) + " us.");
   }
 };
