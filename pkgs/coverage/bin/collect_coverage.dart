@@ -11,8 +11,7 @@ import 'package:http/http.dart' as http;
 
 Future<Map> getAllCoverage(Observatory observatory) {
   return observatory.getIsolates()
-      .then((isolates) => isolates.map((i) => i.name))
-      .then((isolateIds) => isolateIds.map(observatory.getCoverage))
+      .then((isolates) => isolates.map((i) => i.getCoverage()))
       .then(Future.wait)
       .then((responses) {
         // flatten response lists
@@ -26,8 +25,7 @@ Future<Map> getAllCoverage(Observatory observatory) {
 
 Future unpinIsolates(Observatory observatory) {
   return observatory.getIsolates()
-      .then((isolates) => isolates.map((i) => i.name))
-      .then((isolateIds) => isolateIds.map(observatory.unpin))
+      .then((isolates) => isolates.map((i) => i.unpin()))
       .then(Future.wait);
 }
 

@@ -10,8 +10,16 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class IsolateInfo {
+  final _Connection _connection;
   final String name;
-  IsolateInfo(this.name);
+  IsolateInfo(this._connection, Map json) :
+    name = json['name'];
+
+  Future<Map> getCoverage() =>
+      _connection.request('isolates/$name/coverage')
+      .then((resp) => resp['coverage']);
+
+  Future unpin() => _connection.request('isolates/$name/unpin');
 }
 
 /// Interface to Dart's VM Observatory
@@ -31,21 +39,14 @@ class Observatory {
     return _DevtoolsConnection.connect(uri).then((c) => new Observatory._(c));
   }
 
-  Future<Iterable<IsolateInfo>> getIsolates() {
-    return _connection.request('isolates')
+  Future<Iterable<IsolateInfo>> getIsolates() =>
+      _connection.request('isolates')
       .then((resp) => resp['members'])
-      .then((members) => (members == null) ? []
-          : members.map((isolate) => new IsolateInfo(isolate['name'])));
-  }
+      .then((members) => (members == null) ? [] : members)
+      .then((members) => members.map((m) => new IsolateInfo(_connection, m)));
 
-  Future<Map> getCoverage(String isolateId) {
-    return _connection.request('isolates/$isolateId/coverage')
-          .then((resp) => resp['coverage']);
-  }
-
-  Future unpin(String isolateId) {
-    return _connection.request('isolates/$isolateId/unpin');
-  }
+  Future unpin(String isolateId) =>
+      _connection.request('isolates/$isolateId/unpin');
 
   Future close() => _connection.close();
 }
