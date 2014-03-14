@@ -144,7 +144,6 @@ Color.prototype = {
   },
 
   toString : function () {
-    var floor = Math.floor;
     var r = Math.floor(this.red*255);
     var g = Math.floor(this.green*255);
     var b = Math.floor(this.blue*255);
