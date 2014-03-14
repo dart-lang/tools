@@ -10,22 +10,24 @@ import 'package:coverage/src/devtools.dart';
 import 'package:http/http.dart' as http;
 
 Future<Map> getAllCoverage(Observatory observatory) {
-  return observatory.getIsolateIds().then((isolateIds) {
-    var requests = isolateIds.map(observatory.getCoverage).toList();
-    return Future.wait(requests).then((responses) {
-      // flatten response lists
-      var allCoverage = responses.expand((it) => it).toList();
-      return {
-        'type': 'CodeCoverage',
-        'coverage': allCoverage,
-      };
+  return observatory.getIsolates()
+      .then((isolates) => isolates.map((i) => i.name))
+      .then((isolateIds) => isolateIds.map(observatory.getCoverage))
+      .then(Future.wait)
+      .then((responses) {
+        // flatten response lists
+        var allCoverage = responses.expand((it) => it).toList();
+        return {
+          'type': 'CodeCoverage',
+          'coverage': allCoverage,
+        };
     });
-  });
 }
 
 Future unpinIsolates(Observatory observatory) {
-  return observatory.getIsolateIds()
-      .then((isolateIds) => isolateIds.map(observatory.unpin).toList())
+  return observatory.getIsolates()
+      .then((isolates) => isolates.map((i) => i.name))
+      .then((isolateIds) => isolateIds.map(observatory.unpin))
       .then(Future.wait);
 }
 
