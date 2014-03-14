@@ -9,6 +9,11 @@ import 'dart:convert' show JSON;
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
+class IsolateInfo {
+  final String name;
+  IsolateInfo(this.name);
+}
+
 /// Interface to Dart's VM Observatory
 class Observatory {
   final _Connection _connection;
@@ -26,11 +31,11 @@ class Observatory {
     return _DevtoolsConnection.connect(uri).then((c) => new Observatory._(c));
   }
 
-  Future<List<String>> getIsolateIds() {
+  Future<Iterable<IsolateInfo>> getIsolates() {
     return _connection.request('isolates')
       .then((resp) => resp['members'])
       .then((members) => (members == null) ? []
-          : members.map((isolate) => isolate['name']).toList());
+          : members.map((isolate) => new IsolateInfo(isolate['name'])));
   }
 
   Future<Map> getCoverage(String isolateId) {
