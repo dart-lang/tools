@@ -19,7 +19,7 @@ class IsolateInfo {
       _connection.request('isolates/$name/coverage')
       .then((resp) => resp['coverage']);
 
-  Future unpin() => _connection.request('isolates/$name/unpin');
+  Future resume() => _connection.request('isolates/$name/resume');
 }
 
 /// Interface to Dart's VM Observatory

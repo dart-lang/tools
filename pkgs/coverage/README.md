@@ -12,14 +12,14 @@ Tools
 
 #### Collecting coverage from the VM
 
-    dart --enable-vm-service:NNNN --pin-isolates script.dart
-    dart bin/collect_coverage.dart --port=NNNN -o coverage.json --unpin-isolates
+    dart --enable-vm-service:NNNN --pause_isolates_on_exit script.dart
+    dart bin/collect_coverage.dart --port=NNNN -o coverage.json --resume-isolates
 
-The `--pin-isolates` VM flag is used to prevent isolates from being cleaned up
-until coverage has been collected. `collect_coverage.dart` can be invoked before
-the VM from which coverage is to be collected, and will wait until it detects
-a VM observatory port. An optional `--connect-timeout` may be specified in
-in seconds.
+The `--pause_isolates_on_exit` VM flag is used to pause isolates from being on
+exit to allow coverage to be collected. If `collect_coverage.dart` is invoked
+before the script from which coverage is to be collected, it will wait until it
+detects a VM observatory port to which it can connect. An optional
+`--connect-timeout` may be specified (in seconds).
 
 #### Collecting coverage from Dartium
 
