@@ -23,9 +23,9 @@ Future<Map> getAllCoverage(Observatory observatory) {
     });
 }
 
-Future unpinIsolates(Observatory observatory) {
+Future resumeIsolates(Observatory observatory) {
   return observatory.getIsolates()
-      .then((isolates) => isolates.map((i) => i.unpin()))
+      .then((isolates) => isolates.map((i) => i.resume()))
       .then(Future.wait);
 }
 
@@ -49,7 +49,7 @@ void main(List<String> arguments) {
           .then(JSON.encode)
           .then(options.out.write)
           .then((_) => options.out.close())
-          .then((_) => options.unpin ? unpinIsolates(observatory) : null)
+          .then((_) => options.resume ? resumeIsolates(observatory) : null)
           .then((_) => observatory.close());
     }, onError: (_) {
       if ((options.timeout != null) && (watch.elapsed > options.timeout)) {
@@ -66,8 +66,8 @@ class Options {
   final String port;
   final IOSink out;
   final Duration timeout;
-  final bool unpin;
-  Options(this.host, this.port, this.out, this.timeout, this.unpin);
+  final bool resume;
+  Options(this.host, this.port, this.out, this.timeout, this.resume);
 }
 
 Options parseArgs(List<String> arguments) {
@@ -80,8 +80,8 @@ Options parseArgs(List<String> arguments) {
       help: 'output: may be file or stdout');
   parser.addOption('connect-timeout', abbr: 't',
       help: 'connect timeout in seconds');
-  parser.addFlag('unpin-isolates', abbr: 'u', defaultsTo: false,
-      help: 'unpin all isolates on exit');
+  parser.addFlag('resume-isolates', abbr: 'r', defaultsTo: false,
+      help: 'resume all isolates on exit');
   parser.addFlag('help', abbr: 'h', negatable: false,
       help: 'show this help');
   var args = parser.parse(arguments);
@@ -115,5 +115,5 @@ Options parseArgs(List<String> arguments) {
   var timeout = (args['connect-timeout'] == null) ? null
       : new Duration(seconds: int.parse(args['connect-timeout']));
   return new Options(args['host'], args['port'], out, timeout,
-      args['unpin-isolates']);
+      args['resume-isolates']);
 }
