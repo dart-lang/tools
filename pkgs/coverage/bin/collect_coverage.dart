@@ -104,8 +104,14 @@ Options parseArgs(List<String> arguments) {
 
   if (args['port'] == null) fail('port not specified');
 
-  var out = (args['out'] == 'stdout') ? stdout
-      : new File(args['out']).openWrite();
+  var out;
+  if (args['out'] == 'stdout') {
+    out = stdout;
+  } else {
+    var outfile = new File(args['out'])
+        ..createSync(recursive: true);
+    out = outfile.openWrite();
+  }
   var timeout = (args['connect-timeout'] == null) ? null
       : new Duration(seconds: int.parse(args['connect-timeout']));
   return new Options(args['host'], args['port'], out, timeout,
