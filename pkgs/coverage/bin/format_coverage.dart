@@ -251,8 +251,10 @@ parseArgs(List<String> arguments) {
   if (args['out'] == 'stdout') {
     env.output = stdout;
   } else {
-    env.output = absolute(normalize(args['out']));
-    env.output = new File(env.output).openWrite();
+    var outpath = absolute(normalize(args['out']));
+    var outfile = new File(outpath)
+        ..createSync(recursive: true);
+    env.output = outfile.openWrite();
   }
 
   env.lcov = args['lcov'];
