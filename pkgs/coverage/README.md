@@ -15,9 +15,9 @@ Tools
     dart --enable-vm-service:NNNN --pause_isolates_on_exit script.dart
     dart bin/collect_coverage.dart --port=NNNN -o coverage.json --resume-isolates
 
-The `--pause_isolates_on_exit` VM flag is used to pause isolates from being on
-exit to allow coverage to be collected. If `collect_coverage.dart` is invoked
-before the script from which coverage is to be collected, it will wait until it
+The `--pause_isolates_on_exit` VM flag is used to pause isolates on exit to
+allow coverage to be collected. If `collect_coverage.dart` is invoked before
+the script from which coverage is to be collected, it will wait until it
 detects a VM observatory port to which it can connect. An optional
 `--connect-timeout` may be specified (in seconds).
 
