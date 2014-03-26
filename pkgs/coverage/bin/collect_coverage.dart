@@ -40,13 +40,23 @@ Future<Observatory> connect(String host, String port) {
   });
 }
 
+Future waitIsolatesPaused(Observatory observatory, Duration timeout) {
+  allPaused() => observatory.getIsolates()
+      .then((isolates) => isolates.every((i) => i.paused))
+      .then((paused) => paused ? paused : new Future.error(paused));
+  return retry(allPaused, RETRY_INTERVAL, timeout: timeout);
+}
+
 const RETRY_INTERVAL = const Duration(milliseconds: 200);
 
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
   retry(() => connect(options.host, options.port), RETRY_INTERVAL,
       timeout: options.timeout).then((observatory) {
-        getAllCoverage(observatory)
+        Future ready = options.waitPaused
+            ? waitIsolatesPaused(observatory, options.timeout)
+            : new Future.value();
+        ready.then((_) => getAllCoverage(observatory))
             .then(JSON.encode)
             .then(options.out.write)
             .then((_) => options.out.close())
@@ -64,8 +74,10 @@ class Options {
   final String port;
   final IOSink out;
   final Duration timeout;
+  final bool waitPaused;
   final bool resume;
-  Options(this.host, this.port, this.out, this.timeout, this.resume);
+  Options(this.host, this.port, this.out, this.timeout, this.waitPaused,
+      this.resume);
 }
 
 Options parseArgs(List<String> arguments) {
@@ -78,6 +90,8 @@ Options parseArgs(List<String> arguments) {
       help: 'output: may be file or stdout');
   parser.addOption('connect-timeout', abbr: 't',
       help: 'connect timeout in seconds');
+  parser.addFlag('wait-paused', abbr: 'w', defaultsTo: false,
+      help: 'wait for all isolates to be paused before collecting coverage');
   parser.addFlag('resume-isolates', abbr: 'r', defaultsTo: false,
       help: 'resume all isolates on exit');
   parser.addFlag('help', abbr: 'h', negatable: false,
@@ -113,5 +127,5 @@ Options parseArgs(List<String> arguments) {
   var timeout = (args['connect-timeout'] == null) ? null
       : new Duration(seconds: int.parse(args['connect-timeout']));
   return new Options(args['host'], args['port'], out, timeout,
-      args['resume-isolates']);
+      args['wait-paused'], args['resume-isolates']);
 }
