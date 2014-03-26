@@ -40,33 +40,41 @@ Future<Observatory> connect(String host, String port) {
   });
 }
 
-Future waitIsolatesPaused(Observatory observatory, Duration timeout) {
+Future waitIsolatesPaused(Observatory observatory) {
   allPaused() => observatory.getIsolates()
       .then((isolates) => isolates.every((i) => i.paused))
       .then((paused) => paused ? paused : new Future.error(paused));
-  return retry(allPaused, RETRY_INTERVAL, timeout: timeout);
+  return retry(allPaused, RETRY_INTERVAL);
 }
 
 const RETRY_INTERVAL = const Duration(milliseconds: 200);
 
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
-  retry(() => connect(options.host, options.port), RETRY_INTERVAL,
-      timeout: options.timeout).then((observatory) {
-        Future ready = options.waitPaused
-            ? waitIsolatesPaused(observatory, options.timeout)
-            : new Future.value();
-        ready.then((_) => getAllCoverage(observatory))
-            .then(JSON.encode)
-            .then(options.out.write)
-            .then((_) => options.out.close())
-            .then((_) => options.resume ? resumeIsolates(observatory) : null)
-            .then((_) => observatory.close());
-      }, onError: (_) {
-        var timeout = options.timeout.inSeconds;
-        print('Failed to collect coverage within ${timeout}s');
-        exit(1);
-      });
+  onTimeout() {
+    var timeout = options.timeout.inSeconds;
+    print('Failed to collect coverage within ${timeout}s');
+    exit(1);
+  }
+  Future connected =
+      retry(() => connect(options.host, options.port), RETRY_INTERVAL);
+  if (options.timeout != null) {
+    connected.timeout(options.timeout, onTimeout: onTimeout);
+  }
+  connected.then((observatory) {
+    Future ready = options.waitPaused
+        ? waitIsolatesPaused(observatory)
+        : new Future.value();
+    if (options.timeout != null) {
+      ready.timeout(options.timeout, onTimeout: onTimeout);
+    }
+    return ready.then((_) => getAllCoverage(observatory))
+        .then(JSON.encode)
+        .then(options.out.write)
+        .then((_) => options.out.close())
+        .then((_) => options.resume ? resumeIsolates(observatory) : null)
+        .then((_) => observatory.close());
+  });
 }
 
 class Options {
