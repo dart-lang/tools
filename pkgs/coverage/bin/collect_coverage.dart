@@ -7,6 +7,7 @@ import 'dart:convert' show JSON;
 import 'dart:io';
 import 'package:args/args.dart';
 import 'package:coverage/src/devtools.dart';
+import 'package:coverage/src/util.dart';
 import 'package:http/http.dart' as http;
 
 Future<Map> getAllCoverage(Observatory observatory) {
@@ -39,26 +40,23 @@ Future<Observatory> connect(String host, String port) {
   });
 }
 
+const RETRY_INTERVAL = const Duration(milliseconds: 200);
+
 void main(List<String> arguments) {
   var options = parseArgs(arguments);
-  var watch = new Stopwatch()..start();
-  new Timer.periodic(new Duration(milliseconds: 200), (timer) {
-    connect(options.host, options.port).then((observatory) {
-      timer.cancel();
-      getAllCoverage(observatory)
-          .then(JSON.encode)
-          .then(options.out.write)
-          .then((_) => options.out.close())
-          .then((_) => options.resume ? resumeIsolates(observatory) : null)
-          .then((_) => observatory.close());
-    }, onError: (_) {
-      if ((options.timeout != null) && (watch.elapsed > options.timeout)) {
+  retry(() => connect(options.host, options.port), RETRY_INTERVAL,
+      timeout: options.timeout).then((observatory) {
+        getAllCoverage(observatory)
+            .then(JSON.encode)
+            .then(options.out.write)
+            .then((_) => options.out.close())
+            .then((_) => options.resume ? resumeIsolates(observatory) : null)
+            .then((_) => observatory.close());
+      }, onError: (_) {
         var timeout = options.timeout.inSeconds;
         print('Failed to collect coverage within ${timeout}s');
         exit(1);
-      }
-    });
-  });
+      });
 }
 
 class Options {
