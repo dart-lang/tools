@@ -13,7 +13,7 @@ class IsolateInfo {
   final _Connection _connection;
   final String name;
   IsolateInfo(this._connection, Map json) :
-    name = json['name'];
+    name = json['mainPort'];
 
   Future<Map> getCoverage() =>
       _connection.request('isolates/$name/coverage')
@@ -40,10 +40,10 @@ class Observatory {
   }
 
   Future<Iterable<IsolateInfo>> getIsolates() =>
-      _connection.request('isolates')
-      .then((resp) => resp['members'])
-      .then((members) => (members == null) ? [] : members)
-      .then((members) => members.map((m) => new IsolateInfo(_connection, m)));
+      _connection.request('vm')
+      .then((resp) => resp['isolates'])
+      .then((isolates) => (isolates == null) ? [] : isolates)
+      .then((isolates) => isolates.map((i) => new IsolateInfo(_connection, i)));
 
   Future unpin(String isolateId) =>
       _connection.request('isolates/$isolateId/unpin');
