@@ -12,8 +12,10 @@ import 'package:http/http.dart' as http;
 class IsolateInfo {
   final _Connection _connection;
   final String name;
+  final bool paused;
   IsolateInfo(this._connection, Map json) :
-    name = json['mainPort'];
+    name = json['mainPort'],
+    paused = json['pausedOnExit'];
 
   Future<Map> getCoverage() =>
       _connection.request('isolates/$name/coverage')
@@ -43,6 +45,9 @@ class Observatory {
       _connection.request('vm')
       .then((resp) => resp['isolates'])
       .then((isolates) => (isolates == null) ? [] : isolates)
+      .then((isolates) => isolates.map((i) => i['mainPort']))
+      .then((ids) => ids.map((id) => _connection.request('isolates/$id')))
+      .then(Future.wait)
       .then((isolates) => isolates.map((i) => new IsolateInfo(_connection, i)));
 
   Future unpin(String isolateId) =>
