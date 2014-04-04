@@ -3,96 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert' show JSON;
 import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/util.dart' as util;
 import 'package:path/path.dart';
 
-
-/// Given an absolute path absPath, this function returns a [List] of files
-/// are contained by it if it is a directory, or a [List] containing the file if
-/// it is a file.
-List filesToProcess(String absPath) {
-  var filePattern = new RegExp(r'^dart-cov-\d+-\d+.json$');
-  if (FileSystemEntity.isDirectorySync(absPath)) {
-    return new Directory(absPath).listSync(recursive: true)
-        .where((entity) => entity is File &&
-            filePattern.hasMatch(basename(entity.path)))
-        .toList();
-  }
-
-  return [new File(absPath)];
-}
-
-worker(WorkMessage msg) {
-  final start = new DateTime.now().millisecondsSinceEpoch;
-
-  List files = msg.files;
-  var resolver = new Resolver(packageRoot: msg.pkgRoot, sdkRoot: msg.sdkRoot);
-  var workerHitmap = {};
-  files.forEach((File fileEntry) {
-    // Read file sync, as it only contains 1 object.
-    String contents = fileEntry.readAsStringSync();
-    if (contents.length > 0) {
-      mergeHitmaps(createHitmap(contents, resolver), workerHitmap);
-    }
-  });
-
-  if (msg.verbose) {
-    final end = new DateTime.now().millisecondsSinceEpoch;
-    print('${msg.workerName}: Finished processing ${files.length} files. '
-          'Took ${end - start} ms.');
-  }
-
-  msg.replyPort.send(new ResultMessage(workerHitmap, resolver.failed));
-}
-
-class WorkMessage {
-  final String workerName;
-  final String sdkRoot;
-  final String pkgRoot;
-  final List files;
-  final SendPort replyPort;
-  final bool verbose;
-  WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files,
-      this.replyPort, this.verbose);
-}
-
-class ResultMessage {
-  final hitmap;
-  final failedResolves;
-  ResultMessage(this.hitmap, this.failedResolves);
-}
-
-List<List> split(List list, int nBuckets) {
-  var buckets = new List(nBuckets);
-  var bucketSize = list.length ~/ nBuckets;
-  var leftover = list.length % nBuckets;
-  var taken = 0;
-  var start = 0;
-  for (int i = 0; i < nBuckets; i++) {
-    var end = (i < leftover) ? (start + bucketSize + 1) : (start + bucketSize);
-    buckets[i] = list.sublist(start, end);
-    taken += buckets[i].length;
-    start = end;
-  }
-  if (taken != list.length) throw 'Error splitting';
-  return buckets;
-}
-
-Future<ResultMessage> spawnWorker(name, pkgRoot, sdkRoot, files, verbose) {
-  RawReceivePort port = new RawReceivePort();
-  var completer = new Completer();
-  port.handler = ((ResultMessage msg) {
-    completer.complete(msg);
-    port.close();
-  });
-  var msg = new WorkMessage(name, pkgRoot, sdkRoot, files, port.sendPort, verbose);
-  Isolate.spawn(worker, msg);
-  return completer.future;
-}
 
 /// [Environment] stores gathered arguments information.
 class Environment {
@@ -111,12 +30,7 @@ main(List<String> arguments) {
   final env = parseArgs(arguments);
 
   List files = filesToProcess(env.input);
-
-  List failedResolves = [];
-  List failedLoads = [];
-  Map globalHitmap = {};
   int start = new DateTime.now().millisecondsSinceEpoch;
-
   if (env.verbose) {
     print('Environment:');
     print('  # files: ${files.length}');
@@ -125,18 +39,9 @@ main(List<String> arguments) {
     print('  package-root: ${env.pkgRoot}');
   }
 
-  // Create workers.
-  int workerId = 0;
-  var results = split(files, env.workers).map((workerFiles) {
-    var result = spawnWorker('Worker ${workerId++}', env.pkgRoot, env.sdkRoot,
-        workerFiles, env.verbose);
-    return result.then((ResultMessage message) {
-      mergeHitmaps(message.hitmap, globalHitmap);
-      failedResolves.addAll(message.failedResolves);
-    });
-  });
-
-  Future.wait(results).then((ignore) {
+  List failedResolves = [];
+  List failedLoads = [];
+  parseCoverage(files, env.pkgRoot, env.sdkRoot, env.workers).then((hitmap) {
     // All workers are done. Process the data.
     if (env.verbose) {
       final end = new DateTime.now().millisecondsSinceEpoch;
@@ -145,9 +50,9 @@ main(List<String> arguments) {
 
     Future out;
     if (env.prettyPrint) {
-      out = prettyPrint(globalHitmap, failedLoads, env.output);
+      out = prettyPrint(hitmap, failedLoads, env.output);
     } else if (env.lcov) {
-      out = lcov(globalHitmap, env.output);
+      out = lcov(hitmap, env.output);
     }
 
     out.then((_) {
@@ -274,4 +179,18 @@ parseArgs(List<String> arguments) {
 
   env.verbose = args['verbose'];
   return env;
+}
+
+/// Given an absolute path absPath, this function returns a [List] of files
+/// are contained by it if it is a directory, or a [List] containing the file if
+/// it is a file.
+List filesToProcess(String absPath) {
+var filePattern = new RegExp(r'^dart-cov-\d+-\d+.json$');
+if (FileSystemEntity.isDirectorySync(absPath)) {
+  return new Directory(absPath).listSync(recursive: true)
+      .where((e) => e is File && filePattern.hasMatch(basename(e.path)))
+      .toList();
+}
+
+return [new File(absPath)];
 }
