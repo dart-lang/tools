@@ -1,70 +1,8 @@
 part of coverage;
 
-/// [Resolver] resolves imports with respect to a given environment.
-class Resolver {
-  static const DART_PREFIX = 'dart:';
-  static const PACKAGE_PREFIX = 'package:';
-  static const FILE_PREFIX = 'file://';
-  static const HTTP_PREFIX = 'http://';
-
-  final String pkgRoot;
-  final String sdkRoot;
-  List failed = [];
-
-  Resolver({packageRoot: null, sdkRoot: null})
-      : pkgRoot = packageRoot,
-        sdkRoot = sdkRoot;
-
-  /// Returns the absolute path wrt. to the given environment or null, if the
-  /// import could not be resolved.
-  resolve(String uri) {
-    if (uri.startsWith(DART_PREFIX)) {
-      if (sdkRoot == null) {
-        // No sdk-root given, do not resolve dart: URIs.
-        return null;
-      }
-      var slashPos = uri.indexOf('/');
-      var filePath;
-      if (slashPos != -1) {
-        var path = uri.substring(DART_PREFIX.length, slashPos);
-        // Drop patch files, since we don't have their source in the compiled
-        // SDK.
-        if (path.endsWith('-patch')) {
-          failed.add(uri);
-          return null;
-        }
-        // Canonicalize path. For instance: _collection-dev => _collection_dev.
-        path = path.replaceAll('-', '_');
-        filePath = '$sdkRoot/${path}${uri.substring(slashPos, uri.length)}';
-      } else {
-        // Resolve 'dart:something' to be something/something.dart in the SDK.
-        var lib = uri.substring(DART_PREFIX.length, uri.length);
-        filePath = '$sdkRoot/$lib/${lib}.dart';
-      }
-      return filePath;
-    }
-    if (uri.startsWith(PACKAGE_PREFIX)) {
-      if (pkgRoot == null) {
-        // No package-root given, do not resolve package: URIs.
-        return null;
-      }
-      return '$pkgRoot/${uri.substring(PACKAGE_PREFIX.length, uri.length)}';
-    }
-    if (uri.startsWith(FILE_PREFIX)) {
-      return fromUri(Uri.parse(uri));
-    }
-    if (uri.startsWith(HTTP_PREFIX)) {
-      return uri;
-    }
-    // We cannot deal with anything else.
-    failed.add(uri);
-    return null;
-  }
-}
-
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
-Map createHitmap(String rawJson, Resolver resolver) {
+Map createHitmap(List<Map> json) {
   Map<String, Map<int,int>> hitMap = {};
 
   addToMap(source, line, count) {
@@ -74,8 +12,8 @@ Map createHitmap(String rawJson, Resolver resolver) {
     hitMap[source][line] += count;
   }
 
-  JSON.decode(rawJson)['coverage'].forEach((Map e) {
-    String source = resolver.resolve(e['source']);
+  json.forEach((Map e) {
+    var source = e['source'];
     if (source == null) {
       // Couldnt resolve import, so skip this entry.
       return;
@@ -123,4 +61,66 @@ mergeHitmaps(Map newMap, Map result) {
       result[file] = v;
     }
   });
+}
+
+Future<Map> parseCoverage(List<File> files, String pkgRoot, String sdkRoot,
+    int workers) {
+  Map globalHitmap = {};
+  var workerId = 0;
+  return Future.wait(_split(files, workers).map((workerFiles) {
+    return _spawnWorker('Worker ${workerId++}', pkgRoot, sdkRoot, workerFiles)
+        .then((Map hitmap) => mergeHitmaps(hitmap, globalHitmap));
+  })).then((_) => globalHitmap);
+}
+
+Future<Map> _spawnWorker(name, pkgRoot, sdkRoot, files) {
+  RawReceivePort port = new RawReceivePort();
+  var completer = new Completer();
+  port.handler = ((Map hitmap) {
+    completer.complete(hitmap);
+    port.close();
+  });
+  var msg = new _WorkMessage(name, pkgRoot, sdkRoot, files, port.sendPort);
+  Isolate.spawn(_worker, msg);
+  return completer.future;
+}
+
+class _WorkMessage {
+  final String workerName;
+  final String sdkRoot;
+  final String pkgRoot;
+  final List files;
+  final SendPort replyPort;
+  _WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files,
+      this.replyPort);
+}
+
+void _worker(_WorkMessage msg) {
+  List files = msg.files;
+  var hitmap = {};
+  files.forEach((File fileEntry) {
+    // Read file sync, as it only contains 1 object.
+    String contents = fileEntry.readAsStringSync();
+    if (contents.length > 0) {
+      var json = JSON.decode(contents)['coverage'];
+      mergeHitmaps(createHitmap(json), hitmap);
+    }
+  });
+  msg.replyPort.send(hitmap);
+}
+
+List<List> _split(List list, int nBuckets) {
+  var buckets = new List(nBuckets);
+  var bucketSize = list.length ~/ nBuckets;
+  var leftover = list.length % nBuckets;
+  var taken = 0;
+  var start = 0;
+  for (int i = 0; i < nBuckets; i++) {
+    var end = (i < leftover) ? (start + bucketSize + 1) : (start + bucketSize);
+    buckets[i] = list.sublist(start, end);
+    taken += buckets[i].length;
+    start = end;
+  }
+  if (taken != list.length) throw 'Error splitting';
+  return buckets;
 }
