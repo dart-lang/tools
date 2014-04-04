@@ -9,3 +9,4 @@ import 'dart:isolate';
 part 'src/hitmap.dart';
 part 'src/lcov.dart';
 part 'src/pretty_print.dart';
+part 'src/resolver.dart';
