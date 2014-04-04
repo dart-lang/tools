@@ -64,7 +64,7 @@ class Resolver {
 
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
-Map createHitmap(String rawJson, Resolver resolver) {
+Map createHitmap(List<Map> json, Resolver resolver) {
   Map<String, Map<int,int>> hitMap = {};
 
   addToMap(source, line, count) {
@@ -74,7 +74,7 @@ Map createHitmap(String rawJson, Resolver resolver) {
     hitMap[source][line] += count;
   }
 
-  JSON.decode(rawJson)['coverage'].forEach((Map e) {
+  json.forEach((Map e) {
     String source = resolver.resolve(e['source']);
     if (source == null) {
       // Couldnt resolve import, so skip this entry.
@@ -123,4 +123,73 @@ mergeHitmaps(Map newMap, Map result) {
       result[file] = v;
     }
   });
+}
+
+Future<Map> parseCoverage(List<File> files, String pkgRoot, String sdkRoot,
+    int workers) {
+  Map globalHitmap = {};
+  var workerId = 0;
+  return Future.wait(_split(files, workers).map((workerFiles) {
+    return _spawnWorker('Worker ${workerId++}', pkgRoot, sdkRoot, workerFiles)
+        .then((_ResultMessage msg) => mergeHitmaps(msg.hitmap, globalHitmap));
+  })).then((_) => globalHitmap);
+}
+
+Future<_ResultMessage> _spawnWorker(name, pkgRoot, sdkRoot, files) {
+  RawReceivePort port = new RawReceivePort();
+  var completer = new Completer();
+  port.handler = ((_ResultMessage msg) {
+    completer.complete(msg);
+    port.close();
+  });
+  var msg = new _WorkMessage(name, pkgRoot, sdkRoot, files, port.sendPort);
+  Isolate.spawn(_worker, msg);
+  return completer.future;
+}
+
+class _WorkMessage {
+  final String workerName;
+  final String sdkRoot;
+  final String pkgRoot;
+  final List files;
+  final SendPort replyPort;
+  _WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files,
+      this.replyPort);
+}
+
+class _ResultMessage {
+  final hitmap;
+  final failedResolves;
+  _ResultMessage(this.hitmap, this.failedResolves);
+}
+
+_worker(_WorkMessage msg) {
+  List files = msg.files;
+  var resolver = new Resolver(packageRoot: msg.pkgRoot, sdkRoot: msg.sdkRoot);
+  var workerHitmap = {};
+  files.forEach((File fileEntry) {
+    // Read file sync, as it only contains 1 object.
+    String contents = fileEntry.readAsStringSync();
+    if (contents.length > 0) {
+      var json = JSON.decode(contents)['coverage'];
+      mergeHitmaps(createHitmap(json, resolver), workerHitmap);
+    }
+  });
+  msg.replyPort.send(new _ResultMessage(workerHitmap, resolver.failed));
+}
+
+List<List> _split(List list, int nBuckets) {
+  var buckets = new List(nBuckets);
+  var bucketSize = list.length ~/ nBuckets;
+  var leftover = list.length % nBuckets;
+  var taken = 0;
+  var start = 0;
+  for (int i = 0; i < nBuckets; i++) {
+    var end = (i < leftover) ? (start + bucketSize + 1) : (start + bucketSize);
+    buckets[i] = list.sublist(start, end);
+    taken += buckets[i].length;
+    start = end;
+  }
+  if (taken != list.length) throw 'Error splitting';
+  return buckets;
 }
