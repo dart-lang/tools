@@ -41,17 +41,18 @@ class Resolver {
         var lib = uri.substring(DART_PREFIX.length, uri.length);
         filePath = '$sdkRoot/$lib/${lib}.dart';
       }
-      return filePath;
+      return normalize(filePath);
     }
     if (uri.startsWith(PACKAGE_PREFIX)) {
       if (pkgRoot == null) {
         // No package-root given, do not resolve package: URIs.
         return null;
       }
-      return '$pkgRoot/${uri.substring(PACKAGE_PREFIX.length, uri.length)}';
+      var path = uri.substring(PACKAGE_PREFIX.length, uri.length);
+      return normalize('$pkgRoot/$path');
     }
     if (uri.startsWith(FILE_PREFIX)) {
-      return fromUri(Uri.parse(uri));
+      return normalize(fromUri(Uri.parse(uri)));
     }
     if (uri.startsWith(HTTP_PREFIX)) {
       return uri;
