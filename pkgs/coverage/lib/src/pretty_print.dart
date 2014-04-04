@@ -5,35 +5,41 @@ part of coverage;
 ///
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
-Future prettyPrint(Map hitMap, List failedLoads, IOSink output) {
+Future prettyPrint(Map hitMap, Resolver resolver, IOSink output,
+                   List failedResolves, List failedLoads) {
   var emitOne = (key) {
     var v = hitMap[key];
     var c = new Completer();
-    _loadResource(key).then((lines) {
-      if (lines == null) {
-        failedLoads.add(key);
-        c.complete();
-        return;
-      }
-      output.write('${key}\n');
-      for (var line = 1; line <= lines.length; line++) {
-        String prefix = '       ';
-        if (v.containsKey(line)) {
-          prefix = v[line].toString();
-          StringBuffer b = new StringBuffer();
-          for (int i = prefix.length; i < 7; i++) {
-            b.write(' ');
-          }
-          b.write(prefix);
-          prefix = b.toString();
-        }
-        output.write('${prefix}|${lines[line-1]}\n');
-      }
+    var source = resolver.resolve(key);
+    if (source == null) {
+      failedResolves.add(key);
       c.complete();
-    });
+    } else {
+      _loadResource(source).then((lines) {
+        if (lines == null) {
+          failedLoads.add(key);
+          c.complete();
+          return;
+        }
+        output.write('${source}\n');
+        for (var line = 1; line <= lines.length; line++) {
+          String prefix = '       ';
+          if (v.containsKey(line)) {
+            prefix = v[line].toString();
+            StringBuffer b = new StringBuffer();
+            for (int i = prefix.length; i < 7; i++) {
+              b.write(' ');
+            }
+            b.write(prefix);
+            prefix = b.toString();
+          }
+          output.write('${prefix}|${lines[line-1]}\n');
+        }
+        c.complete();
+      });
+    }
     return c.future;
   };
-
   return Future.forEach(hitMap.keys, emitOne);
 }
 

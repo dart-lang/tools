@@ -3,13 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert' show JSON;
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
-import 'package:coverage/src/util.dart' as util;
 import 'package:path/path.dart';
 
 
@@ -39,8 +36,6 @@ main(List<String> arguments) {
     print('  package-root: ${env.pkgRoot}');
   }
 
-  List failedResolves = [];
-  List failedLoads = [];
   parseCoverage(files, env.pkgRoot, env.sdkRoot, env.workers).then((hitmap) {
     // All workers are done. Process the data.
     if (env.verbose) {
@@ -48,11 +43,14 @@ main(List<String> arguments) {
       print('Done creating a global hitmap. Took ${end - start} ms.');
     }
 
+    List failedResolves = [];
+    List failedLoads = [];
     Future out;
+    var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
     if (env.prettyPrint) {
-      out = prettyPrint(hitmap, failedLoads, env.output);
+      out = prettyPrint(hitmap, resolver, env.output, failedResolves, failedLoads);
     } else if (env.lcov) {
-      out = lcov(hitmap, env.output);
+      out = lcov(hitmap, resolver, env.output, failedResolves);
     }
 
     out.then((_) {
@@ -185,12 +183,11 @@ parseArgs(List<String> arguments) {
 /// are contained by it if it is a directory, or a [List] containing the file if
 /// it is a file.
 List filesToProcess(String absPath) {
-var filePattern = new RegExp(r'^dart-cov-\d+-\d+.json$');
-if (FileSystemEntity.isDirectorySync(absPath)) {
-  return new Directory(absPath).listSync(recursive: true)
-      .where((e) => e is File && filePattern.hasMatch(basename(e.path)))
-      .toList();
-}
-
-return [new File(absPath)];
+  var filePattern = new RegExp(r'^dart-cov-\d+-\d+.json$');
+  if (FileSystemEntity.isDirectorySync(absPath)) {
+    return new Directory(absPath).listSync(recursive: true)
+        .where((e) => e is File && filePattern.hasMatch(basename(e.path)))
+        .toList();
+  }
+  return [new File(absPath)];
 }

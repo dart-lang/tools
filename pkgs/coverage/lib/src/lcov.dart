@@ -5,11 +5,16 @@ part of coverage;
 ///
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
-Future lcov(Map hitmap, IOSink output) {
+Future lcov(Map hitmap, Resolver resolver, IOSink output, List failedResolves) {
   var emitOne = (key) {
     var v = hitmap[key];
     StringBuffer entry = new StringBuffer();
-    entry.write('SF:${key}\n');
+    var source = resolver.resolve(key);
+    if (source == null) {
+      failedResolves.add(key);
+      return new Future.value();
+    }
+    entry.write('SF:${source}\n');
     v.keys.toList()
           ..sort()
           ..forEach((k) {
@@ -17,7 +22,7 @@ Future lcov(Map hitmap, IOSink output) {
     });
     entry.write('end_of_record\n');
     output.write(entry.toString());
-    return new Future.value(null);
+    return new Future.value();
   };
 
   return Future.forEach(hitmap.keys, emitOne);
