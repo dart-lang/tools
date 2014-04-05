@@ -9,7 +9,6 @@ class Resolver {
 
   final String pkgRoot;
   final String sdkRoot;
-  List failed = [];
 
   Resolver({packageRoot: null, sdkRoot: null})
       : pkgRoot = packageRoot,
@@ -30,7 +29,6 @@ class Resolver {
         // Drop patch files, since we don't have their source in the compiled
         // SDK.
         if (path.endsWith('-patch')) {
-          failed.add(uri);
           return null;
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
@@ -58,7 +56,6 @@ class Resolver {
       return uri;
     }
     // We cannot deal with anything else.
-    failed.add(uri);
     return null;
   }
 }
