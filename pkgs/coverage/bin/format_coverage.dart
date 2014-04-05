@@ -47,8 +47,10 @@ main(List<String> arguments) {
     List failedLoads = [];
     Future out;
     var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
+    var loader = new Loader();
     if (env.prettyPrint) {
-      out = prettyPrint(hitmap, resolver, env.output, failedResolves, failedLoads);
+      out = prettyPrint(hitmap, resolver, loader, env.output,
+          failedResolves, failedLoads);
     } else if (env.lcov) {
       out = lcov(hitmap, resolver, env.output, failedResolves);
     }

@@ -5,23 +5,23 @@ part of coverage;
 ///
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
-Future prettyPrint(Map hitMap, Resolver resolver, IOSink output,
+Future prettyPrint(Map hitMap, Resolver resolver, Loader loader, IOSink output,
                    List failedResolves, List failedLoads) {
   var emitOne = (key) {
     var v = hitMap[key];
     var c = new Completer();
-    var source = resolver.resolve(key);
-    if (source == null) {
+    var uri = resolver.resolve(key);
+    if (uri == null) {
       failedResolves.add(key);
       c.complete();
     } else {
-      _loadResource(source).then((lines) {
+      loader.load(uri).then((lines) {
         if (lines == null) {
           failedLoads.add(key);
           c.complete();
           return;
         }
-        output.write('${source}\n');
+        output.write('${uri}\n');
         for (var line = 1; line <= lines.length; line++) {
           String prefix = '       ';
           if (v.containsKey(line)) {
@@ -41,33 +41,4 @@ Future prettyPrint(Map hitMap, Resolver resolver, IOSink output,
     return c.future;
   };
   return Future.forEach(hitMap.keys, emitOne);
-}
-
-/// Load an import resource and return a [Future] with a [List] of its lines.
-/// Returns [null] instead of a list if the resource could not be loaded.
-Future<List> _loadResource(String uri) {
-  if (uri.startsWith('http')) {
-    Completer c = new Completer();
-    HttpClient client = new HttpClient();
-    client.getUrl(Uri.parse(uri))
-        .then((HttpClientRequest request) {
-          return request.close();
-        })
-        .then((HttpClientResponse response) {
-          response.transform(UTF8.decoder).toList().then((data) {
-            c.complete(data);
-            client.close();
-          });
-        })
-        .catchError((e) {
-          c.complete(null);
-        });
-    return c.future;
-  } else {
-    File f = new File(uri);
-    return f.readAsLines()
-        .catchError((e) {
-          return new Future.value(null);
-        });
-  }
 }

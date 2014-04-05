@@ -59,3 +59,24 @@ class Resolver {
     return null;
   }
 }
+
+/// Loads the lines of imported resources.
+class Loader {
+  /// Loads an imported resource and returns a [Future] with a [List] of lines.
+  /// Returns [null] if the resource could not be loaded.
+  load(String uri) {
+    if (uri.startsWith('http')) {
+      Completer c = new Completer();
+      HttpClient client = new HttpClient();
+      client.getUrl(Uri.parse(uri))
+          .then((request) => request.close())
+          .then((response) => response.transform(UTF8.decoder).toList())
+          .then((data) => c.complete(data))
+          .then((_) => client.close())
+          .catchError((e) => c.complete(null));
+      return c.future;
+    }
+    return new File(uri).readAsLines()
+        .catchError((e) => new Future.value());
+  }
+}
