@@ -9,6 +9,7 @@ class Resolver {
 
   final String pkgRoot;
   final String sdkRoot;
+  final List<String> failed = [];
 
   Resolver({packageRoot: null, sdkRoot: null})
       : pkgRoot = packageRoot,
@@ -16,7 +17,7 @@ class Resolver {
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
-  resolve(String uri) {
+  String resolve(String uri) {
     if (uri.startsWith(DART_PREFIX)) {
       if (sdkRoot == null) {
         // No sdk-root given, do not resolve dart: URIs.
@@ -29,6 +30,7 @@ class Resolver {
         // Drop patch files, since we don't have their source in the compiled
         // SDK.
         if (path.endsWith('-patch')) {
+          failed.add(uri);
           return null;
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
@@ -56,15 +58,18 @@ class Resolver {
       return uri;
     }
     // We cannot deal with anything else.
+    failed.add(uri);
     return null;
   }
 }
 
 /// Loads the lines of imported resources.
 class Loader {
+  final List<String> failed = [];
+
   /// Loads an imported resource and returns a [Future] with a [List] of lines.
   /// Returns [null] if the resource could not be loaded.
-  load(String uri) {
+  Future<List<String>> load(String uri) {
     if (uri.startsWith('http')) {
       Completer c = new Completer();
       HttpClient client = new HttpClient();
@@ -73,7 +78,10 @@ class Loader {
           .then((response) => response.transform(UTF8.decoder).toList())
           .then((data) => c.complete(data))
           .then((_) => client.close())
-          .catchError((e) => c.complete(null));
+          .catchError((e) {
+            failed.add(uri);
+            c.complete(null);
+          });
       return c.future;
     }
     return new File(uri).readAsLines()
