@@ -36,7 +36,7 @@ main(List<String> arguments) {
     print('  package-root: ${env.pkgRoot}');
   }
 
-  parseCoverage(files, env.pkgRoot, env.sdkRoot, env.workers).then((hitmap) {
+  parseCoverage(files, env.workers).then((hitmap) {
     // All workers are done. Process the data.
     if (env.verbose) {
       final end = new DateTime.now().millisecondsSinceEpoch;
