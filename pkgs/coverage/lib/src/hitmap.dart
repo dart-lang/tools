@@ -63,36 +63,32 @@ mergeHitmaps(Map newMap, Map result) {
   });
 }
 
-Future<Map> parseCoverage(List<File> files, String pkgRoot, String sdkRoot,
-    int workers) {
+Future<Map> parseCoverage(List<File> files, int workers) {
   Map globalHitmap = {};
   var workerId = 0;
   return Future.wait(_split(files, workers).map((workerFiles) {
-    return _spawnWorker('Worker ${workerId++}', pkgRoot, sdkRoot, workerFiles)
+    return _spawnWorker('Worker ${workerId++}', workerFiles)
         .then((Map hitmap) => mergeHitmaps(hitmap, globalHitmap));
   })).then((_) => globalHitmap);
 }
 
-Future<Map> _spawnWorker(name, pkgRoot, sdkRoot, files) {
+Future<Map> _spawnWorker(name, files) {
   RawReceivePort port = new RawReceivePort();
   var completer = new Completer();
   port.handler = ((Map hitmap) {
     completer.complete(hitmap);
     port.close();
   });
-  var msg = new _WorkMessage(name, pkgRoot, sdkRoot, files, port.sendPort);
+  var msg = new _WorkMessage(name, files, port.sendPort);
   Isolate.spawn(_worker, msg);
   return completer.future;
 }
 
 class _WorkMessage {
   final String workerName;
-  final String sdkRoot;
-  final String pkgRoot;
   final List files;
   final SendPort replyPort;
-  _WorkMessage(this.workerName, this.pkgRoot, this.sdkRoot, this.files,
-      this.replyPort);
+  _WorkMessage(this.workerName, this.files, this.replyPort);
 }
 
 void _worker(_WorkMessage msg) {
