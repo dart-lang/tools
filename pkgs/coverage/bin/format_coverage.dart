@@ -43,19 +43,17 @@ main(List<String> arguments) {
       print('Done creating a global hitmap. Took ${end - start} ms.');
     }
 
-    List failedResolves = [];
-    List failedLoads = [];
     Future out;
     var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
     var loader = new Loader();
     if (env.prettyPrint) {
-      out = prettyPrint(hitmap, resolver, loader, env.output,
-          failedResolves, failedLoads);
+      out = new PrettyPrintFormatter(resolver, loader).format(hitmap);
     } else if (env.lcov) {
-      out = lcov(hitmap, resolver, env.output, failedResolves);
+      out = new LcovFormatter(resolver).format(hitmap);
     }
 
-    out.then((_) {
+    out.then((output) {
+      env.output.write(output);
       env.output.close().then((_) {
         if (env.verbose) {
           final end = new DateTime.now().millisecondsSinceEpoch;
@@ -64,17 +62,13 @@ main(List<String> arguments) {
       });
 
       if (env.verbose) {
-        if (failedResolves.length > 0) {
+        if (resolver.failed.length > 0) {
           print('Failed to resolve:');
-          failedResolves.toSet().forEach((e) {
-            print('  ${e}');
-          });
+          resolver.failed.toSet().forEach((e) => print('  ${e}'));
         }
-        if (failedLoads.length > 0) {
+        if (loader.failed.length > 0) {
           print('Failed to load:');
-          failedLoads.toSet().forEach((e) {
-            print('  ${e}');
-          });
+          loader.failed.toSet().forEach((e) => print('  ${e}'));
         }
       }
     });
