@@ -32,7 +32,9 @@ paused before collecting coverage.
 
 As noted above, `collect_coverage.dart` may be invoked before Dartium, in which
 case it will wait until it detects a Dartium remote debugging port, up to the
-(optional) timeout.
+(optional) timeout. Note that coverage cannot be run against a Dartium instance
+launched from Dart Editor, since the editor makes use of Dartium's remote
+debugging port.
 
 #### Formatting coverage data
 
