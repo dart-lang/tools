@@ -50,9 +50,6 @@ class Observatory {
       .then(Future.wait)
       .then((isolates) => isolates.map((i) => new IsolateInfo(_connection, i)));
 
-  Future unpin(String isolateId) =>
-      _connection.request('isolates/$isolateId/unpin');
-
   Future close() => _connection.close();
 }
 
