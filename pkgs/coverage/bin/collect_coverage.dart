@@ -8,7 +8,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:coverage/src/devtools.dart';
 import 'package:coverage/src/util.dart';
-import 'package:http/http.dart' as http;
 
 Future<Map> getAllCoverage(Observatory observatory) {
   return observatory.getIsolates()
@@ -30,16 +29,6 @@ Future resumeIsolates(Observatory observatory) {
       .then(Future.wait);
 }
 
-Future<Observatory> connect(String host, String port) {
-  return http.get('http://$host:$port/json').then((resp) {
-    var json = JSON.decode(resp.body);
-    if (json is List) {
-      return Observatory.connectOverDevtools(host, port);
-    }
-    return Observatory.connect(host, port);
-  });
-}
-
 Future waitIsolatesPaused(Observatory observatory) {
   allPaused() => observatory.getIsolates()
       .then((isolates) => isolates.every((i) => i.paused))
@@ -57,7 +46,7 @@ void main(List<String> arguments) {
     exit(1);
   }
   Future connected =
-      retry(() => connect(options.host, options.port), RETRY_INTERVAL);
+      retry(() => Observatory.connect(options.host, options.port), RETRY_INTERVAL);
   if (options.timeout != null) {
     connected.timeout(options.timeout, onTimeout: onTimeout);
   }

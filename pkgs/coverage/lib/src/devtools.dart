@@ -31,12 +31,20 @@ class Observatory {
   Observatory._(this._connection);
 
   static Future<Observatory> connect(String host, String port) {
+    return http.get('http://$host:$port/json').then((resp) {
+      var json = JSON.decode(resp.body);
+      if (json is List) return Observatory.connectToDevtools(host, port);
+      return Observatory.connectToVM(host, port);
+    });
+  }
+
+  static Future<Observatory> connectToVM(String host, String port) {
     var uri = 'http://$host:$port';
     var observatory = new Observatory._(new _VmConnection(uri));
     return new Future.value(observatory);
   }
 
-  static Future<Observatory> connectOverDevtools(String host, String port) {
+  static Future<Observatory> connectToDevtools(String host, String port) {
     var uri = 'http://$host:$port/json';
     return _DevtoolsConnection.connect(uri).then((c) => new Observatory._(c));
   }
