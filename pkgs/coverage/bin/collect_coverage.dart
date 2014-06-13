@@ -45,8 +45,8 @@ void main(List<String> arguments) {
     print('Failed to collect coverage within ${timeout}s');
     exit(1);
   }
-  Future connected =
-      retry(() => Observatory.connect(options.host, options.port), RETRY_INTERVAL);
+  Future connected = retry(() =>
+      Observatory.connect(options.host, options.port), RETRY_INTERVAL);
   if (options.timeout != null) {
     connected.timeout(options.timeout, onTimeout: onTimeout);
   }
