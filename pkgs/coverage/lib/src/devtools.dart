@@ -21,6 +21,11 @@ class IsolateInfo {
       _connection.request('isolates/$name/coverage')
       .then((resp) => resp['coverage']);
 
+  Future<Map> getAllocationProfile({gc: true}) {
+    var params = gc ? '?gc=full' : '';
+    return _connection.request('isolates/$name/allocationprofile$params');
+  }
+
   Future resume() => _connection.request('isolates/$name/resume');
 }
 
