@@ -13,7 +13,6 @@ class LcovFormatter implements Formatter {
   final Resolver resolver;
   LcovFormatter(this.resolver);
 
-  @override
   Future<String> format(Map hitmap) {
     var buf = new StringBuffer();
     var emitOne = (key) {
@@ -48,7 +47,6 @@ class PrettyPrintFormatter implements Formatter {
   final Loader loader;
   PrettyPrintFormatter(this.resolver, this.loader);
 
-  @override
   Future<String> format(Map hitmap) {
     var buf = new StringBuffer();
     var emitOne = (key) {
