@@ -119,7 +119,6 @@ class _DevtoolsConnection implements _Connection {
     });
   }
 
-  @override
   Future<Map> request(String request) {
     _pendingRequests[_requestId] = new Completer();
     _socket.add(JSON.encode({
