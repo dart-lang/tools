@@ -26,7 +26,7 @@ class IsolateInfo {
     return _connection.request('isolates/$name/allocationprofile$params');
   }
 
-  Future resume() => _connection.request('isolates/$name/resume');
+  Future resume() => _connection.request('isolates/$name/debug/resume');
 }
 
 /// Interface to Dart's VM Observatory
