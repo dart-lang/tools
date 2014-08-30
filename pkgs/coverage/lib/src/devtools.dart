@@ -15,7 +15,7 @@ class IsolateInfo {
   final bool paused;
   IsolateInfo(this._connection, Map json)
       : name = json['mainPort'],
-        paused = json['pausedOnExit'];
+        paused = json['pausedOnExit'] || json.containsKey('pauseEvent');
 
   Future<Map> getCoverage() => _connection
       .request('isolates/$name/coverage')
