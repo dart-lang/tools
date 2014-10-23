@@ -24,14 +24,14 @@ abstract class VersionConstraint {
   /// Parses a version constraint.
   ///
   /// This string is one of:
-  ///   
+  ///
   ///   * "any". [any] version.
-  ///   * "^" followed by a version string. Versions compatible with 
+  ///   * "^" followed by a version string. Versions compatible with
   ///     ([VersionConstraint.compatibleWith]) the version.
   ///   * a series of version parts. Each part can be one of:
   ///     * A version string like `1.2.3`. In other words, anything that can be
   ///       parsed by [Version.parse()].
-  ///     * A comparison operator (`<`, `>`, `<=`, or `>=`) followed by a 
+  ///     * A comparison operator (`<`, `>`, `<=`, or `>=`) followed by a
   ///       version string.
   ///
   /// Whitespace is ignored.
@@ -87,7 +87,7 @@ abstract class VersionConstraint {
       }
       throw "Unreachable.";
     }
-    
+
     // Try to parse the "^" operator followed by a version.
     matchCompatibleWith() {
       var compatibleWith = START_COMPATIBLE_WITH.firstMatch(text);
@@ -96,26 +96,26 @@ abstract class VersionConstraint {
       var op = compatibleWith[0];
       text = text.substring(compatibleWith.end);
       skipWhitespace();
-      
+
       var version = matchVersion();
       if (version == null) {
         throw new FormatException('Expected version number after "$op" in '
             '"$originalText", got "$text".');
       }
-      
+
       getCurrentTextIndex() => originalText.length - text.length;
       var startTextIndex = getCurrentTextIndex();
       if (constraints.isNotEmpty || text.isNotEmpty) {
-        var constraint = op + originalText.substring(startTextIndex, 
+        var constraint = op + originalText.substring(startTextIndex,
             getCurrentTextIndex());
         throw new FormatException('Cannot include other constraints with '
             '"^" constraint "$constraint" in "$originalText".');
       }
-      
-      return new VersionRange(min: version, includeMin: true, 
+
+      return new VersionRange(min: version, includeMin: true,
           max: version.nextBreaking);
     }
-    
+
     while (true) {
       skipWhitespace();
 
@@ -132,7 +132,7 @@ abstract class VersionConstraint {
         constraints.add(comparison);
         continue;
       }
-      
+
       var compatibleWith = matchCompatibleWith();
       if (compatibleWith != null) {
         return compatibleWith;
@@ -150,14 +150,14 @@ abstract class VersionConstraint {
     return new VersionConstraint.intersection(constraints);
   }
 
-  /// Creates a version constraint which allows all versions that are 
+  /// Creates a version constraint which allows all versions that are
   /// backward compatible with [version].
   ///
   /// Versions are considered backward compatible with [version] if they
   /// are greater than or equal to [version], but less than the next breaking
   /// version ([Version.nextBreaking]) of [version].
   factory VersionConstraint.compatibleWith(Version version) {
-    return new VersionRange(min: version, includeMin: true, 
+    return new VersionRange(min: version, includeMin: true,
         max: version.nextBreaking);
   }
 

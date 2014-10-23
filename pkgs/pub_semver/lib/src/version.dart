@@ -220,21 +220,21 @@ class Version implements Comparable<Version>, VersionConstraint {
   /// Gets the next breaking version number that follows this one.
   ///
   /// Increments the left-most non-zero digit in ([major], [minor], [patch]).
-  /// In other words, if [major] and [minor] are zero (e.g. 0.0.3), then it 
-  /// increments [patch].  If [major] is zero and [minor] is not (e.g. 0.7.2), 
+  /// In other words, if [major] and [minor] are zero (e.g. 0.0.3), then it
+  /// increments [patch].  If [major] is zero and [minor] is not (e.g. 0.7.2),
   /// then it increments [minor]. Otherwise, it increments [major].
   Version get nextBreaking {
     if (major == 0) {
       if (minor == 0) {
         return _incrementPatch();
       }
-      
+
       return _incrementMinor();
     }
 
     return _incrementMajor();
   }
-  
+
   Version _incrementMajor() => new Version(major + 1, 0, 0);
   Version _incrementMinor() => new Version(major, minor + 1, 0);
   Version _incrementPatch() => new Version(major, minor, patch + 1);

@@ -173,11 +173,11 @@ main() {
       }
     });
   });
-  
+
   test('compatibleWith', () {
     var constraint = new VersionConstraint.compatibleWith(v072);
 
-    expect(constraint, equals(new VersionRange(min: v072, includeMin: true, 
+    expect(constraint, equals(new VersionRange(min: v072, includeMin: true,
         max: v072.nextBreaking)));
   });
 }
