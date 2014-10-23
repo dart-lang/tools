@@ -25,11 +25,9 @@ abstract class VersionConstraint {
   ///
   /// This string is one of:
   ///   
-  ///   * "any". See [any].
-  ///   * "^" followed by a version string. Versions compatible with the 
-  ///     version number. This allows versions greater than or equal to the 
-  ///     version, and less then the next breaking version (see 
-  ///     [Version.nextBreaking]).
+  ///   * "any". [any] version.
+  ///   * "^" followed by a version string. Versions compatible with 
+  ///     ([VersionConstraint.compatibleWith]) the version.
   ///   * a series of version parts. Each part can be one of:
   ///     * A version string like `1.2.3`. In other words, anything that can be
   ///       parsed by [Version.parse()].
@@ -107,7 +105,7 @@ abstract class VersionConstraint {
       
       getCurrentTextIndex() => originalText.length - text.length;
       var startTextIndex = getCurrentTextIndex();
-      if(constraints.isNotEmpty || text.isNotEmpty) {
+      if (constraints.isNotEmpty || text.isNotEmpty) {
         var constraint = op + originalText.substring(startTextIndex, 
             getCurrentTextIndex());
         throw new FormatException('Cannot include other constraints with '
@@ -150,6 +148,17 @@ abstract class VersionConstraint {
     }
 
     return new VersionConstraint.intersection(constraints);
+  }
+
+  /// Creates a version constraint which allows all versions that are 
+  /// backward compatible with [version].
+  ///
+  /// Versions are considered backward compatible with [version] if they
+  /// are greater than or equal to [version], but less than the next breaking
+  /// version ([Version.nextBreaking]) of [version].
+  factory VersionConstraint.compatibleWith(Version version) {
+    return new VersionRange(min: version, includeMin: true, 
+        max: version.nextBreaking);
   }
 
   /// Creates a new version constraint that is the intersection of

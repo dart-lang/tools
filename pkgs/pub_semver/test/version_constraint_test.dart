@@ -126,30 +126,26 @@ main() {
     test('parses a "^" post-1.0.0 version', () {
       var constraint = new VersionConstraint.parse('^1.2.3');
 
-      expect(constraint, equals(new VersionRange(min: v123, includeMin: true, 
-          max: v123.nextBreaking)));
+      expect(constraint, equals(new VersionConstraint.compatibleWith(v123)));
     });
 
     test('parses a "^" pre-1.0.0, post-0.1.0 version', () {
       var constraint = new VersionConstraint.parse('^0.7.2');
 
-      expect(constraint, equals(new VersionRange(min: v072, includeMin: true, 
-          max: v072.nextBreaking)));
+      expect(constraint, equals(new VersionConstraint.compatibleWith(v072)));
     });
 
     test('parses a "^" pre-0.1.0 version', () {
       var constraint = new VersionConstraint.parse('^0.0.3');
 
-      expect(constraint, equals(new VersionRange(min: v003, includeMin: true, 
-          max: v003.nextBreaking)));
+      expect(constraint, equals(new VersionConstraint.compatibleWith(v003)));
     });
 
     test('parses a "^" pre-release version', () {
       var constraint = new VersionConstraint.parse('^0.7.2-pre+1');
 
       var min = new Version.parse('0.7.2-pre+1');
-      expect(constraint, equals(new VersionRange(min: min, includeMin: true, 
-          max: min.nextBreaking)));
+      expect(constraint, equals(new VersionConstraint.compatibleWith(min)));
     });
 
     test('does not allow "^" to be mixed with other constraints', () {
@@ -176,5 +172,12 @@ main() {
             throwsFormatException);
       }
     });
+  });
+  
+  test('compatibleWith', () {
+    var constraint = new VersionConstraint.compatibleWith(v072);
+
+    expect(constraint, equals(new VersionRange(min: v072, includeMin: true, 
+        max: v072.nextBreaking)));
   });
 }
