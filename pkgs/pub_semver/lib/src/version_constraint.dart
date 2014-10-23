@@ -23,19 +23,26 @@ abstract class VersionConstraint {
 
   /// Parses a version constraint.
   ///
-  /// This string is either "any" or a series of version parts. Each part can
-  /// be one of:
-  ///
-  ///   * A version string like `1.2.3`. In other words, anything that can be
-  ///     parsed by [Version.parse()].
-  ///   * A comparison operator (`<`, `>`, `<=`, or `>=`) followed by a version
-  ///     string.
+  /// This string is one of:
+  ///   
+  ///   * "any". See [any].
+  ///   * "^" followed by a version string. Versions compatible with the 
+  ///     version number. This allows versions greater than or equal to the 
+  ///     version, and less then the next breaking version (see 
+  ///     [Version.nextBreaking]).
+  ///   * a series of version parts. Each part can be one of:
+  ///     * A version string like `1.2.3`. In other words, anything that can be
+  ///       parsed by [Version.parse()].
+  ///     * A comparison operator (`<`, `>`, `<=`, or `>=`) followed by a 
+  ///       version string.
   ///
   /// Whitespace is ignored.
   ///
   /// Examples:
   ///
   ///     any
+  ///     ^0.7.2
+  ///     ^1.0.0-alpha
   ///     1.2.3-alpha
   ///     <=5.1.4
   ///     >2.0.4 <= 2.4.6
@@ -82,9 +89,38 @@ abstract class VersionConstraint {
       }
       throw "Unreachable.";
     }
+    
+    // Try to parse the "^" operator followed by a version.
+    matchCompatibleWith() {
+      var compatibleWith = START_COMPATIBLE_WITH.firstMatch(text);
+      if (compatibleWith == null) return null;
 
+      var op = compatibleWith[0];
+      text = text.substring(compatibleWith.end);
+      skipWhitespace();
+      
+      var version = matchVersion();
+      if (version == null) {
+        throw new FormatException('Expected version number after "$op" in '
+            '"$originalText", got "$text".');
+      }
+      
+      getCurrentTextIndex() => originalText.length - text.length;
+      var startTextIndex = getCurrentTextIndex();
+      if(constraints.isNotEmpty || text.isNotEmpty) {
+        var constraint = op + originalText.substring(startTextIndex, 
+            getCurrentTextIndex());
+        throw new FormatException('Cannot include other constraints with '
+            '"^" constraint "$constraint" in "$originalText".');
+      }
+      
+      return new VersionRange(min: version, includeMin: true, 
+          max: version.nextBreaking);
+    }
+    
     while (true) {
       skipWhitespace();
+
       if (text.isEmpty) break;
 
       var version = matchVersion();
@@ -97,6 +133,11 @@ abstract class VersionConstraint {
       if (comparison != null) {
         constraints.add(comparison);
         continue;
+      }
+      
+      var compatibleWith = matchCompatibleWith();
+      if (compatibleWith != null) {
+        return compatibleWith;
       }
 
       // If we got here, we couldn't parse the remaining string.

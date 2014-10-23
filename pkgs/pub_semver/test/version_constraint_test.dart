@@ -123,11 +123,48 @@ main() {
           throwsFormatException);
     });
 
+    test('parses a "^" post-1.0.0 version', () {
+      var constraint = new VersionConstraint.parse('^1.2.3');
+
+      expect(constraint, equals(new VersionRange(min: v123, includeMin: true, 
+          max: v123.nextBreaking)));
+    });
+
+    test('parses a "^" pre-1.0.0, post-0.1.0 version', () {
+      var constraint = new VersionConstraint.parse('^0.7.2');
+
+      expect(constraint, equals(new VersionRange(min: v072, includeMin: true, 
+          max: v072.nextBreaking)));
+    });
+
+    test('parses a "^" pre-0.1.0 version', () {
+      var constraint = new VersionConstraint.parse('^0.0.3');
+
+      expect(constraint, equals(new VersionRange(min: v003, includeMin: true, 
+          max: v003.nextBreaking)));
+    });
+
+    test('parses a "^" pre-release version', () {
+      var constraint = new VersionConstraint.parse('^0.7.2-pre+1');
+
+      var min = new Version.parse('0.7.2-pre+1');
+      expect(constraint, equals(new VersionRange(min: min, includeMin: true, 
+          max: min.nextBreaking)));
+    });
+
+    test('does not allow "^" to be mixed with other constraints', () {
+      expect(() => new VersionConstraint.parse('>=1.2.3 ^1.0.0'),
+          throwsFormatException);
+      expect(() => new VersionConstraint.parse('^1.0.0 <1.2.3'),
+          throwsFormatException);
+    });
+
     test('throws FormatException on a bad string', () {
       var bad = [
          "", "   ",               // Empty string.
          "foo",                   // Bad text.
          ">foo",                  // Bad text after operator.
+         "^foo",                  // Bad text after "^".
          "1.0.0 foo", "1.0.0foo", // Bad text after version.
          "anything",              // Bad text after "any".
          "<>1.0.0",               // Multiple operators.

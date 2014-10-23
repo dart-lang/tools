@@ -73,5 +73,23 @@ spec. It differs from semver in a few corner cases:
     specifically selects that unstable version -- they've deliberately opted
     into it.
 
+ *  **There is a notion of compatibility between pre-1.0.0 versions.** Semver 
+    deems all pre-1.0.0 versions to be incompatible.  This means that the only 
+    way to ensure compatibility when depending on a pre-1.0.0 package is to 
+    pin the dependency to an exact version. Pinned version constraints prevent 
+    automatic patch and pre-release updates. To avoid this situation, pub 
+    defines the "next breaking" version to be the version with the left-most 
+    non-zero digit in [major, minor, patch] incremented, and the subsequent 
+    digits reset to zero.  For example, here are some versions along with their 
+    next breaking ones:
+    
+    `0.0.3` -> `0.0.4`
+    `0.7.2-alpha` -> `0.8.0` 
+    `1.2.3` -> `2.0.0` 
+    
+    To make use of this, pub defines a "^" operator which yields a version 
+    constraint greater than or equal to a given version, but less than its next 
+    breaking one.
+    
 [pub]: http://pub.dartlang.org/
 [semver]: http://semver.org/

@@ -198,6 +198,18 @@ main() {
     expect(new Version.parse('1.2.3+patch').nextPatch, equals(v124));
   });
 
+  test('nextBreaking', () {
+    expect(v123.nextBreaking, equals(v200));
+    expect(v072.nextBreaking, equals(v080));
+    expect(v003.nextBreaking, equals(v004));
+
+    // Removes pre-release version if present.
+    expect(new Version.parse('1.2.3-dev').nextBreaking, equals(v200));
+
+    // Strips build suffix.
+    expect(new Version.parse('1.2.3+patch').nextBreaking, equals(v200));
+  });
+
   test('parse()', () {
     expect(new Version.parse('0.0.0'), equals(new Version(0, 0, 0)));
     expect(new Version.parse('12.34.56'), equals(new Version(12, 34, 56)));
