@@ -18,5 +18,5 @@ final COMPLETE_VERSION = new RegExp(START_VERSION.pattern + r'$');
 /// a string.
 final START_COMPARISON = new RegExp(r"^[<>]=?");
 
-/// Parses the "compatible with" operator ("^") at the beginning of a string.
-final START_COMPATIBLE_WITH = new RegExp(r"^\^");
+/// The "compatible with" operator.
+const COMPATIBLE_WITH = "^";

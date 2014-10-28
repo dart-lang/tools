@@ -91,22 +91,20 @@ abstract class VersionConstraint {
 
     // Try to parse the "^" operator followed by a version.
     matchCompatibleWith() {
-      var compatibleWith = START_COMPATIBLE_WITH.firstMatch(text);
-      if (compatibleWith == null) return null;
+      if (!text.startsWith(COMPATIBLE_WITH)) return null;
 
-      var op = compatibleWith[0];
-      text = text.substring(compatibleWith.end);
+      text = text.substring(COMPATIBLE_WITH.length);
       skipWhitespace();
 
       var version = matchVersion();
       if (version == null) {
-        throw new FormatException('Expected version number after "$op" in '
-            '"$originalText", got "$text".');
+        throw new FormatException('Expected version number after '
+            '"$COMPATIBLE_WITH" in "$originalText", got "$text".');
       }
 
       if (text.isNotEmpty) {
         throw new FormatException('Cannot include other constraints with '
-            '"^" constraint in "$originalText".');
+            '"$COMPATIBLE_WITH" constraint in "$originalText".');
       }
 
       return new VersionConstraint.compatibleWith(version);
