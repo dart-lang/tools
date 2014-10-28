@@ -45,15 +45,16 @@ abstract class VersionConstraint {
   ///     <=5.1.4
   ///     >2.0.4 <= 2.4.6
   factory VersionConstraint.parse(String text) {
-    // Handle the "any" constraint.
-    if (text.trim() == "any") return any;
-
     var originalText = text;
-    var constraints = [];
 
     skipWhitespace() {
       text = text.trim();
     }
+
+    skipWhitespace();
+
+    // Handle the "any" constraint.
+    if (text == "any") return any;
 
     // Try to parse and consume a version number.
     matchVersion() {
@@ -103,17 +104,18 @@ abstract class VersionConstraint {
             '"$originalText", got "$text".');
       }
 
-      getCurrentTextIndex() => originalText.length - text.length;
-      var startTextIndex = getCurrentTextIndex();
-      if (constraints.isNotEmpty || text.isNotEmpty) {
-        var constraint = op + originalText.substring(startTextIndex,
-            getCurrentTextIndex());
+      if (text.isNotEmpty) {
         throw new FormatException('Cannot include other constraints with '
-            '"^" constraint "$constraint" in "$originalText".');
+            '"^" constraint in "$originalText".');
       }
 
       return new VersionConstraint.compatibleWith(version);
     }
+
+    var compatibleWith = matchCompatibleWith();
+    if (compatibleWith != null) return compatibleWith;
+
+    var constraints = [];
 
     while (true) {
       skipWhitespace();
@@ -130,11 +132,6 @@ abstract class VersionConstraint {
       if (comparison != null) {
         constraints.add(comparison);
         continue;
-      }
-
-      var compatibleWith = matchCompatibleWith();
-      if (compatibleWith != null) {
-        return compatibleWith;
       }
 
       // If we got here, we couldn't parse the remaining string.
