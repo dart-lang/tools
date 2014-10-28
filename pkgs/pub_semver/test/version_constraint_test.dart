@@ -174,10 +174,18 @@ main() {
     });
   });
 
-  test('compatibleWith', () {
-    var constraint = new VersionConstraint.compatibleWith(v072);
+  group('compatibleWith()', () {
+    test('returns the range of compatible versions', () {
+      var constraint = new VersionConstraint.compatibleWith(v072);
 
-    expect(constraint, equals(new VersionRange(min: v072, includeMin: true,
-        max: v072.nextBreaking)));
+      expect(constraint, equals(new VersionRange(min: v072, includeMin: true,
+          max: v072.nextBreaking)));
+    });
+
+    test('toString() uses "^"', () {
+      var constraint = new VersionConstraint.compatibleWith(v072);
+
+      expect(constraint.toString(), equals('^0.7.2'));
+    });
   });
 }

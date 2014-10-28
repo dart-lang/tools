@@ -112,8 +112,7 @@ abstract class VersionConstraint {
             '"^" constraint "$constraint" in "$originalText".');
       }
 
-      return new VersionRange(min: version, includeMin: true,
-          max: version.nextBreaking);
+      return new VersionConstraint.compatibleWith(version);
     }
 
     while (true) {
@@ -156,10 +155,8 @@ abstract class VersionConstraint {
   /// Versions are considered backward compatible with [version] if they
   /// are greater than or equal to [version], but less than the next breaking
   /// version ([Version.nextBreaking]) of [version].
-  factory VersionConstraint.compatibleWith(Version version) {
-    return new VersionRange(min: version, includeMin: true,
-        max: version.nextBreaking);
-  }
+  factory VersionConstraint.compatibleWith(Version version) =>
+      new _CompatibleWithVersionRange(version);
 
   /// Creates a new version constraint that is the intersection of
   /// [constraints].
@@ -198,4 +195,12 @@ class _EmptyVersion implements VersionConstraint {
   bool allows(Version other) => false;
   VersionConstraint intersect(VersionConstraint other) => this;
   String toString() => '<empty>';
+}
+
+class _CompatibleWithVersionRange extends VersionRange {
+  _CompatibleWithVersionRange(Version version) : super(
+      min: version, includeMin: true,
+      max: version.nextBreaking, includeMax: false);
+
+  String toString() => '^$min';
 }
