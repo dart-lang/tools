@@ -46,7 +46,7 @@ abstract class VersionConstraint {
   ///     >2.0.4 <= 2.4.6
   factory VersionConstraint.parse(String text) {
     // Handle the "any" constraint.
-    if (text.trim() == "any") return new VersionRange();
+    if (text.trim() == "any") return any;
 
     var originalText = text;
     var constraints = [];
