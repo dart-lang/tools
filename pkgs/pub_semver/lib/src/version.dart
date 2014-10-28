@@ -219,16 +219,11 @@ class Version implements Comparable<Version>, VersionConstraint {
 
   /// Gets the next breaking version number that follows this one.
   ///
-  /// Increments the left-most non-zero digit in ([major], [minor], [patch]).
-  /// In other words, if [major] and [minor] are zero (e.g. 0.0.3), then it
-  /// increments [patch].  If [major] is zero and [minor] is not (e.g. 0.7.2),
-  /// then it increments [minor]. Otherwise, it increments [major].
+  /// Increments [major] if it's greater than zero, otherwise [minor], resets
+  /// subsequent digits to zero, and strips any [preRelease] or [build]
+  /// suffix.
   Version get nextBreaking {
     if (major == 0) {
-      if (minor == 0) {
-        return _incrementPatch();
-      }
-
       return _incrementMinor();
     }
 

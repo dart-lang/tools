@@ -10,7 +10,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 /// Some stock example versions to use in tests.
 final v003 = new Version.parse('0.0.3');
-final v004 = new Version.parse('0.0.4');
+final v010 = new Version.parse('0.1.0');
 final v072 = new Version.parse('0.7.2');
 final v080 = new Version.parse('0.8.0');
 final v114 = new Version.parse('1.1.4');

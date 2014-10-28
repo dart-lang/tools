@@ -78,12 +78,13 @@ spec. It differs from semver in a few corner cases:
     way to ensure compatibility when depending on a pre-1.0.0 package is to
     pin the dependency to an exact version. Pinned version constraints prevent
     automatic patch and pre-release updates. To avoid this situation, pub
-    defines the "next breaking" version to be the version with the left-most
-    non-zero digit in [major, minor, patch] incremented, and the subsequent
-    digits reset to zero.  For example, here are some versions along with their
-    next breaking ones:
+    defines the "next breaking" version as the version which increments the
+    major version if it's greater than zero, and the minor version otherwise,
+    resets subsequent digits to zero, and strips any pre-release or build
+    suffix.  For example, here are some versions along with their next breaking
+    ones:
 
-    `0.0.3` -> `0.0.4`
+    `0.0.3` -> `0.1.0`
     `0.7.2-alpha` -> `0.8.0`
     `1.2.3` -> `2.0.0`
 

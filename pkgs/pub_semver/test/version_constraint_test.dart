@@ -106,7 +106,7 @@ main() {
           new Version.parse('3.4.5')));
     });
 
-    test('ignores whitespace around operators', () {
+    test('ignores whitespace around comparison operators', () {
       var constraint = new VersionConstraint.parse(' >1.0.0>=1.2.3 < 1.3.0');
 
       expect(constraint, allows(
@@ -123,29 +123,19 @@ main() {
           throwsFormatException);
     });
 
-    test('parses a "^" post-1.0.0 version', () {
-      var constraint = new VersionConstraint.parse('^1.2.3');
+    test('parses a "^" version', () {
+      expect(new VersionConstraint.parse('^0.0.3'), equals(
+          new VersionConstraint.compatibleWith(v003)));
 
-      expect(constraint, equals(new VersionConstraint.compatibleWith(v123)));
-    });
+      expect(new VersionConstraint.parse('^0.7.2'), equals(
+          new VersionConstraint.compatibleWith(v072)));
 
-    test('parses a "^" pre-1.0.0, post-0.1.0 version', () {
-      var constraint = new VersionConstraint.parse('^0.7.2');
-
-      expect(constraint, equals(new VersionConstraint.compatibleWith(v072)));
-    });
-
-    test('parses a "^" pre-0.1.0 version', () {
-      var constraint = new VersionConstraint.parse('^0.0.3');
-
-      expect(constraint, equals(new VersionConstraint.compatibleWith(v003)));
-    });
-
-    test('parses a "^" pre-release version', () {
-      var constraint = new VersionConstraint.parse('^0.7.2-pre+1');
+      expect(new VersionConstraint.parse('^1.2.3'), equals(
+          new VersionConstraint.compatibleWith(v123)));
 
       var min = new Version.parse('0.7.2-pre+1');
-      expect(constraint, equals(new VersionConstraint.compatibleWith(min)));
+      expect(new VersionConstraint.parse('^0.7.2-pre+1'), equals(
+          new VersionConstraint.compatibleWith(min)));
     });
 
     test('does not allow "^" to be mixed with other constraints', () {
@@ -153,6 +143,13 @@ main() {
           throwsFormatException);
       expect(() => new VersionConstraint.parse('^1.0.0 <1.2.3'),
           throwsFormatException);
+    });
+
+    test('ignores whitespace around "^"', () {
+      var constraint = new VersionConstraint.parse(' ^ 1.2.3 ');
+
+      expect(constraint, equals(
+          new VersionConstraint.compatibleWith(v123)));
     });
 
     test('throws FormatException on a bad string', () {
