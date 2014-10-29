@@ -189,7 +189,7 @@ class Version implements Comparable<Version>, VersionConstraint {
       return new Version(major, minor, patch);
     }
 
-    return new Version(major + 1, 0, 0);
+    return _incrementMajor();
   }
 
   /// Gets the next minor version number that follows this one.
@@ -202,7 +202,7 @@ class Version implements Comparable<Version>, VersionConstraint {
       return new Version(major, minor, patch);
     }
 
-    return new Version(major, minor + 1, 0);
+    return _incrementMinor();
   }
 
   /// Gets the next patch version number that follows this one.
@@ -214,8 +214,25 @@ class Version implements Comparable<Version>, VersionConstraint {
       return new Version(major, minor, patch);
     }
 
-    return new Version(major, minor, patch + 1);
+    return _incrementPatch();
   }
+
+  /// Gets the next breaking version number that follows this one.
+  ///
+  /// Increments [major] if it's greater than zero, otherwise [minor], resets
+  /// subsequent digits to zero, and strips any [preRelease] or [build]
+  /// suffix.
+  Version get nextBreaking {
+    if (major == 0) {
+      return _incrementMinor();
+    }
+
+    return _incrementMajor();
+  }
+
+  Version _incrementMajor() => new Version(major + 1, 0, 0);
+  Version _incrementMinor() => new Version(major, minor + 1, 0);
+  Version _incrementPatch() => new Version(major, minor, patch + 1);
 
   /// Tests if [other] matches this version exactly.
   bool allows(Version other) => this == other;

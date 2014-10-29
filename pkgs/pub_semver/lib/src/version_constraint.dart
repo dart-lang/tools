@@ -23,32 +23,38 @@ abstract class VersionConstraint {
 
   /// Parses a version constraint.
   ///
-  /// This string is either "any" or a series of version parts. Each part can
-  /// be one of:
+  /// This string is one of:
   ///
-  ///   * A version string like `1.2.3`. In other words, anything that can be
-  ///     parsed by [Version.parse()].
-  ///   * A comparison operator (`<`, `>`, `<=`, or `>=`) followed by a version
-  ///     string.
+  ///   * "any". [any] version.
+  ///   * "^" followed by a version string. Versions compatible with
+  ///     ([VersionConstraint.compatibleWith]) the version.
+  ///   * a series of version parts. Each part can be one of:
+  ///     * A version string like `1.2.3`. In other words, anything that can be
+  ///       parsed by [Version.parse()].
+  ///     * A comparison operator (`<`, `>`, `<=`, or `>=`) followed by a
+  ///       version string.
   ///
   /// Whitespace is ignored.
   ///
   /// Examples:
   ///
   ///     any
+  ///     ^0.7.2
+  ///     ^1.0.0-alpha
   ///     1.2.3-alpha
   ///     <=5.1.4
   ///     >2.0.4 <= 2.4.6
   factory VersionConstraint.parse(String text) {
-    // Handle the "any" constraint.
-    if (text.trim() == "any") return new VersionRange();
-
     var originalText = text;
-    var constraints = [];
 
     skipWhitespace() {
       text = text.trim();
     }
+
+    skipWhitespace();
+
+    // Handle the "any" constraint.
+    if (text == "any") return any;
 
     // Try to parse and consume a version number.
     matchVersion() {
@@ -83,8 +89,35 @@ abstract class VersionConstraint {
       throw "Unreachable.";
     }
 
+    // Try to parse the "^" operator followed by a version.
+    matchCompatibleWith() {
+      if (!text.startsWith(COMPATIBLE_WITH)) return null;
+
+      text = text.substring(COMPATIBLE_WITH.length);
+      skipWhitespace();
+
+      var version = matchVersion();
+      if (version == null) {
+        throw new FormatException('Expected version number after '
+            '"$COMPATIBLE_WITH" in "$originalText", got "$text".');
+      }
+
+      if (text.isNotEmpty) {
+        throw new FormatException('Cannot include other constraints with '
+            '"$COMPATIBLE_WITH" constraint in "$originalText".');
+      }
+
+      return new VersionConstraint.compatibleWith(version);
+    }
+
+    var compatibleWith = matchCompatibleWith();
+    if (compatibleWith != null) return compatibleWith;
+
+    var constraints = [];
+
     while (true) {
       skipWhitespace();
+
       if (text.isEmpty) break;
 
       var version = matchVersion();
@@ -110,6 +143,15 @@ abstract class VersionConstraint {
 
     return new VersionConstraint.intersection(constraints);
   }
+
+  /// Creates a version constraint which allows all versions that are
+  /// backward compatible with [version].
+  ///
+  /// Versions are considered backward compatible with [version] if they
+  /// are greater than or equal to [version], but less than the next breaking
+  /// version ([Version.nextBreaking]) of [version].
+  factory VersionConstraint.compatibleWith(Version version) =>
+      new _CompatibleWithVersionRange(version);
 
   /// Creates a new version constraint that is the intersection of
   /// [constraints].
@@ -148,4 +190,12 @@ class _EmptyVersion implements VersionConstraint {
   bool allows(Version other) => false;
   VersionConstraint intersect(VersionConstraint other) => this;
   String toString() => '<empty>';
+}
+
+class _CompatibleWithVersionRange extends VersionRange {
+  _CompatibleWithVersionRange(Version version) : super(
+      min: version, includeMin: true,
+      max: version.nextBreaking, includeMax: false);
+
+  String toString() => '^$min';
 }
