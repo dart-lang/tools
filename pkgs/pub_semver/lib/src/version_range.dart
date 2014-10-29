@@ -66,6 +66,9 @@ class VersionRange implements VersionConstraint {
            includeMax == other.includeMax;
   }
 
+  int get hashCode => min.hashCode ^ (max.hashCode * 3) ^
+      (includeMin.hashCode * 5) ^ (includeMax.hashCode * 7);
+
   bool get isEmpty => false;
 
   bool get isAny => min == null && max == null;

@@ -10,6 +10,8 @@
 * Add `new VersionConstraint.compatibleWith()`, which returns a range covering
   all versions compatible with a given version.
 
+* Add a custom `VersionRange.hashCode` to make it properly hashable.
+
 # 1.0.0
 
 * Initial release.
