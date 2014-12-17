@@ -10,27 +10,27 @@ import 'package:coverage/src/devtools.dart';
 import 'package:coverage/src/util.dart';
 
 Future<Map> getAllCoverage(Observatory observatory) {
-  return observatory.getIsolates()
+  return observatory
+      .getIsolates()
       .then((isolates) => isolates.map((i) => i.getCoverage()))
       .then(Future.wait)
       .then((responses) {
-        // flatten response lists
-        var allCoverage = responses.expand((it) => it).toList();
-        return {
-          'type': 'CodeCoverage',
-          'coverage': allCoverage,
-        };
-    });
+    // flatten response lists
+    var allCoverage = responses.expand((it) => it).toList();
+    return {'type': 'CodeCoverage', 'coverage': allCoverage,};
+  });
 }
 
 Future resumeIsolates(Observatory observatory) {
-  return observatory.getIsolates()
+  return observatory
+      .getIsolates()
       .then((isolates) => isolates.map((i) => i.resume()))
       .then(Future.wait);
 }
 
 Future waitIsolatesPaused(Observatory observatory) {
-  allPaused() => observatory.getIsolates()
+  allPaused() => observatory
+      .getIsolates()
       .then((isolates) => isolates.every((i) => i.paused))
       .then((paused) => paused ? paused : new Future.error(paused));
   return retry(allPaused, RETRY_INTERVAL);
@@ -51,13 +51,13 @@ void main(List<String> arguments) {
     connected.timeout(options.timeout, onTimeout: onTimeout);
   }
   connected.then((observatory) {
-    Future ready = options.waitPaused
-        ? waitIsolatesPaused(observatory)
-        : new Future.value();
+    Future ready = options.waitPaused ?
+        waitIsolatesPaused(observatory) : new Future.value();
     if (options.timeout != null) {
       ready.timeout(options.timeout, onTimeout: onTimeout);
     }
-    return ready.then((_) => getAllCoverage(observatory))
+    return ready
+        .then((_) => getAllCoverage(observatory))
         .then(JSON.encode)
         .then(options.out.write)
         .then((_) => options.out.close())
@@ -80,19 +80,18 @@ class Options {
 Options parseArgs(List<String> arguments) {
   var parser = new ArgParser();
 
-  parser.addOption('host', abbr: 'H', defaultsTo: '127.0.0.1',
-      help: 'remote VM host');
+  parser.addOption(
+      'host', abbr: 'H', defaultsTo: '127.0.0.1', help: 'remote VM host');
   parser.addOption('port', abbr: 'p', help: 'remote VM port');
   parser.addOption('out', abbr: 'o', defaultsTo: 'stdout',
       help: 'output: may be file or stdout');
-  parser.addOption('connect-timeout', abbr: 't',
-      help: 'connect timeout in seconds');
+  parser.addOption(
+      'connect-timeout', abbr: 't', help: 'connect timeout in seconds');
   parser.addFlag('wait-paused', abbr: 'w', defaultsTo: false,
       help: 'wait for all isolates to be paused before collecting coverage');
   parser.addFlag('resume-isolates', abbr: 'r', defaultsTo: false,
       help: 'resume all isolates on exit');
-  parser.addFlag('help', abbr: 'h', negatable: false,
-      help: 'show this help');
+  parser.addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
   var args = parser.parse(arguments);
 
   printUsage() {
@@ -117,12 +116,11 @@ Options parseArgs(List<String> arguments) {
   if (args['out'] == 'stdout') {
     out = stdout;
   } else {
-    var outfile = new File(args['out'])
-        ..createSync(recursive: true);
+    var outfile = new File(args['out'])..createSync(recursive: true);
     out = outfile.openWrite();
   }
-  var timeout = (args['connect-timeout'] == null) ? null
-      : new Duration(seconds: int.parse(args['connect-timeout']));
+  var timeout = (args['connect-timeout'] == null) ?
+      null : new Duration(seconds: int.parse(args['connect-timeout']));
   return new Options(args['host'], args['port'], out, timeout,
       args['wait-paused'], args['resume-isolates']);
 }

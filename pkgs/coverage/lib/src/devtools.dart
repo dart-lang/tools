@@ -13,12 +13,12 @@ class IsolateInfo {
   final _Connection _connection;
   final String name;
   final bool paused;
-  IsolateInfo(this._connection, Map json) :
-    name = json['mainPort'],
-    paused = json['pausedOnExit'];
+  IsolateInfo(this._connection, Map json)
+      : name = json['mainPort'],
+        paused = json['pausedOnExit'];
 
-  Future<Map> getCoverage() =>
-      _connection.request('isolates/$name/coverage')
+  Future<Map> getCoverage() => _connection
+      .request('isolates/$name/coverage')
       .then((resp) => resp['coverage']);
 
   Future<Map> getAllocationProfile({gc: true}) {
@@ -54,8 +54,8 @@ class Observatory {
     return _DevtoolsConnection.connect(uri).then((c) => new Observatory._(c));
   }
 
-  Future<Iterable<IsolateInfo>> getIsolates() =>
-      _connection.request('vm')
+  Future<Iterable<IsolateInfo>> getIsolates() => _connection
+      .request('vm')
       .then((resp) => resp['isolates'])
       .then((isolates) => (isolates == null) ? [] : isolates)
       .then((isolates) => isolates.map((i) => i['mainPort']))
@@ -79,7 +79,8 @@ class _VmConnection implements _Connection {
   _VmConnection(this.uri);
 
   Future<Map> request(String request) {
-    return http.get('$uri/$request')
+    return http
+        .get('$uri/$request')
         .then((resp) => resp.body)
         .then((resp) => resp.isEmpty ? {} : JSON.decode(resp));
   }
@@ -114,7 +115,8 @@ class _DevtoolsConnection implements _Connection {
 
     return http.get(uri).then((response) {
       var webSocketDebuggerUrl = _getWebsocketDebuggerUrl(response);
-      return WebSocket.connect(webSocketDebuggerUrl)
+      return WebSocket
+          .connect(webSocketDebuggerUrl)
           .then((socket) => new _DevtoolsConnection(socket));
     });
   }
@@ -124,10 +126,7 @@ class _DevtoolsConnection implements _Connection {
     _socket.add(JSON.encode({
       'id': _requestId,
       'method': 'Dart.observatoryQuery',
-      'params': {
-        'id': '$_requestId',
-        'query': request,
-      },
+      'params': {'id': '$_requestId', 'query': request,},
     }));
     return _pendingRequests[_requestId++].future;
   }
