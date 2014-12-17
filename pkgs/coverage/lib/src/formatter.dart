@@ -24,10 +24,10 @@ class LcovFormatter implements Formatter {
       }
       entry.write('SF:${source}\n');
       v.keys.toList()
-            ..sort()
-            ..forEach((k) {
-        entry.write('DA:${k},${v[k]}\n');
-      });
+        ..sort()
+        ..forEach((k) {
+          entry.write('DA:${k},${v[k]}\n');
+        });
       entry.write('end_of_record\n');
       buf.write(entry.toString());
       return new Future.value();

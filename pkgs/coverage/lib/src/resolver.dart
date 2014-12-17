@@ -73,18 +73,18 @@ class Loader {
     if (uri.startsWith('http')) {
       Completer c = new Completer();
       HttpClient client = new HttpClient();
-      client.getUrl(Uri.parse(uri))
+      client
+          .getUrl(Uri.parse(uri))
           .then((request) => request.close())
           .then((response) => response.transform(UTF8.decoder).toList())
           .then((data) => c.complete(data))
           .then((_) => client.close())
           .catchError((e) {
-            failed.add(uri);
-            c.complete(null);
-          });
+        failed.add(uri);
+        c.complete(null);
+      });
       return c.future;
     }
-    return new File(uri).readAsLines()
-        .catchError((e) => new Future.value());
+    return new File(uri).readAsLines().catchError((e) => new Future.value());
   }
 }

@@ -3,7 +3,7 @@ part of coverage;
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
 Map createHitmap(List<Map> json) {
-  Map<String, Map<int,int>> hitMap = {};
+  Map<String, Map<int, int>> hitMap = {};
 
   addToMap(source, line, count) {
     if (!hitMap[source].containsKey(line)) {
@@ -30,7 +30,7 @@ Map createHitmap(List<Map> json) {
       var k = hits[i];
       if (k is num) {
         // Single line.
-        addToMap(source, k, hits[i+1]);
+        addToMap(source, k, hits[i + 1]);
       }
       if (k is String) {
         // Linerange. We expand line ranges to actual lines at this point.
@@ -38,7 +38,7 @@ Map createHitmap(List<Map> json) {
         int start = int.parse(k.substring(0, splitPos));
         int end = int.parse(k.substring(splitPos + 1, k.length));
         for (var j = start; j <= end; j++) {
-          addToMap(source, j, hits[i+1]);
+          addToMap(source, j, hits[i + 1]);
         }
       }
     }

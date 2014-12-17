@@ -9,7 +9,6 @@ import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart';
 
-
 /// [Environment] stores gathered arguments information.
 class Environment {
   String sdkRoot;
@@ -81,24 +80,20 @@ parseArgs(List<String> arguments) {
   final env = new Environment();
   var parser = new ArgParser();
 
-  parser.addOption('sdk-root', abbr: 's',
-      help: 'path to the SDK root');
-  parser.addOption('package-root', abbr: 'p',
-      help: 'path to the package root');
-  parser.addOption('in', abbr: 'i',
-      help: 'input(s): may be file or directory');
+  parser.addOption('sdk-root', abbr: 's', help: 'path to the SDK root');
+  parser.addOption('package-root', abbr: 'p', help: 'path to the package root');
+  parser.addOption('in', abbr: 'i', help: 'input(s): may be file or directory');
   parser.addOption('out', abbr: 'o', defaultsTo: 'stdout',
       help: 'output: may be file or stdout');
-  parser.addOption('workers', abbr: 'j', defaultsTo: '1',
-      help: 'number of workers');
+  parser.addOption(
+      'workers', abbr: 'j', defaultsTo: '1', help: 'number of workers');
   parser.addFlag('pretty-print', abbr: 'r', negatable: false,
       help: 'convert coverage data to pretty print format');
-  parser.addFlag('lcov', abbr :'l', negatable: false,
+  parser.addFlag('lcov', abbr: 'l', negatable: false,
       help: 'convert coverage data to lcov format');
-  parser.addFlag('verbose', abbr :'v', negatable: false,
-      help: 'verbose output');
-  parser.addFlag('help', abbr: 'h', negatable: false,
-      help: 'show this help');
+  parser
+      .addFlag('verbose', abbr: 'v', negatable: false, help: 'verbose output');
+  parser.addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   var args = parser.parse(arguments);
 
@@ -122,14 +117,14 @@ parseArgs(List<String> arguments) {
   if (env.sdkRoot == null) {
     if (Platform.environment.containsKey('DART_SDK')) {
       env.sdkRoot =
-        join(absolute(normalize(Platform.environment['DART_SDK'])), 'lib');
+          join(absolute(normalize(Platform.environment['DART_SDK'])), 'lib');
     }
   } else {
     env.sdkRoot = join(absolute(normalize(env.sdkRoot)), 'lib');
   }
   if ((env.sdkRoot != null) && !FileSystemEntity.isDirectorySync(env.sdkRoot)) {
     fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
-         'top-level directory');
+        'top-level directory');
   }
 
   env.pkgRoot = args['package-root'];
@@ -151,8 +146,7 @@ parseArgs(List<String> arguments) {
     env.output = stdout;
   } else {
     var outpath = absolute(normalize(args['out']));
-    var outfile = new File(outpath)
-        ..createSync(recursive: true);
+    var outfile = new File(outpath)..createSync(recursive: true);
     env.output = outfile.openWrite();
   }
 
@@ -181,7 +175,8 @@ parseArgs(List<String> arguments) {
 List filesToProcess(String absPath) {
   var filePattern = new RegExp(r'^dart-cov-\d+-\d+.json$');
   if (FileSystemEntity.isDirectorySync(absPath)) {
-    return new Directory(absPath).listSync(recursive: true)
+    return new Directory(absPath)
+        .listSync(recursive: true)
         .where((e) => e is File && filePattern.hasMatch(basename(e.path)))
         .toList();
   }
