@@ -1,7 +1,7 @@
 name: glob
 version: 1.0.3
 author: "Dart Team <misc@dartlang.org>"
-homepage: http://www.dartlang.org
+homepage: http://github.com/dart-lang/glob
 description: Bash-style filename globbing.
 dependencies:
   path: ">=1.0.0 <2.0.0"
