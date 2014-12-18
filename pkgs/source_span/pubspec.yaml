@@ -3,7 +3,7 @@ name: source_span
 version: 1.0.2
 author: Dart Team <misc@dartlang.org>
 description: A library for identifying source spans and locations.
-homepage: http://www.dartlang.org
+homepage: http://github.com/dart-lang/source_span
 dependencies:
   path: '>=1.2.0 <2.0.0'
 environment:
