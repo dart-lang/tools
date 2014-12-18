@@ -2,7 +2,7 @@ name: pool
 version: 1.0.0
 author: Dart Team <misc@dartlang.org>
 description: A class for managing a finite pool of resources.
-homepage: http://www.dartlang.org
+homepage: http://github.com/dart-lang/pool
 dependencies:
   stack_trace: ">=0.9.2 <2.0.0"
 dev_dependencies:
