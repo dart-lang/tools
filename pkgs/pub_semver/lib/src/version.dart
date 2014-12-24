@@ -43,7 +43,7 @@ class Version implements Comparable<Version>, VersionConstraint {
     return a.compareTo(b);
   }
 
-  /// Like [proiritize], but lower version numbers are considered greater than
+  /// Like [prioritize], but lower version numbers are considered greater than
   /// higher version numbers.
   ///
   /// This still considers prerelease versions to be lower than non-prerelease
