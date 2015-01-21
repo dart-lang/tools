@@ -38,6 +38,11 @@ class Server {
   /// [RpcException.methodNotFound] exception.
   final _fallbacks = new Queue<Function>();
 
+  /// Returns a [Future] that completes when the connection is closed.
+  ///
+  /// This is the same future that's returned by [listen].
+  Future get done => _streams.done;
+
   /// Creates a [Server] that reads requests from [requests] and writes
   /// responses to [responses].
   ///
@@ -135,7 +140,9 @@ class Server {
         var nonNull = results.where((result) => result != null);
         return nonNull.isEmpty ? null : nonNull.toList();
       });
-    }).then(_streams.add);
+    }).then((response) {
+      if (response != null) _streams.add(response);
+    });
   }
 
   /// Handles an individual parsed request.

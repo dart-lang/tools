@@ -41,6 +41,8 @@ class Peer implements Client, Server {
   /// and [_client].
   final _outgoingForwarder = new StreamController(sync: true);
 
+  Future get done => _streams.done;
+
   /// Creates a [Peer] that reads incoming messages from [incoming] and writes
   /// outgoing messages to [outgoing].
   ///

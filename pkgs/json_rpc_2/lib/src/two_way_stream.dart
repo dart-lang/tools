@@ -32,10 +32,11 @@ class TwoWayStream {
   /// This takes decoded JSON objects.
   final StreamSink _output;
 
-  /// The completer for [listen].
+  /// Returns a [Future] that completes when the connection is closed.
   ///
-  /// This is non-`null` after [listen] has been called.
-  Completer _listenCompleter;
+  /// This is the same future that's returned by [listen].
+  Future get done => _doneCompleter.future;
+  final _doneCompleter = new Completer();
 
   /// Creates a two-way stream.
   ///
@@ -95,23 +96,22 @@ class TwoWayStream {
   /// The returned Future will complete when the input stream is closed. If the
   /// input stream emits an error, that will be piped to the returned Future.
   Future listen(void handleInput(input)) {
-    if (_listenCompleter != null) {
+    if (_inputSubscription != null) {
       throw new StateError("Can only call $_name.listen once.");
     }
 
-    _listenCompleter = new Completer();
     _inputSubscription = _input.listen(handleInput,
         onError: (error, stackTrace) {
-      if (_listenCompleter.isCompleted) return;
+      if (_doneCompleter.isCompleted) return;
       _output.close();
-      _listenCompleter.completeError(error, stackTrace);
+      _doneCompleter.completeError(error, stackTrace);
     }, onDone: () {
-      if (_listenCompleter.isCompleted) return;
+      if (_doneCompleter.isCompleted) return;
       _output.close();
-      _listenCompleter.complete();
+      _doneCompleter.complete();
     }, cancelOnError: true);
 
-    return _listenCompleter.future;
+    return _doneCompleter.future;
   }
 
   /// Emit [event] on the output stream.
@@ -119,11 +119,11 @@ class TwoWayStream {
 
   /// Stops listening to the input stream and closes the output stream.
   Future close() {
-    if (_listenCompleter == null) {
+    if (_inputSubscription == null) {
       throw new StateError("Can't call $_name.close before $_name.listen.");
     }
 
-    if (!_listenCompleter.isCompleted) _listenCompleter.complete();
+    if (!_doneCompleter.isCompleted) _doneCompleter.complete();
 
     var inputFuture = _inputSubscription.cancel();
     // TODO(nweiz): include the output future in the return value when issue

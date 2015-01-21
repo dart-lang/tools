@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Add a `done` getter to `Client`, `Server`, and `Peer`.
+
 ## 1.0.0
 
 * Add a `Client` class for communicating with external JSON-RPC 2.0 servers.

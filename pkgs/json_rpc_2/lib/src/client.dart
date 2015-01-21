@@ -32,6 +32,11 @@ class Client {
   /// completed with those requests' responses.
   final _pendingRequests = new Map<int, Completer>();
 
+  /// Returns a [Future] that completes when the connection is closed.
+  ///
+  /// This is the same future that's returned by [listen].
+  Future get done => _streams.done;
+
   /// Creates a [Client] that writes requests to [requests] and reads responses
   /// from [responses].
   ///
