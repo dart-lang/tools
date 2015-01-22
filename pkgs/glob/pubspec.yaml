@@ -1,9 +1,10 @@
 name: glob
-version: 1.0.3
+version: 1.0.4
 author: "Dart Team <misc@dartlang.org>"
-homepage: http://github.com/dart-lang/glob
+homepage: https://github.com/dart-lang/glob
 description: Bash-style filename globbing.
 dependencies:
+  collection: ">=1.1.0 <2.0.0"
   path: ">=1.0.0 <2.0.0"
   string_scanner: ">=0.1.0 <0.2.0"
 dev_dependencies:

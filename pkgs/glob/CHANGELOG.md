@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Added overlooked `collection` dependency.
+
 ## 1.0.3
 
 * Fix a bug where `Glob.list()` and `Glob.listSync()` would incorrectly throw

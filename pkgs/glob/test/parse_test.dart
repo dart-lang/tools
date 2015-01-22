@@ -25,8 +25,8 @@ void main() {
       expect("fo2", contains(bang));
 
       var caret = new Glob("fo[^a-z]");
-      expect("foo", isNot(contains(bang)));
-      expect("fo2", contains(bang));
+      expect("foo", isNot(contains(caret)));
+      expect("fo2", contains(caret));
     });
 
     test("supports backslash-escaped characters", () {
