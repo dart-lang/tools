@@ -89,7 +89,7 @@ void main() {
       'jsonrpc': '2.0',
       'method': 'foo',
       'params': {}
-    }), completion(isNull));
+    }), doesNotComplete);
   });
 
   test("includes the error data in the response", () {

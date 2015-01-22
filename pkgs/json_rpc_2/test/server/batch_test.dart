@@ -70,7 +70,7 @@ void main() {
       {'jsonrpc': '2.0', 'method': 'foo'},
       {'jsonrpc': '2.0', 'method': 'id', 'params': ['value']},
       {'jsonrpc': '2.0', 'method': 'arg', 'params': {'arg': 'value'}}
-    ]), completion(isNull));
+    ]), doesNotComplete);
   });
 
   test('returns an error if the batch is empty', () {
