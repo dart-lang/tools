@@ -1,3 +1,8 @@
+# 1.0.3
+
+* Cleanup equality operator to accept any Object rather than just a
+  `SourceLocation`.
+
 # 1.0.2
 
 * Avoid unintentionally allocating extra objects for internal `FileSpan`
