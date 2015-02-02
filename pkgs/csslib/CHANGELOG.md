@@ -1,3 +1,7 @@
+## 0.11.0+4
+
+* Cleanup some ambiguous and some incorrect type signatures.
+
 ## 0.11.0+3
 
 * Improve the speed and memory efficiency of parsing.

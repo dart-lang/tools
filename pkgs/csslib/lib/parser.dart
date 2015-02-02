@@ -130,7 +130,7 @@ String _inputAsString(input) {
 
   if (input is String) {
     source = input;
-  } else if (input is List<int>) {
+  } else if (input is List) {
     // TODO(terry): The parse function needs an "encoding" argument and will
     //              default to whatever encoding CSS defaults to.
     //
@@ -145,7 +145,7 @@ String _inputAsString(input) {
     // See encoding helpers at: package:html5lib/lib/src/char_encodings.dart
     // These helpers can decode in different formats given an encoding name
     // (mostly unicode, ascii, windows-1252 which is html5 default encoding).
-    source = new String.fromCharCodes(input);
+    source = new String.fromCharCodes(input as List<int>);
   } else {
     // TODO(terry): Support RandomAccessFile using console.
     throw new ArgumentError("'source' must be a String or "

@@ -184,7 +184,7 @@ class Color implements _StyleProperty, ColorBase {
 
   int get argbValue => Color.hexToInt(_argb);
 
-  bool operator ==(Object other) => Color.equal(this, other);
+  bool operator ==(other) => Color.equal(this, other);
 
   String toHexArgbString() => _argb;
 
@@ -198,7 +198,7 @@ class Color implements _StyleProperty, ColorBase {
     return new Color.hex("${newRgba.toHexArgbString()}");
   }
 
-  static bool equal(ColorBase curr, Object other) {
+  static bool equal(ColorBase curr, other) {
     if (other is Color) {
       Color o = other;
       return o.toHexArgbString() == curr.toHexArgbString();
@@ -601,7 +601,7 @@ class Rgba implements _StyleProperty, ColorBase {
     return v1;
   }
 
-  bool operator ==(Object other) => Color.equal(this, other);
+  bool operator ==(other) => Color.equal(this, other);
 
   String get cssExpression {
     if (a == null) {
@@ -763,7 +763,7 @@ class Hsla implements _StyleProperty, ColorBase {
    */
   num get alpha => _a;
 
-  bool operator ==(Object other) => Color.equal(this, other);
+  bool operator ==(other) => Color.equal(this, other);
 
   String get cssExpression => (_a == null) ?
       "hsl($hueDegrees,$saturationPercentage,$lightnessPercentage)" :
@@ -1099,7 +1099,7 @@ class Font implements _StyleProperty {
     return size.toInt() % family[0].hashCode;
   }
 
-  bool operator ==(Object other) {
+  bool operator ==(other) {
     if (other is! Font) return false;
     Font o = other;
     return o.size == size && o.family == family && o.weight == weight &&
