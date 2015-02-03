@@ -1,6 +1,6 @@
 # cli_util
 
-A utility to help in building Dart command-line apps.
+A library to help in building Dart command-line apps.
 
 In particular, `cli_util` provides a simple, standardized way to get the current
 SDK directory.  Useful, especially, when building client applications that
