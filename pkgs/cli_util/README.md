@@ -1,14 +1,10 @@
 # cli_util
 
-Utilities to help in building Dart command-line apps.
+A utility to help in building Dart command-line apps.
 
-In particular, ``cli_util`` provides a simple, standardized way to get the current SDK directory.  Useful, especially, when building client applications that interact with the Dart SDK (such as the [analyzer](https://pub.dartlang.org/packages/analyzer)).
-
-## Install
-
-```shell
-pub global activate cli_util
-```
+In particular, `cli_util` provides a simple, standardized way to get the current
+SDK directory.  Useful, especially, when building client applications that
+interact with the Dart SDK (such as the [analyzer][analyzer]).
 
 ## Usage
 
@@ -19,7 +15,6 @@ import 'package:cli_util/cli_util.dart';
 import 'package:path/path.dart' as path;
 
 main(args) {
-
   // Get sdk dir from cli_util
   Directory sdkDir = getSdkDir(args);
   
@@ -33,4 +28,5 @@ main(args) {
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
+[analyzer]: https://pub.dartlang.org/packages/analyzer
 [tracker]: https://github.com/dart-lang/cli_util/issues
