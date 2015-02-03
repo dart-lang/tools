@@ -17,7 +17,7 @@ import 'package:path/path.dart' as path;
 main(args) {
   // Get sdk dir from cli_util
   Directory sdkDir = getSdkDir(args);
-
+  
   // Do stuff... For example, print version string
   File versionFile = new File(path.join(sdkDir.path, 'version'));
   print(versionFile.readAsStringSync());
