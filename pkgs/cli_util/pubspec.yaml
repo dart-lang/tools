@@ -1,0 +1,9 @@
+name: cli_util
+version: 0.0.1
+author: Dart Team <misc@dartlang.org>
+description: A micro framework for building commandline apps.
+homepage: https://github.com/dart-lang/cli_util
+environment:
+  sdk: '>=1.0.0 <2.0.0'
+dependencies:
+  which: '>=0.1.2 <0.2.0'
