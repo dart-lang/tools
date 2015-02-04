@@ -83,16 +83,20 @@ parseArgs(List<String> arguments) {
   parser.addOption('sdk-root', abbr: 's', help: 'path to the SDK root');
   parser.addOption('package-root', abbr: 'p', help: 'path to the package root');
   parser.addOption('in', abbr: 'i', help: 'input(s): may be file or directory');
-  parser.addOption('out', abbr: 'o', defaultsTo: 'stdout',
-      help: 'output: may be file or stdout');
-  parser.addOption(
-      'workers', abbr: 'j', defaultsTo: '1', help: 'number of workers');
-  parser.addFlag('pretty-print', abbr: 'r', negatable: false,
+  parser.addOption('out',
+      abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout');
+  parser.addOption('workers',
+      abbr: 'j', defaultsTo: '1', help: 'number of workers');
+  parser.addFlag('pretty-print',
+      abbr: 'r',
+      negatable: false,
       help: 'convert coverage data to pretty print format');
-  parser.addFlag('lcov', abbr: 'l', negatable: false,
+  parser.addFlag('lcov',
+      abbr: 'l',
+      negatable: false,
       help: 'convert coverage data to lcov format');
-  parser
-      .addFlag('verbose', abbr: 'v', negatable: false, help: 'verbose output');
+  parser.addFlag('verbose',
+      abbr: 'v', negatable: false, help: 'verbose output');
   parser.addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   var args = parser.parse(arguments);
