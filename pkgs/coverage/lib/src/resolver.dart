@@ -41,7 +41,7 @@ class Resolver {
         var lib = uri.substring(DART_PREFIX.length, uri.length);
         filePath = '$sdkRoot/$lib/${lib}.dart';
       }
-      return normalize(filePath);
+      return resolveSymbolicLinks(filePath);
     }
     if (uri.startsWith(PACKAGE_PREFIX)) {
       if (pkgRoot == null) {
@@ -49,10 +49,10 @@ class Resolver {
         return null;
       }
       var path = uri.substring(PACKAGE_PREFIX.length, uri.length);
-      return normalize('$pkgRoot/$path');
+      return resolveSymbolicLinks('$pkgRoot/$path');
     }
     if (uri.startsWith(FILE_PREFIX)) {
-      return normalize(fromUri(Uri.parse(uri)));
+      return resolveSymbolicLinks(fromUri(Uri.parse(uri)));
     }
     if (uri.startsWith(HTTP_PREFIX)) {
       return uri;
@@ -60,6 +60,10 @@ class Resolver {
     // We cannot deal with anything else.
     failed.add(uri);
     return null;
+  }
+
+  String resolveSymbolicLinks(String path) {
+    return new File(normalize(path)).resolveSymbolicLinksSync();
   }
 }
 
