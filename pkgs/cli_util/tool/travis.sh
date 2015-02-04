@@ -9,10 +9,11 @@ set -e
 
 # Verify that the libraries are error free.
 dartanalyzer --fatal-warnings \
-  lib/cli_util.dart
+  lib/cli_util.dart \
+  test/cli_util_test.dart
 
 # Run the tests.
-#dart test/all.dart
+dart test/cli_util_test.dart
 
 # Install dart_coveralls; gather and send coverage data.
 if [ "$COVERALLS_TOKEN" ]; then
@@ -21,5 +22,5 @@ if [ "$COVERALLS_TOKEN" ]; then
     --token $COVERALLS_TOKEN \
     --retry 2 \
     --exclude-test-files \
-    test/all.dart
+    test/cli_util_test.dart
 fi
