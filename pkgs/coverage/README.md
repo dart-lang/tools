@@ -4,6 +4,8 @@ Coverage
 Coverage provides coverage data collection, manipulation, and formatting for
 Dart.
 
+[![Build Status](https://travis-ci.org/dart-lang/coverage.svg?branch=master)](https://travis-ci.org/dart-lang/coverage)
+
 Tools
 -----
 `collect_coverage.dart` collects coverage JSON from the Dart VM Observatory.
