@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Update the README to match the current API.
+
 ## 1.1.0
 
 * Add a `done` getter to `Client`, `Server`, and `Peer`.
