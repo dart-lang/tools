@@ -37,6 +37,7 @@ Directory getSdkDir([List<String> cliArgs]) {
 
   // Try and locate the VM using 'which'.
   String executable = whichSync('dart', orElse: () => null);
+  if (executable == null) return null;
 
   // In case Dart is symlinked (e.g. homebrew on Mac) follow symbolic links.
   Link link = new Link(executable);
