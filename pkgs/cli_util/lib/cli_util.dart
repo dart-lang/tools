@@ -38,15 +38,17 @@ Directory getSdkDir([List<String> cliArgs]) {
   // Try and locate the VM using 'which'.
   String executable = whichSync('dart', orElse: () => null);
 
-  // In case Dart is symlinked (e.g. homebrew on Mac) follow symbolic links.
-  Link link = new Link(executable);
-  if (link.existsSync()) {
-    executable = link.resolveSymbolicLinksSync();
-  }
+  if (executable != null) {
+    // In case Dart is symlinked (e.g. homebrew on Mac) follow symbolic links.
+    Link link = new Link(executable);
+    if (link.existsSync()) {
+      executable = link.resolveSymbolicLinksSync();
+    }
 
-  File dartVm = new File(executable);
-  Directory dir = dartVm.parent.parent;
-  if (_isSdkDir(dir)) return dir;
+    File dartVm = new File(executable);
+    Directory dir = dartVm.parent.parent;
+    if (_isSdkDir(dir)) return dir;
+  }
 
   return null;
 }
