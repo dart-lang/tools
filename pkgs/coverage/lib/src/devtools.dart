@@ -8,87 +8,247 @@ import 'dart:async';
 import 'dart:convert' show JSON;
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
-class IsolateInfo {
-  final _Connection _connection;
-  final String name;
-  final bool paused;
-  IsolateInfo(this._connection, Map json)
-      : name = json['mainPort'],
-        paused = json['pausedOnExit'] || json.containsKey('pauseEvent');
+final Logger _log = new Logger('coverage.src.devtools');
 
-  Future<Map> getCoverage() => _connection
-      .request('isolates/$name/coverage')
-      .then((resp) => resp['coverage']);
-
-  Future<Map> getAllocationProfile({gc: true}) {
-    var params = gc ? '?gc=full' : '';
-    return _connection.request('isolates/$name/allocationprofile$params');
-  }
-
-  Future resume() => _connection.request('isolates/$name/debug/resume');
-}
-
-/// Interface to Dart's VM Observatory
-class Observatory {
+class VMService {
   final _Connection _connection;
 
-  Observatory._(this._connection);
+  VMService._(this._connection);
 
-  static Future<Observatory> connect(String host, String port) {
-    return http.get('http://$host:$port/json').then((resp) {
-      var json = JSON.decode(resp.body);
-      if (json is List) return Observatory.connectToDevtools(host, port);
-      return Observatory.connectToVM(host, port);
-    });
+  Future<VM> getVM() =>
+      _connection.request('getVM').then((resp) => new VM.fromJson(resp));
+
+  Future<Isolate> getIsolate(String isolateId) {
+    return _connection
+        .request('getIsolate', {'isolateId': isolateId})
+        .then((resp) => new Isolate.fromJson(resp));
   }
 
-  static Future<Observatory> connectToVM(String host, String port) {
-    var uri = 'http://$host:$port';
-    var observatory = new Observatory._(new _VmConnection(uri));
-    return new Future.value(observatory);
+  Future<AllocationProfile> getAllocationProfile(String isolateId, {bool reset, bool gc}) {
+    var params = {'isolateId': isolateId};
+    if (reset != null) {
+      params['reset'] = reset;
+    }
+    if (gc != null) {
+      params['gc'] = 'full';
+    }
+    return _connection.
+        .request('getAllocationProfile', params)
+        .then((resp) => new AllocationProfile.fromJson(resp));
   }
 
-  static Future<Observatory> connectToDevtools(String host, String port) {
-    var uri = 'http://$host:$port/json';
-    return _DevtoolsConnection.connect(uri).then((c) => new Observatory._(c));
+  Future getCoverage(String isolateId, {String targetId}) {
+    var params = {'isolateId': isolateId};
+    if (targetId != null) {
+      params['targetId'] = targetId;
+    }
+    return _connection
+        .request('getCoverage', params)
+        .then((resp) => new CodeCoverage.fromJson(resp));
   }
 
-  Future<Iterable<IsolateInfo>> getIsolates() => _connection
-      .request('vm')
-      .then((resp) => resp['isolates'])
-      .then((isolates) => (isolates == null) ? [] : isolates)
-      .then((isolates) => isolates.map((i) => i['mainPort']))
-      .then((ids) => ids.map((id) => _connection.request('isolates/$id')))
-      .then(Future.wait)
-      .then((isolates) => isolates.map((i) => new IsolateInfo(_connection, i)));
+  Future resume(String isolateId) =>
+      _connection.request('resume', {'isolateId': isolateId});
+
+  static Future<VMService> connect(String host, String port) {
+    _log.fine('Connecting to host $host on port $port');
+
+    // For pre-1.9.0 VM versions attempt to detect if we're talking to a
+    // Chromium remote debugging port or the VM observatory.
+    var doDetect = new RegExp(r'^1\.[4-8]\.').hasMatch(Platform.version);
+    if (doDetect) {
+      return http.get('http://$host:$port/json').then((resp) {
+        var json = JSON.decode(resp.body);
+        if (json is List) {
+          return connectToDevtools(host, port);
+        }
+        return connectToVM(host, port);
+      });
+    }
+
+    // For VM versions >=1.9.0, always connect via websocket protocol.
+    return connectToVMWebsocket(host, port);
+  }
+
+  static Future<VMService> connectToVM(String host, String port) {
+    return _VMConnection.connect(host, port)
+        .then((c) => new VMService._(c));
+  }
+
+  static Future<VMService> connectToVMWebsocket(String host, String port) {
+    return _VMWebsocketConnection.connect(host, port)
+        .then((c) => new VMService._(c));
+  }
+
+  static Future<VMService> connectToDevtools(String host, String port) {
+    return _DevtoolsConnection.connect(host, port)
+        .then((c) => new VMService._(c));
+  }
 
   Future close() => _connection.close();
 }
 
-/// Dart Observatory connection
+class VM {
+  final String id;
+  final String targetCPU;
+  final String hostCPU;
+  final String version;
+  final String pid;
+  final List<String> isolates;
+
+  VM(this.id, this.targetCPU, this.hostCPU, this.version, this.pid, this.isolates);
+
+  factory VM.fromJson(json) => new VM(
+      json['id'],
+      json['targetCPU'],
+      json['hostCPU'],
+      json['version'],
+      json['pid'],
+      json['isolates'].map((i) => new IsolateRef.fromJson(i)).toList());
+}
+
+class IsolateRef {
+  final String id;
+  final String name;
+
+  IsolateRef(this.id, this.name);
+
+  factory IsolateRef.fromJson(json) => new IsolateRef(
+      json['id'],
+      json['name']);
+}
+
+class Isolate {
+  final String id;
+  final String name;
+  final bool pauseOnExit;
+  final pauseEvent;
+  bool get paused => pauseOnExit || (pauseEvent != null);
+
+  Isolate(this.id, this.name, this.pauseOnExit, this.pauseEvent);
+
+  factory Isolate.fromJson(json) => new Isolate(
+      json['id'],
+      json['name'],
+      json['pauseOnExit'],
+      json['pauseEvent']);
+}
+
+class CodeCoverage {
+  final String id;
+  final List coverage;
+
+  CodeCoverage(this.id, this.coverage);
+
+  factory CodeCoverage.fromJson(json) => new CodeCoverage(
+      json['id'],
+      json['coverage']);
+}
+
+class AllocationProfile {
+  final String id;
+
+  AllocationProfile(this.id);
+
+  factory AllocationProfile.fromJson(json) =>
+      new AllocationProfile(json['id']);
+}
+
+String _getLegacyRequest(String request, Map params) {
+  if (request == 'getVM') return 'vm';
+  if (request == 'getCoverage') return '${params["isolateId"]}/coverage';
+  if (request == 'getIsolate') return '${params["isolateId"]}';
+  if (request == 'getAllocationProfile') {
+    var opts = params['gc'] != null ? '?gc=${params["gc"]}' : '';
+    return '${params["isolateId"]}/allocationprofile$opts';
+  }
+  if (request == 'resume') return '${params["isolateId"]}/debug/resume';
+}
+
+/// Observatory connection.
 abstract class _Connection {
-  Future<Map> request(String request);
+  Future<Map> request(String request, [Map params = const {}]);
   Future close();
 }
 
-/// Observatory connection over HTTP GET requests
-class _VmConnection implements _Connection {
+/// Observatory connection via HTTP GET requests.
+class _VMConnection implements _Connection {
   final String uri;
 
-  _VmConnection(this.uri);
+  _VMConnection(this.uri);
 
-  Future<Map> request(String request) {
+  static Future<_Connection> connect(String host, String port) {
+    _log.fine('Connecting to VM via HTTP GET protocol');
+    var uri = 'http://$host:$port';
+    return new Future.value(new _VMConnection(uri));
+  }
+
+  Future<Map> request(String request, [Map params = const {}]) {
+    request = _getLegacyRequest(request, params);
+    _log.fine('Send> $uri/$request');
     return http
         .get('$uri/$request')
         .then((resp) => resp.body)
-        .then((resp) => resp.isEmpty ? {} : JSON.decode(resp));
+        .then((resp) {
+          _log.fine('Recv< $resp');
+          return resp.isEmpty ? {} : JSON.decode(resp);
+        });
   }
 
   Future close() => new Future.value();
 }
 
-/// Observatory connection over Chrome DevTools websocket
+/// Observatory connection via websocket.
+class _VMWebsocketConnection implements _Connection {
+  final WebSocket _socket;
+  final Map<int, Completer> _pendingRequests = {};
+  int _requestId = 1;
+
+  _VMWebsocketConnection(this._socket) {
+    _socket.listen(_handleResponse);
+  }
+
+  static Future<_Connection> connect(String host, String port) {
+    _log.fine('Connecting to VM via HTTP websocket protocol');
+    var uri = 'ws://$host:$port/ws';
+    return WebSocket.connect(uri)
+        .then((socket) => new _VMWebsocketConnection(socket));
+  }
+
+  Future<Map> request(String method, [Map params = const {}]) {
+    _pendingRequests[_requestId] = new Completer();
+    var message = JSON.encode({
+      'id': _requestId,
+      'method': method,
+      'params': params,
+    });
+    _log.fine('Send> $message');
+    _socket.add(message);
+    return _pendingRequests[_requestId++].future;
+  }
+
+  Future close() => _socket.close();
+
+  void _handleResponse(String response) {
+    _log.fine('Recv< $response');
+    var json = JSON.decode(response);
+    var id = json['id'];
+    if (id == null || !_pendingRequests.keys.contains(id)) {
+      // Suppress unloved messages.
+      return;
+    }
+    var message = JSON.decode(json['response']);
+    var completer = _pendingRequests.remove(id);
+    if (completer == null) {
+      _log.severe('Failed to pair response with request');
+    }
+    completer.complete(message);
+  }
+}
+
+/// Dart VM Observatory connection via Chromium remote debug protocol.
 class _DevtoolsConnection implements _Connection {
   final WebSocket _socket;
   final Map<int, Completer> _pendingRequests = {};
@@ -98,12 +258,18 @@ class _DevtoolsConnection implements _Connection {
     _socket.listen(_handleResponse);
   }
 
-  static Future<_Connection> connect(String uri) {
+  static Future<_Connection> connect(String host, port) {
+    _log.fine('Connecting to VM via Chromium remote debugging protocol');
+    var uri = 'http://$host:$port/json';
+
     _getWebsocketDebuggerUrl(response) {
-      var json = JSON.decode(response.body);
-      if (json.length < 1) throw new StateError('No open pages');
+      var json = JSON.decode(response.body).where((p) => p['type'] == 'page').toList();
+      if (json.length < 1) {
+        _log.warning('No open pages');
+        throw new StateError('No open pages');
+      }
       if (json.length > 1) {
-        throw new UnsupportedError('Multiple page support not yet implemented');
+        _log.warning('More than one open page. Defaulting to the first one.');
       }
       var pageData = json[0];
       var debuggerUrl = pageData['webSocketDebuggerUrl'];
@@ -121,19 +287,22 @@ class _DevtoolsConnection implements _Connection {
     });
   }
 
-  Future<Map> request(String request) {
+  Future<Map> request(String request, [Map params = const {}]) {
     _pendingRequests[_requestId] = new Completer();
-    _socket.add(JSON.encode({
+    var message = JSON.encode({
       'id': _requestId,
       'method': 'Dart.observatoryQuery',
-      'params': {'id': '$_requestId', 'query': request,},
-    }));
+      'params': {'id': '$_requestId', 'query': _getLegacyRequest(request, params),},
+    });
+    _log.fine('Send> $message');
+    _socket.add(message);
     return _pendingRequests[_requestId++].future;
   }
 
   Future close() => _socket.close();
 
   void _handleResponse(String response) {
+    _log.fine('Recv< $response');
     var json = JSON.decode(response);
     if (json['method'] == 'Dart.observatoryData') {
       var id = int.parse(json['params']['id']);

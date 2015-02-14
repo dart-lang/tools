@@ -8,37 +8,45 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:coverage/src/devtools.dart';
 import 'package:coverage/src/util.dart';
+import 'package:logging/logging.dart';
 
-Future<Map> getAllCoverage(Observatory observatory) {
-  return observatory
-      .getIsolates()
-      .then((isolates) => isolates.map((i) => i.getCoverage()))
+Future<Map> getAllCoverage(VMService service) {
+  return service
+      .getVM()
+      .then((vm) => vm.isolates.map((i) => service.getCoverage(i.id)))
       .then(Future.wait)
       .then((responses) {
     // flatten response lists
-    var allCoverage = responses.expand((it) => it).toList();
+    var allCoverage = responses.expand((c) => c.coverage).toList();
     return {'type': 'CodeCoverage', 'coverage': allCoverage,};
   });
 }
 
-Future resumeIsolates(Observatory observatory) {
-  return observatory
-      .getIsolates()
-      .then((isolates) => isolates.map((i) => i.resume()))
+Future resumeIsolates(VMService service) {
+  return service
+      .getVM()
+      .then((vm) => vm.isolates.map((i) => service.resume(i.id)))
       .then(Future.wait);
 }
 
-Future waitIsolatesPaused(Observatory observatory) {
-  allPaused() => observatory
-      .getIsolates()
+Future waitIsolatesPaused(VMService service) {
+  allPaused() => service
+      .getVM()
+      .then((vm) => vm.isolates.map((i) => service.getIsolate(i.id)))
+      .then(Future.wait)
       .then((isolates) => isolates.every((i) => i.paused))
       .then((paused) => paused ? paused : new Future.error(paused));
-  return retry(allPaused, RETRY_INTERVAL);
+  return retry(allPaused, retryInterval);
 }
 
-const RETRY_INTERVAL = const Duration(milliseconds: 200);
+const retryInterval = const Duration(milliseconds: 200);
 
 void main(List<String> arguments) {
+  Logger.root.level = Level.WARNING;
+  Logger.root.onRecord.listen((LogRecord rec) {
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
+
   var options = parseArgs(arguments);
   onTimeout() {
     var timeout = options.timeout.inSeconds;
@@ -46,24 +54,24 @@ void main(List<String> arguments) {
     exit(1);
   }
   Future connected = retry(
-      () => Observatory.connect(options.host, options.port), RETRY_INTERVAL);
+      () => VMService.connect(options.host, options.port), retryInterval);
   if (options.timeout != null) {
     connected.timeout(options.timeout, onTimeout: onTimeout);
   }
-  connected.then((observatory) {
+  connected.then((vmservice) {
     Future ready = options.waitPaused
-        ? waitIsolatesPaused(observatory)
+        ? waitIsolatesPaused(vmservice)
         : new Future.value();
     if (options.timeout != null) {
       ready.timeout(options.timeout, onTimeout: onTimeout);
     }
     return ready
-        .then((_) => getAllCoverage(observatory))
+        .then((_) => getAllCoverage(vmservice))
         .then(JSON.encode)
         .then(options.out.write)
         .then((_) => options.out.close())
-        .then((_) => options.resume ? resumeIsolates(observatory) : null)
-        .then((_) => observatory.close());
+        .then((_) => options.resume ? resumeIsolates(vmservice) : null)
+        .then((_) => vmservice.close());
   });
 }
 
