@@ -34,7 +34,7 @@ class VMService {
     if (gc != null) {
       params['gc'] = 'full';
     }
-    return _connection.
+    return _connection
         .request('getAllocationProfile', params)
         .then((resp) => new AllocationProfile.fromJson(resp));
   }
