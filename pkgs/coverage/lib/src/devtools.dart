@@ -96,7 +96,7 @@ class VM {
   final String hostCPU;
   final String version;
   final String pid;
-  final List<String> isolates;
+  final List<IsolateRef> isolates;
 
   VM(this.id, this.targetCPU, this.hostCPU, this.version, this.pid, this.isolates);
 
