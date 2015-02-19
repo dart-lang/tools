@@ -165,6 +165,7 @@ String _getLegacyRequest(String request, Map params) {
     return '${params["isolateId"]}/allocationprofile$opts';
   }
   if (request == 'resume') return '${params["isolateId"]}/debug/resume';
+  throw new ArgumentError('Unknown request $request. Params: $params.');
 }
 
 /// Observatory connection.
