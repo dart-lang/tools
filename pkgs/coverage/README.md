@@ -12,10 +12,22 @@ Tools
 `format_coverage.dart` formats JSON coverage data into either
 [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) or pretty-printed format.
 
+#### Install coverage
+
+    pub global activate coverage
+    
+Consider adding the `pub global run` executables directory to your path. 
+See [Running a script from your PATH](https://www.dartlang.org/tools/pub/cmd/pub-global.html#running-a-script-from-your-path)
+for more details.    
+    
 #### Collecting coverage from the VM
 
     dart --observe=NNNN script.dart
-    dart bin/collect_coverage.dart --port=NNNN -o coverage.json --resume-isolates
+    pub global run coverage:collect_coverage.dart --port=NNNN -o coverage.json --resume-isolates
+
+or if the `pub global run` executables are in your path, just
+    
+    collect_coverage.dart --port=NNNN -o coverage.json --resume-isolates    
 
 If `collect_coverage.dart` is invoked before the script from which coverage is
 to be collected, it will wait until it detects a VM observatory port to which
@@ -27,7 +39,13 @@ wait until all isolates are paused before collecting coverage.
 
     dartium --remote-debugging-port=NNNN
     # execute code in Dartium
-    dart bin/collect_coverage.dart --port=NNNN -o coverage.json
+    pub global run coverage:collect_coverage.dart --port=NNNN -o coverage.json
+
+or if the `pub global run` executables are in your path, just
+
+    collect_coverage.dart --port=NNNN -o coverage.json
+
+
 
 As noted above, `collect_coverage.dart` may be invoked before Dartium, in which
 case it will wait until it detects a Dartium remote debugging port, up to the

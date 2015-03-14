@@ -1,3 +1,6 @@
+0.6.0+1
+   * Add support for `pub global run`
+
 0.6.0
    * Add support for SDK versions >= 1.9.0. For Dartium/content-shell versions
      past 1.9.0, coverage collection is no longer done over the remote debugging
