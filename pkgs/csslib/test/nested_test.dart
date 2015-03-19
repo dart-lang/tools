@@ -195,7 +195,6 @@ span {
 }
 
 void simpleNest() {
-  final errors = [];
   final input = '''
 div span { color: green; }
 #header {
@@ -239,7 +238,6 @@ div > span[attr="foo"] {
 }
 
 void complexNest() {
-  final errors = [];
   final input = '''
 @font-face  { font-family: arial; }
 div { color: #f0f0f0; }

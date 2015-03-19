@@ -614,6 +614,7 @@ class Rgba implements _StyleProperty, ColorBase {
     value += (r << 0x10);
     value += (g << 0x08);
     value += b;
+    return value;
   }
 
   Color get color => new Color.createRgba(r, g, b, a);

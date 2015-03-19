@@ -390,8 +390,6 @@ class _TreePrinter extends Visitor {
   }
 
   void visitUnitTerm(UnitTerm node) {
-    String unitValue;
-
     output.depth++;
     output.writeValue('value', node.text);
     output.writeValue('unit', node.unitToString());

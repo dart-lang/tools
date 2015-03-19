@@ -812,7 +812,6 @@ class _Parser {
       }
 
       var declGroup = processDeclarations(checkBrace: false);
-      var decls = [];
       if (declGroup.declarations.any((decl) {
         return decl is Declaration && decl is! IncludeMixinAtDeclaration;
       })) {
@@ -881,7 +880,7 @@ class _Parser {
     // sign and the directive name.  Technically, it's not valid grammar but
     // a number of CSS tests test for whitespace between @ and name.
     if (tokId == TokenKind.AT) {
-      Token tok = _next();
+      _next();
       tokId = _peek();
       if (_peekIdentifier()) {
         // Is it a directive?
@@ -1847,7 +1846,6 @@ class _Parser {
         }
         break;
       case _lineHeightPart:
-        num lineHeight;
         if (exprs.expressions.length == 1) {
           var expr = exprs.expressions[0];
           if (expr is UnitTerm) {
@@ -2645,13 +2643,10 @@ class ExpressionsProcessor {
   }
 
   FontExpression processFont() {
-    List<String> family;
-
     // Process all parts of the font expression.
     FontExpression fontSize;
     FontExpression fontFamily;
     for (; _index < _exprs.expressions.length; _index++) {
-      var expr = _exprs.expressions[_index];
       // Order is font-size font-family
       if (fontSize == null) {
         fontSize = processFontSize();

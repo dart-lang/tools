@@ -458,10 +458,6 @@ void badTopInclude() {
 @include a;
   ''';
 
-  var generated = r'''span {
-  border: 2px dashed #f00;
-}''';
-
   var stylesheet = compileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
   expect(errors.length, 1, reason: errors.toString());

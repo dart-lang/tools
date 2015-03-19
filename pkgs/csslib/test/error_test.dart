@@ -233,7 +233,7 @@ void testBadUnicode() {
   unicode-range: U+400-200;
 }''';
 
-  var stylesheet = parseCss(input, errors: errors);
+  parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
   expect(errors[0].toString(),
@@ -248,7 +248,7 @@ void testBadUnicode() {
   unicode-range: U+12FFFF;
 }''';
 
-  stylesheet = parseCss(input2, errors: errors..clear());
+  parseCss(input2, errors: errors..clear());
 
   expect(errors.isEmpty, false);
   expect(errors[0].toString(),
@@ -272,7 +272,7 @@ div {
 }
 ''';
 
-  var stylesheet = parseCss(input, errors: errors);
+  parseCss(input, errors: errors);
   expect(errors.length, 1);
   var errorMessage = messages.messages[0];
   expect(errorMessage.message, contains('Bad hex number'));
@@ -289,7 +289,7 @@ div {
   }
 }
 ''';
-  var stylesheet2 = parseCss(input2, errors: errors..clear());
+  parseCss(input2, errors: errors..clear());
   expect(errors.length, 4);
   errorMessage = messages.messages[0];
   expect(errorMessage.message, contains(':, but found +'));
@@ -326,7 +326,7 @@ div {
     color: #green;
 }
 ''';
-  var stylesheet3 = parseCss(input3, errors: errors..clear());
+  parseCss(input3, errors: errors..clear());
   expect(errors.length, 2);
   errorMessage = messages.messages[0];
   expect(errorMessage.message, contains('Bad hex number'));

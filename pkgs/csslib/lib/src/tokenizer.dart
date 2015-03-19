@@ -40,7 +40,7 @@ class Tokenizer extends TokenizerBase {
 
           _startIndex = _index;
           ch = _nextChar();
-          Token ident = finishIdentifier();
+          finishIdentifier();
 
           // Is it a directive?
           int tokId = TokenKind.matchDirectives(
@@ -260,7 +260,6 @@ class Tokenizer extends TokenizerBase {
   Token finishIdentifier() {
     // If we encounter an escape sequence, remember it so we can post-process
     // to unescape.
-    bool hasEscapedChars = false;
     var chars = [];
 
     // backup so we can start with the first character

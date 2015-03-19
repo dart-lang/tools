@@ -52,7 +52,7 @@ void testSelectorFailures() {
   var errors = [];
 
   // Test for invalid class name (can't start with number).
-  var selectorAst = selector('.foobar .1a-story .xyzzy', errors: errors);
+  selector('.foobar .1a-story .xyzzy', errors: errors);
   expect(errors.isEmpty, false);
   expect(errors[0].toString(),
       'error on line 1, column 9: name must start with a alpha character, but '

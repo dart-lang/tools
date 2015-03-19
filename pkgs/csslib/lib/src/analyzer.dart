@@ -596,7 +596,6 @@ class CallMixin extends Visitor {
   MixinDefinition transform(List callArgs) {
     // TODO(terry): Handle default arguments and varArgs.
     // Transform mixin with callArgs.
-    var index = 0;
     for (var index = 0; index < _definedArgs.length; index++) {
       var definedArg = _definedArgs[index];
       VarDefinition varDef;
@@ -908,7 +907,6 @@ class AllExtends extends Visitor {
       new Map<String, List<SelectorGroup>>();
 
   SelectorGroup _currSelectorGroup;
-  List _currDecls;
   int _currDeclIndex;
   List<int> _extendsToRemove = [];
 
