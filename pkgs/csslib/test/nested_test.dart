@@ -159,9 +159,9 @@ html, body {
   color: #f00;
 }
 '''
-'html button span, body button span, html div span, body div span, '
-'html button a, body button a, html div a, body div a, html button ul, '
-r'''body button ul, html div ul, body div ul {
+      'html button span, body button span, html div span, body div span, '
+      'html button a, body button a, html div a, body div a, html button ul, '
+      r'''body button ul, html div ul, body div ul {
   height: 200;
 }
 html table, body table {
@@ -215,8 +215,7 @@ div span { color: green; }
 div > span[attr="foo"] { color: yellow; }
 ''';
 
-  final generated =
-r'''div span {
+  final generated = r'''div span {
   color: #008000;
 }
 #header {

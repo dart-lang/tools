@@ -9,9 +9,12 @@ import 'package:csslib/visitor.dart';
  * CSS will allow any property/value pairs regardless of validity; all of our
  * tests (by default) will ensure that the CSS is really valid.
  */
-StyleSheet parseCss(String cssInput, {List errors, List opts}) =>
-    css.parse(cssInput, errors: errors, options: opts == null ?
-        ['--no-colors', '--checked', '--warnings_as_errors', 'memory'] : opts);
+StyleSheet parseCss(String cssInput, {List errors, List opts}) => css.parse(
+    cssInput,
+    errors: errors,
+    options: opts == null
+        ? ['--no-colors', '--checked', '--warnings_as_errors', 'memory']
+        : opts);
 
 // Pretty printer for CSS.
 var emitCss = new CssPrinter();
@@ -25,14 +28,14 @@ main() {
   print('1. Good CSS, parsed CSS emitted:');
   print('   =============================');
   var stylesheet = parseCss(
-    '@import "support/at-charset-019.css"; div { color: red; }'
-    'button[type] { background-color: red; }'
-    '.foo { '
+      '@import "support/at-charset-019.css"; div { color: red; }'
+      'button[type] { background-color: red; }'
+      '.foo { '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
-    '}'
-    '#div {'
+      '}'
+      '#div {'
       'color : #00F578; border-color: #878787;'
-    '}', errors: errors);
+      '}', errors: errors);
 
   if (!errors.isEmpty) {
     print("Got ${errors.length} errors.\n");
@@ -46,10 +49,9 @@ main() {
   // Parse a stylesheet with errors
   print('2. Catch severe syntax errors:');
   print('   ===========================');
-  var stylesheetError = parseCss(
-    '.foo #%^&*asdf{ '
+  var stylesheetError = parseCss('.foo #%^&*asdf{ '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
-    '}', errors: errors);
+      '}', errors: errors);
 
   if (!errors.isEmpty) {
     print("Got ${errors.length} errors.\n");
@@ -63,7 +65,7 @@ main() {
   // Parse a stylesheet that warns (checks) problematic CSS.
   print('3. Detect CSS problem with checking on:');
   print('   ===================================');
-  stylesheetError = parseCss( '# div1 { color: red; }', errors: errors);
+  stylesheetError = parseCss('# div1 { color: red; }', errors: errors);
 
   if (!errors.isEmpty) {
     print("Detected ${errors.length} problem in checked mode.\n");
@@ -86,5 +88,4 @@ main() {
   } else {
     print(prettyPrint(selectorAst));
   }
-
 }

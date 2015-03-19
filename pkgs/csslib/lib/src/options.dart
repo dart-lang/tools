@@ -44,38 +44,48 @@ class PreprocessorOptions {
   factory PreprocessorOptions() => parse(['']);
 
   PreprocessorOptions.fromArgs(ArgResults args)
-    : warningsAsErrors = args['warnings_as_errors'],
-      throwOnWarnings = args['throw_on_warnings'],
-      throwOnErrors = args['throw_on_errors'],
-      verbose = args['verbose'],
-      checked = args['checked'],
-      lessSupport = args['less'],
-      useColors = args['colors'],
-      polyfill = args['polyfill'],
-      inputFile = args.rest.length > 0 ? args.rest[0] : null;
+      : warningsAsErrors = args['warnings_as_errors'],
+        throwOnWarnings = args['throw_on_warnings'],
+        throwOnErrors = args['throw_on_errors'],
+        verbose = args['verbose'],
+        checked = args['checked'],
+        lessSupport = args['less'],
+        useColors = args['colors'],
+        polyfill = args['polyfill'],
+        inputFile = args.rest.length > 0 ? args.rest[0] : null;
 
   // tool.dart [options...] <css file>
   static PreprocessorOptions parse(List<String> arguments) {
     var parser = new ArgParser()
-      ..addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false,
+      ..addFlag('verbose',
+          abbr: 'v',
+          defaultsTo: false,
+          negatable: false,
           help: 'Display detail info')
-      ..addFlag('checked', defaultsTo: false, negatable: false,
+      ..addFlag('checked',
+          defaultsTo: false,
+          negatable: false,
           help: 'Validate CSS values invalid value display a warning message')
-      ..addFlag('less', defaultsTo: true, negatable: true,
+      ..addFlag('less',
+          defaultsTo: true,
+          negatable: true,
           help: 'Supports subset of Less syntax')
-      ..addFlag('suppress_warnings', defaultsTo: true,
-          help: 'Warnings not displayed')
-      ..addFlag('warnings_as_errors', defaultsTo: false,
-          help: 'Warning handled as errors')
-      ..addFlag('throw_on_errors', defaultsTo: false,
-          help: 'Throw on errors encountered')
-      ..addFlag('throw_on_warnings', defaultsTo: false,
-          help: 'Throw on warnings encountered')
-      ..addFlag('colors', defaultsTo: true,
-          help: 'Display errors/warnings in colored text')
-      ..addFlag('polyfill', defaultsTo: false,
-          help: 'Generate polyfill for new CSS features')
-      ..addFlag('help', abbr: 'h', defaultsTo: false, negatable: false,
+      ..addFlag('suppress_warnings',
+          defaultsTo: true, help: 'Warnings not displayed')
+      ..addFlag('warnings_as_errors',
+          defaultsTo: false, help: 'Warning handled as errors')
+      ..addFlag('throw_on_errors',
+          defaultsTo: false, help: 'Throw on errors encountered')
+      ..addFlag('throw_on_warnings',
+          defaultsTo: false, help: 'Throw on warnings encountered')
+      ..addFlag('colors',
+          defaultsTo: true, help: 'Display errors/warnings in colored text')
+      ..addFlag('polyfill',
+          defaultsTo: false, help: 'Generate polyfill for new CSS features')
+      ..addFlag('help',
+          abbr: 'h',
+          defaultsTo: false,
+          negatable: false,
           help: 'Displays this help message');
 
     try {
@@ -96,5 +106,4 @@ class PreprocessorOptions {
     print('Usage: css [options...] input.css');
     print(parser.getUsage());
   }
-
 }

@@ -7,7 +7,7 @@ library extend_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-var  options = ['--warnings_as_errors', '--no-colors', 'memory'];
+var options = ['--warnings_as_errors', '--no-colors', 'memory'];
 
 compileAndValidate(String input, String generated) {
   var errors = [];
@@ -215,13 +215,13 @@ input.second + label {
   color: blue;
 }
 ''', '.btn + .btn, '
-    'input.second + label + .btn, '
-    '.btn + input.second + label, '
+      'input.second + label + .btn, '
+      '.btn + input.second + label, '
       'input.second + label + input.second + label, '
       'input.second + label + input.second + label {\n'
-    '  margin-left: 5px;\n}\n'
-    'input.second + label {\n'
-    '  color: #00f;\n}');
+      '  margin-left: 5px;\n}\n'
+      'input.second + label {\n'
+      '  color: #00f;\n}');
 }
 
 main() {

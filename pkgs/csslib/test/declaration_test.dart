@@ -7,7 +7,6 @@ library declaration_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-
 /** CSS compiler options no checks in in memory style sheet. */
 List options = ['--no-colors', 'memory'];
 
@@ -365,7 +364,7 @@ void testMediaQueries() {
     }
   }''';
   generated =
-    '''@media handheld AND (min-width:20em), screen AND (min-width:20em) {
+      '''@media handheld AND (min-width:20em), screen AND (min-width:20em) {
 #id {
   color: #f00;
 }
@@ -481,8 +480,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
      url(basic-sans-serif.ttf) format("opentype"),
      local(Gentium Bold);
 }''';
-  final String generated2 =
-      '@font-face  {\n'
+  final String generated2 = '@font-face  {\n'
       '  src: url("ideal-sans-serif.woff") '
       'format("woff"), url("basic-sans-serif.ttf") '
       'format("opentype"), local(Gentium Bold);\n}';
@@ -563,8 +561,7 @@ div[href^='test'] {
 }
 ''';
 
-  final String generated =
-      '@import "simple.css"; '
+  final String generated = '@import "simple.css"; '
       '@import "test.css" print; '
       '@import "test.css" screen, print; '
       '@import "http://google.com/maps/maps.css";\n'
@@ -715,36 +712,32 @@ html|*:not(:link):not(:visited) {
 
 void testIE() {
   var errors = [];
-  final String input =
-".test {\n"
-"  filter: progid:DXImageTransform.Microsoft.gradient"
-"(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
-"}";
-  final String generated =
-".test {\n"
-"  filter: progid:DXImageTransform.Microsoft.gradient"
-"(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
-"}";
+  final String input = ".test {\n"
+      "  filter: progid:DXImageTransform.Microsoft.gradient"
+      "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
+      "}";
+  final String generated = ".test {\n"
+      "  filter: progid:DXImageTransform.Microsoft.gradient"
+      "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
+      "}";
 
-  var stylesheet = parseCss(input,  errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: options);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
-  final String input2 =
-".test {\n"
-"  filter: progid:DXImageTransform.Microsoft.gradient"
-"(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
-"        progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
-"}";
+  final String input2 = ".test {\n"
+      "  filter: progid:DXImageTransform.Microsoft.gradient"
+      "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
+      "        progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
+      "}";
 
-  final String generated2 =
-".test {\n"
-"  filter: progid:DXImageTransform.Microsoft.gradient"
-"(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
-"         progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
-"}";
+  final String generated2 = ".test {\n"
+      "  filter: progid:DXImageTransform.Microsoft.gradient"
+      "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
+      "         progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
+      "}";
 
   stylesheet = parseCss(input2, errors: errors..clear(), opts: options);
 

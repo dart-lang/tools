@@ -496,7 +496,6 @@ div {
   expect(prettyPrint(stylesheet), generated);
 }
 
-
 void undefinedTopLevel() {
   final errors = [];
   final input = r'''

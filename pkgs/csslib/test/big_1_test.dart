@@ -7,7 +7,7 @@ library big_1_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-var  options = ['--warnings_as_errors', '--no-colors', 'memory'];
+var options = ['--warnings_as_errors', '--no-colors', 'memory'];
 
 compilePolyfillAndValidate(String input, String generated) {
   var errors = [];

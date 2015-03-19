@@ -27,8 +27,8 @@ void testSelectorSuccesses() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect('.foobar .a-story .xyzzy', compactOuptut(selectorAst));
 
-  selectorAst = selector('.foobar .xyzzy .a-story .b-story',
-      errors: errors..clear());
+  selectorAst =
+      selector('.foobar .xyzzy .a-story .b-story', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
   expect('.foobar .xyzzy .a-story .b-story', compactOuptut(selectorAst));
 
@@ -56,7 +56,7 @@ void testSelectorFailures() {
   expect(errors.isEmpty, false);
   expect(errors[0].toString(),
       'error on line 1, column 9: name must start with a alpha character, but '
-        'found a number\n'
+      'found a number\n'
       '.foobar .1a-story .xyzzy\n'
       '        ^^');
 }

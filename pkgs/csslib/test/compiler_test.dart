@@ -516,10 +516,10 @@ void testArrayOfChars() {
   var errors = [];
   var input = '<![CDATA[.foo { '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
-    '}'
-    '#div {'
+      '}'
+      '#div {'
       'color : #00F578; border-color: #878787;'
-    '}]]>';
+      '}]]>';
 
   var stylesheet = parse(UTF8.encode(input), errors: errors);
 
@@ -584,8 +584,8 @@ p:nth-child(3n-3) { }
 div:nth-child(2n) { color : red; }
 ''';
 
-  var stylesheet = parseCss(input, errors: errors,
-      opts: ['--no-colors', 'memory']);
+  var stylesheet =
+      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -647,16 +647,16 @@ void testHost() {
   var errors = [];
   var input = '@host { '
       ':scope {'
-        'white-space: nowrap;'
-        'overflow-style: marquee-line;'
-        'overflow-x: marquee;'
+      'white-space: nowrap;'
+      'overflow-style: marquee-line;'
+      'overflow-x: marquee;'
       '}'
       '* { color: red; }'
       '*:hover { font-weight: bold; }'
       ':nth-child(odd) { color: blue; }'
-    '}';
-  var stylesheet = parseCss(input, errors: errors,
-      opts: ['--no-colors', 'memory']);
+      '}';
+  var stylesheet =
+      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -684,10 +684,10 @@ void testEmitter() {
   var errors = [];
   var input = '.foo { '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
-    '}'
-    '#div {'
+      '}'
+      '#div {'
       'color : #00F578; border-color: #878787;'
-    '}';
+      '}';
   var stylesheet = parseCss(input, errors: errors);
 
   expect(stylesheet != null, true);

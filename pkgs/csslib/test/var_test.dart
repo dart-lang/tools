@@ -393,27 +393,27 @@ void undefinedVars() {
 
   var errorStrings = [
     'error on line 5, column 14: Variable is not defined.\n'
-    '  var-a: var(b);\n'
-    '             ^^',
+        '  var-a: var(b);\n'
+        '             ^^',
     'error on line 6, column 14: Variable is not defined.\n'
-    '  var-b: var(c);\n'
-    '             ^^',
+        '  var-b: var(c);\n'
+        '             ^^',
     'error on line 9, column 16: Variable is not defined.\n'
-    '  var-one: var(two);\n'
-    '               ^^^^',
+        '  var-one: var(two);\n'
+        '               ^^^^',
     'error on line 12, column 17: Variable is not defined.\n'
-    '  var-four: var(five);\n'
-    '                ^^^^^',
+        '  var-four: var(five);\n'
+        '                ^^^^^',
     'error on line 13, column 17: Variable is not defined.\n'
-    '  var-five: var(six);\n'
-    '                ^^^^',
+        '  var-five: var(six);\n'
+        '                ^^^^',
     'error on line 16, column 18: Variable is not defined.\n'
-    '  var-def-1: var(def-2);\n'
-    '                 ^^^^^^',
+        '  var-def-1: var(def-2);\n'
+        '                 ^^^^^^',
     'error on line 17, column 18: Variable is not defined.\n'
-    '  var-def-2: var(def-3);\n'
-    '                 ^^^^^^',
-    ];
+        '  var-def-2: var(def-3);\n'
+        '                 ^^^^^^',
+  ];
 
   var generated = r''':root {
   var-color-background: #f00;
@@ -445,8 +445,8 @@ void undefinedVars() {
 
   compileAndValidate(input, generated);
 
-  var stylesheet = polyFillCompileCss(input, errors: errors..clear(),
-      opts: options);
+  var stylesheet =
+      polyFillCompileCss(input, errors: errors..clear(), opts: options);
 
   expect(stylesheet != null, true);
 
@@ -644,8 +644,8 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  var stylesheet = parseCss(input, errors: errors,
-      opts: ['--no-colors', 'memory']);
+  var stylesheet =
+      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -670,8 +670,8 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  stylesheet = parseCss(input, errors: errors..clear(),
-      opts: ['--no-colors', 'memory']);
+  stylesheet =
+      parseCss(input, errors: errors..clear(), opts: ['--no-colors', 'memory']);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -699,8 +699,8 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  var stylesheet = parseCss(input, errors: errors,
-      opts: ['--no-colors', 'memory']);
+  var stylesheet =
+      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -725,8 +725,8 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  stylesheet = parseCss(input, errors: errors..clear(),
-      opts: ['--no-colors', 'memory']);
+  stylesheet =
+      parseCss(input, errors: errors..clear(), opts: ['--no-colors', 'memory']);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -854,8 +854,8 @@ void includes() {
   border-color: var(a3);
 }''';
 
-  var stylesheet2 = compileCss(file2Input, includes: [stylesheet1],
-      errors: errors..clear(), opts: options);
+  var stylesheet2 = compileCss(file2Input,
+      includes: [stylesheet1], errors: errors..clear(), opts: options);
   expect(stylesheet2 != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet2), generated2);
@@ -870,8 +870,8 @@ void includes() {
 .test-1a {
   color: #000;
 }''';
-  var styleSheet1Polyfill = compileCss(file1Input, errors: errors..clear(),
-      polyfill: true, opts: options);
+  var styleSheet1Polyfill = compileCss(file1Input,
+      errors: errors..clear(), polyfill: true, opts: options);
   expect(styleSheet1Polyfill != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(styleSheet1Polyfill), generatedPolyfill1);
@@ -883,8 +883,11 @@ void includes() {
   background-color: #0b0;
   border-color: #fff;
 }''';
-  var styleSheet2Polyfill = compileCss(file2Input, includes: [stylesheet1],
-      errors: errors..clear(), polyfill: true, opts: options);
+  var styleSheet2Polyfill = compileCss(file2Input,
+      includes: [stylesheet1],
+      errors: errors..clear(),
+      polyfill: true,
+      opts: options);
   expect(styleSheet2Polyfill != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(styleSheet2Polyfill), generatedPolyfill2);
@@ -900,8 +903,10 @@ void includes() {
   border-color: #fff;
 }''';
   var stylesheetPolyfill = compileCss(input,
-      includes: [stylesheet1, stylesheet2], errors: errors..clear(),
-      polyfill: true, opts: options);
+      includes: [stylesheet1, stylesheet2],
+      errors: errors..clear(),
+      polyfill: true,
+      opts: options);
 
   expect(stylesheetPolyfill != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());

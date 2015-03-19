@@ -223,7 +223,6 @@ error on line 1, column 18: Expected hex number
 .foobar {
   color: # 123 fff;
 }''');
-
 }
 
 void testBadUnicode() {
@@ -239,7 +238,7 @@ void testBadUnicode() {
   expect(errors.isEmpty, false);
   expect(errors[0].toString(),
       'error on line 3, column 20: unicode first range can not be greater than '
-        'last\n'
+      'last\n'
       '  unicode-range: U+400-200;\n'
       '                   ^^^^^^^');
 

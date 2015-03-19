@@ -43,7 +43,7 @@ void testClassVisitors() {
   var clsVisits = new ClassVisitor(['foobar'])..visitTree(s);
   expect(clsVisits.matches, true);
 
-  in1= '''
+  in1 = '''
       .foobar1 { }
       .xyzzy .foo #my-div { color: red; }
       div.hello { font: arial; }
@@ -54,8 +54,8 @@ void testClassVisitors() {
   expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
-  clsVisits =
-      new ClassVisitor(['foobar1', 'xyzzy', 'foo', 'hello'])..visitTree(s);
+  clsVisits = new ClassVisitor(['foobar1', 'xyzzy', 'foo', 'hello'])
+    ..visitTree(s);
   expect(clsVisits.matches, true);
 
   expect(prettyPrint(s), r'''
@@ -80,7 +80,7 @@ class PolyfillEmitter extends CssPrinter {
 }
 
 String polyfillPrint(String prefix, StyleSheet ss) =>
-  (new PolyfillEmitter(prefix)..visitTree(ss, pretty: true)).toString();
+    (new PolyfillEmitter(prefix)..visitTree(ss, pretty: true)).toString();
 
 void testPolyFill() {
   var errors = [];
