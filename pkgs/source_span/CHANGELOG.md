@@ -1,3 +1,8 @@
+# 1.1.0
+
+* Added `SourceSpanWithContext`: a span that also includes the full line of text
+  that contains the span.
+
 # 1.0.3
 
 * Cleanup equality operator to accept any Object rather than just a

@@ -36,6 +36,37 @@ main() {
       });
     });
 
+    group('for new SourceSpanWithContext()', () {
+      test('context must contain text', () {
+        var start = new SourceLocation(2);
+        var end = new SourceLocation(5);
+        expect(() => new SourceSpanWithContext(
+              start, end, "abc", "--axc--"), throwsArgumentError);
+      });
+
+      test('text starts at start.column in context', () {
+        var start = new SourceLocation(3);
+        var end = new SourceLocation(5);
+        expect(() => new SourceSpanWithContext(
+              start, end, "abc", "--abc--"), throwsArgumentError);
+      });
+
+      test('text starts at start.column of line in multi-line context', () {
+        var start = new SourceLocation(4, line: 55, column: 3);
+        var end = new SourceLocation(7, line: 55, column: 6);
+        expect(() => new SourceSpanWithContext(
+              start, end, "abc", "\n--abc--"), throwsArgumentError);
+        expect(() => new SourceSpanWithContext(
+              start, end, "abc", "\n----abc--"), throwsArgumentError);
+        expect(() => new SourceSpanWithContext(
+              start, end, "abc", "\n\n--abc--"), throwsArgumentError);
+
+        // However, these are valid:
+        new SourceSpanWithContext(start, end, "abc", "\n---abc--");
+        new SourceSpanWithContext(start, end, "abc", "\n\n---abc--");
+      });
+    });
+
     group('for union()', () {
       test('source URLs must match', () {
         var other = new SourceSpan(
@@ -178,15 +209,48 @@ foo bar
       expect(span.message("oh no", color: true),
           equals("""
 line 1, column 6 of foo.dart: oh no
-${colors.RED}foo bar
-^^^^^^^${colors.NONE}"""));
+${colors.RED}foo bar${colors.NONE}
+${colors.RED}^^^^^^^${colors.NONE}"""));
     });
 
     test("uses the given color if it's passed", () {
       expect(span.message("oh no", color: colors.YELLOW), equals("""
 line 1, column 6 of foo.dart: oh no
-${colors.YELLOW}foo bar
-^^^^^^^${colors.NONE}"""));
+${colors.YELLOW}foo bar${colors.NONE}
+${colors.YELLOW}^^^^^^^${colors.NONE}"""));
+    });
+  });
+
+  group("message() with context", () {
+    var spanWithContext;
+    setUp(() {
+      spanWithContext = new SourceSpanWithContext(
+          new SourceLocation(5, sourceUrl: "foo.dart"),
+          new SourceLocation(12, sourceUrl: "foo.dart"),
+          "foo bar",
+          "-----foo bar-----");
+    });
+
+    test("underlines under the right column", () {
+      expect(spanWithContext.message("oh no", color: colors.YELLOW), equals("""
+line 1, column 6 of foo.dart: oh no
+-----${colors.YELLOW}foo bar${colors.NONE}-----
+     ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
+    });
+
+    test("supports lines of preceeding context", () {
+      var span = new SourceSpanWithContext(
+          new SourceLocation(5, line: 3, column: 5, sourceUrl: "foo.dart"),
+          new SourceLocation(12, line: 3, column: 12, sourceUrl: "foo.dart"),
+          "foo bar",
+          "previous\nlines\n-----foo bar-----\nfollowing line\n");
+
+      expect(span.message("oh no", color: colors.YELLOW), equals("""
+line 4, column 6 of foo.dart: oh no
+previous
+lines
+-----${colors.YELLOW}foo bar${colors.NONE}-----
+     ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
     });
   });
 
