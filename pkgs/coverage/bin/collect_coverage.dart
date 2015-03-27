@@ -53,15 +53,14 @@ void main(List<String> arguments) {
     print('Failed to collect coverage within ${timeout}s');
     exit(1);
   }
-  Future connected = retry(
-      () => VMService.connect(options.host, options.port), retryInterval);
+  Future connected =
+      retry(() => VMService.connect(options.host, options.port), retryInterval);
   if (options.timeout != null) {
     connected.timeout(options.timeout, onTimeout: onTimeout);
   }
   connected.then((vmservice) {
-    Future ready = options.waitPaused
-        ? waitIsolatesPaused(vmservice)
-        : new Future.value();
+    Future ready =
+        options.waitPaused ? waitIsolatesPaused(vmservice) : new Future.value();
     if (options.timeout != null) {
       ready.timeout(options.timeout, onTimeout: onTimeout);
     }
