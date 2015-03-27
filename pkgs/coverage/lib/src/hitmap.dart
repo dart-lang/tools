@@ -1,4 +1,9 @@
-part of coverage;
+library coverage.hitmap;
+
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
 
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
@@ -72,7 +77,7 @@ Future<Map> parseCoverage(List<File> files, int workers) {
   })).then((_) => globalHitmap);
 }
 
-Future<Map> _spawnWorker(name, files) {
+Future<Map> _spawnWorker(String name, List files) {
   RawReceivePort port = new RawReceivePort();
   var completer = new Completer();
   port.handler = ((Map hitmap) {
