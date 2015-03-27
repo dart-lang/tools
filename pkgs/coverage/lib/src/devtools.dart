@@ -53,7 +53,7 @@ class VMService {
   Future resume(String isolateId) =>
       _connection.request('resume', {'isolateId': isolateId});
 
-  static Future<VMService> connect(String host, String port) {
+  static Future<VMService> connect(String host, int port) {
     _log.fine('Connecting to host $host on port $port');
 
     // For pre-1.9.0 VM versions attempt to detect if we're talking to a
@@ -73,17 +73,17 @@ class VMService {
     return connectToVMWebsocket(host, port);
   }
 
-  static Future<VMService> connectToVM(String host, String port) {
+  static Future<VMService> connectToVM(String host, int port) {
     return _VMConnection.connect(host, port).then((c) => new VMService._(c));
   }
 
-  static Future<VMService> connectToVMWebsocket(String host, String port) {
+  static Future<VMService> connectToVMWebsocket(String host, int port) {
     return _VMWebsocketConnection
         .connect(host, port)
         .then((c) => new VMService._(c));
   }
 
-  static Future<VMService> connectToDevtools(String host, String port) {
+  static Future<VMService> connectToDevtools(String host, int port) {
     return _DevtoolsConnection
         .connect(host, port)
         .then((c) => new VMService._(c));
@@ -172,7 +172,7 @@ class _VMConnection implements _Connection {
 
   _VMConnection(this.uri);
 
-  static Future<_Connection> connect(String host, String port) {
+  static Future<_Connection> connect(String host, int port) {
     _log.fine('Connecting to VM via HTTP GET protocol');
     var uri = 'http://$host:$port';
     return new Future.value(new _VMConnection(uri));
@@ -200,7 +200,7 @@ class _VMWebsocketConnection implements _Connection {
     _socket.listen(_handleResponse);
   }
 
-  static Future<_Connection> connect(String host, String port) {
+  static Future<_Connection> connect(String host, int port) {
     _log.fine('Connecting to VM via HTTP websocket protocol');
     var uri = 'ws://$host:$port/ws';
     return WebSocket
@@ -267,7 +267,7 @@ class _DevtoolsConnection implements _Connection {
     _socket.listen(_handleResponse);
   }
 
-  static Future<_Connection> connect(String host, port) {
+  static Future<_Connection> connect(String host, int port) {
     _log.fine('Connecting to VM via Chromium remote debugging protocol');
     var uri = 'http://$host:$port/json';
 
