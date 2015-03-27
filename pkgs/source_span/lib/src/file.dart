@@ -205,12 +205,8 @@ class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
   FileLocation get start => new FileLocation._(file, _start);
   FileLocation get end => new FileLocation._(file, _end);
   String get text => file.getText(_start, _end);
-
-  String get context {
-    var line = start.line;
-    return file.getText(file.getOffset(line),
-        line == file.lines - 1 ? null : file.getOffset(line + 1));
-  }
+  String get context => file.getText(file.getOffset(start.line),
+      end.line == file.lines - 1 ? null : file.getOffset(end.line + 1));
 
   FileSpan._(this.file, this._start, this._end) {
     if (_end < _start) {

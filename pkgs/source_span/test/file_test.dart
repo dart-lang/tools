@@ -253,6 +253,12 @@ zip zap zop""", url: "bar.dart").span(10, 11);
       expect(file.span(8, 15).text, equals("baz\nwhi"));
     });
 
+    test("context contains the span's text", () {
+      var span = file.span(8, 15);
+      expect(span.context.contains(span.text), isTrue);
+      expect(span.context, equals('foo bar baz\nwhiz bang boom\n'));
+    });
+
     group("union()", () {
       var span;
       setUp(() {

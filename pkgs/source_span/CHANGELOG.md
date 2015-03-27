@@ -1,3 +1,8 @@
+# 1.1.1
+
+* Fixed `FileSpan`'s context to include the full span text, not just the first
+  line of it.
+
 # 1.1.0
 
 * Added `SourceSpanWithContext`: a span that also includes the full line of text
