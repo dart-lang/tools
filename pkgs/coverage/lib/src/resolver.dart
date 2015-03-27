@@ -1,4 +1,10 @@
-part of coverage;
+library coverage.resolver;
+
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
@@ -52,7 +58,7 @@ class Resolver {
       return resolveSymbolicLinks('$pkgRoot/$path');
     }
     if (uri.startsWith(FILE_PREFIX)) {
-      return resolveSymbolicLinks(fromUri(Uri.parse(uri)));
+      return resolveSymbolicLinks(p.fromUri(Uri.parse(uri)));
     }
     if (uri.startsWith(HTTP_PREFIX)) {
       return uri;
@@ -63,7 +69,7 @@ class Resolver {
   }
 
   String resolveSymbolicLinks(String path) {
-    return new File(normalize(path)).resolveSymbolicLinksSync();
+    return new File(p.normalize(path)).resolveSymbolicLinksSync();
   }
 }
 

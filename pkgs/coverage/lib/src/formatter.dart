@@ -1,4 +1,8 @@
-part of coverage;
+library coverage.formatter;
+
+import 'dart:async';
+
+import 'resolver.dart';
 
 abstract class Formatter {
   Future<String> format(Map json);
