@@ -86,22 +86,22 @@ class Options {
 }
 
 Options parseArgs(List<String> arguments) {
-  var parser = new ArgParser();
+  var parser = new ArgParser()
+    ..addOption('host',
+        abbr: 'H', defaultsTo: '127.0.0.1', help: 'remote VM host')
+    ..addOption('port', abbr: 'p', help: 'remote VM port')
+    ..addOption('out',
+        abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
+    ..addOption('connect-timeout',
+        abbr: 't', help: 'connect timeout in seconds')
+    ..addFlag('wait-paused',
+        abbr: 'w',
+        defaultsTo: false,
+        help: 'wait for all isolates to be paused before collecting coverage')
+    ..addFlag('resume-isolates',
+        abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
+    ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
-  parser.addOption('host',
-      abbr: 'H', defaultsTo: '127.0.0.1', help: 'remote VM host');
-  parser.addOption('port', abbr: 'p', help: 'remote VM port');
-  parser.addOption('out',
-      abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout');
-  parser.addOption('connect-timeout',
-      abbr: 't', help: 'connect timeout in seconds');
-  parser.addFlag('wait-paused',
-      abbr: 'w',
-      defaultsTo: false,
-      help: 'wait for all isolates to be paused before collecting coverage');
-  parser.addFlag('resume-isolates',
-      abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit');
-  parser.addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
   var args = parser.parse(arguments);
 
   printUsage() {
