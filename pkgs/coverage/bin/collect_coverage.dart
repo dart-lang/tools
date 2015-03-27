@@ -76,7 +76,7 @@ void main(List<String> arguments) {
 
 class Options {
   final String host;
-  final String port;
+  final int port;
   final IOSink out;
   final Duration timeout;
   final bool waitPaused;
@@ -89,7 +89,7 @@ Options parseArgs(List<String> arguments) {
   var parser = new ArgParser()
     ..addOption('host',
         abbr: 'H', defaultsTo: '127.0.0.1', help: 'remote VM host')
-    ..addOption('port', abbr: 'p', help: 'remote VM port')
+    ..addOption('port', abbr: 'p', help: 'remote VM port', defaultsTo: '8181')
     ..addOption('out',
         abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
     ..addOption('connect-timeout',
@@ -121,6 +121,7 @@ Options parseArgs(List<String> arguments) {
   }
 
   if (args['port'] == null) fail('port not specified');
+  var port = int.parse(args['port']);
 
   var out;
   if (args['out'] == 'stdout') {
@@ -132,6 +133,6 @@ Options parseArgs(List<String> arguments) {
   var timeout = (args['connect-timeout'] == null)
       ? null
       : new Duration(seconds: int.parse(args['connect-timeout']));
-  return new Options(args['host'], args['port'], out, timeout,
-      args['wait-paused'], args['resume-isolates']);
+  return new Options(args['host'], port, out, timeout, args['wait-paused'],
+      args['resume-isolates']);
 }
