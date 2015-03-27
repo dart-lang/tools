@@ -26,7 +26,8 @@ class VMService {
         .then((resp) => new Isolate.fromJson(resp));
   }
 
-  Future<AllocationProfile> getAllocationProfile(String isolateId, {bool reset, bool gc}) {
+  Future<AllocationProfile> getAllocationProfile(String isolateId,
+      {bool reset, bool gc}) {
     var params = {'isolateId': isolateId};
     if (reset != null) {
       params['reset'] = reset;
@@ -73,17 +74,18 @@ class VMService {
   }
 
   static Future<VMService> connectToVM(String host, String port) {
-    return _VMConnection.connect(host, port)
-        .then((c) => new VMService._(c));
+    return _VMConnection.connect(host, port).then((c) => new VMService._(c));
   }
 
   static Future<VMService> connectToVMWebsocket(String host, String port) {
-    return _VMWebsocketConnection.connect(host, port)
+    return _VMWebsocketConnection
+        .connect(host, port)
         .then((c) => new VMService._(c));
   }
 
   static Future<VMService> connectToDevtools(String host, String port) {
-    return _DevtoolsConnection.connect(host, port)
+    return _DevtoolsConnection
+        .connect(host, port)
         .then((c) => new VMService._(c));
   }
 
@@ -98,14 +100,11 @@ class VM {
   final String pid;
   final List<IsolateRef> isolates;
 
-  VM(this.id, this.targetCPU, this.hostCPU, this.version, this.pid, this.isolates);
+  VM(this.id, this.targetCPU, this.hostCPU, this.version, this.pid,
+      this.isolates);
 
-  factory VM.fromJson(json) => new VM(
-      json['id'],
-      json['targetCPU'],
-      json['hostCPU'],
-      json['version'],
-      json['pid'],
+  factory VM.fromJson(json) => new VM(json['id'], json['targetCPU'],
+      json['hostCPU'], json['version'], json['pid'],
       json['isolates'].map((i) => new IsolateRef.fromJson(i)).toList());
 }
 
@@ -115,9 +114,7 @@ class IsolateRef {
 
   IsolateRef(this.id, this.name);
 
-  factory IsolateRef.fromJson(json) => new IsolateRef(
-      json['id'],
-      json['name']);
+  factory IsolateRef.fromJson(json) => new IsolateRef(json['id'], json['name']);
 }
 
 class Isolate {
@@ -130,10 +127,7 @@ class Isolate {
   Isolate(this.id, this.name, this.pauseOnExit, this.pauseEvent);
 
   factory Isolate.fromJson(json) => new Isolate(
-      json['id'],
-      json['name'],
-      json['pauseOnExit'],
-      json['pauseEvent']);
+      json['id'], json['name'], json['pauseOnExit'], json['pauseEvent']);
 }
 
 class CodeCoverage {
@@ -142,9 +136,8 @@ class CodeCoverage {
 
   CodeCoverage(this.id, this.coverage);
 
-  factory CodeCoverage.fromJson(json) => new CodeCoverage(
-      json['id'],
-      json['coverage']);
+  factory CodeCoverage.fromJson(json) =>
+      new CodeCoverage(json['id'], json['coverage']);
 }
 
 class AllocationProfile {
@@ -152,8 +145,7 @@ class AllocationProfile {
 
   AllocationProfile(this.id);
 
-  factory AllocationProfile.fromJson(json) =>
-      new AllocationProfile(json['id']);
+  factory AllocationProfile.fromJson(json) => new AllocationProfile(json['id']);
 }
 
 String _getLegacyRequest(String request, Map params) {
@@ -189,13 +181,10 @@ class _VMConnection implements _Connection {
   Future<Map> request(String request, [Map params = const {}]) {
     request = _getLegacyRequest(request, params);
     _log.fine('Send> $uri/$request');
-    return http
-        .get('$uri/$request')
-        .then((resp) => resp.body)
-        .then((resp) {
-          _log.fine('Recv< $resp');
-          return resp.isEmpty ? {} : JSON.decode(resp);
-        });
+    return http.get('$uri/$request').then((resp) => resp.body).then((resp) {
+      _log.fine('Recv< $resp');
+      return resp.isEmpty ? {} : JSON.decode(resp);
+    });
   }
 
   Future close() => new Future.value();
@@ -214,17 +203,15 @@ class _VMWebsocketConnection implements _Connection {
   static Future<_Connection> connect(String host, String port) {
     _log.fine('Connecting to VM via HTTP websocket protocol');
     var uri = 'ws://$host:$port/ws';
-    return WebSocket.connect(uri)
+    return WebSocket
+        .connect(uri)
         .then((socket) => new _VMWebsocketConnection(socket));
   }
 
   Future<Map> request(String method, [Map params = const {}]) {
     _pendingRequests[_requestId] = new Completer();
-    var message = JSON.encode({
-      'id': _requestId,
-      'method': method,
-      'params': params,
-    });
+    var message =
+        JSON.encode({'id': _requestId, 'method': method, 'params': params,});
     _log.fine('Send> $message');
     _socket.add(message);
     return _pendingRequests[_requestId++].future;
@@ -285,7 +272,8 @@ class _DevtoolsConnection implements _Connection {
     var uri = 'http://$host:$port/json';
 
     _getWebsocketDebuggerUrl(response) {
-      var json = JSON.decode(response.body).where((p) => p['type'] == 'page').toList();
+      var json =
+          JSON.decode(response.body).where((p) => p['type'] == 'page').toList();
       if (json.length < 1) {
         _log.warning('No open pages');
         throw new StateError('No open pages');
@@ -314,7 +302,10 @@ class _DevtoolsConnection implements _Connection {
     var message = JSON.encode({
       'id': _requestId,
       'method': 'Dart.observatoryQuery',
-      'params': {'id': '$_requestId', 'query': _getLegacyRequest(request, params),},
+      'params': {
+        'id': '$_requestId',
+        'query': _getLegacyRequest(request, params),
+      },
     });
     _log.fine('Send> $message');
     _socket.add(message);
