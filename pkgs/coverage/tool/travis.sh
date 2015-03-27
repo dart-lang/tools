@@ -14,6 +14,10 @@ dartanalyzer $DARTANALYZER_FLAGS \
   bin/format_coverage.dart \
   lib/coverage.dart
 
-# Run the tests.
-# echo "Running tests..."
-# dart -c test/all_tests.dart
+# Tests only work on Dart <= 1.10 – protocol changed in 1.11
+# BUG https://github.com/dart-lang/coverage/issues/70
+if [ "$TRAVIS_DART_VERSION" = "stable" ]; then
+  # Run the tests.
+  echo "Running tests..."
+  pub run test
+fi

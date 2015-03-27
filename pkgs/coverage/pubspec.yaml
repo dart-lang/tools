@@ -10,6 +10,8 @@ dependencies:
   http: '>=0.9.0 <2.0.0'
   logging: '>=0.9.0 <0.10.0'
   path: '>=0.9.0 <2.0.0'
+dev_dependencies:
+  test: '>=0.12.0 <0.13.0'
 executables:
   collect_coverage:
   format_coverage:
