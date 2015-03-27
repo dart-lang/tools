@@ -5,6 +5,8 @@ Coverage provides coverage data collection, manipulation, and formatting for
 Dart.
 
 [![Build Status](https://travis-ci.org/dart-lang/coverage.svg?branch=master)](https://travis-ci.org/dart-lang/coverage)
+[![Coverage Status](https://coveralls.io/repos/dart-lang/coverage/badge.svg?branch=master)](https://coveralls.io/r/dart-lang/coverage)
+
 
 Tools
 -----
