@@ -44,6 +44,7 @@ class SourceMapFileSpan implements SourceMapSpan, FileSpan {
   FileLocation get start => _inner.start;
   FileLocation get end => _inner.end;
   String get text => _inner.text;
+  String get context => _inner.context;
   Uri get sourceUrl => _inner.sourceUrl;
   int get length => _inner.length;
 

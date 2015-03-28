@@ -1,3 +1,7 @@
+## 0.10.0+2
+
+* Fix analyzer error (FileSpan has a new field since `source_span` 1.1.1)
+
 ## 0.10.0+1
 
 * Remove an unnecessary warning printed when the "file" field is missing from a
