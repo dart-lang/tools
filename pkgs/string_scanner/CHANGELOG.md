@@ -1,3 +1,7 @@
+## 0.1.3+1
+
+* Fixed the homepage URL.
+
 ## 0.1.3
 
 * Add an optional `endState` argument to `SpanScanner.spanFrom`.

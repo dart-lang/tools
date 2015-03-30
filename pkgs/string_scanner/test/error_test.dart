@@ -28,7 +28,8 @@ void main() {
     });
 
     test('supports a match on a previous line', () {
-      var scanner = new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner =
+          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar baz\ndo ');
       scanner.expect('re');
       var match = scanner.lastMatch;
@@ -38,7 +39,8 @@ void main() {
     });
 
     test('supports a multiline match', () {
-      var scanner = new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner =
+          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar ');
       scanner.expect('baz\ndo');
       var match = scanner.lastMatch;
@@ -81,14 +83,16 @@ void main() {
     });
 
     test('supports a position on a previous line', () {
-      var scanner = new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner =
+          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar baz\ndo re mi\nearth');
       expect(() => scanner.error('oh no!', position: 15, length: 2),
           throwsStringScannerException('re'));
     });
 
     test('supports a multiline length', () {
-      var scanner = new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner =
+          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar baz\ndo re mi\nearth');
       expect(() => scanner.error('oh no!', position: 8, length: 8),
           throwsStringScannerException('baz\ndo r'));
@@ -121,8 +125,7 @@ void main() {
     });
 
     test("if match is passed with length", () {
-      expect(
-          () => scanner.error("oh no!", match: scanner.lastMatch, length: 1),
+      expect(() => scanner.error("oh no!", match: scanner.lastMatch, length: 1),
           throwsArgumentError);
     });
 

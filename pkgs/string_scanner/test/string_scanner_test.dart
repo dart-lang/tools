@@ -330,8 +330,8 @@ void main() {
     });
 
     test('throws an ArgumentError if the position is beyond the string', () {
-      expect(() => new StringScanner('foo bar', position: 8),
-          throwsArgumentError);
+      expect(
+          () => new StringScanner('foo bar', position: 8), throwsArgumentError);
     });
   });
 }
