@@ -65,6 +65,21 @@ main() {
         new SourceSpanWithContext(start, end, "abc", "\n---abc--");
         new SourceSpanWithContext(start, end, "abc", "\n\n---abc--");
       });
+
+      test('text can occur multiple times in context', () {
+        var start1 = new SourceLocation(4, line: 55, column: 2);
+        var end1 = new SourceLocation(7, line: 55, column: 5);
+        var start2 = new SourceLocation(4, line: 55, column: 8);
+        var end2 = new SourceLocation(7, line: 55, column: 11);
+        new SourceSpanWithContext(start1, end1, "abc", "--abc---abc--\n");
+        new SourceSpanWithContext(start1, end1, "abc", "--abc--abc--\n");
+        new SourceSpanWithContext(start2, end2, "abc", "--abc---abc--\n");
+        new SourceSpanWithContext(start2, end2, "abc", "---abc--abc--\n");
+        expect(() => new SourceSpanWithContext(
+              start1, end1, "abc", "---abc--abc--\n"), throwsArgumentError);
+        expect(() => new SourceSpanWithContext(
+              start2, end2, "abc", "--abc--abc--\n"), throwsArgumentError);
+      });
     });
 
     group('for union()', () {
@@ -237,6 +252,18 @@ line 1, column 6 of foo.dart: oh no
 -----${colors.YELLOW}foo bar${colors.NONE}-----
      ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
     });
+
+    test("underlines correctly when text appears twice", () {
+      var span = new SourceSpanWithContext(
+          new SourceLocation(9, column: 9, sourceUrl: "foo.dart"),
+          new SourceLocation(12, column: 12, sourceUrl: "foo.dart"),
+          "foo",
+          "-----foo foo-----");
+      expect(span.message("oh no", color: colors.YELLOW), equals("""
+line 1, column 10 of foo.dart: oh no
+-----foo ${colors.YELLOW}foo${colors.NONE}-----
+         ${colors.YELLOW}^^^${colors.NONE}"""));
+  });
 
     test("supports lines of preceeding context", () {
       var span = new SourceSpanWithContext(

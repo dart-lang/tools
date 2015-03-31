@@ -6,6 +6,7 @@ library source_span.span_with_context;
 
 import 'location.dart';
 import 'span.dart';
+import 'utils.dart';
 
 /// A class that describes a segment of source text with additional context.
 class SourceSpanWithContext extends SourceSpanBase {
@@ -23,14 +24,12 @@ class SourceSpanWithContext extends SourceSpanBase {
   SourceSpanWithContext(
       SourceLocation start, SourceLocation end, String text, this.context)
       : super(start, end, text) {
-    var index = context.indexOf(text);
-    if (index == -1) {
+    if (!context.contains(text)) {
       throw new ArgumentError(
           'The context line "$context" must contain "$text".');
     }
 
-    var beginningOfLine = context.lastIndexOf('\n', index) + 1;
-    if (start.column != index - beginningOfLine) {
+    if (findLineStart(context, text, start.column) == null) {
       throw new ArgumentError('The span text "$text" must start at '
           'column ${start.column + 1} in a line within "$context".');
     }

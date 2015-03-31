@@ -65,11 +65,10 @@ abstract class SourceSpanMixin implements SourceSpan {
     var textLine;
     if (this is SourceSpanWithContext) {
       var context = (this as SourceSpanWithContext).context;
-      var textIndex = context.indexOf(text.split('\n').first);
-      var lineStart = context.lastIndexOf('\n', textIndex);
-      if (lineStart != -1) {
-        buffer.write(context.substring(0, lineStart + 1));
-        context = context.substring(lineStart + 1);
+      var lineStart = findLineStart(context, text, column);
+      if (lineStart != null && lineStart > 0) {
+        buffer.write(context.substring(0, lineStart));
+        context = context.substring(lineStart);
       }
       var endIndex = context.indexOf('\n');
       textLine = endIndex == -1 ? context : context.substring(0, endIndex + 1);

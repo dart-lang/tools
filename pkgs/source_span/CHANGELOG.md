@@ -1,3 +1,8 @@
+# 1.1.2
+
+* Fixed validation in `SourceSpanWithContext` to allow multiple occurrences of
+  `text` within `context`.
+
 # 1.1.1
 
 * Fixed `FileSpan`'s context to include the full span text, not just the first
