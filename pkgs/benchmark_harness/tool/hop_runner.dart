@@ -1,11 +1,12 @@
 #!/usr/bin/env dart
 library hop_runner;
 
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:hop/hop.dart';
 import 'package:hop/hop_tasks.dart';
+import 'package:hop_unittest/hop_unittest.dart';
 
 import 'package:path/path.dart' as path;
 

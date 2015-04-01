@@ -1,7 +1,7 @@
 library result_emitter_test;
 
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:unittest/mock.dart';
+import 'package:mock/mock.dart';
 
 import 'fixed-unittest.dart';
 
