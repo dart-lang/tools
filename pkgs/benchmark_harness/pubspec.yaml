@@ -1,11 +1,13 @@
 name: benchmark_harness
-version: 1.0.4
-author: Dart Project <johnmccutchan@google.com>
+version: 1.0.5-dev
+author: Dart Team <misc@dartlang.org>
 description: The official Dart project benchmark harness.
-homepage: http://www.dartlang.org
+homepage: https://github.com/dart-lang/benchmark_harness
 dependencies:
-  browser: ">=0.10.0+2 <0.11.0"
+  browser: '>=0.10.0+2 <0.11.0'
 dev_dependencies:
-  unittest: ">=0.10.0 <0.11.0"
-  hop: ">=0.30.3 <0.31.0"
-  path: ">=1.1.0 <2.0.0"
+  hop: '>=0.30.3 <0.32.0'
+  hop_unittest: any
+  mock: '>=0.11.0 <0.12.0'
+  path: '>=1.1.0 <2.0.0'
+  unittest: '>=0.10.0 <0.12.0'
