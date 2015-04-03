@@ -8,6 +8,21 @@ library testing;
 import 'package:csslib/parser.dart';
 import 'package:csslib/visitor.dart';
 import 'package:csslib/src/messages.dart';
+import 'package:csslib/src/options.dart';
+
+export 'package:csslib/src/options.dart';
+
+const simpleOptionsWithCheckedAndWarningsAsErrors = const PreprocessorOptions(
+    useColors: false,
+    checked: true,
+    warningsAsErrors: true,
+    inputFile: 'memory');
+
+const simpleOptions =
+    const PreprocessorOptions(useColors: false, inputFile: 'memory');
+
+const options = const PreprocessorOptions(
+    useColors: false, warningsAsErrors: true, inputFile: 'memory');
 
 void useMockMessages() {
   messages = new Messages(printHandler: (message) {});
@@ -19,10 +34,10 @@ void useMockMessages() {
  * tests (by default) will ensure that the CSS is really valid.
  */
 StyleSheet parseCss(String cssInput,
-    {List<Message> errors, List<String> opts}) => parse(cssInput,
+    {List<Message> errors, PreprocessorOptions opts}) => parse(cssInput,
         errors: errors,
         options: opts == null
-            ? ['--no-colors', '--checked', '--warnings_as_errors', 'memory']
+            ? simpleOptionsWithCheckedAndWarningsAsErrors
             : opts);
 
 /**
@@ -30,17 +45,18 @@ StyleSheet parseCss(String cssInput,
  * CSS will allow any property/value pairs regardless of validity; all of our
  * tests (by default) will ensure that the CSS is really valid.
  */
-StyleSheet compileCss(String cssInput, {List<Message> errors, List<String> opts,
-    bool polyfill: false, List<StyleSheet> includes: null}) => compile(cssInput,
+StyleSheet compileCss(String cssInput, {List<Message> errors,
+    PreprocessorOptions opts, bool polyfill: false,
+    List<StyleSheet> includes: null}) => compile(cssInput,
         errors: errors,
         options: opts == null
-            ? ['--no-colors', '--checked', '--warnings_as_errors', 'memory']
+            ? simpleOptionsWithCheckedAndWarningsAsErrors
             : opts,
         polyfill: polyfill,
         includes: includes);
 
 StyleSheet polyFillCompileCss(input,
-        {List<Message> errors, List<String> opts}) =>
+        {List<Message> errors, PreprocessorOptions opts}) =>
     compileCss(input, errors: errors, polyfill: true, opts: opts);
 
 /** CSS emitter walks the style sheet tree and emits readable CSS. */

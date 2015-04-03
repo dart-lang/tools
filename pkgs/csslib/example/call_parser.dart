@@ -4,17 +4,22 @@
 import 'package:csslib/parser.dart' as css;
 import 'package:csslib/visitor.dart';
 
+const _default = const css.PreprocessorOptions(
+    useColors: false,
+    checked: true,
+    warningsAsErrors: true,
+    inputFile: 'memory');
+
 /**
  * Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
  * CSS will allow any property/value pairs regardless of validity; all of our
  * tests (by default) will ensure that the CSS is really valid.
  */
-StyleSheet parseCss(String cssInput, {List errors, List opts}) => css.parse(
-    cssInput,
-    errors: errors,
-    options: opts == null
-        ? ['--no-colors', '--checked', '--warnings_as_errors', 'memory']
-        : opts);
+StyleSheet parseCss(String cssInput,
+    {List errors, css.PreprocessorOptions opts}) {
+  return css.parse(cssInput,
+      errors: errors, options: opts == null ? _default : opts);
+}
 
 // Pretty printer for CSS.
 var emitCss = new CssPrinter();

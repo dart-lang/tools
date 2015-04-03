@@ -49,7 +49,7 @@ void testClassVisitors() {
       div.hello { font: arial; }
     ''';
 
-  s = parseCss(in1, errors: errors..clear(), opts: ['--no-colors', 'memory']);
+  s = parseCss(in1, errors: errors..clear(), opts: simpleOptions);
 
   expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());

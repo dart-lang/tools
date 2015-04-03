@@ -7,11 +7,9 @@ library nested_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-List optionsCss = ['--no-colors', 'memory'];
-
 compileAndValidate(String input, String generated) {
   var errors = [];
-  var stylesheet = compileCss(input, errors: errors, opts: optionsCss);
+  var stylesheet = compileCss(input, errors: errors, opts: simpleOptions);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);

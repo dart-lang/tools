@@ -1,3 +1,10 @@
+## 0.12.0
+
+* Top-level methods in `parser.dart` now take `PreprocessorOptions` instead of
+  `List<String>`.
+
+* `PreprocessorOptions.inputFile` is now final.
+
 ## 0.11.0+4
 
 * Cleanup some ambiguous and some incorrect type signatures.

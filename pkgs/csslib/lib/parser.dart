@@ -12,6 +12,8 @@ import "visitor.dart";
 import 'src/messages.dart';
 import 'src/options.dart';
 
+export 'src/options.dart';
+
 part 'src/analyzer.dart';
 part 'src/polyfill.dart';
 part 'src/property.dart';
@@ -30,14 +32,14 @@ class ParserState extends TokenizerState {
 }
 
 // TODO(jmesserly): this should not be global
-void _createMessages({List<Message> errors, List<String> options}) {
+void _createMessages({List<Message> errors, PreprocessorOptions options}) {
   if (errors == null) errors = [];
 
   if (options == null) {
-    options = ['--no-colors', 'memory'];
+    options = new PreprocessorOptions(useColors: false, inputFile: 'memory');
   }
-  var opt = PreprocessorOptions.parse(options);
-  messages = new Messages(options: opt, printHandler: errors.add);
+
+  messages = new Messages(options: options, printHandler: errors.add);
 }
 
 /** CSS checked mode enabled. */
@@ -45,7 +47,7 @@ bool get isChecked => messages.options.checked;
 
 // TODO(terry): Remove nested name parameter.
 /** Parse and analyze the CSS file. */
-StyleSheet compile(input, {List<Message> errors, List<String> options,
+StyleSheet compile(input, {List<Message> errors, PreprocessorOptions options,
     bool nested: true, bool polyfill: false, List<StyleSheet> includes: null}) {
   if (includes == null) {
     includes = [];
@@ -71,7 +73,7 @@ StyleSheet compile(input, {List<Message> errors, List<String> options,
 
 /** Analyze the CSS file. */
 void analyze(List<StyleSheet> styleSheets,
-    {List<Message> errors, List<String> options}) {
+    {List<Message> errors, PreprocessorOptions options}) {
   _createMessages(errors: errors, options: options);
   new Analyzer(styleSheets, messages).run();
 }
@@ -81,7 +83,7 @@ void analyze(List<StyleSheet> styleSheets,
  * or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
  * [errors] list will contain each error/warning as a [Message].
  */
-StyleSheet parse(input, {List<Message> errors, List<String> options}) {
+StyleSheet parse(input, {List<Message> errors, PreprocessorOptions options}) {
   var source = _inputAsString(input);
 
   _createMessages(errors: errors, options: options);

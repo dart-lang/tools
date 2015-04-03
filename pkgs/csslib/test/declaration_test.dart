@@ -7,9 +7,6 @@ library declaration_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-/** CSS compiler options no checks in in memory style sheet. */
-List options = ['--no-colors', 'memory'];
-
 void testSimpleTerms() {
   var errors = [];
   final String input = r'''
@@ -236,7 +233,7 @@ void testUnits() {
   transform: rotatez(20turn);
 }''';
 
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -339,7 +336,7 @@ void testMediaQueries() {
 }
 }''';
 
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
@@ -384,7 +381,7 @@ void testMediaQueries() {
 }
 }''';
 
-  stylesheet = parseCss(input, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -401,7 +398,7 @@ void testMediaQueries() {
       'AND (min-device-height:2000px), screen (another:100px) {\n'
       'html {\n  font-size: 10em;\n}\n}';
 
-  stylesheet = parseCss(input, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -418,7 +415,7 @@ void testMediaQueries() {
       '(min-device-height:2000px), screen (another:100px) {\n'
       'html {\n  font-size: 10em;\n}\n}';
 
-  stylesheet = parseCss(input, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -429,7 +426,7 @@ void testMediaQueries() {
   generated =
       '@import "test.css" ONLY screen, NOT print (min-device-width:4000px);';
 
-  stylesheet = parseCss(input, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -450,7 +447,7 @@ void testFontFace() {
   src: url("fonts/BBCBengali.ttf") format("opentype");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
 }''';
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -468,7 +465,7 @@ void testFontFace() {
   src: url("http://example.com/fonts/Gentium.ttf");
 }''';
 
-  stylesheet = parseCss(input1, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input1, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -485,7 +482,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
       'format("woff"), url("basic-sans-serif.ttf") '
       'format("opentype"), local(Gentium Bold);\n}';
 
-  stylesheet = parseCss(input2, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input2, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -504,7 +501,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
   font-weight: bold;
 }''';
 
-  stylesheet = parseCss(input3, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input3, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -521,7 +518,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
   src: local(STIXGeneral), url("/stixfonts/STIXGeneral.otf");
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
 }''';
-  stylesheet = parseCss(input4, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input4, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -703,7 +700,7 @@ html|*:not(:link):not(:visited) {
   color: #00f;
 }''';
 
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -721,7 +718,7 @@ void testIE() {
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
       "}";
 
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -739,7 +736,7 @@ void testIE() {
       "         progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
       "}";
 
-  stylesheet = parseCss(input2, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input2, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -769,7 +766,7 @@ div {
       '      FinishX=0, FinishY=0)  Wave(Add=0, Freq=5, LightStrength=20, \n'
       '      Phase=220, Strength=10);\n}';
 
-  stylesheet = parseCss(input3, errors: errors..clear(), opts: options);
+  stylesheet = parseCss(input3, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -946,19 +943,18 @@ input.search-query {
   }
 }''';
 
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
 
 void testHangs() {
-  final optionErrors = ['--no-colors', '--warnings_as_errors', 'memory'];
   var errors = [];
 
   // Bad hexvalue had caused a hang in processTerm.
   final input = r'''#a { color: #ebebeburl(0/IE8+9+); }''';
-  var stylesheet = parseCss(input, errors: errors, opts: optionErrors);
+  var stylesheet = parseCss(input, errors: errors, opts: options);
 
   expect(stylesheet != null, true);
   expect(errors.length, 3, reason: errors.toString());
@@ -994,7 +990,7 @@ void testHangs() {
   }
 ''';
 
-  stylesheet = parseCss(input2, errors: errors..clear(), opts: optionErrors);
+  stylesheet = parseCss(input2, errors: errors..clear(), opts: options);
 
   expect(stylesheet != null, true);
 

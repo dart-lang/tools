@@ -124,10 +124,7 @@ class Messages {
   void mergeMessages(Messages newMessages) {
     messages.addAll(newMessages.messages);
     newMessages.messages
-        .where(
-            (message) => message.level.value == Level.SEVERE || options.verbose)
-        .forEach((message) {
-      printHandler(message);
-    });
+        .where((message) => message.level == Level.SEVERE || options.verbose)
+        .forEach(printHandler);
   }
 }

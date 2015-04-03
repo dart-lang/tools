@@ -7,8 +7,6 @@ library var_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-List options = ['--no-colors', '--warnings_as_errors', 'memory'];
-
 compileAndValidate(String input, String generated) {
   var errors = [];
   var stylesheet = compileCss(input, errors: errors, opts: options);
@@ -644,8 +642,7 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  var stylesheet =
-      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -670,8 +667,7 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  stylesheet =
-      parseCss(input, errors: errors..clear(), opts: ['--no-colors', 'memory']);
+  stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -699,8 +695,7 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  var stylesheet =
-      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -725,8 +720,7 @@ var-color-foreground: #00f;
   color: var(color-foreground);
 }''';
 
-  stylesheet =
-      parseCss(input, errors: errors..clear(), opts: ['--no-colors', 'memory']);
+  stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());

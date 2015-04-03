@@ -7,8 +7,6 @@ library mixin_test;
 import 'package:unittest/unittest.dart';
 import 'testing.dart';
 
-final options = ['--warnings_as_errors', '--no-colors', 'memory'];
-
 compileAndValidate(String input, String generated) {
   var errors = [];
   var stylesheet = compileCss(input, errors: errors, opts: options);

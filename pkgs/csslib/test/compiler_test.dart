@@ -584,8 +584,7 @@ p:nth-child(3n-3) { }
 div:nth-child(2n) { color : red; }
 ''';
 
-  var stylesheet =
-      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -655,8 +654,7 @@ void testHost() {
       '*:hover { font-weight: bold; }'
       ':nth-child(odd) { color: blue; }'
       '}';
-  var stylesheet =
-      parseCss(input, errors: errors, opts: ['--no-colors', 'memory']);
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
