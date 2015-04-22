@@ -1,4 +1,4 @@
-Unreleased
+0.6.1
    * Support observatory protocol changes for VM >= 1.10.0.
 
 0.6.0+1
