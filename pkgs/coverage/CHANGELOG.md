@@ -1,5 +1,8 @@
+Unreleased
+   * Support observatory protocol changes for VM >= 1.10.0.
+
 0.6.0+1
-   * Add support for `pub global run`
+   * Add support for `pub global run`.
 
 0.6.0
    * Add support for SDK versions >= 1.9.0. For Dartium/content-shell versions
