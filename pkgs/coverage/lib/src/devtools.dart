@@ -240,7 +240,16 @@ class _VMWebsocketConnection implements _Connection {
       // Suppress unloved messages.
       return;
     }
-    var message = JSON.decode(json['response']);
+
+    var innerResponse = json['result'];
+    if (innerResponse == null) {
+      // Support for 1.9.0 <= vm version < 1.10.0.
+      innerResponse = json['response'];
+    }
+    if (innerResponse == null) {
+      _log.severe('Failed to get JSON response for message $id');
+    }
+    var message = innerResponse != null ? JSON.decode(innerResponse) : null;
     var completer = _pendingRequests.remove(id);
     if (completer == null) {
       _log.severe('Failed to pair response with request');
