@@ -11,7 +11,7 @@ import 'dart:async';
 import 'package:unittest/unittest.dart';
 
 /**
- * Runs test methods existing in the given [type].
+ * Define tests using methods existing in the given [type].
  *
  * Methods with names starting with `test` are run using [test] function.
  * Methods with names starting with `solo_test` are run using [solo_test] function.
@@ -26,13 +26,13 @@ import 'package:unittest/unittest.dart';
  * method invocation. If method returns [Future] to test some asyncronous
  * behavior, then `tearDown` will be invoked in `Future.complete`.
  */
-void runReflectiveTests(Type type) {
+void defineReflectiveTests(Type type) {
   ClassMirror classMirror = reflectClass(type);
   if (!classMirror.metadata.any((InstanceMirror annotation) =>
-  annotation.type.reflectedType == ReflectiveTest)) {
+      annotation.type.reflectedType == ReflectiveTest)) {
     String name = MirrorSystem.getName(classMirror.qualifiedName);
     throw new Exception('Class $name must have annotation "@reflectiveTest" '
-    'in order to be run by runReflectiveTests.');
+        'in order to be run by runReflectiveTests.');
   }
   String className = MirrorSystem.getName(classMirror.simpleName);
   group(className, () {
@@ -102,8 +102,8 @@ Future _runFailingTest(ClassMirror classMirror, Symbol symbol) {
 _runTest(ClassMirror classMirror, Symbol symbol) {
   InstanceMirror instanceMirror = classMirror.newInstance(new Symbol(''), []);
   return _invokeSymbolIfExists(instanceMirror, #setUp)
-  .then((_) => instanceMirror.invoke(symbol, []).reflectee)
-  .whenComplete(() => _invokeSymbolIfExists(instanceMirror, #tearDown));
+      .then((_) => instanceMirror.invoke(symbol, []).reflectee)
+      .whenComplete(() => _invokeSymbolIfExists(instanceMirror, #tearDown));
 }
 
 /**
