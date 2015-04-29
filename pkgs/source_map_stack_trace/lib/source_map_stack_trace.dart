@@ -25,8 +25,8 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     {bool minified: false, packageRoot, sdkRoot}) {
   if (stackTrace is Chain) {
     return new Chain(stackTrace.traces.map((trace) {
-      return mapStackTrace(trace, sourceMap,
-          minified: minified, packageRoot: packageRoot, sdkRoot: sdkRoot);
+      return new Trace.from(mapStackTrace(sourceMap, trace,
+          minified: minified, packageRoot: packageRoot, sdkRoot: sdkRoot));
     }));
   }
 

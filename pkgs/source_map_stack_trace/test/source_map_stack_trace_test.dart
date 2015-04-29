@@ -122,6 +122,26 @@ foo.dart.js 10:11  baz
     expect(frame.column, equals(4));
   });
 
+  test("converts a stack chain", () {
+    var trace = new Chain([
+      new Trace.parse("foo.dart.js 10:11  foo"),
+      new Trace.parse("foo.dart.js 10:11  bar")
+    ]);
+    var traces = mapStackTrace(_simpleMapping, trace).traces;
+
+    var frame = traces.first.frames.single;
+    expect(frame.uri, equals(Uri.parse("foo.dart")));
+    expect(frame.member, equals("foo"));
+    expect(frame.line, equals(2));
+    expect(frame.column, equals(4));
+
+    frame = traces.last.frames.single;
+    expect(frame.uri, equals(Uri.parse("foo.dart")));
+    expect(frame.member, equals("bar"));
+    expect(frame.line, equals(2));
+    expect(frame.column, equals(4));
+  });
+
   group("cleans up", () {
     test("Firefox junk", () {
       expect(_prettify("foo/<"), equals("foo"));
