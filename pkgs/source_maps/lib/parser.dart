@@ -16,15 +16,23 @@ import 'src/utils.dart';
 import 'src/vlq.dart';
 
 /// Parses a source map directly from a json string.
+///
+/// [mapUrl], which may be either a [String] or a [Uri], indicates the URL of
+/// the source map file itself. If it's passed, any URLs in the source
+/// map will be interpreted as relative to this URL when generating spans.
 // TODO(sigmund): evaluate whether other maps should have the json parsed, or
 // the string represenation.
 // TODO(tjblasi): Ignore the first line of [jsonMap] if the JSON safety string
 // `)]}'` begins the string representation of the map.
-Mapping parse(String jsonMap, {Map<String, Map> otherMaps}) =>
-  parseJson(JSON.decode(jsonMap), otherMaps: otherMaps);
+Mapping parse(String jsonMap, {Map<String, Map> otherMaps, mapUrl}) =>
+  parseJson(JSON.decode(jsonMap), otherMaps: otherMaps, mapUrl: mapUrl);
 
 /// Parses a source map directly from a json map object.
-Mapping parseJson(Map map, {Map<String, Map> otherMaps}) {
+///
+/// [mapUrl], which may be either a [String] or a [Uri], indicates the URL of
+/// the source map file itself. If it's passed, any URLs in the source
+/// map will be interpreted as relative to this URL when generating spans.
+Mapping parseJson(Map map, {Map<String, Map> otherMaps, mapUrl}) {
   if (map['version'] != 3) {
     throw new ArgumentError(
         'unexpected source map version: ${map["version"]}. '
@@ -37,9 +45,10 @@ Mapping parseJson(Map map, {Map<String, Map> otherMaps}) {
       throw new FormatException('map containing "sections" '
           'cannot contain "mappings", "sources", or "names".');
     }
-    return new MultiSectionMapping.fromJson(map['sections'], otherMaps);
+    return new MultiSectionMapping.fromJson(map['sections'], otherMaps,
+        mapUrl: mapUrl);
   }
-  return new SingleMapping.fromJson(map);
+  return new SingleMapping.fromJson(map, mapUrl: mapUrl);
 }
 
 
@@ -68,7 +77,8 @@ class MultiSectionMapping extends Mapping {
   final List<Mapping> _maps = <Mapping>[];
 
   /// Creates a section mapping from json.
-  MultiSectionMapping.fromJson(List sections, Map<String, Map> otherMaps) {
+  MultiSectionMapping.fromJson(List sections, Map<String, Map> otherMaps,
+      {mapUrl}) {
     for (var section in sections) {
       var offset = section['offset'];
       if (offset == null) throw new FormatException('section missing offset');
@@ -93,9 +103,9 @@ class MultiSectionMapping extends Mapping {
               'section contains refers to $url, but no map was '
               'given for it. Make sure a map is passed in "otherMaps"');
         }
-        _maps.add(parseJson(otherMaps[url], otherMaps: otherMaps));
+        _maps.add(parseJson(otherMaps[url], otherMaps: otherMaps, mapUrl: url));
       } else if (map != null) {
-        _maps.add(parseJson(map, otherMaps: otherMaps));
+        _maps.add(parseJson(map, otherMaps: otherMaps, mapUrl: mapUrl));
       } else {
         throw new FormatException('section missing url or map');
       }
@@ -149,10 +159,13 @@ class SingleMapping extends Mapping {
   /// Url of the target file.
   String targetUrl;
 
-  /// Source root appended to the start of all entries in [urls].
+  /// Source root prepended to all entries in [urls].
   String sourceRoot;
 
-  SingleMapping._(this.targetUrl, this.urls, this.names, this.lines);
+  final Uri _mapUrl;
+
+  SingleMapping._(this.targetUrl, this.urls, this.names, this.lines)
+      : _mapUrl = null;
 
   factory SingleMapping.fromEntries(
       Iterable<builder.Entry> entries, [String fileUrl]) {
@@ -197,12 +210,13 @@ class SingleMapping extends Mapping {
         fileUrl, urls.keys.toList(), names.keys.toList(), lines);
   }
 
-  SingleMapping.fromJson(Map map)
+  SingleMapping.fromJson(Map map, {mapUrl})
       : targetUrl = map['file'],
         urls = map['sources'],
         names = map['names'],
         sourceRoot = map['sourceRoot'],
-        lines = <TargetLineEntry>[] {
+        lines = <TargetLineEntry>[],
+        _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : mapUrl {
     int line = 0;
     int column = 0;
     int srcUrlId = 0;
@@ -373,7 +387,10 @@ class SingleMapping extends Mapping {
       }
     } else {
       var start = new SourceLocation(0,
-          sourceUrl: url, line: entry.sourceLine, column: entry.sourceColumn);
+          sourceUrl: _mapUrl == null ? url : _mapUrl.resolve(url),
+          line: entry.sourceLine,
+          column: entry.sourceColumn);
+
       // Offset and other context is not available.
       if (entry.sourceNameId != null) {
         return new SourceMapSpan.identifier(start, names[entry.sourceNameId]);

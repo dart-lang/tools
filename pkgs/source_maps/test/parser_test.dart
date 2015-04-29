@@ -114,6 +114,14 @@ main() {
     expect(mapping.toJson(), equals(inputMap));
   });
 
+  test('parse with map URL', () {
+    var inputMap = new Map.from(MAP_WITH_SOURCE_LOCATION);
+    inputMap['sourceRoot'] = 'pkg/';
+    var mapping = parseJson(inputMap, mapUrl: "file:///path/to/map");
+    expect(mapping.spanFor(0, 0).sourceUrl,
+        Uri.parse("file:///path/to/pkg/input.dart"));
+  });
+
   test('parse and re-emit', () {
     for (var expected in [
         EXPECTED_MAP,

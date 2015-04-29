@@ -1,3 +1,8 @@
+## 0.10.1
+
+* Add a `mapUrl` named argument to `parse` and `parseJson`. This argument is
+  used to resolve source URLs for source spans.
+
 ## 0.10.0+2
 
 * Fix analyzer error (FileSpan has a new field since `source_span` 1.1.1)
