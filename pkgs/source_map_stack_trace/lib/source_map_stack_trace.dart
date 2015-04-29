@@ -51,7 +51,10 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 
     // If there's no column, try using the first column of the line.
     var column = frame.column == null ? 0 : frame.column;
-    var span = sourceMap.spanFor(frame.line, column);
+
+    // Subtract 1 because stack traces use 1-indexed lines and columns and
+    // source maps uses 0-indexed.
+    var span = sourceMap.spanFor(frame.line - 1, column - 1);
 
     // If we can't find a source span, ignore the frame. It's probably something
     // internal that the user doesn't care about.

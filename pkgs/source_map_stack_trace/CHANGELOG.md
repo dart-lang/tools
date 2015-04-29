@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Fix an off-by-one bug that was causing line numbers to be slightly off.
+
 ## 1.0.1
 
 * Don't crash when mapping stack chains.
