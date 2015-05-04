@@ -158,10 +158,8 @@ parseArgs(List<String> arguments) {
   if (args['pretty-print'] && env.lcov) {
     fail('Choose one of pretty-print or lcov output');
   }
-  if (!env.lcov) {
-    // Use pretty-print either explicitly or by default.
-    env.prettyPrint = true;
-  }
+  // Use pretty-print either explicitly or by default.
+  env.prettyPrint = !env.lcov;
 
   try {
     env.workers = int.parse('${args["workers"]}');
