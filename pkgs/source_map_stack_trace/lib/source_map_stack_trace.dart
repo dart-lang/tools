@@ -61,11 +61,11 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     if (span == null) return null;
 
     var sourceUrl = span.sourceUrl.toString();
-    if (packageRoot != null && p.url.isWithin(packageRoot, sourceUrl)) {
+    if (sdkRoot != null && p.url.isWithin(sdkLib, sourceUrl)) {
+      sourceUrl = "dart:" + p.url.relative(sourceUrl, from: sdkLib);
+    } else if (packageRoot != null && p.url.isWithin(packageRoot, sourceUrl)) {
       sourceUrl = "package:" +
           p.url.relative(sourceUrl, from: packageRoot);
-    } else if (sdkRoot != null && p.url.isWithin(sdkLib, sourceUrl)) {
-      sourceUrl = "dart:" + p.url.relative(sourceUrl, from: sdkLib);
     }
 
     return new Frame(

@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Prefer "dart:" URLs to "package:" URLs.
+
 ## 1.0.2
 
 * Fix an off-by-one bug that was causing line numbers to be slightly off.
