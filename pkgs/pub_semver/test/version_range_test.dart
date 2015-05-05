@@ -4,7 +4,7 @@
 
 library pub_semver.test.version_range_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'package:pub_semver/pub_semver.dart';
 

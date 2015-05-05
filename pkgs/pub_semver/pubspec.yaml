@@ -8,6 +8,6 @@ homepage: http://github.com/dart-lang/pub_semver
 dependencies:
   collection: ">=0.9.0 <2.0.0"
 dev_dependencies:
-  unittest: ">=0.9.0 <0.12.0"
+  test: ">=0.12.0 <0.13.0"
 environment:
   sdk: ">=1.0.0 <2.0.0"
