@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Add compatibility for Dart 1.10-style name munging.
+
 ## 1.0.3
 
 * Prefer "dart:" URLs to "package:" URLs.

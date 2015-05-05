@@ -101,7 +101,7 @@ String _prettifyMember(String member) {
       .replaceAll(new RegExp(r"[a-zA-Z_0-9]+\$"), "")
       // Get rid of the static method prefix. The class name also exists in the
       // invocation, so we're not getting rid of any information.
-      .replaceAll(new RegExp(r"^[a-zA-Z_0-9]+.static."), "")
+      .replaceAll(new RegExp(r"^[a-zA-Z_0-9]+.(static|dart)."), "")
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
