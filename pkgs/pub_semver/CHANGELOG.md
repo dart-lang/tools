@@ -10,6 +10,8 @@
 * Add a `VersionConstraint.allowsAny()` method, which returns whether one
   constraint overlaps another.
 
+* `Version` now implements `VersionRange`.
+
 # 1.1.0
 
 * Add support for the `^` operator for compatible versions according to pub's
