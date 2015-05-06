@@ -1,3 +1,15 @@
+# 1.2.0
+
+* Add a `VersionConstraint.union()` method and a `new
+  VersionConstraint.unionOf()` constructor. These each return a constraint that
+  matches multiple existing constraints.
+
+* Add a `VersionConstraint.allowsAll()` method, which returns whether one
+  constraint is a superset of another.
+
+* Add a `VersionConstraint.allowsAny()` method, which returns whether one
+  constraint overlaps another.
+
 # 1.1.0
 
 * Add support for the `^` operator for compatible versions according to pub's

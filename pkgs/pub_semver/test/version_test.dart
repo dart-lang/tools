@@ -138,6 +138,22 @@ main() {
         new Version.parse('1.2.3+build')));
   });
 
+  test('allowsAll()', () {
+    expect(v123.allowsAll(v123), isTrue);
+    expect(v123.allowsAll(v003), isFalse);
+    expect(v123.allowsAll(new VersionRange(min: v114, max: v124)), isFalse);
+    expect(v123.allowsAll(VersionConstraint.any), isFalse);
+    expect(v123.allowsAll(VersionConstraint.empty), isTrue);
+  });
+
+  test('allowsAny()', () {
+    expect(v123.allowsAny(v123), isTrue);
+    expect(v123.allowsAny(v003), isFalse);
+    expect(v123.allowsAny(new VersionRange(min: v114, max: v124)), isTrue);
+    expect(v123.allowsAny(VersionConstraint.any), isTrue);
+    expect(v123.allowsAny(VersionConstraint.empty), isFalse);
+  });
+
   test('intersect()', () {
     // Intersecting the same version returns the version.
     expect(v123.intersect(v123), equals(v123));
@@ -152,6 +168,40 @@ main() {
     // Intersecting a range allows no versions if the range doesn't allow it.
     expect(v114.intersect(new VersionRange(min: v123, max: v124)).isEmpty,
         isTrue);
+  });
+
+  group('union()', () {
+    test("with the same version returns the version", () {
+      expect(v123.union(v123), equals(v123));
+    });
+
+    test("with a different version returns a version that matches both", () {
+      var result = v123.union(v080);
+      expect(result, allows(v123));
+      expect(result, allows(v080));
+
+      // Nothing in between should match.
+      expect(result, doesNotAllow(v114));
+    });
+
+    test("with a range returns the range if it contains the version", () {
+      var range = new VersionRange(min: v114, max: v124);
+      expect(v123.union(range), equals(range));
+    });
+
+    test("with a range with the version on the edge, expands the range", () {
+      expect(v124.union(new VersionRange(min: v114, max: v124)),
+          equals(new VersionRange(min: v114, max: v124, includeMax: true)));
+      expect(v114.union(new VersionRange(min: v114, max: v124)),
+          equals(new VersionRange(min: v114, max: v124, includeMin: true)));
+    });
+
+    test("with a range allows both the range and the version if the range "
+        "doesn't contain the version", () {
+      var result = v123.union(new VersionRange(min: v003, max: v114));
+      expect(result, allows(v123));
+      expect(result, allows(v010));
+    });
   });
 
   test('isEmpty', () {

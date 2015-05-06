@@ -4,7 +4,7 @@
 
 library pub_semver.src.version;
 
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:collection/equality.dart';
 
@@ -16,7 +16,7 @@ import 'version_range.dart';
 final _equality = const IterableEquality();
 
 /// A parsed semantic version number.
-class Version implements Comparable<Version>, VersionConstraint {
+class Version implements Comparable<Version>, VersionConstraint, VersionRange {
   /// No released version: i.e. "0.0.0".
   static Version get none => new Version(0, 0, 0);
 
@@ -84,6 +84,11 @@ class Version implements Comparable<Version>, VersionConstraint {
   /// This preserves textual artifacts like leading zeros that may be left out
   /// of the parsed version.
   final String _text;
+
+  Version get min => this;
+  Version get max => this;
+  bool get includeMin => true;
+  bool get includeMax => true;
 
   Version._(this.major, this.minor, this.patch, String preRelease, String build,
             this._text)
@@ -237,19 +242,31 @@ class Version implements Comparable<Version>, VersionConstraint {
   /// Tests if [other] matches this version exactly.
   bool allows(Version other) => this == other;
 
-  VersionConstraint intersect(VersionConstraint other) {
-    if (other.isEmpty) return other;
+  bool allowsAll(VersionConstraint other) => other.isEmpty || other == this;
 
-    // Intersect a version and a range.
-    if (other is VersionRange) return other.intersect(this);
+  bool allowsAny(VersionConstraint other) => other.allows(this);
 
-    // Intersecting two versions only works if they are the same.
-    if (other is Version) {
-      return this == other ? this : VersionConstraint.empty;
+  VersionConstraint intersect(VersionConstraint other) =>
+      other.allows(this) ? this : VersionConstraint.empty;
+
+  VersionConstraint union(VersionConstraint other) {
+    if (other.allows(this)) return other;
+
+    if (other is VersionRange) {
+      if (other.min == this) {
+        return new VersionRange(
+            min: other.min, max: other.max,
+            includeMin: true, includeMax: other.includeMax);
+      }
+
+      if (other.max == this) {
+        return new VersionRange(
+            min: other.min, max: other.max,
+            includeMin: other.includeMin, includeMax: true);
+      }
     }
 
-    throw new ArgumentError(
-        'Unknown VersionConstraint type $other.');
+    return new VersionConstraint.unionOf([this, other]);
   }
 
   int compareTo(Version other) {
@@ -277,7 +294,7 @@ class Version implements Comparable<Version>, VersionConstraint {
   /// This is used for the pre-release and build version parts. This follows
   /// Rule 12 of the Semantic Versioning spec (v2.0.0-rc.1).
   int _compareLists(List a, List b) {
-    for (var i = 0; i < max(a.length, b.length); i++) {
+    for (var i = 0; i < math.max(a.length, b.length); i++) {
       var aPart = (i < a.length) ? a[i] : null;
       var bPart = (i < b.length) ? b[i] : null;
 

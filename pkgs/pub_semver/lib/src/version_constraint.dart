@@ -7,6 +7,7 @@ library pub_semver.src.version_constraint;
 import 'patterns.dart';
 import 'version.dart';
 import 'version_range.dart';
+import 'version_union.dart';
 
 /// A [VersionConstraint] is a predicate that can determine whether a given
 /// version is valid or not.
@@ -168,6 +169,14 @@ abstract class VersionConstraint {
     return constraint;
   }
 
+  /// Creates a new version constraint that is the union of [constraints].
+  ///
+  /// It allows any versions that any of those constraints allows. If
+  /// [constraints] is empty, this returns a constraint that allows no versions.
+  factory VersionConstraint.unionOf(
+          Iterable<VersionConstraint> constraints) =>
+      VersionUnion.create(constraints);
+
   /// Returns `true` if this constraint allows no versions.
   bool get isEmpty;
 
@@ -177,9 +186,21 @@ abstract class VersionConstraint {
   /// Returns `true` if this constraint allows [version].
   bool allows(Version version);
 
+  /// Returns `true` if this constraint allows all the versions that [other]
+  /// allows.
+  bool allowsAll(VersionConstraint other);
+
+  /// Returns `true` if this constraint allows any of the versions that [other]
+  /// allows.
+  bool allowsAny(VersionConstraint other);
+
   /// Creates a new [VersionConstraint] that only allows [Version]s allowed by
   /// both this and [other].
   VersionConstraint intersect(VersionConstraint other);
+
+  /// Creates a new [VersionConstraint] that allows [Versions]s allowed by
+  /// either this or [other].
+  VersionConstraint union(VersionConstraint other);
 }
 
 class _EmptyVersion implements VersionConstraint {
@@ -188,7 +209,10 @@ class _EmptyVersion implements VersionConstraint {
   bool get isEmpty => true;
   bool get isAny => false;
   bool allows(Version other) => false;
+  bool allowsAll(Version other) => other.isEmpty;
+  bool allowsAny(Version other) => false;
   VersionConstraint intersect(VersionConstraint other) => this;
+  VersionConstraint union(VersionConstraint other) => other;
   String toString() => '<empty>';
 }
 

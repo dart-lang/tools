@@ -6,6 +6,7 @@ library pub_semver.src.version_range;
 
 import 'version.dart';
 import 'version_constraint.dart';
+import 'version_union.dart';
 
 /// Constrains versions to a fall within a given range.
 ///
@@ -99,8 +100,81 @@ class VersionRange implements VersionConstraint {
     return true;
   }
 
+  bool allowsAll(VersionConstraint other) {
+    if (other.isEmpty) return true;
+    if (other is Version) return allows(other);
+
+    if (other is VersionUnion) {
+      return other.constraints.every((constraint) => allowsAll(constraint));
+    }
+
+    if (other is VersionRange) {
+      if (min != null) {
+        if (other.min == null) return false;
+        if (min > other.min) return false;
+        if (min == other.min && !includeMin && other.includeMin) return false;
+      }
+
+      if (max != null) {
+        if (other.max == null) return false;
+        if (max < other.max) return false;
+        if (max == other.max && !includeMax && other.includeMax) return false;
+      }
+
+      return true;
+    }
+
+    throw new ArgumentError('Unknown VersionConstraint type $other.');
+  }
+
+  bool allowsAny(VersionConstraint other) {
+    if (other.isEmpty) return false;
+    if (other is Version) return allows(other);
+
+    if (other is VersionUnion) {
+      return other.constraints.any((constraint) => allowsAny(constraint));
+    }
+
+    if (other is VersionRange) {
+      // If neither range has a minimum, they'll overlap at some point.
+      //
+      //     ...     this     ]
+      //     ...     other         ]
+      if (min == null && other.min == null) return true;
+
+      // If this range has a lower minimum than the other range, it overlaps as
+      // long as its maximum is higher than or the same as the other range's
+      // minimum.
+      //
+      //     [  this  ]            [  this  ]
+      //        [  other  ]                 [  other  ]
+      if (min == null || (other.min != null && min < other.min)) {
+        if (max == null) return true;
+        if (max > other.min) return true;
+        if (max < other.min) return false;
+        assert(max == other.min);
+        return includeMax && other.includeMin;
+      }
+
+      // If this range has a higher minimum than the other range, it overlaps as
+      // long as its minimum is lower than or the same as the other range's
+      // maximum.
+      //
+      //         [  this  ]               [  this  ]
+      //     [  other  ]        [  other  ]
+      if (other.max == null) return true;
+      if (min < other.max) return true;
+      if (min > other.max) return false;
+      assert(min == other.max);
+      return includeMin && other.includeMax;
+    }
+
+    throw new ArgumentError('Unknown VersionConstraint type $other.');
+  }
+
   VersionConstraint intersect(VersionConstraint other) {
     if (other.isEmpty) return other;
+    if (other is VersionUnion) return other.intersect(this);
 
     // A range and a Version just yields the version if it's in the range.
     if (other is Version) {
@@ -160,6 +234,66 @@ class VersionRange implements VersionConstraint {
     }
 
     throw new ArgumentError('Unknown VersionConstraint type $other.');
+  }
+
+  VersionConstraint union(VersionConstraint other) {
+    if (other is Version) {
+      if (allows(other)) return this;
+
+      if (other == min) {
+        return new VersionRange(
+            min: this.min, max: this.max,
+            includeMin: true, includeMax: this.includeMax);
+      }
+
+      if (other == max) {
+        return new VersionRange(
+            min: this.min, max: this.max,
+            includeMin: this.includeMin, includeMax: true);
+      }
+
+      return new VersionConstraint.unionOf([this, other]);
+    }
+
+    if (other is VersionRange) {
+      // If the two ranges don't overlap, we won't be able to create a single
+      // VersionRange for both of them.
+      var edgesTouch = (max == other.min && (includeMax || other.includeMin)) ||
+          (min == other.max && (includeMin || other.includeMax));
+      if (!edgesTouch && !allowsAny(other)) {
+        return new VersionConstraint.unionOf([this, other]);
+      }
+
+      var unionMin = min;
+      var unionIncludeMin = includeMin;
+      var unionMax = max;
+      var unionIncludeMax = includeMax;
+
+      if (unionMin == null) {
+        // Do nothing.
+      } else if (other.min == null || other.min < min) {
+        unionMin = other.min;
+        unionIncludeMin = other.includeMin;
+      } else if (min == other.min && other.includeMin) {
+        // If the edges are the same but one is inclusive, make it inclusive.
+        unionIncludeMin = true;
+      }
+
+      if (unionMax == null) {
+        // Do nothing.
+      } else if (other.max == null || other.max > max) {
+        unionMax = other.max;
+        unionIncludeMax = other.includeMax;
+      } else if (max == other.max && other.includeMax) {
+        // If the edges are the same but one is inclusive, make it inclusive.
+        unionIncludeMax = true;
+      }
+
+      return new VersionRange(min: unionMin, max: unionMax,
+          includeMin: unionIncludeMin, includeMax: unionIncludeMax);
+    }
+
+    return new VersionConstraint.unionOf([this, other]);
   }
 
   String toString() {
