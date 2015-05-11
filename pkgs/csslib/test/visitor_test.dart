@@ -4,8 +4,9 @@
 
 library visitor_test;
 
-import 'package:unittest/unittest.dart';
 import 'package:csslib/visitor.dart';
+import 'package:test/test.dart';
+
 import 'testing.dart';
 
 class ClassVisitor extends Visitor {

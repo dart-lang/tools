@@ -4,7 +4,8 @@
 
 library nested_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
+
 import 'testing.dart';
 
 compileAndValidate(String input, String generated) {
@@ -413,7 +414,7 @@ void complexThis() {
     .textLink {
       color: fooL1;
       &:hover { color: barL1;}
-    } 
+    }
     .picLink {
       background-image: url(/fooL1.jpg);
       &:hover { background-image: url(/barL1.jpg);}
@@ -423,7 +424,7 @@ void complexThis() {
       background-image: url(/fooL2.jpg);
       &:hover { color: barL2; background-image: url(/barL2.jpg);}
     }
-  }   
+  }
 }''';
 
   final generated1 = r'''.light {
@@ -456,11 +457,11 @@ void complexThis() {
   .light .leftCol & {
     color: fooL1;
     &:hover { color: barL1; }
-  }      
+  }
   .light .rightCol & {
     color: fooL3;
     &:hover { color: barL3; }
-  } 
+  }
 }''';
 
   final generated2 = r'''

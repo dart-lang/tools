@@ -4,9 +4,10 @@
 
 library error_test;
 
-import 'package:unittest/unittest.dart';
-import 'testing.dart';
 import 'package:csslib/src/messages.dart';
+import 'package:test/test.dart';
+
+import 'testing.dart';
 
 /**
  * Test for unsupported font-weights values of bolder, lighter and inherit.

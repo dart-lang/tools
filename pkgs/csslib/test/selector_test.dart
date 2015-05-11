@@ -4,9 +4,10 @@
 
 library selector_test;
 
-import 'package:unittest/unittest.dart';
-import 'testing.dart';
 import 'package:csslib/parser.dart';
+import 'package:test/test.dart';
+
+import 'testing.dart';
 
 void testSelectorSuccesses() {
   var errors = [];

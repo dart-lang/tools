@@ -1,6 +1,6 @@
 library debug;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'testing.dart';
 
 void main() {

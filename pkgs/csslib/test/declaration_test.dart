@@ -4,7 +4,8 @@
 
 library declaration_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
+
 import 'testing.dart';
 
 void testSimpleTerms() {
@@ -342,7 +343,7 @@ void testMediaQueries() {
   expect(prettyPrint(stylesheet), generated);
 
   input = '''
-  @media handheld and (min-width: 20em), 
+  @media handheld and (min-width: 20em),
          screen and (min-width: 20em) {
     #id { color: red; }
     .myclass { height: 20px; }
@@ -751,8 +752,8 @@ div {
   Filter: FlipV;
   Filter: Gray;
   FILTER: Chroma(Color = #000000) Mask(Color=#00FF00);
-  Filter: Alpha(Opacity=100, FinishOpacity=0, Style=2, StartX=20, StartY=40, 
-      FinishX=0, FinishY=0) Wave(Add=0, Freq=5, LightStrength=20, 
+  Filter: Alpha(Opacity=100, FinishOpacity=0, Style=2, StartX=20, StartY=40,
+      FinishX=0, FinishY=0) Wave(Add=0, Freq=5, LightStrength=20,
       Phase=220, Strength=10);
 }
 ''';
@@ -762,8 +763,8 @@ div {
       '  Filter: FlipV;\n  Filter: Gray;\n'
       '  FILTER: Chroma(Color = #000000)  Mask(Color=#00FF00);\n'
       '  Filter: Alpha(Opacity=100, FinishOpacity=0, Style=2, '
-      'StartX=20, StartY=40, \n'
-      '      FinishX=0, FinishY=0)  Wave(Add=0, Freq=5, LightStrength=20, \n'
+      'StartX=20, StartY=40,\n'
+      '      FinishX=0, FinishY=0)  Wave(Add=0, Freq=5, LightStrength=20,\n'
       '      Phase=220, Strength=10);\n}';
 
   stylesheet = parseCss(input3, errors: errors..clear(), opts: simpleOptions);

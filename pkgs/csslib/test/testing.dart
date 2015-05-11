@@ -24,10 +24,6 @@ const simpleOptions =
 const options = const PreprocessorOptions(
     useColors: false, warningsAsErrors: true, inputFile: 'memory');
 
-void useMockMessages() {
-  messages = new Messages(printHandler: (message) {});
-}
-
 /**
  * Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
  * CSS will allow any property/value pairs regardless of validity; all of our

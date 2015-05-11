@@ -5,7 +5,7 @@
 library compiler_test;
 
 import 'dart:convert';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:csslib/parser.dart';
 import 'package:csslib/visitor.dart';
 import 'testing.dart';

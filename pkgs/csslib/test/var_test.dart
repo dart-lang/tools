@@ -4,7 +4,8 @@
 
 library var_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
+
 import 'testing.dart';
 
 compileAndValidate(String input, String generated) {
