@@ -1,3 +1,7 @@
+## 0.12.0+1
+
+* Allow the lastest version of `logging` package.
+
 ## 0.12.0
 
 * Top-level methods in `parser.dart` now take `PreprocessorOptions` instead of

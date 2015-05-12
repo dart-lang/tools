@@ -341,8 +341,6 @@ span {
 }
 
 void mediaNesting() {
-  var errors = [];
-
   final input = r'''
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   #toggle-all {
@@ -372,7 +370,6 @@ void mediaNesting() {
 }
 
 void simpleThis() {
-  final errors = [];
   final input = '''#header {
   h1 {
     font-size: 26px;
@@ -406,8 +403,6 @@ void simpleThis() {
 }
 
 void complexThis() {
-  var errors = [];
-
   final input1 = r'''
 .light {
   .leftCol {
@@ -484,8 +479,6 @@ void complexThis() {
 }
 
 variationsThis() {
-  var errors = [];
-
   final input1 = r'''
 .textLink {
   a {
@@ -597,7 +590,6 @@ light .leftCol .textLink a {
 }
 
 thisCombinator() {
-  var errors = [];
   var input = r'''
 .btn {
   color: red;

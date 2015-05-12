@@ -63,7 +63,6 @@ void simpleVar() {
 }
 
 void expressionsVar() {
-  final errors = [];
   final input = ''':root {
   var-color-background: red;
   var-color-foreground: blue;
@@ -222,7 +221,6 @@ void expressionsVar() {
 }
 
 void defaultVar() {
-  final errors = [];
   final input = '''
 :root {
   var-color-background: red;

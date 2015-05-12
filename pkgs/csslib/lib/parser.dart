@@ -300,10 +300,6 @@ class _Parser {
     }
   }
 
-  void _eatSemicolon() {
-    _eat(TokenKind.SEMICOLON);
-  }
-
   void _errorExpected(String expected) {
     var tok = _next();
     var message;

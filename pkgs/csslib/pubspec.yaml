@@ -1,5 +1,5 @@
 name: csslib
-version: 0.12.1-dev
+version: 0.12.0+1
 author: Polymer.dart Team <web-ui-dev@dartlang.org>
 description: A library for parsing CSS.
 homepage: https://github.com/dart-lang/csslib

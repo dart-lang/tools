@@ -467,40 +467,6 @@ class TokenKind {
   //              see http://www.w3schools.com/cssref/pr_list-style-type.asp
   //              for list of possible values.
 
-  // List of valid CSS functions:
-  static const List<Map<String, Object>> _FUNCTIONS = const [
-    const {'name': 'counter', 'info': const {'params': 2, 'expr': false}},
-    const {'name': 'attr', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'calc', 'info': const {'params': 1, 'expr': true}},
-    const {'name': 'min', 'info': const {'params': 2, 'expr': true}},
-    const {'name': 'max', 'info': const {'params': 2, 'expr': true}},
-
-    // 2D functions:
-    const {'name': 'translateX', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'translateY', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'translate', 'info': const {'params': 2, 'expr': false}},
-    const {'name': 'rotate', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'scaleX', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'scaleY', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'scale', 'info': const {'params': 2, 'expr': false}},
-    const {'name': 'skewX', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'skewY', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'skew', 'info': const {'params': 2, 'expr': false}},
-    const {'name': 'matrix', 'info': const {'params': 6, 'expr': false}},
-
-    // 3D functions:
-    const {'name': 'matrix3d', 'info': const {'params': 16, 'expr': false}},
-    const {'name': 'translate3d', 'info': const {'params': 3, 'expr': false}},
-    const {'name': 'translateZ', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'scale3d', 'info': const {'params': 3, 'expr': false}},
-    const {'name': 'scaleZ', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'rotate3d', 'info': const {'params': 3, 'expr': false}},
-    const {'name': 'rotateX', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'rotateY', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'rotateZ', 'info': const {'params': 1, 'expr': false}},
-    const {'name': 'perspective', 'info': const {'params': 1, 'expr': false}},
-  ];
-
   /**
    * Check if name is a pre-defined CSS name.  Used by error handler to report
    * if name is unknown or used improperly.

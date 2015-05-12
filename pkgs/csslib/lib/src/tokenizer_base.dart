@@ -55,9 +55,6 @@ abstract class TokenizerBase {
   int _index = 0;
   int _startIndex = 0;
 
-  static const String _CDATA_START = '<![CDATA[';
-  static const String _CDATA_END = ']]>';
-
   TokenizerBase(this._file, this._text, this._skipWhitespace,
       [this._index = 0]);
 
@@ -101,14 +98,6 @@ abstract class TokenizerBase {
       }
     } else {
       return false;
-    }
-  }
-
-  String _tokenText() {
-    if (_index < _text.length) {
-      return _text.substring(_startIndex, _index);
-    } else {
-      return _text.substring(_startIndex, _text.length);
     }
   }
 
@@ -304,14 +293,6 @@ abstract class TokenizerBase {
         buf.add(ch);
       }
     }
-  }
-
-  Token _finishOpenBrace() {
-    return _finishToken(TokenKind.LBRACE);
-  }
-
-  Token _finishCloseBrace() {
-    return _finishToken(TokenKind.RBRACE);
   }
 
   Token finishString(int quote) {
