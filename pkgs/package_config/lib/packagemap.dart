@@ -30,8 +30,9 @@ class Packages {
       throw new ArgumentError.value(
           uri, "uri", "Path must not start with '/'.");
     }
+    //TODO: re-enable
     // Normalizes the path by removing '.' and '..' segments.
-    uri = uri.normalizePath();
+    // uri = uri.normalizePath();
     String path = uri.path;
     var slashIndex = path.indexOf('/');
     String packageName;
@@ -185,12 +186,14 @@ class Packages {
       }
     }
 
-    baseUri = baseUri.normalizePath();
+    //TODO: normalize path
+    // baseUri = baseUri.normalizePath();
     List<String> base = baseUri.pathSegments.toList();
     if (base.isNotEmpty) {
       base = new List<String>.from(base)..removeLast();
     }
-    uri = uri.normalizePath();
+    //TODO: normalize path
+    //uri = uri.normalizePath();
     List<String> target = uri.pathSegments.toList();
     int index = 0;
     while (index < base.length && index < target.length) {
