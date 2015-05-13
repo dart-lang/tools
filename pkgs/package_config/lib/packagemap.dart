@@ -27,8 +27,8 @@ class Packages {
       throw new ArgumentError.value(uri, "uri", "Must not have authority");
     }
     if (uri.path.startsWith("/")) {
-      throw new ArgumentError.value(uri, "uri",
-      "Path must not start with '/'.");
+      throw new ArgumentError.value(
+          uri, "uri", "Path must not start with '/'.");
     }
     // Normalizes the path by removing '.' and '..' segments.
     uri = uri.normalizePath();
@@ -45,8 +45,8 @@ class Packages {
     }
     Uri packageLocation = packageMapping[packageName];
     if (packageLocation == null) {
-      throw new ArgumentError.value(uri, "uri",
-      "Unknown package name: $packageName");
+      throw new ArgumentError.value(
+          uri, "uri", "Unknown package name: $packageName");
     }
     return packageLocation.resolveUri(new Uri(path: rest));
   }
@@ -94,13 +94,13 @@ class Packages {
 
       var packageLocation = Uri.parse(source, eqIndex + 1, end);
       if (!packageLocation.path.endsWith('/')) {
-        packageLocation = packageLocation.replace(
-            path: packageLocation.path + "/");
+        packageLocation =
+            packageLocation.replace(path: packageLocation.path + "/");
       }
       packageLocation = baseLocation.resolveUri(packageLocation);
       if (result.containsKey(packageName)) {
-        throw new FormatException("Same package name occured twice.",
-        source, start);
+        throw new FormatException(
+            "Same package name occured twice.", source, start);
       }
       result[packageName] = packageLocation;
     }
@@ -141,7 +141,7 @@ class Packages {
 
       // If baseUri provided, make uri relative.
       if (baseUri != null) {
-        uri = _relativizeUri(uri, baseUri);
+        uri = relativize(uri, baseUri);
       }
       output.write(uri);
       if (!uri.path.endsWith('/')) {
@@ -157,14 +157,14 @@ class Packages {
     return buffer.toString();
   }
 
-  static Uri relativize(Uri uri,
-                        Uri baseUri) {
+  static Uri relativize(Uri uri, Uri baseUri) {
     if (uri.hasQuery || uri.hasFragment) {
-      uri = new Uri(scheme: uri.scheme,
-      userInfo: uri.hasAuthority ? uri.userInfo : null,
-      host: uri.hasAuthority ? uri.host : null,
-      port: uri.hasAuthority ? uri.port : null,
-      path: uri.path);
+      uri = new Uri(
+          scheme: uri.scheme,
+          userInfo: uri.hasAuthority ? uri.userInfo : null,
+          host: uri.hasAuthority ? uri.host : null,
+          port: uri.hasAuthority ? uri.port : null,
+          path: uri.path);
     }
     if (!baseUri.isAbsolute) {
       throw new ArgumentError("Base uri '$baseUri' must be absolute.");
@@ -179,19 +179,19 @@ class Packages {
     if (uri.hasAuthority != baseUri.hasAuthority) return uri;
     if (uri.hasAuthority) {
       if (uri.userInfo != baseUri.userInfo ||
-      uri.host.toLowerCase() != baseUri.host.toLowerCase() ||
-      uri.port != baseUri.port) {
+          uri.host.toLowerCase() != baseUri.host.toLowerCase() ||
+          uri.port != baseUri.port) {
         return uri;
       }
     }
 
+    baseUri = baseUri.normalizePath();
     List<String> base = baseUri.pathSegments.toList();
-    base = base.normalizePath();
     if (base.isNotEmpty) {
       base = new List<String>.from(base)..removeLast();
     }
+    uri = uri.normalizePath();
     List<String> target = uri.pathSegments.toList();
-    target = target.normalizePath();
     int index = 0;
     while (index < base.length && index < target.length) {
       if (base[index] != target[index]) {
@@ -209,7 +209,7 @@ class Packages {
     }
   }
 
-  static void _checkIdentifier(String string, int start, int end) {
+  static bool _checkIdentifier(String string, int start, int end) {
     const int a = 0x61;
     const int z = 0x7a;
     const int _ = 0x5f;
@@ -219,9 +219,10 @@ class Packages {
       var char = string.codeUnitAt(i);
       if (char == _ || char == $) continue;
       if ((char ^ 0x30) <= 9 && i > 0) continue;
-      char |= 0x20;  // Lower-case letters.
+      char |= 0x20; // Lower-case letters.
       if (char >= a && char <= z) continue;
       throw new FormatException("Not an identifier", string, i);
     }
+    return true;
   }
 }
