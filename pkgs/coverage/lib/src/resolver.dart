@@ -68,8 +68,12 @@ class Resolver {
     return null;
   }
 
+  /// Returns a canonicalized path, or `null` if the path cannot be resolved.
   String resolveSymbolicLinks(String path) {
-    return new File(p.normalize(path)).resolveSymbolicLinksSync();
+    var normalizedPath = p.normalize(path);
+    var type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
+    if (type == FileSystemEntityType.NOT_FOUND) return null;
+    return new File(normalizedPath).resolveSymbolicLinksSync();
   }
 }
 
