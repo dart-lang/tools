@@ -72,14 +72,12 @@ main() {
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
-
-// TODO: re-enable when path normalization is in
-//  test("dot-dot 2", () {
-//    var packages = Packages.parse(singleRelativeSample, base);
-//    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
-//    expect(packages.resolve(Uri.parse("package:qux/../foo/bar/baz.dart")),
-//        equals(base.resolve("../test/").resolve("bar/baz.dart")));
-//  });
+  test("dot-dot 2", () {
+    var packages = Packages.parse(singleRelativeSample, base);
+    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    expect(packages.resolve(Uri.parse("package:qux/../foo/bar/baz.dart")),
+        equals(base.resolve("../test/").resolve("bar/baz.dart")));
+  });
 
   test("all valid chars", () {
     var packages = Packages.parse(allValidCharsSample, base);
