@@ -103,7 +103,7 @@ parseArgs(List<String> arguments) {
 
   printUsage() {
     print('Usage: dart format_coverage.dart [OPTION...]\n');
-    print(parser.getUsage());
+    print(parser.usage);
   }
 
   fail(String msg) {
