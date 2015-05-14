@@ -6,7 +6,7 @@ homepage: https://github.com/dart-lang/coverage
 environment:
   sdk: '>=1.4.0 <2.0.0'
 dependencies:
-  args: '>=0.9.0 <2.0.0'
+  args: '>=0.12.1 <1.0.0'
   http: '>=0.9.0 <2.0.0'
   logging: '>=0.9.0 <0.10.0'
   path: '>=0.9.0 <2.0.0'

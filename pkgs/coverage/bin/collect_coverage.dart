@@ -106,7 +106,7 @@ Options parseArgs(List<String> arguments) {
 
   printUsage() {
     print('Usage: dart collect_coverage.dart --port=NNNN [OPTION...]\n');
-    print(parser.getUsage());
+    print(parser.usage);
   }
 
   fail(message) {
