@@ -31,7 +31,7 @@ class Packages {
           uri, "uri", "Path must not start with '/'.");
     }
     // Normalizes the path by removing '.' and '..' segments.
-    uri = _normalizePath(uri);
+    uri = uri.normalizePath();
     String path = uri.path;
     var slashIndex = path.indexOf('/');
     String packageName;
@@ -50,10 +50,6 @@ class Packages {
     }
     return packageLocation.resolveUri(new Uri(path: rest));
   }
-
-  /// A stand in for uri.normalizePath(), coming in 1.11
-  static Uri _normalizePath(Uri existingUri) =>
-      new Uri().resolveUri(existingUri);
 
   /// Parses a `packages.cfg` file into a `Packages` object.
   ///
@@ -189,12 +185,12 @@ class Packages {
       }
     }
 
-    baseUri = _normalizePath(baseUri);
+    baseUri = baseUri.normalizePath();
     List<String> base = baseUri.pathSegments.toList();
     if (base.isNotEmpty) {
       base = new List<String>.from(base)..removeLast();
     }
-    uri = _normalizePath(uri);
+    uri = uri.normalizePath();
     List<String> target = uri.pathSegments.toList();
     int index = 0;
     while (index < base.length && index < target.length) {
