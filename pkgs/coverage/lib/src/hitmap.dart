@@ -68,24 +68,44 @@ mergeHitmaps(Map newMap, Map result) {
   });
 }
 
-Future<Map> parseCoverage(List<File> files, int workers) {
+Future<Map> parseCoverage(List<File> files, int workers) async {
   Map globalHitmap = {};
   var workerId = 0;
-  return Future.wait(_split(files, workers).map((workerFiles) {
-    return _spawnWorker('Worker ${workerId++}', workerFiles)
-        .then((Map hitmap) => mergeHitmaps(hitmap, globalHitmap));
-  })).then((_) => globalHitmap);
+  await Future.wait(_split(files, workers).map((workerFiles) async {
+    var hitmap = await _spawnWorker('Worker ${workerId++}', workerFiles);
+    mergeHitmaps(hitmap, globalHitmap);
+  }));
+
+  return globalHitmap;
 }
 
-Future<Map> _spawnWorker(String name, List files) {
+Future<Map> _spawnWorker(String name, List<File> files) async {
   RawReceivePort port = new RawReceivePort();
   var completer = new Completer();
-  port.handler = ((Map hitmap) {
-    completer.complete(hitmap);
-    port.close();
+  port.handler = ((result) {
+    try {
+      if (result is Map) {
+        completer.complete(result);
+      } else {
+        // TODO: result[1] is a String, but should map to a StackTrace
+        //       consider using the stacktrace package to parse and send
+        completer.completeError(result[0]);
+      }
+    } catch (err, stack) {
+      completer.completeError(err, stack);
+    } finally {
+      port.close();
+    }
   });
   var msg = new _WorkMessage(name, files, port.sendPort);
-  Isolate.spawn(_worker, msg);
+
+  Isolate isolate = await Isolate.spawn(_worker, msg, paused: true);
+  isolate.setErrorsFatal(true);
+
+  isolate.resume(isolate.pauseCapability);
+
+  isolate.addErrorListener(port.sendPort);
+
   return completer.future;
 }
 
