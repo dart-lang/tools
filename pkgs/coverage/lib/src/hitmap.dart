@@ -8,24 +8,22 @@ import 'dart:isolate';
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
 Map createHitmap(List<Map> json) {
-  Map<String, Map<int, int>> hitMap = {};
+  // Map of source file to map of line to hit count for that line.
+  var globalHitMap = <String, Map<int, int>>{};
 
-  addToMap(source, line, count) {
-    if (!hitMap[source].containsKey(line)) {
-      hitMap[source][line] = 0;
-    }
-    hitMap[source][line] += count;
+  void addToMap(Map<int, int> map, int line, int count) {
+    var oldCount = map.putIfAbsent(line, () => 0);
+    map[line] = count + oldCount;
   }
 
-  json.forEach((Map e) {
+  for (Map e in json) {
     var source = e['source'];
     if (source == null) {
-      // Couldnt resolve import, so skip this entry.
-      return;
+      // Couldn't resolve import, so skip this entry.
+      continue;
     }
-    if (!hitMap.containsKey(source)) {
-      hitMap[source] = {};
-    }
+
+    var sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
     var hits = e['hits'];
     // hits is a flat array of the following format:
     // [ <line|linerange>, <hitcount>,...]
@@ -35,20 +33,20 @@ Map createHitmap(List<Map> json) {
       var k = hits[i];
       if (k is num) {
         // Single line.
-        addToMap(source, k, hits[i + 1]);
-      }
-      if (k is String) {
+        addToMap(sourceHitMap, k, hits[i + 1]);
+      } else {
+        assert(k is String);
         // Linerange. We expand line ranges to actual lines at this point.
         var splitPos = k.indexOf('-');
         int start = int.parse(k.substring(0, splitPos));
-        int end = int.parse(k.substring(splitPos + 1, k.length));
+        int end = int.parse(k.substring(splitPos + 1));
         for (var j = start; j <= end; j++) {
-          addToMap(source, j, hits[i + 1]);
+          addToMap(sourceHitMap, j, hits[i + 1]);
         }
       }
     }
-  });
-  return hitMap;
+  }
+  return globalHitMap;
 }
 
 /// Merges [newMap] into [result].
