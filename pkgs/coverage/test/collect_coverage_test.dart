@@ -67,6 +67,20 @@ void main() {
 
     expect(isolateFile, {7: 1, 9: 3, 11: 1, 6: 1});
   });
+
+  test('parseCoverage', () async {
+    var tempDir = await Directory.systemTemp.createTemp('coverage.test.');
+
+    var outputFile = new File(p.join(tempDir.path, 'coverage.json'));
+
+    var coverageResults = await _getCoverageResult();
+    await outputFile.writeAsString(coverageResults, flush: true);
+
+    var parsedResult = await parseCoverage([outputFile], 1);
+
+    expect(parsedResult, contains(_sampleAppFileUri));
+    expect(parsedResult, contains(_isolateLibFileUri));
+  });
 }
 
 String _coverageData;
