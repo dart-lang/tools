@@ -6,6 +6,7 @@ library cli_util;
 
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:which/which.dart';
 
 /// Return the path to the current Dart SDK. This will return `null` if we are
@@ -43,6 +44,12 @@ Directory getSdkDir([List<String> cliArgs]) {
     Link link = new Link(executable);
     if (link.existsSync()) {
       executable = link.resolveSymbolicLinksSync();
+    }
+
+    Link parentLink = new Link(p.dirname(executable));
+    if (parentLink.existsSync()) {
+      executable = p.join(
+          parentLink.resolveSymbolicLinksSync(), p.basename(executable));
     }
 
     File dartVm = new File(executable);
