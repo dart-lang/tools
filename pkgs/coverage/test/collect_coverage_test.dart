@@ -30,15 +30,15 @@ void main() {
     var coverage = json['coverage'] as List;
     expect(coverage, isNotEmpty);
 
-    var sources = coverage.fold(new Map(), (Map map, Map value) {
-      var sourceUri = Uri.parse(value['source']);
+    var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
+      var sourceUri = value['source'];
 
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
 
       return map;
     });
 
-    var fullSamplePath = p.toUri(p.absolute(_sampleAppPath));
+    var fullSamplePath = p.toUri(p.absolute(_sampleAppPath)).toString();
 
     var sampleCoverageData = sources[fullSamplePath].single;
 
