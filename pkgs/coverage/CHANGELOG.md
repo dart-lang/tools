@@ -1,3 +1,6 @@
+###0.6.2
+ * Support observatory protocol changes for VM >= 1.11.0.
+
 ###0.6.1
  * Support observatory protocol changes for VM >= 1.10.0.
 
