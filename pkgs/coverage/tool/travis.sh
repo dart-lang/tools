@@ -14,16 +14,13 @@ dartanalyzer $DARTANALYZER_FLAGS \
   bin/format_coverage.dart \
   lib/coverage.dart
 
-# Tests only work on Dart <= 1.10 – protocol changed in 1.11
-# BUG https://github.com/dart-lang/coverage/issues/70
-if [ "$TRAVIS_DART_VERSION" = "stable" ]; then
-  # Run the tests.
-  echo "Running tests..."
-  pub run test
-fi
+# Run the tests.
+echo "Running tests..."
+pub run test
 
 # Install dart_coveralls; gather and send coverage data.
 if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "stable" ]; then
+  echo "Running coverage..."
   pub global activate dart_coveralls
   pub global run dart_coveralls report \
     --token $COVERALLS_TOKEN \
