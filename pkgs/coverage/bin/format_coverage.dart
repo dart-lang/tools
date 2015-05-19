@@ -76,7 +76,7 @@ main(List<String> arguments) {
 
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
-parseArgs(List<String> arguments) {
+Environment parseArgs(List<String> arguments) {
   final env = new Environment();
   var parser = new ArgParser();
 
