@@ -15,14 +15,14 @@ main() async {
   ReceivePort port = new ReceivePort();
 
   Isolate isolate =
-      await Isolate.spawn(isolateTask, [port.sendPort, 1, 2, 3], paused: true);
+      await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);
   isolate.addOnExitListener(port.sendPort);
   isolate.resume(isolate.pauseCapability);
 
   var value = await port.first;
 
-  if (value != 6) {
-    throw 'expected 6!';
+  if (value != 3) {
+    throw 'expected 3!';
   }
 }
 

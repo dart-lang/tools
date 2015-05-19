@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -49,6 +50,22 @@ void main() {
     for (var sampleCoverageData in sources[_isolateLibFileUri]) {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
+  });
+
+  test('createHitmap', () async {
+    var resultString = await _getCoverageResult();
+
+    var json = JSON.decode(resultString) as Map;
+
+    var coverage = json['coverage'] as List;
+
+    var hitMap = createHitmap(coverage);
+
+    expect(hitMap, contains(_sampleAppFileUri));
+
+    var isolateFile = hitMap[_isolateLibFileUri];
+
+    expect(isolateFile, {7: 1, 9: 3, 11: 1, 6: 1});
   });
 }
 
