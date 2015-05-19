@@ -1,4 +1,8 @@
-void main() {
+import 'dart:isolate';
+
+import 'test_app_isolate.dart';
+
+main() async {
   for (var i = 0; i < 10; i++) {
     for (var j = 0; j < 10; j++) {
       var sum = usedMethod(i, j);
@@ -6,6 +10,19 @@ void main() {
         throw 'bad method!';
       }
     }
+  }
+
+  ReceivePort port = new ReceivePort();
+
+  Isolate isolate =
+      await Isolate.spawn(isolateTask, [port.sendPort, 1, 2, 3], paused: true);
+  isolate.addOnExitListener(port.sendPort);
+  isolate.resume(isolate.pauseCapability);
+
+  var value = await port.first;
+
+  if (value != 6) {
+    throw 'expected 6!';
   }
 }
 

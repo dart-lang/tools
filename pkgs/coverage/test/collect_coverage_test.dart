@@ -12,7 +12,11 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 final _sampleAppPath = p.join('test', 'test_files', 'test_app.dart');
+final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
 final _collectAppPath = p.join('bin', 'collect_coverage.dart');
+
+final _sampleAppFileUri = p.toUri(p.absolute(_sampleAppPath)).toString();
+final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 const _timeout = const Duration(seconds: 5);
 
@@ -38,11 +42,13 @@ void main() {
       return map;
     });
 
-    var fullSamplePath = p.toUri(p.absolute(_sampleAppPath)).toString();
+    for (var sampleCoverageData in sources[_sampleAppFileUri]) {
+      expect(sampleCoverageData['hits'], isNotEmpty);
+    }
 
-    var sampleCoverageData = sources[fullSamplePath].single;
-
-    expect(sampleCoverageData['hits'], isNotEmpty);
+    for (var sampleCoverageData in sources[_isolateLibFileUri]) {
+      expect(sampleCoverageData['hits'], isNotEmpty);
+    }
   });
 }
 
