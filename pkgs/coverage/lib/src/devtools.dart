@@ -236,6 +236,10 @@ class _VMWebsocketConnection implements _Connection {
     _log.fine('Recv< $response');
     var json = JSON.decode(response);
     var id = json['id'];
+    if (id is String) {
+      // Support for vm version >= 1.11.0
+      id = int.parse(id);
+    }
     if (id == null || !_pendingRequests.keys.contains(id)) {
       // Suppress unloved messages.
       return;
@@ -249,7 +253,15 @@ class _VMWebsocketConnection implements _Connection {
     if (innerResponse == null) {
       _log.severe('Failed to get JSON response for message $id');
     }
-    var message = innerResponse != null ? JSON.decode(innerResponse) : null;
+    var message;
+    if (innerResponse != null) {
+      if (innerResponse is Map) {
+        // Support for vm version >= 1.11.0
+        message = innerResponse;
+      } else {
+        message = JSON.decode(innerResponse);
+      }
+    }
     var completer = _pendingRequests.remove(id);
     if (completer == null) {
       _log.severe('Failed to pair response with request');
