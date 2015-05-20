@@ -1,3 +1,11 @@
+# 1.2.1
+
+* Allow version ranges like `>=1.2.3-dev.1 <1.2.3` to match pre-release versions
+  of `1.2.3`. Previously, these didn't match, since the pre-release versions had
+  the same major, minor, and patch numbers as the max; now an exception has been
+  added if they also have the same major, minor, and patch numbers as the min
+  *and* the min is also a pre-release version.
+
 # 1.2.0
 
 * Add a `VersionConstraint.union()` method and a `new

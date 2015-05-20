@@ -33,10 +33,12 @@ spec. It differs from semver in a few corner cases:
     unstable versions of `2.0.0`'s API, which is what pre-release versions
     represent.
 
-    To handle that, `<` version ranges to not allow pre-release versions of the
-    maximum unless the max is itself a pre-release. In other words, a `<2.0.0`
-    constraint will prohibit not just `2.0.0` but any pre-release of `2.0.0`.
-    However, `<2.0.0-beta` will exclude `2.0.0-beta` but allow `2.0.0-alpha`.
+    To handle that, `<` version ranges don't allow pre-release versions of the
+    maximum unless the max is itself a pre-release, or the min is a pre-release
+    of the same version. In other words, a `<2.0.0` constraint will prohibit not
+    just `2.0.0` but any pre-release of `2.0.0`. However, `<2.0.0-beta` will
+    exclude `2.0.0-beta` but allow `2.0.0-alpha`. Likewise, `>2.0.0-alpha
+    <2.0.0` will exclude `2.0.0-alpha` but allow `2.0.0-beta`.
 
  *  **Pre-release versions are avoided when possible.** The above case
     handles pre-release versions at the top of the range, but what about in

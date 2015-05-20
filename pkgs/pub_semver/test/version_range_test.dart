@@ -105,6 +105,18 @@ main() {
           new Version.parse('2.3.4')));
     });
 
+    test('pre-release versions of non-pre-release max are included if min is a '
+        'pre-release of the same version', () {
+      var range = new VersionRange(
+          min: new Version.parse('2.3.4-dev.0'), max: v234);
+
+      expect(range, allows(new Version.parse('2.3.4-dev.1')));
+      expect(range, doesNotAllow(
+          new Version.parse('2.3.3'),
+          new Version.parse('2.3.4-dev'),
+          new Version.parse('2.3.4')));
+    });
+
     test('pre-release versions of pre-release max are included', () {
       var range = new VersionRange(max: new Version.parse('2.3.4-dev.2'));
 

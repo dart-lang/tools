@@ -85,20 +85,41 @@ class VersionRange implements VersionConstraint {
       if (other > max) return false;
       if (!includeMax && other == max) return false;
 
-      // If the max isn't itself a pre-release, don't allow any pre-release
-      // versions of the max.
+
+      // Disallow pre-release versions that have the same major, minor, and
+      // patch version as the max, but only if neither the max nor the min is a
+      // pre-release of that version. This ensures that "^1.2.3" doesn't include
+      // "2.0.0-pre", while also allowing both ">=2.0.0-pre.2 <2.0.0" and
+      // ">=1.2.3 <2.0.0-pre.7" to match "2.0.0-pre.5".
       //
-      // See: https://www.npmjs.org/doc/misc/semver.html
-      if (!includeMax &&
+      // It's worth noting that this is different than [NPM's semantics][]. NPM
+      // disallows **all** pre-release versions unless their major, minor, and
+      // patch numbers match those of a prerelease min or max. This ensures that
+      // no prerelease versions will ever be selected if the user doesn't
+      // explicitly allow them.
+      //
+      // [NPM's semantics]: https://www.npmjs.org/doc/misc/semver.html#prerelease-tags
+      //
+      // Instead, we ensure that release versions will always be preferred over
+      // prerelease versions by ordering the release versions first in
+      // [Version.prioritize]. This means that constraints like "any" or
+      // ">1.2.3" can still match prerelease versions if they're the only things
+      // available.
+      var maxIsReleaseOfOther = !includeMax &&
           !max.isPreRelease && other.isPreRelease &&
-          other.major == max.major && other.minor == max.minor &&
-          other.patch == max.patch) {
-        return false;
-      }
+          _equalsWithoutPreRelease(other, max);
+      var minIsPreReleaseOfOther = min != null && min.isPreRelease &&
+          _equalsWithoutPreRelease(other, min);
+      if (maxIsReleaseOfOther && !minIsPreReleaseOfOther) return false;
     }
 
     return true;
   }
+
+  bool _equalsWithoutPreRelease(Version version1, Version version2) =>
+      version1.major == version2.major &&
+          version1.minor == version2.minor &&
+          version1.patch == version2.patch;
 
   bool allowsAll(VersionConstraint other) {
     if (other.isEmpty) return true;
