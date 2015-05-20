@@ -1,3 +1,13 @@
+###0.6.3
+
+ * Support the latest release of `args` package.
+ 
+ * Support the latest release of `logging` package.
+ 
+ * Fixed error when trying to access invalid paths.
+ 
+ * Require at least Dart SDK v1.9.0.
+
 ###0.6.2
  * Support observatory protocol changes for VM >= 1.11.0.
 
