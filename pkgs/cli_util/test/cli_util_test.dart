@@ -11,6 +11,9 @@ void defineTests() {
       expect(getSdkDir(['--dart-sdk', '/dart/sdk']).path, equals('/dart/sdk'));
       expect(getSdkDir(['--dart-sdk=/dart/sdk']).path, equals('/dart/sdk'));
     });
+    test('finds the SDK without cli args', () {
+      expect(getSdkDir(), isNotNull);
+    });
   });
 }
 
