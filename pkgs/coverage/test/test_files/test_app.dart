@@ -4,6 +4,9 @@
 
 import 'dart:isolate';
 
+// explicitly using a package import to validate hitmap coverage of packages
+import 'package:coverage/src/util.dart';
+
 import 'test_app_isolate.dart';
 
 main() async {
@@ -28,6 +31,9 @@ main() async {
   if (value != 3) {
     throw 'expected 3!';
   }
+
+  var result = await retry(() async => 42, const Duration(seconds: 1));
+  print(result);
 }
 
 int usedMethod(int a, int b) {
