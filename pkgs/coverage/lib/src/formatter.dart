@@ -48,39 +48,31 @@ class PrettyPrintFormatter implements Formatter {
   final Loader loader;
   PrettyPrintFormatter(this.resolver, this.loader);
 
-  Future<String> format(Map hitmap) {
+  Future<String> format(Map hitmap) async {
     var buf = new StringBuffer();
-    var emitOne = (key) {
+    for (var key in hitmap.keys) {
       var v = hitmap[key];
-      var c = new Completer();
       var uri = resolver.resolve(key);
       if (uri == null) {
-        c.complete();
+        continue;
       } else {
-        loader.load(uri).then((lines) {
-          if (lines == null) {
-            c.complete();
-            return;
+        var lines = await loader.load(uri);
+        if (lines == null) {
+          continue;
+        }
+        buf.writeln(uri);
+        for (var line = 1; line <= lines.length; line++) {
+          var prefix = _prefix;
+          if (v.containsKey(line)) {
+            prefix = v[line].toString().padLeft(_prefix.length);
           }
-          buf.write('${uri}\n');
-          for (var line = 1; line <= lines.length; line++) {
-            String prefix = '       ';
-            if (v.containsKey(line)) {
-              prefix = v[line].toString();
-              StringBuffer b = new StringBuffer();
-              for (int i = prefix.length; i < 7; i++) {
-                b.write(' ');
-              }
-              b.write(prefix);
-              prefix = b.toString();
-            }
-            buf.write('${prefix}|${lines[line-1]}\n');
-          }
-          c.complete();
-        });
+          buf.writeln('${prefix}|${lines[line-1]}');
+        }
       }
-      return c.future;
-    };
-    return Future.forEach(hitmap.keys, emitOne).then((_) => buf.toString());
+    }
+
+    return buf.toString();
   }
 }
+
+const _prefix = '       ';
