@@ -10,38 +10,34 @@ import 'package:coverage/src/devtools.dart';
 import 'package:coverage/src/util.dart';
 import 'package:logging/logging.dart';
 
-Future<Map> getAllCoverage(VMService service) {
-  return service
-      .getVM()
-      .then((vm) => vm.isolates.map((i) => service.getCoverage(i.id)))
-      .then(Future.wait)
-      .then((responses) {
-    // flatten response lists
-    var allCoverage = responses.expand((c) => c.coverage).toList();
-    return {'type': 'CodeCoverage', 'coverage': allCoverage,};
-  });
+Future<Map> getAllCoverage(VMService service) async {
+  var vm = await service.getVM();
+  var coverageRequests = vm.isolates.map((i) => service.getCoverage(i.id));
+  var coverageResponses = await Future.wait(coverageRequests);
+  var allCoverage = coverageResponses.expand((c) => c.coverage).toList();
+  return {'type': 'CodeCoverage', 'coverage': allCoverage,};
 }
 
-Future resumeIsolates(VMService service) {
-  return service
-      .getVM()
-      .then((vm) => vm.isolates.map((i) => service.resume(i.id)))
-      .then(Future.wait);
+Future resumeIsolates(VMService service) async {
+  var vm = await service.getVM();
+  var isolateRequests = vm.isolates.map((i) => service.resume(i.id));
+  return Future.wait(isolateRequests);
 }
 
-Future waitIsolatesPaused(VMService service) {
-  allPaused() => service
-      .getVM()
-      .then((vm) => vm.isolates.map((i) => service.getIsolate(i.id)))
-      .then(Future.wait)
-      .then((isolates) => isolates.every((i) => i.paused))
-      .then((paused) => paused ? paused : new Future.error(paused));
+Future waitIsolatesPaused(VMService service) async {
+  allPaused() async {
+    var vm = await service.getVM();
+    var isolateRequests = vm.isolates.map((i) => service.getIsolate(i.id));
+    var isolates = await Future.wait(isolateRequests);
+    var paused = isolates.every((i) => i.paused);
+    if (!paused) throw "Unpaused isolates remaining.";
+  }
   return retry(allPaused, retryInterval);
 }
 
 const retryInterval = const Duration(milliseconds: 200);
 
-void main(List<String> arguments) {
+main(List<String> arguments) async {
   Logger.root.level = Level.WARNING;
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
@@ -56,22 +52,22 @@ void main(List<String> arguments) {
   Future connected =
       retry(() => VMService.connect(options.host, options.port), retryInterval);
   if (options.timeout != null) {
-    connected.timeout(options.timeout, onTimeout: onTimeout);
+    connected = connected.timeout(options.timeout, onTimeout: onTimeout);
   }
-  connected.then((vmservice) {
-    Future ready =
-        options.waitPaused ? waitIsolatesPaused(vmservice) : new Future.value();
-    if (options.timeout != null) {
-      ready.timeout(options.timeout, onTimeout: onTimeout);
-    }
-    return ready
-        .then((_) => getAllCoverage(vmservice))
-        .then(JSON.encode)
-        .then(options.out.write)
-        .then((_) => options.out.close())
-        .then((_) => options.resume ? resumeIsolates(vmservice) : null)
-        .then((_) => vmservice.close());
-  });
+  var vmService = await connected;
+  Future ready =
+      options.waitPaused ? waitIsolatesPaused(vmService) : new Future.value();
+  if (options.timeout != null) {
+    ready = ready.timeout(options.timeout, onTimeout: onTimeout);
+  }
+  await ready;
+  var coverage = await getAllCoverage(vmService);
+  options.out.write(JSON.encode(coverage));
+  await options.out.close();
+  if (options.resume) {
+    await resumeIsolates(vmService);
+  }
+  await vmService.close();
 }
 
 class Options {
