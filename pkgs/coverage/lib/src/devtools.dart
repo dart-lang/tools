@@ -17,17 +17,19 @@ class VMService {
 
   VMService._(this._connection);
 
-  Future<VM> getVM() =>
-      _connection.request('getVM').then((resp) => new VM.fromJson(resp));
+  Future<VM> getVM() async {
+    var response = await _connection.request('getVM');
+    return new VM.fromJson(response);
+  }
 
-  Future<Isolate> getIsolate(String isolateId) {
-    return _connection
-        .request('getIsolate', {'isolateId': isolateId})
-        .then((resp) => new Isolate.fromJson(resp));
+  Future<Isolate> getIsolate(String isolateId) async {
+    var response =
+        await _connection.request('getIsolate', {'isolateId': isolateId});
+    return new Isolate.fromJson(response);
   }
 
   Future<AllocationProfile> getAllocationProfile(String isolateId,
-      {bool reset, bool gc}) {
+      {bool reset, bool gc}) async {
     var params = {'isolateId': isolateId};
     if (reset != null) {
       params['reset'] = reset;
@@ -35,58 +37,54 @@ class VMService {
     if (gc != null) {
       params['gc'] = 'full';
     }
-    return _connection
-        .request('getAllocationProfile', params)
-        .then((resp) => new AllocationProfile.fromJson(resp));
+    var response = await _connection.request('getAllocationProfile', params);
+    return new AllocationProfile.fromJson(response);
   }
 
-  Future getCoverage(String isolateId, {String targetId}) {
+  Future getCoverage(String isolateId, {String targetId}) async {
     var params = {'isolateId': isolateId};
     if (targetId != null) {
       params['targetId'] = targetId;
     }
-    return _connection
-        .request('getCoverage', params)
-        .then((resp) => new CodeCoverage.fromJson(resp));
+    var response = await _connection.request('getCoverage', params);
+    return new CodeCoverage.fromJson(response);
   }
 
   Future resume(String isolateId) =>
       _connection.request('resume', {'isolateId': isolateId});
 
-  static Future<VMService> connect(String host, int port) {
+  static Future<VMService> connect(String host, int port) async {
     _log.fine('Connecting to host $host on port $port');
 
     // For pre-1.9.0 VM versions attempt to detect if we're talking to a
     // Chromium remote debugging port or the VM observatory.
     var doDetect = new RegExp(r'^1\.[4-8]\.').hasMatch(Platform.version);
     if (doDetect) {
-      return http.get('http://$host:$port/json').then((resp) {
-        var json = JSON.decode(resp.body);
-        if (json is List) {
-          return connectToDevtools(host, port);
-        }
-        return connectToVM(host, port);
-      });
+      var response = await http.get('http://$host:$port/json');
+      var json = JSON.decode(response.body);
+      if (json is List) {
+        return connectToDevtools(host, port);
+      }
+      return connectToVM(host, port);
     }
 
     // For VM versions >=1.9.0, always connect via websocket protocol.
     return connectToVMWebsocket(host, port);
   }
 
-  static Future<VMService> connectToVM(String host, int port) {
-    return _VMConnection.connect(host, port).then((c) => new VMService._(c));
+  static Future<VMService> connectToVM(String host, int port) async {
+    var connection = await _VMConnection.connect(host, port);
+    return new VMService._(connection);
   }
 
-  static Future<VMService> connectToVMWebsocket(String host, int port) {
-    return _VMWebsocketConnection
-        .connect(host, port)
-        .then((c) => new VMService._(c));
+  static Future<VMService> connectToVMWebsocket(String host, int port) async {
+    var connection = await _VMWebsocketConnection.connect(host, port);
+    return new VMService._(connection);
   }
 
-  static Future<VMService> connectToDevtools(String host, int port) {
-    return _DevtoolsConnection
-        .connect(host, port)
-        .then((c) => new VMService._(c));
+  static Future<VMService> connectToDevtools(String host, int port) async {
+    var connection = await _DevtoolsConnection.connect(host, port);
+    return new VMService._(connection);
   }
 
   Future close() => _connection.close();
@@ -189,13 +187,12 @@ class _VMConnection implements _Connection {
     return new Future.value(new _VMConnection(uri));
   }
 
-  Future<Map> request(String request, [Map params = const {}]) {
+  Future<Map> request(String request, [Map params = const {}]) async {
     request = _getLegacyRequest(request, params);
     _log.fine('Send> $uri/$request');
-    return http.get('$uri/$request').then((resp) => resp.body).then((resp) {
-      _log.fine('Recv< $resp');
-      return resp.isEmpty ? {} : JSON.decode(resp);
-    });
+    var response = (await http.get('$uri/$request')).body;
+    _log.fine('Recv< $response');
+    return response.isEmpty ? {} : JSON.decode(response);
   }
 
   Future close() => new Future.value();
@@ -211,12 +208,11 @@ class _VMWebsocketConnection implements _Connection {
     _socket.listen(_handleResponse);
   }
 
-  static Future<_Connection> connect(String host, int port) {
+  static Future<_Connection> connect(String host, int port) async {
     _log.fine('Connecting to VM via HTTP websocket protocol');
     var uri = 'ws://$host:$port/ws';
-    return WebSocket
-        .connect(uri)
-        .then((socket) => new _VMWebsocketConnection(socket));
+    var socket = await WebSocket.connect(uri);
+    return new _VMWebsocketConnection(socket);
   }
 
   Future<Map> request(String method, [Map params = const {}]) {
@@ -278,7 +274,7 @@ class _DevtoolsConnection implements _Connection {
     _socket.listen(_handleResponse);
   }
 
-  static Future<_Connection> connect(String host, int port) {
+  static Future<_Connection> connect(String host, int port) async {
     _log.fine('Connecting to VM via Chromium remote debugging protocol');
     var uri = 'http://$host:$port/json';
 
@@ -300,12 +296,10 @@ class _DevtoolsConnection implements _Connection {
       return debuggerUrl;
     }
 
-    return http.get(uri).then((response) {
-      var webSocketDebuggerUrl = _getWebsocketDebuggerUrl(response);
-      return WebSocket
-          .connect(webSocketDebuggerUrl)
-          .then((socket) => new _DevtoolsConnection(socket));
-    });
+    var response = await http.get(uri);
+    var webSocketDebuggerUrl = _getWebsocketDebuggerUrl(response);
+    var socket = await WebSocket.connect(webSocketDebuggerUrl);
+    return new _DevtoolsConnection(socket);
   }
 
   Future<Map> request(String request, [Map params = const {}]) {
