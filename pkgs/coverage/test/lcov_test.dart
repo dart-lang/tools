@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library coverage.test.collect_coverage_test;
+library coverage.test.lcov_test;
 
 import 'dart:async';
 import 'dart:io';
@@ -65,7 +65,7 @@ void main() {
 
     // be very careful if you change the test file
     expect(res, contains("      0|  return a - b;"));
-    expect(res, contains('       |  doRetry() {'));
+    expect(res, contains('      0|      await new Future.delayed(interval);'));
 
     var hitLineRegexp = new RegExp(r'\s+(\d+)\|  return a \+ b;');
     var match = hitLineRegexp.allMatches(res).single;
