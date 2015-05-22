@@ -121,13 +121,24 @@ class Isolate {
   final String id;
   final String name;
   final bool pauseOnExit;
-  final pauseEvent;
-  bool get paused => pauseOnExit || (pauseEvent != null);
+  final ServiceEvent pauseEvent;
+  bool get paused =>
+      pauseOnExit && pauseEvent != null && pauseEvent.eventType == 'PauseExit';
 
   Isolate(this.id, this.name, this.pauseOnExit, this.pauseEvent);
 
-  factory Isolate.fromJson(json) => new Isolate(
-      json['id'], json['name'], json['pauseOnExit'], json['pauseEvent']);
+  factory Isolate.fromJson(json) => new Isolate(json['id'], json['name'],
+      json['pauseOnExit'], new ServiceEvent.fromJson(json['pauseEvent']));
+}
+
+class ServiceEvent {
+  final String eventType;
+  final IsolateRef isolate;
+
+  ServiceEvent(this.eventType, this.isolate);
+
+  factory ServiceEvent.fromJson(json) => new ServiceEvent(
+      json['eventType'], new IsolateRef.fromJson(json['isolate']));
 }
 
 class CodeCoverage {

@@ -1,3 +1,7 @@
+###0.6.5
+
+ * Fixed early collection bug when --wait-paused is set.
+
 ###0.6.4
 
  * Optimized formatters and fixed return value of `format` methods.
