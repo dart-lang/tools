@@ -17,27 +17,24 @@ class LcovFormatter implements Formatter {
   final Resolver resolver;
   LcovFormatter(this.resolver);
 
-  Future<String> format(Map hitmap) {
+  Future<String> format(Map hitmap) async {
     var buf = new StringBuffer();
-    var emitOne = (key) {
-      var v = hitmap[key];
-      StringBuffer entry = new StringBuffer();
+
+    hitmap.forEach((key, v) {
       var source = resolver.resolve(key);
       if (source == null) {
-        return new Future.value();
+        return;
       }
-      entry.write('SF:${source}\n');
+      buf.write('SF:${source}\n');
       v.keys.toList()
         ..sort()
         ..forEach((k) {
-          entry.write('DA:${k},${v[k]}\n');
+          buf.write('DA:${k},${v[k]}\n');
         });
-      entry.write('end_of_record\n');
-      buf.write(entry.toString());
-      return new Future.value();
-    };
+      buf.write('end_of_record\n');
+    });
 
-    return Future.forEach(hitmap.keys, emitOne).then((_) => buf.toString());
+    return buf.toString();
   }
 }
 
