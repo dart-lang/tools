@@ -11,7 +11,6 @@ class Resolver {
   static const DART_PREFIX = 'dart:';
   static const PACKAGE_PREFIX = 'package:';
   static const FILE_PREFIX = 'file://';
-  static const HTTP_PREFIX = 'http://';
 
   @Deprecated('See packageRoot. Removal in 0.7.0.')
   String get pkgRoot => packageRoot;
@@ -61,9 +60,6 @@ class Resolver {
     if (uri.startsWith(FILE_PREFIX)) {
       return resolveSymbolicLinks(p.fromUri(Uri.parse(uri)));
     }
-    if (uri.startsWith(HTTP_PREFIX)) {
-      return uri;
-    }
     // We cannot deal with anything else.
     failed.add(uri);
     return null;
@@ -84,22 +80,12 @@ class Loader {
 
   /// Loads an imported resource and returns a [Future] with a [List] of lines.
   /// Returns [null] if the resource could not be loaded.
-  Future<List<String>> load(String uri) {
-    if (uri.startsWith('http')) {
-      Completer c = new Completer();
-      HttpClient client = new HttpClient();
-      client
-          .getUrl(Uri.parse(uri))
-          .then((request) => request.close())
-          .then((response) => response.transform(UTF8.decoder).toList())
-          .then((data) => c.complete(data))
-          .then((_) => client.close())
-          .catchError((e) {
-        failed.add(uri);
-        c.complete(null);
-      });
-      return c.future;
+  Future<List<String>> load(String path) async {
+    try {
+      return new File(path).readAsLines();
+    } catch (_) {
+      failed.add(path);
+      return null;
     }
-    return new File(uri).readAsLines().catchError((e) => new Future.value());
   }
 }
