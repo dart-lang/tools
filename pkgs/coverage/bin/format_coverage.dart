@@ -60,11 +60,11 @@ main(List<String> arguments) async {
   if (env.verbose) {
     if (resolver.failed.length > 0) {
       print('Failed to resolve:');
-      resolver.failed.toSet().forEach((e) => print('  ${e}'));
+      resolver.failed.toSet().forEach((e) => print('  $e'));
     }
     if (loader.failed.length > 0) {
       print('Failed to load:');
-      loader.failed.toSet().forEach((e) => print('  ${e}'));
+      loader.failed.toSet().forEach((e) => print('  $e'));
     }
   }
   await env.output.close();
