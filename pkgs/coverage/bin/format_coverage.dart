@@ -25,7 +25,6 @@ main(List<String> arguments) async {
   final env = parseArgs(arguments);
 
   List files = filesToProcess(env.input);
-  int start = new DateTime.now().millisecondsSinceEpoch;
   if (env.verbose) {
     print('Environment:');
     print('  # files: ${files.length}');
@@ -34,12 +33,12 @@ main(List<String> arguments) async {
     print('  package-root: ${env.pkgRoot}');
   }
 
+  var clock = new Stopwatch()..start();
   var hitmap = await parseCoverage(files, env.workers);
 
   // All workers are done. Process the data.
   if (env.verbose) {
-    final end = new DateTime.now().millisecondsSinceEpoch;
-    print('Done creating a global hitmap. Took ${end - start} ms.');
+    print('Done creating global hitmap. Took ${clock.elapsedMilliseconds} ms.');
   }
 
   String output;
@@ -55,8 +54,7 @@ main(List<String> arguments) async {
   env.output.write(output);
   await env.output.flush();
   if (env.verbose) {
-    final end = new DateTime.now().millisecondsSinceEpoch;
-    print('Done flushing output. Took ${end - start} ms.');
+    print('Done flushing output. Took ${clock.elapsedMilliseconds} ms.');
   }
 
   if (env.verbose) {
