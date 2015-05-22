@@ -44,7 +44,7 @@ main(List<String> arguments) async {
   });
 
   var options = parseArgs(arguments);
-  onTimeout() {
+  exitOnTimeout() {
     var timeout = options.timeout.inSeconds;
     print('Failed to collect coverage within ${timeout}s');
     exit(1);
@@ -52,13 +52,13 @@ main(List<String> arguments) async {
   Future connected =
       retry(() => VMService.connect(options.host, options.port), retryInterval);
   if (options.timeout != null) {
-    connected = connected.timeout(options.timeout, onTimeout: onTimeout);
+    connected = connected.timeout(options.timeout, onTimeout: exitOnTimeout);
   }
   var vmService = await connected;
   Future ready =
       options.waitPaused ? waitIsolatesPaused(vmService) : new Future.value();
   if (options.timeout != null) {
-    ready = ready.timeout(options.timeout, onTimeout: onTimeout);
+    ready = ready.timeout(options.timeout, onTimeout: exitOnTimeout);
   }
   await ready;
   var coverage = await getAllCoverage(vmService);
