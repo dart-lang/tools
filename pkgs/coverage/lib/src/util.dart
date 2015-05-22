@@ -8,12 +8,13 @@ import 'dart:async';
 
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
-Future retry(Future f(), Duration interval) {
-  var completer = new Completer();
-  doRetry() {
-    f().then((result) => completer.complete(result),
-        onError: (e) => new Timer(interval, doRetry));
+Future retry(Future f(), Duration interval) async {
+  while (true) {
+    try {
+      var result = await f();
+      return result;
+    } catch (_) {
+      await new Future.delayed(interval);
+    }
   }
-  doRetry();
-  return completer.future;
 }
