@@ -65,7 +65,7 @@ void main() {
 
     var isolateFile = hitMap[_isolateLibFileUri];
 
-    expect(isolateFile, {7: 1, 9: 3, 11: 1, 6: 1});
+    expect(isolateFile, {11: 1, 13: 3, 15: 1, 10: 1});
   });
 
   test('parseCoverage', () async {
