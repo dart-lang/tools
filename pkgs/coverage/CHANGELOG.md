@@ -1,3 +1,9 @@
+###0.6.4
+
+ * Optimized formatters and fixed return value of `format` methods.
+ 
+ * Added `Resolver.packageRoot` – deprecated `Resolver.pkgRoot`.
+
 ###0.6.3
 
  * Support the latest release of `args` package.
