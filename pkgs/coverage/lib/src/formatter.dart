@@ -37,7 +37,7 @@ class LcovFormatter implements Formatter {
       return new Future.value();
     };
 
-    return Future.forEach(hitmap.keys, emitOne).then((_) => buf);
+    return Future.forEach(hitmap.keys, emitOne).then((_) => buf.toString());
   }
 }
 
@@ -84,6 +84,6 @@ class PrettyPrintFormatter implements Formatter {
       }
       return c.future;
     };
-    return Future.forEach(hitmap.keys, emitOne).then((_) => buf);
+    return Future.forEach(hitmap.keys, emitOne).then((_) => buf.toString());
   }
 }
