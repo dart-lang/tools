@@ -50,6 +50,29 @@ void main() {
     expect(res, contains(p.absolute(_isolateLibPath)));
     expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
   });
+
+  test('PrettyPrintFormatter', () async {
+    var hitmap = await _getHitMap();
+
+    var resolver = new Resolver(packageRoot: 'packages');
+    var formatter = new PrettyPrintFormatter(resolver, new Loader());
+
+    String res = await formatter.format(hitmap);
+
+    expect(res, contains(p.absolute(_sampleAppPath)));
+    expect(res, contains(p.absolute(_isolateLibPath)));
+    expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
+
+    // be very careful if you change the test file
+    expect(res, contains("      0|  return a - b;"));
+    expect(res, contains('       |  doRetry() {'));
+
+    var hitLineRegexp = new RegExp(r'\s+(\d+)\|  return a \+ b;');
+    var match = hitLineRegexp.allMatches(res).single;
+
+    var hitCount = int.parse(match[1]);
+    expect(hitCount, greaterThanOrEqualTo(1));
+  });
 }
 
 Map _hitMap;
