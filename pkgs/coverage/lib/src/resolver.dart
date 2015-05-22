@@ -13,13 +13,14 @@ class Resolver {
   static const FILE_PREFIX = 'file://';
   static const HTTP_PREFIX = 'http://';
 
-  final String pkgRoot;
+  @Deprecated('See packageRoot. Removal in 0.7.0.')
+  String get pkgRoot => packageRoot;
+
+  final String packageRoot;
   final String sdkRoot;
   final List<String> failed = [];
 
-  Resolver({packageRoot: null, sdkRoot: null})
-      : pkgRoot = packageRoot,
-        sdkRoot = sdkRoot;
+  Resolver({this.packageRoot, this.sdkRoot});
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -50,12 +51,12 @@ class Resolver {
       return resolveSymbolicLinks(filePath);
     }
     if (uri.startsWith(PACKAGE_PREFIX)) {
-      if (pkgRoot == null) {
+      if (packageRoot == null) {
         // No package-root given, do not resolve package: URIs.
         return null;
       }
       var path = uri.substring(PACKAGE_PREFIX.length, uri.length);
-      return resolveSymbolicLinks('$pkgRoot/$path');
+      return resolveSymbolicLinks(p.join(packageRoot, path));
     }
     if (uri.startsWith(FILE_PREFIX)) {
       return resolveSymbolicLinks(p.fromUri(Uri.parse(uri)));
