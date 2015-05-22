@@ -4,61 +4,62 @@
 
 library test_all;
 
-import "package:package_config/packagemap.dart";
+import "package:package_config/packages.dart";
+import "package:package_config/packages_file.dart" show parse;
 import "package:test/test.dart";
 
 main() {
   var base = Uri.parse("file:///one/two/three/packages.map");
   test("empty", () {
-    var packages = Packages.parse(emptySample, base);
-    expect(packages.packageMapping, isEmpty);
+    var packages = doParse(emptySample, base);
+    expect(packages.asMap(), isEmpty);
   });
   test("comment only", () {
-    var packages = Packages.parse(commentOnlySample, base);
-    expect(packages.packageMapping, isEmpty);
+    var packages = doParse(commentOnlySample, base);
+    expect(packages.asMap(), isEmpty);
   });
   test("empty lines only", () {
-    var packages = Packages.parse(emptyLinesSample, base);
-    expect(packages.packageMapping, isEmpty);
+    var packages = doParse(emptyLinesSample, base);
+    expect(packages.asMap(), isEmpty);
   });
 
   test("empty lines only", () {
-    var packages = Packages.parse(emptyLinesSample, base);
-    expect(packages.packageMapping, isEmpty);
+    var packages = doParse(emptyLinesSample, base);
+    expect(packages.asMap(), isEmpty);
   });
 
   test("single", () {
-    var packages = Packages.parse(singleRelativeSample, base);
-    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    var packages = doParse(singleRelativeSample, base);
+    expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
   test("single no slash", () {
-    var packages = Packages.parse(singleRelativeSampleNoSlash, base);
-    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    var packages = doParse(singleRelativeSampleNoSlash, base);
+    expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
   test("single no newline", () {
-    var packages = Packages.parse(singleRelativeSampleNoNewline, base);
-    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    var packages = doParse(singleRelativeSampleNoNewline, base);
+    expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
   test("single absolute", () {
-    var packages = Packages.parse(singleAbsoluteSample, base);
-    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    var packages = doParse(singleAbsoluteSample, base);
+    expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
         equals(Uri.parse("http://example.com/some/where/bar/baz.dart")));
   });
 
   test("multiple", () {
-    var packages = Packages.parse(multiRelativeSample, base);
+    var packages = doParse(multiRelativeSample, base);
     expect(
-        packages.packageMapping.keys.toList()..sort(), equals(["bar", "foo"]));
+        packages.packages.toList()..sort(), equals(["bar", "foo"]));
     expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
     expect(packages.resolve(Uri.parse("package:bar/foo/baz.dart")),
@@ -66,51 +67,51 @@ main() {
   });
 
   test("dot-dot 1", () {
-    var packages = Packages.parse(singleRelativeSample, base);
-    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    var packages = doParse(singleRelativeSample, base);
+    expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:foo/qux/../bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
   test("dot-dot 2", () {
-    var packages = Packages.parse(singleRelativeSample, base);
-    expect(packages.packageMapping.keys.toList(), equals(["foo"]));
+    var packages = doParse(singleRelativeSample, base);
+    expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:qux/../foo/bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
   test("all valid chars", () {
-    var packages = Packages.parse(allValidCharsSample, base);
-    expect(packages.packageMapping.keys.toList(), equals([allValidChars]));
+    var packages = doParse(allValidCharsSample, base);
+    expect(packages.packages.toList(), equals([allValidChars]));
     expect(packages.resolve(Uri.parse("package:$allValidChars/bar/baz.dart")),
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
   test("no escapes", () {
-    expect(() => Packages.parse("x%41x=x", base), throws);
+    expect(() => doParse("x%41x=x", base), throws);
   });
 
   test("not identifiers", () {
-    expect(() => Packages.parse("1x=x", base), throws);
-    expect(() => Packages.parse(" x=x", base), throws);
-    expect(() => Packages.parse("\\x41x=x", base), throws);
-    expect(() => Packages.parse("x@x=x", base), throws);
-    expect(() => Packages.parse("x[x=x", base), throws);
-    expect(() => Packages.parse("x`x=x", base), throws);
-    expect(() => Packages.parse("x{x=x", base), throws);
-    expect(() => Packages.parse("x/x=x", base), throws);
-    expect(() => Packages.parse("x:x=x", base), throws);
+    expect(() => doParse("1x=x", base), throws);
+    expect(() => doParse(" x=x", base), throws);
+    expect(() => doParse("\\x41x=x", base), throws);
+    expect(() => doParse("x@x=x", base), throws);
+    expect(() => doParse("x[x=x", base), throws);
+    expect(() => doParse("x`x=x", base), throws);
+    expect(() => doParse("x{x=x", base), throws);
+    expect(() => doParse("x/x=x", base), throws);
+    expect(() => doParse("x:x=x", base), throws);
   });
 
   test("same name twice", () {
-    expect(() => Packages.parse(singleRelativeSample * 2, base), throws);
+    expect(() => doParse(singleRelativeSample * 2, base), throws);
   });
 
   for (String invalidSample in invalid) {
     test("invalid '$invalidSample'", () {
       var result;
       try {
-        result = Packages.parse(invalidSample, base);
+        result = doParse(invalidSample, base);
       } on FormatException {
         // expected
         return;
@@ -118,6 +119,11 @@ main() {
       fail("Resolved to $result");
     });
   }
+}
+
+Packages doParse(String sample, Uri baseUri) {
+  Map<String, Uri> map = parse(sample.codeUnits, baseUri);
+  return new Packages(map);
 }
 
 // Valid samples.

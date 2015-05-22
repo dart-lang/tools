@@ -13,6 +13,10 @@ packages:
     description: barback
     source: hosted
     version: "0.15.2+4"
+  charcode:
+    description: charcode
+    source: hosted
+    version: "1.1.0"
   collection:
     description: collection
     source: hosted
@@ -21,6 +25,10 @@ packages:
     description: crypto
     source: hosted
     version: "0.9.0"
+  http:
+    description: http
+    source: hosted
+    version: "0.11.2"
   http_parser:
     description: http_parser
     source: hosted

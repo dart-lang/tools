@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'test_packagemap.dart' as packagemap;
+import 'parse_test.dart' as parse;
 
 main() {
-  packagemap.main();
+  parse.main();
 }
