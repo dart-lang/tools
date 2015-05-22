@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -22,7 +21,7 @@ class Environment {
   bool verbose;
 }
 
-main(List<String> arguments) {
+main(List<String> arguments) async {
   final env = parseArgs(arguments);
 
   List files = filesToProcess(env.input);
@@ -35,43 +34,42 @@ main(List<String> arguments) {
     print('  package-root: ${env.pkgRoot}');
   }
 
-  parseCoverage(files, env.workers).then((hitmap) {
-    // All workers are done. Process the data.
-    if (env.verbose) {
-      final end = new DateTime.now().millisecondsSinceEpoch;
-      print('Done creating a global hitmap. Took ${end - start} ms.');
+  var hitmap = await parseCoverage(files, env.workers);
+
+  // All workers are done. Process the data.
+  if (env.verbose) {
+    final end = new DateTime.now().millisecondsSinceEpoch;
+    print('Done creating a global hitmap. Took ${end - start} ms.');
+  }
+
+  String output;
+  var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
+  var loader = new Loader();
+  if (env.prettyPrint) {
+    output = await new PrettyPrintFormatter(resolver, loader).format(hitmap);
+  } else {
+    assert(env.lcov);
+    output = await new LcovFormatter(resolver).format(hitmap);
+  }
+
+  env.output.write(output);
+  await env.output.flush();
+  if (env.verbose) {
+    final end = new DateTime.now().millisecondsSinceEpoch;
+    print('Done flushing output. Took ${end - start} ms.');
+  }
+
+  if (env.verbose) {
+    if (resolver.failed.length > 0) {
+      print('Failed to resolve:');
+      resolver.failed.toSet().forEach((e) => print('  ${e}'));
     }
-
-    Future out;
-    var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
-    var loader = new Loader();
-    if (env.prettyPrint) {
-      out = new PrettyPrintFormatter(resolver, loader).format(hitmap);
-    } else if (env.lcov) {
-      out = new LcovFormatter(resolver).format(hitmap);
+    if (loader.failed.length > 0) {
+      print('Failed to load:');
+      loader.failed.toSet().forEach((e) => print('  ${e}'));
     }
-
-    out.then((output) {
-      env.output.write(output);
-      env.output.close().then((_) {
-        if (env.verbose) {
-          final end = new DateTime.now().millisecondsSinceEpoch;
-          print('Done flushing output. Took ${end - start} ms.');
-        }
-      });
-
-      if (env.verbose) {
-        if (resolver.failed.length > 0) {
-          print('Failed to resolve:');
-          resolver.failed.toSet().forEach((e) => print('  ${e}'));
-        }
-        if (loader.failed.length > 0) {
-          print('Failed to load:');
-          loader.failed.toSet().forEach((e) => print('  ${e}'));
-        }
-      }
-    });
-  });
+  }
+  await env.output.close();
 }
 
 /// Checks the validity of the provided arguments. Does not initialize actual
