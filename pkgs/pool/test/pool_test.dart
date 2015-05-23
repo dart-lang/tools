@@ -7,13 +7,12 @@ import 'dart:async';
 import 'package:fake_async/fake_async.dart';
 import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   group("request()", () {
     test("resources can be requested freely up to the limit", () {
       var pool = new Pool(50);
-      var requests = [];
       for (var i = 0; i < 50; i++) {
         expect(pool.request(), completes);
       }
@@ -22,7 +21,6 @@ void main() {
     test("resources block past the limit", () {
       new FakeAsync().run((async) {
         var pool = new Pool(50);
-        var requests = [];
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
@@ -35,7 +33,6 @@ void main() {
     test("a blocked resource is allocated when another is released", () {
       new FakeAsync().run((async) {
         var pool = new Pool(50);
-        var requests = [];
         for (var i = 0; i < 49; i++) {
           expect(pool.request(), completes);
         }
@@ -57,7 +54,6 @@ void main() {
   group("withResource()", () {
     test("can be called freely up to the limit", () {
       var pool = new Pool(50);
-      var requests = [];
       for (var i = 0; i < 50; i++) {
         pool.withResource(expectAsync(() => new Completer().future));
       }
@@ -66,7 +62,6 @@ void main() {
     test("blocks the callback past the limit", () {
       new FakeAsync().run((async) {
         var pool = new Pool(50);
-        var requests = [];
         for (var i = 0; i < 50; i++) {
           pool.withResource(expectAsync(() => new Completer().future));
         }
@@ -79,15 +74,14 @@ void main() {
     test("a blocked resource is allocated when another is released", () {
       new FakeAsync().run((async) {
         var pool = new Pool(50);
-        var requests = [];
         for (var i = 0; i < 49; i++) {
           pool.withResource(expectAsync(() => new Completer().future));
         }
 
         var completer = new Completer();
-        var lastAllocatedResource = pool.withResource(() => completer.future);
+        pool.withResource(() => completer.future);
         var blockedResourceAllocated = false;
-        var blockedResource = pool.withResource(() {
+        pool.withResource(() {
           blockedResourceAllocated = true;
         });
 
@@ -151,7 +145,7 @@ void main() {
 
         async.elapse(new Duration(seconds: 6));
       });
-    });    
+    });
 
     test("times out if nothing happens", () {
       new FakeAsync().run((async) {
@@ -163,7 +157,7 @@ void main() {
 
         async.elapse(new Duration(seconds: 6));
       });
-    });    
+    });
   });
 }
 
@@ -172,20 +166,18 @@ void main() {
 /// This should only be called within a [FakeAsync.run] zone.
 Function expectNoAsync() {
   var stack = new Trace.current(1);
-  return () => handleExternalError(
-      new TestFailure("Expected function not to be called."), "",
-      stack);
+  return () => registerException(
+      new TestFailure("Expected function not to be called."), stack);
 }
 
 /// A matcher for Futures that asserts that they don't complete.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
 Matcher get doesNotComplete => predicate((future) {
-  expect(future, new isInstanceOf<Future>('Future'));
+  expect(future, new isInstanceOf<Future>());
 
   var stack = new Trace.current(1);
-  future.then((_) => handleExternalError(
-      new TestFailure("Expected future not to complete."), "",
-      stack));
+  future.then((_) => registerException(
+      new TestFailure("Expected future not to complete."), stack));
   return true;
 });
