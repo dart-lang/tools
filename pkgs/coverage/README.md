@@ -59,7 +59,7 @@ debugging port.
 
 or if the `pub global run` exectuables are on your PATH,
 
-   format_coverage --package-root=app_package_root -i coverage.json
+    format_coverage --package-root=app_package_root -i coverage.json
 
 where `app_package_root` is the package-root of the code whose coverage is being
 collected. If `--sdk-root` is set, Dart SDK coverage will also be output.
