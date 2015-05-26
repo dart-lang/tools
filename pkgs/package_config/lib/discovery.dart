@@ -44,9 +44,9 @@ Future<Packages> findPackages(
   if (baseUri.scheme == "file") {
     return new Future<Packages>.sync(() => findPackagesFromFile(baseUri));
   } else if (baseUri.scheme == "http" || baseUri.scheme == "https") {
-    return findPackagesFromNonFile(baseUri, _httpGet);
+    return findPackagesFromNonFile(baseUri, loader: _httpGet);
   } else if (loader != null) {
-    return findPackagesFromNonFile(baseUri, loader);
+    return findPackagesFromNonFile(baseUri, loader: loader);
   } else {
     return new Future<Packages>.value(Packages.noPackages);
   }
@@ -138,7 +138,7 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// of the requestsed `.packages` file as bytes, which will be assumed to be
 /// UTF-8 encoded.
 Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
-                                         [Future<List<int>> loader(Uri name)]) {
+                                         {Future<List<int>> loader(Uri name)}) {
   if (loader == null) loader = _httpGet;
   Uri packagesFileUri = nonFileUri.resolve(".packages");
   return loader(packagesFileUri).then((List<int> fileBytes) {

@@ -70,7 +70,7 @@ class FilePackagesDirectoryPackages extends _PackagesBase {
   FilePackagesDirectoryPackages(this._packageDir);
 
   Uri _getBase(String packageName) =>
-      new Uri.directory(path.join(packageName,''));
+      new Uri.directory(path.join(_packageDir.path, packageName, ''));
 
   Iterable<String> _listPackageNames() {
     return _packageDir.listSync()
