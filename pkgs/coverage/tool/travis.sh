@@ -21,11 +21,7 @@ pub run test
 # Install dart_coveralls; gather and send coverage data.
 if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "stable" ]; then
   echo "Running coverage..."
-
-  # TODO: replace this work-around once pull-request lands
-  # Pull request: https://github.com/duse-io/dart-coveralls/pull/32 lands
-  pub global activate --source git https://github.com/kevmoo/dart_coveralls_hacking.git
-  # pub global activate dart_coveralls
+  pub global activate dart_coveralls
   pub global run dart_coveralls report \
     --token $COVERALLS_TOKEN \
     --retry 2 \
