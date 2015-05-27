@@ -21,7 +21,7 @@ class NoPackages implements Packages {
                                   'No package named "$packageName"');
   }
 
-  Iterable<String> get packages => new Iterable<String>.empty();
+  Iterable<String> get packages => new Iterable<String>.generate(0);
 
   Map<String, Uri> asMap() => const<String,Uri>{};
 }
