@@ -147,12 +147,12 @@ Uri _relativize(Uri uri, Uri baseUri) {
     }
   }
 
-  baseUri = baseUri.normalizePath();
+  baseUri = _normalizePath(baseUri);
   List<String> base = baseUri.pathSegments.toList();
   if (base.isNotEmpty) {
     base = new List<String>.from(base)..removeLast();
   }
-  uri = uri.normalizePath();
+  uri = _normalizePath(uri);
   List<String> target = uri.pathSegments.toList();
   int index = 0;
   while (index < base.length && index < target.length) {
@@ -170,3 +170,6 @@ Uri _relativize(Uri uri, Uri baseUri) {
     return uri;
   }
 }
+
+// TODO: inline to uri.normalizePath() when we move to 1.11
+Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri); 

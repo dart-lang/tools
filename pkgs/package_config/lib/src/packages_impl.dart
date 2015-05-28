@@ -33,7 +33,7 @@ class NoPackages implements Packages {
 /// member
 abstract class _PackagesBase implements Packages {
   Uri resolve(Uri packageUri, {Uri notFound(Uri packageUri)}) {
-    packageUri = packageUri.normalizePath();
+    packageUri = _normalizePath(packageUri);
     String packageName = checkValidPackageUri(packageUri);
     Uri packageBase = _getBase(packageName);
     if (packageBase == null) {
@@ -50,6 +50,9 @@ abstract class _PackagesBase implements Packages {
   /// Returns `null` if no package exists with that name, and that can be
   /// determined.
   Uri _getBase(String packageName);
+  
+  // TODO: inline to uri.normalizePath() when we move to 1.11
+  static Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri); 
 }
 
 /// A [Packages] implementation based on an existing map.
