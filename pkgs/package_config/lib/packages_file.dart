@@ -10,7 +10,7 @@ import "src/util.dart" show isIdentifier;
 /// Parses a `.packages` file into a map from package name to base URI.
 ///
 /// The [source] is the byte content of a `.packages` file, assumed to be
-/// UTF-8 encoded. In practice, all sinficant parts of the file must be ASCII,
+/// UTF-8 encoded. In practice, all significant parts of the file must be ASCII,
 /// so Latin-1 or Windows-1252 encoding will also work fine.
 ///
 /// If the file content is available as a string, its [String.codeUnits] can

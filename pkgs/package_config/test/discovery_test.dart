@@ -215,7 +215,7 @@ void fileTest(String name,
     tearDown(() {
       tempDir.deleteSync(recursive: true);
     });
-    test(name, () => fileTest(new Uri.directory(tempDir.path)));
+    test(name, () => fileTest(new Uri.file(path.join(tempDir.path, "."))));
   });
 }
 

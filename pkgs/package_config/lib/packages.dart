@@ -57,7 +57,7 @@ abstract class Packages {
   ///   for the existence of a `.packages` file. If one is found, it is loaded
   ///   just as in the first step.
   /// * If no file is found before reaching the file system root,
-  ///   the constant [noPacakages] is returned. It's a `Packages` object
+  ///   the constant [noPackages] is returned. It's a `Packages` object
   ///   with no available packages.
   ///
   static Future<Packages> find(Uri baseLocation) => findPackages(baseLocation);

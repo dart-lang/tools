@@ -101,7 +101,7 @@ FileSystemEntity _findPackagesFile(String workingDirectory) {
 /// a `packages/` directory in the same place.
 /// If that also fails, it starts checking parent directories for a `.packages`
 /// file, and stops if it finds it.
-/// Otherwise it gives up and returns [Pacakges.noPackages].
+/// Otherwise it gives up and returns [Packages.noPackages].
 Packages findPackagesFromFile(Uri fileBaseUri) {
   Uri baseDirectoryUri = fileBaseUri;
   if (!fileBaseUri.path.endsWith('/')) {
@@ -135,7 +135,7 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// By default, this function only works for `http:` and `https:` URIs.
 /// To support other schemes, a loader must be provided, which is used to
 /// try to load the `.packages` file. The loader should return the contents
-/// of the requestsed `.packages` file as bytes, which will be assumed to be
+/// of the requested `.packages` file as bytes, which will be assumed to be
 /// UTF-8 encoded.
 Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
                                          {Future<List<int>> loader(Uri name)}) {
