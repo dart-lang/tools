@@ -50,9 +50,9 @@ abstract class _PackagesBase implements Packages {
   /// Returns `null` if no package exists with that name, and that can be
   /// determined.
   Uri _getBase(String packageName);
-  
+
   // TODO: inline to uri.normalizePath() when we move to 1.11
-  static Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri); 
+  static Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri);
 }
 
 /// A [Packages] implementation based on an existing map.
@@ -73,7 +73,7 @@ class FilePackagesDirectoryPackages extends _PackagesBase {
   FilePackagesDirectoryPackages(this._packageDir);
 
   Uri _getBase(String packageName) =>
-      new Uri.directory(path.join(_packageDir.path, packageName, ''));
+      new Uri.file(path.join(_packageDir.path, packageName, '.'));
 
   Iterable<String> _listPackageNames() {
     return _packageDir.listSync()
