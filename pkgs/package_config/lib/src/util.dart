@@ -11,7 +11,7 @@ import "package:charcode/ascii.dart";
 bool isIdentifier(String string) {
   if (string.isEmpty) return false;
   int firstChar = string.codeUnitAt(0);
-  int firstCharLower = firstChar |= 0x20;
+  int firstCharLower = firstChar | 0x20;
   if (firstCharLower < $a || firstCharLower > $z) {
     if (firstChar != $_ && firstChar != $$) return false;
   }
