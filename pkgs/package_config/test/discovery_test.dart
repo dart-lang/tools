@@ -93,6 +93,14 @@ main() {
     validatePackagesDir(resolver, location);
   });
 
+  generalTest("underscore packages",
+              {"packages": {"_foo": {}}},
+              (Uri location) async {
+    Packages resolver = await findPackages(location);
+    expect(resolver.resolve(pkg("_foo", "foo.dart")),
+           equals(location.resolve("packages/_foo/foo.dart")));
+  });
+
   fileTest(".packages recursive",
            {".packages": packagesFile, "subdir": {"script.dart": "main(){}"}},
            (Uri location) async {
