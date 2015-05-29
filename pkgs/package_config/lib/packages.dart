@@ -4,8 +4,6 @@
 
 library package_config.packages;
 
-import "dart:async" show Future;
-import "discovery.dart" show findPackages;
 import "src/packages_impl.dart";
 
 /// A package resolution strategy.
@@ -25,42 +23,6 @@ abstract class Packages {
   /// This constant object is returned by [find] above if no
   /// package resolution strategy is found.
   static const Packages noPackages = const NoPackages();
-
-  /// Create a `Packages` object based on a map from package name to base URI.
-  ///
-  /// The resulting `Packages` object will resolve package URIs by using this
-  /// map.
-  /// There is no validation of the map containing only valid package names,
-  factory Packages(Map<String, Uri> packageMapping) =>
-      new MapPackages(packageMapping);
-
-  /// Attempts to find a package resolution strategy for a Dart script.
-  ///
-  /// The [baseLocation] should point to a Dart script or to its directory.
-  /// The function goes through the following steps in order to search for
-  /// a packages resolution strategy:
-  ///
-  /// * First check if a `.packages` file in the script's directory.
-  ///   If a file is found, its content is loaded and interpreted as a map
-  ///   from package names to package location URIs.
-  ///   If loading or parsing of the file fails, so does this function.
-  /// * Then if `baseLocation` is not a `file:` URI,
-  ///   assume that a `packages/` directory exists in the script's directory,
-  ///   and return a `Packages` object that resolves package URIs as
-  ///   paths into that directory.
-  /// * If `baseLocation` is a `file:` URI, instead *check* whether
-  ///   a `packages/` directory exists in the script directory.
-  ///   If it does, return a `Packages` object that resolves package URIs
-  ///   as paths into that directory. This `Packages` object is able to
-  ///   read the directory and see which packages are available.
-  /// * Otherwise, check each directory in the parent path of `baseLocation`
-  ///   for the existence of a `.packages` file. If one is found, it is loaded
-  ///   just as in the first step.
-  /// * If no file is found before reaching the file system root,
-  ///   the constant [noPackages] is returned. It's a `Packages` object
-  ///   with no available packages.
-  ///
-  static Future<Packages> find(Uri baseLocation) => findPackages(baseLocation);
 
   /// Resolve a package URI into a non-package URI.
   ///

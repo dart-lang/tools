@@ -2,11 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// Implementations of [Packages] that may be used in either server or browser
+/// based applications. For implementations that can only run in the browser,
+/// see [package_config.packages_io_impl].
 library package_config.packages_impl;
 
 import "dart:collection" show UnmodifiableMapView;
-import "dart:io" show Directory;
-import "package:path/path.dart" as path;
 import "../packages.dart";
 import "util.dart" show checkValidPackageUri;
 
@@ -26,16 +27,15 @@ class NoPackages implements Packages {
   Map<String, Uri> asMap() => const<String,Uri>{};
 }
 
-
 /// Base class for [Packages] implementations.
 ///
 /// This class implements the [resolve] method in terms of a private
 /// member
-abstract class _PackagesBase implements Packages {
+abstract class PackagesBase implements Packages {
   Uri resolve(Uri packageUri, {Uri notFound(Uri packageUri)}) {
     packageUri = _normalizePath(packageUri);
     String packageName = checkValidPackageUri(packageUri);
-    Uri packageBase = _getBase(packageName);
+    Uri packageBase = getBase(packageName);
     if (packageBase == null) {
       if (notFound != null) return notFound(packageUri);
       throw new ArgumentError.value(packageUri, "packageUri",
@@ -49,49 +49,22 @@ abstract class _PackagesBase implements Packages {
   ///
   /// Returns `null` if no package exists with that name, and that can be
   /// determined.
-  Uri _getBase(String packageName);
+  Uri getBase(String packageName);
 
   // TODO: inline to uri.normalizePath() when we move to 1.11
   static Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri);
 }
 
 /// A [Packages] implementation based on an existing map.
-class MapPackages extends _PackagesBase {
+class MapPackages extends PackagesBase {
   final Map<String, Uri> _mapping;
   MapPackages(this._mapping);
 
-  Uri _getBase(String packageName) => _mapping[packageName];
+  Uri getBase(String packageName) => _mapping[packageName];
 
   Iterable<String> get packages => _mapping.keys;
 
   Map<String, Uri> asMap() => new UnmodifiableMapView<String, Uri>(_mapping);
-}
-
-/// A [Packages] implementation based on a local directory.
-class FilePackagesDirectoryPackages extends _PackagesBase {
-  final Directory _packageDir;
-  FilePackagesDirectoryPackages(this._packageDir);
-
-  Uri _getBase(String packageName) =>
-      new Uri.file(path.join(_packageDir.path, packageName, '.'));
-
-  Iterable<String> _listPackageNames() {
-    return _packageDir.listSync()
-                      .where((e) => e is Directory)
-                      .map((e) => path.basename(e.path));
-  }
-
-  Iterable<String> get packages {
-    return _listPackageNames();
-  }
-
-  Map<String, Uri> asMap() {
-    var result = <String, Uri>{};
-    for (var packageName in _listPackageNames()) {
-      result[packageName] = _getBase(packageName);
-    }
-    return new UnmodifiableMapView<String, Uri>(result);
-  }
 }
 
 /// A [Packages] implementation based on a remote (e.g., HTTP) directory.
@@ -99,11 +72,11 @@ class FilePackagesDirectoryPackages extends _PackagesBase {
 /// There is no way to detect which packages exist short of trying to use
 /// them. You can't necessarily check whether a directory exists,
 /// except by checking for a know file in the directory.
-class NonFilePackagesDirectoryPackages extends _PackagesBase {
+class NonFilePackagesDirectoryPackages extends PackagesBase {
   final Uri _packageBase;
   NonFilePackagesDirectoryPackages(this._packageBase);
 
-  Uri _getBase(String packageName) => _packageBase.resolve("$packageName/");
+  Uri getBase(String packageName) => _packageBase.resolve("$packageName/");
 
   Error _failListingPackages() {
     return new UnsupportedError(

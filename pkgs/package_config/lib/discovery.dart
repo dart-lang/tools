@@ -11,6 +11,7 @@ import "package:http/http.dart" as http;
 import "packages.dart";
 import "packages_file.dart" as pkgfile show parse;
 import "src/packages_impl.dart";
+import "src/packages_io_impl.dart";
 
 /// Discover the package configuration for a Dart script.
 ///

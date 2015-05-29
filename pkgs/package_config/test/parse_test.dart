@@ -6,6 +6,7 @@ library test_all;
 
 import "package:package_config/packages.dart";
 import "package:package_config/packages_file.dart" show parse;
+import "package:package_config/src/packages_impl.dart";
 import "package:test/test.dart";
 
 main() {
@@ -123,7 +124,7 @@ main() {
 
 Packages doParse(String sample, Uri baseUri) {
   Map<String, Uri> map = parse(sample.codeUnits, baseUri);
-  return new Packages(map);
+  return new MapPackages(map);
 }
 
 // Valid samples.
