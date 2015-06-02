@@ -27,6 +27,7 @@ class VMService {
     return new Isolate.fromJson(response);
   }
 
+  //TODO(kevmoo): Test this - https://github.com/dart-lang/coverage/issues/90
   Future<AllocationProfile> getAllocationProfile(String isolateId,
       {bool reset, bool gc}) async {
     var params = {'isolateId': isolateId};
@@ -36,7 +37,22 @@ class VMService {
     if (gc != null) {
       params['gc'] = 'full';
     }
-    var response = await _connection.request('getAllocationProfile', params);
+
+    // TODO(kevmoo) Remove fallback logic once 1.11 is stable
+    // https://github.com/dart-lang/coverage/issues/91
+    var response;
+    try {
+      // For Dart >=1.11.0-dev.3.0 - _getAllocationProfile is considered private
+      response = await _connection.request('_getAllocationProfile', params);
+    } on ServiceProtocolErrorBase catch (error) {
+      if (error.isMethodNotFound) {
+        // For Dart <1.11.0-dev.3.0 - getAllocationProfile is considered public
+        response = await _connection.request('getAllocationProfile', params);
+      } else {
+        rethrow;
+      }
+    }
+
     return new AllocationProfile.fromJson(response);
   }
 
