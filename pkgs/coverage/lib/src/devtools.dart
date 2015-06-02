@@ -56,7 +56,7 @@ class VMService {
     return new AllocationProfile.fromJson(response);
   }
 
-  Future getCoverage(String isolateId, {String targetId}) async {
+  Future<CodeCoverage> getCoverage(String isolateId, {String targetId}) async {
     var params = {'isolateId': isolateId};
     if (targetId != null) {
       params['targetId'] = targetId;
@@ -64,6 +64,8 @@ class VMService {
 
     var response;
 
+    // TODO(kevmoo) Remove fallback logic once 1.11 is stable
+    // https://github.com/dart-lang/coverage/issues/91
     try {
       // For Dart >=1.11.0-dev.3.0 - _getCoverage is considered private
       response = await _connection.request('_getCoverage', params);
