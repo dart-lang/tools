@@ -174,13 +174,27 @@ class _VMWebsocketConnection {
       return;
     }
 
+    var completer = _pendingRequests.remove(id);
+    if (completer == null) {
+      _log.severe('Failed to pair response with request');
+    }
+
+    // Behavior >= Dart 1.11-dev.3
+    var error = json['error'];
+    if (error != null) {
+      var errorObj = new JsonRpcError.fromJson(error);
+      completer.completeError(errorObj);
+      return;
+    }
+
     var innerResponse = json['result'];
     if (innerResponse == null) {
       // Support for 1.9.0 <= vm version < 1.10.0.
       innerResponse = json['response'];
     }
     if (innerResponse == null) {
-      _log.severe('Failed to get JSON response for message $id');
+      completer.completeError('Failed to get JSON response for message $id');
+      return;
     }
     var message;
     if (innerResponse != null) {
@@ -191,10 +205,70 @@ class _VMWebsocketConnection {
         message = JSON.decode(innerResponse);
       }
     }
-    var completer = _pendingRequests.remove(id);
-    if (completer == null) {
-      _log.severe('Failed to pair response with request');
+
+    // need to check this for errors in the Dart 1.10 version
+    var type = message['type'];
+    if (type == 'Error') {
+      var errorObj = new Dart_1_10_RpcError.fromJson(message);
+      completer.completeError(errorObj);
+      return;
     }
+
     completer.complete(message);
+  }
+}
+
+abstract class ServiceProtocolErrorBase extends Error {
+  String get message;
+  bool get isMethodNotFound;
+}
+
+// TODO(kevmoo) Remove this logic once 1.11 is stable
+// https://github.com/dart-lang/coverage/issues/91
+class Dart_1_10_RpcError extends ServiceProtocolErrorBase {
+  final String message;
+  final bool isMethodNotFound;
+
+  Dart_1_10_RpcError(this.message, this.isMethodNotFound);
+
+  factory Dart_1_10_RpcError.fromJson(Map<String, dynamic> json) {
+    assert(json['type'] == 'Error');
+    var message = json['message'];
+
+    var isMethodNotFound = message.startsWith('unrecognized method:');
+
+    return new Dart_1_10_RpcError(message, isMethodNotFound);
+  }
+}
+
+class JsonRpcError extends ServiceProtocolErrorBase {
+  final int code;
+  final String message;
+  final data;
+
+  // http://www.jsonrpc.org/specification
+  // -32601	Method not found	The method does not exist / is not available.
+  bool get isMethodNotFound => code == -32601;
+
+  JsonRpcError(this.code, this.message, this.data);
+
+  factory JsonRpcError.fromJson(Map<String, dynamic> json) =>
+      new JsonRpcError(json['code'], json['message'], json['data']);
+
+  String toString() {
+    var msg = 'JsonRpcError: $message';
+    if (isMethodNotFound) {
+      if (data is Map) {
+        var request = data['request'];
+        if (request is Map) {
+          var method = request['method'];
+          if (method != null) {
+            msg = '$msg - "$method"';
+          }
+        }
+      }
+    }
+
+    return '$msg ($code)';
   }
 }
