@@ -125,9 +125,13 @@ Future<String> _collectCoverage() async {
     throw 'We timed out waiting for the tool to finish.';
   });
 
-  await sampleProcFuture;
+  if (toolResult.exitCode != 0) {
+    print(toolResult.stdout);
+    print(toolResult.stderr);
+    fail('Tool failed with exit code ${toolResult.exitCode}.');
+  }
 
-  expect(toolResult.exitCode, 0);
+  await sampleProcFuture;
 
   return toolResult.stdout;
 }
