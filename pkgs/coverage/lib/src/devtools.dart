@@ -12,7 +12,7 @@ import 'package:logging/logging.dart';
 final Logger _log = new Logger('coverage.src.devtools');
 
 class VMService {
-  final _VMWebsocketConnection _connection;
+  final _Connection _connection;
 
   VMService._(this._connection);
 
@@ -90,7 +90,7 @@ class VMService {
   }
 
   static Future<VMService> connectToVMWebsocket(String host, int port) async {
-    var connection = await _VMWebsocketConnection.connect(host, port);
+    var connection = await _Connection.connect(host, port);
     return new VMService._(connection);
   }
 
@@ -165,20 +165,20 @@ class AllocationProfile {
 }
 
 /// Observatory connection via websocket.
-class _VMWebsocketConnection {
+class _Connection {
   final WebSocket _socket;
   final Map<int, Completer> _pendingRequests = {};
   int _requestId = 1;
 
-  _VMWebsocketConnection(this._socket) {
+  _Connection(this._socket) {
     _socket.listen(_handleResponse);
   }
 
-  static Future<_VMWebsocketConnection> connect(String host, int port) async {
+  static Future<_Connection> connect(String host, int port) async {
     _log.fine('Connecting to VM via HTTP websocket protocol');
     var uri = 'ws://$host:$port/ws';
     var socket = await WebSocket.connect(uri);
-    return new _VMWebsocketConnection(socket);
+    return new _Connection(socket);
   }
 
   Future<Map> request(String method, [Map params = const {}]) {
