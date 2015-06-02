@@ -14,10 +14,13 @@ import 'package:stack_trace/stack_trace.dart';
 
 Future<Map> getAllCoverage(VMService service) async {
   var vm = await service.getVM();
-  var coverageRequests = vm.isolates.map((i) => service.getCoverage(i.id));
-  var coverageResponses = await Future.wait(coverageRequests);
-  var allCoverage = coverageResponses.expand((c) => c.coverage).toList();
-  return {'type': 'CodeCoverage', 'coverage': allCoverage,};
+  var allCoverage = [];
+
+  for (var isolate in vm.isolates) {
+    var coverage = await service.getCoverage(isolate.id);
+    allCoverage.addAll(coverage.coverage);
+  }
+  return {'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
 Future resumeIsolates(VMService service) async {
