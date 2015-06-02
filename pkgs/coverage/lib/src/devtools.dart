@@ -45,7 +45,20 @@ class VMService {
     if (targetId != null) {
       params['targetId'] = targetId;
     }
-    var response = await _connection.request('getCoverage', params);
+
+    var response;
+
+    try {
+      // For Dart >=1.11.0-dev.3.0 - _getCoverage is considered private
+      response = await _connection.request('_getCoverage', params);
+    } on ServiceProtocolErrorBase catch (error) {
+      if (error.isMethodNotFound) {
+        // For Dart <1.11.0-dev.3.0 - getCoverage is considered public
+        response = await _connection.request('getCoverage', params);
+      } else {
+        rethrow;
+      }
+    }
     return new CodeCoverage.fromJson(response);
   }
 
