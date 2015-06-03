@@ -3,6 +3,8 @@
  * `format_coverage` no longer emits SDK coverage unless --sdk-root is set
    explicitly.
 
+ * Removed support for collecting coverage from old (<1.9.0) Dart SDKs.
+
 ###0.6.5
 
  * Fixed early collection bug when --wait-paused is set.
