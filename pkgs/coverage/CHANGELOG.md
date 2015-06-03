@@ -4,6 +4,8 @@
    explicitly.
 
  * Removed support for collecting coverage from old (<1.9.0) Dart SDKs.
+ 
+ * Removed deprecated `Resolver.pkgRoot`.
 
 ###0.6.5
 
