@@ -114,17 +114,12 @@ Environment parseArgs(List<String> arguments) {
   }
 
   env.sdkRoot = args['sdk-root'];
-  if (env.sdkRoot == null) {
-    if (Platform.environment.containsKey('DART_SDK')) {
-      env.sdkRoot =
-          join(absolute(normalize(Platform.environment['DART_SDK'])), 'lib');
+  if (env.sdkRoot != null) {
+    env.sdkRoot = normalize(join(absolute(env.sdkRoot), 'lib'));
+    if (!FileSystemEntity.isDirectorySync(env.sdkRoot)) {
+      fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
+          'top-level directory');
     }
-  } else {
-    env.sdkRoot = join(absolute(normalize(env.sdkRoot)), 'lib');
-  }
-  if ((env.sdkRoot != null) && !FileSystemEntity.isDirectorySync(env.sdkRoot)) {
-    fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
-        'top-level directory');
   }
 
   env.pkgRoot = args['package-root'];
