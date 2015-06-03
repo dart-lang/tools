@@ -5,17 +5,22 @@
 import 'dart:async';
 import 'dart:convert' show JSON;
 import 'dart:io';
+
 import 'package:args/args.dart';
 import 'package:coverage/src/devtools.dart';
 import 'package:coverage/src/util.dart';
 import 'package:logging/logging.dart';
+import 'package:stack_trace/stack_trace.dart';
 
 Future<Map> getAllCoverage(VMService service) async {
   var vm = await service.getVM();
-  var coverageRequests = vm.isolates.map((i) => service.getCoverage(i.id));
-  var coverageResponses = await Future.wait(coverageRequests);
-  var allCoverage = coverageResponses.expand((c) => c.coverage).toList();
-  return {'type': 'CodeCoverage', 'coverage': allCoverage,};
+  var allCoverage = [];
+
+  for (var isolate in vm.isolates) {
+    var coverage = await service.getCoverage(isolate.id);
+    allCoverage.addAll(coverage.coverage);
+  }
+  return {'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
 Future resumeIsolates(VMService service) async {
@@ -44,30 +49,39 @@ main(List<String> arguments) async {
   });
 
   var options = parseArgs(arguments);
-  exitOnTimeout() {
-    var timeout = options.timeout.inSeconds;
-    print('Failed to collect coverage within ${timeout}s');
-    exit(1);
-  }
-  Future connected =
-      retry(() => VMService.connect(options.host, options.port), retryInterval);
-  if (options.timeout != null) {
-    connected = connected.timeout(options.timeout, onTimeout: exitOnTimeout);
-  }
-  var vmService = await connected;
-  Future ready =
-      options.waitPaused ? waitIsolatesPaused(vmService) : new Future.value();
-  if (options.timeout != null) {
-    ready = ready.timeout(options.timeout, onTimeout: exitOnTimeout);
-  }
-  await ready;
-  var coverage = await getAllCoverage(vmService);
-  options.out.write(JSON.encode(coverage));
-  await options.out.close();
-  if (options.resume) {
-    await resumeIsolates(vmService);
-  }
-  await vmService.close();
+  await Chain.capture(() async {
+    exitOnTimeout() {
+      var timeout = options.timeout.inSeconds;
+      print('Failed to collect coverage within ${timeout}s');
+      exit(1);
+    }
+
+    Future connected = retry(
+        () => VMService.connect(options.host, options.port), retryInterval);
+    if (options.timeout != null) {
+      connected = connected.timeout(options.timeout, onTimeout: exitOnTimeout);
+    }
+    var vmService = await connected;
+    Future ready =
+        options.waitPaused ? waitIsolatesPaused(vmService) : new Future.value();
+    if (options.timeout != null) {
+      ready = ready.timeout(options.timeout, onTimeout: exitOnTimeout);
+    }
+    await ready;
+    var coverage = await getAllCoverage(vmService);
+    options.out.write(JSON.encode(coverage));
+    await options.out.close();
+    if (options.resume) {
+      await resumeIsolates(vmService);
+    }
+    await vmService.close();
+  }, onError: (error, Chain chain) {
+    print(error);
+    print(chain.terse);
+    // See http://www.retro11.de/ouxr/211bsd/usr/include/sysexits.h.html
+    // EX_SOFTWARE
+    exit(70);
+  });
 }
 
 class Options {
