@@ -1,3 +1,8 @@
+###0.7.0
+
+ * `format_coverage` no longer emits SDK coverage unless --sdk-root is set
+   explicitly.
+
 ###0.6.5
 
  * Fixed early collection bug when --wait-paused is set.
