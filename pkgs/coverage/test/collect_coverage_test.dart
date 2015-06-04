@@ -65,7 +65,7 @@ void main() {
 
     var isolateFile = hitMap[_isolateLibFileUri];
 
-    expect(isolateFile, {11: 1, 13: 3, 15: 1, 10: 1});
+    expect(isolateFile, {11: 1, 12: 1, 14: 1, 16: 3, 18: 1});
   });
 
   test('parseCoverage', () async {
@@ -119,7 +119,7 @@ Future<String> _collectCoverage() async {
     '--port',
     openPort.toString(),
     '--resume-isolates',
-    '--resume-isolates'
+    '--wait-paused'
   ])
       .timeout(_timeout, onTimeout: () {
     throw 'We timed out waiting for the tool to finish.';
