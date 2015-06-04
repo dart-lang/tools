@@ -25,10 +25,6 @@ packages:
     description: crypto
     source: hosted
     version: "0.9.0"
-  http:
-    description: http
-    source: hosted
-    version: "0.11.2"
   http_parser:
     description: http_parser
     source: hosted
