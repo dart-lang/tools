@@ -13,24 +13,13 @@ const _retryInterval = const Duration(milliseconds: 200);
 
 Future<Map> collect(String host, int port, bool resume, bool waitPaused,
     {Duration timeout}) async {
-  exitOnTimeout() {
-    var timeoutSeconds = timeout.inSeconds;
-    throw new StateError(
-        'Failed to collect coverage within ${timeoutSeconds}s');
-  }
-
-  Future connected = retry(() => VMService.connect(host, port), _retryInterval);
-  if (timeout != null) {
-    connected = connected.timeout(timeout, onTimeout: exitOnTimeout);
-  }
-  var vmService = await connected;
+  var vmService = await retry(
+      () => VMService.connect(host, port), _retryInterval, timeout: timeout);
   try {
-    Future ready =
-        waitPaused ? _waitIsolatesPaused(vmService) : new Future.value();
-    if (timeout != null) {
-      ready = ready.timeout(timeout, onTimeout: exitOnTimeout);
+    if (waitPaused) {
+      await _waitIsolatesPaused(vmService, timeout: timeout);
     }
-    await ready;
+
     return await _getAllCoverage(vmService);
   } finally {
     if (resume) {
@@ -57,7 +46,7 @@ Future _resumeIsolates(VMService service) async {
   return Future.wait(isolateRequests);
 }
 
-Future _waitIsolatesPaused(VMService service) async {
+Future _waitIsolatesPaused(VMService service, {Duration timeout}) async {
   allPaused() async {
     var vm = await service.getVM();
     var isolateRequests = vm.isolates.map((i) => service.getIsolate(i.id));
@@ -65,5 +54,5 @@ Future _waitIsolatesPaused(VMService service) async {
     var paused = isolates.every((i) => i.paused);
     if (!paused) throw "Unpaused isolates remaining.";
   }
-  return retry(allPaused, _retryInterval);
+  return retry(allPaused, _retryInterval, timeout: timeout);
 }

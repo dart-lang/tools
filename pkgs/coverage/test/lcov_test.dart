@@ -65,7 +65,9 @@ void main() {
 
     // be very careful if you change the test file
     expect(res, contains("      0|  return a - b;"));
-    expect(res, contains('      0|      await new Future.delayed(interval);'));
+
+    expect(res, contains('      1|  return _withTimeout(() async {'),
+        reason: 'be careful if you change lib/src/util.dart');
 
     var hitLineRegexp = new RegExp(r'\s+(\d+)\|  return a \+ b;');
     var match = hitLineRegexp.allMatches(res).single;
