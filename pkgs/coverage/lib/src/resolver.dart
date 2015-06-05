@@ -11,9 +11,6 @@ class Resolver {
   static const PACKAGE_PREFIX = 'package:';
   static const FILE_PREFIX = 'file://';
 
-  @Deprecated('See packageRoot. Removal in 0.7.0.')
-  String get pkgRoot => packageRoot;
-
   final String packageRoot;
   final String sdkRoot;
   final List<String> failed = [];
