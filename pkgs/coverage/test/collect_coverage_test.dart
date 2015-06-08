@@ -13,11 +13,12 @@ import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
-final _sampleAppPath = p.join('test', 'test_files', 'test_app.dart');
+import 'test_util.dart';
+
 final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
 final _collectAppPath = p.join('bin', 'collect_coverage.dart');
 
-final _sampleAppFileUri = p.toUri(p.absolute(_sampleAppPath)).toString();
+final _sampleAppFileUri = p.toUri(p.absolute(testAppPath)).toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 const _timeout = const Duration(seconds: 5);
@@ -98,7 +99,7 @@ Future<String> _getCoverageResult() async {
 }
 
 Future<String> _collectCoverage() async {
-  expect(await FileSystemEntity.isFile(_sampleAppPath), isTrue);
+  expect(await FileSystemEntity.isFile(testAppPath), isTrue);
 
   var openPort = await getOpenPort();
 
@@ -107,7 +108,7 @@ Future<String> _collectCoverage() async {
       .run('dart', [
     '--enable-vm-service=$openPort',
     '--pause_isolates_on_exit',
-    _sampleAppPath
+    testAppPath
   ])
       .timeout(_timeout, onTimeout: () {
     throw 'We timed out waiting for the sample app to finish.';
