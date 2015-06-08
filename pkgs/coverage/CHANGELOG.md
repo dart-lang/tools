@@ -4,6 +4,8 @@
    They can be used independently to limit the files which are included in the
    output.
 
+ * Added `runAndCollect` API to library.
+
 ###0.7.1
 
  * Added `collect` top-level method.
