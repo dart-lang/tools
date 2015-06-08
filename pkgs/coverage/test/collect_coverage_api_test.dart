@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -58,10 +59,7 @@ Future<Map> _getCoverageResult() async {
 }
 
 Future<Map> _collectCoverage() async {
-  // need to find an open port
-  var socket = await ServerSocket.bind(InternetAddress.ANY_IP_V4, 0);
-  int openPort = socket.port;
-  await socket.close();
+  var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
   var sampleProcFuture = Process
