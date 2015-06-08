@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -99,10 +100,7 @@ Future<String> _getCoverageResult() async {
 Future<String> _collectCoverage() async {
   expect(await FileSystemEntity.isFile(_sampleAppPath), isTrue);
 
-  // need to find an open port
-  var socket = await ServerSocket.bind(InternetAddress.ANY_IP_V4, 0);
-  int openPort = socket.port;
-  await socket.close();
+  var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
   var sampleProcFuture = Process
