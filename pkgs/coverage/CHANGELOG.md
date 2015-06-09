@@ -1,3 +1,12 @@
+###0.7.1
+
+ * Added `collect` top-level method.
+ 
+ * Updated support for latest `0.11.0` dev build.
+ 
+ * Replaced `ServiceEvent.eventType` with `ServiceEvent.kind`.
+   *  `ServiceEvent.eventType` is deprecated and will be removed in `0.8`.
+
 ###0.7.0
 
  * `format_coverage` no longer emits SDK coverage unless --sdk-root is set
