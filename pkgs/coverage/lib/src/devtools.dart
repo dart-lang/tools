@@ -128,7 +128,7 @@ class Isolate {
   final bool pauseOnExit;
   final ServiceEvent pauseEvent;
   bool get paused =>
-      pauseOnExit && pauseEvent != null && pauseEvent.eventType == 'PauseExit';
+      pauseOnExit && pauseEvent != null && pauseEvent.kind == 'PauseExit';
 
   Isolate(this.id, this.name, this.pauseOnExit, this.pauseEvent);
 
@@ -137,13 +137,23 @@ class Isolate {
 }
 
 class ServiceEvent {
-  final String eventType;
+  final String kind;
   final IsolateRef isolate;
 
-  ServiceEvent(this.eventType, this.isolate);
+  @deprecated('Will be removed in 0.8')
+  String get eventType => kind;
 
-  factory ServiceEvent.fromJson(json) => new ServiceEvent(
-      json['eventType'], new IsolateRef.fromJson(json['isolate']));
+  ServiceEvent(this.kind, this.isolate);
+
+  factory ServiceEvent.fromJson(Map json) {
+    // TODO(kevmoo) Keep around until 1.11 is stable
+    // https://github.com/dart-lang/coverage/issues/91
+    // 'kind' is the key for >= 1.11-dev.5.0.
+    // 'eventType' is for older versions
+    var kind = json.containsKey('kind') ? json['kind'] : json['eventType'];
+
+    return new ServiceEvent(kind, new IsolateRef.fromJson(json['isolate']));
+  }
 }
 
 class CodeCoverage {
