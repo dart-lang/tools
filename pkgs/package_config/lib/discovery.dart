@@ -15,6 +15,55 @@ import "packages_file.dart" as pkgfile show parse;
 import "src/packages_impl.dart";
 import "src/packages_io_impl.dart";
 
+/// Reads a package resolution file and creates a [Packages] object from it.
+///
+/// The [packagesFile] must exist and be loadable.
+/// Currently that means the URI must have a `file`, `http` or `https` scheme,
+/// and that the file can be loaded and its contents parsed correctly.
+///
+/// If the [loader] is provided, it is used to fetch non-`file` URIs, and
+/// it can support other schemes or set up more complex HTTP requests.
+///
+/// This function can be used to load an explicitly configured package
+/// resolution file, for example one specified using a `--packages`
+/// command-line parameter.
+Future<Packages> loadPackagesFile(Uri packagesFile,
+                                  {Future<List<int>> loader(Uri uri)}) {
+  Packages parseBytes(List<int> bytes) {
+    Map<String, Uri> packageMap = pkgfile.parse(bytes, packagesFile);
+    return new MapPackages(packageMap);
+  }
+  if (packagesFile.scheme == "file") {
+    File file = new File.fromUri(packagesFile);
+    return file.readAsBytes().then(parseBytes);
+  }
+  if (loader == null) {
+    return http.readBytes(packagesFile).then(parseBytes);
+  }
+  return loader(packagesFile).then(parseBytes);
+}
+
+
+/// Create a [Packages] object for a package directory.
+///
+/// The [packagesDir] URI should refer to a directory.
+/// Package names are resolved as relative to sub-directories of the
+/// package directory.
+///
+/// This function can be used for explicitly configured package directories,
+/// for example one specified using a `--package-root` comand-line parameter.
+Packages getPackagesDirectory(Uri packagesDir) {
+  if (packagesDir.scheme == "file") {
+    Directory directory = new Directory.fromUri(packagesDir);
+    return new FilePackagesDirectoryPackages(directory);
+  }
+  if (!packagesDir.path.endsWith('/')) {
+    packagesDir = packagesDir.replace(path: packagesDir.path + '/');
+  }
+  return new NonFilePackagesDirectoryPackages(packagesDir);
+}
+
+
 /// Discover the package configuration for a Dart script.
 ///
 /// The [baseUri] points to either the Dart script or its directory.
@@ -36,19 +85,21 @@ import "src/packages_io_impl.dart";
 /// It needs to be able to load a `.packages` file from the URI, so only
 /// recognized schemes are accepted.
 ///
-/// To support other schemes, an optional [loader] function can be supplied.
-/// It's called to load the `.packages` file for any unsupported scheme.
-/// It must return the *contents* of the file identified by the URI it's given,
-/// which should be a UTF-8 encoded `.packages` file, and must return an
+/// To support other schemes, or more complex HTTP requests,
+/// an optional [loader] function can be supplied.
+/// It's called to load the `.packages` file for a non-`file` scheme.
+/// The loader function returns the *contents* of the file
+/// identified by the URI it's given.
+/// The content should be a UTF-8 encoded `.packages` file, and must return an
 /// error future if loading fails for any reason.
 Future<Packages> findPackages(Uri baseUri,
-    {Future<List<int>> loader(Uri unsupportedUri)}) {
+                              {Future<List<int>> loader(Uri unsupportedUri)}) {
   if (baseUri.scheme == "file") {
     return new Future<Packages>.sync(() => findPackagesFromFile(baseUri));
-  } else if (baseUri.scheme == "http" || baseUri.scheme == "https") {
-    return findPackagesFromNonFile(baseUri, loader: _httpGet);
   } else if (loader != null) {
     return findPackagesFromNonFile(baseUri, loader: loader);
+  } else if (baseUri.scheme == "http" || baseUri.scheme == "https") {
+    return findPackagesFromNonFile(baseUri, loader: http.readBytes);
   } else {
     return new Future<Packages>.value(Packages.noPackages);
   }
@@ -140,8 +191,8 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// of the requested `.packages` file as bytes, which will be assumed to be
 /// UTF-8 encoded.
 Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
-    {Future<List<int>> loader(Uri name)}) {
-  if (loader == null) loader = _httpGet;
+                                         {Future<List<int>> loader(Uri name)}) {
+  if (loader == null) loader = http.readBytes;
   Uri packagesFileUri = nonFileUri.resolve(".packages");
   return loader(packagesFileUri).then((List<int> fileBytes) {
     Map<String, Uri> map = pkgfile.parse(fileBytes, packagesFileUri);
@@ -150,32 +201,5 @@ Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
     // Didn't manage to load ".packages". Assume a "packages/" directory.
     Uri packagesDirectoryUri = nonFileUri.resolve("packages/");
     return new NonFilePackagesDirectoryPackages(packagesDirectoryUri);
-  });
-}
-
-/// Fetches a file over http.
-Future<List<int>> _httpGet(Uri uri) {
-  HttpClient client = new HttpClient();
-  return client
-      .getUrl(uri)
-      .then((HttpClientRequest request) => request.close())
-      .then((HttpClientResponse response) {
-    if (response.statusCode != HttpStatus.OK) {
-      String msg = 'Failure getting $uri: '
-          '${response.statusCode} ${response.reasonPhrase}';
-      throw msg;
-    }
-    return response.toList();
-  }).then((List<List<int>> splitContent) {
-    int totalLength = splitContent.fold(0, (int old, List list) {
-      return old + list.length;
-    });
-    Uint8List result = new Uint8List(totalLength);
-    int offset = 0;
-    for (List<int> contentPart in splitContent) {
-      result.setRange(offset, offset + contentPart.length, contentPart);
-      offset += contentPart.length;
-    }
-    return result;
   });
 }

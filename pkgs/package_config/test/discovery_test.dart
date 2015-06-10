@@ -205,6 +205,52 @@ main() {
                                              loader:loader);
     validatePackagesDir(resolver, location);
   });
+
+  generalTest("loadPackagesFile",
+              {".packages": packagesFile},
+              (Uri directory) async {
+    Uri file = directory.resolve(".packages");
+    Packages resolver = await loadPackagesFile(file);
+    validatePackagesFile(resolver, file);
+  });
+
+  generalTest("loadPackagesFile non-default name",
+              {"pheldagriff": packagesFile},
+              (Uri directory) async {
+    Uri file = directory.resolve("pheldagriff");
+    Packages resolver = await loadPackagesFile(file);
+    validatePackagesFile(resolver, file);
+  });
+
+  test("loadPackagesFile w/ loader", () async {
+    loader(Uri uri) async => packagesFile.codeUnits;
+    Uri file = Uri.parse("krutz://example.com/.packages");
+    Packages resolver = await loadPackagesFile(file, loader: loader);
+    validatePackagesFile(resolver, file);
+  });
+
+  generalTest("loadPackagesFile not found",
+               {},
+               (Uri directory) async {
+    Uri file = directory.resolve(".packages");
+    expect(loadPackagesFile(file), throws);
+  });
+
+  generalTest("loadPackagesFile syntax error",
+               {".packages": "syntax error"},
+               (Uri directory) async {
+    Uri file = directory.resolve(".packages");
+    expect(loadPackagesFile(file), throws);
+  });
+
+  generalTest("getPackagesDir",
+              {"packages": {"foo": {}, "bar": {}, "baz": {}}},
+              (Uri directory) async {
+    Uri packages = directory.resolve("packages/");
+    Packages resolver = getPackagesDirectory(packages);
+    Uri resolved = resolver.resolve(pkg("foo","flip/flop"));
+    expect(resolved, packages.resolve("foo/flip/flop"));
+  });
 }
 
 /// Create a directory structure from [description] and run [fileTest].
@@ -285,5 +331,3 @@ void _createFiles(Directory target, Map description) {
     }
   });
 }
-
-
