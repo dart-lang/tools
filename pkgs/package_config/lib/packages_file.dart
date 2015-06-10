@@ -74,7 +74,9 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation) {
 /// Writes the mapping to a [StringSink].
 ///
 /// If [comment] is provided, the output will contain this comment
-/// with `#` in front of each line.
+/// with `# ` in front of each line.
+/// Lines are defined as ending in line feed (`'\n'`). If the final
+/// line of the comment doesn't end in a line feed, one will be added.
 ///
 /// If [baseUri] is provided, package locations will be made relative
 /// to the base URI, if possible, before writing.
@@ -85,8 +87,10 @@ void write(StringSink output, Map<String, Uri> packageMapping,
   }
 
   if (comment != null) {
-    for (var commentLine in comment.split('\n')) {
-      output.write('#');
+    var lines = comment.split('\n');
+    if (lines.last.isEmpty) lines.removeLast();
+    for (var commentLine in lines) {
+      output.write('# ');
       output.writeln(commentLine);
     }
   } else {
@@ -172,4 +176,4 @@ Uri _relativize(Uri uri, Uri baseUri) {
 }
 
 // TODO: inline to uri.normalizePath() when we move to 1.11
-Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri); 
+Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri);
