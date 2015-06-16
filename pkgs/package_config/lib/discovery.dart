@@ -38,7 +38,7 @@ Future<Packages> loadPackagesFile(Uri packagesFile,
     return file.readAsBytes().then(parseBytes);
   }
   if (loader == null) {
-    return http.readBytes(packagesFile).then(parseBytes);
+    return _httpGet(packagesFile).then(parseBytes);
   }
   return loader(packagesFile).then(parseBytes);
 }
@@ -99,7 +99,7 @@ Future<Packages> findPackages(Uri baseUri,
   } else if (loader != null) {
     return findPackagesFromNonFile(baseUri, loader: loader);
   } else if (baseUri.scheme == "http" || baseUri.scheme == "https") {
-    return findPackagesFromNonFile(baseUri, loader: http.readBytes);
+    return findPackagesFromNonFile(baseUri, loader: _httpGet);
   } else {
     return new Future<Packages>.value(Packages.noPackages);
   }
@@ -192,7 +192,7 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// UTF-8 encoded.
 Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
                                          {Future<List<int>> loader(Uri name)}) {
-  if (loader == null) loader = http.readBytes;
+  if (loader == null) loader = _httpGet;
   Uri packagesFileUri = nonFileUri.resolve(".packages");
   return loader(packagesFileUri).then((List<int> fileBytes) {
     Map<String, Uri> map = pkgfile.parse(fileBytes, packagesFileUri);
@@ -202,4 +202,27 @@ Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
     Uri packagesDirectoryUri = nonFileUri.resolve("packages/");
     return new NonFilePackagesDirectoryPackages(packagesDirectoryUri);
   });
+}
+
+/// Fetches a file over http.
+Future<List<int>> _httpGet(Uri uri) async {
+  HttpClient client = new HttpClient();
+  HttpClientRequest request = await client.getUrl(uri);
+  HttpClientResponse response = await request.close();
+  if (response.statusCode != HttpStatus.OK) {
+    throw 'Failure getting $uri: '
+        '${response.statusCode} ${response.reasonPhrase}';
+  }
+  List<List<int>> splitContent = await response.toList();
+  int totalLength = 0;
+  for (var list in splitContent) {
+    totalLength += list.length;
+  }
+  Uint8List result = new Uint8List(totalLength);
+  int offset = 0;
+  for (List<int> contentPart in splitContent) {
+    result.setRange(offset, offset + contentPart.length, contentPart);
+    offset += contentPart.length;
+  }
+  return result;
 }

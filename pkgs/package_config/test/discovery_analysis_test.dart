@@ -19,19 +19,19 @@ main() {
            (Directory directory) {
     var dirUri = new Uri.directory(directory.path);
     PackageContext ctx = PackageContext.findAll(directory);
-    PackagesContext root = ctx[directory];
+    PackageContext root = ctx[directory];
     expect(root, same(ctx));
     validatePackagesFile(root.packages, dirUri);
     var fooDir = sub(directory, "foo");
-    PackagesContext foo = ctx[fooDir];
+    PackageContext foo = ctx[fooDir];
     expect(identical(root, foo), isFalse);
     validatePackagesFile(foo.packages, dirUri.resolve("foo/"));
     var barDir = sub(directory, "bar");
-    PackagesContext bar = ctx[sub(directory, "bar")];
+    PackageContext bar = ctx[sub(directory, "bar")];
     validatePackagesDir(bar.packages, dirUri.resolve("bar/"));
-    PackagesContext barbar = ctx[sub(barDir, "bar")];
+    PackageContext barbar = ctx[sub(barDir, "bar")];
     expect(barbar, same(bar));  // inherited.
-    PackagesContext baz = ctx[sub(directory, "baz")];
+    PackageContext baz = ctx[sub(directory, "baz")];
     expect(baz, same(root));  // inherited.
 
     var map = ctx.asMap();
@@ -95,7 +95,7 @@ Uri pkg(String packageName, String packagePath) {
 /// as a string.
 void fileTest(String name,
               Map description,
-              Future fileTest(Uri directory)) {
+              Future fileTest(Directory directory)) {
   group("file-test", () {
     Directory tempDir = Directory.systemTemp.createTempSync("file-test");
     setUp(() {
