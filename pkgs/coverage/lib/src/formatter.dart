@@ -1,6 +1,7 @@
 library coverage.formatter;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'resolver.dart';
 
@@ -17,12 +18,15 @@ class LcovFormatter implements Formatter {
   final Resolver resolver;
   LcovFormatter(this.resolver);
 
-  Future<String> format(Map hitmap) async {
+  Future<String> format(Map hitmap, {List<String> reportOn}) async {
     var buf = new StringBuffer();
+    var reportOnPaths = reportOn != null ? reportOn.map((path) => new File(path).absolute.path) : [];
 
     hitmap.forEach((key, v) {
       var source = resolver.resolve(key);
       if (source == null) {
+        return;
+      } else if (!reportOnPaths.isEmpty && !reportOnPaths.any((p) => source.startsWith(p))) {
         return;
       }
       buf.write('SF:${source}\n');
@@ -48,12 +52,15 @@ class PrettyPrintFormatter implements Formatter {
   final Loader loader;
   PrettyPrintFormatter(this.resolver, this.loader);
 
-  Future<String> format(Map hitmap) async {
+  Future<String> format(Map hitmap, {List<String> reportOn}) async {
     var buf = new StringBuffer();
+    var reportOnPaths = reportOn != null ? reportOn.map((path) => new File(path).absolute.path) : [];
     for (var key in hitmap.keys) {
       var v = hitmap[key];
       var uri = resolver.resolve(key);
       if (uri == null) {
+        continue;
+      } else if (!reportOnPaths.isEmpty && !reportOnPaths.any((p) => uri.startsWith(p))) {
         continue;
       } else {
         var lines = await loader.load(uri);

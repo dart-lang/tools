@@ -14,6 +14,7 @@ class Environment {
   String pkgRoot;
   String input;
   IOSink output;
+  List<String> reportOn;
   int workers;
   bool prettyPrint;
   bool lcov;
@@ -31,6 +32,7 @@ main(List<String> arguments) async {
     print('  # workers: ${env.workers}');
     print('  sdk-root: ${env.sdkRoot}');
     print('  package-root: ${env.pkgRoot}');
+    print('  report-on: ${env.reportOn}');
   }
 
   var clock = new Stopwatch()..start();
@@ -45,10 +47,10 @@ main(List<String> arguments) async {
   var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
-    output = await new PrettyPrintFormatter(resolver, loader).format(hitmap);
+    output = await new PrettyPrintFormatter(resolver, loader).format(hitmap, reportOn: env.reportOn);
   } else {
     assert(env.lcov);
-    output = await new LcovFormatter(resolver).format(hitmap);
+    output = await new LcovFormatter(resolver).format(hitmap, reportOn: env.reportOn);
   }
 
   env.output.write(output);
@@ -81,6 +83,8 @@ Environment parseArgs(List<String> arguments) {
   parser.addOption('in', abbr: 'i', help: 'input(s): may be file or directory');
   parser.addOption('out',
       abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout');
+  parser.addOption('report-on',
+      allowMultiple: true, help: 'which directories or files to report coverage on');
   parser.addOption('workers',
       abbr: 'j', defaultsTo: '1', help: 'number of workers');
   parser.addFlag('pretty-print',
@@ -144,6 +148,8 @@ Environment parseArgs(List<String> arguments) {
     var outfile = new File(outpath)..createSync(recursive: true);
     env.output = outfile.openWrite();
   }
+
+  env.reportOn = args['report-on'];
 
   env.lcov = args['lcov'];
   if (args['pretty-print'] && env.lcov) {
