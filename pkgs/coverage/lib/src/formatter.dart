@@ -6,7 +6,16 @@ import 'dart:io';
 import 'resolver.dart';
 
 abstract class Formatter {
-  Future<String> format(Map json);
+  /// [pathFilter], if provided, is used to filter which files are included
+  /// in the output.
+  ///
+  /// The paths in [reportOn], if provided, are used to filter the included
+  /// files. Files are only included if their path starts with one of the
+  /// values.
+  ///
+  /// [pathFilter] and [reportOn] cannot both be provided in a call to [format].
+  Future<String> format(Map hitmap,
+      {List<String> reportOn, bool pathFilter(String path)});
 }
 
 /// Converts the given hitmap to lcov format and appends the result to
@@ -18,20 +27,22 @@ class LcovFormatter implements Formatter {
   final Resolver resolver;
   LcovFormatter(this.resolver);
 
-  Future<String> format(Map hitmap, {List<String> reportOn}) async {
-    var buf = new StringBuffer();
-    var reportOnPaths = reportOn != null
-        ? reportOn.map((path) => new File(path).absolute.path)
-        : [];
+  Future<String> format(Map hitmap,
+      {List<String> reportOn, bool pathFilter(String path)}) async {
+    pathFilter = _getFilter(pathFilter, reportOn);
 
-    hitmap.forEach((key, v) {
+    var buf = new StringBuffer();
+    for (var key in hitmap.keys) {
+      var v = hitmap[key];
       var source = resolver.resolve(key);
       if (source == null) {
-        return;
-      } else if (!reportOnPaths.isEmpty &&
-          !reportOnPaths.any((p) => source.startsWith(p))) {
-        return;
+        continue;
       }
+
+      if (!pathFilter(source)) {
+        continue;
+      }
+
       buf.write('SF:${source}\n');
       v.keys.toList()
         ..sort()
@@ -39,7 +50,7 @@ class LcovFormatter implements Formatter {
           buf.write('DA:${k},${v[k]}\n');
         });
       buf.write('end_of_record\n');
-    });
+    }
 
     return buf.toString();
   }
@@ -55,32 +66,33 @@ class PrettyPrintFormatter implements Formatter {
   final Loader loader;
   PrettyPrintFormatter(this.resolver, this.loader);
 
-  Future<String> format(Map hitmap, {List<String> reportOn}) async {
+  Future<String> format(Map hitmap,
+      {List<String> reportOn, bool pathFilter(String path)}) async {
+    pathFilter = _getFilter(pathFilter, reportOn);
+
     var buf = new StringBuffer();
-    var reportOnPaths = reportOn != null
-        ? reportOn.map((path) => new File(path).absolute.path)
-        : [];
     for (var key in hitmap.keys) {
       var v = hitmap[key];
-      var uri = resolver.resolve(key);
-      if (uri == null) {
+      var source = resolver.resolve(key);
+      if (source == null) {
         continue;
-      } else if (!reportOnPaths.isEmpty &&
-          !reportOnPaths.any((p) => uri.startsWith(p))) {
+      }
+
+      if (!pathFilter(source)) {
         continue;
-      } else {
-        var lines = await loader.load(uri);
-        if (lines == null) {
-          continue;
+      }
+
+      var lines = await loader.load(source);
+      if (lines == null) {
+        continue;
+      }
+      buf.writeln(source);
+      for (var line = 1; line <= lines.length; line++) {
+        var prefix = _prefix;
+        if (v.containsKey(line)) {
+          prefix = v[line].toString().padLeft(_prefix.length);
         }
-        buf.writeln(uri);
-        for (var line = 1; line <= lines.length; line++) {
-          var prefix = _prefix;
-          if (v.containsKey(line)) {
-            prefix = v[line].toString().padLeft(_prefix.length);
-          }
-          buf.writeln('${prefix}|${lines[line-1]}');
-        }
+        buf.writeln('${prefix}|${lines[line-1]}');
       }
     }
 
@@ -89,3 +101,25 @@ class PrettyPrintFormatter implements Formatter {
 }
 
 const _prefix = '       ';
+
+typedef bool _PathFilter(String path);
+
+bool _anyPathFilter(String input) => true;
+
+_PathFilter _getFilter(_PathFilter pathFilter, List<String> reportOn) {
+  if (reportOn != null) {
+    if (pathFilter != null) {
+      throw new ArgumentError('Cannot provide both reportOn and pathFilter');
+    }
+    var absolutePaths =
+        reportOn.map((path) => new File(path).absolute.path).toList();
+
+    return (String path) => absolutePaths.any((item) => path.startsWith(item));
+  }
+
+  if (pathFilter == null) {
+    return _anyPathFilter;
+  }
+
+  return pathFilter;
+}
