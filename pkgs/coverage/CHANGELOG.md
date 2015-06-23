@@ -1,3 +1,9 @@
+###0.7.2
+
+ * `Formatter.format` added two optional arguments: `reportOn` and `pathFilter`.
+   They can be used independently to limit the files which are included in the
+   output.
+
 ###0.7.1
 
  * Added `collect` top-level method.
