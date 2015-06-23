@@ -47,10 +47,12 @@ main(List<String> arguments) async {
   var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
-    output = await new PrettyPrintFormatter(resolver, loader).format(hitmap, reportOn: env.reportOn);
+    output = await new PrettyPrintFormatter(resolver, loader).format(hitmap,
+        reportOn: env.reportOn);
   } else {
     assert(env.lcov);
-    output = await new LcovFormatter(resolver).format(hitmap, reportOn: env.reportOn);
+    output = await new LcovFormatter(resolver).format(hitmap,
+        reportOn: env.reportOn);
   }
 
   env.output.write(output);
@@ -84,7 +86,8 @@ Environment parseArgs(List<String> arguments) {
   parser.addOption('out',
       abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout');
   parser.addOption('report-on',
-      allowMultiple: true, help: 'which directories or files to report coverage on');
+      allowMultiple: true,
+      help: 'which directories or files to report coverage on');
   parser.addOption('workers',
       abbr: 'j', defaultsTo: '1', help: 'number of workers');
   parser.addFlag('pretty-print',
