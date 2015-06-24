@@ -24,6 +24,19 @@ class Pool {
   /// be completed.
   final _requestedResources = new Queue<Completer<PoolResource>>();
 
+  /// Callbacks that must be called before additional resources can be
+  /// allocated.
+  ///
+  /// See [PoolResource.allowRelease].
+  final _onReleaseCallbacks = new Queue<Function>();
+
+  /// Completers that will be completed once `onRelease` callbacks are done
+  /// running.
+  ///
+  /// These are kept in a queue to ensure that the earliest request completes
+  /// first regardless of what order the `onRelease` callbacks complete in.
+  final _onReleaseCompleters = new Queue<Completer<PoolResource>>();
+
   /// The maximum number of resources that may be allocated at once.
   final int _maxAllocatedResources;
 
@@ -59,6 +72,8 @@ class Pool {
     if (_allocatedResources < _maxAllocatedResources) {
       _allocatedResources++;
       return new Future.value(new PoolResource._(this));
+    } else if (_onReleaseCallbacks.isNotEmpty) {
+      return _runOnRelease(_onReleaseCallbacks.removeFirst());
     } else {
       var completer = new Completer<PoolResource>();
       _requestedResources.add(completer);
@@ -78,24 +93,53 @@ class Pool {
 
   /// If there are any pending requests, this will fire the oldest one.
   void _onResourceReleased() {
+    _resetTimer();
+
     if (_requestedResources.isEmpty) {
       _allocatedResources--;
-      if (_timer != null) {
-        _timer.cancel();
-        _timer = null;
-      }
       return;
     }
 
-    _resetTimer();
     var pending = _requestedResources.removeFirst();
     pending.complete(new PoolResource._(this));
+  }
+
+  /// If there are any pending requests, this will fire the oldest one after
+  /// running [onRelease].
+  void _onResourceReleaseAllowed(onRelease()) {
+    _resetTimer();
+
+    if (_requestedResources.isEmpty) {
+      _onReleaseCallbacks.add(
+          Zone.current.bindCallback(onRelease, runGuarded: false));
+      return;
+    }
+
+    var pending = _requestedResources.removeFirst();
+    pending.complete(_runOnRelease(onRelease));
+  }
+
+  /// Runs [onRelease] and returns a Future that completes to a resource once an
+  /// [onRelease] callback completes.
+  ///
+  /// Futures returned by [_runOnRelease] always complete in the order they were
+  /// created, even if earlier [onRelease] callbacks take longer to run.
+  Future<PoolResource> _runOnRelease(onRelease()) {
+    new Future.sync(onRelease).then((value) {
+      _onReleaseCompleters.removeFirst().complete(new PoolResource._(this));
+    }).catchError((error, stackTrace) {
+      _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
+    });
+
+    var completer = new Completer.sync();
+    _onReleaseCompleters.add(completer);
+    return completer.future;
   }
 
   /// A resource has been requested, allocated, or released.
   void _resetTimer() {
     if (_timer != null) _timer.cancel();
-    if (_timeout == null) {
+    if (_timeout == null || _requestedResources.isEmpty) {
       _timer = null;
     } else {
       _timer = new Timer(_timeout, _onTimeout);
@@ -137,6 +181,26 @@ class PoolResource {
     }
     _released = true;
     _pool._onResourceReleased();
+  }
+
+  /// Tells the parent [Pool] that the resource associated with this resource is
+  /// no longer necessary, but should remain allocated until more resources are
+  /// needed.
+  ///
+  /// When [Pool.request] is called and there are no remaining available
+  /// resources, the [onRelease] callback is called. It should free the
+  /// resource, and it may return a Future or `null`. Once that completes, the
+  /// [Pool.request] call will complete to a new [PoolResource].
+  ///
+  /// This is useful when a resource's main function is complete, but it may
+  /// produce additional information later on. For example, an isolate's task
+  /// may be complete, but it could still emit asynchronous errors.
+  void allowRelease(onRelease()) {
+    if (_released) {
+      throw new StateError("A PoolResource may only be released once.");
+    }
+    _released = true;
+    _pool._onResourceReleaseAllowed(onRelease);
   }
 }
 

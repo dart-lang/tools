@@ -159,6 +159,119 @@ void main() {
       });
     });
   });
+
+  group("allowRelease()", () {
+    test("runs the callback once the resource limit is exceeded", () async {
+      var pool = new Pool(50);
+      var requests = [];
+      for (var i = 0; i < 49; i++) {
+        expect(pool.request(), completes);
+      }
+
+      var resource = await pool.request();
+      var onReleaseCalled = false;
+      resource.allowRelease(() => onReleaseCalled = true);
+      await new Future.delayed(Duration.ZERO);
+      expect(onReleaseCalled, isFalse);
+
+      expect(pool.request(), completes);
+      await new Future.delayed(Duration.ZERO);
+      expect(onReleaseCalled, isTrue);
+    });
+
+    test("runs the callback immediately if there are blocked requests",
+        () async {
+      var pool = new Pool(1);
+      var resource = await pool.request();
+
+      // This will be blocked until [resource.allowRelease] is called.
+      expect(pool.request(), completes);
+
+      var onReleaseCalled = false;
+      resource.allowRelease(() => onReleaseCalled = true);
+      await new Future.delayed(Duration.ZERO);
+      expect(onReleaseCalled, isTrue);
+    });
+
+    test("blocks the request until the callback completes", () async {
+      var pool = new Pool(1);
+      var resource = await pool.request();
+
+      var requestComplete = false;
+      pool.request().then((_) => requestComplete = true);
+
+      var completer = new Completer();
+      resource.allowRelease(() => completer.future);
+      await new Future.delayed(Duration.ZERO);
+      expect(requestComplete, isFalse);
+
+      completer.complete();
+      await new Future.delayed(Duration.ZERO);
+      expect(requestComplete, isTrue);
+    });
+
+    test("completes requests in request order regardless of callback order",
+        () async {
+      var pool = new Pool(2);
+      var resource1 = await pool.request();
+      var resource2 = await pool.request();
+
+      var request1Complete = false;
+      pool.request().then((_) => request1Complete = true);
+      var request2Complete = false;
+      pool.request().then((_) => request2Complete = true);
+
+      var onRelease1Called = false;
+      var completer1 = new Completer();
+      resource1.allowRelease(() {
+        onRelease1Called = true;
+        return completer1.future;
+      });
+      await new Future.delayed(Duration.ZERO);
+      expect(onRelease1Called, isTrue);
+
+      var onRelease2Called = false;
+      var completer2 = new Completer();
+      resource2.allowRelease(() {
+        onRelease2Called = true;
+        return completer2.future;
+      });
+      await new Future.delayed(Duration.ZERO);
+      expect(onRelease2Called, isTrue);
+      expect(request1Complete, isFalse);
+      expect(request2Complete, isFalse);
+
+      // Complete the second resource's onRelease callback first. Even though it
+      // was triggered by the second blocking request, it should complete the
+      // first one to preserve ordering.
+      completer2.complete();
+      await new Future.delayed(Duration.ZERO);
+      expect(request1Complete, isTrue);
+      expect(request2Complete, isFalse);
+
+      completer1.complete();
+      await new Future.delayed(Duration.ZERO);
+      expect(request1Complete, isTrue);
+      expect(request2Complete, isTrue);
+    });
+
+    test("runs onRequest in the zone it was created", () async {
+      var pool = new Pool(1);
+      var resource = await pool.request();
+
+      var outerZone = Zone.current;
+      runZoned(() {
+        var innerZone = Zone.current;
+        expect(innerZone, isNot(equals(outerZone)));
+
+        resource.allowRelease(expectAsync(() {
+          expect(Zone.current, equals(innerZone));
+        }));
+      });
+
+      pool.request();
+    });
+  });
 }
 
 /// Returns a function that will cause the test to fail if it's called.
