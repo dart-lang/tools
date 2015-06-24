@@ -1,5 +1,12 @@
 # Changelog
 
-## 0.0.1
+## 0.1.1
 
-- Initial version
+- Syntax updates.
+
+
+## 0.1.0
+
+- Initial implementation.
+
+
