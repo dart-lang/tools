@@ -7,26 +7,38 @@ library package_config.util;
 
 import "package:charcode/ascii.dart";
 
-/// Tests whether something is a valid Dart identifier/package name.
-bool isIdentifier(String string) {
-  if (string.isEmpty) return false;
-  int firstChar = string.codeUnitAt(0);
-  int firstCharLower = firstChar | 0x20;
-  if (firstCharLower < $a || firstCharLower > $z) {
-    if (firstChar != $_ && firstChar != $$) return false;
-  }
-  for (int i = 1; i < string.length; i++) {
-    int char = string.codeUnitAt(i);
-    int charLower = char | 0x20;
-    if (charLower < $a || charLower > $z) {    // Letters.
-      if ((char ^ 0x30) <= 9) continue;        // Digits.
-      if (char == $_ || char == $$) continue;  // $ and _
-      if (firstChar != $_ && firstChar != $$) return false;
-    }
-  }
-  return true;
+// All ASCII characters that are valid in a package name, with space
+// for all the invalid ones (including space).
+const String _validPackageNameCharacters =
+    r"                                 !  $ &'()*+,-. 0123456789 ; =  "
+    r"@ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz   ~ ";
+
+/// Tests whether something is a valid Dart package name.
+bool isValidPackageName(String string) {
+  return _findInvalidCharacter(string) < 0;
 }
 
+/// Check if a string is a valid package name.
+///
+/// Valid package names contain only characters in [_validPackageNameCharacters]
+/// and must contain at least one non-'.' character.
+///
+/// Returns `-1` if the string is valid.
+/// Otherwise returns the index of the first invalid character,
+/// or `string.length` if the string contains no non-'.' character.
+int _findInvalidCharacter(String string) {
+  // Becomes non-zero if any non-'.' character is encountered.
+  int nonDot = 0;
+  for (int i = 0; i < string.length; i++) {
+    var c = string.codeUnitAt(i);
+    if (c > 0x7f || _validPackageNameCharacters.codeUnitAt(c) <= $space) {
+      return i;
+    }
+    nonDot += c ^ $dot;
+  }
+  if (nonDot == 0) return string.length;
+  return -1;
+}
 
 /// Validate that a Uri is a valid package:URI.
 String checkValidPackageUri(Uri packageUri) {
@@ -61,9 +73,25 @@ String checkValidPackageUri(Uri packageUri) {
         "Package URIs must start with the package name followed by a '/'");
   }
   String packageName = packageUri.path.substring(0, firstSlash);
-  if (!isIdentifier(packageName)) {
+  int badIndex = _findInvalidCharacter(packageName);
+  if (badIndex >= 0) {
+    if (packageName.isEmpty) {
+      throw new ArgumentError.value(packageUri, "packageUri",
+          "Package names mus be non-empty");
+    }
+    if (badIndex == packageName.length) {
+      throw new ArgumentError.value(packageUri, "packageUri",
+          "Package names must contain at least one non-'.' character");
+    }
+    assert(badIndex < packageName.length);
+    int badCharCode = packageName.codeUnitAt(badIndex);
+    var badChar = "U+" + badCharCode.toRadixString(16).padLeft(4, '0');
+    if (badCharCode >= 0x20 && badCharCode <= 0x7e) {
+      // Printable character.
+      badChar = "'${packageName[badIndex]}' ($badChar)";
+    }
     throw new ArgumentError.value(packageUri, "packageUri",
-        "Package names must be valid identifiers");
+        "Package names must not contain $badChar");
   }
   return packageName;
 }

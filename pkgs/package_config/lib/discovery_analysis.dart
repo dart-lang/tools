@@ -18,7 +18,6 @@ import "dart:collection" show HashMap;
 import "package:path/path.dart" as path;
 
 import "packages.dart";
-import "discovery.dart";
 import "packages_file.dart" as pkgfile;
 import "src/packages_impl.dart";
 import "src/packages_io_impl.dart";

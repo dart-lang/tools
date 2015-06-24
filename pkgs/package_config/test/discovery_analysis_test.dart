@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+library package_config.discovery_analysis_test;
+
 import "dart:async";
 import "dart:io";
 
@@ -46,9 +48,9 @@ Directory sub(Directory parent, String dirName) {
 
 const packagesFile = """
 # A comment
-foo=file:///dart/packages/foo/
-bar=http://example.com/dart/packages/bar/
-baz=packages/baz/
+foo:file:///dart/packages/foo/
+bar:http://example.com/dart/packages/bar/
+baz:packages/baz/
 """;
 
 void validatePackagesFile(Packages resolver, Uri location) {

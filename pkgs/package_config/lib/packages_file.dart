@@ -5,7 +5,7 @@
 library package_config.packages_file;
 
 import "package:charcode/ascii.dart";
-import "src/util.dart" show isIdentifier;
+import "src/util.dart" show isValidPackageName;
 
 /// Parses a `.packages` file into a map from package name to base URI.
 ///
@@ -28,34 +28,34 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation) {
   while (index < source.length) {
     bool isComment = false;
     int start = index;
-    int eqIndex = -1;
+    int separatorIndex = -1;
     int end = source.length;
     int char = source[index++];
     if (char == $cr || char == $lf) {
       continue;
     }
-    if (char == $equal) {
+    if (char == $colon) {
       throw new FormatException("Missing package name", source, index - 1);
     }
     isComment = char == $hash;
     while (index < source.length) {
       char = source[index++];
-      if (char == $equal && eqIndex < 0) {
-        eqIndex = index - 1;
+      if (char == $colon && separatorIndex < 0) {
+        separatorIndex = index - 1;
       } else if (char == $cr || char == $lf) {
         end = index - 1;
         break;
       }
     }
     if (isComment) continue;
-    if (eqIndex < 0) {
-      throw new FormatException("No '=' on line", source, index - 1);
+    if (separatorIndex < 0) {
+      throw new FormatException("No ':' on line", source, index - 1);
     }
-    var packageName = new String.fromCharCodes(source, start, eqIndex);
-    if (!isIdentifier(packageName)) {
+    var packageName = new String.fromCharCodes(source, start, separatorIndex);
+    if (!isValidPackageName(packageName)) {
       throw new FormatException("Not a valid package name", packageName, 0);
     }
-    var packageUri = new String.fromCharCodes(source, eqIndex + 1, end);
+    var packageUri = new String.fromCharCodes(source, separatorIndex + 1, end);
     var packageLocation = Uri.parse(packageUri);
     if (!packageLocation.path.endsWith('/')) {
       packageLocation =
@@ -101,11 +101,11 @@ void write(StringSink output, Map<String, Uri> packageMapping,
 
   packageMapping.forEach((String packageName, Uri uri) {
     // Validate packageName.
-    if (!isIdentifier(packageName)) {
+    if (!isValidPackageName(packageName)) {
       throw new ArgumentError('"$packageName" is not a valid package name');
     }
     output.write(packageName);
-    output.write('=');
+    output.write(':');
     // If baseUri provided, make uri relative.
     if (baseUri != null) {
       uri = _relativize(uri, baseUri);
@@ -124,7 +124,7 @@ void write(StringSink output, Map<String, Uri> packageMapping,
 /// but may be relative.
 /// The `baseUri` must be absolute.
 Uri _relativize(Uri uri, Uri baseUri) {
-  assert(!baseUri.isAbsolute);
+  assert(baseUri.isAbsolute);
   if (uri.hasQuery || uri.hasFragment) {
     uri = new Uri(
         scheme: uri.scheme,
@@ -158,6 +158,7 @@ Uri _relativize(Uri uri, Uri baseUri) {
   }
   uri = _normalizePath(uri);
   List<String> target = uri.pathSegments.toList();
+  if (target.isNotEmpty && target.last.isEmpty) target.removeLast();
   int index = 0;
   while (index < base.length && index < target.length) {
     if (base[index] != target[index]) {
@@ -166,6 +167,9 @@ Uri _relativize(Uri uri, Uri baseUri) {
     index++;
   }
   if (index == base.length) {
+    if (index == target.length) {
+      return new Uri(path: "./");
+    }
     return new Uri(path: target.skip(index).join('/'));
   } else if (index > 0) {
     return new Uri(
