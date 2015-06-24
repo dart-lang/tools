@@ -96,7 +96,7 @@ main() {
     for (int i = 0; i <= 255; i++) {
       if (map[i] == true) continue;
       var char = new String.fromCharCode(i);
-      expect(() => doParse("x${char}x:x"), throws);
+      expect(() => doParse("x${char}x:x", null), throws);
     }
   });
 

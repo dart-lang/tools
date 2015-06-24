@@ -4,7 +4,6 @@
 
 library package_config.parse_write_test;
 
-import "package:package_config/packages.dart";
 import "package:package_config/packages_file.dart";
 import "package:test/test.dart";
 
