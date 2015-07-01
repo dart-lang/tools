@@ -87,8 +87,7 @@ class Pool {
   ///
   /// The return value of [callback] is piped to the returned Future.
   Future withResource(callback()) {
-    return request().then((resource) =>
-        Chain.track(new Future.sync(callback)).whenComplete(resource.release));
+    return request().then((resource) => new Future.sync(callback).whenComplete(resource.release));
   }
 
   /// If there are any pending requests, this will fire the oldest one.

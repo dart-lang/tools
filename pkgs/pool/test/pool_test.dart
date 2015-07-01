@@ -163,7 +163,6 @@ void main() {
   group("allowRelease()", () {
     test("runs the callback once the resource limit is exceeded", () async {
       var pool = new Pool(50);
-      var requests = [];
       for (var i = 0; i < 49; i++) {
         expect(pool.request(), completes);
       }
