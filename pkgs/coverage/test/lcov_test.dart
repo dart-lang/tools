@@ -39,7 +39,6 @@ void main() {
   });
 
   group('LcovFormatter', () {
-
     test('format()', () async {
       var hitmap = await _getHitMap();
 
@@ -78,11 +77,9 @@ void main() {
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
       expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
     });
-
   });
 
   group('PrettyPrintFormatter', () {
-
     test('format()', () async {
       var hitmap = await _getHitMap();
 
@@ -99,7 +96,7 @@ void main() {
       expect(res, contains("      0|  return a - b;"));
 
       expect(res, contains('      1|  return _withTimeout(() async {'),
-      reason: 'be careful if you change lib/src/util.dart');
+          reason: 'be careful if you change lib/src/util.dart');
 
       var hitLineRegexp = new RegExp(r'\s+(\d+)\|  return a \+ b;');
       var match = hitLineRegexp.allMatches(res).single;
@@ -133,7 +130,6 @@ void main() {
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
       expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
     });
-
   });
 }
 
