@@ -5,6 +5,7 @@
 library coverage.src.util;
 
 import 'dart:async';
+import 'dart:io';
 
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
@@ -43,4 +44,23 @@ Future retry(Future f(), Duration interval, {Duration timeout}) async {
       }
     }
   }, duration: timeout);
+}
+
+/// Returns an open port by creating a temporary Socket
+Future<int> getOpenPort() async {
+  ServerSocket socket;
+
+  try {
+    socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+  } catch (_) {
+    // try again v/ V6 only. Slight possibility that V4 is disabled
+    socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
+        v6Only: true);
+  }
+
+  try {
+    return socket.port;
+  } finally {
+    await socket.close();
+  }
 }

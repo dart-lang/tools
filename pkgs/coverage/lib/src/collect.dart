@@ -33,8 +33,8 @@ Future<Map> _getAllCoverage(VMService service) async {
   var vm = await service.getVM();
   var allCoverage = [];
 
-  for (var isolate in vm.isolates) {
-    var coverage = await service.getCoverage(isolate.id);
+  for (var isolateRef in vm.isolates) {
+    var coverage = await service.getCoverage(isolateRef.id);
     allCoverage.addAll(coverage.coverage);
   }
   return {'type': 'CodeCoverage', 'coverage': allCoverage};
@@ -42,17 +42,18 @@ Future<Map> _getAllCoverage(VMService service) async {
 
 Future _resumeIsolates(VMService service) async {
   var vm = await service.getVM();
-  var isolateRequests = vm.isolates.map((i) => service.resume(i.id));
-  return Future.wait(isolateRequests);
+  for (var isolateRef in vm.isolates) {
+    await service.resume(isolateRef.id);
+  }
 }
 
 Future _waitIsolatesPaused(VMService service, {Duration timeout}) async {
   allPaused() async {
     var vm = await service.getVM();
-    var isolateRequests = vm.isolates.map((i) => service.getIsolate(i.id));
-    var isolates = await Future.wait(isolateRequests);
-    var paused = isolates.every((i) => i.paused);
-    if (!paused) throw "Unpaused isolates remaining.";
+    for (var isolateRef in vm.isolates) {
+      var isolate = await service.getIsolate(isolateRef.id);
+      if (!isolate.paused) throw "Unpaused isolates remaining.";
+    }
   }
   return retry(allPaused, _retryInterval, timeout: timeout);
 }
