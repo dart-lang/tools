@@ -677,6 +677,19 @@ void testHost() {
 }''');
 }
 
+void testStringEscape() {
+  var errors = [];
+  var input = r'''a { foo: '{"text" : "a\\\""}' }''';
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
+  expect(stylesheet != null, true);
+  expect(errors.isEmpty, true, reason: errors.toString());
+
+  expect(prettyPrint(stylesheet), r'''
+a {
+  foo: '{"text" : "a\\\""}';
+}''');
+}
+
 // TODO(terry): Move to emitter_test.dart when real emitter exist.
 void testEmitter() {
   var errors = [];
@@ -721,6 +734,7 @@ main() {
   test('Attributes', testAttribute);
   test('Negation', testNegation);
   test('@host', testHost);
+  test('stringEscape', testStringEscape);
   test('Parse List<int> as input', testArrayOfChars);
   test('Simple Emitter', testEmitter);
 }
