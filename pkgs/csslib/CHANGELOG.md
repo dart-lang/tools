@@ -1,3 +1,7 @@
+## 0.12.1
+
+ * Fix to handling of escapes in strings.
+
 ## 0.12.0+1
 
 * Allow the lastest version of `logging` package.
