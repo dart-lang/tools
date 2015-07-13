@@ -80,6 +80,9 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation) {
 ///
 /// If [baseUri] is provided, package locations will be made relative
 /// to the base URI, if possible, before writing.
+///
+/// All the keys of [packageMapping] must be valid package names,
+/// and the values must be URIs that do not have the `package:` scheme.
 void write(StringSink output, Map<String, Uri> packageMapping,
            {Uri baseUri, String comment}) {
   if (baseUri != null && !baseUri.isAbsolute) {
@@ -103,6 +106,10 @@ void write(StringSink output, Map<String, Uri> packageMapping,
     // Validate packageName.
     if (!isValidPackageName(packageName)) {
       throw new ArgumentError('"$packageName" is not a valid package name');
+    }
+    if (uri.scheme == "package") {
+      throw new ArgumentError.value(
+          "Package location must not be a package: URI", uri);
     }
     output.write(packageName);
     output.write(':');

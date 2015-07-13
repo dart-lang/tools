@@ -179,7 +179,7 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// script.
 /// The [nonFileUri] should not be a `file:` URI since the algorithm for
 /// finding a package resolution strategy is more elaborate for `file:` URIs.
-/// In that case, use [findPackagesFile].
+/// In that case, use [findPackagesFromFile].
 ///
 /// This function first tries to locate a `.packages` file in the [nonFileUri]
 /// directory. If that is not found, it instead assumes a `packages/` directory
