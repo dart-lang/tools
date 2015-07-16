@@ -25,7 +25,7 @@ final _simpleMapping = parseJson(
 void main() {
   test("maps a JS line and column to a Dart line and span", () {
     var trace = new Trace.parse("foo.dart.js 10:11  foo");
-    var frame = mapStackTrace(_simpleMapping, trace).frames.first;
+    var frame = _mapTrace(_simpleMapping, trace).frames.first;
     expect(frame.uri, equals(Uri.parse("foo.dart")));
 
     // These are +1 because stack_trace is 1-based whereas source_span is
@@ -40,7 +40,7 @@ foo.dart.js 10:11  foo
 foo.dart.js        bar
 foo.dart.js 10:11  baz
 """);
-    var frames = mapStackTrace(_simpleMapping, trace).frames;
+    var frames = _mapTrace(_simpleMapping, trace).frames;
 
     expect(frames.length, equals(2));
     expect(frames.first.member, equals("foo"));
@@ -54,7 +54,7 @@ foo.dart.js 1:1   bar
 foo.dart.js 10:11  baz
 """);
 
-    var frames = mapStackTrace(_simpleMapping, trace).frames;
+    var frames = _mapTrace(_simpleMapping, trace).frames;
 
     expect(frames.length, equals(2));
     expect(frames.first.member, equals("foo"));
@@ -75,7 +75,7 @@ foo.dart.js 10:11  baz
                 "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
-    var frame = mapStackTrace(mapping, trace).frames.first;
+    var frame = _mapTrace(mapping, trace).frames.first;
     expect(frame.uri, equals(Uri.parse("foo.dart")));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
@@ -95,7 +95,7 @@ foo.dart.js 10:11  baz
                 "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
-    var frame = mapStackTrace(mapping, trace, packageRoot: "packages/")
+    var frame = _mapTrace(mapping, trace, packageRoot: "packages/")
         .frames.first;
     expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
     expect(frame.line, equals(2));
@@ -116,7 +116,7 @@ foo.dart.js 10:11  baz
                 "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
-    var frame = mapStackTrace(mapping, trace, sdkRoot: "sdk/").frames.first;
+    var frame = _mapTrace(mapping, trace, sdkRoot: "sdk/").frames.first;
     expect(frame.uri, equals(Uri.parse("dart:async/foo.dart")));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
@@ -127,7 +127,7 @@ foo.dart.js 10:11  baz
       new Trace.parse("foo.dart.js 10:11  foo"),
       new Trace.parse("foo.dart.js 10:11  bar")
     ]);
-    var traces = mapStackTrace(_simpleMapping, trace).traces;
+    var traces = _mapChain(_simpleMapping, trace).traces;
 
     var frame = traces.first.frames.single;
     expect(frame.uri, equals(Uri.parse("foo.dart")));
@@ -190,8 +190,24 @@ foo.dart.js 10:11  baz
   });
 }
 
+/// Like [mapStackTrace], but is guaranteed to return a [Trace] so it can be
+/// inspected.
+Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
+    {bool minified: false, packageRoot, sdkRoot}) {
+  return new Trace.from(mapStackTrace(sourceMap, stackTrace,
+      minified: minified, packageRoot: packageRoot, sdkRoot: sdkRoot));
+}
+
+/// Like [mapStackTrace], but is guaranteed to return a [Chain] so it can be
+/// inspected.
+Chain _mapChain(Mapping sourceMap, StackTrace stackTrace,
+    {bool minified: false, packageRoot, sdkRoot}) {
+  return new Chain.forTrace(mapStackTrace(sourceMap, stackTrace,
+      minified: minified, packageRoot: packageRoot, sdkRoot: sdkRoot));
+}
+
 /// Runs the mapper's prettification logic on [member] and returns the result.
 String _prettify(String member) {
   var trace = new Trace([new Frame(Uri.parse("foo.dart.js"), 10, 11, member)]);
-  return mapStackTrace(_simpleMapping, trace).frames.first.member;
+  return _mapTrace(_simpleMapping, trace).frames.first.member;
 }
