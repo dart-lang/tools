@@ -5,7 +5,7 @@
 library string_scanner.error_test;
 
 import 'package:string_scanner/string_scanner.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'utils.dart';
 

@@ -5,7 +5,7 @@
 library string_scanner.line_scanner_test;
 
 import 'package:string_scanner/string_scanner.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   var scanner;

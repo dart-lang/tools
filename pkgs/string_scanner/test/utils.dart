@@ -5,7 +5,7 @@
 library string_scanner.test.utils;
 
 import 'package:string_scanner/string_scanner.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 /// Returns a matcher that asserts that a closure throws a [FormatException]
 /// with the given [message].
