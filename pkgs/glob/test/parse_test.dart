@@ -4,7 +4,7 @@
 
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   test("supports backslash-escaped characters", () {

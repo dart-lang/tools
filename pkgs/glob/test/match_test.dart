@@ -5,7 +5,7 @@
 import 'package:glob/glob.dart';
 import 'package:glob/src/utils.dart';
 import 'package:path/path.dart' as p;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 const RAW_ASCII_WITHOUT_SLASH = "\t\n\r !\"#\$%&'()*+`-.0123456789:;<=>?@ABCDEF"
     "GHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~";

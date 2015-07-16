@@ -1,3 +1,10 @@
+## 1.0.5
+
+* Narrow the dependency on `path`. Previously, this allowed versions that didn't
+  support all the functionality this package needs.
+
+* Upgrade to the new test runner.
+
 ## 1.0.4
 
 * Added overlooked `collection` dependency.
