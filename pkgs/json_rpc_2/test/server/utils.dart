@@ -9,7 +9,7 @@ import 'dart:convert';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:json_rpc_2/error_code.dart' as error_code;
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 /// A controller used to test a [json_rpc.Server].
 class ServerController {

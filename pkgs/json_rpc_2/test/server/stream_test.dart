@@ -6,7 +6,7 @@ library json_rpc_2.test.server.stream_test;
 
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
 import 'utils.dart';
