@@ -4,7 +4,7 @@
 
 library test.end2end_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
 import 'common.dart';

@@ -4,7 +4,7 @@
 
 library polymer.test.refactor_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:source_maps/refactor.dart';
 import 'package:source_maps/parser.dart' show parse, Mapping;
 import 'package:source_span/source_span.dart';

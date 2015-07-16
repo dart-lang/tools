@@ -5,7 +5,7 @@
 library test.source_maps_test;
 
 import 'dart:convert';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:source_maps/source_maps.dart';
 import 'common.dart';
 

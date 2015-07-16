@@ -5,7 +5,7 @@
 library test.vlq_test;
 
 import 'dart:math';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:source_maps/src/vlq.dart';
 
 main() {
@@ -49,7 +49,9 @@ main() {
     expect(() => decodeVlq('igggggE'.split('').iterator), throws);
     expect(() => decodeVlq('jgggggE'.split('').iterator), throws);
     expect(() => decodeVlq('lgggggE'.split('').iterator), throws);
-  });
+  },
+      // This test uses integers so large they overflow in JS.
+      testOn: "dart-vm");
 }
 
 _checkEncodeDecode(int value) {

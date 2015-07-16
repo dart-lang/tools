@@ -7,7 +7,7 @@ library test.common;
 
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 /// Content of the source file
 const String INPUT = '''
