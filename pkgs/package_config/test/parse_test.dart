@@ -74,13 +74,6 @@ main() {
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
-  test("dot-dot 2", () {
-    var packages = doParse(singleRelativeSample, base);
-    expect(packages.packages.toList(), equals(["foo"]));
-    expect(packages.resolve(Uri.parse("package:qux/../foo/bar/baz.dart")),
-        equals(base.resolve("../test/").resolve("bar/baz.dart")));
-  });
-
   test("all valid chars can be used in URI segment", () {
     var packages = doParse(allValidCharsSample, base);
     expect(packages.packages.toList(), equals([allValidChars]));
