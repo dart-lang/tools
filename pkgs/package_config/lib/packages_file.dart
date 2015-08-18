@@ -109,7 +109,7 @@ void write(StringSink output, Map<String, Uri> packageMapping,
     }
     if (uri.scheme == "package") {
       throw new ArgumentError.value(
-          "Package location must not be a package: URI", uri);
+          "Package location must not be a package: URI", uri.toString());
     }
     output.write(packageName);
     output.write(':');
