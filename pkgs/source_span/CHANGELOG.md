@@ -1,3 +1,10 @@
+# 1.1.3
+
+* `FileSpan.compareTo`, `FileSpan.==`, `FileSpan.union`, and `FileSpan.expand`
+  no longer throw exceptions for external implementations of `FileSpan`.
+
+* `FileSpan.hashCode` now fully agrees with `FileSpan.==`.
+
 # 1.1.2
 
 * Fixed validation in `SourceSpanWithContext` to allow multiple occurrences of

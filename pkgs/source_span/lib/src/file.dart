@@ -7,9 +7,6 @@ library source_span.file;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:path/path.dart' as p;
-
-import 'colors.dart' as colors;
 import 'location.dart';
 import 'span.dart';
 import 'span_mixin.dart';
@@ -74,7 +71,7 @@ class SourceFile {
   /// If [end] isn't passed, it defaults to the end of the file.
   FileSpan span(int start, [int end]) {
     if (end == null) end = length - 1;
-    return new FileSpan._(this, start, end);
+    return new _FileSpan(this, start, end);
   }
 
   /// Returns a location in [this] at [offset].
@@ -173,7 +170,7 @@ class FileLocation extends SourceLocation {
     }
   }
 
-  FileSpan pointSpan() => new FileSpan._(file, offset, offset);
+  FileSpan pointSpan() => new _FileSpan(file, offset, offset);
 }
 
 /// A [SourceSpan] within a [SourceFile].
@@ -184,8 +181,23 @@ class FileLocation extends SourceLocation {
 /// [FileSpan.union] will return a [FileSpan] if possible.
 ///
 /// A [FileSpan] can be created using [SourceFile.span].
-class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
+abstract class FileSpan implements SourceSpanWithContext {
   /// The [file] that [this] belongs to.
+  SourceFile get file;
+
+  /// Returns a new span that covers both [this] and [other].
+  ///
+  /// Unlike [union], [other] may be disjoint from [this]. If it is, the text
+  /// between the two will be covered by the returned span.
+  FileSpan expand(FileSpan other);
+}
+
+/// The implementation of [FileSpan].
+///
+/// This is split into a separate class so that `is _FileSpan` checks can be run
+/// to make certain operations more efficient. If we used `is FileSpan`, that
+/// would break if external classes implemented the interface.
+class _FileSpan extends SourceSpanMixin implements FileSpan {
   final SourceFile file;
 
   /// The offset of the beginning of the span.
@@ -208,7 +220,7 @@ class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
   String get context => file.getText(file.getOffset(start.line),
       end.line == file.lines - 1 ? null : file.getOffset(end.line + 1));
 
-  FileSpan._(this.file, this._start, this._end) {
+  _FileSpan(this.file, this._start, this._end) {
     if (_end < _start) {
       throw new ArgumentError('End $_end must come after start $_start.');
     } else if (_end > file.length) {
@@ -220,9 +232,9 @@ class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
   }
 
   int compareTo(SourceSpan other) {
-    if (other is! FileSpan) return super.compareTo(other);
+    if (other is! _FileSpan) return super.compareTo(other);
 
-    FileSpan otherFile = other;
+    _FileSpan otherFile = other;
     var result = _start.compareTo(otherFile._start);
     return result == 0 ? _end.compareTo(otherFile._end) : result;
   }
@@ -230,7 +242,7 @@ class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
   SourceSpan union(SourceSpan other) {
     if (other is! FileSpan) return super.union(other);
 
-    var span = expand(other);
+    _FileSpan span = expand(other);
     var beginSpan = span._start == _start ? this : other;
     var endSpan = span._end == _end ? this : other;
 
@@ -243,12 +255,13 @@ class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
 
   bool operator ==(other) {
     if (other is! FileSpan) return super == other;
+    if (other is! _FileSpan) {
+      return super == other && sourceUrl == other.sourceUrl;
+    }
+
     return _start == other._start && _end == other._end &&
         sourceUrl == other.sourceUrl;
   }
-
-  int get hashCode => _start.hashCode + 5 * _end.hashCode +
-      7 * sourceUrl.hashCode;
 
   /// Returns a new span that covers both [this] and [other].
   ///
@@ -260,8 +273,14 @@ class FileSpan extends SourceSpanMixin implements SourceSpanWithContext {
           " \"${other.sourceUrl}\" don't match.");
     }
 
-    var start = math.min(this._start, other._start);
-    var end = math.max(this._end, other._end);
-    return new FileSpan._(file, start, end);
+    if (other is _FileSpan) {
+      var start = math.min(this._start, other._start);
+      var end = math.max(this._end, other._end);
+      return new _FileSpan(file, start, end);
+    } else {
+      var start = math.min(this._start, other.start.offset);
+      var end = math.max(this._end, other.end.offset);
+      return new _FileSpan(file, start, end);
+    }
   }
 }
