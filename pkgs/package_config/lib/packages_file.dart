@@ -57,11 +57,11 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation) {
     }
     var packageUri = new String.fromCharCodes(source, separatorIndex + 1, end);
     var packageLocation = Uri.parse(packageUri);
+    packageLocation = baseLocation.resolveUri(packageLocation);
     if (!packageLocation.path.endsWith('/')) {
       packageLocation =
           packageLocation.replace(path: packageLocation.path + "/");
     }
-    packageLocation = baseLocation.resolveUri(packageLocation);
     if (result.containsKey(packageName)) {
       throw new FormatException(
           "Same package name occured twice.", source, start);

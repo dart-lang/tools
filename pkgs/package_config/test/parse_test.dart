@@ -50,11 +50,25 @@ main() {
         equals(base.resolve("../test/").resolve("bar/baz.dart")));
   });
 
-  test("single absolute", () {
+  test("single absolute authority", () {
     var packages = doParse(singleAbsoluteSample, base);
     expect(packages.packages.toList(), equals(["foo"]));
     expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
         equals(Uri.parse("http://example.com/some/where/bar/baz.dart")));
+  });
+
+  test("single empty path", () {
+    var packages = doParse(singleEmptyPathSample, base);
+    expect(packages.packages.toList(), equals(["foo"]));
+    expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
+        equals(base.replace(path: "${base.path}/bar/baz.dart")));
+  });
+
+  test("single absolute path", () {
+    var packages = doParse(singleAbsolutePathSample, base);
+    expect(packages.packages.toList(), equals(["foo"]));
+    expect(packages.resolve(Uri.parse("package:foo/bar/baz.dart")),
+        equals(base.replace(path: "/test/bar/baz.dart")));
   });
 
   test("multiple", () {
@@ -121,14 +135,16 @@ Packages doParse(String sample, Uri baseUri) {
 }
 
 // Valid samples.
-var emptySample = "";
-var commentOnlySample = "# comment only\n";
-var emptyLinesSample = "\n\n\r\n";
-var singleRelativeSample = "foo:../test/\n";
-var singleRelativeSampleNoSlash = "foo:../test\n";
+var emptySample                   = "";
+var commentOnlySample             = "# comment only\n";
+var emptyLinesSample              = "\n\n\r\n";
+var singleRelativeSample          = "foo:../test/\n";
+var singleRelativeSampleNoSlash   = "foo:../test\n";
 var singleRelativeSampleNoNewline = "foo:../test/";
-var singleAbsoluteSample = "foo:http://example.com/some/where/\n";
-var multiRelativeSample = "foo:../test/\nbar:../test2/\n";
+var singleAbsoluteSample          = "foo:http://example.com/some/where/\n";
+var singleEmptyPathSample         = "foo:\n";
+var singleAbsolutePathSample      = "foo:/test/\n";
+var multiRelativeSample           = "foo:../test/\nbar:../test2/\n";
 // All valid path segment characters in an URI.
 var allValidChars =
     r"!$&'()*+,-.0123456789;="
