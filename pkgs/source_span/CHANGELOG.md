@@ -1,3 +1,7 @@
+# 1.1.4
+
+* Eliminated dart2js warning about overriding `==`, but not `hashCode`.
+
 # 1.1.3
 
 * `FileSpan.compareTo`, `FileSpan.==`, `FileSpan.union`, and `FileSpan.expand`

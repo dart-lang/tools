@@ -263,6 +263,9 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
         sourceUrl == other.sourceUrl;
   }
 
+  // Eliminates dart2js warning about overriding `==`, but not `hashCode`
+  int get hashCode => super.hashCode;
+
   /// Returns a new span that covers both [this] and [other].
   ///
   /// Unlike [union], [other] may be disjoint from [this]. If it is, the text
