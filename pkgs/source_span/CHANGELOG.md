@@ -1,3 +1,8 @@
+# 1.1.5
+
+* Fixed another case in which `FileSpan.union` could throw an exception for
+  external implementations of `FileSpan`.
+
 # 1.1.4
 
 * Eliminated dart2js warning about overriding `==`, but not `hashCode`.

@@ -242,12 +242,17 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   SourceSpan union(SourceSpan other) {
     if (other is! FileSpan) return super.union(other);
 
+    
     _FileSpan span = expand(other);
-    var beginSpan = span._start == _start ? this : other;
-    var endSpan = span._end == _end ? this : other;
 
-    if (beginSpan._end < endSpan._start) {
-      throw new ArgumentError("Spans $this and $other are disjoint.");
+    if (other is _FileSpan) {
+      if (this._start > other._end || other._start > this._end) {
+        throw new ArgumentError("Spans $this and $other are disjoint.");
+      }
+    } else {
+      if (this._start > other.end.offset || other.start.offset > this._end) {
+        throw new ArgumentError("Spans $this and $other are disjoint.");
+      }
     }
 
     return span;
