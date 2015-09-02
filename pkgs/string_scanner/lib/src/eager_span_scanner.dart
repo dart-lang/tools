@@ -1,42 +1,36 @@
-// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library string_scanner.line_scanner;
+library string_scanner.eager_span_scanner;
 
 import 'package:charcode/ascii.dart';
 
-import 'string_scanner.dart';
+import 'line_scanner.dart';
+import 'span_scanner.dart';
 
-// Note that much of this code is duplicated in eager_span_scanner.dart.
+// TODO(nweiz): Currently this duplicates code in line_scanner.dart. Once
+// sdk#23770 is fully complete, we should move the shared code into a mixin.
 
 /// A regular expression matching newlines across platforms.
 final _newlineRegExp = new RegExp(r"\r\n?|\n");
 
-/// A subclass of [StringScanner] that tracks line and column information.
-class LineScanner extends StringScanner {
-  /// The scanner's current (zero-based) line number.
+/// A [SpanScanner] that tracks the line and column eagerly, like [LineScanner].
+class EagerSpanScanner extends SpanScanner {
   int get line => _line;
   int _line = 0;
 
-  /// The scanner's current (zero-based) column number.
   int get column => _column;
   int _column = 0;
 
-  /// The scanner's state, including line and column information.
-  ///
-  /// This can be used to efficiently save and restore the state of the scanner
-  /// when backtracking. A given [LineScannerState] is only valid for the
-  /// [LineScanner] that created it.
   LineScannerState get state =>
-      new LineScannerState._(this, position, line, column);
+      new _EagerSpanScannerState(this, position, line, column);
 
-  /// Whether the current position is between a CR character and an LF
-  /// charactet.
   bool get _betweenCRLF => peekChar(-1) == $cr && peekChar() == $lf;
 
   set state(LineScannerState state) {
-    if (!identical(state._scanner, this)) {
+    if (state is! _EagerSpanScannerState ||
+        !identical((state as _EagerSpanScannerState)._scanner, this)) {
       throw new ArgumentError("The given LineScannerState was not returned by "
           "this LineScanner.");
     }
@@ -72,7 +66,7 @@ class LineScanner extends StringScanner {
     }
   }
 
-  LineScanner(String string, {sourceUrl, int position})
+  EagerSpanScanner(String string, {sourceUrl, int position})
       : super(string, sourceUrl: sourceUrl, position: position);
 
   int readChar() {
@@ -109,19 +103,13 @@ class LineScanner extends StringScanner {
   }
 }
 
-/// A class representing the state of a [LineScanner].
-class LineScannerState {
-  /// The [LineScanner] that created this.
-  final LineScanner _scanner;
-
-  /// The position of the scanner in this state.
+/// A class representing the state of an [EagerSpanScanner].
+class _EagerSpanScannerState implements LineScannerState {
+  final EagerSpanScanner _scanner;
   final int position;
-
-  /// The zero-based line number of the scanner in this state.
   final int line;
-
-  /// The zero-based column number of the scanner in this state.
   final int column;
 
-  LineScannerState._(this._scanner, this.position, this.line, this.column);
+  _EagerSpanScannerState(this._scanner, this.position, this.line, this.column);
 }
+

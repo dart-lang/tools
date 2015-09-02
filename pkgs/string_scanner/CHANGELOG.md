@@ -1,3 +1,8 @@
+## 0.1.4
+
+* Add `new SpanScanner.eager()` for creating a `SpanScanner` that eagerly
+  computes its current line and column numbers.
+
 ## 0.1.3+2
 
 * Fix `LineScanner`'s handling of carriage returns to match that of
