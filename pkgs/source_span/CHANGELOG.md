@@ -1,5 +1,9 @@
 # 1.2.0
 
+* **Deprecated:** Extending `SourceLocation` directly is deprecated. Instead,
+  extend the new `SourceLocationBase` class or mix in the new
+  `SourceLocationMixin` mixin.
+
 * Dramatically improve the performance of `FileLocation`.
 
 # 1.1.6

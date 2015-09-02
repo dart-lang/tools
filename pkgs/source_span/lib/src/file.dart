@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'location.dart';
+import 'location_mixin.dart';
 import 'span.dart';
 import 'span_mixin.dart';
 import 'span_with_context.dart';
@@ -212,17 +213,19 @@ class SourceFile {
 /// and column values based on its offset and the contents of [file].
 ///
 /// A [FileLocation] can be created using [SourceFile.location].
-class FileLocation extends SourceLocation {
+class FileLocation extends SourceLocationMixin implements SourceLocation {
   /// The [file] that [this] belongs to.
   final SourceFile file;
 
+  final int offset;
   Uri get sourceUrl => file.url;
   int get line => file.getLine(offset);
   int get column => file.getColumn(offset);
 
-  FileLocation._(this.file, int offset)
-      : super(offset) {
-    if (offset > file.length) {
+  FileLocation._(this.file, this.offset) {
+    if (offset < 0) {
+      throw new RangeError("Offset may not be negative, was $offset.");
+    } else if (offset > file.length) {
       throw new RangeError("Offset $offset must not be greater than the number "
           "of characters in the file, ${file.length}.");
     }
