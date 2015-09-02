@@ -6,9 +6,9 @@ description: >
   A class for parsing strings using a sequence of patterns.
 dependencies:
   charcode: "^1.1.0"
-  path: ">=1.2.0 <2.0.0"
-  source_span: ">=1.0.0 <2.0.0"
+  path: "^1.2.0"
+  source_span: "^1.0.0"
 dev_dependencies:
   test: ">=0.12.0 <0.13.0"
 environment:
-  sdk: ">=1.2.0 <2.0.0"
+  sdk: ">=1.8.0 <2.0.0"
