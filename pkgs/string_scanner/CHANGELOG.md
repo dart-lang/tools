@@ -1,3 +1,8 @@
+## 0.1.3+2
+
+* Fix `LineScanner`'s handling of carriage returns to match that of
+  `SpanScanner`.
+
 ## 0.1.3+1
 
 * Fixed the homepage URL.

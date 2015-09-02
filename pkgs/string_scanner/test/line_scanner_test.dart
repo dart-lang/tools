@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 void main() {
   var scanner;
   setUp(() {
-    scanner = new LineScanner('foo\nbar\nbaz');
+    scanner = new LineScanner('foo\nbar\r\nbaz');
   });
 
   test('begins with line and column 0', () {
@@ -33,7 +33,17 @@ void main() {
 
     test("consuming multiple newlines resets the column and increases the line",
         () {
-      scanner.expect('foo\nbar\nb');
+      scanner.expect('foo\nbar\r\nb');
+      expect(scanner.line, equals(2));
+      expect(scanner.column, equals(1));
+    });
+
+    test("consuming halfway through a CR LF doesn't count as a line", () {
+      scanner.expect('foo\nbar\r');
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(4));
+
+      scanner.expect('\nb');
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(1));
     });
@@ -56,11 +66,25 @@ void main() {
       expect(scanner.line, equals(1));
       expect(scanner.column, equals(0));
     });
+
+    test("consuming halfway through a CR LF doesn't count as a line", () {
+      scanner.expect('foo\nbar');
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(3));
+
+      scanner.readChar();
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(4));
+
+      scanner.readChar();
+      expect(scanner.line, equals(2));
+      expect(scanner.column, equals(0));
+    });
   });
 
   group("position=", () {
     test("forward through newlines sets the line and column", () {
-      scanner.position = 9; // "foo\nbar\nb"
+      scanner.position = 10; // "foo\nbar\r\nb"
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(1));
     });
@@ -72,17 +96,23 @@ void main() {
     });
 
     test("backward through newlines sets the line and column", () {
-      scanner.scan("foo\nbar\nbaz");
+      scanner.scan("foo\nbar\r\nbaz");
       scanner.position = 2; // "fo"
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(2));
     });
 
     test("backward through no newlines sets the column", () {
-      scanner.scan("foo\nbar\nbaz");
-      scanner.position = 9; // "foo\nbar\nb"
+      scanner.scan("foo\nbar\r\nbaz");
+      scanner.position = 10; // "foo\nbar\r\nb"
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(1));
+    });
+
+    test("forward halfway through a CR LF doesn't count as a line", () {
+      scanner.position = 8; // "foo\nbar\r"
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(4));
     });
   });
 
@@ -92,7 +122,7 @@ void main() {
 
     scanner.scan('ar\nba');
     scanner.state = state;
-    expect(scanner.rest, equals('ar\nbaz'));
+    expect(scanner.rest, equals('ar\r\nbaz'));
     expect(scanner.line, equals(1));
     expect(scanner.column, equals(1));
   });
