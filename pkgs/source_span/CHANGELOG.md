@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Dramatically improve the performance of `FileLocation`.
+
 # 1.1.6
 
 * Optimize `getLine()` in `SourceFile` when repeatedly called.
