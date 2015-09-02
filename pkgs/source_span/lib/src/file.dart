@@ -11,7 +11,6 @@ import 'location.dart';
 import 'span.dart';
 import 'span_mixin.dart';
 import 'span_with_context.dart';
-import 'utils.dart';
 
 // Constants to determine end-of-lines.
 const int _LF = 10;
@@ -42,6 +41,14 @@ class SourceFile {
 
   /// The number of lines in the file.
   int get lines => _lineStarts.length;
+
+  /// The line that the offset fell on the last time [getLine] was called.
+  ///
+  /// In many cases, sequential calls to getLine() are for nearby, usually
+  /// increasing offsets. In that case, we can find the line for an offset
+  /// quickly by first checking to see if the offset is on the same line as the
+  /// previous result.
+  int _cachedLine;
 
   /// Creates a new source file from [text].
   ///
@@ -85,7 +92,58 @@ class SourceFile {
       throw new RangeError("Offset $offset must not be greater than the number "
           "of characters in the file, $length.");
     }
-    return binarySearch(_lineStarts, (o) => o > offset) - 1;
+
+    if (offset < _lineStarts.first) return -1;
+    if (offset >= _lineStarts.last) return _lineStarts.length - 1;
+
+    if (_isNearCachedLine(offset)) return _cachedLine;
+
+    _cachedLine = _binarySearch(offset) - 1;
+    return _cachedLine;
+  }
+
+  /// Returns `true` if [offset] is near [_cachedLine].
+  ///
+  /// Checks on [_cachedLine] and the next line. If it's on the next line, it
+  /// updates [_cachedLine] to point to that.
+  bool _isNearCachedLine(int offset) {
+    if (_cachedLine == null) return false;
+
+    // See if it's before the cached line.
+    if (offset < _lineStarts[_cachedLine]) return false;
+
+    // See if it's on the cached line.
+    if (_cachedLine >= _lineStarts.length - 1 ||
+        offset < _lineStarts[_cachedLine + 1]) {
+      return true;
+    }
+
+    // See if it's on the next line.
+    if (_cachedLine >= _lineStarts.length - 2 ||
+        offset < _lineStarts[_cachedLine + 2]) {
+      _cachedLine++;
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Binary search through [_lineStarts] to find the line containing [offset].
+  ///
+  /// Returns the index of the line in [_lineStarts].
+  int _binarySearch(int offset) {
+    int min = 0;
+    int max = _lineStarts.length - 1;
+    while (min < max) {
+      var half = min + ((max - min) ~/ 2);
+      if (_lineStarts[half] > offset) {
+        max = half;
+      } else {
+        min = half + 1;
+      }
+    }
+
+    return max;
   }
 
   /// Gets the 0-based column corresponding to [offset].

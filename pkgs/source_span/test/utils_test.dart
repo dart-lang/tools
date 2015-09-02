@@ -6,40 +6,6 @@ import 'package:test/test.dart';
 import 'package:source_span/src/utils.dart';
 
 main() {
-  group('binary search', () {
-    test('empty', () {
-      expect(binarySearch([], (x) => true), -1);
-    });
-
-    test('single element', () {
-      expect(binarySearch([1], (x) => true), 0);
-      expect(binarySearch([1], (x) => false), 1);
-    });
-
-    test('no matches', () {
-      var list = [1, 2, 3, 4, 5, 6, 7];
-      expect(binarySearch(list, (x) => false), list.length);
-    });
-
-    test('all match', () {
-      var list = [1, 2, 3, 4, 5, 6, 7];
-      expect(binarySearch(list, (x) => true), 0);
-    });
-
-    test('compare with linear search', () {
-      for (int size = 0; size < 100; size++) {
-        var list = [];
-        for (int i = 0; i < size; i++) {
-          list.add(i);
-        }
-        for (int pos = 0; pos <= size; pos++) {
-          expect(binarySearch(list, (x) => x >= pos),
-              _linearSearch(list, (x) => x >= pos));
-        }
-      }
-    });
-  });
-
   group('find line start', () {
     test('skip entries in wrong column', () {
       var context = '0_bb\n1_bbb\n2b____\n3bbb\n';
