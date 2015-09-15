@@ -8,6 +8,8 @@
 * Fix a race condition in `Server` where a `StateError` could be thrown if the
   connection was closed in the middle of handling a request.
 
+* Improve stack traces for error responses.
+
 ## 1.1.1
 
 * Update the README to match the current API.

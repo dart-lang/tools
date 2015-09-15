@@ -28,9 +28,8 @@ class Client {
   /// Each element is a JSON-serializable object.
   List _batch;
 
-  /// The map of request ids for pending requests to [Completer]s that will be
-  /// completed with those requests' responses.
-  final _pendingRequests = new Map<int, Completer>();
+  /// The map of request ids to pending requests.
+  final _pendingRequests = new Map<int, _Request>();
 
   /// Returns a [Future] that completes when the connection is closed.
   ///
@@ -97,7 +96,7 @@ class Client {
     _send(method, parameters, id);
 
     var completer = new Completer.sync();
-    _pendingRequests[id] = completer;
+    _pendingRequests[id] = new _Request(completer, new Chain.current());
     return completer.future;
   }
 
@@ -174,15 +173,15 @@ class Client {
   /// resolved.
   void _handleSingleResponse(response) {
     if (!_isResponseValid(response)) return;
-    var completer = _pendingRequests.remove(response["id"]);
+    var request = _pendingRequests.remove(response["id"]);
     if (response.containsKey("result")) {
-      completer.complete(response["result"]);
+      request.completer.complete(response["result"]);
     } else {
-      completer.completeError(new RpcException(
+      request.completer.completeError(new RpcException(
             response["error"]["code"],
             response["error"]["message"],
             data: response["error"]["data"]),
-          new Chain.current());
+          request.chain);
     }
   }
 
@@ -200,4 +199,15 @@ class Client {
     if (error["message"] is! String) return false;
     return true;
   }
+}
+
+/// A pending request to the server.
+class _Request {
+  /// The completer to use to complete the response future.
+  final Completer completer;
+
+  /// The stack chain from where the request was made.
+  final Chain chain;
+
+  _Request(this.completer, this.chain);
 }
