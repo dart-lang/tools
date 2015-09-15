@@ -43,6 +43,9 @@ class Server {
   /// This is the same future that's returned by [listen].
   Future get done => _streams.done;
 
+  /// Whether the connection is closed.
+  bool get isClosed => _streams.isClosed;
+
   /// Creates a [Server] that reads requests from [requests] and writes
   /// responses to [responses].
   ///
@@ -141,7 +144,7 @@ class Server {
         return nonNull.isEmpty ? null : nonNull.toList();
       });
     }).then((response) {
-      if (response != null) _streams.add(response);
+      if (!_streams.isClosed && response != null) _streams.add(response);
     });
   }
 

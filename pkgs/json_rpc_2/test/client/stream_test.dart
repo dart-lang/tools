@@ -79,7 +79,10 @@ void main() {
         responseController.stream, requestController.sink);
 
     expect(client.listen(), completes);
+
+    expect(client.isClosed, isFalse);
     expect(client.close(), completes);
+    expect(client.isClosed, isTrue);
 
     expect(() => responseController.stream.listen((_) {}), throwsStateError);
     expect(requestController.isClosed, isTrue);

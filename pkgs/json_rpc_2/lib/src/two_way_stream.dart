@@ -38,6 +38,9 @@ class TwoWayStream {
   Future get done => _doneCompleter.future;
   final _doneCompleter = new Completer();
 
+  /// Whether the stream has been closed.
+  bool get isClosed => _doneCompleter.isCompleted;
+
   /// Creates a two-way stream.
   ///
   /// [input] and [output] should emit and take (respectively) JSON-encoded
@@ -103,12 +106,12 @@ class TwoWayStream {
     _inputSubscription = _input.listen(handleInput,
         onError: (error, stackTrace) {
       if (_doneCompleter.isCompleted) return;
-      _output.close();
       _doneCompleter.completeError(error, stackTrace);
+      _output.close();
     }, onDone: () {
       if (_doneCompleter.isCompleted) return;
-      _output.close();
       _doneCompleter.complete();
+      _output.close();
     }, cancelOnError: true);
 
     return _doneCompleter.future;

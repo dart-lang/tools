@@ -37,6 +37,9 @@ class Client {
   /// This is the same future that's returned by [listen].
   Future get done => _streams.done;
 
+  /// Whether the connection is closed.
+  bool get isClosed => _streams.isClosed;
+
   /// Creates a [Client] that writes requests to [requests] and reads responses
   /// from [responses].
   ///

@@ -1,3 +1,13 @@
+## 1.2.0
+
+* Add `Client.isClosed` and `Server.isClosed`, which make it possible to
+  synchronously determine whether the connection is open. In particular, this
+  makes it possible to reliably tell whether it's safe to call
+  `Client.sendRequest`.
+
+* Fix a race condition in `Server` where a `StateError` could be thrown if the
+  connection was closed in the middle of handling a request.
+
 ## 1.1.1
 
 * Update the README to match the current API.
