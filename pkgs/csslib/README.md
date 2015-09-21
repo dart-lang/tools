@@ -1,20 +1,12 @@
 csslib in Pure Dart
 ===================
 
-This is a pure [Dart][dart] [CSS parser][cssparse]. Since it's 100%
-Dart you can use it safely from a script or server side app.
+This is a CSS parser written entirely in [Dart][dart].
+It can be used in the client/server/command line.
 
-Installation
-------------
-
-Add this to your `pubspec.yaml` (or create it):
-```yaml
-dependencies:
-  csslib: any
-```
-Then run the [Pub Package Manager][pub] (comes with the Dart SDK):
-
-    pub install
+This package is installed with [Pub][pub], see:
+[install instructions](https://pub.dartlang.org/packages/csslib#installing)
+for this package.
 
 Usage
 -----
@@ -33,21 +25,6 @@ main() {
 
 You can pass a String or list of bytes to `parse`.
 
-
-Updating
---------
-
-You can upgrade the library with:
-
-    pub update
-
-Disclaimer: the APIs are not finished. Updating may break your code. If that
-happens, you can check the
-[commit log](https://github.com/dart-lang/csslib/commits/master), to figure
-out what the change was.
-
-If you want to avoid breakage, you can also put the version constraint in your
-`pubspec.yaml` in place of the word `any`.
 
 Running Tests
 -------------
