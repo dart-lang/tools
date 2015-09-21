@@ -1,7 +1,7 @@
-csslib in Pure Dart
-===================
+CSS parser library for Dart
+==========================
 
-This is a CSS parser written entirely in [Dart][dart].
+This is a [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) parser written entirely in [Dart][dart].
 It can be used in the client/server/command line.
 
 This package is installed with [Pub][pub], see:
@@ -29,30 +29,15 @@ You can pass a String or list of bytes to `parse`.
 Running Tests
 -------------
 
-All tests (both canary and suite) should be passing.  Canary are quick test
-verifies that basic CSS is working.  The suite tests are a comprehensive set of
-~11,000 tests.
-
+Basic tests can be found in this repository:
 ```bash
-export DART_SDK=path/to/dart/sdk
-
-# Make sure dependencies are installed
-pub install
-
-# Run command both canary and the suite tests
-test/run.sh
+pub run test
 ```
 
-  Run only the canary test:
-
+The full CSS test suite can be found in https://github.com/dart-lang/csslib-test-suite
 ```bash
- test/run.sh canary
-```
-
-  Run only the suite tests:
-
-```bash
- test/run.sh suite
+cd ../csslib-test-suite
+./run.sh
 ```
 
 [dart]: http://www.dartlang.org/
