@@ -64,7 +64,7 @@ StyleSheet compile(input, {List<Message> errors, PreprocessorOptions options,
   analyze([tree], errors: errors, options: options);
 
   if (polyfill) {
-    var processCss = new PolyFill(messages, true);
+    var processCss = new PolyFill(messages);
     processCss.process(tree, includes: includes);
   }
 
@@ -430,6 +430,7 @@ class _Parser {
     if (unaryOp != -1 || type != null || exprs.length > 0) {
       return new MediaQuery(unaryOp, type, exprs, _makeSpan(start));
     }
+    return null;
   }
 
   MediaExpression processMediaExpression([bool andOperator = false]) {
@@ -453,9 +454,9 @@ class _Parser {
         }
       } else if (isChecked) {
         _warning("Missing media feature in media expression", _makeSpan(start));
-        return null;
       }
     }
+    return null;
   }
 
   /**
@@ -798,7 +799,6 @@ class _Parser {
     _eat(TokenKind.LBRACE);
 
     List<TreeNode> productions = [];
-    List<TreeNode> declarations = [];
     var mixinDirective;
 
     var start = _peekToken.span;
@@ -984,6 +984,7 @@ class _Parser {
       return new RuleSet(
           selectorGroup, processDeclarations(), selectorGroup.span);
     }
+    return null;
   }
 
   /**
@@ -1191,6 +1192,7 @@ class _Parser {
     if (selectors.length > 0) {
       return new SelectorGroup(selectors, _makeSpan(start));
     }
+    return null;
   }
 
   /**
@@ -1602,6 +1604,7 @@ class _Parser {
 
       return new AttributeSelector(attrName, op, value, _makeSpan(start));
     }
+    return null;
   }
 
   //  Declaration grammar:
@@ -1763,6 +1766,7 @@ class _Parser {
     if (styleType != null) {
       return buildDartStyleNode(styleType, exprs, dartStyles);
     }
+    return null;
   }
 
   FontExpression _mergeFontStyles(FontExpression fontExpr, List dartStyles) {
@@ -1910,10 +1914,8 @@ class _Parser {
           return processOneNumber(exprs, styleType);
         }
         break;
-      default:
-        // Don't handle it.
-        return null;
     }
+    return null;
   }
 
   // TODO(terry): Look at handling width of thin, thick, etc. any none numbers
@@ -1956,6 +1958,7 @@ class _Parser {
           return new PaddingExpression(exprs.span, bottom: value);
       }
     }
+    return null;
   }
 
   /**
