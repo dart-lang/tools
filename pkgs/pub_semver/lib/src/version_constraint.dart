@@ -209,8 +209,8 @@ class _EmptyVersion implements VersionConstraint {
   bool get isEmpty => true;
   bool get isAny => false;
   bool allows(Version other) => false;
-  bool allowsAll(Version other) => other.isEmpty;
-  bool allowsAny(Version other) => false;
+  bool allowsAll(VersionConstraint other) => other.isEmpty;
+  bool allowsAny(VersionConstraint other) => false;
   VersionConstraint intersect(VersionConstraint other) => this;
   VersionConstraint union(VersionConstraint other) => other;
   String toString() => '<empty>';

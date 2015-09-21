@@ -1,3 +1,9 @@
+# 1.2.2
+
+* Make the package analyze under strong mode and compile with the DDC (Dart Dev
+  Compiler). Fix two issues with a private subclass of `VersionConstraint`
+  having different types for overridden methods.
+
 # 1.2.1
 
 * Allow version ranges like `>=1.2.3-dev.1 <1.2.3` to match pre-release versions
