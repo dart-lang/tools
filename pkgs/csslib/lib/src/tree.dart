@@ -197,6 +197,7 @@ class AttributeSelector extends SimpleSelector {
       case TokenKind.NO_MATCH:
         return '';
     }
+    return null;
   }
 
   // Return the TokenKind for operator used by visitAttributeSelector.
@@ -215,6 +216,7 @@ class AttributeSelector extends SimpleSelector {
       case TokenKind.SUBSTRING_MATCH:
         return 'SUBSTRING_MATCH';
     }
+    return null;
   }
 
   String valueToString() {
@@ -572,6 +574,7 @@ class KeyFrameDirective extends Directive {
       case TokenKind.DIRECTIVE_O_KEYFRAMES:
         return '@-o-keyframes';
     }
+    return null;
   }
 
   KeyFrameDirective clone() {
@@ -676,7 +679,7 @@ class MixinDefinition extends Directive {
 
 /** Support a Sass @mixin. See http://sass-lang.com for description. */
 class MixinRulesetDirective extends MixinDefinition {
-  final List<RuleSet> rulesets;
+  final List rulesets;
 
   MixinRulesetDirective(String name, List<VarDefinitionDirective> args,
       bool varArgs, this.rulesets, SourceSpan span)
