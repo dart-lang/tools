@@ -1005,6 +1005,16 @@ void testHangs() {
   expect(errorMessage.span.text.trim(), '');
 }
 
+void testExpressionSpans() {
+  final input = r'''.foo { width: 50px; }''';
+  var stylesheet = parseCss(input);
+  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  // This passes
+  expect(decl.span.text, 'width: 50px');
+  // This currently fails
+  expect(decl.expression.span.text, '50px');
+}
+
 main() {
   test('Simple Terms', testSimpleTerms);
   test('Declarations', testDeclarations);
@@ -1021,4 +1031,6 @@ main() {
   test('IE stuff', testIE);
   test('IE declaration syntax', testIEDeclaration);
   test('Hanging bugs', testHangs);
+   test('Expression spans', testExpressionSpans,
+       skip: 'expression spans are broken');
 }
