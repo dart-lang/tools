@@ -246,6 +246,9 @@ abstract class FileSpan implements SourceSpanWithContext {
   /// The [file] that [this] belongs to.
   SourceFile get file;
 
+  FileLocation get start;
+  FileLocation get end;
+
   /// Returns a new span that covers both [this] and [other].
   ///
   /// Unlike [union], [other] may be disjoint from [this]. If it is, the text

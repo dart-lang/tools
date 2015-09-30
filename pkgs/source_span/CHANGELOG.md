@@ -1,3 +1,8 @@
+# 1.2.1
+
+* Fix the declared type of `FileSpan.start` and `FileSpan.end`. In 1.2.0 these
+  were mistakenly changed from `FileLocation` to `SourceLocation`.
+
 # 1.2.0
 
 * **Deprecated:** Extending `SourceLocation` directly is deprecated. Instead,
