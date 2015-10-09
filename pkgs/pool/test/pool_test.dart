@@ -271,6 +271,139 @@ void main() {
       pool.request();
     });
   });
+
+  group("close()", () {
+    test("disallows request() and withResource()", () {
+      var pool = new Pool(1)..close();
+      expect(pool.request, throwsStateError);
+      expect(() => pool.withResource(() {}), throwsStateError);
+    });
+
+    test("pending requests are fulfilled", () async {
+      var pool = new Pool(1);
+      var resource1 = await pool.request();
+      expect(pool.request().then((resource2) {
+        resource2.release();
+      }), completes);
+      expect(pool.close(), completes);
+      resource1.release();
+    });
+
+    test("pending requests are fulfilled with allowRelease", () async {
+      var pool = new Pool(1);
+      var resource1 = await pool.request();
+
+      var completer = new Completer();
+      expect(pool.request().then((resource2) {
+        expect(completer.isCompleted, isTrue);
+        resource2.release();
+      }), completes);
+      expect(pool.close(), completes);
+
+      resource1.allowRelease(() => completer.future);
+      await new Future.delayed(Duration.ZERO);
+
+      completer.complete();
+    });
+
+    test("doesn't complete until all resources are released", () async {
+      var pool = new Pool(2);
+      var resource1 = await pool.request();
+      var resource2 = await pool.request();
+      var resource3Future = pool.request();
+
+      var resource1Released = false;
+      var resource2Released = false;
+      var resource3Released = false;
+      expect(pool.close().then((_) {
+        expect(resource1Released, isTrue);
+        expect(resource2Released, isTrue);
+        expect(resource3Released, isTrue);
+      }), completes);
+
+      resource1Released = true;
+      resource1.release();
+      await new Future.delayed(Duration.ZERO);
+
+      resource2Released = true;
+      resource2.release();
+      await new Future.delayed(Duration.ZERO);
+
+      var resource3 = await resource3Future;
+      resource3Released = true;
+      resource3.release();
+    });
+
+    test("active onReleases complete as usual", () async {
+      var pool = new Pool(1);
+      var resource = await pool.request();
+
+      // Set up an onRelease callback whose completion is controlled by
+      // [completer].
+      var completer = new Completer();
+      resource.allowRelease(() => completer.future);
+      expect(pool.request().then((_) {
+        expect(completer.isCompleted, isTrue);
+      }), completes);
+
+      await new Future.delayed(Duration.ZERO);
+      pool.close();
+
+      await new Future.delayed(Duration.ZERO);
+      completer.complete();
+    });
+
+    test("inactive onReleases fire", () async {
+      var pool = new Pool(2);
+      var resource1 = await pool.request();
+      var resource2 = await pool.request();
+
+      var completer1 = new Completer();
+      resource1.allowRelease(() => completer1.future);
+      var completer2 = new Completer();
+      resource2.allowRelease(() => completer2.future);
+
+      expect(pool.close().then((_) {
+        expect(completer1.isCompleted, isTrue);
+        expect(completer2.isCompleted, isTrue);
+      }), completes);
+
+      await new Future.delayed(Duration.ZERO);
+      completer1.complete();
+
+      await new Future.delayed(Duration.ZERO);
+      completer2.complete();
+    });
+
+    test("new allowReleases fire immediately", () async {
+      var pool = new Pool(1);
+      var resource = await pool.request();
+
+      var completer = new Completer();
+      expect(pool.close().then((_) {
+        expect(completer.isCompleted, isTrue);
+      }), completes);
+
+      await new Future.delayed(Duration.ZERO);
+      resource.allowRelease(() => completer.future);
+
+      await new Future.delayed(Duration.ZERO);
+      completer.complete();
+    });
+
+    test("an onRelease error is piped to the return value", () async {
+      var pool = new Pool(1);
+      var resource = await pool.request();
+
+      var completer = new Completer();
+      resource.allowRelease(() => completer.future);
+
+      expect(pool.close(), throwsA("oh no!"));
+
+      await new Future.delayed(Duration.ZERO);
+      completer.completeError("oh no!");
+    });
+  });
 }
 
 /// Returns a function that will cause the test to fail if it's called.
