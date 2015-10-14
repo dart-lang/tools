@@ -1015,6 +1015,14 @@ void testExpressionSpans() {
   expect(decl.expression.span.text, '50px');
 }
 
+void testDeclarationSpanWithCalc() {
+  final input = r'''.foo { height: calc(100% - 55px); }''';
+  var stylesheet = parseCss(input);
+  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  // This fails, with span being "height: calc("
+  expect(decl.span.text, 'height: calc(100% - 55px);');
+}
+
 main() {
   test('Simple Terms', testSimpleTerms);
   test('Declarations', testDeclarations);
@@ -1031,6 +1039,8 @@ main() {
   test('IE stuff', testIE);
   test('IE declaration syntax', testIEDeclaration);
   test('Hanging bugs', testHangs);
-   test('Expression spans', testExpressionSpans,
-       skip: 'expression spans are broken');
+  test('Expression spans', testExpressionSpans,
+      skip: 'expression spans are broken');
+  test('Declaration span containing calc()', testDeclarationSpanWithCalc,
+      skip: 'calc() declarations are broken');
 }
