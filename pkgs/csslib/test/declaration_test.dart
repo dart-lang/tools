@@ -1040,7 +1040,9 @@ main() {
   test('IE declaration syntax', testIEDeclaration);
   test('Hanging bugs', testHangs);
   test('Expression spans', testExpressionSpans,
-      skip: 'expression spans are broken');
+      skip: 'expression spans are broken'
+            ' (https://github.com/dart-lang/csslib/issues/15)');
   test('Declaration span containing calc()', testDeclarationSpanWithCalc,
-      skip: 'calc() declarations are broken');
+      skip: 'calc() declarations are broken'
+            ' (https://github.com/dart-lang/csslib/issues/17)');
 }
