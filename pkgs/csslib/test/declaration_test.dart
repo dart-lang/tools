@@ -1015,12 +1015,50 @@ void testExpressionSpans() {
   expect(decl.expression.span.text, '50px');
 }
 
-void testDeclarationSpanWithCalc() {
+void simpleCalc() {
   final input = r'''.foo { height: calc(100% - 55px); }''';
   var stylesheet = parseCss(input);
   var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
-  // This fails, with span being "height: calc("
-  expect(decl.span.text, 'height: calc(100% - 55px);');
+  expect(decl.span.text, 'height: calc(100% - 55px)');
+}
+
+void complexCalc() {
+  final input = r'''.foo { left: calc((100%/3 - 2) * 1em - 2 * 1px); }''';
+  var stylesheet = parseCss(input);
+  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  expect(decl.span.text, 'left: calc((100%/3 - 2) * 1em - 2 * 1px)');
+}
+
+void twoCalcs() {
+  final input = r'''.foo { margin: calc(1rem - 2px) calc(1rem - 1px); }''';
+  var stylesheet = parseCss(input);
+  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  expect(decl.span.text, 'margin: calc(1rem - 2px) calc(1rem - 1px)');
+}
+
+void selectorWithCalcs() {
+  var errors = [];
+  final String input = r'''
+.foo {
+  width: calc(1em + 5 * 2em);
+  height: calc(1px + 2%) !important;
+  border: 5px calc(1pt + 2cm) 6px calc(1em + 1in + 2px) red;
+  border: calc(5px + 1em) 0px 1px calc(10 + 20 + 1px);
+  margin: 25px calc(50px + (100% / (3 - 1em) - 20%)) calc(10px + 10 * 20) calc(100% - 10px);
+}''';
+  final String generated = r'''
+.foo {
+  width: calc(1em + 5 * 2em);
+  height: calc(1px + 2%) !important;
+  border: 5px calc(1pt + 2cm) 6px calc(1em + 1in + 2px) #f00;
+  border: calc(5px + 1em) 0px 1px calc(10 + 20 + 1px);
+  margin: 25px calc(50px + (100% / (3 - 1em) - 20%)) calc(10px + 10 * 20) calc(100% - 10px);
+}''';
+
+  var stylesheet = parseCss(input, errors: errors);
+  expect(stylesheet != null, true);
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), generated);
 }
 
 main() {
@@ -1042,7 +1080,11 @@ main() {
   test('Expression spans', testExpressionSpans,
       skip: 'expression spans are broken'
             ' (https://github.com/dart-lang/csslib/issues/15)');
-  test('Declaration span containing calc()', testDeclarationSpanWithCalc,
-      skip: 'calc() declarations are broken'
-            ' (https://github.com/dart-lang/csslib/issues/17)');
+  group('calc function', () {
+    test('simple calc', simpleCalc);
+    test('single complex', complexCalc);
+    test('two calc terms for same declaration', twoCalcs);
+    test('selector with many calc declarations', selectorWithCalcs);
+  });
 }
+

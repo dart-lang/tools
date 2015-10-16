@@ -1,3 +1,8 @@
+## 0.12.2
+
+ * Fix to handle calc functions however, the expressions are treated as a
+   LiteralTerm and not fully parsed into the AST.
+
 ## 0.12.1
 
  * Fix to handling of escapes in strings.

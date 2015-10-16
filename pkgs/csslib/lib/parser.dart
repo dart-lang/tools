@@ -2188,6 +2188,8 @@ class _Parser {
         var nameValue = identifier(); // Snarf up the ident we'll remap, maybe.
 
         if (!ieFilter && _maybeEat(TokenKind.LPAREN)) {
+          var calc = processCalc(nameValue);
+          if (calc != null) return calc;
           // FUNCTION
           return processFunction(nameValue);
         }
@@ -2442,6 +2444,64 @@ class _Parser {
     }
   }
 
+  //  TODO(terry): Hack to gobble up the calc expression as a string looking
+  //               for the matching RPAREN the expression is not parsed into the
+  //               AST.
+  //
+  //  grammar should be:
+  //
+  //    <calc()> = calc( <calc-sum> )
+  //    <calc-sum> = <calc-product> [ [ '+' | '-' ] <calc-product> ]*
+  //    <calc-product> = <calc-value> [ '*' <calc-value> | '/' <number> ]*
+  //    <calc-value> = <number> | <dimension> | <percentage> | ( <calc-sum> )
+  //
+  String processCalcExpression() {
+    var inString = tokenizer._inString;
+    tokenizer._inString = false;
+
+    // Gobble up everything until we hit our stop token.
+    var stringValue = new StringBuffer();
+    var left = 1;
+    var matchingParens = false;
+    while (_peek() != TokenKind.END_OF_FILE && !matchingParens) {
+      var token = _peek();
+      if (token == TokenKind.LPAREN)
+        left++;
+      else if (token == TokenKind.RPAREN)
+        left--;
+
+      matchingParens = left == 0;
+      if (!matchingParens) stringValue.write(_next().text);
+    }
+
+    if (!matchingParens) {
+      _error("problem parsing function expected ), ", _peekToken.span);
+    }
+
+    tokenizer._inString = inString;
+
+    return stringValue.toString();
+  }
+
+  CalcTerm processCalc(Identifier func) {
+    var start = _peekToken.span;
+
+    var name = func.name;
+    if (name == 'calc') {
+      // TODO(terry): Implement expression parsing properly.
+      String expression = processCalcExpression();
+      var calcExpr = new LiteralTerm(expression, expression, _makeSpan(start));
+
+      if (!_maybeEat(TokenKind.RPAREN)) {
+        _error("problem parsing function expected ), ", _peekToken.span);
+      }
+
+      return new CalcTerm(name, name, calcExpr, _makeSpan(start));
+    }
+
+    return null;
+  }
+
   //  Function grammar:
   //
   //  function:     IDENT '(' expr ')'
@@ -2466,9 +2526,6 @@ class _Parser {
         }
 
         return new UriTerm(urlParam, _makeSpan(start));
-      case 'calc':
-        // TODO(terry): Implement expression handling...
-        break;
       case 'var':
         // TODO(terry): Consider handling var in IE specific filter/progid.  This
         //              will require parsing entire IE specific syntax e.g.,

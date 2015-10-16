@@ -44,6 +44,21 @@ class Negation extends TreeNode {
   String get name => 'not';
 }
 
+// calc(...)
+// TODO(terry): Hack to handle calc however the expressions should be fully
+//              parsed and in the AST.
+class CalcTerm extends LiteralTerm {
+  final LiteralTerm expr;
+
+  CalcTerm(var value, String t, this.expr, SourceSpan span)
+      : super(value, t, span);
+
+  CalcTerm clone() => new CalcTerm(value, text, expr.clone(), span);
+  visit(VisitorBase visitor) => visitor.visitCalcTerm(this);
+
+  String toString() => "$text($expr)";
+}
+
 // /*  ....   */
 class CssComment extends TreeNode {
   final String comment;

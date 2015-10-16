@@ -13,6 +13,7 @@ part 'src/tree_base.dart';
 part 'src/tree_printer.dart';
 
 abstract class VisitorBase {
+  visitCalcTerm(CalcTerm node);
   visitCssComment(CssComment node);
   visitCommentDefinition(CommentDefinition node);
   visitStyleSheet(StyleSheet node);
@@ -131,6 +132,11 @@ class Visitor implements VisitorBase {
   visitTopLevelProduction(TopLevelProduction node) {}
 
   visitDirective(Directive node) {}
+
+  visitCalcTerm(CalcTerm node) {
+    visitLiteralTerm(node);
+    visitLiteralTerm(node.expr);
+  }
 
   visitCssComment(CssComment node) {}
 
