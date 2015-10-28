@@ -46,12 +46,14 @@ class Pool {
 
   /// The timeout timer.
   ///
-  /// If [_timeout] isn't null, this timer is set as soon as the resource limit
-  /// is reached and is reset every time an resource is released or a new
-  /// resource is requested. If it fires, that indicates that the caller became
-  /// deadlocked, likely due to files waiting for additional files to be read
-  /// before they could be closed.
-  Timer _timer;
+  /// This timer is canceled as long as the pool is below the resource limit.
+  /// It's reset once the resource limit is reached and again every time an
+  /// resource is released or a new resource is requested. If it fires, that
+  /// indicates that the caller became deadlocked, likely due to files waiting
+  /// for additional files to be read before they could be closed.
+  ///
+  /// This is `null` if this pool shouldn't time out.
+  RestartableTimer _timer;
 
   /// The amount of time to wait before timing out the pending resources.
   final Duration _timeout;
@@ -72,7 +74,13 @@ class Pool {
   /// all pending [request] futures will throw a [TimeoutException]. This is
   /// intended to avoid deadlocks.
   Pool(this._maxAllocatedResources, {Duration timeout})
-      : _timeout = timeout;
+      : _timeout = timeout {
+    if (timeout != null) {
+      // Start the timer canceled since we only want to start counting down once
+      // we've run out of available resources.
+      _timer = new RestartableTimer(timeout, _onTimeout)..cancel();
+    }
+  }
 
   /// Request a [PoolResource].
   ///
@@ -190,11 +198,12 @@ class Pool {
 
   /// A resource has been requested, allocated, or released.
   void _resetTimer() {
-    if (_timer != null) _timer.cancel();
-    if (_timeout == null || _requestedResources.isEmpty) {
-      _timer = null;
+    if (_timer == null) return;
+
+    if (_requestedResources.isEmpty) {
+      _timer.cancel();
     } else {
-      _timer = new Timer(_timeout, _onTimeout);
+      _timer.reset();
     }
   }
 
