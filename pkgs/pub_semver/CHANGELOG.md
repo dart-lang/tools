@@ -1,3 +1,7 @@
+# 1.2.3
+
+* Addressed three strong mode warnings.
+
 # 1.2.2
 
 * Make the package analyze under strong mode and compile with the DDC (Dart Dev

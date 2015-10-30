@@ -59,7 +59,7 @@ class VersionUnion implements VersionConstraint {
 
     (flattened as List).sort(compareMax);
 
-    var merged = [];
+    var merged = <VersionRange>[];
     for (var constraint in flattened) {
       // Merge this constraint with the previous one, but only if they touch.
       if (merged.isEmpty ||
@@ -132,7 +132,7 @@ class VersionUnion implements VersionConstraint {
 
     // Because both lists of constraints are ordered by minimum version, we can
     // safely move through them linearly here.
-    var newConstraints = [];
+    var newConstraints = <VersionRange>[];
     ourConstraints.moveNext();
     theirConstraints.moveNext();
     while (ourConstraints.current != null && theirConstraints.current != null) {

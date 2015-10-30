@@ -114,7 +114,7 @@ abstract class VersionConstraint {
     var compatibleWith = matchCompatibleWith();
     if (compatibleWith != null) return compatibleWith;
 
-    var constraints = [];
+    var constraints = <VersionConstraint>[];
 
     while (true) {
       skipWhitespace();
