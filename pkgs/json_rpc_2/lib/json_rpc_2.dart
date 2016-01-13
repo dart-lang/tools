@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library json_rpc_2;
-
 export 'src/client.dart';
 export 'src/exception.dart';
 export 'src/parameters.dart';

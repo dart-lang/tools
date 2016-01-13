@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library json_rpc_2.exception;
-
 import '../error_code.dart' as error_code;
 
 /// An exception from a JSON-RPC server that can be translated into an error

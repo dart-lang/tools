@@ -9,8 +9,6 @@
 /// convenience constructors in [RpcException].
 ///
 /// [spec]: http://www.jsonrpc.org/specification#error_object
-library json_rpc_2.error_code;
-
 /// An error code indicating that invalid JSON was received by the server.
 const PARSE_ERROR = -32700;
 
