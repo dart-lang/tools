@@ -108,8 +108,12 @@ class VM {
   VM(this.id, this.targetCPU, this.hostCPU, this.version, this.pid,
       this.isolates);
 
-  factory VM.fromJson(json) => new VM(json['id'], json['targetCPU'],
-      json['hostCPU'], json['version'], json['pid'],
+  factory VM.fromJson(json) => new VM(
+      json['id'],
+      json['targetCPU'],
+      json['hostCPU'],
+      json['version'],
+      json['pid'],
       json['isolates'].map((i) => new IsolateRef.fromJson(i)).toList());
 }
 

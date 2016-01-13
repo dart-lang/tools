@@ -104,27 +104,23 @@ Future<String> _collectCoverage() async {
   var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
-  var sampleProcFuture = Process
-      .run('dart', [
+  var sampleProcFuture = Process.run('dart', [
     '--enable-vm-service=$openPort',
     '--pause_isolates_on_exit',
     testAppPath
-  ])
-      .timeout(_timeout, onTimeout: () {
+  ]).timeout(_timeout, onTimeout: () {
     throw 'We timed out waiting for the sample app to finish.';
   });
 
   // run the tool with the right flags
   // TODO: need to get all of this functionality in the lib
-  var toolResult = await Process
-      .run('dart', [
+  var toolResult = await Process.run('dart', [
     _collectAppPath,
     '--port',
     openPort.toString(),
     '--resume-isolates',
     '--wait-paused'
-  ])
-      .timeout(_timeout, onTimeout: () {
+  ]).timeout(_timeout, onTimeout: () {
     throw 'We timed out waiting for the tool to finish.';
   });
 
