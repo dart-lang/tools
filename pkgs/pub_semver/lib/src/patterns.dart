@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library pub_semver.src.patterns;
-
 /// Regex that matches a version number at the beginning of a string.
 final START_VERSION = new RegExp(
     r'^'                                        // Start at beginning.
