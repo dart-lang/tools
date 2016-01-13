@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library string_scanner.utils;
-
 /// Validates the arguments passed to [StringScanner.error].
 void validateErrorArgs(String string, Match match, int position, int length) {
   if (match != null && (position != null || length != null)) {

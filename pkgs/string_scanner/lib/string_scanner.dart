@@ -3,8 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A library for parsing strings using a sequence of patterns.
-library string_scanner;
-
 export 'src/exception.dart';
 export 'src/line_scanner.dart';
 export 'src/span_scanner.dart';
