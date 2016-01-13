@@ -47,12 +47,12 @@ main(List<String> arguments) async {
   var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
-    output = await new PrettyPrintFormatter(resolver, loader).format(hitmap,
-        reportOn: env.reportOn);
+    output = await new PrettyPrintFormatter(resolver, loader)
+        .format(hitmap, reportOn: env.reportOn);
   } else {
     assert(env.lcov);
-    output = await new LcovFormatter(resolver).format(hitmap,
-        reportOn: env.reportOn);
+    output = await new LcovFormatter(resolver)
+        .format(hitmap, reportOn: env.reportOn);
   }
 
   env.output.write(output);

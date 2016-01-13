@@ -63,13 +63,11 @@ Future<Map> _collectCoverage() async {
   var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
-  var sampleProcFuture = Process
-      .run('dart', [
+  var sampleProcFuture = Process.run('dart', [
     '--enable-vm-service=$openPort',
     '--pause_isolates_on_exit',
     testAppPath
-  ])
-      .timeout(_timeout, onTimeout: () {
+  ]).timeout(_timeout, onTimeout: () {
     throw 'We timed out waiting for the sample app to finish.';
   });
 

@@ -14,7 +14,8 @@ const _retryInterval = const Duration(milliseconds: 200);
 Future<Map> collect(String host, int port, bool resume, bool waitPaused,
     {Duration timeout}) async {
   var vmService = await retry(
-      () => VMService.connect(host, port), _retryInterval, timeout: timeout);
+      () => VMService.connect(host, port), _retryInterval,
+      timeout: timeout);
   try {
     if (waitPaused) {
       await _waitIsolatesPaused(vmService, timeout: timeout);

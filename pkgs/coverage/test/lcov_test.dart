@@ -158,7 +158,9 @@ Future<List<File>> _collectCoverage(Directory tempDir) async {
   ];
   var result = await Process.run("dart", args);
   if (result.exitCode != 0) {
-    throw new ProcessException('dart', args,
+    throw new ProcessException(
+        'dart',
+        args,
         'There was a critical error. Exit code: ${result.exitCode}',
         result.exitCode);
   }
