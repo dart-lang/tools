@@ -43,6 +43,9 @@ class Glob implements Pattern {
   /// contained within a directory that matches.
   final bool recursive;
 
+  /// Whether the glob matches paths case-sensitively.
+  bool get caseSensitive => _ast.caseSensitive;
+
   /// The parsed AST of the glob.
   final AstNode _ast;
 
@@ -85,21 +88,24 @@ class Glob implements Pattern {
   /// Paths matched against the glob are interpreted according to [context]. It
   /// defaults to the system context.
   ///
-  /// If [recursive] is true, this glob will match and list not only the files
-  /// and directories it explicitly lists, but anything beneath those as well.
-  Glob(String pattern, {p.Context context, bool recursive: false})
-      : this._(
-          pattern,
-          context == null ? p.context : context,
-          recursive);
+  /// If [recursive] is true, this glob matches and lists not only the files and
+  /// directories it explicitly matches, but anything beneath those as well.
+  ///
+  /// If [caseSensitive] is true, this glob matches and lists only files whose
+  /// case matches that of the characters in the glob. Otherwise, it matches
+  /// regardless of case. This defaults to `false` when [context] is Windows and
+  /// `true` otherwise.
+  factory Glob(String pattern, {p.Context context, bool recursive: false,
+      bool caseSensitive}) {
+    context ??= p.context;
+    caseSensitive ??= context.style == p.Style.windows ? false : true;
+    if (recursive) pattern += "{,/**}";
 
-  // Internal constructor used to fake local variables for [context] and [ast].
-  Glob._(String pattern, p.Context context, bool recursive)
-      : pattern = pattern,
-        context = context,
-        recursive = recursive,
-        _ast = new Parser(pattern + (recursive ? "{,/**}" : ""), context)
-            .parse();
+    var parser = new Parser(pattern, context, caseSensitive: caseSensitive);
+    return new Glob._(pattern, context, parser.parse(), recursive);
+  }
+
+  Glob._(this.pattern, this.context, this._ast, this.recursive);
 
   /// Lists all [FileSystemEntity]s beneath [root] that match the glob.
   ///

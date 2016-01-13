@@ -291,4 +291,62 @@ void main() {
     expect("/foo/bar", isNot(contains(new Glob("**", context: p.url))));
     expect("/foo/bar", contains(new Glob("/**", context: p.url)));
   });
+
+  group("when case-sensitive", () {
+    test("literals match case-sensitively", () {
+      expect("foo", contains(new Glob("foo", caseSensitive: true)));
+      expect("FOO", isNot(contains(new Glob("foo", caseSensitive: true))));
+      expect("foo", isNot(contains(new Glob("FOO", caseSensitive: true))));
+    });
+
+    test("ranges match case-sensitively", () {
+      expect("foo", contains(new Glob("[fx][a-z]o", caseSensitive: true)));
+      expect("FOO",
+          isNot(contains(new Glob("[fx][a-z]o", caseSensitive: true))));
+      expect("foo",
+          isNot(contains(new Glob("[FX][A-Z]O", caseSensitive: true))));
+    });
+
+    test("sequences preserve case-sensitivity", () {
+      expect("foo/bar", contains(new Glob("foo/bar", caseSensitive: true)));
+      expect("FOO/BAR",
+          isNot(contains(new Glob("foo/bar", caseSensitive: true))));
+      expect("foo/bar",
+          isNot(contains(new Glob("FOO/BAR", caseSensitive: true))));
+    });
+
+    test("options preserve case-sensitivity", () {
+      expect("foo", contains(new Glob("{foo,bar}", caseSensitive: true)));
+      expect("FOO",
+          isNot(contains(new Glob("{foo,bar}", caseSensitive: true))));
+      expect("foo",
+          isNot(contains(new Glob("{FOO,BAR}", caseSensitive: true))));
+    });
+  });
+
+  group("when case-insensitive", () {
+    test("literals match case-insensitively", () {
+      expect("foo", contains(new Glob("foo", caseSensitive: false)));
+      expect("FOO", contains(new Glob("foo", caseSensitive: false)));
+      expect("foo", contains(new Glob("FOO", caseSensitive: false)));
+    });
+
+    test("ranges match case-insensitively", () {
+      expect("foo", contains(new Glob("[fx][a-z]o", caseSensitive: false)));
+      expect("FOO", contains(new Glob("[fx][a-z]o", caseSensitive: false)));
+      expect("foo", contains(new Glob("[FX][A-Z]O", caseSensitive: false)));
+    });
+
+    test("sequences preserve case-insensitivity", () {
+      expect("foo/bar", contains(new Glob("foo/bar", caseSensitive: false)));
+      expect("FOO/BAR", contains(new Glob("foo/bar", caseSensitive: false)));
+      expect("foo/bar", contains(new Glob("FOO/BAR", caseSensitive: false)));
+    });
+
+    test("options preserve case-insensitivity", () {
+      expect("foo", contains(new Glob("{foo,bar}", caseSensitive: false)));
+      expect("FOO", contains(new Glob("{foo,bar}", caseSensitive: false)));
+      expect("foo", contains(new Glob("{FOO,BAR}", caseSensitive: false)));
+    });
+  });
 }

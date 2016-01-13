@@ -91,4 +91,20 @@ void main() {
       expect(() => match.groups([1]), throwsRangeError);
     });
   });
+
+  test("globs are case-sensitive by default for Posix and URL contexts", () {
+    expect("foo", contains(new Glob("foo", context: p.posix)));
+    expect("FOO", isNot(contains(new Glob("foo", context: p.posix))));
+    expect("foo", isNot(contains(new Glob("FOO", context: p.posix))));
+
+    expect("foo", contains(new Glob("foo", context: p.url)));
+    expect("FOO", isNot(contains(new Glob("foo", context: p.url))));
+    expect("foo", isNot(contains(new Glob("FOO", context: p.url))));
+  });
+
+  test("globs are case-insensitive by default for Windows contexts", () {
+    expect("foo", contains(new Glob("foo", context: p.windows)));
+    expect("FOO", contains(new Glob("foo", context: p.windows)));
+    expect("foo", contains(new Glob("FOO", context: p.windows)));
+  });
 }

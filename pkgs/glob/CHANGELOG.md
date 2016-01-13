@@ -1,3 +1,13 @@
+## 1.1.0
+
+* Add a `caseSensitive` named parameter to `new Glob()` that controls whether
+  the glob is case-sensitive. This defaults to `false` on Windows and `true`
+  elsewhere.
+
+  Matching case-insensitively on Windows is a behavioral change, but since it
+  more closely matches the semantics of Windows paths it's considered a bug fix
+  rather than a breaking change.
+
 ## 1.0.5
 
 * Narrow the dependency on `path`. Previously, this allowed versions that didn't

@@ -232,6 +232,13 @@ class _ListTreeNode {
   /// A recursive node has no children and is listed recursively.
   bool get isRecursive => children == null;
 
+  bool get _caseSensitive {
+    if (_validator != null) return _validator.caseSensitive;
+    if (children == null) return true;
+    if (children.isEmpty) return true;
+    return children.keys.first.caseSensitive;
+  }
+
   /// Whether this node doesn't itself need to be listed.
   ///
   /// If a node has no validator and all of its children are literal filenames,
@@ -239,6 +246,7 @@ class _ListTreeNode {
   /// its children.
   bool get _isIntermediate {
     if (_validator != null) return false;
+    if (!_caseSensitive) return false;
     return children.keys.every((sequence) =>
         sequence.nodes.length == 1 && sequence.nodes.first is LiteralNode);
   }
@@ -253,9 +261,14 @@ class _ListTreeNode {
     // If there's more than one child node and at least one of the children is
     // dynamic (that is, matches more than just a literal string), there may be
     // overlap.
-    if (children.length > 1 && children.keys.any((sequence) =>
+    if (children.length > 1) {
+      // Case-insensitivity means that even literals may match multiple entries.
+      if (!_caseSensitive) return true;
+
+      if (children.keys.any((sequence) =>
           sequence.nodes.length > 1 || sequence.nodes.single is! LiteralNode)) {
-      return true;
+        return true;
+      }
     }
 
     return children.values.any((node) => node.canOverlap);
@@ -269,7 +282,8 @@ class _ListTreeNode {
   /// Creates a recursive node the given [validator].
   _ListTreeNode.recursive(SequenceNode validator)
       : children = null,
-        _validator = new OptionsNode([validator]);
+        _validator = new OptionsNode([validator],
+            caseSensitive: validator.caseSensitive);
 
   /// Transforms this into recursive node, folding all its children into its
   /// validator.
@@ -279,14 +293,15 @@ class _ListTreeNode {
       var child = children[sequence];
       child.makeRecursive();
       return _join([sequence, child._validator]);
-    }));
+    }), caseSensitive: _caseSensitive);
     children = null;
   }
 
   /// Adds [validator] to this node's existing validator.
   void addOption(SequenceNode validator) {
     if (_validator == null) {
-      _validator = new OptionsNode([validator]);
+      _validator = new OptionsNode([validator],
+          caseSensitive: validator.caseSensitive);
     } else {
       _validator.options.add(validator);
     }
@@ -409,10 +424,11 @@ class _ListTreeNode {
 /// a path separator.
 SequenceNode _join(Iterable<AstNode> components) {
   var componentsList = components.toList();
-  var nodes = [componentsList.removeAt(0)];
+  var first = componentsList.removeAt(0);
+  var nodes = [first];
   for (var component in componentsList) {
-    nodes.add(new LiteralNode('/'));
+    nodes.add(new LiteralNode('/', caseSensitive: first.caseSensitive));
     nodes.add(component);
   }
-  return new SequenceNode(nodes);
+  return new SequenceNode(nodes, caseSensitive: first.caseSensitive);
 }

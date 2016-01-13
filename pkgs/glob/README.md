@@ -50,6 +50,9 @@ all globs use POSIX path syntax, including using `/` as a directory separator
 regardless of which platform they're on. This is true even for Windows roots;
 for example, a glob matching all files in the C drive would be `C:/*`.
 
+Globs are case-sensitive by default on Posix systems and browsers, and
+case-insensitive by default on Windows.
+
 ### Match any characters in a filename: `*`
 
 The `*` character matches zero or more of any character other than `/`. This

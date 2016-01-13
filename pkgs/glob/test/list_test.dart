@@ -52,6 +52,29 @@ void main() {
     });
   });
 
+  group("when case-sensitive", () {
+    test("lists literals case-sensitively", () {
+      schedule(() {
+        expect(new Glob("foo/BAZ/qux", caseSensitive: true).listSync,
+            throwsA(new isInstanceOf<FileSystemException>()));
+      });
+    });
+
+    test("lists ranges case-sensitively", () {
+      schedule(() {
+        expect(new Glob("foo/[BX][A-Z]z/qux", caseSensitive: true).listSync,
+            throwsA(new isInstanceOf<FileSystemException>()));
+      });
+    });
+
+    test("options preserve case-sensitivity", () {
+      schedule(() {
+        expect(new Glob("foo/{BAZ,ZAP}/qux", caseSensitive: true).listSync,
+            throwsA(new isInstanceOf<FileSystemException>()));
+      });
+    });
+  });
+
   syncAndAsync((list) {
     group("literals", () {
       test("lists a single literal", () {
@@ -263,34 +286,63 @@ void main() {
       expect(list("top/*/subdir/**"),
           completion(equals([p.join("top", "dir1", "subdir", "file")])));
     });
+
+    group("when case-insensitive", () {
+      test("lists literals case-insensitively", () {
+        expect(list("foo/baz/qux", caseSensitive: false),
+            completion(equals([p.join("foo", "baz", "qux")])));
+        expect(list("foo/BAZ/qux", caseSensitive: false),
+            completion(equals([p.join("foo", "baz", "qux")])));
+      });
+
+      test("lists ranges case-insensitively", () {
+        expect(list("foo/[bx][a-z]z/qux", caseSensitive: false),
+            completion(equals([p.join("foo", "baz", "qux")])));
+        expect(list("foo/[BX][A-Z]z/qux", caseSensitive: false),
+            completion(equals([p.join("foo", "baz", "qux")])));
+      });
+
+      test("options preserve case-insensitivity", () {
+        expect(list("foo/{bar,baz}/qux", caseSensitive: false),
+            completion(equals([p.join("foo", "baz", "qux")])));
+        expect(list("foo/{BAR,BAZ}/qux", caseSensitive: false),
+            completion(equals([p.join("foo", "baz", "qux")])));
+      });
+    });
   });
 }
 
 typedef Future<List<String>> ListFn(String glob,
-    {bool recursive, bool followLinks});
+    {bool recursive, bool followLinks, bool caseSensitive});
 
 /// Runs [callback] in two groups with two values of [listFn]: one that uses
 /// [Glob.list], one that uses [Glob.listSync].
 void syncAndAsync(callback(ListFn listFn)) {
   group("async", () {
-    callback((glob, {recursive: false, followLinks: true}) {
+    callback((pattern, {recursive: false, followLinks: true, caseSensitive}) {
       return schedule(() {
-        return new Glob(glob, recursive: recursive)
+        var glob = new Glob(pattern,
+            recursive: recursive, caseSensitive: caseSensitive);
+
+        return glob
             .list(root: sandbox, followLinks: followLinks)
             .map((entity) => p.relative(entity.path, from: sandbox))
             .toList();
-      }, 'listing $glob');
+      }, 'listing $pattern');
     });
   });
 
   group("sync", () {
-    callback((glob, {recursive: false, followLinks: true}) {
+    callback((pattern, {recursive: false, followLinks: true, caseSensitive}) {
       return schedule(() {
-        return new Glob(glob, recursive: recursive)
+        var glob = new Glob(pattern,
+            recursive: recursive, caseSensitive: caseSensitive);
+
+        return glob
             .listSync(root: sandbox, followLinks: followLinks)
             .map((entity) => p.relative(entity.path, from: sandbox))
             .toList();
-      }, 'listing $glob');
+      }, 'listing $pattern');
     });
   });
 }
