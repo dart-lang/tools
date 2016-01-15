@@ -1,3 +1,7 @@
+## 0.1.4+1
+
+* Remove the dependency on `path`, since we don't actually import it.
+
 ## 0.1.4
 
 * Add `new SpanScanner.eager()` for creating a `SpanScanner` that eagerly
