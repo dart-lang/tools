@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+export 'src/delegating_stream_channel.dart';
 export 'src/multi_channel.dart';
 
 /// An abstract class representing a two-way communication channel.
