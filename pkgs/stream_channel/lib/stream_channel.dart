@@ -5,6 +5,7 @@
 import 'dart:async';
 
 export 'src/delegating_stream_channel.dart';
+export 'src/isolate_channel.dart';
 export 'src/multi_channel.dart';
 export 'src/stream_channel_completer.dart';
 
