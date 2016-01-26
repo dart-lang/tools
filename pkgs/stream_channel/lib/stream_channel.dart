@@ -3,6 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
+
+import 'package:async/async.dart';
 
 export 'src/delegating_stream_channel.dart';
 export 'src/isolate_channel.dart';
@@ -66,6 +69,13 @@ abstract class StreamChannel<T> {
   /// Connects [this] to [other], so that any values emitted by either are sent
   /// directly to the other.
   void pipe(StreamChannel<T> other);
+
+  /// Transforms [this] using [codec].
+  ///
+  /// This returns a stream channel that encodes all input using [Codec.encoder]
+  /// before passing it to this channel's [sink], and decodes all output from
+  /// this channel's [stream] using [Codec.decoder].
+  StreamChannel transform(Codec<dynamic, T> codec);
 }
 
 /// An implementation of [StreamChannel] that simply takes a stream and a sink
@@ -86,5 +96,13 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
   void pipe(StreamChannel<T> other) {
     stream.pipe(other.sink);
     other.stream.pipe(sink);
+  }
+
+  StreamChannel transform(Codec<dynamic, T> codec) {
+    var sinkTransformer =
+        new StreamSinkTransformer.fromStreamTransformer(codec.encoder);
+    return new _StreamChannel(
+        stream.transform(codec.decoder),
+        sinkTransformer.bind(sink));
   }
 }
