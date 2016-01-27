@@ -123,4 +123,39 @@ void main() {
       channel.sink.add(1);
     });
   });
+
+  group("connect constructors", () {
+    var connectPort;
+    setUp(() {
+      connectPort = new ReceivePort();
+    });
+
+    tearDown(() {
+      connectPort.close();
+    });
+
+    test("create a connected pair of channels", () {
+      var channel1 = new IsolateChannel.connectReceive(connectPort);
+      var channel2 = new IsolateChannel.connectSend(connectPort.sendPort);
+
+      channel1.sink.add(1);
+      channel1.sink.add(2);
+      channel1.sink.add(3);
+      expect(channel2.stream.take(3).toList(), completion(equals([1, 2, 3])));
+
+      channel2.sink.add(4);
+      channel2.sink.add(5);
+      channel2.sink.add(6);
+      expect(channel1.stream.take(3).toList(), completion(equals([4, 5, 6])));
+    });
+
+    test("the receiving channel produces an error if it gets the wrong message",
+        () {
+      var connectedChannel = new IsolateChannel.connectReceive(connectPort);
+      connectPort.sendPort.send("wrong value");
+
+      expect(connectedChannel.stream.toList(), throwsStateError);
+      expect(connectedChannel.sink.done, completes);
+    });
+  });
 }
