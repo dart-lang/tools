@@ -44,7 +44,8 @@ void main() {
   });
 
   test("transform() transforms the channel", () {
-    var transformed = channel.transform(UTF8);
+    var transformed = channel.transform(
+        new StreamChannelTransformer.fromCodec(UTF8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();

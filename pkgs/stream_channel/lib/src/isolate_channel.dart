@@ -128,7 +128,7 @@ class _SendPortSink<T> implements StreamSink<T> {
     if (_inAddStream) {
       throw new StateError("Cannot add stream while adding stream.");
     }
-    if (_isDone) return;
+    if (_isDone) return new Future.value();
 
     _inAddStream = true;
     var completer = new Completer.sync();
