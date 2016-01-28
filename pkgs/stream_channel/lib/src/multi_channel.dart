@@ -52,12 +52,11 @@ abstract class MultiChannel implements StreamChannel {
   /// virtual channels may be opened.
   StreamSink get sink;
 
-  /// Creates a new [MultiChannel] that sends messages over [innerStream] and
-  /// [innerSink].
+  /// Creates a new [MultiChannel] that sends and receives messages over
+  /// [inner].
   ///
-  /// The inner streams must take JSON-like objects.
-  factory MultiChannel(Stream innerStream, StreamSink innerSink) =>
-      new _MultiChannel(innerStream, innerSink);
+  /// The inner channel must take JSON-like objects.
+  factory MultiChannel(StreamChannel inner) => new _MultiChannel(inner);
 
   /// Creates a new virtual channel.
   ///
@@ -78,17 +77,12 @@ abstract class MultiChannel implements StreamChannel {
 /// This is private so that [VirtualChannel] can inherit from [MultiChannel]
 /// without having to implement all the private members.
 class _MultiChannel extends StreamChannelMixin implements MultiChannel {
-  /// The inner stream over which all communication is received.
+  /// The inner channel over which all communication is conducted.
   ///
   /// This will be `null` if the underlying communication channel is closed.
-  Stream _innerStream;
+  StreamChannel _inner;
 
-  /// The inner sink over which all communication is sent.
-  ///
-  /// This will be `null` if the underlying communication channel is closed.
-  StreamSink _innerSink;
-
-  /// The subscription to [_innerStream].
+  /// The subscription to [_inner.stream].
   StreamSubscription _innerStreamSubscription;
 
   Stream get stream => _streamController.stream;
@@ -128,16 +122,16 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// scheme, but if it has an even id, it's using the remote id scheme.
   var _nextId = 1;
 
-  _MultiChannel(this._innerStream, this._innerSink) {
+  _MultiChannel(this._inner) {
     // The default connection is a special case which has id 0 on both ends.
     // This allows it to begin connected without having to send over an id.
     _streamControllers[0] = _streamController;
     _sinkControllers[0] = _sinkController;
     _sinkController.stream.listen(
-        (message) => _innerSink.add([0, message]),
+        (message) => _inner.sink.add([0, message]),
         onDone: () => _closeChannel(0, 0));
 
-    _innerStreamSubscription = _innerStream.listen((message) {
+    _innerStreamSubscription = _inner.stream.listen((message) {
       var id = message[0];
       var sink = _streamControllers[id];
 
@@ -156,7 +150,7 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   }
 
   VirtualChannel virtualChannel([id]) {
-    if (_innerStream == null) {
+    if (_inner == null) {
       throw new StateError("The underlying channel is closed.");
     }
 
@@ -186,7 +180,7 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
     _streamControllers[inputId] = streamController;
     _sinkControllers[inputId] = sinkController;
     sinkController.stream.listen(
-        (message) => _innerSink.add([outputId, message]),
+        (message) => _inner.sink.add([outputId, message]),
         onDone: () => _closeChannel(inputId, outputId));
 
     return new VirtualChannel._(
@@ -199,20 +193,19 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
     _streamControllers.remove(inputId).close();
     _sinkControllers.remove(inputId).close();
 
-    if (_innerSink == null) return;
+    if (_inner == null) return;
 
     // A message without data indicates that the virtual channel has been
     // closed.
-    _innerSink.add([outputId]);
+    _inner.sink.add([outputId]);
     if (_streamControllers.isEmpty) _closeInnerChannel();
   }
 
   /// Closes the underlying communication channel.
   void _closeInnerChannel() {
-    _innerSink.close();
+    _inner.sink.close();
     _innerStreamSubscription.cancel();
-    _innerStream = null;
-    _innerSink = null;
+    _inner = null;
     for (var controller in _sinkControllers.values.toList()) {
       controller.close();
     }

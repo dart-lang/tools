@@ -17,8 +17,10 @@ void main() {
   setUp(() {
     oneToTwo = new StreamController();
     twoToOne = new StreamController();
-    channel1 = new MultiChannel(twoToOne.stream, oneToTwo.sink);
-    channel2 = new MultiChannel(oneToTwo.stream, twoToOne.sink);
+    channel1 = new MultiChannel(
+        new StreamChannel(twoToOne.stream, oneToTwo.sink));
+    channel2 = new MultiChannel(
+        new StreamChannel(oneToTwo.stream, twoToOne.sink));
   });
 
   group("the default virtual channel", () {
