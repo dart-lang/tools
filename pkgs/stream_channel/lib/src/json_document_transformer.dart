@@ -17,6 +17,10 @@ final jsonDocument = new JsonDocumentTransformer();
 ///
 /// This decodes JSON that's emitted by the transformed channel's stream, and
 /// encodes objects so that JSON is passed to the transformed channel's sink.
+///
+/// If the transformed channel emits invalid JSON, this emits a
+/// [FormatException]. If an unencodable object is added to the sink, it
+/// synchronously throws a [JsonUnsupportedObjectError].
 class JsonDocumentTransformer
     implements StreamChannelTransformer<String, Object> {
   /// The underlying codec that implements the encoding and decoding logic.

@@ -47,4 +47,16 @@ void main() {
     transformed.sink.add(new Object());
     expect(sinkController.stream.first, completion(equals('"encoded"')));
   });
+
+  test("emits a stream error when incoming JSON is malformed", () {
+    var transformed = channel.transform(jsonDocument);
+    streamController.add("{invalid");
+    expect(transformed.stream.first, throwsFormatException);
+  });
+
+  test("synchronously throws if an unencodable object is added", () {
+    var transformed = channel.transform(jsonDocument);
+    expect(() => transformed.sink.add(new Object()),
+        throwsA(new isInstanceOf<JsonUnsupportedObjectError>()));
+  });
 }

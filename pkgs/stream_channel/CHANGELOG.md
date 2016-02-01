@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Be more explicit about `JsonDocumentTransformer`'s error-handling behavior.
+
 ## 1.0.1
 
 * Fix `MultiChannel`'s constructor to take a `StreamChannel`. This is
