@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:async/async.dart';
+
 import 'src/stream_channel_transformer.dart';
 
 export 'src/delegating_stream_channel.dart';
@@ -75,6 +77,20 @@ abstract class StreamChannel<T> {
   ///
   /// This is identical to calling `transformer.bind(channel)`.
   StreamChannel transform(StreamChannelTransformer<dynamic, T> transformer);
+
+  /// Transforms only the [stream] component of [this] using [transformer].
+  StreamChannel<T> transformStream(StreamTransformer<T, T> transformer);
+
+  /// Transforms only the [sink] component of [this] using [transformer].
+  StreamChannel<T> transformSink(StreamSinkTransformer<T, T> transformer);
+
+  /// Returns a copy of [this] with [stream] replaced by [change]'s return
+  /// value.
+  StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream));
+
+  /// Returns a copy of [this] with [sink] replaced by [change]'s return
+  /// value.
+  StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink));
 }
 
 /// An implementation of [StreamChannel] that simply takes a stream and a sink
@@ -99,4 +115,16 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
 
   StreamChannel transform(StreamChannelTransformer<dynamic, T> transformer) =>
       transformer.bind(this);
+
+  StreamChannel<T> transformStream(StreamTransformer<T, T> transformer) =>
+      changeStream(transformer.bind);
+
+  StreamChannel<T> transformSink(StreamSinkTransformer<T, T> transformer) =>
+      changeSink(transformer.bind);
+
+  StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream)) =>
+      new StreamChannel(change(stream), sink);
+
+  StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink)) =>
+      new StreamChannel(stream, change(sink));
 }

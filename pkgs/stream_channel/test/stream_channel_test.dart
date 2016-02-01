@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -55,5 +56,63 @@ void main() {
     transformed.sink.close();
     expect(sinkController.stream.toList(),
         completion(equals([[102, 98, 108, 116, 104, 112]])));
+  });
+
+  test("transformStream() transforms only the stream", () {
+    var transformed = channel.transformStream(UTF8.decoder);
+
+    streamController.add([102, 111, 111, 98, 97, 114]);
+    streamController.close();
+    expect(transformed.stream.toList(), completion(equals(["foobar"])));
+
+    transformed.sink.add("fblthp");
+    transformed.sink.close();
+    expect(sinkController.stream.toList(),
+        completion(equals(["fblthp"])));
+  });
+
+  test("transformSink() transforms only the sink", () {
+    var transformed = channel.transformSink(
+        new StreamSinkTransformer.fromStreamTransformer(UTF8.encoder));
+
+    streamController.add([102, 111, 111, 98, 97, 114]);
+    streamController.close();
+    expect(transformed.stream.toList(),
+        completion(equals([[102, 111, 111, 98, 97, 114]])));
+
+    transformed.sink.add("fblthp");
+    transformed.sink.close();
+    expect(sinkController.stream.toList(),
+        completion(equals([[102, 98, 108, 116, 104, 112]])));
+  });
+
+  test("changeStream() changes the stream", () {
+    var newController = new StreamController();
+    var changed = channel.changeStream((stream) {
+      expect(stream, equals(channel.stream));
+      return newController.stream;
+    });
+
+    newController.add(10);
+    newController.close();
+
+    streamController.add(20);
+    streamController.close();
+
+    expect(changed.stream.toList(), completion(equals([10])));
+  });
+
+  test("changeSink() changes the sink", () {
+    var newController = new StreamController();
+    var changed = channel.changeSink((sink) {
+      expect(sink, equals(channel.sink));
+      return newController.sink;
+    });
+
+    expect(newController.stream.toList(), completion(equals([10])));
+    streamController.stream.listen(expectAsync((_) {}, count: 0));
+
+    changed.sink.add(10);
+    changed.sink.close();
   });
 }
