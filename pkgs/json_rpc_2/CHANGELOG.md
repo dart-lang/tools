@@ -1,3 +1,21 @@
+## 2.0.0
+
+* **Breaking change:** all constructors now take a `StreamChannel` rather than a
+  `Stream`/`StreamSink` pair.
+
+* `Client.sendRequest()` and `Client.sendNotification()` no longer throw
+  `StateError`s after the connection has been closed but before `Client.close()`
+  has been called.
+
+* The various `close()` methods may now be called before their corresponding
+  `listen()` methods.
+
+* The various `close()` methods now wait on the result of closing the underlying
+  `StreamSink`. Be aware that [in some circumstances][issue 19095]
+  `StreamController`s' `Sink.close()` futures may never complete.
+
+[issue 19095]: https://github.com/dart-lang/sdk/issues/19095
+
 ## 1.2.0
 
 * Add `Client.isClosed` and `Server.isClosed`, which make it possible to

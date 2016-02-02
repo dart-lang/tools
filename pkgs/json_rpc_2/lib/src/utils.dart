@@ -5,6 +5,10 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
+import 'package:stream_channel/stream_channel.dart';
+
+import '../error_code.dart' as error_code;
+import 'exception.dart';
 
 typedef ZeroArgumentFunction();
 
@@ -61,6 +65,35 @@ tryFinally(body(), whenComplete()) {
     return result;
   } else {
     return result.whenComplete(whenComplete);
+  }
+}
+
+/// A transformer that silently drops [FormatException]s.
+final ignoreFormatExceptions = new StreamTransformer.fromHandlers(
+    handleError: (error, stackTrace, sink) {
+  if (error is FormatException) return;
+  sink.addError(error, stackTrace);
+});
+
+/// A transformer that sends error responses on [FormatException]s.
+final StreamChannelTransformer respondToFormatExceptions =
+    new _RespondToFormatExceptionsTransformer();
+
+/// The implementation of [respondToFormatExceptions].
+class _RespondToFormatExceptionsTransformer
+    implements StreamChannelTransformer {
+  StreamChannel bind(StreamChannel channel) {
+    var transformed;
+    transformed = channel.changeStream((stream) {
+      return stream.handleError((error) {
+        if (error is! FormatException) throw error;
+
+        var exception = new RpcException(
+            error_code.PARSE_ERROR, 'Invalid JSON: ${error.message}');
+        transformed.sink.add(exception.serialize(error.source));
+      });
+    });
+    return transformed;
   }
 }
 

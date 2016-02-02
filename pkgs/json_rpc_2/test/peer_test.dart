@@ -5,7 +5,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
+
 import 'package:json_rpc_2/error_code.dart' as error_code;
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
@@ -19,7 +21,7 @@ void main() {
     var outgoingController = new StreamController();
     outgoing = outgoingController.stream;
     peer = new json_rpc.Peer.withoutJson(
-        incomingController.stream, outgoingController);
+        new StreamChannel(incomingController.stream, outgoingController));
   });
 
   group("like a client,", () {
@@ -165,7 +167,7 @@ void main() {
       var incomingController = new StreamController();
       var outgoingController = new StreamController();
       var jsonPeer = new json_rpc.Peer(
-          incomingController.stream, outgoingController);
+          new StreamChannel(incomingController.stream, outgoingController));
 
       expect(outgoingController.stream.first.then(JSON.decode), completion({
         "jsonrpc": "2.0",

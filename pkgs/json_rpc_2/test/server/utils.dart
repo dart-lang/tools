@@ -5,9 +5,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:stream_channel/stream_channel.dart';
+import 'package:test/test.dart';
+
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:json_rpc_2/error_code.dart' as error_code;
-import 'package:test/test.dart';
 
 /// A controller used to test a [json_rpc.Server].
 class ServerController {
@@ -23,7 +25,7 @@ class ServerController {
 
   ServerController() {
     _server = new json_rpc.Server(
-        _requestController.stream, _responseController.sink);
+        new StreamChannel(_requestController.stream, _responseController.sink));
     _server.listen();
   }
 

@@ -4,17 +4,25 @@
 
 import 'dart:async';
 
+import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
+
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
 import 'utils.dart';
 
 void main() {
+  var requestController;
+  var responseController;
+  var server;
+  setUp(() {
+    requestController = new StreamController();
+    responseController = new StreamController();
+    server = new json_rpc.Server.withoutJson(
+        new StreamChannel(requestController.stream, responseController.sink));
+  });
+
   test(".withoutJson supports decoded stream and sink", () {
-    var requestController = new StreamController();
-    var responseController = new StreamController();
-    var server = new json_rpc.Server.withoutJson(
-        requestController.stream, responseController.sink);
     server.listen();
 
     server.registerMethod('foo', (params) {
@@ -36,11 +44,6 @@ void main() {
   });
 
   test(".listen returns when the controller is closed", () {
-    var requestController = new StreamController();
-    var responseController = new StreamController();
-    var server = new json_rpc.Server(
-        requestController.stream, responseController.sink);
-
     var hasListenCompeted = false;
     expect(server.listen().then((_) => hasListenCompeted = true), completes);
 
@@ -53,30 +56,19 @@ void main() {
   });
 
   test(".listen returns a stream error", () {
-    var requestController = new StreamController();
-    var responseController = new StreamController();
-    var server = new json_rpc.Server(
-        requestController.stream, responseController.sink);
-
     expect(server.listen(), throwsA('oh no'));
     requestController.addError('oh no');
   });
 
   test(".listen can't be called twice", () {
-    var requestController = new StreamController();
-    var responseController = new StreamController();
-    var server = new json_rpc.Server(
-        requestController.stream, responseController.sink);
     server.listen();
 
     expect(() => server.listen(), throwsStateError);
   });
 
   test(".close cancels the stream subscription and closes the sink", () {
-    var requestController = new StreamController();
-    var responseController = new StreamController();
-    var server = new json_rpc.Server(
-        requestController.stream, responseController.sink);
+    // Work around sdk#19095.
+    responseController.stream.listen(null);
 
     expect(server.listen(), completes);
 
@@ -86,14 +78,5 @@ void main() {
 
     expect(() => requestController.stream.listen((_) {}), throwsStateError);
     expect(responseController.isClosed, isTrue);
-  });
-
-  test(".close can't be called before .listen", () {
-    var requestController = new StreamController();
-    var responseController = new StreamController();
-    var server = new json_rpc.Server(
-        requestController.stream, responseController.sink);
-
-    expect(() => server.close(), throwsStateError);
   });
 }
