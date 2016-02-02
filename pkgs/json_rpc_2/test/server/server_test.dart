@@ -113,7 +113,8 @@ void main() {
         'error': {
           'code': error_code.PARSE_ERROR,
           'message': startsWith("Invalid JSON: "),
-          'data': {'request': 'invalid json {'}
+          // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
+          'data': {'request': anyOf([isNull, 'invalid json {'])}
         },
         'id': null
       });
