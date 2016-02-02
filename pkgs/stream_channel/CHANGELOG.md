@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Fix the type annotation for `StreamChannel.transform()`'s parameter.
+
 ## 1.1.0
 
 * Add `StreamChannel.transformStream()`, `StreamChannel.transformSink()`,
