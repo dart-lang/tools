@@ -1,3 +1,11 @@
+## 1.2.0
+
+* Add `new StreamChannel.withGuarantees()`, which creates a channel with extra
+  wrapping to ensure that it obeys the stream channel guarantees.
+
+* Add `StreamChannelController`, which can be used to create custom
+  `StreamChannel` objects.
+
 ## 1.1.1
 
 * Fix the type annotation for `StreamChannel.transform()`'s parameter.

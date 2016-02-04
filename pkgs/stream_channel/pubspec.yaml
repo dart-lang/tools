@@ -1,5 +1,5 @@
 name: stream_channel
-version: 1.1.1
+version: 1.2.0-dev
 description: An abstraction for two-way communication channels.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/stream_channel

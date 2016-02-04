@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
+import 'src/guarantee_channel.dart';
 import 'src/stream_channel_transformer.dart';
 
 export 'src/delegating_stream_channel.dart';
@@ -13,6 +14,7 @@ export 'src/isolate_channel.dart';
 export 'src/json_document_transformer.dart';
 export 'src/multi_channel.dart';
 export 'src/stream_channel_completer.dart';
+export 'src/stream_channel_controller.dart';
 export 'src/stream_channel_transformer.dart';
 
 /// An abstract class representing a two-way communication channel.
@@ -65,9 +67,19 @@ abstract class StreamChannel<T> {
   /// Creates a new [StreamChannel] that communicates over [stream] and [sink].
   ///
   /// Note that this stream/sink pair must provide the guarantees listed in the
-  /// [StreamChannel] documentation.
+  /// [StreamChannel] documentation. If they don't do so natively, [new
+  /// StreamChannel.withGuarantees] should be used instead.
   factory StreamChannel(Stream<T> stream, StreamSink<T> sink) =>
       new _StreamChannel<T>(stream, sink);
+
+  /// Creates a new [StreamChannel] that communicates over [stream] and [sink].
+  ///
+  /// Unlike [new StreamChannel], this enforces the guarantees listed in the
+  /// [StreamChannel] documentation. This makes it somewhat less efficient than
+  /// just wrapping a stream and a sink directly, so [new StreamChannel] should
+  /// be used when the guarantees are provided natively.
+  factory StreamChannel.withGuarantees(Stream<T> stream, StreamSink<T> sink) =>
+      new GuaranteeChannel(stream, sink);
 
   /// Connects [this] to [other], so that any values emitted by either are sent
   /// directly to the other.
