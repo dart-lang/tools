@@ -25,6 +25,17 @@ void main() {
       controller.foreign.sink..add(1)..add(2)..add(3)..close();
       expect(controller.local.stream.toList(), completion(equals([1, 2, 3])));
     });
+
+    test("with allowForeignErrors: false, shuts down the connection if an "
+        "error is added to the foreign channel", () {
+      controller = new StreamChannelController(allowForeignErrors: false);
+
+      controller.foreign.sink.addError("oh no");
+      expect(controller.foreign.sink.done, throwsA("oh no"));
+      expect(controller.foreign.stream.toList(), completion(isEmpty));
+      expect(controller.local.sink.done, completes);
+      expect(controller.local.stream.toList(), completion(isEmpty));
+    });
   });
 
   group("synchronously", () {

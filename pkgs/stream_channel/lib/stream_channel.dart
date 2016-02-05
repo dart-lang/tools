@@ -78,8 +78,13 @@ abstract class StreamChannel<T> {
   /// [StreamChannel] documentation. This makes it somewhat less efficient than
   /// just wrapping a stream and a sink directly, so [new StreamChannel] should
   /// be used when the guarantees are provided natively.
-  factory StreamChannel.withGuarantees(Stream<T> stream, StreamSink<T> sink) =>
-      new GuaranteeChannel(stream, sink);
+  ///
+  /// If [allowSinkErrors] is `false`, errors are not allowed to be passed to
+  /// [sink]. If any are, the connection will close and the error will be
+  /// forwarded to [Sink.done].
+  factory StreamChannel.withGuarantees(Stream<T> stream, StreamSink<T> sink,
+          {bool allowSinkErrors: true}) =>
+      new GuaranteeChannel(stream, sink, allowSinkErrors: allowSinkErrors);
 
   /// Connects [this] to [other], so that any values emitted by either are sent
   /// directly to the other.

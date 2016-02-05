@@ -47,12 +47,18 @@ class StreamChannelController<T> {
   /// If [sync] is true, events added to either channel's sink are synchronously
   /// dispatched to the other channel's stream. This should only be done if the
   /// source of those events is already asynchronous.
-  StreamChannelController({bool sync: false}) {
+  ///
+  /// If [allowForeignErrors] is `false`, errors are not allowed to be passed to
+  /// the foreign channel's sink. If any are, the connection will close and the
+  /// error will be forwarded to the foreign channel's [Sink.done] future. This
+  /// guarantees that the local stream will never emit errors.
+  StreamChannelController({bool allowForeignErrors: true, bool sync: false}) {
     var localToForeignController = new StreamController<T>(sync: sync);
     var foreignToLocalController = new StreamController<T>(sync: sync);
     _local = new StreamChannel<T>.withGuarantees(
         foreignToLocalController.stream, localToForeignController.sink);
     _foreign = new StreamChannel<T>.withGuarantees(
-        localToForeignController.stream, foreignToLocalController.sink);
+        localToForeignController.stream, foreignToLocalController.sink,
+        allowSinkErrors: allowForeignErrors);
   }
 }

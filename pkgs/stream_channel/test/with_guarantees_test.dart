@@ -107,4 +107,44 @@ void main() {
     channel.sink.addError("error");
     expect(sinkController.stream.first, throwsA("error"));
   });
+
+  test("Sink.done completes once the stream is done", () {
+    channel.stream.listen(null);
+    expect(channel.sink.done, completes);
+    streamController.close();
+  });
+
+  group("with allowSinkErrors: false", () {
+    setUp(() {
+      streamController = new StreamController();
+      sinkController = new StreamController();
+      channel = new StreamChannel.withGuarantees(
+          streamController.stream, sinkController.sink, allowSinkErrors: false);
+    });
+
+    test("forwards errors to Sink.done but not the stream", () {
+      channel.sink.addError("oh no");
+      expect(channel.sink.done, throwsA("oh no"));
+      sinkController.stream.listen(null,
+          onError: expectAsync((_) {}, count: 0));
+    });
+
+    test("adding an error causes the stream to emit a done event", () {
+      expect(channel.sink.done, throwsA("oh no"));
+
+      streamController.add(1);
+      streamController.add(2);
+      streamController.add(3);
+
+      expect(channel.stream.listen(expectAsync((event) {
+        if (event == 2) channel.sink.addError("oh no");
+      }, count: 2)).asFuture(), completes);
+    });
+
+    test("adding an error closes the inner sink", () {
+      channel.sink.addError("oh no");
+      expect(channel.sink.done, throwsA("oh no"));
+      expect(sinkController.stream.toList(), completion(isEmpty));
+    });
+  });
 }
