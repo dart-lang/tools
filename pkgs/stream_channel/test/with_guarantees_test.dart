@@ -114,6 +114,29 @@ void main() {
     streamController.close();
   });
 
+  test("events can't be added to an explicitly-closed sink", () {
+    sinkController.stream.listen(null); // Work around sdk#19095.
+
+    expect(channel.sink.close(), completes);
+    expect(() => channel.sink.add(1), throwsStateError);
+    expect(() => channel.sink.addError("oh no"), throwsStateError);
+    expect(() => channel.sink.addStream(new Stream.fromIterable([])),
+        throwsStateError);
+  });
+
+  test("events can't be added while a stream is being added", () {
+    var controller = new StreamController();
+    channel.sink.addStream(controller.stream);
+
+    expect(() => channel.sink.add(1), throwsStateError);
+    expect(() => channel.sink.addError("oh no"), throwsStateError);
+    expect(() => channel.sink.addStream(new Stream.fromIterable([])),
+        throwsStateError);
+    expect(() => channel.sink.close(), throwsStateError);
+
+    controller.close();
+  });
+
   group("with allowSinkErrors: false", () {
     setUp(() {
       streamController = new StreamController();
@@ -145,6 +168,26 @@ void main() {
       channel.sink.addError("oh no");
       expect(channel.sink.done, throwsA("oh no"));
       expect(sinkController.stream.toList(), completion(isEmpty));
+    });
+
+    test("adding an error via via addStream causes the stream to emit a done "
+        "event", () async {
+      var canceled = false;
+      var controller = new StreamController(onCancel: () {
+        canceled = true;
+      });
+
+      // This future shouldn't get the error, because it's sent to [Sink.done].
+      expect(channel.sink.addStream(controller.stream), completes);
+
+      controller.addError("oh no");
+      expect(channel.sink.done, throwsA("oh no"));
+      await pumpEventQueue();
+      expect(canceled, isTrue);
+
+      // Even though the sink is closed, this shouldn't throw an error because
+      // the user didn't explicitly close it.
+      channel.sink.add(1);
     });
   });
 }

@@ -15,13 +15,13 @@ import '../stream_channel.dart';
 ///
 /// ```dart
 /// StreamChannel isolateChannel(ReceivePort receivePort, SendPort sendPort) {
-///   var controller = new StreamChannelController();
+///   var controller = new StreamChannelController(allowForeignErrors: false);
 ///
 ///   // Pipe all events from the receive port into the local sink...
 ///   receivePort.pipe(controller.local.sink);
 ///
 ///   // ...and all events from the local stream into the send port.
-///   controller.local.listen(sendPort.add, onDone: receivePort.close);
+///   controller.local.stream.listen(sendPort.send, onDone: receivePort.close);
 ///
 ///   // Then return the foreign controller for your users to use.
 ///   return controller.foreign;

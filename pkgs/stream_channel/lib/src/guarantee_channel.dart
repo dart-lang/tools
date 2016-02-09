@@ -127,6 +127,14 @@ class _GuaranteeSink<T> implements StreamSink<T> {
     }
     if (_disconnected) return;
 
+    _addError(error, stackTrace);
+  }
+
+  /// Like [addError], but doesn't check to ensure that an error can be added.
+  ///
+  /// This is called from [addStream], so it shouldn't fail if a stream is being
+  /// added.
+  void _addError(error, [StackTrace stackTrace]) {
     if (_allowErrors) {
       _inner.addError(error, stackTrace);
       return;
@@ -153,7 +161,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
     _addStreamCompleter = new Completer.sync();
     _addStreamSubscription = stream.listen(
         _inner.add,
-        onError: _inner.addError,
+        onError: _addError,
         onDone: _addStreamCompleter.complete);
     return _addStreamCompleter.future.then((_) {
       _addStreamCompleter = null;
