@@ -10,6 +10,7 @@ import 'src/guarantee_channel.dart';
 import 'src/stream_channel_transformer.dart';
 
 export 'src/delegating_stream_channel.dart';
+export 'src/disconnector.dart';
 export 'src/isolate_channel.dart';
 export 'src/json_document_transformer.dart';
 export 'src/multi_channel.dart';

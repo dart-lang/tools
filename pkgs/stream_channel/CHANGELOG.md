@@ -1,3 +1,8 @@
+## 1.3.0
+
+* Add `Disconnector`, a transformer that allows the caller to disconnect the
+  transformed channel.
+
 ## 1.2.0
 
 * Add `new StreamChannel.withGuarantees()`, which creates a channel with extra
