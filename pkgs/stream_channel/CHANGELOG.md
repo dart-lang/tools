@@ -2,6 +2,8 @@
 
 * Make `IsolateChannel` slightly more efficient.
 
+* Make `MultiChannel` follow the stream channel rules.
+
 ## 1.3.0
 
 * Add `Disconnector`, a transformer that allows the caller to disconnect the
