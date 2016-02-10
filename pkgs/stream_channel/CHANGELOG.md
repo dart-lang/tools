@@ -1,3 +1,7 @@
+## 1.3.1
+
+* Make `IsolateChannel` slightly more efficient.
+
 ## 1.3.0
 
 * Add `Disconnector`, a transformer that allows the caller to disconnect the

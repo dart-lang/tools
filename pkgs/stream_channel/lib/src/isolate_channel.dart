@@ -53,7 +53,8 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
     var subscription;
     subscription = receivePort.listen((message) {
       if (message is SendPort) {
-        var controller = new StreamChannelController(allowForeignErrors: false);
+        var controller = new StreamChannelController(
+            allowForeignErrors: false, sync: true);
         new SubscriptionStream<T>(subscription).pipe(controller.local.sink);
         controller.local.stream.listen(message.send,
             onDone: receivePort.close);
@@ -91,7 +92,8 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
   /// Creates a stream channel that receives messages from [receivePort] and
   /// sends them over [sendPort].
   factory IsolateChannel(ReceivePort receivePort, SendPort sendPort) {
-    var controller = new StreamChannelController(allowForeignErrors: false);
+    var controller = new StreamChannelController(
+        allowForeignErrors: false, sync: true);
     receivePort.pipe(controller.local.sink);
     controller.local.stream.listen(sendPort.send, onDone: receivePort.close);
     return new IsolateChannel._(
