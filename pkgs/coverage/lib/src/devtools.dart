@@ -144,7 +144,7 @@ class ServiceEvent {
   final String kind;
   final IsolateRef isolate;
 
-  @deprecated('Will be removed in 0.8')
+  @Deprecated('Will be removed in 0.8')
   String get eventType => kind;
 
   ServiceEvent(this.kind, this.isolate);
