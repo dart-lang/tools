@@ -6,15 +6,17 @@ library coverage.collect;
 
 import 'dart:async';
 
-import 'devtools.dart';
+import 'vm_service_client.dart';
 import 'util.dart';
 
 const _retryInterval = const Duration(milliseconds: 200);
 
 Future<Map> collect(String host, int port, bool resume, bool waitPaused,
     {Duration timeout}) async {
+  var uri = 'ws://$host:$port/ws';
+
   var vmService = await retry(
-      () => VMService.connect(host, port), _retryInterval,
+      () => VMServiceClient.connect(uri), _retryInterval,
       timeout: timeout);
   try {
     if (waitPaused) {
@@ -30,30 +32,34 @@ Future<Map> collect(String host, int port, bool resume, bool waitPaused,
   }
 }
 
-Future<Map> _getAllCoverage(VMService service) async {
+Future<Map> _getAllCoverage(VMServiceClient service) async {
   var vm = await service.getVM();
   var allCoverage = [];
 
   for (var isolateRef in vm.isolates) {
-    var coverage = await service.getCoverage(isolateRef.id);
+    var isolate = await isolateRef.load();
+    var coverage = await service.getCoverage(isolate);
     allCoverage.addAll(coverage.coverage);
   }
   return {'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
-Future _resumeIsolates(VMService service) async {
+Future _resumeIsolates(VMServiceClient service) async {
   var vm = await service.getVM();
   for (var isolateRef in vm.isolates) {
-    await service.resume(isolateRef.id);
+    var isolate = await isolateRef.load();
+    if (isolate.isPaused) {
+      await isolateRef.resume();
+    }
   }
 }
 
-Future _waitIsolatesPaused(VMService service, {Duration timeout}) async {
+Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
   allPaused() async {
     var vm = await service.getVM();
     for (var isolateRef in vm.isolates) {
-      var isolate = await service.getIsolate(isolateRef.id);
-      if (!isolate.paused) throw "Unpaused isolates remaining.";
+      var isolate = await isolateRef.load();
+      if (!isolate.isPaused) throw "Unpaused isolates remaining.";
     }
   }
   return retry(allPaused, _retryInterval, timeout: timeout);

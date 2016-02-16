@@ -37,7 +37,7 @@ void main() {
     });
 
     for (var sampleCoverageData in sources[_sampleAppFileUri]) {
-      expect(sampleCoverageData['hits'], isNotEmpty);
+      expect(sampleCoverageData['hits'], isNotNull);
     }
 
     for (var sampleCoverageData in sources[_isolateLibFileUri]) {
@@ -50,6 +50,6 @@ void main() {
 
     var isolateFile = hitMap[_isolateLibFileUri];
 
-    expect(isolateFile, {11: 1, 12: 1, 14: 1, 16: 3, 18: 1});
+    expect(isolateFile, {12: 1, 14: 1, 16: 3, 18: 1});
   });
 }

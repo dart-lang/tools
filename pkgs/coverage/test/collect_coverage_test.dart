@@ -21,8 +21,6 @@ final _collectAppPath = p.join('bin', 'collect_coverage.dart');
 final _sampleAppFileUri = p.toUri(p.absolute(testAppPath)).toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
-const _timeout = const Duration(seconds: 5);
-
 void main() {
   test('collect_coverage', () async {
     var resultString = await _getCoverageResult();
@@ -46,7 +44,7 @@ void main() {
     });
 
     for (var sampleCoverageData in sources[_sampleAppFileUri]) {
-      expect(sampleCoverageData['hits'], isNotEmpty);
+      expect(sampleCoverageData['hits'], isNotNull);
     }
 
     for (var sampleCoverageData in sources[_isolateLibFileUri]) {
@@ -67,7 +65,7 @@ void main() {
 
     var isolateFile = hitMap[_isolateLibFileUri];
 
-    expect(isolateFile, {11: 1, 12: 1, 14: 1, 16: 3, 18: 1});
+    expect(isolateFile, {12: 1, 14: 1, 16: 3, 18: 1});
   });
 
   test('parseCoverage', () async {
@@ -104,13 +102,7 @@ Future<String> _collectCoverage() async {
   var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
-  var sampleProcFuture = Process.run('dart', [
-    '--enable-vm-service=$openPort',
-    '--pause_isolates_on_exit',
-    testAppPath
-  ]).timeout(_timeout, onTimeout: () {
-    throw 'We timed out waiting for the sample app to finish.';
-  });
+  var sampleProcFuture = runTestApp(openPort);
 
   // run the tool with the right flags
   // TODO: need to get all of this functionality in the lib
@@ -120,7 +112,7 @@ Future<String> _collectCoverage() async {
     openPort.toString(),
     '--resume-isolates',
     '--wait-paused'
-  ]).timeout(_timeout, onTimeout: () {
+  ]).timeout(timeout, onTimeout: () {
     throw 'We timed out waiting for the tool to finish.';
   });
 
