@@ -5,7 +5,6 @@
 library coverage.test.collect_coverage_api_test;
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:coverage/coverage.dart';
 import 'package:coverage/src/util.dart';
@@ -18,8 +17,6 @@ final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
 
 final _sampleAppFileUri = p.toUri(p.absolute(testAppPath)).toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
-
-const _timeout = const Duration(seconds: 5);
 
 void main() {
   test('collect_coverage_api', () async {
@@ -40,8 +37,8 @@ void main() {
       return map;
     });
 
-    for (var sampleCoverageData in sources[_sampleAppFileUri]) {
-      expect(sampleCoverageData['hits'], isNotEmpty);
+    for (Map sampleCoverageData in sources[_sampleAppFileUri]) {
+      expect(sampleCoverageData['hits'], isNotNull);
     }
 
     for (var sampleCoverageData in sources[_isolateLibFileUri]) {
@@ -63,15 +60,9 @@ Future<Map> _collectCoverage() async {
   var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
-  var sampleProcFuture = Process.run('dart', [
-    '--enable-vm-service=$openPort',
-    '--pause_isolates_on_exit',
-    testAppPath
-  ]).timeout(_timeout, onTimeout: () {
-    throw 'We timed out waiting for the sample app to finish.';
-  });
+  var sampleProcFuture = runTestApp(openPort);
 
-  var result = collect('127.0.0.1', openPort, true, false, timeout: _timeout);
+  var result = collect('127.0.0.1', openPort, true, false, timeout: timeout);
   await sampleProcFuture;
 
   return result;
