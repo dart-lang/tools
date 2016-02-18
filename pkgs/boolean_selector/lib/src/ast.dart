@@ -38,6 +38,10 @@ class VariableNode implements Node {
   accept(Visitor visitor) => visitor.visitVariable(this);
 
   String toString() => name;
+
+  bool operator==(other) => other is VariableNode && name == other.name;
+
+  int get hashCode => name.hashCode;
 }
 
 /// A negation expression.
@@ -56,6 +60,10 @@ class NotNode implements Node {
   String toString() => child is VariableNode || child is NotNode
       ? "!$child"
       : "!($child)";
+
+  bool operator==(other) => other is NotNode && child == other.child;
+
+  int get hashCode => ~child.hashCode;
 }
 
 /// An or expression.
@@ -87,6 +95,11 @@ class OrNode implements Node {
 
     return "$string1 || $string2";
   }
+
+  bool operator==(other) =>
+      other is OrNode && left == other.left && right == other.right;
+
+  int get hashCode => left.hashCode ^ right.hashCode;
 }
 
 /// An and expression.
@@ -118,6 +131,11 @@ class AndNode implements Node {
 
     return "$string1 && $string2";
   }
+
+  bool operator==(other) =>
+      other is AndNode && left == other.left && right == other.right;
+
+  int get hashCode => left.hashCode ^ right.hashCode;
 }
 
 /// A ternary conditional expression.
@@ -149,6 +167,15 @@ class ConditionalNode implements Node {
     var trueString = whenTrue is ConditionalNode ? "($whenTrue)" : whenTrue;
     return "$conditionString ? $trueString : $whenFalse";
   }
+
+  bool operator==(other) =>
+      other is ConditionalNode &&
+      condition == other.condition &&
+      whenTrue == other.whenTrue &&
+      whenFalse == other.whenFalse;
+
+  int get hashCode =>
+      condition.hashCode ^ whenTrue.hashCode ^ whenFalse.hashCode;
 }
 
 /// Like [FileSpan.expand], except if [start] and [end] are `null` or from

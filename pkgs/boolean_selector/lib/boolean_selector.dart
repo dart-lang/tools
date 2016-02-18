@@ -15,6 +15,9 @@ import 'src/none.dart';
 /// operations. See [the README][] for full details.
 ///
 /// [the README]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+///
+/// Boolean selectors support structural equality. Two selectors that have the
+/// same parsed structure are considered equal.
 abstract class BooleanSelector {
   /// A selector that accepts all inputs.
   static const all = const All();
