@@ -32,10 +32,13 @@ class SourceSpanException implements Exception {
 /// A [SourceSpanException] that's also a [FormatException].
 class SourceSpanFormatException extends SourceSpanException
     implements FormatException {
-  final source;
+  final _source;
+
+  // Subclasses may narrow the type.
+  dynamic get source => _source;
 
   int get offset => span == null ? null : span.start.offset;
 
-  SourceSpanFormatException(String message, SourceSpan span, [this.source])
+  SourceSpanFormatException(String message, SourceSpan span, [this._source])
       : super(message, span);
 }
