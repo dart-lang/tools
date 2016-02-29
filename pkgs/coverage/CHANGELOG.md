@@ -1,4 +1,8 @@
-###0.7.2
+## 0.7.3
+
+ * Added support for the latest Dart SDK.
+
+## 0.7.2
 
  * `Formatter.format` added two optional arguments: `reportOn` and `pathFilter`.
    They can be used independently to limit the files which are included in the
@@ -6,7 +10,7 @@
 
  * Added `runAndCollect` API to library.
 
-###0.7.1
+## 0.7.1
 
  * Added `collect` top-level method.
  
@@ -15,7 +19,7 @@
  * Replaced `ServiceEvent.eventType` with `ServiceEvent.kind`.
    *  `ServiceEvent.eventType` is deprecated and will be removed in `0.8`.
 
-###0.7.0
+## 0.7.0
 
  * `format_coverage` no longer emits SDK coverage unless --sdk-root is set
    explicitly.
@@ -24,17 +28,17 @@
  
  * Removed deprecated `Resolver.pkgRoot`.
 
-###0.6.5
+## 0.6.5
 
  * Fixed early collection bug when --wait-paused is set.
 
-###0.6.4
+## 0.6.4
 
  * Optimized formatters and fixed return value of `format` methods.
  
  * Added `Resolver.packageRoot` – deprecated `Resolver.pkgRoot`.
 
-###0.6.3
+## 0.6.3
 
  * Support the latest release of `args` package.
  
@@ -44,16 +48,16 @@
  
  * Require at least Dart SDK v1.9.0.
 
-###0.6.2
+## 0.6.2
  * Support observatory protocol changes for VM >= 1.11.0.
 
-###0.6.1
+## 0.6.1
  * Support observatory protocol changes for VM >= 1.10.0.
 
-###0.6.0+1
+## 0.6.0+1
  * Add support for `pub global run`.
 
-###0.6.0
+## 0.6.0
   * Add support for SDK versions >= 1.9.0. For Dartium/content-shell versions
     past 1.9.0, coverage collection is no longer done over the remote debugging
     port, but via the observatory port emitted on stdout. Backward
