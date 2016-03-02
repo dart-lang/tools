@@ -6,15 +6,19 @@ import 'span.dart';
 
 /// A class for exceptions that have source span information attached.
 class SourceSpanException implements Exception {
+  // This is a getter so that subclasses can override it.
   /// A message describing the exception.
-  final String message;
+  String get message => _message;
+  final String _message;
 
+  // This is a getter so that subclasses can override it.
   /// The span associated with this exception.
   ///
   /// This may be `null` if the source location can't be determined.
-  final SourceSpan span;
+  SourceSpan get span => _span;
+  final SourceSpan _span;
 
-  SourceSpanException(this.message, this.span);
+  SourceSpanException(this._message, this._span);
 
   /// Returns a string representation of [this].
   ///
@@ -32,10 +36,9 @@ class SourceSpanException implements Exception {
 /// A [SourceSpanException] that's also a [FormatException].
 class SourceSpanFormatException extends SourceSpanException
     implements FormatException {
-  final _source;
-
-  // Subclasses may narrow the type.
+  // This is a getter so that subclasses can override it.
   dynamic get source => _source;
+  final _source;
 
   int get offset => span == null ? null : span.start.offset;
 

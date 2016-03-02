@@ -8,8 +8,10 @@ import 'utils.dart';
 
 /// A class that describes a segment of source text with additional context.
 class SourceSpanWithContext extends SourceSpanBase {
+  // This is a getter so that subclasses can override it.
   /// Text around the span, which includes the line containing this span.
-  final String context;
+  String get context => _context;
+  final String _context;
 
   /// Creates a new span from [start] to [end] (exclusive) containing [text], in
   /// the given [context].
@@ -20,7 +22,7 @@ class SourceSpanWithContext extends SourceSpanBase {
   /// [text] should start at `start.column` from the beginning of a line in
   /// [context].
   SourceSpanWithContext(
-      SourceLocation start, SourceLocation end, String text, this.context)
+          SourceLocation start, SourceLocation end, String text, this._context)
       : super(start, end, text) {
     if (!context.contains(text)) {
       throw new ArgumentError(

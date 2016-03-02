@@ -1,3 +1,8 @@
+# 1.2.2
+
+* Allow `SourceSpanException.message`, `SourceSpanFormatException.source`, and
+  `SourceSpanWithContext.context` to be overridden in strong mode.
+
 # 1.2.1
 
 * Fix the declared type of `FileSpan.start` and `FileSpan.end`. In 1.2.0 these
