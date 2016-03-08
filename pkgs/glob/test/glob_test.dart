@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:glob/glob.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {

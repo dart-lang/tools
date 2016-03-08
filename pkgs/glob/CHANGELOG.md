@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Fix a bug where listing an absolute glob with `caseInsensitive: false` failed.
+
 ## 1.1.0
 
 * Add a `caseSensitive` named parameter to `new Glob()` that controls whether

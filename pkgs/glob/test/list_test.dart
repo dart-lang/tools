@@ -275,6 +275,19 @@ void main() {
       ])));
     });
 
+    // Regression test for #4.
+    test("lists an absolute case-insensitive glob", () {
+      expect(schedule(() {
+        var pattern = separatorToForwardSlash(
+            p.absolute(p.join(sandbox, 'foo/Baz/**')));
+
+        return list(pattern, caseSensitive: false);
+      }), completion(unorderedEquals([
+        p.join("foo", "baz", "bang"),
+        p.join("foo", "baz", "qux")
+      ])));
+    });
+
     test("lists a subdirectory that sometimes exists", () {
       d.dir("top", [
         d.dir("dir1", [

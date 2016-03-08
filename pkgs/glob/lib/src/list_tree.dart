@@ -314,7 +314,7 @@ class _ListTreeNode {
   Stream<FileSystemEntity> list(String dir, {bool followLinks: true}) {
     if (isRecursive) {
       return new Directory(dir).list(recursive: true, followLinks: followLinks)
-          .where((entity) => _matches(entity.path.substring(dir.length + 1)));
+          .where((entity) => _matches(p.relative(entity.path, from: dir)));
     }
 
     var resultPool = new StreamPool();
@@ -333,7 +333,7 @@ class _ListTreeNode {
     var resultController = new StreamController(sync: true);
     resultPool.add(resultController.stream);
     new Directory(dir).list(followLinks: followLinks).listen((entity) {
-      var basename = entity.path.substring(dir.length + 1);
+      var basename = p.relative(entity.path, from: dir);
       if (_matches(basename)) resultController.add(entity);
 
       children.forEach((sequence, child) {
@@ -368,7 +368,7 @@ class _ListTreeNode {
     if (isRecursive) {
       return new Directory(dir)
           .listSync(recursive: true, followLinks: followLinks)
-          .where((entity) => _matches(entity.path.substring(dir.length + 1)));
+          .where((entity) => _matches(p.relative(entity.path, from: dir)));
     }
 
     // Don't spawn extra [Directory.listSync] calls when we already know exactly
@@ -383,7 +383,7 @@ class _ListTreeNode {
     return new Directory(dir).listSync(followLinks: followLinks)
         .expand((entity) {
       var entities = [];
-      var basename = entity.path.substring(dir.length + 1);
+      var basename = p.relative(entity.path, from: dir);
       if (_matches(basename)) entities.add(entity);
       if (entity is! Directory) return entities;
 
