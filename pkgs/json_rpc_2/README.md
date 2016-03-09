@@ -10,10 +10,11 @@ These methods can be registered using `Server.registerMethod`:
 ```dart
 import "package:json_rpc_2/json_rpc_2.dart" as json_rpc;
 import "package:stream_channel/stream_channel.dart";
+import "package:web_socket_channel/io.dart";
 
 main() async {
-  var socket = await WebSocket.connect('ws://localhost:4321');
-  var server = new json_rpc.Server(new StreamChannel(socket, socket));
+  var socket = IOWebSocketChannel.connect('ws://localhost:4321');
+  var server = new json_rpc.Server(socket);
 
   // Any string may be used as a method name. JSON-RPC 2.0 methods are
   // case-sensitive.
@@ -81,10 +82,11 @@ responses to those method calls. These methods can be called using
 ```dart
 import "package:json_rpc_2/json_rpc_2.dart" as json_rpc;
 import "package:stream_channel/stream_channel.dart";
+import "package:web_socket_channel/html.dart";
 
 main() async {
-  var socket = await WebSocket.connect('ws://localhost:4321');
-  var client = new json_rpc.Client(new StreamChannel(socket, socket));
+  var socket = HtmlWebSocketChannel.connect('ws://localhost:4321');
+  var client = new json_rpc.Client(socket);
 
   // This calls the "count" method on the server. A Future is returned that
   // will complete to the value contained in the server's response.
