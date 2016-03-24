@@ -1,3 +1,7 @@
+## 0.10.1+1
+
+* Fix all strong mode warnings.
+
 ## 0.10.1
 
 * Add a `mapUrl` named argument to `parse` and `parseJson`. This argument is

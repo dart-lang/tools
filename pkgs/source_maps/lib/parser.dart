@@ -182,7 +182,7 @@ class SingleMapping extends Mapping {
     var names = new LinkedHashMap<String, int>();
 
     var lineNum;
-    var targetEntries;
+    List<TargetEntry> targetEntries;
     for (var sourceEntry in sourceEntries) {
       if (lineNum == null || sourceEntry.target.line > lineNum) {
         lineNum = sourceEntry.target.line;
@@ -212,8 +212,8 @@ class SingleMapping extends Mapping {
 
   SingleMapping.fromJson(Map map, {mapUrl})
       : targetUrl = map['file'],
-        urls = map['sources'],
-        names = map['names'],
+        urls = new List<String>.from(map['sources']),
+        names = new List<String>.from(map['names']),
         sourceRoot = map['sourceRoot'],
         lines = <TargetLineEntry>[],
         _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : mapUrl {
