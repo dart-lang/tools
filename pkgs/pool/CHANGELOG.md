@@ -1,3 +1,7 @@
+## 1.2.2
+
+* Fix strong mode warnings and add generic method annotations.
+
 ## 1.2.1
 
 * Internal changes only.

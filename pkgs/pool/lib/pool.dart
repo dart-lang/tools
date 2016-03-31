@@ -106,16 +106,18 @@ class Pool {
   /// Future.
   ///
   /// The return value of [callback] is piped to the returned Future.
-  Future withResource(callback()) {
+  Future/*<T>*/ withResource/*<T>*/(/*=T*/ callback()) async {
     if (isClosed) {
       throw new StateError(
           "withResource() may not be called on a closed Pool.");
     }
 
-    // TODO(nweiz): Use async/await when sdk#23497 is fixed.
-    return request().then((resource) {
-      return new Future.sync(callback).whenComplete(resource.release);
-    });
+    var resource = await request();
+    try {
+      return await callback();
+    } finally {
+      resource.release();
+    }
   }
 
   /// Closes the pool so that no more resources are requested.
@@ -189,7 +191,7 @@ class Pool {
       _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
     });
 
-    var completer = new Completer.sync();
+    var completer = new Completer<PoolResource>.sync();
     _onReleaseCompleters.add(completer);
     return completer.future;
   }
