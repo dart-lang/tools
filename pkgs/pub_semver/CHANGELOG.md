@@ -1,3 +1,7 @@
+# 1.2.4
+
+* Fix all remaining strong mode warnings.
+
 # 1.2.3
 
 * Addressed three strong mode warnings.

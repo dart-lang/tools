@@ -4,7 +4,7 @@
 
 import 'dart:math' as math;
 
-import 'package:collection/equality.dart';
+import 'package:collection/collection.dart';
 
 import 'patterns.dart';
 import 'version_constraint.dart';

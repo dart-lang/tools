@@ -55,7 +55,7 @@ class VersionUnion implements VersionConstraint {
       throw new ArgumentError('Unknown VersionConstraint type $constraint.');
     }
 
-    (flattened as List).sort(compareMax);
+    flattened.sort(compareMax);
 
     var merged = <VersionRange>[];
     for (var constraint in flattened) {
