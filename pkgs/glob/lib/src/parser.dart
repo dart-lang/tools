@@ -33,7 +33,7 @@ class Parser {
   ///
   /// If [inOptions] is true, this is parsing within an [OptionsNode].
   SequenceNode _parseSequence({bool inOptions: false}) {
-    var nodes = [];
+    var nodes = <AstNode>[];
 
     if (_scanner.isDone) {
       _scanner.error('expected a glob.', position: 0, length: 0);
@@ -99,7 +99,7 @@ class Parser {
           position: _scanner.position - 1);
     }
 
-    var ranges = [];
+    var ranges = <Range>[];
     while (!_scanner.scan(']')) {
       var start = _scanner.position;
       // Allow a backslash to escape a character.
@@ -140,7 +140,7 @@ class Parser {
     if (!_scanner.scan('{')) return null;
     if (_scanner.matches('}')) _scanner.error('unexpected "}".');
 
-    var options = [];
+    var options = <SequenceNode>[];
     do {
       options.add(_parseSequence(inOptions: true));
     } while (_scanner.scan(','));

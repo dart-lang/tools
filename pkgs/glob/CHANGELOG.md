@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Fix all strong mode errors and warnings.
+
 ## 1.1.1
 
 * Fix a bug where listing an absolute glob with `caseInsensitive: false` failed.

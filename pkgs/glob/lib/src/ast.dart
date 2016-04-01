@@ -20,12 +20,12 @@ abstract class AstNode {
   /// Whether this glob could match an absolute path.
   ///
   /// Either this or [canMatchRelative] or both will be true.
-  final bool canMatchAbsolute = false;
+  bool get canMatchAbsolute => false;
 
   /// Whether this glob could match a relative path.
   ///
   /// Either this or [canMatchRelative] or both will be true.
-  final bool canMatchRelative = true;
+  bool get canMatchRelative => true;
 
   AstNode._(this.caseSensitive);
 
@@ -86,14 +86,16 @@ class SequenceNode extends AstNode {
 
     return new OptionsNode(sequences.map((sequence) {
       // Combine any adjacent LiteralNodes in [sequence].
-      return new SequenceNode(sequence.fold([], (combined, node) {
+      return new SequenceNode(sequence.fold/*<List<AstNode>>*/([], (combined, node) {
         if (combined.isEmpty || combined.last is! LiteralNode ||
             node is! LiteralNode) {
           return combined..add(node);
         }
 
         combined[combined.length - 1] = new LiteralNode(
-            combined.last.text + node.text, caseSensitive: caseSensitive);
+            // TODO(nweiz): Avoid casting when sdk#25565 is fixed.
+            (combined.last as LiteralNode).text + (node as LiteralNode).text,
+            caseSensitive: caseSensitive);
         return combined;
       }), caseSensitive: caseSensitive);
     }), caseSensitive: caseSensitive);
@@ -111,10 +113,10 @@ class SequenceNode extends AstNode {
   /// [context] is used to determine what absolute roots look like for this
   /// glob.
   List<SequenceNode> split(p.Context context) {
-    var componentsToReturn = [];
-    var currentComponent;
+    var componentsToReturn = <SequenceNode>[];
+    List<AstNode> currentComponent;
 
-    addNode(node) {
+    addNode(AstNode node) {
       if (currentComponent == null) currentComponent = [];
       currentComponent.add(node);
     }
@@ -127,12 +129,19 @@ class SequenceNode extends AstNode {
     }
 
     for (var node in nodes) {
-      if (node is! LiteralNode || !node.text.contains('/')) {
+      if (node is! LiteralNode) {
         addNode(node);
         continue;
       }
 
-      var text = node.text;
+      // TODO(nweiz): Avoid casting when sdk#25565 is fixed.
+      var literal = node as LiteralNode;
+      if (!literal.text.contains('/')) {
+        addNode(literal);
+        continue;
+      }
+
+      var text = literal.text;
       if (context.style == p.Style.windows) text = text.replaceAll("/", "\\");
       var components = context.split(text);
 
@@ -167,7 +176,7 @@ class SequenceNode extends AstNode {
       // For the final component, only end its sequence (by adding a new empty
       // sequence) if it ends with a separator.
       addNode(new LiteralNode(components.last, caseSensitive: caseSensitive));
-      if (node.text.endsWith('/')) finishComponent();
+      if (literal.text.endsWith('/')) finishComponent();
     }
 
     finishComponent();

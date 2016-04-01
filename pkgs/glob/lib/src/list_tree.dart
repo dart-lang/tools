@@ -5,10 +5,10 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 
 import 'ast.dart';
-import 'stream_pool.dart';
 import 'utils.dart';
 
 /// The errno for a file or directory not existing on Mac and Linux.
@@ -97,7 +97,7 @@ class ListTree {
   }
 
   /// Add the glob represented by [components] to the tree under [root].
-  void _addGlob(String root, List<AstNode> components) {
+  void _addGlob(String root, List<SequenceNode> components) {
     // The first [parent] represents the root directory itself. It may be null
     // here if this is the first option with this particular [root]. If so,
     // we'll create it below.
@@ -170,19 +170,19 @@ class ListTree {
   /// List all entities that match this glob beneath [root].
   Stream<FileSystemEntity> list({String root, bool followLinks: true}) {
     if (root == null) root = '.';
-    var pool = new StreamPool();
+    var group = new StreamGroup<FileSystemEntity>();
     for (var rootDir in _trees.keys) {
       var dir = rootDir == '.' ? root : rootDir;
-      pool.add(_trees[rootDir].list(dir, followLinks: followLinks));
+      group.add(_trees[rootDir].list(dir, followLinks: followLinks));
     }
-    pool.closeWhenEmpty();
+    group.close();
 
-    if (!_canOverlap) return pool.stream;
+    if (!_canOverlap) return group.stream;
 
     // TODO(nweiz): Rather than filtering here, avoid double-listing directories
     // in the first place.
     var seen = new Set();
-    return pool.stream.where((entity) {
+    return group.stream.where((entity) {
       if (seen.contains(entity.path)) return false;
       seen.add(entity.path);
       return true;
@@ -193,7 +193,8 @@ class ListTree {
   List<FileSystemEntity> listSync({String root, bool followLinks: true}) {
     if (root == null) root = '.';
 
-    var result = _trees.keys.expand((rootDir) {
+    // TODO(nweiz): Remove the explicit annotation when sdk#26139 is fixed.
+    var result = _trees.keys.expand/*<FileSystemEntity>*/((rootDir) {
       var dir = rootDir == '.' ? root : rootDir;
       return _trees[rootDir].listSync(dir, followLinks: followLinks);
     });
@@ -202,7 +203,7 @@ class ListTree {
 
     // TODO(nweiz): Rather than filtering here, avoid double-listing directories
     // in the first place.
-    var seen = new Set();
+    var seen = new Set<String>();
     return result.where((entity) {
       if (seen.contains(entity.path)) return false;
       seen.add(entity.path);
@@ -317,21 +318,22 @@ class _ListTreeNode {
           .where((entity) => _matches(p.relative(entity.path, from: dir)));
     }
 
-    var resultPool = new StreamPool();
+    var resultGroup = new StreamGroup<FileSystemEntity>();
 
     // Don't spawn extra [Directory.list] calls when we already know exactly
     // which subdirectories we're interested in.
     if (_isIntermediate) {
       children.forEach((sequence, child) {
-        resultPool.add(child.list(p.join(dir, sequence.nodes.single.text),
+        resultGroup.add(child.list(
+            p.join(dir, (sequence.nodes.single as LiteralNode).text),
             followLinks: followLinks));
       });
-      resultPool.closeWhenEmpty();
-      return resultPool.stream;
+      resultGroup.close();
+      return resultGroup.stream;
     }
 
-    var resultController = new StreamController(sync: true);
-    resultPool.add(resultController.stream);
+    var resultController = new StreamController<FileSystemEntity>(sync: true);
+    resultGroup.add(resultController.stream);
     new Directory(dir).list(followLinks: followLinks).listen((entity) {
       var basename = p.relative(entity.path, from: dir);
       if (_matches(basename)) resultController.add(entity);
@@ -349,14 +351,16 @@ class _ListTreeNode {
               (error.osError.errorCode == _ENOENT ||
               error.osError.errorCode == _ENOENT_WIN);
         });
-        resultPool.add(stream);
+        resultGroup.add(stream);
       });
     },
         onError: resultController.addError,
-        onDone: resultController.close);
+        onDone: () {
+          resultController.close();
+          resultGroup.close();
+        });
 
-    resultPool.closeWhenEmpty();
-    return resultPool.stream;
+    return resultGroup.stream;
   }
 
   /// Synchronously lists all entities within [dir] matching this node or its
@@ -376,13 +380,14 @@ class _ListTreeNode {
     if (_isIntermediate) {
       return children.keys.expand((sequence) {
         return children[sequence].listSync(
-            p.join(dir, sequence.nodes.single.text), followLinks: followLinks);
+            p.join(dir, (sequence.nodes.single as LiteralNode).text),
+            followLinks: followLinks);
       });
     }
 
     return new Directory(dir).listSync(followLinks: followLinks)
         .expand((entity) {
-      var entities = [];
+      var entities = <FileSystemEntity>[];
       var basename = p.relative(entity.path, from: dir);
       if (_matches(basename)) entities.add(entity);
       if (entity is! Directory) return entities;
