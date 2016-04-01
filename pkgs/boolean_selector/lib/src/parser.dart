@@ -96,7 +96,7 @@ class Parser {
         return child;
 
       case TokenType.identifier:
-        return new VariableNode(token.name, token.span);
+        return new VariableNode((token as IdentifierToken).name, token.span);
 
       default:
         throw new SourceSpanFormatException("Expected expression.", token.span);
