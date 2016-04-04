@@ -106,18 +106,19 @@ class Pool {
   /// Future.
   ///
   /// The return value of [callback] is piped to the returned Future.
-  Future/*<T>*/ withResource/*<T>*/(/*=T*/ callback()) async {
+  Future/*<T>*/ withResource/*<T>*/(/*=T*/ callback()) {
     if (isClosed) {
       throw new StateError(
           "withResource() may not be called on a closed Pool.");
     }
 
-    var resource = await request();
-    try {
-      return await callback();
-    } finally {
-      resource.release();
-    }
+    // We can't use async/await here because we need to start the request
+    // synchronously in case the pool is closed immediately afterwards. Async
+    // functions have an asynchronous gap between calling and running the body,
+    // and [close] could be called during that gap. See #3.
+    return request().then((resource) {
+      return new Future.sync(callback).whenComplete(resource.release);
+    });
   }
 
   /// Closes the pool so that no more resources are requested.

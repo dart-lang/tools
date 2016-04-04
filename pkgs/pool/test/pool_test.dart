@@ -96,6 +96,13 @@ void main() {
         async.elapse(new Duration(seconds: 1));
       });
     });
+
+    // Regression test for #3.
+    test("can be called immediately before close()", () async {
+      var pool = new Pool(1);
+      pool.withResource(expectAsync(() {}));
+      await pool.close();
+    });
   });
 
   group("with a timeout", () {
@@ -276,7 +283,7 @@ void main() {
     test("disallows request() and withResource()", () {
       var pool = new Pool(1)..close();
       expect(pool.request, throwsStateError);
-      expect(pool.withResource(() {}), throwsStateError);
+      expect(() => pool.withResource(() {}), throwsStateError);
     });
 
     test("pending requests are fulfilled", () async {

@@ -1,3 +1,8 @@
+## 1.2.3
+
+* Fix a bug in which `Pool.withResource()` could throw a `StateError` when
+  called immediately before closing the pool.
+
 ## 1.2.2
 
 * Fix strong mode warnings and add generic method annotations.
