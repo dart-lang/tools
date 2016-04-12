@@ -11,8 +11,8 @@ import 'package:protobuf/protobuf.dart';
 
 class Input extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('Input')
-    ..a(1, 'path', PbFieldType.OS)
-    ..a(2, 'digest', PbFieldType.OY)
+    ..a/*<String>*/(1, 'path', PbFieldType.OS)
+    ..a/*<List<int>>*/(2, 'digest', PbFieldType.OY)
     ..hasRequiredFields = false;
 
   Input() : super();
@@ -55,8 +55,8 @@ class _ReadonlyInput extends Input with ReadonlyMessageMixin {}
 
 class WorkRequest extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('WorkRequest')
-    ..p(1, 'arguments', PbFieldType.PS)
-    ..pp(2, 'inputs', PbFieldType.PM, Input.$checkItem, Input.create)
+    ..p/*<String>*/(1, 'arguments', PbFieldType.PS)
+    ..pp/*<Input>*/(2, 'inputs', PbFieldType.PM, Input.$checkItem, Input.create)
     ..hasRequiredFields = false;
 
   WorkRequest() : super();
@@ -89,8 +89,8 @@ class _ReadonlyWorkRequest extends WorkRequest with ReadonlyMessageMixin {}
 
 class WorkResponse extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('WorkResponse')
-    ..a(1, 'exitCode', PbFieldType.O3)
-    ..a(2, 'output', PbFieldType.OS)
+    ..a/*<int>*/(1, 'exitCode', PbFieldType.O3)
+    ..a/*<String>*/(2, 'output', PbFieldType.OS)
     ..hasRequiredFields = false;
 
   WorkResponse() : super();

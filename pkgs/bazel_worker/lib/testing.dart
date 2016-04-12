@@ -40,10 +40,12 @@ class TestStdinStream implements Stdin {
   }
 
   @override
-  StreamSubscription listen(onData(List<int> bytes),
+  StreamSubscription<List<int>> listen(onData(List<int> bytes),
       {Function onError, void onDone(), bool cancelOnError}) {
     return _controller.stream.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+        onError: onError,
+        onDone: onDone,
+        cancelOnError: cancelOnError) as StreamSubscription<List<int>>;
   }
 
   @override

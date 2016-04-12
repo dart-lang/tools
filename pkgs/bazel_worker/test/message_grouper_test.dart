@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:test/test.dart';
 
@@ -12,15 +13,15 @@ import 'package:bazel_worker/testing.dart';
 
 void main() {
   group('AsyncMessageGrouper', () {
-    runTests((stdinStream) => new AsyncMessageGrouper(stdinStream));
+    runTests((Stdin stdinStream) => new AsyncMessageGrouper(stdinStream));
   });
 
   group('SyncMessageGrouper', () {
-    runTests((stdinStream) => new SyncMessageGrouper(stdinStream));
+    runTests((Stdin stdinStream) => new SyncMessageGrouper(stdinStream));
   });
 }
 
-void runTests(messageGrouperFactory) {
+void runTests(messageGrouperFactory(Stdin stdinStream)) {
   // AsyncMessageGrouper or SyncMessageGrouper
   var messageGrouper;
 
