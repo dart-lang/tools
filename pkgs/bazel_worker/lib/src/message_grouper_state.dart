@@ -4,6 +4,8 @@
 
 import 'dart:typed_data';
 
+import 'package:protobuf/protobuf.dart';
+
 /// State held by the [MessageGrouper] while waiting for additional data to
 /// arrive.
 class MessageGrouperState {
@@ -62,7 +64,7 @@ class _LengthReader {
   /// If [_done] is `true`, the decoded value of the length bytes received so
   /// far (if any).  If [_done] is `false`, the decoded length that was most
   /// recently received.
-  int _length = 0;
+  int _length;
 
   /// The length read in.  You are only allowed to read this if [_done] is
   /// `true`.
@@ -71,21 +73,18 @@ class _LengthReader {
     return _length;
   }
 
-  /// If [_done] is `true`, the amount by which the next received
-  /// length byte must be left-shifted; otherwise undefined.
-  int _lengthShift = 0;
+  final List<int> _buffer = <int>[];
 
   /// Read a single byte into [_length].
   void readByte(int byte) {
     assert(!_done);
+    _buffer.add(byte);
 
-    _length |= (byte & 0x7f) << _lengthShift;
-
-    // Check for the last byte in the length.
+    // Check for the last byte in the length, and then read it.
     if ((byte & 0x80) == 0) {
       _done = true;
-    } else {
-      _lengthShift += 7;
+      var reader = new CodedBufferReader(_buffer);
+      _length = reader.readInt32();
     }
   }
 }
