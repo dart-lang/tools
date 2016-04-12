@@ -22,7 +22,6 @@ abstract class SyncWorkerConnection {
 ///
 /// Extend this class and implement the `performRequest` method.
 abstract class SyncWorkerLoop {
-
   final SyncWorkerConnection connection;
 
   SyncWorkerLoop({SyncWorkerConnection connection})
