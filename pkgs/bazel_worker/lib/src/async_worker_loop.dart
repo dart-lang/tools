@@ -2,17 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'constants.dart';
-import 'sync_message_grouper.dart';
+import 'async_message_grouper.dart';
 import 'utils.dart';
 import 'worker_protocol.pb.dart';
 
 /// Connection between a worker and input / output.
-abstract class SyncWorkerConnection {
+abstract class AsyncWorkerConnection {
   /// Read a new [WorkRequest]. Returns [null] when there are no more requests.
-  WorkRequest readRequest();
+  Future<WorkRequest> readRequest();
 
   /// Write the given [response] as bytes to the output.
   void writeResponse(WorkResponse response);
@@ -21,24 +22,24 @@ abstract class SyncWorkerConnection {
 /// Persistent Bazel worker loop.
 ///
 /// Extend this class and implement the `performRequest` method.
-abstract class SyncWorkerLoop {
+abstract class AsyncWorkerLoop {
+  final AsyncWorkerConnection connection;
 
-  final SyncWorkerConnection connection;
-
-  SyncWorkerLoop({SyncWorkerConnection connection})
-      : this.connection = connection ?? new StdSyncWorkerConnection();
+  AsyncWorkerLoop({AsyncWorkerConnection connection})
+      : this.connection = connection ?? new StdAsyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
-  WorkResponse performRequest(WorkRequest request);
+  Future<WorkResponse> performRequest(WorkRequest request);
 
-  /// Run the worker loop. Blocks until [connection#readRequest] returns `null`.
-  void run() {
+  /// Run the worker loop. The returned [Future] doesn't complete until
+  /// [connection#readRequest] returns `null`.
+  Future run() async {
     while (true) {
       WorkResponse response;
       try {
-        var request = connection.readRequest();
+        var request = await connection.readRequest();
         if (request == null) break;
-        response = performRequest(request);
+        response = await performRequest(request);
         // In case they forget to set this.
         response.exitCode ??= EXIT_CODE_OK;
       } catch (e, s) {
@@ -52,19 +53,20 @@ abstract class SyncWorkerLoop {
   }
 }
 
-/// Default implementation of [SyncWorkerConnection] that works with [Stdin] and
-/// [Stdout].
-class StdSyncWorkerConnection implements SyncWorkerConnection {
-  final SyncMessageGrouper _messageGrouper;
-  final Stdout _stdoutStream;
+/// Default implementation of [AsyncWorkerConnection] that works with [Stdin]
+/// and [Stdout].
+class StdAsyncWorkerConnection implements AsyncWorkerConnection {
+  final AsyncMessageGrouper _messageGrouper;
+  final StreamSink<List<int>> _outputStream;
 
-  StdSyncWorkerConnection({Stdin stdinStream, Stdout stdoutStream})
-      : _messageGrouper = new SyncMessageGrouper(stdinStream ?? stdin),
-        _stdoutStream = stdoutStream ?? stdout;
+  StdAsyncWorkerConnection(
+      {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
+      : _messageGrouper = new AsyncMessageGrouper(inputStream ?? stdin),
+        _outputStream = outputStream ?? stdout;
 
   @override
-  WorkRequest readRequest() {
-    var buffer = _messageGrouper.next;
+  Future<WorkRequest> readRequest() async {
+    var buffer = await _messageGrouper.next;
     if (buffer == null) return null;
 
     return new WorkRequest.fromBuffer(buffer);
@@ -72,6 +74,6 @@ class StdSyncWorkerConnection implements SyncWorkerConnection {
 
   @override
   void writeResponse(WorkResponse response) {
-    _stdoutStream.add(protoToDelimitedBuffer(response));
+    _outputStream.add(protoToDelimitedBuffer(response));
   }
 }

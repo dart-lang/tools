@@ -6,18 +6,7 @@ import 'dart:io';
 
 import 'message_grouper_state.dart';
 
-/// Groups stdin input into messages by interpreting it as
-/// base-128 encoded lengths interleaved with raw data.
-///
-/// The base-128 encoding is in little-endian order, with the high bit set on
-/// all bytes but the last.  This was chosen since it's the same as the
-/// base-128 encoding used by protobufs, so it allows a modest amount of code
-/// reuse at the other end of the protocol.
-///
-/// Possible future improvements to consider (should a debugging need arise):
-/// - Put a magic number at the beginning of the stream.
-/// - Use a guard byte between messages to sanity check that the encoder and
-///   decoder agree on the encoding of lengths.
+/// Groups bytes in delimited proto format into the bytes for each message.
 class SyncMessageGrouper {
   final _state = new MessageGrouperState();
   final Stdin _stdin;
