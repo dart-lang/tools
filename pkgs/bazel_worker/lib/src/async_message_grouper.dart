@@ -7,11 +7,12 @@ import 'dart:collection';
 
 import 'package:async/async.dart';
 
+import 'message_grouper.dart';
 import 'message_grouper_state.dart';
 
 /// Collects stream data into messages by interpreting it as
 /// base-128 encoded lengths interleaved with raw data.
-class AsyncMessageGrouper {
+class AsyncMessageGrouper implements MessageGrouper {
   /// Current state for reading in messages;
   final _state = new MessageGrouperState();
 

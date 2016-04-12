@@ -4,5 +4,8 @@
 
 export 'src/async_worker_loop.dart';
 export 'src/constants.dart';
+export 'src/message_grouper.dart';
 export 'src/sync_worker_loop.dart';
+export 'src/worker_connection.dart';
+export 'src/worker_loop.dart';
 export 'src/worker_protocol.pb.dart';

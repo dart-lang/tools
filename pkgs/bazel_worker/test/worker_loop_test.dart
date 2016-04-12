@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -13,6 +12,7 @@ import 'package:bazel_worker/testing.dart';
 void main() {
   group('SyncWorkerLoop', () {
     runTests(
+        () => new TestStdinSync(),
         (Stdin stdinStream, Stdout stdoutStream) =>
             new TestSyncWorkerConnection(stdinStream, stdoutStream),
         (TestSyncWorkerConnection connection) =>
@@ -21,24 +21,25 @@ void main() {
 
   group('AsyncWorkerLoop', () {
     runTests(
-        (Stream<List<int>> stdinStream, StreamSink<List<int>> stdoutStream) =>
+        () => new TestStdinAsync(),
+        (Stdin stdinStream, Stdout stdoutStream) =>
             new TestAsyncWorkerConnection(stdinStream, stdoutStream),
         (TestAsyncWorkerConnection connection) =>
             new TestAsyncWorkerLoop(connection));
   });
 }
 
-void runTests(
-    workerConnectionFactory(stdin, stdout), workerLoopFactory(connection)) {
-  TestStdinStream stdinStream;
+void runTests/*<T extends TestWorkerConnection>*/(
+    TestStdin stdinFactory(),
+    /*=T*/ workerConnectionFactory(Stdin stdin, Stdout stdout),
+    TestWorkerLoop workerLoopFactory(/*=T*/ connection)) {
+  TestStdin stdinStream;
   TestStdoutStream stdoutStream;
-  // TestSyncWorkerConnection or TestAsyncWorkerConnection
-  var connection;
-  // TestSyncWorkerLoop or TestAsyncWorkerLoop
-  var workerLoop;
+  var /*=T*/ connection;
+  TestWorkerLoop workerLoop;
 
   setUp(() {
-    stdinStream = new TestStdinStream();
+    stdinStream = stdinFactory();
     stdoutStream = new TestStdoutStream();
     connection = workerConnectionFactory(stdinStream, stdoutStream);
     workerLoop = workerLoopFactory(connection);

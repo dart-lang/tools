@@ -9,26 +9,29 @@ import 'package:test/test.dart';
 
 import 'package:bazel_worker/src/async_message_grouper.dart';
 import 'package:bazel_worker/src/sync_message_grouper.dart';
+import 'package:bazel_worker/bazel_worker.dart';
 import 'package:bazel_worker/testing.dart';
 
 void main() {
   group('AsyncMessageGrouper', () {
-    runTests((Stdin stdinStream) => new AsyncMessageGrouper(stdinStream));
+    runTests(() => new TestStdinAsync(),
+        (Stdin stdinStream) => new AsyncMessageGrouper(stdinStream));
   });
 
   group('SyncMessageGrouper', () {
-    runTests((Stdin stdinStream) => new SyncMessageGrouper(stdinStream));
+    runTests(() => new TestStdinSync(),
+        (Stdin stdinStream) => new SyncMessageGrouper(stdinStream));
   });
 }
 
-void runTests(messageGrouperFactory(Stdin stdinStream)) {
-  // AsyncMessageGrouper or SyncMessageGrouper
-  var messageGrouper;
+void runTests(TestStdin stdinFactory(),
+    MessageGrouper messageGrouperFactory(Stdin stdinStream)) {
+  MessageGrouper messageGrouper;
 
-  TestStdinStream stdinStream;
+  TestStdin stdinStream;
 
   setUp(() {
-    stdinStream = new TestStdinStream();
+    stdinStream = stdinFactory();
     messageGrouper = messageGrouperFactory(stdinStream);
   });
 

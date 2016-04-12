@@ -8,10 +8,12 @@ import 'dart:io';
 import 'constants.dart';
 import 'async_message_grouper.dart';
 import 'utils.dart';
+import 'worker_connection.dart';
+import 'worker_loop.dart';
 import 'worker_protocol.pb.dart';
 
 /// Connection between a worker and input / output.
-abstract class AsyncWorkerConnection {
+abstract class AsyncWorkerConnection implements WorkerConnection {
   /// Read a new [WorkRequest]. Returns [null] when there are no more requests.
   Future<WorkRequest> readRequest();
 
@@ -22,7 +24,7 @@ abstract class AsyncWorkerConnection {
 /// Persistent Bazel worker loop.
 ///
 /// Extend this class and implement the `performRequest` method.
-abstract class AsyncWorkerLoop {
+abstract class AsyncWorkerLoop implements WorkerLoop {
   final AsyncWorkerConnection connection;
 
   AsyncWorkerLoop({AsyncWorkerConnection connection})

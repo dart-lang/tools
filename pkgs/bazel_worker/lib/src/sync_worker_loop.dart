@@ -7,10 +7,12 @@ import 'dart:io';
 import 'constants.dart';
 import 'sync_message_grouper.dart';
 import 'utils.dart';
+import 'worker_connection.dart';
+import 'worker_loop.dart';
 import 'worker_protocol.pb.dart';
 
 /// Connection between a worker and input / output.
-abstract class SyncWorkerConnection {
+abstract class SyncWorkerConnection implements WorkerConnection {
   /// Read a new [WorkRequest]. Returns [null] when there are no more requests.
   WorkRequest readRequest();
 
@@ -21,7 +23,7 @@ abstract class SyncWorkerConnection {
 /// Persistent Bazel worker loop.
 ///
 /// Extend this class and implement the `performRequest` method.
-abstract class SyncWorkerLoop {
+abstract class SyncWorkerLoop implements WorkerLoop {
   final SyncWorkerConnection connection;
 
   SyncWorkerLoop({SyncWorkerConnection connection})

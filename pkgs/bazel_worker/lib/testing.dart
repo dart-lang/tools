@@ -10,33 +10,54 @@ import 'package:bazel_worker/bazel_worker.dart';
 
 export 'src/utils.dart' show protoToDelimitedBuffer;
 
-/// A [Stdin] mock object.
-///
-/// Note: When using this with an [AsyncWorkerLoop] you must call [close] in
-/// order for the loop to exit properly.
-class TestStdinStream implements Stdin {
+/// Interface for a mock [Stdin] object that allows you to add bytes manually.
+abstract class TestStdin implements Stdin {
+  void addInputBytes(List<int> bytes);
+
+  void close();
+}
+
+/// A [Stdin] mock object which only implements `readByteSync`.
+class TestStdinSync implements TestStdin {
   /// Pending bytes to be delivered synchronously.
   final Queue<int> pendingBytes = new Queue<int>();
 
+  /// Adds all the [bytes] to this stream.
+  void addInputBytes(List<int> bytes) {
+    pendingBytes.addAll(bytes);
+  }
+
+  /// Add a -1 to signal EOF.
+  void close() {
+    pendingBytes.add(-1);
+  }
+
+  @override
+  int readByteSync() {
+    return pendingBytes.removeFirst();
+  }
+
+  @override
+  void noSuchMethod(Invocation invocation) {
+    throw new StateError('Unexpected invocation ${invocation.memberName}.');
+  }
+}
+
+/// A mock [Stdin] object which only implements `listen`.
+///
+/// Note: You must call [close] in order for the loop to exit properly.
+class TestStdinAsync implements TestStdin {
   /// Controls the stream for async delivery of bytes.
   final StreamController _controller = new StreamController();
 
   /// Adds all the [bytes] to this stream.
   void addInputBytes(List<int> bytes) {
-    pendingBytes.addAll(bytes);
     _controller.add(bytes);
   }
 
   /// Closes this stream. This is necessary for the [AsyncWorkerLoop] to exit.
-  Future close() => _controller.close();
-
-  @override
-  int readByteSync() {
-    if (pendingBytes.isEmpty) {
-      return -1;
-    } else {
-      return pendingBytes.removeFirst();
-    }
+  void close() {
+    _controller.close();
   }
 
   @override
@@ -69,8 +90,19 @@ class TestStdoutStream implements Stdout {
   }
 }
 
+/// Interface for a [TestWorkerConnection] which records its responses
+abstract class TestWorkerConnection implements WorkerConnection {
+  List<WorkResponse> get responses;
+}
+
+/// Interface for a [TestWorkerLoop] which allows you to enqueue responses.
+abstract class TestWorkerLoop implements WorkerLoop {
+  void enqueueResponse(WorkResponse response);
+}
+
 /// A [StdSyncWorkerConnection] which records its responses.
-class TestSyncWorkerConnection extends StdSyncWorkerConnection {
+class TestSyncWorkerConnection extends StdSyncWorkerConnection
+    implements TestWorkerConnection {
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestSyncWorkerConnection(Stdin stdinStream, Stdout stdoutStream)
@@ -84,7 +116,7 @@ class TestSyncWorkerConnection extends StdSyncWorkerConnection {
 }
 
 /// A [SyncWorkerLoop] for testing.
-class TestSyncWorkerLoop extends SyncWorkerLoop {
+class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   final List<WorkRequest> requests = <WorkRequest>[];
   final Queue<WorkResponse> _responses = new Queue<WorkResponse>();
 
@@ -106,7 +138,8 @@ class TestSyncWorkerLoop extends SyncWorkerLoop {
 }
 
 /// A [StdAsyncWorkerConnection] which records its responses.
-class TestAsyncWorkerConnection extends StdAsyncWorkerConnection {
+class TestAsyncWorkerConnection extends StdAsyncWorkerConnection
+    implements TestWorkerConnection {
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestAsyncWorkerConnection(
@@ -121,7 +154,7 @@ class TestAsyncWorkerConnection extends StdAsyncWorkerConnection {
 }
 
 /// A [AsyncWorkerLoop] for testing.
-class TestAsyncWorkerLoop extends AsyncWorkerLoop {
+class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   final List<WorkRequest> requests = <WorkRequest>[];
   final Queue<WorkResponse> _responses = new Queue<WorkResponse>();
 
