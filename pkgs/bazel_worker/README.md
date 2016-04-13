@@ -38,7 +38,7 @@ void main() {
   new AsyncSimpleWorker().run();
 }
 
-class AsyncSimpleWorker extends SyncWorkerLoop {
+class AsyncSimpleWorker extends AsyncWorkerLoop {
   /// Must return a [Future<WorkResponse>], since this is an
   /// [AsyncWorkerLoop].
   Future<WorkResponse> performRequest(WorkRequest request) async {
