@@ -1,3 +1,8 @@
+## 2.0.1
+
+* Fix a race condition in which a `StateError` could be top-leveled if
+  `Peer.close()` was called before the underlying channel closed.
+
 ## 2.0.0
 
 * **Breaking change:** all constructors now take a `StreamChannel` rather than a

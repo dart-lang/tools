@@ -56,7 +56,9 @@ class ChannelManager {
           _doneCompleter.completeError(error, stackTrace);
           _channel.sink.close();
         },
-        onDone: _doneCompleter.complete,
+        onDone: () {
+          if (!_doneCompleter.isCompleted) _doneCompleter.complete();
+        },
         cancelOnError: true);
 
     return done;
