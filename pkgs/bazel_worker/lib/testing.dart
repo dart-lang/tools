@@ -8,6 +8,8 @@ import 'dart:io';
 
 import 'package:bazel_worker/bazel_worker.dart';
 
+export 'src/async_message_grouper.dart';
+export 'src/sync_message_grouper.dart';
 export 'src/utils.dart' show protoToDelimitedBuffer;
 
 /// Interface for a mock [Stdin] object that allows you to add bytes manually.
