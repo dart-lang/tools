@@ -13,7 +13,7 @@ import 'testing.dart';
  * Test for unsupported font-weights values of bolder, lighter and inherit.
  */
 void testUnsupportedFontWeights() {
-  var errors = [];
+  var errors = <Message>[];
 
   // TODO(terry): Need to support bolder.
   // font-weight value bolder.
@@ -70,7 +70,7 @@ error on line 1, column 24: Unknown property value inherit
  * inherit.
  */
 void testUnsupportedLineHeights() {
-  var errors = [];
+  var errors = <Message>[];
 
   // line-height value in percentge unit.
   var input = ".foobar { line-height: 120%; }";
@@ -122,7 +122,7 @@ error on line 1, column 24: Unknown property value inherit
 
 /** Test for bad selectors. */
 void testBadSelectors() {
-  var errors = [];
+  var errors = <Message>[];
 
   // Invalid id selector.
   var input = "# foo { color: #ff00ff; }";
@@ -157,7 +157,7 @@ error on line 1, column 1: Not a valid class selector expected .className
 
 /** Test for bad hex values. */
 void testBadHexValues() {
-  var errors = [];
+  var errors = <Message>[];
 
   // Invalid hex value.
   var input = ".foobar { color: #AH787; }";
@@ -227,7 +227,7 @@ error on line 1, column 18: Expected hex number
 }
 
 void testBadUnicode() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = '''
 @font-face {
   src: url(fonts/BBCBengali.ttf) format("opentype");
@@ -259,7 +259,7 @@ void testBadUnicode() {
 }
 
 void testBadNesting() {
-  var errors = [];
+  var errors = <Message>[];
 
   // Test for bad declaration in a nested rule.
   final String input = '''

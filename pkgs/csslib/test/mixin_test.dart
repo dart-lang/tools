@@ -4,12 +4,13 @@
 
 library mixin_test;
 
+import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
 
 import 'testing.dart';
 
 compileAndValidate(String input, String generated) {
-  var errors = [];
+  var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -17,7 +18,7 @@ compileAndValidate(String input, String generated) {
 }
 
 compilePolyfillAndValidate(String input, String generated) {
-  var errors = [];
+  var errors = <Message>[];
   var stylesheet = polyFillCompileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -413,7 +414,7 @@ void mixinManyArgs() {
 }
 
 void badDeclarationInclude() {
-  final errors = [];
+  final errors = <Message>[];
   final input = r'''
 @mixin a {
   #foo-id {
@@ -441,7 +442,7 @@ void badDeclarationInclude() {
 }
 
 void badTopInclude() {
-  final errors = [];
+  final errors = <Message>[];
   final input = r'''
 @mixin b {
   color: red;
@@ -467,7 +468,7 @@ void badTopInclude() {
 }
 
 void emptyMixin() {
-  final errors = [];
+  final errors = <Message>[];
   final input = r'''
 @mixin a {
 }
@@ -492,7 +493,7 @@ div {
 }
 
 void undefinedTopLevel() {
-  final errors = [];
+  final errors = <Message>[];
   final input = r'''
 @mixin a {
   @include b;
@@ -520,7 +521,7 @@ void undefinedTopLevel() {
 }
 
 void undefinedDeclaration() {
-  final errors = [];
+  final errors = <Message>[];
   final input = r'''
 @mixin a {
   @include b;
@@ -578,7 +579,7 @@ foo {
   color: #f00;
 }''');
 
-  var errors = [];
+  var errors = <Message>[];
   var input = r'''
 @mixin a {
   foo { color: red }

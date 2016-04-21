@@ -5,12 +5,13 @@
 library selector_test;
 
 import 'package:csslib/parser.dart';
+import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
 
 import 'testing.dart';
 
 void testSelectorSuccesses() {
-  var errors = [];
+  var errors = <Message>[];
   var selectorAst = selector('#div .foo', errors: errors);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect('#div .foo', compactOuptut(selectorAst));
@@ -50,7 +51,7 @@ void testSelectorSuccesses() {
 // TODO(terry): Move this failure case to a failure_test.dart when the analyzer
 //              and validator exit then they'll be a bunch more checks.
 void testSelectorFailures() {
-  var errors = [];
+  var errors = <Message>[];
 
   // Test for invalid class name (can't start with number).
   selector('.foobar .1a-story .xyzzy', errors: errors);

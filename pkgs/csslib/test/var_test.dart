@@ -4,12 +4,13 @@
 
 library var_test;
 
+import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
 
 import 'testing.dart';
 
 compileAndValidate(String input, String generated) {
-  var errors = [];
+  var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -17,7 +18,7 @@ compileAndValidate(String input, String generated) {
 }
 
 compilePolyfillAndValidate(String input, String generated) {
-  var errors = [];
+  var errors = <Message>[];
   var stylesheet = polyFillCompileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -340,7 +341,7 @@ div {
 }
 
 void undefinedVars() {
-  final errors = [];
+  final errors = <Message>[];
   final input = ''':root {
   var-color-background: red;
   var-color-foreground: blue;
@@ -622,7 +623,7 @@ parserVar() {
 }
 
 testVar() {
-  final errors = [];
+  final errors = <Message>[];
   final input = '''
 @color-background: red;
 @color-foreground: blue;
@@ -676,7 +677,7 @@ var-color-foreground: #00f;
 }
 
 testLess() {
-  final errors = [];
+  final errors = <Message>[];
   final input = '''
 @color-background: red;
 @color-foreground: blue;
@@ -772,7 +773,7 @@ void testIndirects() {
 }
 
 void includes() {
-  var errors = [];
+  var errors = <Message>[];
   var file1Input = r'''
 :root {
   var-redef: #0f0;

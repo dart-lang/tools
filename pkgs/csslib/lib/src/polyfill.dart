@@ -170,7 +170,7 @@ class _VarDefAndUsage extends Visitor {
   }
 
   List<Expression> resolveUsageTerminal(VarUsage usage) {
-    var result = [];
+    var result = <Expression>[];
 
     var varDef = _knownVarDefs[usage.name];
     var expressions;

@@ -4,12 +4,14 @@
 
 library declaration_test;
 
+import 'package:csslib/src/messages.dart';
+import 'package:csslib/visitor.dart';
 import 'package:test/test.dart';
 
 import 'testing.dart';
 
 void testSimpleTerms() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 @ import url("test.css");
 .foo {
@@ -64,7 +66,7 @@ void testSimpleTerms() {
  * no quotes.  Hex values with # and letters, and functions (rgba, url, etc.)
  */
 void testDeclarations() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 .more {
   color: white;
@@ -102,7 +104,7 @@ void testDeclarations() {
 }
 
 void testIdentifiers() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 #da {
   height: 100px;
@@ -129,7 +131,7 @@ void testIdentifiers() {
 }
 
 void testComposites() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 .xyzzy {
   border: 10px 80px 90px 100px;
@@ -158,7 +160,7 @@ void testComposites() {
 }
 
 void testUnits() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 #id-1 {
   transition: color 0.4s;
@@ -242,7 +244,7 @@ void testUnits() {
 }
 
 void testUnicode() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 .toggle:after {
   content: '✔';
@@ -270,7 +272,7 @@ void testUnicode() {
 }
 
 void testNewerCss() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 @media screen,print {
   .foobar_screen {
@@ -317,7 +319,7 @@ void testNewerCss() {
 }
 
 void testMediaQueries() {
-  var errors = [];
+  var errors = <Message>[];
   String input = '''
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   .todo-item .toggle {
@@ -435,7 +437,7 @@ void testMediaQueries() {
 }
 
 void testFontFace() {
-  var errors = [];
+  var errors = <Message>[];
 
   final String input = '''
 @font-face {
@@ -527,7 +529,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
 }
 
 void testCssFile() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 @import 'simple.css'
 @import "test.css" print
@@ -591,7 +593,7 @@ div[href^='test'] {
 }
 
 void testCompactEmitter() {
-  var errors = [];
+  var errors = <Message>[];
 
   // Check !import compactly emitted.
   final String input = r'''
@@ -619,7 +621,7 @@ div {
 }
 
 void testNotSelectors() {
-  var errors = [];
+  var errors = <Message>[];
 
   final String input = r'''
 .details:not(.open-details) x-element,
@@ -709,7 +711,7 @@ html|*:not(:link):not(:visited) {
 }
 
 void testIE() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = ".test {\n"
       "  filter: progid:DXImageTransform.Microsoft.gradient"
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
@@ -785,7 +787,7 @@ div {
  *        background: red\9;
  */
 void testIEDeclaration() {
-  var errors = [];
+  var errors = <Message>[];
 
   final input = '''
 .testIE-6 {
@@ -951,7 +953,7 @@ input.search-query {
 }
 
 void testHangs() {
-  var errors = [];
+  var errors = <Message>[];
 
   // Bad hexvalue had caused a hang in processTerm.
   final input = r'''#a { color: #ebebeburl(0/IE8+9+); }''';
@@ -1008,36 +1010,48 @@ void testHangs() {
 void testExpressionSpans() {
   final input = r'''.foo { width: 50px; }''';
   var stylesheet = parseCss(input);
-  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  var decl = (stylesheet.topLevels.single as RuleSet)
+      .declarationGroup
+      .declarations
+      .single;
   // This passes
   expect(decl.span.text, 'width: 50px');
   // This currently fails
-  expect(decl.expression.span.text, '50px');
+  expect((decl as Declaration).expression.span.text, '50px');
 }
 
 void simpleCalc() {
   final input = r'''.foo { height: calc(100% - 55px); }''';
   var stylesheet = parseCss(input);
-  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  var decl = (stylesheet.topLevels.single as RuleSet)
+      .declarationGroup
+      .declarations
+      .single;
   expect(decl.span.text, 'height: calc(100% - 55px)');
 }
 
 void complexCalc() {
   final input = r'''.foo { left: calc((100%/3 - 2) * 1em - 2 * 1px); }''';
   var stylesheet = parseCss(input);
-  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  var decl = (stylesheet.topLevels.single as RuleSet)
+      .declarationGroup
+      .declarations
+      .single;
   expect(decl.span.text, 'left: calc((100%/3 - 2) * 1em - 2 * 1px)');
 }
 
 void twoCalcs() {
   final input = r'''.foo { margin: calc(1rem - 2px) calc(1rem - 1px); }''';
   var stylesheet = parseCss(input);
-  var decl = stylesheet.topLevels.single.declarationGroup.declarations.single;
+  var decl = (stylesheet.topLevels.single as RuleSet)
+      .declarationGroup
+      .declarations
+      .single;
   expect(decl.span.text, 'margin: calc(1rem - 2px) calc(1rem - 1px)');
 }
 
 void selectorWithCalcs() {
-  var errors = [];
+  var errors = <Message>[];
   final String input = r'''
 .foo {
   width: calc(1em + 5 * 2em);
@@ -1079,7 +1093,7 @@ main() {
   test('Hanging bugs', testHangs);
   test('Expression spans', testExpressionSpans,
       skip: 'expression spans are broken'
-            ' (https://github.com/dart-lang/csslib/issues/15)');
+          ' (https://github.com/dart-lang/csslib/issues/15)');
   group('calc function', () {
     test('simple calc', simpleCalc);
     test('single complex', complexCalc);
@@ -1087,4 +1101,3 @@ main() {
     test('selector with many calc declarations', selectorWithCalcs);
   });
 }
-

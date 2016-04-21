@@ -4,12 +4,13 @@
 
 library nested_test;
 
+import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
 
 import 'testing.dart';
 
 compileAndValidate(String input, String generated) {
-  var errors = [];
+  var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: simpleOptions);
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());

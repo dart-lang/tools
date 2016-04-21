@@ -1,3 +1,11 @@
+## 0.13.0
+
+ * **BREAKING** Fix all [strong mode][] errors and warnings.
+   This involved adding more precise on some public APIs, which
+   is why it may break users.
+ 
+[strong mode]: https://github.com/dart-lang/dev_compiler/blob/master/STRONG_MODE.md
+
 ## 0.12.2
 
  * Fix to handle calc functions however, the expressions are treated as a

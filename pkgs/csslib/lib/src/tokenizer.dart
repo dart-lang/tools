@@ -260,7 +260,7 @@ class Tokenizer extends TokenizerBase {
   Token finishIdentifier() {
     // If we encounter an escape sequence, remember it so we can post-process
     // to unescape.
-    var chars = [];
+    var chars = <int>[];
 
     // backup so we can start with the first character
     int validateFrom = _index;

@@ -7,11 +7,12 @@ library compiler_test;
 import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:csslib/parser.dart';
+import 'package:csslib/src/messages.dart';
 import 'package:csslib/visitor.dart';
 import 'testing.dart';
 
 void testClass() {
-  var errors = [];
+  var errors = <Message>[];
   var input = ".foobar {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -24,7 +25,7 @@ void testClass() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
 
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -37,7 +38,7 @@ void testClass() {
 }
 
 void testClass2() {
-  var errors = [];
+  var errors = <Message>[];
   var input = ".foobar .bar .no-story {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -49,7 +50,7 @@ void testClass2() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -73,7 +74,7 @@ void testClass2() {
 }
 
 void testId() {
-  var errors = [];
+  var errors = <Message>[];
   var input = "#elemId {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -85,7 +86,7 @@ void testId() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -99,7 +100,7 @@ void testId() {
 }
 
 void testElement() {
-  var errors = [];
+  var errors = <Message>[];
   var input = "div {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -111,7 +112,7 @@ void testElement() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -160,7 +161,7 @@ void testElement() {
 }
 
 void testNamespace() {
-  var errors = [];
+  var errors = <Message>[];
   var input = "ns1|div {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -172,15 +173,15 @@ void testNamespace() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
   var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 1);
-  var simpSelector = simpleSeqs[0].simpleSelector;
-  expect(simpSelector is NamespaceSelector, true);
+  expect(simpleSeqs[0].simpleSelector is NamespaceSelector, true);
+  var simpSelector = simpleSeqs[0].simpleSelector as NamespaceSelector;
   expect(simpleSeqs[0].isCombinatorNone, true);
   expect(simpSelector.isNamespaceWildcard, false);
   expect(simpSelector.namespace, "ns1");
@@ -191,7 +192,7 @@ void testNamespace() {
 }
 
 void testNamespace2() {
-  var errors = [];
+  var errors = <Message>[];
   var input = "ns1|div div ns2|span .foobar {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -203,7 +204,7 @@ void testNamespace2() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -211,8 +212,8 @@ void testNamespace2() {
 
   expect(simpleSeqs.length, 4);
 
-  var simpSelector0 = simpleSeqs[0].simpleSelector;
-  expect(simpSelector0 is NamespaceSelector, true);
+  expect(simpleSeqs[0].simpleSelector is NamespaceSelector, true);
+  var simpSelector0 = simpleSeqs[0].simpleSelector as NamespaceSelector;
   expect(simpleSeqs[0].isCombinatorNone, true);
   expect(simpSelector0.namespace, "ns1");
   var elementSelector0 = simpSelector0.nameAsSimpleSelector;
@@ -225,8 +226,8 @@ void testNamespace2() {
   expect(simpleSeqs[1].isCombinatorDescendant, true);
   expect(simpSelector1.name, "div");
 
-  var simpSelector2 = simpleSeqs[2].simpleSelector;
-  expect(simpSelector2 is NamespaceSelector, true);
+  expect(simpleSeqs[2].simpleSelector is NamespaceSelector, true);
+  var simpSelector2 = simpleSeqs[2].simpleSelector as NamespaceSelector;
   expect(simpleSeqs[2].isCombinatorDescendant, true);
   expect(simpSelector2.namespace, "ns2");
   var elementSelector2 = simpSelector2.nameAsSimpleSelector;
@@ -241,7 +242,7 @@ void testNamespace2() {
 }
 
 void testSelectorGroups() {
-  var errors = [];
+  var errors = <Message>[];
   var input =
       "div, .foobar ,#elemId, .xyzzy .test, ns1|div div #elemId .foobar {}";
   var stylesheet = parseCss(input, errors: errors);
@@ -254,7 +255,7 @@ void testSelectorGroups() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 5);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -301,8 +302,8 @@ void testSelectorGroups() {
   expect(groupSelector4.simpleSelectorSequences.length, 4);
 
   var selector40 = groupSelector4.simpleSelectorSequences[0];
-  var simpleSelector40 = selector40.simpleSelector;
-  expect(simpleSelector40 is NamespaceSelector, true);
+  expect(selector40.simpleSelector is NamespaceSelector, true);
+  var simpleSelector40 = selector40.simpleSelector as NamespaceSelector;
   expect(selector40.isCombinatorNone, true);
   expect(simpleSelector40.namespace, "ns1");
   var elementSelector = simpleSelector40.nameAsSimpleSelector;
@@ -329,7 +330,7 @@ void testSelectorGroups() {
 }
 
 void testCombinator() {
-  var errors = [];
+  var errors = <Message>[];
   var input = ".foobar > .bar + .no-story ~ myNs|div #elemId {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -341,7 +342,7 @@ void testCombinator() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -368,8 +369,8 @@ void testCombinator() {
   expect(simpleSelector2.name, "no-story");
 
   var selector3 = simpleSeqs[3];
-  var simpleSelector3 = selector3.simpleSelector;
-  expect(simpleSelector3 is NamespaceSelector, true);
+  expect(selector3.simpleSelector is NamespaceSelector, true);
+  var simpleSelector3 = selector3.simpleSelector as NamespaceSelector;
   expect(selector3.isCombinatorTilde, true);
   expect(simpleSelector3.namespace, "myNs");
   var elementSelector = simpleSelector3.nameAsSimpleSelector;
@@ -385,7 +386,7 @@ void testCombinator() {
 }
 
 void testWildcard() {
-  var errors = [];
+  var errors = <Message>[];
   var input = "* {}";
   var stylesheet = parseCss(input, errors: errors);
 
@@ -397,7 +398,7 @@ void testWildcard() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  var ruleset = stylesheet.topLevels[0];
+  var ruleset = stylesheet.topLevels[0] as RuleSet;
   expect(ruleset.selectorGroup.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
@@ -429,12 +430,14 @@ void testWildcard() {
 
   expect(simpleSeqs.length, 2);
 
-  var selector0 = simpleSeqs[0];
-  var simpleSelector0 = selector0.simpleSelector;
-  expect(simpleSelector0 is ElementSelector, true);
-  expect(selector0.isCombinatorNone, true);
-  expect(simpleSelector0.isWildcard, true);
-  expect(simpleSelector0.name, "*");
+  {
+    var selector0 = simpleSeqs[0];
+    var simpleSelector0 = selector0.simpleSelector;
+    expect(simpleSelector0 is ElementSelector, true);
+    expect(selector0.isCombinatorNone, true);
+    expect(simpleSelector0.isWildcard, true);
+    expect(simpleSelector0.name, "*");
+  }
 
   var selector1 = simpleSeqs[1];
   var simpleSelector1 = selector1.simpleSelector;
@@ -461,15 +464,17 @@ void testWildcard() {
 
   expect(simpleSeqs.length, 2);
 
-  selector0 = simpleSeqs[0];
-  simpleSelector0 = selector0.simpleSelector;
-  expect(simpleSelector0 is NamespaceSelector, true);
-  expect(selector0.isCombinatorNone, true);
-  expect(simpleSelector0.isNamespaceWildcard, false);
-  var elementSelector = simpleSelector0.nameAsSimpleSelector;
-  expect("myNs", simpleSelector0.namespace);
-  expect(elementSelector.isWildcard, true);
-  expect("*", elementSelector.name);
+  {
+    var selector0 = simpleSeqs[0];
+    expect(selector0.simpleSelector is NamespaceSelector, true);
+    var simpleSelector0 = selector0.simpleSelector as NamespaceSelector;
+    expect(selector0.isCombinatorNone, true);
+    expect(simpleSelector0.isNamespaceWildcard, false);
+    var elementSelector = simpleSelector0.nameAsSimpleSelector;
+    expect("myNs", simpleSelector0.namespace);
+    expect(elementSelector.isWildcard, true);
+    expect("*", elementSelector.name);
+  }
 
   selector1 = simpleSeqs[1];
   simpleSelector1 = selector1.simpleSelector;
@@ -494,15 +499,17 @@ void testWildcard() {
 
   expect(simpleSeqs.length, 2);
 
-  selector0 = simpleSeqs[0];
-  simpleSelector0 = selector0.simpleSelector;
-  expect(simpleSelector0 is NamespaceSelector, true);
-  expect(selector0.isCombinatorNone, true);
-  expect(simpleSelector0.isNamespaceWildcard, true);
-  expect("*", simpleSelector0.namespace);
-  elementSelector = simpleSelector0.nameAsSimpleSelector;
-  expect(elementSelector.isWildcard, true);
-  expect("*", elementSelector.name);
+  {
+    var selector0 = simpleSeqs[0];
+    expect(selector0.simpleSelector is NamespaceSelector, true);
+    var simpleSelector0 = selector0.simpleSelector as NamespaceSelector;
+    expect(selector0.isCombinatorNone, true);
+    expect(simpleSelector0.isNamespaceWildcard, true);
+    expect("*", simpleSelector0.namespace);
+    var elementSelector = simpleSelector0.nameAsSimpleSelector;
+    expect(elementSelector.isWildcard, true);
+    expect("*", elementSelector.name);
+  }
 
   selector1 = simpleSeqs[1];
   simpleSelector1 = selector1.simpleSelector;
@@ -513,7 +520,7 @@ void testWildcard() {
 
 /** Test List<int> as input to parser. */
 void testArrayOfChars() {
-  var errors = [];
+  var errors = <Message>[];
   var input = '<![CDATA[.foo { '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
       '}'
@@ -541,7 +548,7 @@ void testArrayOfChars() {
 }
 
 void testPseudo() {
-  var errors = [];
+  var errors = <Message>[];
 
   final input = r'''
 html:lang(fr-ca) { quotes: '" ' ' "' }
@@ -643,7 +650,7 @@ void testNegation() {
 }
 
 void testHost() {
-  var errors = [];
+  var errors = <Message>[];
   var input = '@host { '
       ':scope {'
       'white-space: nowrap;'
@@ -678,7 +685,7 @@ void testHost() {
 }
 
 void testStringEscape() {
-  var errors = [];
+  var errors = <Message>[];
   var input = r'''a { foo: '{"text" : "a\\\""}' }''';
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
   expect(stylesheet != null, true);
@@ -692,7 +699,7 @@ a {
 
 // TODO(terry): Move to emitter_test.dart when real emitter exist.
 void testEmitter() {
-  var errors = [];
+  var errors = <Message>[];
   var input = '.foo { '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
       '}'

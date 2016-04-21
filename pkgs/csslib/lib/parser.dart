@@ -356,7 +356,7 @@ class _Parser {
    *    : IDENT
    */
   List<MediaQuery> processMediaQueryList() {
-    var mediaQueries = [];
+    var mediaQueries = <MediaQuery>[];
 
     bool firstTime = true;
     var mediaQuery;
@@ -409,7 +409,7 @@ class _Parser {
       if (_peekIdentifier()) type = identifier();
     }
 
-    var exprs = [];
+    var exprs = <MediaExpression>[];
 
     if (unaryOp == -1 || unaryOp == TokenKind.MEDIA_OP_AND) {
       var andOp = false;
@@ -775,7 +775,7 @@ class _Parser {
 
     var name = identifier();
 
-    List<VarDefinitionDirective> params = [];
+    var params = <VarDefinition>[];
     // Any parameters?
     if (_maybeEat(TokenKind.LPAREN)) {
       var mustHaveParam = false;
@@ -813,7 +813,7 @@ class _Parser {
       if (declGroup.declarations.any((decl) {
         return decl is Declaration && decl is! IncludeMixinAtDeclaration;
       })) {
-        var newDecls = [];
+        var newDecls = <Declaration>[];
         productions.forEach((include) {
           // If declGroup has items that are declarations then we assume
           // this mixin is a declaration mixin not a top-level mixin.
@@ -943,7 +943,7 @@ class _Parser {
       name = identifier();
     }
 
-    var params = [];
+    var params = <List<Expression>>[];
 
     // Any parameters?  Parameters can be multiple terms per argument e.g.,
     // 3px solid yellow, green is two parameters:
@@ -951,7 +951,7 @@ class _Parser {
     //    2. green
     // the first has 3 terms and the second has 1 term.
     if (_maybeEat(TokenKind.LPAREN)) {
-      var terms = [];
+      var terms = <Expression>[];
       var expr;
       var keepGoing = true;
       while (keepGoing && (expr = processTerm()) != null) {
@@ -1041,8 +1041,8 @@ class _Parser {
 
     if (checkBrace) _eat(TokenKind.LBRACE);
 
-    List decls = [];
-    List dartStyles = []; // List of latest styles exposed to Dart.
+    var decls = <TreeNode>[];
+    var dartStyles = []; // List of latest styles exposed to Dart.
 
     do {
       var selectorGroup = _nestedSelector();
@@ -1093,7 +1093,7 @@ class _Parser {
   }
 
   List<DeclarationGroup> processMarginsDeclarations() {
-    List groups = [];
+    var groups = <DeclarationGroup>[];
 
     var start = _peekToken.span;
 
@@ -1487,7 +1487,7 @@ class _Parser {
   processSelectorExpression() {
     var start = _peekToken.span;
 
-    var expressions = [];
+    var expressions = <Expression>[];
 
     Token termToken;
     var value;
@@ -2269,7 +2269,8 @@ class _Parser {
           }
 
           var param = expr.expressions[0];
-          var varUsage = new VarUsage(param.text, [], _makeSpan(start));
+          var varUsage = new VarUsage(
+              (param as LiteralTerm).text, [], _makeSpan(start));
           expr.expressions[0] = varUsage;
           return expr.expressions;
         }
@@ -2543,11 +2544,11 @@ class _Parser {
           _error("too many parameters to var()", _peekToken.span);
         }
 
-        var paramName = expr.expressions[0].text;
+        var paramName = (expr.expressions[0] as LiteralTerm).text;
 
         // [0] - var name, [1] - OperatorComma, [2] - default value.
-        var defaultValues =
-            expr.expressions.length >= 3 ? expr.expressions.sublist(2) : [];
+        var defaultValues = expr.expressions.length >= 3
+            ? expr.expressions.sublist(2) : <Expression>[];
         return new VarUsage(paramName, defaultValues, _makeSpan(start));
       default:
         var expr = processExpr();

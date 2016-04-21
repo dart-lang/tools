@@ -243,7 +243,7 @@ class ExpandNestedSelectors extends Visitor {
     var selectors = node.selectorGroup.selectors;
 
     // Create a merged set of previous parent selectors and current selectors.
-    var newSelectors = [];
+    var newSelectors = <Selector>[];
     for (Selector selector in selectors) {
       for (Selector nestedSelector in nestedSelectors) {
         var seq = _mergeNestedSelector(nestedSelector.simpleSelectorSequences,
@@ -267,7 +267,7 @@ class ExpandNestedSelectors extends Visitor {
     // the parent selector is pre-pended to the current selector.
     var hasThis = current.any((s) => s.simpleSelector.isThis);
 
-    var newSequence = [];
+    var newSequence = <SimpleSelectorSequence>[];
 
     if (!hasThis) {
       // If no & in the sector group then prefix with the parent selector.
@@ -302,7 +302,7 @@ class ExpandNestedSelectors extends Visitor {
       List<SimpleSelectorSequence> sequences) {
     if (sequences.isEmpty) return sequences;
 
-    var newSequences = [];
+    var newSequences = <SimpleSelectorSequence>[];
     var first = sequences.first;
     newSequences.add(new SimpleSelectorSequence(
         first.simpleSelector, first.span, TokenKind.COMBINATOR_DESCENDANT));
@@ -592,7 +592,7 @@ class CallMixin extends Visitor {
    * Given a mixin's defined arguments return a cloned mixin defintion that has
    * replaced all defined arguments with user's supplied VarUsages.
    */
-  MixinDefinition transform(List callArgs) {
+  MixinDefinition transform(List<List<Expression>> callArgs) {
     // TODO(terry): Handle default arguments and varArgs.
     // Transform mixin with callArgs.
     for (var index = 0; index < _definedArgs.length; index++) {
@@ -628,11 +628,11 @@ class CallMixin extends Visitor {
   }
 
   /** Rip apart var def with multiple parameters. */
-  List<List<TreeNode>> _varDefsAsCallArgs(var callArg) {
-    var defArgs = [];
+  List<List<Expression>> _varDefsAsCallArgs(var callArg) {
+    var defArgs = <List<Expression>>[];
     if (callArg is List && callArg[0] is VarUsage) {
       var varDef = varDefs[callArg[0].name];
-      var expressions = varDef.expression.expressions;
+      var expressions = (varDef.expression as Expressions).expressions;
       assert(expressions.length > 1);
       for (var expr in expressions) {
         if (expr is! OperatorComma) {
@@ -756,11 +756,11 @@ class DeclarationIncludes extends Visitor {
           // We're a list of @include(s) inside of a mixin ruleset - convert
           // to a list of IncludeMixinAtDeclaration(s).
           var origRulesets = mixinDef.rulesets;
-          var rulesets = [];
+          var rulesets = <Declaration>[];
           if (origRulesets.every((ruleset) => ruleset is IncludeDirective)) {
             origRulesets.forEach((ruleset) {
-              rulesets
-                  .add(new IncludeMixinAtDeclaration(ruleset, ruleset.span));
+              rulesets.add(new IncludeMixinAtDeclaration(
+                  ruleset as IncludeDirective, ruleset.span));
             });
             _IncludeReplacer.replace(_styleSheet, node, rulesets);
           }
@@ -841,7 +841,7 @@ class DeclarationIncludes extends Visitor {
 /** @include as a top-level with ruleset(s). */
 class _IncludeReplacer extends Visitor {
   final _include;
-  final List<Declaration> _newDeclarations;
+  final List<TreeNode> _newDeclarations;
   bool _foundAndReplaced = false;
 
   /**
@@ -849,7 +849,7 @@ class _IncludeReplacer extends Visitor {
    * with the [newRules].
    */
   static void replace(
-      StyleSheet ss, var include, List<Declaration> newDeclarations) {
+      StyleSheet ss, var include, List<TreeNode> newDeclarations) {
     var visitor = new _IncludeReplacer(include, newDeclarations);
     visitor.visitStyleSheet(ss);
   }

@@ -4,6 +4,7 @@
 
 library visitor_test;
 
+import 'package:csslib/src/messages.dart';
 import 'package:csslib/visitor.dart';
 import 'package:test/test.dart';
 
@@ -33,7 +34,7 @@ class ClassVisitor extends Visitor {
 }
 
 void testClassVisitors() {
-  var errors = [];
+  var errors = <Message>[];
   var in1 = '.foobar { }';
 
   var s = parseCss(in1, errors: errors);
@@ -84,7 +85,7 @@ String polyfillPrint(String prefix, StyleSheet ss) =>
     (new PolyfillEmitter(prefix)..visitTree(ss, pretty: true)).toString();
 
 void testPolyFill() {
-  var errors = [];
+  var errors = <Message>[];
   final input = r'''
 .foobar { }
 div.xyzzy { }

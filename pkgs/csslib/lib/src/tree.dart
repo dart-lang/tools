@@ -421,7 +421,7 @@ class ImportDirective extends Directive {
       : super(span);
 
   ImportDirective clone() {
-    var cloneMediaQueries = [];
+    var cloneMediaQueries = <MediaQuery>[];
     for (var mediaQuery in mediaQueries) {
       cloneMediaQueries.add(mediaQuery.clone());
     }
@@ -483,7 +483,7 @@ class MediaQuery extends TreeNode {
       TokenKind.idToValue(TokenKind.MEDIA_OPERATORS, _mediaUnary).toUpperCase();
 
   MediaQuery clone() {
-    var cloneExpressions = [];
+    var cloneExpressions = <MediaExpression>[];
     for (var expr in expressions) {
       cloneExpressions.add(expr.clone());
     }
@@ -500,11 +500,11 @@ class MediaDirective extends Directive {
       : super(span);
 
   MediaDirective clone() {
-    var cloneQueries = [];
+    var cloneQueries = <MediaQuery>[];
     for (var mediaQuery in mediaQueries) {
       cloneQueries.add(mediaQuery.clone());
     }
-    var cloneRulesets = [];
+    var cloneRulesets = <RuleSet>[];
     for (var ruleset in rulesets) {
       cloneRulesets.add(ruleset.clone());
     }
@@ -520,7 +520,7 @@ class HostDirective extends Directive {
   HostDirective(this.rulesets, SourceSpan span) : super(span);
 
   HostDirective clone() {
-    var cloneRulesets = [];
+    var cloneRulesets = <RuleSet>[];
     for (var ruleset in rulesets) {
       cloneRulesets.add(ruleset.clone());
     }
@@ -540,7 +540,7 @@ class PageDirective extends Directive {
       : super(span);
 
   PageDirective clone() {
-    var cloneDeclsMargin = [];
+    var cloneDeclsMargin = <DeclarationGroup>[];
     for (var declMargin in _declsMargin) {
       cloneDeclsMargin.add(declMargin.clone());
     }
@@ -635,7 +635,7 @@ class StyletDirective extends Directive {
   bool get isExtension => true;
 
   StyletDirective clone() {
-    var cloneRulesets = [];
+    var cloneRulesets = <RuleSet>[];
     for (var ruleset in rulesets) {
       cloneRulesets.add(ruleset.clone());
     }
@@ -675,14 +675,14 @@ class VarDefinitionDirective extends Directive {
 
 class MixinDefinition extends Directive {
   final String name;
-  final List definedArgs;
+  final List<TreeNode> definedArgs;
   final bool varArgs;
 
   MixinDefinition(this.name, this.definedArgs, this.varArgs, SourceSpan span)
       : super(span);
 
   MixinDefinition clone() {
-    var cloneDefinedArgs = [];
+    var cloneDefinedArgs = <TreeNode>[];
     for (var definedArg in definedArgs) {
       cloneDefinedArgs.add(definedArg.clone());
     }
@@ -694,18 +694,18 @@ class MixinDefinition extends Directive {
 
 /** Support a Sass @mixin. See http://sass-lang.com for description. */
 class MixinRulesetDirective extends MixinDefinition {
-  final List rulesets;
+  final List<TreeNode> rulesets;
 
-  MixinRulesetDirective(String name, List<VarDefinitionDirective> args,
+  MixinRulesetDirective(String name, List<VarDefinition> args,
       bool varArgs, this.rulesets, SourceSpan span)
       : super(name, args, varArgs, span);
 
   MixinRulesetDirective clone() {
-    var clonedArgs = [];
+    var clonedArgs = <VarDefinition>[];
     for (var arg in definedArgs) {
       clonedArgs.add(arg.clone());
     }
-    var clonedRulesets = [];
+    var clonedRulesets = <TreeNode>[];
     for (var ruleset in rulesets) {
       clonedRulesets.add(ruleset.clone());
     }
@@ -719,12 +719,12 @@ class MixinRulesetDirective extends MixinDefinition {
 class MixinDeclarationDirective extends MixinDefinition {
   final DeclarationGroup declarations;
 
-  MixinDeclarationDirective(String name, List<VarDefinitionDirective> args,
+  MixinDeclarationDirective(String name, List<TreeNode> args,
       bool varArgs, this.declarations, SourceSpan span)
       : super(name, args, varArgs, span);
 
   MixinDeclarationDirective clone() {
-    var clonedArgs = [];
+    var clonedArgs = <TreeNode>[];
     for (var arg in definedArgs) {
       clonedArgs.add(arg.clone());
     }
@@ -738,16 +738,14 @@ class MixinDeclarationDirective extends MixinDefinition {
 /** To support consuming a SASS mixin @include. */
 class IncludeDirective extends Directive {
   final String name;
-  final List<List<TreeNode>> args;
+  final List<List<Expression>> args;
 
   IncludeDirective(this.name, this.args, SourceSpan span) : super(span);
 
   IncludeDirective clone() {
-    var cloneArgs = [];
+    var cloneArgs = <List<Expression>>[];
     for (var arg in args) {
-      for (var term in arg) {
-        cloneArgs.add(term.clone());
-      }
+      cloneArgs.add(arg.map((term) => term.clone()).toList());
     }
     return new IncludeDirective(name, cloneArgs, span);
   }
@@ -852,7 +850,7 @@ class ExtendDeclaration extends Declaration {
 
 class DeclarationGroup extends TreeNode {
   /** Can be either Declaration or RuleSet (if nested selector). */
-  final List declarations;
+  final List<TreeNode> declarations;
 
   DeclarationGroup(this.declarations, SourceSpan span) : super(span);
 
@@ -867,10 +865,10 @@ class DeclarationGroup extends TreeNode {
 class MarginGroup extends DeclarationGroup {
   final int margin_sym; // TokenType for for @margin sym.
 
-  MarginGroup(this.margin_sym, List<Declaration> decls, SourceSpan span)
+  MarginGroup(this.margin_sym, List<TreeNode> decls, SourceSpan span)
       : super(decls, span);
   MarginGroup clone() =>
-      new MarginGroup(margin_sym, super.clone() as dynamic, span);
+      new MarginGroup(margin_sym, super.clone().declarations, span);
   visit(VisitorBase visitor) => visitor.visitMarginGroup(this);
 }
 
@@ -881,7 +879,7 @@ class VarUsage extends Expression {
   VarUsage(this.name, this.defaultValues, SourceSpan span) : super(span);
 
   VarUsage clone() {
-    var clonedValues = [];
+    var clonedValues = <Expression>[];
     for (var expr in defaultValues) {
       clonedValues.add(expr.clone());
     }
