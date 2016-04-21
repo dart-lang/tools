@@ -696,7 +696,7 @@ class MixinDefinition extends Directive {
 class MixinRulesetDirective extends MixinDefinition {
   final List<TreeNode> rulesets;
 
-  MixinRulesetDirective(String name, List<VarDefinition> args,
+  MixinRulesetDirective(String name, List<TreeNode> args,
       bool varArgs, this.rulesets, SourceSpan span)
       : super(name, args, varArgs, span);
 

@@ -1,3 +1,7 @@
+## 0.13.1
+
+* Fix two checked mode bugs introduced in 0.13.0.
+
 ## 0.13.0
 
  * **BREAKING** Fix all [strong mode][] errors and warnings.

@@ -775,7 +775,7 @@ class _Parser {
 
     var name = identifier();
 
-    var params = <VarDefinition>[];
+    var params = <TreeNode>[];
     // Any parameters?
     if (_maybeEat(TokenKind.LPAREN)) {
       var mustHaveParam = false;
