@@ -1,5 +1,5 @@
 name: pool
-version: 1.2.3
+version: 1.2.4
 author: Dart Team <misc@dartlang.org>
 description: A class for managing a finite pool of resources.
 homepage: https://github.com/dart-lang/pool

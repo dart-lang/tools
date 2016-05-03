@@ -116,8 +116,8 @@ class Pool {
     // synchronously in case the pool is closed immediately afterwards. Async
     // functions have an asynchronous gap between calling and running the body,
     // and [close] could be called during that gap. See #3.
-    return request().then((resource) {
-      return new Future.sync(callback).whenComplete(resource.release);
+    return request().then/*<Future<T>>*/((resource) {
+      return new Future/*<T>*/.sync(callback).whenComplete(resource.release);
     });
   }
 

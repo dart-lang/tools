@@ -1,3 +1,7 @@
+## 1.2.4
+
+* Fix a strong-mode error.
+
 ## 1.2.3
 
 * Fix a bug in which `Pool.withResource()` could throw a `StateError` when
