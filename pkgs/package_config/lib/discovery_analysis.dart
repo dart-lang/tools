@@ -41,7 +41,7 @@ abstract class PackageContext {
   /// Look up the [PackageContext] that applies to a specific directory.
   ///
   /// The directory must be inside [directory].
-  PackageContext operator[](Directory directory);
+  PackageContext operator [](Directory directory);
 
   /// A map from directory to package resolver.
   ///
@@ -57,7 +57,7 @@ abstract class PackageContext {
   /// directory of `directory`. If there is, its corresponding `Packages` object
   /// should be provided as `root`.
   static PackageContext findAll(Directory directory,
-                                {Packages root: Packages.noPackages}) {
+      {Packages root: Packages.noPackages}) {
     if (!directory.existsSync()) {
       throw new ArgumentError("Directory not found: $directory");
     }
@@ -93,8 +93,7 @@ abstract class PackageContext {
     }
     findRoots(directory);
     // If the root is not itself context root, add a the wrapper context.
-    if (contexts.length == 1 &&
-        contexts[0].directory == directory) {
+    if (contexts.length == 1 && contexts[0].directory == directory) {
       return contexts[0];
     }
     return new _PackageContext(directory, root, contexts);
@@ -120,7 +119,7 @@ class _PackageContext implements PackageContext {
     return result;
   }
 
-  PackageContext operator[](Directory directory) {
+  PackageContext operator [](Directory directory) {
     String path = directory.path;
     if (!path.startsWith(this.directory.path)) {
       throw new ArgumentError("Not inside $path: $directory");

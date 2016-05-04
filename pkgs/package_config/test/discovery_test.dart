@@ -21,11 +21,11 @@ baz:packages/baz/
 void validatePackagesFile(Packages resolver, Uri location) {
   expect(resolver, isNotNull);
   expect(resolver.resolve(pkg("foo", "bar/baz")),
-         equals(Uri.parse("file:///dart/packages/foo/bar/baz")));
+      equals(Uri.parse("file:///dart/packages/foo/bar/baz")));
   expect(resolver.resolve(pkg("bar", "baz/qux")),
-         equals(Uri.parse("http://example.com/dart/packages/bar/baz/qux")));
+      equals(Uri.parse("http://example.com/dart/packages/bar/baz/qux")));
   expect(resolver.resolve(pkg("baz", "qux/foo")),
-         equals(location.resolve("packages/baz/qux/foo")));
+      equals(location.resolve("packages/baz/qux/foo")));
   expect(resolver.packages, unorderedEquals(["foo", "bar", "baz"]));
 }
 
@@ -33,18 +33,17 @@ void validatePackagesDir(Packages resolver, Uri location) {
   // Expect three packages: foo, bar and baz
   expect(resolver, isNotNull);
   expect(resolver.resolve(pkg("foo", "bar/baz")),
-         equals(location.resolve("packages/foo/bar/baz")));
+      equals(location.resolve("packages/foo/bar/baz")));
   expect(resolver.resolve(pkg("bar", "baz/qux")),
-         equals(location.resolve("packages/bar/baz/qux")));
+      equals(location.resolve("packages/bar/baz/qux")));
   expect(resolver.resolve(pkg("baz", "qux/foo")),
-         equals(location.resolve("packages/baz/qux/foo")));
+      equals(location.resolve("packages/baz/qux/foo")));
   if (location.scheme == "file") {
     expect(resolver.packages, unorderedEquals(["foo", "bar", "baz"]));
   } else {
     expect(() => resolver.packages, throws);
   }
 }
-
 
 Uri pkg(String packageName, String packagePath) {
   var path;
@@ -57,11 +56,11 @@ Uri pkg(String packageName, String packagePath) {
 }
 
 main() {
-  generalTest(".packages",
-              {".packages": packagesFile,
-               "script.dart": "main(){}",
-               "packages": {"shouldNotBeFound": {}}},
-              (Uri location) async {
+  generalTest(".packages", {
+    ".packages": packagesFile,
+    "script.dart": "main(){}",
+    "packages": {"shouldNotBeFound": {}}
+  }, (Uri location) async {
     Packages resolver;
     resolver = await findPackages(location);
     validatePackagesFile(resolver, location);
@@ -76,36 +75,36 @@ main() {
     validatePackagesFile(resolver, location);
   });
 
-  generalTest("packages/",
-              {"packages": { "foo": {}, "bar": {}, "baz": {}},
-               "script.dart": "main(){}"},
-              (Uri location) async {
+  generalTest("packages/", {
+    "packages": {"foo": {}, "bar": {}, "baz": {}},
+    "script.dart": "main(){}"
+  }, (Uri location) async {
     Packages resolver;
     bool isFile = (location.scheme == "file");
     resolver = await findPackages(location);
     validatePackagesDir(resolver, location);
     resolver = await findPackages(location.resolve("script.dart"));
     validatePackagesDir(resolver, location);
-    var specificDiscovery = isFile
-        ? findPackagesFromFile
-        : findPackagesFromNonFile;
+    var specificDiscovery =
+        isFile ? findPackagesFromFile : findPackagesFromNonFile;
     resolver = await specificDiscovery(location);
     validatePackagesDir(resolver, location);
     resolver = await specificDiscovery(location.resolve("script.dart"));
     validatePackagesDir(resolver, location);
   });
 
-  generalTest("underscore packages",
-              {"packages": {"_foo": {}}},
-              (Uri location) async {
+  generalTest("underscore packages", {
+    "packages": {"_foo": {}}
+  }, (Uri location) async {
     Packages resolver = await findPackages(location);
     expect(resolver.resolve(pkg("_foo", "foo.dart")),
-           equals(location.resolve("packages/_foo/foo.dart")));
+        equals(location.resolve("packages/_foo/foo.dart")));
   });
 
-  fileTest(".packages recursive",
-           {".packages": packagesFile, "subdir": {"script.dart": "main(){}"}},
-           (Uri location) async {
+  fileTest(".packages recursive", {
+    ".packages": packagesFile,
+    "subdir": {"script.dart": "main(){}"}
+  }, (Uri location) async {
     Packages resolver;
     resolver = await findPackages(location.resolve("subdir/"));
     validatePackagesFile(resolver, location);
@@ -118,9 +117,10 @@ main() {
     validatePackagesFile(resolver, location);
   });
 
-  httpTest(".packages not recursive",
-           {".packages": packagesFile, "subdir": {"script.dart": "main(){}"}},
-           (Uri location) async {
+  httpTest(".packages not recursive", {
+    ".packages": packagesFile,
+    "subdir": {"script.dart": "main(){}"}
+  }, (Uri location) async {
     Packages resolver;
     var subdir = location.resolve("subdir/");
     resolver = await findPackages(subdir);
@@ -133,9 +133,7 @@ main() {
     validatePackagesDir(resolver, subdir);
   });
 
-  fileTest("no packages",
-          {"script.dart": "main(){}"},
-          (Uri location) async {
+  fileTest("no packages", {"script.dart": "main(){}"}, (Uri location) async {
     // A file: location with no .packages or packages returns
     // Packages.noPackages.
     Packages resolver;
@@ -149,9 +147,7 @@ main() {
     expect(resolver, same(Packages.noPackages));
   });
 
-  httpTest("no packages",
-           {"script.dart": "main(){}"},
-           (Uri location) async {
+  httpTest("no packages", {"script.dart": "main(){}"}, (Uri location) async {
     // A non-file: location with no .packages or packages/:
     // Assumes a packages dir exists, and resolves relative to that.
     Packages resolver;
@@ -178,13 +174,13 @@ main() {
     Packages resolver;
     resolver = await findPackages(location, loader: loader);
     validatePackagesFile(resolver, location);
-    resolver = await findPackages(location.resolve("script.dart"),
-                                  loader: loader);
+    resolver =
+        await findPackages(location.resolve("script.dart"), loader: loader);
     validatePackagesFile(resolver, location);
     resolver = await findPackagesFromNonFile(location, loader: loader);
     validatePackagesFile(resolver, location);
     resolver = await findPackagesFromNonFile(location.resolve("script.dart"),
-                                             loader: loader);
+        loader: loader);
     validatePackagesFile(resolver, location);
   });
 
@@ -198,27 +194,26 @@ main() {
     Packages resolver;
     resolver = await findPackages(location, loader: loader);
     validatePackagesDir(resolver, location);
-    resolver = await findPackages(location.resolve("script.dart"),
-                                  loader: loader);
+    resolver =
+        await findPackages(location.resolve("script.dart"), loader: loader);
     validatePackagesDir(resolver, location);
     resolver = await findPackagesFromNonFile(location, loader: loader);
     validatePackagesDir(resolver, location);
     resolver = await findPackagesFromNonFile(location.resolve("script.dart"),
-                                             loader:loader);
+        loader: loader);
     validatePackagesDir(resolver, location);
   });
 
-  generalTest("loadPackagesFile",
-              {".packages": packagesFile},
-              (Uri directory) async {
+  generalTest("loadPackagesFile", {".packages": packagesFile},
+      (Uri directory) async {
     Uri file = directory.resolve(".packages");
     Packages resolver = await loadPackagesFile(file);
     validatePackagesFile(resolver, file);
   });
 
-  generalTest("loadPackagesFile non-default name",
-              {"pheldagriff": packagesFile},
-              (Uri directory) async {
+  generalTest(
+      "loadPackagesFile non-default name", {"pheldagriff": packagesFile},
+      (Uri directory) async {
     Uri file = directory.resolve("pheldagriff");
     Packages resolver = await loadPackagesFile(file);
     validatePackagesFile(resolver, file);
@@ -231,26 +226,23 @@ main() {
     validatePackagesFile(resolver, file);
   });
 
-  generalTest("loadPackagesFile not found",
-               {},
-               (Uri directory) async {
+  generalTest("loadPackagesFile not found", {}, (Uri directory) async {
     Uri file = directory.resolve(".packages");
     expect(loadPackagesFile(file), throws);
   });
 
-  generalTest("loadPackagesFile syntax error",
-               {".packages": "syntax error"},
-               (Uri directory) async {
+  generalTest("loadPackagesFile syntax error", {".packages": "syntax error"},
+      (Uri directory) async {
     Uri file = directory.resolve(".packages");
     expect(loadPackagesFile(file), throws);
   });
 
-  generalTest("getPackagesDir",
-              {"packages": {"foo": {}, "bar": {}, "baz": {}}},
-              (Uri directory) async {
+  generalTest("getPackagesDir", {
+    "packages": {"foo": {}, "bar": {}, "baz": {}}
+  }, (Uri directory) async {
     Uri packages = directory.resolve("packages/");
     Packages resolver = getPackagesDirectory(packages);
-    Uri resolved = resolver.resolve(pkg("foo","flip/flop"));
+    Uri resolved = resolver.resolve(pkg("foo", "flip/flop"));
     expect(resolved, packages.resolve("foo/flip/flop"));
   });
 }
@@ -260,9 +252,7 @@ main() {
 /// Description is a map, each key is a file entry. If the value is a map,
 /// it's a sub-dir, otherwise it's a file and the value is the content
 /// as a string.
-void fileTest(String name,
-              Map description,
-              Future fileTest(Uri directory)) {
+void fileTest(String name, Map description, Future fileTest(Uri directory)) {
   group("file-test", () {
     Directory tempDir = Directory.systemTemp.createTempSync("file-test");
     setUp(() {
@@ -285,31 +275,27 @@ void httpTest(String name, Map description, Future httpTest(Uri directory)) {
     var serverSub;
     var uri;
     setUp(() {
-      return HttpServer
-        .bind(InternetAddress.LOOPBACK_IP_V4, 0)
-        .then((server) {
-          uri = new Uri(scheme: "http",
-                        host: "127.0.0.1",
-                        port: server.port,
-                        path: "/");
-          serverSub = server.listen((HttpRequest request) {
-            // No error handling.
-            var path = request.uri.path;
-            if (path.startsWith('/')) path = path.substring(1);
-            if (path.endsWith('/')) path = path.substring(0, path.length - 1);
-            var parts = path.split('/');
-            var fileOrDir = description;
-            for (int i = 0; i < parts.length; i++) {
-              fileOrDir = fileOrDir[parts[i]];
-              if (fileOrDir == null) {
-                request.response.statusCode = 404;
-                request.response.close();
-              }
+      return HttpServer.bind(InternetAddress.LOOPBACK_IP_V4, 0).then((server) {
+        uri = new Uri(
+            scheme: "http", host: "127.0.0.1", port: server.port, path: "/");
+        serverSub = server.listen((HttpRequest request) {
+          // No error handling.
+          var path = request.uri.path;
+          if (path.startsWith('/')) path = path.substring(1);
+          if (path.endsWith('/')) path = path.substring(0, path.length - 1);
+          var parts = path.split('/');
+          var fileOrDir = description;
+          for (int i = 0; i < parts.length; i++) {
+            fileOrDir = fileOrDir[parts[i]];
+            if (fileOrDir == null) {
+              request.response.statusCode = 404;
+              request.response.close();
             }
-            request.response.write(fileOrDir);
-            request.response.close();
-          });
+          }
+          request.response.write(fileOrDir);
+          request.response.close();
         });
+      });
     });
     tearDown(() => serverSub.cancel());
     test(name, () => httpTest(uri));

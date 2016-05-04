@@ -17,7 +17,6 @@ import "src/packages_impl.dart";
 /// One such case is if the packages are resolved relative to a
 /// `packages/` directory available over HTTP.
 abstract class Packages {
-
   /// A [Packages] resolver containing no packages.
   ///
   /// This constant object is returned by [find] above if no

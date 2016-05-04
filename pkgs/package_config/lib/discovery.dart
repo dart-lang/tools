@@ -28,7 +28,7 @@ import "src/packages_io_impl.dart";
 /// resolution file, for example one specified using a `--packages`
 /// command-line parameter.
 Future<Packages> loadPackagesFile(Uri packagesFile,
-                                  {Future<List<int>> loader(Uri uri)}) {
+    {Future<List<int>> loader(Uri uri)}) {
   Packages parseBytes(List<int> bytes) {
     Map<String, Uri> packageMap = pkgfile.parse(bytes, packagesFile);
     return new MapPackages(packageMap);
@@ -42,7 +42,6 @@ Future<Packages> loadPackagesFile(Uri packagesFile,
   }
   return loader(packagesFile).then(parseBytes);
 }
-
 
 /// Create a [Packages] object for a package directory.
 ///
@@ -62,7 +61,6 @@ Packages getPackagesDirectory(Uri packagesDir) {
   }
   return new NonFilePackagesDirectoryPackages(packagesDir);
 }
-
 
 /// Discover the package configuration for a Dart script.
 ///
@@ -93,7 +91,7 @@ Packages getPackagesDirectory(Uri packagesDir) {
 /// The content should be a UTF-8 encoded `.packages` file, and must return an
 /// error future if loading fails for any reason.
 Future<Packages> findPackages(Uri baseUri,
-                              {Future<List<int>> loader(Uri unsupportedUri)}) {
+    {Future<List<int>> loader(Uri unsupportedUri)}) {
   if (baseUri.scheme == "file") {
     return new Future<Packages>.sync(() => findPackagesFromFile(baseUri));
   } else if (loader != null) {
@@ -191,7 +189,7 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// of the requested `.packages` file as bytes, which will be assumed to be
 /// UTF-8 encoded.
 Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
-                                         {Future<List<int>> loader(Uri name)}) {
+    {Future<List<int>> loader(Uri name)}) {
   if (loader == null) loader = _httpGet;
   Uri packagesFileUri = nonFileUri.resolve(".packages");
   return loader(packagesFileUri).then((List<int> fileBytes) {
