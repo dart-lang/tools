@@ -45,11 +45,3 @@ main() {
     });
   });
 }
-
-_linearSearch(list, predicate) {
-  if (list.length == 0) return -1;
-  for (int i = 0; i < list.length; i++) {
-    if (predicate(list[i])) return i;
-  }
-  return list.length;
-}
