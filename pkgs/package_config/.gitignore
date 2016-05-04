@@ -1,8 +1,4 @@
-.idea
+.packages
 .pub
 packages
-build
-.project
-.settings
 pubspec.lock
-.packages
