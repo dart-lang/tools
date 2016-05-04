@@ -81,7 +81,7 @@ main() {
   });
 }
 
-String writeToString(Map map, {Uri baseUri, String comment}) {
+String writeToString(Map<String, Uri> map, {Uri baseUri, String comment}) {
   var buffer = new StringBuffer();
   write(buffer, map, baseUri: baseUri, comment: comment);
   return buffer.toString();

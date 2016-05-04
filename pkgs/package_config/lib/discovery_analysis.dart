@@ -61,10 +61,10 @@ abstract class PackageContext {
     if (!directory.existsSync()) {
       throw new ArgumentError("Directory not found: $directory");
     }
-    List contexts = [];
+    var contexts = <PackageContext>[];
     void findRoots(Directory directory) {
       Packages packages;
-      List oldContexts;
+      List<PackageContext> oldContexts;
       File packagesFile = new File(path.join(directory.path, ".packages"));
       if (packagesFile.existsSync()) {
         packages = _loadPackagesFile(packagesFile);

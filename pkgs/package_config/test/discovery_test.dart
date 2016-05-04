@@ -163,7 +163,7 @@ main() {
 
   test(".packages w/ loader", () async {
     Uri location = Uri.parse("krutch://example.com/path/");
-    Future loader(Uri file) async {
+    Future<List<int>> loader(Uri file) async {
       if (file.path.endsWith(".packages")) {
         return packagesFile.codeUnits;
       }
@@ -186,7 +186,7 @@ main() {
 
   test("no packages w/ loader", () async {
     Uri location = Uri.parse("krutch://example.com/path/");
-    Future loader(Uri file) async {
+    Future<List<int>> loader(Uri file) async {
       throw "not found";
     }
     // A non-file: location with no .packages or packages/:
@@ -220,7 +220,7 @@ main() {
   });
 
   test("loadPackagesFile w/ loader", () async {
-    loader(Uri uri) async => packagesFile.codeUnits;
+    Future<List<int>> loader(Uri uri) async => packagesFile.codeUnits;
     Uri file = Uri.parse("krutz://example.com/.packages");
     Packages resolver = await loadPackagesFile(file, loader: loader);
     validatePackagesFile(resolver, file);
