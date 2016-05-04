@@ -28,19 +28,19 @@ import "src/packages_io_impl.dart";
 /// resolution file, for example one specified using a `--packages`
 /// command-line parameter.
 Future<Packages> loadPackagesFile(Uri packagesFile,
-    {Future<List<int>> loader(Uri uri)}) {
+    {Future<List<int>> loader(Uri uri)}) async {
   Packages parseBytes(List<int> bytes) {
     Map<String, Uri> packageMap = pkgfile.parse(bytes, packagesFile);
     return new MapPackages(packageMap);
   }
   if (packagesFile.scheme == "file") {
     File file = new File.fromUri(packagesFile);
-    return file.readAsBytes().then(parseBytes);
+    return parseBytes(await file.readAsBytes());
   }
   if (loader == null) {
-    return _httpGet(packagesFile).then(parseBytes);
+    return parseBytes(await _httpGet(packagesFile));
   }
-  return loader(packagesFile).then(parseBytes);
+  return parseBytes(await loader(packagesFile));
 }
 
 /// Create a [Packages] object for a package directory.
@@ -189,17 +189,19 @@ Packages findPackagesFromFile(Uri fileBaseUri) {
 /// of the requested `.packages` file as bytes, which will be assumed to be
 /// UTF-8 encoded.
 Future<Packages> findPackagesFromNonFile(Uri nonFileUri,
-    {Future<List<int>> loader(Uri name)}) {
+    {Future<List<int>> loader(Uri name)}) async {
   if (loader == null) loader = _httpGet;
   Uri packagesFileUri = nonFileUri.resolve(".packages");
-  return loader(packagesFileUri).then((List<int> fileBytes) {
+
+  try {
+    List<int> fileBytes = await loader(packagesFileUri);
     Map<String, Uri> map = pkgfile.parse(fileBytes, packagesFileUri);
     return new MapPackages(map);
-  }, onError: (_) {
+  } catch (_) {
     // Didn't manage to load ".packages". Assume a "packages/" directory.
     Uri packagesDirectoryUri = nonFileUri.resolve("packages/");
     return new NonFilePackagesDirectoryPackages(packagesDirectoryUri);
-  });
+  }
 }
 
 /// Fetches a file over http.
