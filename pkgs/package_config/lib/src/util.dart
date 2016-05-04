@@ -43,29 +43,29 @@ int _findInvalidCharacter(String string) {
 /// Validate that a Uri is a valid package:URI.
 String checkValidPackageUri(Uri packageUri) {
   if (packageUri.scheme != "package") {
-    throw new ArgumentError.value(packageUri, "packageUri",
-                                  "Not a package: URI");
+    throw new ArgumentError.value(
+        packageUri, "packageUri", "Not a package: URI");
   }
   if (packageUri.hasAuthority) {
-    throw new ArgumentError.value(packageUri, "packageUri",
-                                  "Package URIs must not have a host part");
+    throw new ArgumentError.value(
+        packageUri, "packageUri", "Package URIs must not have a host part");
   }
   if (packageUri.hasQuery) {
     // A query makes no sense if resolved to a file: URI.
-    throw new ArgumentError.value(packageUri, "packageUri",
-                                  "Package URIs must not have a query part");
+    throw new ArgumentError.value(
+        packageUri, "packageUri", "Package URIs must not have a query part");
   }
   if (packageUri.hasFragment) {
     // We could leave the fragment after the URL when resolving,
     // but it would be odd if "package:foo/foo.dart#1" and
     // "package:foo/foo.dart#2" were considered different libraries.
     // Keep the syntax open in case we ever get multiple libraries in one file.
-    throw new ArgumentError.value(packageUri, "packageUri",
-                                  "Package URIs must not have a fragment part");
+    throw new ArgumentError.value(
+        packageUri, "packageUri", "Package URIs must not have a fragment part");
   }
   if (packageUri.path.startsWith('/')) {
-    throw new ArgumentError.value(packageUri, "packageUri",
-                                  "Package URIs must not start with a '/'");
+    throw new ArgumentError.value(
+        packageUri, "packageUri", "Package URIs must not start with a '/'");
   }
   int firstSlash = packageUri.path.indexOf('/');
   if (firstSlash == -1) {
@@ -76,8 +76,8 @@ String checkValidPackageUri(Uri packageUri) {
   int badIndex = _findInvalidCharacter(packageName);
   if (badIndex >= 0) {
     if (packageName.isEmpty) {
-      throw new ArgumentError.value(packageUri, "packageUri",
-          "Package names mus be non-empty");
+      throw new ArgumentError.value(
+          packageUri, "packageUri", "Package names mus be non-empty");
     }
     if (badIndex == packageName.length) {
       throw new ArgumentError.value(packageUri, "packageUri",
@@ -90,8 +90,8 @@ String checkValidPackageUri(Uri packageUri) {
       // Printable character.
       badChar = "'${packageName[badIndex]}' ($badChar)";
     }
-    throw new ArgumentError.value(packageUri, "packageUri",
-        "Package names must not contain $badChar");
+    throw new ArgumentError.value(
+        packageUri, "packageUri", "Package names must not contain $badChar");
   }
   return packageName;
 }

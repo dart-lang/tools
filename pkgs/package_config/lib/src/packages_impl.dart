@@ -18,13 +18,13 @@ class NoPackages implements Packages {
   Uri resolve(Uri packageUri, {Uri notFound(Uri packageUri)}) {
     String packageName = checkValidPackageUri(packageUri);
     if (notFound != null) return notFound(packageUri);
-    throw new ArgumentError.value(packageUri, "packageUri",
-                                  'No package named "$packageName"');
+    throw new ArgumentError.value(
+        packageUri, "packageUri", 'No package named "$packageName"');
   }
 
   Iterable<String> get packages => new Iterable<String>.generate(0);
 
-  Map<String, Uri> asMap() => const<String,Uri>{};
+  Map<String, Uri> asMap() => const <String, Uri>{};
 }
 
 /// Base class for [Packages] implementations.
@@ -38,8 +38,8 @@ abstract class PackagesBase implements Packages {
     Uri packageBase = getBase(packageName);
     if (packageBase == null) {
       if (notFound != null) return notFound(packageUri);
-      throw new ArgumentError.value(packageUri, "packageUri",
-                                    'No package named "$packageName"');
+      throw new ArgumentError.value(
+          packageUri, "packageUri", 'No package named "$packageName"');
     }
     String packagePath = packageUri.path.substring(packageName.length + 1);
     return packageBase.resolve(packagePath);

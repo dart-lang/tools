@@ -52,12 +52,17 @@ main() {
       roundTripTest("http directory", {"foo": httpDir});
       roundTripTest("other scheme directory", {"foo": otherDir});
       roundTripTest("multiple same-type directories",
-                    {"foo": lowerDir, "bar": higherDir, "baz": parallelDir});
+          {"foo": lowerDir, "bar": higherDir, "baz": parallelDir});
       roundTripTest("multiple scheme directories",
-                    {"foo": fileDir, "bar": httpDir, "baz": otherDir});
-      roundTripTest("multiple scheme directories and mutliple same type",
-                    {"foo": fileDir, "bar": httpDir, "baz": otherDir,
-                     "qux": lowerDir, "hip": higherDir, "dep": parallelDir});
+          {"foo": fileDir, "bar": httpDir, "baz": otherDir});
+      roundTripTest("multiple scheme directories and mutliple same type", {
+        "foo": fileDir,
+        "bar": httpDir,
+        "baz": otherDir,
+        "qux": lowerDir,
+        "hip": higherDir,
+        "dep": parallelDir
+      });
     });
   }
 
@@ -76,7 +81,7 @@ main() {
   });
 }
 
-String writeToString(Map map, {Uri baseUri, String comment}) {
+String writeToString(Map<String, Uri> map, {Uri baseUri, String comment}) {
   var buffer = new StringBuffer();
   write(buffer, map, baseUri: baseUri, comment: comment);
   return buffer.toString();

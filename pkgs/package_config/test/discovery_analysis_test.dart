@@ -13,12 +13,14 @@ import "package:path/path.dart" as path;
 import "package:test/test.dart";
 
 main() {
-  fileTest("basic",
-           {".packages": packagesFile,
-            "foo": {".packages": packagesFile},
-            "bar": {"packages": {"foo": {}, "bar":{}, "baz": {}}},
-            "baz": {}},
-           (Directory directory) {
+  fileTest("basic", {
+    ".packages": packagesFile,
+    "foo": {".packages": packagesFile},
+    "bar": {
+      "packages": {"foo": {}, "bar": {}, "baz": {}}
+    },
+    "baz": {}
+  }, (Directory directory) {
     var dirUri = new Uri.directory(directory.path);
     PackageContext ctx = PackageContext.findAll(directory);
     PackageContext root = ctx[directory];
@@ -32,13 +34,13 @@ main() {
     PackageContext bar = ctx[sub(directory, "bar")];
     validatePackagesDir(bar.packages, dirUri.resolve("bar/"));
     PackageContext barbar = ctx[sub(barDir, "bar")];
-    expect(barbar, same(bar));  // inherited.
+    expect(barbar, same(bar)); // inherited.
     PackageContext baz = ctx[sub(directory, "baz")];
-    expect(baz, same(root));  // inherited.
+    expect(baz, same(root)); // inherited.
 
     var map = ctx.asMap();
     expect(map.keys.map((dir) => dir.path),
-           unorderedEquals([directory.path, fooDir.path, barDir.path]));
+        unorderedEquals([directory.path, fooDir.path, barDir.path]));
   });
 }
 
@@ -56,11 +58,11 @@ baz:packages/baz/
 void validatePackagesFile(Packages resolver, Uri location) {
   expect(resolver, isNotNull);
   expect(resolver.resolve(pkg("foo", "bar/baz")),
-         equals(Uri.parse("file:///dart/packages/foo/bar/baz")));
+      equals(Uri.parse("file:///dart/packages/foo/bar/baz")));
   expect(resolver.resolve(pkg("bar", "baz/qux")),
-         equals(Uri.parse("http://example.com/dart/packages/bar/baz/qux")));
+      equals(Uri.parse("http://example.com/dart/packages/bar/baz/qux")));
   expect(resolver.resolve(pkg("baz", "qux/foo")),
-         equals(location.resolve("packages/baz/qux/foo")));
+      equals(location.resolve("packages/baz/qux/foo")));
   expect(resolver.packages, unorderedEquals(["foo", "bar", "baz"]));
 }
 
@@ -68,11 +70,11 @@ void validatePackagesDir(Packages resolver, Uri location) {
   // Expect three packages: foo, bar and baz
   expect(resolver, isNotNull);
   expect(resolver.resolve(pkg("foo", "bar/baz")),
-         equals(location.resolve("packages/foo/bar/baz")));
+      equals(location.resolve("packages/foo/bar/baz")));
   expect(resolver.resolve(pkg("bar", "baz/qux")),
-         equals(location.resolve("packages/bar/baz/qux")));
+      equals(location.resolve("packages/bar/baz/qux")));
   expect(resolver.resolve(pkg("baz", "qux/foo")),
-         equals(location.resolve("packages/baz/qux/foo")));
+      equals(location.resolve("packages/baz/qux/foo")));
   if (location.scheme == "file") {
     expect(resolver.packages, unorderedEquals(["foo", "bar", "baz"]));
   } else {
@@ -95,9 +97,8 @@ Uri pkg(String packageName, String packagePath) {
 /// Description is a map, each key is a file entry. If the value is a map,
 /// it's a sub-dir, otherwise it's a file and the value is the content
 /// as a string.
-void fileTest(String name,
-              Map description,
-              Future fileTest(Directory directory)) {
+void fileTest(
+    String name, Map description, Future fileTest(Directory directory)) {
   group("file-test", () {
     Directory tempDir = Directory.systemTemp.createTempSync("file-test");
     setUp(() {

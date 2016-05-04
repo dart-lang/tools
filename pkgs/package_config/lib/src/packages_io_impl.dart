@@ -17,12 +17,13 @@ class FilePackagesDirectoryPackages extends PackagesBase {
   FilePackagesDirectoryPackages(this._packageDir);
 
   Uri getBase(String packageName) =>
-    new Uri.file(path.join(_packageDir.path, packageName, '.'));
+      new Uri.file(path.join(_packageDir.path, packageName, '.'));
 
   Iterable<String> _listPackageNames() {
-    return _packageDir.listSync()
-    .where((e) => e is Directory)
-    .map((e) => path.basename(e.path));
+    return _packageDir
+        .listSync()
+        .where((e) => e is Directory)
+        .map((e) => path.basename(e.path));
   }
 
   Iterable<String> get packages => _listPackageNames();
