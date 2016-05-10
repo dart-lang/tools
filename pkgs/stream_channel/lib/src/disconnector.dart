@@ -38,7 +38,7 @@ class Disconnector<T> implements StreamChannelTransformer<T, T> {
 
   StreamChannel<T> bind(StreamChannel<T> channel) {
     return channel.changeSink((innerSink) {
-      var sink = new _DisconnectorSink(innerSink);
+      var sink = new _DisconnectorSink<T>(innerSink);
 
       if (_isDisconnected) {
         sink._disconnect();

@@ -19,10 +19,10 @@ import '../stream_channel.dart';
 /// Transformers must be able to have `bind` called multiple times.
 class StreamChannelTransformer<S, T> {
   /// The transformer to use on the channel's stream.
-  final StreamTransformer _streamTransformer;
+  final StreamTransformer<T, S> _streamTransformer;
 
   /// The transformer to use on the channel's sink.
-  final StreamSinkTransformer _sinkTransformer;
+  final StreamSinkTransformer<S, T> _sinkTransformer;
 
   /// Creates a [StreamChannelTransformer] from existing stream and sink
   /// transformers.
@@ -35,8 +35,9 @@ class StreamChannelTransformer<S, T> {
   /// and all output from its stream is decoded using [Codec.decoder].
   StreamChannelTransformer.fromCodec(Codec<S, T> codec)
       : this(
-          codec.decoder,
-          new StreamSinkTransformer.fromStreamTransformer(codec.encoder));
+          typedStreamTransformer(codec.decoder),
+          StreamSinkTransformer.typed(
+              new StreamSinkTransformer.fromStreamTransformer(codec.encoder)));
 
   /// Transforms the events sent to and emitted by [channel].
   ///

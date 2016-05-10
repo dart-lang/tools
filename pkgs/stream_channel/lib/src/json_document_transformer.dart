@@ -22,7 +22,7 @@ final jsonDocument = new JsonDocumentTransformer();
 /// [FormatException]. If an unencodable object is added to the sink, it
 /// synchronously throws a [JsonUnsupportedObjectError].
 class JsonDocumentTransformer
-    implements StreamChannelTransformer<String, Object> {
+    implements StreamChannelTransformer<Object, String> {
   /// The underlying codec that implements the encoding and decoding logic.
   final JsonCodec _codec;
 

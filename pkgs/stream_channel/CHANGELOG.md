@@ -1,3 +1,7 @@
+## 1.3.2
+
+* Fix all strong-mode errors and warnings.
+
 ## 1.3.1
 
 * Make `IsolateChannel` slightly more efficient.
