@@ -1,3 +1,11 @@
+## 1.4.0
+
+* Add `StreamChannel.cast()`, which soundly coerces the generic type of a
+  channel.
+
+* Add `StreamChannelTransformer.typed()`, which soundly coerces the generic type
+  of a transformer.
+
 ## 1.3.2
 
 * Fix all strong-mode errors and warnings.

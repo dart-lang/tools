@@ -109,6 +109,13 @@ abstract class StreamChannel<T> {
   /// Returns a copy of [this] with [sink] replaced by [change]'s return
   /// value.
   StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink));
+
+  /// Returns a copy of [this] with the generic type coerced to [S].
+  ///
+  /// If any events emitted by [stream] aren't of type [S], they're converted
+  /// into [CastError] events. Similarly, if any events are added to [sync] that
+  /// aren't of type [S], a [CastError] is thrown.
+  StreamChannel/*<S>*/ cast/*<S>*/();
 }
 
 /// An implementation of [StreamChannel] that simply takes a stream and a sink
@@ -145,4 +152,7 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
 
   StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink)) =>
       new StreamChannel(stream, change(sink));
+
+  StreamChannel/*<S>*/ cast/*<S>*/() => new StreamChannel(
+      DelegatingStream.typed(stream), DelegatingStreamSink.typed(sink));
 }
