@@ -1,3 +1,7 @@
+## 0.13.2
+
+* Relax type of TreeNode.visit, to allow returning values from visitors.
+
 ## 0.13.1
 
 * Fix two checked mode bugs introduced in 0.13.0.

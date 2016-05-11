@@ -16,7 +16,7 @@ abstract class TreeNode {
   TreeNode clone();
 
   /** Classic double-dispatch visitor for implementing passes. */
-  void visit(VisitorBase visitor);
+  visit(VisitorBase visitor);
 
   /** A multiline string showing the node and its children. */
   String toDebugString() {
