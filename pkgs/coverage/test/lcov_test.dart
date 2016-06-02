@@ -5,9 +5,11 @@
 library coverage.test.lcov_test;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -133,37 +135,37 @@ void main() {
   });
 }
 
-Map _hitMap;
-
 Future<Map> _getHitMap() async {
-  if (_hitMap == null) {
-    var tempDir = await Directory.systemTemp.createTemp('coverage.test.');
-    try {
-      var files = await _collectCoverage(tempDir);
-      _hitMap = await parseCoverage(files, 1);
-    } finally {
-      await tempDir.delete(recursive: true);
-    }
-  }
-  return _hitMap;
-}
-
-Future<List<File>> _collectCoverage(Directory tempDir) async {
   expect(await FileSystemEntity.isFile(_sampleAppPath), isTrue);
 
-  var args = [
-    "--enable-vm-service=0",
-    "--coverage_dir=${tempDir.path}",
+  // select service port.
+  var port = await getOpenPort();
+
+  // start sample app.
+  var sampleAppArgs = [
+    '--pause-isolates-on-exit',
+    '--enable-vm-service=$port',
     _sampleAppPath
   ];
-  var result = await Process.run("dart", args);
-  if (result.exitCode != 0) {
-    throw new ProcessException(
-        'dart',
-        args,
-        'There was a critical error. Exit code: ${result.exitCode}',
-        result.exitCode);
+  var sampleAppProc = Process.run('dart', sampleAppArgs);
+
+  // collect hit map; serialize out; parse.
+  var hitMap = await collect('127.0.0.1', port, true, true);
+  var tempDir = await Directory.systemTemp.createTemp('coverage.test.');
+  var outFile = new File(p.join(tempDir.path, 'out.json'))
+    ..writeAsStringSync(JSON.encode(hitMap));
+  var coverage;
+  try {
+    coverage = await parseCoverage([outFile], 1);
+  } finally {
+    await tempDir.delete(recursive: true);
   }
 
-  return await tempDir.list(recursive: false, followLinks: false).toList();
+  // wait for sample app to terminate.
+  var result = await sampleAppProc;
+  if (result.exitCode != 0) {
+    throw new ProcessException('dart', sampleAppArgs,
+        'Fatal error. Exit code: ${result.exitCode}', result.exitCode);
+  }
+  return coverage;
 }

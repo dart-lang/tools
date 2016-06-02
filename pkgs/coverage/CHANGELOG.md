@@ -1,3 +1,7 @@
+## 0.7.4-dev
+
+ * Added support for Dart SDK 1.16.0.
+
 ## 0.7.3
 
  * Added support for the latest Dart SDK.
