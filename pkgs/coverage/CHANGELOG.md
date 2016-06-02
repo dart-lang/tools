@@ -1,6 +1,7 @@
-## 0.7.4-dev
+## 0.7.4
 
- * Added support for Dart SDK 1.16.0.
+ * Require at least Dart SDK 1.16.0.
+
  * Bugfix in format_coverage: if `--report-on` is not specified, emit all
    coverage, rather than none.
 
@@ -19,9 +20,9 @@
 ## 0.7.1
 
  * Added `collect` top-level method.
- 
+
  * Updated support for latest `0.11.0` dev build.
- 
+
  * Replaced `ServiceEvent.eventType` with `ServiceEvent.kind`.
    *  `ServiceEvent.eventType` is deprecated and will be removed in `0.8`.
 
@@ -31,7 +32,7 @@
    explicitly.
 
  * Removed support for collecting coverage from old (<1.9.0) Dart SDKs.
- 
+
  * Removed deprecated `Resolver.pkgRoot`.
 
 ## 0.6.5
@@ -41,17 +42,17 @@
 ## 0.6.4
 
  * Optimized formatters and fixed return value of `format` methods.
- 
+
  * Added `Resolver.packageRoot` – deprecated `Resolver.pkgRoot`.
 
 ## 0.6.3
 
  * Support the latest release of `args` package.
- 
+
  * Support the latest release of `logging` package.
- 
+
  * Fixed error when trying to access invalid paths.
- 
+
  * Require at least Dart SDK v1.9.0.
 
 ## 0.6.2
