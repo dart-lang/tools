@@ -152,7 +152,7 @@ Environment parseArgs(List<String> arguments) {
     env.output = outfile.openWrite();
   }
 
-  env.reportOn = args['report-on'];
+  env.reportOn = args['report-on'].isNotEmpty ? args['report-on'] : null;
 
   env.lcov = args['lcov'];
   if (args['pretty-print'] && env.lcov) {
