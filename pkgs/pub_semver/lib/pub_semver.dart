@@ -5,3 +5,4 @@
 export 'src/version.dart';
 export 'src/version_constraint.dart';
 export 'src/version_range.dart';
+export 'src/version_union.dart';

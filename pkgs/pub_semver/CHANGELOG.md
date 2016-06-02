@@ -1,3 +1,9 @@
+# 1.3.0
+
+* Make the `VersionUnion` class public. This was previously used internally to
+  implement `new VersionConstraint.unionOf()` and `VersionConstraint.union()`.
+  Now it's public so you can use it too.
+
 # 1.2.4
 
 * Fix all remaining strong mode warnings.

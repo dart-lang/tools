@@ -6,6 +6,7 @@ import 'patterns.dart';
 import 'version.dart';
 import 'version_range.dart';
 import 'version_union.dart';
+import 'utils.dart';
 
 /// A [VersionConstraint] is a predicate that can determine whether a given
 /// version is valid or not.
@@ -172,8 +173,44 @@ abstract class VersionConstraint {
   /// It allows any versions that any of those constraints allows. If
   /// [constraints] is empty, this returns a constraint that allows no versions.
   factory VersionConstraint.unionOf(
-          Iterable<VersionConstraint> constraints) =>
-      VersionUnion.create(constraints);
+          Iterable<VersionConstraint> constraints) {
+    var flattened = constraints.expand((constraint) {
+      if (constraint.isEmpty) return [];
+      if (constraint is VersionUnion) return constraint.ranges;
+      return [constraint];
+    }).toList();
+
+    if (flattened.isEmpty) return VersionConstraint.empty;
+
+    if (flattened.any((constraint) => constraint.isAny)) {
+      return VersionConstraint.any;
+    }
+
+    // Only allow Versions and VersionRanges here so we can more easily reason
+    // about everything in [flattened]. _EmptyVersions and VersionUnions are
+    // filtered out above.
+    for (var constraint in flattened) {
+      if (constraint is VersionRange) continue;
+      throw new ArgumentError('Unknown VersionConstraint type $constraint.');
+    }
+
+    flattened.sort(compareMax);
+
+    var merged = <VersionRange>[];
+    for (var constraint in flattened) {
+      // Merge this constraint with the previous one, but only if they touch.
+      if (merged.isEmpty ||
+          (!merged.last.allowsAny(constraint) &&
+              !areAdjacent(merged.last, constraint))) {
+        merged.add(constraint);
+      } else {
+        merged[merged.length - 1] = merged.last.union(constraint);
+      }
+    }
+
+    if (merged.length == 1) return merged.single;
+    return new VersionUnion.fromRanges(merged);
+  }
 
   /// Returns `true` if this constraint allows no versions.
   bool get isEmpty;

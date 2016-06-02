@@ -124,7 +124,7 @@ class VersionRange implements VersionConstraint {
     if (other is Version) return allows(other);
 
     if (other is VersionUnion) {
-      return other.constraints.every((constraint) => allowsAll(constraint));
+      return other.ranges.every((constraint) => allowsAll(constraint));
     }
 
     if (other is VersionRange) {
@@ -151,7 +151,7 @@ class VersionRange implements VersionConstraint {
     if (other is Version) return allows(other);
 
     if (other is VersionUnion) {
-      return other.constraints.any((constraint) => allowsAny(constraint));
+      return other.ranges.any((constraint) => allowsAny(constraint));
     }
 
     if (other is VersionRange) {

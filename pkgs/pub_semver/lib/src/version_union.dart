@@ -9,8 +9,8 @@ import 'version.dart';
 import 'version_constraint.dart';
 import 'version_range.dart';
 
-/// A (package-private) version constraint representing a union of multiple
-/// disjoint version constraints.
+/// A version constraint representing a union of multiple disjoint version
+/// ranges.
 ///
 /// An instance of this will only be created if the version can't be represented
 /// as a non-compound value.
@@ -23,101 +23,63 @@ class VersionUnion implements VersionConstraint {
   /// * Its contents are disjoint and non-adjacent. In other words, for any two
   ///   constraints next to each other in the list, there's some version between
   ///   those constraints that they don't match.
-  final List<VersionRange> constraints;
+  final List<VersionRange> ranges;
 
   bool get isEmpty => false;
 
   bool get isAny => false;
 
-  /// Returns the union of [constraints].
+  /// Creates a union from a list of ranges with no pre-processing.
   ///
-  /// This ensures that an actual [VersionUnion] is only returned if necessary.
-  /// It also takes care of sorting and merging the constraints to ensure that
-  /// they're disjoint.
-  static VersionConstraint create(Iterable<VersionConstraint> constraints) {
-    var flattened = constraints.expand((constraint) {
-      if (constraint.isEmpty) return [];
-      if (constraint is VersionUnion) return constraint.constraints;
-      return [constraint];
-    }).toList();
-
-    if (flattened.isEmpty) return VersionConstraint.empty;
-
-    if (flattened.any((constraint) => constraint.isAny)) {
-      return VersionConstraint.any;
-    }
-
-    // Only allow Versions and VersionRanges here so we can more easily reason
-    // about everything in [flattened]. _EmptyVersions and VersionUnions are
-    // filtered out above.
-    for (var constraint in flattened) {
-      if (constraint is VersionRange) continue;
-      throw new ArgumentError('Unknown VersionConstraint type $constraint.');
-    }
-
-    flattened.sort(compareMax);
-
-    var merged = <VersionRange>[];
-    for (var constraint in flattened) {
-      // Merge this constraint with the previous one, but only if they touch.
-      if (merged.isEmpty ||
-          (!merged.last.allowsAny(constraint) &&
-              !areAdjacent(merged.last, constraint))) {
-        merged.add(constraint);
-      } else {
-        merged[merged.length - 1] = merged.last.union(constraint);
-      }
-    }
-
-    if (merged.length == 1) return merged.single;
-    return new VersionUnion._(merged);
-  }
-
-  VersionUnion._(this.constraints);
+  /// It's up to the caller to ensure that the invariants described in [ranges]
+  /// are maintained. They are not verified by this constructor. To
+  /// automatically ensure that they're maintained, use [new
+  /// VersionConstraint.unionOf] instead.
+  VersionUnion.fromRanges(this.ranges);
 
   bool allows(Version version) =>
-      constraints.any((constraint) => constraint.allows(version));
+      ranges.any((constraint) => constraint.allows(version));
 
   bool allowsAll(VersionConstraint other) {
-    var ourConstraints = constraints.iterator;
-    var theirConstraints = _constraintsFor(other).iterator;
+    var ourRanges = ranges.iterator;
+    var theirRanges = _rangesFor(other).iterator;
 
-    // Because both lists of constraints are ordered by minimum version, we can
+    // Because both lists of ranges are ordered by minimum version, we can
     // safely move through them linearly here.
-    ourConstraints.moveNext();
-    theirConstraints.moveNext();
-    while (ourConstraints.current != null && theirConstraints.current != null) {
-      if (ourConstraints.current.allowsAll(theirConstraints.current)) {
-        theirConstraints.moveNext();
+    ourRanges.moveNext();
+    theirRanges.moveNext();
+    while (ourRanges.current != null && theirRanges.current != null) {
+      if (ourRanges.current.allowsAll(theirRanges.current)) {
+        theirRanges.moveNext();
       } else {
-        ourConstraints.moveNext();
+        ourRanges.moveNext();
       }
     }
 
-    // If our constraints have allowed all of their constraints, we'll have
-    // consumed all of them.
-    return theirConstraints.current == null;
+    // If our ranges have allowed all of their ranges, we'll have consumed all
+    // of them.
+    return theirRanges.current == null;
   }
 
   bool allowsAny(VersionConstraint other) {
-    var ourConstraints = constraints.iterator;
-    var theirConstraints = _constraintsFor(other).iterator;
+    var ourRanges = ranges.iterator;
+    var theirRanges = _rangesFor(other).iterator;
 
-    // Because both lists of constraints are ordered by minimum version, we can
+    // Because both lists of ranges are ordered by minimum version, we can
     // safely move through them linearly here.
-    ourConstraints.moveNext();
-    theirConstraints.moveNext();
-    while (ourConstraints.current != null && theirConstraints.current != null) {
-      if (ourConstraints.current.allowsAny(theirConstraints.current)) {
+    ourRanges.moveNext();
+    theirRanges.moveNext();
+    while (ourRanges.current != null && theirRanges.current != null) {
+      if (ourRanges.current.allowsAny(theirRanges.current)) {
         return true;
       }
 
       // Move the constraint with the higher max value forward. This ensures
       // that we keep both lists in sync as much as possible.
-      if (compareMax(ourConstraints.current, theirConstraints.current) < 0) {
-        ourConstraints.moveNext();
+      if (compareMax(ourRanges.current, theirRanges.current) < 0) {
+        ourRanges.moveNext();
       } else {
-        theirConstraints.moveNext();
+        theirRanges.moveNext();
       }
     }
 
@@ -125,43 +87,42 @@ class VersionUnion implements VersionConstraint {
   }
 
   VersionConstraint intersect(VersionConstraint other) {
-    var ourConstraints = constraints.iterator;
-    var theirConstraints = _constraintsFor(other).iterator;
+    var ourRanges = ranges.iterator;
+    var theirRanges = _rangesFor(other).iterator;
 
-    // Because both lists of constraints are ordered by minimum version, we can
+    // Because both lists of ranges are ordered by minimum version, we can
     // safely move through them linearly here.
-    var newConstraints = <VersionRange>[];
-    ourConstraints.moveNext();
-    theirConstraints.moveNext();
-    while (ourConstraints.current != null && theirConstraints.current != null) {
-      var intersection = ourConstraints.current
-          .intersect(theirConstraints.current);
+    var newRanges = <VersionRange>[];
+    ourRanges.moveNext();
+    theirRanges.moveNext();
+    while (ourRanges.current != null && theirRanges.current != null) {
+      var intersection = ourRanges.current
+          .intersect(theirRanges.current);
 
-      if (!intersection.isEmpty) newConstraints.add(intersection);
+      if (!intersection.isEmpty) newRanges.add(intersection);
 
       // Move the constraint with the higher max value forward. This ensures
       // that we keep both lists in sync as much as possible, and that large
-      // constraints have a chance to match multiple small constraints that they
-      // contain.
-      if (compareMax(ourConstraints.current, theirConstraints.current) < 0) {
-        ourConstraints.moveNext();
+      // ranges have a chance to match multiple small ranges that they contain.
+      if (compareMax(ourRanges.current, theirRanges.current) < 0) {
+        ourRanges.moveNext();
       } else {
-        theirConstraints.moveNext();
+        theirRanges.moveNext();
       }
     }
 
-    if (newConstraints.isEmpty) return VersionConstraint.empty;
-    if (newConstraints.length == 1) return newConstraints.single;
+    if (newRanges.isEmpty) return VersionConstraint.empty;
+    if (newRanges.length == 1) return newRanges.single;
 
-    return new VersionUnion._(newConstraints);
+    return new VersionUnion.fromRanges(newRanges);
   }
 
-  /// Returns [constraint] as a list of constraints.
+  /// Returns [constraint] as a list of ranges.
   ///
-  /// This is used to normalize constraints of various types.
-  List<VersionRange> _constraintsFor(VersionConstraint constraint) {
+  /// This is used to normalize ranges of various types.
+  List<VersionRange> _rangesFor(VersionConstraint constraint) {
     if (constraint.isEmpty) return [];
-    if (constraint is VersionUnion) return constraint.constraints;
+    if (constraint is VersionUnion) return constraint.ranges;
     if (constraint is VersionRange) return [constraint];
     throw new ArgumentError('Unknown VersionConstraint type $constraint.');
   }
@@ -171,10 +132,10 @@ class VersionUnion implements VersionConstraint {
 
   bool operator ==(other) {
     if (other is! VersionUnion) return false;
-    return const ListEquality().equals(constraints, other.constraints);
+    return const ListEquality().equals(ranges, other.ranges);
   }
 
-  int get hashCode => const ListEquality().hash(constraints);
+  int get hashCode => const ListEquality().hash(ranges);
 
-  String toString() => constraints.join(" or ");
+  String toString() => ranges.join(" or ");
 }
