@@ -1,6 +1,8 @@
 ## 0.7.4-dev
 
  * Added support for Dart SDK 1.16.0.
+ * Bugfix in format_coverage: if `--report-on` is not specified, emit all
+   coverage, rather than none.
 
 ## 0.7.3
 
