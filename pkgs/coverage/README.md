@@ -17,18 +17,18 @@ Tools
 #### Install coverage
 
     pub global activate coverage
-    
-Consider adding the `pub global run` executables directory to your path. 
+
+Consider adding the `pub global run` executables directory to your path.
 See [Running a script from your PATH](https://www.dartlang.org/tools/pub/cmd/pub-global.html#running-a-script-from-your-path)
-for more details.    
-    
+for more details.
+
 #### Collecting coverage from the VM
 
-    dart --observe=NNNN script.dart
+    dart --pause-isolates-on-exit --enable-vm-service=NNNN script.dart
     pub global run coverage:collect_coverage --port=NNNN -o coverage.json --resume-isolates
 
 or if the `pub global run` executables are on your PATH,
-    
+
     collect_coverage --port=NNNN -o coverage.json --resume-isolates
 
 If `collect_coverage` is invoked before the script from which coverage is to be
