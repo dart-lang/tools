@@ -84,6 +84,9 @@ Future<List> _getCoverageJson(
   // script uri -> { line -> hit count }
   var hitMaps = <Uri, Map<int, int>>{};
   for (var range in report.ranges) {
+    // Not returned in scripts section of source report.
+    if (range.script.uri.scheme == 'evaluate') continue;
+
     hitMaps.putIfAbsent(range.script.uri, () => <int, int>{});
     var hitMap = hitMaps[range.script.uri];
     var script = scripts[range.script.uri];
