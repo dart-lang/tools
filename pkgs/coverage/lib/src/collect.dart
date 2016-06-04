@@ -17,11 +17,13 @@ Future<Map> collect(String host, int port, bool resume, bool waitPaused,
 
   var vmService;
   await retry(() async {
-    vmService = new VMServiceClient.connect(uri);
-    return await vmService.getVM().timeout(_retryInterval, onTimeout: () {
-      throw new TimeoutException(
-          'Failed to connect to VM service', _retryInterval);
-    });
+    try {
+      vmService = new VMServiceClient.connect(uri);
+      await vmService.getVM().timeout(_retryInterval);
+    } on TimeoutException catch (e) {
+      vmService.close();
+      rethrow;
+    }
   }, _retryInterval, timeout: timeout);
   try {
     if (waitPaused) {
