@@ -3,7 +3,6 @@ library coverage.hitmap;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
@@ -66,80 +65,13 @@ mergeHitmaps(Map newMap, Map result) {
   });
 }
 
-Future<Map> parseCoverage(List<File> files, int workers) async {
+/// Generates a merged hitmap from a set of coverage JSON files.
+Future<Map> parseCoverage(Iterable<File> files, _) async {
   Map globalHitmap = {};
-  var workerId = 0;
-  await Future.wait(_split(files, workers).map((workerFiles) async {
-    var hitmap = await _spawnWorker('Worker ${workerId++}', workerFiles);
-    mergeHitmaps(hitmap, globalHitmap);
-  }));
-
-  return globalHitmap;
-}
-
-Future<Map> _spawnWorker(String name, List<File> files) async {
-  RawReceivePort port = new RawReceivePort();
-  var completer = new Completer();
-  port.handler = ((result) {
-    try {
-      if (result is Map) {
-        completer.complete(result);
-      } else {
-        // TODO: result[1] is a String, but should map to a StackTrace
-        //       consider using the stacktrace package to parse and send
-        completer.completeError(result[0]);
-      }
-    } catch (err, stack) {
-      completer.completeError(err, stack);
-    } finally {
-      port.close();
-    }
-  });
-  var msg = new _WorkMessage(name, files, port.sendPort);
-
-  Isolate isolate = await Isolate.spawn(_worker, msg, paused: true);
-  isolate.setErrorsFatal(true);
-
-  isolate.resume(isolate.pauseCapability);
-
-  isolate.addErrorListener(port.sendPort);
-
-  return completer.future;
-}
-
-class _WorkMessage {
-  final String workerName;
-  final List files;
-  final SendPort replyPort;
-  _WorkMessage(this.workerName, this.files, this.replyPort);
-}
-
-void _worker(_WorkMessage msg) {
-  List files = msg.files;
-  var hitmap = {};
-  files.forEach((File fileEntry) {
-    // Read file sync, as it only contains 1 object.
-    String contents = fileEntry.readAsStringSync();
-    if (contents.length > 0) {
-      var json = JSON.decode(contents)['coverage'];
-      mergeHitmaps(createHitmap(json), hitmap);
-    }
-  });
-  msg.replyPort.send(hitmap);
-}
-
-List<List> _split(List list, int nBuckets) {
-  var buckets = new List(nBuckets);
-  var bucketSize = list.length ~/ nBuckets;
-  var leftover = list.length % nBuckets;
-  var taken = 0;
-  var start = 0;
-  for (int i = 0; i < nBuckets; i++) {
-    var end = (i < leftover) ? (start + bucketSize + 1) : (start + bucketSize);
-    buckets[i] = list.sublist(start, end);
-    taken += buckets[i].length;
-    start = end;
+  for (var file in files) {
+    String contents = file.readAsStringSync();
+    var json = JSON.decode(contents)['coverage'];
+    mergeHitmaps(createHitmap(json), globalHitmap);
   }
-  if (taken != list.length) throw 'Error splitting';
-  return buckets;
+  return globalHitmap;
 }
