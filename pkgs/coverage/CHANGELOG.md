@@ -1,7 +1,14 @@
 ## 0.7.5-dev
 
- * Bugfix in collect_coverage: prevent hang if initial VM service connection is
-   slow.
+ * Bugfix in `collect_coverage`: prevent hang if initial VM service connection
+   is slow.
+ * Workaround for VM behaviour in which `evaluate:source` ranges may appear in
+   the returned source report manifesting in a crash in `collect_coverage`.
+   These generally correspond to source evaluations in the debugger and add
+   little value to line coverage.
+ * `format_coverage`: may be slower for large sets of coverage JSON input
+   files. Unlikely to be an issue due to elimination of `--coverage-dir` VM
+   flag.
 
 ## 0.7.4
 
