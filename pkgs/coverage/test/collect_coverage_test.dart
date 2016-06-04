@@ -84,7 +84,7 @@ void main() {
     } finally {
       await tempDir.delete(recursive: true);
     }
-  }, timeout: new Timeout.factor(2));
+  });
 }
 
 String _coverageData;
