@@ -20,7 +20,7 @@ Future<Map> collect(String host, int port, bool resume, bool waitPaused,
     try {
       vmService = new VMServiceClient.connect(uri);
       await vmService.getVM().timeout(_retryInterval);
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       vmService.close();
       rethrow;
     }
