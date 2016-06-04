@@ -70,6 +70,80 @@ class Resolver {
   }
 }
 
+/// Bazel URI resolver.
+class BazelResolver extends Resolver {
+  static const DART_PREFIX = 'dart:';
+  static const PACKAGE_PREFIX = 'package:';
+  static const FILE_PREFIX = 'file://';
+  static const HTTP_PREFIX = 'http://';
+  static const HTTPS_PREFIX = 'https://';
+  static const PACKAGES_SEGMENT = '/packages/';
+  static const RUNFILES_SUFFIX = '.runfiles';
+
+  final List<String> failed = [];
+  final String workspacePath;
+
+  /// Creates a Bazel resolver with the specified workspace path, if any.
+  BazelResolver({this.workspacePath: ''});
+
+  /// Returns the absolute path wrt. to the given environment or null, if the
+  /// import could not be resolved.
+  String resolve(String uri) {
+    if (uri.startsWith(DART_PREFIX)) {
+      // Ignore the SDK
+      return null;
+    }
+    if (uri.startsWith(PACKAGE_PREFIX)) {
+      // TODO(cbracken) belongs in a Bazel package
+      var path = uri.substring(PACKAGE_PREFIX.length);
+      return _resolveBazelPackage(path);
+    }
+    if (uri.startsWith(FILE_PREFIX)) {
+      var runfilesPathSegment = '$RUNFILES_SUFFIX/$workspacePath';
+      runfilesPathSegment = runfilesPathSegment.replaceAll(new RegExp(r'/*$'), '/');
+      var runfilesPos = uri.indexOf(runfilesPathSegment);
+      if (runfilesPos >= 0) {
+        int pathStart = runfilesPos + runfilesPathSegment.length;
+        return uri.substring(pathStart);
+      }
+      return null;
+    }
+    if (uri.startsWith(HTTPS_PREFIX)) {
+      uri = uri.substring(HTTPS_PREFIX.length);
+      int packagesPos = uri.indexOf(PACKAGES_SEGMENT);
+      if (packagesPos >= 0) {
+        return _resolveBazelPackage(uri.substring(packagesPos + PACKAGES_SEGMENT.length));
+      }
+      return uri;
+    }
+    if (uri.startsWith(HTTP_PREFIX)) {
+      uri = uri.substring(HTTP_PREFIX.length);
+      int packagesPos = uri.indexOf(PACKAGES_SEGMENT);
+      if (packagesPos >= 0) {
+        return _resolveBazelPackage(uri.substring(packagesPos + PACKAGES_SEGMENT.length));
+      }
+      return uri;
+    }
+    // We cannot deal with anything else.
+    failed.add(uri);
+    return null;
+  }
+
+  String _resolveBazelPackage(String uriPath) {
+    // TODO(cbracken) belongs in a Bazel package
+    var slashPos = uriPath.indexOf('/');
+    var packageName = uriPath.substring(0, slashPos);
+    var packageFile = uriPath.substring(slashPos + 1);
+    var packagePath;
+    if (packageName.contains('.')) {
+      packagePath = packageName.replaceAll('.', '/');
+    } else {
+      packagePath = 'third_party/dart/$packageName';
+    }
+    return '$packagePath/lib/$packageFile';
+  }
+}
+
 /// Loads the lines of imported resources.
 class Loader {
   final List<String> failed = [];

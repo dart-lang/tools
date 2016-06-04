@@ -15,6 +15,8 @@ class Environment {
   String input;
   IOSink output;
   List<String> reportOn;
+  String bazelWorkspace;
+  bool bazel;
   int workers;
   bool prettyPrint;
   bool lcov;
@@ -44,7 +46,9 @@ main(List<String> arguments) async {
   }
 
   String output;
-  var resolver = new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
+  var resolver = env.bazel
+      ? new BazelResolver(workspacePath: env.bazelWorkspace)
+      : new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
     output = await new PrettyPrintFormatter(resolver, loader)
@@ -90,6 +94,12 @@ Environment parseArgs(List<String> arguments) {
       help: 'which directories or files to report coverage on');
   parser.addOption('workers',
       abbr: 'j', defaultsTo: '1', help: 'number of workers');
+  parser.addOption('bazel-workspace',
+      defaultsTo: '',
+      help: 'Bazel workspace directory');
+  parser.addFlag('bazel',
+      defaultsTo: false,
+      help: 'use Bazel-style path resolution');
   parser.addFlag('pretty-print',
       abbr: 'r',
       negatable: false,
@@ -153,6 +163,12 @@ Environment parseArgs(List<String> arguments) {
   }
 
   env.reportOn = args['report-on'].isNotEmpty ? args['report-on'] : null;
+
+  env.bazel = args['bazel'];
+  env.bazelWorkspace = args['bazel-workspace'];
+  if (env.bazelWorkspace.isNotEmpty && !env.bazel) {
+    stderr.writeln('warning: ignoring --bazel-workspace: --bazel not set');
+  }
 
   env.lcov = args['lcov'];
   if (args['pretty-print'] && env.lcov) {

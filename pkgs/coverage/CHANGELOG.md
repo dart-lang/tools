@@ -1,5 +1,6 @@
 ## 0.7.6-dev
 
+ * Add [Bazel](http://bazel.io) support to `format_coverage`.
 
 ## 0.7.5
 
