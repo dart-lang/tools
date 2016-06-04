@@ -1,4 +1,4 @@
-## 0.7.5-dev
+## 0.7.5
 
  * Bugfix in `collect_coverage`: prevent hang if initial VM service connection
    is slow.
