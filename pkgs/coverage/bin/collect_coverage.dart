@@ -24,8 +24,8 @@ main(List<String> arguments) async {
     options.out.write(JSON.encode(coverage));
     await options.out.close();
   }, onError: (error, Chain chain) {
-    print(error);
-    print(chain.terse);
+    stderr.writeln(error);
+    stderr.writeln(chain.terse);
     // See http://www.retro11.de/ouxr/211bsd/usr/include/sysexits.h.html
     // EX_SOFTWARE
     exit(70);
