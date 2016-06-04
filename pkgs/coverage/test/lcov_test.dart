@@ -5,7 +5,6 @@
 library coverage.test.lcov_test;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
