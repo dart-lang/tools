@@ -1,3 +1,6 @@
+## 0.7.6-dev
+
+
 ## 0.7.5
 
  * Bugfix in `collect_coverage`: prevent hang if initial VM service connection
