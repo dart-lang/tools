@@ -149,17 +149,9 @@ Future<Map> _getHitMap() async {
   ];
   var sampleAppProc = Process.run('dart', sampleAppArgs);
 
-  // collect hit map; serialize out; parse.
-  var hitMap = await collect('127.0.0.1', port, true, true);
-  var tempDir = await Directory.systemTemp.createTemp('coverage.test.');
-  var outFile = new File(p.join(tempDir.path, 'out.json'))
-    ..writeAsStringSync(JSON.encode(hitMap));
-  var coverage;
-  try {
-    coverage = await parseCoverage([outFile], 1);
-  } finally {
-    await tempDir.delete(recursive: true);
-  }
+  // collect hit map.
+  var coverageJson = await collect('127.0.0.1', port, true, true);
+  var hitMap = createHitmap(coverageJson['coverage']);
 
   // wait for sample app to terminate.
   var result = await sampleAppProc;
@@ -167,5 +159,5 @@ Future<Map> _getHitMap() async {
     throw new ProcessException('dart', sampleAppArgs,
         'Fatal error. Exit code: ${result.exitCode}', result.exitCode);
   }
-  return coverage;
+  return hitMap;
 }
