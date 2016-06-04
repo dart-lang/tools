@@ -1,3 +1,8 @@
+## 0.7.5-dev
+
+ * Bugfix in collect_coverage: prevent hang if initial VM service connection is
+   slow.
+
 ## 0.7.4
 
  * Require at least Dart SDK 1.16.0.
