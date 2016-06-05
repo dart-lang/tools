@@ -100,7 +100,8 @@ class BazelResolver extends Resolver {
     }
     if (uri.startsWith(FILE_PREFIX)) {
       var runfilesPathSegment = '$RUNFILES_SUFFIX/$workspacePath';
-      runfilesPathSegment = runfilesPathSegment.replaceAll(new RegExp(r'/*$'), '/');
+      runfilesPathSegment =
+          runfilesPathSegment.replaceAll(new RegExp(r'/*$'), '/');
       var runfilesPos = uri.indexOf(runfilesPathSegment);
       if (runfilesPos >= 0) {
         int pathStart = runfilesPos + runfilesPathSegment.length;
@@ -109,24 +110,25 @@ class BazelResolver extends Resolver {
       return null;
     }
     if (uri.startsWith(HTTPS_PREFIX)) {
-      uri = uri.substring(HTTPS_PREFIX.length);
-      int packagesPos = uri.indexOf(PACKAGES_SEGMENT);
-      if (packagesPos >= 0) {
-        return _resolveBazelPackage(uri.substring(packagesPos + PACKAGES_SEGMENT.length));
-      }
-      return uri;
+      return _extractHttpPath(uri, HTTPS_PREFIX);
     }
     if (uri.startsWith(HTTP_PREFIX)) {
-      uri = uri.substring(HTTP_PREFIX.length);
-      int packagesPos = uri.indexOf(PACKAGES_SEGMENT);
-      if (packagesPos >= 0) {
-        return _resolveBazelPackage(uri.substring(packagesPos + PACKAGES_SEGMENT.length));
-      }
-      return uri;
+      return _extractHttpPath(uri, HTTP_PREFIX);
     }
     // We cannot deal with anything else.
     failed.add(uri);
     return null;
+  }
+
+  String _extractHttpPath(String uri, String prefix) {
+    uri = uri.substring(prefix.length);
+    int packagesPos = uri.indexOf(PACKAGES_SEGMENT);
+    if (packagesPos >= 0) {
+      return _resolveBazelPackage(
+          uri.substring(packagesPos + PACKAGES_SEGMENT.length));
+    }
+    int pathPos = uri.indexOf('/');
+    return pathPos >= 0 ? uri.substring(pathPos + 1) : uri;
   }
 
   String _resolveBazelPackage(String uriPath) {
