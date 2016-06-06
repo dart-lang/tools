@@ -41,13 +41,13 @@ void main() {
     expect(sinkController.stream.toList(), completion(equals([4, 5, 6])));
   });
 
-  test("transform() transforms the channel", () {
+  test("transform() transforms the channel", () async {
     var transformed = channel.transform(
         new StreamChannelTransformer.fromCodec(UTF8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
-    expect(transformed.stream.toList(), completion(equals(["foobar"])));
+    expect(await transformed.stream.toList(), equals(["foobar"]));
 
     transformed.sink.add("fblthp");
     transformed.sink.close();
@@ -55,12 +55,12 @@ void main() {
         completion(equals([[102, 98, 108, 116, 104, 112]])));
   });
 
-  test("transformStream() transforms only the stream", () {
+  test("transformStream() transforms only the stream", () async {
     var transformed = channel.transformStream(UTF8.decoder);
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
-    expect(transformed.stream.toList(), completion(equals(["foobar"])));
+    expect(await transformed.stream.toList(), equals(["foobar"]));
 
     transformed.sink.add("fblthp");
     transformed.sink.close();
@@ -68,14 +68,14 @@ void main() {
         completion(equals(["fblthp"])));
   });
 
-  test("transformSink() transforms only the sink", () {
+  test("transformSink() transforms only the sink", () async {
     var transformed = channel.transformSink(
         new StreamSinkTransformer.fromStreamTransformer(UTF8.encoder));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
-    expect(transformed.stream.toList(),
-        completion(equals([[102, 111, 111, 98, 97, 114]])));
+    expect(await transformed.stream.toList(),
+        equals([[102, 111, 111, 98, 97, 114]]));
 
     transformed.sink.add("fblthp");
     transformed.sink.close();
