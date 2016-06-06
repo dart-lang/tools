@@ -1,3 +1,14 @@
+## 1.5.0
+
+* Add `new StreamChannel.withCloseGuarantee()` to provide the specific guarantee
+  that closing the sink causes the stream to close before it emits any more
+  events. This is the only guarantee that isn't automatically preserved when
+  transforming a channel.
+
+* `StreamChannelTransformer`s provided by the `stream_channel` package now
+  properly provide the guarantee that closing the sink causes the stream to
+  close before it emits any more events
+
 ## 1.4.0
 
 * Add `StreamChannel.cast()`, which soundly coerces the generic type of a

@@ -17,7 +17,14 @@ import 'transformer/typed.dart';
 /// [StreamSinkTransformer]. Each transformer defines a [bind] method that takes
 /// in the original [StreamChannel] and returns the transformed version.
 ///
-/// Transformers must be able to have `bind` called multiple times.
+/// Transformers must be able to have [bind] called multiple times. If a
+/// subclass implements [bind] explicitly, it should be sure that the returned
+/// stream follows the second stream channel guarantee: closing the sink causes
+/// the stream to close before it emits any more events. This guarantee is
+/// invalidated when an asynchronous gap is added between the original stream's
+/// event dispatch and the returned stream's, for example by transforming it
+/// with a [StreamTransformer]. The guarantee can be easily preserved using [new
+/// StreamChannel.withCloseGuarantee].
 class StreamChannelTransformer<S, T> {
   /// The transformer to use on the channel's stream.
   final StreamTransformer<T, S> _streamTransformer;
@@ -63,7 +70,7 @@ class StreamChannelTransformer<S, T> {
   /// `channel.straem`, the transformer will transform them and pass the
   /// transformed versions to the returned channel's stream.
   StreamChannel<S> bind(StreamChannel<T> channel) =>
-      new StreamChannel<S>(
+      new StreamChannel<S>.withCloseGuarantee(
           channel.stream.transform(_streamTransformer),
           _sinkTransformer.bind(channel.sink));
 }

@@ -40,6 +40,6 @@ class JsonDocumentTransformer
     var sink = new StreamSinkTransformer.fromHandlers(handleData: (data, sink) {
       sink.add(_codec.encode(data));
     }).bind(channel.sink);
-    return new StreamChannel(stream, sink);
+    return new StreamChannel.withCloseGuarantee(stream, sink);
   }
 }
