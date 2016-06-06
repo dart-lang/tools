@@ -7,6 +7,7 @@ import 'package:source_span/source_span.dart';
 import 'eager_span_scanner.dart';
 import 'exception.dart';
 import 'line_scanner.dart';
+import 'relative_span_scanner.dart';
 import 'string_scanner.dart';
 import 'utils.dart';
 
@@ -68,6 +69,14 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// their line and column numbers.
   factory SpanScanner.eager(String string, {sourceUrl, int position}) =
       EagerSpanScanner;
+
+  /// Creates a new [SpanScanner] that scans within [span].
+  ///
+  /// This scans through [span.text], but emits new spans from [span.file] in
+  /// their appropriate relative positions. The [string] field contains only
+  /// [span.text], and [position], [line], and [column] are all relative to the
+  /// span.
+  factory SpanScanner.within(FileSpan span) = RelativeSpanScanner;
 
   /// Creates a [FileSpan] representing the source range between [startState]
   /// and the current position.
