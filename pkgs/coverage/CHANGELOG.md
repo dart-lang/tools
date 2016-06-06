@@ -1,4 +1,4 @@
-## 0.7.7-dev
+## 0.7.7
 
  * Add fallback URI resolution for Bazel http(s) URIs that don't contain a
    `packages` path component.
