@@ -73,15 +73,26 @@ class LineScanner extends StringScanner {
   LineScanner(String string, {sourceUrl, int position})
       : super(string, sourceUrl: sourceUrl, position: position);
 
+  bool scanChar(int character) {
+    if (!super.scanChar(character)) return false;
+    _adjustLineAndColumn(character);
+    return true;
+  }
+
   int readChar() {
-    var char = super.readChar();
-    if (char == $lf || (char == $cr && peekChar() != $lf)) {
+    var character = super.readChar();
+    _adjustLineAndColumn(character);
+    return character;
+  }
+
+  /// Adjusts [_line] and [_column] after having consumed [character].
+  void _adjustLineAndColumn(int character) {
+    if (character == $lf || (character == $cr && peekChar() != $lf)) {
       _line += 1;
       _column = 0;
     } else {
       _column += 1;
     }
-    return char;
   }
 
   bool scan(Pattern pattern) {

@@ -2,6 +2,8 @@
 
 * Add `new SpanScanner.within()`, which scans within a existing `FileSpan`.
 
+* Add `StringScanner.scanChar()` and `StringScanner.expectChar()`.
+
 ## 0.1.4+1
 
 * Remove the dependency on `path`, since we don't actually import it.

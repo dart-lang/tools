@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:charcode/charcode.dart';
 import 'package:string_scanner/string_scanner.dart';
 import 'package:test/test.dart';
 
@@ -75,6 +76,39 @@ void main() {
       expect(scanner.column, equals(4));
 
       scanner.readChar();
+      expect(scanner.line, equals(2));
+      expect(scanner.column, equals(0));
+    });
+  });
+
+  group("scanChar()", () {
+    test("on a non-newline character increases the column but not the line",
+        () {
+      scanner.scanChar($f);
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(1));
+    });
+
+    test("consuming a newline resets the column and increases the line", () {
+      scanner.expect('foo');
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(3));
+
+      scanner.scanChar($lf);
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(0));
+    });
+
+    test("consuming halfway through a CR LF doesn't count as a line", () {
+      scanner.expect('foo\nbar');
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(3));
+
+      scanner.scanChar($cr);
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(4));
+
+      scanner.scanChar($lf);
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(0));
     });

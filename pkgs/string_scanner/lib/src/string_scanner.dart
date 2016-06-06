@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:charcode/charcode.dart';
 import 'package:source_span/source_span.dart';
 
 import 'exception.dart';
@@ -77,6 +78,38 @@ class StringScanner {
     var index = position + offset;
     if (index < 0 || index >= string.length) return null;
     return string.codeUnitAt(index);
+  }
+
+  /// If the next character in the string is [character], consumes it.
+  ///
+  /// Returns whether or not [character] was consumed.
+  bool scanChar(int character) {
+    if (isDone) return false;
+    if (string.codeUnitAt(_position) != character) return false;
+    _position++;
+    return true;
+  }
+
+  /// If the next character in the string is [character], consumes it.
+  ///
+  /// If [character] could not be consumed, throws a [FormatException]
+  /// describing the position of the failure. [name] is used in this error as
+  /// the expected name of the character being matched; if it's `null`, the
+  /// character itself is used instead.
+  void expectChar(int character, {String name}) {
+    if (scanChar(character)) return;
+
+    if (name == null) {
+      if (character == $backslash) {
+        name = r'"\"';
+      } else if (character == $double_quote) {
+        name = r'"\""';
+      } else {
+        name = '"${new String.fromCharCode(character)}"';
+      }
+    }
+
+    _fail('Expected $name.');
   }
 
   /// If [pattern] matches at the current position of the string, scans forward

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:charcode/charcode.dart';
 import 'package:string_scanner/string_scanner.dart';
 import 'package:test/test.dart';
 
@@ -37,6 +38,18 @@ void main() {
 
     test("peekChar returns null and doesn't change the state", () {
       expect(scanner.peekChar(), isNull);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(0));
+    });
+
+    test("scanChar returns false and doesn't change the state", () {
+      expect(scanner.scanChar($f), isFalse);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(0));
+    });
+
+    test("expectChar fails and doesn't change the state", () {
+      expect(() => scanner.expectChar($f), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
@@ -113,6 +126,30 @@ void main() {
 
     test('peekChar with an argument returns the nth character', () {
       expect(scanner.peekChar(4), equals(0x62));
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(0));
+    });
+
+    test("a matching scanChar returns true moves forward", () {
+      expect(scanner.scanChar($f), isTrue);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(1));
+    });
+
+    test("a non-matching scanChar returns false and does nothing", () {
+      expect(scanner.scanChar($x), isFalse);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(0));
+    });
+
+    test("a matching expectChar moves forward", () {
+      scanner.expectChar($f);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(1));
+    });
+
+    test("a non-matching expectChar fails", () {
+      expect(() => scanner.expectChar($x), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
@@ -252,6 +289,18 @@ void main() {
 
     test("peekChar returns null and doesn't change the state", () {
       expect(scanner.peekChar(), isNull);
+      expect(scanner.lastMatch, isNotNull);
+      expect(scanner.position, equals(7));
+    });
+
+    test("scanChar returns false and doesn't change the state", () {
+      expect(scanner.scanChar($f), isFalse);
+      expect(scanner.lastMatch, isNotNull);
+      expect(scanner.position, equals(7));
+    });
+
+    test("expectChar fails and doesn't change the state", () {
+      expect(() => scanner.expectChar($f), throwsFormatException);
       expect(scanner.lastMatch, isNotNull);
       expect(scanner.position, equals(7));
     });
