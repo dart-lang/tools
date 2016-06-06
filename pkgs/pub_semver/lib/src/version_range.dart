@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'utils.dart';
 import 'version.dart';
 import 'version_constraint.dart';
 import 'version_union.dart';
@@ -11,7 +12,11 @@ import 'version_union.dart';
 /// If there is a minimum, then this only allows versions that are at that
 /// minimum or greater. If there is a maximum, then only versions less than
 /// that are allowed. In other words, this allows `>= min, < max`.
-class VersionRange implements VersionConstraint {
+///
+/// Version ranges are ordered first by their lower bounds, then by their upper
+/// bounds. For example, `>=1.0.0 <2.0.0` is before `>=1.5.0 <2.0.0` is before
+/// `>=1.5.0 <3.0.0`.
+class VersionRange implements Comparable<VersionRange>, VersionConstraint {
   /// The minimum end of the range.
   ///
   /// If [includeMin] is `true`, this will be the minimum allowed version.
@@ -313,6 +318,21 @@ class VersionRange implements VersionConstraint {
     }
 
     return new VersionConstraint.unionOf([this, other]);
+  }
+
+  int compareTo(VersionRange other) {
+    if (min == null) {
+      if (other.min == null) return compareMax(this, other);
+      return -1;
+    } else if (other.min == null) {
+      return 1;
+    }
+
+    var result = min.compareTo(other.min);
+    if (result != 0) return result;
+    if (includeMin != other.includeMin) return includeMin ? -1 : 1;
+
+    return compareMax(this, other);
   }
 
   String toString() {

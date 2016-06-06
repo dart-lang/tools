@@ -4,6 +4,9 @@
   implement `new VersionConstraint.unionOf()` and `VersionConstraint.union()`.
   Now it's public so you can use it too.
 
+* Make `VersionRange` implement `Comparable<VersionRange>`. Ranges are ordered
+  first by lower bound, then by upper bound.
+
 # 1.2.4
 
 * Fix all remaining strong mode warnings.

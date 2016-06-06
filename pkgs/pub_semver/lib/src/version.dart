@@ -14,7 +14,7 @@ import 'version_range.dart';
 final _equality = const IterableEquality();
 
 /// A parsed semantic version number.
-class Version implements Comparable<Version>, VersionConstraint, VersionRange {
+class Version implements VersionConstraint, VersionRange {
   /// No released version: i.e. "0.0.0".
   static Version get none => new Version(0, 0, 0);
 
@@ -267,22 +267,26 @@ class Version implements Comparable<Version>, VersionConstraint, VersionRange {
     return new VersionConstraint.unionOf([this, other]);
   }
 
-  int compareTo(Version other) {
-    if (major != other.major) return major.compareTo(other.major);
-    if (minor != other.minor) return minor.compareTo(other.minor);
-    if (patch != other.patch) return patch.compareTo(other.patch);
+  int compareTo(VersionRange other) {
+    if (other is Version) {
+      if (major != other.major) return major.compareTo(other.major);
+      if (minor != other.minor) return minor.compareTo(other.minor);
+      if (patch != other.patch) return patch.compareTo(other.patch);
 
-    // Pre-releases always come before no pre-release string.
-    if (!isPreRelease && other.isPreRelease) return 1;
-    if (!other.isPreRelease && isPreRelease) return -1;
+      // Pre-releases always come before no pre-release string.
+      if (!isPreRelease && other.isPreRelease) return 1;
+      if (!other.isPreRelease && isPreRelease) return -1;
 
-    var comparison = _compareLists(preRelease, other.preRelease);
-    if (comparison != 0) return comparison;
+      var comparison = _compareLists(preRelease, other.preRelease);
+      if (comparison != 0) return comparison;
 
-    // Builds always come after no build string.
-    if (build.isEmpty && other.build.isNotEmpty) return -1;
-    if (other.build.isEmpty && build.isNotEmpty) return 1;
-    return _compareLists(build, other.build);
+      // Builds always come after no build string.
+      if (build.isEmpty && other.build.isNotEmpty) return -1;
+      if (other.build.isEmpty && build.isNotEmpty) return 1;
+      return _compareLists(build, other.build);
+    } else {
+      return -other.compareTo(this);
+    }
   }
 
   String toString() => _text;

@@ -194,7 +194,7 @@ abstract class VersionConstraint {
       throw new ArgumentError('Unknown VersionConstraint type $constraint.');
     }
 
-    flattened.sort(compareMax);
+    flattened.sort();
 
     var merged = <VersionRange>[];
     for (var constraint in flattened) {

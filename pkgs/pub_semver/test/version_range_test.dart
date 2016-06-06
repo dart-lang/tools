@@ -445,4 +445,61 @@ main() {
     expect(new VersionRange().isEmpty, isFalse);
     expect(new VersionRange(min: v123, max: v124).isEmpty, isFalse);
   });
+
+  group('compareTo()', () {
+    test("orders by minimum first", () {
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v080),
+          new VersionRange(min: v010, max: v072));
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v080),
+          new VersionRange(min: v010, max: v080));
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v080),
+          new VersionRange(min: v010, max: v114));
+    });
+
+    test("orders by maximum second", () {
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v010),
+          new VersionRange(min: v003, max: v072));
+    });
+
+    test("includeMin comes before !includeMin", () {
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v080, includeMin: true),
+          new VersionRange(min: v003, max: v080, includeMin: false));
+    });
+
+    test("includeMax comes after !includeMax", () {
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v080, includeMax: false),
+          new VersionRange(min: v003, max: v080, includeMax: true));
+    });
+
+    test("no minimum comes before small minimum", () {
+      _expectComparesSmaller(
+          new VersionRange(max: v010),
+          new VersionRange(min: v003, max: v010));
+      _expectComparesSmaller(
+          new VersionRange(max: v010, includeMin: true),
+          new VersionRange(min: v003, max: v010));
+    });
+
+    test("no maximium comes after large maximum", () {
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v300),
+          new VersionRange(min: v003));
+      _expectComparesSmaller(
+          new VersionRange(min: v003, max: v300),
+          new VersionRange(min: v003, includeMax: true));
+    });
+  });
+}
+
+void _expectComparesSmaller(VersionRange smaller, VersionRange larger) {
+  expect(smaller.compareTo(larger), lessThan(0),
+      reason: "expected $smaller to sort below $larger");
+  expect(larger.compareTo(smaller), greaterThan(0),
+      reason: "expected $larger to sort above $smaller");
 }

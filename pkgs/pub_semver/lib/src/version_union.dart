@@ -19,7 +19,7 @@ class VersionUnion implements VersionConstraint {
   ///
   /// This list has two invariants:
   ///
-  /// * Its contents are sorted from lowest to highest matched versions.
+  /// * Its contents are sorted using the standard ordering of [VersionRange]s.
   /// * Its contents are disjoint and non-adjacent. In other words, for any two
   ///   constraints next to each other in the list, there's some version between
   ///   those constraints that they don't match.
@@ -74,8 +74,8 @@ class VersionUnion implements VersionConstraint {
         return true;
       }
 
-      // Move the constraint with the higher max value forward. This ensures
-      // that we keep both lists in sync as much as possible.
+      // Move the constraint with the lower max value forward. This ensures that
+      // we keep both lists in sync as much as possible.
       if (compareMax(ourRanges.current, theirRanges.current) < 0) {
         ourRanges.moveNext();
       } else {
@@ -101,9 +101,9 @@ class VersionUnion implements VersionConstraint {
 
       if (!intersection.isEmpty) newRanges.add(intersection);
 
-      // Move the constraint with the higher max value forward. This ensures
-      // that we keep both lists in sync as much as possible, and that large
-      // ranges have a chance to match multiple small ranges that they contain.
+      // Move the constraint with the lower max value forward. This ensures that
+      // we keep both lists in sync as much as possible, and that large ranges
+      // have a chance to match multiple small ranges that they contain.
       if (compareMax(ourRanges.current, theirRanges.current) < 0) {
         ourRanges.moveNext();
       } else {

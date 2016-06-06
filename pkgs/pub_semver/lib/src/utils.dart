@@ -15,10 +15,15 @@ bool areAdjacent(VersionRange range1, VersionRange range2) {
 
 /// A [Comparator] that compares the maximum versions of [range1] and [range2].
 int compareMax(VersionRange range1, VersionRange range2) {
-  if (range1.max < range2.max) return -1;
-  if (range1.max > range2.max) return 1;
+  if (range1.max == null) {
+    if (range2.max == null) return 0;
+    return 1;
+  } else if (range2.max == null) {
+    return -1;
+  }
 
-  if (!range1.includeMax && range2.includeMax) return -1;
-  if (range1.includeMax && !range2.includeMax) return 1;
+  var result = range1.max.compareTo(range2.max);
+  if (result != 0) return result;
+  if (range1.includeMax != range2.includeMax) return range1.includeMax ? 1 : -1;
   return 0;
 }
