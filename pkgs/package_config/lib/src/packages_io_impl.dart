@@ -14,10 +14,15 @@ import "packages_impl.dart";
 /// A [Packages] implementation based on a local directory.
 class FilePackagesDirectoryPackages extends PackagesBase {
   final Directory _packageDir;
+  final Map<String, Uri> _packageToBaseUriMap = <String, Uri>{};
+
   FilePackagesDirectoryPackages(this._packageDir);
 
-  Uri getBase(String packageName) =>
-      new Uri.file(path.join(_packageDir.path, packageName, '.'));
+  Uri getBase(String packageName) {
+    return _packageToBaseUriMap.putIfAbsent(packageName, () {
+      return new Uri.file(path.join(_packageDir.path, packageName, '.'));
+    });
+  }
 
   Iterable<String> _listPackageNames() {
     return _packageDir
