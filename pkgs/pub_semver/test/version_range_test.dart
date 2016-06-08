@@ -340,8 +340,8 @@ main() {
     });
 
     test('adjacent ranges allow no versions if exclusive', () {
-      var a = new VersionRange(min: v114, max: v124, includeMax: false);
-      var b = new VersionRange(min: v124, max: v200, includeMin: true);
+      var a = new VersionRange(min: v114, max: v124);
+      var b = new VersionRange(min: v124, max: v200);
       expect(a.intersect(b).isEmpty, isTrue);
     });
 
@@ -438,6 +438,164 @@ main() {
           .union(new VersionRange(min: v003, max: v114, includeMax: true));
       expect(result, equals(new VersionRange(
           min: v003, max: v114, includeMin: true, includeMax: true)));
+    });
+  });
+
+  group('difference()', () {
+    test("with an empty range returns the original range", () {
+      expect(
+          new VersionRange(min: v003, max: v114)
+              .difference(VersionConstraint.empty),
+          equals(new VersionRange(min: v003, max: v114)));
+    });
+
+    test("with a version outside the range returns the original range", () {
+      expect(
+          new VersionRange(min: v003, max: v114).difference(v200),
+          equals(new VersionRange(min: v003, max: v114)));
+    });
+
+    test("with a version in the range splits the range", () {
+      expect(
+          new VersionRange(min: v003, max: v114).difference(v072),
+          equals(new VersionConstraint.unionOf([
+            new VersionRange(min: v003, max: v072),
+            new VersionRange(min: v072, max: v114)
+          ])));
+    });
+
+    test("with the max version makes the max exclusive", () {
+      expect(
+          new VersionRange(min: v003, max: v114, includeMax: true)
+              .difference(v114),
+          equals(new VersionRange(min: v003, max: v114)));
+    });
+
+    test("with the min version makes the min exclusive", () {
+      expect(
+          new VersionRange(min: v003, max: v114, includeMin: true)
+              .difference(v003),
+          equals(new VersionRange(min: v003, max: v114)));
+    });
+
+    test("with a disjoint range returns the original", () {
+      expect(
+          new VersionRange(min: v003, max: v114)
+              .difference(new VersionRange(min: v123, max: v140)),
+          equals(new VersionRange(min: v003, max: v114)));
+    });
+
+    test("with an adjacent range returns the original", () {
+      expect(
+          new VersionRange(min: v003, max: v114, includeMax: true)
+              .difference(new VersionRange(min: v114, max: v140)),
+          equals(new VersionRange(min: v003, max: v114, includeMax: true)));
+    });
+
+    test("with a range at the beginning cuts off the beginning of the range",
+        () {
+      expect(
+          new VersionRange(min: v080, max: v130)
+              .difference(new VersionRange(min: v010, max: v114)),
+          equals(new VersionRange(min: v114, max: v130, includeMin: true)));
+      expect(
+          new VersionRange(min: v080, max: v130)
+              .difference(new VersionRange(max: v114)),
+          equals(new VersionRange(min: v114, max: v130, includeMin: true)));
+      expect(
+          new VersionRange(min: v080, max: v130).difference(
+              new VersionRange(min: v010, max: v114, includeMax: true)),
+          equals(new VersionRange(min: v114, max: v130)));
+      expect(
+          new VersionRange(min: v080, max: v130, includeMin: true).difference(
+              new VersionRange(min: v010, max: v080, includeMax: true)),
+          equals(new VersionRange(min: v080, max: v130)));
+      expect(
+          new VersionRange(min: v080, max: v130, includeMax: true)
+              .difference(new VersionRange(min: v080, max: v130)),
+          equals(v130));
+    });
+
+    test("with a range at the end cuts off the end of the range",
+        () {
+      expect(
+          new VersionRange(min: v080, max: v130)
+              .difference(new VersionRange(min: v114, max: v140)),
+          equals(new VersionRange(min: v080, max: v114, includeMax: true)));
+      expect(
+          new VersionRange(min: v080, max: v130)
+              .difference(new VersionRange(min: v114)),
+          equals(new VersionRange(min: v080, max: v114, includeMax: true)));
+      expect(
+          new VersionRange(min: v080, max: v130).difference(
+              new VersionRange(min: v114, max: v140, includeMin: true)),
+          equals(new VersionRange(min: v080, max: v114)));
+      expect(
+          new VersionRange(min: v080, max: v130, includeMax: true).difference(
+              new VersionRange(min: v130, max: v140, includeMin: true)),
+          equals(new VersionRange(min: v080, max: v130)));
+      expect(
+          new VersionRange(min: v080, max: v130, includeMin: true)
+              .difference(new VersionRange(min: v080, max: v130)),
+          equals(v080));
+    });
+
+    test("with a range in the middle cuts the range in half", () {
+      expect(
+          new VersionRange(min: v003, max: v130)
+              .difference(new VersionRange(min: v072, max: v114)),
+          equals(new VersionConstraint.unionOf([
+            new VersionRange(min: v003, max: v072, includeMax: true),
+            new VersionRange(min: v114, max: v130, includeMin: true)
+          ])));
+    });
+
+    test("with a totally covering range returns empty", () {
+      expect(
+          new VersionRange(min: v114, max: v200)
+              .difference(new VersionRange(min: v072, max: v300)),
+          isEmpty);
+      expect(
+          new VersionRange(min: v003, max: v114)
+              .difference(new VersionRange(min: v003, max: v114)),
+          isEmpty);
+      expect(
+          new VersionRange(
+                  min: v003, max: v114, includeMin: true, includeMax: true)
+              .difference(new VersionRange(
+                  min: v003, max: v114, includeMin: true, includeMax: true)),
+          isEmpty);
+    });
+
+    test("with a version union that doesn't cover the range, returns the "
+        "original", () {
+      expect(
+          new VersionRange(min: v114, max: v140)
+              .difference(new VersionConstraint.unionOf([v010, v200])),
+          equals(new VersionRange(min: v114, max: v140)));
+    });
+
+    test("with a version union that intersects the ends, chops them off", () {
+      expect(
+          new VersionRange(min: v114, max: v140)
+              .difference(new VersionConstraint.unionOf([
+                new VersionRange(min: v080, max: v123),
+                new VersionRange(min: v130, max: v200)
+              ])),
+          equals(new VersionRange(
+              min: v123, max: v130, includeMin: true, includeMax: true)));
+    });
+
+    test("with a version union that intersects the middle, chops it up", () {
+      expect(
+          new VersionRange(min: v114, max: v140)
+              .difference(new VersionConstraint.unionOf([v123, v124, v130])),
+          equals(new VersionConstraint.unionOf([
+            new VersionRange(min: v114, max: v123),
+            new VersionRange(min: v123, max: v124),
+            new VersionRange(min: v124, max: v130),
+            new VersionRange(min: v130, max: v140)
+          ])));
     });
   });
 

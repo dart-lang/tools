@@ -76,7 +76,7 @@ class VersionUnion implements VersionConstraint {
 
       // Move the constraint with the lower max value forward. This ensures that
       // we keep both lists in sync as much as possible.
-      if (compareMax(ourRanges.current, theirRanges.current) < 0) {
+      if (allowsHigher(theirRanges.current, ourRanges.current)) {
         ourRanges.moveNext();
       } else {
         theirRanges.moveNext();
@@ -104,7 +104,7 @@ class VersionUnion implements VersionConstraint {
       // Move the constraint with the lower max value forward. This ensures that
       // we keep both lists in sync as much as possible, and that large ranges
       // have a chance to match multiple small ranges that they contain.
-      if (compareMax(ourRanges.current, theirRanges.current) < 0) {
+      if (allowsHigher(theirRanges.current, ourRanges.current)) {
         ourRanges.moveNext();
       } else {
         theirRanges.moveNext();
@@ -114,6 +114,80 @@ class VersionUnion implements VersionConstraint {
     if (newRanges.isEmpty) return VersionConstraint.empty;
     if (newRanges.length == 1) return newRanges.single;
 
+    return new VersionUnion.fromRanges(newRanges);
+  }
+
+  VersionConstraint difference(VersionConstraint other) {
+    var ourRanges = ranges.iterator;
+    var theirRanges = _rangesFor(other).iterator;
+
+    var newRanges = <VersionRange>[];
+    ourRanges.moveNext();
+    theirRanges.moveNext();
+    var current = ourRanges.current;
+
+    theirNextRange() {
+      if (theirRanges.moveNext()) return true;
+
+      // If there are no more of their ranges, none of the rest of our ranges
+      // need to be subtracted so we can add them as-is.
+      newRanges.add(current);
+      while (ourRanges.moveNext()) {
+        newRanges.add(ourRanges.current);
+      }
+      return false;
+    }
+
+    ourNextRange({bool includeCurrent: true}) {
+      if (includeCurrent) newRanges.add(current);
+      if (!ourRanges.moveNext()) return false;
+      current = ourRanges.current;
+      return true;
+    }
+
+    while (true) {
+      // If the current ranges are disjoint, move the lowest one forward.
+      if (strictlyLower(theirRanges.current, current)) {
+        if (!theirNextRange()) break;
+        continue;
+      }
+
+      if (strictlyHigher(theirRanges.current, current)) {
+        if (!ourNextRange()) break;
+        continue;
+      }
+
+      // If we're here, we know [theirRanges.current] overlaps [current].
+      var difference = current.difference(theirRanges.current);
+      if (difference is VersionUnion) {
+        // If their range split [current] in half, we only need to continue
+        // checking future ranges against the latter half.
+        assert(difference.ranges.length == 2);
+        newRanges.add(difference.ranges.first);
+        current = difference.ranges.last;
+
+        // Since their range split [current], it definitely doesn't allow higher
+        // versions, so we should move their ranges forward.
+        if (!theirNextRange()) break;
+      } else if (difference.isEmpty) {
+        if (!ourNextRange(includeCurrent: false)) break;
+      } else {
+        current = difference as VersionRange;
+
+        // Move the constraint with the lower max value forward. This ensures
+        // that we keep both lists in sync as much as possible, and that large
+        // ranges have a chance to subtract or be subtracted by multiple small
+        // ranges that they contain.
+        if (allowsHigher(current, theirRanges.current)) {
+          if (!theirNextRange()) break;
+        } else {
+          if (!ourNextRange()) break;
+        }
+      }
+    }
+
+    if (newRanges.isEmpty) return VersionConstraint.empty;
+    if (newRanges.length == 1) return newRanges.single;
     return new VersionUnion.fromRanges(newRanges);
   }
 

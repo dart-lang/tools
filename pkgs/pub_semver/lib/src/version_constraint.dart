@@ -229,13 +229,17 @@ abstract class VersionConstraint {
   /// allows.
   bool allowsAny(VersionConstraint other);
 
-  /// Creates a new [VersionConstraint] that only allows [Version]s allowed by
-  /// both this and [other].
+  /// Returns a [VersionConstraint] that only allows [Version]s allowed by both
+  /// this and [other].
   VersionConstraint intersect(VersionConstraint other);
 
-  /// Creates a new [VersionConstraint] that allows [Versions]s allowed by
-  /// either this or [other].
+  /// Returns a [VersionConstraint] that allows [Versions]s allowed by either
+  /// this or [other].
   VersionConstraint union(VersionConstraint other);
+
+  /// Returns a [VersionConstraint] that allows [Version]s allowed by this but
+  /// not [other].
+  VersionConstraint difference(VersionConstraint other);
 }
 
 class _EmptyVersion implements VersionConstraint {
@@ -248,6 +252,7 @@ class _EmptyVersion implements VersionConstraint {
   bool allowsAny(VersionConstraint other) => false;
   VersionConstraint intersect(VersionConstraint other) => this;
   VersionConstraint union(VersionConstraint other) => other;
+  VersionConstraint difference(VersionConstraint other) => this;
   String toString() => '<empty>';
 }
 

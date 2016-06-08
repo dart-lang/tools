@@ -349,4 +349,62 @@ main() {
       });
     });
   });
+
+  group("difference()", () {
+    test("ignores ranges that don't intersect", () {
+      expect(new VersionConstraint.unionOf([
+        new VersionRange(min: v072, max: v080),
+        new VersionRange(min: v123, max: v130)
+      ]).difference(new VersionConstraint.unionOf([
+        new VersionRange(min: v003, max: v010),
+        new VersionRange(min: v080, max: v123),
+        new VersionRange(min: v140)
+      ])), equals(new VersionConstraint.unionOf([
+        new VersionRange(min: v072, max: v080),
+        new VersionRange(min: v123, max: v130)
+      ])));
+    });
+
+    test("removes overlapping portions", () {
+      expect(new VersionConstraint.unionOf([
+        new VersionRange(min: v010, max: v080),
+        new VersionRange(min: v123, max: v130)
+      ]).difference(new VersionConstraint.unionOf([
+        new VersionRange(min: v003, max: v072),
+        new VersionRange(min: v124)
+      ])), equals(new VersionConstraint.unionOf([
+        new VersionRange(min: v072, max: v080, includeMin: true),
+        new VersionRange(min: v123, max: v124, includeMax: true)
+      ])));
+    });
+
+    test("removes multiple portions from the same range", () {
+      expect(new VersionConstraint.unionOf([
+        new VersionRange(min: v010, max: v114),
+        new VersionRange(min: v130, max: v200)
+      ]).difference(new VersionConstraint.unionOf([v072, v080])),
+          equals(new VersionConstraint.unionOf([
+        new VersionRange(min: v010, max: v072),
+        new VersionRange(min: v072, max: v080),
+        new VersionRange(min: v080, max: v114),
+        new VersionRange(min: v130, max: v200)
+      ])));
+    });
+
+    test("removes the same range from multiple ranges", () {
+      expect(new VersionConstraint.unionOf([
+        new VersionRange(min: v010, max: v072),
+        new VersionRange(min: v080, max: v123),
+        new VersionRange(min: v124, max: v130),
+        new VersionRange(min: v200, max: v234),
+        new VersionRange(min: v250, max: v300)
+      ]).difference(new VersionRange(min: v114, max: v201)),
+          equals(new VersionConstraint.unionOf([
+        new VersionRange(min: v010, max: v072),
+        new VersionRange(min: v080, max: v114, includeMax: true),
+        new VersionRange(min: v201, max: v234, includeMin: true),
+        new VersionRange(min: v250, max: v300)
+      ])));
+    });
+  });
 }

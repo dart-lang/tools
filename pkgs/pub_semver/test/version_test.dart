@@ -202,6 +202,27 @@ main() {
     });
   });
 
+  group('difference()', () {
+    test("with the same version returns an empty constraint", () {
+      expect(v123.difference(v123), isEmpty);
+    });
+
+    test("with a different version returns the original version", () {
+      expect(v123.difference(v080), equals(v123));
+    });
+
+    test("returns an empty constraint with a range that contains the version",
+        () {
+      expect(v123.difference(new VersionRange(min: v114, max: v124)), isEmpty);
+    });
+
+    test("returns the version constraint with a range that doesn't contain it",
+        () {
+      expect(v123.difference(new VersionRange(min: v140, max: v300)),
+          equals(v123));
+    });
+  });
+
   test('isEmpty', () {
     expect(v123.isEmpty, isFalse);
   });

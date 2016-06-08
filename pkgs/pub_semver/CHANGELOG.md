@@ -4,6 +4,9 @@
   implement `new VersionConstraint.unionOf()` and `VersionConstraint.union()`.
   Now it's public so you can use it too.
 
+* Added `VersionConstraint.difference()`. This returns a constraint matching all
+  versions matched by one constraint but not another.
+
 * Make `VersionRange` implement `Comparable<VersionRange>`. Ranges are ordered
   first by lower bound, then by upper bound.
 

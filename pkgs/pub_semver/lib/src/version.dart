@@ -267,6 +267,9 @@ class Version implements VersionConstraint, VersionRange {
     return new VersionConstraint.unionOf([this, other]);
   }
 
+  VersionConstraint difference(VersionConstraint other) =>
+      other.allows(this) ? VersionConstraint.empty : this;
+
   int compareTo(VersionRange other) {
     if (other is Version) {
       if (major != other.major) return major.compareTo(other.major);
