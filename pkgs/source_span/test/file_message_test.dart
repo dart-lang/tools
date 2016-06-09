@@ -59,6 +59,15 @@ zip zap zop
            ^"""));
   });
 
+  test("works for a point span at the end of the file with no trailing newline",
+      () {
+    file = new SourceFile("zip zap zop");
+    expect(file.location(11).pointSpan().message("oh no"), equals("""
+line 1, column 12: oh no
+zip zap zop
+           ^"""));
+  });
+
   test("works for a point span in an empty file", () {
     expect(new SourceFile("").location(0).pointSpan().message("oh no"),
         equals("""

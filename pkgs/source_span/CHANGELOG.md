@@ -1,3 +1,8 @@
+# 1.2.3
+
+* Fix a bug where a point span at the end of a file without a trailing newline
+  would be printed incorrectly.
+
 # 1.2.2
 
 * Allow `SourceSpanException.message`, `SourceSpanFormatException.source`, and

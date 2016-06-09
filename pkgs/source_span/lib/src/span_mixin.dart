@@ -70,7 +70,7 @@ abstract class SourceSpanMixin implements SourceSpan {
       }
       var endIndex = context.indexOf('\n');
       textLine = endIndex == -1 ? context : context.substring(0, endIndex + 1);
-      column = math.min(column, textLine.length - 1);
+      column = math.min(column, textLine.length);
     } else {
       textLine = text.split("\n").first;
       column = 0;
