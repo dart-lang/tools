@@ -38,7 +38,10 @@ class SpanScanner extends StringScanner implements LineScanner {
   ///
   /// This is the span for the entire match. There's no way to get spans for
   /// subgroups since [Match] exposes no information about their positions.
-  FileSpan get lastSpan => _lastSpan;
+  FileSpan get lastSpan {
+    if (lastMatch == null) _lastSpan = null;
+    return _lastSpan;
+  }
   FileSpan _lastSpan;
 
   /// The current location of the scanner.
@@ -102,7 +105,7 @@ class SpanScanner extends StringScanner implements LineScanner {
     if (position == null) {
       position = match == null ? this.position : match.start;
     }
-    if (length == null) length = match == null ? 1 : match.end - match.start;
+    if (length == null) length = match == null ? 0 : match.end - match.start;
 
     var span = _sourceFile.span(position, position + length);
     throw new StringScannerException(message, span, string);

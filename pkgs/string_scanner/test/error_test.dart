@@ -59,11 +59,11 @@ void main() {
   });
 
   group("with position and/or length", () {
-    test('defaults to length 1', () {
+    test('defaults to length 0', () {
       var scanner = new StringScanner('foo bar baz');
       scanner.expect('foo ');
       expect(() => scanner.error('oh no!', position: 1),
-          throwsStringScannerException('o'));
+          throwsStringScannerException(''));
     });
 
     test('defaults to the current position', () {

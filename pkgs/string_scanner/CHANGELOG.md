@@ -1,3 +1,16 @@
+## 1.0.0
+
+* **Breaking change**: `StringScanner.error()`'s `length` argument now defaults
+  to `0` rather than `1` when no match data is available.
+
+* **Breaking change**: `StringScanner.lastMatch` and related methods are now
+  reset when the scanner's position changes without producing a new match.
+
+**Note**: While the changes in `1.0.0` are user-visible, they're unlikely to
+actually break any code in practice. Unless you know that your package is
+incompatible with 0.1.x, consider using 0.1.5 as your lower bound rather
+than 1.0.0. For example, `string_scanner: ">=0.1.5 <2.0.0"`.
+
 ## 0.1.5
 
 * Add `new SpanScanner.within()`, which scans within a existing `FileSpan`.

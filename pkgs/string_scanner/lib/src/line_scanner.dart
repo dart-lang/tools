@@ -26,6 +26,8 @@ class LineScanner extends StringScanner {
   /// This can be used to efficiently save and restore the state of the scanner
   /// when backtracking. A given [LineScannerState] is only valid for the
   /// [LineScanner] that created it.
+  ///
+  /// This does not include the scanner's match information.
   LineScannerState get state =>
       new LineScannerState._(this, position, line, column);
 

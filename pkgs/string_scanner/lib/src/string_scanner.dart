@@ -32,14 +32,21 @@ class StringScanner {
     }
 
     _position = position;
+    _lastMatch = null;
   }
   int _position = 0;
 
   /// The data about the previous match made by the scanner.
   ///
   /// If the last match failed, this will be `null`.
-  Match get lastMatch => _lastMatch;
+  Match get lastMatch {
+    // Lazily unset [_lastMatch] so that we avoid extra assignments in
+    // character-by-character methods that are used in core loops.
+    if (_position != _lastMatchPosition) _lastMatch = null;
+    return _lastMatch;
+  }
   Match _lastMatch;
+  int _lastMatchPosition;
 
   /// The portion of the string that hasn't yet been scanned.
   String get rest => string.substring(position);
@@ -118,7 +125,10 @@ class StringScanner {
   /// Returns whether or not [pattern] matched.
   bool scan(Pattern pattern) {
     var success = matches(pattern);
-    if (success) _position = _lastMatch.end;
+    if (success) {
+      _position = _lastMatch.end;
+      _lastMatchPosition = _position;
+    }
     return success;
   }
 
@@ -159,6 +169,7 @@ class StringScanner {
   /// This doesn't move the scan pointer forward.
   bool matches(Pattern pattern) {
     _lastMatch = pattern.matchAsPrefix(string, position);
+    _lastMatchPosition = _position;
     return _lastMatch != null;
   }
 
@@ -181,7 +192,7 @@ class StringScanner {
   ///
   /// If [position] and/or [length] are passed, they are used as the error span
   /// instead. If only [length] is passed, [position] defaults to the current
-  /// position; if only [position] is passed, [length] defaults to 1.
+  /// position; if only [position] is passed, [length] defaults to 0.
   ///
   /// It's an error to pass [match] at the same time as [position] or [length].
   void error(String message, {Match match, int position, int length}) {
@@ -191,7 +202,7 @@ class StringScanner {
     if (position == null) {
       position = match == null ? this.position : match.start;
     }
-    if (length == null) length = match == null ? 1 : match.end - match.start;
+    if (length == null) length = match == null ? 0 : match.end - match.start;
 
     var sourceFile = new SourceFile(string, url: sourceUrl);
     var span = sourceFile.span(position, position + length);

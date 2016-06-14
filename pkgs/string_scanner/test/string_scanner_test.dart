@@ -261,6 +261,32 @@ void main() {
     });
   });
 
+  group('after a scan', () {
+    var scanner;
+    setUp(() {
+      scanner = new StringScanner('foo bar');
+      expect(scanner.scan('foo'), isTrue);
+    });
+
+    test('readChar returns the first character and unsets the last match', () {
+      expect(scanner.readChar(), equals($space));
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(4));
+    });
+
+    test('a matching scanChar returns true and unsets the last match', () {
+      expect(scanner.scanChar($space), isTrue);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(4));
+    });
+
+    test('a matching expectChar returns true and unsets the last match', () {
+      scanner.expectChar($space);
+      expect(scanner.lastMatch, isNull);
+      expect(scanner.position, equals(4));
+    });
+  });
+
   group('at the end of a string', () {
     var scanner;
     setUp(() {
@@ -344,6 +370,13 @@ void main() {
       expect(scanner.lastMatch[0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
+    });
+
+    test('setting and resetting position clears lastMatch', () {
+      var oldPosition = scanner.position;
+      scanner.position = 1;
+      scanner.position = oldPosition;
+      expect(scanner.lastMatch, isNull);
     });
 
     test('setting position beyond the string throws an ArgumentError', () {
