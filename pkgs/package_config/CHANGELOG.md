@@ -1,3 +1,7 @@
+## 1.0.0
+
+- Public API marked stable.
+
 ## 0.1.5
 
 - `FilePackagesDirectoryPackages.getBase(..)` performance improvements.
