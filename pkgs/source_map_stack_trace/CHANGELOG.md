@@ -1,3 +1,7 @@
+## 1.0.5
+
+* Add compatibility for member names that include named arguments.
+
 ## 1.0.4
 
 * Add compatibility for Dart 1.10-style name munging.

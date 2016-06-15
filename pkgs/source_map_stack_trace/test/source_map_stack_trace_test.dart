@@ -153,6 +153,11 @@ foo.dart.js 10:11  baz
       expect(_prettify(r"foo$1234"), equals("foo"));
     });
 
+    test("named arguments", () {
+      expect(_prettify(r"foo$1$bar"), equals("foo"));
+      expect(_prettify(r"foo$123$bar$bang$qux"), equals("foo"));
+    });
+
     test("closures", () {
       expect(_prettify("foo_closure.call"), equals("foo.<fn>"));
     });

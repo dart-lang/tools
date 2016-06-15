@@ -84,8 +84,8 @@ String _prettifyMember(String member) {
   return member
       // Get rid of the noise that Firefox sometimes adds.
       .replaceAll(new RegExp(r"/?<$"), "")
-      // Get rid of arity indicators.
-      .replaceAll(new RegExp(r"\$\d+$"), "")
+      // Get rid of arity indicators and named arguments.
+      .replaceAll(new RegExp(r"\$\d+(\$[a-zA-Z_0-9]+)*$"), "")
       // Convert closures to <fn>.
       .replaceAllMapped(new RegExp(r"(_+)closure\d*\.call$"),
           // The number of underscores before "closure" indicates how nested it
