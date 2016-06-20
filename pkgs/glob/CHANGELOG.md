@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Support `string_scanner` 1.0.0.
+
 ## 1.1.2
 
 * Fix all strong mode errors and warnings.
