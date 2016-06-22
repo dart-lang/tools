@@ -1,4 +1,4 @@
-## 0.7.8-dev
+## 0.7.8
 
  * `format_coverage`: support `--packages` option for package specs.
 
