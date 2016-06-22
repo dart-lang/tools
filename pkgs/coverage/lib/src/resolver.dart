@@ -3,15 +3,20 @@ library coverage.resolver;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:package_config/packages_file.dart' as packages_file;
 import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
+  final String packagesPath;
   final String packageRoot;
   final String sdkRoot;
   final List<String> failed = [];
+  Map<String, Uri> _packages;
 
-  Resolver({this.packageRoot, this.sdkRoot});
+  Resolver({String packagesPath, this.packageRoot, this.sdkRoot})
+      : packagesPath = packagesPath,
+        _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -44,9 +49,21 @@ class Resolver {
       return resolveSymbolicLinks(filePath);
     }
     if (uri.scheme == 'package') {
-      if (packageRoot == null) {
+      if (packagesPath == null && packageRoot == null) {
         // No package-root given, do not resolve package: URIs.
         return null;
+      }
+
+      var packageName = uri.pathSegments[0];
+      if (_packages != null) {
+        var packageUri = _packages[packageName];
+        if (packageUri == null) {
+          failed.add('$uri');
+          return null;
+        }
+        var packagePath = p.fromUri(packageUri);
+        var pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
+        return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
       }
       return resolveSymbolicLinks(p.join(packageRoot, uri.path));
     }
@@ -64,6 +81,11 @@ class Resolver {
     var type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
     if (type == FileSystemEntityType.NOT_FOUND) return null;
     return new File(normalizedPath).resolveSymbolicLinksSync();
+  }
+
+  static Map<String, Uri> _parsePackages(String packagesPath) {
+    var source = new File(packagesPath).readAsBytesSync();
+    return packages_file.parse(source, new Uri.file(packagesPath));
   }
 }
 
