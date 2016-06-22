@@ -143,7 +143,7 @@ Environment parseArgs(List<String> arguments) {
   if (env.pkgRoot != null) {
     env.pkgRoot = absolute(normalize(args['package-root']));
     if (!FileSystemEntity.isDirectorySync(env.pkgRoot)) {
-      fail('Provided package root "${args["package-root"]}" is not directory.');
+      fail('Package root "${args["package-root"]}" is not a directory.');
     }
   }
 
