@@ -1,3 +1,6 @@
+## 0.7.8-dev
+
+
 ## 0.7.7
 
  * Add fallback URI resolution for Bazel http(s) URIs that don't contain a
