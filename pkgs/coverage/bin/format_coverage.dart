@@ -12,6 +12,7 @@ import 'package:path/path.dart';
 class Environment {
   String sdkRoot;
   String pkgRoot;
+  String packagesPath;
   String input;
   IOSink output;
   List<String> reportOn;
@@ -34,6 +35,7 @@ main(List<String> arguments) async {
     print('  # workers: ${env.workers}');
     print('  sdk-root: ${env.sdkRoot}');
     print('  package-root: ${env.pkgRoot}');
+    print('  package-spec: ${env.packagesPath}');
     print('  report-on: ${env.reportOn}');
   }
 
@@ -48,7 +50,9 @@ main(List<String> arguments) async {
   String output;
   var resolver = env.bazel
       ? new BazelResolver(workspacePath: env.bazelWorkspace)
-      : new Resolver(packageRoot: env.pkgRoot, sdkRoot: env.sdkRoot);
+      : new Resolver(packagesPath: env.packagesPath,
+                     packageRoot: env.pkgRoot,
+                     sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
     output = await new PrettyPrintFormatter(resolver, loader)
@@ -86,6 +90,7 @@ Environment parseArgs(List<String> arguments) {
 
   parser.addOption('sdk-root', abbr: 's', help: 'path to the SDK root');
   parser.addOption('package-root', abbr: 'p', help: 'path to the package root');
+  parser.addOption('packages', help: 'path to the package spec file');
   parser.addOption('in', abbr: 'i', help: 'input(s): may be file or directory');
   parser.addOption('out',
       abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout');
@@ -136,6 +141,17 @@ Environment parseArgs(List<String> arguments) {
     if (!FileSystemEntity.isDirectorySync(env.sdkRoot)) {
       fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
           'top-level directory');
+    }
+  }
+
+  if (args['package-root'] != null && args['packages'] != null) {
+    fail('Only one of --package-root or --packages may be specified.');
+  }
+
+  env.packagesPath = args['packages'];
+  if (env.packagesPath != null) {
+    if (!FileSystemEntity.isFileSync(env.packagesPath)) {
+      fail('Package spec "${args["packages"]}" not found, or not a file.');
     }
   }
 
