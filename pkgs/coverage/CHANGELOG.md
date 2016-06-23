@@ -1,3 +1,9 @@
+## 0.7.9
+
+ * `format_coverage`: add `--base-directory` option. Source paths in
+   LCOV/pretty-print output are relative to this directory, or absolute if
+   unspecified.
+
 ## 0.7.8
 
  * `format_coverage`: support `--packages` option for package specs.
