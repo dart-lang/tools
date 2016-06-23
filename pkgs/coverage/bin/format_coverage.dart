@@ -13,6 +13,7 @@ class Environment {
   String sdkRoot;
   String pkgRoot;
   String packagesPath;
+  String baseDirectory;
   String input;
   IOSink output;
   List<String> reportOn;
@@ -60,7 +61,7 @@ main(List<String> arguments) async {
   } else {
     assert(env.lcov);
     output = await new LcovFormatter(resolver)
-        .format(hitmap, reportOn: env.reportOn);
+        .format(hitmap, reportOn: env.reportOn, basePath: env.baseDirectory);
   }
 
   env.output.write(output);
@@ -102,6 +103,9 @@ Environment parseArgs(List<String> arguments) {
   parser.addOption('bazel-workspace',
       defaultsTo: '',
       help: 'Bazel workspace directory');
+  parser.addOption('base-directory',
+      abbr: 'b',
+      help: 'the base directory relative to which source paths are output');
   parser.addFlag('bazel',
       defaultsTo: false,
       help: 'use Bazel-style path resolution');
@@ -184,6 +188,10 @@ Environment parseArgs(List<String> arguments) {
   env.bazelWorkspace = args['bazel-workspace'];
   if (env.bazelWorkspace.isNotEmpty && !env.bazel) {
     stderr.writeln('warning: ignoring --bazel-workspace: --bazel not set');
+  }
+
+  if (args['base-directory'] != null) {
+    env.baseDirectory = absolute(args['base-directory']);
   }
 
   env.lcov = args['lcov'];
