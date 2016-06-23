@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 
 /// [Environment] stores gathered arguments information.
 class Environment {
@@ -141,7 +141,7 @@ Environment parseArgs(List<String> arguments) {
 
   env.sdkRoot = args['sdk-root'];
   if (env.sdkRoot != null) {
-    env.sdkRoot = normalize(join(absolute(env.sdkRoot), 'lib'));
+    env.sdkRoot = p.normalize(p.join(p.absolute(env.sdkRoot), 'lib'));
     if (!FileSystemEntity.isDirectorySync(env.sdkRoot)) {
       fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
           'top-level directory');
@@ -161,14 +161,14 @@ Environment parseArgs(List<String> arguments) {
 
   env.pkgRoot = args['package-root'];
   if (env.pkgRoot != null) {
-    env.pkgRoot = absolute(normalize(args['package-root']));
+    env.pkgRoot = p.absolute(p.normalize(args['package-root']));
     if (!FileSystemEntity.isDirectorySync(env.pkgRoot)) {
       fail('Package root "${args["package-root"]}" is not a directory.');
     }
   }
 
   if (args['in'] == null) fail('No input files given.');
-  env.input = absolute(normalize(args['in']));
+  env.input = p.absolute(p.normalize(args['in']));
   if (!FileSystemEntity.isDirectorySync(env.input) &&
       !FileSystemEntity.isFileSync(env.input)) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
@@ -177,7 +177,7 @@ Environment parseArgs(List<String> arguments) {
   if (args['out'] == 'stdout') {
     env.output = stdout;
   } else {
-    var outpath = absolute(normalize(args['out']));
+    var outpath = p.absolute(p.normalize(args['out']));
     var outfile = new File(outpath)..createSync(recursive: true);
     env.output = outfile.openWrite();
   }
@@ -191,7 +191,7 @@ Environment parseArgs(List<String> arguments) {
   }
 
   if (args['base-directory'] != null) {
-    env.baseDirectory = absolute(args['base-directory']);
+    env.baseDirectory = p.absolute(args['base-directory']);
   }
 
   env.lcov = args['lcov'];
@@ -219,7 +219,7 @@ List filesToProcess(String absPath) {
   if (FileSystemEntity.isDirectorySync(absPath)) {
     return new Directory(absPath)
         .listSync(recursive: true)
-        .where((e) => e is File && filePattern.hasMatch(basename(e.path)))
+        .where((e) => e is File && filePattern.hasMatch(p.basename(e.path)))
         .toList();
   }
   return [new File(absPath)];
