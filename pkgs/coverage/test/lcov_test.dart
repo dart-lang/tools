@@ -78,6 +78,19 @@ void main() {
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
       expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
     });
+
+    test('format() uses paths relative to basePath', () async {
+      var hitmap = await _getHitMap();
+
+      var resolver = new Resolver(packageRoot: 'packages');
+      var formatter = new LcovFormatter(resolver);
+
+      String res = await formatter.format(hitmap, basePath: p.absolute('lib'));
+
+      expect(
+          res, isNot(contains(p.absolute(p.join('lib', 'src', 'util.dart')))));
+      expect(res, contains(p.join('src', 'util.dart')));
+    });
   });
 
   group('PrettyPrintFormatter', () {
