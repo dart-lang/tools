@@ -3,6 +3,8 @@ library coverage.formatter;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
+
 import 'resolver.dart';
 
 abstract class Formatter {
@@ -28,7 +30,9 @@ class LcovFormatter implements Formatter {
   LcovFormatter(this.resolver);
 
   Future<String> format(Map hitmap,
-      {List<String> reportOn, bool pathFilter(String path)}) async {
+      {List<String> reportOn,
+      bool pathFilter(String path),
+      String basePath}) async {
     pathFilter = _getFilter(pathFilter, reportOn);
 
     var buf = new StringBuffer();
@@ -41,6 +45,10 @@ class LcovFormatter implements Formatter {
 
       if (!pathFilter(source)) {
         continue;
+      }
+
+      if (basePath != null) {
+        source = p.relative(source, from: basePath);
       }
 
       buf.write('SF:${source}\n');
