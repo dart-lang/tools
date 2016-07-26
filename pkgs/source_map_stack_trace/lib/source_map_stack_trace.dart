@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_maps/source_maps.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -12,25 +13,35 @@ import 'package:stack_trace/stack_trace.dart';
 /// [minified] indicates whether or not the dart2js code was minified. If it
 /// hasn't, this tries to clean up the stack frame member names.
 ///
-/// [packageRoot] is the URI (usually a `file:` URI) for the package root that
-/// was used by dart2js. It can be a [String] or a [Uri]. If it's passed, stack
-/// frames from packages will use `package:` URLs.
+/// If [packageResolver] is passed, it's used to reconstruct `package:` URIs for
+/// stack frames that come from packages.
 ///
 /// [sdkRoot] is the URI (usually a `file:` URI) for the SDK containing dart2js.
 /// It can be a [String] or a [Uri]. If it's passed, stack frames from the SDK
 /// will have `dart:` URLs.
+///
+/// [packageRoot] is deprecated and shouldn't be used in new code. This throws
+/// an [ArgumentError] if [packageRoot] and [packageResolver] are both passed.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified: false, packageRoot, sdkRoot}) {
-  if (stackTrace is Chain) {
-    return new Chain(stackTrace.traces.map((trace) {
-      return new Trace.from(mapStackTrace(sourceMap, trace,
-          minified: minified, packageRoot: packageRoot, sdkRoot: sdkRoot));
-    }));
+    {bool minified: false, SyncPackageResolver packageResolver, sdkRoot,
+    @Deprecated("Use the packageResolver parameter instead.") packageRoot}) {
+  if (packageRoot != null) {
+    if (packageResolver != null) {
+      throw new ArgumentError(
+          "packageResolver and packageRoot may not both be passed.");
+    }
+
+    packageResolver = new SyncPackageResolver.root(packageRoot);
   }
 
-  if (packageRoot != null && packageRoot is! String && packageRoot is! Uri) {
-    throw new ArgumentError(
-        'packageRoot must be a String or a Uri, was "$packageRoot".');
+  if (stackTrace is Chain) {
+    return new Chain(stackTrace.traces.map((trace) {
+      return new Trace.from(mapStackTrace(
+          sourceMap, trace,
+          minified: minified,
+          packageResolver: packageResolver,
+          sdkRoot: sdkRoot));
+    }));
   }
 
   if (sdkRoot != null && sdkRoot is! String && sdkRoot is! Uri) {
@@ -38,7 +49,6 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
         'sdkRoot must be a String or a Uri, was "$sdkRoot".');
   }
 
-  packageRoot = packageRoot == null ? null : packageRoot.toString();
   var sdkLib = sdkRoot == null ? null : "$sdkRoot/lib";
 
   var trace = new Trace.from(stackTrace);
@@ -61,9 +71,21 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     var sourceUrl = span.sourceUrl.toString();
     if (sdkRoot != null && p.url.isWithin(sdkLib, sourceUrl)) {
       sourceUrl = "dart:" + p.url.relative(sourceUrl, from: sdkLib);
-    } else if (packageRoot != null && p.url.isWithin(packageRoot, sourceUrl)) {
-      sourceUrl = "package:" +
-          p.url.relative(sourceUrl, from: packageRoot);
+    } else if (packageResolver != null) {
+      if (packageResolver.packageRoot != null &&
+          p.url.isWithin(packageResolver.packageRoot.toString(), sourceUrl)) {
+        sourceUrl = "package:" + p.url.relative(sourceUrl,
+            from: packageResolver.packageRoot.toString());
+      } else {
+        for (var package in packageResolver.packageConfigMap.keys) {
+          var packageUrl = packageResolver.packageConfigMap[package].toString();
+          if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
+
+          sourceUrl = "package:$package/" +
+              p.url.relative(sourceUrl, from: packageUrl);
+          break;
+        }
+      }
     }
 
     return new Frame(
