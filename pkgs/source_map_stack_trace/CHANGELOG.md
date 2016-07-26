@@ -1,3 +1,14 @@
+## 1.1.0
+
+* `mapStackTrace()` now uses a `SyncPackageResolver` object from the
+  [`package_resolver` package][package_resolver] to recreate `package:` URIs.
+
+* **Deprecation**: the `packageRoot` parameter to `mapStackTrace` is deprecated
+  in favor of the `packageInfo` parameter described above. It will be removed in
+  a future release.
+
+[package_resolver]: https://pub.dartlang.org/packages/package_resolver
+
 ## 1.0.5
 
 * Add compatibility for member names that include named arguments.
