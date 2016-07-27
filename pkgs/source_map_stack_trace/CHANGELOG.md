@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Fix a typo in the previous fix.
+
 ## 1.1.1
 
 * Don't crash if the `SyncPackageResolver` has no package information at all.
