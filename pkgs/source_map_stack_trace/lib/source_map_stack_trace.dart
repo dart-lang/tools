@@ -76,7 +76,7 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
           p.url.isWithin(packageResolver.packageRoot.toString(), sourceUrl)) {
         sourceUrl = "package:" + p.url.relative(sourceUrl,
             from: packageResolver.packageRoot.toString());
-      } else {
+      } else if (packageResolver.packageConfig != null) {
         for (var package in packageResolver.packageConfigMap.keys) {
           var packageUrl = packageResolver.packageConfigMap[package].toString();
           if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
