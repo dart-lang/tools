@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Don't crash if the `SyncPackageResolver` has no package information at all.
+
 ## 1.1.0
 
 * `mapStackTrace()` now uses a `SyncPackageResolver` object from the
