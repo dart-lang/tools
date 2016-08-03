@@ -1,3 +1,7 @@
+## 0.8.0
+ * Moved `Formatter.format` parameters `reportOn` and `basePath` to
+   constructor. Eliminated `pathFilter` parameter.
+
 ## 0.7.9
 
  * `format_coverage`: add `--base-directory` option. Source paths in

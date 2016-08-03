@@ -8,16 +8,8 @@ import 'package:path/path.dart' as p;
 import 'resolver.dart';
 
 abstract class Formatter {
-  /// [pathFilter], if provided, is used to filter which files are included
-  /// in the output.
-  ///
-  /// The paths in [reportOn], if provided, are used to filter the included
-  /// files. Files are only included if their path starts with one of the
-  /// values.
-  ///
-  /// [pathFilter] and [reportOn] cannot both be provided in a call to [format].
-  Future<String> format(Map hitmap,
-      {List<String> reportOn, bool pathFilter(String path)});
+  /// Returns the formatted coverage data.
+  Future<String> format(Map hitmap);
 }
 
 /// Converts the given hitmap to lcov format and appends the result to
@@ -27,14 +19,18 @@ abstract class Formatter {
 /// emitted.
 class LcovFormatter implements Formatter {
   final Resolver resolver;
-  LcovFormatter(this.resolver);
+  final String basePath;
+  final List<String> reportOn;
 
-  Future<String> format(Map hitmap,
-      {List<String> reportOn,
-      bool pathFilter(String path),
-      String basePath}) async {
-    pathFilter = _getFilter(pathFilter, reportOn);
+  /// Creates a new LCOV formatter.
+  ///
+  /// If [reportOn] is provided, coverage report output is limited to files
+  /// prefixed with one of the paths included. If [basePath] is provided, paths
+  /// are reported relative to that path.
+  LcovFormatter(this.resolver, {this.reportOn, this.basePath});
 
+  Future<String> format(Map hitmap) async {
+    _PathFilter pathFilter = _getPathFilter(reportOn);
     var buf = new StringBuffer();
     for (var key in hitmap.keys) {
       var v = hitmap[key];
@@ -72,12 +68,17 @@ class LcovFormatter implements Formatter {
 class PrettyPrintFormatter implements Formatter {
   final Resolver resolver;
   final Loader loader;
-  PrettyPrintFormatter(this.resolver, this.loader);
+  final List<String> reportOn;
 
-  Future<String> format(Map hitmap,
-      {List<String> reportOn, bool pathFilter(String path)}) async {
-    pathFilter = _getFilter(pathFilter, reportOn);
+  /// Creates a new pretty-print formatter.
+  ///
+  /// If [reportOn] is provided, coverage report output is limited to files
+  /// prefixed with one of the paths included. If [basePath] is provided, paths
+  /// are reported relative to that path.
+  PrettyPrintFormatter(this.resolver, this.loader, {this.reportOn});
 
+  Future<String> format(Map hitmap) async {
+    _PathFilter pathFilter = _getPathFilter(reportOn);
     var buf = new StringBuffer();
     for (var key in hitmap.keys) {
       var v = hitmap[key];
@@ -112,22 +113,9 @@ const _prefix = '       ';
 
 typedef bool _PathFilter(String path);
 
-bool _anyPathFilter(String input) => true;
+_PathFilter _getPathFilter(List<String> reportOn) {
+  if (reportOn == null) return (String path) => true;
 
-_PathFilter _getFilter(_PathFilter pathFilter, List<String> reportOn) {
-  if (reportOn != null) {
-    if (pathFilter != null) {
-      throw new ArgumentError('Cannot provide both reportOn and pathFilter');
-    }
-    var absolutePaths =
-        reportOn.map((path) => new File(path).absolute.path).toList();
-
-    return (String path) => absolutePaths.any((item) => path.startsWith(item));
-  }
-
-  if (pathFilter == null) {
-    return _anyPathFilter;
-  }
-
-  return pathFilter;
+  var absolutePaths = reportOn.map(p.absolute).toList();
+  return (String path) => absolutePaths.any((item) => path.startsWith(item));
 }
