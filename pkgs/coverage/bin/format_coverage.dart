@@ -51,16 +51,19 @@ main(List<String> arguments) async {
   String output;
   var resolver = env.bazel
       ? new BazelResolver(workspacePath: env.bazelWorkspace)
-      : new Resolver(packagesPath: env.packagesPath,
-                     packageRoot: env.pkgRoot,
-                     sdkRoot: env.sdkRoot);
+      : new Resolver(
+          packagesPath: env.packagesPath,
+          packageRoot: env.pkgRoot,
+          sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
-    output = await new PrettyPrintFormatter(resolver, loader, reportOn: env.reportOn)
-        .format(hitmap);
+    output =
+        await new PrettyPrintFormatter(resolver, loader, reportOn: env.reportOn)
+            .format(hitmap);
   } else {
     assert(env.lcov);
-    output = await new LcovFormatter(resolver, reportOn: env.reportOn, basePath: env.baseDirectory)
+    output = await new LcovFormatter(resolver,
+            reportOn: env.reportOn, basePath: env.baseDirectory)
         .format(hitmap);
   }
 
@@ -101,14 +104,12 @@ Environment parseArgs(List<String> arguments) {
   parser.addOption('workers',
       abbr: 'j', defaultsTo: '1', help: 'number of workers');
   parser.addOption('bazel-workspace',
-      defaultsTo: '',
-      help: 'Bazel workspace directory');
+      defaultsTo: '', help: 'Bazel workspace directory');
   parser.addOption('base-directory',
       abbr: 'b',
       help: 'the base directory relative to which source paths are output');
   parser.addFlag('bazel',
-      defaultsTo: false,
-      help: 'use Bazel-style path resolution');
+      defaultsTo: false, help: 'use Bazel-style path resolution');
   parser.addFlag('pretty-print',
       abbr: 'r',
       negatable: false,

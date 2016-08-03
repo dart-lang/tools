@@ -38,8 +38,7 @@ class Resolver {
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll('-', '_');
-        var pathSegments = [sdkRoot, path]
-            ..addAll(uri.pathSegments.sublist(1));
+        var pathSegments = [sdkRoot, path]..addAll(uri.pathSegments.sublist(1));
         filePath = p.joinAll(pathSegments);
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.
