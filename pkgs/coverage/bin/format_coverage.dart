@@ -56,12 +56,12 @@ main(List<String> arguments) async {
                      sdkRoot: env.sdkRoot);
   var loader = new Loader();
   if (env.prettyPrint) {
-    output = await new PrettyPrintFormatter(resolver, loader)
-        .format(hitmap, reportOn: env.reportOn);
+    output = await new PrettyPrintFormatter(resolver, loader, reportOn: env.reportOn)
+        .format(hitmap);
   } else {
     assert(env.lcov);
-    output = await new LcovFormatter(resolver)
-        .format(hitmap, reportOn: env.reportOn, basePath: env.baseDirectory);
+    output = await new LcovFormatter(resolver, reportOn: env.reportOn, basePath: env.baseDirectory)
+        .format(hitmap);
   }
 
   env.output.write(output);

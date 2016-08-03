@@ -57,9 +57,9 @@ void main() {
       var hitmap = await _getHitMap();
 
       var resolver = new Resolver(packageRoot: 'packages');
-      var formatter = new LcovFormatter(resolver);
+      var formatter = new LcovFormatter(resolver, reportOn: ['lib/', 'test/']);
 
-      String res = await formatter.format(hitmap, reportOn: ['lib/', 'test/']);
+      String res = await formatter.format(hitmap);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_isolateLibPath)));
@@ -70,9 +70,9 @@ void main() {
       var hitmap = await _getHitMap();
 
       var resolver = new Resolver(packageRoot: 'packages');
-      var formatter = new LcovFormatter(resolver);
+      var formatter = new LcovFormatter(resolver, reportOn: ['lib/']);
 
-      String res = await formatter.format(hitmap, reportOn: ['lib/']);
+      String res = await formatter.format(hitmap);
 
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
@@ -83,9 +83,9 @@ void main() {
       var hitmap = await _getHitMap();
 
       var resolver = new Resolver(packageRoot: 'packages');
-      var formatter = new LcovFormatter(resolver);
+      var formatter = new LcovFormatter(resolver, basePath: p.absolute('lib'));
 
-      String res = await formatter.format(hitmap, basePath: p.absolute('lib'));
+      String res = await formatter.format(hitmap);
 
       expect(
           res, isNot(contains(p.absolute(p.join('lib', 'src', 'util.dart')))));
@@ -123,9 +123,10 @@ void main() {
       var hitmap = await _getHitMap();
 
       var resolver = new Resolver(packageRoot: 'packages');
-      var formatter = new PrettyPrintFormatter(resolver, new Loader());
+      var formatter = new PrettyPrintFormatter(resolver, new Loader(),
+          reportOn: ['lib/', 'test/']);
 
-      String res = await formatter.format(hitmap, reportOn: ['lib/', 'test/']);
+      String res = await formatter.format(hitmap);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_isolateLibPath)));
@@ -136,9 +137,10 @@ void main() {
       var hitmap = await _getHitMap();
 
       var resolver = new Resolver(packageRoot: 'packages');
-      var formatter = new PrettyPrintFormatter(resolver, new Loader());
+      var formatter =
+          new PrettyPrintFormatter(resolver, new Loader(), reportOn: ['lib/']);
 
-      String res = await formatter.format(hitmap, reportOn: ['lib/']);
+      String res = await formatter.format(hitmap);
 
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
