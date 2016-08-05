@@ -26,9 +26,10 @@ class Parameters {
   ///
   /// If this is accessed for a [Parameter] that was not passed, the request
   /// will be automatically rejected. To avoid this, use [Parameter.valueOr].
-  final value;
+  final _value;
+  get value => _value;
 
-  Parameters(this.method, this.value);
+  Parameters(this.method, this._value);
 
   /// Returns a single parameter.
   ///
@@ -141,15 +142,16 @@ class Parameter extends Parameters {
       }
 
       var path = computePath(params._parent);
-      return params._key is int ?
-          "$path[${params._key}]" : "$path.${quoteKey(params._key)}";
+      return params._key is int
+          ? "$path[${params._key}]"
+          : "$path.${quoteKey(params._key)}";
     }
 
     return computePath(this);
   }
 
   /// Whether this parameter exists.
-  final exists = true;
+  bool get exists => true;
 
   Parameter._(String method, value, this._parent, this._key)
       : super(method, value);
@@ -307,7 +309,7 @@ class _MissingParameter extends Parameter {
         'missing required parameter $_path.');
   }
 
-  final exists = false;
+  bool get exists => false;
 
   _MissingParameter(String method, Parameters parent, key)
       : super._(method, null, parent, key);

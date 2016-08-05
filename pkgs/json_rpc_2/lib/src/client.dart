@@ -121,7 +121,7 @@ class Client {
           'parameters, was "$parameters".');
     }
 
-    var message = {
+    var message = <String, dynamic>{
       "jsonrpc": "2.0",
       "method": method
     };
