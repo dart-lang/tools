@@ -1,4 +1,9 @@
+## 0.8.0+1
+
+ * Make strong mode clean.
+
 ## 0.8.0
+
  * Moved `Formatter.format` parameters `reportOn` and `basePath` to
    constructor. Eliminated `pathFilter` parameter.
 
