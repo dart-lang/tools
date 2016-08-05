@@ -63,7 +63,7 @@ Future _resumeIsolates(VMServiceClient service) async {
 }
 
 Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
-  allPaused() async {
+  Future allPaused() async {
     var vm = await service.getVM();
     for (var isolateRef in vm.isolates) {
       var isolate = await isolateRef.load();
