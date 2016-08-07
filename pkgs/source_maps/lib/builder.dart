@@ -77,7 +77,8 @@ class Entry implements Comparable {
   /// location in the target file. We sort primarily by the target offset
   /// because source map files are encoded by printing each mapping in order as
   /// they appear in the target file.
-  int compareTo(Entry other) {
+  int compareTo(_other) {
+    Entry other = _other as Entry;
     int res = target.compareTo(other.target);
     if (res != 0) return res;
     res = source.sourceUrl.toString().compareTo(
