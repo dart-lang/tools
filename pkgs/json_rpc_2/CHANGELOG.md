@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Fix all strong-mode warnings.
+
 ## 2.0.1
 
 * Fix a race condition in which a `StateError` could be top-leveled if
