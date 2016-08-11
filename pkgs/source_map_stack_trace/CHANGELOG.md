@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Add a missing dependency on `path`.
+
 ## 1.1.2
 
 * Fix a typo in the previous fix.
