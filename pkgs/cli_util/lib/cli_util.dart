@@ -33,7 +33,14 @@ Directory getSdkDir([List<String> cliArgs]) {
   }
 
   // Look relative to the dart executable.
-  Directory sdkDirectory = new File(Platform.executable).parent.parent;
+  File platformExecutable = new File(Platform.executable);
+  Directory sdkDirectory = platformExecutable.parent.parent;
+  if (_isSdkDir(sdkDirectory)) return sdkDirectory;
+
+  // Handle the case where Platform.executable is a sibling of the SDK directory
+  // (this happens during internal testing).
+  sdkDirectory =
+      new Directory(p.join(platformExecutable.parent.path, 'dart-sdk'));
   if (_isSdkDir(sdkDirectory)) return sdkDirectory;
 
   // Try and locate the VM using 'which'.
