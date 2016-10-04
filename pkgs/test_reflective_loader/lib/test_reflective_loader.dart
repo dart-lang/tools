@@ -8,7 +8,7 @@ import 'dart:async';
 @MirrorsUsed(metaTargets: 'ReflectiveTest')
 import 'dart:mirrors';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart' as test_package;
 
 /**
  * A marker annotation used to annotate overridden test methods (so we cannot
@@ -30,9 +30,13 @@ const _FailingTest failingTest = const _FailingTest();
 const ReflectiveTest reflectiveTest = const ReflectiveTest();
 
 /**
- * Test classes annotated with this annotation are run using [solo_group].
+ * A marker annotation used to annotate "solo" groups and tests.
  */
 const _SoloTest soloTest = const _SoloTest();
+
+final List<_Group> _currentGroups = <_Group>[];
+int _currentSuiteLevel = 0;
+String _currentSuiteName = null;
 
 /**
  * Is `true` the application is running in the checked mode.
@@ -47,10 +51,33 @@ final bool _isCheckedMode = () {
 }();
 
 /**
+ * Run the [define] function parameter that calls [defineReflectiveTests] to
+ * add normal and "solo" tests, and also calls [defineReflectiveSuite] to
+ * create embedded suites.  If the current suite is the top-level one, perform
+ * check for "solo" groups and tests, and run all or only "solo" items.
+ */
+void defineReflectiveSuite(void define(), {String name}) {
+  String groupName = _currentSuiteName;
+  _currentSuiteLevel++;
+  try {
+    _currentSuiteName = _combineNames(_currentSuiteName, name);
+    define();
+  } finally {
+    _currentSuiteName = groupName;
+    _currentSuiteLevel--;
+  }
+  _addTestsIfTopLevelSuite();
+}
+
+/**
  * Runs test methods existing in the given [type].
  *
- * Methods with names starting with `test` are run using [test] function.
- * Methods with names starting with `solo_test` are run using [solo_test] function.
+ * If there is a "solo" test method in the top-level suite, only "solo" methods
+ * are run.
+ *
+ * If there is a "solo" test type, only its test methods are run.
+ *
+ * Otherwise all tests methods of all test types are run.
  *
  * Each method is run with a new instance of [type].
  * So, [type] should have a default constructor.
@@ -65,56 +92,105 @@ final bool _isCheckedMode = () {
 void defineReflectiveTests(Type type) {
   ClassMirror classMirror = reflectClass(type);
   if (!classMirror.metadata.any((InstanceMirror annotation) =>
-  annotation.type.reflectedType == ReflectiveTest)) {
+      annotation.type.reflectedType == ReflectiveTest)) {
     String name = MirrorSystem.getName(classMirror.qualifiedName);
     throw new Exception('Class $name must have annotation "@reflectiveTest" '
         'in order to be run by runReflectiveTests.');
   }
-  void runMembers() {
-    classMirror.instanceMembers
-        .forEach((Symbol symbol, MethodMirror memberMirror) {
-      // we need only methods
-      if (memberMirror is! MethodMirror || !memberMirror.isRegularMethod) {
-        return;
-      }
-      String memberName = MirrorSystem.getName(symbol);
-      // test_
-      if (memberName.startsWith('test_')) {
-        test(memberName, () {
-          if (_hasFailingTestAnnotation(memberMirror) ||
-              _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror)) {
-            return _runFailingTest(classMirror, symbol);
-          } else {
-            return _runTest(classMirror, symbol);
-          }
-        });
-        return;
-      }
-      // solo_test_
-      if (memberName.startsWith('solo_test_')) {
-        solo_test(memberName, () {
-          return _runTest(classMirror, symbol);
-        });
-      }
-      // fail_test_
-      if (memberName.startsWith('fail_')) {
-        test(memberName, () {
-          return _runFailingTest(classMirror, symbol);
-        });
-      }
-      // solo_fail_test_
-      if (memberName.startsWith('solo_fail_')) {
-        solo_test(memberName, () {
-          return _runFailingTest(classMirror, symbol);
-        });
-      }
-    });
+
+  _Group group;
+  {
+    bool isSolo = _hasAnnotationInstance(classMirror, soloTest);
+    String className = MirrorSystem.getName(classMirror.simpleName);
+    group = new _Group(isSolo, _combineNames(_currentSuiteName, className));
+    _currentGroups.add(group);
   }
-  String className = MirrorSystem.getName(classMirror.simpleName);
-  if (_hasAnnotationInstance(classMirror, soloTest)) {
-    solo_group(className, runMembers);
+
+  classMirror.instanceMembers
+      .forEach((Symbol symbol, MethodMirror memberMirror) {
+    // we need only methods
+    if (memberMirror is! MethodMirror || !memberMirror.isRegularMethod) {
+      return;
+    }
+    // prepare information about the method
+    String memberName = MirrorSystem.getName(symbol);
+    bool isSolo = memberName.startsWith('solo_') ||
+        _hasAnnotationInstance(memberMirror, soloTest);
+    // test_
+    if (memberName.startsWith('test_')) {
+      group.addTest(isSolo, memberName, () {
+        if (_hasFailingTestAnnotation(memberMirror) ||
+            _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror)) {
+          return _runFailingTest(classMirror, symbol);
+        } else {
+          return _runTest(classMirror, symbol);
+        }
+      });
+      return;
+    }
+    // solo_test_
+    if (memberName.startsWith('solo_test_')) {
+      group.addTest(true, memberName, () {
+        return _runTest(classMirror, symbol);
+      });
+    }
+    // fail_test_
+    if (memberName.startsWith('fail_')) {
+      group.addTest(isSolo, memberName, () {
+        return _runFailingTest(classMirror, symbol);
+      });
+    }
+    // solo_fail_test_
+    if (memberName.startsWith('solo_fail_')) {
+      group.addTest(true, memberName, () {
+        return _runFailingTest(classMirror, symbol);
+      });
+    }
+  });
+
+  // Support for the case of missing enclosing [defineReflectiveSuite].
+  _addTestsIfTopLevelSuite();
+}
+
+/**
+ * If the current suite is the top-level one, add tests to the `test` package.
+ */
+void _addTestsIfTopLevelSuite() {
+  if (_currentSuiteLevel == 0) {
+    void runTests({bool allGroups, bool allTests}) {
+      for (_Group group in _currentGroups) {
+        if (allGroups || group.isSolo) {
+          for (_Test test in group.tests) {
+            if (allTests || test.isSolo) {
+              test_package.test(test.name, test.function);
+            }
+          }
+        }
+      }
+    }
+
+    if (_currentGroups.any((g) => g.hasSoloTest)) {
+      runTests(allGroups: true, allTests: false);
+    } else if (_currentGroups.any((g) => g.isSolo)) {
+      runTests(allGroups: false, allTests: true);
+    } else {
+      runTests(allGroups: true, allTests: true);
+    }
+    _currentGroups.clear();
+  }
+}
+
+/**
+ * Return the combination of the [base] and [addition] names.
+ * If any other two is `null`, then the other one is returned.
+ */
+String _combineNames(String base, String addition) {
+  if (base == null) {
+    return addition;
+  } else if (addition == null) {
+    return base;
   } else {
-    group(className, runMembers);
+    return '$base | $addition';
   }
 }
 
@@ -153,7 +229,7 @@ Future _invokeSymbolIfExists(InstanceMirror instanceMirror, Symbol symbol) {
  */
 Future _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   return new Future(() => _runTest(classMirror, symbol)).then((_) {
-    fail('Test passed - expected to fail.');
+    test_package.fail('Test passed - expected to fail.');
   }, onError: (_) {});
 }
 
@@ -163,6 +239,8 @@ _runTest(ClassMirror classMirror, Symbol symbol) {
       .then((_) => instanceMirror.invoke(symbol, []).reflectee)
       .whenComplete(() => _invokeSymbolIfExists(instanceMirror, #tearDown));
 }
+
+typedef _TestFunction();
 
 /**
  * A marker annotation used to instruct dart2js to keep reflection information
@@ -190,9 +268,37 @@ class _FailingTest {
 }
 
 /**
- * A marker annotation used to annotate a test class to run it using
- * [solo_group].
+ * Information about a type based test group.
+ */
+class _Group {
+  final bool isSolo;
+  final String name;
+  final List<_Test> tests = <_Test>[];
+
+  _Group(this.isSolo, this.name);
+
+  bool get hasSoloTest => tests.any((test) => test.isSolo);
+
+  void addTest(bool isSolo, String name, _TestFunction function) {
+    String fullName = _combineNames(this.name, name);
+    tests.add(new _Test(isSolo, fullName, function));
+  }
+}
+
+/**
+ * A marker annotation used to annotate "solo" groups and tests.
  */
 class _SoloTest {
   const _SoloTest();
+}
+
+/**
+ * Information about a test.
+ */
+class _Test {
+  final bool isSolo;
+  final String name;
+  final _TestFunction function;
+
+  _Test(this.isSolo, this.name, this.function);
 }
