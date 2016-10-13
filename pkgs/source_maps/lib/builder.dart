@@ -60,7 +60,7 @@ class SourceMapBuilder {
 }
 
 /// An entry in the source map builder.
-class Entry implements Comparable {
+class Entry implements Comparable<Entry> {
   /// Span denoting the original location in the input source file
   final SourceLocation source;
 
