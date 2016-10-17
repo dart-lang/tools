@@ -1,3 +1,7 @@
+## 0.13.2+1
+
+* Fix new strong mode error.
+
 ## 0.13.2
 
 * Relax type of TreeNode.visit, to allow returning values from visitors.
@@ -11,7 +15,7 @@
  * **BREAKING** Fix all [strong mode][] errors and warnings.
    This involved adding more precise on some public APIs, which
    is why it may break users.
- 
+
 [strong mode]: https://github.com/dart-lang/dev_compiler/blob/master/STRONG_MODE.md
 
 ## 0.12.2
