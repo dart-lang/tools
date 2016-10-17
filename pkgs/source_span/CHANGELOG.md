@@ -1,3 +1,7 @@
+# 1.2.4
+
+* Fix a new strong mode error.
+
 # 1.2.3
 
 * Fix a bug where a point span at the end of a file without a trailing newline
