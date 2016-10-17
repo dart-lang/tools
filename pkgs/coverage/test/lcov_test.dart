@@ -43,7 +43,7 @@ void main() {
     test('format()', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter = new LcovFormatter(resolver);
 
       String res = await formatter.format(hitmap);
@@ -56,7 +56,7 @@ void main() {
     test('format() includes files in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter = new LcovFormatter(resolver, reportOn: ['lib/', 'test/']);
 
       String res = await formatter.format(hitmap);
@@ -69,7 +69,7 @@ void main() {
     test('format() excludes files not in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter = new LcovFormatter(resolver, reportOn: ['lib/']);
 
       String res = await formatter.format(hitmap);
@@ -82,7 +82,7 @@ void main() {
     test('format() uses paths relative to basePath', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter = new LcovFormatter(resolver, basePath: p.absolute('lib'));
 
       String res = await formatter.format(hitmap);
@@ -97,7 +97,7 @@ void main() {
     test('format()', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter = new PrettyPrintFormatter(resolver, new Loader());
 
       String res = await formatter.format(hitmap);
@@ -122,7 +122,7 @@ void main() {
     test('format() includes files in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter = new PrettyPrintFormatter(resolver, new Loader(),
           reportOn: ['lib/', 'test/']);
 
@@ -136,7 +136,7 @@ void main() {
     test('format() excludes files not in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packageRoot: 'packages');
+      var resolver = new Resolver(packagesPath: '.packages');
       var formatter =
           new PrettyPrintFormatter(resolver, new Loader(), reportOn: ['lib/']);
 
