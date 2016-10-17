@@ -60,7 +60,7 @@ abstract class SourceSpanMixin implements SourceSpan {
     if (length == 0 && this is! SourceSpanWithContext) return buffer.toString();
     buffer.write("\n");
 
-    var textLine;
+    String textLine;
     if (this is SourceSpanWithContext) {
       var context = (this as SourceSpanWithContext).context;
       var lineStart = findLineStart(context, text, column);
