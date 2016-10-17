@@ -39,7 +39,7 @@ void _compile(String inputPath, bool verbose) {
     var file = new SourceFile(contents, url: path.toUri(inputPath));
 
     // Parse the CSS.
-    var tree = _time(
+    StyleSheet tree = _time(
         'Parse $filename', () => new Parser(file, contents).parse(), verbose);
 
     _time('Analyzer $filename', () => new Analyzer([tree], messages), verbose)
