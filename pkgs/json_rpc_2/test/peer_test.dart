@@ -164,8 +164,8 @@ void main() {
     });
 
     test("returns a response for malformed JSON", () {
-      var incomingController = new StreamController();
-      var outgoingController = new StreamController();
+      var incomingController = new StreamController<String>();
+      var outgoingController = new StreamController<String>();
       var jsonPeer = new json_rpc.Peer(
           new StreamChannel(incomingController.stream, outgoingController));
 

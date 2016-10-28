@@ -4,17 +4,12 @@
 
 import 'dart:async';
 
-import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../error_code.dart' as error_code;
 import 'exception.dart';
 
 typedef ZeroArgumentFunction();
-
-/// Like [new Future.sync], but automatically wraps the future in a
-/// [Chain.track] call.
-Future syncFuture(callback()) => Chain.track(new Future.sync(callback));
 
 /// Returns a sentence fragment listing the elements of [iter].
 ///
@@ -69,8 +64,9 @@ tryFinally(body(), whenComplete()) {
 }
 
 /// A transformer that silently drops [FormatException]s.
-final ignoreFormatExceptions = new StreamTransformer.fromHandlers(
-    handleError: (error, stackTrace, sink) {
+final ignoreFormatExceptions =
+    new StreamTransformer<Object, Object>.fromHandlers(
+        handleError: (error, stackTrace, sink) {
   if (error is FormatException) return;
   sink.addError(error, stackTrace);
 });

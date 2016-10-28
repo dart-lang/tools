@@ -45,10 +45,14 @@ class ClientController {
   }
 
   /// Sends [response], a decoded response, to [client].
-  Future sendResponse(response) => sendJsonResponse(JSON.encode(response));
+  void sendResponse(response) {
+    sendJsonResponse(JSON.encode(response));
+  }
 
   /// Sends [response], a JSON-encoded response, to [client].
-  Future sendJsonResponse(String request) => _responseController.add(request);
+  void sendJsonResponse(String request) {
+    _responseController.add(request);
+  }
 }
 
 /// Returns a [Future] that completes after pumping the event queue [times]

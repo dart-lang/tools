@@ -49,9 +49,8 @@ class Client {
   /// Note that the client won't begin listening to [responses] until
   /// [Client.listen] is called.
   Client(StreamChannel<String> channel)
-      : this.withoutJson(channel
-            .transform(jsonDocument)
-            .transformStream(ignoreFormatExceptions));
+      : this.withoutJson(
+            jsonDocument.bind(channel).transformStream(ignoreFormatExceptions));
 
   /// Creates a [Client] that communicates using decoded messages over
   /// [channel].

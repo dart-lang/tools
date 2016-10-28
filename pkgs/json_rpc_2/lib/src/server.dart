@@ -56,9 +56,8 @@ class Server {
   /// Note that the server won't begin listening to [requests] until
   /// [Server.listen] is called.
   Server(StreamChannel<String> channel)
-      : this.withoutJson(channel
-            .transform(jsonDocument)
-            .transform(respondToFormatExceptions));
+      : this.withoutJson(
+            jsonDocument.bind(channel).transform(respondToFormatExceptions));
 
   /// Creates a [Server] that communicates using decoded messages over
   /// [channel].
@@ -126,41 +125,45 @@ class Server {
   /// errors by throwing an [RpcException].
   Future _handleRequest(request) async {
     var response;
-    if (request is! List) {
+    if (request is List) {
+      if (request.isEmpty) {
+        response = new RpcException(error_code.INVALID_REQUEST,
+                'A batch must contain at least one request.')
+            .serialize(request);
+      } else {
+        var results = await Future.wait(request.map(_handleSingleRequest));
+        var nonNull = results.where((result) => result != null);
+        if (nonNull.isEmpty) return;
+        response = nonNull.toList();
+      }
+    } else {
       response = await _handleSingleRequest(request);
       if (response == null) return;
-    } else if (request.isEmpty) {
-      response = new RpcException(
-              error_code.INVALID_REQUEST,
-              'A batch must contain at least one request.')
-          .serialize(request);
-    } else {
-      var results = await Future.wait(request.map(_handleSingleRequest));
-      var nonNull = results.where((result) => result != null);
-      if (nonNull.isEmpty) return;
-      response = nonNull.toList();
     }
 
     if (!isClosed) _manager.add(response);
   }
 
   /// Handles an individual parsed request.
-  Future _handleSingleRequest(request) {
-    return syncFuture(() {
+  Future _handleSingleRequest(request) async {
+    try {
       _validateRequest(request);
 
       var name = request['method'];
       var method = _methods[name];
       if (method == null) method = _tryFallbacks;
 
+      Object result;
       if (method is ZeroArgumentFunction) {
-        if (!request.containsKey('params')) return method();
-        throw new RpcException.invalidParams('No parameters are allowed for '
-            'method "$name".');
+        if (request.containsKey('params')) {
+          throw new RpcException.invalidParams('No parameters are allowed for '
+              'method "$name".');
+        }
+        result = await method();
+      } else {
+        result = await method(new Parameters(name, request['params']));
       }
 
-      return method(new Parameters(name, request['params']));
-    }).then((result) {
       // A request without an id is a notification, which should not be sent a
       // response, even if one is generated on the server.
       if (!request.containsKey('id')) return null;
@@ -170,22 +173,24 @@ class Server {
         'result': result,
         'id': request['id']
       };
-    }).catchError((error, stackTrace) {
-      if (error is! RpcException) {
-        error = new RpcException(
-            error_code.SERVER_ERROR, getErrorMessage(error), data: {
-          'full': error.toString(),
-          'stack': new Chain.forTrace(stackTrace).toString()
-        });
-      }
-
-      if (error.code != error_code.INVALID_REQUEST &&
-          !request.containsKey('id')) {
+    } catch (error, stackTrace) {
+      if (error is RpcException) {
+        if (error.code == error_code.INVALID_REQUEST ||
+            request.containsKey('id')) {
+          return error.serialize(request);
+        } else {
+          return null;
+        }
+      } else if (!request.containsKey('id')) {
         return null;
-      } else {
-        return error.serialize(request);
       }
-    });
+      final chain = new Chain.forTrace(stackTrace);
+      return new RpcException(error_code.SERVER_ERROR, getErrorMessage(error),
+          data: {
+            'full': '$error',
+            'stack': '$chain',
+          }).serialize(request);
+    }
   }
 
   /// Validates that [request] matches the JSON-RPC spec.
@@ -233,18 +238,18 @@ class Server {
   Future _tryFallbacks(Parameters params) {
     var iterator = _fallbacks.toList().iterator;
 
-    _tryNext() {
+    _tryNext() async {
       if (!iterator.moveNext()) {
-        return new Future.error(
-            new RpcException.methodNotFound(params.method),
-            new Chain.current());
+        throw new RpcException.methodNotFound(params.method);
       }
 
-      return syncFuture(() => iterator.current(params)).catchError((error) {
+      try {
+        return iterator.current(params);
+      } on RpcException catch (error) {
         if (error is! RpcException) throw error;
         if (error.code != error_code.METHOD_NOT_FOUND) throw error;
         return _tryNext();
-      });
+      }
     }
 
     return _tryNext();
