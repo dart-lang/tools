@@ -1,3 +1,7 @@
+## 2.0.3
+
+* Fix new strong-mode warnings.
+
 ## 2.0.2
 
 * Fix all strong-mode warnings.
