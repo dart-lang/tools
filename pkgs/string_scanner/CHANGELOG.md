@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Fix the error text emitted by `StringScanner.expectChar()`.
+
 ## 1.0.0
 
 * **Breaking change**: `StringScanner.error()`'s `length` argument now defaults

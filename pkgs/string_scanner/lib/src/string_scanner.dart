@@ -116,7 +116,7 @@ class StringScanner {
       }
     }
 
-    _fail('Expected $name.');
+    _fail(name);
   }
 
   /// If [pattern] matches at the current position of the string, scans forward
