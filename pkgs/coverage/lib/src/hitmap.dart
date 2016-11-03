@@ -70,7 +70,7 @@ Future<Map> parseCoverage(Iterable<File> files, _) async {
   Map globalHitmap = {};
   for (var file in files) {
     String contents = file.readAsStringSync();
-    var json = JSON.decode(contents)['coverage'];
+    var json = JSON.decode(contents)['coverage'] as List<Map>;
     mergeHitmaps(createHitmap(json), globalHitmap);
   }
   return globalHitmap;

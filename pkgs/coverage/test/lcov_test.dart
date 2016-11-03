@@ -165,7 +165,7 @@ Future<Map> _getHitMap() async {
 
   // collect hit map.
   var coverageJson = await collect('127.0.0.1', port, true, true);
-  var hitMap = createHitmap(coverageJson['coverage']);
+  var hitMap = createHitmap(coverageJson['coverage'] as List<Map>);
 
   // wait for sample app to terminate.
   var result = await sampleAppProc;
