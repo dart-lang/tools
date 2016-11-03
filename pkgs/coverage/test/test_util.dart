@@ -30,7 +30,7 @@ Future runTestApp(int openPort) async {
   });
 }
 
-Future<Null> _transformStd(Stream<List<int>> source) {
+Future _transformStd(Stream<List<int>> source) {
   return source
       .transform(SYSTEM_ENCODING.decoder)
       .transform(const LineSplitter())

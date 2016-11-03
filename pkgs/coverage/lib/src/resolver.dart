@@ -90,7 +90,6 @@ class Resolver {
 
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
-  final List<String> failed = [];
   final String workspacePath;
 
   /// Creates a Bazel resolver with the specified workspace path, if any.

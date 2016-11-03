@@ -25,7 +25,7 @@ void main() {
 
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    var coverage = json['coverage'] as List;
+    var coverage = json['coverage'] as List<Map>;
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {

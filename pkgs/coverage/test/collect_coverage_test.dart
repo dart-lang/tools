@@ -57,7 +57,7 @@ void main() {
 
     var json = JSON.decode(resultString) as Map;
 
-    var coverage = json['coverage'] as List;
+    var coverage = json['coverage'] as List<Map>;
 
     var hitMap = createHitmap(coverage);
 
