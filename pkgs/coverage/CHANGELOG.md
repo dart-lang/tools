@@ -1,3 +1,7 @@
+## 0.8.0+2
+
+ * Strong mode fixes as of Dart SDK 1.20.1.
+
 ## 0.8.0+1
 
  * Make strong mode clean.
