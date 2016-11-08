@@ -1,3 +1,8 @@
+# 1.3.0
+
+* Add `SourceSpan.highlight()`, which returns just the highlighted text that
+  would be included in `SourceSpan.message()`.
+
 # 1.2.4
 
 * Fix a new strong mode error.

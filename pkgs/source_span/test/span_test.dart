@@ -234,48 +234,16 @@ line 1, column 6 of foo.dart: oh no
 ${colors.YELLOW}foo bar${colors.NONE}
 ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
     });
-  });
 
-  group("message() with context", () {
-    var spanWithContext;
-    setUp(() {
-      spanWithContext = new SourceSpanWithContext(
+    test("with context, underlines the right column", () {
+      var spanWithContext = new SourceSpanWithContext(
           new SourceLocation(5, sourceUrl: "foo.dart"),
           new SourceLocation(12, sourceUrl: "foo.dart"),
           "foo bar",
           "-----foo bar-----");
-    });
 
-    test("underlines under the right column", () {
       expect(spanWithContext.message("oh no", color: colors.YELLOW), equals("""
 line 1, column 6 of foo.dart: oh no
------${colors.YELLOW}foo bar${colors.NONE}-----
-     ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
-    });
-
-    test("underlines correctly when text appears twice", () {
-      var span = new SourceSpanWithContext(
-          new SourceLocation(9, column: 9, sourceUrl: "foo.dart"),
-          new SourceLocation(12, column: 12, sourceUrl: "foo.dart"),
-          "foo",
-          "-----foo foo-----");
-      expect(span.message("oh no", color: colors.YELLOW), equals("""
-line 1, column 10 of foo.dart: oh no
------foo ${colors.YELLOW}foo${colors.NONE}-----
-         ${colors.YELLOW}^^^${colors.NONE}"""));
-  });
-
-    test("supports lines of preceeding context", () {
-      var span = new SourceSpanWithContext(
-          new SourceLocation(5, line: 3, column: 5, sourceUrl: "foo.dart"),
-          new SourceLocation(12, line: 3, column: 12, sourceUrl: "foo.dart"),
-          "foo bar",
-          "previous\nlines\n-----foo bar-----\nfollowing line\n");
-
-      expect(span.message("oh no", color: colors.YELLOW), equals("""
-line 4, column 6 of foo.dart: oh no
-previous
-lines
 -----${colors.YELLOW}foo bar${colors.NONE}-----
      ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
     });
