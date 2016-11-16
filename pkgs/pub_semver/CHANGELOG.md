@@ -1,3 +1,7 @@
+# 1.3.1
+
+* Fix a new strong mode error.
+
 # 1.3.0
 
 * Make the `VersionUnion` class public. This was previously used internally to

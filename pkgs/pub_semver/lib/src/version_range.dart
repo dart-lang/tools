@@ -321,7 +321,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     } else if (other is VersionRange) {
       if (!allowsAny(other)) return this;
 
-      VersionConstraint before;
+      VersionRange before;
       if (!allowsLower(this, other)) {
         before = VersionConstraint.empty;
       } else if (min == other.min) {
@@ -334,7 +334,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
             includeMin: includeMin, includeMax: !other.includeMin);
       }
 
-      VersionConstraint after;
+      VersionRange after;
       if (!allowsHigher(this, other)) {
         after = VersionConstraint.empty;
       } else if (max == other.max) {
