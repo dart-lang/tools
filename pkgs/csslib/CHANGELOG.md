@@ -1,3 +1,7 @@
+## 0.13.2+2
+
+* Fix static warnings.
+
 ## 0.13.2+1
 
 * Fix new strong mode error.
