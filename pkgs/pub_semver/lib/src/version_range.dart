@@ -323,7 +323,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
       VersionRange before;
       if (!allowsLower(this, other)) {
-        before = VersionConstraint.empty;
+        before = null;
       } else if (min == other.min) {
         assert(includeMin && !other.includeMin);
         assert(min != null);
@@ -336,7 +336,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
       VersionRange after;
       if (!allowsHigher(this, other)) {
-        after = VersionConstraint.empty;
+        after = null;
       } else if (max == other.max) {
         assert(includeMax && !other.includeMax);
         assert(max != null);
@@ -347,8 +347,9 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
             includeMin: !other.includeMax, includeMax: includeMax);
       }
 
-      if (before == VersionConstraint.empty) return after;
-      if (after == VersionConstraint.empty) return before;
+      if (before == null && after == null) return VersionConstraint.empty;
+      if (before == null) return after;
+      if (after == null) return before;
       return new VersionUnion.fromRanges([before, after]);
     } else if (other is VersionUnion) {
       var ranges = <VersionRange>[];

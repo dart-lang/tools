@@ -1,3 +1,7 @@
+# 1.3.2
+
+* Fix a checked-mode error in `VersionRange.difference()`.
+
 # 1.3.1
 
 * Fix a new strong mode error.
