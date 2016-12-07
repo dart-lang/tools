@@ -1,3 +1,8 @@
+## 1.1.4
+
+* Throw an exception when listing globs whose initial paths don't exist in
+  case-insensitive mode. This matches the case-sensitive behavior.
+
 ## 1.1.3
 
 * Support `string_scanner` 1.0.0.
