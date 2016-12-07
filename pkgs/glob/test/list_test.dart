@@ -302,7 +302,7 @@ void main() {
         p.join("foo", "baz", "bang"),
         p.join("foo", "baz", "qux")
       ])));
-    });
+    }, skip: "Broken by sdk#28015.");
 
     test("lists a subdirectory that sometimes exists", () {
       d.dir("top", [
