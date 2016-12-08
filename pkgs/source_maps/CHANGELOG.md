@@ -1,3 +1,10 @@
+## 0.10.1+3
+
+* Add `MappingBundle` class that handles extended source map format that
+  supports source maps for multiple output files in a single mapper.
+  Extend `Mapping.spanFor` API to accept a uri parameter that is optional
+  for normal source maps but required for MappingBundle source maps.
+
 ## 0.10.1+2
 
 * Fix more strong mode warnings.
