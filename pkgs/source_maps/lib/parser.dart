@@ -213,7 +213,17 @@ class MappingBundle extends Mapping {
     if (_mappings.containsKey(name)) {
       return _mappings[name].spanFor(line, column, files: files, uri: name);
     }
-    return null;
+
+    // Note: when there is no source map for an uri, this behaves like an
+    // identity function, returning the requested location as the result.
+
+    // Create a mock offset for the output location. We compute it in terms
+    // of the input line and column to minimize the chances that two different
+    // line and column locations are mapped to the same offset.
+    var offset = line * 1000000 + column;
+    var location = new SourceLocation(offset,
+        line: line, column: column, sourceUrl: Uri.parse(uri));
+    return new SourceMapSpan(location, location, "");
   }
 }
 

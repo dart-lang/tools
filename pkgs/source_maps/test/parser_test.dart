@@ -178,7 +178,15 @@ main() {
     });
 
     test('unmapped path', () {
-      expect(mapping.spanFor(0, 0, uri: "unmapped_output.dart"), isNull);
+      var span = mapping.spanFor(0, 0, uri: "unmapped_output.dart");
+      expect(span.sourceUrl, Uri.parse("unmapped_output.dart"));
+      expect(span.start.line, equals(0));
+      expect(span.start.column, equals(0));
+
+      span = mapping.spanFor(10, 5, uri: "unmapped_output.dart");
+      expect(span.sourceUrl, Uri.parse("unmapped_output.dart"));
+      expect(span.start.line, equals(10));
+      expect(span.start.column, equals(5));
     });
 
     test('missing path', () {

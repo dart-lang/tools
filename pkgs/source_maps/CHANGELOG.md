@@ -1,3 +1,8 @@
+## 0.10.1+4
+
+* Extend `MappingBundle.spanFor` to accept requests for output files that
+  don't have source maps.
+
 ## 0.10.1+3
 
 * Add `MappingBundle` class that handles extended source map format that
