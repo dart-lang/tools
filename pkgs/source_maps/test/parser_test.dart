@@ -250,7 +250,7 @@ main() {
       expect(mapping.toJson(), equals(expected));
     }
     // Invalid for this case
-    expect(() => parseJson(SOURCE_MAP_BUNDLE), throws);
+    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throws);
 
     var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE);
     expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));

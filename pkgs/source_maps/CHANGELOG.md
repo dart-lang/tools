@@ -1,3 +1,6 @@
+## 0.10.1+5
+ * Fix strong mode warning in test.
+
 ## 0.10.1+4
 
 * Extend `MappingBundle.spanFor` to accept requests for output files that
