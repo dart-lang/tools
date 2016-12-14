@@ -43,7 +43,7 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_1 = const {
   'sources': const ['input1.dart'],
   'names': const ['var1'],
   'mappings': 'AAAAA',
-  'file': 'output1.dart'
+  'file': 'output.dart'
 };
 
 const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_2 = const {
@@ -55,9 +55,19 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_2 = const {
   'file': 'output2.dart'
 };
 
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_3 = const {
+  'version': 3,
+  'sourceRoot': 'pkg/',
+  'sources': const ['input3.dart'],
+  'names': const ['var3'],
+  'mappings': 'AAAAA',
+  'file': '3/output.dart'
+};
+
 const List SOURCE_MAP_BUNDLE = const [
   MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
-  MAP_WITH_SOURCE_LOCATION_AND_NAME_2
+  MAP_WITH_SOURCE_LOCATION_AND_NAME_2,
+  MAP_WITH_SOURCE_LOCATION_AND_NAME_3,
 ];
 
 main() {
@@ -155,11 +165,12 @@ main() {
   group('parse with bundle', () {
     var mapping =
         parseJsonExtended(SOURCE_MAP_BUNDLE, mapUrl: "file:///path/to/map");
+
     test('simple', () {
       expect(
           mapping
               .spanForLocation(new SourceLocation(0,
-                  sourceUrl: new Uri.file('/path/to/output1.dart')))
+                  sourceUrl: new Uri.file('/path/to/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
@@ -168,13 +179,50 @@ main() {
                   sourceUrl: new Uri.file('/path/to/output2.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(
+          mapping
+              .spanForLocation(new SourceLocation(0,
+                  sourceUrl: new Uri.file('/path/to/3/output.dart')))
+              .sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
 
       expect(
-          mapping.spanFor(0, 0, uri: "file:///path/to/output1.dart").sourceUrl,
+          mapping.spanFor(0, 0, uri: "file:///path/to/output.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
           mapping.spanFor(0, 0, uri: "file:///path/to/output2.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(
+          mapping.spanFor(0, 0, uri: "file:///path/to/3/output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
+    });
+
+    test('package uris', () {
+      expect(
+          mapping
+              .spanForLocation(new SourceLocation(0,
+                  sourceUrl: Uri.parse('package:1/output.dart')))
+              .sourceUrl,
+          Uri.parse("file:///path/to/pkg/input1.dart"));
+      expect(
+          mapping
+              .spanForLocation(new SourceLocation(0,
+                  sourceUrl: Uri.parse('package:2/output2.dart')))
+              .sourceUrl,
+          Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(
+          mapping
+              .spanForLocation(new SourceLocation(0,
+                  sourceUrl: Uri.parse('package:3/output.dart')))
+              .sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
+
+      expect(mapping.spanFor(0, 0, uri: "package:1/output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input1.dart"));
+      expect(mapping.spanFor(0, 0, uri: "package:2/output2.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(mapping.spanFor(0, 0, uri: "package:3/output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
     });
 
     test('unmapped path', () {
@@ -194,20 +242,24 @@ main() {
     });
 
     test('incomplete paths', () {
-      expect(mapping.spanFor(0, 0, uri: "output1.dart").sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: "output.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(mapping.spanFor(0, 0, uri: "output2.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(mapping.spanFor(0, 0, uri: "3/output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
     });
 
     test('parseExtended', () {
       var mapping = parseExtended(JSON.encode(SOURCE_MAP_BUNDLE),
           mapUrl: "file:///path/to/map");
 
-      expect(mapping.spanFor(0, 0, uri: "output1.dart").sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: "output.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(mapping.spanFor(0, 0, uri: "output2.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(mapping.spanFor(0, 0, uri: "3/output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
     });
 
     // Test that the source map can handle cases where the uri passed in is
@@ -217,7 +269,7 @@ main() {
       expect(
           mapping
               .spanForLocation(new SourceLocation(0,
-                  sourceUrl: Uri.parse('http://localhost/output1.dart')))
+                  sourceUrl: Uri.parse('http://localhost/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
@@ -226,13 +278,24 @@ main() {
                   sourceUrl: Uri.parse('http://localhost/output2.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(
+          mapping
+              .spanForLocation(new SourceLocation(0,
+                  sourceUrl: Uri.parse('http://localhost/3/output.dart')))
+              .sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
 
       expect(
-          mapping.spanFor(0, 0, uri: "http://localhost/output1.dart").sourceUrl,
+          mapping.spanFor(0, 0, uri: "http://localhost/output.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
           mapping.spanFor(0, 0, uri: "http://localhost/output2.dart").sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
+      expect(
+          mapping
+              .spanFor(0, 0, uri: "http://localhost/3/output.dart")
+              .sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
     });
   });
 

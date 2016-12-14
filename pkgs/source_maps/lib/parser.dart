@@ -8,7 +8,6 @@ library source_maps.parser;
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:path/path.dart' as path;
 import 'package:source_span/source_span.dart';
 
 import 'builder.dart' as builder;
@@ -185,6 +184,8 @@ class MappingBundle extends Mapping {
     for (var map in json) {
       var mapping = parseJson(map, mapUrl: mapUrl) as SingleMapping;
       var targetUrl = mapping.targetUrl;
+      // TODO(jacobr): verify that targetUrl is valid uri instead of a windows
+      // path.
       _mappings[targetUrl] = mapping;
     }
   }
@@ -205,13 +206,29 @@ class MappingBundle extends Mapping {
     if (uri == null) {
       throw new ArgumentError.notNull('uri');
     }
-    if (_mappings.containsKey(uri)) {
-      return _mappings[uri].spanFor(line, column, files: files, uri: uri);
-    }
-    // Fall back to looking up the source map on just the basename.
-    var name = path.basename(uri.toString());
-    if (_mappings.containsKey(name)) {
-      return _mappings[name].spanFor(line, column, files: files, uri: name);
+
+    // Find the longest suffix of the uri that matches the sourcemap
+    // where the suffix starts after a path segment boundary.
+    // We consider ":" and "/" as path segment boundaries so that
+    // "package:" uris can be handled with minimal special casing. Having a
+    // few false positive path segment boundaries is not a significant issue
+    // as we prefer the longest matching prefix.
+    // Using package:path `path.split` to find path segment boundaries would
+    // not generate all of the path segment boundaries we want for "package:"
+    // urls as "package:package_name" would be one path segment when we want
+    // "package" and "package_name" to be sepearate path segments.
+
+    bool onBoundary = true;
+    var separatorCodeUnits = ['/'.codeUnitAt(0), ':'.codeUnitAt(0)];
+    for (var i = 0; i < uri.length; ++i) {
+      if (onBoundary) {
+        var candidate = uri.substring(i);
+        if (_mappings.containsKey(candidate)) {
+          return _mappings[candidate]
+              .spanFor(line, column, files: files, uri: candidate);
+        }
+      }
+      onBoundary = separatorCodeUnits.contains(uri.codeUnitAt(i));
     }
 
     // Note: when there is no source map for an uri, this behaves like an

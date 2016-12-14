@@ -1,3 +1,8 @@
+## 0.10.2
+ * Support for extended source map format.
+ * Polish `MappingBundle.spanFor` handling of URIs that have a suffix that
+   exactly match a source map in the MappingBundle.
+
 ## 0.10.1+5
  * Fix strong mode warning in test.
 
