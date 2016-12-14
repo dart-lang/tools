@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:package_resolver/package_resolver.dart';
+import 'package:path/path.dart' as p;
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -60,6 +61,58 @@ foo.dart.js 10:11  baz
     expect(frames.length, equals(2));
     expect(frames.first.member, equals("foo"));
     expect(frames.last.member, equals("baz"));
+  });
+
+  test("include frames from JS files not covered by the source map bundle",
+      () {
+    var trace = new Trace.parse("""
+foo.dart.js 10:11  foo
+jquery.js 10:1  foo
+bar.dart.js 10:11  foo
+""");
+    var builder = new SourceMapBuilder()
+      ..addSpan(
+          new SourceMapSpan.identifier(
+              new SourceLocation(1,
+                  line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
+              "qux"),
+          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
+              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+    var sourceMapJson1 = builder.build("foo.dart.js.map");
+    sourceMapJson1['file'] = "foo.dart.js";
+
+    builder = new SourceMapBuilder()
+      ..addSpan(
+          new SourceMapSpan.identifier(
+              new SourceLocation(1,
+                  line: 1, column: 3, sourceUrl: "packages/bar/bar.dart"),
+              "qux"),
+          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
+              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+    var sourceMapJson2 = builder.build("bar.dart.js.map");
+    sourceMapJson2['file'] = "bar.dart.js";
+
+    var bundle = [sourceMapJson1, sourceMapJson2];
+    var mapping = parseJsonExtended(bundle);
+    var frames = _mapTrace(mapping, trace,
+            packageResolver: new SyncPackageResolver.root("packages/"))
+        .frames;
+
+    expect(frames.length, equals(3));
+
+    var frame = frames[0];
+    expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
+    expect(frame.line, equals(2));
+    expect(frame.column, equals(4));
+
+    frame = frames[1];
+    expect(p.basename(frame.uri.toString()), equals("jquery.js"));
+    expect(frame.line, equals(10));
+
+    frame = frames[2];
+    expect(frame.uri, equals(Uri.parse("package:bar/bar.dart")));
+    expect(frame.line, equals(2));
+    expect(frame.column, equals(4));
   });
 
   test("falls back to column 0 for unlisted column", () {
