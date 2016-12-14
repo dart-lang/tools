@@ -1,3 +1,8 @@
+## 1.1.4
+
+* Support source maps that depend on the uri of the location to resolve spans
+  correctly.
+
 ## 1.1.3
 
 * Add a missing dependency on `path`.
