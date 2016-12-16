@@ -14,7 +14,10 @@ Future<Map> runAndCollect(String scriptPath,
     {List<String> scriptArgs, String packageRoot, Duration timeout}) async {
   var openPort = await getOpenPort();
 
-  var dartArgs = ['--enable-vm-service=$openPort', '--pause_isolates_on_exit',];
+  var dartArgs = [
+    '--enable-vm-service=$openPort',
+    '--pause_isolates_on_exit',
+  ];
 
   if (packageRoot != null) {
     dartArgs.add('--package-root=$packageRoot');

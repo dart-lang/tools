@@ -70,6 +70,7 @@ Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
       if (!isolate.isPaused) throw "Unpaused isolates remaining.";
     }
   }
+
   return retry(allPaused, _retryInterval, timeout: timeout);
 }
 
