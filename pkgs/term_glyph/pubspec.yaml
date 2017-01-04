@@ -1,0 +1,8 @@
+name: symbol
+version: 1.0.0-dev
+description: Useful symbols and Windows-safe equivalents.
+author: Dart Team <misc@dartlang.org>
+homepage: https://github.com/dart-lang/symbol
+
+environment:
+  sdk: '>=1.8.0 <2.0.0'
