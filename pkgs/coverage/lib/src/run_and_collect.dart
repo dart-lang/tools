@@ -11,13 +11,17 @@ import 'collect.dart';
 import 'util.dart';
 
 Future<Map> runAndCollect(String scriptPath,
-    {List<String> scriptArgs, String packageRoot, Duration timeout}) async {
+    {List<String> scriptArgs, bool checked: false, String packageRoot, Duration timeout}) async {
   var openPort = await getOpenPort();
 
   var dartArgs = [
     '--enable-vm-service=$openPort',
     '--pause_isolates_on_exit',
   ];
+
+  if (checked) {
+    dartArgs.add('--checked');
+  }
 
   if (packageRoot != null) {
     dartArgs.add('--package-root=$packageRoot');
