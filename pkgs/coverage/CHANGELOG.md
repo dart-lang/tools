@@ -1,3 +1,7 @@
+## Unreleased
+
+ * BREAKING CHANGE: `runAndCollect` now defaults to running in checked mode.
+
 ## 0.8.1
 
  * Added optional `checked` parameter to `runAndCollect` to run in checked

@@ -12,7 +12,7 @@ import 'util.dart';
 
 Future<Map> runAndCollect(String scriptPath,
     {List<String> scriptArgs,
-    bool checked: false,
+    bool checked: true,
     String packageRoot,
     Duration timeout}) async {
   var openPort = await getOpenPort();
