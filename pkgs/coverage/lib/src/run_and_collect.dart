@@ -11,7 +11,10 @@ import 'collect.dart';
 import 'util.dart';
 
 Future<Map> runAndCollect(String scriptPath,
-    {List<String> scriptArgs, bool checked: false, String packageRoot, Duration timeout}) async {
+    {List<String> scriptArgs,
+    bool checked: false,
+    String packageRoot,
+    Duration timeout}) async {
   var openPort = await getOpenPort();
 
   var dartArgs = [
