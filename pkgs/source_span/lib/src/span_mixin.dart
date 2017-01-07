@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:math' as math;
+
+import 'package:charcode/charcode.dart';
 import 'package:path/path.dart' as p;
 
 import 'colors.dart' as colors;
@@ -96,7 +98,15 @@ abstract class SourceSpanMixin implements SourceSpan {
       buffer.write(textLine);
     }
     if (!textLine.endsWith('\n')) buffer.write('\n');
-    buffer.write(' ' * column);
+
+    for (var i = 0; i < column; i++) {
+      if (textLine.codeUnitAt(i) == $tab) {
+        buffer.writeCharCode($tab);
+      } else {
+        buffer.writeCharCode($space);
+      }
+    }
+
     if (color != null) buffer.write(color);
     buffer.write('^' * math.max(toColumn - column, 1));
     if (color != null) buffer.write(colors.NONE);

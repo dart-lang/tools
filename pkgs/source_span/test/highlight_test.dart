@@ -75,6 +75,13 @@ foo bar
 ^^^^^^^"""));
   });
 
+  test("emits tabs for tabs", () {
+    expect(new SourceFile(" \t \t\tfoo bar").span(5, 8).highlight(),
+        equals("""
+ \t \t\tfoo bar
+ \t \t\t^^^"""));
+  });
+
   test("supports lines of preceding context", () {
     var span = new SourceSpanWithContext(
         new SourceLocation(5, line: 3, column: 5, sourceUrl: "foo.dart"),

@@ -1,3 +1,8 @@
+# 1.3.1
+
+* Properly highlight spans for lines that include tabs with
+  `SourceSpan.highlight()` and `SourceSpan.message()`.
+
 # 1.3.0
 
 * Add `SourceSpan.highlight()`, which returns just the highlighted text that
