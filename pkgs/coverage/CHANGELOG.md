@@ -1,6 +1,8 @@
 ## Unreleased
 
  * BREAKING CHANGE: `runAndCollect` now defaults to running in checked mode.
+ * Added `extractObservatoryUri`: scrapes an input string for an Observatory
+   URI. Potentially useful for automated tooling after Dart SDK 1.22.
 
 ## 0.8.1
 

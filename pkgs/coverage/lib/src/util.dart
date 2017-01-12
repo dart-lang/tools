@@ -46,6 +46,22 @@ Future retry(Future f(), Duration interval, {Duration timeout}) async {
   }, duration: timeout);
 }
 
+/// Scrapes and returns the observatory URI from a string, or null if not found.
+///
+/// Potentially useful as a means to extract it from log statements.
+Uri extractObservatoryUri(String str) {
+  const kObservatoryListening = 'Observatory listening on ';
+  int msgPos = str.indexOf(kObservatoryListening);
+  if (msgPos == -1) return null;
+  int startPos = msgPos + kObservatoryListening.length;
+  int endPos = str.indexOf(new RegExp(r'(\s|$)'), startPos);
+  try {
+    return Uri.parse(str.substring(startPos, endPos));
+  } on FormatException {
+    return null;
+  }
+}
+
 /// Returns an open port by creating a temporary Socket
 Future<int> getOpenPort() async {
   ServerSocket socket;
