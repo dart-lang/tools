@@ -5,6 +5,7 @@
 library coverage.test.lcov_test;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
@@ -161,17 +162,32 @@ Future<Map> _getHitMap() async {
     '--enable-vm-service=$port',
     _sampleAppPath
   ];
-  var sampleAppProc = Process.run('dart', sampleAppArgs);
+  var sampleProcess = await Process.start('dart', sampleAppArgs);
+
+  // Capture the VM service URI.
+  Completer<Uri> serviceUriCompleter = new Completer<Uri>();
+  sampleProcess.stdout
+      .transform(UTF8.decoder)
+      .transform(new LineSplitter())
+      .listen((line) {
+    if (!serviceUriCompleter.isCompleted) {
+      Uri serviceUri = extractObservatoryUri(line);
+      if (serviceUri != null) {
+        serviceUriCompleter.complete(serviceUri);
+      }
+    }
+  });
+  Uri serviceUri = await serviceUriCompleter.future;
 
   // collect hit map.
-  var coverageJson = await collect('127.0.0.1', port, true, true);
+  var coverageJson = await collect(serviceUri, true, true);
   var hitMap = createHitmap(coverageJson['coverage'] as List<Map>);
 
   // wait for sample app to terminate.
-  var result = await sampleAppProc;
-  if (result.exitCode != 0) {
+  if (await sampleProcess.exitCode != 0) {
     throw new ProcessException('dart', sampleAppArgs,
         'Fatal error. Exit code: ${result.exitCode}', result.exitCode);
   }
+  sampleProcess.stderr.drain();
   return hitMap;
 }

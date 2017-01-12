@@ -101,15 +101,30 @@ Future<String> _collectCoverage() async {
 
   var openPort = await getOpenPort();
 
-  // run the sample app, with the right flags
-  var sampleProcFuture = runTestApp(openPort);
+  // Run the sample app with the right flags.
+  Process sampleProcess = await runTestApp(openPort);
 
-  // run the tool with the right flags
+  // Capture the VM service URI.
+  Completer<Uri> serviceUriCompleter = new Completer<Uri>();
+  sampleProcess.stdout
+      .transform(UTF8.decoder)
+      .transform(new LineSplitter())
+      .listen((line) {
+    if (!serviceUriCompleter.isCompleted) {
+      Uri serviceUri = extractObservatoryUri(line);
+      if (serviceUri != null) {
+        serviceUriCompleter.complete(serviceUri);
+      }
+    }
+  });
+  Uri serviceUri = await serviceUriCompleter.future;
+
+  // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
   var toolResult = await Process.run('dart', [
     _collectAppPath,
-    '--port',
-    openPort.toString(),
+    '--uri',
+    '$serviceUri',
     '--resume-isolates',
     '--wait-paused'
   ]).timeout(timeout, onTimeout: () {
@@ -122,7 +137,8 @@ Future<String> _collectCoverage() async {
     fail('Tool failed with exit code ${toolResult.exitCode}.');
   }
 
-  await sampleProcFuture;
+  await sampleProcess.exitCode;
+  sampleProcess.stderr.drain();
 
   return toolResult.stdout;
 }

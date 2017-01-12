@@ -11,9 +11,12 @@ import 'util.dart';
 
 const _retryInterval = const Duration(milliseconds: 200);
 
-Future<Map> collect(String host, int port, bool resume, bool waitPaused,
+Future<Map> collect(Uri serviceUri, bool resume, bool waitPaused,
     {Duration timeout}) async {
-  var uri = 'ws://$host:$port/ws';
+  // Create websocket URI. Handle any trailing slashes.
+  var pathSegments = serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()
+    ..add('ws');
+  var uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
   var vmService;
   await retry(() async {

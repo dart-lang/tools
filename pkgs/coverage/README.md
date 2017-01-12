@@ -24,28 +24,38 @@ for more details.
 
 #### Collecting coverage from the VM
 
-    dart --pause-isolates-on-exit --enable-vm-service=NNNN script.dart
-    pub global run coverage:collect_coverage --port=NNNN -o coverage.json --resume-isolates
+```
+dart --pause-isolates-on-exit --enable-vm-service=NNNN script.dart
+pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates
+```
 
 or if the `pub global run` executables are on your PATH,
 
-    collect_coverage --port=NNNN -o coverage.json --resume-isolates
+```
+collect_coverage --uri=http://... -o coverage.json --resume-isolates
+```
+
+where `--uri` specifies the Observatory URI emitted by the VM.
 
 If `collect_coverage` is invoked before the script from which coverage is to be
-collected, it will wait until it detects a VM observatory port to which it can
+collected, it will wait until it detects a VM observatory to which it can
 connect. An optional `--connect-timeout` may be specified (in seconds).  The
 `--wait-paused` flag may be enabled, causing `collect_coverage` to wait until
 all isolates are paused before collecting coverage.
 
 #### Collecting coverage from Dartium
 
-    dartium --remote-debugging-port=NNNN
-    # execute code in Dartium
-    pub global run coverage:collect_coverage --port=NNNN -o coverage.json
+```
+dartium --remote-debugging-port=NNNN
+# execute code in Dartium
+pub global run coverage:collect_coverage --uri=... -o coverage.json
+```
 
 or if the `pub global run` executables are on your PATH,
 
-    collect_coverage --port=NNNN -o coverage.json
+```
+collect_coverage --port=NNNN -o coverage.json
+```
 
 As noted above, `collect_coverage` may be invoked before Dartium, in which case
 it will wait until it detects a Dartium remote debugging port, up to the
@@ -55,11 +65,15 @@ debugging port.
 
 #### Formatting coverage data
 
-    pub global run coverage:format_coverage --packages=app_package/.packages -i coverage.json
+```
+pub global run coverage:format_coverage --packages=app_package/.packages -i coverage.json
+```
 
 or if the `pub global run` exectuables are on your PATH,
 
-    format_coverage --packages=app_package/.packages -i coverage.json
+```
+format_coverage --packages=app_package/.packages -i coverage.json
+```
 
 where `app_package` is the path to the package whose coverage is being
 collected. If `--sdk-root` is set, Dart SDK coverage will also be output.

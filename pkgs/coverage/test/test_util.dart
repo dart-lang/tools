@@ -14,28 +14,10 @@ final testAppPath = p.join('test', 'test_files', 'test_app.dart');
 
 const timeout = const Duration(seconds: 10);
 
-Future runTestApp(int openPort) async {
-  var proc = await Process.start('dart', [
+Future<Process> runTestApp(int openPort) async {
+  return Process.start('dart', [
     '--enable-vm-service=$openPort',
     '--pause_isolates_on_exit',
     testAppPath
   ]);
-
-  return Future.wait([
-    _transformStd(proc.stdout),
-    _transformStd(proc.stderr),
-    proc.exitCode
-  ]).timeout(timeout, onTimeout: () {
-    throw 'We timed out waiting for the sample app to finish.';
-  });
-}
-
-Future _transformStd(Stream<List<int>> source) {
-  return source
-      .transform(SYSTEM_ENCODING.decoder)
-      .transform(const LineSplitter())
-      .forEach((line) {
-    // Uncomment to debug output from `testApp`
-    // print(line);
-  });
 }
