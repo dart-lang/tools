@@ -1,4 +1,4 @@
-## Unreleased
+## 0.9.0 - 2017-01-11
 
  * BREAKING CHANGE: `collect` no longer supports the `host` and `port`
    parameters. These are replaced with a `serviceUri` parameter. As of Dart SDK
