@@ -5,6 +5,7 @@
 library coverage.test.collect_coverage_api_test;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:coverage/coverage.dart';
 import 'package:coverage/src/util.dart';
@@ -60,10 +61,25 @@ Future<Map> _collectCoverage() async {
   var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
-  var sampleProcFuture = runTestApp(openPort);
+  var sampleProcess = await runTestApp(openPort);
 
-  var result = collect('127.0.0.1', openPort, true, false, timeout: timeout);
-  await sampleProcFuture;
+  // Capture the VM service URI.
+  Completer<Uri> serviceUriCompleter = new Completer<Uri>();
+  sampleProcess.stdout
+      .transform(UTF8.decoder)
+      .transform(new LineSplitter())
+      .listen((line) {
+    if (!serviceUriCompleter.isCompleted) {
+      Uri serviceUri = extractObservatoryUri(line);
+      if (serviceUri != null) {
+        serviceUriCompleter.complete(serviceUri);
+      }
+    }
+  });
+  Uri serviceUri = await serviceUriCompleter.future;
+
+  var result = collect(serviceUri, true, false, timeout: timeout);
+  await sampleProcess;
 
   return result;
 }

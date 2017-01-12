@@ -5,6 +5,7 @@
 library coverage.run_and_collect;
 
 import 'dart:async';
+import 'dart:convert' show UTF8, LineSplitter;
 import 'dart:io';
 
 import 'collect.dart';
@@ -18,7 +19,7 @@ Future<Map> runAndCollect(String scriptPath,
   var openPort = await getOpenPort();
 
   var dartArgs = [
-    '--enable-vm-service=$openPort',
+    '--enable-vm-service',
     '--pause_isolates_on_exit',
   ];
 
@@ -37,11 +38,21 @@ Future<Map> runAndCollect(String scriptPath,
   }
 
   var process = await Process.start('dart', dartArgs);
+  var serviceUriCompleter = new Completer<Uri>();
+  process.stdout
+      .transform(UTF8.decoder)
+      .transform(const LineSplitter())
+      .listen((line) {
+    var uri = extractObservatoryUri(line);
+    if (uri != null) {
+      serviceUriCompleter.complete(uri);
+    }
+  });
 
+  var serviceUri = await serviceUriCompleter.future;
   try {
-    return collect('127.0.0.1', openPort, true, true, timeout: timeout);
+    return collect(serviceUri, true, true, timeout: timeout);
   } finally {
-    await process.stdout.drain();
     await process.stderr.drain();
 
     var code = await process.exitCode;

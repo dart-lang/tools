@@ -1,5 +1,12 @@
 ## Unreleased
 
+ * BREAKING CHANGE: `collect` no longer supports the `host` and `port`
+   parameters. These are replaced with a `serviceUri` parameter. As of Dart SDK
+   1.22, the Dart VM will emit Observatory URIs that include an authentication
+   token for security reasons. Automated tools will need to scrape stdout for
+   this URI and pass it to `collect_coverage`.
+ * BREAKING CHANGE: `collect_coverage`: the `--host` and `--port` options have
+   been replaced with a `--uri` option. See the above change for details.
  * BREAKING CHANGE: `runAndCollect` now defaults to running in checked mode.
  * Added `extractObservatoryUri`: scrapes an input string for an Observatory
    URI. Potentially useful for automated tooling after Dart SDK 1.22.
