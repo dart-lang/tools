@@ -94,4 +94,39 @@ void main() {
       expect(caught, isTrue);
     });
   });
+
+  group('extractObservatoryUri', () {
+    test('returns null when not found', () {
+      expect(extractObservatoryUri('foo bar baz'), isNull);
+    });
+
+    test('returns null for an incorrectly formatted URI', () {
+      const msg = 'Observatory listening on :://';
+      Uri actual = extractObservatoryUri(msg);
+      expect(extractObservatoryUri(msg), null);
+    });
+
+    test('returns URI at end of string', () {
+      const msg = 'Observatory listening on http://foo.bar:9999/';
+      expect(extractObservatoryUri(msg), Uri.parse('http://foo.bar:9999/'));
+    });
+
+    test('returns URI with auth token at end of string', () {
+      const msg = 'Observatory listening on http://foo.bar:9999/cG90YXRv/';
+      expect(extractObservatoryUri(msg),
+          Uri.parse('http://foo.bar:9999/cG90YXRv/'));
+    });
+
+    test('return URI embedded within string', () {
+      const msg = '1985-10-26 Observatory listening on http://foo.bar:9999/ **';
+      expect(extractObservatoryUri(msg), Uri.parse('http://foo.bar:9999/'));
+    });
+
+    test('return URI with auth token embedded within string', () {
+      const msg =
+          '1985-10-26 Observatory listening on http://foo.bar:9999/cG90YXRv/ **';
+      expect(extractObservatoryUri(msg),
+          Uri.parse('http://foo.bar:9999/cG90YXRv/'));
+    });
+  });
 }
