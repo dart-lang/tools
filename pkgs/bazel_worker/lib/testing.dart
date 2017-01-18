@@ -51,6 +51,7 @@ class TestStdinSync implements TestStdin {
 class TestStdinAsync implements TestStdin {
   /// Controls the stream for async delivery of bytes.
   final StreamController _controller = new StreamController();
+  StreamController get controller => _controller;
 
   /// Adds all the [bytes] to this stream.
   void addInputBytes(List<int> bytes) {

@@ -137,4 +137,15 @@ void runTests(TestStdin stdinFactory(),
       [30, 40]
     ]);
   });
+
+  test('Handles the case when stdin gives an error instead of EOF', () async {
+    if (stdinStream is TestStdinSync) {
+      // Reading will now cause an error as pendingBytes is empty.
+      (stdinStream as TestStdinSync).pendingBytes.clear();
+      expect(messageGrouper.next, isNull);
+    } else if (stdinStream is TestStdinAsync) {
+      (stdinStream as TestStdinAsync).controller.addError('Error!');
+      expect(await messageGrouper.next, isNull);
+    }
+  });
 }

@@ -18,12 +18,19 @@ class SyncMessageGrouper implements MessageGrouper {
   ///
   /// Returns null at end of file.
   List<int> get next {
-    List<int> message;
-    while (message == null) {
-      var nextByte = _stdin.readByteSync();
-      if (nextByte == -1) return null;
-      message = _state.handleInput(nextByte);
+    try {
+      List<int> message;
+      while (message == null) {
+        var nextByte = _stdin.readByteSync();
+        if (nextByte == -1) return null;
+        message = _state.handleInput(nextByte);
+      }
+      return message;
+    } catch (e) {
+      // It appears we sometimes get an exception instead of -1 as expected when
+      // stdin closes, this handles that in the same way (returning a null
+      // message)
+      return null;
     }
-    return message;
   }
 }

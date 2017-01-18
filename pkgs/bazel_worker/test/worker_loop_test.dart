@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -35,7 +36,7 @@ void runTests/*<T extends TestWorkerConnection>*/(
     TestWorkerLoop workerLoopFactory(/*=T*/ connection)) {
   TestStdin stdinStream;
   TestStdoutStream stdoutStream;
-  var /*=T*/ connection;
+  var/*=T*/ connection;
   TestWorkerLoop workerLoop;
 
   setUp(() {
@@ -85,5 +86,18 @@ void runTests/*<T extends TestWorkerConnection>*/(
     stdinStream.addInputBytes([-1]);
     stdinStream.close();
     await workerLoop.run();
+  });
+
+  test('Stops if stdin gives an error instead of EOF', () async {
+    if (stdinStream is TestStdinSync) {
+      // Reading will now cause an error as pendingBytes is empty.
+      (stdinStream as TestStdinSync).pendingBytes.clear();
+      await workerLoop.run();
+    } else if (stdinStream is TestStdinAsync) {
+      var done = new Completer();
+      workerLoop.run().then((_) => done.complete(null));
+      (stdinStream as TestStdinAsync).controller.addError('Error!!');
+      await done.future;
+    }
   });
 }

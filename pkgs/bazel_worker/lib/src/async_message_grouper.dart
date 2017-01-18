@@ -27,19 +27,26 @@ class AsyncMessageGrouper implements MessageGrouper {
 
   /// Returns the next full message that is received, or null if none are left.
   Future<List<int>> get next async {
-    List<int> message;
-    while (
-        message == null && (_buffer.isNotEmpty || await _inputQueue.hasNext)) {
-      if (_buffer.isEmpty) _buffer.addAll(await _inputQueue.next);
-      var nextByte = _buffer.removeFirst();
-      if (nextByte == -1) return null;
-      message = _state.handleInput(nextByte);
+    try {
+      List<int> message;
+      while (message == null &&
+          (_buffer.isNotEmpty || await _inputQueue.hasNext)) {
+        if (_buffer.isEmpty) _buffer.addAll(await _inputQueue.next);
+        var nextByte = _buffer.removeFirst();
+        if (nextByte == -1) return null;
+        message = _state.handleInput(nextByte);
+      }
+
+      // If there is nothing left in the queue then cancel the subscription.
+      if (message == null) _inputQueue.cancel();
+
+      return message;
+    } catch (e) {
+      // It appears we sometimes get an exception instead of -1 as expected when
+      // stdin closes, this handles that in the same way (returning a null
+      // message)
+      return null;
     }
-
-    // If there is nothing left in the queue then cancel the subscription.
-    if (message == null) _inputQueue.cancel();
-
-    return message;
   }
 
   /// Stop listening to the stream for further updates.
