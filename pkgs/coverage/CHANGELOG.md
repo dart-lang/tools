@@ -1,3 +1,11 @@
+## 0.9.1 - 2017-01-18
+
+ * Temporarily add back support for the `--host` and `--port` options to
+   `collect_coverage`. This is a temporary measure for backwards-compatibility
+   that may stop working on Dart SDKs >= 1.22. See the related
+   [breaking change note](https://groups.google.com/a/dartlang.org/forum/#!msg/announce/VxSw-V5tx8k/wPV0GfX7BwAJ)
+   for the Dart VM service protocol.
+
 ## 0.9.0 - 2017-01-11
 
  * BREAKING CHANGE: `collect` no longer supports the `host` and `port`
