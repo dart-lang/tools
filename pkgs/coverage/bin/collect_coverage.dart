@@ -44,6 +44,14 @@ class Options {
 
 Options _parseArgs(List<String> arguments) {
   var parser = new ArgParser()
+    ..addOption('host',
+        abbr: 'H',
+        help: 'remote VM host. DEPRECATED: use --uri',
+        defaultsTo: '127.0.0.1')
+    ..addOption('port',
+        abbr: 'p',
+        help: 'remote VM port. DEPRECATED: use --uri',
+        defaultsTo: '8181')
     ..addOption('uri', abbr: 'u', help: 'VM observatory service URI')
     ..addOption('out',
         abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
@@ -75,12 +83,17 @@ Options _parseArgs(List<String> arguments) {
     exit(0);
   }
 
-  if (args['uri'] == null) fail('VM observatory service URI not specified');
   Uri serviceUri;
-  try {
-    serviceUri = Uri.parse(args['uri']);
-  } on FormatException catch (e) {
-    fail('Invalid service URI specified: ${args['uri']}');
+  if (args['uri'] == null) {
+    // TODO(cbracken) eliminate --host and --port support when VM defaults to
+    // requiring an auth token. Estimated for Dart SDK 1.22.
+    serviceUri = Uri.parse('http://${args['host']}:${args['port']}/');
+  } else {
+    try {
+      serviceUri = Uri.parse(args['uri']);
+    } on FormatException catch (e) {
+      fail('Invalid service URI specified: ${args['uri']}');
+    }
   }
 
   var out;
