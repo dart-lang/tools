@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -78,8 +79,35 @@ void main() {
     expect(canceled, isTrue);
   });
 
+  test("disconnect() returns the close future from the inner sink", () async {
+    var streamController = new StreamController();
+    var sinkController = new StreamController();
+    var disconnector = new Disconnector();
+    var sink = new _CloseCompleterSink(sinkController.sink);
+    var channel = new StreamChannel.withGuarantees(
+            streamController.stream, sink)
+        .transform(disconnector);
+
+    var disconnectFutureFired = false;
+    expect(disconnector.disconnect().then((_) {
+      disconnectFutureFired = true;
+    }), completes);
+
+    // Give the future time to fire early if it's going to.
+    await pumpEventQueue();
+    expect(disconnectFutureFired, isFalse);
+
+    // When the inner sink's close future completes, so should the
+    // disconnector's.
+    sink.completer.complete();
+    await pumpEventQueue();
+    expect(disconnectFutureFired, isTrue);
+  });
+
   group("after disconnection", () {
-    setUp(() => disconnector.disconnect());
+    setUp(() {
+      disconnector.disconnect();
+    });
 
     test("closes the inner sink and ignores events to the outer sink", () {
       channel.sink.add(1);
@@ -107,4 +135,18 @@ void main() {
       expect(() => channel.sink.addError("oh no"), throwsStateError);
     });
   });
+}
+
+/// A [StreamSink] wrapper that adds the ability to manually complete the Future
+/// returned by [close] using [completer].
+class _CloseCompleterSink extends DelegatingStreamSink {
+  /// The completer for the future returned by [close].
+  final completer = new Completer();
+
+  _CloseCompleterSink(StreamSink inner) : super(inner);
+
+  Future close() {
+    super.close();
+    return completer.future;
+  }
 }

@@ -1,3 +1,8 @@
+## 1.6.0
+
+* `Disconnector.disconnect()` now returns a future that completes when all the
+  inner `StreamSink.close()` futures have completed.
+
 ## 1.5.0
 
 * Add `new StreamChannel.withCloseGuarantee()` to provide the specific guarantee

@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:async/async.dart';
+
 import '../stream_channel.dart';
 
 /// Allows the caller to force a channel to disconnect.
@@ -17,8 +19,7 @@ import '../stream_channel.dart';
 /// be disconnected immediately.
 class Disconnector<T> implements StreamChannelTransformer<T, T> {
   /// Whether [disconnect] has been called.
-  bool get isDisconnected => _isDisconnected;
-  var _isDisconnected = false;
+  bool get isDisconnected => _disconnectMemo.hasRun;
 
   /// The sinks for transformed channels.
   ///
@@ -28,20 +29,25 @@ class Disconnector<T> implements StreamChannelTransformer<T, T> {
   final _sinks = <_DisconnectorSink<T>>[];
 
   /// Disconnects all channels that have been transformed.
-  void disconnect() {
-    _isDisconnected = true;
-    for (var sink in _sinks) {
-      sink._disconnect();
-    }
+  ///
+  /// Returns a future that completes when all inner sinks' [StreamSink.close]
+  /// futures have completed. Note that a [StreamController]'s sink won't close
+  /// until the corresponding stream has a listener.
+  Future disconnect() => _disconnectMemo.runOnce(() {
+    var futures = _sinks.map((sink) => sink._disconnect()).toList();
     _sinks.clear();
-  }
+    return Future.wait(futures, eagerError: true);
+  });
+  final _disconnectMemo = new AsyncMemoizer();
 
   StreamChannel<T> bind(StreamChannel<T> channel) {
     return channel.changeSink((innerSink) {
       var sink = new _DisconnectorSink<T>(innerSink);
 
-      if (_isDisconnected) {
-        sink._disconnect();
+      if (isDisconnected) {
+        // Ignore errors here, because otherwise there would be no way for the
+        // user to handle them gracefully.
+        sink._disconnect().catchError((_) {});
       } else {
         _sinks.add(sink);
       }
@@ -126,14 +132,18 @@ class _DisconnectorSink<T> implements StreamSink<T> {
 
   /// Disconnects this sink.
   ///
-  /// This closes the underlying sink and stops forwarding events.
-  void _disconnect() {
+  /// This closes the underlying sink and stops forwarding events. It returns
+  /// the [StreamSink.close] future for the underlying sink.
+  Future _disconnect() {
     _isDisconnected = true;
-    _inner.close();
+    var future = _inner.close();
 
-    if (!_inAddStream) return;
-    _addStreamCompleter.complete(_addStreamSubscription.cancel());
-    _addStreamCompleter = null;
-    _addStreamSubscription = null;
+    if (_inAddStream) {
+      _addStreamCompleter.complete(_addStreamSubscription.cancel());
+      _addStreamCompleter = null;
+      _addStreamSubscription = null;
+    }
+
+    return future;
   }
 }
