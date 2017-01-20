@@ -287,6 +287,7 @@ void testNewerCss() {
   width: 10px;
 }
 @page bar : left { @top-left { margin: 8px; } }
+@page { @top-left { margin: 8px; } width: 10px; }
 @charset "ISO-8859-1";
 @charset 'ASCII';''';
 
@@ -307,6 +308,12 @@ void testNewerCss() {
 @top-left {
   margin: 8px;
 }
+}
+@page {
+@top-left {
+  margin: 8px;
+}
+  width: 10px;
 }
 @charset "ISO-8859-1";
 @charset "ASCII";''';

@@ -107,16 +107,14 @@ class CssPrinter extends Visitor {
       emit(node._ident);
       emit(node.hasPseudoPage ? ':${node._pseudoPage}' : '');
     }
-    emit(' ');
 
     var declsMargin = node._declsMargin;
     var declsMarginLength = declsMargin.length;
+    emit(' {$_newLine');
     for (var i = 0; i < declsMarginLength; i++) {
-      if (i > 0) emit(_newLine);
-      emit('{$_newLine');
       declsMargin[i].visit(this);
-      emit('}');
     }
+    emit('}');
   }
 
   /** @charset "charset encoding" */
