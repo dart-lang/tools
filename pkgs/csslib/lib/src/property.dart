@@ -537,13 +537,10 @@ class Rgba implements _StyleProperty, ColorBase {
 
   factory Rgba.fromArgbValue(num value) {
     return new Rgba(
-        ((value.toInt() & 0xff000000) >> 0x18),
-        /* a */
-        ((value.toInt() & 0xff0000) >> 0x10),
-        /* r */
-        ((value.toInt() & 0xff00) >> 8),
-        /* g */
-        ((value.toInt() & 0xff))); /* b */
+        ((value.toInt() & 0xff000000) >> 0x18), // a
+        ((value.toInt() & 0xff0000) >> 0x10), // r
+        ((value.toInt() & 0xff00) >> 8), // g
+        ((value.toInt() & 0xff))); // b
   }
 
   factory Rgba.fromHsla(Hsla hsla) {
