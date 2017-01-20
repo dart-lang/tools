@@ -2425,8 +2425,15 @@ class _Parser {
    * then parse to the right paren ignoring everything in between.
    */
   processIEFilter(FileSpan startAfterProgidColon) {
-    var parens = 0;
+    // Support non-functional filters (i.e. filter: FlipH)
+    var kind = _peek();
+    if (kind == TokenKind.SEMICOLON || kind == TokenKind.RBRACE) {
+      var tok = tokenizer.makeIEFilter(
+          startAfterProgidColon.start.offset, _peekToken.start);
+      return new LiteralTerm(tok.text, tok.text, tok.span);
+    }
 
+    var parens = 0;
     while (_peek() != TokenKind.END_OF_FILE) {
       switch (_peek()) {
         case TokenKind.LPAREN:
