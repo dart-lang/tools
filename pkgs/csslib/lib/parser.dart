@@ -1219,6 +1219,20 @@ class _Parser {
     return new Selector(simpleSequences, _makeSpan(start));
   }
 
+  /// Same as [processSelector] but reports an error for each combinator.
+  ///
+  /// This is a quick fix for parsing <compound-selectors> until the parser
+  /// supports Selector Level 4 grammar:
+  /// https://drafts.csswg.org/selectors-4/#typedef-compound-selector
+  Selector processCompoundSelector() {
+    return processSelector()
+      ..simpleSelectorSequences.forEach((sequence) {
+        if (!sequence.isCombinatorNone) {
+          _error('compound selector can not contain combinator', sequence.span);
+        }
+      });
+  }
+
   simpleSelectorSequence(bool forceCombinatorNone) {
     var start = _peekToken.span;
     var combinatorType = TokenKind.COMBINATOR_NONE;
@@ -1429,7 +1443,8 @@ class _Parser {
     // Functional pseudo?
 
     if (_peekToken.kind == TokenKind.LPAREN) {
-      if (!pseudoElement && pseudoName.name.toLowerCase() == 'not') {
+      var name = pseudoName.name.toLowerCase();
+      if (!pseudoElement && name == 'not') {
         _eat(TokenKind.LPAREN);
 
         // Negation :   ':NOT(' S* negation_arg S* ')'
@@ -1437,6 +1452,12 @@ class _Parser {
 
         _eat(TokenKind.RPAREN);
         return new NegationSelector(negArg, _makeSpan(start));
+      } else if (!pseudoElement && (name == 'host' || name == 'host-context')) {
+        _eat(TokenKind.LPAREN);
+        var selector = processCompoundSelector();
+        _eat(TokenKind.RPAREN);
+        var span = _makeSpan(start);
+        return new PseudoClassFunctionSelector(pseudoName, selector, span);
       } else {
         // Special parsing for expressions in pseudo functions.  Minus is used
         // as operator not identifier.

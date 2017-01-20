@@ -324,7 +324,7 @@ class CssPrinter extends Visitor {
 
   void visitPseudoClassFunctionSelector(PseudoClassFunctionSelector node) {
     emit(":${node.name}(");
-    node.expression.visit(this);
+    node.argument.visit(this);
     emit(')');
   }
 

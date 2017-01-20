@@ -291,15 +291,19 @@ class PseudoElementSelector extends SimpleSelector {
   String toString() => "::$name";
 }
 
-// :pseudoClassFunction(expression)
+// :pseudoClassFunction(argument)
 class PseudoClassFunctionSelector extends PseudoClassSelector {
-  final SelectorExpression expression;
+  final TreeNode _argument; // Selector, SelectorExpression
 
-  PseudoClassFunctionSelector(Identifier name, this.expression, SourceSpan span)
+  PseudoClassFunctionSelector(Identifier name, this._argument, SourceSpan span)
       : super(name, span);
 
   PseudoClassFunctionSelector clone() =>
-      new PseudoClassFunctionSelector(_name, expression, span);
+      new PseudoClassFunctionSelector(_name, _argument, span);
+
+  TreeNode get argument => _argument;
+  Selector get selector => _argument as Selector;
+  SelectorExpression get expression => _argument as SelectorExpression;
 
   visit(VisitorBase visitor) => visitor.visitPseudoClassFunctionSelector(this);
 }

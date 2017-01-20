@@ -338,7 +338,7 @@ class _TreePrinter extends Visitor {
   void visitPseudoClassFunctionSelector(PseudoClassFunctionSelector node) {
     heading('Pseudo Class Function Selector', node);
     output.depth++;
-    visitSelectorExpression(node.expression);
+    node.argument.visit(this);
     super.visitPseudoClassFunctionSelector(node);
     output.depth--;
   }
