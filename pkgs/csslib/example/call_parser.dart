@@ -41,7 +41,8 @@ main() {
       '}'
       '#div {'
       'color : #00F578; border-color: #878787;'
-      '}', errors: errors);
+      '}',
+      errors: errors);
 
   if (!errors.isEmpty) {
     print("Got ${errors.length} errors.\n");
@@ -55,9 +56,11 @@ main() {
   // Parse a stylesheet with errors
   print('2. Catch severe syntax errors:');
   print('   ===========================');
-  var stylesheetError = parseCss('.foo #%^&*asdf{ '
+  var stylesheetError = parseCss(
+      '.foo #%^&*asdf{ '
       'color: red; left: 20px; top: 20px; width: 100px; height:200px'
-      '}', errors: errors);
+      '}',
+      errors: errors);
 
   if (!errors.isEmpty) {
     print("Got ${errors.length} errors.\n");

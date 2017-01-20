@@ -40,14 +40,17 @@ class PolyFill {
   void processVarDefinitions(List<StyleSheet> includes) {
     for (var include in includes) {
       _allVarDefinitions = (new _VarDefinitionsIncludes(_allVarDefinitions)
-        ..visitTree(include)).varDefs;
+            ..visitTree(include))
+          .varDefs;
     }
   }
 
   void processVars(StyleSheet styleSheet) {
     // Build list of all var definitions.
-    var mainStyleSheetVarDefs = (new _VarDefAndUsage(
-        this._messages, _allVarDefinitions)..visitTree(styleSheet)).varDefs;
+    var mainStyleSheetVarDefs =
+        (new _VarDefAndUsage(this._messages, _allVarDefinitions)
+              ..visitTree(styleSheet))
+            .varDefs;
 
     // Resolve all definitions to a non-VarUsage (terminal expression).
     mainStyleSheetVarDefs.forEach((key, value) {

@@ -262,7 +262,6 @@ class ExpandNestedSelectors extends Visitor {
   List<SimpleSelectorSequence> _mergeNestedSelector(
       List<SimpleSelectorSequence> parent,
       List<SimpleSelectorSequence> current) {
-
     // If any & operator then the parent selector will be substituted otherwise
     // the parent selector is pre-pended to the current selector.
     var hasThis = current.any((s) => s.simpleSelector.isThis);
@@ -746,8 +745,8 @@ class DeclarationIncludes extends Visitor {
         if (!_allIncludes(mixinDef.rulesets) && currDeclGroup != null) {
           var index = _findInclude(currDeclGroup.declarations, node);
           if (index != -1) {
-            currDeclGroup.declarations.replaceRange(
-                index, index + 1, [new NoOp()]);
+            currDeclGroup.declarations
+                .replaceRange(index, index + 1, [new NoOp()]);
           }
           _messages.warning(
               "Using top-level mixin ${node.include.name} as a declaration",

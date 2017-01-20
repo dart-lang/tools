@@ -302,8 +302,7 @@ class Visitor implements VisitorBase {
   visitPseudoElementFunctionSelector(PseudoElementFunctionSelector node) =>
       visitSimpleSelector(node);
 
-  visitNegationSelector(NegationSelector node) =>
-      visitSimpleSelector(node);
+  visitNegationSelector(NegationSelector node) => visitSimpleSelector(node);
 
   visitSelectorExpression(SelectorExpression node) {
     _visitNodeList(node.expressions);

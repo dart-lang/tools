@@ -55,8 +55,7 @@ abstract class TokenizerBase {
   int _index = 0;
   int _startIndex = 0;
 
-  TokenizerBase(this._file, this._text, this._inString,
-      [this._index = 0]);
+  TokenizerBase(this._file, this._text, this._inString, [this._index = 0]);
 
   Token next();
   int getIdentifierKind();

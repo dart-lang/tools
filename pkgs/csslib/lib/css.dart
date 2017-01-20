@@ -76,8 +76,6 @@ void _printMessage(String message, int duration) {
   buf.write(' -- ');
   if (duration < 10) buf.write(' ');
   if (duration < 100) buf.write(' ');
-  buf
-    ..write(duration)
-    ..write(' ms');
+  buf..write(duration)..write(' ms');
   print(buf.toString());
 }

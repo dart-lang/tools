@@ -56,7 +56,8 @@ void testSelectorFailures() {
   // Test for invalid class name (can't start with number).
   selector('.foobar .1a-story .xyzzy', errors: errors);
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(),
+  expect(
+      errors[0].toString(),
       'error on line 1, column 9: name must start with a alpha character, but '
       'found a number\n'
       '.foobar .1a-story .xyzzy\n'

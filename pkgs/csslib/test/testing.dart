@@ -30,24 +30,26 @@ const options = const PreprocessorOptions(
  * tests (by default) will ensure that the CSS is really valid.
  */
 StyleSheet parseCss(String cssInput,
-    {List<Message> errors, PreprocessorOptions opts}) => parse(cssInput,
+        {List<Message> errors, PreprocessorOptions opts}) =>
+    parse(cssInput,
         errors: errors,
-        options: opts == null
-            ? simpleOptionsWithCheckedAndWarningsAsErrors
-            : opts);
+        options:
+            opts == null ? simpleOptionsWithCheckedAndWarningsAsErrors : opts);
 
 /**
  * Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
  * CSS will allow any property/value pairs regardless of validity; all of our
  * tests (by default) will ensure that the CSS is really valid.
  */
-StyleSheet compileCss(String cssInput, {List<Message> errors,
-    PreprocessorOptions opts, bool polyfill: false,
-    List<StyleSheet> includes: null}) => compile(cssInput,
+StyleSheet compileCss(String cssInput,
+        {List<Message> errors,
+        PreprocessorOptions opts,
+        bool polyfill: false,
+        List<StyleSheet> includes: null}) =>
+    compile(cssInput,
         errors: errors,
-        options: opts == null
-            ? simpleOptionsWithCheckedAndWarningsAsErrors
-            : opts,
+        options:
+            opts == null ? simpleOptionsWithCheckedAndWarningsAsErrors : opts,
         polyfill: polyfill,
         includes: includes);
 

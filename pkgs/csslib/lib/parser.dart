@@ -47,8 +47,12 @@ bool get isChecked => messages.options.checked;
 
 // TODO(terry): Remove nested name parameter.
 /** Parse and analyze the CSS file. */
-StyleSheet compile(input, {List<Message> errors, PreprocessorOptions options,
-    bool nested: true, bool polyfill: false, List<StyleSheet> includes: null}) {
+StyleSheet compile(input,
+    {List<Message> errors,
+    PreprocessorOptions options,
+    bool nested: true,
+    bool polyfill: false,
+    List<StyleSheet> includes: null}) {
   if (includes == null) {
     includes = [];
   }
@@ -115,9 +119,10 @@ SelectorGroup parseSelectorGroup(input, {List<Message> errors}) {
 
   var file = new SourceFile(source);
   return (new _Parser(file, source)
-    // TODO(jmesserly): this fix should be applied to the parser. It's tricky
-    // because by the time the flag is set one token has already been fetched.
-    ..tokenizer.inSelector = true).processSelectorGroup();
+        // TODO(jmesserly): this fix should be applied to the parser. It's tricky
+        // because by the time the flag is set one token has already been fetched.
+        ..tokenizer.inSelector = true)
+      .processSelectorGroup();
 }
 
 String _inputAsString(input) {
@@ -2266,8 +2271,8 @@ class _Parser {
           }
 
           var param = expr.expressions[0];
-          var varUsage = new VarUsage(
-              (param as LiteralTerm).text, [], _makeSpan(start));
+          var varUsage =
+              new VarUsage((param as LiteralTerm).text, [], _makeSpan(start));
           expr.expressions[0] = varUsage;
           return expr.expressions;
         }
@@ -2465,8 +2470,7 @@ class _Parser {
       var token = _peek();
       if (token == TokenKind.LPAREN)
         left++;
-      else if (token == TokenKind.RPAREN)
-        left--;
+      else if (token == TokenKind.RPAREN) left--;
 
       matchingParens = left == 0;
       if (!matchingParens) stringValue.write(_next().text);
@@ -2544,7 +2548,8 @@ class _Parser {
 
         // [0] - var name, [1] - OperatorComma, [2] - default value.
         var defaultValues = expr.expressions.length >= 3
-            ? expr.expressions.sublist(2) : <Expression>[];
+            ? expr.expressions.sublist(2)
+            : <Expression>[];
         return new VarUsage(paramName, defaultValues, _makeSpan(start));
       default:
         var expr = processExpr();

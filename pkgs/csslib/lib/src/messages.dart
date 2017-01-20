@@ -55,9 +55,7 @@ class Message {
     bool colors = useColors && _ERROR_COLORS.containsKey(level);
     var levelColor = colors ? _ERROR_COLORS[level] : null;
     if (colors) output.write(levelColor);
-    output
-      ..write(_ERROR_LABEL[level])
-      ..write(' ');
+    output..write(_ERROR_LABEL[level])..write(' ');
     if (colors) output.write(NO_COLOR);
 
     if (span == null) {

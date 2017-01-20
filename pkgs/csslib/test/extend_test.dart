@@ -18,7 +18,8 @@ compileAndValidate(String input, String generated) {
 }
 
 void simpleExtend() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .error {
   border: 1px red;
   background-color: #fdd;
@@ -27,7 +28,9 @@ void simpleExtend() {
   @extend .error;
   border-width: 3px;
 }
-''', r'''.error, .seriousError {
+''',
+      r'''
+.error, .seriousError {
   border: 1px #f00;
   background-color: #fdd;
 }
@@ -37,7 +40,8 @@ void simpleExtend() {
 }
 
 void complexSelectors() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .error {
   border: 1px #f00;
   background-color: #fdd;
@@ -49,7 +53,9 @@ void complexSelectors() {
   @extend .error;
   border-width: 3px;
 }
-''', r'''.error, .seriousError {
+''',
+      r'''
+.error, .seriousError {
   border: 1px #f00;
   background-color: #fdd;
 }
@@ -60,14 +66,17 @@ void complexSelectors() {
   border-width: 3px;
 }''');
 
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 a:hover {
   text-decoration: underline;
 }
 .hoverlink {
   @extend a:hover;
 }
-''', r'''a:hover, .hoverlink {
+''',
+      r'''
+a:hover, .hoverlink {
   text-decoration: underline;
 }
 .hoverlink {
@@ -75,7 +84,8 @@ a:hover {
 }
 
 void multipleExtends() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .error {
   border: 1px #f00;
   background-color: #fdd;
@@ -89,7 +99,9 @@ void multipleExtends() {
   @extend .attention;
   border-width: 3px;
 }
-''', r'''.error, .seriousError {
+''',
+      r'''
+.error, .seriousError {
   border: 1px #f00;
   background-color: #fdd;
 }
@@ -103,7 +115,8 @@ void multipleExtends() {
 }
 
 void chaining() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .error {
   border: 1px #f00;
   background-color: #fdd;
@@ -120,7 +133,9 @@ void chaining() {
   left: 10%;
   right: 10%;
 }
-''', r'''.error, .seriousError, .criticalError {
+''',
+      r'''
+.error, .seriousError, .criticalError {
   border: 1px #f00;
   background-color: #fdd;
 }
@@ -137,7 +152,8 @@ void chaining() {
 }
 
 void nestedSelectors() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 a {
   color: blue;
   &:hover {
@@ -148,7 +164,9 @@ a {
 #fake-links .link {
   @extend a;
 }
-''', r'''a, #fake-links .link {
+''',
+      r'''
+a, #fake-links .link {
   color: #00f;
 }
 a:hover, #fake-links .link:hover {
@@ -159,7 +177,8 @@ a:hover, #fake-links .link:hover {
 }
 
 void nestedMulty() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .btn {
   display: inline-block;
 }
@@ -171,7 +190,9 @@ input[type="checkbox"].toggle-button {
     @extend .btn;
   }
 }
-''', r'''.btn, input[type="checkbox"].toggle-button label {
+''',
+      r'''
+.btn, input[type="checkbox"].toggle-button label {
   display: inline-block;
 }
 input[type="checkbox"].toggle-button {
@@ -182,14 +203,16 @@ input[type="checkbox"].toggle-button label {
 }
 
 void nWayExtends() {
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .btn > .btn {
   margin-left: 5px;
 }
 input.second + label {
   @extend .btn;
 }
-''', '.btn > .btn, '
+''',
+      '.btn > .btn, '
       'input.second + label > .btn, '
       '.btn > input.second + label, '
       'input.second + label > input.second + label, '
@@ -206,7 +229,8 @@ input.second + label {
   //  input.second + label {
   //    color: blue;
   //  }
-  compileAndValidate(r'''
+  compileAndValidate(
+      r'''
 .btn + .btn {
   margin-left: 5px;
 }
@@ -214,7 +238,8 @@ input.second + label {
   @extend .btn;
   color: blue;
 }
-''', '.btn + .btn, '
+''',
+      '.btn + .btn, '
       'input.second + label + .btn, '
       '.btn + input.second + label, '
       'input.second + label + input.second + label, '

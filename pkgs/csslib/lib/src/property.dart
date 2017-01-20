@@ -79,9 +79,11 @@ class Color implements _StyleProperty, ColorBase {
    * components.
    */
   Color.createRgba(int red, int green, int blue, [num alpha])
-      : this._argb = Color.convertToHexString(Color._clamp(red, 0, 255),
-          Color._clamp(green, 0, 255), Color._clamp(blue, 0, 255),
-          alpha != null ? Color._clamp(alpha, 0, 1) : alpha);
+      : this._argb = Color.convertToHexString(
+            Color._clamp(red, 0, 255),
+            Color._clamp(green, 0, 255),
+            Color._clamp(blue, 0, 255),
+            alpha != null ? Color._clamp(alpha, 0, 1) : alpha);
 
   /**
    * Creates a new color from a CSS color string. For more information, see
@@ -105,10 +107,12 @@ class Color implements _StyleProperty, ColorBase {
    */
   Color.createHsla(num hueDegree, num saturationPercent, num lightnessPercent,
       [num alpha])
-      : this._argb = new Hsla(Color._clamp(hueDegree, 0, 360) / 360,
-          Color._clamp(saturationPercent, 0, 100) / 100,
-          Color._clamp(lightnessPercent, 0, 100) / 100,
-          alpha != null ? Color._clamp(alpha, 0, 1) : alpha).toHexArgbString();
+      : this._argb = new Hsla(
+                Color._clamp(hueDegree, 0, 360) / 360,
+                Color._clamp(saturationPercent, 0, 100) / 100,
+                Color._clamp(lightnessPercent, 0, 100) / 100,
+                alpha != null ? Color._clamp(alpha, 0, 1) : alpha)
+            .toHexArgbString();
 
   /**
    * The hslaRaw takes three values.  The [hue] degree on the color wheel; '0'
@@ -126,9 +130,12 @@ class Color implements _StyleProperty, ColorBase {
    *                opaque foreground.
    */
   Color.hslaRaw(num hue, num saturation, num lightness, [num alpha])
-      : this._argb = new Hsla(Color._clamp(hue, 0, 1),
-          Color._clamp(saturation, 0, 1), Color._clamp(lightness, 0, 1),
-          alpha != null ? Color._clamp(alpha, 0, 1) : alpha).toHexArgbString();
+      : this._argb = new Hsla(
+                Color._clamp(hue, 0, 1),
+                Color._clamp(saturation, 0, 1),
+                Color._clamp(lightness, 0, 1),
+                alpha != null ? Color._clamp(alpha, 0, 1) : alpha)
+            .toHexArgbString();
 
   /**
    * Generate a real constant for pre-defined colors (no leading #).
@@ -529,9 +536,13 @@ class Rgba implements _StyleProperty, ColorBase {
   factory Rgba.fromColor(Color color) => color.rgba;
 
   factory Rgba.fromArgbValue(num value) {
-    return new Rgba(((value.toInt() & 0xff000000) >> 0x18), /* a */
-        ((value.toInt() & 0xff0000) >> 0x10), /* r */
-        ((value.toInt() & 0xff00) >> 8), /* g */
+    return new Rgba(
+        ((value.toInt() & 0xff000000) >> 0x18),
+        /* a */
+        ((value.toInt() & 0xff0000) >> 0x10),
+        /* r */
+        ((value.toInt() & 0xff00) >> 8),
+        /* g */
         ((value.toInt() & 0xff))); /* b */
   }
 
@@ -1029,7 +1040,12 @@ class Font implements _StyleProperty {
    * [FontVariant], and [lineHeight] extra space (leading) around the font in
    * pixels, if not specified it's 1.2 the font size.
    */
-  const Font({this.size, this.family, this.weight, this.style, this.variant,
+  const Font(
+      {this.size,
+      this.family,
+      this.weight,
+      this.style,
+      this.variant,
       this.lineHeight});
 
   /**

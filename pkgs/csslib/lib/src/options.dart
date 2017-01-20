@@ -40,10 +40,16 @@ class PreprocessorOptions {
   /** File to process by the compiler. */
   final String inputFile;
 
-  const PreprocessorOptions({this.verbose: false, this.checked: false,
-      this.lessSupport: true, this.warningsAsErrors: false,
-      this.throwOnErrors: false, this.throwOnWarnings: false,
-      this.useColors: true, this.polyfill: false, this.inputFile});
+  const PreprocessorOptions(
+      {this.verbose: false,
+      this.checked: false,
+      this.lessSupport: true,
+      this.warningsAsErrors: false,
+      this.throwOnErrors: false,
+      this.throwOnWarnings: false,
+      this.useColors: true,
+      this.polyfill: false,
+      this.inputFile});
 
   PreprocessorOptions.fromArgs(ArgResults args)
       : warningsAsErrors = args['warnings_as_errors'],

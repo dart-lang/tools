@@ -445,7 +445,9 @@ class TokenizerHelpers {
         // http://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
         // http://www.w3.org/TR/CSS21/syndata.html#characters
         // Also, escaped character should be allowed.
-        c == 95 /*_*/ || c >= 0xA0 || c == 92 /*\*/);
+        c == 95 /*_*/ ||
+        c >= 0xA0 ||
+        c == 92 /*\*/);
   }
 
   /** Pseudo function expressions identifiers can't have a minus sign. */
