@@ -100,8 +100,9 @@ class TokenKind {
   static const int COMBINATOR_PLUS = 515; // + combinator
   static const int COMBINATOR_GREATER = 516; // > combinator
   static const int COMBINATOR_TILDE = 517; // ~ combinator
+  static const int COMBINATOR_DEEP = 518; // /deep/ or >>> combinator
 
-  static const int UNARY_OP_NONE = 518; // No unary operator present.
+  static const int UNARY_OP_NONE = 519; // No unary operator present.
 
   // Attribute match types:
   static const int INCLUDES = 530; // '~='

@@ -120,12 +120,24 @@ class SimpleSelectorSequence extends TreeNode {
   bool get isCombinatorTilde => combinator == TokenKind.COMBINATOR_TILDE;
   bool get isCombinatorDescendant =>
       combinator == TokenKind.COMBINATOR_DESCENDANT;
+  bool get isCombinatorDeep => combinator == TokenKind.COMBINATOR_DEEP;
 
-  String get _combinatorToString => isCombinatorDescendant
-      ? ' '
-      : isCombinatorPlus
-          ? ' + '
-          : isCombinatorGreater ? ' > ' : isCombinatorTilde ? ' ~ ' : '';
+  String get _combinatorToString {
+    switch (combinator) {
+      case TokenKind.COMBINATOR_DEEP:
+        return ' /deep/ ';
+      case TokenKind.COMBINATOR_DESCENDANT:
+        return ' ';
+      case TokenKind.COMBINATOR_GREATER:
+        return ' > ';
+      case TokenKind.COMBINATOR_PLUS:
+        return ' + ';
+      case TokenKind.COMBINATOR_TILDE:
+        return ' ~ ';
+      default:
+        return '';
+    }
+  }
 
   SimpleSelectorSequence clone() =>
       new SimpleSelectorSequence(simpleSelector, span, combinator);

@@ -1244,12 +1244,29 @@ class _Parser {
         combinatorType = TokenKind.COMBINATOR_PLUS;
         break;
       case TokenKind.GREATER:
+        // Parse > or >>>
         _eat(TokenKind.GREATER);
-        combinatorType = TokenKind.COMBINATOR_GREATER;
+        if (_maybeEat(TokenKind.GREATER)) {
+          _eat(TokenKind.GREATER);
+          combinatorType = TokenKind.COMBINATOR_DEEP;
+        } else {
+          combinatorType = TokenKind.COMBINATOR_GREATER;
+        }
         break;
       case TokenKind.TILDE:
         _eat(TokenKind.TILDE);
         combinatorType = TokenKind.COMBINATOR_TILDE;
+        break;
+      case TokenKind.SLASH:
+        // Parse /deep/
+        _eat(TokenKind.SLASH);
+        var ate = _maybeEat(TokenKind.IDENTIFIER);
+        var tok = ate ? _previousToken : _peekToken;
+        if (!(ate && tok.text == 'deep')) {
+          _error('expected deep, but found ${tok.text}', tok.span);
+        }
+        _eat(TokenKind.SLASH);
+        combinatorType = TokenKind.COMBINATOR_DEEP;
         break;
       case TokenKind.AMPERSAND:
         _eat(TokenKind.AMPERSAND);
