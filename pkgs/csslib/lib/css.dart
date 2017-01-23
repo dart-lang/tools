@@ -10,9 +10,8 @@ import 'package:path/path.dart' as path;
 import 'package:source_span/source_span.dart';
 
 import 'parser.dart';
+import 'src/messages.dart' show Messages;
 import 'visitor.dart';
-import 'src/messages.dart';
-import 'src/options.dart';
 
 void main(List<String> arguments) {
   // TODO(jmesserly): fix this to return a proper exit code

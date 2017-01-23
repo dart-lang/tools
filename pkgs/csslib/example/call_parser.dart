@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 
 import 'package:csslib/parser.dart' as css;
-import 'package:csslib/src/messages.dart';
 import 'package:csslib/visitor.dart';
 
 const _default = const css.PreprocessorOptions(
@@ -17,7 +16,7 @@ const _default = const css.PreprocessorOptions(
  * tests (by default) will ensure that the CSS is really valid.
  */
 StyleSheet parseCss(String cssInput,
-    {List<Message> errors, css.PreprocessorOptions opts}) {
+    {List<css.Message> errors, css.PreprocessorOptions opts}) {
   return css.parse(cssInput,
       errors: errors, options: opts == null ? _default : opts);
 }
@@ -28,7 +27,7 @@ String prettyPrint(StyleSheet ss) =>
     (emitCss..visitTree(ss, pretty: true)).toString();
 
 main() {
-  var errors = <Message>[];
+  var errors = <css.Message>[];
 
   // Parse a simple stylesheet.
   print('1. Good CSS, parsed CSS emitted:');

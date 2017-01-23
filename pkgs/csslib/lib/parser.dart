@@ -8,10 +8,11 @@ import 'dart:math' as math;
 
 import 'package:source_span/source_span.dart';
 
-import "visitor.dart";
+import 'visitor.dart';
 import 'src/messages.dart';
 import 'src/options.dart';
 
+export 'src/messages.dart' show Message;
 export 'src/options.dart';
 
 part 'src/analyzer.dart';
