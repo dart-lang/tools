@@ -1,3 +1,14 @@
+## 0.13.3
+
+* Adds support for shadow host selectors `:host()` and `:host-context()`.
+* Adds support for shadow-piercing descendant combinator `>>>` and its alias
+  `/deep/` for backwards compatibility.
+* Adds support for non-functional IE filter properties (i.e. `filter: FlipH`)
+* Fixes emitted CSS for '@page' directive when body includes declarations and
+  page-margin boxes.
+* Exports `Message` from `parser.dart` so its no longer necessary to import
+  `src/messages.dart` to use the parser API.
+
 ## 0.13.2+2
 
 * Fix static warnings.
