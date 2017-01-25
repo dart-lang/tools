@@ -272,7 +272,7 @@ class _TreePrinter extends Visitor {
     } else if (node.isCombinatorTilde) {
       output.writeValue('combinator', "~");
     } else if (node.isCombinatorDeep) {
-      output.writeValue('combinator', '/deep/');
+      output.writeValue('combinator', '>>>');
     } else {
       output.writeValue('combinator', "ERROR UNKNOWN");
     }

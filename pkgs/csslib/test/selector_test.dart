@@ -61,11 +61,11 @@ void testSelectorSuccesses() {
 
   selectorAst = selector('.a /deep/ .b', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), '.a /deep/ .b');
+  expect(compactOuptut(selectorAst), '.a >>> .b');
 
   selectorAst = selector('.x >>> .y', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), '.x /deep/ .y');
+  expect(compactOuptut(selectorAst), '.x >>> .y');
 }
 
 // TODO(terry): Move this failure case to a failure_test.dart when the analyzer

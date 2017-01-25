@@ -125,7 +125,7 @@ class SimpleSelectorSequence extends TreeNode {
   String get _combinatorToString {
     switch (combinator) {
       case TokenKind.COMBINATOR_DEEP:
-        return ' /deep/ ';
+        return ' >>> ';
       case TokenKind.COMBINATOR_DESCENDANT:
         return ' ';
       case TokenKind.COMBINATOR_GREATER:
