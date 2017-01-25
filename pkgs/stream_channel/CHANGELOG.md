@@ -1,3 +1,9 @@
+## 1.6.1
+
+* Fix the type of `StreamChannel.transform()`. This previously inverted the
+  generic parameters, so it only really worked with transformers where both
+  generic types were identical.
+
 ## 1.6.0
 
 * `Disconnector.disconnect()` now returns a future that completes when all the

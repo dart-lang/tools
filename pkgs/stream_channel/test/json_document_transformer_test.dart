@@ -11,11 +11,11 @@ import 'package:test/test.dart';
 void main() {
   var streamController;
   var sinkController;
-  var channel;
+  StreamChannel<String> channel;
   setUp(() {
     streamController = new StreamController();
     sinkController = new StreamController();
-    channel = new StreamChannel(
+    channel = new StreamChannel<String>(
         streamController.stream, sinkController.sink);
   });
 
