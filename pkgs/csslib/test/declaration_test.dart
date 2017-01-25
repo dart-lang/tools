@@ -781,6 +781,17 @@ div {
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated3);
+
+  final input4 = '''
+div {
+  filter: FlipH;
+}''';
+
+  stylesheet = parseCss(input4, errors: errors..clear(), opts: simpleOptions);
+
+  expect(stylesheet != null, true);
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), input4);
 }
 
 /**
