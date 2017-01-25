@@ -61,7 +61,7 @@ void testSelectorSuccesses() {
 
   selectorAst = selector('.a /deep/ .b', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), '.a >>> .b');
+  expect(compactOuptut(selectorAst), '.a /deep/ .b');
 
   selectorAst = selector('.x >>> .y', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());

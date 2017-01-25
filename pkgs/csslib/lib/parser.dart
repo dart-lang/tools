@@ -1248,7 +1248,7 @@ class _Parser {
         _eat(TokenKind.GREATER);
         if (_maybeEat(TokenKind.GREATER)) {
           _eat(TokenKind.GREATER);
-          combinatorType = TokenKind.COMBINATOR_DEEP;
+          combinatorType = TokenKind.COMBINATOR_SHADOW_PIERCING_DESCENDANT;
         } else {
           combinatorType = TokenKind.COMBINATOR_GREATER;
         }

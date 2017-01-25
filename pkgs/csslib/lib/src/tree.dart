@@ -121,11 +121,15 @@ class SimpleSelectorSequence extends TreeNode {
   bool get isCombinatorDescendant =>
       combinator == TokenKind.COMBINATOR_DESCENDANT;
   bool get isCombinatorDeep => combinator == TokenKind.COMBINATOR_DEEP;
+  bool get isCombinatorShadowPiercingDescendant =>
+      combinator == TokenKind.COMBINATOR_SHADOW_PIERCING_DESCENDANT;
 
   String get _combinatorToString {
     switch (combinator) {
-      case TokenKind.COMBINATOR_DEEP:
+      case TokenKind.COMBINATOR_SHADOW_PIERCING_DESCENDANT:
         return ' >>> ';
+      case TokenKind.COMBINATOR_DEEP:
+        return ' /deep/ ';
       case TokenKind.COMBINATOR_DESCENDANT:
         return ' ';
       case TokenKind.COMBINATOR_GREATER:
