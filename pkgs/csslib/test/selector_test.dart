@@ -46,6 +46,18 @@ void testSelectorSuccesses() {
   selectorAst = selector('#_privateId', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
   expect('#_privateId', compactOuptut(selectorAst));
+
+  selectorAst = selector(':host', errors: errors..clear());
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(compactOuptut(selectorAst), ':host');
+
+  selectorAst = selector(':host(.foo)', errors: errors..clear());
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(compactOuptut(selectorAst), ':host(.foo)');
+
+  selectorAst = selector(':host-context(.foo)', errors: errors..clear());
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(compactOuptut(selectorAst), ':host-context(.foo)');
 }
 
 // TODO(terry): Move this failure case to a failure_test.dart when the analyzer
