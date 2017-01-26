@@ -1,3 +1,7 @@
+## 0.13.3+1
+
+* Fixes analyzer error.
+
 ## 0.13.3
 
 * Adds support for shadow host selectors `:host()` and `:host-context()`.

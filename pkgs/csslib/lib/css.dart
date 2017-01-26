@@ -10,7 +10,7 @@ import 'package:path/path.dart' as path;
 import 'package:source_span/source_span.dart';
 
 import 'parser.dart';
-import 'src/messages.dart' show Messages;
+import 'src/messages.dart';
 import 'visitor.dart';
 
 void main(List<String> arguments) {
