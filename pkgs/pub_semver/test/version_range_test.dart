@@ -327,10 +327,12 @@ main() {
       var a = new VersionRange(min: v123, max: v250);
       var b = new VersionRange(min: v200, max: v300);
       var intersect = a.intersect(b);
-      expect(intersect.min, equals(v200));
-      expect(intersect.max, equals(v250));
-      expect(intersect.includeMin, isFalse);
-      expect(intersect.includeMax, isFalse);
+      expect(intersect, new isInstanceOf<VersionRange>());
+      var intersectRange = intersect as VersionRange;
+      expect(intersectRange.min, equals(v200));
+      expect(intersectRange.max, equals(v250));
+      expect(intersectRange.includeMin, isFalse);
+      expect(intersectRange.includeMax, isFalse);
     });
 
     test('a non-overlapping range allows no versions', () {
