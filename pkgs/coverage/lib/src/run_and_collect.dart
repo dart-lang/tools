@@ -16,7 +16,6 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     bool checked: true,
     String packageRoot,
     Duration timeout}) async {
-
   var dartArgs = [
     '--enable-vm-service',
     '--pause_isolates_on_exit',

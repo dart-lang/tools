@@ -186,8 +186,8 @@ Future<Map> _getHitMap() async {
   // wait for sample app to terminate.
   var exitCode = await sampleProcess.exitCode;
   if (exitCode != 0) {
-    throw new ProcessException('dart', sampleAppArgs,
-        'Fatal error. Exit code: $exitCode', exitCode);
+    throw new ProcessException(
+        'dart', sampleAppArgs, 'Fatal error. Exit code: $exitCode', exitCode);
   }
   sampleProcess.stderr.drain();
   return hitMap;
