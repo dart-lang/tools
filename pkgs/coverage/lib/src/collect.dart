@@ -11,7 +11,8 @@ import 'util.dart';
 
 const _retryInterval = const Duration(milliseconds: 200);
 
-Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume, bool waitPaused,
+Future<Map<String, dynamic>> collect(
+    Uri serviceUri, bool resume, bool waitPaused,
     {Duration timeout}) async {
   // Create websocket URI. Handle any trailing slashes.
   var pathSegments = serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()
@@ -114,7 +115,8 @@ Future<List> _getCoverageJson(
 }
 
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
-Map<String, dynamic> _toScriptCoverageJson(VMScript script, Map<int, int> hitMap) {
+Map<String, dynamic> _toScriptCoverageJson(
+    VMScript script, Map<int, int> hitMap) {
   var json = <String, dynamic>{};
   var hits = [];
   hitMap.forEach((line, hitCount) {
