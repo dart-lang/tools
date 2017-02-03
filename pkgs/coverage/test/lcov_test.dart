@@ -184,9 +184,10 @@ Future<Map> _getHitMap() async {
   var hitMap = createHitmap(coverageJson['coverage'] as List<Map>);
 
   // wait for sample app to terminate.
-  if (await sampleProcess.exitCode != 0) {
+  var exitCode = await sampleProcess.exitCode;
+  if (exitCode != 0) {
     throw new ProcessException('dart', sampleAppArgs,
-        'Fatal error. Exit code: ${result.exitCode}', result.exitCode);
+        'Fatal error. Exit code: $exitCode', exitCode);
   }
   sampleProcess.stderr.drain();
   return hitMap;

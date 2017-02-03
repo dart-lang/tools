@@ -11,12 +11,11 @@ import 'dart:io';
 import 'collect.dart';
 import 'util.dart';
 
-Future<Map> runAndCollect(String scriptPath,
+Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     {List<String> scriptArgs,
     bool checked: true,
     String packageRoot,
     Duration timeout}) async {
-  var openPort = await getOpenPort();
 
   var dartArgs = [
     '--enable-vm-service',

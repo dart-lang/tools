@@ -91,7 +91,7 @@ Options _parseArgs(List<String> arguments) {
   } else {
     try {
       serviceUri = Uri.parse(args['uri']);
-    } on FormatException catch (e) {
+    } on FormatException {
       fail('Invalid service URI specified: ${args['uri']}');
     }
   }

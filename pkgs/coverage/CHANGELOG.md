@@ -1,3 +1,6 @@
+## 0.9.2 - 2017-2-2
+ * Strong mode fixes as of Dart SDK 1.22.0
+
 ## 0.9.1 - 2017-01-18
 
  * Temporarily add back support for the `--host` and `--port` options to

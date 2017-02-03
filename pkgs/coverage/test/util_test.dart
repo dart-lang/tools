@@ -102,7 +102,6 @@ void main() {
 
     test('returns null for an incorrectly formatted URI', () {
       const msg = 'Observatory listening on :://';
-      Uri actual = extractObservatoryUri(msg);
       expect(extractObservatoryUri(msg), null);
     });
 
