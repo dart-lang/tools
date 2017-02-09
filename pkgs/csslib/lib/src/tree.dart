@@ -299,12 +299,17 @@ class PseudoClassSelector extends SimpleSelector {
 
 // ::pseudoElement
 class PseudoElementSelector extends SimpleSelector {
-  PseudoElementSelector(Identifier name, SourceSpan span) : super(name, span);
+  // If true, this is a CSS2.1 pseudo-element with only a single ':'.
+  final bool isLegacy;
+
+  PseudoElementSelector(Identifier name, SourceSpan span,
+      {this.isLegacy: false})
+      : super(name, span);
   visit(VisitorBase visitor) => visitor.visitPseudoElementSelector(this);
 
   PseudoElementSelector clone() => new PseudoElementSelector(_name, span);
 
-  String toString() => "::$name";
+  String toString() => "${isLegacy ? ':' : '::'}$name";
 }
 
 // :pseudoClassFunction(argument)

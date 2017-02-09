@@ -171,6 +171,14 @@ class Parser {
   StyleSheet parse() => _parser.parse();
 }
 
+// CSS2.1 pseudo-elements which were defined with a single ':'.
+final _legacyPseudoElements = new Set<String>.from(const [
+  'after',
+  'before',
+  'first-letter',
+  'first-line',
+]);
+
 /** A simple recursive descent parser for CSS. */
 class _Parser {
   final Tokenizer tokenizer;
@@ -1456,11 +1464,10 @@ class _Parser {
     } else {
       return null;
     }
+    var name = pseudoName.name.toLowerCase();
 
     // Functional pseudo?
-
     if (_peekToken.kind == TokenKind.LPAREN) {
-      var name = pseudoName.name.toLowerCase();
       if (!pseudoElement && name == 'not') {
         _eat(TokenKind.LPAREN);
 
@@ -1504,14 +1511,11 @@ class _Parser {
       }
     }
 
-    // TODO(terry): Need to handle specific pseudo class/element name and
-    // backward compatible names that are : as well as :: as well as
-    // parameters.  Current, spec uses :: for pseudo-element and : for
-    // pseudo-class.  However, CSS2.1 allows for : to specify old
-    // pseudo-elements (:first-line, :first-letter, :before and :after) any
-    // new pseudo-elements defined would require a ::.
-    return pseudoElement
-        ? new PseudoElementSelector(pseudoName, _makeSpan(start))
+    // Treat CSS2.1 pseudo-elements defined with pseudo class syntax as pseudo-
+    // elements for backwards compatibility.
+    return pseudoElement || _legacyPseudoElements.contains(name)
+        ? new PseudoElementSelector(pseudoName, _makeSpan(start),
+            isLegacy: !pseudoElement)
         : new PseudoClassSelector(pseudoName, _makeSpan(start));
   }
 
