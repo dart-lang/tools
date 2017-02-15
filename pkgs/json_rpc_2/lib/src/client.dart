@@ -61,7 +61,18 @@ class Client {
   /// Note that the client won't begin listening to [responses] until
   /// [Client.listen] is called.
   Client.withoutJson(StreamChannel channel)
-      : _manager = new ChannelManager("Client", channel);
+      : _manager = new ChannelManager("Client", channel) {
+    _manager.done.whenComplete(() {
+      for (var request in _pendingRequests.values) {
+        request.completer.completeError(
+            new StateError("The client closed with pending requests."),
+            StackTrace.current);
+      }
+      _pendingRequests.clear();
+    }).catchError((_) {
+      // Avoid an unhandled error.
+    });
+  }
 
   /// Starts listening to the underlying stream.
   ///
@@ -87,6 +98,9 @@ class Client {
   /// If the request succeeds, this returns the response result as a decoded
   /// JSON-serializable object. If it fails, it throws an [RpcException]
   /// describing the failure.
+  ///
+  /// Throws a [StateError] if the client is closed while the request is in
+  /// flight, or if the client is closed when this method is called.
   Future sendRequest(String method, [parameters]) {
     var id = _id++;
     _send(method, parameters, id);
@@ -106,6 +120,8 @@ class Client {
   ///
   /// Since this is just a notification to which the server isn't expected to
   /// send a response, it has no return value.
+  ///
+  /// Throws a [StateError] if the client is closed when this method is called.
   void sendNotification(String method, [parameters]) =>
       _send(method, parameters);
 
@@ -119,6 +135,7 @@ class Client {
       throw new ArgumentError('Only maps and lists may be used as JSON-RPC '
           'parameters, was "$parameters".');
     }
+    if (isClosed) throw new StateError("The client is closed.");
 
     var message = <String, dynamic>{
       "jsonrpc": "2.0",

@@ -25,7 +25,7 @@ class ChannelManager {
   ///
   /// This is the same future that's returned by [listen].
   Future get done => _doneCompleter.future;
-  final _doneCompleter = new Completer();
+  final _doneCompleter = new Completer.sync();
 
   /// Whether the underlying communication channel is closed.
   bool get isClosed => _doneCompleter.isCompleted;

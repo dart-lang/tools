@@ -184,6 +184,12 @@ void main() {
     })));
   });
 
+  test("requests throw StateErrors if the client is closed", () {
+    controller.client.close();
+    expect(() => controller.client.sendRequest("foo"), throwsStateError);
+    expect(() => controller.client.sendNotification("foo"), throwsStateError);
+  });
+
   test("ignores bogus responses", () {
     // Make a request so we have something to respond to.
     controller.expectRequest((request) {

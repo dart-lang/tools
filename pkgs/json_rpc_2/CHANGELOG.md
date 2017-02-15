@@ -1,3 +1,12 @@
+## 2.0.4
+
+* `Client.sendRequest()` now throws a `StateError` if the client is closed while
+  the request is in-flight. This avoids dangling `Future`s that will never be
+  completed.
+
+* Both `Client.sendRequest()` and `Client.sendNotification()` now throw
+  `StateError`s if they're called after the client is closed.
+
 ## 2.0.3
 
 * Fix new strong-mode warnings.

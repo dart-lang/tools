@@ -76,4 +76,27 @@ void main() {
     expect(() => responseController.stream.listen((_) {}), throwsStateError);
     expect(requestController.isClosed, isTrue);
   });
+
+  group("a stream error", () {
+    test("is reported through .done", () {
+      expect(client.listen(), throwsA("oh no!"));
+      expect(client.done, throwsA("oh no!"));
+      responseController.addError("oh no!");
+    });
+
+    test("cause a pending request to throw a StateError", () {
+      expect(client.listen(), throwsA("oh no!"));
+      expect(client.sendRequest('foo'), throwsStateError);
+      responseController.addError("oh no!");
+    });
+
+    test("causes future requests to throw StateErrors", () async {
+      expect(client.listen(), throwsA("oh no!"));
+      responseController.addError("oh no!");
+      await pumpEventQueue();
+
+      expect(() => client.sendRequest('foo'), throwsStateError);
+      expect(() => client.sendNotification('foo'), throwsStateError);
+    });
+  });
 }
