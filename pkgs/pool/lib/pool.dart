@@ -63,7 +63,14 @@ class Pool {
   FutureGroup _closeGroup;
 
   /// Whether [close] has been called.
-  bool get isClosed => _closeGroup != null;
+  bool get isClosed => _closeMemo.hasRun;
+
+  /// A future that completes once the pool is closed and all its outstanding
+  /// resources have been released.
+  ///
+  /// If any [PoolResource.allowRelease] callback throws an exception after the
+  /// pool is closed, this completes with that exception.
+  Future get done => _closeMemo.future;
 
   /// Creates a new pool with the given limit on how many resources may be
   /// allocated at once.
@@ -132,7 +139,7 @@ class Pool {
   /// an error, the returned future completes with that error.
   ///
   /// This may be called more than once; it returns the same [Future] each time.
-  Future close() {
+  Future close() => _closeMemo.runOnce(() {
     if (_closeGroup != null) return _closeGroup.future;
 
     _resetTimer();
@@ -147,7 +154,8 @@ class Pool {
 
     if (_allocatedResources == 0) _closeGroup.close();
     return _closeGroup.future;
-  }
+  });
+  final _closeMemo = new AsyncMemoizer();
 
   /// If there are any pending requests, this will fire the oldest one.
   void _onResourceReleased() {

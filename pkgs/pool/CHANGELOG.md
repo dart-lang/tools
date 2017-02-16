@@ -1,3 +1,8 @@
+## 1.3.0
+
+* Add a `Pool.done` getter that returns the same future returned by
+  `Pool.close()`.
+
 ## 1.2.4
 
 * Fix a strong-mode error.

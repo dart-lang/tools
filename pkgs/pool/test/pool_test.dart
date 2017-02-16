@@ -279,6 +279,16 @@ void main() {
     });
   });
 
+  test("done doesn't complete without close", () async {
+    var pool = new Pool(1);
+    pool.done.then(expectAsync1((_) {}, count: 0));
+
+    var resource = await pool.request();
+    resource.release();
+
+    await new Future.delayed(Duration.ZERO);
+  });
+
   group("close()", () {
     test("disallows request() and withResource()", () {
       var pool = new Pool(1)..close();
@@ -292,6 +302,7 @@ void main() {
       expect(pool.request().then((resource2) {
         resource2.release();
       }), completes);
+      expect(pool.done, completes);
       expect(pool.close(), completes);
       resource1.release();
     });
@@ -405,6 +416,7 @@ void main() {
       var completer = new Completer();
       resource.allowRelease(() => completer.future);
 
+      expect(pool.done, throwsA("oh no!"));
       expect(pool.close(), throwsA("oh no!"));
 
       await new Future.delayed(Duration.ZERO);
