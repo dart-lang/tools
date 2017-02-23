@@ -79,9 +79,9 @@ abstract class TokenizerBase {
     }
   }
 
-  int _peekChar() {
-    if (_index < _text.length) {
-      return _text.codeUnitAt(_index);
+  int _peekChar([int offset = 0]) {
+    if (_index + offset < _text.length) {
+      return _text.codeUnitAt(_index + offset);
     } else {
       return 0;
     }
@@ -98,6 +98,17 @@ abstract class TokenizerBase {
     } else {
       return false;
     }
+  }
+
+  bool _nextCharsAreNumber(int first) {
+    if (TokenizerHelpers.isDigit(first)) return true;
+    var second = _peekChar();
+    if (first == TokenChar.DOT) return TokenizerHelpers.isDigit(second);
+    if (first == TokenChar.PLUS || first == TokenChar.MINUS) {
+      return TokenizerHelpers.isDigit(second) ||
+          (second == TokenChar.DOT && TokenizerHelpers.isDigit(_peekChar(1)));
+    }
+    return false;
   }
 
   Token _finishToken(int kind) {

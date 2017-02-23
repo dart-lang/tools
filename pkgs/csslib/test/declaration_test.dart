@@ -170,8 +170,8 @@ void testUnits() {
   right: 300px;
   bottom: 400cm;
   border-width: 2.5mm;
-  margin-top: .5in;
-  margin-left: 5pc;
+  margin-top: -.5in;
+  margin-left: +5pc;
   margin-right: 5ex;
   margin-bottom: 5ch;
   font-size: 10pt;
@@ -208,8 +208,8 @@ void testUnits() {
   right: 300px;
   bottom: 400cm;
   border-width: 2.5mm;
-  margin-top: .5in;
-  margin-left: 5pc;
+  margin-top: -.5in;
+  margin-left: +5pc;
   margin-right: 5ex;
   margin-bottom: 5ch;
   font-size: 10pt;
