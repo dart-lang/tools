@@ -2168,7 +2168,8 @@ class _Parser {
           if (_peekKind(TokenKind.INTEGER)) {
             String hexText1 = _peekToken.text;
             _next();
-            if (_peekIdentifier()) {
+            // Append identifier only if there's no delimiting whitespace.
+            if (_peekIdentifier() && _previousToken.end == _peekToken.start) {
               hexText = '$hexText1${identifier().name}';
             } else {
               hexText = hexText1;
