@@ -97,7 +97,7 @@ class Tokenizer extends TokenizerBase {
       case TokenChar.HASH:
         return _finishToken(TokenKind.HASH);
       case TokenChar.PLUS:
-        if (maybeEatDigit()) return finishNumber();
+        if (_nextCharsAreNumber(ch)) return finishNumber();
         return _finishToken(TokenKind.PLUS);
       case TokenChar.MINUS:
         if (inSelectorExpression || unicodeRange) {
@@ -105,7 +105,7 @@ class Tokenizer extends TokenizerBase {
           // not part of identifier e.g., interval value range (e.g. U+400-4ff)
           // or minus operator in selector expression.
           return _finishToken(TokenKind.MINUS);
-        } else if (maybeEatDigit()) {
+        } else if (_nextCharsAreNumber(ch)) {
           return finishNumber();
         } else if (TokenizerHelpers.isIdentifierStart(ch)) {
           return finishIdentifier();
