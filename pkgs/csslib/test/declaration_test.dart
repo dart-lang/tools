@@ -566,6 +566,10 @@ div[href^='test'] {
 .test-background {
   background:  url(http://www.foo.com/bar.png);
 }
+
+.test-background-with-multiple-properties {
+  background: #000 url(http://www.foo.com/bar.png);
+}
 ''';
 
   final String generated = '@import "simple.css"; '
@@ -591,6 +595,9 @@ div[href^='test'] {
       '}\n'
       '.test-background {\n'
       '  background: url("http://www.foo.com/bar.png");\n'
+      '}\n'
+      '.test-background-with-multiple-properties {\n'
+      '  background: #000 url("http://www.foo.com/bar.png");\n'
       '}';
   var stylesheet = parseCss(input, errors: errors);
 
