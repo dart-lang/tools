@@ -202,8 +202,13 @@ class Tokenizer extends TokenizerBase {
           } else {
             return _errorToken();
           }
-        } else if ((ch == UNICODE_U || ch == UNICODE_LOWER_U) &&
+        } else if (_inString &&
+            (ch == UNICODE_U || ch == UNICODE_LOWER_U) &&
             (_peekChar() == UNICODE_PLUS)) {
+          // `_inString` is misleading. We actually DON'T want to enter this
+          // block while tokenizing a string, but the parser sets this value to
+          // false while it IS consuming tokens within a string.
+          //
           // Unicode range: U+uNumber[-U+uNumber]
           //   uNumber = 0..10FFFF
           _nextChar(); // Skip +
