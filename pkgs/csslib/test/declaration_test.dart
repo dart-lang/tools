@@ -16,6 +16,7 @@ void testSimpleTerms() {
 @ import url("test.css");
 .foo {
   background-color: #191919;
+  content: "u+0041";
   width: 10PX;
   height: 22mM !important;
   border-width: 20cm;
@@ -29,6 +30,7 @@ void testSimpleTerms() {
 @import "test.css";
 .foo {
   background-color: #191919;
+  content: "u+0041";
   width: 10px;
   height: 22mm !important;
   border-width: 20cm;
