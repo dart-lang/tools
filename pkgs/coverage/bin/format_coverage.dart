@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -26,7 +27,7 @@ class Environment {
   bool verbose;
 }
 
-main(List<String> arguments) async {
+Future<Null> main(List<String> arguments) async {
   final env = parseArgs(arguments);
 
   List<File> files = filesToProcess(env.input);
