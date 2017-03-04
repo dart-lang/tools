@@ -36,10 +36,8 @@ void main() {
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
-      var sourceUri = value['source'];
-
+      String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
-
       return map;
     });
 
@@ -54,18 +52,13 @@ void main() {
 
   test('createHitmap', () async {
     var resultString = await _getCoverageResult();
-
     var json = JSON.decode(resultString) as Map;
-
     var coverage = json['coverage'] as List<Map>;
-
     var hitMap = createHitmap(coverage);
-
     expect(hitMap, contains(_sampleAppFileUri));
 
-    var isolateFile = hitMap[_isolateLibFileUri];
-
-    expect(isolateFile, {12: 1, 14: 1, 16: 3, 18: 1});
+    Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
+    expect(isolateFile, {12: 1, 14: 1, 15: 3, 16: 1});
   });
 
   test('parseCoverage', () async {

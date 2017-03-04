@@ -15,28 +15,28 @@ Map createHitmap(List<Map> json) {
     map[line] = count + oldCount;
   }
 
-  for (Map e in json) {
-    var source = e['source'];
+  for (Map<String, dynamic> e in json) {
+    String source = e['source'] as String;
     if (source == null) {
       // Couldn't resolve import, so skip this entry.
       continue;
     }
 
     var sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
-    var hits = e['hits'];
+    List<dynamic> hits = e['hits'];
     // hits is a flat array of the following format:
     // [ <line|linerange>, <hitcount>,...]
     // line: number.
     // linerange: '<line>-<line>'.
     for (var i = 0; i < hits.length; i += 2) {
-      var k = hits[i];
+      dynamic k = hits[i];
       if (k is num) {
         // Single line.
         addToMap(sourceHitMap, k, hits[i + 1]);
       } else {
         assert(k is String);
         // Linerange. We expand line ranges to actual lines at this point.
-        var splitPos = k.indexOf('-');
+        int splitPos = k.indexOf('-');
         int start = int.parse(k.substring(0, splitPos));
         int end = int.parse(k.substring(splitPos + 1));
         for (var j = start; j <= end; j++) {

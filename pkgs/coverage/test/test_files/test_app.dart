@@ -27,13 +27,12 @@ Future<Null> main() async {
   isolate.addOnExitListener(port.sendPort);
   isolate.resume(isolate.pauseCapability);
 
-  var value = await port.first;
-
+  int value = await port.first;
   if (value != 3) {
     throw 'expected 3!';
   }
 
-  var result = await retry(() async => 42, const Duration(seconds: 1));
+  int result = await retry(() async => 42, const Duration(seconds: 1));
   print(result);
 }
 

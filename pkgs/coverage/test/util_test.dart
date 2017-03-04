@@ -27,7 +27,7 @@ void main() {
       return 42;
     }
 
-    var value = await retry(failCountTimes, _delay);
+    int value = await retry(failCountTimes, _delay);
 
     expect(value, 42);
     expect(count, _failCount);
@@ -50,7 +50,7 @@ void main() {
       }
 
       var safeTimoutDuration = _delay * _failCount * 2;
-      var value =
+      int value =
           await retry(failCountTimes, _delay, timeout: safeTimoutDuration);
 
       expect(value, 42);

@@ -32,7 +32,7 @@ class LcovFormatter implements Formatter {
     _PathFilter pathFilter = _getPathFilter(reportOn);
     var buf = new StringBuffer();
     for (var key in hitmap.keys) {
-      var v = hitmap[key];
+      Map<int, int> v = hitmap[key];
       var source = resolver.resolve(key);
       if (source == null) {
         continue;
@@ -80,7 +80,7 @@ class PrettyPrintFormatter implements Formatter {
     _PathFilter pathFilter = _getPathFilter(reportOn);
     var buf = new StringBuffer();
     for (var key in hitmap.keys) {
-      var v = hitmap[key];
+      Map<int, int> v = hitmap[key];
       var source = resolver.resolve(key);
       if (source == null) {
         continue;

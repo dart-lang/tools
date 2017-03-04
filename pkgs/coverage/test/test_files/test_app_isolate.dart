@@ -8,12 +8,10 @@ import 'dart:isolate';
 /// The number of covered lines is tested and expected to be 4.
 ///
 /// If you modify this method, you may have to update the tests!
-void isolateTask(List threeThings) {
+void isolateTask(List<dynamic> threeThings) {
   sleep(const Duration(milliseconds: 500));
 
   SendPort port = threeThings.first;
-
-  var sum = threeThings[1] + threeThings[2];
-
+  int sum = threeThings[1] + threeThings[2];
   port.send(sum);
 }

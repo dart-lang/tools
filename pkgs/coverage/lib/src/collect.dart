@@ -19,7 +19,7 @@ Future<Map<String, dynamic>> collect(
     ..add('ws');
   var uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
-  var vmService;
+  VMServiceClient vmService;
   await retry(() async {
     try {
       vmService = new VMServiceClient.connect(uri);

@@ -30,11 +30,11 @@ void main() {
     expect(hitmap, contains(_isolateLibFileUri));
     expect(hitmap, contains('package:coverage/src/util.dart'));
 
-    var sampleAppHitMap = hitmap[_sampleAppFileUri];
+    Map<int, int> sampleAppHitMap = hitmap[_sampleAppFileUri];
 
-    expect(sampleAppHitMap, containsPair(41, greaterThanOrEqualTo(1)),
+    expect(sampleAppHitMap, containsPair(40, greaterThanOrEqualTo(1)),
         reason: 'be careful if you modify the test file');
-    expect(sampleAppHitMap, containsPair(45, 0),
+    expect(sampleAppHitMap, containsPair(44, 0),
         reason: 'be careful if you modify the test file');
     expect(sampleAppHitMap, isNot(contains(29)),
         reason: 'be careful if you modify the test file');
