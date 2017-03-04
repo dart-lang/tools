@@ -16,7 +16,7 @@ Map createHitmap(List<Map> json) {
   }
 
   for (Map<String, dynamic> e in json) {
-    String source = e['source'] as String;
+    String source = e['source'];
     if (source == null) {
       // Couldn't resolve import, so skip this entry.
       continue;
@@ -70,7 +70,7 @@ Future<Map> parseCoverage(Iterable<File> files, int _) async {
   Map globalHitmap = <String, Map<int, int>>{};
   for (var file in files) {
     String contents = file.readAsStringSync();
-    var json = JSON.decode(contents)['coverage'] as List<Map>;
+    List<Map<String, dynamic>> json = JSON.decode(contents)['coverage'];
     mergeHitmaps(createHitmap(json), globalHitmap);
   }
   return globalHitmap;

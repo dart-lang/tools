@@ -185,7 +185,7 @@ Environment parseArgs(List<String> arguments) {
   }
 
   env.reportOn =
-      args['report-on'].isNotEmpty ? args['report-on'] as List<String> : null;
+      args['report-on'].isNotEmpty ? args['report-on'] : null;
 
   env.bazel = args['bazel'];
   env.bazelWorkspace = args['bazel-workspace'];

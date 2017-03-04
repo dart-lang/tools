@@ -21,13 +21,11 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('collect_coverage_api', () async {
-    var json = await _getCoverageResult();
-
+    Map<String, dynamic> json = await _getCoverageResult();
     expect(json.keys, unorderedEquals(['type', 'coverage']));
-
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    var coverage = json['coverage'] as List;
+    List coverage = json['coverage'];
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
@@ -48,14 +46,14 @@ void main() {
 
 Map _coverageData;
 
-Future<Map> _getCoverageResult() async {
+Future<Map<String, dynamic>> _getCoverageResult() async {
   if (_coverageData == null) {
     _coverageData = await _collectCoverage();
   }
   return _coverageData;
 }
 
-Future<Map> _collectCoverage() async {
+Future<Map<String, dynamic>> _collectCoverage() async {
   var openPort = await getOpenPort();
 
   // run the sample app, with the right flags
