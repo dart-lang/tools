@@ -9,9 +9,9 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-final testAppPath = p.join('test', 'test_files', 'test_app.dart');
+final String testAppPath = p.join('test', 'test_files', 'test_app.dart');
 
-const timeout = const Duration(seconds: 10);
+const Duration timeout = const Duration(seconds: 10);
 
 Future<Process> runTestApp(int openPort) async {
   return Process.start('dart', [

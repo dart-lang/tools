@@ -68,12 +68,12 @@ Options _parseArgs(List<String> arguments) {
 
   var args = parser.parse(arguments);
 
-  printUsage() {
+  void printUsage() {
     print('Usage: dart collect_coverage.dart --uri=http://... [OPTION...]\n');
     print(parser.usage);
   }
 
-  fail(String message) {
+  void fail(String message) {
     print('Error: $message\n');
     printUsage();
     exit(1);
