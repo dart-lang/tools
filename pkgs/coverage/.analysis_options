@@ -53,7 +53,7 @@ linter:
     # - avoid_as
     - avoid_init_to_null
     - avoid_return_types_on_setters
-    # - await_only_futures
+    - await_only_futures
     - camel_case_types
     - constant_identifier_names
     - control_flow_in_finally
