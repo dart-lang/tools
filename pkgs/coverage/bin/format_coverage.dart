@@ -125,12 +125,12 @@ Environment parseArgs(List<String> arguments) {
 
   var args = parser.parse(arguments);
 
-  printUsage() {
+  void printUsage() {
     print('Usage: dart format_coverage.dart [OPTION...]\n');
     print(parser.usage);
   }
 
-  fail(String msg) {
+  void fail(String msg) {
     print('\n$msg\n');
     printUsage();
     exit(1);
