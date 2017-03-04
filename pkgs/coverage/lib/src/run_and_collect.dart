@@ -48,15 +48,15 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
   });
 
   var serviceUri = await serviceUriCompleter.future;
+  Map<String, dynamic> coverage;
   try {
-    return collect(serviceUri, true, true, timeout: timeout);
+    coverage = await collect(serviceUri, true, true, timeout: timeout);
   } finally {
     await process.stderr.drain<List<int>>();
-
-    var code = await process.exitCode;
-
-    if (code < 0) {
-      throw "A critical exception happened in the process: exit code $code";
-    }
   }
+  int exitStatus = await process.exitCode;
+  if (exitStatus != 0) {
+    throw "Process exited with exit code $exitStatus";
+  }
+  return coverage;
 }
