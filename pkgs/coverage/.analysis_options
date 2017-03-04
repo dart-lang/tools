@@ -47,7 +47,7 @@ linter:
     - valid_regexps
 
     # === style rules ===
-    # - always_declare_return_types
+    - always_declare_return_types
     # - always_specify_types
     - annotate_overrides
     - avoid_as
