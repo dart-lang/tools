@@ -22,7 +22,7 @@ void main() {
     expect(json.keys, unorderedEquals(['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    var coverage = json['coverage'] as List<Map>;
+    List<Map> coverage = json['coverage'];
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {

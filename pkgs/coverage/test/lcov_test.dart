@@ -180,8 +180,8 @@ Future<Map> _getHitMap() async {
   Uri serviceUri = await serviceUriCompleter.future;
 
   // collect hit map.
-  var coverageJson = await collect(serviceUri, true, true);
-  var hitMap = createHitmap(coverageJson['coverage'] as List<Map>);
+  List<Map> coverageJson = (await collect(serviceUri, true, true))['coverage'];
+  var hitMap = createHitmap(coverageJson);
 
   // wait for sample app to terminate.
   var exitCode = await sampleProcess.exitCode;

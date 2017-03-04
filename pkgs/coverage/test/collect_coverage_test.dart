@@ -26,13 +26,12 @@ void main() {
     var resultString = await _getCoverageResult();
 
     // analyze the output json
-    var json = JSON.decode(resultString) as Map;
+    Map<String, dynamic> json = JSON.decode(resultString);
 
     expect(json.keys, unorderedEquals(['type', 'coverage']));
-
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    var coverage = json['coverage'] as List;
+    List<Map<String, dynamic>> coverage = json['coverage'];
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
@@ -52,8 +51,8 @@ void main() {
 
   test('createHitmap', () async {
     var resultString = await _getCoverageResult();
-    var json = JSON.decode(resultString) as Map;
-    var coverage = json['coverage'] as List<Map>;
+    Map<String, dynamic> json = JSON.decode(resultString);
+    List<Map<String, dynamic>> coverage = json['coverage'];
     var hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 
