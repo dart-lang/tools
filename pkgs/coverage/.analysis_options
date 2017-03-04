@@ -1,2 +1,23 @@
+# Specify analysis options.
+#
+# Until there are meta linter rules, each desired lint must be explicitly enabled.
+# See: https://github.com/dart-lang/linter/issues/288
+#
+# For a list of lints, see: http://dart-lang.github.io/linter/lints/
+# See the configuration guide for more
+# https://github.com/dart-lang/sdk/tree/master/pkg/analyzer#configuring-the-analyzer
+
 analyzer:
-  strong-mode: false
+  language:
+    enableStrictCallChecks: true
+  strong-mode:
+    implicit-dynamic: false
+  errors:
+    # treat missing required parameters as a warning (not a hint)
+    missing_required_param: warning
+    # allow overriding fields (if they use super, ideally...)
+    strong_mode_invalid_field_override: ignore
+    # allow type narrowing
+    strong_mode_down_cast_composite: ignore
+    # allow having TODOs in the code
+    todo: ignore
