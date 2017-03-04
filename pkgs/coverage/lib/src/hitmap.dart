@@ -49,7 +49,7 @@ Map createHitmap(List<Map> json) {
 }
 
 /// Merges [newMap] into [result].
-mergeHitmaps(Map newMap, Map result) {
+void mergeHitmaps(Map newMap, Map result) {
   newMap.forEach((String file, Map v) {
     if (result.containsKey(file)) {
       v.forEach((int line, int cnt) {

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:isolate';
 
 // explicitly using a package import to validate hitmap coverage of packages
@@ -9,7 +10,7 @@ import 'package:coverage/src/util.dart';
 
 import 'test_app_isolate.dart';
 
-main() async {
+Future<Null> main() async {
   for (var i = 0; i < 10; i++) {
     for (var j = 0; j < 10; j++) {
       var sum = usedMethod(i, j);

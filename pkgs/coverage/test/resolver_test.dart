@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:coverage/src/resolver.dart';
 import 'package:test/test.dart';
 
-main() {
+Future<Null> main() {
   group('Bazel resolver', () {
     const workspace = 'foo';
     final resolver = new BazelResolver(workspacePath: workspace);
