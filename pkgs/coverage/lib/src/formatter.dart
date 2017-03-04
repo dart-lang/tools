@@ -49,7 +49,7 @@ class LcovFormatter implements Formatter {
       buf.write('SF:${source}\n');
       v.keys.toList()
         ..sort()
-        ..forEach((k) {
+        ..forEach((int k) {
           buf.write('DA:${k},${v[k]}\n');
         });
       buf.write('end_of_record\n');

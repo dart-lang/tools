@@ -66,7 +66,7 @@ void mergeHitmaps(Map newMap, Map result) {
 }
 
 /// Generates a merged hitmap from a set of coverage JSON files.
-Future<Map> parseCoverage(Iterable<File> files, _) async {
+Future<Map> parseCoverage(Iterable<File> files, int _) async {
   Map globalHitmap = {};
   for (var file in files) {
     String contents = file.readAsStringSync();
