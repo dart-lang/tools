@@ -131,7 +131,7 @@ Future<String> _collectCoverage() async {
   }
 
   await sampleProcess.exitCode;
-  sampleProcess.stderr.drain();
+  sampleProcess.stderr.drain<List<int>>();
 
   return toolResult.stdout;
 }

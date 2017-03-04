@@ -51,7 +51,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
   try {
     return collect(serviceUri, true, true, timeout: timeout);
   } finally {
-    await process.stderr.drain();
+    await process.stderr.drain<List<int>>();
 
     var code = await process.exitCode;
 

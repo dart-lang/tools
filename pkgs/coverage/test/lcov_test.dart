@@ -189,6 +189,6 @@ Future<Map> _getHitMap() async {
     throw new ProcessException(
         'dart', sampleAppArgs, 'Fatal error. Exit code: $exitCode', exitCode);
   }
-  sampleProcess.stderr.drain();
+  sampleProcess.stderr.drain<List<int>>();
   return hitMap;
 }

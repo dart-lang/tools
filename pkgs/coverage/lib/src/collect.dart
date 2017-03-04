@@ -45,7 +45,7 @@ Future<Map<String, dynamic>> collect(
 
 Future<Map<String, dynamic>> _getAllCoverage(VMServiceClient service) async {
   var vm = await service.getVM();
-  var allCoverage = [];
+  var allCoverage = <Map<String, dynamic>>[];
 
   for (var isolateRef in vm.isolates) {
     var isolate = await isolateRef.load();
@@ -79,7 +79,7 @@ Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
 }
 
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
-Future<List> _getCoverageJson(
+Future<List<Map<String, dynamic>>> _getCoverageJson(
     VMServiceClient service, VMSourceReport report) async {
   var scriptRefs = report.ranges.map((r) => r.script).toSet();
   var scripts = new Map<Uri, VMScript>.fromIterable(
@@ -106,7 +106,7 @@ Future<List> _getCoverageJson(
   }
 
   // Output JSON
-  var coverage = [];
+  var coverage = <Map<String, dynamic>>[];
   hitMaps.forEach((uri, hitMap) {
     var script = scripts[uri];
     coverage.add(_toScriptCoverageJson(script, hitMap));
@@ -118,7 +118,7 @@ Future<List> _getCoverageJson(
 Map<String, dynamic> _toScriptCoverageJson(
     VMScript script, Map<int, int> hitMap) {
   var json = <String, dynamic>{};
-  var hits = [];
+  var hits = <int>[];
   hitMap.forEach((line, hitCount) {
     hits.add(line);
     hits.add(hitCount);
