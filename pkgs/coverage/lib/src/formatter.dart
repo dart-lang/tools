@@ -28,6 +28,7 @@ class LcovFormatter implements Formatter {
   /// are reported relative to that path.
   LcovFormatter(this.resolver, {this.reportOn, this.basePath});
 
+  @override
   Future<String> format(Map hitmap) async {
     _PathFilter pathFilter = _getPathFilter(reportOn);
     var buf = new StringBuffer();
@@ -76,6 +77,7 @@ class PrettyPrintFormatter implements Formatter {
   /// are reported relative to that path.
   PrettyPrintFormatter(this.resolver, this.loader, {this.reportOn});
 
+  @override
   Future<String> format(Map hitmap) async {
     _PathFilter pathFilter = _getPathFilter(reportOn);
     var buf = new StringBuffer();

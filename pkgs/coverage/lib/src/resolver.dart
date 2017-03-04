@@ -97,6 +97,7 @@ class BazelResolver extends Resolver {
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
+  @override
   String resolve(String scriptUri) {
     var uri = Uri.parse(scriptUri);
     if (uri.scheme == 'dart') {
