@@ -86,7 +86,7 @@ void main() {
         expect(countAfterError, 0,
             reason: 'Execution should stop after a timeout');
 
-        await new Future.delayed(_delay * 3);
+        await new Future<dynamic>.delayed(_delay * 3);
 
         expect(countAfterError, 0, reason: 'Even after a delay');
       }
