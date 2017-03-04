@@ -49,7 +49,7 @@ linter:
     # === style rules ===
     # - always_declare_return_types
     # - always_specify_types
-    # - annotate_overrides
+    - annotate_overrides
     - avoid_as
     - avoid_init_to_null
     - avoid_return_types_on_setters
