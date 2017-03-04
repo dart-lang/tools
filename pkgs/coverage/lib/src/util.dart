@@ -19,15 +19,9 @@ Future retry(Future f(), Duration interval, {Duration timeout}) async {
 
     return f().timeout(duration, onTimeout: () {
       keepGoing = false;
-
-      var msg;
-
-      if (duration.inSeconds == 0) {
-        msg = '${duration.inMilliseconds}ms';
-      } else {
-        msg = '${duration.inSeconds}s';
-      }
-
+      var msg = duration.inSeconds == 0
+          ? '${duration.inMilliseconds}ms'
+          : '${duration.inSeconds}s';
       throw new StateError('Failed to complete within ${msg}');
     });
   }
@@ -35,8 +29,7 @@ Future retry(Future f(), Duration interval, {Duration timeout}) async {
   return _withTimeout(() async {
     while (keepGoing) {
       try {
-        var result = await f();
-        return result;
+        return await f();
       } catch (_) {
         if (keepGoing) {
           await new Future.delayed(interval);

@@ -97,7 +97,7 @@ Options _parseArgs(List<String> arguments) {
     }
   }
 
-  var out;
+  IOSink out;
   if (args['out'] == 'stdout') {
     out = stdout;
   } else {

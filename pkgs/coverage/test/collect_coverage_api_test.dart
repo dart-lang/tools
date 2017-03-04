@@ -31,10 +31,8 @@ void main() {
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
-      var sourceUri = value['source'];
-
+      String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
-
       return map;
     });
 

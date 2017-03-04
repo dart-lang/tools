@@ -27,7 +27,7 @@ class Resolver {
         // No sdk-root given, do not resolve dart: URIs.
         return null;
       }
-      var filePath;
+      String filePath;
       if (uri.pathSegments.length > 1) {
         var path = uri.pathSegments[0];
         // Drop patch files, since we don't have their source in the compiled
@@ -139,7 +139,7 @@ class BazelResolver extends Resolver {
     // TODO(cbracken) belongs in a Bazel package
     var packageName = pathSegments[0];
     var pathInPackage = pathSegments.sublist(1).join('/');
-    var packagePath;
+    String packagePath;
     if (packageName.contains('.')) {
       packagePath = packageName.replaceAll('.', '/');
     } else {
