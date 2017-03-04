@@ -73,8 +73,7 @@ class PrettyPrintFormatter implements Formatter {
   /// Creates a new pretty-print formatter.
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
-  /// prefixed with one of the paths included. If [basePath] is provided, paths
-  /// are reported relative to that path.
+  /// prefixed with one of the paths included.
   PrettyPrintFormatter(this.resolver, this.loader, {this.reportOn});
 
   @override
