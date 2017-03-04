@@ -23,7 +23,7 @@ Future<dynamic> retry(Future f(), Duration interval, {Duration timeout}) async {
       var msg = duration.inSeconds == 0
           ? '${duration.inMilliseconds}ms'
           : '${duration.inSeconds}s';
-      throw new StateError('Failed to complete within ${msg}');
+      throw new StateError('Failed to complete within $msg');
     });
   }
 

@@ -46,11 +46,11 @@ class LcovFormatter implements Formatter {
         source = p.relative(source, from: basePath);
       }
 
-      buf.write('SF:${source}\n');
+      buf.write('SF:$source\n');
       v.keys.toList()
         ..sort()
         ..forEach((int k) {
-          buf.write('DA:${k},${v[k]}\n');
+          buf.write('DA:$k,${v[k]}\n');
         });
       buf.write('end_of_record\n');
     }
@@ -100,7 +100,7 @@ class PrettyPrintFormatter implements Formatter {
         if (v.containsKey(line)) {
           prefix = v[line].toString().padLeft(_prefix.length);
         }
-        buf.writeln('${prefix}|${lines[line-1]}');
+        buf.writeln('$prefix|${lines[line-1]}');
       }
     }
 
