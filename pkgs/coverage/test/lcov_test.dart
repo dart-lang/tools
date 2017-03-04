@@ -151,7 +151,7 @@ void main() {
 }
 
 Future<Map> _getHitMap() async {
-  expect(await FileSystemEntity.isFile(_sampleAppPath), isTrue);
+  expect(FileSystemEntity.isFileSync(_sampleAppPath), isTrue);
 
   // select service port.
   var port = await getOpenPort();

@@ -90,7 +90,7 @@ Future<String> _getCoverageResult() async {
 }
 
 Future<String> _collectCoverage() async {
-  expect(await FileSystemEntity.isFile(testAppPath), isTrue);
+  expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
   var openPort = await getOpenPort();
 

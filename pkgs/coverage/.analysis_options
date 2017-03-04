@@ -30,7 +30,7 @@ linter:
 
     # === error rules ===
     - avoid_empty_else
-    # - avoid_slow_async_io
+    - avoid_slow_async_io
     # - comment_references # blocked on https://github.com/dart-lang/dartdoc/issues/1153
     - cancel_subscriptions
     # - close_sinks
