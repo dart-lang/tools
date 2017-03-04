@@ -76,8 +76,5 @@ Future<Map> _collectCoverage() async {
   });
   Uri serviceUri = await serviceUriCompleter.future;
 
-  var result = collect(serviceUri, true, false, timeout: timeout);
-  await sampleProcess;
-
-  return result;
+  return collect(serviceUri, true, false, timeout: timeout);
 }
