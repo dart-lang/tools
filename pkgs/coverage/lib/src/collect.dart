@@ -84,7 +84,7 @@ Future<List> _getCoverageJson(
   var scriptRefs = report.ranges.map((r) => r.script).toSet();
   var scripts = new Map<Uri, VMScript>.fromIterable(
       await Future.wait(scriptRefs.map((ref) => ref.load()).toList()),
-      key: (s) => s.uri);
+      key: (VMScript s) => s.uri);
 
   // script uri -> { line -> hit count }
   var hitMaps = <Uri, Map<int, int>>{};

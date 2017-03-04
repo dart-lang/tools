@@ -24,7 +24,7 @@ Future<Null> main(List<String> arguments) async {
         timeout: options.timeout);
     options.out.write(JSON.encode(coverage));
     await options.out.close();
-  }, onError: (error, Chain chain) {
+  }, onError: (dynamic error, Chain chain) {
     stderr.writeln(error);
     stderr.writeln(chain.terse);
     // See http://www.retro11.de/ouxr/211bsd/usr/include/sysexits.h.html
@@ -73,7 +73,7 @@ Options _parseArgs(List<String> arguments) {
     print(parser.usage);
   }
 
-  fail(message) {
+  fail(String message) {
     print('Error: $message\n');
     printUsage();
     exit(1);
