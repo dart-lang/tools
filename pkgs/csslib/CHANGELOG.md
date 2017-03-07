@@ -1,6 +1,6 @@
 ## 0.13.4
 
-* Parses CSS 2.1 pseudo-classes as pseudo-classes instead of pseudo-elements.
+* Parses CSS 2.1 pseudo-elements as pseudo-elements instead of pseudo-classes.
 * Supports signed decimal numbers with no integer part.
 * Fixes parsing hexadecimal numbers when followed by an identifier.
 * Fixes parsing strings which contain unicode-range character sequences.
