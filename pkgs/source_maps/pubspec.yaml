@@ -4,7 +4,6 @@ author: Dart Team <misc@dartlang.org>
 description: Library to programmatically manipulate source map files.
 homepage: http://github.com/dart-lang/source_maps
 dependencies:
-  path: ^1.2.0
   source_span: ^1.1.1
 environment:
   sdk: '>=1.8.0 <2.0.0'
