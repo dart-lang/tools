@@ -1,3 +1,10 @@
+## 0.13.4
+
+* Parses CSS 2.1 pseudo-classes as pseudo-classes instead of pseudo-elements.
+* Supports signed decimal numbers with no integer part.
+* Fixes parsing hexadecimal numbers when followed by an identifier.
+* Fixes parsing strings which contain unicode-range character sequences.
+
 ## 0.13.3+1
 
 * Fixes analyzer error.
