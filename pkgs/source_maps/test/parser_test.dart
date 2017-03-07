@@ -262,6 +262,29 @@ main() {
           Uri.parse("file:///path/to/pkg/input3.dart"));
     });
 
+    test('build bundle incrementally', () {
+      var mapping = new MappingBundle();
+
+      mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
+          mapUrl: "file:///path/to/map"));
+      expect(mapping.spanFor(0, 0, uri: "output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input1.dart"));
+
+      expect(mapping.containsMapping("output2.dart"), isFalse);
+      mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_2,
+          mapUrl: "file:///path/to/map"));
+      expect(mapping.containsMapping("output2.dart"), isTrue);
+      expect(mapping.spanFor(0, 0, uri: "output2.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input2.dart"));
+
+      expect(mapping.containsMapping("3/output.dart"), isFalse);
+      mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_3,
+          mapUrl: "file:///path/to/map"));
+      expect(mapping.containsMapping("3/output.dart"), isTrue);
+      expect(mapping.spanFor(0, 0, uri: "3/output.dart").sourceUrl,
+          Uri.parse("file:///path/to/pkg/input3.dart"));
+    });
+
     // Test that the source map can handle cases where the uri passed in is
     // not from the expected host but it is still unambiguous which source
     // map should be used.

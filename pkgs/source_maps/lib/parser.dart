@@ -180,14 +180,18 @@ class MultiSectionMapping extends Mapping {
 class MappingBundle extends Mapping {
   Map<String, SingleMapping> _mappings = {};
 
+  MappingBundle() {}
+
   MappingBundle.fromJson(List json, {String mapUrl}) {
     for (var map in json) {
-      var mapping = parseJson(map, mapUrl: mapUrl) as SingleMapping;
-      var targetUrl = mapping.targetUrl;
-      // TODO(jacobr): verify that targetUrl is valid uri instead of a windows
-      // path.
-      _mappings[targetUrl] = mapping;
+      addMapping(parseJson(map, mapUrl: mapUrl) as SingleMapping);
     }
+  }
+
+  addMapping(SingleMapping mapping) {
+    // TODO(jacobr): verify that targetUrl is valid uri instead of a windows
+    // path.
+    _mappings[mapping.targetUrl] = mapping;
   }
 
   /// Encodes the Mapping mappings as a json map.
@@ -200,6 +204,8 @@ class MappingBundle extends Mapping {
     }
     return buff.toString();
   }
+
+  bool containsMapping(String url) => _mappings.containsKey(url);
 
   SourceMapSpan spanFor(int line, int column,
       {Map<String, SourceFile> files, String uri}) {
