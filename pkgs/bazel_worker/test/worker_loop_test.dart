@@ -28,6 +28,24 @@ void main() {
         (TestAsyncWorkerConnection connection) =>
             new TestAsyncWorkerLoop(connection));
   });
+
+  group('SyncWorkerLoopWithPrint', () {
+    runTests(
+        () => new TestStdinSync(),
+        (Stdin stdinStream, Stdout stdoutStream) =>
+            new TestSyncWorkerConnection(stdinStream, stdoutStream),
+        (TestSyncWorkerConnection connection) =>
+            new TestSyncWorkerLoop(connection, printMessage: 'Goodbye!'));
+  });
+
+  group('AsyncWorkerLoopWithPrint', () {
+    runTests(
+        () => new TestStdinAsync(),
+        (Stdin stdinStream, Stdout stdoutStream) =>
+            new TestAsyncWorkerConnection(stdinStream, stdoutStream),
+        (TestAsyncWorkerConnection connection) =>
+            new TestAsyncWorkerLoop(connection, printMessage: 'Goodbye!'));
+  });
 }
 
 void runTests/*<T extends TestWorkerConnection>*/(
@@ -54,10 +72,23 @@ void runTests/*<T extends TestWorkerConnection>*/(
 
     var response = new WorkResponse()..output = 'Hello World';
     workerLoop.enqueueResponse(response);
-    await workerLoop.run();
+
+    // Make sure `print` never gets called in the parent zone.
+    var printMessages = <String>[];
+    await runZoned(() => workerLoop.run(), zoneSpecification:
+        new ZoneSpecification(print: (self, parent, zone, message) {
+      printMessages.add(message);
+    }));
+    expect(printMessages, isEmpty,
+        reason: 'The worker loop should hide all print calls from the parent '
+            'zone.');
 
     expect(connection.responses, hasLength(1));
     expect(connection.responses[0], response);
+    if (workerLoop.printMessage != null) {
+      expect(response.output, endsWith(workerLoop.printMessage),
+          reason: 'Print messages should get appended to the response output.');
+    }
 
     // Check that a serialized version was written to std out.
     expect(stdoutStream.writes, hasLength(1));

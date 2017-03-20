@@ -1,7 +1,7 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
+import 'dart:async';
 import 'dart:io';
 
 import 'constants.dart';
@@ -39,7 +39,15 @@ abstract class SyncWorkerLoop implements WorkerLoop {
       try {
         var request = connection.readRequest();
         if (request == null) break;
-        response = performRequest(request);
+        var printMessages = new StringBuffer();
+        response = runZoned(() => performRequest(request), zoneSpecification:
+            new ZoneSpecification(print: (self, parent, zone, message) {
+          printMessages.writeln();
+          printMessages.write(message);
+        }));
+        if (printMessages.isNotEmpty) {
+          response.output = '${response.output}$printMessages';
+        }
         // In case they forget to set this.
         response.exitCode ??= EXIT_CODE_OK;
       } catch (e, s) {

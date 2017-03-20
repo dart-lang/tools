@@ -41,7 +41,16 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
       try {
         var request = await connection.readRequest();
         if (request == null) break;
-        response = await performRequest(request);
+        var printMessages = new StringBuffer();
+        response = await runZoned(() => performRequest(request),
+            zoneSpecification:
+                new ZoneSpecification(print: (self, parent, zone, message) {
+          printMessages.writeln();
+          printMessages.write(message);
+        }));
+        if (printMessages.isNotEmpty) {
+          response.output = '${response.output}$printMessages';
+        }
         // In case they forget to set this.
         response.exitCode ??= EXIT_CODE_OK;
       } catch (e, s) {

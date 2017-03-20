@@ -101,6 +101,9 @@ abstract class TestWorkerConnection implements WorkerConnection {
 /// Interface for a [TestWorkerLoop] which allows you to enqueue responses.
 abstract class TestWorkerLoop implements WorkerLoop {
   void enqueueResponse(WorkResponse response);
+
+  /// If set, this message will be printed during the call to `performRequest`.
+  String get printMessage;
 }
 
 /// A [StdSyncWorkerConnection] which records its responses.
@@ -123,12 +126,16 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   final List<WorkRequest> requests = <WorkRequest>[];
   final Queue<WorkResponse> _responses = new Queue<WorkResponse>();
 
-  TestSyncWorkerLoop(SyncWorkerConnection connection)
+  @override
+  final String printMessage;
+
+  TestSyncWorkerLoop(SyncWorkerConnection connection, {this.printMessage})
       : super(connection: connection);
 
   @override
   WorkResponse performRequest(WorkRequest request) {
     requests.add(request);
+    if (printMessage != null) print(printMessage);
     return _responses.removeFirst();
   }
 
@@ -161,12 +168,16 @@ class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   final List<WorkRequest> requests = <WorkRequest>[];
   final Queue<WorkResponse> _responses = new Queue<WorkResponse>();
 
-  TestAsyncWorkerLoop(AsyncWorkerConnection connection)
+  @override
+  final String printMessage;
+
+  TestAsyncWorkerLoop(AsyncWorkerConnection connection, {this.printMessage})
       : super(connection: connection);
 
   @override
   Future<WorkResponse> performRequest(WorkRequest request) async {
     requests.add(request);
+    if (printMessage != null) print(printMessage);
     return _responses.removeFirst();
   }
 
