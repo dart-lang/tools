@@ -17,7 +17,7 @@ class SourceMapSpan extends SourceSpanBase {
   final bool isIdentifier;
 
   SourceMapSpan(SourceLocation start, SourceLocation end, String text,
-          {this.isIdentifier: false})
+      {this.isIdentifier: false})
       : super(start, end, text);
 
   /// Creates a [SourceMapSpan] for an identifier with value [text] starting at
@@ -26,13 +26,13 @@ class SourceMapSpan extends SourceSpanBase {
   /// The [end] location is determined by adding [text] to [start].
   SourceMapSpan.identifier(SourceLocation start, String text)
       : this(
-          start,
-          new SourceLocation(start.offset + text.length,
-              sourceUrl: start.sourceUrl,
-              line: start.line,
-              column: start.column + text.length),
-          text,
-          isIdentifier: true);
+            start,
+            new SourceLocation(start.offset + text.length,
+                sourceUrl: start.sourceUrl,
+                line: start.line,
+                column: start.column + text.length),
+            text,
+            isIdentifier: true);
 }
 
 /// A wrapper aruond a [FileSpan] that implements [SourceMapSpan].
@@ -51,10 +51,11 @@ class SourceMapFileSpan implements SourceMapSpan, FileSpan {
   SourceMapFileSpan(this._inner, {this.isIdentifier: false});
 
   int compareTo(SourceSpan other) => _inner.compareTo(other);
+  String highlight({color}) => _inner.highlight(color: color);
   SourceSpan union(SourceSpan other) => _inner.union(other);
   FileSpan expand(FileSpan other) => _inner.expand(other);
   String message(String message, {color}) =>
       _inner.message(message, color: color);
-  String toString() => _inner.toString()
-      .replaceAll("FileSpan", "SourceMapFileSpan");
+  String toString() =>
+      _inner.toString().replaceAll("FileSpan", "SourceMapFileSpan");
 }
