@@ -1,3 +1,11 @@
+## 0.1.4
+
+* Added `BazelWorkerDriver` class, which can be used to implement the bazel side
+  of the protocol. This allows you to speak to any process which knows the bazel
+  protocol from your own process.
+* Changed `WorkerConnection#readRequest` to return a `FutureOr<WorkRequest>`
+  instead of dynamic.
+
 ## 0.1.3
 
 * Add automatic intercepting of print calls and append them to
