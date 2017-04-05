@@ -10,6 +10,8 @@ set -e
 # Verify that the libraries are error free.
 dartanalyzer --fatal-warnings \
   lib/bazel_worker.dart \
+  lib/driver.dart \
+  lib/testing.dart \
   test/test_all.dart
 
 # Run the tests.
