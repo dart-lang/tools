@@ -3,23 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import '../constants.dart';
-import '../async_message_grouper.dart';
-import '../utils.dart';
 import '../worker_protocol.pb.dart';
 import 'worker_connection.dart';
 import 'worker_loop.dart';
-
-/// Connection between a worker and input / output.
-abstract class AsyncWorkerConnection implements WorkerConnection {
-  /// Read a new [WorkRequest]. Returns [null] when there are no more requests.
-  Future<WorkRequest> readRequest();
-
-  /// Write the given [response] as bytes to the output.
-  void writeResponse(WorkResponse response);
-}
 
 /// Persistent Bazel worker loop.
 ///
@@ -61,30 +49,5 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
 
       connection.writeResponse(response);
     }
-  }
-}
-
-/// Default implementation of [AsyncWorkerConnection] that works with [Stdin]
-/// and [Stdout].
-class StdAsyncWorkerConnection implements AsyncWorkerConnection {
-  final AsyncMessageGrouper _messageGrouper;
-  final StreamSink<List<int>> _outputStream;
-
-  StdAsyncWorkerConnection(
-      {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
-      : _messageGrouper = new AsyncMessageGrouper(inputStream ?? stdin),
-        _outputStream = outputStream ?? stdout;
-
-  @override
-  Future<WorkRequest> readRequest() async {
-    var buffer = await _messageGrouper.next;
-    if (buffer == null) return null;
-
-    return new WorkRequest.fromBuffer(buffer);
-  }
-
-  @override
-  void writeResponse(WorkResponse response) {
-    _outputStream.add(protoToDelimitedBuffer(response));
   }
 }

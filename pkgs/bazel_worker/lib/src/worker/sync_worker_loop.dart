@@ -2,23 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:async';
-import 'dart:io';
 
 import '../constants.dart';
-import '../sync_message_grouper.dart';
-import '../utils.dart';
 import '../worker_protocol.pb.dart';
 import 'worker_connection.dart';
 import 'worker_loop.dart';
-
-/// Connection between a worker and input / output.
-abstract class SyncWorkerConnection implements WorkerConnection {
-  /// Read a new [WorkRequest]. Returns [null] when there are no more requests.
-  WorkRequest readRequest();
-
-  /// Write the given [response] as bytes to the output.
-  void writeResponse(WorkResponse response);
-}
 
 /// Persistent Bazel worker loop.
 ///
@@ -58,29 +46,5 @@ abstract class SyncWorkerLoop implements WorkerLoop {
 
       connection.writeResponse(response);
     }
-  }
-}
-
-/// Default implementation of [SyncWorkerConnection] that works with [Stdin] and
-/// [Stdout].
-class StdSyncWorkerConnection implements SyncWorkerConnection {
-  final SyncMessageGrouper _messageGrouper;
-  final Stdout _stdoutStream;
-
-  StdSyncWorkerConnection({Stdin stdinStream, Stdout stdoutStream})
-      : _messageGrouper = new SyncMessageGrouper(stdinStream ?? stdin),
-        _stdoutStream = stdoutStream ?? stdout;
-
-  @override
-  WorkRequest readRequest() {
-    var buffer = _messageGrouper.next;
-    if (buffer == null) return null;
-
-    return new WorkRequest.fromBuffer(buffer);
-  }
-
-  @override
-  void writeResponse(WorkResponse response) {
-    _stdoutStream.add(protoToDelimitedBuffer(response));
   }
 }
