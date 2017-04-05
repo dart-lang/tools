@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'worker_protocol.pb.dart';
+import 'dart:async';
+
+import '../worker_protocol.pb.dart';
 
 /// Interface for a [WorkerConnection].
 ///
@@ -10,7 +12,7 @@ import 'worker_protocol.pb.dart';
 abstract class WorkerConnection {
   /// Read a [WorkRequest]. Returns either [Future<WorkRequest>] or
   /// [WorkRequest].
-  dynamic readRequest();
+  FutureOr<WorkRequest> readRequest();
 
   /// Writes a [WorkResponse].
   void writeResponse(WorkResponse response);

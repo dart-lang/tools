@@ -4,12 +4,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'constants.dart';
-import 'sync_message_grouper.dart';
-import 'utils.dart';
+import '../constants.dart';
+import '../sync_message_grouper.dart';
+import '../utils.dart';
+import '../worker_protocol.pb.dart';
 import 'worker_connection.dart';
 import 'worker_loop.dart';
-import 'worker_protocol.pb.dart';
 
 /// Connection between a worker and input / output.
 abstract class SyncWorkerConnection implements WorkerConnection {
