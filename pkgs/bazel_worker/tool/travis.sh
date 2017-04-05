@@ -16,3 +16,9 @@ dartanalyzer --fatal-warnings \
 
 # Run the tests.
 pub run test
+
+pushd e2e_test
+pub get
+dartanalyzer --fatal-warnings test/e2e_test.dart
+pub run test
+popd
