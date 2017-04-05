@@ -24,13 +24,16 @@ class BazelWorkerDriver {
   final int _maxWorkers;
 
   /// The number of currently active workers.
-  int get _numWorkers => _allWorkers.length;
+  int get _numWorkers => _readyWorkers.length + _spawningWorkers.length;
 
   /// Idle worker processes.
   final _idleWorkers = <Process>[];
 
-  /// All workers, even the ones that are in the process of being spawned.
-  final _allWorkers = <FutureOr<Process>>[];
+  /// All workers that are fully spawned and ready to handle work.
+  final _readyWorkers = <Process>[];
+
+  /// All workers that are in the process of being spawned.
+  final _spawningWorkers = <Future<Process>>[];
 
   /// Work requests that haven't been started yet.
   final _workQueue = new Queue<WorkRequest>();
@@ -52,10 +55,11 @@ class BazelWorkerDriver {
 
   /// Calls `kill` on all worker processes.
   Future terminateWorkers() async {
-    var existing = new List.from(_allWorkers);
-    _allWorkers.clear();
-    await Future.wait(existing.map((futureWorker) async {
-      (await futureWorker).kill();
+    for (var worker in _readyWorkers) {
+      worker.kill();
+    }
+    await Future.wait(_spawningWorkers.map((worker) async {
+      (await worker).kill();
     }));
   }
 
@@ -86,12 +90,10 @@ class BazelWorkerDriver {
       // No need to block here, we want to continue to synchronously drain the
       // work queue.
       var futureWorker = _spawnWorker();
-      _allWorkers.add(futureWorker);
+      _spawningWorkers.add(futureWorker);
       futureWorker.then((worker) {
-        // Somewhat ugly cleanup, we want to replace the `Future<Process>` in
-        // `_allWorkers` with the real `Process` once we have it.
-        _allWorkers.remove(futureWorker);
-        _allWorkers.add(worker);
+        _spawningWorkers.remove(futureWorker);
+        _readyWorkers.add(worker);
 
         // Set up the connection and run the worker.
         _workerConnections[worker] = new StdDriverConnection.forWorker(worker);
@@ -100,7 +102,7 @@ class BazelWorkerDriver {
         // Clean up things when the worker exits, and retry running the work
         // queue in case there is more work to be done.
         worker.exitCode.then((_) {
-          _allWorkers.remove(worker);
+          _readyWorkers.remove(worker);
           _runWorkQueue();
         });
       });
@@ -130,7 +132,7 @@ class BazelWorkerDriver {
         // Note that whenever we spawn a worker we listen for its exit code
         // and clean it up so we don't need to do that here.
         var worker = _idleWorkers.removeLast();
-        _allWorkers.remove(worker);
+        _readyWorkers.remove(worker);
         worker.kill();
       }
     } catch (e, s) {
