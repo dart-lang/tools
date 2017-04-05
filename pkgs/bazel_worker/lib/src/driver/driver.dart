@@ -95,12 +95,12 @@ class BazelWorkerDriver {
         _spawningWorkers.remove(futureWorker);
         _readyWorkers.add(worker);
 
-        // Set up the connection and run the worker.
         _workerConnections[worker] = new StdDriverConnection.forWorker(worker);
         _runWorker(worker, request);
 
-        // Clean up things when the worker exits, and retry running the work
-        // queue in case there is more work to be done.
+        // When the worker exits we should retry running the work queue in case
+        // there is more work to be done. This is primarily just a defensive
+        // thing but is cheap to do.
         worker.exitCode.then((_) {
           _readyWorkers.remove(worker);
           _runWorkQueue();

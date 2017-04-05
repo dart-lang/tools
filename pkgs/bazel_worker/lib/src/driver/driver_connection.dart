@@ -1,4 +1,4 @@
-// Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -9,12 +9,14 @@ import '../async_message_grouper.dart';
 import '../worker_protocol.pb.dart';
 import '../utils.dart';
 
-/// Interface for a [DriverConnection].
+/// A connection from a `BazelWorkerDriver` to a worker.
+///
+/// Unlike `WorkerConnection` there is no synchronous version of this class.
+/// This is because drivers talk to multiple workers, so they should never block
+/// when waiting for the response of any individual worker.
 abstract class DriverConnection {
-  /// Reads a [WorkResponse] asynchronously.
   Future<WorkResponse> readResponse();
 
-  /// Writes a [WorkRequest].
   void writeRequest(WorkRequest request);
 }
 
