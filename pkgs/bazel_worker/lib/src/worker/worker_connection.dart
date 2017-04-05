@@ -10,8 +10,9 @@ import '../sync_message_grouper.dart';
 import '../utils.dart';
 import '../worker_protocol.pb.dart';
 
-/// A connection from a worker to a driver (diver could be bazel, a dart program
-/// using `BazelWorkerDriver`, or any other process that speaks the protocol).
+/// A connection from a worker to a driver (driver could be bazel, a dart
+/// program using `BazelWorkerDriver`, or any other process that speaks the
+/// protocol).
 abstract class WorkerConnection {
   /// Reads a [WorkRequest] or returns [null] if there are none left.
   ///
