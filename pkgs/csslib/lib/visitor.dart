@@ -20,6 +20,7 @@ abstract class VisitorBase {
   visitNoOp(NoOp node);
   visitTopLevelProduction(TopLevelProduction node);
   visitDirective(Directive node);
+  visitDocumentDirective(DocumentDirective node);
   visitMediaExpression(MediaExpression node);
   visitMediaQuery(MediaQuery node);
   visitMediaDirective(MediaDirective node);
@@ -150,6 +151,11 @@ class Visitor implements VisitorBase {
     for (var mediaExpr in node.expressions) {
       visitMediaExpression(mediaExpr);
     }
+  }
+
+  visitDocumentDirective(DocumentDirective node) {
+    _visitNodeList(node.functions);
+    _visitNodeList(node.groupRuleBody);
   }
 
   visitMediaDirective(MediaDirective node) {

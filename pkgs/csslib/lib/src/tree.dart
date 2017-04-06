@@ -435,6 +435,20 @@ class Directive extends TreeNode {
   visit(VisitorBase visitor) => visitor.visitDirective(this);
 }
 
+class DocumentDirective extends Directive {
+  final List<LiteralTerm> functions;
+  final List<TreeNode> groupRuleBody;
+
+  DocumentDirective(this.functions, this.groupRuleBody, SourceSpan span)
+      : super(span);
+
+  DocumentDirective clone() {
+    return new DocumentDirective(this.functions, this.groupRuleBody, span);
+  }
+
+  visit(VisitorBase visitor) => visitor.visitDocumentDirective(this);
+}
+
 class ImportDirective extends Directive {
   /** import name specified. */
   final String import;

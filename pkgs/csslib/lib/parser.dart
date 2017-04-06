@@ -485,7 +485,11 @@ class _Parser {
    *  mixin:              '@mixin name [(args,...)] '{' declarations/ruleset '}'
    *  include:            '@include name [(@arg,@arg1)]
    *                      '@include name [(@arg...)]
-   *  content             '@content'
+   *  content:            '@content'
+   *  -moz-document:      '@-moz-document' [ <url> | url-prefix(<string>) |
+   *                          domain(<string>) | regexp(<string) ]# '{'
+   *                        declarations
+   *                      '}'
    */
   processDirective() {
     var start = _peekToken.span;
@@ -762,11 +766,12 @@ class _Parser {
 
       case TokenKind.DIRECTIVE_INCLUDE:
         return processInclude(_makeSpan(start));
-
       case TokenKind.DIRECTIVE_CONTENT:
         // TODO(terry): TBD
         _warning("@content not implemented.", _makeSpan(start));
         return null;
+      case TokenKind.DIRECTIVE_MOZ_DOCUMENT:
+        return processDocumentDirective(start);
     }
     return null;
   }
@@ -987,6 +992,51 @@ class _Parser {
     return new IncludeDirective(name.name, params, span);
   }
 
+  /// Assumes '@' has already been consumed.
+  DocumentDirective processDocumentDirective(SourceSpan start) {
+    _next(); // '-moz-document'
+    var functions = <LiteralTerm>[];
+    do {
+      var function;
+
+      // Consume function token: IDENT '('
+      var ident = identifier();
+      _eat(TokenKind.LPAREN);
+
+      // Consume function arguments.
+      if (ident.name == 'url-prefix' || ident.name == 'domain') {
+        // @-moz-document allows the 'url-prefix' and 'domain' functions to
+        // omit quotations around their argument, contrary to the standard
+        // in which they must be strings. To support this we consume a
+        // string with optional quotation marks, then reapply quotation
+        // marks so they're present in the emitted CSS.
+        var argumentStart = _peekToken.span;
+        var value = processQuotedString(true);
+        // Don't quote the argument if it's empty. '@-moz-document url-prefix()'
+        // is a common pattern used for browser detection.
+        var argument = value.isNotEmpty ? '"$value"' : '';
+        var argumentSpan = _makeSpan(argumentStart);
+
+        _eat(TokenKind.RPAREN);
+
+        var arguments = new Expressions(_makeSpan(argumentSpan))
+          ..add(new LiteralTerm(argument, argument, argumentSpan));
+        function = new FunctionTerm(
+            ident.name, ident.name, arguments, _makeSpan(ident.span));
+      } else {
+        function = processFunction(ident);
+      }
+
+      functions.add(function);
+    } while (_maybeEat(TokenKind.COMMA));
+
+    _eat(TokenKind.LBRACE);
+    var groupRuleBody = processGroupRuleBody();
+    _eat(TokenKind.RBRACE);
+    return new DocumentDirective(
+        functions, groupRuleBody, _makeSpan(start));
+  }
+
   RuleSet processRuleSet([SelectorGroup selectorGroup]) {
     if (selectorGroup == null) {
       selectorGroup = processSelectorGroup();
@@ -996,6 +1046,24 @@ class _Parser {
           selectorGroup, processDeclarations(), selectorGroup.span);
     }
     return null;
+  }
+
+  List<TreeNode> processGroupRuleBody() {
+    var nodes = <TreeNode>[];
+    while (!(_peekKind(TokenKind.RBRACE) || _peekKind(TokenKind.END_OF_FILE))) {
+      var directive = processDirective();
+      if (directive != null) {
+        nodes.add(directive);
+        continue;
+      }
+      var ruleSet = processRuleSet();
+      if (ruleSet != null) {
+        nodes.add(ruleSet);
+        continue;
+      }
+      break;
+    }
+    return nodes;
   }
 
   /**

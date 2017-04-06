@@ -380,11 +380,13 @@ void testMediaQueries() {
 .myclass {
   height: 20px;
 }
-} @media print AND (min-resolution:300dpi) {
+}
+@media print AND (min-resolution:300dpi) {
 #anotherId {
   color: #fff;
 }
-} @media print AND (min-resolution:280dpcm) {
+}
+@media print AND (min-resolution:280dpcm) {
 #finalId {
   color: #aaa;
 }
@@ -443,6 +445,76 @@ void testMediaQueries() {
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
+}
+
+void testMozDocument() {
+  var errors = <Message>[];
+  // Test empty url-prefix, commonly used for browser detection.
+  var css = '''
+@-moz-document url-prefix() {
+  div {
+    color: #000;
+  }
+}''';
+  var expected = '''@-moz-document url-prefix() {
+div {
+  color: #000;
+}
+}''';
+  var styleSheet = parseCss(css, errors: errors);
+  expect(styleSheet, isNotNull);
+  expect(errors, isEmpty);
+  expect(prettyPrint(styleSheet), expected);
+
+  // Test url-prefix with unquoted parameter
+  css = '''
+@-moz-document url-prefix(http://www.w3.org/Style/) {
+  div {
+    color: #000;
+  }
+}''';
+  expected = '''@-moz-document url-prefix("http://www.w3.org/Style/") {
+div {
+  color: #000;
+}
+}''';
+  styleSheet = parseCss(css, errors: errors);
+  expect(styleSheet, isNotNull);
+  expect(errors, isEmpty);
+  expect(prettyPrint(styleSheet), expected);
+
+  // Test domain with unquoted parameter
+  css = '''
+@-moz-document domain(google.com) {
+  div {
+    color: #000;
+  }
+}''';
+  expected = '''@-moz-document domain("google.com") {
+div {
+  color: #000;
+}
+}''';
+  styleSheet = parseCss(css, errors: errors);
+  expect(styleSheet, isNotNull);
+  expect(errors, isEmpty);
+  expect(prettyPrint(styleSheet), expected);
+
+  // Test all document functions combined.
+  css = '@-moz-document ' +
+      'url(http://www.w3.org/), ' +
+      "url-prefix('http://www.w3.org/Style/'), " +
+      'domain("google.com"), ' +
+      'regexp("https:.*") { div { color: #000; } }';
+  expected = '@-moz-document ' +
+      'url("http://www.w3.org/"), ' +
+      'url-prefix("http://www.w3.org/Style/"), ' +
+      'domain("google.com"), ' +
+      'regexp("https:.*") {\ndiv {\n  color: #000;\n}\n}';
+  styleSheet = parseCss(css, errors: errors);
+  expect(styleSheet, isNotNull);
+  expect(errors, isEmpty);
+  expect(prettyPrint(styleSheet), expected);
 }
 
 void testFontFace() {
@@ -1111,6 +1183,7 @@ main() {
   test('Unicode', testUnicode);
   test('Newer CSS', testNewerCss);
   test('Media Queries', testMediaQueries);
+  test('Document', testMozDocument);
   test('Font-Face', testFontFace);
   test('CSS file', testCssFile);
   test('Compact Emitter', testCompactEmitter);

@@ -90,6 +90,15 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  void visitDocumentDirective(DocumentDirective node) {
+    heading('DocumentDirective', node);
+    output.depth++;
+    output.writeNodeList('functions', node.functions);
+    output.writeNodeList('group rule body', node.groupRuleBody);
+    super.visitDocumentDirective(node);
+    output.depth--;
+  }
+
   void visitPageDirective(PageDirective node) {
     heading('PageDirective', node);
     output.depth++;
