@@ -77,22 +77,36 @@ class CssPrinter extends Visitor {
     }
   }
 
+  void visitDocumentDirective(DocumentDirective node) {
+    emit('$_newLine@-moz-document ');
+    node.functions.first.visit(this);
+    for (var function in node.functions.skip(1)) {
+      emit(',$_sp');
+      function.visit(this);
+    }
+    emit('$_sp{');
+    for (var ruleSet in node.groupRuleBody) {
+      ruleSet.visit(this);
+    }
+    emit('$_newLine}');
+  }
+
   void visitMediaDirective(MediaDirective node) {
-    emit(' @media');
+    emit('$_newLine@media');
     emitMediaQueries(node.mediaQueries);
-    emit(' {');
+    emit('$_sp{');
     for (var ruleset in node.rulesets) {
       ruleset.visit(this);
     }
-    emit('$_newLine\}');
+    emit('$_newLine}');
   }
 
   void visitHostDirective(HostDirective node) {
-    emit('\n@host {');
+    emit('$_newLine@host$_sp{');
     for (var ruleset in node.rulesets) {
       ruleset.visit(this);
     }
-    emit('$_newLine\}');
+    emit('$_newLine}');
   }
 
   /**

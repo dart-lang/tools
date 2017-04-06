@@ -161,6 +161,7 @@ class TokenKind {
   static const int DIRECTIVE_INCLUDE = 655;
   static const int DIRECTIVE_CONTENT = 656;
   static const int DIRECTIVE_EXTEND = 657;
+  static const int DIRECTIVE_MOZ_DOCUMENT = 658;
 
   // Media query operators
   static const int MEDIA_OP_ONLY = 665; // Unary.
@@ -218,6 +219,7 @@ class TokenKind {
     const {'type': TokenKind.DIRECTIVE_INCLUDE, 'value': 'include'},
     const {'type': TokenKind.DIRECTIVE_CONTENT, 'value': 'content'},
     const {'type': TokenKind.DIRECTIVE_EXTEND, 'value': 'extend'},
+    const {'type': TokenKind.DIRECTIVE_MOZ_DOCUMENT, 'value': '-moz-document'},
   ];
 
   static const List<Map<String, dynamic>> MEDIA_OPERATORS = const [
