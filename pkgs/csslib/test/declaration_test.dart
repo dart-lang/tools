@@ -450,24 +450,51 @@ void testMediaQueries() {
 void testMozDocument() {
   var errors = <Message>[];
   // Test empty url-prefix, commonly used for browser detection.
-  var css = '@-moz-document url-prefix() {}';
-  var expected = '@-moz-document url-prefix() {\n}';
+  var css = '''
+@-moz-document url-prefix() {
+  div {
+    color: #000;
+  }
+}''';
+  var expected = '''@-moz-document url-prefix() {
+div {
+  color: #000;
+}
+}''';
   var styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
   expect(errors, isEmpty);
   expect(prettyPrint(styleSheet), expected);
 
   // Test url-prefix with unquoted parameter
-  css = '@-moz-document url-prefix(http://www.w3.org/Style/) {}';
-  expected = '@-moz-document url-prefix("http://www.w3.org/Style/") {\n}';
+  css = '''
+@-moz-document url-prefix(http://www.w3.org/Style/) {
+  div {
+    color: #000;
+  }
+}''';
+  expected = '''@-moz-document url-prefix("http://www.w3.org/Style/") {
+div {
+  color: #000;
+}
+}''';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
   expect(errors, isEmpty);
   expect(prettyPrint(styleSheet), expected);
 
   // Test domain with unquoted parameter
-  css = '@-moz-document domain(google.com) {}';
-  expected = '@-moz-document domain("google.com") {\n}';
+  css = '''
+@-moz-document domain(google.com) {
+  div {
+    color: #000;
+  }
+}''';
+  expected = '''@-moz-document domain("google.com") {
+div {
+  color: #000;
+}
+}''';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
   expect(errors, isEmpty);
@@ -478,12 +505,12 @@ void testMozDocument() {
       'url(http://www.w3.org/), ' +
       "url-prefix('http://www.w3.org/Style/'), " +
       'domain("google.com"), ' +
-      'regexp("https:.*") {} ';
+      'regexp("https:.*") { div { color: #000; } }';
   expected = '@-moz-document ' +
       'url("http://www.w3.org/"), ' +
       'url-prefix("http://www.w3.org/Style/"), ' +
       'domain("google.com"), ' +
-      'regexp("https:.*") {\n}';
+      'regexp("https:.*") {\ndiv {\n  color: #000;\n}\n}';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
   expect(errors, isEmpty);
