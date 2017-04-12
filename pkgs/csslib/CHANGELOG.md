@@ -1,7 +1,7 @@
 ## 0.13.5
 
-* Adds supports for `@document`.
-* Adds supports for `@supports`.
+* Adds support for `@-moz-document`.
+* Adds support for `@supports`.
 
 ## 0.13.4
 
