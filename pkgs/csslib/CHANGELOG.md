@@ -1,3 +1,8 @@
+## 0.13.5
+
+* Adds supports for `@document`.
+* Adds supports for `@supports`.
+
 ## 0.13.4
 
 * Parses CSS 2.1 pseudo-elements as pseudo-elements instead of pseudo-classes.
