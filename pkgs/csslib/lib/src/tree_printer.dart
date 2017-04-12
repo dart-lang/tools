@@ -95,7 +95,42 @@ class _TreePrinter extends Visitor {
     output.depth++;
     output.writeNodeList('functions', node.functions);
     output.writeNodeList('group rule body', node.groupRuleBody);
-    super.visitDocumentDirective(node);
+    output.depth--;
+  }
+
+  void visitSupportsDirective(SupportsDirective node) {
+    heading('SupportsDirective', node);
+    output.depth++;
+    output.writeNode('condition', node.condition);
+    output.writeNodeList('group rule body', node.groupRuleBody);
+    output.depth--;
+  }
+
+  void visitSupportsConditionInParens(SupportsConditionInParens node) {
+    heading('SupportsConditionInParens', node);
+    output.depth++;
+    output.writeNode('condition', node.condition);
+    output.depth--;
+  }
+
+  void visitSupportsNegation(SupportsNegation node) {
+    heading('SupportsNegation', node);
+    output.depth++;
+    output.writeNode('condition', node.condition);
+    output.depth--;
+  }
+
+  void visitSupportsConjunction(SupportsConjunction node) {
+    heading('SupportsConjunction', node);
+    output.depth++;
+    output.writeNodeList('conditions', node.conditions);
+    output.depth--;
+  }
+
+  void visitSupportsDisjunction(SupportsDisjunction node) {
+    heading('SupportsDisjunction', node);
+    output.depth++;
+    output.writeNodeList('conditions', node.conditions);
     output.depth--;
   }
 

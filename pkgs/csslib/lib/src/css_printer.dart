@@ -91,6 +91,43 @@ class CssPrinter extends Visitor {
     emit('$_newLine}');
   }
 
+  void visitSupportsDirective(SupportsDirective node) {
+    emit('$_newLine@supports ');
+    node.condition.visit(this);
+    emit('$_sp{');
+    for (var rule in node.groupRuleBody) {
+      rule.visit(this);
+    }
+    emit('$_newLine}');
+  }
+
+  void visitSupportsConditionInParens(SupportsConditionInParens node) {
+    emit('(');
+    node.condition.visit(this);
+    emit(')');
+  }
+
+  void visitSupportsNegation(SupportsNegation node) {
+    emit('not$_sp');
+    node.condition.visit(this);
+  }
+
+  void visitSupportsConjunction(SupportsConjunction node) {
+    node.conditions.first.visit(this);
+    for (var condition in node.conditions.skip(1)) {
+      emit('${_sp}and$_sp');
+      condition.visit(this);
+    }
+  }
+
+  void visitSupportsDisjunction(SupportsDisjunction node) {
+    node.conditions.first.visit(this);
+    for (var condition in node.conditions.skip(1)) {
+      emit('${_sp}or$_sp');
+      condition.visit(this);
+    }
+  }
+
   void visitMediaDirective(MediaDirective node) {
     emit('$_newLine@media');
     emitMediaQueries(node.mediaQueries);
@@ -265,12 +302,11 @@ class CssPrinter extends Visitor {
   }
 
   void visitDeclaration(Declaration node) {
-    String importantAsString() => node.important ? '$_sp!important' : '';
-
-    emit("${node.property}: ");
+    emit('${node.property}:$_sp');
     node._expression.visit(this);
-
-    emit("${importantAsString()}");
+    if (node.important) {
+      emit('$_sp!important');
+    }
   }
 
   void visitVarDefinition(VarDefinition node) {

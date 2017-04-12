@@ -23,6 +23,12 @@ part 'src/tokenizer_base.dart';
 part 'src/tokenizer.dart';
 part 'src/tokenkind.dart';
 
+enum ClauseType {
+  none,
+  conjunction,
+  disjunction,
+}
+
 /** Used for parser lookup ahead (used for nested selectors Less support). */
 class ParserState extends TokenizerState {
   final Token peekToken;
@@ -490,6 +496,7 @@ class _Parser {
    *                          domain(<string>) | regexp(<string) ]# '{'
    *                        declarations
    *                      '}'
+   *  supports:           '@supports' supports_condition group_rule_body
    */
   processDirective() {
     var start = _peekToken.span;
@@ -771,7 +778,9 @@ class _Parser {
         _warning("@content not implemented.", _makeSpan(start));
         return null;
       case TokenKind.DIRECTIVE_MOZ_DOCUMENT:
-        return processDocumentDirective(start);
+        return processDocumentDirective();
+      case TokenKind.DIRECTIVE_SUPPORTS:
+        return processSupportsDirective();
     }
     return null;
   }
@@ -992,9 +1001,9 @@ class _Parser {
     return new IncludeDirective(name.name, params, span);
   }
 
-  /// Assumes '@' has already been consumed.
-  DocumentDirective processDocumentDirective(SourceSpan start) {
-    _next(); // '-moz-document'
+  DocumentDirective processDocumentDirective() {
+    var start = _peekToken.span;
+    _next(); // '@-moz-document'
     var functions = <LiteralTerm>[];
     do {
       var function;
@@ -1033,8 +1042,84 @@ class _Parser {
     _eat(TokenKind.LBRACE);
     var groupRuleBody = processGroupRuleBody();
     _eat(TokenKind.RBRACE);
-    return new DocumentDirective(
-        functions, groupRuleBody, _makeSpan(start));
+    return new DocumentDirective(functions, groupRuleBody, _makeSpan(start));
+  }
+
+  SupportsDirective processSupportsDirective() {
+    var start = _peekToken.span;
+    _next(); // '@supports'
+    var condition = processSupportsCondition();
+    _eat(TokenKind.LBRACE);
+    var groupRuleBody = processGroupRuleBody();
+    _eat(TokenKind.RBRACE);
+    return new SupportsDirective(condition, groupRuleBody, _makeSpan(start));
+  }
+
+  SupportsCondition processSupportsCondition() {
+    if (_peekKind(TokenKind.IDENTIFIER)) {
+      return processSupportsNegation();
+    }
+
+    var start = _peekToken.span;
+    var conditions = <SupportsConditionInParens>[];
+    var clauseType = ClauseType.none;
+
+    while (true) {
+      conditions.add(processSupportsConditionInParens());
+
+      var type;
+      var text = _peekToken.text.toLowerCase();
+
+      if (text == 'and') {
+        type = ClauseType.conjunction;
+      } else if (text == 'or') {
+        type = ClauseType.disjunction;
+      } else {
+        break; // Done parsing clause.
+      }
+
+      if (clauseType == ClauseType.none) {
+        clauseType = type; // First operand and operator of clause.
+      } else if (clauseType != type) {
+        _error("Operators can't be mixed without a layer of parentheses",
+            _peekToken.span);
+        break;
+      }
+
+      _next(); // Consume operator.
+    }
+
+    if (clauseType == ClauseType.conjunction) {
+      return new SupportsConjunction(conditions, _makeSpan(start));
+    } else if (clauseType == ClauseType.disjunction) {
+      return new SupportsDisjunction(conditions, _makeSpan(start));
+    } else {
+      return conditions.first;
+    }
+  }
+
+  SupportsNegation processSupportsNegation() {
+    var start = _peekToken.span;
+    var text = _peekToken.text.toLowerCase();
+    if (text != 'not') return null;
+    _next(); // 'not'
+    var condition = processSupportsConditionInParens();
+    return new SupportsNegation(condition, _makeSpan(start));
+  }
+
+  SupportsConditionInParens processSupportsConditionInParens() {
+    var start = _peekToken.span;
+    _eat(TokenKind.LPAREN);
+    // Try to parse a condition.
+    var condition = processSupportsCondition();
+    if (condition != null) {
+      _eat(TokenKind.RPAREN);
+      return new SupportsConditionInParens.nested(condition, _makeSpan(start));
+    }
+    // Otherwise, parse a declaration.
+    var declaration = processDeclaration([]);
+    _eat(TokenKind.RPAREN);
+    return new SupportsConditionInParens(declaration, _makeSpan(start));
   }
 
   RuleSet processRuleSet([SelectorGroup selectorGroup]) {

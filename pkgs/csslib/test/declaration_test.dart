@@ -10,6 +10,14 @@ import 'package:test/test.dart';
 
 import 'testing.dart';
 
+void expectCss(String css, String expected) {
+  var errors = <Message>[];
+  var styleSheet = parseCss(css, errors: errors, opts: simpleOptions);
+  expect(styleSheet, isNotNull);
+  expect(errors, isEmpty);
+  expect(prettyPrint(styleSheet), expected);
+}
+
 void testSimpleTerms() {
   var errors = <Message>[];
   final String input = r'''
@@ -517,6 +525,84 @@ div {
   expect(prettyPrint(styleSheet), expected);
 }
 
+void testSupports() {
+  // Test single declaration condition.
+  var css = '''
+@supports (-webkit-appearance: none) {
+  div {
+    -webkit-appearance: none;
+  }
+}''';
+  var expected = '''@supports (-webkit-appearance: none) {
+div {
+  -webkit-appearance: none;
+}
+}''';
+  expectCss(css, expected);
+
+  // Test negation.
+  css = '''
+@supports not ( display: flex ) {
+  body { width: 100%; }
+}''';
+  expected = '''@supports not (display: flex) {
+body {
+  width: 100%;
+}
+}''';
+  expectCss(css, expected);
+
+  // Test clause with multiple conditions.
+  css = '''
+@supports (box-shadow: 0 0 2px black inset) or
+    (-moz-box-shadow: 0 0 2px black inset) or
+    (-webkit-box-shadow: 0 0 2px black inset) or
+    (-o-box-shadow: 0 0 2px black inset) {
+  .box {
+    box-shadow: 0 0 2px black inset;
+  }
+}''';
+  expected = '@supports (box-shadow: 0 0 2px #000 inset) or ' +
+      '(-moz-box-shadow: 0 0 2px #000 inset) or ' +
+      '(-webkit-box-shadow: 0 0 2px #000 inset) or ' +
+      '(-o-box-shadow: 0 0 2px #000 inset) {\n' +
+      '.box {\n' +
+      '  box-shadow: 0 0 2px #000 inset;\n' +
+      '}\n' +
+      '}';
+  expectCss(css, expected);
+
+  // Test conjunction and disjunction together.
+  css = '''
+@supports ((transition-property: color) or (animation-name: foo)) and
+    (transform: rotate(10deg)) {
+  div {
+    transition-property: color;
+    transform: rotate(10deg);
+  }
+}''';
+
+  expected = '@supports ' +
+      '((transition-property: color) or (animation-name: foo)) and ' +
+      '(transform: rotate(10deg)) {\n' +
+      'div {\n' +
+      '  transition-property: color;\n' +
+      '  transform: rotate(10deg);\n' +
+      '}\n' +
+      '}';
+  expectCss(css, expected);
+
+  // Test that operators can't be mixed without parentheses.
+  css = '@supports (a: 1) and (b: 2) or (c: 3) {}';
+  var errors = <Message>[];
+  var styleSheet = parseCss(css, errors: errors, opts: simpleOptions);
+  expect(styleSheet, isNotNull);
+  expect(errors, isNotEmpty);
+  expect(errors.first.message,
+      "Operators can't be mixed without a layer of parentheses");
+  expect(errors.first.span.text, 'or');
+}
+
 void testFontFace() {
   var errors = <Message>[];
 
@@ -689,7 +775,7 @@ div {
   color: green !important;
 }
 ''';
-  final String generated = "div { color: green!important; }";
+  final String generated = "div { color:green!important; }";
 
   var stylesheet = parseCss(input, errors: errors);
 
@@ -1184,6 +1270,7 @@ main() {
   test('Newer CSS', testNewerCss);
   test('Media Queries', testMediaQueries);
   test('Document', testMozDocument);
+  test('Supports', testSupports);
   test('Font-Face', testFontFace);
   test('CSS file', testCssFile);
   test('Compact Emitter', testCompactEmitter);

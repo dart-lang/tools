@@ -21,6 +21,11 @@ abstract class VisitorBase {
   visitTopLevelProduction(TopLevelProduction node);
   visitDirective(Directive node);
   visitDocumentDirective(DocumentDirective node);
+  visitSupportsDirective(SupportsDirective node);
+  visitSupportsConditionInParens(SupportsConditionInParens node);
+  visitSupportsNegation(SupportsNegation node);
+  visitSupportsConjunction(SupportsConjunction node);
+  visitSupportsDisjunction(SupportsDisjunction node);
   visitMediaExpression(MediaExpression node);
   visitMediaQuery(MediaQuery node);
   visitMediaDirective(MediaDirective node);
@@ -156,6 +161,27 @@ class Visitor implements VisitorBase {
   visitDocumentDirective(DocumentDirective node) {
     _visitNodeList(node.functions);
     _visitNodeList(node.groupRuleBody);
+  }
+
+  visitSupportsDirective(SupportsDirective node) {
+    node.condition.visit(this);
+    _visitNodeList(node.groupRuleBody);
+  }
+
+  visitSupportsConditionInParens(SupportsConditionInParens node) {
+    node.condition.visit(this);
+  }
+
+  visitSupportsNegation(SupportsNegation node) {
+    node.condition.visit(this);
+  }
+
+  visitSupportsConjunction(SupportsConjunction node) {
+    _visitNodeList(node.conditions);
+  }
+
+  visitSupportsDisjunction(SupportsDisjunction node) {
+    _visitNodeList(node.conditions);
   }
 
   visitMediaDirective(MediaDirective node) {
