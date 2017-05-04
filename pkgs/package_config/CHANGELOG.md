@@ -1,3 +1,7 @@
+## 1.0.1
+
+- Fix test to not write to sink after it's closed.
+
 ## 1.0.0
 
 - Public API marked stable.

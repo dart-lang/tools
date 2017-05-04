@@ -1,5 +1,5 @@
 name: package_config
-version: 1.0.0 
+version: 1.0.1
 description: Support for working with Package Resolution config files.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/package_config

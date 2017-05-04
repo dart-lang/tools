@@ -290,6 +290,7 @@ void httpTest(String name, Map description, Future httpTest(Uri directory)) {
             if (fileOrDir == null) {
               request.response.statusCode = 404;
               request.response.close();
+              return;
             }
           }
           request.response.write(fileOrDir);
