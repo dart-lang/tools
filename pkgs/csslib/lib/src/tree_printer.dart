@@ -134,6 +134,13 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  void visitViewportDirective(ViewportDirective node) {
+    heading('ViewportDirective', node);
+    output.depth++;
+    super.visitViewportDirective(node);
+    output.depth--;
+  }
+
   void visitPageDirective(PageDirective node) {
     heading('PageDirective', node);
     output.depth++;

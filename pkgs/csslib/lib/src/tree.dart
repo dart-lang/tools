@@ -540,6 +540,19 @@ class SupportsDisjunction extends SupportsCondition {
   visit(VisitorBase visitor) => visitor.visitSupportsDisjunction(this);
 }
 
+class ViewportDirective extends Directive {
+  final String name;
+  final DeclarationGroup declarations;
+
+  ViewportDirective(this.name, this.declarations, SourceSpan span)
+      : super(span);
+
+  ViewportDirective clone() =>
+      new ViewportDirective(name, declarations.clone(), span);
+
+  visit(VisitorBase visitor) => visitor.visitViewportDirective(this);
+}
+
 class ImportDirective extends Directive {
   /** import name specified. */
   final String import;
