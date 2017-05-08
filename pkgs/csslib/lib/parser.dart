@@ -781,6 +781,9 @@ class _Parser {
         return processDocumentDirective();
       case TokenKind.DIRECTIVE_SUPPORTS:
         return processSupportsDirective();
+      case TokenKind.DIRECTIVE_VIEWPORT:
+      case TokenKind.DIRECTIVE_MS_VIEWPORT:
+        return processViewportDirective();
     }
     return null;
   }
@@ -1120,6 +1123,13 @@ class _Parser {
     var declaration = processDeclaration([]);
     _eat(TokenKind.RPAREN);
     return new SupportsConditionInParens(declaration, _makeSpan(start));
+  }
+
+  ViewportDirective processViewportDirective() {
+    var start = _peekToken.span;
+    var name = _next().text;
+    var declarations = processDeclarations();
+    return new ViewportDirective(name, declarations, _makeSpan(start));
   }
 
   RuleSet processRuleSet([SelectorGroup selectorGroup]) {

@@ -603,6 +603,36 @@ body {
   expect(errors.first.span.text, 'or');
 }
 
+void testViewport() {
+  // No declarations.
+  var css = '@viewport {\n}';
+  expectCss(css, css);
+
+  // All declarations.
+  css = '''
+@viewport {
+  min-width: auto;
+  max-width: 800px;
+  width: 400px;
+  min-height: 50%;
+  max-height: 200px;
+  height: 100px 200px;
+  zoom: auto;
+  min-zoom: 0.75;
+  max-zoom: 40%;
+  user-zoom: fixed;
+  orientation: landscape;
+}''';
+  expectCss(css, css);
+
+  // Vendor specific.
+  css = '''
+@-ms-viewport {
+  width: device-width;
+}''';
+  expectCss(css, css);
+}
+
 void testFontFace() {
   var errors = <Message>[];
 
@@ -1271,6 +1301,7 @@ main() {
   test('Media Queries', testMediaQueries);
   test('Document', testMozDocument);
   test('Supports', testSupports);
+  test('Viewport', testViewport);
   test('Font-Face', testFontFace);
   test('CSS file', testCssFile);
   test('Compact Emitter', testCompactEmitter);

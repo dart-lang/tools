@@ -26,6 +26,7 @@ abstract class VisitorBase {
   visitSupportsNegation(SupportsNegation node);
   visitSupportsConjunction(SupportsConjunction node);
   visitSupportsDisjunction(SupportsDisjunction node);
+  visitViewportDirective(ViewportDirective node);
   visitMediaExpression(MediaExpression node);
   visitMediaQuery(MediaQuery node);
   visitMediaDirective(MediaDirective node);
@@ -182,6 +183,10 @@ class Visitor implements VisitorBase {
 
   visitSupportsDisjunction(SupportsDisjunction node) {
     _visitNodeList(node.conditions);
+  }
+
+  visitViewportDirective(ViewportDirective node) {
+    node.declarations.visit(this);
   }
 
   visitMediaDirective(MediaDirective node) {

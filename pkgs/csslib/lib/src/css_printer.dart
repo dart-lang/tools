@@ -128,6 +128,12 @@ class CssPrinter extends Visitor {
     }
   }
 
+  void visitViewportDirective(ViewportDirective node) {
+    emit('@${node.name}$_sp{$_newLine');
+    node.declarations.visit(this);
+    emit('}');
+  }
+
   void visitMediaDirective(MediaDirective node) {
     emit('$_newLine@media');
     emitMediaQueries(node.mediaQueries);
