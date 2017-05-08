@@ -2476,7 +2476,7 @@ class _Parser {
         break;
     }
 
-    return processDimension(t, value, _makeSpan(start));
+    return t != null ? processDimension(t, value, _makeSpan(start)) : null;
   }
 
   /** Process all dimension units. */
