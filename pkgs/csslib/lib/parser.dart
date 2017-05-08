@@ -375,27 +375,19 @@ class _Parser {
   List<MediaQuery> processMediaQueryList() {
     var mediaQueries = <MediaQuery>[];
 
-    bool firstTime = true;
-    var mediaQuery;
     do {
-      mediaQuery = processMediaQuery(firstTime == true);
+      var mediaQuery = processMediaQuery();
       if (mediaQuery != null) {
         mediaQueries.add(mediaQuery);
-        firstTime = false;
-        continue;
+      } else {
+        break;
       }
-
-      // Any more more media types separated by comma.
-      if (!_maybeEat(TokenKind.COMMA)) break;
-
-      // Yep more media types start again.
-      firstTime = true;
-    } while ((!firstTime && mediaQuery != null) || firstTime);
+    } while (_maybeEat(TokenKind.COMMA));
 
     return mediaQueries;
   }
 
-  MediaQuery processMediaQuery([bool startQuery = true]) {
+  MediaQuery processMediaQuery() {
     // Grammar: [ONLY | NOT]? S* media_type S*
     //          [ AND S* MediaExpr ]* | MediaExpr [ AND S* MediaExpr ]*
 
@@ -407,13 +399,10 @@ class _Parser {
     var unaryOp = TokenKind.matchMediaOperator(op, 0, opLen);
     if (unaryOp != -1) {
       if (isChecked) {
-        if (startQuery && unaryOp != TokenKind.MEDIA_OP_NOT ||
+        if (unaryOp != TokenKind.MEDIA_OP_NOT ||
             unaryOp != TokenKind.MEDIA_OP_ONLY) {
           _warning("Only the unary operators NOT and ONLY allowed",
               _makeSpan(start));
-        }
-        if (!startQuery && unaryOp != TokenKind.MEDIA_OP_AND) {
-          _warning("Only the binary AND operator allowed", _makeSpan(start));
         }
       }
       _next();
@@ -421,27 +410,28 @@ class _Parser {
     }
 
     var type;
-    if (startQuery && unaryOp != TokenKind.MEDIA_OP_AND) {
-      // Get the media type.
-      if (_peekIdentifier()) type = identifier();
-    }
+    // Get the media type.
+    if (_peekIdentifier()) type = identifier();
 
     var exprs = <MediaExpression>[];
 
-    if (unaryOp == -1 || unaryOp == TokenKind.MEDIA_OP_AND) {
-      var andOp = false;
-      while (true) {
-        var expr = processMediaExpression(andOp);
-        if (expr == null) break;
-
-        exprs.add(expr);
+    while (true) {
+      // Parse AND if query has a media_type or previous expression.
+      var andOp = exprs.isNotEmpty || type != null;
+      if (andOp) {
         op = _peekToken.text;
         opLen = op.length;
-        andOp = TokenKind.matchMediaOperator(op, 0, opLen) ==
-            TokenKind.MEDIA_OP_AND;
-        if (!andOp) break;
+        if (TokenKind.matchMediaOperator(op, 0, opLen) !=
+            TokenKind.MEDIA_OP_AND) {
+          break;
+        }
         _next();
       }
+
+      var expr = processMediaExpression(andOp);
+      if (expr == null) break;
+
+      exprs.add(expr);
     }
 
     if (unaryOp != -1 || type != null || exprs.length > 0) {
@@ -457,17 +447,16 @@ class _Parser {
     if (_maybeEat(TokenKind.LPAREN)) {
       if (_peekIdentifier()) {
         var feature = identifier(); // Media feature.
-        while (_maybeEat(TokenKind.COLON)) {
-          var startExpr = _peekToken.span;
-          var exprs = processExpr();
-          if (_maybeEat(TokenKind.RPAREN)) {
-            return new MediaExpression(
-                andOperator, feature, exprs, _makeSpan(startExpr));
-          } else if (isChecked) {
-            _warning("Missing parenthesis around media expression",
-                _makeSpan(start));
-            return null;
-          }
+        var exprs = _maybeEat(TokenKind.COLON)
+            ? processExpr()
+            : new Expressions(_makeSpan(_peekToken.span));
+        if (_maybeEat(TokenKind.RPAREN)) {
+          return new MediaExpression(
+              andOperator, feature, exprs, _makeSpan(start));
+        } else if (isChecked) {
+          _warning(
+              "Missing parenthesis around media expression", _makeSpan(start));
+          return null;
         }
       } else if (isChecked) {
         _warning("Missing media feature in media expression", _makeSpan(start));

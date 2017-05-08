@@ -54,8 +54,11 @@ class CssPrinter extends Visitor {
 
   void visitMediaExpression(MediaExpression node) {
     emit(node.andOperator ? ' AND ' : ' ');
-    emit('(${node.mediaFeature}:');
-    visitExpressions(node.exprs);
+    emit('(${node.mediaFeature}');
+    if (node.exprs.expressions.isNotEmpty) {
+      emit(':');
+      visitExpressions(node.exprs);
+    }
     emit(')');
   }
 
@@ -68,11 +71,11 @@ class CssPrinter extends Visitor {
     }
   }
 
-  void emitMediaQueries(queries) {
+  void emitMediaQueries(List<MediaQuery> queries) {
     var queriesLen = queries.length;
     for (var i = 0; i < queriesLen; i++) {
       var query = queries[i];
-      if (query.hasMediaType && i > 0) emit(',');
+      if (i > 0) emit(',');
       visitMediaQuery(query);
     }
   }

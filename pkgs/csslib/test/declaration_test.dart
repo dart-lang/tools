@@ -411,13 +411,13 @@ void testMediaQueries() {
 
   input = '''
 @media only screen and (min-device-width: 4000px) and
-    (min-device-height: 2000px), screen (another: 100px) {
+    (min-device-height: 2000px), screen AND (another: 100px) {
       html {
         font-size: 10em;
       }
     }''';
   generated = '@media ONLY screen AND (min-device-width:4000px) '
-      'AND (min-device-height:2000px), screen (another:100px) {\n'
+      'AND (min-device-height:2000px), screen AND (another:100px) {\n'
       'html {\n  font-size: 10em;\n}\n}';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
@@ -427,14 +427,14 @@ void testMediaQueries() {
   expect(prettyPrint(stylesheet), generated);
 
   input = '''
-@media screen,print (min-device-width: 4000px) and
-    (min-device-height: 2000px), screen (another: 100px) {
+@media screen,print AND (min-device-width: 4000px) and
+    (min-device-height: 2000px), screen AND (another: 100px) {
       html {
         font-size: 10em;
       }
     }''';
-  generated = '@media screen, print (min-device-width:4000px) AND '
-      '(min-device-height:2000px), screen (another:100px) {\n'
+  generated = '@media screen, print AND (min-device-width:4000px) AND '
+      '(min-device-height:2000px), screen AND (another:100px) {\n'
       'html {\n  font-size: 10em;\n}\n}';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
@@ -444,15 +444,29 @@ void testMediaQueries() {
   expect(prettyPrint(stylesheet), generated);
 
   input = '''
-@import "test.css" ONLY screen, NOT print (min-device-width: 4000px);''';
-  generated =
-      '@import "test.css" ONLY screen, NOT print (min-device-width:4000px);';
+@import "test.css" ONLY screen, NOT print AND (min-device-width: 4000px);''';
+  generated = '@import "test.css" ONLY screen, '
+      'NOT print AND (min-device-width:4000px);';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
+
+  var css = '@media (min-device-width:400px) {\n}';
+  expectCss(css, css);
+
+  css = '@media all AND (tranform-3d), (-webkit-transform-3d) {\n}';
+  expectCss(css, css);
+
+  // Test that AND operator is required between media type and expressions.
+  css = '@media screen (min-device-width:400px';
+  stylesheet = parseCss(css, errors: errors..clear(), opts: simpleOptions);
+  expect(errors, isNotEmpty);
+  expect(
+      errors.first.message, contains('expected { after media before ruleset'));
+  expect(errors.first.span.text, '(');
 }
 
 void testMozDocument() {
