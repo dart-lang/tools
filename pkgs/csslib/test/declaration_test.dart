@@ -1260,6 +1260,20 @@ void selectorWithCalcs() {
   expect(prettyPrint(stylesheet), generated);
 }
 
+void vendorPrefixedCalc() {
+  var css = '''
+.foo {
+  width: -webkit-calc((100% - 15px*1) / 1);
+}''';
+  expectCss(css, css);
+
+  css = '''
+.foo {
+  width: -moz-calc((100% - 15px*1) / 1);
+}''';
+  expectCss(css, css);
+}
+
 main() {
   test('Simple Terms', testSimpleTerms);
   test('Declarations', testDeclarations);
@@ -1286,5 +1300,6 @@ main() {
     test('single complex', complexCalc);
     test('two calc terms for same declaration', twoCalcs);
     test('selector with many calc declarations', selectorWithCalcs);
+    test('vendor prefixed calc', vendorPrefixedCalc);
   });
 }
