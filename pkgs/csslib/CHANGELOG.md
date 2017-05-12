@@ -1,3 +1,12 @@
+## 0.13.6
+
+* Adds support for `@viewport`.
+* Adds support for `-webkit-calc()` and `-moz-calc()`.
+* Adds support for querying media features without specifying an expression. For
+  example: `@media (transform-3d) { ... }`.
+* Prevents exception being thrown for invalid dimension terms, and instead
+  issues an error.
+
 ## 0.13.5
 
 * Adds support for `@-moz-document`.
