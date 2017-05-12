@@ -69,6 +69,17 @@ void testSimpleTerms() {
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated2);
+
+  // Regression test to ensure invalid percentages don't throw an exception and
+  // instead print a useful error message when not in checked mode.
+  var css = '''
+.foo {
+  width: Infinity%;
+}''';
+  stylesheet = parseCss(css, errors: errors..clear(), opts: simpleOptions);
+  expect(errors, isNotEmpty);
+  expect(errors.first.message, 'expected }, but found %');
+  expect(errors.first.span.text, '%');
 }
 
 /**
