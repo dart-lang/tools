@@ -17,11 +17,11 @@ import 'package:cli_util/cli_util.dart';
 import 'package:path/path.dart' as path;
 
 main(args) {
-  // Get sdk dir from cli_util
-  Directory sdkDir = getSdkDir(args);
+  // Get sdk dir from cli_util.
+  String sdkPath = getSdkPath();
   
   // Do stuff... For example, print version string
-  File versionFile = new File(path.join(sdkDir.path, 'version'));
+  File versionFile = new File(path.join(sdkPath, 'version'));
   print(versionFile.readAsStringSync());
 }
 ```
