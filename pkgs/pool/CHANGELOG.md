@@ -1,3 +1,8 @@
+## 1.3.1
+
+* Fix the type annotation of `Pool.withResource()` to indicate that it takes
+  `() -> FutureOr<T>`.
+
 ## 1.3.0
 
 * Add a `Pool.done` getter that returns the same future returned by
