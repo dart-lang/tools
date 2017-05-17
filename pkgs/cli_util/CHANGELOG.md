@@ -1,10 +1,9 @@
 # Changelog
 
-## unreleased
+## 0.1.0
 
 - Use the new `Platform.resolvedExecutable` API to locate the SDK
-- add the `cli_logging.dart` library - some utilities to help cli tools
-  display output
+- Add the `cli_logging.dart` library - utilities to display output and progress
 
 ## 0.0.1+3
 
