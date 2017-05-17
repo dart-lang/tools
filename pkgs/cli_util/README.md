@@ -7,6 +7,7 @@ SDK directory.  Useful, especially, when building client applications that
 interact with the Dart SDK (such as the [analyzer][analyzer]).
 
 [![Build Status](https://travis-ci.org/dart-lang/cli_util.svg)](https://travis-ci.org/dart-lang/cli_util)
+[![Pub](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dartlang.org/packages/cli_util)
 
 ## Locating the Dart SDK
 
