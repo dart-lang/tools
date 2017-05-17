@@ -478,6 +478,30 @@ void testMediaQueries() {
   expect(
       errors.first.message, contains('expected { after media before ruleset'));
   expect(errors.first.span.text, '(');
+
+  // Test nested at-rules.
+  input = '''
+@media (min-width: 840px) {
+  .cell {
+    width: calc(33% - 16px);
+  }
+  @supports (display: grid) {
+    .cell {
+      grid-column-end: span 4;
+    }
+  }
+}''';
+  generated = '''@media (min-width:840px) {
+.cell {
+  width: calc(33% - 16px);
+}
+@supports (display: grid) {
+.cell {
+  grid-column-end: span 4;
+}
+}
+}''';
+  expectCss(input, generated);
 }
 
 void testMozDocument() {

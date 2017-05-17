@@ -141,7 +141,7 @@ class CssPrinter extends Visitor {
     emit('$_newLine@media');
     emitMediaQueries(node.mediaQueries);
     emit('$_sp{');
-    for (var ruleset in node.rulesets) {
+    for (var ruleset in node.rules) {
       ruleset.visit(this);
     }
     emit('$_newLine}');
@@ -149,7 +149,7 @@ class CssPrinter extends Visitor {
 
   void visitHostDirective(HostDirective node) {
     emit('$_newLine@host$_sp{');
-    for (var ruleset in node.rulesets) {
+    for (var ruleset in node.rules) {
       ruleset.visit(this);
     }
     emit('$_newLine}');

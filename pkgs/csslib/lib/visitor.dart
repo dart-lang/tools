@@ -190,18 +190,12 @@ class Visitor implements VisitorBase {
   }
 
   visitMediaDirective(MediaDirective node) {
-    for (var mediaQuery in node.mediaQueries) {
-      visitMediaQuery(mediaQuery);
-    }
-    for (var ruleset in node.rulesets) {
-      visitRuleSet(ruleset);
-    }
+    _visitNodeList(node.mediaQueries);
+    _visitNodeList(node.rules);
   }
 
   visitHostDirective(HostDirective node) {
-    for (var ruleset in node.rulesets) {
-      visitRuleSet(ruleset);
-    }
+    _visitNodeList(node.rules);
   }
 
   visitPageDirective(PageDirective node) {
@@ -237,7 +231,7 @@ class Visitor implements VisitorBase {
   }
 
   visitStyletDirective(StyletDirective node) {
-    _visitNodeList(node.rulesets);
+    _visitNodeList(node.rules);
   }
 
   visitNamespaceDirective(NamespaceDirective node) {}
