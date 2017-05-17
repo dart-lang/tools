@@ -1260,6 +1260,16 @@ void testExpressionSpans() {
   expect((decl as Declaration).expression.span.text, '50px');
 }
 
+void testComments() {
+  final css = '''/* This comment has a nested HTML comment...
+* <html>
+*   <!-- Nested HTML comment... -->
+*   <div></div>
+* </html>
+*/''';
+  expectCss(css, '');
+}
+
 void simpleCalc() {
   final input = r'''.foo { height: calc(100% - 55px); }''';
   var stylesheet = parseCss(input);
@@ -1351,6 +1361,7 @@ main() {
   test('Expression spans', testExpressionSpans,
       skip: 'expression spans are broken'
           ' (https://github.com/dart-lang/csslib/issues/15)');
+  test('Comments', testComments);
   group('calc function', () {
     test('simple calc', simpleCalc);
     test('single complex', complexCalc);
