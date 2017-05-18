@@ -1,11 +1,11 @@
+@TestOn('vm')
 library samples_test;
 
-import 'dart:mirrors';
 import 'dart:io';
+import 'dart:mirrors';
+
 import 'package:test/test.dart';
 import 'package:csslib/parser.dart';
-import 'package:csslib/src/messages.dart';
-import 'testing.dart';
 
 const testOptions = const PreprocessorOptions(
     useColors: false,
@@ -16,7 +16,7 @@ const testOptions = const PreprocessorOptions(
 void testCSSFile(File cssFile) {
   final errors = <Message>[];
   final css = cssFile.readAsStringSync();
-  final stylesheet = parseCss(css, errors: errors, opts: testOptions);
+  final stylesheet = parse(css, errors: errors, options: testOptions);
 
   expect(stylesheet, isNotNull);
   expect(errors, isEmpty, reason: errors.toString());
