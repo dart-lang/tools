@@ -4,11 +4,10 @@
 
 /// This library contains functionality to help command-line utilities to easily
 /// create aesthetic output.
+library cli_logging;
 
 import 'dart:async';
 import 'dart:io' as io;
-
-/// create aesthetic output.
 
 /// A small utility class to make it easier to work with common ANSI escape
 /// sequences.
