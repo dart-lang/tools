@@ -1,5 +1,9 @@
 # Changelog
 
+## unreleased
+
+- Updated to the output for indeterminate progress
+
 ## 0.1.0
 
 - Use the new `Platform.resolvedExecutable` API to locate the SDK

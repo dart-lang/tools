@@ -202,15 +202,17 @@ class _AnsiProgress extends Progress {
       bool showTiming: false}) {
     String char = kAnimationItems[_index % kAnimationItems.length];
     if (isFinal || cancelled) {
-      char = ' ';
+      char = '';
     }
     io.stdout.write('${ansi.backspace}${char}');
     if (isFinal || cancelled) {
       if (message != null) {
-        io.stdout.write(message);
+        io.stdout.write(message.isEmpty ? ' ' : message);
       } else if (showTiming) {
         String time = (elapsed.inMilliseconds / 1000.0).toStringAsFixed(1);
         io.stdout.write('${time}s');
+      } else {
+        io.stdout.write(' ');
       }
       io.stdout.writeln();
     }
