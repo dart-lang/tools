@@ -1,3 +1,8 @@
+## 0.13.7
+
+* Supports nested at-rules.
+* Supports nested HTML comments in CSS comments and vice-versa.
+
 ## 0.13.6
 
 * Adds support for `@viewport`.
