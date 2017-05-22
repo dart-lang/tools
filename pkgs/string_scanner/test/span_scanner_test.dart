@@ -9,12 +9,13 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  testForImplementation("lazy", () {
-    return new SpanScanner('foo\nbar\nbaz', sourceUrl: 'source');
+  testForImplementation("lazy", ([string]) {
+    return new SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
   });
 
-  testForImplementation("eager", () {
-    return new SpanScanner.eager('foo\nbar\nbaz', sourceUrl: 'source');
+  testForImplementation("eager", ([string]) {
+    return new SpanScanner.eager(string ?? 'foo\nbar\nbaz',
+        sourceUrl: 'source');
   });
 
   group("within", () {
@@ -23,7 +24,7 @@ void main() {
 
     var scanner;
     setUp(() {
-      var file = new SourceFile(text, url: 'source');
+      var file = new SourceFile.fromString(text, url: 'source');
       scanner = new SpanScanner.within(
           file.span(startOffset, text.indexOf(' :after')));
     });
@@ -134,6 +135,15 @@ void testForImplementation(String name, SpanScanner create()) {
 
       var span = scanner.spanFrom(state);
       expect(span.text, equals('o\nbar\nba'));
+    });
+
+    test(".spanFrom() handles surrogate pairs correctly", () {
+      scanner = create('fo\u{12345}o');
+      scanner.scan('fo');
+      var state = scanner.state;
+      scanner.scan('\u{12345}o');
+      var span = scanner.spanFrom(state);
+      expect(span.text, equals('\u{12345}o'));
     });
 
     test(".emptySpan returns an empty span at the current location", () {

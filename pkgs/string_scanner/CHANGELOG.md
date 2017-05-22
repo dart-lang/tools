@@ -1,3 +1,8 @@
+## 1.0.2
+
+* `SpanScanner` no longer crashes when creating a span that contains a UTF-16
+  surrogate pair.
+
 ## 1.0.1
 
 * Fix the error text emitted by `StringScanner.expectChar()`.
