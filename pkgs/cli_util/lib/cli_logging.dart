@@ -62,6 +62,8 @@ abstract class Logger {
 
   Ansi get ansi;
 
+  bool get isVerbose;
+
   /// Print an error message.
   void stderr(String message);
 
@@ -101,6 +103,8 @@ class _StandardLogger implements Logger {
   _StandardLogger({this.ansi}) {
     ansi ??= new Ansi(Ansi.terminalSupportsAnsi);
   }
+
+  bool get isVerbose => false;
 
   Progress _currentProgress;
 
@@ -229,6 +233,8 @@ class _VerboseLogger implements Logger {
     ansi ??= new Ansi(Ansi.terminalSupportsAnsi);
     _timer = new Stopwatch()..start();
   }
+
+  bool get isVerbose => true;
 
   void stderr(String message) {
     flush();

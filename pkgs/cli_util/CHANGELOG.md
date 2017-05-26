@@ -1,8 +1,9 @@
 # Changelog
 
-## unreleased
+## 0.1.1
 
 - Updated to the output for indeterminate progress
+- Exposed a `Logger.isVerbose` getter
 
 ## 0.1.0
 
