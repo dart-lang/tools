@@ -1,7 +1,15 @@
-## 0.13.7
+## 0.14.0
+
+### New features
 
 * Supports nested at-rules.
 * Supports nested HTML comments in CSS comments and vice-versa.
+
+### Breaking changes
+
+* The `List<RuleSet> rulesets` field on `MediaDirective`, `HostDirective`, and
+  `StyletDirective` has been replaced by `List<TreeNode> rules` to allow nested
+  at-rules in addition to rulesets.
 
 ## 0.13.6
 
