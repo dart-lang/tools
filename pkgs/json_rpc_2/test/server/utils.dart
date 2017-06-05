@@ -61,20 +61,6 @@ void expectErrorResponse(ServerController controller, request, int errorCode,
   })));
 }
 
-/// Returns a matcher that matches [Future]s that never complete.
-Matcher get doesNotComplete => predicate((future) {
-  future.then(expectAsync((_) {
-    // This will never be called. [expectAsync] with `count: 0` ensures that an
-    // error will be thrown when [future] completes.
-  }, count: 0));
-
-  // Make sure there's enough time in the test for [expectAsync] to fail if it's
-  // going to.
-  expect(pumpEventQueue(), completes);
-
-  return true;
-});
-
 /// Returns a matcher that matches a [json_rpc.RpcException] with an
 /// `invalid_params` error code.
 Matcher throwsInvalidParams(String message) {
