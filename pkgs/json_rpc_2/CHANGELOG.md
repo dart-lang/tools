@@ -1,3 +1,7 @@
+## 2.0.5
+
+* Fix tests due to new `doesNotComplete` matcher in package:test 
+
 ## 2.0.4
 
 * `Client.sendRequest()` now throws a `StateError` if the client is closed while
