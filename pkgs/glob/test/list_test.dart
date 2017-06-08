@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn('vm')
 import 'dart:async';
 import 'dart:io';
 
@@ -10,6 +11,7 @@ import 'package:glob/src/utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test/test.dart' show TestOn;
 
 String sandbox;
 
@@ -19,10 +21,7 @@ void main() {
 
     d.dir("foo", [
       d.file("bar"),
-      d.dir("baz", [
-        d.file("bang"),
-        d.file("qux")
-      ])
+      d.dir("baz", [d.file("bang"), d.file("qux")])
     ]).create();
   });
 
@@ -41,7 +40,8 @@ void main() {
     test("reports exceptions for non-existent case-insensitive directories",
         () {
       schedule(() {
-        expect(new Glob("non/existent/**", caseSensitive: false).list().toList(),
+        expect(
+            new Glob("non/existent/**", caseSensitive: false).list().toList(),
             throwsA(new isInstanceOf<FileSystemException>()));
       });
     });
@@ -105,10 +105,10 @@ void main() {
 
     group("star", () {
       test("lists within filenames but not across directories", () {
-        expect(list("foo/b*"), completion(unorderedEquals([
-          p.join("foo", "bar"),
-          p.join("foo", "baz")
-        ])));
+        expect(
+            list("foo/b*"),
+            completion(
+                unorderedEquals([p.join("foo", "bar"), p.join("foo", "baz")])));
       });
 
       test("lists the empy string", () {
@@ -118,10 +118,10 @@ void main() {
 
     group("double star", () {
       test("lists within filenames", () {
-        expect(list("foo/baz/**"), completion(unorderedEquals([
-          p.join("foo", "baz", "qux"),
-          p.join("foo", "baz", "bang")
-        ])));
+        expect(
+            list("foo/baz/**"),
+            completion(unorderedEquals(
+                [p.join("foo", "baz", "qux"), p.join("foo", "baz", "bang")])));
       });
 
       test("lists the empty string", () {
@@ -129,49 +129,52 @@ void main() {
       });
 
       test("lists recursively", () {
-        expect(list("foo/**"), completion(unorderedEquals([
-          p.join("foo", "bar"),
-          p.join("foo", "baz"),
-          p.join("foo", "baz", "qux"),
-          p.join("foo", "baz", "bang")
-        ])));
+        expect(
+            list("foo/**"),
+            completion(unorderedEquals([
+              p.join("foo", "bar"),
+              p.join("foo", "baz"),
+              p.join("foo", "baz", "qux"),
+              p.join("foo", "baz", "bang")
+            ])));
       });
 
       test("combines with literals", () {
-        expect(list("foo/ba**"), completion(unorderedEquals([
-          p.join("foo", "bar"),
-          p.join("foo", "baz"),
-          p.join("foo", "baz", "qux"),
-          p.join("foo", "baz", "bang")
-        ])));
+        expect(
+            list("foo/ba**"),
+            completion(unorderedEquals([
+              p.join("foo", "bar"),
+              p.join("foo", "baz"),
+              p.join("foo", "baz", "qux"),
+              p.join("foo", "baz", "bang")
+            ])));
       });
 
       test("lists recursively in the middle of a glob", () {
         d.dir("deep", [
           d.dir("a", [
             d.dir("b", [
-              d.dir("c", [
-                d.file("d"),
-                d.file("long-file")
-              ]),
+              d.dir("c", [d.file("d"), d.file("long-file")]),
               d.dir("long-dir", [d.file("x")])
             ])
           ])
         ]).create();
 
-        expect(list("deep/**/?/?"), completion(unorderedEquals([
-          p.join("deep", "a", "b", "c"),
-          p.join("deep", "a", "b", "c", "d")
-        ])));
+        expect(
+            list("deep/**/?/?"),
+            completion(unorderedEquals([
+              p.join("deep", "a", "b", "c"),
+              p.join("deep", "a", "b", "c", "d")
+            ])));
       });
     });
 
     group("any char", () {
       test("matches a character", () {
-        expect(list("foo/ba?"), completion(unorderedEquals([
-          p.join("foo", "bar"),
-          p.join("foo", "baz")
-        ])));
+        expect(
+            list("foo/ba?"),
+            completion(
+                unorderedEquals([p.join("foo", "bar"), p.join("foo", "baz")])));
       });
 
       test("doesn't match a separator", () {
@@ -181,17 +184,17 @@ void main() {
 
     group("range", () {
       test("matches a range of characters", () {
-        expect(list("foo/ba[a-z]"), completion(unorderedEquals([
-          p.join("foo", "bar"),
-          p.join("foo", "baz")
-        ])));
+        expect(
+            list("foo/ba[a-z]"),
+            completion(
+                unorderedEquals([p.join("foo", "bar"), p.join("foo", "baz")])));
       });
 
       test("matches a specific list of characters", () {
-        expect(list("foo/ba[rz]"), completion(unorderedEquals([
-          p.join("foo", "bar"),
-          p.join("foo", "baz")
-        ])));
+        expect(
+            list("foo/ba[rz]"),
+            completion(
+                unorderedEquals([p.join("foo", "bar"), p.join("foo", "baz")])));
       });
 
       test("doesn't match outside its range", () {
@@ -220,23 +223,21 @@ void main() {
         d.dir("a", [
           d.dir("b", [
             d.file("file"),
-            d.dir("c", [
-              d.file("file")
-            ])
+            d.dir("c", [d.file("file")])
           ]),
           d.dir("x", [
-            d.dir("y", [
-              d.file("file")
-            ])
+            d.dir("y", [d.file("file")])
           ])
         ])
       ]).create();
 
-      expect(list("multi/{*/*/*/file,a/**/file}"), completion(unorderedEquals([
-        p.join("multi", "a", "b", "file"),
-        p.join("multi", "a", "b", "c", "file"),
-        p.join("multi", "a", "x", "y", "file")
-      ])));
+      expect(
+          list("multi/{*/*/*/file,a/**/file}"),
+          completion(unorderedEquals([
+            p.join("multi", "a", "b", "file"),
+            p.join("multi", "a", "b", "c", "file"),
+            p.join("multi", "a", "x", "y", "file")
+          ])));
     });
 
     group("with symlinks", () {
@@ -248,11 +249,13 @@ void main() {
       });
 
       test("follows symlinks by default", () {
-        expect(list("dir/**"), completion(unorderedEquals([
-          p.join("dir", "link"),
-          p.join("dir", "link", "bang"),
-          p.join("dir", "link", "qux")
-        ])));
+        expect(
+            list("dir/**"),
+            completion(unorderedEquals([
+              p.join("dir", "link"),
+              p.join("dir", "link", "bang"),
+              p.join("dir", "link", "qux")
+            ])));
       });
 
       test("doesn't follow symlinks with followLinks: false", () {
@@ -270,38 +273,38 @@ void main() {
     });
 
     test("always lists recursively with recursive: true", () {
-      expect(list("foo", recursive: true), completion(unorderedEquals([
-        "foo",
-        p.join("foo", "bar"),
-        p.join("foo", "baz"),
-        p.join("foo", "baz", "qux"),
-        p.join("foo", "baz", "bang")
-      ])));
+      expect(
+          list("foo", recursive: true),
+          completion(unorderedEquals([
+            "foo",
+            p.join("foo", "bar"),
+            p.join("foo", "baz"),
+            p.join("foo", "baz", "qux"),
+            p.join("foo", "baz", "bang")
+          ])));
     });
 
     test("lists an absolute glob", () {
       expect(schedule(() {
-        var pattern = separatorToForwardSlash(
-            p.absolute(p.join(sandbox, 'foo/baz/**')));
+        var pattern =
+            separatorToForwardSlash(p.absolute(p.join(sandbox, 'foo/baz/**')));
 
         return list(pattern);
-      }), completion(unorderedEquals([
-        p.join("foo", "baz", "bang"),
-        p.join("foo", "baz", "qux")
-      ])));
+      }),
+          completion(unorderedEquals(
+              [p.join("foo", "baz", "bang"), p.join("foo", "baz", "qux")])));
     });
 
     // Regression test for #4.
     test("lists an absolute case-insensitive glob", () {
       expect(schedule(() {
-        var pattern = separatorToForwardSlash(
-            p.absolute(p.join(sandbox, 'foo/Baz/**')));
+        var pattern =
+            separatorToForwardSlash(p.absolute(p.join(sandbox, 'foo/Baz/**')));
 
         return list(pattern, caseSensitive: false);
-      }), completion(unorderedEquals([
-        p.join("foo", "baz", "bang"),
-        p.join("foo", "baz", "qux")
-      ])));
+      }),
+          completion(unorderedEquals(
+              [p.join("foo", "baz", "bang"), p.join("foo", "baz", "qux")])));
     }, skip: "Broken by sdk#28015.");
 
     test("lists a subdirectory that sometimes exists", () {

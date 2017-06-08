@@ -11,8 +11,9 @@ const RAW_ASCII_WITHOUT_SLASH = "\t\n\r !\"#\$%&'()*+`-.0123456789:;<=>?@ABCDEF"
     "GHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
 // URL-encode the path for a URL context.
-final asciiWithoutSlash = p.style == p.Style.url ?
-    Uri.encodeFull(RAW_ASCII_WITHOUT_SLASH) : RAW_ASCII_WITHOUT_SLASH;
+final asciiWithoutSlash = p.style == p.Style.url
+    ? Uri.encodeFull(RAW_ASCII_WITHOUT_SLASH)
+    : RAW_ASCII_WITHOUT_SLASH;
 
 void main() {
   test("literals match exactly", () {
@@ -22,8 +23,8 @@ void main() {
   });
 
   test("backslashes match nothing on Windows", () {
-    expect(r"foo\bar",
-        isNot(contains(new Glob(r"foo\\bar", context: p.windows))));
+    expect(
+        r"foo\bar", isNot(contains(new Glob(r"foo\\bar", context: p.windows))));
   });
 
   group("star", () {
@@ -237,7 +238,7 @@ void main() {
   test("a relative path can be matched by an absolute glob", () {
     var pattern = separatorToForwardSlash(p.absolute('foo/bar'));
     expect('foo/bar', contains(new Glob(pattern)));
-  });
+  }, testOn: 'vm');
 
   group("with recursive: true", () {
     var glob = new Glob("foo/bar", recursive: true);
@@ -270,20 +271,20 @@ void main() {
 
     expect(r"\\foo\bar\baz",
         contains(new Glob("//foo/bar/baz", context: p.windows)));
-    expect(r"\\foo\bar\baz",
-        isNot(contains(new Glob("**", context: p.windows))));
+    expect(
+        r"\\foo\bar\baz", isNot(contains(new Glob("**", context: p.windows))));
     expect(r"\\foo\bar\baz", contains(new Glob("//**", context: p.windows)));
-    expect(r"\\foo\bar\baz",
-        contains(new Glob("//foo/**", context: p.windows)));
+    expect(
+        r"\\foo\bar\baz", contains(new Glob("//foo/**", context: p.windows)));
   });
 
   test("absolute URL paths", () {
     expect(r"http://foo.com/bar",
         contains(new Glob("http://foo.com/bar", context: p.url)));
-    expect(r"http://foo.com/bar",
-        isNot(contains(new Glob("**", context: p.url))));
-    expect(r"http://foo.com/bar",
-        contains(new Glob("http://**", context: p.url)));
+    expect(
+        r"http://foo.com/bar", isNot(contains(new Glob("**", context: p.url))));
+    expect(
+        r"http://foo.com/bar", contains(new Glob("http://**", context: p.url)));
     expect(r"http://foo.com/bar",
         contains(new Glob("http://foo.com/**", context: p.url)));
 
@@ -301,26 +302,26 @@ void main() {
 
     test("ranges match case-sensitively", () {
       expect("foo", contains(new Glob("[fx][a-z]o", caseSensitive: true)));
-      expect("FOO",
-          isNot(contains(new Glob("[fx][a-z]o", caseSensitive: true))));
-      expect("foo",
-          isNot(contains(new Glob("[FX][A-Z]O", caseSensitive: true))));
+      expect(
+          "FOO", isNot(contains(new Glob("[fx][a-z]o", caseSensitive: true))));
+      expect(
+          "foo", isNot(contains(new Glob("[FX][A-Z]O", caseSensitive: true))));
     });
 
     test("sequences preserve case-sensitivity", () {
       expect("foo/bar", contains(new Glob("foo/bar", caseSensitive: true)));
-      expect("FOO/BAR",
-          isNot(contains(new Glob("foo/bar", caseSensitive: true))));
-      expect("foo/bar",
-          isNot(contains(new Glob("FOO/BAR", caseSensitive: true))));
+      expect(
+          "FOO/BAR", isNot(contains(new Glob("foo/bar", caseSensitive: true))));
+      expect(
+          "foo/bar", isNot(contains(new Glob("FOO/BAR", caseSensitive: true))));
     });
 
     test("options preserve case-sensitivity", () {
       expect("foo", contains(new Glob("{foo,bar}", caseSensitive: true)));
-      expect("FOO",
-          isNot(contains(new Glob("{foo,bar}", caseSensitive: true))));
-      expect("foo",
-          isNot(contains(new Glob("{FOO,BAR}", caseSensitive: true))));
+      expect(
+          "FOO", isNot(contains(new Glob("{foo,bar}", caseSensitive: true))));
+      expect(
+          "foo", isNot(contains(new Glob("{FOO,BAR}", caseSensitive: true))));
     });
   });
 
