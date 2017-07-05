@@ -13,7 +13,7 @@ final pool = new Pool(10, timeout: new Duration(seconds: 30));
 Future<String> readFile(String path) {
   // Since the call to [File.readAsString] is within [withResource], no more
   // than ten files will be open at once.
-  return pool.withResource(() => return new File(path).readAsString());
+  return pool.withResource(() => new File(path).readAsString());
 }
 ```
 
