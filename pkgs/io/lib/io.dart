@@ -2,5 +2,5 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-export 'src/permissions.dart'
-    show FilePermissionRole, FilePermission, hasPermission, isExecutable;
+export 'src/exit_codes.dart' show ExitCode;
+export 'src/permissions.dart' show isExecutable;
