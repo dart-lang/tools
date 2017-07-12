@@ -2,4 +2,6 @@
 
 - Initial commit of...
    - `FutureOr<bool> String isExecutable(path)`.
-   - `ExitCode`.
+   - `ExitCode`
+   - `ProcessManager` and `Spawn`
+   - `sharedStdIn` and `SharedStdIn`

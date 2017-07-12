@@ -4,3 +4,5 @@
 
 export 'src/exit_codes.dart' show ExitCode;
 export 'src/permissions.dart' show isExecutable;
+export 'src/process_manager.dart' show ProcessManager, Spawn;
+export 'src/shared_stdin.dart' show SharedStdIn, sharedStdIn;
