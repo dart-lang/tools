@@ -9,6 +9,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 
+import 'src/utils.dart';
+
 /// Return the path to the current Dart SDK.
 ///
 /// This first checks for an explicit SDK listed on the command-line
@@ -17,6 +19,7 @@ import 'package:path/path.dart' as path;
 /// [Platform.resolvedExecutable] API.
 ///
 /// Callers should generally prefer using the [getSdkPath] function.
+@Deprecated('Clients should generally prefer getSdkPath()')
 Directory getSdkDir([List<String> cliArgs]) {
   // Look for --dart-sdk on the command line.
   if (cliArgs != null) {
@@ -41,13 +44,13 @@ Directory getSdkDir([List<String> cliArgs]) {
   // Look relative to the dart executable.
   File platformExecutable = new File(Platform.executable);
   Directory sdkDirectory = platformExecutable.parent.parent;
-  if (_isSdkDir(sdkDirectory)) return sdkDirectory;
+  if (isSdkDir(sdkDirectory)) return sdkDirectory;
 
   // Handle the case where Platform.executable is a sibling of the SDK directory
   // (this happens during internal testing).
   sdkDirectory =
       new Directory(path.join(platformExecutable.parent.path, 'dart-sdk'));
-  if (_isSdkDir(sdkDirectory)) return sdkDirectory;
+  if (isSdkDir(sdkDirectory)) return sdkDirectory;
 
   // Use `Platform.resolvedExecutable`.
   return new Directory(getSdkPath());
@@ -55,6 +58,3 @@ Directory getSdkDir([List<String> cliArgs]) {
 
 /// Return the path to the current Dart SDK.
 String getSdkPath() => path.dirname(path.dirname(Platform.resolvedExecutable));
-
-bool _isSdkDir(Directory dir) =>
-    FileSystemEntity.isDirectorySync(path.join(dir.path, 'version'));

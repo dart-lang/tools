@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Fix a bug in `getSdkDir` (#21)
+
 ## 0.1.1
 
 - Updated to the output for indeterminate progress
