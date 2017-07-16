@@ -28,7 +28,7 @@ void main() {
     // analyze the output json
     Map<String, dynamic> json = JSON.decode(resultString);
 
-    expect(json.keys, unorderedEquals(['type', 'coverage']));
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
     List<Map<String, dynamic>> coverage = json['coverage'];

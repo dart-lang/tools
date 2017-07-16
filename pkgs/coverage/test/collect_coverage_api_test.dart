@@ -22,7 +22,7 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 void main() {
   test('collect_coverage_api', () async {
     Map<String, dynamic> json = await _getCoverageResult();
-    expect(json.keys, unorderedEquals(['type', 'coverage']));
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
     List coverage = json['coverage'];
