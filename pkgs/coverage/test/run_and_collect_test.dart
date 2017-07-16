@@ -19,7 +19,7 @@ void main() {
   test('runAndCollect', () async {
     // use runAndCollect and verify that the results match w/ running manually
     var json = await runAndCollect(testAppPath);
-    expect(json.keys, unorderedEquals(['type', 'coverage']));
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
     List<Map> coverage = json['coverage'];
