@@ -1,4 +1,10 @@
+## 0.9.3-dev - unreleased
+
+ * Strong mode fixes
+ * Rev the SDK constraint to `<2.0.0-dev.infinity`
+
 ## 0.9.2 - 2017-02-03
+
  * Strong mode fixes as of Dart SDK 1.22.0
 
 ## 0.9.1 - 2017-01-18

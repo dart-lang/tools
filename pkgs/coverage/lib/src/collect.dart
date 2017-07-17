@@ -53,7 +53,7 @@ Future<Map<String, dynamic>> _getAllCoverage(VMServiceClient service) async {
     var coverage = await _getCoverageJson(service, report);
     allCoverage.addAll(coverage);
   }
-  return {'type': 'CodeCoverage', 'coverage': allCoverage};
+  return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
 Future _resumeIsolates(VMServiceClient service) async {
@@ -83,7 +83,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
     VMServiceClient service, VMSourceReport report) async {
   var scriptRefs = report.ranges.map((r) => r.script).toSet();
   var scripts = new Map<Uri, VMScript>.fromIterable(
-      await Future.wait(scriptRefs.map((ref) => ref.load()).toList()),
+      await Future.wait<VMScript>(scriptRefs.map((ref) => ref.load()).toList()),
       key: (VMScript s) => s.uri);
 
   // script uri -> { line -> hit count }
