@@ -305,7 +305,7 @@ void main() {
       }),
           completion(unorderedEquals(
               [p.join("foo", "baz", "bang"), p.join("foo", "baz", "qux")])));
-    }, skip: "Broken by sdk#28015.");
+    });
 
     test("lists a subdirectory that sometimes exists", () {
       d.dir("top", [
@@ -356,6 +356,9 @@ void syncAndAsync(callback(ListFn listFn)) {
         var glob = new Glob(pattern,
             recursive: recursive, caseSensitive: caseSensitive);
 
+        // TODO(kevmoo) - need to get off scheduled_test to fix this
+        // https://github.com/dart-lang/glob/issues/14
+        // ignore: return_of_invalid_type
         return glob
             .list(root: sandbox, followLinks: followLinks)
             .map((entity) => p.relative(entity.path, from: sandbox))
