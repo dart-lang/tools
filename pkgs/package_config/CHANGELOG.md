@@ -1,3 +1,7 @@
+## 1.0.2
+
+- Update SDK constraint to be 2.0.0 dev friendly.
+
 ## 1.0.1
 
 - Fix test to not write to sink after it's closed.
