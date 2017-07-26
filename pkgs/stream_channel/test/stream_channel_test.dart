@@ -16,8 +16,7 @@ void main() {
   setUp(() {
     streamController = new StreamController();
     sinkController = new StreamController();
-    channel = new StreamChannel(
-        streamController.stream, sinkController.sink);
+    channel = new StreamChannel(streamController.stream, sinkController.sink);
   });
 
   test("pipe() pipes data from each channel's stream into the other's sink",
@@ -42,8 +41,8 @@ void main() {
   });
 
   test("transform() transforms the channel", () async {
-    var transformed = channel.transform(
-        new StreamChannelTransformer.fromCodec(UTF8));
+    var transformed =
+        channel.transform(new StreamChannelTransformer.fromCodec(UTF8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
@@ -51,8 +50,11 @@ void main() {
 
     transformed.sink.add("fblthp");
     transformed.sink.close();
-    expect(sinkController.stream.toList(),
-        completion(equals([[102, 98, 108, 116, 104, 112]])));
+    expect(
+        sinkController.stream.toList(),
+        completion(equals([
+          [102, 98, 108, 116, 104, 112]
+        ])));
   });
 
   test("transformStream() transforms only the stream", () async {
@@ -64,8 +66,7 @@ void main() {
 
     transformed.sink.add("fblthp");
     transformed.sink.close();
-    expect(sinkController.stream.toList(),
-        completion(equals(["fblthp"])));
+    expect(sinkController.stream.toList(), completion(equals(["fblthp"])));
   });
 
   test("transformSink() transforms only the sink", () async {
@@ -74,13 +75,19 @@ void main() {
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
-    expect(await transformed.stream.toList(),
-        equals([[102, 111, 111, 98, 97, 114]]));
+    expect(
+        await transformed.stream.toList(),
+        equals([
+          [102, 111, 111, 98, 97, 114]
+        ]));
 
     transformed.sink.add("fblthp");
     transformed.sink.close();
-    expect(sinkController.stream.toList(),
-        completion(equals([[102, 98, 108, 116, 104, 112]])));
+    expect(
+        sinkController.stream.toList(),
+        completion(equals([
+          [102, 98, 108, 116, 104, 112]
+        ])));
   });
 
   test("changeStream() changes the stream", () {

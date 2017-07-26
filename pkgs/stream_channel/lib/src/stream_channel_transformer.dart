@@ -58,9 +58,10 @@ class StreamChannelTransformer<S, T> {
   /// and all output from its stream is decoded using [Codec.decoder].
   StreamChannelTransformer.fromCodec(Codec<S, T> codec)
       : this(
-          typedStreamTransformer(codec.decoder),
-          StreamSinkTransformer.typed(
-              new StreamSinkTransformer.fromStreamTransformer(codec.encoder)));
+            typedStreamTransformer(codec.decoder),
+            StreamSinkTransformer.typed(
+                new StreamSinkTransformer.fromStreamTransformer(
+                    codec.encoder)));
 
   /// Transforms the events sent to and emitted by [channel].
   ///

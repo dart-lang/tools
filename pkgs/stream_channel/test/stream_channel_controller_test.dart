@@ -13,16 +13,25 @@ void main() {
     });
 
     test("forwards events from the local sink to the foreign stream", () {
-      controller.local.sink..add(1)..add(2)..add(3)..close();
+      controller.local.sink
+        ..add(1)
+        ..add(2)
+        ..add(3)
+        ..close();
       expect(controller.foreign.stream.toList(), completion(equals([1, 2, 3])));
     });
 
     test("forwards events from the foreign sink to the local stream", () {
-      controller.foreign.sink..add(1)..add(2)..add(3)..close();
+      controller.foreign.sink
+        ..add(1)
+        ..add(2)
+        ..add(3)
+        ..close();
       expect(controller.local.stream.toList(), completion(equals([1, 2, 3])));
     });
 
-    test("with allowForeignErrors: false, shuts down the connection if an "
+    test(
+        "with allowForeignErrors: false, shuts down the connection if an "
         "error is added to the foreign channel", () {
       controller = new StreamChannelController(allowForeignErrors: false);
 
@@ -40,7 +49,8 @@ void main() {
       controller = new StreamChannelController(sync: true);
     });
 
-    test("synchronously forwards events from the local sink to the foreign "
+    test(
+        "synchronously forwards events from the local sink to the foreign "
         "stream", () {
       var receivedEvent = false;
       var receivedError = false;
@@ -65,7 +75,8 @@ void main() {
       expect(receivedDone, isTrue);
     });
 
-    test("synchronously forwards events from the foreign sink to the local "
+    test(
+        "synchronously forwards events from the foreign sink to the local "
         "stream", () {
       var receivedEvent = false;
       var receivedError = false;

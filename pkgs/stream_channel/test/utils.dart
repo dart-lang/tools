@@ -9,7 +9,7 @@ import 'dart:async';
 ///
 /// By default, this should pump the event queue enough times to allow any code
 /// to run, as long as it's not waiting on some external event.
-Future pumpEventQueue([int times=20]) {
+Future pumpEventQueue([int times = 20]) {
   if (times == 0) return new Future.value();
   // Use [new Future] future to allow microtask events to finish. The [new
   // Future.value] constructor uses scheduleMicrotask itself and would therefore
@@ -17,4 +17,3 @@ Future pumpEventQueue([int times=20]) {
   // method.
   return new Future(() => pumpEventQueue(times - 1));
 }
-

@@ -64,7 +64,8 @@ void main() {
   });
 
   group("stream channel rules", () {
-    test("closing the sink causes the stream to close before it emits any more "
+    test(
+        "closing the sink causes the stream to close before it emits any more "
         "events", () {
       sendPort.send(1);
       sendPort.send(2);

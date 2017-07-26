@@ -15,8 +15,8 @@ void main() {
   setUp(() {
     streamController = new StreamController();
     sinkController = new StreamController();
-    channel = new StreamChannel<String>(
-        streamController.stream, sinkController.sink);
+    channel =
+        new StreamChannel<String>(streamController.stream, sinkController.sink);
   });
 
   test("decodes JSON emitted by the channel", () {

@@ -84,14 +84,16 @@ void main() {
     var sinkController = new StreamController();
     var disconnector = new Disconnector();
     var sink = new _CloseCompleterSink(sinkController.sink);
-    var channel = new StreamChannel.withGuarantees(
-            streamController.stream, sink)
-        .transform(disconnector);
+    var channel =
+        new StreamChannel.withGuarantees(streamController.stream, sink)
+            .transform(disconnector);
 
     var disconnectFutureFired = false;
-    expect(disconnector.disconnect().then((_) {
-      disconnectFutureFired = true;
-    }), completes);
+    expect(
+        disconnector.disconnect().then((_) {
+          disconnectFutureFired = true;
+        }),
+        completes);
 
     // Give the future time to fire early if it's going to.
     await pumpEventQueue();
@@ -114,7 +116,7 @@ void main() {
       channel.sink.add(2);
       channel.sink.add(3);
       channel.sink.close();
- 
+
       expect(sinkController.stream.toList(), completion(isEmpty));
     });
 
@@ -126,7 +128,7 @@ void main() {
       sinkController.stream.listen(null); // Work around sdk#19095.
       expect(channel.sink.done, completes);
     });
- 
+
     test("still emits state errors after explicit close", () {
       sinkController.stream.listen(null); // Work around sdk#19095.
       expect(channel.sink.close(), completes);

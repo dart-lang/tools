@@ -18,8 +18,8 @@ void main() {
     completer = new StreamChannelCompleter();
     streamController = new StreamController();
     sinkController = new StreamController();
-    innerChannel = new StreamChannel(
-        streamController.stream, sinkController.sink);
+    innerChannel =
+        new StreamChannel(streamController.stream, sinkController.sink);
   });
 
   group("when a channel is set before accessing", () {
@@ -98,8 +98,8 @@ void main() {
 
   group("forFuture", () {
     test("forwards a StreamChannel", () {
-      var channel = StreamChannelCompleter.fromFuture(
-          new Future.value(innerChannel));
+      var channel =
+          StreamChannelCompleter.fromFuture(new Future.value(innerChannel));
       channel.sink.add(1);
       channel.sink.close();
       streamController.sink.add(2);
@@ -110,8 +110,8 @@ void main() {
     });
 
     test("forwards an error", () {
-      var channel = StreamChannelCompleter.fromFuture(
-          new Future.error("oh no"));
+      var channel =
+          StreamChannelCompleter.fromFuture(new Future.error("oh no"));
       expect(channel.stream.toList(), throwsA("oh no"));
     });
   });

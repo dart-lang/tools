@@ -97,8 +97,8 @@ abstract class StreamChannel<T> {
   /// transforming it with a [StreamTransformer]. This is a lighter-weight way
   /// of preserving that guarantee in particular than
   /// [StreamChannel.withGuarantees].
-  factory StreamChannel.withCloseGuarantee(Stream<T> stream,
-          StreamSink<T> sink) =>
+  factory StreamChannel.withCloseGuarantee(
+          Stream<T> stream, StreamSink<T> sink) =>
       new CloseGuaranteeChannel(stream, sink);
 
   /// Connects [this] to [other], so that any values emitted by either are sent
@@ -108,8 +108,7 @@ abstract class StreamChannel<T> {
   /// Transforms [this] using [transformer].
   ///
   /// This is identical to calling `transformer.bind(channel)`.
-  StreamChannel<S> transform<S>(
-      StreamChannelTransformer<S, T> transformer);
+  StreamChannel<S> transform<S>(StreamChannelTransformer<S, T> transformer);
 
   /// Transforms only the [stream] component of [this] using [transformer].
   StreamChannel<T> transformStream(StreamTransformer<T, T> transformer);
@@ -153,8 +152,7 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
     other.stream.pipe(sink);
   }
 
-  StreamChannel<S> transform<S>(
-          StreamChannelTransformer<S, T> transformer) =>
+  StreamChannel<S> transform<S>(StreamChannelTransformer<S, T> transformer) =>
       transformer.bind(this);
 
   StreamChannel<T> transformStream(StreamTransformer<T, T> transformer) =>

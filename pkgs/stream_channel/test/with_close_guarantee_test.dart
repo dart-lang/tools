@@ -35,26 +35,30 @@ void main() {
     channel = new StreamChannel.withCloseGuarantee(stream, sink);
   });
 
-  test("closing the event sink causes the stream to close before it emits any "
+  test(
+      "closing the event sink causes the stream to close before it emits any "
       "more events", () async {
     controller.local.sink.add(1);
     controller.local.sink.add(2);
     controller.local.sink.add(3);
 
-    expect(channel.stream.listen(expectAsync((event) {
-      if (event == 2) channel.sink.close();
-    }, count: 2)).asFuture(), completes);
+    expect(
+        channel.stream
+            .listen(expectAsync((event) {
+              if (event == 2) channel.sink.close();
+            }, count: 2))
+            .asFuture(),
+        completes);
 
     await pumpEventQueue();
   });
 
-  test("closing the event sink before events are emitted causes the stream to "
+  test(
+      "closing the event sink before events are emitted causes the stream to "
       "close immediately", () async {
     channel.sink.close();
-    channel.stream.listen(
-        expectAsync((_) {}, count: 0),
-        onError: expectAsync((_, __) {}, count: 0),
-        onDone: expectAsync(() {}));
+    channel.stream.listen(expectAsync((_) {}, count: 0),
+        onError: expectAsync((_, __) {}, count: 0), onDone: expectAsync(() {}));
 
     controller.local.sink.add(1);
     controller.local.sink.add(2);
