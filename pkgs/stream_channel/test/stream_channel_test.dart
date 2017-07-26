@@ -114,7 +114,7 @@ void main() {
     });
 
     expect(newController.stream.toList(), completion(equals([10])));
-    streamController.stream.listen(expectAsync((_) {}, count: 0));
+    streamController.stream.listen(expectAsync1((_) {}, count: 0));
 
     changed.sink.add(10);
     changed.sink.close();

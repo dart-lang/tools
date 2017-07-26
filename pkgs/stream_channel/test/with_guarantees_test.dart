@@ -52,7 +52,7 @@ void main() {
 
     expect(
         channel.stream
-            .listen(expectAsync((event) {
+            .listen(expectAsync1((event) {
               if (event == 2) channel.sink.close();
             }, count: 2))
             .asFuture(),
@@ -70,8 +70,8 @@ void main() {
     channel.sink.close();
 
     // None of our channel.sink additions should make it to the other endpoint.
-    sinkController.stream.listen(expectAsync((_) {}, count: 0),
-        onDone: expectAsync(() {}, count: 0));
+    sinkController.stream.listen(expectAsync1((_) {}, count: 0),
+        onDone: expectAsync0(() {}, count: 0));
     await pumpEventQueue();
   });
 
@@ -101,8 +101,8 @@ void main() {
     channel.sink.close();
 
     // The sink should be ignoring events because the stream closed.
-    sinkController.stream.listen(expectAsync((_) {}, count: 0),
-        onDone: expectAsync(() {}, count: 0));
+    sinkController.stream.listen(expectAsync1((_) {}, count: 0),
+        onDone: expectAsync0(() {}, count: 0));
     await pumpEventQueue();
   });
 
@@ -153,7 +153,7 @@ void main() {
       channel.sink.addError("oh no");
       expect(channel.sink.done, throwsA("oh no"));
       sinkController.stream
-          .listen(null, onError: expectAsync((_) {}, count: 0));
+          .listen(null, onError: expectAsync1((_) {}, count: 0));
     });
 
     test("adding an error causes the stream to emit a done event", () {
@@ -165,7 +165,7 @@ void main() {
 
       expect(
           channel.stream
-              .listen(expectAsync((event) {
+              .listen(expectAsync1((event) {
                 if (event == 2) channel.sink.addError("oh no");
               }, count: 2))
               .asFuture(),

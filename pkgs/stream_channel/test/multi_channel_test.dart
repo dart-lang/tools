@@ -20,7 +20,7 @@ void main() {
   group("the default virtual channel", () {
     test("begins connected", () {
       var first = true;
-      channel2.stream.listen(expectAsync((message) {
+      channel2.stream.listen(expectAsync1((message) {
         if (first) {
           expect(message, equals("hello"));
           first = false;
@@ -50,7 +50,7 @@ void main() {
     test(
         "doesn't closes the local virtual channel when the stream "
         "subscription is canceled", () {
-      channel1.sink.done.then(expectAsync((_) {}, count: 0));
+      channel1.sink.done.then(expectAsync1((_) {}, count: 0));
 
       channel1.stream.listen((_) {}).cancel();
 
@@ -71,8 +71,8 @@ void main() {
     test(
         "doesn't close the underlying channel when it closes with other "
         "virtual channels", () {
-      controller.local.sink.done.then(expectAsync((_) {}, count: 0));
-      controller.foreign.sink.done.then(expectAsync((_) {}, count: 0));
+      controller.local.sink.done.then(expectAsync1((_) {}, count: 0));
+      controller.foreign.sink.done.then(expectAsync1((_) {}, count: 0));
 
       // Establish another virtual connection which should keep the underlying
       // connection open.
@@ -95,7 +95,7 @@ void main() {
 
     test("sends messages only to the other virtual channel", () {
       var first = true;
-      virtual2.stream.listen(expectAsync((message) {
+      virtual2.stream.listen(expectAsync1((message) {
         if (first) {
           expect(message, equals("hello"));
           first = false;
@@ -107,9 +107,9 @@ void main() {
       // No other virtual channels should receive the message.
       for (var i = 0; i < 10; i++) {
         var virtual = channel2.virtualChannel(channel1.virtualChannel().id);
-        virtual.stream.listen(expectAsync((_) {}, count: 0));
+        virtual.stream.listen(expectAsync1((_) {}, count: 0));
       }
-      channel2.stream.listen(expectAsync((_) {}, count: 0));
+      channel2.stream.listen(expectAsync1((_) {}, count: 0));
 
       virtual1.sink.add("hello");
       virtual1.sink.add("world");
@@ -132,7 +132,7 @@ void main() {
     test(
         "doesn't closes the local virtual channel when the stream "
         "subscription is canceled", () {
-      virtual1.sink.done.then(expectAsync((_) {}, count: 0));
+      virtual1.sink.done.then(expectAsync1((_) {}, count: 0));
       virtual1.stream.listen((_) {}).cancel();
 
       // Ensure that there's enough time for the channel to close if it's going
@@ -157,8 +157,8 @@ void main() {
     test(
         "doesn't close the underlying channel when it closes with other "
         "virtual channels", () {
-      controller.local.sink.done.then(expectAsync((_) {}, count: 0));
-      controller.foreign.sink.done.then(expectAsync((_) {}, count: 0));
+      controller.local.sink.done.then(expectAsync1((_) {}, count: 0));
+      controller.foreign.sink.done.then(expectAsync1((_) {}, count: 0));
 
       virtual1.sink.close();
 
@@ -176,9 +176,9 @@ void main() {
       expect(virtual1.id, equals(virtual3.id));
 
       virtual2.stream
-          .listen(expectAsync((message) => expect(message, equals("hello"))));
-      virtual4.stream
-          .listen(expectAsync((message) => expect(message, equals("goodbye"))));
+          .listen(expectAsync1((message) => expect(message, equals("hello"))));
+      virtual4.stream.listen(
+          expectAsync1((message) => expect(message, equals("goodbye"))));
 
       virtual1.sink.add("hello");
       virtual3.sink.add("goodbye");
@@ -195,7 +195,7 @@ void main() {
 
     test("sends messages only to the other virtual channel", () {
       var first = true;
-      virtual1.stream.listen(expectAsync((message) {
+      virtual1.stream.listen(expectAsync1((message) {
         if (first) {
           expect(message, equals("hello"));
           first = false;
@@ -207,9 +207,9 @@ void main() {
       // No other virtual channels should receive the message.
       for (var i = 0; i < 10; i++) {
         var virtual = channel2.virtualChannel(channel1.virtualChannel().id);
-        virtual.stream.listen(expectAsync((_) {}, count: 0));
+        virtual.stream.listen(expectAsync1((_) {}, count: 0));
       }
-      channel1.stream.listen(expectAsync((_) {}, count: 0));
+      channel1.stream.listen(expectAsync1((_) {}, count: 0));
 
       virtual2.sink.add("hello");
       virtual2.sink.add("world");
@@ -232,7 +232,7 @@ void main() {
     test(
         "doesn't closes the local virtual channel when the stream "
         "subscription is canceled", () {
-      virtual2.sink.done.then(expectAsync((_) {}, count: 0));
+      virtual2.sink.done.then(expectAsync1((_) {}, count: 0));
       virtual2.stream.listen((_) {}).cancel();
 
       // Ensure that there's enough time for the channel to close if it's going
@@ -257,8 +257,8 @@ void main() {
     test(
         "doesn't close the underlying channel when it closes with other "
         "virtual channels", () {
-      controller.local.sink.done.then(expectAsync((_) {}, count: 0));
-      controller.foreign.sink.done.then(expectAsync((_) {}, count: 0));
+      controller.local.sink.done.then(expectAsync1((_) {}, count: 0));
+      controller.foreign.sink.done.then(expectAsync1((_) {}, count: 0));
 
       virtual2.sink.close();
 
@@ -311,10 +311,10 @@ void main() {
     });
 
     test("emits an error, the error is sent only to the default channel", () {
-      channel1.stream.listen(expectAsync((_) {}, count: 0),
-          onError: expectAsync((error) => expect(error, equals("oh no"))));
-      virtual1.stream.listen(expectAsync((_) {}, count: 0),
-          onError: expectAsync((_) {}, count: 0));
+      channel1.stream.listen(expectAsync1((_) {}, count: 0),
+          onError: expectAsync1((error) => expect(error, equals("oh no"))));
+      virtual1.stream.listen(expectAsync1((_) {}, count: 0),
+          onError: expectAsync1((_) {}, count: 0));
 
       controller.foreign.sink.addError("oh no");
     });
@@ -329,7 +329,7 @@ void main() {
         channel1.sink.add(2);
         channel1.sink.add(3);
 
-        channel2.stream.listen(expectAsync((message) {
+        channel2.stream.listen(expectAsync1((message) {
           expect(message, equals(1));
           channel2.sink.close();
         }, count: 1));
@@ -346,7 +346,7 @@ void main() {
         channel2.sink.close();
 
         // None of our channel.sink additions should make it to the other endpoint.
-        channel1.stream.listen(expectAsync((_) {}, count: 0));
+        channel1.stream.listen(expectAsync1((_) {}, count: 0));
         await pumpEventQueue();
       });
 
@@ -376,7 +376,7 @@ void main() {
         channel1.sink.close();
 
         // The sink should be ignoring events because the channel closed.
-        channel2.stream.listen(expectAsync((_) {}, count: 0));
+        channel2.stream.listen(expectAsync1((_) {}, count: 0));
         await pumpEventQueue();
       });
     });
@@ -396,7 +396,7 @@ void main() {
         virtual1.sink.add(2);
         virtual1.sink.add(3);
 
-        virtual2.stream.listen(expectAsync((message) {
+        virtual2.stream.listen(expectAsync1((message) {
           expect(message, equals(1));
           virtual2.sink.close();
         }, count: 1));
@@ -413,7 +413,7 @@ void main() {
         virtual2.sink.close();
 
         // None of our virtual.sink additions should make it to the other endpoint.
-        virtual1.stream.listen(expectAsync((_) {}, count: 0));
+        virtual1.stream.listen(expectAsync1((_) {}, count: 0));
         await pumpEventQueue();
       });
 
@@ -443,7 +443,7 @@ void main() {
         virtual1.sink.close();
 
         // The sink should be ignoring events because the stream closed.
-        virtual2.stream.listen(expectAsync((_) {}, count: 0));
+        virtual2.stream.listen(expectAsync1((_) {}, count: 0));
         await pumpEventQueue();
       });
     });

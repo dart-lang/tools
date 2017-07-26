@@ -44,7 +44,7 @@ void main() {
 
     expect(
         channel.stream
-            .listen(expectAsync((event) {
+            .listen(expectAsync1((event) {
               if (event == 2) channel.sink.close();
             }, count: 2))
             .asFuture(),
@@ -57,8 +57,9 @@ void main() {
       "closing the event sink before events are emitted causes the stream to "
       "close immediately", () async {
     channel.sink.close();
-    channel.stream.listen(expectAsync((_) {}, count: 0),
-        onError: expectAsync((_, __) {}, count: 0), onDone: expectAsync(() {}));
+    channel.stream.listen(expectAsync1((_) {}, count: 0),
+        onError: expectAsync2((_, __) {}, count: 0),
+        onDone: expectAsync0(() {}));
 
     controller.local.sink.add(1);
     controller.local.sink.add(2);

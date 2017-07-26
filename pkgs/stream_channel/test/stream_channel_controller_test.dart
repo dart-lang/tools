@@ -55,13 +55,13 @@ void main() {
       var receivedEvent = false;
       var receivedError = false;
       var receivedDone = false;
-      controller.foreign.stream.listen(expectAsync((event) {
+      controller.foreign.stream.listen(expectAsync1((event) {
         expect(event, equals(1));
         receivedEvent = true;
-      }), onError: expectAsync((error) {
+      }), onError: expectAsync1((error) {
         expect(error, equals("oh no"));
         receivedError = true;
-      }), onDone: expectAsync(() {
+      }), onDone: expectAsync0(() {
         receivedDone = true;
       }));
 
@@ -81,13 +81,13 @@ void main() {
       var receivedEvent = false;
       var receivedError = false;
       var receivedDone = false;
-      controller.local.stream.listen(expectAsync((event) {
+      controller.local.stream.listen(expectAsync1((event) {
         expect(event, equals(1));
         receivedEvent = true;
-      }), onError: expectAsync((error) {
+      }), onError: expectAsync1((error) {
         expect(error, equals("oh no"));
         receivedError = true;
-      }), onDone: expectAsync(() {
+      }), onDone: expectAsync0(() {
         receivedDone = true;
       }));
 

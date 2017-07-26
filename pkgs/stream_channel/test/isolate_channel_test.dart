@@ -73,7 +73,7 @@ void main() {
       sendPort.send(4);
       sendPort.send(5);
 
-      channel.stream.listen(expectAsync((message) {
+      channel.stream.listen(expectAsync1((message) {
         expect(message, equals(1));
         channel.sink.close();
       }, count: 1));
@@ -100,7 +100,7 @@ void main() {
 
       // The other end shouldn't receive the next event, since the sink was
       // closed. Pump the event queue to give it a chance to.
-      receivePort.listen(expectAsync((_) {}, count: 0));
+      receivePort.listen(expectAsync1((_) {}, count: 0));
       await pumpEventQueue();
     });
 
