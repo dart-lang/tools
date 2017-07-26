@@ -84,9 +84,8 @@ void main() {
     var sinkController = new StreamController();
     var disconnector = new Disconnector();
     var sink = new _CloseCompleterSink(sinkController.sink);
-    var channel =
-        new StreamChannel.withGuarantees(streamController.stream, sink)
-            .transform(disconnector);
+    new StreamChannel.withGuarantees(streamController.stream, sink)
+        .transform(disconnector);
 
     var disconnectFutureFired = false;
     expect(
