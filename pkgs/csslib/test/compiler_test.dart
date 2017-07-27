@@ -533,9 +533,7 @@ void testArrayOfChars() {
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
-  expect(
-      prettyPrint(stylesheet),
-      r'''
+  expect(prettyPrint(stylesheet), r'''
 .foo {
   color: #f00;
   left: 20px;
@@ -597,9 +595,7 @@ div:nth-child(2n) { color : red; }
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(
-      prettyPrint(stylesheet),
-      r'''
+  expect(prettyPrint(stylesheet), r'''
 html:lang(fr-ca) {
   quotes: '" ' ' "';
 }
@@ -669,9 +665,7 @@ void testHost() {
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(
-      prettyPrint(stylesheet),
-      r'''
+  expect(prettyPrint(stylesheet), r'''
 @host {
 :scope {
   white-space: nowrap;
@@ -697,9 +691,7 @@ void testStringEscape() {
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
-  expect(
-      prettyPrint(stylesheet),
-      r'''
+  expect(prettyPrint(stylesheet), r'''
 a {
   foo: '{"text" : "a\\\""}';
 }''');
@@ -721,9 +713,7 @@ void testEmitter() {
 
   walkTree(stylesheet);
 
-  expect(
-      prettyPrint(stylesheet),
-      r'''
+  expect(prettyPrint(stylesheet), r'''
 .foo {
   color: #f00;
   left: 20px;

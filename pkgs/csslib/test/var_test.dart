@@ -748,15 +748,13 @@ var-color-foreground: #00f;
 }
 
 void polyfill() {
-  compilePolyfillAndValidate(
-      r'''
+  compilePolyfillAndValidate(r'''
 @color-background: red;
 @color-foreground: blue;
 .test {
   background-color: @color-background;
   color: @color-foreground;
-}''',
-      r'''
+}''', r'''
 .test {
   background-color: #f00;
   color: #00f;
@@ -764,8 +762,7 @@ void polyfill() {
 }
 
 void testIndirects() {
-  compilePolyfillAndValidate(
-      '''
+  compilePolyfillAndValidate('''
 :root {
   var-redef: #0f0;
 
@@ -782,8 +779,7 @@ void testIndirects() {
 }
 .test-1 {
   color: @redef;
-}''',
-      r'''
+}''', r'''
 :root {
 }
 .test {

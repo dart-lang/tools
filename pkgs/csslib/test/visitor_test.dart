@@ -60,9 +60,7 @@ void testClassVisitors() {
     ..visitTree(s);
   expect(clsVisits.matches, true);
 
-  expect(
-      prettyPrint(s),
-      r'''
+  expect(prettyPrint(s), r'''
 .foobar1 {
 }
 .xyzzy .foo #my-div {

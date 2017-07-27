@@ -18,8 +18,7 @@ compileAndValidate(String input, String generated) {
 }
 
 void simpleExtend() {
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 .error {
   border: 1px red;
   background-color: #fdd;
@@ -28,8 +27,7 @@ void simpleExtend() {
   @extend .error;
   border-width: 3px;
 }
-''',
-      r'''
+''', r'''
 .error, .seriousError {
   border: 1px #f00;
   background-color: #fdd;
@@ -40,8 +38,7 @@ void simpleExtend() {
 }
 
 void complexSelectors() {
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 .error {
   border: 1px #f00;
   background-color: #fdd;
@@ -53,8 +50,7 @@ void complexSelectors() {
   @extend .error;
   border-width: 3px;
 }
-''',
-      r'''
+''', r'''
 .error, .seriousError {
   border: 1px #f00;
   background-color: #fdd;
@@ -66,16 +62,14 @@ void complexSelectors() {
   border-width: 3px;
 }''');
 
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 a:hover {
   text-decoration: underline;
 }
 .hoverlink {
   @extend a:hover;
 }
-''',
-      r'''
+''', r'''
 a:hover, .hoverlink {
   text-decoration: underline;
 }
@@ -84,8 +78,7 @@ a:hover, .hoverlink {
 }
 
 void multipleExtends() {
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 .error {
   border: 1px #f00;
   background-color: #fdd;
@@ -99,8 +92,7 @@ void multipleExtends() {
   @extend .attention;
   border-width: 3px;
 }
-''',
-      r'''
+''', r'''
 .error, .seriousError {
   border: 1px #f00;
   background-color: #fdd;
@@ -115,8 +107,7 @@ void multipleExtends() {
 }
 
 void chaining() {
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 .error {
   border: 1px #f00;
   background-color: #fdd;
@@ -133,8 +124,7 @@ void chaining() {
   left: 10%;
   right: 10%;
 }
-''',
-      r'''
+''', r'''
 .error, .seriousError, .criticalError {
   border: 1px #f00;
   background-color: #fdd;
@@ -152,8 +142,7 @@ void chaining() {
 }
 
 void nestedSelectors() {
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 a {
   color: blue;
   &:hover {
@@ -164,8 +153,7 @@ a {
 #fake-links .link {
   @extend a;
 }
-''',
-      r'''
+''', r'''
 a, #fake-links .link {
   color: #00f;
 }
@@ -177,8 +165,7 @@ a:hover, #fake-links .link:hover {
 }
 
 void nestedMulty() {
-  compileAndValidate(
-      r'''
+  compileAndValidate(r'''
 .btn {
   display: inline-block;
 }
@@ -190,8 +177,7 @@ input[type="checkbox"].toggle-button {
     @extend .btn;
   }
 }
-''',
-      r'''
+''', r'''
 .btn, input[type="checkbox"].toggle-button label {
   display: inline-block;
 }
