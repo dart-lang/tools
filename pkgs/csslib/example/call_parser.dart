@@ -43,7 +43,7 @@ main() {
       '}',
       errors: errors);
 
-  if (!errors.isEmpty) {
+  if (errors.isNotEmpty) {
     print("Got ${errors.length} errors.\n");
     for (var error in errors) {
       print(error);
@@ -61,7 +61,7 @@ main() {
       '}',
       errors: errors);
 
-  if (!errors.isEmpty) {
+  if (errors.isNotEmpty) {
     print("Got ${errors.length} errors.\n");
     for (var error in errors) {
       print(error);
@@ -75,7 +75,7 @@ main() {
   print('   ===================================');
   stylesheetError = parseCss('# div1 { color: red; }', errors: errors);
 
-  if (!errors.isEmpty) {
+  if (errors.isNotEmpty) {
     print("Detected ${errors.length} problem in checked mode.\n");
     for (var error in errors) {
       print(error);
@@ -88,7 +88,7 @@ main() {
   print('4. Parse a selector only:');
   print('   ======================');
   var selectorAst = css.selector('#div .foo', errors: errors);
-  if (!errors.isEmpty) {
+  if (errors.isNotEmpty) {
     print("Got ${errors.length} errors.\n");
     for (var error in errors) {
       print(error);
