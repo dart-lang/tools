@@ -35,7 +35,7 @@ void _compile(String inputPath, bool verbose) {
     // Read the file.
     var filename = path.basename(inputPath);
     var contents = new File(inputPath).readAsStringSync();
-    var file = new SourceFile(contents, url: path.toUri(inputPath));
+    var file = new SourceFile.fromString(contents, url: path.toUri(inputPath));
 
     // Parse the CSS.
     StyleSheet tree = _time(
