@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-export 'src/exit_codes.dart' show ExitCode;
+export 'src/exit_code.dart' show ExitCode;
 export 'src/permissions.dart' show isExecutable;
 export 'src/process_manager.dart' show ProcessManager, Spawn;
 export 'src/shared_stdin.dart' show SharedStdIn, sharedStdIn;
