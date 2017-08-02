@@ -35,8 +35,7 @@ class Scanner {
   /// Whether the scanner has emitted a [TokenType.endOfFile] token.
   bool _endOfFileEmitted = false;
 
-  Scanner(String selector)
-      : _scanner = new SpanScanner(selector);
+  Scanner(String selector) : _scanner = new SpanScanner(selector);
 
   /// Returns the next token that will be returned by [next].
   ///
@@ -75,19 +74,26 @@ class Scanner {
 
     _consumeWhitespace();
     if (_scanner.isDone) {
-      return new Token(
-          TokenType.endOfFile, _scanner.spanFrom(_scanner.state));
+      return new Token(TokenType.endOfFile, _scanner.spanFrom(_scanner.state));
     }
 
     switch (_scanner.peekChar()) {
-      case 0x28 /* ( */: return _scanOperator(TokenType.leftParen);
-      case 0x29 /* ) */: return _scanOperator(TokenType.rightParen);
-      case 0x3F /* ? */: return _scanOperator(TokenType.questionMark);
-      case 0x3A /* : */: return _scanOperator(TokenType.colon);
-      case 0x21 /* ! */: return _scanOperator(TokenType.not);
-      case 0x7C /* | */: return _scanOr();
-      case 0x26 /* & */: return _scanAnd();
-      default: return _scanIdentifier();
+      case 0x28 /* ( */ :
+        return _scanOperator(TokenType.leftParen);
+      case 0x29 /* ) */ :
+        return _scanOperator(TokenType.rightParen);
+      case 0x3F /* ? */ :
+        return _scanOperator(TokenType.questionMark);
+      case 0x3A /* : */ :
+        return _scanOperator(TokenType.colon);
+      case 0x21 /* ! */ :
+        return _scanOperator(TokenType.not);
+      case 0x7C /* | */ :
+        return _scanOr();
+      case 0x26 /* & */ :
+        return _scanAnd();
+      default:
+        return _scanIdentifier();
     }
   }
 

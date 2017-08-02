@@ -39,7 +39,7 @@ class VariableNode implements Node {
 
   String toString() => name;
 
-  bool operator==(other) => other is VariableNode && name == other.name;
+  bool operator ==(other) => other is VariableNode && name == other.name;
 
   int get hashCode => name.hashCode;
 }
@@ -57,11 +57,10 @@ class NotNode implements Node {
 
   accept(Visitor visitor) => visitor.visitNot(this);
 
-  String toString() => child is VariableNode || child is NotNode
-      ? "!$child"
-      : "!($child)";
+  String toString() =>
+      child is VariableNode || child is NotNode ? "!$child" : "!($child)";
 
-  bool operator==(other) => other is NotNode && child == other.child;
+  bool operator ==(other) => other is NotNode && child == other.child;
 
   int get hashCode => ~child.hashCode;
 }
@@ -86,17 +85,14 @@ class OrNode implements Node {
   accept(Visitor visitor) => visitor.visitOr(this);
 
   String toString() {
-    var string1 = left is AndNode || left is ConditionalNode
-        ? "($left)"
-        : left;
-    var string2 = right is AndNode || right is ConditionalNode
-        ? "($right)"
-        : right;
+    var string1 = left is AndNode || left is ConditionalNode ? "($left)" : left;
+    var string2 =
+        right is AndNode || right is ConditionalNode ? "($right)" : right;
 
     return "$string1 || $string2";
   }
 
-  bool operator==(other) =>
+  bool operator ==(other) =>
       other is OrNode && left == other.left && right == other.right;
 
   int get hashCode => left.hashCode ^ right.hashCode;
@@ -122,17 +118,14 @@ class AndNode implements Node {
   accept(Visitor visitor) => visitor.visitAnd(this);
 
   String toString() {
-    var string1 = left is OrNode || left is ConditionalNode
-        ? "($left)"
-        : left;
-    var string2 = right is OrNode || right is ConditionalNode
-        ? "($right)"
-        : right;
+    var string1 = left is OrNode || left is ConditionalNode ? "($left)" : left;
+    var string2 =
+        right is OrNode || right is ConditionalNode ? "($right)" : right;
 
     return "$string1 && $string2";
   }
 
-  bool operator==(other) =>
+  bool operator ==(other) =>
       other is AndNode && left == other.left && right == other.right;
 
   int get hashCode => left.hashCode ^ right.hashCode;
@@ -168,7 +161,7 @@ class ConditionalNode implements Node {
     return "$conditionString ? $trueString : $whenFalse";
   }
 
-  bool operator==(other) =>
+  bool operator ==(other) =>
       other is ConditionalNode &&
       condition == other.condition &&
       whenTrue == other.whenTrue &&

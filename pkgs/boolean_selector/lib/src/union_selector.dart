@@ -31,7 +31,7 @@ class UnionSelector implements BooleanSelector {
 
   String toString() => "($_selector1) && ($_selector2)";
 
-  bool operator==(other) =>
+  bool operator ==(other) =>
       other is UnionSelector &&
       _selector1 == other._selector1 &&
       _selector2 == other._selector2;

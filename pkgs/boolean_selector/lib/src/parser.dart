@@ -18,8 +18,7 @@ class Parser {
   /// The scanner that tokenizes the selector.
   final Scanner _scanner;
 
-  Parser(String selector)
-      : _scanner = new Scanner(selector);
+  Parser(String selector) : _scanner = new Scanner(selector);
 
   /// Parses the selector.
   ///

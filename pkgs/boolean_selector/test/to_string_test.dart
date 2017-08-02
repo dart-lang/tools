@@ -30,40 +30,42 @@ void main() {
         _expectToString("((a || b) || c) || d", "a || b || c || d");
       });
 
-      test("parenthesizes ands", () =>
-          _expectToString("a && b || c && d", "(a && b) || (c && d)"));
+      test("parenthesizes ands",
+          () => _expectToString("a && b || c && d", "(a && b) || (c && d)"));
 
-      test("parenthesizes conditions", () =>
-          _expectToString("(a ? b : c) || (e ? f : g)"));
+      test("parenthesizes conditions",
+          () => _expectToString("(a ? b : c) || (e ? f : g)"));
     });
 
     group("and", () {
       test("doesn't parenthesize variables", () => _expectToString("a && b"));
       test("doesn't parenthesize nots", () => _expectToString("!a && !b"));
 
-      test("parenthesizes ors", () =>
-          _expectToString("(a || b) && (c || d)", "(a || b) && (c || d)"));
+      test(
+          "parenthesizes ors",
+          () =>
+              _expectToString("(a || b) && (c || d)", "(a || b) && (c || d)"));
 
       test("doesn't parenthesize ands", () {
         _expectToString("a && b && c && d");
         _expectToString("((a && b) && c) && d", "a && b && c && d");
       });
 
-      test("parenthesizes conditions", () =>
-          _expectToString("(a ? b : c) && (e ? f : g)"));
+      test("parenthesizes conditions",
+          () => _expectToString("(a ? b : c) && (e ? f : g)"));
     });
 
     group("conditional", () {
-      test("doesn't parenthesize variables", () =>
-          _expectToString("a ? b : c"));
+      test(
+          "doesn't parenthesize variables", () => _expectToString("a ? b : c"));
 
       test("doesn't parenthesize nots", () => _expectToString("!a ? !b : !c"));
 
-      test("doesn't parenthesize ors", () =>
-          _expectToString("a || b ? c || d : e || f"));
+      test("doesn't parenthesize ors",
+          () => _expectToString("a || b ? c || d : e || f"));
 
-      test("doesn't parenthesize ands", () =>
-          _expectToString("a && b ? c && d : e && f"));
+      test("doesn't parenthesize ands",
+          () => _expectToString("a && b ? c && d : e && f"));
 
       test("parenthesizes non-trailing conditions", () {
         _expectToString("(a ? b : c) ? (e ? f : g) : h ? i : j");

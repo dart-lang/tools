@@ -54,7 +54,7 @@ class BooleanSelectorImpl implements BooleanSelector {
 
   String toString() => _selector.toString();
 
-  bool operator==(other) =>
+  bool operator ==(other) =>
       other is BooleanSelectorImpl && _selector == other._selector;
 
   int get hashCode => _selector.hashCode;

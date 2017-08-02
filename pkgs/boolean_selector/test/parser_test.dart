@@ -35,8 +35,7 @@ void main() {
       // Should not parse as "a || (b ? (c || d) : (e || f))".
       // Should not parse as "((a || b) ? (c || d) : e) || f".
       // Should not parse as "a || (b ? (c || d) : e) || f".
-      _expectToString("a || b ? c || d : e || f",
-          "a || b ? c || d : e || f");
+      _expectToString("a || b ? c || d : e || f", "a || b ? c || d : e || f");
     });
 
     test("with a conditional expression as branch 1", () {
