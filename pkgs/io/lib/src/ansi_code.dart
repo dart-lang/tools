@@ -8,8 +8,7 @@ library ansi_code;
 import 'dart:async';
 import 'dart:io' as io;
 
-/// Returns `true` if formatted ANSI output is enabled for [wrapWith] and
-/// [AnsiCode.wrap].
+/// Whether formatted ANSI output is enabled for [wrapWith] and [AnsiCode.wrap].
 ///
 /// By default, returns `true` if both `stdout.supportsAnsiEscapes` and
 /// `stderr.supportsAnsiEscapes` from `dart:io` are `true`.
