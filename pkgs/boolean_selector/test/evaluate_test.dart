@@ -46,7 +46,7 @@ void main() {
 ///
 /// By default, "true" is true and all other variables are "false".
 void _expectEval(String expression, bool result, {semantics}) {
-  var reason = expect(_eval(expression, semantics: semantics), equals(result),
+  expect(_eval(expression, semantics: semantics), equals(result),
       reason: 'Expected "$expression" to evaluate to $result.');
 }
 

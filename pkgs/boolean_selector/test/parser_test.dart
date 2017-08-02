@@ -249,7 +249,7 @@ void main() {
 }
 
 /// Parses [selector] and returns its root node.
-Node _parse(String selector) => new Parser(selector).parse();
+dynamic _parse(String selector) => new Parser(selector).parse();
 
 /// A matcher that asserts that a value is a [VariableNode] with the given
 /// [name].
