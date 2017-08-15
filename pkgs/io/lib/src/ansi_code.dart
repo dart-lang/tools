@@ -2,9 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO(kevmoo) provide library documentation.
-library ansi_code;
-
 import 'dart:async';
 import 'dart:io' as io;
 
@@ -92,17 +89,14 @@ class AnsiCode {
 /// Returns a [String] formatted with [codes].
 ///
 /// Returns `value` unchanged if
-///   * [value] is `null` or empty
-///   * [ansiOutputEnabled] is `false`
+///   * [value] is `null` or empty.
+///   * [ansiOutputEnabled] is `false`.
 ///   * [codes] is empty.
 ///
 /// Throws an [ArgumentError] if
-///   * [codes] contains more than one value of type
-///     [AnsiCodeType.background].
-///   * [codes] contains more than one value of type
-///     [AnsiCodeType.foreground].
-///   * [codes] contains more any value of type
-///     [AnsiCodeType.reset].
+///   * [codes] contains more than one value of type [AnsiCodeType.foreground].
+///   * [codes] contains more than one value of type [AnsiCodeType.background].
+///   * [codes] contains any value of type [AnsiCodeType.reset].
 String wrapWith(String value, Iterable<AnsiCode> codes) {
   // Eliminate duplicates
   final myCodes = codes.toSet();
@@ -265,6 +259,7 @@ const List<AnsiCode> styles = const [
   styleCrossedOut
 ];
 
+/// All of the [AnsiCode] values that represent [AnsiCodeType.foreground].
 const List<AnsiCode> foregroundColors = const [
   black,
   red,
@@ -285,6 +280,7 @@ const List<AnsiCode> foregroundColors = const [
   white
 ];
 
+/// All of the [AnsiCode] values that represent [AnsiCodeType.background].
 const List<AnsiCode> backgroundColors = const [
   backgroundBlack,
   backgroundRed,
