@@ -8,6 +8,9 @@ homepage: https://github.com/dart-lang/io
 environment:
   sdk: ">=1.22.0 <2.0.0"
 
+dependencies:
+  meta: ^1.0.2
+
 dev_dependencies:
   path: ^1.0.0
   test: ^0.12.0

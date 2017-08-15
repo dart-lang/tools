@@ -72,7 +72,6 @@ class Spawn implements io.Process {
   }
 
   @mustCallSuper
-  @visibleForOverriding
   void _onClosed() {}
 
   @override
