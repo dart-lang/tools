@@ -8,7 +8,7 @@ import 'package:io/ansi.dart';
 
 /// Prints a sample of all of the `AnsiCode` values.
 void main() {
-  if (ansiOutputEnabled) {
+  if (!ansiOutputEnabled) {
     print('`ansiOutputEnabled` is `false`.');
     print("Don't expect pretty output.");
   }
