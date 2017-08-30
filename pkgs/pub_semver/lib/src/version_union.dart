@@ -96,8 +96,7 @@ class VersionUnion implements VersionConstraint {
     ourRanges.moveNext();
     theirRanges.moveNext();
     while (ourRanges.current != null && theirRanges.current != null) {
-      var intersection = ourRanges.current
-          .intersect(theirRanges.current);
+      var intersection = ourRanges.current.intersect(theirRanges.current);
 
       if (!intersection.isEmpty) newRanges.add(intersection);
 

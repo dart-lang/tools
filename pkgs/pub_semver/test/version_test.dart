@@ -119,21 +119,23 @@ main() {
       expect(new Version.parse('01.2.3'), equals(new Version.parse('1.2.3')));
       expect(new Version.parse('1.02.3'), equals(new Version.parse('1.2.3')));
       expect(new Version.parse('1.2.03'), equals(new Version.parse('1.2.3')));
-      expect(new Version.parse('1.2.3-01'),
-          equals(new Version.parse('1.2.3-1')));
-      expect(new Version.parse('1.2.3+01'),
-          equals(new Version.parse('1.2.3+1')));
+      expect(
+          new Version.parse('1.2.3-01'), equals(new Version.parse('1.2.3-1')));
+      expect(
+          new Version.parse('1.2.3+01'), equals(new Version.parse('1.2.3+1')));
     });
   });
 
   test('allows()', () {
     expect(v123, allows(v123));
-    expect(v123, doesNotAllow(
-        new Version.parse('2.2.3'),
-        new Version.parse('1.3.3'),
-        new Version.parse('1.2.4'),
-        new Version.parse('1.2.3-dev'),
-        new Version.parse('1.2.3+build')));
+    expect(
+        v123,
+        doesNotAllow(
+            new Version.parse('2.2.3'),
+            new Version.parse('1.3.3'),
+            new Version.parse('1.2.4'),
+            new Version.parse('1.2.3-dev'),
+            new Version.parse('1.2.3+build')));
   });
 
   test('allowsAll()', () {
@@ -160,12 +162,12 @@ main() {
     expect(v123.intersect(v114).isEmpty, isTrue);
 
     // Intersecting a range returns the version if the range allows it.
-    expect(v123.intersect(new VersionRange(min: v114, max: v124)),
-        equals(v123));
+    expect(
+        v123.intersect(new VersionRange(min: v114, max: v124)), equals(v123));
 
     // Intersecting a range allows no versions if the range doesn't allow it.
-    expect(v114.intersect(new VersionRange(min: v123, max: v124)).isEmpty,
-        isTrue);
+    expect(
+        v114.intersect(new VersionRange(min: v123, max: v124)).isEmpty, isTrue);
   });
 
   group('union()', () {
@@ -194,7 +196,8 @@ main() {
           equals(new VersionRange(min: v114, max: v124, includeMin: true)));
     });
 
-    test("with a range allows both the range and the version if the range "
+    test(
+        "with a range allows both the range and the version if the range "
         "doesn't contain the version", () {
       var result = v123.union(new VersionRange(min: v003, max: v114));
       expect(result, allows(v123));

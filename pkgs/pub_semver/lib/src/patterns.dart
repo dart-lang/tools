@@ -3,10 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Regex that matches a version number at the beginning of a string.
-final START_VERSION = new RegExp(
-    r'^'                                        // Start at beginning.
-    r'(\d+).(\d+).(\d+)'                        // Version number.
-    r'(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?'    // Pre-release.
+final START_VERSION = new RegExp(r'^' // Start at beginning.
+    r'(\d+).(\d+).(\d+)' // Version number.
+    r'(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?' // Pre-release.
     r'(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?'); // Build.
 
 /// Like [START_VERSION] but matches the entire string.

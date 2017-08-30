@@ -89,15 +89,15 @@ class Version implements VersionConstraint, VersionRange {
   bool get includeMax => true;
 
   Version._(this.major, this.minor, this.patch, String preRelease, String build,
-            this._text)
+      this._text)
       : preRelease = preRelease == null ? [] : _splitParts(preRelease),
         build = build == null ? [] : _splitParts(build) {
-    if (major < 0) throw new ArgumentError(
-        'Major version must be non-negative.');
-    if (minor < 0) throw new ArgumentError(
-        'Minor version must be non-negative.');
-    if (patch < 0) throw new ArgumentError(
-        'Patch version must be non-negative.');
+    if (major < 0)
+      throw new ArgumentError('Major version must be non-negative.');
+    if (minor < 0)
+      throw new ArgumentError('Minor version must be non-negative.');
+    if (patch < 0)
+      throw new ArgumentError('Patch version must be non-negative.');
   }
 
   /// Creates a new [Version] object.
@@ -137,7 +137,8 @@ class Version implements VersionConstraint, VersionRange {
   static Version primary(List<Version> versions) {
     var primary;
     for (var version in versions) {
-      if (primary == null || (!version.isPreRelease && primary.isPreRelease) ||
+      if (primary == null ||
+          (!version.isPreRelease && primary.isPreRelease) ||
           (version.isPreRelease == primary.isPreRelease && version > primary)) {
         primary = version;
       }
@@ -161,13 +162,18 @@ class Version implements VersionConstraint, VersionRange {
 
   bool operator ==(other) {
     if (other is! Version) return false;
-    return major == other.major && minor == other.minor &&
+    return major == other.major &&
+        minor == other.minor &&
         patch == other.patch &&
         _equality.equals(preRelease, other.preRelease) &&
         _equality.equals(build, other.build);
   }
 
-  int get hashCode => major ^ minor ^ patch ^ _equality.hash(preRelease) ^
+  int get hashCode =>
+      major ^
+      minor ^
+      patch ^
+      _equality.hash(preRelease) ^
       _equality.hash(build);
 
   bool operator <(Version other) => compareTo(other) < 0;
@@ -253,14 +259,18 @@ class Version implements VersionConstraint, VersionRange {
     if (other is VersionRange) {
       if (other.min == this) {
         return new VersionRange(
-            min: other.min, max: other.max,
-            includeMin: true, includeMax: other.includeMax);
+            min: other.min,
+            max: other.max,
+            includeMin: true,
+            includeMax: other.includeMax);
       }
 
       if (other.max == this) {
         return new VersionRange(
-            min: other.min, max: other.max,
-            includeMin: other.includeMin, includeMax: true);
+            min: other.min,
+            max: other.max,
+            includeMin: other.includeMin,
+            includeMax: true);
       }
     }
 
