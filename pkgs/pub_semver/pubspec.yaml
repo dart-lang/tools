@@ -1,5 +1,5 @@
 name: pub_semver
-version: 1.3.2
+version: 1.3.3-dev
 author: Dart Team <misc@dartlang.org>
 description: >
  Versions and version constraints implementing pub's versioning policy. This
