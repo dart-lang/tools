@@ -3,10 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'patterns.dart';
+import 'utils.dart';
 import 'version.dart';
 import 'version_range.dart';
 import 'version_union.dart';
-import 'utils.dart';
 
 /// A [VersionConstraint] is a predicate that can determine whether a given
 /// version is valid or not.
