@@ -1,3 +1,7 @@
+## 1.1.5
+
+* Require Dart 1.23.0.
+
 ## 1.1.4
 
 * Throw an exception when listing globs whose initial paths don't exist in

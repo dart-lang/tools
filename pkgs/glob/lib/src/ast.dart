@@ -87,7 +87,7 @@ class SequenceNode extends AstNode {
     return new OptionsNode(sequences.map((sequence) {
       // Combine any adjacent LiteralNodes in [sequence].
       return new SequenceNode(
-          sequence.fold/*<List<AstNode>>*/([], (combined, node) {
+          sequence.fold<List<AstNode>>([], (combined, node) {
             if (combined.isEmpty ||
                 combined.last is! LiteralNode ||
                 node is! LiteralNode) {

@@ -193,8 +193,7 @@ class ListTree {
   List<FileSystemEntity> listSync({String root, bool followLinks: true}) {
     if (root == null) root = '.';
 
-    // TODO(nweiz): Remove the explicit annotation when sdk#26139 is fixed.
-    var result = _trees.keys.expand/*<FileSystemEntity>*/((rootDir) {
+    var result = _trees.keys.expand((rootDir) {
       var dir = rootDir == '.' ? root : rootDir;
       return _trees[rootDir].listSync(dir, followLinks: followLinks);
     });
