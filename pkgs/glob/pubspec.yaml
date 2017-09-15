@@ -5,11 +5,11 @@ homepage: https://github.com/dart-lang/glob
 description: Bash-style filename globbing.
 dependencies:
   async: "^1.2.0"
-  collection: ">=1.1.0 <2.0.0"
-  path: ">=1.3.0 <2.0.0"
+  collection: "^1.1.0"
+  path: "^1.3.0"
   string_scanner: ">=0.1.0 <2.0.0"
 dev_dependencies:
-  test: ">=0.12.0 <0.13.0"
+  test: "^0.12.0"
   test_descriptor: "^1.0.0"
 environment:
   sdk: ">=1.23.0 <2.0.0"
