@@ -1,4 +1,6 @@
-# Changelog
+## 0.1.2+1
+
+- Remove unneeded change to Dart SDK constraint.
 
 ## 0.1.2
 
