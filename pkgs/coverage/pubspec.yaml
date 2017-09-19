@@ -4,7 +4,7 @@ author: Dart Team <misc@dartlang.org>
 description: Coverage data manipulation and formatting
 homepage: https://github.com/dart-lang/coverage
 environment:
-  sdk: '>=1.16.0 <2.0.0-dev.infinity'
+  sdk: '>=1.16.0 <2.0.0'
 dependencies:
   args: '>=0.12.1 <1.0.0'
   async: ^1.8.0
