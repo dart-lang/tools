@@ -42,7 +42,7 @@ void main() {
     test('should output Hello from another process [via stdout]', () async {
       final spawn = await processManager.spawn(
         'dart',
-        arguments: [p.join('test', '_files', 'stdout_hello.dart')],
+        [p.join('test', '_files', 'stdout_hello.dart')],
       );
       await spawn.exitCode;
       expect(stdoutLog, ['Hello']);
@@ -51,7 +51,7 @@ void main() {
     test('should output Hello from another process [via stderr]', () async {
       final spawn = await processManager.spawn(
         'dart',
-        arguments: [p.join('test', '_files', 'stderr_hello.dart')],
+        [p.join('test', '_files', 'stderr_hello.dart')],
       );
       await spawn.exitCode;
       expect(stderrLog, ['Hello']);
@@ -60,13 +60,29 @@ void main() {
     test('should forward stdin to another process', () async {
       final spawn = await processManager.spawn(
         'dart',
-        arguments: [p.join('test', '_files', 'stdin_echo.dart')],
+        [p.join('test', '_files', 'stdin_echo.dart')],
       );
       spawn.stdin.writeln('Ping');
       await spawn.exitCode;
-      // TODO: https://github.com/dart-lang/sdk/issues/30119.
-      // expect(stdoutLog, ['You said: Ping', '\n']);
       expect(stdoutLog.join(''), contains('You said: Ping'));
+    });
+
+    group('should return a Process where', () {
+      test('.stdout is readable', () async {
+        final spawn = await processManager.spawn(
+          'dart',
+          [p.join('test', '_files', 'stdout_hello.dart')],
+        );
+        expect(await spawn.stdout.transform(UTF8.decoder).first, 'Hello');
+      });
+
+      test('.stderr is readable', () async {
+        final spawn = await processManager.spawn(
+          'dart',
+          [p.join('test', '_files', 'stderr_hello.dart')],
+        );
+        expect(await spawn.stderr.transform(UTF8.decoder).first, 'Hello');
+      });
     });
   });
 }

@@ -2,6 +2,15 @@ Contains utilities for the Dart VM's `dart:io`.
 
 [![Build Status](https://travis-ci.org/dart-lang/io.svg?branch=master)](https://travis-ci.org/dart-lang/io)
 
+## Contributing
+
+> **NOTE**: Due to the changing nature of the Dart SDK (towards 2.0.0), running
+> `dartfmt` requires the local executable:
+
+```sh
+$ pub run dart_style:format
+```
+
 ## Usage - `io.dart`
 
 ### Files

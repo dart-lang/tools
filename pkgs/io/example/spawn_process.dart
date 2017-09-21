@@ -12,19 +12,19 @@ Future<Null> main() async {
 
   // Runs dartfmt --version and outputs the result via stdout.
   print('Running dartfmt --version');
-  var spawn = await manager.spawn('dartfmt', arguments: ['--version']);
+  var spawn = await manager.spawn('dartfmt', ['--version']);
   await spawn.exitCode;
 
   // Runs dartfmt -n . and outputs the result via stdout.
   print('Running dartfmt -n .');
-  spawn = await manager.spawn('dartfmt', arguments: ['-n', '.']);
+  spawn = await manager.spawn('dartfmt', ['-n', '.']);
   await spawn.exitCode;
 
   // Runs pub publish. Upon hitting a blocking stdin state, you may directly
   // output to the processes's stdin via your own, similar to how a bash or
   // shell script would spawn a process.
   print('Running pub publish');
-  spawn = await manager.spawn('pub', arguments: ['publish']);
+  spawn = await manager.spawn('pub', ['publish']);
   await spawn.exitCode;
 
   // Closes stdin for the entire program.

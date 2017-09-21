@@ -52,11 +52,43 @@ abstract class ProcessManager {
   ///
   /// Returns a future that completes with a handle to the spawned process.
   Future<io.Process> spawn(
-    String executable, {
-    Iterable<String> arguments: const [],
-  }) async {
+    String executable,
+    Iterable<String> arguments,
+  ) async {
     final process = io.Process.start(executable, arguments.toList());
     return new _ForwardingSpawn(await process, _stdin, _stdout, _stderr);
+  }
+
+  /// Spawns a process by invoking [executable] with [arguments].
+  ///
+  /// This is _similar_ to [io.Process.start], but `stdout` and `stderr` is
+  /// forwarded/routed between the process and host, similar to how a shell
+  /// script works.
+  ///
+  /// Returns a future that completes with a handle to the spawned process.
+  Future<io.Process> spawnBackground(
+    String executable,
+    Iterable<String> arguments,
+  ) async {
+    final process = io.Process.start(executable, arguments.toList());
+    return new _ForwardingSpawn(
+      await process,
+      const Stream.empty(),
+      _stdout,
+      _stderr,
+    );
+  }
+
+  /// Spawns a process by invoking [executable] with [arguments].
+  ///
+  /// This is _identical to [io.Process.start] (no forwarding of I/O).
+  ///
+  /// Returns a future that completes with a handle to the spawned process.
+  Future<io.Process> spawnDetached(
+    String executable,
+    Iterable<String> arguments,
+  ) async {
+    return io.Process.start(executable, arguments.toList());
   }
 }
 
@@ -99,6 +131,8 @@ class _ForwardingSpawn extends Spawn {
   final StreamSubscription _stdInSub;
   final StreamSubscription _stdOutSub;
   final StreamSubscription _stdErrSub;
+  final StreamController<List<int>> _stdOut;
+  final StreamController<List<int>> _stdErr;
 
   factory _ForwardingSpawn(
     io.Process delegate,
@@ -106,14 +140,24 @@ class _ForwardingSpawn extends Spawn {
     io.IOSink stdout,
     io.IOSink stderr,
   ) {
+    final stdoutSelf = new StreamController<List<int>>();
+    final stderrSelf = new StreamController<List<int>>();
     final stdInSub = stdin.listen(delegate.stdin.add);
-    final stdOutSub = delegate.stdout.listen(stdout.add);
-    final stdErrSub = delegate.stderr.listen(stderr.add);
+    final stdOutSub = delegate.stdout.listen((event) {
+      stdout.add(event);
+      stdoutSelf.add(event);
+    });
+    final stdErrSub = delegate.stderr.listen((event) {
+      stderr.add(event);
+      stderrSelf.add(event);
+    });
     return new _ForwardingSpawn._delegate(
       delegate,
       stdInSub,
       stdOutSub,
       stdErrSub,
+      stdoutSelf,
+      stderrSelf,
     );
   }
 
@@ -122,6 +166,8 @@ class _ForwardingSpawn extends Spawn {
     this._stdInSub,
     this._stdOutSub,
     this._stdErrSub,
+    this._stdOut,
+    this._stdErr,
   )
       : super._(delegate);
 
@@ -132,6 +178,12 @@ class _ForwardingSpawn extends Spawn {
     _stdErrSub.cancel();
     super._onClosed();
   }
+
+  @override
+  Stream<List<int>> get stdout => _stdOut.stream;
+
+  @override
+  Stream<List<int>> get stderr => _stdErr.stream;
 }
 
 class _UnixProcessManager extends ProcessManager {
