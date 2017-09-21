@@ -1,3 +1,8 @@
+## 0.14.1
+
+* Deprecated `package:csslib/css.dart`.
+  Use `parser.dart` and `visitor.dart` instead.
+
 ## 0.14.0
 
 ### New features
