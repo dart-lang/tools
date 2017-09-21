@@ -78,8 +78,7 @@ class Pool {
   /// If [timeout] is passed, then if that much time passes without any activity
   /// all pending [request] futures will throw a [TimeoutException]. This is
   /// intended to avoid deadlocks.
-  Pool(this._maxAllocatedResources, {Duration timeout})
-      : _timeout = timeout {
+  Pool(this._maxAllocatedResources, {Duration timeout}) : _timeout = timeout {
     if (timeout != null) {
       // Start the timer canceled since we only want to start counting down once
       // we've run out of available resources.
@@ -140,21 +139,21 @@ class Pool {
   ///
   /// This may be called more than once; it returns the same [Future] each time.
   Future close() => _closeMemo.runOnce(() {
-    if (_closeGroup != null) return _closeGroup.future;
+        if (_closeGroup != null) return _closeGroup.future;
 
-    _resetTimer();
+        _resetTimer();
 
-    _closeGroup = new FutureGroup();
-    for (var callback in _onReleaseCallbacks) {
-      _closeGroup.add(new Future.sync(callback));
-    }
+        _closeGroup = new FutureGroup();
+        for (var callback in _onReleaseCallbacks) {
+          _closeGroup.add(new Future.sync(callback));
+        }
 
-    _allocatedResources -= _onReleaseCallbacks.length;
-    _onReleaseCallbacks.clear();
+        _allocatedResources -= _onReleaseCallbacks.length;
+        _onReleaseCallbacks.clear();
 
-    if (_allocatedResources == 0) _closeGroup.close();
-    return _closeGroup.future;
-  });
+        if (_allocatedResources == 0) _closeGroup.close();
+        return _closeGroup.future;
+      });
   final _closeMemo = new AsyncMemoizer();
 
   /// If there are any pending requests, this will fire the oldest one.
@@ -222,7 +221,8 @@ class Pool {
   void _onTimeout() {
     for (var completer in _requestedResources) {
       completer.completeError(
-          new TimeoutException("Pool deadlock: all resources have been "
+          new TimeoutException(
+              "Pool deadlock: all resources have been "
               "allocated for too long.",
               _timeout),
           new Chain.current());

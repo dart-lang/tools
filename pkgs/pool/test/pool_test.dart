@@ -299,9 +299,11 @@ void main() {
     test("pending requests are fulfilled", () async {
       var pool = new Pool(1);
       var resource1 = await pool.request();
-      expect(pool.request().then((resource2) {
-        resource2.release();
-      }), completes);
+      expect(
+          pool.request().then((resource2) {
+            resource2.release();
+          }),
+          completes);
       expect(pool.done, completes);
       expect(pool.close(), completes);
       resource1.release();
@@ -312,10 +314,12 @@ void main() {
       var resource1 = await pool.request();
 
       var completer = new Completer();
-      expect(pool.request().then((resource2) {
-        expect(completer.isCompleted, isTrue);
-        resource2.release();
-      }), completes);
+      expect(
+          pool.request().then((resource2) {
+            expect(completer.isCompleted, isTrue);
+            resource2.release();
+          }),
+          completes);
       expect(pool.close(), completes);
 
       resource1.allowRelease(() => completer.future);
@@ -333,11 +337,13 @@ void main() {
       var resource1Released = false;
       var resource2Released = false;
       var resource3Released = false;
-      expect(pool.close().then((_) {
-        expect(resource1Released, isTrue);
-        expect(resource2Released, isTrue);
-        expect(resource3Released, isTrue);
-      }), completes);
+      expect(
+          pool.close().then((_) {
+            expect(resource1Released, isTrue);
+            expect(resource2Released, isTrue);
+            expect(resource3Released, isTrue);
+          }),
+          completes);
 
       resource1Released = true;
       resource1.release();
@@ -360,9 +366,11 @@ void main() {
       // [completer].
       var completer = new Completer();
       resource.allowRelease(() => completer.future);
-      expect(pool.request().then((_) {
-        expect(completer.isCompleted, isTrue);
-      }), completes);
+      expect(
+          pool.request().then((_) {
+            expect(completer.isCompleted, isTrue);
+          }),
+          completes);
 
       await new Future.delayed(Duration.ZERO);
       pool.close();
@@ -381,10 +389,12 @@ void main() {
       var completer2 = new Completer();
       resource2.allowRelease(() => completer2.future);
 
-      expect(pool.close().then((_) {
-        expect(completer1.isCompleted, isTrue);
-        expect(completer2.isCompleted, isTrue);
-      }), completes);
+      expect(
+          pool.close().then((_) {
+            expect(completer1.isCompleted, isTrue);
+            expect(completer2.isCompleted, isTrue);
+          }),
+          completes);
 
       await new Future.delayed(Duration.ZERO);
       completer1.complete();
@@ -398,9 +408,11 @@ void main() {
       var resource = await pool.request();
 
       var completer = new Completer();
-      expect(pool.close().then((_) {
-        expect(completer.isCompleted, isTrue);
-      }), completes);
+      expect(
+          pool.close().then((_) {
+            expect(completer.isCompleted, isTrue);
+          }),
+          completes);
 
       await new Future.delayed(Duration.ZERO);
       resource.allowRelease(() => completer.future);
@@ -438,10 +450,10 @@ Function expectNoAsync() {
 ///
 /// This should only be called within a [FakeAsync.run] zone.
 Matcher get doesNotComplete => predicate((future) {
-  expect(future, new isInstanceOf<Future>());
+      expect(future, new isInstanceOf<Future>());
 
-  var stack = new Trace.current(1);
-  future.then((_) => registerException(
-      new TestFailure("Expected future not to complete."), stack));
-  return true;
-});
+      var stack = new Trace.current(1);
+      future.then((_) => registerException(
+          new TestFailure("Expected future not to complete."), stack));
+      return true;
+    });
