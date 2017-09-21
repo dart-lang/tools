@@ -110,8 +110,8 @@ class PreprocessorOptions {
     }
   }
 
-  static showUsage(parser) {
+  static showUsage(ArgParser parser) {
     print('Usage: css [options...] input.css');
-    print(parser.getUsage());
+    print(parser.usage);
   }
 }
