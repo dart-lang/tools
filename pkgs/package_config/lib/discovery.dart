@@ -33,6 +33,7 @@ Future<Packages> loadPackagesFile(Uri packagesFile,
     Map<String, Uri> packageMap = pkgfile.parse(bytes, packagesFile);
     return new MapPackages(packageMap);
   }
+
   if (packagesFile.scheme == "file") {
     File file = new File.fromUri(packagesFile);
     return parseBytes(await file.readAsBytes());
@@ -125,6 +126,7 @@ FileSystemEntity _findPackagesFile(String workingDirectory) {
     if (file.existsSync()) return file;
     return null;
   }
+
   // Check for $cwd/.packages
   var packagesCfgFile = checkForConfigFile(dir);
   if (packagesCfgFile != null) return packagesCfgFile;

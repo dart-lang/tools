@@ -169,6 +169,7 @@ main() {
       }
       throw "not found";
     }
+
     // A non-file: location with no .packages or packages/:
     // Assumes a packages dir exists, and resolves relative to that.
     Packages resolver;
@@ -189,6 +190,7 @@ main() {
     Future<List<int>> loader(Uri file) async {
       throw "not found";
     }
+
     // A non-file: location with no .packages or packages/:
     // Assumes a packages dir exists, and resolves relative to that.
     Packages resolver;

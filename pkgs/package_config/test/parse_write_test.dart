@@ -34,6 +34,7 @@ main() {
           });
         });
       }
+
       var lowerDir = baseDir.resolve("path3/path4/");
       var higherDir = baseDir.resolve("../");
       var parallelDir = baseDir.resolve("../path3/");
