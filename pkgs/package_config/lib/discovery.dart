@@ -210,8 +210,8 @@ Future<List<int>> _httpGet(Uri uri) async {
   HttpClientRequest request = await client.getUrl(uri);
   HttpClientResponse response = await request.close();
   if (response.statusCode != HttpStatus.OK) {
-    throw 'Failure getting $uri: '
-        '${response.statusCode} ${response.reasonPhrase}';
+    throw new HttpException('${response.statusCode} ${response.reasonPhrase}',
+        uri: uri);
   }
   List<List<int>> splitContent = await response.toList();
   int totalLength = 0;

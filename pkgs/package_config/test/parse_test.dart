@@ -102,16 +102,18 @@ main() {
     for (int i = 0; i <= 255; i++) {
       if (map[i] == true) continue;
       var char = new String.fromCharCode(i);
-      expect(() => doParse("x${char}x:x", null), throws);
+      expect(() => doParse("x${char}x:x", null),
+          anyOf(throwsNoSuchMethodError, throwsFormatException));
     }
   });
 
   test("no escapes", () {
-    expect(() => doParse("x%41x:x", base), throws);
+    expect(() => doParse("x%41x:x", base), throwsFormatException);
   });
 
   test("same name twice", () {
-    expect(() => doParse(singleRelativeSample * 2, base), throws);
+    expect(
+        () => doParse(singleRelativeSample * 2, base), throwsFormatException);
   });
 
   for (String invalidSample in invalid) {

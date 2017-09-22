@@ -78,7 +78,7 @@ void validatePackagesDir(Packages resolver, Uri location) {
   if (location.scheme == "file") {
     expect(resolver.packages, unorderedEquals(["foo", "bar", "baz"]));
   } else {
-    expect(() => resolver.packages, throws);
+    expect(() => resolver.packages, throwsUnsupportedError);
   }
 }
 

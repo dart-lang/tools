@@ -41,7 +41,7 @@ void validatePackagesDir(Packages resolver, Uri location) {
   if (location.scheme == "file") {
     expect(resolver.packages, unorderedEquals(["foo", "bar", "baz"]));
   } else {
-    expect(() => resolver.packages, throws);
+    expect(() => resolver.packages, throwsUnsupportedError);
   }
 }
 
@@ -228,13 +228,16 @@ main() {
 
   generalTest("loadPackagesFile not found", {}, (Uri directory) async {
     Uri file = directory.resolve(".packages");
-    expect(loadPackagesFile(file), throws);
+    expect(
+        loadPackagesFile(file),
+        throwsA(anyOf(new isInstanceOf<FileSystemException>(),
+            new isInstanceOf<HttpException>())));
   });
 
   generalTest("loadPackagesFile syntax error", {".packages": "syntax error"},
       (Uri directory) async {
     Uri file = directory.resolve(".packages");
-    expect(loadPackagesFile(file), throws);
+    expect(loadPackagesFile(file), throwsFormatException);
   });
 
   generalTest("getPackagesDir", {
