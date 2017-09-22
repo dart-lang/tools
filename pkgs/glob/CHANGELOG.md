@@ -1,5 +1,7 @@
 ## 1.1.5
 
+* Declare support for `async` 2.0.0.
+
 * Require Dart 1.23.0.
 
 ## 1.1.4
