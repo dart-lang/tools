@@ -1,3 +1,7 @@
+## 1.3.3
+
+* Declare support for `async` 2.0.0.
+
 ## 1.3.2
 
 * Update to make the code work with strong-mode clean Zone API.
