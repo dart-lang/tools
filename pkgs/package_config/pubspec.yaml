@@ -5,7 +5,7 @@ author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/package_config
 
 environment:
-  sdk: '>=1.11.0 <2.0.0-dev.infinity'
+  sdk: '>=1.11.0 <2.0.0'
 
 dependencies:
   charcode: ^1.1.0

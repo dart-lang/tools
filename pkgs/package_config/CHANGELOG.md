@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Removed unneeded dependency constraint on SDK.
+
 ## 1.0.2
 
 - Update SDK constraint to be 2.0.0 dev friendly.
