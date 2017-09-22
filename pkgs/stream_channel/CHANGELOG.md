@@ -1,3 +1,7 @@
+## 1.6.2
+
+* Declare support for `async` 2.0.0.
+
 ## 1.6.1
 
 * Fix the type of `StreamChannel.transform()`. This previously inverted the
