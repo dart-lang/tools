@@ -1,13 +1,13 @@
-## 0.9.3-dev - unreleased
+## 0.9.3 - 2017-10-02
 
- * Strong mode fixes.
+ * Strong mode fixes as of Dart SDK 1.24.0.
  * Restrict the SDK lower version constraint to `>=1.21.0`. Required for method
    generics.
  * Eliminate dependency on package:async.
 
 ## 0.9.2 - 2017-02-03
 
- * Strong mode fixes as of Dart SDK 1.22.0
+ * Strong mode fixes as of Dart SDK 1.22.0.
 
 ## 0.9.1 - 2017-01-18
 
