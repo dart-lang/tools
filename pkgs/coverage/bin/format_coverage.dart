@@ -184,8 +184,7 @@ Environment parseArgs(List<String> arguments) {
     env.output = outfile.openWrite();
   }
 
-  env.reportOn =
-      args['report-on'].isNotEmpty ? args['report-on'] : null;
+  env.reportOn = args['report-on'].isNotEmpty ? args['report-on'] : null;
 
   env.bazel = args['bazel'];
   env.bazelWorkspace = args['bazel-workspace'];
