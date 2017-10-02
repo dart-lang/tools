@@ -1,7 +1,8 @@
 ## 0.9.3-dev - unreleased
 
  * Strong mode fixes.
- * Rev the SDK constraint to `<2.0.0-dev.infinity`.
+ * Restrict the SDK lower version constraint to `>=1.21.0`. Required for method
+   generics.
  * Eliminate dependency on package:async.
 
 ## 0.9.2 - 2017-02-03
