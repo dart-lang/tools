@@ -17,7 +17,9 @@ processManager.spawn('dart', ['--version']);
 - Added `ProcessManager#spawnDetached`, which does not forward any I/O.
 
 - Added the `shellSplit()` function, which parses a list of arguments in the
-  same manner as the POSIX shell.
+  same manner as [the POSIX shell][what_is_posix_shell].
+  
+[what_is_posix_shell]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html
 
 ## 0.2.0
 
