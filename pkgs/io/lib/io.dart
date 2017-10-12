@@ -6,3 +6,4 @@ export 'src/exit_code.dart' show ExitCode;
 export 'src/permissions.dart' show isExecutable;
 export 'src/process_manager.dart' show ProcessManager, Spawn;
 export 'src/shared_stdin.dart' show SharedStdIn, sharedStdIn;
+export 'src/shell_words.dart' show shellSplit;
