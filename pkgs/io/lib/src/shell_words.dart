@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: comment_references
+
 import 'package:charcode/charcode.dart';
 import 'package:string_scanner/string_scanner.dart';
 
@@ -20,9 +22,9 @@ import 'package:string_scanner/string_scanner.dart';
 ///
 /// Throws a [FormatException] if [command] isn't a valid shell command.
 List<String> shellSplit(String command) {
-  var scanner = new StringScanner(command);
-  var results = <String>[];
-  var token = new StringBuffer();
+  final scanner = new StringScanner(command);
+  final results = <String>[];
+  final token = new StringBuffer();
 
   // Whether a token is being parsed, as opposed to a separator character. This
   // is different than just [token.isEmpty], because empty quoted tokens can
@@ -30,7 +32,7 @@ List<String> shellSplit(String command) {
   var hasToken = false;
 
   while (!scanner.isDone) {
-    var next = scanner.readChar();
+    final next = scanner.readChar();
     switch (next) {
       case $backslash:
         // Section 2.2.1: A <backslash> that is not quoted shall preserve the
@@ -51,7 +53,7 @@ List<String> shellSplit(String command) {
         // Section 2.2.2: Enclosing characters in single-quotes ( '' ) shall
         // preserve the literal value of each character within the
         // single-quotes. A single-quote cannot occur within single-quotes.
-        var firstQuote = scanner.position - 1;
+        final firstQuote = scanner.position - 1;
         while (!scanner.scanChar($single_quote)) {
           _checkUnmatchedQuote(scanner, firstQuote);
           token.writeCharCode(scanner.readChar());
@@ -68,7 +70,7 @@ List<String> shellSplit(String command) {
         // (Note that this code doesn't preserve special behavior of backquote
         // or dollar sign within double quotes, since those are dynamic
         // features.)
-        var firstQuote = scanner.position - 1;
+        final firstQuote = scanner.position - 1;
         while (!scanner.scanChar($double_quote)) {
           _checkUnmatchedQuote(scanner, firstQuote);
 
@@ -80,7 +82,7 @@ List<String> shellSplit(String command) {
             // by one of the following characters when considered special:
             //
             //     $ ` " \ <newline>
-            var next = scanner.readChar();
+            final next = scanner.readChar();
             if (next == $lf) continue;
             if (next == $dollar ||
                 next == $backquote ||
@@ -88,8 +90,7 @@ List<String> shellSplit(String command) {
                 next == $backslash) {
               token.writeCharCode(next);
             } else {
-              token.writeCharCode($backslash);
-              token.writeCharCode(next);
+              token..writeCharCode($backslash)..writeCharCode(next);
             }
           } else {
             token.writeCharCode(scanner.readChar());
@@ -116,6 +117,7 @@ List<String> shellSplit(String command) {
       case $space:
       case $tab:
       case $lf:
+        // ignore: invariant_booleans
         if (hasToken) results.add(token.toString());
         hasToken = false;
         token.clear();
@@ -136,7 +138,7 @@ List<String> shellSplit(String command) {
 /// quote matching the one at position [openingQuote] is missing.
 void _checkUnmatchedQuote(StringScanner scanner, int openingQuote) {
   if (!scanner.isDone) return;
-  var type = scanner.substring(openingQuote, openingQuote + 1) == '"'
+  final type = scanner.substring(openingQuote, openingQuote + 1) == '"'
       ? "double"
       : "single";
   scanner.error("Unmatched $type quote.", position: openingQuote, length: 1);
