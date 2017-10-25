@@ -2,10 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
 String fooSync(int x) {
+  if (x == 42) {
+    return '*' * x;
+  }
+  return new List.generate(x, (_) => 'xyzzy').join(' ');
+}
+
+Future<String> fooAsync(int x) async {
   if (x == 42) {
     return '*' * x;
   }
@@ -19,8 +27,9 @@ void isolateTask(List<dynamic> threeThings) {
   sleep(const Duration(milliseconds: 500));
 
   fooSync(42);
-
-  SendPort port = threeThings.first;
-  int sum = threeThings[1] + threeThings[2];
-  port.send(sum);
+  fooAsync(42).then((_) {
+    SendPort port = threeThings.first;
+    int sum = threeThings[1] + threeThings[2];
+    port.send(sum);
+  });
 }

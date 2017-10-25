@@ -57,8 +57,23 @@ void main() {
     expect(hitMap, contains(_sampleAppFileUri));
 
     Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
-    expect(
-        isolateFile, {9: 1, 10: 1, 12: 0, 19: 1, 21: 1, 23: 1, 24: 3, 25: 1});
+    expect(isolateFile, {
+      10: 1,
+      11: 1,
+      13: 0,
+      17: 1,
+      18: 1,
+      20: 0,
+      // TODO(cbracken) remove line 21 coverage expectation when fixed:
+      // https://github.com/dart-lang/coverage/issues/196
+      21: 0,
+      27: 1,
+      29: 1,
+      30: 2,
+      31: 1,
+      32: 3,
+      33: 1,
+    });
   });
 
   test('parseCoverage', () async {
