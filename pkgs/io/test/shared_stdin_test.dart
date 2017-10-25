@@ -43,4 +43,37 @@ void main() {
     await active.cancel();
     expect(() => sharedStdIn.listen((_) {}), returnsNormally);
   });
+
+  test('should return a stream of lines', () async {
+    expect(
+      sharedStdIn.lines(),
+      emitsInOrder(<dynamic>[
+        'I',
+        'Think',
+        'Therefore',
+        'I',
+        'Am',
+      ]),
+    );
+    [
+      'I\nThink\n',
+      'Therefore\n',
+      'I\n',
+      'Am\n',
+    ].forEach(fakeStdIn.add);
+  });
+
+  test('should return the next line', () {
+    expect(sharedStdIn.nextLine(), completion('Hello World'));
+    fakeStdIn.add('Hello World\n');
+  });
+
+  test('should allow listening for new lines multiple times', () async {
+    expect(sharedStdIn.nextLine(), completion('Hello World'));
+    fakeStdIn.add('Hello World\n');
+    await new Future<Null>.value();
+
+    expect(sharedStdIn.nextLine(), completion('Hello World'));
+    fakeStdIn.add('Hello World\n');
+  });
 }

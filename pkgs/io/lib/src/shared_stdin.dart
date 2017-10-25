@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:meta/meta.dart';
@@ -30,6 +31,28 @@ class SharedStdIn extends Stream<List<int>> {
 
   SharedStdIn([Stream<List<int>> stream]) {
     _sub = (stream ??= stdin).listen(_onInput);
+  }
+
+  /// Returns a future that completes with the next line.
+  ///
+  /// This is similar to the standard [Stdin.readLineSync], but asynchronous.
+  Future<String> nextLine({Encoding encoding: SYSTEM_ENCODING}) {
+    return lines(encoding: encoding).first;
+  }
+
+  /// Returns the stream transformed as UTF8 strings separated by line breaks.
+  ///
+  /// This is similar to synchronous code using [Stdin.readLineSync]:
+  /// ```dart
+  /// while (true) {
+  ///   var line = stdin.readLineSync();
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// ... but asynchronous.
+  Stream<String> lines({Encoding encoding: SYSTEM_ENCODING}) {
+    return transform(UTF8.decoder).transform(const LineSplitter());
   }
 
   void _onInput(List<int> event) => _getCurrent().add(event);
