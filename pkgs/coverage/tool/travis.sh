@@ -17,7 +17,7 @@ dartanalyzer $DARTANALYZER_FLAGS \
   bin/format_coverage.dart \
   lib/coverage.dart
 
-# Verify that dartfmt has been run
+# Verify that dartfmt has been run.
 echo "Checking dartfmt..."
 if [[ $(dartfmt -n --set-exit-if-changed lib/ test/) ]]; then
 	echo "Failed dartfmt check: run dartfmt -w lib/ test/"
@@ -28,13 +28,29 @@ fi
 echo "Running tests..."
 pub run test
 
-# Install dart_coveralls; gather and send coverage data.
+# Gather coverage and upload to Coveralls.
 if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "stable" ]; then
-  echo "Running coverage..."
-  pub global activate dart_coveralls
-  pub global run dart_coveralls report \
-    --retry 2 \
-    --exclude-test-files \
-    --debug \
-    test/test_all.dart
+  OBS_PORT=9292
+  echo "Collecting coverage on port $OBS_PORT..."
+
+  # Start tests in one VM.
+  dart \
+    --enable-vm-service=$OBS_PORT \
+    --pause-isolates-on-exit \
+    test/test_all.dart &
+
+  # Run the coverage collector to generate the JSON coverage report.
+  dart bin/collect_coverage.dart \
+    --port=$OBS_PORT \
+    --out=var/coverage.json \
+    --wait-paused \
+    --resume-isolates
+
+  echo "Generating LCOV report..."
+  dart bin/format_coverage.dart \
+    --lcov \
+    --in=var/coverage.json \
+    --out=var/lcov.info \
+    --packages=.packages \
+    --report-on=lib
 fi
