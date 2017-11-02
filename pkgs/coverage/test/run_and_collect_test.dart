@@ -64,6 +64,13 @@ void main() {
     // See: https://github.com/dart-lang/coverage/issues/196
     if (Platform.version.startsWith('1.')) {
       expectedHits[21] = 0;
+    } else {
+      // Dart VMs version 2.0.0-dev.6.0 mark the opening brace of a function as
+      // coverable.
+      expectedHits[9] = 1;
+      expectedHits[16] = 1;
+      expectedHits[26] = 1;
+      expectedHits[30] = 3;
     }
     expect(isolateFile, expectedHits);
   });
