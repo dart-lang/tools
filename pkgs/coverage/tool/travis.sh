@@ -7,6 +7,9 @@
 # Fast fail the script on failures.
 set -e
 
+# Run pub get to fetch packages.
+pub get
+
 # Verify that the libraries are error and warning-free.
 echo "Running dartanalyzer..."
 dartanalyzer $DARTANALYZER_FLAGS \
