@@ -4,6 +4,8 @@
 
 library coverage.test.run_and_collect_test;
 
+import 'dart:io';
+
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -43,22 +45,26 @@ void main() {
     expect(hitMap, contains(_sampleAppFileUri));
 
     Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
-    expect(isolateFile, {
+    Map<int, int> expectedHits = {
       10: 1,
       11: 1,
       13: 0,
       17: 1,
       18: 2,
       20: 0,
-      // TODO(cbracken) remove line 21 coverage expectation when fixed:
-      // https://github.com/dart-lang/coverage/issues/196
-      21: 0,
       27: 1,
       29: 1,
       30: 2,
       31: 1,
       32: 3,
       33: 1,
-    });
+    };
+    // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
+    // closing brace of async function blocks.
+    // See: https://github.com/dart-lang/coverage/issues/196
+    if (Platform.version.startsWith('1.')) {
+      expectedHits[21] = 0;
+    }
+    expect(isolateFile, expectedHits);
   });
 }
