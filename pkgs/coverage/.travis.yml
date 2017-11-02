@@ -2,6 +2,10 @@ language: dart
 dart:
   - dev
   - stable
+install:
+  - gem install coveralls-lcov
 script: ./tool/travis.sh
+after_success:
+  - coveralls-lcov var/lcov.info
 env:
   - DARTANALYZER_FLAGS=--fatal-warnings
