@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library coverage.collect;
-
 import 'dart:async';
 
 import 'package:vm_service_client/vm_service_client.dart';

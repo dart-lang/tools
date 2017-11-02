@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library coverage.run_and_collect;
-
 import 'dart:async';
 import 'dart:convert' show UTF8, LineSplitter;
 import 'dart:io';
