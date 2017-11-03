@@ -1,3 +1,8 @@
+## 0.1.6
+
+* Update the worker_protocol.pb.dart file with the latest proto generator.
+* Add support for package:async 2.x and package:protobuf 6.x.
+
 ## 0.1.5
 
 * Change TestStdinAsync.controller to StreamController<List<int>> (instead of

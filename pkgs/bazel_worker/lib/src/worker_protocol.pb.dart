@@ -5,14 +5,17 @@
 ///
 //  Generated code. Do not modify.
 ///
+// ignore_for_file: non_constant_identifier_names,library_prefixes
 library blaze.worker_worker_protocol;
 
+// ignore: UNUSED_SHOWN_NAME
+import 'dart:core' show int, bool, double, String, List, override;
 import 'package:protobuf/protobuf.dart';
 
 class Input extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('Input')
-    ..a/*<String>*/(1, 'path', PbFieldType.OS)
-    ..a/*<List<int>>*/(2, 'digest', PbFieldType.OY)
+    ..a<String>(1, 'path', PbFieldType.OS)
+    ..a<List<int>>(2, 'digest', PbFieldType.OY)
     ..hasRequiredFields = false;
 
   Input() : super();
@@ -35,7 +38,7 @@ class Input extends GeneratedMessage {
   }
 
   String get path => $_get(0, 1, '');
-  void set path(String v) {
+  set path(String v) {
     $_setString(0, 1, v);
   }
 
@@ -43,7 +46,7 @@ class Input extends GeneratedMessage {
   void clearPath() => clearField(1);
 
   List<int> get digest => $_get(1, 2, null);
-  void set digest(List<int> v) {
+  set digest(List<int> v) {
     $_setBytes(1, 2, v);
   }
 
@@ -55,8 +58,8 @@ class _ReadonlyInput extends Input with ReadonlyMessageMixin {}
 
 class WorkRequest extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('WorkRequest')
-    ..p/*<String>*/(1, 'arguments', PbFieldType.PS)
-    ..pp/*<Input>*/(2, 'inputs', PbFieldType.PM, Input.$checkItem, Input.create)
+    ..p<String>(1, 'arguments', PbFieldType.PS)
+    ..pp<Input>(2, 'inputs', PbFieldType.PM, Input.$checkItem, Input.create)
     ..hasRequiredFields = false;
 
   WorkRequest() : super();
@@ -89,8 +92,8 @@ class _ReadonlyWorkRequest extends WorkRequest with ReadonlyMessageMixin {}
 
 class WorkResponse extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('WorkResponse')
-    ..a/*<int>*/(1, 'exitCode', PbFieldType.O3)
-    ..a/*<String>*/(2, 'output', PbFieldType.OS)
+    ..a<int>(1, 'exitCode', PbFieldType.O3)
+    ..a<String>(2, 'output', PbFieldType.OS)
     ..hasRequiredFields = false;
 
   WorkResponse() : super();
@@ -116,7 +119,7 @@ class WorkResponse extends GeneratedMessage {
   }
 
   int get exitCode => $_get(0, 1, 0);
-  void set exitCode(int v) {
+  set exitCode(int v) {
     $_setUnsignedInt32(0, 1, v);
   }
 
@@ -124,7 +127,7 @@ class WorkResponse extends GeneratedMessage {
   void clearExitCode() => clearField(1);
 
   String get output => $_get(1, 2, '');
-  void set output(String v) {
+  set output(String v) {
     $_setString(1, 2, v);
   }
 
@@ -133,27 +136,3 @@ class WorkResponse extends GeneratedMessage {
 }
 
 class _ReadonlyWorkResponse extends WorkResponse with ReadonlyMessageMixin {}
-
-const Input$json = const {
-  '1': 'Input',
-  '2': const [
-    const {'1': 'path', '3': 1, '4': 1, '5': 9},
-    const {'1': 'digest', '3': 2, '4': 1, '5': 12},
-  ],
-};
-
-const WorkRequest$json = const {
-  '1': 'WorkRequest',
-  '2': const [
-    const {'1': 'arguments', '3': 1, '4': 3, '5': 9},
-    const {'1': 'inputs', '3': 2, '4': 3, '5': 11, '6': '.blaze.worker.Input'},
-  ],
-};
-
-const WorkResponse$json = const {
-  '1': 'WorkResponse',
-  '2': const [
-    const {'1': 'exit_code', '3': 1, '4': 1, '5': 5},
-    const {'1': 'output', '3': 2, '4': 1, '5': 9},
-  ],
-};
