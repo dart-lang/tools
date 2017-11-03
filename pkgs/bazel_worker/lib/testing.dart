@@ -50,8 +50,8 @@ class TestStdinSync implements TestStdin {
 /// Note: You must call [close] in order for the loop to exit properly.
 class TestStdinAsync implements TestStdin {
   /// Controls the stream for async delivery of bytes.
-  final StreamController _controller = new StreamController();
-  StreamController get controller => _controller;
+  final StreamController<List<int>> _controller = new StreamController();
+  StreamController<List<int>> get controller => _controller;
 
   /// Adds all the [bytes] to this stream.
   void addInputBytes(List<int> bytes) {
@@ -67,9 +67,7 @@ class TestStdinAsync implements TestStdin {
   StreamSubscription<List<int>> listen(onData(List<int> bytes),
       {Function onError, void onDone(), bool cancelOnError}) {
     return _controller.stream.listen(onData,
-        onError: onError,
-        onDone: onDone,
-        cancelOnError: cancelOnError) as StreamSubscription<List<int>>;
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   @override

@@ -48,13 +48,13 @@ void main() {
   });
 }
 
-void runTests/*<T extends TestWorkerConnection>*/(
+void runTests<T extends TestWorkerConnection>(
     TestStdin stdinFactory(),
-    /*=T*/ workerConnectionFactory(Stdin stdin, Stdout stdout),
-    TestWorkerLoop workerLoopFactory(/*=T*/ connection)) {
+    T workerConnectionFactory(Stdin stdin, Stdout stdout),
+    TestWorkerLoop workerLoopFactory(T connection)) {
   TestStdin stdinStream;
   TestStdoutStream stdoutStream;
-  var/*=T*/ connection;
+  T connection;
   TestWorkerLoop workerLoop;
 
   setUp(() {
