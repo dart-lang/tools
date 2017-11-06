@@ -21,15 +21,14 @@ void main() {
         expect(await isExecutable(shellNotExec), isFalse);
       });
     }, testOn: '!windows');
-    group('on shell scripts [windows]', () {
-      test('should always return true', () {
-        test('should return true for "is_executable.sh"', () async {
-          expect(await isExecutable(shellIsExec, isWindows: true), isTrue);
-        });
 
-        test('should return true for "is_not_executable.sh"', () async {
-          expect(await isExecutable(shellNotExec, isWindows: true), isTrue);
-        });
+    group('on shell scripts [windows]', () {
+      test('should return true for "is_executable.sh"', () async {
+        expect(await isExecutable(shellIsExec, isWindows: true), isTrue);
+      });
+
+      test('should return true for "is_not_executable.sh"', () async {
+        expect(await isExecutable(shellNotExec, isWindows: true), isTrue);
       });
     });
   });
