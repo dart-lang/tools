@@ -13,12 +13,9 @@ import 'package:test/test.dart';
 
 final _sampleAppPath = p.join('test', 'test_files', 'test_app.dart');
 final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
-final _collectAppPath = p.join('bin', 'collect_coverage.dart');
 
 final _sampleAppFileUri = p.toUri(p.absolute(_sampleAppPath)).toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
-
-const _timeout = const Duration(seconds: 5);
 
 void main() {
   test('validate hitMap', () async {

@@ -157,7 +157,7 @@ class Loader {
   final List<String> failed = [];
 
   /// Loads an imported resource and returns a [Future] with a [List] of lines.
-  /// Returns [null] if the resource could not be loaded.
+  /// Returns `null` if the resource could not be loaded.
   Future<List<String>> load(String path) async {
     try {
       return new File(path).readAsLines();
