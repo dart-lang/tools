@@ -23,7 +23,7 @@ Future<String> fooAsync(int x) async {
 /// The number of covered lines is tested and expected to be 4.
 ///
 /// If you modify this method, you may have to update the tests!
-void isolateTask(List<dynamic> threeThings) {
+void isolateTask(dynamic threeThings) {
   sleep(const Duration(milliseconds: 500));
 
   fooSync(42);

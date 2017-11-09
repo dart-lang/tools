@@ -26,7 +26,8 @@ void main() {
     List coverage = json['coverage'];
     expect(coverage, isNotEmpty);
 
-    var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
+    var sources = coverage.fold(<String, dynamic>{},
+        (Map<String, dynamic> map, dynamic value) {
       String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
