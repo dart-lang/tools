@@ -7,6 +7,6 @@ dependencies:
   stack_trace: '>=0.9.1 <2.0.0'
   stream_channel: '^1.1.0'
 dev_dependencies:
-  test: "^0.12.21"
+  test: "^0.12.28"
 environment:
   sdk: ">=1.8.0 <2.0.0"
