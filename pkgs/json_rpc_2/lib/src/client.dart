@@ -137,10 +137,7 @@ class Client {
     }
     if (isClosed) throw new StateError("The client is closed.");
 
-    var message = <String, dynamic>{
-      "jsonrpc": "2.0",
-      "method": method
-    };
+    var message = <String, dynamic>{"jsonrpc": "2.0", "method": method};
     if (id != null) message["id"] = id;
     if (parameters != null) message["params"] = parameters;
 
@@ -190,10 +187,10 @@ class Client {
     if (response.containsKey("result")) {
       request.completer.complete(response["result"]);
     } else {
-      request.completer.completeError(new RpcException(
-            response["error"]["code"],
-            response["error"]["message"],
-            data: response["error"]["data"]),
+      request.completer.completeError(
+          new RpcException(
+              response["error"]["code"], response["error"]["message"],
+              data: response["error"]["data"]),
           request.chain);
     }
   }

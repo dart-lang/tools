@@ -24,16 +24,13 @@ void main() {
     client.listen();
 
     expect(requestController.stream.first.then((request) {
-      expect(request, allOf([
-        containsPair('jsonrpc', '2.0'),
-        containsPair('method', 'foo')
-      ]));
+      expect(
+          request,
+          allOf(
+              [containsPair('jsonrpc', '2.0'), containsPair('method', 'foo')]));
 
-      responseController.add({
-        'jsonrpc': '2.0',
-        'result': 'bar',
-        'id': request['id']
-      });
+      responseController
+          .add({'jsonrpc': '2.0', 'result': 'bar', 'id': request['id']});
     }), completes);
 
     client.sendRequest('foo');

@@ -51,15 +51,12 @@ class ChannelManager {
     }
     _listenCalled = true;
 
-    _channel.stream.listen(handleInput,
-        onError: (error, stackTrace) {
-          _doneCompleter.completeError(error, stackTrace);
-          _channel.sink.close();
-        },
-        onDone: () {
-          if (!_doneCompleter.isCompleted) _doneCompleter.complete();
-        },
-        cancelOnError: true);
+    _channel.stream.listen(handleInput, onError: (error, stackTrace) {
+      _doneCompleter.completeError(error, stackTrace);
+      _channel.sink.close();
+    }, onDone: () {
+      if (!_doneCompleter.isCompleted) _doneCompleter.complete();
+    }, cancelOnError: true);
 
     return done;
   }

@@ -34,11 +34,15 @@ void main() {
       'id': 1234
     });
 
-    expect(responseController.stream.first, completion(equals({
-      'jsonrpc': '2.0',
-      'result': {'params': {'param': 'value'}},
-      'id': 1234
-    })));
+    expect(
+        responseController.stream.first,
+        completion(equals({
+          'jsonrpc': '2.0',
+          'result': {
+            'params': {'param': 'value'}
+          },
+          'id': 1234
+        })));
   });
 
   test(".listen returns when the controller is closed", () {

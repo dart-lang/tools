@@ -27,71 +27,59 @@ void main() {
   group("like a client,", () {
     test("can send a message and receive a response", () {
       expect(outgoing.first.then((request) {
-        expect(request, equals({
-          "jsonrpc": "2.0",
-          "method": "foo",
-          "params": {"bar": "baz"},
-          "id": 0
-        }));
-        incoming.add({
-          "jsonrpc": "2.0",
-          "result": "qux",
-          "id": 0
-        });
+        expect(
+            request,
+            equals({
+              "jsonrpc": "2.0",
+              "method": "foo",
+              "params": {"bar": "baz"},
+              "id": 0
+            }));
+        incoming.add({"jsonrpc": "2.0", "result": "qux", "id": 0});
       }), completes);
 
       peer.listen();
-      expect(peer.sendRequest("foo", {"bar": "baz"}),
-          completion(equals("qux")));
+      expect(
+          peer.sendRequest("foo", {"bar": "baz"}), completion(equals("qux")));
     });
 
     test("can send a batch of messages and receive a batch of responses", () {
       expect(outgoing.first.then((request) {
-        expect(request, equals([
-          {
-            "jsonrpc": "2.0",
-            "method": "foo",
-            "params": {"bar": "baz"},
-            "id": 0
-          },
-          {
-            "jsonrpc": "2.0",
-            "method": "a",
-            "params": {"b": "c"},
-            "id": 1
-          },
-          {
-            "jsonrpc": "2.0",
-            "method": "w",
-            "params": {"x": "y"},
-            "id": 2
-          }
-        ]));
+        expect(
+            request,
+            equals([
+              {
+                "jsonrpc": "2.0",
+                "method": "foo",
+                "params": {"bar": "baz"},
+                "id": 0
+              },
+              {
+                "jsonrpc": "2.0",
+                "method": "a",
+                "params": {"b": "c"},
+                "id": 1
+              },
+              {
+                "jsonrpc": "2.0",
+                "method": "w",
+                "params": {"x": "y"},
+                "id": 2
+              }
+            ]));
 
         incoming.add([
-          {
-            "jsonrpc": "2.0",
-            "result": "qux",
-            "id": 0
-          },
-          {
-            "jsonrpc": "2.0",
-            "result": "d",
-            "id": 1
-          },
-          {
-            "jsonrpc": "2.0",
-            "result": "z",
-            "id": 2
-          }
+          {"jsonrpc": "2.0", "result": "qux", "id": 0},
+          {"jsonrpc": "2.0", "result": "d", "id": 1},
+          {"jsonrpc": "2.0", "result": "z", "id": 2}
         ]);
       }), completes);
 
       peer.listen();
 
       peer.withBatch(() {
-        expect(peer.sendRequest("foo", {"bar": "baz"}),
-            completion(equals("qux")));
+        expect(
+            peer.sendRequest("foo", {"bar": "baz"}), completion(equals("qux")));
         expect(peer.sendRequest("a", {"b": "c"}), completion(equals("d")));
         expect(peer.sendRequest("w", {"x": "y"}), completion(equals("z")));
       });
@@ -100,11 +88,8 @@ void main() {
 
   group("like a server,", () {
     test("can receive a call and return a response", () {
-      expect(outgoing.first, completion(equals({
-        "jsonrpc": "2.0",
-        "result": "qux",
-        "id": 0
-      })));
+      expect(outgoing.first,
+          completion(equals({"jsonrpc": "2.0", "result": "qux", "id": 0})));
 
       peer.registerMethod("foo", (_) => "qux");
       peer.listen();
@@ -118,23 +103,13 @@ void main() {
     });
 
     test("can receive a batch of calls and return a batch of responses", () {
-      expect(outgoing.first, completion(equals([
-        {
-          "jsonrpc": "2.0",
-          "result": "qux",
-          "id": 0
-        },
-        {
-          "jsonrpc": "2.0",
-          "result": "d",
-          "id": 1
-        },
-        {
-          "jsonrpc": "2.0",
-          "result": "z",
-          "id": 2
-        }
-      ])));
+      expect(
+          outgoing.first,
+          completion(equals([
+            {"jsonrpc": "2.0", "result": "qux", "id": 0},
+            {"jsonrpc": "2.0", "result": "d", "id": 1},
+            {"jsonrpc": "2.0", "result": "z", "id": 2}
+          ])));
 
       peer.registerMethod("foo", (_) => "qux");
       peer.registerMethod("a", (_) => "d");
@@ -169,16 +144,20 @@ void main() {
       var jsonPeer = new json_rpc.Peer(
           new StreamChannel(incomingController.stream, outgoingController));
 
-      expect(outgoingController.stream.first.then(JSON.decode), completion({
-        "jsonrpc": "2.0",
-        "error": {
-          'code': error_code.PARSE_ERROR,
-          "message": startsWith("Invalid JSON: "),
-          // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
-          "data": {'request': anyOf([isNull, '{invalid'])}
-        },
-        "id": null
-      }));
+      expect(
+          outgoingController.stream.first.then(JSON.decode),
+          completion({
+            "jsonrpc": "2.0",
+            "error": {
+              'code': error_code.PARSE_ERROR,
+              "message": startsWith("Invalid JSON: "),
+              // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
+              "data": {
+                'request': anyOf([isNull, '{invalid'])
+              }
+            },
+            "id": null
+          }));
 
       jsonPeer.listen();
 
@@ -186,21 +165,23 @@ void main() {
     });
 
     test("returns a response for incorrectly-structured JSON", () {
-      expect(outgoing.first, completion({
-        "jsonrpc": "2.0",
-        "error": {
-          'code': error_code.INVALID_REQUEST,
-          "message": 'Request must contain a "jsonrpc" key.',
-          "data": {'request': {'completely': 'wrong'}}
-        },
-        "id": null
-      }));
+      expect(
+          outgoing.first,
+          completion({
+            "jsonrpc": "2.0",
+            "error": {
+              'code': error_code.INVALID_REQUEST,
+              "message": 'Request must contain a "jsonrpc" key.',
+              "data": {
+                'request': {'completely': 'wrong'}
+              }
+            },
+            "id": null
+          }));
 
       peer.listen();
 
-      incoming.add({
-        "completely": "wrong"
-      });
+      incoming.add({"completely": "wrong"});
     });
   });
 }

@@ -35,13 +35,15 @@ class ClientController {
   /// null, no response is sent. Otherwise, the return value is encoded and sent
   /// as the response.
   void expectRequest(callback(request)) {
-    expect(_requestController.stream.first.then((request) {
-      return callback(JSON.decode(request));
-    }).then((response) {
-      if (response == null) return;
-      if (response is! String) response = JSON.encode(response);
-      _responseController.add(response);
-    }), completes);
+    expect(
+        _requestController.stream.first.then((request) {
+          return callback(JSON.decode(request));
+        }).then((response) {
+          if (response == null) return;
+          if (response is! String) response = JSON.encode(response);
+          _responseController.add(response);
+        }),
+        completes);
   }
 
   /// Sends [response], a decoded response, to [client].

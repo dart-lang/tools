@@ -168,11 +168,7 @@ class Server {
       // response, even if one is generated on the server.
       if (!request.containsKey('id')) return null;
 
-      return {
-        'jsonrpc': '2.0',
-        'result': result,
-        'id': request['id']
-      };
+      return {'jsonrpc': '2.0', 'result': result, 'id': request['id']};
     } catch (error, stackTrace) {
       if (error is RpcException) {
         if (error.code == error_code.INVALID_REQUEST ||
@@ -196,40 +192,54 @@ class Server {
   /// Validates that [request] matches the JSON-RPC spec.
   void _validateRequest(request) {
     if (request is! Map) {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Request must be '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Request must be '
           'an Array or an Object.');
     }
 
     if (!request.containsKey('jsonrpc')) {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Request must '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Request must '
           'contain a "jsonrpc" key.');
     }
 
     if (request['jsonrpc'] != '2.0') {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Invalid JSON-RPC '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Invalid JSON-RPC '
           'version ${JSON.encode(request['jsonrpc'])}, expected "2.0".');
     }
 
     if (!request.containsKey('method')) {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Request must '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Request must '
           'contain a "method" key.');
     }
 
     var method = request['method'];
     if (request['method'] is! String) {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Request method must '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Request method must '
           'be a string, but was ${JSON.encode(method)}.');
     }
 
     var params = request['params'];
     if (request.containsKey('params') && params is! List && params is! Map) {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Request params must '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Request params must '
           'be an Array or an Object, but was ${JSON.encode(params)}.');
     }
 
     var id = request['id'];
     if (id != null && id is! String && id is! num) {
-      throw new RpcException(error_code.INVALID_REQUEST, 'Request id must be a '
+      throw new RpcException(
+          error_code.INVALID_REQUEST,
+          'Request id must be a '
           'string, number, or null, but was ${JSON.encode(id)}.');
     }
   }

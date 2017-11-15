@@ -19,75 +19,70 @@ void main() {
       return {'params': params.value};
     });
 
-    expect(controller.handleRequest({
-      'jsonrpc': '2.0',
-      'method': 'foo',
-      'params': {'param': 'value'},
-      'id': 1234
-    }), completion(equals({
-      'jsonrpc': '2.0',
-      'result': {'params': {'param': 'value'}},
-      'id': 1234
-    })));
+    expect(
+        controller.handleRequest({
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': {'param': 'value'},
+          'id': 1234
+        }),
+        completion(equals({
+          'jsonrpc': '2.0',
+          'result': {
+            'params': {'param': 'value'}
+          },
+          'id': 1234
+        })));
   });
 
   test("calls a method that takes no parameters", () {
     controller.server.registerMethod('foo', () => 'foo');
 
-    expect(controller.handleRequest({
-      'jsonrpc': '2.0',
-      'method': 'foo',
-      'id': 1234
-    }), completion(equals({
-      'jsonrpc': '2.0',
-      'result': 'foo',
-      'id': 1234
-    })));
+    expect(
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+        completion(equals({'jsonrpc': '2.0', 'result': 'foo', 'id': 1234})));
   });
 
   test("a method that takes no parameters rejects parameters", () {
     controller.server.registerMethod('foo', () => 'foo');
 
-    expectErrorResponse(controller, {
-      'jsonrpc': '2.0',
-      'method': 'foo',
-      'params': {},
-      'id': 1234
-    },
+    expectErrorResponse(
+        controller,
+        {'jsonrpc': '2.0', 'method': 'foo', 'params': {}, 'id': 1234},
         error_code.INVALID_PARAMS,
         'No parameters are allowed for method "foo".');
   });
 
   test("an unexpected error in a method is captured", () {
-    controller.server.registerMethod('foo', () => throw new FormatException('bad format'));
+    controller.server
+        .registerMethod('foo', () => throw new FormatException('bad format'));
 
-    expect(controller.handleRequest({
-      'jsonrpc': '2.0',
-      'method': 'foo',
-      'id': 1234
-    }), completion({
-      'jsonrpc': '2.0',
-      'id': 1234,
-      'error': {
-        'code': error_code.SERVER_ERROR,
-        'message': 'bad format',
-        'data': {
-          'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
-          'full': 'FormatException: bad format',
-          'stack': new isInstanceOf<String>()
-        }
-      }
-    }));
+    expect(
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+        completion({
+          'jsonrpc': '2.0',
+          'id': 1234,
+          'error': {
+            'code': error_code.SERVER_ERROR,
+            'message': 'bad format',
+            'data': {
+              'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
+              'full': 'FormatException: bad format',
+              'stack': new isInstanceOf<String>()
+            }
+          }
+        }));
   });
 
   test("doesn't return a result for a notification", () {
     controller.server.registerMethod('foo', (args) => 'result');
 
-    expect(controller.handleRequest({
-      'jsonrpc': '2.0',
-      'method': 'foo',
-      'params': {}
-    }), doesNotComplete);
+    expect(
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'params': {}}),
+        doesNotComplete);
   });
 
   test("includes the error data in the response", () {
@@ -95,12 +90,9 @@ void main() {
       throw new json_rpc.RpcException(5, 'Error message.', data: 'data value');
     });
 
-    expectErrorResponse(controller, {
-      'jsonrpc': '2.0',
-      'method': 'foo',
-      'params': {},
-      'id': 1234
-    },
+    expectErrorResponse(
+        controller,
+        {'jsonrpc': '2.0', 'method': 'foo', 'params': {}, 'id': 1234},
         5,
         'Error message.',
         data: 'data value');
@@ -114,7 +106,9 @@ void main() {
           'code': error_code.PARSE_ERROR,
           'message': startsWith("Invalid JSON: "),
           // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
-          'data': {'request': anyOf([isNull, 'invalid json {'])}
+          'data': {
+            'request': anyOf([isNull, 'invalid json {'])
+          }
         },
         'id': null
       });
@@ -124,61 +118,60 @@ void main() {
   group("fallbacks", () {
     test("calls a fallback if no method matches", () {
       controller.server
-          ..registerMethod('foo', () => 'foo')
-          ..registerMethod('bar', () => 'foo')
-          ..registerFallback((params) => {'fallback': params.value});
+        ..registerMethod('foo', () => 'foo')
+        ..registerMethod('bar', () => 'foo')
+        ..registerFallback((params) => {'fallback': params.value});
 
-      expect(controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'baz',
-        'params': {'param': 'value'},
-        'id': 1234
-      }), completion(equals({
-        'jsonrpc': '2.0',
-        'result': {'fallback': {'param': 'value'}},
-        'id': 1234
-      })));
+      expect(
+          controller.handleRequest({
+            'jsonrpc': '2.0',
+            'method': 'baz',
+            'params': {'param': 'value'},
+            'id': 1234
+          }),
+          completion(equals({
+            'jsonrpc': '2.0',
+            'result': {
+              'fallback': {'param': 'value'}
+            },
+            'id': 1234
+          })));
     });
 
     test("calls the first matching fallback", () {
       controller.server
-          ..registerFallback((params) =>
-              throw new json_rpc.RpcException.methodNotFound(params.method))
-          ..registerFallback((params) => 'fallback 2')
-          ..registerFallback((params) => 'fallback 3');
+        ..registerFallback((params) =>
+            throw new json_rpc.RpcException.methodNotFound(params.method))
+        ..registerFallback((params) => 'fallback 2')
+        ..registerFallback((params) => 'fallback 3');
 
-      expect(controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'fallback 2',
-        'id': 1234
-      }), completion(equals({
-        'jsonrpc': '2.0',
-        'result': 'fallback 2',
-        'id': 1234
-      })));
+      expect(
+          controller.handleRequest(
+              {'jsonrpc': '2.0', 'method': 'fallback 2', 'id': 1234}),
+          completion(
+              equals({'jsonrpc': '2.0', 'result': 'fallback 2', 'id': 1234})));
     });
 
     test("an unexpected error in a fallback is captured", () {
-      controller.server.registerFallback((_) =>
-          throw new FormatException('bad format'));
+      controller.server
+          .registerFallback((_) => throw new FormatException('bad format'));
 
-      expect(controller.handleRequest({
-        'jsonrpc': '2.0',
-        'method': 'foo',
-        'id': 1234
-      }), completion({
-        'jsonrpc': '2.0',
-        'id': 1234,
-        'error': {
-          'code': error_code.SERVER_ERROR,
-          'message': 'bad format',
-          'data': {
-            'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
-            'full': 'FormatException: bad format',
-            'stack': new isInstanceOf<String>()
-          }
-        }
-      }));
+      expect(
+          controller
+              .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+          completion({
+            'jsonrpc': '2.0',
+            'id': 1234,
+            'error': {
+              'code': error_code.SERVER_ERROR,
+              'message': 'bad format',
+              'data': {
+                'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
+                'full': 'FormatException: bad format',
+                'stack': new isInstanceOf<String>()
+              }
+            }
+          }));
     });
   });
 

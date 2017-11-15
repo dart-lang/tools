@@ -44,21 +44,20 @@ class ServerController {
 
 /// Expects that [controller]'s server will return an error response to
 /// [request] with the given [errorCode], [message], and [data].
-void expectErrorResponse(ServerController controller, request, int errorCode,
-    String message, {data}) {
+void expectErrorResponse(
+    ServerController controller, request, int errorCode, String message,
+    {data}) {
   var id;
   if (request is Map) id = request['id'];
   if (data == null) data = {'request': request};
 
-  expect(controller.handleRequest(request), completion(equals({
-    'jsonrpc': '2.0',
-    'id': id,
-    'error': {
-      'code': errorCode,
-      'message': message,
-      'data': data
-    }
-  })));
+  expect(
+      controller.handleRequest(request),
+      completion(equals({
+        'jsonrpc': '2.0',
+        'id': id,
+        'error': {'code': errorCode, 'message': message, 'data': data}
+      })));
 }
 
 /// Returns a matcher that matches a [json_rpc.RpcException] with an

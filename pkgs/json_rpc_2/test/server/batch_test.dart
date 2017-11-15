@@ -12,60 +12,106 @@ void main() {
   setUp(() {
     controller = new ServerController();
     controller.server
-        ..registerMethod('foo', () => 'foo')
-        ..registerMethod('id', (params) => params.value)
-        ..registerMethod('arg', (params) => params['arg'].value);
+      ..registerMethod('foo', () => 'foo')
+      ..registerMethod('id', (params) => params.value)
+      ..registerMethod('arg', (params) => params['arg'].value);
   });
 
   test('handles a batch of requests', () {
-    expect(controller.handleRequest([
-      {'jsonrpc': '2.0', 'method': 'foo', 'id': 1},
-      {'jsonrpc': '2.0', 'method': 'id', 'params': ['value'], 'id': 2},
-      {'jsonrpc': '2.0', 'method': 'arg', 'params': {'arg': 'value'}, 'id': 3}
-    ]), completion(equals([
-      {'jsonrpc': '2.0', 'result': 'foo', 'id': 1},
-      {'jsonrpc': '2.0', 'result': ['value'], 'id': 2},
-      {'jsonrpc': '2.0', 'result': 'value', 'id': 3}
-    ])));
+    expect(
+        controller.handleRequest([
+          {'jsonrpc': '2.0', 'method': 'foo', 'id': 1},
+          {
+            'jsonrpc': '2.0',
+            'method': 'id',
+            'params': ['value'],
+            'id': 2
+          },
+          {
+            'jsonrpc': '2.0',
+            'method': 'arg',
+            'params': {'arg': 'value'},
+            'id': 3
+          }
+        ]),
+        completion(equals([
+          {'jsonrpc': '2.0', 'result': 'foo', 'id': 1},
+          {
+            'jsonrpc': '2.0',
+            'result': ['value'],
+            'id': 2
+          },
+          {'jsonrpc': '2.0', 'result': 'value', 'id': 3}
+        ])));
   });
 
   test('handles errors individually', () {
-    expect(controller.handleRequest([
-      {'jsonrpc': '2.0', 'method': 'foo', 'id': 1},
-      {'jsonrpc': '2.0', 'method': 'zap', 'id': 2},
-      {'jsonrpc': '2.0', 'method': 'arg', 'params': {'arg': 'value'}, 'id': 3}
-    ]), completion(equals([
-      {'jsonrpc': '2.0', 'result': 'foo', 'id': 1},
-      {
-        'jsonrpc': '2.0',
-        'id': 2,
-        'error': {
-          'code': error_code.METHOD_NOT_FOUND,
-          'message': 'Unknown method "zap".',
-          'data': {'request': {'jsonrpc': '2.0', 'method': 'zap', 'id': 2}},
-        }
-      },
-      {'jsonrpc': '2.0', 'result': 'value', 'id': 3}
-    ])));
+    expect(
+        controller.handleRequest([
+          {'jsonrpc': '2.0', 'method': 'foo', 'id': 1},
+          {'jsonrpc': '2.0', 'method': 'zap', 'id': 2},
+          {
+            'jsonrpc': '2.0',
+            'method': 'arg',
+            'params': {'arg': 'value'},
+            'id': 3
+          }
+        ]),
+        completion(equals([
+          {'jsonrpc': '2.0', 'result': 'foo', 'id': 1},
+          {
+            'jsonrpc': '2.0',
+            'id': 2,
+            'error': {
+              'code': error_code.METHOD_NOT_FOUND,
+              'message': 'Unknown method "zap".',
+              'data': {
+                'request': {'jsonrpc': '2.0', 'method': 'zap', 'id': 2}
+              },
+            }
+          },
+          {'jsonrpc': '2.0', 'result': 'value', 'id': 3}
+        ])));
   });
 
   test('handles notifications individually', () {
-    expect(controller.handleRequest([
-      {'jsonrpc': '2.0', 'method': 'foo', 'id': 1},
-      {'jsonrpc': '2.0', 'method': 'id', 'params': ['value']},
-      {'jsonrpc': '2.0', 'method': 'arg', 'params': {'arg': 'value'}, 'id': 3}
-    ]), completion(equals([
-      {'jsonrpc': '2.0', 'result': 'foo', 'id': 1},
-      {'jsonrpc': '2.0', 'result': 'value', 'id': 3}
-    ])));
+    expect(
+        controller.handleRequest([
+          {'jsonrpc': '2.0', 'method': 'foo', 'id': 1},
+          {
+            'jsonrpc': '2.0',
+            'method': 'id',
+            'params': ['value']
+          },
+          {
+            'jsonrpc': '2.0',
+            'method': 'arg',
+            'params': {'arg': 'value'},
+            'id': 3
+          }
+        ]),
+        completion(equals([
+          {'jsonrpc': '2.0', 'result': 'foo', 'id': 1},
+          {'jsonrpc': '2.0', 'result': 'value', 'id': 3}
+        ])));
   });
 
   test('returns nothing if every request is a notification', () {
-    expect(controller.handleRequest([
-      {'jsonrpc': '2.0', 'method': 'foo'},
-      {'jsonrpc': '2.0', 'method': 'id', 'params': ['value']},
-      {'jsonrpc': '2.0', 'method': 'arg', 'params': {'arg': 'value'}}
-    ]), doesNotComplete);
+    expect(
+        controller.handleRequest([
+          {'jsonrpc': '2.0', 'method': 'foo'},
+          {
+            'jsonrpc': '2.0',
+            'method': 'id',
+            'params': ['value']
+          },
+          {
+            'jsonrpc': '2.0',
+            'method': 'arg',
+            'params': {'arg': 'value'}
+          }
+        ]),
+        doesNotComplete);
   });
 
   test('returns an error if the batch is empty', () {
@@ -74,16 +120,26 @@ void main() {
   });
 
   test('disallows nested batches', () {
-    expect(controller.handleRequest([
-      [{'jsonrpc': '2.0', 'method': 'foo', 'id': 1}]
-    ]), completion(equals([{
-      'jsonrpc': '2.0',
-      'id': null,
-      'error': {
-        'code': error_code.INVALID_REQUEST,
-        'message': 'Request must be an Array or an Object.',
-        'data': {'request': [{'jsonrpc': '2.0', 'method': 'foo', 'id': 1}]}
-      }
-    }])));
+    expect(
+        controller.handleRequest([
+          [
+            {'jsonrpc': '2.0', 'method': 'foo', 'id': 1}
+          ]
+        ]),
+        completion(equals([
+          {
+            'jsonrpc': '2.0',
+            'id': null,
+            'error': {
+              'code': error_code.INVALID_REQUEST,
+              'message': 'Request must be an Array or an Object.',
+              'data': {
+                'request': [
+                  {'jsonrpc': '2.0', 'method': 'foo', 'id': 1}
+                ]
+              }
+            }
+          }
+        ])));
   });
 }

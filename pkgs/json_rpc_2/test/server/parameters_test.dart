@@ -20,32 +20,29 @@ void main() {
         "date-time": "1990-01-01 00:00:00.000",
         "uri": "http://dartlang.org",
         "invalid-uri": "http://[::1",
-        "map": {
-          "num": 4.2,
-          "bool": false
-        }
+        "map": {"num": 4.2, "bool": false}
       });
     });
 
     test("value returns the wrapped value", () {
-      expect(parameters.value, equals({
-        "num": 1.5,
-        "int": 1,
-        "bool": true,
-        "string": "zap",
-        "list": [1, 2, 3],
-        "date-time": "1990-01-01 00:00:00.000",
-        "uri": "http://dartlang.org",
-        "invalid-uri": "http://[::1",
-        "map": {
-          "num": 4.2,
-          "bool": false
-        }
-      }));
+      expect(
+          parameters.value,
+          equals({
+            "num": 1.5,
+            "int": 1,
+            "bool": true,
+            "string": "zap",
+            "list": [1, 2, 3],
+            "date-time": "1990-01-01 00:00:00.000",
+            "uri": "http://dartlang.org",
+            "invalid-uri": "http://[::1",
+            "map": {"num": 4.2, "bool": false}
+          }));
     });
 
     test("[int] throws a parameter error", () {
-      expect(() => parameters[0],
+      expect(
+          () => parameters[0],
           throwsInvalidParams('Parameters for method "foo" must be passed by '
               'position.'));
     });
@@ -59,7 +56,8 @@ void main() {
     });
 
     test("[].value fails for absent parameters", () {
-      expect(() => parameters['fblthp'].value,
+      expect(
+          () => parameters['fblthp'].value,
           throwsInvalidParams('Request for method "foo" is missing required '
               'parameter "fblthp".'));
     });
@@ -86,19 +84,22 @@ void main() {
     });
 
     test("[].asNum fails for non-numeric parameters", () {
-      expect(() => parameters['bool'].asNum,
+      expect(
+          () => parameters['bool'].asNum,
           throwsInvalidParams('Parameter "bool" for method "foo" must be a '
               'number, but was true.'));
     });
 
     test("[].asNumOr fails for non-numeric parameters", () {
-      expect(() => parameters['bool'].asNumOr(7),
+      expect(
+          () => parameters['bool'].asNumOr(7),
           throwsInvalidParams('Parameter "bool" for method "foo" must be a '
               'number, but was true.'));
     });
 
     test("[].asNum fails for absent parameters", () {
-      expect(() => parameters['fblthp'].asNum,
+      expect(
+          () => parameters['fblthp'].asNum,
           throwsInvalidParams('Request for method "foo" is missing required '
               'parameter "fblthp".'));
     });
@@ -116,7 +117,8 @@ void main() {
     });
 
     test("[].asInt fails for non-integer parameters", () {
-      expect(() => parameters['bool'].asInt,
+      expect(
+          () => parameters['bool'].asInt,
           throwsInvalidParams('Parameter "bool" for method "foo" must be an '
               'integer, but was true.'));
     });
@@ -134,7 +136,8 @@ void main() {
     });
 
     test("[].asBoolOr fails for non-boolean parameters", () {
-      expect(() => parameters['int'].asBool,
+      expect(
+          () => parameters['int'].asBool,
           throwsInvalidParams('Parameter "int" for method "foo" must be a '
               'boolean, but was 1.'));
     });
@@ -152,7 +155,8 @@ void main() {
     });
 
     test("[].asString fails for non-string parameters", () {
-      expect(() => parameters['int'].asString,
+      expect(
+          () => parameters['int'].asString,
           throwsInvalidParams('Parameter "int" for method "foo" must be a '
               'string, but was 1.'));
     });
@@ -170,7 +174,8 @@ void main() {
     });
 
     test("[].asList fails for non-list parameters", () {
-      expect(() => parameters['int'].asList,
+      expect(
+          () => parameters['int'].asList,
           throwsInvalidParams('Parameter "int" for method "foo" must be an '
               'Array, but was 1.'));
     });
@@ -184,12 +189,13 @@ void main() {
     });
 
     test("[].asMapOr returns map parameters", () {
-      expect(parameters['map'].asMapOr({}),
-          equals({"num": 4.2, "bool": false}));
+      expect(
+          parameters['map'].asMapOr({}), equals({"num": 4.2, "bool": false}));
     });
 
     test("[].asMap fails for non-map parameters", () {
-      expect(() => parameters['int'].asMap,
+      expect(
+          () => parameters['int'].asMap,
           throwsInvalidParams('Parameter "int" for method "foo" must be an '
               'Object, but was 1.'));
     });
@@ -208,7 +214,8 @@ void main() {
     });
 
     test("[].asDateTime fails for non-date/time parameters", () {
-      expect(() => parameters['int'].asDateTime,
+      expect(
+          () => parameters['int'].asDateTime,
           throwsInvalidParams('Parameter "int" for method "foo" must be a '
               'string, but was 1.'));
     });
@@ -219,13 +226,15 @@ void main() {
     });
 
     test("[].asDateTime fails for non-date/time parameters", () {
-      expect(() => parameters['int'].asDateTime,
+      expect(
+          () => parameters['int'].asDateTime,
           throwsInvalidParams('Parameter "int" for method "foo" must be a '
               'string, but was 1.'));
     });
 
     test("[].asDateTime fails for invalid date/times", () {
-      expect(() => parameters['string'].asDateTime,
+      expect(
+          () => parameters['string'].asDateTime,
           throwsInvalidParams('Parameter "string" for method "foo" must be a '
               'valid date/time, but was "zap".\n'
               'Invalid date format'));
@@ -241,7 +250,8 @@ void main() {
     });
 
     test("[].asUri fails for non-URI parameters", () {
-      expect(() => parameters['int'].asUri,
+      expect(
+          () => parameters['int'].asUri,
           throwsInvalidParams('Parameter "int" for method "foo" must be a '
               'string, but was 1.'));
     });
@@ -252,13 +262,15 @@ void main() {
     });
 
     test("[].asUri fails for non-URI parameters", () {
-      expect(() => parameters['int'].asUri,
+      expect(
+          () => parameters['int'].asUri,
           throwsInvalidParams('Parameter "int" for method "foo" must be a '
               'string, but was 1.'));
     });
 
     test("[].asUri fails for invalid URIs", () {
-      expect(() => parameters['invalid-uri'].asUri,
+      expect(
+          () => parameters['invalid-uri'].asUri,
           throwsInvalidParams('Parameter "invalid-uri" for method "foo" must '
               'be a valid URI, but was "http://[::1".\n'
               'Missing end `]` to match `[` in host'));
@@ -269,7 +281,8 @@ void main() {
       setUp(() => nested = parameters['map']);
 
       test("[int] fails with a type error", () {
-        expect(() => nested[0],
+        expect(
+            () => nested[0],
             throwsInvalidParams('Parameter "map" for method "foo" must be an '
                 'Array, but was {"num":4.2,"bool":false}.'));
       });
@@ -280,7 +293,8 @@ void main() {
       });
 
       test("[].value fails for absent parameters", () {
-        expect(() => nested['fblthp'].value,
+        expect(
+            () => nested['fblthp'].value,
             throwsInvalidParams('Request for method "foo" is missing required '
                 'parameter map.fblthp.'));
       });
@@ -290,7 +304,8 @@ void main() {
       });
 
       test("typed getters fail for incorrectly-typed parameters", () {
-        expect(() => nested['bool'].asNum,
+        expect(
+            () => nested['bool'].asNum,
             throwsInvalidParams('Parameter map.bool for method "foo" must be '
                 'a number, but was false.'));
       });
@@ -301,7 +316,8 @@ void main() {
       setUp(() => nested = parameters['list']);
 
       test("[string] fails with a type error", () {
-        expect(() => nested['foo'],
+        expect(
+            () => nested['foo'],
             throwsInvalidParams('Parameter "list" for method "foo" must be an '
                 'Object, but was [1,2,3].'));
       });
@@ -312,7 +328,8 @@ void main() {
       });
 
       test("[].value fails for absent parameters", () {
-        expect(() => nested[5].value,
+        expect(
+            () => nested[5].value,
             throwsInvalidParams('Request for method "foo" is missing required '
                 'parameter list[5].'));
       });
@@ -322,7 +339,8 @@ void main() {
       });
 
       test("typed getters fail for incorrectly-typed parameters", () {
-        expect(() => nested[0].asBool,
+        expect(
+            () => nested[0].asBool,
             throwsInvalidParams('Parameter list[0] for method "foo" must be '
                 'a boolean, but was 1.'));
       });
@@ -338,7 +356,8 @@ void main() {
     });
 
     test("[string] throws a parameter error", () {
-      expect(() => parameters['foo'],
+      expect(
+          () => parameters['foo'],
           throwsInvalidParams('Parameters for method "foo" must be passed by '
               'name.'));
     });
@@ -348,7 +367,8 @@ void main() {
     });
 
     test("[].value fails for out-of-range parameters", () {
-      expect(() => parameters[10].value,
+      expect(
+          () => parameters[10].value,
           throwsInvalidParams('Request for method "foo" is missing required '
               'parameter 11.'));
     });
@@ -364,10 +384,18 @@ void main() {
 
   test("with a complex parameter path", () {
     var parameters = new json_rpc.Parameters("foo", {
-      'bar baz': [0, 1, 2, {'bang.zap': {'\n': 'qux'}}]
+      'bar baz': [
+        0,
+        1,
+        2,
+        {
+          'bang.zap': {'\n': 'qux'}
+        }
+      ]
     });
 
-    expect(() => parameters['bar baz'][3]['bang.zap']['\n']['bip'],
+    expect(
+        () => parameters['bar baz'][3]['bang.zap']['\n']['bip'],
         throwsInvalidParams('Parameter "bar baz"[3]."bang.zap"."\\n" for '
             'method "foo" must be an Object, but was "qux".'));
   });
