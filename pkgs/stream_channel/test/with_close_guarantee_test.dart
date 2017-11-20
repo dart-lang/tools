@@ -8,8 +8,6 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
-import 'utils.dart';
-
 final _delayTransformer = new StreamTransformer.fromHandlers(
     handleData: (data, sink) => new Future.microtask(() => sink.add(data)),
     handleDone: (sink) => new Future.microtask(() => sink.close()));

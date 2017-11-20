@@ -8,8 +8,6 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
-import 'utils.dart';
-
 void main() {
   var streamController;
   var sinkController;
