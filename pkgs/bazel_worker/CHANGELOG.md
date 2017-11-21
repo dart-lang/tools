@@ -1,3 +1,9 @@
+## 0.1.7
+
+* Update the `BazelWorkerDriver` class to handle worker crashes, and retry work
+  requests. The number of retries is configurable with the new `int maxRetries`
+  optional arg to the `BazelWorkerDriver` constructor.
+
 ## 0.1.6
 
 * Update the worker_protocol.pb.dart file with the latest proto generator.

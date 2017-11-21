@@ -69,10 +69,61 @@ void main() {
       }
     });
 
+    group('failing workers', () {
+      /// A driver which spawns [numBadWorkers] failing workers and then good
+      /// ones after that, and which will retry [maxRetries] times.
+      void createDriver({int maxRetries = 2, int numBadWorkers = 2}) {
+        int numSpawned = 0;
+        driver = new BazelWorkerDriver(
+            () async => new MockWorker(workerLoopFactory: (MockWorker worker) {
+                  var connection = new StdAsyncWorkerConnection(
+                      inputStream: worker._stdinController.stream,
+                      outputStream: worker._stdoutController.sink);
+                  if (numSpawned < numBadWorkers) {
+                    numSpawned++;
+                    return new ThrowingMockWorkerLoop(
+                        worker, MockWorker.responseQueue, connection);
+                  } else {
+                    return new MockWorkerLoop(MockWorker.responseQueue,
+                        connection: connection);
+                  }
+                }),
+            maxRetries: maxRetries);
+      }
+
+      test('should retry up to maxRetries times', () async {
+        createDriver();
+        var expectedResponse = new WorkResponse();
+        MockWorker.responseQueue.addAll([null, null, expectedResponse]);
+        var actualResponse = await driver.doWork(new WorkRequest());
+        // The first 2 null responses are thrown away, and we should get the
+        // third one.
+        expect(actualResponse, expectedResponse);
+
+        expect(MockWorker.deadWorkers.length, 2);
+        expect(MockWorker.liveWorkers.length, 1);
+      });
+
+      test('should fail if it exceeds maxRetries failures', () async {
+        createDriver(maxRetries: 2, numBadWorkers: 3);
+        MockWorker.responseQueue.addAll([null, null, new WorkResponse()]);
+        var actualResponse = await driver.doWork(new WorkRequest());
+        // Should actually get a bad response.
+        expect(actualResponse.exitCode, 15);
+        expect(
+            actualResponse.output,
+            'Invalid response from worker, this probably means it wrote '
+            'invalid output or died.');
+
+        expect(MockWorker.deadWorkers.length, 3);
+      });
+    });
+
     tearDown(() async {
       await driver?.terminateWorkers();
       expect(MockWorker.liveWorkers, isEmpty);
       MockWorker.deadWorkers.clear();
+      MockWorker.responseQueue.clear();
     });
   });
 }
@@ -108,6 +159,27 @@ class MockWorkerLoop extends AsyncWorkerLoop {
   }
 }
 
+/// A mock worker loop with a custom `run` function that throws.
+class ThrowingMockWorkerLoop extends MockWorkerLoop {
+  final MockWorker _mockWorker;
+
+  ThrowingMockWorkerLoop(this._mockWorker, Queue<WorkResponse> responseQueue,
+      AsyncWorkerConnection connection)
+      : super(responseQueue, connection: connection);
+
+  /// Run the worker loop. The returned [Future] doesn't complete until
+  /// [connection#readRequest] returns `null`.
+  @override
+  Future run() async {
+    while (true) {
+      var request = await connection.readRequest();
+      if (request == null) break;
+      await performRequest(request);
+      _mockWorker.kill();
+    }
+  }
+}
+
 /// A mock worker process.
 ///
 /// Items in [responseQueue] will be returned in order based on requests.
@@ -132,13 +204,15 @@ class MockWorker implements Process {
   static final deadWorkers = <MockWorker>[];
 
   /// Standard constructor, creates the [_workerLoop].
-  MockWorker() {
+  MockWorker({WorkerLoop workerLoopFactory(MockWorker mockWorker)}) {
     liveWorkers.add(this);
-    _workerLoop = new MockWorkerLoop(responseQueue,
-        connection: new StdAsyncWorkerConnection(
-            inputStream: this._stdinController.stream,
-            outputStream: this._stdoutController.sink))
-      ..run();
+    var workerLoop = workerLoopFactory != null
+        ? workerLoopFactory(this)
+        : new MockWorkerLoop(responseQueue,
+            connection: new StdAsyncWorkerConnection(
+                inputStream: this._stdinController.stream,
+                outputStream: this._stdoutController.sink));
+    _workerLoop = workerLoop..run();
   }
 
   Future<int> get exitCode => _exitCodeCompleter.future;
