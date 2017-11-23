@@ -18,6 +18,15 @@ void main() {
   List<String> stdoutLog;
   List<String> stderrLog;
 
+  test('spawn functions should match the type definition of Process.start', () {
+    final isStartProcess = const isInstanceOf<StartProcess>();
+    expect(Process.start, isStartProcess);
+    final manager = new ProcessManager();
+    expect(manager.spawn, isStartProcess);
+    expect(manager.spawnBackground, isStartProcess);
+    expect(manager.spawnDetached, isStartProcess);
+  });
+
   group('spawn', () {
     setUp(() async {
       fakeStdIn = new StreamController<String>(sync: true);

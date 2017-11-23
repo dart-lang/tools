@@ -9,6 +9,19 @@ import 'package:meta/meta.dart';
 
 import 'shared_stdin.dart';
 
+/// Type definition for both [io.Process.start] and [ProcessManager.spawn].
+///
+/// Useful for taking different implementations of this base functionality.
+typedef Future<io.Process> StartProcess(
+  String executable,
+  Iterable<String> arguments, {
+  String workingDirectory,
+  Map<String, String> environment,
+  bool includeParentEnvironment,
+  bool runInShell,
+  io.ProcessStartMode mode,
+});
+
 /// A high-level abstraction around using and managing processes on the system.
 abstract class ProcessManager {
   /// Terminates the global `stdin` listener, making future listens impossible.
@@ -53,9 +66,22 @@ abstract class ProcessManager {
   /// Returns a future that completes with a handle to the spawned process.
   Future<io.Process> spawn(
     String executable,
-    Iterable<String> arguments,
-  ) async {
-    final process = io.Process.start(executable, arguments.toList());
+    Iterable<String> arguments, {
+    String workingDirectory,
+    Map<String, String> environment,
+    bool includeParentEnvironment: true,
+    bool runInShell: false,
+    io.ProcessStartMode mode: io.ProcessStartMode.NORMAL,
+  }) async {
+    final process = io.Process.start(
+      executable,
+      arguments.toList(),
+      workingDirectory: workingDirectory,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      runInShell: runInShell,
+      mode: mode,
+    );
     return new _ForwardingSpawn(await process, _stdin, _stdout, _stderr);
   }
 
@@ -68,9 +94,22 @@ abstract class ProcessManager {
   /// Returns a future that completes with a handle to the spawned process.
   Future<io.Process> spawnBackground(
     String executable,
-    Iterable<String> arguments,
-  ) async {
-    final process = io.Process.start(executable, arguments.toList());
+    Iterable<String> arguments, {
+    String workingDirectory,
+    Map<String, String> environment,
+    bool includeParentEnvironment: true,
+    bool runInShell: false,
+    io.ProcessStartMode mode: io.ProcessStartMode.NORMAL,
+  }) async {
+    final process = io.Process.start(
+      executable,
+      arguments.toList(),
+      workingDirectory: workingDirectory,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      runInShell: runInShell,
+      mode: mode,
+    );
     return new _ForwardingSpawn(
       await process,
       const Stream.empty(),
@@ -86,9 +125,22 @@ abstract class ProcessManager {
   /// Returns a future that completes with a handle to the spawned process.
   Future<io.Process> spawnDetached(
     String executable,
-    Iterable<String> arguments,
-  ) async {
-    return io.Process.start(executable, arguments.toList());
+    Iterable<String> arguments, {
+    String workingDirectory,
+    Map<String, String> environment,
+    bool includeParentEnvironment: true,
+    bool runInShell: false,
+    io.ProcessStartMode mode: io.ProcessStartMode.NORMAL,
+  }) async {
+    return io.Process.start(
+      executable,
+      arguments.toList(),
+      workingDirectory: workingDirectory,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      runInShell: runInShell,
+      mode: mode,
+    );
   }
 }
 
