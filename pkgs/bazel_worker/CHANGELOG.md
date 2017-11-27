@@ -1,3 +1,10 @@
+## 0.1.8
+
+* Add `Future cancel()` method to `DriverConnection`, which in the case of a
+  `StdDriverConnection` closes the input stream.
+  * The `terminateWorkers` method on `BazelWorkerDriver` now calls `cancel` on
+    all worker connections to ensure the vm can exit correctly.
+
 ## 0.1.7
 
 * Update the `BazelWorkerDriver` class to handle worker crashes, and retry work

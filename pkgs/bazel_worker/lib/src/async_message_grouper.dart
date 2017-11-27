@@ -19,6 +19,9 @@ class AsyncMessageGrouper implements MessageGrouper {
   /// The input stream.
   final StreamQueue<List<int>> _inputQueue;
 
+  // Whether or not the input queue has already been cancelled.
+  bool _inputQueueCancelled = false;
+
   /// The current buffer.
   final Queue<int> _buffer = new Queue<int>();
 
@@ -38,7 +41,7 @@ class AsyncMessageGrouper implements MessageGrouper {
       }
 
       // If there is nothing left in the queue then cancel the subscription.
-      if (message == null) _inputQueue.cancel();
+      if (message == null) _cancel();
 
       return message;
     } catch (e) {
@@ -49,6 +52,14 @@ class AsyncMessageGrouper implements MessageGrouper {
     }
   }
 
+  Future _cancel() {
+    if (!_inputQueueCancelled) {
+      _inputQueueCancelled = true;
+      return _inputQueue.cancel();
+    }
+    return new Future.value(null);
+  }
+
   /// Stop listening to the stream for further updates.
-  Future cancel() => _inputQueue.cancel();
+  Future cancel() => _cancel();
 }

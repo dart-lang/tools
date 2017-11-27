@@ -59,11 +59,11 @@ class BazelWorkerDriver {
 
   /// Calls `kill` on all worker processes.
   Future terminateWorkers() async {
-    for (var worker in _readyWorkers) {
-      worker.kill();
+    for (var worker in _readyWorkers.toList()) {
+      _killWorker(worker);
     }
     await Future.wait(_spawningWorkers.map((worker) async {
-      (await worker).kill();
+      _killWorker(await worker);
     }));
   }
 
@@ -108,7 +108,6 @@ class BazelWorkerDriver {
         worker.exitCode.then((exitCode) {
           _idleWorkers.remove(worker);
           _readyWorkers.remove(worker);
-          _spawningWorkers.remove(worker);
           _runWorkQueue();
         });
       });
@@ -178,8 +177,7 @@ class BazelWorkerDriver {
       // Note that whenever we spawn a worker we listen for its exit code
       // and clean it up so we don't need to do that here.
       var worker = _idleWorkers.removeLast();
-      _readyWorkers.remove(worker);
-      worker.kill();
+      _killWorker(worker);
     }
   }
 
@@ -193,6 +191,13 @@ class BazelWorkerDriver {
     _workQueue.add(attempt);
     _runWorkQueue();
     return true;
+  }
+
+  void _killWorker(Process worker) {
+    _workerConnections[worker].cancel();
+    _readyWorkers.remove(worker);
+    _idleWorkers.remove(worker);
+    worker.kill();
   }
 }
 

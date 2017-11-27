@@ -20,6 +20,8 @@ abstract class DriverConnection {
   Future<WorkResponse> readResponse();
 
   void writeRequest(WorkRequest request);
+
+  Future cancel();
 }
 
 /// Default implementation of [DriverConnection] that works with [Stdin]
@@ -72,4 +74,7 @@ class StdDriverConnection implements DriverConnection {
   void writeRequest(WorkRequest request) {
     _outputStream.add(protoToDelimitedBuffer(request));
   }
+
+  @override
+  Future cancel() => _messageGrouper.cancel();
 }

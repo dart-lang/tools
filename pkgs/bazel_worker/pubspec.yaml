@@ -1,5 +1,5 @@
 name: bazel_worker
-version: 0.1.7
+version: 0.1.8
 description: Tools for creating a bazel persistent worker.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/bazel_worker
