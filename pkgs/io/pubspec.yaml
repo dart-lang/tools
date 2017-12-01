@@ -11,9 +11,10 @@ environment:
 dependencies:
   charcode: ^1.0.0
   meta: ^1.0.2
+  path: ^1.5.1
   string_scanner: ">=0.1.5 <2.0.0"
 
 dev_dependencies:
   dart_style: ^1.0.7
-  path: ^1.0.0
   test: ^0.12.0
+  test_descriptor: ^1.0.0

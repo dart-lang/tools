@@ -14,6 +14,10 @@ main() async {
 }
 ```
 
+- Added a `copyPath` and `copyPathSync` function, similar to `cp -R`.
+
+- Added a dependency on `package:path`.
+
 - Added the remaining missing arguments to `ProcessManager.spawnX` which
   forward to `Process.start`. It is now an interchangeable function for running
   a process.
