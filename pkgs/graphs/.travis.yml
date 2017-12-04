@@ -15,6 +15,9 @@ matrix:
     - dart: stable
       dart_task: dartfmt
 
+branches:
+  only: [master]
+
 cache:
   directories:
     - $HOME/.pub-cache
