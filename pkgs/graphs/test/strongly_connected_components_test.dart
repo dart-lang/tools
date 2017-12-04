@@ -75,6 +75,17 @@ void main() {
       ]);
     });
 
+    test('handles self cycles', () {
+      var result = components({
+        'a': ['b'],
+        'b': ['b'],
+      });
+      expect(result, [
+        ['b'],
+        ['a'],
+      ]);
+    });
+
     test('valid topological ordering for disjoint subgraphs', () {
       var result = components({
         'a': ['b', 'c'],
