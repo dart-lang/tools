@@ -126,5 +126,16 @@ void main() {
             ['a']
           ]));
     });
+
+    test('handles getting null for children', () {
+      var result = components({
+        'a': ['b'],
+        'b': null,
+      });
+      expect(result, [
+        ['b'],
+        ['a']
+      ]);
+    });
   });
 }
