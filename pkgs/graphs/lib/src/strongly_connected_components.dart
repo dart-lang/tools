@@ -5,12 +5,12 @@
 import 'dart:collection';
 import 'dart:math' show min;
 
-/// Finds the strongly connected components of an ordered graph using Tarjan's
+/// Finds the strongly connected components of a directed graph using Tarjan's
 /// algorithm.
 ///
-/// The result will be a valid topological order ordering of the strongly
-/// connected components. Elements further from a root will appear in the
-/// result before the components which they are children of.
+/// The result will be a valid reverse topological order ordering of the
+/// strongly connected components. Components further from a root will appear in
+/// the result before the components which they are children of.
 ///
 /// Nodes within a strongly connected component have no ordering guarantees,
 /// except that if the first value in [nodes] is a valid root, and is contained
