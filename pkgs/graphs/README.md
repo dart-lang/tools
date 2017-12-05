@@ -39,3 +39,6 @@ Any representation can be adapted to the needs of the algorithm:
   provides the reachable nodes.
   - `(node) => graph[node]`
   - `(node) => node.children`
+
+Graphs which are resolved asynchronously will have similar functions which
+return `FutureOr`.

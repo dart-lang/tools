@@ -11,3 +11,7 @@ dependencies:
 
 dev_dependencies:
   test: ^0.12.0
+  # For examples
+  analyzer: ^0.30.0
+  path: ^1.1.0
+  resource: ^2.1.0
