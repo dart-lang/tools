@@ -1,11 +1,17 @@
 # Changelog
 
+## 0.1.1
+
+- For `@failingTest` tests, properly handle when the test fails by throwing an
+  exception in a timer task
+- Analyze this package in strong mode
+
 ## 0.1.0
 
 - Switched from 'package:unittest' to 'package:test'.
-- Since 'package:test' does not define 'solo_test', in order to keep
-  this functionality, `defineReflectiveSuite` must be used to wrap
-  all `defineReflectiveTests` invocations.
+- Since 'package:test' does not define 'solo_test', in order to keep this
+  functionality, `defineReflectiveSuite` must be used to wrap all
+  `defineReflectiveTests` invocations.
 
 ## 0.0.4
 
