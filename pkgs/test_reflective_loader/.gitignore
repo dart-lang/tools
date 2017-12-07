@@ -6,4 +6,5 @@
 .settings/
 build/
 packages
+.packages
 pubspec.lock
