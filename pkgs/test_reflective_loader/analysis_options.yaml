@@ -2,4 +2,6 @@ analyzer:
   strong-mode: true
 linter:
   rules:
+    - always_declare_return_types
     - directives_ordering
+    - public_member_api_docs
