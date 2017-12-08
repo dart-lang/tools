@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Update the pubspec `dependencies` section to include `package:test`
+
 ## 0.1.1
 
 - For `@failingTest` tests, properly handle when the test fails by throwing an
