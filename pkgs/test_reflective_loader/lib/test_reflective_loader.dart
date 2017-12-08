@@ -27,7 +27,7 @@ const _FailingTest failingTest = const _FailingTest();
  * A marker annotation used to instruct dart2js to keep reflection information
  * for the annotated classes.
  */
-const ReflectiveTest reflectiveTest = const ReflectiveTest();
+const _ReflectiveTest reflectiveTest = const _ReflectiveTest();
 
 /**
  * A marker annotation used to annotate "solo" groups and tests.
@@ -92,7 +92,7 @@ void defineReflectiveSuite(void define(), {String name}) {
 void defineReflectiveTests(Type type) {
   ClassMirror classMirror = reflectClass(type);
   if (!classMirror.metadata.any((InstanceMirror annotation) =>
-      annotation.type.reflectedType == ReflectiveTest)) {
+      annotation.type.reflectedType == _ReflectiveTest)) {
     String name = MirrorSystem.getName(classMirror.qualifiedName);
     throw new Exception('Class $name must have annotation "@reflectiveTest" '
         'in order to be run by runReflectiveTests.');
@@ -247,21 +247,21 @@ Future _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   });
 }
 
-_runTest(ClassMirror classMirror, Symbol symbol) {
+Future _runTest(ClassMirror classMirror, Symbol symbol) {
   InstanceMirror instanceMirror = classMirror.newInstance(new Symbol(''), []);
   return _invokeSymbolIfExists(instanceMirror, #setUp)
       .then((_) => instanceMirror.invoke(symbol, []).reflectee)
       .whenComplete(() => _invokeSymbolIfExists(instanceMirror, #tearDown));
 }
 
-typedef _TestFunction();
+typedef dynamic _TestFunction();
 
 /**
  * A marker annotation used to instruct dart2js to keep reflection information
  * for the annotated classes.
  */
-class ReflectiveTest {
-  const ReflectiveTest();
+class _ReflectiveTest {
+  const _ReflectiveTest();
 }
 
 /**
