@@ -1,5 +1,7 @@
 # test_reflective_loader
 
+[![Build Status](https://travis-ci.org/dart-lang/test_reflective_loader.svg?branch=master)](https://travis-ci.org/dart-lang/test_reflective_loader)
+
 Support for discovering tests and test suites using reflection.
 
 This package follows the xUnit style where each class is a test suite, and each
