@@ -7,8 +7,6 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
-// ignore_for_file: always_declare_return_types
-
 void main() {
   defineReflectiveSuite(() {
     defineReflectiveTests(TestReflectiveLoaderTest);
@@ -19,22 +17,22 @@ void main() {
 class TestReflectiveLoaderTest {
   String pathname;
 
-  test_passes() {
+  void test_passes() {
     expect(true, true);
   }
 
   @failingTest
-  test_fails() {
+  void test_fails() {
     expect(false, true);
   }
 
   @failingTest
-  test_fails_throws_sync() {
+  void test_fails_throws_sync() {
     throw 'foo';
   }
 
   @failingTest
-  test_fails_throws_async() {
+  Future test_fails_throws_async() {
     return new Future.error('foo');
   }
 }
