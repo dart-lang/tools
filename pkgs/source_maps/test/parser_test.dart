@@ -329,16 +329,16 @@ main() {
       MAP_WITH_SOURCE_LOCATION,
       MAP_WITH_SOURCE_LOCATION_AND_NAME
     ]) {
-      var mapping = parseJson(expected) as SingleMapping;
+      SingleMapping mapping = parseJson(expected);
       expect(mapping.toJson(), equals(expected));
 
-      mapping = parseJsonExtended(expected) as SingleMapping;
+      mapping = parseJsonExtended(expected);
       expect(mapping.toJson(), equals(expected));
     }
     // Invalid for this case
-    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throws) as MappingBundle;
+    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throws);
 
-    var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE);
+    var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE) as MappingBundle;
     expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));
   });
 }
