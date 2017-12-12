@@ -137,7 +137,7 @@ main() {
   test('parse with source root', () {
     var inputMap = new Map.from(MAP_WITH_SOURCE_LOCATION);
     inputMap['sourceRoot'] = '/pkg/';
-    var mapping = parseJson(inputMap);
+    var mapping = parseJson(inputMap) as SingleMapping;
     expect(mapping.spanFor(0, 0).sourceUrl, Uri.parse("/pkg/input.dart"));
     expect(
         mapping
@@ -329,14 +329,14 @@ main() {
       MAP_WITH_SOURCE_LOCATION,
       MAP_WITH_SOURCE_LOCATION_AND_NAME
     ]) {
-      var mapping = parseJson(expected);
+      var mapping = parseJson(expected) as SingleMapping;
       expect(mapping.toJson(), equals(expected));
 
-      mapping = parseJsonExtended(expected);
+      mapping = parseJsonExtended(expected) as SingleMapping;
       expect(mapping.toJson(), equals(expected));
     }
     // Invalid for this case
-    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throws);
+    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throws) as MappingBundle;
 
     var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE);
     expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));
