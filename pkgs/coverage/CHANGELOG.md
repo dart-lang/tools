@@ -2,6 +2,7 @@
 
  * BREAKING CHANGE: `createHitmap` and `mergeHitmaps` now specify generic types
    (`Map<String, Map<int, int>>`) on their hit map parameter/return value.
+ * Updated package:args dependency to 1.0.0.
 
 ## 0.9.3 - 2017-10-02
 
