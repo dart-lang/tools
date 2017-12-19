@@ -1,3 +1,7 @@
+## 1.6.3
+
+* Use `pumpEventQueue()` from test.
+
 ## 1.6.2
 
 * Declare support for `async` 2.0.0.
