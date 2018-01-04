@@ -1,3 +1,7 @@
+## 1.3.4
+
+* Modify code to eliminate Future flattening.
+
 ## 1.3.3
 
 * Declare support for `async` 2.0.0.
