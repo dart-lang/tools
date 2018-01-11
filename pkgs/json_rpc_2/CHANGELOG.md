@@ -1,3 +1,7 @@
+## 2.0.6
+
+* Internal changes only.
+
 ## 2.0.5
 
 * Internal changes only.

@@ -36,7 +36,7 @@ class ServerController {
 
   /// Passes [request], a JSON-encoded request, to [server] and returns its
   /// encoded response.
-  Future handleJsonRequest(String request) {
+  Future<String> handleJsonRequest(String request) {
     _requestController.add(request);
     return _responseController.stream.first;
   }
