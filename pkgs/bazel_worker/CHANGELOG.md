@@ -1,3 +1,7 @@
+## 0.1.9
+
+* Update the worker_protocol.pb.dart file with the latest proto generator.
+
 ## 0.1.8
 
 * Add `Future cancel()` method to `DriverConnection`, which in the case of a

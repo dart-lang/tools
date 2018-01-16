@@ -10,11 +10,12 @@ library blaze.worker_worker_protocol;
 
 // ignore: UNUSED_SHOWN_NAME
 import 'dart:core' show int, bool, double, String, List, override;
+
 import 'package:protobuf/protobuf.dart';
 
 class Input extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('Input')
-    ..a<String>(1, 'path', PbFieldType.OS)
+    ..aOS(1, 'path')
     ..a<List<int>>(2, 'digest', PbFieldType.OY)
     ..hasRequiredFields = false;
 
@@ -37,20 +38,20 @@ class Input extends GeneratedMessage {
     if (v is! Input) checkItemFailed(v, 'Input');
   }
 
-  String get path => $_get(0, 1, '');
+  String get path => $_getS(0, '');
   set path(String v) {
-    $_setString(0, 1, v);
+    $_setString(0, v);
   }
 
-  bool hasPath() => $_has(0, 1);
+  bool hasPath() => $_has(0);
   void clearPath() => clearField(1);
 
-  List<int> get digest => $_get(1, 2, null);
+  List<int> get digest => $_getN(1);
   set digest(List<int> v) {
-    $_setBytes(1, 2, v);
+    $_setBytes(1, v);
   }
 
-  bool hasDigest() => $_has(1, 2);
+  bool hasDigest() => $_has(1);
   void clearDigest() => clearField(2);
 }
 
@@ -58,7 +59,7 @@ class _ReadonlyInput extends Input with ReadonlyMessageMixin {}
 
 class WorkRequest extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('WorkRequest')
-    ..p<String>(1, 'arguments', PbFieldType.PS)
+    ..pPS(1, 'arguments')
     ..pp<Input>(2, 'inputs', PbFieldType.PM, Input.$checkItem, Input.create)
     ..hasRequiredFields = false;
 
@@ -83,9 +84,9 @@ class WorkRequest extends GeneratedMessage {
     if (v is! WorkRequest) checkItemFailed(v, 'WorkRequest');
   }
 
-  List<String> get arguments => $_get(0, 1, null);
+  List<String> get arguments => $_getN(0);
 
-  List<Input> get inputs => $_get(1, 2, null);
+  List<Input> get inputs => $_getN(1);
 }
 
 class _ReadonlyWorkRequest extends WorkRequest with ReadonlyMessageMixin {}
@@ -93,7 +94,7 @@ class _ReadonlyWorkRequest extends WorkRequest with ReadonlyMessageMixin {}
 class WorkResponse extends GeneratedMessage {
   static final BuilderInfo _i = new BuilderInfo('WorkResponse')
     ..a<int>(1, 'exitCode', PbFieldType.O3)
-    ..a<String>(2, 'output', PbFieldType.OS)
+    ..aOS(2, 'output')
     ..hasRequiredFields = false;
 
   WorkResponse() : super();
@@ -118,20 +119,20 @@ class WorkResponse extends GeneratedMessage {
     if (v is! WorkResponse) checkItemFailed(v, 'WorkResponse');
   }
 
-  int get exitCode => $_get(0, 1, 0);
+  int get exitCode => $_get(0, 0);
   set exitCode(int v) {
-    $_setUnsignedInt32(0, 1, v);
+    $_setUnsignedInt32(0, v);
   }
 
-  bool hasExitCode() => $_has(0, 1);
+  bool hasExitCode() => $_has(0);
   void clearExitCode() => clearField(1);
 
-  String get output => $_get(1, 2, '');
+  String get output => $_getS(1, '');
   set output(String v) {
-    $_setString(1, 2, v);
+    $_setString(1, v);
   }
 
-  bool hasOutput() => $_has(1, 2);
+  bool hasOutput() => $_has(1);
   void clearOutput() => clearField(2);
 }
 
