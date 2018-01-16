@@ -11,8 +11,8 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
-  var sdkDir = getSdkDir();
-  var dart = p.join(sdkDir.path, 'bin', 'dart');
+  var sdkPath = getSdkPath();
+  var dart = p.join(sdkPath, 'bin', 'dart');
   runE2eTestForWorker('sync worker',
       () => Process.start(dart, [p.join('bin', 'sync_worker.dart')]));
   runE2eTestForWorker('async worker',
