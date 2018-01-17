@@ -40,7 +40,7 @@ List<List<V>> stronglyConnectedComponents<K, V>(
     index++;
     lastVisited.addLast(node);
     onStack.add(nodeKey);
-    for (final next in children(node) ?? const []) {
+    for (final V next in children(node) ?? const []) {
       var nextKey = key(next);
       if (!indexes.containsKey(nextKey)) {
         strongConnect(next);
