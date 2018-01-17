@@ -1,3 +1,8 @@
+## 2.0.7
+
+* When a `Client` is closed before a request completes, the error sent to that
+  request's `Future` now includes the request method to aid in debugging.
+
 ## 2.0.6
 
 * Internal changes only.

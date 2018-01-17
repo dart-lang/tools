@@ -65,7 +65,8 @@ class Client {
     _manager.done.whenComplete(() {
       for (var request in _pendingRequests.values) {
         request.completer.completeError(
-            new StateError("The client closed with pending requests."),
+            new StateError(
+                'The client closed with pending request "${request.method}".'),
             StackTrace.current);
       }
       _pendingRequests.clear();
@@ -106,7 +107,7 @@ class Client {
     _send(method, parameters, id);
 
     var completer = new Completer.sync();
-    _pendingRequests[id] = new _Request(completer, new Chain.current());
+    _pendingRequests[id] = new _Request(method, completer, new Chain.current());
     return completer.future;
   }
 
@@ -213,11 +214,14 @@ class Client {
 
 /// A pending request to the server.
 class _Request {
+  /// THe method that was sent.
+  final String method;
+
   /// The completer to use to complete the response future.
   final Completer completer;
 
   /// The stack chain from where the request was made.
   final Chain chain;
 
-  _Request(this.completer, this.chain);
+  _Request(this.method, this.completer, this.chain);
 }
