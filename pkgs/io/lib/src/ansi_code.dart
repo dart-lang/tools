@@ -5,6 +5,9 @@
 import 'dart:async';
 import 'dart:io' as io;
 
+const _ansiEscapeLiteral = '\x1B';
+const _ansiEscapeForScript = '\\033';
+
 /// Whether formatted ANSI output is enabled for [wrapWith] and [AnsiCode.wrap].
 ///
 /// By default, returns `true` if both `stdout.supportsAnsiEscapes` and
@@ -66,20 +69,31 @@ class AnsiCode {
   const AnsiCode._(this.name, this.type, this.code, this.reset);
 
   /// Represents the value escaped for use in terminal output.
-  String get escape => "\x1B[${code}m";
+  String get escape => "$_ansiEscapeLiteral[${code}m";
+
+  /// Represents the value as an unescaped literal suitable for scripts.
+  String get escapeForScript => "$_ansiEscapeForScript[${code}m";
+
+  String _escapeValue({bool forScript: false}) {
+    forScript ??= false;
+    return forScript ? escapeForScript : escape;
+  }
 
   /// Wraps [value] with the [escape] value for this code, followed by
   /// [resetAll].
+  ///
+  /// If [forScript] is `true`, the return value is an unescaped literal.
   ///
   /// Returns `value` unchanged if
   ///   * [value] is `null` or empty
   ///   * [ansiOutputEnabled] is `false`
   ///   * [type] is [AnsiCodeType.reset]
-  String wrap(String value) => (ansiOutputEnabled &&
+  String wrap(String value, {bool forScript: false}) => (ansiOutputEnabled &&
           type != AnsiCodeType.reset &&
           value != null &&
           value.isNotEmpty)
-      ? "$escape$value${reset.escape}"
+      ? "${_escapeValue(forScript: forScript)}$value"
+          "${reset._escapeValue(forScript: forScript)}"
       : value;
 
   @override
@@ -87,6 +101,8 @@ class AnsiCode {
 }
 
 /// Returns a [String] formatted with [codes].
+///
+/// If [forScript] is `true`, the return value is an unescaped literal.
 ///
 /// Returns `value` unchanged if
 ///   * [value] is `null` or empty.
@@ -97,7 +113,9 @@ class AnsiCode {
 ///   * [codes] contains more than one value of type [AnsiCodeType.foreground].
 ///   * [codes] contains more than one value of type [AnsiCodeType.background].
 ///   * [codes] contains any value of type [AnsiCodeType.reset].
-String wrapWith(String value, Iterable<AnsiCode> codes) {
+String wrapWith(String value, Iterable<AnsiCode> codes,
+    {bool forScript: false}) {
+  forScript ??= false;
   // Eliminate duplicates
   final myCodes = codes.toSet();
 
@@ -130,8 +148,10 @@ String wrapWith(String value, Iterable<AnsiCode> codes) {
   }
 
   final sortedCodes = myCodes.map((ac) => ac.code).toList()..sort();
+  final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
-  return "\x1B[${sortedCodes.join(';')}m$value${resetAll.escape}";
+  return "$escapeValue[${sortedCodes.join(';')}m$value"
+      "${resetAll._escapeValue(forScript: forScript)}";
 }
 
 //

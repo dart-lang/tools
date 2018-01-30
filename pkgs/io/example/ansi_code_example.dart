@@ -7,17 +7,19 @@ import 'dart:math';
 import 'package:io/ansi.dart';
 
 /// Prints a sample of all of the `AnsiCode` values.
-void main() {
+void main(List<String> args) {
+  final forScript = args.contains('--for-script');
+
   if (!ansiOutputEnabled) {
     print('`ansiOutputEnabled` is `false`.');
     print("Don't expect pretty output.");
   }
-  _preview('Foreground', foregroundColors);
-  _preview('Background', backgroundColors);
-  _preview('Styles', styles);
+  _preview('Foreground', foregroundColors, forScript);
+  _preview('Background', backgroundColors, forScript);
+  _preview('Styles', styles, forScript);
 }
 
-void _preview(String name, List<AnsiCode> values) {
+void _preview(String name, List<AnsiCode> values, bool forScript) {
   print('');
   final longest = values.map((ac) => ac.name.length).reduce(max);
 
@@ -26,6 +28,6 @@ void _preview(String name, List<AnsiCode> values) {
     final header =
         "${code.name.padRight(longest)} ${code.code.toString().padLeft(3)}";
 
-    print("$header: ${code.wrap('Sample')}");
+    print("$header: ${code.wrap('Sample', forScript: forScript)}");
   }
 }

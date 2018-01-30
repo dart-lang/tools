@@ -1,3 +1,15 @@
+## 0.3.2
+
+* `ansi.dart`
+
+  * Added `forScript` named argument to top-level `wrapWith` function.
+
+  * `AnsiCode`
+
+    * Added `String get escapeForScript` property.
+
+    * Added `forScript` named argument to `wrap` function.
+
 ## 0.3.1
 
 - Added `SharedStdIn.nextLine` (similar to `readLineSync`) and `lines`:

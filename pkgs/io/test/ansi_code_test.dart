@@ -7,6 +7,9 @@ import 'dart:io';
 import 'package:io/ansi.dart';
 import 'package:test/test.dart';
 
+const _ansiEscapeLiteral = '\x1B';
+const _ansiEscapeForScript = '\\033';
+
 void main() {
   group('ansiOutputEnabled', () {
     test("default value matches dart:io", () {
@@ -63,84 +66,106 @@ void main() {
 
   final sampleInput = 'sample input';
 
-  group('wrap', () {
-    _test("color", () {
-      final expected = '\x1B[34m$sampleInput\x1B[0m';
+  for (var forScript in [true, false]) {
+    group(forScript ? 'for script' : 'literal', () {
+      final escapeLiteral =
+          forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
-      expect(blue.wrap(sampleInput), expected);
+      group('wrap', () {
+        _test("color", () {
+          final expected = '$escapeLiteral[34m$sampleInput$escapeLiteral[0m';
+
+          expect(blue.wrap(sampleInput, forScript: forScript), expected);
+        });
+
+        _test("style", () {
+          final expected = '$escapeLiteral[1m$sampleInput$escapeLiteral[22m';
+
+          expect(styleBold.wrap(sampleInput, forScript: forScript), expected);
+        });
+
+        _test("style", () {
+          final expected = '$escapeLiteral[34m$sampleInput$escapeLiteral[0m';
+
+          expect(blue.wrap(sampleInput, forScript: forScript), expected);
+        });
+
+        test("empty", () {
+          expect(blue.wrap('', forScript: forScript), '');
+        });
+
+        test(null, () {
+          expect(blue.wrap(null, forScript: forScript), isNull);
+        });
+      });
+
+      group('wrapWith', () {
+        _test("foreground", () {
+          final expected = '$escapeLiteral[34m$sampleInput$escapeLiteral[0m';
+
+          expect(wrapWith(sampleInput, [blue], forScript: forScript), expected);
+        });
+
+        _test("background", () {
+          final expected = '$escapeLiteral[44m$sampleInput$escapeLiteral[0m';
+
+          expect(wrapWith(sampleInput, [backgroundBlue], forScript: forScript),
+              expected);
+        });
+
+        _test("style", () {
+          final expected = '$escapeLiteral[1m$sampleInput$escapeLiteral[0m';
+
+          expect(wrapWith(sampleInput, [styleBold], forScript: forScript),
+              expected);
+        });
+
+        _test("2 styles", () {
+          final expected = '$escapeLiteral[1;3m$sampleInput$escapeLiteral[0m';
+
+          expect(
+              wrapWith(sampleInput, [styleBold, styleItalic],
+                  forScript: forScript),
+              expected);
+        });
+
+        _test("2 foregrounds", () {
+          expect(
+              () => wrapWith(sampleInput, [blue, white], forScript: forScript),
+              throwsArgumentError);
+        });
+
+        _test("multi", () {
+          final expected =
+              '$escapeLiteral[1;4;34;107m$sampleInput$escapeLiteral[0m';
+
+          expect(
+              wrapWith(sampleInput,
+                  [blue, backgroundWhite, styleBold, styleUnderlined],
+                  forScript: forScript),
+              expected);
+        });
+
+        test('no codes', () {
+          expect(wrapWith(sampleInput, []), sampleInput);
+        });
+
+        _test("empty", () {
+          expect(
+              wrapWith('', [blue, backgroundWhite, styleBold],
+                  forScript: forScript),
+              '');
+        });
+
+        _test(null, () {
+          expect(
+              wrapWith(null, [blue, backgroundWhite, styleBold],
+                  forScript: forScript),
+              isNull);
+        });
+      });
     });
-
-    _test("style", () {
-      final expected = '\x1B[1m$sampleInput\x1B[22m';
-
-      expect(styleBold.wrap(sampleInput), expected);
-    });
-
-    _test("style", () {
-      final expected = '\x1B[34m$sampleInput\x1B[0m';
-
-      expect(blue.wrap(sampleInput), expected);
-    });
-
-    test("empty", () {
-      expect(blue.wrap(''), '');
-    });
-
-    test(null, () {
-      expect(blue.wrap(null), isNull);
-    });
-  });
-
-  group('wrapWith', () {
-    _test("foreground", () {
-      final expected = '\x1B[34m$sampleInput\x1B[0m';
-
-      expect(wrapWith(sampleInput, [blue]), expected);
-    });
-
-    _test("background", () {
-      final expected = '\x1B[44m$sampleInput\x1B[0m';
-
-      expect(wrapWith(sampleInput, [backgroundBlue]), expected);
-    });
-
-    _test("style", () {
-      final expected = '\x1B[1m$sampleInput\x1B[0m';
-
-      expect(wrapWith(sampleInput, [styleBold]), expected);
-    });
-
-    _test("2 styles", () {
-      final expected = '\x1B[1;3m$sampleInput\x1B[0m';
-
-      expect(wrapWith(sampleInput, [styleBold, styleItalic]), expected);
-    });
-
-    _test("2 foregrounds", () {
-      expect(() => wrapWith(sampleInput, [blue, white]), throwsArgumentError);
-    });
-
-    _test("multi", () {
-      final expected = '\x1B[1;4;34;107m$sampleInput\x1B[0m';
-
-      expect(
-          wrapWith(
-              sampleInput, [blue, backgroundWhite, styleBold, styleUnderlined]),
-          expected);
-    });
-
-    test('no codes', () {
-      expect(wrapWith(sampleInput, []), sampleInput);
-    });
-
-    _test("empty", () {
-      expect(wrapWith('', [blue, backgroundWhite, styleBold]), '');
-    });
-
-    _test(null, () {
-      expect(wrapWith(null, [blue, backgroundWhite, styleBold]), isNull);
-    });
-  });
+  }
 }
 
 void _test<T>(String name, T body()) =>
