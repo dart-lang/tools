@@ -1,20 +1,18 @@
 language: dart
-sudo: false
+
 dart:
   - dev
   - stable
-cache:
-  directories:
-    - $HOME/.pub-cache
+
 dart_task:
-  - test: --platform vm
-    install_dartium: true
+  - test
   - dartanalyzer
   - dartfmt
-matrix:
-  # Only run dartfmt checks with stable.
-  exclude:
-    - dart: dev
-      dart_task: dartfmt
-    - dart: dev
-      dart_task: dartanalyzer
+
+# Only building master means that we don't run two builds for each pull request.
+branches:
+  only: [master]
+
+cache:
+ directories:
+   - $HOME/.pub-cache
