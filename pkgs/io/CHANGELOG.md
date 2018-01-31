@@ -1,3 +1,11 @@
+## 0.3.2+1
+
+* `ansi.dart`
+
+  * The "forScript" code paths now ignore the `ansiOutputEnabled` value. Affects
+    the `escapeForScript` property on `AnsiCode` and the `wrap` and `wrapWith`
+    functions when `forScript` is true.
+
 ## 0.3.2
 
 * `ansi.dart`

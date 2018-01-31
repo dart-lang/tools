@@ -21,6 +21,13 @@ bool get ansiOutputEnabled =>
     Zone.current[AnsiCode] as bool ??
     (io.stdout.supportsAnsiEscapes && io.stderr.supportsAnsiEscapes);
 
+/// Returns `true` no formatting is required for [input].
+bool _isNoop(bool skip, String input, bool forScript) =>
+    skip ||
+    input == null ||
+    input.isEmpty ||
+    !((forScript ?? false) || ansiOutputEnabled);
+
 /// Allows overriding [ansiOutputEnabled] to [enableAnsiOutput] for the code run
 /// within [body].
 T overrideAnsiOutput<T>(bool enableAnsiOutput, T body()) =>
@@ -82,19 +89,18 @@ class AnsiCode {
   /// Wraps [value] with the [escape] value for this code, followed by
   /// [resetAll].
   ///
-  /// If [forScript] is `true`, the return value is an unescaped literal.
+  /// If [forScript] is `true`, the return value is an unescaped literal. The
+  /// value of [ansiOutputEnabled] is also ignored.
   ///
   /// Returns `value` unchanged if
   ///   * [value] is `null` or empty
-  ///   * [ansiOutputEnabled] is `false`
+  ///   * both [ansiOutputEnabled] and [forScript] are `false`.
   ///   * [type] is [AnsiCodeType.reset]
-  String wrap(String value, {bool forScript: false}) => (ansiOutputEnabled &&
-          type != AnsiCodeType.reset &&
-          value != null &&
-          value.isNotEmpty)
-      ? "${_escapeValue(forScript: forScript)}$value"
-          "${reset._escapeValue(forScript: forScript)}"
-      : value;
+  String wrap(String value, {bool forScript: false}) =>
+      _isNoop(type == AnsiCodeType.reset, value, forScript)
+          ? value
+          : "${_escapeValue(forScript: forScript)}$value"
+          "${reset._escapeValue(forScript: forScript)}";
 
   @override
   String toString() => "$name ${type._name} ($code)";
@@ -102,11 +108,12 @@ class AnsiCode {
 
 /// Returns a [String] formatted with [codes].
 ///
-/// If [forScript] is `true`, the return value is an unescaped literal.
+/// If [forScript] is `true`, the return value is an unescaped literal. The
+/// value of [ansiOutputEnabled] is also ignored.
 ///
 /// Returns `value` unchanged if
 ///   * [value] is `null` or empty.
-///   * [ansiOutputEnabled] is `false`.
+///   * both [ansiOutputEnabled] and [forScript] are `false`.
 ///   * [codes] is empty.
 ///
 /// Throws an [ArgumentError] if
@@ -119,7 +126,7 @@ String wrapWith(String value, Iterable<AnsiCode> codes,
   // Eliminate duplicates
   final myCodes = codes.toSet();
 
-  if (myCodes.isEmpty || !ansiOutputEnabled || value == null || value.isEmpty) {
+  if (_isNoop(myCodes.isEmpty, value, forScript)) {
     return value;
   }
 

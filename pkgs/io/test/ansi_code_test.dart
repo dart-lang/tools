@@ -9,6 +9,7 @@ import 'package:test/test.dart';
 
 const _ansiEscapeLiteral = '\x1B';
 const _ansiEscapeForScript = '\\033';
+const sampleInput = 'sample input';
 
 void main() {
   group('ansiOutputEnabled', () {
@@ -27,6 +28,19 @@ void main() {
       overrideAnsiOutput(false, () {
         expect(ansiOutputEnabled, isFalse);
       });
+    });
+
+    test('forScript variaents ignore `ansiOutputEnabled`', () {
+      final expected =
+          '$_ansiEscapeForScript[34m$sampleInput$_ansiEscapeForScript[0m';
+
+      for (var override in [true, false]) {
+        overrideAnsiOutput(override, () {
+          expect(blue.escapeForScript, '$_ansiEscapeForScript[34m');
+          expect(blue.wrap(sampleInput, forScript: true), expected);
+          expect(wrapWith(sampleInput, [blue], forScript: true), expected);
+        });
+      }
     });
   });
 
@@ -64,10 +78,8 @@ void main() {
     }
   });
 
-  final sampleInput = 'sample input';
-
   for (var forScript in [true, false]) {
-    group(forScript ? 'for script' : 'literal', () {
+    group(forScript ? 'forScript' : 'escaped', () {
       final escapeLiteral =
           forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
