@@ -8,7 +8,7 @@ import 'package:cli_util/cli_util.dart';
 import 'package:cli_util/src/utils.dart';
 import 'package:test/test.dart';
 
-main() => defineTests();
+void main() => defineTests();
 
 void defineTests() {
   group('getSdkDir', () {
