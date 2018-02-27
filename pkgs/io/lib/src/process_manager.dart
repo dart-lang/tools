@@ -220,8 +220,7 @@ class _ForwardingSpawn extends Spawn {
     this._stdErrSub,
     this._stdOut,
     this._stdErr,
-  )
-      : super._(delegate);
+  ) : super._(delegate);
 
   @override
   void _onClosed() {
@@ -243,8 +242,7 @@ class _UnixProcessManager extends ProcessManager {
     Stream<List<int>> stdin,
     io.IOSink stdout,
     io.IOSink stderr,
-  )
-      : super._(
+  ) : super._(
           stdin,
           stdout,
           stderr,
@@ -256,8 +254,7 @@ class _WindowsProcessManager extends ProcessManager {
     Stream<List<int>> stdin,
     io.IOSink stdout,
     io.IOSink stderr,
-  )
-      : super._(
+  ) : super._(
           stdin,
           stdout,
           stderr,

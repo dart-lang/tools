@@ -6,8 +6,13 @@ dart:
 
 dart_task:
   - test
-  - dartanalyzer
+  - dartanalyzer: --fatal-warnings --fatal-lints .
   - dartfmt
+
+matrix:
+  exclude:
+    - dart_task: dartfmt
+      dart: stable
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
