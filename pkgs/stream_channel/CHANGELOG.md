@@ -1,3 +1,9 @@
+## 1.6.4
+
+* Fix a race condition in `MultiChannel` where messages from a remote virtual
+  channel could get dropped if the corresponding local channel wasn't registered
+  quickly enough.
+
 ## 1.6.3
 
 * Use `pumpEventQueue()` from test.

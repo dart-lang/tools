@@ -93,9 +93,17 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// The controller for this channel.
   final _mainController = new StreamChannelController(sync: true);
 
-  /// A map from virtual channel ids to [StreamChannelController]s that should
-  /// be used to communicate over those channels.
+  /// A map from input IDs to [StreamChannelController]s that should be used to
+  /// communicate over those channels.
   final _controllers = <int, StreamChannelController>{};
+
+  /// Input IDs of controllers in [_controllers] that we've received messages
+  /// for but that have not yet had a local [virtualChannel] created.
+  final _pendingIds = new Set<int>();
+
+  /// Input IDs of virtual channels that used to exist but have since been
+  /// closed.
+  final _closedIds = new Set<int>();
 
   /// The next id to use for a local virtual channel.
   ///
@@ -114,8 +122,9 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// The trick is that each endpoint only uses odd ids for its own channels.
   /// When sending a message over a channel that was created by the remote
   /// endpoint, the channel's id plus one is used. This way each [MultiChannel]
-  /// knows that if an incoming message has an odd id, it's using the local id
-  /// scheme, but if it has an even id, it's using the remote id scheme.
+  /// knows that if an incoming message has an odd id, it's coming from a
+  /// channel that was originally created remotely, but if it has an even id,
+  /// it's coming from a channel that was originally created locally.
   var _nextId = 1;
 
   _MultiChannel(this._inner) {
@@ -128,21 +137,28 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
 
     _innerStreamSubscription = _inner.stream.listen((message) {
       var id = message[0];
-      var controller = _controllers[id];
 
-      // A controller might not exist if the channel was closed before an
-      // incoming message was processed.
-      if (controller == null) return;
+      // If the channel was closed before an incoming message was processed,
+      // ignore that message.
+      if (_closedIds.contains(id)) return;
+
+      var controller = _controllers.putIfAbsent(id, () {
+        // If we receive a message for a controller that doesn't have a local
+        // counterpart yet, create a controller for it to buffer incoming
+        // messages for when a local connection is created.
+        _pendingIds.add(id);
+        return new StreamChannelController(sync: true);
+      });
+
       if (message.length > 1) {
         controller.local.sink.add(message[1]);
-        return;
+      } else {
+        // A message without data indicates that the channel has been closed. We
+        // can just close the sink here without doing any more cleanup, because
+        // the sink closing will cause the stream to emit a done event which
+        // will trigger more cleanup.
+        controller.local.sink.close();
       }
-
-      // A message without data indicates that the channel has been closed. We
-      // can only close the sink here without doing any more cleanup, because
-      // the sink closing will cause the stream to emit a done event which will
-      // trigger more cleanup.
-      controller.local.sink.close();
     },
         onDone: _closeInnerChannel,
         onError: _mainController.local.sink.addError);
@@ -173,16 +189,22 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
           this, inputId, new Stream.empty(), new NullStreamSink());
     }
 
-    if (_controllers.containsKey(inputId)) {
+    StreamChannelController controller;
+    if (_pendingIds.remove(inputId)) {
+      // If we've already received messages for this channel, use the controller
+      // where those messages are buffered.
+      controller = _controllers[inputId];
+    } else if (_controllers.containsKey(inputId) ||
+        _closedIds.contains(inputId)) {
       throw new ArgumentError("A virtual channel with id $id already exists.");
+    } else {
+      controller = new StreamChannelController(sync: true);
+      _controllers[inputId] = controller;
     }
 
-    var controller = new StreamChannelController(sync: true);
-    _controllers[inputId] = controller;
     controller.local.stream.listen(
         (message) => _inner.sink.add([outputId, message]),
         onDone: () => _closeChannel(inputId, outputId));
-
     return new VirtualChannel._(
         this, outputId, controller.foreign.stream, controller.foreign.sink);
   }
@@ -190,6 +212,7 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
   /// Closes the virtual channel for which incoming messages have [inputId] and
   /// outgoing messages have [outputId].
   void _closeChannel(int inputId, int outputId) {
+    _closedIds.add(inputId);
     var controller = _controllers.remove(inputId);
     controller.local.sink.close();
 

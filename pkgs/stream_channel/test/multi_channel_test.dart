@@ -268,6 +268,32 @@ void main() {
     test("doesn't allow another virtual channel with the same id", () {
       expect(() => channel2.virtualChannel(virtual1.id), throwsArgumentError);
     });
+
+    test("dispatches events received before the virtual channel is created",
+        () async {
+      virtual1 = channel1.virtualChannel();
+
+      virtual1.sink.add("hello");
+      await pumpEventQueue();
+
+      virtual1.sink.add("world");
+      await pumpEventQueue();
+
+      expect(channel2.virtualChannel(virtual1.id).stream,
+          emitsInOrder(["hello", "world"]));
+    });
+
+    test(
+        "dispatches close events received before the virtual channel is "
+        "created", () async {
+      virtual1 = channel1.virtualChannel();
+
+      virtual1.sink.close();
+      await pumpEventQueue();
+
+      expect(channel2.virtualChannel(virtual1.id).stream.toList(),
+          completion(isEmpty));
+    });
   });
 
   group("when the underlying stream", () {
