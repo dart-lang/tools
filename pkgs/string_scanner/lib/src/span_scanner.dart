@@ -42,6 +42,7 @@ class SpanScanner extends StringScanner implements LineScanner {
     if (lastMatch == null) _lastSpan = null;
     return _lastSpan;
   }
+
   FileSpan _lastSpan;
 
   /// The current location of the scanner.

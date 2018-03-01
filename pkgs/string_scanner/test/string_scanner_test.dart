@@ -178,7 +178,8 @@ void main() {
       expect(scanner.rest, equals(' bar'));
     });
 
-    test("a non-matching expect throws a FormatException and sets lastMatch to "
+    test(
+        "a non-matching expect throws a FormatException and sets lastMatch to "
         "null", () {
       expect(scanner.matches(new RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch, isNotNull);

@@ -27,13 +27,14 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   /// This is used to convert between span-relative and file-relative fields.
   final FileLocation _startLocation;
 
-  int get line => _sourceFile.getLine(_startLocation.offset + position) -
+  int get line =>
+      _sourceFile.getLine(_startLocation.offset + position) -
       _startLocation.line;
 
   int get column {
     var line = _sourceFile.getLine(_startLocation.offset + position);
-    var column = _sourceFile.getColumn(_startLocation.offset + position,
-        line: line);
+    var column =
+        _sourceFile.getColumn(_startLocation.offset + position, line: line);
     return line == _startLocation.line
         ? column - _startLocation.column
         : column;
@@ -66,8 +67,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   FileSpan spanFrom(LineScannerState startState, [LineScannerState endState]) {
     var endPosition = endState == null ? position : endState.position;
-    return _sourceFile.span(
-        _startLocation.offset + startState.position,
+    return _sourceFile.span(_startLocation.offset + startState.position,
         _startLocation.offset + endPosition);
   }
 
@@ -77,8 +77,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
       return false;
     }
 
-    _lastSpan = _sourceFile.span(
-        _startLocation.offset + position,
+    _lastSpan = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + lastMatch.end);
     return true;
   }
@@ -92,8 +91,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
     }
     if (length == null) length = match == null ? 1 : match.end - match.start;
 
-    var span = _sourceFile.span(
-        _startLocation.offset + position,
+    var span = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + position + length);
     throw new StringScannerException(message, span, string);
   }

@@ -58,8 +58,8 @@ class EagerSpanScanner extends SpanScanner {
       if (newlines.isEmpty) {
         _column -= oldPosition - newPosition;
       } else {
-        _column = newPosition -
-            string.lastIndexOf(_newlineRegExp, newPosition) - 1;
+        _column =
+            newPosition - string.lastIndexOf(_newlineRegExp, newPosition) - 1;
       }
     }
   }
@@ -121,4 +121,3 @@ class _EagerSpanScannerState implements LineScannerState {
 
   _EagerSpanScannerState(this._scanner, this.position, this.line, this.column);
 }
-

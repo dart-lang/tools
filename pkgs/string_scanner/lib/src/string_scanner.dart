@@ -34,6 +34,7 @@ class StringScanner {
     _position = position;
     _lastMatch = null;
   }
+
   int _position = 0;
 
   /// The data about the previous match made by the scanner.
@@ -45,6 +46,7 @@ class StringScanner {
     if (_position != _lastMatchPosition) _lastMatch = null;
     return _lastMatch;
   }
+
   Match _lastMatch;
   int _lastMatchPosition;
 

@@ -66,8 +66,8 @@ class LineScanner extends StringScanner {
       if (newlines.isEmpty) {
         _column -= oldPosition - newPosition;
       } else {
-        _column = newPosition -
-            string.lastIndexOf(_newlineRegExp, newPosition) - 1;
+        _column =
+            newPosition - string.lastIndexOf(_newlineRegExp, newPosition) - 1;
       }
     }
   }
