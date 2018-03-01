@@ -9,10 +9,8 @@ import 'package:source_span/src/colors.dart' as colors;
 main() {
   var span;
   setUp(() {
-    span = new SourceSpan(
-        new SourceLocation(5, sourceUrl: "foo.dart"),
-        new SourceLocation(12, sourceUrl: "foo.dart"),
-        "foo bar");
+    span = new SourceSpan(new SourceLocation(5, sourceUrl: "foo.dart"),
+        new SourceLocation(12, sourceUrl: "foo.dart"), "foo bar");
   });
 
   group('errors', () {
@@ -40,26 +38,28 @@ main() {
       test('context must contain text', () {
         var start = new SourceLocation(2);
         var end = new SourceLocation(5);
-        expect(() => new SourceSpanWithContext(
-              start, end, "abc", "--axc--"), throwsArgumentError);
+        expect(() => new SourceSpanWithContext(start, end, "abc", "--axc--"),
+            throwsArgumentError);
       });
 
       test('text starts at start.column in context', () {
         var start = new SourceLocation(3);
         var end = new SourceLocation(5);
-        expect(() => new SourceSpanWithContext(
-              start, end, "abc", "--abc--"), throwsArgumentError);
+        expect(() => new SourceSpanWithContext(start, end, "abc", "--abc--"),
+            throwsArgumentError);
       });
 
       test('text starts at start.column of line in multi-line context', () {
         var start = new SourceLocation(4, line: 55, column: 3);
         var end = new SourceLocation(7, line: 55, column: 6);
-        expect(() => new SourceSpanWithContext(
-              start, end, "abc", "\n--abc--"), throwsArgumentError);
-        expect(() => new SourceSpanWithContext(
-              start, end, "abc", "\n----abc--"), throwsArgumentError);
-        expect(() => new SourceSpanWithContext(
-              start, end, "abc", "\n\n--abc--"), throwsArgumentError);
+        expect(() => new SourceSpanWithContext(start, end, "abc", "\n--abc--"),
+            throwsArgumentError);
+        expect(
+            () => new SourceSpanWithContext(start, end, "abc", "\n----abc--"),
+            throwsArgumentError);
+        expect(
+            () => new SourceSpanWithContext(start, end, "abc", "\n\n--abc--"),
+            throwsArgumentError);
 
         // However, these are valid:
         new SourceSpanWithContext(start, end, "abc", "\n---abc--");
@@ -75,10 +75,14 @@ main() {
         new SourceSpanWithContext(start1, end1, "abc", "--abc--abc--\n");
         new SourceSpanWithContext(start2, end2, "abc", "--abc---abc--\n");
         new SourceSpanWithContext(start2, end2, "abc", "---abc--abc--\n");
-        expect(() => new SourceSpanWithContext(
-              start1, end1, "abc", "---abc--abc--\n"), throwsArgumentError);
-        expect(() => new SourceSpanWithContext(
-              start2, end2, "abc", "--abc--abc--\n"), throwsArgumentError);
+        expect(
+            () => new SourceSpanWithContext(
+                start1, end1, "abc", "---abc--abc--\n"),
+            throwsArgumentError);
+        expect(
+            () => new SourceSpanWithContext(
+                start2, end2, "abc", "--abc--abc--\n"),
+            throwsArgumentError);
       });
     });
 
@@ -103,10 +107,8 @@ main() {
     });
 
     test('for compareTo() source URLs must match', () {
-      var other = new SourceSpan(
-          new SourceLocation(12, sourceUrl: "bar.dart"),
-          new SourceLocation(13, sourceUrl: "bar.dart"),
-          "_");
+      var other = new SourceSpan(new SourceLocation(12, sourceUrl: "bar.dart"),
+          new SourceLocation(13, sourceUrl: "bar.dart"), "_");
 
       expect(() => span.compareTo(other), throwsArgumentError);
     });
@@ -121,10 +123,8 @@ main() {
 
   group("union()", () {
     test("works with a preceding adjacent span", () {
-      var other = new SourceSpan(
-          new SourceLocation(0, sourceUrl: "foo.dart"),
-          new SourceLocation(5, sourceUrl: "foo.dart"),
-          "hey, ");
+      var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
+          new SourceLocation(5, sourceUrl: "foo.dart"), "hey, ");
 
       var result = span.union(other);
       expect(result.start, equals(other.start));
@@ -133,10 +133,8 @@ main() {
     });
 
     test("works with a preceding overlapping span", () {
-      var other = new SourceSpan(
-          new SourceLocation(0, sourceUrl: "foo.dart"),
-          new SourceLocation(8, sourceUrl: "foo.dart"),
-          "hey, foo");
+      var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
+          new SourceLocation(8, sourceUrl: "foo.dart"), "hey, foo");
 
       var result = span.union(other);
       expect(result.start, equals(other.start));
@@ -145,10 +143,8 @@ main() {
     });
 
     test("works with a following adjacent span", () {
-      var other = new SourceSpan(
-          new SourceLocation(12, sourceUrl: "foo.dart"),
-          new SourceLocation(16, sourceUrl: "foo.dart"),
-          " baz");
+      var other = new SourceSpan(new SourceLocation(12, sourceUrl: "foo.dart"),
+          new SourceLocation(16, sourceUrl: "foo.dart"), " baz");
 
       var result = span.union(other);
       expect(result.start, equals(span.start));
@@ -157,10 +153,8 @@ main() {
     });
 
     test("works with a following overlapping span", () {
-      var other = new SourceSpan(
-          new SourceLocation(9, sourceUrl: "foo.dart"),
-          new SourceLocation(16, sourceUrl: "foo.dart"),
-          "bar baz");
+      var other = new SourceSpan(new SourceLocation(9, sourceUrl: "foo.dart"),
+          new SourceLocation(16, sourceUrl: "foo.dart"), "bar baz");
 
       var result = span.union(other);
       expect(result.start, equals(span.start));
@@ -169,19 +163,15 @@ main() {
     });
 
     test("works with an internal overlapping span", () {
-      var other = new SourceSpan(
-          new SourceLocation(7, sourceUrl: "foo.dart"),
-          new SourceLocation(10, sourceUrl: "foo.dart"),
-          "o b");
+      var other = new SourceSpan(new SourceLocation(7, sourceUrl: "foo.dart"),
+          new SourceLocation(10, sourceUrl: "foo.dart"), "o b");
 
       expect(span.union(other), equals(span));
     });
 
     test("works with an external overlapping span", () {
-      var other = new SourceSpan(
-          new SourceLocation(0, sourceUrl: "foo.dart"),
-          new SourceLocation(16, sourceUrl: "foo.dart"),
-          "hey, foo bar baz");
+      var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
+          new SourceLocation(16, sourceUrl: "foo.dart"), "hey, foo bar baz");
 
       expect(span.union(other), equals(other));
     });
@@ -206,11 +196,10 @@ foo bar
     });
 
     test("gracefully handles empty text", () {
-      var span = new SourceSpan(
-          new SourceLocation(5), new SourceLocation(5), "");
+      var span =
+          new SourceSpan(new SourceLocation(5), new SourceLocation(5), "");
 
-      expect(span.message("oh no"),
-          equals("line 1, column 6: oh no"));
+      expect(span.message("oh no"), equals("line 1, column 6: oh no"));
     });
 
     test("doesn't colorize if color is false", () {
@@ -221,8 +210,7 @@ foo bar
     });
 
     test("colorizes if color is true", () {
-      expect(span.message("oh no", color: true),
-          equals("""
+      expect(span.message("oh no", color: true), equals("""
 line 1, column 6 of foo.dart: oh no
 ${colors.RED}foo bar${colors.NONE}
 ${colors.RED}^^^^^^^${colors.NONE}"""));
@@ -251,20 +239,16 @@ line 1, column 6 of foo.dart: oh no
 
   group("compareTo()", () {
     test("sorts by start location first", () {
-      var other = new SourceSpan(
-          new SourceLocation(6, sourceUrl: "foo.dart"),
-          new SourceLocation(14, sourceUrl: "foo.dart"),
-          "oo bar b");
+      var other = new SourceSpan(new SourceLocation(6, sourceUrl: "foo.dart"),
+          new SourceLocation(14, sourceUrl: "foo.dart"), "oo bar b");
 
       expect(span.compareTo(other), lessThan(0));
       expect(other.compareTo(span), greaterThan(0));
     });
 
     test("sorts by length second", () {
-      var other = new SourceSpan(
-          new SourceLocation(5, sourceUrl: "foo.dart"),
-          new SourceLocation(14, sourceUrl: "foo.dart"),
-          "foo bar b");
+      var other = new SourceSpan(new SourceLocation(5, sourceUrl: "foo.dart"),
+          new SourceLocation(14, sourceUrl: "foo.dart"), "foo bar b");
 
       expect(span.compareTo(other), lessThan(0));
       expect(other.compareTo(span), greaterThan(0));
@@ -277,37 +261,29 @@ line 1, column 6 of foo.dart: oh no
 
   group("equality", () {
     test("two spans with the same locations are equal", () {
-      var other = new SourceSpan(
-          new SourceLocation(5, sourceUrl: "foo.dart"),
-          new SourceLocation(12, sourceUrl: "foo.dart"),
-          "foo bar");
+      var other = new SourceSpan(new SourceLocation(5, sourceUrl: "foo.dart"),
+          new SourceLocation(12, sourceUrl: "foo.dart"), "foo bar");
 
       expect(span, equals(other));
     });
 
     test("a different start isn't equal", () {
-      var other = new SourceSpan(
-          new SourceLocation(0, sourceUrl: "foo.dart"),
-          new SourceLocation(12, sourceUrl: "foo.dart"),
-          "hey, foo bar");
+      var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
+          new SourceLocation(12, sourceUrl: "foo.dart"), "hey, foo bar");
 
       expect(span, isNot(equals(other)));
     });
 
     test("a different end isn't equal", () {
-      var other = new SourceSpan(
-          new SourceLocation(5, sourceUrl: "foo.dart"),
-          new SourceLocation(16, sourceUrl: "foo.dart"),
-          "foo bar baz");
+      var other = new SourceSpan(new SourceLocation(5, sourceUrl: "foo.dart"),
+          new SourceLocation(16, sourceUrl: "foo.dart"), "foo bar baz");
 
       expect(span, isNot(equals(other)));
     });
 
     test("a different source URL isn't equal", () {
-      var other = new SourceSpan(
-          new SourceLocation(5, sourceUrl: "bar.dart"),
-          new SourceLocation(12, sourceUrl: "bar.dart"),
-          "foo bar");
+      var other = new SourceSpan(new SourceLocation(5, sourceUrl: "bar.dart"),
+          new SourceLocation(12, sourceUrl: "bar.dart"), "foo bar");
 
       expect(span, isNot(equals(other)));
     });

@@ -113,8 +113,8 @@ abstract class SourceSpanMixin implements SourceSpan {
     return buffer.toString();
   }
 
-  bool operator ==(other) => other is SourceSpan &&
-      start == other.start && end == other.end;
+  bool operator ==(other) =>
+      other is SourceSpan && start == other.start && end == other.end;
 
   int get hashCode => start.hashCode + (31 * end.hashCode);
 

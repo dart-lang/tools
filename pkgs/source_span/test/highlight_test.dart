@@ -62,22 +62,19 @@ zip zap zop
   });
 
   test("works for a point span in an empty file", () {
-    expect(new SourceFile("").location(0).pointSpan().highlight(),
-        equals("""
+    expect(new SourceFile("").location(0).pointSpan().highlight(), equals("""
 
 ^"""));
   });
 
   test("works for a single-line file without a newline", () {
-    expect(new SourceFile("foo bar").span(0, 7).highlight(),
-        equals("""
+    expect(new SourceFile("foo bar").span(0, 7).highlight(), equals("""
 foo bar
 ^^^^^^^"""));
   });
 
   test("emits tabs for tabs", () {
-    expect(new SourceFile(" \t \t\tfoo bar").span(5, 8).highlight(),
-        equals("""
+    expect(new SourceFile(" \t \t\tfoo bar").span(5, 8).highlight(), equals("""
  \t \t\tfoo bar
  \t \t\t^^^"""));
   });

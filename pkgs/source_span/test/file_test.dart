@@ -87,7 +87,7 @@ zip zap zop""", url: "foo.dart");
       test("column may not be outside the file", () {
         expect(() => file.getOffset(2, 100), throwsRangeError);
       });
- 
+
       test("column may not be outside the line", () {
         expect(() => file.getOffset(1, 20), throwsRangeError);
       });
@@ -109,8 +109,8 @@ zip zap zop""", url: "foo.dart");
 
     group("for span().union()", () {
       test("source URLs must match", () {
-        var other = new SourceSpan(
-            new SourceLocation(10), new SourceLocation(11), "_");
+        var other =
+            new SourceSpan(new SourceLocation(10), new SourceLocation(11), "_");
 
         expect(() => file.span(9, 10).union(other), throwsArgumentError);
       });
@@ -312,10 +312,8 @@ zip zap zop""", url: "bar.dart").span(10, 11);
       });
 
       test("returns a base SourceSpan for a SourceSpan input", () {
-        var other = new SourceSpan(
-            new SourceLocation(0, sourceUrl: "foo.dart"),
-            new SourceLocation(5, sourceUrl: "foo.dart"),
-            "hey, ");
+        var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
+            new SourceLocation(5, sourceUrl: "foo.dart"), "hey, ");
         var result = span.union(other);
         expect(result, isNot(new isInstanceOf<FileSpan>()));
         expect(result.start, equals(other.start));

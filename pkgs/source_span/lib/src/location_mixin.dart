@@ -46,4 +46,3 @@ abstract class SourceLocationMixin implements SourceLocation {
 
   String toString() => '<$runtimeType: $offset $toolString>';
 }
-

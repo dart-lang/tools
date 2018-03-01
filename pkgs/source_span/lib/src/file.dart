@@ -53,8 +53,7 @@ class SourceFile {
   ///
   /// Use [new SourceFile.fromString] instead.
   @Deprecated("Will be removed in 2.0.0")
-  SourceFile(String text, {url})
-      : this.decoded(text.runes, url: url);
+  SourceFile(String text, {url}) : this.decoded(text.runes, url: url);
 
   /// Creates a new source file from [text].
   ///
@@ -317,7 +316,6 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   SourceSpan union(SourceSpan other) {
     if (other is! FileSpan) return super.union(other);
 
-    
     _FileSpan span = expand(other);
 
     if (other is _FileSpan) {
@@ -339,7 +337,8 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
       return super == other && sourceUrl == other.sourceUrl;
     }
 
-    return _start == other._start && _end == other._end &&
+    return _start == other._start &&
+        _end == other._end &&
         sourceUrl == other.sourceUrl;
   }
 

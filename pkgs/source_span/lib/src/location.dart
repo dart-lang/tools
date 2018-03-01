@@ -82,7 +82,8 @@ class SourceLocation implements Comparable<SourceLocation> {
   }
 
   bool operator ==(other) =>
-      other is SourceLocation && sourceUrl == other.sourceUrl &&
+      other is SourceLocation &&
+      sourceUrl == other.sourceUrl &&
       offset == other.offset;
 
   int get hashCode => sourceUrl.hashCode + offset;

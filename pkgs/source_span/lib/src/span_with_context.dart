@@ -22,7 +22,7 @@ class SourceSpanWithContext extends SourceSpanBase {
   /// [text] should start at `start.column` from the beginning of a line in
   /// [context].
   SourceSpanWithContext(
-          SourceLocation start, SourceLocation end, String text, this._context)
+      SourceLocation start, SourceLocation end, String text, this._context)
       : super(start, end, text) {
     if (!context.contains(text)) {
       throw new ArgumentError(
