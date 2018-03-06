@@ -22,8 +22,7 @@ typedef DateTime TimeFunction();
 @Deprecated("Use new DateTime.now() instead.")
 DateTime systemTime() => new DateTime.now();
 
-/// A class which encapsulates the notion of the "current time" and provides
-/// easy access to points relative to the current time.
+/// A provider for the "current time" and points relative to the current time.
 ///
 /// This class is designed with testability in mind. The current point in time
 /// (or [now()]) is defined by a function that returns a [DateTime]. By
