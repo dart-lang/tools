@@ -6,7 +6,9 @@ import '../boolean_selector.dart';
 
 /// A selector that matches all inputs.
 class All implements BooleanSelector {
-  final variables = const [];
+  // TODO(nweiz): Stop explicitly providing a type argument when sdk#32412 is
+  // fixed.
+  final variables = const <String>[];
 
   const All();
 
