@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of quiver.time;
+import 'src/utils.dart';
 
 /// Returns current time.
 typedef DateTime TimeFunction();

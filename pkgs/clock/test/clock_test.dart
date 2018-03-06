@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library quiver.time.clock_test;
+import 'package:clock/clock.dart';
 
 import 'package:test/test.dart';
-import 'package:quiver/time.dart';
 
 Clock from(int y, int m, int d) => new Clock.fixed(new DateTime(y, m, d));
 
