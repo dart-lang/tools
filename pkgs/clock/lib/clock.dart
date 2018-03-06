@@ -12,35 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of quiver.time;
+import 'src/utils.dart';
 
 /// Returns current time.
+@Deprecated("Pass around an instance of Clock instead.")
 typedef DateTime TimeFunction();
 
 /// Return current system time.
+@Deprecated("Use new DateTime.now() instead.")
 DateTime systemTime() => new DateTime.now();
 
-/// Provides points in time relative to the current point in time, for example:
-/// now, 2 days ago, 4 weeks from now, etc.
+/// A provider for the "current time" and points relative to the current time.
 ///
 /// This class is designed with testability in mind. The current point in time
-/// (or [now()]) is defined by a [TimeFunction]. By supplying your own time
-/// function or by using fixed clock (see constructors), you can control
-/// exactly what time a [Clock] returns and base your test expectations on
-/// that. See specific constructors for how to supply time functions.
+/// (or [now()]) is defined by a function that returns a [DateTime]. By
+/// supplying your own time function or using [new Clock.fixed], you can control
+/// exactly what time a [Clock] returns and base your test expectations on that.
 class Clock {
-  final TimeFunction _time;
+  /// The function that's called to determine this clock's notion of the current
+  /// time.
+  final DateTime Function() _time;
 
-  /// Creates a clock based on the given [timeFunc].
-  ///
-  /// If [timeFunc] is not provided, creates [Clock] based on system clock.
-  ///
-  /// Custom [timeFunc] can be useful in unit-tests. For example, you might
-  /// want to control what time it is now and set date and time expectations in
-  /// your test cases.
-  const Clock([TimeFunction timeFunc = systemTime]) : _time = timeFunc;
+  /// Creates a clock based on the given [currentTime], or on the system clock
+  /// by default.
+  const Clock([DateTime currentTime()]) : _time = currentTime ?? systemTime;
 
-  /// Creates [Clock] that returns fixed [time] value. Useful in unit-tests.
+  /// Creates [Clock] that always considers the current time to be [time].
   Clock.fixed(DateTime time) : _time = (() => time);
 
   /// Returns current time.
@@ -52,9 +49,9 @@ class Clock {
   /// Returns the point in time [Duration] amount of time from now.
   DateTime fromNowBy(Duration duration) => now().add(duration);
 
-  /// Returns the point in time that's given amount of time ago. The
-  /// amount of time is the sum of individual parts. Parts are compatible with
-  /// ones defined in [Duration].
+  /// Returns the point in time that's given amount of time ago.
+  ///
+  /// The amount of time is the sum of the individual parts.
   DateTime ago(
           {int days: 0,
           int hours: 0,
@@ -70,9 +67,9 @@ class Clock {
           milliseconds: milliseconds,
           microseconds: microseconds));
 
-  /// Returns the point in time that's given amount of time from now. The
-  /// amount of time is the sum of individual parts. Parts are compatible with
-  /// ones defined in [Duration].
+  /// Returns the point in time that's given amount of time from now.
+  ///
+  /// The amount of time is the sum of the individual parts.
   DateTime fromNow(
           {int days: 0,
           int hours: 0,
@@ -88,17 +85,19 @@ class Clock {
           milliseconds: milliseconds,
           microseconds: microseconds));
 
-  /// Return the point in time [micros] microseconds ago.
-  DateTime microsAgo(int micros) => ago(microseconds: micros);
+  /// Return the point in time [microseconds] ago.
+  DateTime microsAgo(int microseconds) => ago(microseconds: microseconds);
 
-  /// Return the point in time [micros] microseconds from now.
-  DateTime microsFromNow(int micros) => fromNow(microseconds: micros);
+  /// Return the point in time [microseconds] from now.
+  DateTime microsFromNow(int microseconds) =>
+      fromNow(microseconds: microseconds);
 
-  /// Return the point in time [millis] milliseconds ago.
-  DateTime millisAgo(int millis) => ago(milliseconds: millis);
+  /// Return the point in time [milliseconds] ago.
+  DateTime millisAgo(int milliseconds) => ago(milliseconds: milliseconds);
 
-  /// Return the point in time [millis] milliseconds from now.
-  DateTime millisFromNow(int millis) => fromNow(milliseconds: millis);
+  /// Return the point in time [milliseconds] from now.
+  DateTime millisFromNow(int milliseconds) =>
+      fromNow(milliseconds: milliseconds);
 
   /// Return the point in time [seconds] ago.
   DateTime secondsAgo(int seconds) => ago(seconds: seconds);
@@ -131,34 +130,46 @@ class Clock {
   DateTime weeksFromNow(int weeks) => fromNow(days: 7 * weeks);
 
   /// Return the point in time [months] ago on the same date.
+  ///
+  /// If the current day of the month isn't valid in the new month, the nearest
+  /// valid day in the new month will be used.
   DateTime monthsAgo(int months) {
     var time = now();
-    var m = (time.month - months - 1) % 12 + 1;
-    var y = time.year - (months + 12 - time.month) ~/ 12;
-    var d = clampDayOfMonth(year: y, month: m, day: time.day);
-    return new DateTime(
-        y, m, d, time.hour, time.minute, time.second, time.millisecond);
-  }
-
-  /// Return the point in time [months] from now on the same date.
-  DateTime monthsFromNow(int months) {
-    var time = now();
-    var m = (time.month + months - 1) % 12 + 1;
-    var y = time.year + (months + time.month - 1) ~/ 12;
-    var d = clampDayOfMonth(year: y, month: m, day: time.day);
-    return new DateTime(
-        y, m, d, time.hour, time.minute, time.second, time.millisecond);
-  }
-
-  /// Return the point in time [years] ago on the same date.
-  DateTime yearsAgo(int years) {
-    var time = now();
-    var y = time.year - years;
-    var d = clampDayOfMonth(year: y, month: time.month, day: time.day);
-    return new DateTime(y, time.month, d, time.hour, time.minute, time.second,
+    var month = (time.month - months - 1) % 12 + 1;
+    var year = time.year - (months + 12 - time.month) ~/ 12;
+    var day = clampDayOfMonth(year: year, month: month, day: time.day);
+    return new DateTime(year, month, day, time.hour, time.minute, time.second,
         time.millisecond);
   }
 
+  /// Return the point in time [months] from now on the same date.
+  ///
+  /// If the current day of the month isn't valid in the new month, the nearest
+  /// valid day in the new month will be used.
+  DateTime monthsFromNow(int months) {
+    var time = now();
+    var month = (time.month + months - 1) % 12 + 1;
+    var year = time.year + (months + time.month - 1) ~/ 12;
+    var day = clampDayOfMonth(year: year, month: month, day: time.day);
+    return new DateTime(year, month, day, time.hour, time.minute, time.second,
+        time.millisecond);
+  }
+
+  /// Return the point in time [years] ago on the same date.
+  ///
+  /// If the current day of the month isn't valid in the new year, the nearest
+  /// valid day in the original month will be used.
+  DateTime yearsAgo(int years) {
+    var time = now();
+    var year = time.year - years;
+    var day = clampDayOfMonth(year: year, month: time.month, day: time.day);
+    return new DateTime(year, time.month, day, time.hour, time.minute,
+        time.second, time.millisecond);
+  }
+
   /// Return the point in time [years] from now on the same date.
+  ///
+  /// If the current day of the month isn't valid in the new year, the nearest
+  /// valid day in the original month will be used.
   DateTime yearsFromNow(int years) => yearsAgo(-years);
 }
