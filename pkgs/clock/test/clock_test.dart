@@ -16,20 +16,12 @@ import 'package:clock/clock.dart';
 
 import 'package:test/test.dart';
 
-/// A utility function for tersely constructing a [DateTime] with no time
-/// component.
-DateTime _date(int year, [int month, int day]) =>
-    new DateTime(year, month ?? 1, day ?? 1);
-
-/// Return a clock that always returns a date with the given [year], [month],
-/// and [day].
-Clock _fixed(int year, [int month, int day]) =>
-    new Clock.fixed(_date(year, month, day));
+import 'utils.dart';
 
 main() {
   Clock clock;
   setUp(() {
-    clock = new Clock.fixed(_date(2013));
+    clock = new Clock.fixed(date(2013));
   });
 
   test('should return a non-null value from system clock', () {
@@ -50,24 +42,24 @@ main() {
   });
 
   test('should return time provided by a custom function', () {
-    var time = _date(2013);
+    var time = date(2013);
     var fixedClock = new Clock(() => time);
-    expect(fixedClock.now(), _date(2013));
+    expect(fixedClock.now(), date(2013));
 
-    time = _date(2014);
-    expect(fixedClock.now(), _date(2014));
+    time = date(2014);
+    expect(fixedClock.now(), date(2014));
   });
 
   test('should return fixed time', () {
-    expect(new Clock.fixed(_date(2013)).now(), _date(2013));
+    expect(new Clock.fixed(date(2013)).now(), date(2013));
   });
 
   test('should return time Duration ago', () {
-    expect(clock.agoBy(const Duration(days: 366)), _date(2012));
+    expect(clock.agoBy(const Duration(days: 366)), date(2012));
   });
 
   test('should return time Duration from now', () {
-    expect(clock.fromNowBy(const Duration(days: 365)), _date(2014));
+    expect(clock.fromNowBy(const Duration(days: 365)), date(2014));
   });
 
   test('should return time parts ago', () {
@@ -135,86 +127,86 @@ main() {
   });
 
   test('should return time days ago', () {
-    expect(clock.daysAgo(10), _date(2012, 12, 22));
+    expect(clock.daysAgo(10), date(2012, 12, 22));
   });
 
   test('should return time days from now', () {
-    expect(clock.daysFromNow(3), _date(2013, 1, 4));
+    expect(clock.daysFromNow(3), date(2013, 1, 4));
   });
 
   test('should return time months ago on the same date', () {
-    expect(clock.monthsAgo(1), _date(2012, 12, 1));
-    expect(clock.monthsAgo(2), _date(2012, 11, 1));
-    expect(clock.monthsAgo(3), _date(2012, 10, 1));
-    expect(clock.monthsAgo(4), _date(2012, 9, 1));
+    expect(clock.monthsAgo(1), date(2012, 12, 1));
+    expect(clock.monthsAgo(2), date(2012, 11, 1));
+    expect(clock.monthsAgo(3), date(2012, 10, 1));
+    expect(clock.monthsAgo(4), date(2012, 9, 1));
   });
 
   test('should return time months from now on the same date', () {
-    expect(clock.monthsFromNow(1), _date(2013, 2, 1));
-    expect(clock.monthsFromNow(2), _date(2013, 3, 1));
-    expect(clock.monthsFromNow(3), _date(2013, 4, 1));
-    expect(clock.monthsFromNow(4), _date(2013, 5, 1));
+    expect(clock.monthsFromNow(1), date(2013, 2, 1));
+    expect(clock.monthsFromNow(2), date(2013, 3, 1));
+    expect(clock.monthsFromNow(3), date(2013, 4, 1));
+    expect(clock.monthsFromNow(4), date(2013, 5, 1));
   });
 
   test('should go from 2013-05-31 to 2012-11-30', () {
-    expect(_fixed(2013, 5, 31).monthsAgo(6), _date(2012, 11, 30));
+    expect(fixed(2013, 5, 31).monthsAgo(6), date(2012, 11, 30));
   });
 
   test('should go from 2013-03-31 to 2013-02-28 (common year)', () {
-    expect(_fixed(2013, 3, 31).monthsAgo(1), _date(2013, 2, 28));
+    expect(fixed(2013, 3, 31).monthsAgo(1), date(2013, 2, 28));
   });
 
   test('should go from 2013-05-31 to 2013-02-28 (common year)', () {
-    expect(_fixed(2013, 5, 31).monthsAgo(3), _date(2013, 2, 28));
+    expect(fixed(2013, 5, 31).monthsAgo(3), date(2013, 2, 28));
   });
 
   test('should go from 2004-03-31 to 2004-02-29 (leap year)', () {
-    expect(_fixed(2004, 3, 31).monthsAgo(1), _date(2004, 2, 29));
+    expect(fixed(2004, 3, 31).monthsAgo(1), date(2004, 2, 29));
   });
 
   test('should go from 2013-03-31 to 2013-06-30', () {
-    expect(_fixed(2013, 3, 31).monthsFromNow(3), _date(2013, 6, 30));
+    expect(fixed(2013, 3, 31).monthsFromNow(3), date(2013, 6, 30));
   });
 
   test('should go from 2003-12-31 to 2004-02-29 (common to leap)', () {
-    expect(_fixed(2003, 12, 31).monthsFromNow(2), _date(2004, 2, 29));
+    expect(fixed(2003, 12, 31).monthsFromNow(2), date(2004, 2, 29));
   });
 
   test('should go from 2004-02-29 to 2003-02-28 by year', () {
-    expect(_fixed(2004, 2, 29).yearsAgo(1), _date(2003, 2, 28));
+    expect(fixed(2004, 2, 29).yearsAgo(1), date(2003, 2, 28));
   });
 
   test('should go from 2004-02-29 to 2003-02-28 by month', () {
-    expect(_fixed(2004, 2, 29).monthsAgo(12), _date(2003, 2, 28));
+    expect(fixed(2004, 2, 29).monthsAgo(12), date(2003, 2, 28));
   });
 
   test('should go from 2004-02-29 to 2005-02-28 by year', () {
-    expect(_fixed(2004, 2, 29).yearsFromNow(1), _date(2005, 2, 28));
+    expect(fixed(2004, 2, 29).yearsFromNow(1), date(2005, 2, 28));
   });
 
   test('should go from 2004-02-29 to 2005-02-28 by month', () {
-    expect(_fixed(2004, 2, 29).monthsFromNow(12), _date(2005, 2, 28));
+    expect(fixed(2004, 2, 29).monthsFromNow(12), date(2005, 2, 28));
   });
 
   test('should return time years ago on the same date', () {
-    expect(clock.yearsAgo(1), _date(2012, 1, 1)); // leap year
-    expect(clock.yearsAgo(2), _date(2011, 1, 1));
-    expect(clock.yearsAgo(3), _date(2010, 1, 1));
-    expect(clock.yearsAgo(4), _date(2009, 1, 1));
-    expect(clock.yearsAgo(5), _date(2008, 1, 1)); // leap year
-    expect(clock.yearsAgo(6), _date(2007, 1, 1));
-    expect(clock.yearsAgo(30), _date(1983, 1, 1));
-    expect(clock.yearsAgo(2013), _date(0, 1, 1));
+    expect(clock.yearsAgo(1), date(2012, 1, 1)); // leap year
+    expect(clock.yearsAgo(2), date(2011, 1, 1));
+    expect(clock.yearsAgo(3), date(2010, 1, 1));
+    expect(clock.yearsAgo(4), date(2009, 1, 1));
+    expect(clock.yearsAgo(5), date(2008, 1, 1)); // leap year
+    expect(clock.yearsAgo(6), date(2007, 1, 1));
+    expect(clock.yearsAgo(30), date(1983, 1, 1));
+    expect(clock.yearsAgo(2013), date(0, 1, 1));
   });
 
   test('should return time years from now on the same date', () {
-    expect(clock.yearsFromNow(1), _date(2014, 1, 1));
-    expect(clock.yearsFromNow(2), _date(2015, 1, 1));
-    expect(clock.yearsFromNow(3), _date(2016, 1, 1));
-    expect(clock.yearsFromNow(4), _date(2017, 1, 1));
-    expect(clock.yearsFromNow(5), _date(2018, 1, 1));
-    expect(clock.yearsFromNow(6), _date(2019, 1, 1));
-    expect(clock.yearsFromNow(30), _date(2043, 1, 1));
-    expect(clock.yearsFromNow(1000), _date(3013, 1, 1));
+    expect(clock.yearsFromNow(1), date(2014, 1, 1));
+    expect(clock.yearsFromNow(2), date(2015, 1, 1));
+    expect(clock.yearsFromNow(3), date(2016, 1, 1));
+    expect(clock.yearsFromNow(4), date(2017, 1, 1));
+    expect(clock.yearsFromNow(5), date(2018, 1, 1));
+    expect(clock.yearsFromNow(6), date(2019, 1, 1));
+    expect(clock.yearsFromNow(30), date(2043, 1, 1));
+    expect(clock.yearsFromNow(1000), date(3013, 1, 1));
   });
 }

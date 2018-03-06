@@ -22,6 +22,10 @@ import '../clock.dart';
 /// (or [now()]) is defined by a function that returns a [DateTime]. By
 /// supplying your own time function or using [new Clock.fixed], you can control
 /// exactly what time a [Clock] returns and base your test expectations on that.
+///
+/// Most users should use the top-level [clock] field, which provides access to
+/// a default implementation of [Clock] which can be overridden using
+/// [withClock].
 class Clock {
   /// The function that's called to determine this clock's notion of the current
   /// time.

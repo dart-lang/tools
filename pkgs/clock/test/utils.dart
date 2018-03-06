@@ -1,4 +1,4 @@
-// Copyright 2013 Google Inc. All Rights Reserved.
+// Copyright 2018 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'src/clock.dart';
-export 'src/default.dart';
+import 'package:clock/clock.dart';
 
-/// Returns current time.
-@Deprecated("Pass around an instance of Clock instead.")
-typedef DateTime TimeFunction();
+/// A utility function for tersely constructing a [DateTime] with no time
+/// component.
+DateTime date(int year, [int month, int day]) =>
+    new DateTime(year, month ?? 1, day ?? 1);
 
-/// Return current system time.
-@Deprecated("Use new DateTime.now() instead.")
-DateTime systemTime() => new DateTime.now();
+/// Returns a clock that always returns a date with the given [year], [month],
+/// and [day].
+Clock fixed(int year, [int month, int day]) =>
+    new Clock.fixed(date(year, month, day));
