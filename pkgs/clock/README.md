@@ -15,7 +15,7 @@ import 'package:clock/clock.dart';
 
 /// Runs [callback] and prints how long it took.
 T runWithTiming<T>(T callback()) {
-  var stopwatch = clock.getStopwatch()..start();
+  var stopwatch = clock.stopwatch()..start();
   var result = callback();
   print("It took ${stopwatch.elapsed}!");
   return result;
