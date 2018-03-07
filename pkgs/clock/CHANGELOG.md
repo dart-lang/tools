@@ -21,7 +21,7 @@ backwards-compatible with the old version of the `clock` package.
 ### Changes Relative to `clock` 0.1
 
 * The top-level `new` getter and `getStopwatch()` methods are deprecated.
-  `clock.new()` and `clock.getStopwatch()` should be used instead.
+  `clock.new()` and `clock.stopwatch()` should be used instead.
 
 * `Clock.getStopwatch()` is deprecated. `Clock.stopwatch()` should be used instead.
 
