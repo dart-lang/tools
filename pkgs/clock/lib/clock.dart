@@ -15,6 +15,8 @@
 export 'src/clock.dart';
 export 'src/default.dart';
 
+import 'src/default.dart';
+
 /// Returns current time.
 @Deprecated("Pass around an instance of Clock instead.")
 typedef DateTime TimeFunction();
