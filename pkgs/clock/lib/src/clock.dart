@@ -15,6 +15,7 @@
 import 'utils.dart';
 
 import '../clock.dart';
+import 'stopwatch.dart';
 
 /// A provider for the "current time" and points relative to the current time.
 ///
@@ -170,4 +171,11 @@ class Clock {
   /// If the current day of the month isn't valid in the new year, the nearest
   /// valid day in the original month will be used.
   DateTime yearsFromNow(int years) => yearsAgo(-years);
+
+  /// Returns a new stopwatch that uses the current time as reported by [this].
+  Stopwatch stopwatch() => new ClockStopwatch(this);
+
+  /// Returns a new stopwatch that uses the current time as reported by [this].
+  @Deprecated("Use stopwatch() instead.")
+  Stopwatch getStopwatch() => stopwatch();
 }
