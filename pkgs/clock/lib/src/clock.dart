@@ -34,7 +34,7 @@ class Clock {
 
   /// Creates a clock based on the given [currentTime], or on the system clock
   /// by default.
-  const Clock([DateTime currentTime()]) : _time = currentTime ?? systemTime;
+  const Clock([DateTime currentTime() = systemTime]) : _time = currentTime;
 
   /// Creates [Clock] that always considers the current time to be [time].
   Clock.fixed(DateTime time) : _time = (() => time);
