@@ -1,5 +1,5 @@
 .packages
-.dart_tool
+.dart_tool/
 packages
 pubspec.lock
 doc/api/
