@@ -63,19 +63,19 @@ SourceMapSpan outputExpr = ospan(19, 24);
 /// This mapping is stored in the tests so we can independently test the builder
 /// and parser algorithms without relying entirely on end2end tests.
 const Map<String, dynamic> EXPECTED_MAP = const {
-    'version': 3,
-    'sourceRoot': '',
-    'sources': const ['input.dart'],
-    'names': const ['longVar1','longName','longVar2'],
-    'mappings': 'IACIA;AAGAC,EAAaC,MACR',
-    'file': 'output.dart'
+  'version': 3,
+  'sourceRoot': '',
+  'sources': const ['input.dart'],
+  'names': const ['longVar1', 'longName', 'longVar2'],
+  'mappings': 'IACIA;AAGAC,EAAaC,MACR',
+  'file': 'output.dart'
 };
 
 check(SourceSpan outputSpan, Mapping mapping, SourceMapSpan inputSpan,
     bool realOffsets) {
   var line = outputSpan.start.line;
   var column = outputSpan.start.column;
-  var files = realOffsets ? {'input.dart': input} : null; 
+  var files = realOffsets ? {'input.dart': input} : null;
   var span = mapping.spanFor(line, column, files: files);
   var span2 = mapping.spanForLocation(outputSpan.start, files: files);
 

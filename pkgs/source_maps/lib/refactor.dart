@@ -41,7 +41,7 @@ class TextEditTransaction {
   /// rewritten string and source map information. [filename] is given to the
   /// underlying printer to indicate the name of the generated file that will
   /// contains the source map information.
-  /// 
+  ///
   /// Throws [UnsupportedError] if the edits were overlapping. If no edits were
   /// made, the printer simply contains the original string.
   NestedPrinter commit() {
@@ -57,12 +57,13 @@ class TextEditTransaction {
     for (var edit in _edits) {
       if (consumed > edit.begin) {
         var sb = new StringBuffer();
-        sb..write(file.location(edit.begin).toolString)
-            ..write(': overlapping edits. Insert at offset ')
-            ..write(edit.begin)
-            ..write(' but have consumed ')
-            ..write(consumed)
-            ..write(' input characters. List of edits:');
+        sb
+          ..write(file.location(edit.begin).toolString)
+          ..write(': overlapping edits. Insert at offset ')
+          ..write(edit.begin)
+          ..write(' but have consumed ')
+          ..write(consumed)
+          ..write(' input characters. List of edits:');
         for (var e in _edits) sb..write('\n    ')..write(e);
         throw new UnsupportedError(sb.toString());
       }
@@ -70,8 +71,9 @@ class TextEditTransaction {
       // Add characters from the original string between this edit and the last
       // one, if any.
       var betweenEdits = original.substring(consumed, edit.begin);
-      printer..add(betweenEdits, location: _loc(consumed), isOriginal: true)
-             ..add(edit.replace, location: _loc(edit.begin));
+      printer
+        ..add(betweenEdits, location: _loc(consumed), isOriginal: true)
+        ..add(edit.replace, location: _loc(edit.begin));
       consumed = edit.end;
     }
 

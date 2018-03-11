@@ -51,4 +51,3 @@ _linearSearch(list, predicate) {
   }
   return list.length;
 }
-

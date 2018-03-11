@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-
 /// Utilities to encode and decode VLQ values used in source maps.
 ///
 /// Sourcemaps are encoded with variable length numbers as base64 encoded

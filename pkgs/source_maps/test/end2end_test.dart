@@ -30,10 +30,10 @@ main() {
 
   test('build + parse', () {
     var map = (new SourceMapBuilder()
-        ..addSpan(inputVar1, outputVar1)
-        ..addSpan(inputFunction, outputFunction)
-        ..addSpan(inputVar2, outputVar2)
-        ..addSpan(inputExpr, outputExpr))
+          ..addSpan(inputVar1, outputVar1)
+          ..addSpan(inputFunction, outputFunction)
+          ..addSpan(inputVar2, outputVar2)
+          ..addSpan(inputExpr, outputExpr))
         .build(output.url.toString());
     var mapping = parseJson(map);
     check(outputVar1, mapping, inputVar1, false);
@@ -44,10 +44,10 @@ main() {
 
   test('build + parse - no symbols', () {
     var map = (new SourceMapBuilder()
-        ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
-        ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
-        ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
-        ..addSpan(inputExpr, outputExpr))
+          ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
+          ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
+          ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
+          ..addSpan(inputExpr, outputExpr))
         .build(output.url.toString());
     var mapping = parseJson(map);
     check(outputVar1NoSymbol, mapping, inputVar1NoSymbol, false);
@@ -58,14 +58,14 @@ main() {
 
   test('build + parse, repeated entries', () {
     var map = (new SourceMapBuilder()
-        ..addSpan(inputVar1, outputVar1)
-        ..addSpan(inputVar1, outputVar1)
-        ..addSpan(inputFunction, outputFunction)
-        ..addSpan(inputFunction, outputFunction)
-        ..addSpan(inputVar2, outputVar2)
-        ..addSpan(inputVar2, outputVar2)
-        ..addSpan(inputExpr, outputExpr)
-        ..addSpan(inputExpr, outputExpr))
+          ..addSpan(inputVar1, outputVar1)
+          ..addSpan(inputVar1, outputVar1)
+          ..addSpan(inputFunction, outputFunction)
+          ..addSpan(inputFunction, outputFunction)
+          ..addSpan(inputVar2, outputVar2)
+          ..addSpan(inputVar2, outputVar2)
+          ..addSpan(inputExpr, outputExpr)
+          ..addSpan(inputExpr, outputExpr))
         .build(output.url.toString());
     var mapping = parseJson(map);
     check(outputVar1, mapping, inputVar1, false);
@@ -76,13 +76,13 @@ main() {
 
   test('build + parse - no symbols, repeated entries', () {
     var map = (new SourceMapBuilder()
-        ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
-        ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
-        ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
-        ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
-        ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
-        ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
-        ..addSpan(inputExpr, outputExpr))
+          ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
+          ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
+          ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
+          ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
+          ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
+          ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
+          ..addSpan(inputExpr, outputExpr))
         .build(output.url.toString());
     var mapping = parseJson(map);
     check(outputVar1NoSymbol, mapping, inputVar1NoSymbol, false);
@@ -93,10 +93,10 @@ main() {
 
   test('build + parse with file', () {
     var json = (new SourceMapBuilder()
-        ..addSpan(inputVar1, outputVar1)
-        ..addSpan(inputFunction, outputFunction)
-        ..addSpan(inputVar2, outputVar2)
-        ..addSpan(inputExpr, outputExpr))
+          ..addSpan(inputVar1, outputVar1)
+          ..addSpan(inputFunction, outputFunction)
+          ..addSpan(inputVar2, outputVar2)
+          ..addSpan(inputExpr, outputExpr))
         .toJson(output.url.toString());
     var mapping = parse(json);
     check(outputVar1, mapping, inputVar1, true);
@@ -156,7 +156,7 @@ main() {
     var oOffset = out.length - 2;
     var iOffset = INPUT.length - 2;
     check(file.span(oOffset, oOffset), mapping, ispan(iOffset, iOffset), true);
-    check(file.span(oOffset + 1, oOffset + 1), mapping,
-        ispan(iOffset, iOffset), true);
+    check(file.span(oOffset + 1, oOffset + 1), mapping, ispan(iOffset, iOffset),
+        true);
   });
 }

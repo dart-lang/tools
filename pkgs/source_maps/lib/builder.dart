@@ -16,7 +16,6 @@ import 'src/source_map_span.dart';
 
 /// Builds a source map given a set of mappings.
 class SourceMapBuilder {
-
   final List<Entry> _entries = <Entry>[];
 
   /// Adds an entry mapping the [targetOffset] to [source].
@@ -25,8 +24,8 @@ class SourceMapBuilder {
     if (targetFile == null) {
       throw new ArgumentError('targetFile cannot be null');
     }
-    _entries.add(
-        new Entry(source, targetFile.location(targetOffset), identifier));
+    _entries
+        .add(new Entry(source, targetFile.location(targetOffset), identifier));
   }
 
   /// Adds an entry mapping [target] to [source].
@@ -45,8 +44,8 @@ class SourceMapBuilder {
   }
 
   /// Adds an entry mapping [target] to [source].
-  void addLocation(SourceLocation source, SourceLocation target,
-      String identifier) {
+  void addLocation(
+      SourceLocation source, SourceLocation target, String identifier) {
     _entries.add(new Entry(source, target, identifier));
   }
 
@@ -80,8 +79,9 @@ class Entry implements Comparable<Entry> {
   int compareTo(Entry other) {
     int res = target.compareTo(other.target);
     if (res != 0) return res;
-    res = source.sourceUrl.toString().compareTo(
-        other.source.sourceUrl.toString());
+    res = source.sourceUrl
+        .toString()
+        .compareTo(other.source.sourceUrl.toString());
     if (res != 0) return res;
     return source.compareTo(other.source);
   }

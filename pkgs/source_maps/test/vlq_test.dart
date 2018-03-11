@@ -42,7 +42,6 @@ main() {
     expect(() => encodeVlq(min_int - 1), throws);
     expect(() => encodeVlq(min_int - 2), throws);
 
-
     // if we allowed more than 32 bits, these would be the expected encodings
     // for the large numbers above.
     expect(() => decodeVlq('ggggggE'.split('').iterator), throws);

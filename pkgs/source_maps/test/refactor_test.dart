@@ -33,15 +33,16 @@ main() {
       txn.edit(6, 7, '_');
       txn.edit(6, 6, '-');
       expect((txn.commit()..build('')).text, "01.4|5-_789abcdefghij");
-
     });
 
     test('conflict', () {
       var txn = new TextEditTransaction(original, file);
       txn.edit(2, 4, '.');
       txn.edit(3, 3, '-');
-      expect(() => txn.commit(), throwsA(predicate(
-            (e) => e.toString().contains('overlapping edits'))));
+      expect(
+          () => txn.commit(),
+          throwsA(
+              predicate((e) => e.toString().contains('overlapping edits'))));
     });
   });
 
@@ -60,40 +61,48 @@ main() {
 
     // Line 1 and 2 are unmodified: mapping any column returns the beginning
     // of the corresponding line:
-    expect(_span(1, 1, map, file),
+    expect(
+        _span(1, 1, map, file),
         "line 1, column 1: \n"
         "0123456789\n"
         "^");
-    expect(_span(1, 5, map, file),
+    expect(
+        _span(1, 5, map, file),
         "line 1, column 1: \n"
         "0123456789\n"
         "^");
-    expect(_span(2, 1, map, file),
+    expect(
+        _span(2, 1, map, file),
         "line 2, column 1: \n"
         "0*23456789\n"
         "^");
-    expect(_span(2, 8, map, file),
+    expect(
+        _span(2, 8, map, file),
         "line 2, column 1: \n"
         "0*23456789\n"
         "^");
 
     // Line 3 is modified part way: mappings before the edits have the right
     // mapping, after the edits the mapping is null.
-    expect(_span(3, 1, map, file),
+    expect(
+        _span(3, 1, map, file),
         "line 3, column 1: \n"
         "01*3456789\n"
         "^");
-    expect(_span(3, 5, map, file),
+    expect(
+        _span(3, 5, map, file),
         "line 3, column 1: \n"
         "01*3456789\n"
         "^");
 
     // Start of edits map to beginning of the edit secion:
-    expect(_span(3, 6, map, file),
+    expect(
+        _span(3, 6, map, file),
         "line 3, column 6: \n"
         "01*3456789\n"
         "     ^");
-    expect(_span(3, 7, map, file),
+    expect(
+        _span(3, 7, map, file),
         "line 3, column 6: \n"
         "01*3456789\n"
         "     ^");
@@ -101,42 +110,50 @@ main() {
     // Lines added have no mapping (they should inherit the last mapping),
     // but the end of the edit region continues were we left off:
     expect(_span(4, 1, map, file), isNull);
-    expect(_span(4, 5, map, file),
+    expect(
+        _span(4, 5, map, file),
         "line 3, column 8: \n"
         "01*3456789\n"
         "       ^");
 
     // Subsequent lines are still mapped correctly:
     // a (in a___cd...)
-    expect(_span(5, 1, map, file),
+    expect(
+        _span(5, 1, map, file),
         "line 4, column 1: \n"
         "abcdefghij\n"
         "^");
     // _ (in a___cd...)
-    expect(_span(5, 2, map, file),
+    expect(
+        _span(5, 2, map, file),
         "line 4, column 2: \n"
         "abcdefghij\n"
         " ^");
     // _ (in a___cd...)
-    expect(_span(5, 3, map, file),
+    expect(
+        _span(5, 3, map, file),
         "line 4, column 2: \n"
         "abcdefghij\n"
         " ^");
     // _ (in a___cd...)
-    expect(_span(5, 4, map, file),
+    expect(
+        _span(5, 4, map, file),
         "line 4, column 2: \n"
         "abcdefghij\n"
         " ^");
     // c (in a___cd...)
-    expect(_span(5, 5, map, file),
+    expect(
+        _span(5, 5, map, file),
         "line 4, column 3: \n"
         "abcdefghij\n"
         "  ^");
-    expect(_span(6, 1, map, file),
+    expect(
+        _span(6, 1, map, file),
         "line 5, column 1: \n"
         "abcd*fghij\n"
         "^");
-    expect(_span(6, 8, map, file),
+    expect(
+        _span(6, 8, map, file),
         "line 5, column 1: \n"
         "abcd*fghij\n"
         "^");

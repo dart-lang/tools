@@ -63,7 +63,6 @@ class Printer {
     _buff.write(str);
   }
 
-
   /// Append a [total] number of spaces in the target file. Typically used for
   /// formatting indentation.
   void addSpaces(int total) {
@@ -101,7 +100,6 @@ class Printer {
 /// peices of the code are generated independently on separate printers, and are
 /// finally put together in the end.
 class NestedPrinter implements NestedItem {
-
   /// Items recoded by this printer, which can be [String] literals,
   /// [NestedItem]s, and source map information like [SourceLocation] and
   /// [SourceSpan].
@@ -134,8 +132,8 @@ class NestedPrinter implements NestedItem {
   /// Indicate [isOriginal] when [object] is copied directly from the user code.
   /// Setting [isOriginal] will make this printer propagate source map locations
   /// on every line-break.
-  void add(object, {SourceLocation location, SourceSpan span,
-      bool isOriginal: false}) {
+  void add(object,
+      {SourceLocation location, SourceSpan span, bool isOriginal: false}) {
     if (object is! String || location != null || span != null || isOriginal) {
       _flush();
       assert(location == null || span == null);

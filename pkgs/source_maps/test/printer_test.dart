@@ -13,15 +13,16 @@ import 'common.dart';
 main() {
   test('printer', () {
     var printer = new Printer('output.dart');
-    printer..add('var ')
-           ..mark(inputVar1)
-           ..add('x = 3;\n')
-           ..mark(inputFunction)
-           ..add('f(')
-           ..mark(inputVar2)
-           ..add('y) => ')
-           ..mark(inputExpr)
-           ..add('x + y;\n');
+    printer
+      ..add('var ')
+      ..mark(inputVar1)
+      ..add('x = 3;\n')
+      ..mark(inputFunction)
+      ..add('f(')
+      ..mark(inputVar2)
+      ..add('y) => ')
+      ..mark(inputExpr)
+      ..add('x + y;\n');
     expect(printer.text, OUTPUT);
     expect(printer.map, JSON.encode(EXPECTED_MAP));
   });
@@ -32,48 +33,50 @@ main() {
 
     var segments = INPUT.split('long');
     expect(segments.length, 6);
-    printer..mark(ispan(0, 0))
-        ..add(segments[0], projectMarks: true)
-        ..mark(inputVar1)
-        ..add('_s')
-        ..add(segments[1], projectMarks: true)
-        ..mark(inputFunction)
-        ..add('_s')
-        ..add(segments[2], projectMarks: true)
-        ..mark(inputVar2)
-        ..add('_s')
-        ..add(segments[3], projectMarks: true)
-        ..mark(inputExpr)
-        ..add('_s')
-        ..add(segments[4], projectMarks: true)
-        ..add('_s')
-        ..add(segments[5], projectMarks: true);
+    printer
+      ..mark(ispan(0, 0))
+      ..add(segments[0], projectMarks: true)
+      ..mark(inputVar1)
+      ..add('_s')
+      ..add(segments[1], projectMarks: true)
+      ..mark(inputFunction)
+      ..add('_s')
+      ..add(segments[2], projectMarks: true)
+      ..mark(inputVar2)
+      ..add('_s')
+      ..add(segments[3], projectMarks: true)
+      ..mark(inputExpr)
+      ..add('_s')
+      ..add(segments[4], projectMarks: true)
+      ..add('_s')
+      ..add(segments[5], projectMarks: true);
 
     expect(printer.text, out);
     // 8 new lines in the source map:
     expect(printer.map.split(';').length, 8);
 
-    asFixed(SourceMapSpan s) => new SourceMapSpan(s.start, s.end, s.text,
-        isIdentifier: s.isIdentifier);
+    asFixed(SourceMapSpan s) =>
+        new SourceMapSpan(s.start, s.end, s.text, isIdentifier: s.isIdentifier);
 
     // The result is the same if we use fixed positions
     var printer2 = new Printer('output2.dart');
-    printer2..mark(new SourceLocation(0, sourceUrl: 'input.dart').pointSpan())
-        ..add(segments[0], projectMarks: true)
-        ..mark(asFixed(inputVar1))
-        ..add('_s')
-        ..add(segments[1], projectMarks: true)
-        ..mark(asFixed(inputFunction))
-        ..add('_s')
-        ..add(segments[2], projectMarks: true)
-        ..mark(asFixed(inputVar2))
-        ..add('_s')
-        ..add(segments[3], projectMarks: true)
-        ..mark(asFixed(inputExpr))
-        ..add('_s')
-        ..add(segments[4], projectMarks: true)
-        ..add('_s')
-        ..add(segments[5], projectMarks: true);
+    printer2
+      ..mark(new SourceLocation(0, sourceUrl: 'input.dart').pointSpan())
+      ..add(segments[0], projectMarks: true)
+      ..mark(asFixed(inputVar1))
+      ..add('_s')
+      ..add(segments[1], projectMarks: true)
+      ..mark(asFixed(inputFunction))
+      ..add('_s')
+      ..add(segments[2], projectMarks: true)
+      ..mark(asFixed(inputVar2))
+      ..add('_s')
+      ..add(segments[3], projectMarks: true)
+      ..mark(asFixed(inputExpr))
+      ..add('_s')
+      ..add(segments[4], projectMarks: true)
+      ..add('_s')
+      ..add(segments[5], projectMarks: true);
 
     expect(printer2.text, out);
     expect(printer2.map, printer.map);
@@ -82,24 +85,26 @@ main() {
   group('nested printer', () {
     test('simple use', () {
       var printer = new NestedPrinter();
-      printer..add('var ')
-             ..add('x = 3;\n', span: inputVar1)
-             ..add('f(', span: inputFunction)
-             ..add('y) => ', span: inputVar2)
-             ..add('x + y;\n', span: inputExpr)
-             ..build('output.dart');
+      printer
+        ..add('var ')
+        ..add('x = 3;\n', span: inputVar1)
+        ..add('f(', span: inputFunction)
+        ..add('y) => ', span: inputVar2)
+        ..add('x + y;\n', span: inputExpr)
+        ..build('output.dart');
       expect(printer.text, OUTPUT);
       expect(printer.map, JSON.encode(EXPECTED_MAP));
     });
 
     test('nested use', () {
       var printer = new NestedPrinter();
-      printer..add('var ')
-             ..add(new NestedPrinter()..add('x = 3;\n', span: inputVar1))
-             ..add('f(', span: inputFunction)
-             ..add(new NestedPrinter()..add('y) => ', span: inputVar2))
-             ..add('x + y;\n', span: inputExpr)
-             ..build('output.dart');
+      printer
+        ..add('var ')
+        ..add(new NestedPrinter()..add('x = 3;\n', span: inputVar1))
+        ..add('f(', span: inputFunction)
+        ..add(new NestedPrinter()..add('y) => ', span: inputVar2))
+        ..add('x + y;\n', span: inputExpr)
+        ..build('output.dart');
       expect(printer.text, OUTPUT);
       expect(printer.map, JSON.encode(EXPECTED_MAP));
     });
