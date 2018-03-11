@@ -1,7 +1,7 @@
 .buildlog
 .DS_Store
 .idea
-.dart_tool
+.dart_tool/
 .project
 .settings
 build/
