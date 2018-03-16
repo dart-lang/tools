@@ -1,0 +1,27 @@
+language: dart
+
+# trying to get chrome working
+sudo: true
+
+dart:
+  - dev
+  - stable
+
+dart_task:
+  - test: -p chrome,vm
+
+matrix:
+  include:
+    # Only validate formatting using the dev release
+    - dart: dev
+      dart_task: dartfmt
+    - dart: dev
+      dart_task: analyzer
+
+# Only building master means that we don't run two builds for each pull request.
+branches:
+  only: [master]
+
+cache:
+ directories:
+   - $HOME/.pub-cache
