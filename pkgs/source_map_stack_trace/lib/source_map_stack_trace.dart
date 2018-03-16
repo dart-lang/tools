@@ -23,7 +23,9 @@ import 'package:stack_trace/stack_trace.dart';
 /// [packageRoot] is deprecated and shouldn't be used in new code. This throws
 /// an [ArgumentError] if [packageRoot] and [packageResolver] are both passed.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified: false, SyncPackageResolver packageResolver, sdkRoot,
+    {bool minified: false,
+    SyncPackageResolver packageResolver,
+    sdkRoot,
     @Deprecated("Use the packageResolver parameter instead.") packageRoot}) {
   if (packageRoot != null) {
     if (packageResolver != null) {
@@ -36,8 +38,7 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 
   if (stackTrace is Chain) {
     return new Chain(stackTrace.traces.map((trace) {
-      return new Trace.from(mapStackTrace(
-          sourceMap, trace,
+      return new Trace.from(mapStackTrace(sourceMap, trace,
           minified: minified,
           packageResolver: packageResolver,
           sdkRoot: sdkRoot));
@@ -75,15 +76,16 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     } else if (packageResolver != null) {
       if (packageResolver.packageRoot != null &&
           p.url.isWithin(packageResolver.packageRoot.toString(), sourceUrl)) {
-        sourceUrl = "package:" + p.url.relative(sourceUrl,
-            from: packageResolver.packageRoot.toString());
+        sourceUrl = "package:" +
+            p.url.relative(sourceUrl,
+                from: packageResolver.packageRoot.toString());
       } else if (packageResolver.packageConfigMap != null) {
         for (var package in packageResolver.packageConfigMap.keys) {
           var packageUrl = packageResolver.packageConfigMap[package].toString();
           if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
 
-          sourceUrl = "package:$package/" +
-              p.url.relative(sourceUrl, from: packageUrl);
+          sourceUrl =
+              "package:$package/" + p.url.relative(sourceUrl, from: packageUrl);
           break;
         }
       }
@@ -110,7 +112,8 @@ String _prettifyMember(String member) {
       // Get rid of arity indicators and named arguments.
       .replaceAll(new RegExp(r"\$\d+(\$[a-zA-Z_0-9]+)*$"), "")
       // Convert closures to <fn>.
-      .replaceAllMapped(new RegExp(r"(_+)closure\d*\.call$"),
+      .replaceAllMapped(
+          new RegExp(r"(_+)closure\d*\.call$"),
           // The number of underscores before "closure" indicates how nested it
           // is.
           (match) => ".<fn>" * match[1].length)
@@ -126,6 +129,6 @@ String _prettifyMember(String member) {
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
-      .replaceAllMapped(new RegExp(r"([a-zA-Z0-9]+)_"),
-          (match) => match[1] + ".");
+      .replaceAllMapped(
+          new RegExp(r"([a-zA-Z0-9]+)_"), (match) => match[1] + ".");
 }
