@@ -275,8 +275,8 @@ class ReflectiveTest {
 }
 
 /**
- * A marker annotation used to annotate overridden test methods with additional
- * timeout information.
+ * A marker annotation used to annotate test methods with additional timeout
+ * information.
  */
 class TestTimeout {
   final test_package.Timeout timeout;
