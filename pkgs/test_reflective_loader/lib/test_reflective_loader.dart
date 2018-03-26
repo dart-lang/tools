@@ -118,7 +118,7 @@ void defineReflectiveTests(Type type) {
         _hasAnnotationInstance(memberMirror, soloTest);
     // test_
     if (memberName.startsWith('test_')) {
-      group.addTest(isSolo, memberName, () {
+      group.addTest(isSolo, memberName, memberMirror, () {
         if (_hasFailingTestAnnotation(memberMirror) ||
             _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror)) {
           return _runFailingTest(classMirror, symbol);
@@ -130,19 +130,19 @@ void defineReflectiveTests(Type type) {
     }
     // solo_test_
     if (memberName.startsWith('solo_test_')) {
-      group.addTest(true, memberName, () {
+      group.addTest(true, memberName, memberMirror, () {
         return _runTest(classMirror, symbol);
       });
     }
     // fail_test_
     if (memberName.startsWith('fail_')) {
-      group.addTest(isSolo, memberName, () {
+      group.addTest(isSolo, memberName, memberMirror, () {
         return _runFailingTest(classMirror, symbol);
       });
     }
     // solo_fail_test_
     if (memberName.startsWith('solo_fail_')) {
-      group.addTest(true, memberName, () {
+      group.addTest(true, memberName, memberMirror, () {
         return _runFailingTest(classMirror, symbol);
       });
     }
@@ -162,7 +162,8 @@ void _addTestsIfTopLevelSuite() {
         if (allGroups || group.isSolo) {
           for (_Test test in group.tests) {
             if (allTests || test.isSolo) {
-              test_package.test(test.name, test.function);
+              test_package.test(test.name, test.function,
+                  timeout: test.timeout);
             }
           }
         }
@@ -192,6 +193,15 @@ String _combineNames(String base, String addition) {
   } else {
     return '$base | $addition';
   }
+}
+
+Object _getAnnotationInstance(DeclarationMirror declaration, Type type) {
+  for (InstanceMirror annotation in declaration.metadata) {
+    if (annotation.reflectee.runtimeType == type) {
+      return annotation.reflectee;
+    }
+  }
+  return null;
 }
 
 bool _hasAnnotationInstance(DeclarationMirror declaration, instance) =>
@@ -265,6 +275,16 @@ class _ReflectiveTest {
 }
 
 /**
+ * A marker annotation used to annotate test methods with additional timeout
+ * information.
+ */
+class TestTimeout {
+  final test_package.Timeout timeout;
+
+  const TestTimeout(this.timeout);
+}
+
+/**
  * A marker annotation used to annotate overridden test methods (so we cannot
  * rename them to `fail_`) which are expected to fail at `assert` in the
  * checked mode.
@@ -293,9 +313,11 @@ class _Group {
 
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
-  void addTest(bool isSolo, String name, _TestFunction function) {
+  void addTest(bool isSolo, String name, MethodMirror memberMirror,
+      _TestFunction function) {
     String fullName = _combineNames(this.name, name);
-    tests.add(new _Test(isSolo, fullName, function));
+    TestTimeout timeout = _getAnnotationInstance(memberMirror, TestTimeout);
+    tests.add(new _Test(isSolo, fullName, function, timeout?.timeout));
   }
 }
 
@@ -313,6 +335,7 @@ class _Test {
   final bool isSolo;
   final String name;
   final _TestFunction function;
+  final test_package.Timeout timeout;
 
-  _Test(this.isSolo, this.name, this.function);
+  _Test(this.isSolo, this.name, this.function, this.timeout);
 }
