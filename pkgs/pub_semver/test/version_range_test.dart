@@ -606,6 +606,14 @@ main() {
             new VersionRange(min: v130, max: v140)
           ])));
     });
+
+    test("with a version union that covers the whole range, returns empty", () {
+      expect(
+          new VersionRange(min: v114, max: v140).difference(
+              new VersionConstraint.unionOf(
+                  [v003, new VersionRange(min: v010)])),
+          equals(VersionConstraint.empty));
+    });
   });
 
   test('isEmpty', () {

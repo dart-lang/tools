@@ -379,7 +379,9 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         if (strictlyHigher(range, current)) break;
 
         var difference = current.difference(range);
-        if (difference is VersionUnion) {
+        if (difference.isEmpty) {
+          return VersionConstraint.empty;
+        } else if (difference is VersionUnion) {
           // If [range] split [current] in half, we only need to continue
           // checking future ranges against the latter half.
           assert(difference.ranges.length == 2);

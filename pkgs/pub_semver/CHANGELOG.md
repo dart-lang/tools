@@ -1,3 +1,8 @@
+# 1.3.3
+
+* Fix a bug where `VersionRange.difference()` with a union constraint that
+  covered the entire range would crash.
+
 # 1.3.2
 
 * Fix a checked-mode error in `VersionRange.difference()`.
