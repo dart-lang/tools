@@ -137,19 +137,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     }
 
     if (other is VersionRange) {
-      if (min != null) {
-        if (other.min == null) return false;
-        if (min > other.min) return false;
-        if (min == other.min && !includeMin && other.includeMin) return false;
-      }
-
-      if (max != null) {
-        if (other.max == null) return false;
-        if (max < other.max) return false;
-        if (max == other.max && !includeMax && other.includeMax) return false;
-      }
-
-      return true;
+      return !allowsLower(other, this) && !allowsHigher(other, this);
     }
 
     throw new ArgumentError('Unknown VersionConstraint type $other.');
