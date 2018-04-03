@@ -48,11 +48,5 @@ bool strictlyLower(VersionRange range1, VersionRange range2) {
 
 /// Returns whether [range1] allows only versions higher than those allowed by
 /// [range2].
-bool strictlyHigher(VersionRange range1, VersionRange range2) {
-  if (range1.min == null || range2.max == null) return false;
-
-  var comparison = range1.min.compareTo(range2.max);
-  if (comparison == 1) return true;
-  if (comparison == -1) return false;
-  return !range1.includeMin || !range2.includeMax;
-}
+bool strictlyHigher(VersionRange range1, VersionRange range2) =>
+    strictlyLower(range2, range1);
