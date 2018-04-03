@@ -1,3 +1,9 @@
+# 1.3.4
+
+* Fix a bug where `VersionRange.allowsAll()`, `VersionRange.allowsAny()`, and
+  `VersionRange.difference()` would return incorrect results for pre-release
+  versions with the same base version number as release versions.
+
 # 1.3.3
 
 * Fix a bug where `VersionRange.difference()` with a union constraint that

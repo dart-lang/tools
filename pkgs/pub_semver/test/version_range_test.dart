@@ -228,6 +228,50 @@ main() {
           range.allowsAll(new VersionRange(min: v123, max: v234).union(v140)),
           isFalse);
     });
+
+    group('pre-release versions', () {
+      test('of inclusive min are excluded', () {
+        var range = new VersionRange(min: v123, includeMin: true);
+
+        expect(
+            range.allowsAll(new VersionConstraint.parse('>1.2.4-dev')), isTrue);
+        expect(range.allowsAll(new VersionConstraint.parse('>1.2.3-dev')),
+            isFalse);
+      });
+
+      test('of non-pre-release max are excluded', () {
+        var range = new VersionRange(max: v234);
+
+        expect(range.allowsAll(new VersionConstraint.parse('<2.3.3')), isTrue);
+        expect(range.allowsAll(new VersionConstraint.parse('<2.3.4-dev')),
+            isFalse);
+      });
+
+      test(
+          'of non-pre-release max are included if min is a pre-release of the '
+          'same version', () {
+        var range =
+            new VersionRange(min: new Version.parse('2.3.4-dev.0'), max: v234);
+
+        expect(
+            range.allowsAll(
+                new VersionConstraint.parse('>2.3.4-dev.0 <2.3.4-dev.1')),
+            isTrue);
+      });
+
+      test('of pre-release max are included', () {
+        var range = new VersionRange(max: new Version.parse('2.3.4-dev.2'));
+
+        expect(range.allowsAll(new VersionConstraint.parse('<2.3.4-dev.1')),
+            isTrue);
+        expect(range.allowsAll(new VersionConstraint.parse('<2.3.4-dev.2')),
+            isTrue);
+        expect(range.allowsAll(new VersionConstraint.parse('<=2.3.4-dev.2')),
+            isFalse);
+        expect(range.allowsAll(new VersionConstraint.parse('<2.3.4-dev.3')),
+            isFalse);
+      });
+    });
   });
 
   group('allowsAny()', () {
@@ -324,6 +368,52 @@ main() {
       expect(
           range.allowsAny(new VersionRange(min: v234, max: v300).union(v010)),
           isFalse);
+    });
+
+    group('pre-release versions', () {
+      test('of inclusive min are excluded', () {
+        var range = new VersionRange(min: v123, includeMin: true);
+
+        expect(
+            range.allowsAny(new VersionConstraint.parse('<1.2.4-dev')), isTrue);
+        expect(range.allowsAny(new VersionConstraint.parse('<1.2.3-dev')),
+            isFalse);
+      });
+
+      test('of non-pre-release max are excluded', () {
+        var range = new VersionRange(max: v234);
+
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.3')), isTrue);
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.4-dev')),
+            isFalse);
+      });
+
+      test(
+          'of non-pre-release max are included if min is a pre-release of the '
+          'same version', () {
+        var range =
+            new VersionRange(min: new Version.parse('2.3.4-dev.0'), max: v234);
+
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.4-dev.1')),
+            isTrue);
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.4')), isFalse);
+
+        expect(range.allowsAny(new VersionConstraint.parse('<2.3.4-dev.1')),
+            isTrue);
+        expect(range.allowsAny(new VersionConstraint.parse('<2.3.4-dev')),
+            isFalse);
+      });
+
+      test('of pre-release max are included', () {
+        var range = new VersionConstraint.parse('<2.3.4-dev.2');
+
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.4-dev.1')),
+            isTrue);
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.4-dev.2')),
+            isFalse);
+        expect(range.allowsAny(new VersionConstraint.parse('>2.3.4-dev.3')),
+            isFalse);
+      });
     });
   });
 
@@ -613,6 +703,13 @@ main() {
               new VersionConstraint.unionOf(
                   [v003, new VersionRange(min: v010)])),
           equals(VersionConstraint.empty));
+    });
+
+    test("with a range with a pre-release min, returns the original", () {
+      expect(
+          new VersionRange(max: v200)
+              .difference(new VersionConstraint.parse(">=2.0.0-dev")),
+          equals(new VersionRange(max: v200)));
     });
   });
 
