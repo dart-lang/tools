@@ -1,3 +1,8 @@
+# 1.3.5
+
+* Fix a bug where `VersionRange.intersect()` would return incorrect results for
+  pre-release versions with the same base version number as release versions.
+
 # 1.3.4
 
 * Fix a bug where `VersionRange.allowsAll()`, `VersionRange.allowsAny()`, and

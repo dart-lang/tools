@@ -137,29 +137,26 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
     if (other is VersionRange) {
       // Intersect the two ranges.
-      var intersectMin = min;
-      var intersectIncludeMin = includeMin;
-      var intersectMax = max;
-      var intersectIncludeMax = includeMax;
-
-      if (other.min == null) {
-        // Do nothing.
-      } else if (intersectMin == null || intersectMin < other.min) {
+      Version intersectMin;
+      bool intersectIncludeMin;
+      if (allowsLower(this, other)) {
+        if (strictlyLower(this, other)) return VersionConstraint.empty;
         intersectMin = other.min;
         intersectIncludeMin = other.includeMin;
-      } else if (intersectMin == other.min && !other.includeMin) {
-        // The edges are the same, but one is exclusive, make it exclusive.
-        intersectIncludeMin = false;
+      } else {
+        if (strictlyLower(other, this)) return VersionConstraint.empty;
+        intersectMin = this.min;
+        intersectIncludeMin = this.includeMin;
       }
 
-      if (other.max == null) {
-        // Do nothing.
-      } else if (intersectMax == null || intersectMax > other.max) {
+      Version intersectMax;
+      bool intersectIncludeMax;
+      if (allowsHigher(this, other)) {
         intersectMax = other.max;
         intersectIncludeMax = other.includeMax;
-      } else if (intersectMax == other.max && !other.includeMax) {
-        // The edges are the same, but one is exclusive, make it exclusive.
-        intersectIncludeMax = false;
+      } else {
+        intersectMax = this.max;
+        intersectIncludeMax = this.includeMax;
       }
 
       if (intersectMin == null && intersectMax == null) {
@@ -169,18 +166,10 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
       // If the range is just a single version.
       if (intersectMin == intersectMax) {
-        // If both ends are inclusive, allow that version.
-        if (intersectIncludeMin && intersectIncludeMax) return intersectMin;
-
-        // Otherwise, no versions.
-        return VersionConstraint.empty;
-      }
-
-      if (intersectMin != null &&
-          intersectMax != null &&
-          intersectMin > intersectMax) {
-        // Non-overlapping ranges, so empty.
-        return VersionConstraint.empty;
+        // Because we already verified that the lower range isn't strictly
+        // lower, there must be some overlap.
+        assert(intersectIncludeMin && intersectIncludeMax);
+        return intersectMin;
       }
 
       // If we got here, there is an actual range.
