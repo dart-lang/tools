@@ -1,3 +1,8 @@
+# 1.3.6
+
+* Fix a bug where constraints that only allowed pre-release versions would be
+  parsed as empty constraints.
+
 # 1.3.5
 
 * Fix a bug where `VersionRange.intersect()` would return incorrect results for

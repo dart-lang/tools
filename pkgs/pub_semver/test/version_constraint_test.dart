@@ -103,6 +103,18 @@ main() {
               new Version.parse('1.3.0'), new Version.parse('3.4.5')));
     });
 
+    test('parses a pre-release-only constraint', () {
+      var constraint = new VersionConstraint.parse('>=1.0.0-dev.2 <1.0.0');
+      expect(
+          constraint,
+          allows(new Version.parse('1.0.0-dev.2'),
+              new Version.parse('1.0.0-dev.3')));
+      expect(
+          constraint,
+          doesNotAllow(
+              new Version.parse('1.0.0-dev.1'), new Version.parse('1.0.0')));
+    });
+
     test('ignores whitespace around comparison operators', () {
       var constraint = new VersionConstraint.parse(' >1.0.0>=1.2.3 < 1.3.0');
 
