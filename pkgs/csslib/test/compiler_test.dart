@@ -528,7 +528,7 @@ void testArrayOfChars() {
       'color : #00F578; border-color: #878787;'
       '}]]>';
 
-  var stylesheet = parse(UTF8.encode(input), errors: errors);
+  var stylesheet = parse(utf8.encode(input), errors: errors);
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
