@@ -145,7 +145,7 @@ void main() {
           new StreamChannel(incomingController.stream, outgoingController));
 
       expect(
-          outgoingController.stream.first.then(JSON.decode),
+          outgoingController.stream.first.then(jsonDecode),
           completion({
             "jsonrpc": "2.0",
             "error": {

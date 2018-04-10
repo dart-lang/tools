@@ -209,7 +209,7 @@ class Server {
       throw new RpcException(
           error_code.INVALID_REQUEST,
           'Invalid JSON-RPC '
-          'version ${JSON.encode(request['jsonrpc'])}, expected "2.0".');
+          'version ${jsonEncode(request['jsonrpc'])}, expected "2.0".');
     }
 
     if (!request.containsKey('method')) {
@@ -224,7 +224,7 @@ class Server {
       throw new RpcException(
           error_code.INVALID_REQUEST,
           'Request method must '
-          'be a string, but was ${JSON.encode(method)}.');
+          'be a string, but was ${jsonEncode(method)}.');
     }
 
     var params = request['params'];
@@ -232,7 +232,7 @@ class Server {
       throw new RpcException(
           error_code.INVALID_REQUEST,
           'Request params must '
-          'be an Array or an Object, but was ${JSON.encode(params)}.');
+          'be an Array or an Object, but was ${jsonEncode(params)}.');
     }
 
     var id = request['id'];
@@ -240,7 +240,7 @@ class Server {
       throw new RpcException(
           error_code.INVALID_REQUEST,
           'Request id must be a '
-          'string, number, or null, but was ${JSON.encode(id)}.');
+          'string, number, or null, but was ${jsonEncode(id)}.');
     }
   }
 

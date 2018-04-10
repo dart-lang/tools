@@ -100,7 +100,7 @@ void main() {
 
   test("a JSON parse error is rejected", () {
     return controller.handleJsonRequest('invalid json {').then((result) {
-      expect(JSON.decode(result), {
+      expect(jsonDecode(result), {
         'jsonrpc': '2.0',
         'error': {
           'code': error_code.PARSE_ERROR,
