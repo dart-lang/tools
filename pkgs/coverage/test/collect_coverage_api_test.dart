@@ -61,7 +61,7 @@ Future<Map<String, dynamic>> _collectCoverage() async {
   // Capture the VM service URI.
   Completer<Uri> serviceUriCompleter = new Completer<Uri>();
   sampleProcess.stdout
-      .transform(UTF8.decoder)
+      .transform(utf8.decoder)
       .transform(new LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {

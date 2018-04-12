@@ -1,4 +1,9 @@
-## 0.10-0 - 2017-12-14
+## 0.11.0 - 2018-04-12
+
+ * BREAKING CHANGE: This version requires Dart SDK 2.0.0-dev.30 or later.
+ * Updated to Dart 2.0 constants from dart:convert.
+
+## 0.10.0 - 2017-12-14
 
  * BREAKING CHANGE: `createHitmap` and `mergeHitmaps` now specify generic types
    (`Map<String, Map<int, int>>`) on their hit map parameter/return value.

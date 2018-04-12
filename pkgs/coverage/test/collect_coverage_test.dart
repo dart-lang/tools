@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' show json, LineSplitter, utf8;
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
@@ -24,12 +24,12 @@ void main() {
     var resultString = await _getCoverageResult();
 
     // analyze the output json
-    Map<String, dynamic> json = JSON.decode(resultString);
+    Map<String, dynamic> jsonResult = json.decode(resultString);
 
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
+    expect(jsonResult.keys, unorderedEquals(<String>['type', 'coverage']));
+    expect(jsonResult, containsPair('type', 'CodeCoverage'));
 
-    List<Map<String, dynamic>> coverage = json['coverage'];
+    List<Map<String, dynamic>> coverage = jsonResult['coverage'];
     expect(coverage, isNotEmpty);
 
     var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
@@ -49,8 +49,8 @@ void main() {
 
   test('createHitmap', () async {
     var resultString = await _getCoverageResult();
-    Map<String, dynamic> json = JSON.decode(resultString);
-    List<Map<String, dynamic>> coverage = json['coverage'];
+    Map<String, dynamic> jsonResult = json.decode(resultString);
+    List<Map<String, dynamic>> coverage = jsonResult['coverage'];
     var hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 
@@ -124,7 +124,7 @@ Future<String> _collectCoverage() async {
   // Capture the VM service URI.
   Completer<Uri> serviceUriCompleter = new Completer<Uri>();
   sampleProcess.stdout
-      .transform(UTF8.decoder)
+      .transform(utf8.decoder)
       .transform(new LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
