@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert' show UTF8, LineSplitter;
+import 'dart:convert' show utf8, LineSplitter;
 import 'dart:io';
 
 import 'collect.dart';
@@ -36,7 +36,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
   var process = await Process.start('dart', dartArgs);
   var serviceUriCompleter = new Completer<Uri>();
   process.stdout
-      .transform(UTF8.decoder)
+      .transform(utf8.decoder)
       .transform(const LineSplitter())
       .listen((line) {
     var uri = extractObservatoryUri(line);

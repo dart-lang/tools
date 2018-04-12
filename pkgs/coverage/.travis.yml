@@ -1,7 +1,6 @@
 language: dart
 dart:
   - dev
-  - stable
 install:
   - gem install coveralls-lcov
 script: ./tool/travis.sh

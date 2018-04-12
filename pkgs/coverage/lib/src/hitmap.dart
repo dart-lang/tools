@@ -3,12 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' show json;
 import 'dart:io';
 
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
-Map<String, Map<int, int>> createHitmap(List<Map> json) {
+Map<String, Map<int, int>> createHitmap(List<Map> jsonResult) {
   // Map of source file to map of line to hit count for that line.
   var globalHitMap = <String, Map<int, int>>{};
 
@@ -17,7 +17,7 @@ Map<String, Map<int, int>> createHitmap(List<Map> json) {
     map[line] = count + oldCount;
   }
 
-  for (Map<String, dynamic> e in json) {
+  for (Map<String, dynamic> e in jsonResult) {
     String source = e['source'];
     if (source == null) {
       // Couldn't resolve import, so skip this entry.
@@ -73,8 +73,8 @@ Future<Map> parseCoverage(Iterable<File> files, int _) async {
   var globalHitmap = <String, Map<int, int>>{};
   for (var file in files) {
     String contents = file.readAsStringSync();
-    List<Map<String, dynamic>> json = JSON.decode(contents)['coverage'];
-    mergeHitmaps(createHitmap(json), globalHitmap);
+    List<Map<String, dynamic>> jsonResult = json.decode(contents)['coverage'];
+    mergeHitmaps(createHitmap(jsonResult), globalHitmap);
   }
   return globalHitmap;
 }

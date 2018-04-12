@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert' show JSON;
+import 'dart:convert' show json;
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -22,7 +22,7 @@ Future<Null> main(List<String> arguments) async {
     var coverage = await collect(
         options.serviceUri, options.resume, options.waitPaused,
         timeout: options.timeout);
-    options.out.write(JSON.encode(coverage));
+    options.out.write(json.encode(coverage));
     await options.out.close();
   }, onError: (dynamic error, Chain chain) {
     stderr.writeln(error);
