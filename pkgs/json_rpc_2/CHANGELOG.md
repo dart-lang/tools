@@ -1,3 +1,7 @@
+## 2.0.8
+
+- Updated SDK version to 2.0.0-dev.17.0
+
 ## 2.0.7
 
 * When a `Client` is closed before a request completes, the error sent to that
