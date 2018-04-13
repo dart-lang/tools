@@ -1,3 +1,8 @@
+# 1.3.7
+
+* Fix more bugs with `VersionRange.intersect()`, `VersionRange.difference()`,
+  and `VersionRange.union()` involving version ranges with pre-release maximums.
+
 # 1.3.6
 
 * Fix a bug where constraints that only allowed pre-release versions would be

@@ -215,29 +215,24 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         return new VersionConstraint.unionOf([this, other]);
       }
 
-      var unionMin = min;
-      var unionIncludeMin = includeMin;
-      var unionMax = max;
-      var unionIncludeMax = includeMax;
-
-      if (unionMin == null) {
-        // Do nothing.
-      } else if (other.min == null || other.min < min) {
+      Version unionMin;
+      bool unionIncludeMin;
+      if (allowsLower(this, other)) {
+        unionMin = this.min;
+        unionIncludeMin = this.includeMin;
+      } else {
         unionMin = other.min;
         unionIncludeMin = other.includeMin;
-      } else if (min == other.min && other.includeMin) {
-        // If the edges are the same but one is inclusive, make it inclusive.
-        unionIncludeMin = true;
       }
 
-      if (unionMax == null) {
-        // Do nothing.
-      } else if (other.max == null || other.max > max) {
+      Version unionMax;
+      bool unionIncludeMax;
+      if (allowsHigher(this, other)) {
+        unionMax = this.max;
+        unionIncludeMax = this.includeMax;
+      } else {
         unionMax = other.max;
         unionIncludeMax = other.includeMax;
-      } else if (max == other.max && other.includeMax) {
-        // If the edges are the same but one is inclusive, make it inclusive.
-        unionIncludeMax = true;
       }
 
       return new VersionRange(

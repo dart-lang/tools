@@ -32,9 +32,11 @@ bool allowsHigher(VersionRange range1, VersionRange range2) {
   if (range1.max == null) return range2.max != null;
   if (range2.max == null) return false;
 
-  // `<1.0.0-dev.1` allows `1.0.0-dev.0` which is higher than any versions
-  // allowed by `<1.0.0`.
+  // `<1.0.0-dev.1` allows higher versions than `<1.0.0`, such as `1.0.0-dev.0`.
   if (disallowedByPreRelease(range2, range1.max)) return true;
+
+  // `<1.0.0` doesn't allow any versions higher than `<1.0.0-dev`.
+  if (disallowedByPreRelease(range1, range2.max)) return false;
 
   var comparison = range1.max.compareTo(range2.max);
   if (comparison == 1) return true;
@@ -46,7 +48,11 @@ bool allowsHigher(VersionRange range1, VersionRange range2) {
 /// [range2].
 bool strictlyLower(VersionRange range1, VersionRange range2) {
   if (range1.max == null || range2.min == null) return false;
+
+  // `<1.0.0` doesn't allow any versions allowed by `>=1.0.0-dev.0`.
   if (disallowedByPreRelease(range1, range2.min)) return true;
+
+  //if (disallowedByPreRelease(range2, range1.min)) return true;
 
   var comparison = range1.max.compareTo(range2.min);
   if (comparison == -1) return true;

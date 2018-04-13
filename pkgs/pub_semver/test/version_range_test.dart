@@ -469,6 +469,13 @@ main() {
               .intersect(new VersionConstraint.parse(">=2.0.0-dev")),
           equals(VersionConstraint.empty));
     });
+
+    test("with a range with a pre-release max, returns the original", () {
+      expect(
+          new VersionRange(max: v200)
+              .intersect(new VersionConstraint.parse("<2.0.0-dev")),
+          equals(new VersionRange(max: v200)));
+    });
   });
 
   group('union()', () {
@@ -557,6 +564,14 @@ main() {
       expect(result, allows(new Version.parse("2.0.0-dev")));
       expect(result, allows(new Version.parse("2.0.0-dev.1")));
       expect(result, allows(new Version.parse("2.0.0")));
+    });
+
+    test("with a range with a pre-release max, returns the larger constraint",
+        () {
+      expect(
+          new VersionRange(max: v200)
+              .union(new VersionConstraint.parse("<2.0.0-dev")),
+          equals(new VersionConstraint.parse("<2.0.0-dev")));
     });
   });
 
@@ -729,6 +744,13 @@ main() {
           new VersionRange(max: v200)
               .difference(new VersionConstraint.parse(">=2.0.0-dev")),
           equals(new VersionRange(max: v200)));
+    });
+
+    test("with a range with a pre-release max, returns null", () {
+      expect(
+          new VersionRange(max: v200)
+              .difference(new VersionConstraint.parse("<2.0.0-dev")),
+          equals(VersionConstraint.empty));
     });
   });
 
