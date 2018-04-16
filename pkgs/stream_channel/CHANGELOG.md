@@ -1,3 +1,8 @@
+## 1.6.4+1
+
+* Fix an issue with `JsonDocumentTransformer.bind` where it created an internal
+  stream channel which didn't get a properly inferred type for its `sink`.
+
 ## 1.6.4
 
 * Fix a race condition in `MultiChannel` where messages from a remote virtual
