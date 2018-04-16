@@ -1,4 +1,4 @@
-## 1.6.4+1
+## 1.6.5
 
 * Fix an issue with `JsonDocumentTransformer.bind` where it created an internal
   stream channel which didn't get a properly inferred type for its `sink`.

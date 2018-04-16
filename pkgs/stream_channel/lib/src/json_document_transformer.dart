@@ -38,8 +38,8 @@ class JsonDocumentTransformer
 
   StreamChannel<Object> bind(StreamChannel<String> channel) {
     var stream = channel.stream.map(_codec.decode);
-    var sink = new StreamSinkTransformer.fromHandlers(
-        handleData: (Object data, EventSink<String> sink) {
+    var sink = new StreamSinkTransformer<Object, String>.fromHandlers(
+        handleData: (data, sink) {
       sink.add(_codec.encode(data));
     }).bind(channel.sink);
     return new StreamChannel.withCloseGuarantee(stream, sink);
