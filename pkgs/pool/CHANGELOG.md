@@ -1,3 +1,7 @@
+## 1.3.5
+
+- Updated SDK version to 2.0.0-dev.17.0
+
 ## 1.3.4
 
 * Modify code to eliminate Future flattening.
