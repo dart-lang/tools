@@ -1,3 +1,8 @@
+## 0.1.10
+
+* Update th SDK dependency to 2.0.0-dev.17.0.
+* Remove usages of deprecated upper-case constants from the SDK.
+
 ## 0.1.9
 
 * Update the worker_protocol.pb.dart file with the latest proto generator.

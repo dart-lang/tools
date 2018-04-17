@@ -56,7 +56,7 @@ class StdDriverConnection implements DriverConnection {
     } catch (_) {
       try {
         // Try parsing the message as a string and set that as the output.
-        var output = UTF8.decode(buffer);
+        var output = utf8.decode(buffer);
         var response = new WorkResponse()
           ..exitCode = EXIT_CODE_ERROR
           ..output = 'Worker sent an invalid response:\n$output';
