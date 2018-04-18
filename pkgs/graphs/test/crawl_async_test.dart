@@ -33,6 +33,7 @@ void main() {
         'a': ['b', 'c'],
         'b': ['c'],
         'c': ['d'],
+        'd': [],
       }, [
         'a'
       ]);
@@ -73,6 +74,15 @@ void main() {
       ]);
       expect(result, hasLength(2));
       expect(result, allOf(contains('a'), contains('b')));
+    });
+
+    test('ignores null nodes', () async {
+      var result = await crawl({
+        'a': ['b'],
+      }, [
+        'a'
+      ]);
+      expect(result, ['a']);
     });
   });
 }

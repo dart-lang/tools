@@ -22,7 +22,8 @@ class AsyncGraph {
 
   AsyncGraph(this.graph);
 
-  Future<String> readNode(String node) async => node;
+  Future<String> readNode(String node) async =>
+      graph.containsKey(node) ? node : null;
   Future<Iterable<String>> children(String key, String node) async =>
       graph[key];
 }

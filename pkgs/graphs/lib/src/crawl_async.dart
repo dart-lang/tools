@@ -20,6 +20,10 @@ final _empty = new Future<Null>.value(null);
 /// There are no ordering guarantees. This is useful for ensuring some work is
 /// performed at every node in an asynchronous graph, but does not give
 /// guarantees that the work is done in topological order.
+///
+/// If [readNode] returns null for any key it will be ignored from the rest of
+/// the graph. If missing nodes are important they should be tracked within the
+/// [readNode] callback.
 Stream<V> crawlAsync<K, V>(Iterable<K> roots, FutureOr<V> Function(K) readNode,
     FutureOr<Iterable<K>> Function(K, V) children) {
   final crawl = new _CrawlAsync(roots, readNode, children)..run();
@@ -48,6 +52,7 @@ class _CrawlAsync<K, V> {
   /// children.
   Future<Null> _crawlFrom(K key) async {
     var value = await readNode(key);
+    if (value == null) return;
     result.add(value);
     var next = await children(key, value) ?? const [];
     await Future.wait(next.map(_visit));
