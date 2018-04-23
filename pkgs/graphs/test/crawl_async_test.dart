@@ -84,5 +84,23 @@ void main() {
       ]);
       expect(result, ['a']);
     });
+
+    test('surfaces exceptions for crawling children', () {
+      var graph = {
+        'a': ['b'],
+      };
+      var nodes = crawlAsync(['a'], (n) => n,
+          (k, n) => k == 'b' ? throw new ArgumentError() : graph[k]);
+      expect(nodes, emitsThrough(emitsError(isArgumentError)));
+    });
+
+    test('surfaces exceptions for resolving keys', () {
+      var graph = {
+        'a': ['b'],
+      };
+      var nodes = crawlAsync(['a'],
+          (n) => n == 'b' ? throw new ArgumentError() : n, (k, n) => graph[k]);
+      expect(nodes, emitsThrough(emitsError(isArgumentError)));
+    });
   });
 }

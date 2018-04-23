@@ -24,6 +24,10 @@ final _empty = new Future<Null>.value(null);
 /// If [readNode] returns null for any key it will be ignored from the rest of
 /// the graph. If missing nodes are important they should be tracked within the
 /// [readNode] callback.
+///
+/// If either [readNode] or [children] throws the error will be forwarded
+/// through the result stream and no further nodes will be crawled, though some
+/// work may have already been started.
 Stream<V> crawlAsync<K, V>(Iterable<K> roots, FutureOr<V> Function(K) readNode,
     FutureOr<Iterable<K>> Function(K, V) children) {
   final crawl = new _CrawlAsync(roots, readNode, children)..run();
@@ -44,8 +48,13 @@ class _CrawlAsync<K, V> {
   /// Add all nodes in the graph to [result] and return a Future which fires
   /// after all nodes have been seen.
   Future<Null> run() async {
-    await Future.wait(roots.map(_visit));
-    await result.close();
+    try {
+      await Future.wait(roots.map(_visit), eagerError: true);
+      await result.close();
+    } catch (e, st) {
+      result.addError(e, st);
+      await result.close();
+    }
   }
 
   /// Resolve the node at [key] and output it, then start crawling all of it's
@@ -53,9 +62,10 @@ class _CrawlAsync<K, V> {
   Future<Null> _crawlFrom(K key) async {
     var value = await readNode(key);
     if (value == null) return;
+    if (result.isClosed) return;
     result.add(value);
     var next = await children(key, value) ?? const [];
-    await Future.wait(next.map(_visit));
+    await Future.wait(next.map(_visit), eagerError: true);
   }
 
   /// Synchronously record that [key] is being handled then start work on the
