@@ -5,7 +5,6 @@
 /// Contains the top-level function to parse source maps version 3.
 library source_maps.parser;
 
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:source_span/source_span.dart';
@@ -258,6 +257,16 @@ class SingleMapping extends Mapping {
   /// Source names used in the mapping, indexed by id.
   final List<String> names;
 
+  /// The [SourceFile]s to which the entries in [lines] refer.
+  ///
+  /// This is in the same order as [urls]. If this was constructed using
+  /// [fromEntries], this contains files from any [FileLocation]s used to build
+  /// the mapping. If it was parsed from JSON, it contains files for any sources
+  /// whose contents were provided via the `"sourcesContent"` field.
+  ///
+  /// Files whose contents aren't available are `null`.
+  final List<SourceFile> files;
+
   /// Entries indicating the beginning of each span.
   final List<TargetLineEntry> lines;
 
@@ -269,7 +278,7 @@ class SingleMapping extends Mapping {
 
   final Uri _mapUrl;
 
-  SingleMapping._(this.targetUrl, this.urls, this.names, this.lines)
+  SingleMapping._(this.targetUrl, this.files, this.urls, this.names, this.lines)
       : _mapUrl = null;
 
   factory SingleMapping.fromEntries(Iterable<builder.Entry> entries,
@@ -279,12 +288,15 @@ class SingleMapping extends Mapping {
     var lines = <TargetLineEntry>[];
 
     // Indices associated with file urls that will be part of the source map. We
-    // use a linked hash-map so that `_urls.keys[_urls[u]] == u`
-    var urls = new LinkedHashMap<String, int>();
+    // rely on map order so that `urls.keys[urls[u]] == u`
+    var urls = <String, int>{};
 
     // Indices associated with identifiers that will be part of the source map.
-    // We use a linked hash-map so that `_names.keys[_names[n]] == n`
-    var names = new LinkedHashMap<String, int>();
+    // We rely on map order so that `names.keys[names[n]] == n`
+    var names = <String, int>{};
+
+    /// The file for each URL, indexed by [urls]' values.
+    var files = <int, SourceFile>{};
 
     var lineNum;
     List<TargetEntry> targetEntries;
@@ -301,6 +313,12 @@ class SingleMapping extends Mapping {
         var sourceUrl = sourceEntry.source.sourceUrl;
         var urlId = urls.putIfAbsent(
             sourceUrl == null ? '' : sourceUrl.toString(), () => urls.length);
+
+        if (sourceEntry.source is FileLocation) {
+          files.putIfAbsent(
+              urlId, () => (sourceEntry.source as FileLocation).file);
+        }
+
         var srcNameId = sourceEntry.identifierName == null
             ? null
             : names.putIfAbsent(sourceEntry.identifierName, () => names.length);
@@ -309,16 +327,30 @@ class SingleMapping extends Mapping {
       }
     }
     return new SingleMapping._(
-        fileUrl, urls.keys.toList(), names.keys.toList(), lines);
+        fileUrl,
+        urls.values.map((i) => files[i]).toList(),
+        urls.keys.toList(),
+        names.keys.toList(),
+        lines);
   }
 
   SingleMapping.fromJson(Map map, {mapUrl})
       : targetUrl = map['file'],
         urls = new List<String>.from(map['sources']),
         names = new List<String>.from(map['names']),
+        files = new List(map['sources'].length),
         sourceRoot = map['sourceRoot'],
         lines = <TargetLineEntry>[],
         _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : mapUrl {
+    var sourcesContent = map['sourcesContent'] == null
+        ? const []
+        : new List<String>.from(map['sourcesContent']);
+    for (var i = 0; i < urls.length && i < sourcesContent.length; i++) {
+      var source = sourcesContent[i];
+      if (source == null) continue;
+      files[i] = new SourceFile.fromString(source, url: urls[i]);
+    }
+
     int line = 0;
     int column = 0;
     int srcUrlId = 0;
@@ -385,7 +417,10 @@ class SingleMapping extends Mapping {
   }
 
   /// Encodes the Mapping mappings as a json map.
-  Map toJson() {
+  ///
+  /// If [sourcesContent] is `true`, this includes the source file contents from
+  /// [files] in the map if possible.
+  Map toJson({bool includeSourceContents: false}) {
     var buff = new StringBuffer();
     var line = 0;
     var column = 0;
@@ -431,9 +466,12 @@ class SingleMapping extends Mapping {
       'names': names,
       'mappings': buff.toString()
     };
-    if (targetUrl != null) {
-      result['file'] = targetUrl;
+    if (targetUrl != null) result['file'] = targetUrl;
+
+    if (includeSourceContents) {
+      result['sourcesContent'] = files.map((file) => file?.getText(0)).toList();
     }
+
     return result;
   }
 

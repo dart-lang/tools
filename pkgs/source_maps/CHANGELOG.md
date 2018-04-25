@@ -1,3 +1,11 @@
+## 0.10.5
+
+* Add a `SingleMapping.files` field which provides access to `SourceFile`s
+  representing the `"sourcesContent"` fields in the source map.
+
+* Add an `includeSourceContents` flag to `SingleMapping.toJson()` which
+  indicates whether to include source file contents in the source map.
+
 ## 0.10.4
 * Implement `highlight` in `SourceMapFileSpan`.
 * Require version `^1.3.0` of `source_span`.

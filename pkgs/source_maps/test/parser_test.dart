@@ -341,4 +341,55 @@ main() {
     var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE) as MappingBundle;
     expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));
   });
+
+  group("source files", () {
+    group("from fromEntries()", () {
+      test("are null for non-FileLocations", () {
+        var mapping = new SingleMapping.fromEntries([
+          new Entry(new SourceLocation(10, line: 1, column: 8),
+              outputVar1.start, null)
+        ]);
+        expect(mapping.files, equals([null]));
+      });
+
+      test("use a file location's file", () {
+        var mapping = new SingleMapping.fromEntries(
+            [new Entry(inputVar1.start, outputVar1.start, null)]);
+        expect(mapping.files, equals([input]));
+      });
+    });
+
+    group("from parse()", () {
+      group("are null", () {
+        test("with no sourcesContent field", () {
+          var mapping = parseJson(EXPECTED_MAP) as SingleMapping;
+          expect(mapping.files, equals([null]));
+        });
+
+        test("with null sourcesContent values", () {
+          var map = new Map.from(EXPECTED_MAP);
+          map["sourcesContent"] = [null];
+          var mapping = parseJson(map) as SingleMapping;
+          expect(mapping.files, equals([null]));
+        });
+
+        test("with a too-short sourcesContent", () {
+          var map = new Map.from(EXPECTED_MAP);
+          map["sourcesContent"] = [];
+          var mapping = parseJson(map) as SingleMapping;
+          expect(mapping.files, equals([null]));
+        });
+      });
+
+      test("are parsed from sourcesContent", () {
+        var map = new Map.from(EXPECTED_MAP);
+        map["sourcesContent"] = ["hello, world!"];
+        var mapping = parseJson(map) as SingleMapping;
+
+        var file = mapping.files[0];
+        expect(file.url, equals(Uri.parse("input.dart")));
+        expect(file.getText(0), equals("hello, world!"));
+      });
+    });
+  });
 }
