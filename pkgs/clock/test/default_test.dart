@@ -69,11 +69,17 @@ void main() {
       withClock(new Clock.fixed(outerTime), () {
         expect(clock.now(), equals(outerTime));
 
-        expect(
-            () => withClock(fixed(2016, 11, 8), neverCalled), throwsStateError);
+        expect(() => withClock(fixed(2016, 11, 8), neverCalledVoid),
+            throwsStateError);
 
         expect(clock.now(), equals(outerTime));
       }, isFinal: true);
     });
   });
+}
+
+/// A wrapper for [neverCalled] that works around sdk#33015.
+void Function() get neverCalledVoid {
+  var function = neverCalled;
+  return () => neverCalled();
 }
