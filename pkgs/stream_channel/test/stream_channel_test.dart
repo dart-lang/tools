@@ -10,9 +10,9 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var streamController;
-  var sinkController;
-  var channel;
+  StreamController streamController;
+  StreamController sinkController;
+  StreamChannel channel;
   setUp(() {
     streamController = new StreamController();
     sinkController = new StreamController();
@@ -58,36 +58,35 @@ void main() {
   });
 
   test("transformStream() transforms only the stream", () async {
-    var transformed = channel.transformStream(UTF8.decoder);
+    var transformed =
+        channel.cast<String>().transformStream(const LineSplitter());
 
-    streamController.add([102, 111, 111, 98, 97, 114]);
+    streamController.add("hello world");
+    streamController.add(" what\nis");
+    streamController.add("\nup");
     streamController.close();
-    expect(await transformed.stream.toList(), equals(["foobar"]));
+    expect(await transformed.stream.toList(),
+        equals(["hello world what", "is", "up"]));
 
-    transformed.sink.add("fblthp");
+    transformed.sink.add("fbl\nthp");
     transformed.sink.close();
-    expect(sinkController.stream.toList(), completion(equals(["fblthp"])));
+    expect(sinkController.stream.toList(), completion(equals(["fbl\nthp"])));
   });
 
   test("transformSink() transforms only the sink", () async {
-    var transformed = channel.transformSink(
-        new StreamSinkTransformer.fromStreamTransformer(UTF8.encoder));
+    var transformed = channel.cast<String>().transformSink(
+        new StreamSinkTransformer.fromStreamTransformer(const LineSplitter()));
 
-    streamController.add([102, 111, 111, 98, 97, 114]);
+    streamController.add("fbl\nthp");
     streamController.close();
-    expect(
-        await transformed.stream.toList(),
-        equals([
-          [102, 111, 111, 98, 97, 114]
-        ]));
+    expect(await transformed.stream.toList(), equals(["fbl\nthp"]));
 
-    transformed.sink.add("fblthp");
+    transformed.sink.add("hello world");
+    transformed.sink.add(" what\nis");
+    transformed.sink.add("\nup");
     transformed.sink.close();
-    expect(
-        sinkController.stream.toList(),
-        completion(equals([
-          [102, 98, 108, 116, 104, 112]
-        ])));
+    expect(sinkController.stream.toList(),
+        completion(equals(["hello world what", "is", "up"])));
   });
 
   test("changeStream() changes the stream", () {
