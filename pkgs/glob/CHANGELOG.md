@@ -1,3 +1,7 @@
+## 1.1.5+1
+
+* Improve support for Dart 2 runtime semantics.
+
 ## 1.1.5
 
 * Declare support for `async` 2.0.0.
