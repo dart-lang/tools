@@ -147,7 +147,7 @@ class SequenceNode extends AstNode {
 
       var text = literal.text;
       if (context.style == p.Style.windows) text = text.replaceAll("/", "\\");
-      var components = context.split(text);
+      Iterable<String> components = context.split(text);
 
       // If the first component is absolute, that means it's a separator (on
       // Windows some non-separator things are also absolute, but it's invalid
