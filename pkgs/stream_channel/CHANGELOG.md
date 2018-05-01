@@ -1,3 +1,7 @@
+## 1.6.6
+
+* Fix a Dart2 issue with inner stream transformation in `GuaranteeChannel`.
+
 ## 1.6.5
 
 * Fix an issue with `JsonDocumentTransformer.bind` where it created an internal
