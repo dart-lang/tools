@@ -13,8 +13,8 @@ void main() {
   var sinkController;
   StreamChannel<String> channel;
   setUp(() {
-    streamController = new StreamController();
-    sinkController = new StreamController();
+    streamController = new StreamController<String>();
+    sinkController = new StreamController<String>();
     channel =
         new StreamChannel<String>(streamController.stream, sinkController.sink);
   });

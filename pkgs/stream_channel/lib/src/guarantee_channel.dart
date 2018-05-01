@@ -39,7 +39,7 @@ class GuaranteeChannel<T> extends StreamChannelMixin<T> {
     // to single-subscription.
     if (innerStream.isBroadcast) {
       innerStream =
-          innerStream.transform(const SingleSubscriptionTransformer());
+          innerStream.transform(new SingleSubscriptionTransformer<T, T>());
     }
 
     _streamController = new StreamController<T>(
