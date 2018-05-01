@@ -508,7 +508,7 @@ class TopLevelIncludes extends Visitor {
 class _TopLevelIncludeReplacer extends Visitor {
   final Messages _messages;
   final IncludeDirective _include;
-  final List<RuleSet> _newRules;
+  final List<TreeNode> _newRules;
   bool _foundAndReplaced = false;
 
   /**
@@ -516,7 +516,7 @@ class _TopLevelIncludeReplacer extends Visitor {
    * with the [newRules].  If [ruleSet] is found and replaced return true.
    */
   static bool replace(Messages messages, StyleSheet styleSheet,
-      IncludeDirective include, List<RuleSet> newRules) {
+      IncludeDirective include, List<TreeNode> newRules) {
     var visitor = new _TopLevelIncludeReplacer(messages, include, newRules);
     visitor.visitStyleSheet(styleSheet);
     return visitor._foundAndReplaced;
