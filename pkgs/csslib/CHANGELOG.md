@@ -1,3 +1,7 @@
+## 0.14.2
+
+* Fixed Dart 2 runtime failure.
+
 ## 0.14.1
 
 * Deprecated `package:csslib/css.dart`.
