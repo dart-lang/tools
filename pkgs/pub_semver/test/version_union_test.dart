@@ -101,25 +101,32 @@ main() {
           new VersionConstraint.unionOf([
             new VersionRange(min: v003, max: v072, includeMax: true),
             new VersionRange(min: v072, max: v080),
-            new VersionRange(min: v114, max: v124),
-            new VersionRange(min: v124, max: v130, includeMin: true)
+            new VersionRange(
+                min: v114, max: v124, alwaysIncludeMaxPreRelease: true),
+            new VersionRange(min: v124, max: v130, includeMin: true),
+            new VersionRange(
+                min: v130.firstPreRelease, max: v200, includeMin: true)
           ]),
           equals(new VersionConstraint.unionOf([
             new VersionRange(min: v003, max: v080),
-            new VersionRange(min: v114, max: v130)
+            new VersionRange(min: v114, max: v200)
           ])));
     });
 
     test("doesn't merge not-quite-adjacent ranges", () {
       expect(
           new VersionConstraint.unionOf([
+            new VersionRange(min: v114, max: v124),
+            new VersionRange(min: v124, max: v130, includeMin: true)
+          ]),
+          isNot(equals(new VersionRange(min: v114, max: v130))));
+
+      expect(
+          new VersionConstraint.unionOf([
             new VersionRange(min: v003, max: v072),
             new VersionRange(min: v072, max: v080)
           ]),
-          equals(new VersionConstraint.unionOf([
-            new VersionRange(min: v003, max: v072),
-            new VersionRange(min: v072, max: v080)
-          ])));
+          isNot(equals(new VersionRange(min: v003, max: v080))));
     });
 
     test("merges version numbers into ranges", () {
@@ -139,15 +146,29 @@ main() {
     test("merges adjacent version numbers into ranges", () {
       expect(
           new VersionConstraint.unionOf([
-            new VersionRange(min: v003, max: v072),
+            new VersionRange(
+                min: v003, max: v072, alwaysIncludeMaxPreRelease: true),
             v072,
             v114,
-            new VersionRange(min: v114, max: v124)
+            new VersionRange(min: v114, max: v124),
+            v124.firstPreRelease
           ]),
           equals(new VersionConstraint.unionOf([
             new VersionRange(min: v003, max: v072, includeMax: true),
-            new VersionRange(min: v114, max: v124, includeMin: true)
+            new VersionRange(
+                min: v114,
+                max: v124.firstPreRelease,
+                includeMin: true,
+                includeMax: true)
           ])));
+    });
+
+    test("doesn't merge not-quite-adjacent version numbers into ranges", () {
+      expect(
+          new VersionConstraint.unionOf(
+              [new VersionRange(min: v003, max: v072), v072]),
+          isNot(equals(
+              new VersionRange(min: v003, max: v072, includeMax: true))));
     });
   });
 
@@ -424,7 +445,8 @@ main() {
             new VersionRange(min: v124)
           ])),
           equals(new VersionConstraint.unionOf([
-            new VersionRange(min: v072, max: v080, includeMin: true),
+            new VersionRange(
+                min: v072.firstPreRelease, max: v080, includeMin: true),
             new VersionRange(min: v123, max: v124, includeMax: true)
           ])));
     });
@@ -436,8 +458,10 @@ main() {
             new VersionRange(min: v130, max: v200)
           ]).difference(new VersionConstraint.unionOf([v072, v080])),
           equals(new VersionConstraint.unionOf([
-            new VersionRange(min: v010, max: v072),
-            new VersionRange(min: v072, max: v080),
+            new VersionRange(
+                min: v010, max: v072, alwaysIncludeMaxPreRelease: true),
+            new VersionRange(
+                min: v072, max: v080, alwaysIncludeMaxPreRelease: true),
             new VersionRange(min: v080, max: v114),
             new VersionRange(min: v130, max: v200)
           ])));
@@ -455,7 +479,8 @@ main() {
           equals(new VersionConstraint.unionOf([
             new VersionRange(min: v010, max: v072),
             new VersionRange(min: v080, max: v114, includeMax: true),
-            new VersionRange(min: v201, max: v234, includeMin: true),
+            new VersionRange(
+                min: v201.firstPreRelease, max: v234, includeMin: true),
             new VersionRange(min: v250, max: v300)
           ])));
     });

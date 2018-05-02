@@ -1,3 +1,25 @@
+# 1.4.0
+
+* Add a `Version.firstPreRelease` getter that returns the first possible
+  pre-release of a version.
+
+* Add a `Version.isFirstPreRelease` getter that returns whether a version is the
+  first possible pre-release.
+
+* `new VersionRange()` with an exclusive maximum now replaces the maximum with
+  its first pre-release version. This matches the existing semantics, where an
+  exclusive maximum would exclude pre-release versions of that maximum.
+
+  Explicitly representing this by changing the maximum version ensures that all
+  operations behave correctly with respect to the special pre-release semantics.
+  In particular, it fixes bugs where, for example,
+  `(>=1.0.0 <2.0.0-dev).union(>=2.0.0-dev <2.0.0)` and
+  `(>=1.0.0 <3.0.0).difference(^1.0.0)` wouldn't include `2.0.0-dev`.
+
+* Add an `alwaysIncludeMaxPreRelease` parameter to `new VersionRange()`, which
+  disables the replacement described above and allows users to create ranges
+  that do include the pre-release versions of an exclusive max version.
+
 # 1.3.7
 
 * Fix more bugs with `VersionRange.intersect()`, `VersionRange.difference()`,

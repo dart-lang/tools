@@ -84,7 +84,10 @@ abstract class VersionConstraint {
         case '<=':
           return new VersionRange(max: version, includeMax: true);
         case '<':
-          return new VersionRange(max: version, includeMax: false);
+          return new VersionRange(
+              max: version,
+              includeMax: false,
+              alwaysIncludeMaxPreRelease: true);
         case '>=':
           return new VersionRange(min: version, includeMin: true);
         case '>':
@@ -175,7 +178,7 @@ abstract class VersionConstraint {
   /// are greater than or equal to [version], but less than the next breaking
   /// version ([Version.nextBreaking]) of [version].
   factory VersionConstraint.compatibleWith(Version version) =>
-      new _CompatibleWithVersionRange(version);
+      new CompatibleWithVersionRange(version);
 
   /// Creates a new version constraint that is the intersection of
   /// [constraints].
@@ -277,15 +280,4 @@ class _EmptyVersion implements VersionConstraint {
   VersionConstraint union(VersionConstraint other) => other;
   VersionConstraint difference(VersionConstraint other) => this;
   String toString() => '<empty>';
-}
-
-class _CompatibleWithVersionRange extends VersionRange {
-  _CompatibleWithVersionRange(Version version)
-      : super(
-            min: version,
-            includeMin: true,
-            max: version.nextBreaking,
-            includeMax: false);
-
-  String toString() => '^$min';
 }
