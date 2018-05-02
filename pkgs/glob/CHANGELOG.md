@@ -1,4 +1,4 @@
-## 1.1.5+1
+## 1.1.6
 
 * Improve support for Dart 2 runtime semantics.
 
