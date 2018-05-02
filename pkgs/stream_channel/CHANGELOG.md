@@ -1,6 +1,8 @@
 ## 1.6.6
 
-* Fix a Dart2 issue with inner stream transformation in `GuaranteeChannel`.
+* Fix a Dart 2 issue with inner stream transformation in `GuaranteeChannel`.
+
+* Fix a Dart 2 issue with `StreamChannelTransformer.fromCodec()`.
 
 ## 1.6.5
 

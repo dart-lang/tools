@@ -41,8 +41,9 @@ void main() {
   });
 
   test("transform() transforms the channel", () async {
-    var transformed =
-        channel.transform(new StreamChannelTransformer.fromCodec(UTF8));
+    var transformed = channel
+        .cast<List<int>>()
+        .transform(new StreamChannelTransformer.fromCodec(UTF8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
