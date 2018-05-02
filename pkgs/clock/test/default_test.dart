@@ -81,5 +81,5 @@ void main() {
 /// A wrapper for [neverCalled] that works around sdk#33015.
 void Function() get neverCalledVoid {
   var function = neverCalled;
-  return () => neverCalled();
+  return () => function();
 }
