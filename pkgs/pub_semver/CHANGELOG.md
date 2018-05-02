@@ -1,3 +1,8 @@
+# 1.4.1
+
+* Fix a bug where there upper bound of a version range with a build identifier
+  could accidentally be rewritten.
+
 # 1.4.0
 
 * Add a `Version.firstPreRelease` getter that returns the first possible

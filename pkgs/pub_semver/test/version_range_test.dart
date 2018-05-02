@@ -33,6 +33,11 @@ main() {
                 .max,
             equals(v124));
       });
+
+      test("max has a build identifier", () {
+        expect(new VersionRange(max: new Version.parse("1.2.4+1")).max,
+            equals(new Version.parse("1.2.4+1")));
+      });
     });
 
     test('allows omitting max', () {

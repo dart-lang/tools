@@ -72,6 +72,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         !includeMax &&
         max != null &&
         !max.isPreRelease &&
+        max.build.isEmpty &&
         (min == null ||
             !min.isPreRelease ||
             !equalsWithoutPreRelease(min, max))) {
@@ -439,7 +440,9 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
           var minIsPreReleaseOfMax = min != null &&
               min.isPreRelease &&
               equalsWithoutPreRelease(min, max);
-          if (!max.isPreRelease && !minIsPreReleaseOfMax) buffer.write("-∞");
+          if (!max.isPreRelease && max.build.isEmpty && !minIsPreReleaseOfMax) {
+            buffer.write("-∞");
+          }
         }
       }
     }
