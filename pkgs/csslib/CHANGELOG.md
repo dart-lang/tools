@@ -1,3 +1,7 @@
+## 0.14.3
+
+* Reduced the amount of whitespace in compact output around braces.
+
 ## 0.14.2
 
 * Fixed Dart 2 runtime failure.
