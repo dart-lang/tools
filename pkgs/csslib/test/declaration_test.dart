@@ -852,9 +852,15 @@ void testCompactEmitter() {
   final String input = r'''
 div {
   color: green !important;
+  background: red blue green;
+}
+.foo p[bar] {
+  color: blue;
 }
 ''';
-  final String generated = "div { color:green!important; }";
+  final String generated =
+      'div{color:green!important;background:red blue green;}'
+      '.foo p[bar]{color:blue;}';
 
   var stylesheet = parseCss(input, errors: errors);
 

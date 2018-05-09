@@ -29,7 +29,7 @@ class CssPrinter extends Visitor {
   /** Returns the output buffer. */
   String toString() => _buff.toString().trim();
 
-  String get _newLine => prettyPrint ? '\n' : ' ';
+  String get _newLine => prettyPrint ? '\n' : '';
   String get _sp => prettyPrint ? ' ' : '';
 
   // TODO(terry): When adding obfuscation we'll need isOptimized (compact w/
@@ -282,7 +282,7 @@ class CssPrinter extends Visitor {
   void visitRuleSet(RuleSet node) {
     emit("$_newLine");
     node._selectorGroup.visit(this);
-    emit(" {$_newLine");
+    emit("$_sp{$_newLine");
     node._declarationGroup.visit(this);
     emit("}");
   }
