@@ -170,7 +170,7 @@ class CssPrinter extends Visitor {
 
     var declsMargin = node._declsMargin;
     var declsMarginLength = declsMargin.length;
-    emit(' {$_newLine');
+    emit('$_sp{$_newLine');
     for (var i = 0; i < declsMarginLength; i++) {
       declsMargin[i].visit(this);
     }
@@ -303,7 +303,7 @@ class CssPrinter extends Visitor {
     var margin_sym_name =
         TokenKind.idToValue(TokenKind.MARGIN_DIRECTIVES, node.margin_sym);
 
-    emit("@$margin_sym_name {$_newLine");
+    emit("@$margin_sym_name$_sp{$_newLine");
 
     visitDeclarationGroup(node);
 
