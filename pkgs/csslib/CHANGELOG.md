@@ -1,3 +1,5 @@
+* Reduced whitespace in compact output for the `@page` at-rule and margin boxes.
+
 ## 0.14.3
 
 * Reduced the amount of whitespace in compact output around braces.
