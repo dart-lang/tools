@@ -268,23 +268,19 @@ class VerboseLogger implements Logger {
       return '';
     }
 
-    int millis = _timer.elapsedMilliseconds;
-    int seconds = millis ~/ 1000;
+    double seconds = _timer.elapsedMilliseconds / 1000.0;
     int minutes = seconds ~/ 60;
-
-    millis = millis % 1000;
-    seconds = seconds % 60;
+    seconds -= minutes * 60.0;
 
     StringBuffer buf = new StringBuffer();
     if (minutes > 0) {
-      buf.write(minutes);
-      buf.write(':');
+      buf.write((minutes % 60));
+      buf.write('m ');
     }
 
-    buf.write(seconds.toString().padLeft(minutes > 0 ? 2 : 1, '0'));
-    buf.write('.');
-    buf.write(millis.toString().padLeft(3, '0'));
+    buf.write(seconds.toStringAsFixed(3).padLeft(minutes > 0 ? 6 : 1, '0'));
+    buf.write('s');
 
-    return '[${buf.toString().padLeft(9)}] ';
+    return '[${buf.toString().padLeft(11)}] ';
   }
 }
