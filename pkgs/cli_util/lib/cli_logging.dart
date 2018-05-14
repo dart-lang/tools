@@ -23,12 +23,19 @@ class Ansi {
   Ansi(this.useAnsi);
 
   String get cyan => _code('\u001b[36m');
+
   String get green => _code('\u001b[32m');
+
   String get magenta => _code('\u001b[35m');
+
   String get red => _code('\u001b[31m');
+
   String get yellow => _code('\u001b[33m');
+
   String get blue => _code('\u001b[34m');
+
   String get gray => _code('\u001b[1;30m');
+
   String get noColor => _code('\u001b[39m');
 
   String get none => _code('\u001b[0m');
@@ -55,10 +62,14 @@ class Ansi {
 /// standard status messages, trace level output, and indeterminate progress.
 abstract class Logger {
   /// Create a normal [Logger]; this logger will not display trace level output.
-  factory Logger.standard({Ansi ansi}) => new _StandardLogger(ansi: ansi);
+  factory Logger.standard({Ansi ansi}) => new StandardLogger(ansi: ansi);
 
   /// Create a [Logger] that will display trace level output.
-  factory Logger.verbose({Ansi ansi}) => new _VerboseLogger(ansi: ansi);
+  ///
+  /// If [logTime] is `true`, this logger will display the time of the message.
+  factory Logger.verbose({Ansi ansi, bool logTime: true}) {
+    return new VerboseLogger(ansi: ansi, logTime: logTime);
+  }
 
   Ansi get ansi;
 
@@ -75,9 +86,9 @@ abstract class Logger {
 
   /// Start an indeterminate progress display.
   Progress progress(String message);
-  void _progressFinished(Progress progress);
 
   /// Flush any un-written output.
+  @Deprecated('This method will be removed in the future')
   void flush();
 }
 
@@ -86,7 +97,7 @@ abstract class Progress {
   final String message;
   final Stopwatch _stopwatch;
 
-  Progress._(this.message) : _stopwatch = new Stopwatch()..start();
+  Progress(this.message) : _stopwatch = new Stopwatch()..start();
 
   Duration get elapsed => _stopwatch.elapsed;
 
@@ -97,10 +108,10 @@ abstract class Progress {
   void cancel();
 }
 
-class _StandardLogger implements Logger {
+class StandardLogger implements Logger {
   Ansi ansi;
 
-  _StandardLogger({this.ansi}) {
+  StandardLogger({this.ansi}) {
     ansi ??= new Ansi(Ansi.terminalSupportsAnsi);
   }
 
@@ -109,67 +120,68 @@ class _StandardLogger implements Logger {
   Progress _currentProgress;
 
   void stderr(String message) {
+    if (_currentProgress != null) {
+      Progress progress = _currentProgress;
+      _currentProgress = null;
+      progress.cancel();
+    }
+
     io.stderr.writeln(message);
-    _currentProgress?.cancel();
-    _currentProgress = null;
   }
 
   void stdout(String message) {
+    if (_currentProgress != null) {
+      Progress progress = _currentProgress;
+      _currentProgress = null;
+      progress.cancel();
+    }
+
     print(message);
-    _currentProgress?.cancel();
-    _currentProgress = null;
   }
 
   void trace(String message) {}
 
   Progress progress(String message) {
-    _currentProgress?.cancel();
-    _currentProgress = null;
+    if (_currentProgress != null) {
+      Progress progress = _currentProgress;
+      _currentProgress = null;
+      progress.cancel();
+    }
 
     Progress progress = ansi.useAnsi
-        ? new _AnsiProgress(this, ansi, message)
-        : new _SimpleProgress(this, message);
+        ? new AnsiProgress(ansi, message)
+        : new SimpleProgress(this, message);
     _currentProgress = progress;
     return progress;
   }
 
-  void _progressFinished(Progress progress) {
-    if (_currentProgress == progress) {
-      _currentProgress = null;
-    }
-  }
-
+  @Deprecated('This method will be removed in the future')
   void flush() {}
 }
 
-class _SimpleProgress extends Progress {
+class SimpleProgress extends Progress {
   final Logger logger;
 
-  _SimpleProgress(this.logger, String message) : super._(message) {
+  SimpleProgress(this.logger, String message) : super(message) {
     logger.stdout('$message...');
   }
 
   @override
-  void cancel() {
-    logger._progressFinished(this);
-  }
+  void cancel() {}
 
   @override
-  void finish({String message, bool showTiming}) {
-    logger._progressFinished(this);
-  }
+  void finish({String message, bool showTiming}) {}
 }
 
-class _AnsiProgress extends Progress {
+class AnsiProgress extends Progress {
   static const List<String> kAnimationItems = const ['/', '-', '\\', '|'];
 
-  final Logger logger;
   final Ansi ansi;
 
   int _index = 0;
   Timer _timer;
 
-  _AnsiProgress(this.logger, this.ansi, String message) : super._(message) {
+  AnsiProgress(this.ansi, String message) : super(message) {
     io.stdout.write('${message}...  '.padRight(40));
 
     _timer = new Timer.periodic(new Duration(milliseconds: 80), (t) {
@@ -185,7 +197,6 @@ class _AnsiProgress extends Progress {
     if (_timer.isActive) {
       _timer.cancel();
       _updateDisplay(cancelled: true);
-      logger._progressFinished(this);
     }
   }
 
@@ -194,7 +205,6 @@ class _AnsiProgress extends Progress {
     if (_timer.isActive) {
       _timer.cancel();
       _updateDisplay(isFinal: true, message: message, showTiming: showTiming);
-      logger._progressFinished(this);
     }
   }
 
@@ -222,52 +232,59 @@ class _AnsiProgress extends Progress {
   }
 }
 
-class _VerboseLogger implements Logger {
+class VerboseLogger implements Logger {
   Ansi ansi;
+  bool logTime;
   Stopwatch _timer;
 
-  String _previousErr;
-  String _previousMsg;
-
-  _VerboseLogger({this.ansi}) {
+  VerboseLogger({this.ansi, this.logTime}) {
     ansi ??= new Ansi(Ansi.terminalSupportsAnsi);
+    logTime ??= false;
+
     _timer = new Stopwatch()..start();
   }
 
   bool get isVerbose => true;
 
-  void stderr(String message) {
-    flush();
-    _previousErr = '${ansi.red}$message${ansi.none}';
+  void stdout(String message) {
+    io.stdout.writeln('${_createPrefix()}$message');
   }
 
-  void stdout(String message) {
-    flush();
-    _previousMsg = message;
+  void stderr(String message) {
+    io.stderr.writeln('${_createPrefix()}${ansi.red}$message${ansi.none}');
   }
 
   void trace(String message) {
-    flush();
-    _previousMsg = '${ansi.gray}$message${ansi.none}';
+    io.stdout.writeln('${_createPrefix()}${ansi.gray}$message${ansi.none}');
   }
 
-  Progress progress(String message) => new _SimpleProgress(this, message);
+  Progress progress(String message) => new SimpleProgress(this, message);
 
-  void _progressFinished(Progress progress) {}
+  @Deprecated('This method will be removed in the future')
+  void flush() {}
 
-  void flush() {
-    if (_previousErr != null) {
-      io.stderr.writeln('${_createTag()} $_previousErr');
-      _previousErr = null;
-    } else if (_previousMsg != null) {
-      io.stdout.writeln('${_createTag()} $_previousMsg');
-      _previousMsg = null;
+  String _createPrefix() {
+    if (!logTime) {
+      return '';
     }
-  }
 
-  String _createTag() {
     int millis = _timer.elapsedMilliseconds;
-    _timer.reset();
-    return '[${millis.toString().padLeft(4)} ms]';
+    int seconds = millis ~/ 1000;
+    int minutes = seconds ~/ 60;
+
+    millis = millis % 1000;
+    seconds = seconds % 60;
+
+    StringBuffer buf = new StringBuffer();
+    if (minutes > 0) {
+      buf.write(minutes);
+      buf.write(':');
+    }
+
+    buf.write(seconds.toString().padLeft(minutes > 0 ? 2 : 1, '0'));
+    buf.write('.');
+    buf.write(millis.toString().padLeft(3, '0'));
+
+    return '[${buf.toString().padLeft(9)}] ';
   }
 }

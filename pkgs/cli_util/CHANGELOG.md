@@ -1,3 +1,9 @@
+## 0.1.3
+- In verbose mode, instead of printing the diff from the last log message,
+  print the total time since the tool started
+- Change to not buffer the last log message sent in verbose logging mode
+- Expose more classes from the logging library
+
 ## 0.1.2+1
 
 - Remove unneeded change to Dart SDK constraint.
