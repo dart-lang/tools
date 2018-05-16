@@ -21,6 +21,4 @@ main(List<String> args) async {
   progress.finish(showTiming: true);
 
   logger.stdout('All ${logger.ansi.emphasized('done')}.');
-  // ignore: deprecated_member_use
-  logger.flush();
 }
