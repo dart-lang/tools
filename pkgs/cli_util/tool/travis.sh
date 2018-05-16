@@ -15,6 +15,9 @@ dartanalyzer --fatal-warnings \
 # Run the tests.
 dart test/cli_util_test.dart
 
+# Ensure we can run in Dart 2.
+dart --preview-dart-2 example/main.dart
+
 # Install dart_coveralls; gather and send coverage data.
 if [ "$COVERALLS_TOKEN" ]; then
   pub global activate dart_coveralls
