@@ -1,12 +1,7 @@
-// Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 ///
 //  Generated code. Do not modify.
 ///
 // ignore_for_file: non_constant_identifier_names,library_prefixes
-library blaze.worker_worker_protocol;
 
 // ignore: UNUSED_SHOWN_NAME
 import 'dart:core' show int, bool, double, String, List, override;
@@ -84,9 +79,9 @@ class WorkRequest extends GeneratedMessage {
     if (v is! WorkRequest) checkItemFailed(v, 'WorkRequest');
   }
 
-  List<String> get arguments => $_getN(0);
+  List<String> get arguments => $_getList(0);
 
-  List<Input> get inputs => $_getN(1);
+  List<Input> get inputs => $_getList(1);
 }
 
 class _ReadonlyWorkRequest extends WorkRequest with ReadonlyMessageMixin {}

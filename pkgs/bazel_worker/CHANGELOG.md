@@ -1,6 +1,7 @@
 ## 0.1.10
 
-* Update th SDK dependency to 2.0.0-dev.17.0.
+* Update the SDK dependency to 2.0.0-dev.17.0.
+* Update to protobuf version 0.8.0
 * Remove usages of deprecated upper-case constants from the SDK.
 
 ## 0.1.9
