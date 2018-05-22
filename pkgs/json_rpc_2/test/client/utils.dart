@@ -37,10 +37,10 @@ class ClientController {
   void expectRequest(callback(request)) {
     expect(
         _requestController.stream.first.then((request) {
-          return callback(JSON.decode(request));
+          return callback(jsonDecode(request));
         }).then((response) {
           if (response == null) return;
-          if (response is! String) response = JSON.encode(response);
+          if (response is! String) response = jsonEncode(response);
           _responseController.add(response);
         }),
         completes);
@@ -48,7 +48,7 @@ class ClientController {
 
   /// Sends [response], a decoded response, to [client].
   void sendResponse(response) {
-    sendJsonResponse(JSON.encode(response));
+    sendJsonResponse(jsonEncode(response));
   }
 
   /// Sends [response], a JSON-encoded response, to [client].

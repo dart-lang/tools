@@ -32,7 +32,7 @@ class ServerController {
   /// Passes [request], a decoded request, to [server] and returns its decoded
   /// response.
   Future handleRequest(request) =>
-      handleJsonRequest(JSON.encode(request)).then(JSON.decode);
+      handleJsonRequest(jsonEncode(request)).then(jsonDecode);
 
   /// Passes [request], a JSON-encoded request, to [server] and returns its
   /// encoded response.

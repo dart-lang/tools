@@ -1,5 +1,5 @@
 name: json_rpc_2
-version: 2.0.7
+version: 2.0.8
 author: Dart Team <misc@dartlang.org>
 description: An implementation of the JSON-RPC 2.0 spec.
 homepage: http://github.com/dart-lang/json_rpc_2
@@ -9,4 +9,4 @@ dependencies:
 dev_dependencies:
   test: "^0.12.28"
 environment:
-  sdk: ">=1.8.0 <2.0.0"
+  sdk: ">=2.0.0-dev.17.0 <2.0.0"

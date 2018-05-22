@@ -128,11 +128,11 @@ class Parameter extends Parameters {
   /// parameter is represented by that name in quotes.
   String get _path {
     if (_parent is! Parameter) {
-      return _key is int ? (_key + 1).toString() : JSON.encode(_key);
+      return _key is int ? (_key + 1).toString() : jsonEncode(_key);
     }
 
     quoteKey(key) {
-      if (key.contains(new RegExp(r'[^a-zA-Z0-9_-]'))) return JSON.encode(key);
+      if (key.contains(new RegExp(r'[^a-zA-Z0-9_-]'))) return jsonEncode(key);
       return key;
     }
 
@@ -267,7 +267,7 @@ class Parameter extends Parameters {
   _getTyped(String type, bool test(value)) {
     if (test(value)) return value;
     throw new RpcException.invalidParams('Parameter $_path for method '
-        '"$method" must be $type, but was ${JSON.encode(value)}.');
+        '"$method" must be $type, but was ${jsonEncode(value)}.');
   }
 
   _getParsed(String description, parse(String value)) {
@@ -287,7 +287,7 @@ class Parameter extends Parameters {
 
       throw new RpcException.invalidParams('Parameter $_path for method '
           '"$method" must be a valid $description, but was '
-          '${JSON.encode(string)}.$message');
+          '${jsonEncode(string)}.$message');
     }
   }
 
