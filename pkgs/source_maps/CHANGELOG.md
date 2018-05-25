@@ -9,6 +9,7 @@
 ## 0.10.4
 * Implement `highlight` in `SourceMapFileSpan`.
 * Require version `^1.3.0` of `source_span`.
+* Require version 2.0.0 of the Dart SDK.
 
 ## 0.10.3
  * Add `addMapping` and `containsMapping` members to `MappingBundle`.

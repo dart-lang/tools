@@ -80,7 +80,7 @@ main() {
   });
 
   test('parse + json', () {
-    var mapping = parse(JSON.encode(EXPECTED_MAP));
+    var mapping = parse(jsonEncode(EXPECTED_MAP));
     check(outputVar1, mapping, inputVar1, false);
     check(outputVar2, mapping, inputVar2, false);
     check(outputFunction, mapping, inputFunction, false);
@@ -96,7 +96,7 @@ main() {
   });
 
   test('parse with no source location', () {
-    SingleMapping map = parse(JSON.encode(MAP_WITH_NO_SOURCE_LOCATION));
+    SingleMapping map = parse(jsonEncode(MAP_WITH_NO_SOURCE_LOCATION));
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     TargetEntry entry = map.lines.first.entries.first;
@@ -109,7 +109,7 @@ main() {
   });
 
   test('parse with source location and no name', () {
-    SingleMapping map = parse(JSON.encode(MAP_WITH_SOURCE_LOCATION));
+    SingleMapping map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION));
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     TargetEntry entry = map.lines.first.entries.first;
@@ -122,7 +122,7 @@ main() {
   });
 
   test('parse with source location and name', () {
-    SingleMapping map = parse(JSON.encode(MAP_WITH_SOURCE_LOCATION_AND_NAME));
+    SingleMapping map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_NAME));
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     TargetEntry entry = map.lines.first.entries.first;
@@ -251,7 +251,7 @@ main() {
     });
 
     test('parseExtended', () {
-      var mapping = parseExtended(JSON.encode(SOURCE_MAP_BUNDLE),
+      var mapping = parseExtended(jsonEncode(SOURCE_MAP_BUNDLE),
           mapUrl: "file:///path/to/map");
 
       expect(mapping.spanFor(0, 0, uri: "output.dart").sourceUrl,

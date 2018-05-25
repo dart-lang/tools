@@ -27,6 +27,6 @@ main() {
           ..addLocation(inputVar2.start, outputVar2.start, 'longVar2')
           ..addLocation(inputExpr.start, outputExpr.start, null))
         .toJson(output.url.toString());
-    expect(str, JSON.encode(EXPECTED_MAP));
+    expect(str, jsonEncode(EXPECTED_MAP));
   });
 }

@@ -24,7 +24,7 @@ main() {
       ..mark(inputExpr)
       ..add('x + y;\n');
     expect(printer.text, OUTPUT);
-    expect(printer.map, JSON.encode(EXPECTED_MAP));
+    expect(printer.map, jsonEncode(EXPECTED_MAP));
   });
 
   test('printer projecting marks', () {
@@ -93,7 +93,7 @@ main() {
         ..add('x + y;\n', span: inputExpr)
         ..build('output.dart');
       expect(printer.text, OUTPUT);
-      expect(printer.map, JSON.encode(EXPECTED_MAP));
+      expect(printer.map, jsonEncode(EXPECTED_MAP));
     });
 
     test('nested use', () {
@@ -106,7 +106,7 @@ main() {
         ..add('x + y;\n', span: inputExpr)
         ..build('output.dart');
       expect(printer.text, OUTPUT);
-      expect(printer.map, JSON.encode(EXPECTED_MAP));
+      expect(printer.map, jsonEncode(EXPECTED_MAP));
     });
 
     test('add indentation', () {

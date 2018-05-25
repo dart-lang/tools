@@ -55,7 +55,7 @@ class SourceMapBuilder {
   }
 
   /// Encodes all mappings added to this builder as a json string.
-  String toJson(String fileUrl) => JSON.encode(build(fileUrl));
+  String toJson(String fileUrl) => jsonEncode(build(fileUrl));
 }
 
 /// An entry in the source map builder.

@@ -24,7 +24,7 @@ import 'src/vlq.dart';
 // TODO(tjblasi): Ignore the first line of [jsonMap] if the JSON safety string
 // `)]}'` begins the string representation of the map.
 Mapping parse(String jsonMap, {Map<String, Map> otherMaps, mapUrl}) =>
-    parseJson(JSON.decode(jsonMap), otherMaps: otherMaps, mapUrl: mapUrl);
+    parseJson(jsonDecode(jsonMap), otherMaps: otherMaps, mapUrl: mapUrl);
 
 /// Parses a source map or source map bundle directly from a json string.
 ///
@@ -32,7 +32,7 @@ Mapping parse(String jsonMap, {Map<String, Map> otherMaps, mapUrl}) =>
 /// the source map file itself. If it's passed, any URLs in the source
 /// map will be interpreted as relative to this URL when generating spans.
 Mapping parseExtended(String jsonMap, {Map<String, Map> otherMaps, mapUrl}) =>
-    parseJsonExtended(JSON.decode(jsonMap),
+    parseJsonExtended(jsonDecode(jsonMap),
         otherMaps: otherMaps, mapUrl: mapUrl);
 
 /// Parses a source map or source map bundle.
