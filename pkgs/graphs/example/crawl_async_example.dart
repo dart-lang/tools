@@ -26,7 +26,7 @@ AnalysisContext _analysisContext;
 Future<AnalysisContext> get analysisContext async {
   if (_analysisContext == null) {
     var libUri = Uri.parse('package:graphs/');
-    var libPath = await getFilePath(libUri);
+    var libPath = await pathForUri(libUri);
     var packagePath = p.dirname(libPath);
 
     var roots = new ContextLocator().locateRoots(includedPaths: [packagePath]);
@@ -50,23 +50,23 @@ Future<Iterable<Uri>> findImports(Uri from, Source source) async {
       .map((import) => resolveImport(import, from));
 }
 
-Future<String> getFilePath(Uri uri) async {
+Future<CompilationUnit> parseUri(Uri uri) async {
+  var path = await pathForUri(uri);
+  var analysisSession = (await analysisContext).currentSession;
+  var parseResult = analysisSession.getParsedAstSync(path);
+  return parseResult.unit;
+}
+
+Future<String> pathForUri(Uri uri) async {
   var fileUri = await Isolate.resolvePackageUri(uri);
-  if (!fileUri.isScheme('file')) {
+  if (fileUri == null || !fileUri.isScheme('file')) {
     throw new StateError(
         'Expected to resolve $uri to a file URI, got $fileUri');
   }
   return p.fromUri(fileUri);
 }
 
-Future<CompilationUnit> parseFile(Uri uri) async {
-  var path = await getFilePath(uri);
-  var analysisSession = (await analysisContext).currentSession;
-  var parseResult = analysisSession.getParsedAstSync(path);
-  return parseResult.unit;
-}
-
-Future<Source> read(Uri uri) async => new Source(uri, await parseFile(uri));
+Future<Source> read(Uri uri) async => new Source(uri, await parseUri(uri));
 
 Uri resolveImport(String import, Uri from) {
   if (import.startsWith('package:')) return Uri.parse(import);
