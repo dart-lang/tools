@@ -3,31 +3,70 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:isolate';
 
-import 'package:analyzer/analyzer.dart' show parseDirectives;
-import 'package:analyzer/dart/ast/ast.dart' show UriBasedDirective;
-import 'package:resource/resource.dart';
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:analyzer/dart/analysis/context_builder.dart';
+import 'package:analyzer/dart/analysis/context_locator.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:graphs/graphs.dart';
 import 'package:path/path.dart' as p;
 
-class Source {
-  final Uri uri;
-  final String content;
-
-  Source(this.uri, this.content);
+/// Print a transitive set of imported URIs where libraries are read
+/// asynchronously.
+Future<Null> main() async {
+  var allImports = await crawlAsync(
+          [Uri.parse('package:graphs/graphs.dart')], read, findImports)
+      .toList();
+  print(allImports.map((s) => s.uri).toList());
 }
 
-Future<Source> read(Uri uri) async =>
-    new Source(uri, await new Resource(uri).readAsString());
+AnalysisContext _analysisContext;
 
-Iterable<Uri> findImports(Uri from, Source source) {
-  final unit = parseDirectives(source.content);
-  return unit.directives
+Future<AnalysisContext> get analysisContext async {
+  if (_analysisContext == null) {
+    var libUri = Uri.parse('package:graphs/');
+    var libPath = await pathForUri(libUri);
+    var packagePath = p.dirname(libPath);
+
+    var roots = new ContextLocator().locateRoots(includedPaths: [packagePath]);
+    if (roots.length != 1) {
+      throw new StateError(
+          'Expected to find exactly one context root, got $roots');
+    }
+
+    _analysisContext =
+        new ContextBuilder().createContext(contextRoot: roots[0]);
+  }
+
+  return _analysisContext;
+}
+
+Future<Iterable<Uri>> findImports(Uri from, Source source) async {
+  return source.unit.directives
       .where((d) => d is UriBasedDirective)
       .map((d) => (d as UriBasedDirective).uri.stringValue)
       .where((uri) => !uri.startsWith('dart:'))
       .map((import) => resolveImport(import, from));
 }
+
+Future<CompilationUnit> parseUri(Uri uri) async {
+  var path = await pathForUri(uri);
+  var analysisSession = (await analysisContext).currentSession;
+  var parseResult = analysisSession.getParsedAstSync(path);
+  return parseResult.unit;
+}
+
+Future<String> pathForUri(Uri uri) async {
+  var fileUri = await Isolate.resolvePackageUri(uri);
+  if (fileUri == null || !fileUri.isScheme('file')) {
+    throw new StateError(
+        'Expected to resolve $uri to a file URI, got $fileUri');
+  }
+  return p.fromUri(fileUri);
+}
+
+Future<Source> read(Uri uri) async => new Source(uri, await parseUri(uri));
 
 Uri resolveImport(String import, Uri from) {
   if (import.startsWith('package:')) return Uri.parse(import);
@@ -38,11 +77,9 @@ Uri resolveImport(String import, Uri from) {
   return Uri.parse('package:${p.join(package, path)}');
 }
 
-/// Print a transitive set of imported URIs where libraries are read
-/// asynchronously.
-Future<Null> main() async {
-  var allImports = await crawlAsync(
-          [Uri.parse('package:graphs/graphs.dart')], read, findImports)
-      .toList();
-  print(allImports.map((s) => s.uri).toList());
+class Source {
+  final Uri uri;
+  final CompilationUnit unit;
+
+  Source(this.uri, this.unit);
 }
