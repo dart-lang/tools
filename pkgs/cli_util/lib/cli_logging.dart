@@ -15,7 +15,7 @@ class Ansi {
   /// Return whether the current stdout terminal supports ANSI escape sequences.
   static bool get terminalSupportsAnsi {
     return io.stdout.supportsAnsiEscapes &&
-        io.stdioType(io.stdout) == io.StdioType.TERMINAL;
+        io.stdioType(io.stdout) == io.StdioType.terminal;
   }
 
   final bool useAnsi;
