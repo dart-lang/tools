@@ -36,9 +36,12 @@ void main() {
   });
 
   test("with a semantics function", () {
-    _expectEval("foo", false, semantics: (variable) => variable.contains("a"));
-    _expectEval("bar", true, semantics: (variable) => variable.contains("a"));
-    _expectEval("baz", true, semantics: (variable) => variable.contains("a"));
+    _expectEval("foo", false,
+        semantics: (String variable) => variable.contains("a"));
+    _expectEval("bar", true,
+        semantics: (String variable) => variable.contains("a"));
+    _expectEval("baz", true,
+        semantics: (String variable) => variable.contains("a"));
   });
 }
 
