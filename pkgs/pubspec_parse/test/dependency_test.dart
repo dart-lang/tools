@@ -8,15 +8,27 @@ import 'package:test/test.dart';
 import 'test_utils.dart';
 
 void main() {
-  test('HostedDepedency', () {
+  test('HostedDepedency - null', () {
+    var dep = _dependency<HostedDependency>(null);
+    expect(dep.version.toString(), 'any');
+    expect(dep.toString(), 'HostedDependency: any');
+  });
+
+  test('HostedDepedency - string', () {
     var dep = _dependency<HostedDependency>('^1.0.0');
-    expect(dep.constraint.toString(), '^1.0.0');
+    expect(dep.version.toString(), '^1.0.0');
+    expect(dep.toString(), 'HostedDependency: ^1.0.0');
+  });
+
+  test('HostedDepedency - map', () {
+    var dep = _dependency<HostedDependency>({'version': '^1.0.0'});
+    expect(dep.version.toString(), '^1.0.0');
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
   test('SdkDependency without version', () {
     var dep = _dependency<SdkDependency>({'sdk': 'flutter'});
-    expect(dep.name, 'flutter');
+    expect(dep.sdk, 'flutter');
     expect(dep.version, isNull);
     expect(dep.toString(), 'SdkDependency: flutter');
   });
@@ -24,7 +36,7 @@ void main() {
   test('SdkDependency with version', () {
     var dep = _dependency<SdkDependency>(
         {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'});
-    expect(dep.name, 'flutter');
+    expect(dep.sdk, 'flutter');
     expect(dep.version.toString(), '>=1.2.3 <2.0.0');
     expect(dep.toString(), 'SdkDependency: flutter');
   });
@@ -45,12 +57,6 @@ void main() {
     expect(dep.path, 'path');
     expect(dep.ref, 'ref');
     expect(dep.toString(), 'GitDependency: url@url');
-  });
-
-  test('HostedDepedency', () {
-    var dep = _dependency<HostedDependency>('^1.0.0');
-    expect(dep.constraint.toString(), '^1.0.0');
-    expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
   test('PathDependency', () {

@@ -22,11 +22,14 @@ Map<String, Dependency> parseDeps(Map source) =>
 
 /// Returns `null` if the data could not be parsed.
 Dependency _fromJson(dynamic data) {
-  if (data == null) {
-    return new HostedDependency(VersionConstraint.any);
-  } else if (data is String) {
-    return new HostedDependency(new VersionConstraint.parse(data));
-  } else if (data is Map) {
+  var value =
+      SdkDependency.tryFromData(data) ?? HostedDependency.tryFromData(data);
+
+  if (value != null) {
+    return value;
+  }
+
+  if (data is Map) {
     try {
       return _fromMap(data);
     } on ArgumentError catch (e) {
@@ -43,10 +46,6 @@ Dependency _fromMap(Map data) {
 // TODO: provide list of supported keys?
     throw new CheckedFromJsonException(
         data, null, 'Dependency', 'Must provide at least one key.');
-  }
-
-  if (data.containsKey('sdk')) {
-    return new SdkDependency.fromData(data);
   }
 
   if (data.entries.length > 1) {
@@ -81,22 +80,23 @@ abstract class Dependency {
   String toString() => '$runtimeType: $_info';
 }
 
+@JsonSerializable(createToJson: false)
 class SdkDependency extends Dependency {
-  final String name;
+  final String sdk;
+  @JsonKey(fromJson: _constraintFromString)
   final VersionConstraint version;
 
-  SdkDependency(this.name, {this.version}) : super._();
+  SdkDependency(this.sdk, {this.version}) : super._();
 
-  factory SdkDependency.fromData(Map data) {
-    VersionConstraint version;
-    if (data.containsKey('version')) {
-      version = new VersionConstraint.parse(data['version'] as String);
+  static SdkDependency tryFromData(Object data) {
+    if (data is Map && data.containsKey('sdk')) {
+      return _$SdkDependencyFromJson(data);
     }
-    return new SdkDependency(data['sdk'] as String, version: version);
+    return null;
   }
 
   @override
-  String get _info => name;
+  String get _info => sdk;
 }
 
 @JsonSerializable(createToJson: false)
@@ -152,12 +152,32 @@ class PathDependency extends Dependency {
   String get _info => 'path@$path';
 }
 
-// TODO: support explicit host?
+@JsonSerializable(createToJson: false)
 class HostedDependency extends Dependency {
-  final VersionConstraint constraint;
+  // TODO: support explicit host
 
-  HostedDependency(this.constraint) : super._();
+  @JsonKey(fromJson: _constraintFromString)
+  final VersionConstraint version;
+
+  HostedDependency({VersionConstraint version})
+      : this.version = version ?? VersionConstraint.any,
+        super._();
+
+  static HostedDependency tryFromData(Object data) {
+    if (data == null || data is String) {
+      data = {'version': data};
+    }
+
+    if (data is Map && data.containsKey('version')) {
+      return _$HostedDependencyFromJson(data);
+    }
+
+    return null;
+  }
 
   @override
-  String get _info => constraint.toString();
+  String get _info => version.toString();
 }
+
+VersionConstraint _constraintFromString(String input) =>
+    new VersionConstraint.parse(input);

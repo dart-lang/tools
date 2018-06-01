@@ -12,6 +12,9 @@ part 'pubspec.g.dart';
 
 @JsonSerializable(createToJson: false)
 class Pubspec {
+  // TODO: executables
+  // TODO: publish_to
+
   final String name;
 
   @JsonKey(fromJson: _versionFromString)
