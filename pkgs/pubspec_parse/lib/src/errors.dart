@@ -52,7 +52,6 @@ class ParsedYamlException implements Exception {
   /// Describes the nature of the parse failure.
   final String message;
 
-  /// The [YamlNode] that corresponds to the exception.
   final YamlNode yamlNode;
 
   /// If this exception was thrown as a result of another error,
