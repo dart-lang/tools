@@ -49,7 +49,7 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
 Pubspec parse(Object content, {bool quietOnError: false}) {
   quietOnError ??= false;
   try {
-    return parsePubspec(_encodeJson(content));
+    return new Pubspec.parse(_encodeJson(content));
   } on ParsedYamlException catch (e) {
     if (!quietOnError) {
       _printDebugParsedYamlException(e);

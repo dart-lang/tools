@@ -4,6 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:yaml/yaml.dart';
 
 import 'dependency.dart';
 import 'errors.dart';
@@ -74,6 +75,29 @@ class Pubspec {
   }
 
   factory Pubspec.fromJson(Map json) => _$PubspecFromJson(json);
+
+  factory Pubspec.parse(String yaml, {sourceUrl}) {
+    var item = loadYaml(yaml, sourceUrl: sourceUrl);
+
+    if (item == null) {
+      throw new ArgumentError.notNull('yaml');
+    }
+
+    if (item is! YamlMap) {
+      if (item is YamlNode) {
+        throw parsedYamlException('Does not represent a YAML map.', item);
+      }
+
+      throw new ArgumentError.value(
+          yaml, 'yaml', 'Does not represent a YAML map.');
+    }
+
+    try {
+      return new Pubspec.fromJson(item as YamlMap);
+    } on CheckedFromJsonException catch (error, stack) {
+      throw parsedYamlExceptionFromError(error, stack);
+    }
+  }
 
   static List<String> _normalizeAuthors(String author, List<String> authors) {
     var value = new Set<String>();
