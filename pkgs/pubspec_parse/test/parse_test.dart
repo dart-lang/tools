@@ -7,13 +7,41 @@ import 'package:test/test.dart';
 import 'test_utils.dart';
 
 void main() {
-  test('trival', () {
+  test('minimal set values', () {
     var value = parse({'name': 'sample'});
     expect(value.name, 'sample');
+    expect(value.version, isNull);
+    expect(value.description, isNull);
+    expect(value.homepage, isNull);
     // ignore: deprecated_member_use
     expect(value.author, isNull);
     expect(value.authors, isEmpty);
+    expect(value.documentation, isNull);
     expect(value.dependencies, isEmpty);
+    expect(value.devDependencies, isEmpty);
+    expect(value.dependencyOverrides, isEmpty);
+  });
+
+  test('all fields set', () {
+    var value = parse({
+      'name': 'sample',
+      'version': '1.2.3',
+      'author': 'name@example.com',
+      'description': 'description',
+      'homepage': 'homepage',
+      'documentation': 'documentation'
+    });
+    expect(value.name, 'sample');
+    expect(value.version.toString(), '1.2.3');
+    expect(value.description, 'description');
+    expect(value.homepage, 'homepage');
+    // ignore: deprecated_member_use
+    expect(value.author, 'name@example.com');
+    expect(value.authors, ['name@example.com']);
+    expect(value.documentation, 'documentation');
+    expect(value.dependencies, isEmpty);
+    expect(value.devDependencies, isEmpty);
+    expect(value.dependencyOverrides, isEmpty);
   });
 
   group('author, authors', () {

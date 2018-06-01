@@ -13,9 +13,12 @@ part 'pubspec.g.dart';
 @JsonSerializable(createToJson: false)
 class Pubspec {
   final String name;
-  final String homepage;
-  final String documentation;
+
+  @JsonKey(fromJson: _versionFromString)
+  final Version version;
+
   final String description;
+  final String homepage;
 
   /// If there is exactly 1 value in [authors], returns it.
   ///
@@ -30,12 +33,10 @@ class Pubspec {
   }
 
   final List<String> authors;
+  final String documentation;
 
   @JsonKey(fromJson: _environmentMap)
   final Map<String, VersionConstraint> environment;
-
-  @JsonKey(fromJson: _versionFromString)
-  final Version version;
 
   @JsonKey(fromJson: _getDeps, nullable: false)
   final Map<String, Dependency> dependencies;
