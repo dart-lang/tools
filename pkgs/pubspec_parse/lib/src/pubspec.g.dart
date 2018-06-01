@@ -27,11 +27,11 @@ Pubspec _$PubspecFromJson(Map json) => $checkedNew(
             description:
                 $checkedConvert(json, 'description', (v) => v as String),
             dependencies: $checkedConvert(
-                json, 'dependencies', (v) => _getDeps(v as Map)),
+                json, 'dependencies', (v) => parseDeps(v as Map)),
             devDependencies: $checkedConvert(
-                json, 'dev_dependencies', (v) => _getDeps(v as Map)),
+                json, 'dev_dependencies', (v) => parseDeps(v as Map)),
             dependencyOverrides: $checkedConvert(
-                json, 'dependency_overrides', (v) => _getDeps(v as Map))),
+                json, 'dependency_overrides', (v) => parseDeps(v as Map))),
         fieldKeyMap: const {
           'devDependencies': 'dev_dependencies',
           'dependencyOverrides': 'dependency_overrides'

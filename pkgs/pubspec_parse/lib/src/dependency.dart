@@ -5,63 +5,72 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+Map<String, Dependency> parseDeps(Map source) =>
+    source?.map((k, v) {
+      var key = k as String;
+      var value = _fromJson(v);
+      if (value == null) {
+        throw new CheckedFromJsonException(
+            source, key, 'Pubspec', 'Not a valid dependency value.');
+      }
+      return new MapEntry(key, value);
+    }) ??
+    {};
+
+/// Returns `null` if the data could not be parsed.
+Dependency _fromJson(dynamic data) {
+  if (data == null) {
+    return new HostedDependency(VersionConstraint.any);
+  } else if (data is String) {
+    return new HostedDependency(new VersionConstraint.parse(data));
+  } else if (data is Map) {
+    try {
+      return _fromMap(data);
+    } on ArgumentError catch (e) {
+      throw new CheckedFromJsonException(
+          data, e.name, 'Dependency', e.message.toString());
+    }
+  }
+
+  return null;
+}
+
+Dependency _fromMap(Map data) {
+  if (data.entries.isEmpty) {
+// TODO: provide list of supported keys?
+    throw new CheckedFromJsonException(
+        data, null, 'Dependency', 'Must provide at least one key.');
+  }
+
+  if (data.containsKey('sdk')) {
+    return new SdkDependency.fromData(data);
+  }
+
+  if (data.entries.length > 1) {
+    throw new CheckedFromJsonException(data, data.keys.skip(1).first as String,
+        'Dependency', 'Expected only one key.');
+  }
+
+  var entry = data.entries.single;
+  var key = entry.key as String;
+
+  if (entry.value == null) {
+    throw new CheckedFromJsonException(
+        data, key, 'Dependency', 'Cannot be null.');
+  }
+
+  switch (key) {
+    case 'path':
+      return new PathDependency.fromData(entry.value);
+    case 'git':
+      return new GitDependency.fromData(entry.value);
+  }
+
+  return null;
+}
+
 abstract class Dependency {
   Dependency._();
-
-  /// Returns `null` if the data could not be parsed.
-  factory Dependency.fromJson(dynamic data) {
-    if (data == null) {
-      return new HostedDependency(VersionConstraint.any);
-    } else if (data is String) {
-      return new HostedDependency(new VersionConstraint.parse(data));
-    } else if (data is Map) {
-      try {
-        return new Dependency._fromMap(data);
-      } on ArgumentError catch (e) {
-        throw new CheckedFromJsonException(
-            data, e.name, 'Dependency', e.message.toString());
-      }
-    }
-
-    return null;
-  }
-
-  factory Dependency._fromMap(Map data) {
-    if (data.entries.isEmpty) {
-      // TODO: provide list of supported keys?
-      throw new CheckedFromJsonException(
-          data, null, 'Dependency', 'Must provide at least one key.');
-    }
-
-    if (data.containsKey('sdk')) {
-      return new SdkDependency.fromData(data);
-    }
-
-    if (data.entries.length > 1) {
-      throw new CheckedFromJsonException(
-          data,
-          data.keys.skip(1).first as String,
-          'Dependency',
-          'Expected only one key.');
-    }
-
-    var entry = data.entries.single;
-    var key = entry.key as String;
-
-    if (entry.value == null) {
-      throw new CheckedFromJsonException(
-          data, key, 'Dependency', 'Cannot be null.');
-    }
-
-    switch (key) {
-      case 'path':
-        return new PathDependency.fromData(entry.value);
-      case 'git':
-        return new GitDependency.fromData(entry.value);
-    }
-
-    return null;
-  }
 
   String get _info;
 

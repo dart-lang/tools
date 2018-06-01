@@ -38,13 +38,13 @@ class Pubspec {
   @JsonKey(fromJson: _environmentMap)
   final Map<String, VersionConstraint> environment;
 
-  @JsonKey(fromJson: _getDeps, nullable: false)
+  @JsonKey(fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> dependencies;
 
-  @JsonKey(name: 'dev_dependencies', fromJson: _getDeps, nullable: false)
+  @JsonKey(name: 'dev_dependencies', fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> devDependencies;
 
-  @JsonKey(name: 'dependency_overrides', fromJson: _getDeps, nullable: false)
+  @JsonKey(name: 'dependency_overrides', fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> dependencyOverrides;
 
   /// If [author] and [authors] are both provided, their values are combined
@@ -83,19 +83,6 @@ class Pubspec {
     return value.toList();
   }
 }
-
-// TODO: maybe move this to `dependencies.dart`?
-Map<String, Dependency> _getDeps(Map source) =>
-    source?.map((k, v) {
-      var key = k as String;
-      var value = new Dependency.fromJson(v);
-      if (value == null) {
-        throw new CheckedFromJsonException(
-            source, key, 'Pubspec', 'Not a valid dependency value.');
-      }
-      return new MapEntry(key, value);
-    }) ??
-    {};
 
 Version _versionFromString(String input) => new Version.parse(input);
 
