@@ -10,25 +10,32 @@ part of 'dependency.dart';
 // Generator: JsonSerializableGenerator
 // **************************************************************************
 
-SdkDependency _$SdkDependencyFromJson(Map json) => $checkedNew(
-    'SdkDependency',
-    json,
-    () => new SdkDependency($checkedConvert(json, 'sdk', (v) => v as String),
+SdkDependency _$SdkDependencyFromJson(Map json) {
+  return $checkedNew('SdkDependency', json, () {
+    var val = new SdkDependency(
+        $checkedConvert(json, 'sdk', (v) => v as String),
         version: $checkedConvert(json, 'version',
-            (v) => v == null ? null : _constraintFromString(v as String))));
+            (v) => v == null ? null : _constraintFromString(v as String)));
+    return val;
+  });
+}
 
-GitDependency _$GitDependencyFromJson(Map json) => $checkedNew(
-    'GitDependency',
-    json,
-    () => new GitDependency(
+GitDependency _$GitDependencyFromJson(Map json) {
+  return $checkedNew('GitDependency', json, () {
+    var val = new GitDependency(
         $checkedConvert(
             json, 'url', (v) => v == null ? null : _parseUri(v as String)),
         $checkedConvert(json, 'ref', (v) => v as String),
-        $checkedConvert(json, 'path', (v) => v as String)));
+        $checkedConvert(json, 'path', (v) => v as String));
+    return val;
+  });
+}
 
-HostedDependency _$HostedDependencyFromJson(Map json) => $checkedNew(
-    'HostedDependency',
-    json,
-    () => new HostedDependency(
+HostedDependency _$HostedDependencyFromJson(Map json) {
+  return $checkedNew('HostedDependency', json, () {
+    var val = new HostedDependency(
         version: $checkedConvert(json, 'version',
-            (v) => v == null ? null : _constraintFromString(v as String))));
+            (v) => v == null ? null : _constraintFromString(v as String)));
+    return val;
+  });
+}
