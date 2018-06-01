@@ -48,18 +48,32 @@ void _hostedDependency() {
   test('HostedDepedency - null', () {
     var dep = _dependency<HostedDependency>(null);
     expect(dep.version.toString(), 'any');
+    expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
   test('HostedDepedency - string', () {
     var dep = _dependency<HostedDependency>('^1.0.0');
     expect(dep.version.toString(), '^1.0.0');
+    expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
   test('HostedDepedency - map', () {
     var dep = _dependency<HostedDependency>({'version': '^1.0.0'});
     expect(dep.version.toString(), '^1.0.0');
+    expect(dep.hosted, isNull);
+    expect(dep.toString(), 'HostedDependency: ^1.0.0');
+  });
+
+  test('HostedDepedency - map', () {
+    var dep = _dependency<HostedDependency>({
+      'version': '^1.0.0',
+      'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
+    });
+    expect(dep.version.toString(), '^1.0.0');
+    expect(dep.hosted.name, 'hosted_name');
+    expect(dep.hosted.url.toString(), 'hosted_url');
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 }

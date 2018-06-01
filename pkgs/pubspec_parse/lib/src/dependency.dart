@@ -154,12 +154,12 @@ class PathDependency extends Dependency {
 
 @JsonSerializable(createToJson: false)
 class HostedDependency extends Dependency {
-  // TODO: support explicit host
-
   @JsonKey(fromJson: _constraintFromString)
   final VersionConstraint version;
 
-  HostedDependency({VersionConstraint version})
+  final HostedDetails hosted;
+
+  HostedDependency({VersionConstraint version, this.hosted})
       : this.version = version ?? VersionConstraint.any,
         super._();
 
@@ -177,6 +177,25 @@ class HostedDependency extends Dependency {
 
   @override
   String get _info => version.toString();
+}
+
+@JsonSerializable(createToJson: false, nullable: false)
+class HostedDetails {
+  final String name;
+
+  @JsonKey(fromJson: _parseUri)
+  final Uri url;
+
+  HostedDetails(this.name, this.url) {
+    if (name == null) {
+      throw new ArgumentError.value(name, 'name', '"name" cannot be null');
+    }
+    if (url == null) {
+      throw new ArgumentError.value(url, 'url', '"url" cannot be null');
+    }
+  }
+
+  factory HostedDetails.fromJson(Map json) => _$HostedDetailsFromJson(json);
 }
 
 VersionConstraint _constraintFromString(String input) =>

@@ -35,7 +35,18 @@ HostedDependency _$HostedDependencyFromJson(Map json) {
   return $checkedNew('HostedDependency', json, () {
     var val = new HostedDependency(
         version: $checkedConvert(json, 'version',
-            (v) => v == null ? null : _constraintFromString(v as String)));
+            (v) => v == null ? null : _constraintFromString(v as String)),
+        hosted: $checkedConvert(json, 'hosted',
+            (v) => v == null ? null : new HostedDetails.fromJson(v as Map)));
+    return val;
+  });
+}
+
+HostedDetails _$HostedDetailsFromJson(Map json) {
+  return $checkedNew('HostedDetails', json, () {
+    var val = new HostedDetails(
+        $checkedConvert(json, 'name', (v) => v as String),
+        $checkedConvert(json, 'url', (v) => _parseUri(v as String)));
     return val;
   });
 }
