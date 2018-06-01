@@ -17,10 +17,10 @@ Pubspec _$PubspecFromJson(Map json) => $checkedNew(
             version: $checkedConvert(json, 'version',
                 (v) => v == null ? null : _versionFromString(v as String)),
             author: $checkedConvert(json, 'author', (v) => v as String),
-            environment: $checkedConvert(json, 'environment',
-                (v) => v == null ? null : _environmentMap(v as Map)),
             authors: $checkedConvert(json, 'authors',
                 (v) => (v as List)?.map((e) => e as String)?.toList()),
+            environment: $checkedConvert(json, 'environment',
+                (v) => v == null ? null : _environmentMap(v as Map)),
             homepage: $checkedConvert(json, 'homepage', (v) => v as String),
             documentation:
                 $checkedConvert(json, 'documentation', (v) => v as String),

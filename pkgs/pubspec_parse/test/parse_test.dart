@@ -10,38 +10,61 @@ void main() {
   test('trival', () {
     var value = parse({'name': 'sample'});
     expect(value.name, 'sample');
+    // ignore: deprecated_member_use
+    expect(value.author, isNull);
     expect(value.authors, isEmpty);
     expect(value.dependencies, isEmpty);
   });
 
-  test('one author', () {
-    var value = parse({'name': 'sample', 'author': 'name@example.com'});
-    expect(value.allAuthors, ['name@example.com']);
-  });
-
-  test('one author, via authors', () {
-    var value = parse({
-      'name': 'sample',
-      'authors': ['name@example.com']
+  group('author, authors', () {
+    test('one author', () {
+      var value = parse({'name': 'sample', 'author': 'name@example.com'});
+      // ignore: deprecated_member_use
+      expect(value.author, 'name@example.com');
+      expect(value.authors, ['name@example.com']);
     });
-    expect(value.authors, ['name@example.com']);
-  });
 
-  test('many authors', () {
-    var value = parse({
-      'name': 'sample',
-      'authors': ['name@example.com', 'name2@example.com']
+    test('one author, via authors', () {
+      var value = parse({
+        'name': 'sample',
+        'authors': ['name@example.com']
+      });
+      // ignore: deprecated_member_use
+      expect(value.author, 'name@example.com');
+      expect(value.authors, ['name@example.com']);
     });
-    expect(value.authors, ['name@example.com', 'name2@example.com']);
-  });
 
-  test('author and authors', () {
-    var value = parse({
-      'name': 'sample',
-      'author': 'name@example.com',
-      'authors': ['name2@example.com']
+    test('many authors', () {
+      var value = parse({
+        'name': 'sample',
+        'authors': ['name@example.com', 'name2@example.com']
+      });
+      // ignore: deprecated_member_use
+      expect(value.author, isNull);
+      expect(value.authors, ['name@example.com', 'name2@example.com']);
     });
-    expect(value.allAuthors, ['name@example.com', 'name2@example.com']);
+
+    test('author and authors', () {
+      var value = parse({
+        'name': 'sample',
+        'author': 'name@example.com',
+        'authors': ['name2@example.com']
+      });
+      // ignore: deprecated_member_use
+      expect(value.author, isNull);
+      expect(value.authors, ['name@example.com', 'name2@example.com']);
+    });
+
+    test('duplicate author values', () {
+      var value = parse({
+        'name': 'sample',
+        'author': 'name@example.com',
+        'authors': ['name@example.com', 'name@example.com']
+      });
+      // ignore: deprecated_member_use
+      expect(value.author, 'name@example.com');
+      expect(value.authors, ['name@example.com']);
+    });
   });
 
   group('invalid', () {

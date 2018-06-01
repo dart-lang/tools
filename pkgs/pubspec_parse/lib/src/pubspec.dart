@@ -16,20 +16,23 @@ class Pubspec {
   final String homepage;
   final String documentation;
   final String description;
-  final String author;
+
+  /// If there is exactly 1 value in [authors], returns it.
+  ///
+  /// If there are 0 or more than 1, returns `null`.
+  @Deprecated(
+      'Here for completeness, but not recommended. Use `authors` instead.')
+  String get author {
+    if (authors.length == 1) {
+      return authors.single;
+    }
+    return null;
+  }
+
   final List<String> authors;
 
   @JsonKey(fromJson: _environmentMap)
   final Map<String, VersionConstraint> environment;
-
-  List<String> get allAuthors {
-    var values = <String>[];
-    if (author != null) {
-      values.add(author);
-    }
-    values.addAll(authors);
-    return values;
-  }
 
   @JsonKey(fromJson: _versionFromString)
   final Version version;
@@ -43,19 +46,21 @@ class Pubspec {
   @JsonKey(name: 'dependency_overrides', fromJson: _getDeps, nullable: false)
   final Map<String, Dependency> dependencyOverrides;
 
+  /// If [author] and [authors] are both provided, their values are combined
+  /// with duplicates eliminated.
   Pubspec(
     this.name, {
     this.version,
-    this.author,
-    this.environment,
+    String author,
     List<String> authors,
+    this.environment,
     this.homepage,
     this.documentation,
     this.description,
     Map<String, Dependency> dependencies,
     Map<String, Dependency> devDependencies,
     Map<String, Dependency> dependencyOverrides,
-  })  : this.authors = authors ?? const [],
+  })  : this.authors = _normalizeAuthors(author, authors),
         this.dependencies = dependencies ?? const {},
         this.devDependencies = devDependencies ?? const {},
         this.dependencyOverrides = dependencyOverrides ?? const {} {
@@ -65,6 +70,17 @@ class Pubspec {
   }
 
   factory Pubspec.fromJson(Map json) => _$PubspecFromJson(json);
+
+  static List<String> _normalizeAuthors(String author, List<String> authors) {
+    var value = new Set<String>();
+    if (author != null) {
+      value.add(author);
+    }
+    if (authors != null) {
+      value.addAll(authors);
+    }
+    return value.toList();
+  }
 }
 
 // TODO: maybe move this to `dependencies.dart`?
