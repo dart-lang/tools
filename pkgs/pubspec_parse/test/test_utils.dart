@@ -14,8 +14,8 @@ String _encodeJson(Object input) =>
 
 Matcher _throwsParsedYamlException(String prettyValue) => throwsA(allOf(
     const isInstanceOf<ParsedYamlException>(),
-    new FeatureMatcher<ParsedYamlException>('formatMessage', (e) {
-      var message = e.formatMessage;
+    new FeatureMatcher<ParsedYamlException>('formattedMessage', (e) {
+      var message = e.formattedMessage;
       printOnFailure("Actual error format:\nr'''\n$message'''");
       _printDebugParsedYamlException(e);
       return message;

@@ -68,7 +68,7 @@ class ParsedYamlException implements Exception {
 
   /// Returns [message] formatted with source information provided by
   /// [yamlNode].
-  String get formatMessage => yamlNode.span.message(message);
+  String get formattedMessage => yamlNode.span.message(message);
 
   @override
   String toString() => message;
