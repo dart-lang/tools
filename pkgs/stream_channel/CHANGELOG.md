@@ -1,3 +1,7 @@
+## 1.6.7
+
+* Update SDK version to 2.0.0-dev.17.0.
+
 ## 1.6.6
 
 * Fix a Dart 2 issue with inner stream transformation in `GuaranteeChannel`.

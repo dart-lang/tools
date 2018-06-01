@@ -29,7 +29,7 @@ void main() {
     var transformed = channel.transform(jsonDocument);
     transformed.sink.add({"foo": "bar"});
     expect(sinkController.stream.first,
-        completion(equals(JSON.encode({"foo": "bar"}))));
+        completion(equals(jsonEncode({"foo": "bar"}))));
   });
 
   test("supports the reviver function", () {
