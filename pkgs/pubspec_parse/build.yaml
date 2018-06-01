@@ -6,6 +6,7 @@ targets:
       json_serializable:
         generate_for:
           - lib/src/pubspec.dart
+          - lib/src/dependency.dart
         options:
           any_map: true
           checked: true

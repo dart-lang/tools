@@ -29,10 +29,22 @@ void main() {
     expect(dep.toString(), 'SdkDependency: flutter');
   });
 
-  test('GitDependency', () {
-    var dep = _dependency<GitDependency>({'git': 'bob'});
-    expect(dep.url.toString(), 'bob');
-    expect(dep.toString(), 'GitDependency: url@bob');
+  test('GitDependency - string', () {
+    var dep = _dependency<GitDependency>({'git': 'url'});
+    expect(dep.url.toString(), 'url');
+    expect(dep.path, isNull);
+    expect(dep.ref, isNull);
+    expect(dep.toString(), 'GitDependency: url@url');
+  });
+
+  test('GitDependency - map', () {
+    var dep = _dependency<GitDependency>({
+      'git': {'url': 'url', 'path': 'path', 'ref': 'ref'}
+    });
+    expect(dep.url.toString(), 'url');
+    expect(dep.path, 'path');
+    expect(dep.ref, 'ref');
+    expect(dep.toString(), 'GitDependency: url@url');
   });
 
   test('HostedDepedency', () {
@@ -88,6 +100,31 @@ line 5, column 11: Cannot be null.
 line 5, column 11: Must be a String or a Map.
    "git": 42
           ^^^''');
+    });
+
+    test('git - empty map', () {
+      _expectThrows({'git': {}}, r'''
+line 5, column 11: "url" is required.
+   "git": {}
+          ^^''');
+    });
+
+    test('git - null url', () {
+      _expectThrows({
+        'git': {'url': null}
+      }, r'''
+line 6, column 12: "url" cannot be null.
+    "url": null
+           ^^^^^''');
+    });
+
+    test('git - int url', () {
+      _expectThrows({
+        'git': {'url': 42}
+      }, r'''
+line 6, column 12: Unsupported value for `url`.
+    "url": 42
+           ^^^''');
     });
 
     test('path - null content', () {

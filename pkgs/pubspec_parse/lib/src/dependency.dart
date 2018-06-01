@@ -4,6 +4,9 @@
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:pubspec_parse/src/errors.dart';
+
+part 'dependency.g.dart';
 
 Map<String, Dependency> parseDeps(Map source) =>
     source?.map((k, v) {
@@ -96,35 +99,42 @@ class SdkDependency extends Dependency {
   String get _info => name;
 }
 
+@JsonSerializable(createToJson: false)
 class GitDependency extends Dependency {
+  @JsonKey(fromJson: _parseUri)
   final Uri url;
   final String ref;
   final String path;
 
-  GitDependency(this.url, this.ref, this.path) : super._();
+  GitDependency(this.url, this.ref, this.path) : super._() {
+    if (url == null) {
+      throw new ArgumentError.value(url, 'url', '"url" cannot be null.');
+    }
+  }
 
   factory GitDependency.fromData(Object data) {
-    String url;
-    String path;
-    String ref;
-
     if (data is String) {
-      url = data;
-    } else if (data is Map) {
-      url = data['url'] as String;
-      path = data['path'] as String;
-      ref = data['ref'] as String;
-    } else {
-      throw new ArgumentError.value(data, 'git', 'Must be a String or a Map.');
+      data = {'url': data};
     }
 
-    // TODO: validate `url` is a valid URI
-    return new GitDependency(Uri.parse(url), ref, path);
+    if (data is Map) {
+      // TODO: Need JsonKey.required
+      // https://github.com/dart-lang/json_serializable/issues/216
+      if (!data.containsKey('url')) {
+        throw new BadKeyException(data, 'url', '"url" is required.');
+      }
+
+      return _$GitDependencyFromJson(data);
+    }
+
+    throw new ArgumentError.value(data, 'git', 'Must be a String or a Map.');
   }
 
   @override
   String get _info => 'url@$url';
 }
+
+Uri _parseUri(String value) => Uri.parse(value);
 
 class PathDependency extends Dependency {
   final String path;

@@ -14,14 +14,14 @@ ParsedYamlException parsedYamlExceptionFromError(
   if (innerError is BadKeyException) {
     var map = innerError.map;
     if (map is YamlMap) {
-      var key = map.nodes.keys.singleWhere((key) {
-        return (key as YamlScalar).value == innerError.key;
-      }, orElse: () => null);
+      // if the associated key exists, use that as the error node,
+      // otherwise use the map itself
+      var node = map.nodes.keys.cast<YamlNode>().singleWhere((key) {
+        return key.value == innerError.key;
+      }, orElse: () => map);
 
-      if (key is YamlScalar) {
-        return new ParsedYamlException._(innerError.message, key,
-            innerError: error, innerStack: stack);
-      }
+      return new ParsedYamlException._(innerError.message, node,
+          innerError: error, innerStack: stack);
     }
   } else if (innerError is ParsedYamlException) {
     return innerError;
