@@ -58,7 +58,7 @@ class Pubspec {
     this.version,
     String author,
     List<String> authors,
-    this.environment,
+    Map<String, VersionConstraint> environment,
     this.homepage,
     this.documentation,
     this.description,
@@ -66,6 +66,7 @@ class Pubspec {
     Map<String, Dependency> devDependencies,
     Map<String, Dependency> dependencyOverrides,
   })  : this.authors = _normalizeAuthors(author, authors),
+        this.environment = environment ?? const {},
         this.dependencies = dependencies ?? const {},
         this.devDependencies = devDependencies ?? const {},
         this.dependencyOverrides = dependencyOverrides ?? const {} {
@@ -114,7 +115,8 @@ class Pubspec {
 Version _versionFromString(String input) => new Version.parse(input);
 
 Map<String, VersionConstraint> _environmentMap(Map source) =>
-    source.map((key, value) {
+    source.map((k, value) {
+      var key = k as String;
       if (key == 'dart') {
         // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
         // 'dart' is not allowed as a key!
@@ -122,13 +124,17 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
             source, 'dart', 'Use "sdk" to for Dart SDK constraints.');
       }
 
-      VersionConstraint constraint;
-      try {
-        constraint = new VersionConstraint.parse(value as String);
-      } on FormatException catch (e) {
-        throw new CheckedFromJsonException(
-            source, key as String, 'Pubspec', e.message);
+      if (value is String) {
+        VersionConstraint constraint;
+        try {
+          constraint = new VersionConstraint.parse(value);
+        } on FormatException catch (e) {
+          throw new CheckedFromJsonException(source, key, 'Pubspec', e.message);
+        }
+
+        return new MapEntry(key, constraint);
       }
 
-      return new MapEntry(key as String, constraint);
+      throw new CheckedFromJsonException(
+          source, key, 'VersionConstraint', '`$value` is not a String.');
     });

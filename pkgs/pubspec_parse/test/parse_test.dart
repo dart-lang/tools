@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 import 'test_utils.dart';
@@ -16,6 +17,7 @@ void main() {
     // ignore: deprecated_member_use
     expect(value.author, isNull);
     expect(value.authors, isEmpty);
+    expect(value.environment, isEmpty);
     expect(value.documentation, isNull);
     expect(value.dependencies, isEmpty);
     expect(value.devDependencies, isEmpty);
@@ -23,21 +25,25 @@ void main() {
   });
 
   test('all fields set', () {
+    var constraint = new Version.parse('1.2.3');
     var value = parse({
       'name': 'sample',
-      'version': '1.2.3',
+      'version': constraint.toString(),
       'author': 'name@example.com',
+      'environment': {'sdk': '1.2.3'},
       'description': 'description',
       'homepage': 'homepage',
       'documentation': 'documentation'
     });
     expect(value.name, 'sample');
-    expect(value.version.toString(), '1.2.3');
+    expect(value.version, constraint);
     expect(value.description, 'description');
     expect(value.homepage, 'homepage');
     // ignore: deprecated_member_use
     expect(value.author, 'name@example.com');
     expect(value.authors, ['name@example.com']);
+    expect(value.environment, hasLength(1));
+    expect(value.environment, containsPair('sdk', constraint));
     expect(value.documentation, 'documentation');
     expect(value.dependencies, isEmpty);
     expect(value.devDependencies, isEmpty);
@@ -124,6 +130,26 @@ line 1, column 1: "name" cannot be empty.
 line 4, column 3: Use "sdk" to for Dart SDK constraints.
   "dart": "cool"
   ^^^^^^''');
+    });
+
+    test('environment values cannot be null', () {
+      expectParseThrows({
+        'name': 'sample',
+        'environment': {'sdk': null}
+      }, r'''
+line 4, column 10: `null` is not a String.
+  "sdk": null
+         ^^^^^''');
+    });
+
+    test('environment values cannot be int', () {
+      expectParseThrows({
+        'name': 'sample',
+        'environment': {'sdk': 42}
+      }, r'''
+line 4, column 10: `42` is not a String.
+  "sdk": 42
+         ^^^''');
     });
 
     test('invalid version', () {
