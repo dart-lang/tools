@@ -50,8 +50,8 @@ class StreamChannelController<T> {
   ///
   /// If [allowForeignErrors] is `false`, errors are not allowed to be passed to
   /// the foreign channel's sink. If any are, the connection will close and the
-  /// error will be forwarded to the foreign channel's [Sink.done] future. This
-  /// guarantees that the local stream will never emit errors.
+  /// error will be forwarded to the foreign channel's [StreamSink.done] future.
+  /// This guarantees that the local stream will never emit errors.
   StreamChannelController({bool allowForeignErrors: true, bool sync: false}) {
     var localToForeignController = new StreamController<T>(sync: sync);
     var foreignToLocalController = new StreamController<T>(sync: sync);

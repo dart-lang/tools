@@ -86,7 +86,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   /// This will be `null` if the underlying communication channel is closed.
   StreamChannel<dynamic> _inner;
 
-  /// The subscription to [_inner.stream].
+  /// The subscription to [_inner].stream.
   StreamSubscription<dynamic> _innerStreamSubscription;
 
   Stream<T> get stream => _mainController.foreign.stream;

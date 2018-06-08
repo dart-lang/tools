@@ -23,8 +23,8 @@ import 'transformer/typed.dart';
 /// the stream to close before it emits any more events. This guarantee is
 /// invalidated when an asynchronous gap is added between the original stream's
 /// event dispatch and the returned stream's, for example by transforming it
-/// with a [StreamTransformer]. The guarantee can be easily preserved using [new
-/// StreamChannel.withCloseGuarantee].
+/// with a [StreamTransformer]. The guarantee can be easily preserved using
+/// [StreamChannel.withCloseGuarantee].
 class StreamChannelTransformer<S, T> {
   /// The transformer to use on the channel's stream.
   final StreamTransformer<T, S> _streamTransformer;

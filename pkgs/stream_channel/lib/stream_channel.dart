@@ -25,8 +25,8 @@ export 'src/stream_channel_transformer.dart';
 /// canonical indicator that the channel has closed. If they wish to close the
 /// channel, they should close the [sink]—canceling the stream subscription is
 /// not sufficient. Protocol errors may be emitted through the stream or through
-/// [Sink.done], depending on their underlying cause. Note that the sink may
-/// silently drop events if the channel closes before [Sink.close] is called.
+/// [sink].done, depending on their underlying cause. Note that the sink may
+/// silently drop events if the channel closes before [sink].close is called.
 ///
 /// Implementations are strongly encouraged to mix in or extend
 /// [StreamChannelMixin] to get default implementations of the various instance
@@ -43,7 +43,7 @@ export 'src/stream_channel_transformer.dart';
 ///
 /// * After the stream closes, the sink is automatically closed. If this
 ///   happens, sink methods should silently drop their arguments until
-///   [Sink.close] is called.
+///   [sink].close is called.
 ///
 /// * If the stream closes before it has a listener, the sink should silently
 ///   drop events if possible.
@@ -53,7 +53,7 @@ export 'src/stream_channel_transformer.dart';
 ///   even after the subscription has been canceled.
 ///
 /// * The sink *either* forwards errors to the other endpoint *or* closes as
-///   soon as an error is added and forwards that error to the [Sink.done]
+///   soon as an error is added and forwards that error to the [sink].done
 ///   future.
 ///
 /// These guarantees allow users to interact uniformly with all implementations,
@@ -69,8 +69,8 @@ abstract class StreamChannel<T> {
   /// Creates a new [StreamChannel] that communicates over [stream] and [sink].
   ///
   /// Note that this stream/sink pair must provide the guarantees listed in the
-  /// [StreamChannel] documentation. If they don't do so natively, [new
-  /// StreamChannel.withGuarantees] should be used instead.
+  /// [StreamChannel] documentation. If they don't do so natively,
+  /// [StreamChannel.withGuarantees] should be used instead.
   factory StreamChannel(Stream<T> stream, StreamSink<T> sink) =>
       new _StreamChannel<T>(stream, sink);
 
@@ -83,7 +83,7 @@ abstract class StreamChannel<T> {
   ///
   /// If [allowSinkErrors] is `false`, errors are not allowed to be passed to
   /// [sink]. If any are, the connection will close and the error will be
-  /// forwarded to [Sink.done].
+  /// forwarded to [sink].done.
   factory StreamChannel.withGuarantees(Stream<T> stream, StreamSink<T> sink,
           {bool allowSinkErrors: true}) =>
       new GuaranteeChannel(stream, sink, allowSinkErrors: allowSinkErrors);
@@ -101,33 +101,33 @@ abstract class StreamChannel<T> {
           Stream<T> stream, StreamSink<T> sink) =>
       new CloseGuaranteeChannel(stream, sink);
 
-  /// Connects [this] to [other], so that any values emitted by either are sent
+  /// Connects this to [other], so that any values emitted by either are sent
   /// directly to the other.
   void pipe(StreamChannel<T> other);
 
-  /// Transforms [this] using [transformer].
+  /// Transforms this using [transformer].
   ///
   /// This is identical to calling `transformer.bind(channel)`.
   StreamChannel<S> transform<S>(StreamChannelTransformer<S, T> transformer);
 
-  /// Transforms only the [stream] component of [this] using [transformer].
+  /// Transforms only the [stream] component of this using [transformer].
   StreamChannel<T> transformStream(StreamTransformer<T, T> transformer);
 
-  /// Transforms only the [sink] component of [this] using [transformer].
+  /// Transforms only the [sink] component of this using [transformer].
   StreamChannel<T> transformSink(StreamSinkTransformer<T, T> transformer);
 
-  /// Returns a copy of [this] with [stream] replaced by [change]'s return
+  /// Returns a copy of this with [stream] replaced by [change]'s return
   /// value.
   StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream));
 
-  /// Returns a copy of [this] with [sink] replaced by [change]'s return
+  /// Returns a copy of this with [sink] replaced by [change]'s return
   /// value.
   StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink));
 
-  /// Returns a copy of [this] with the generic type coerced to [S].
+  /// Returns a copy of this with the generic type coerced to [S].
   ///
   /// If any events emitted by [stream] aren't of type [S], they're converted
-  /// into [CastError] events. Similarly, if any events are added to [sync] that
+  /// into [CastError] events. Similarly, if any events are added to [sink] that
   /// aren't of type [S], a [CastError] is thrown.
   StreamChannel<S> cast<S>();
 }
