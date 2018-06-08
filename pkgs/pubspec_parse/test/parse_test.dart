@@ -25,29 +25,40 @@ void main() {
   });
 
   test('all fields set', () {
-    var constraint = new Version.parse('1.2.3');
+    var version = new Version.parse('1.2.3');
+    var sdkConstraint = new VersionConstraint.parse('>=2.0.0-dev.54 <2.0.0');
     var value = parse({
       'name': 'sample',
-      'version': constraint.toString(),
+      'version': version.toString(),
       'author': 'name@example.com',
-      'environment': {'sdk': '1.2.3'},
+      'environment': {'sdk': sdkConstraint.toString()},
       'description': 'description',
       'homepage': 'homepage',
       'documentation': 'documentation'
     });
     expect(value.name, 'sample');
-    expect(value.version, constraint);
+    expect(value.version, version);
     expect(value.description, 'description');
     expect(value.homepage, 'homepage');
     // ignore: deprecated_member_use
     expect(value.author, 'name@example.com');
     expect(value.authors, ['name@example.com']);
     expect(value.environment, hasLength(1));
-    expect(value.environment, containsPair('sdk', constraint));
+    expect(value.environment, containsPair('sdk', sdkConstraint));
     expect(value.documentation, 'documentation');
     expect(value.dependencies, isEmpty);
     expect(value.devDependencies, isEmpty);
     expect(value.dependencyOverrides, isEmpty);
+  });
+
+  test('environment values can be null', () {
+    var value = parse({
+      'name': 'sample',
+      'environment': {'sdk': null}
+    });
+    expect(value.name, 'sample');
+    expect(value.environment, hasLength(1));
+    expect(value.environment, containsPair('sdk', isNull));
   });
 
   group('author, authors', () {
@@ -130,16 +141,6 @@ line 1, column 1: "name" cannot be empty.
 line 4, column 3: Use "sdk" to for Dart SDK constraints.
   "dart": "cool"
   ^^^^^^''');
-    });
-
-    test('environment values cannot be null', () {
-      expectParseThrows({
-        'name': 'sample',
-        'environment': {'sdk': null}
-      }, r'''
-line 4, column 10: `null` is not a String.
-  "sdk": null
-         ^^^^^''');
     });
 
     test('environment values cannot be int', () {

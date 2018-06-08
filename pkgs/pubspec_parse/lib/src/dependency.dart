@@ -62,12 +62,7 @@ Dependency _fromJson(dynamic data) {
 }
 
 Dependency _fromMap(Map data) {
-  if (data.entries.isEmpty) {
-// TODO: provide list of supported keys?
-    throw new CheckedFromJsonException(
-        data, null, 'Dependency', 'Must provide at least one key.');
-  }
-
+  assert(data.entries.isNotEmpty);
   if (data.entries.length > 1) {
     throw new CheckedFromJsonException(data, data.keys.skip(1).first as String,
         'Dependency', 'Expected only one key.');
@@ -179,9 +174,12 @@ class HostedDependency extends Dependency {
       data = {'version': data};
     }
 
-    if (data is Map &&
-        (data.containsKey('version') || data.containsKey('hosted'))) {
-      return _$HostedDependencyFromJson(data);
+    if (data is Map) {
+      if (data.isEmpty ||
+          data.containsKey('version') ||
+          data.containsKey('hosted')) {
+        return _$HostedDependencyFromJson(data);
+      }
     }
 
     return null;

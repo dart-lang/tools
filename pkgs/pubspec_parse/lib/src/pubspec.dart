@@ -124,8 +124,10 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
             source, 'dart', 'Use "sdk" to for Dart SDK constraints.');
       }
 
-      if (value is String) {
-        VersionConstraint constraint;
+      VersionConstraint constraint;
+      if (value == null) {
+        constraint = null;
+      } else if (value is String) {
         try {
           constraint = new VersionConstraint.parse(value);
         } on FormatException catch (e) {
@@ -133,8 +135,10 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
         }
 
         return new MapEntry(key, constraint);
+      } else {
+        throw new CheckedFromJsonException(
+            source, key, 'VersionConstraint', '`$value` is not a String.');
       }
 
-      throw new CheckedFromJsonException(
-          source, key, 'VersionConstraint', '`$value` is not a String.');
+      return new MapEntry(key, constraint);
     });

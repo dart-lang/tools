@@ -29,13 +29,6 @@ line 4, column 10: Not a valid dependency value.
          ^^^''');
     });
 
-    test('empty map', () {
-      _expectThrows({}, r'''
-line 4, column 10: Must provide at least one key.
-  "dep": {}
-         ^^''');
-    });
-
     test('map with too many keys', () {
       _expectThrows({'path': 'a', 'git': 'b'}, r'''
 line 5, column 12: Expected only one key.
@@ -49,6 +42,12 @@ void _hostedDependency() {
   test('null', () {
     var dep = _dependency<HostedDependency>(null);
     expect(dep.version.toString(), 'any');
+    expect(dep.hosted, isNull);
+    expect(dep.toString(), 'HostedDependency: any');
+  });
+
+  test('empty map', () {
+    var dep = _dependency<HostedDependency>({});
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });

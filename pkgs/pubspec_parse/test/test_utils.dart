@@ -2,12 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:cli';
 import 'dart:convert';
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
+
+import 'pub_utils.dart';
 
 String _encodeJson(Object input) =>
     const JsonEncoder.withIndent(' ').convert(input);
@@ -48,11 +51,29 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
 
 Pubspec parse(Object content, {bool quietOnError: false}) {
   quietOnError ??= false;
+
+  var encoded = _encodeJson(content);
+
+  var pubResult = waitFor(tryPub(encoded));
+
   try {
-    return new Pubspec.parse(_encodeJson(content));
-  } on ParsedYamlException catch (e) {
-    if (!quietOnError) {
-      _printDebugParsedYamlException(e);
+    var value = new Pubspec.parse(encoded);
+
+    addTearDown(() {
+      expect(pubResult.cleanParse, isTrue,
+          reason:
+              'On success, parsing from the pub client should also succeed.');
+    });
+    return value;
+  } catch (e) {
+    addTearDown(() {
+      expect(pubResult.cleanParse, isFalse,
+          reason: 'On failure, parsing from the pub client should also fail.');
+    });
+    if (e is ParsedYamlException) {
+      if (!quietOnError) {
+        _printDebugParsedYamlException(e);
+      }
     }
     rethrow;
   }
