@@ -11,7 +11,7 @@ ParsedYamlException parsedYamlException(String message, YamlNode yamlNode) =>
 ParsedYamlException parsedYamlExceptionFromError(
     CheckedFromJsonException error, StackTrace stack) {
   var innerError = error.innerError;
-  if (innerError is BadKeyException) {
+  if (innerError is InvalidKeyException) {
     var map = innerError.map;
     if (map is YamlMap) {
       // if the associated key exists, use that as the error node,
@@ -77,10 +77,10 @@ class ParsedYamlException implements Exception {
 ///
 /// Used instead of [CheckedFromJsonException] when highlighting a bad [key]
 /// is desired, instead of the associated value.
-class BadKeyException implements Exception {
+class InvalidKeyException implements Exception {
   final Map map;
   final String key;
   final String message;
 
-  BadKeyException(this.map, this.key, this.message);
+  InvalidKeyException(this.map, this.key, this.message);
 }

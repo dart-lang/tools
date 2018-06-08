@@ -130,7 +130,7 @@ line 5, column 11: Must be a String or a Map.
 
   test('git - empty map', () {
     _expectThrows({'git': {}}, r'''
-line 5, column 11: "url" is required.
+line 5, column 11: Required keys are missing: url.
    "git": {}
           ^^''');
   });
@@ -139,7 +139,7 @@ line 5, column 11: "url" is required.
     _expectThrows({
       'git': {'url': null}
     }, r'''
-line 6, column 12: "url" cannot be null.
+line 6, column 12: These keys had `null` values, which is not allowed: [url]
     "url": null
            ^^^^^''');
   });

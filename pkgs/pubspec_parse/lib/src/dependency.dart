@@ -4,7 +4,6 @@
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:pubspec_parse/src/errors.dart';
 
 part 'dependency.g.dart';
 
@@ -101,16 +100,12 @@ class SdkDependency extends Dependency {
 
 @JsonSerializable(createToJson: false)
 class GitDependency extends Dependency {
-  @JsonKey(fromJson: _parseUri)
+  @JsonKey(fromJson: _parseUri, required: true, disallowNullValue: true)
   final Uri url;
   final String ref;
   final String path;
 
-  GitDependency(this.url, this.ref, this.path) : super._() {
-    if (url == null) {
-      throw new ArgumentError.value(url, 'url', '"url" cannot be null.');
-    }
-  }
+  GitDependency(this.url, this.ref, this.path) : super._();
 
   factory GitDependency.fromData(Object data) {
     if (data is String) {
@@ -118,12 +113,6 @@ class GitDependency extends Dependency {
     }
 
     if (data is Map) {
-      // TODO: Need JsonKey.required
-      // https://github.com/dart-lang/json_serializable/issues/216
-      if (!data.containsKey('url')) {
-        throw new BadKeyException(data, 'url', '"url" is required.');
-      }
-
       return _$GitDependencyFromJson(data);
     }
 

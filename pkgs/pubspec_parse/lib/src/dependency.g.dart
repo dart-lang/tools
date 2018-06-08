@@ -22,6 +22,8 @@ SdkDependency _$SdkDependencyFromJson(Map json) {
 
 GitDependency _$GitDependencyFromJson(Map json) {
   return $checkedNew('GitDependency', json, () {
+    $checkKeys(json,
+        requiredKeys: const ['url'], disallowNullValues: const ['url']);
     var val = new GitDependency(
         $checkedConvert(
             json, 'url', (v) => v == null ? null : _parseUri(v as String)),
