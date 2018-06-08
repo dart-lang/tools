@@ -1,6 +1,7 @@
 ## 1.6.7
 
 * Update SDK version to 2.0.0-dev.17.0.
+* Add a type argument to `MultiChannel`.
 
 ## 1.6.6
 

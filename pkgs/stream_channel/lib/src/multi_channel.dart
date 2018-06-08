@@ -41,24 +41,25 @@ import '../stream_channel.dart';
 ///
 /// Each virtual channel may be closed individually. When all of them are
 /// closed, the underlying [StreamSink] is closed automatically.
-abstract class MultiChannel implements StreamChannel {
+abstract class MultiChannel<T> implements StreamChannel<T> {
   /// The default input stream.
   ///
   /// This connects to the remote [sink].
-  Stream get stream;
+  Stream<T> get stream;
 
   /// The default output stream.
   ///
   /// This connects to the remote [stream]. If this is closed, the remote
   /// [stream] will close, but other virtual channels will remain open and new
   /// virtual channels may be opened.
-  StreamSink get sink;
+  StreamSink<T> get sink;
 
   /// Creates a new [MultiChannel] that sends and receives messages over
   /// [inner].
   ///
   /// The inner channel must take JSON-like objects.
-  factory MultiChannel(StreamChannel inner) => new _MultiChannel(inner);
+  factory MultiChannel(StreamChannel<dynamic> inner) =>
+      new _MultiChannel<T>(inner);
 
   /// Creates a new virtual channel.
   ///
@@ -71,31 +72,32 @@ abstract class MultiChannel implements StreamChannel {
   ///
   /// Throws an [ArgumentError] if a virtual channel already exists for [id].
   /// Throws a [StateError] if the underlying channel is closed.
-  VirtualChannel virtualChannel([id]);
+  VirtualChannel<T> virtualChannel([id]);
 }
 
 /// The implementation of [MultiChannel].
 ///
 /// This is private so that [VirtualChannel] can inherit from [MultiChannel]
 /// without having to implement all the private members.
-class _MultiChannel extends StreamChannelMixin implements MultiChannel {
+class _MultiChannel<T> extends StreamChannelMixin<T>
+    implements MultiChannel<T> {
   /// The inner channel over which all communication is conducted.
   ///
   /// This will be `null` if the underlying communication channel is closed.
-  StreamChannel _inner;
+  StreamChannel<dynamic> _inner;
 
   /// The subscription to [_inner.stream].
-  StreamSubscription _innerStreamSubscription;
+  StreamSubscription<dynamic> _innerStreamSubscription;
 
-  Stream get stream => _mainController.foreign.stream;
-  StreamSink get sink => _mainController.foreign.sink;
+  Stream<T> get stream => _mainController.foreign.stream;
+  StreamSink<T> get sink => _mainController.foreign.sink;
 
   /// The controller for this channel.
-  final _mainController = new StreamChannelController(sync: true);
+  final _mainController = new StreamChannelController<T>(sync: true);
 
   /// A map from input IDs to [StreamChannelController]s that should be used to
   /// communicate over those channels.
-  final _controllers = <int, StreamChannelController>{};
+  final _controllers = <int, StreamChannelController<T>>{};
 
   /// Input IDs of controllers in [_controllers] that we've received messages
   /// for but that have not yet had a local [virtualChannel] created.
@@ -164,7 +166,7 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
         onError: _mainController.local.sink.addError);
   }
 
-  VirtualChannel virtualChannel([id]) {
+  VirtualChannel<T> virtualChannel([id]) {
     var inputId;
     var outputId;
     if (id != null) {
@@ -189,7 +191,7 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
           this, inputId, new Stream.empty(), new NullStreamSink());
     }
 
-    StreamChannelController controller;
+    StreamChannelController<T> controller;
     if (_pendingIds.remove(inputId)) {
       // If we've already received messages for this channel, use the controller
       // where those messages are buffered.
@@ -244,9 +246,10 @@ class _MultiChannel extends StreamChannelMixin implements MultiChannel {
 /// This implements [MultiChannel] for convenience.
 /// [VirtualChannel.virtualChannel] is semantically identical to the parent's
 /// [MultiChannel.virtualChannel].
-class VirtualChannel extends StreamChannelMixin implements MultiChannel {
+class VirtualChannel<T> extends StreamChannelMixin<T>
+    implements MultiChannel<T> {
   /// The [MultiChannel] that created this.
-  final MultiChannel _parent;
+  final MultiChannel<T> _parent;
 
   /// The identifier for this channel.
   ///
@@ -255,10 +258,10 @@ class VirtualChannel extends StreamChannelMixin implements MultiChannel {
   /// except that it will be JSON-serializable.
   final id;
 
-  final Stream stream;
-  final StreamSink sink;
+  final Stream<T> stream;
+  final StreamSink<T> sink;
 
   VirtualChannel._(this._parent, this.id, this.stream, this.sink);
 
-  VirtualChannel virtualChannel([id]) => _parent.virtualChannel(id);
+  VirtualChannel<T> virtualChannel([id]) => _parent.virtualChannel(id);
 }

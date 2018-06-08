@@ -11,8 +11,8 @@ void main() {
   var channel2;
   setUp(() {
     controller = new StreamChannelController();
-    channel1 = new MultiChannel(controller.local);
-    channel2 = new MultiChannel(controller.foreign);
+    channel1 = new MultiChannel<int>(controller.local);
+    channel2 = new MultiChannel<int>(controller.foreign);
   });
 
   group("the default virtual channel", () {
@@ -20,15 +20,15 @@ void main() {
       var first = true;
       channel2.stream.listen(expectAsync1((message) {
         if (first) {
-          expect(message, equals("hello"));
+          expect(message, equals(1));
           first = false;
         } else {
-          expect(message, equals("world"));
+          expect(message, equals(2));
         }
       }, count: 2));
 
-      channel1.sink.add("hello");
-      channel1.sink.add("world");
+      channel1.sink.add(1);
+      channel1.sink.add(2);
     });
 
     test("closes the remote virtual channel when it closes", () {
@@ -95,10 +95,10 @@ void main() {
       var first = true;
       virtual2.stream.listen(expectAsync1((message) {
         if (first) {
-          expect(message, equals("hello"));
+          expect(message, equals(1));
           first = false;
         } else {
-          expect(message, equals("world"));
+          expect(message, equals(2));
         }
       }, count: 2));
 
@@ -109,8 +109,8 @@ void main() {
       }
       channel2.stream.listen(expectAsync1((_) {}, count: 0));
 
-      virtual1.sink.add("hello");
-      virtual1.sink.add("world");
+      virtual1.sink.add(1);
+      virtual1.sink.add(2);
     });
 
     test("closes the remote virtual channel when it closes", () {
@@ -174,12 +174,12 @@ void main() {
       expect(virtual1.id, equals(virtual3.id));
 
       virtual2.stream
-          .listen(expectAsync1((message) => expect(message, equals("hello"))));
-      virtual4.stream.listen(
-          expectAsync1((message) => expect(message, equals("goodbye"))));
+          .listen(expectAsync1((message) => expect(message, equals(1))));
+      virtual4.stream
+          .listen(expectAsync1((message) => expect(message, equals(2))));
 
-      virtual1.sink.add("hello");
-      virtual3.sink.add("goodbye");
+      virtual1.sink.add(1);
+      virtual3.sink.add(2);
     });
   });
 
@@ -195,10 +195,10 @@ void main() {
       var first = true;
       virtual1.stream.listen(expectAsync1((message) {
         if (first) {
-          expect(message, equals("hello"));
+          expect(message, equals(1));
           first = false;
         } else {
-          expect(message, equals("world"));
+          expect(message, equals(2));
         }
       }, count: 2));
 
@@ -209,8 +209,8 @@ void main() {
       }
       channel1.stream.listen(expectAsync1((_) {}, count: 0));
 
-      virtual2.sink.add("hello");
-      virtual2.sink.add("world");
+      virtual2.sink.add(1);
+      virtual2.sink.add(2);
     });
 
     test("closes the remote virtual channel when it closes", () {
@@ -273,14 +273,13 @@ void main() {
         () async {
       virtual1 = channel1.virtualChannel();
 
-      virtual1.sink.add("hello");
+      virtual1.sink.add(1);
       await pumpEventQueue();
 
-      virtual1.sink.add("world");
+      virtual1.sink.add(2);
       await pumpEventQueue();
 
-      expect(channel2.virtualChannel(virtual1.id).stream,
-          emitsInOrder(["hello", "world"]));
+      expect(channel2.virtualChannel(virtual1.id).stream, emitsInOrder([1, 2]));
     });
 
     test(
