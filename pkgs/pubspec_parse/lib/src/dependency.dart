@@ -4,13 +4,34 @@
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:yaml/yaml.dart';
 
 part 'dependency.g.dart';
 
 Map<String, Dependency> parseDeps(Map source) =>
     source?.map((k, v) {
       var key = k as String;
-      var value = _fromJson(v);
+      Dependency value;
+      try {
+        value = _fromJson(v);
+      } on CheckedFromJsonException catch (e) {
+        if (e.map is! YamlMap) {
+          // This is likely a "synthetic" map created from a String value
+          // Use `source` to throw this exception with an actual YamlMap and
+          // extract the associated error information.
+
+          var message = e.message;
+          var innerError = e.innerError;
+          // json_annotation should handle FormatException...
+          // https://github.com/dart-lang/json_serializable/issues/233
+          if (innerError is FormatException) {
+            message = innerError.message;
+          }
+          throw new CheckedFromJsonException(source, key, e.className, message);
+        }
+        rethrow;
+      }
+
       if (value == null) {
         throw new CheckedFromJsonException(
             source, key, 'Pubspec', 'Not a valid dependency value.');
@@ -141,11 +162,12 @@ class PathDependency extends Dependency {
   String get _info => 'path@$path';
 }
 
-@JsonSerializable(createToJson: false)
+@JsonSerializable(createToJson: false, disallowUnrecognizedKeys: true)
 class HostedDependency extends Dependency {
   @JsonKey(fromJson: _constraintFromString)
   final VersionConstraint version;
 
+  @JsonKey(disallowNullValue: true)
   final HostedDetails hosted;
 
   HostedDependency({VersionConstraint version, this.hosted})
@@ -157,7 +179,8 @@ class HostedDependency extends Dependency {
       data = {'version': data};
     }
 
-    if (data is Map && data.containsKey('version')) {
+    if (data is Map &&
+        (data.containsKey('version') || data.containsKey('hosted'))) {
       return _$HostedDependencyFromJson(data);
     }
 
@@ -168,23 +191,27 @@ class HostedDependency extends Dependency {
   String get _info => version.toString();
 }
 
-@JsonSerializable(createToJson: false, nullable: false)
+@JsonSerializable(createToJson: false, disallowUnrecognizedKeys: true)
 class HostedDetails {
+  @JsonKey(required: true, disallowNullValue: true)
   final String name;
 
-  @JsonKey(fromJson: _parseUri)
+  @JsonKey(fromJson: _parseUri, disallowNullValue: true)
   final Uri url;
 
-  HostedDetails(this.name, this.url) {
-    if (name == null) {
-      throw new ArgumentError.value(name, 'name', '"name" cannot be null');
-    }
-    if (url == null) {
-      throw new ArgumentError.value(url, 'url', '"url" cannot be null');
-    }
-  }
+  HostedDetails(this.name, this.url);
 
-  factory HostedDetails.fromJson(Map json) => _$HostedDetailsFromJson(json);
+  factory HostedDetails.fromJson(Object data) {
+    if (data is String) {
+      data = {'name': data};
+    }
+
+    if (data is Map) {
+      return _$HostedDetailsFromJson(data);
+    }
+
+    throw new ArgumentError.value(data, 'hosted', 'Must be a Map or String.');
+  }
 }
 
 VersionConstraint _constraintFromString(String input) =>

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 import 'test_utils.dart';
@@ -45,28 +46,35 @@ line 5, column 12: Expected only one key.
 }
 
 void _hostedDependency() {
-  test('HostedDepedency - null', () {
+  test('null', () {
     var dep = _dependency<HostedDependency>(null);
     expect(dep.version.toString(), 'any');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
-  test('HostedDepedency - string', () {
+  test('string version', () {
     var dep = _dependency<HostedDependency>('^1.0.0');
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
-  test('HostedDepedency - map', () {
+  test('bad string version', () {
+    _expectThrows('not a version', r'''
+line 4, column 10: Could not parse version "not a version". Unknown text at "not a version".
+  "dep": "not a version"
+         ^^^^^^^^^^^^^^^''');
+  });
+
+  test('map w/ just version', () {
     var dep = _dependency<HostedDependency>({'version': '^1.0.0'});
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
-  test('HostedDepedency - map', () {
+  test('map w/ version and hosted as Map', () {
     var dep = _dependency<HostedDependency>({
       'version': '^1.0.0',
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
@@ -75,6 +83,58 @@ void _hostedDependency() {
     expect(dep.hosted.name, 'hosted_name');
     expect(dep.hosted.url.toString(), 'hosted_url');
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
+  });
+
+  test('map w/ bad version value', () {
+    _expectThrows({
+      'version': 'not a version',
+      'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
+    }, r'''
+line 5, column 15: Unsupported value for `version`.
+   "version": "not a version",
+              ^^^^^^^^^^^^^^^''');
+  });
+
+  test('map w/ unsupported keys', () {
+    _expectThrows({
+      'version': '^1.0.0',
+      'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
+      'not_supported': null
+    }, r'''
+line 4, column 10: Unrecognized keys: [not_supported]; supported keys: [version, hosted]
+  "dep": {
+         ^^''');
+  });
+
+  test('map w/ version and hosted as String', () {
+    var dep = _dependency<HostedDependency>(
+        {'version': '^1.0.0', 'hosted': 'hosted_name'});
+    expect(dep.version.toString(), '^1.0.0');
+    expect(dep.hosted.name, 'hosted_name');
+    expect(dep.hosted.url, isNull);
+    expect(dep.toString(), 'HostedDependency: ^1.0.0');
+  });
+
+  test('map w/ hosted as String', () {
+    var dep = _dependency<HostedDependency>({'hosted': 'hosted_name'});
+    expect(dep.version, VersionConstraint.any);
+    expect(dep.hosted.name, 'hosted_name');
+    expect(dep.hosted.url, isNull);
+    expect(dep.toString(), 'HostedDependency: any');
+  });
+
+  test('map w/ null hosted should error', () {
+    _expectThrows({'hosted': null}, r'''
+line 5, column 14: These keys had `null` values, which is not allowed: [hosted]
+   "hosted": null
+             ^^^^^''');
+  });
+
+  test('map w/ null version is fine', () {
+    var dep = _dependency<HostedDependency>({'version': null});
+    expect(dep.version, VersionConstraint.any);
+    expect(dep.hosted, isNull);
+    expect(dep.toString(), 'HostedDependency: any');
   });
 }
 
