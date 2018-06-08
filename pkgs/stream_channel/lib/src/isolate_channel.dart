@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
-import 'package:stack_trace/stack_trace.dart';
 
 import '../stream_channel.dart';
 
@@ -66,7 +65,7 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
 
       streamCompleter.setError(
           new StateError('Unexpected Isolate response "$message".'),
-          new Trace.current());
+          StackTrace.current);
       sinkCompleter.setDestinationSink(new NullStreamSink<T>());
       subscription.cancel();
     });
