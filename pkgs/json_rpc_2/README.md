@@ -14,7 +14,11 @@ import "package:web_socket_channel/io.dart";
 
 main() async {
   var socket = IOWebSocketChannel.connect('ws://localhost:4321');
-  var server = new json_rpc.Server(socket);
+
+  // The socket is a StreamChannel<dynamic> because it might emit binary
+  // List<int>s, but JSON RPC 2 only works with Strings so we assert it only
+  // emits those by casting it.
+  var server = new json_rpc.Server(socket.cast<String>());
 
   // Any string may be used as a method name. JSON-RPC 2.0 methods are
   // case-sensitive.
