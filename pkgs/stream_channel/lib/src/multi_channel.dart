@@ -72,7 +72,7 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   ///
   /// Throws an [ArgumentError] if a virtual channel already exists for [id].
   /// Throws a [StateError] if the underlying channel is closed.
-  VirtualChannel<T> virtualChannel([id]);
+  VirtualChannel<T> virtualChannel([int id]);
 }
 
 /// The implementation of [MultiChannel].
@@ -166,15 +166,15 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
         onError: _mainController.local.sink.addError);
   }
 
-  VirtualChannel<T> virtualChannel([id]) {
-    var inputId;
-    var outputId;
+  VirtualChannel<T> virtualChannel([int id]) {
+    int inputId;
+    int outputId;
     if (id != null) {
       // Since the user is passing in an id, we're connected to a remote
       // VirtualChannel. This means messages they send over this channel will
       // have the original odd id, but our replies will have an even id.
       inputId = id;
-      outputId = (id as int) + 1;
+      outputId = id + 1;
     } else {
       // Since we're generating an id, we originated this VirtualChannel. This
       // means messages we send over this channel will have the original odd id,
@@ -256,7 +256,7 @@ class VirtualChannel<T> extends StreamChannelMixin<T>
   /// This can be sent across the [MultiChannel] to provide the remote endpoint
   /// a means to connect to this channel. Nothing about this is guaranteed
   /// except that it will be JSON-serializable.
-  final id;
+  final int id;
 
   final Stream<T> stream;
   final StreamSink<T> sink;

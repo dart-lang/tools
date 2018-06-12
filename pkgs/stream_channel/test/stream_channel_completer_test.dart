@@ -8,10 +8,10 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var completer;
-  var streamController;
-  var sinkController;
-  var innerChannel;
+  StreamChannelCompleter completer;
+  StreamController streamController;
+  StreamController sinkController;
+  StreamChannel innerChannel;
   setUp(() {
     completer = new StreamChannelCompleter();
     streamController = new StreamController();

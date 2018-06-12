@@ -9,10 +9,10 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var streamController;
-  var sinkController;
-  var disconnector;
-  var channel;
+  StreamController streamController;
+  StreamController sinkController;
+  Disconnector disconnector;
+  StreamChannel channel;
   setUp(() {
     streamController = new StreamController();
     sinkController = new StreamController();

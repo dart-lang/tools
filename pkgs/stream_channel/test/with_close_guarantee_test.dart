@@ -16,8 +16,8 @@ final _delaySinkTransformer =
     new StreamSinkTransformer.fromStreamTransformer(_delayTransformer);
 
 void main() {
-  var controller;
-  var channel;
+  StreamChannelController controller;
+  StreamChannel channel;
   setUp(() {
     controller = new StreamChannelController();
 
