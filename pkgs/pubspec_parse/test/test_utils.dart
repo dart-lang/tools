@@ -49,7 +49,7 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   }
 }
 
-Pubspec parse(Object content, {bool quietOnError: false}) {
+Pubspec parse(Object content, {bool quietOnError = false}) {
   quietOnError ??= false;
 
   var encoded = _encodeJson(content);
@@ -91,5 +91,5 @@ class FeatureMatcher<T> extends CustomMatcher {
       : super('`$name`', '`$name`', matcher);
 
   @override
-  featureValueOf(covariant T actual) => _feature(actual);
+  Object featureValueOf(covariant T actual) => _feature(actual);
 }
