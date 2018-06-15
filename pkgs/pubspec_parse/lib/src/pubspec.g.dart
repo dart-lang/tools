@@ -7,7 +7,7 @@
 part of 'pubspec.dart';
 
 // **************************************************************************
-// Generator: JsonSerializableGenerator
+// JsonSerializableGenerator
 // **************************************************************************
 
 Pubspec _$PubspecFromJson(Map json) {

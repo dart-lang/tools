@@ -7,7 +7,7 @@
 part of 'dependency.dart';
 
 // **************************************************************************
-// Generator: JsonSerializableGenerator
+// JsonSerializableGenerator
 // **************************************************************************
 
 SdkDependency _$SdkDependencyFromJson(Map json) {

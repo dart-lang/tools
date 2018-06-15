@@ -15,14 +15,13 @@ import 'pub_utils.dart';
 String _encodeJson(Object input) =>
     const JsonEncoder.withIndent(' ').convert(input);
 
-Matcher _throwsParsedYamlException(String prettyValue) => throwsA(allOf(
-    const isInstanceOf<ParsedYamlException>(),
-    new FeatureMatcher<ParsedYamlException>('formattedMessage', (e) {
+Matcher _throwsParsedYamlException(String prettyValue) =>
+    throwsA(const TypeMatcher<ParsedYamlException>().having((e) {
       var message = e.formattedMessage;
       printOnFailure("Actual error format:\nr'''\n$message'''");
       _printDebugParsedYamlException(e);
       return message;
-    }, prettyValue)));
+    }, 'formattedMessage', prettyValue));
 
 void _printDebugParsedYamlException(ParsedYamlException e) {
   var innerError = e.innerError;
@@ -82,14 +81,3 @@ Pubspec parse(Object content, {bool quietOnError = false}) {
 void expectParseThrows(Object content, String expectedError) => expect(
     () => parse(content, quietOnError: true),
     _throwsParsedYamlException(expectedError));
-
-// TODO(kevmoo) add this to pkg/matcher – is nice!
-class FeatureMatcher<T> extends CustomMatcher {
-  final dynamic Function(T value) _feature;
-
-  FeatureMatcher(String name, this._feature, matcher)
-      : super('`$name`', '`$name`', matcher);
-
-  @override
-  Object featureValueOf(covariant T actual) => _feature(actual);
-}
