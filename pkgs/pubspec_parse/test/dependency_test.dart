@@ -31,9 +31,16 @@ line 4, column 10: Not a valid dependency value.
 
     test('map with too many keys', () {
       _expectThrows({'path': 'a', 'git': 'b'}, r'''
-line 5, column 12: Expected only one key.
+line 5, column 12: A dependency may only have one source.
    "path": "a",
            ^^^''');
+    });
+
+    test('map with unsupported keys', () {
+      _expectThrows({'bob': 'a', 'jones': 'b'}, r'''
+line 6, column 4: Unsupported dependency key.
+   "jones": "b"
+   ^^^^^^^''');
     });
   });
 }
@@ -94,15 +101,15 @@ line 5, column 15: Unsupported value for `version`.
               ^^^^^^^^^^^^^^^''');
   });
 
-  test('map w/ unsupported keys', () {
+  test('map w/ extra keys should fail', () {
     _expectThrows({
       'version': '^1.0.0',
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
       'not_supported': null
     }, r'''
-line 4, column 10: Unrecognized keys: [not_supported]; supported keys: [version, hosted]
-  "dep": {
-         ^^''');
+line 10, column 4: Unsupported dependency key.
+   "not_supported": null
+   ^^^^^^^^^^^^^^^''');
   });
 
   test('map w/ version and hosted as String', () {
@@ -138,24 +145,38 @@ line 5, column 14: These keys had `null` values, which is not allowed: [hosted]
 }
 
 void _sdkDependency() {
-  test('SdkDependency without version', () {
+  test('without version', () {
     var dep = _dependency<SdkDependency>({'sdk': 'flutter'});
     expect(dep.sdk, 'flutter');
     expect(dep.version, isNull);
     expect(dep.toString(), 'SdkDependency: flutter');
   });
 
-  test('SdkDependency with version', () {
+  test('with version', () {
     var dep = _dependency<SdkDependency>(
         {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'});
     expect(dep.sdk, 'flutter');
     expect(dep.version.toString(), '>=1.2.3 <2.0.0');
     expect(dep.toString(), 'SdkDependency: flutter');
   });
+
+  test('null content', () {
+    _expectThrows({'sdk': null}, r'''
+line 5, column 11: These keys had `null` values, which is not allowed: [sdk]
+   "sdk": null
+          ^^^^^''');
+  });
+
+  test('number content', () {
+    _expectThrows({'sdk': 42}, r'''
+line 5, column 11: Unsupported value for `sdk`.
+   "sdk": 42
+          ^^^''');
+  });
 }
 
 void _gitDependency() {
-  test('GitDependency - string', () {
+  test('string', () {
     var dep = _dependency<GitDependency>({'git': 'url'});
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
@@ -163,7 +184,31 @@ void _gitDependency() {
     expect(dep.toString(), 'GitDependency: url@url');
   });
 
-  test('GitDependency - map', () {
+  test('string with version key is ignored', () {
+    // Regression test for https://github.com/dart-lang/pubspec_parse/issues/13
+    var dep = _dependency<GitDependency>({'git': 'url', 'version': '^1.2.3'});
+    expect(dep.url.toString(), 'url');
+    expect(dep.path, isNull);
+    expect(dep.ref, isNull);
+    expect(dep.toString(), 'GitDependency: url@url');
+  });
+
+  test('string with user@ URL', () {
+    var dep = _dependency<GitDependency>({'git': 'git@localhost:dep.git'});
+    expect(dep.url.toString(), 'ssh://git@localhost/dep.git');
+    expect(dep.path, isNull);
+    expect(dep.ref, isNull);
+    expect(dep.toString(), 'GitDependency: url@ssh://git@localhost/dep.git');
+  });
+
+  test('string with random extra key fails', () {
+    _expectThrows({'git': 'url', 'bob': '^1.2.3'}, r'''
+line 6, column 4: Unsupported dependency key.
+   "bob": "^1.2.3"
+   ^^^^^''');
+  });
+
+  test('map', () {
     var dep = _dependency<GitDependency>({
       'git': {'url': 'url', 'path': 'path', 'ref': 'ref'}
     });
@@ -175,7 +220,7 @@ void _gitDependency() {
 
   test('git - null content', () {
     _expectThrows({'git': null}, r'''
-line 5, column 11: Cannot be null.
+line 5, column 11: Must be a String or a Map.
    "git": null
           ^^^^^''');
   });
@@ -214,20 +259,34 @@ line 6, column 12: Unsupported value for `url`.
 }
 
 void _pathDependency() {
-  test('PathDependency', () {
+  test('valid', () {
     var dep = _dependency<PathDependency>({'path': '../path'});
     expect(dep.path, '../path');
     expect(dep.toString(), 'PathDependency: path@../path');
   });
 
-  test('path - null content', () {
+  test('valid with version key is ignored', () {
+    var dep =
+        _dependency<PathDependency>({'path': '../path', 'version': '^1.2.3'});
+    expect(dep.path, '../path');
+    expect(dep.toString(), 'PathDependency: path@../path');
+  });
+
+  test('valid with random extra key fails', () {
+    _expectThrows({'path': '../path', 'bob': '^1.2.3'}, r'''
+line 6, column 4: Unsupported dependency key.
+   "bob": "^1.2.3"
+   ^^^^^''');
+  });
+
+  test('null content', () {
     _expectThrows({'path': null}, r'''
-line 5, column 12: Cannot be null.
+line 5, column 12: Must be a String.
    "path": null
            ^^^^^''');
   });
 
-  test('path - int content', () {
+  test('int content', () {
     _expectThrows({'path': 42}, r'''
 line 5, column 12: Must be a String.
    "path": 42

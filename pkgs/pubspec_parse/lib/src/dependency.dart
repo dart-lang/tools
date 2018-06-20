@@ -6,6 +6,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
+import 'errors.dart';
+
 part 'dependency.g.dart';
 
 Map<String, Dependency> parseDeps(Map source) =>
@@ -40,49 +42,55 @@ Map<String, Dependency> parseDeps(Map source) =>
     }) ??
     {};
 
+const _sourceKeys = const ['sdk', 'git', 'path', 'hosted'];
+
 /// Returns `null` if the data could not be parsed.
 Dependency _fromJson(dynamic data) {
-  var value =
-      SdkDependency.tryFromData(data) ?? HostedDependency.tryFromData(data);
-
-  if (value != null) {
-    return value;
+  if (data is String || data == null) {
+    return _$HostedDependencyFromJson({'version': data});
   }
 
   if (data is Map) {
-    try {
-      return _fromMap(data);
-    } on ArgumentError catch (e) {
-      throw new CheckedFromJsonException(
-          data, e.name, 'Dependency', e.message.toString());
+    var matchedKeys =
+        data.keys.cast<String>().where((key) => key != 'version').toList();
+
+    if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
+      return _$HostedDependencyFromJson(data);
+    } else {
+      var weirdKey = matchedKeys.firstWhere((k) => !_sourceKeys.contains(k),
+          orElse: () => null);
+
+      if (weirdKey != null) {
+        throw new InvalidKeyException(
+            data, weirdKey, 'Unsupported dependency key.');
+      }
+      if (matchedKeys.length > 1) {
+        throw new CheckedFromJsonException(data, matchedKeys[1], 'Dependency',
+            'A dependency may only have one source.');
+      }
+
+      var key = matchedKeys.single;
+
+      try {
+        switch (key) {
+          case 'git':
+            return new GitDependency.fromData(data[key]);
+          case 'path':
+            return new PathDependency.fromData(data[key]);
+          case 'sdk':
+            return _$SdkDependencyFromJson(data);
+          case 'hosted':
+            return _$HostedDependencyFromJson(data);
+        }
+        throw new StateError('There is a bug in pubspec_parse.');
+      } on ArgumentError catch (e) {
+        throw new CheckedFromJsonException(
+            data, e.name, 'Dependency', e.message.toString());
+      }
     }
   }
 
-  return null;
-}
-
-Dependency _fromMap(Map data) {
-  assert(data.entries.isNotEmpty);
-  if (data.entries.length > 1) {
-    throw new CheckedFromJsonException(data, data.keys.skip(1).first as String,
-        'Dependency', 'Expected only one key.');
-  }
-
-  var entry = data.entries.single;
-  var key = entry.key as String;
-
-  if (entry.value == null) {
-    throw new CheckedFromJsonException(
-        data, key, 'Dependency', 'Cannot be null.');
-  }
-
-  switch (key) {
-    case 'path':
-      return new PathDependency.fromData(entry.value);
-    case 'git':
-      return new GitDependency.fromData(entry.value);
-  }
-
+  // Not a String or a Map – return null so parent logic can throw proper error
   return null;
 }
 
@@ -97,18 +105,12 @@ abstract class Dependency {
 
 @JsonSerializable(createToJson: false)
 class SdkDependency extends Dependency {
+  @JsonKey(nullable: false, disallowNullValue: true, required: true)
   final String sdk;
   @JsonKey(fromJson: _constraintFromString)
   final VersionConstraint version;
 
   SdkDependency(this.sdk, {this.version}) : super._();
-
-  static SdkDependency tryFromData(Object data) {
-    if (data is Map && data.containsKey('sdk')) {
-      return _$SdkDependencyFromJson(data);
-    }
-    return null;
-  }
 
   @override
   String get _info => sdk;
@@ -116,7 +118,7 @@ class SdkDependency extends Dependency {
 
 @JsonSerializable(createToJson: false)
 class GitDependency extends Dependency {
-  @JsonKey(fromJson: _parseUri, required: true, disallowNullValue: true)
+  @JsonKey(fromJson: parseGitUri, required: true, disallowNullValue: true)
   final Uri url;
   final String ref;
   final String path;
@@ -139,7 +141,38 @@ class GitDependency extends Dependency {
   String get _info => 'url@$url';
 }
 
-Uri _parseUri(String value) => Uri.parse(value);
+Uri parseGitUri(String value) => _tryParseScpUri(value) ?? Uri.parse(value);
+
+/// Supports URIs like `[user@]host.xz:path/to/repo.git/`
+/// See https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a
+Uri _tryParseScpUri(String value) {
+  var colonIndex = value.indexOf(':');
+
+  if (colonIndex < 0) {
+    return null;
+  } else if (colonIndex == value.indexOf('://')) {
+    // If the first colon is part of a scheme, it's not an scp-like URI
+    return null;
+  }
+  var slashIndex = value.indexOf('/');
+
+  if (slashIndex >= 0 && slashIndex < colonIndex) {
+    // Per docs: This syntax is only recognized if there are no slashes before
+    // the first colon. This helps differentiate a local path that contains a
+    // colon. For example the local path foo:bar could be specified as an
+    // absolute path or ./foo:bar to avoid being misinterpreted as an ssh url.
+    return null;
+  }
+
+  var atIndex = value.indexOf('@');
+  if (colonIndex > atIndex) {
+    var user = atIndex >= 0 ? value.substring(0, atIndex) : null;
+    var host = value.substring(atIndex + 1, colonIndex);
+    var path = value.substring(colonIndex + 1);
+    return new Uri(scheme: 'ssh', userInfo: user, host: host, path: path);
+  }
+  return null;
+}
 
 class PathDependency extends Dependency {
   final String path;
@@ -169,22 +202,6 @@ class HostedDependency extends Dependency {
       : this.version = version ?? VersionConstraint.any,
         super._();
 
-  static HostedDependency tryFromData(Object data) {
-    if (data == null || data is String) {
-      data = {'version': data};
-    }
-
-    if (data is Map) {
-      if (data.isEmpty ||
-          data.containsKey('version') ||
-          data.containsKey('hosted')) {
-        return _$HostedDependencyFromJson(data);
-      }
-    }
-
-    return null;
-  }
-
   @override
   String get _info => version.toString();
 }
@@ -194,7 +211,7 @@ class HostedDetails {
   @JsonKey(required: true, disallowNullValue: true)
   final String name;
 
-  @JsonKey(fromJson: _parseUri, disallowNullValue: true)
+  @JsonKey(fromJson: parseGitUri, disallowNullValue: true)
   final Uri url;
 
   HostedDetails(this.name, this.url);
