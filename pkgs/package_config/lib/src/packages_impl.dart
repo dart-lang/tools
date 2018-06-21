@@ -23,7 +23,7 @@ class NoPackages implements Packages {
         packageUri, "packageUri", 'No package named "$packageName"');
   }
 
-  Iterable<String> get packages => new Iterable<String>.generate(0);
+  Iterable<String> get packages => new Iterable<String>.empty();
 
   Map<String, Uri> asMap() => const <String, Uri>{};
 }
@@ -34,7 +34,7 @@ class NoPackages implements Packages {
 /// member
 abstract class PackagesBase implements Packages {
   Uri resolve(Uri packageUri, {Uri notFound(Uri packageUri)}) {
-    packageUri = _normalizePath(packageUri);
+    packageUri = packageUri.normalizePath();
     String packageName = checkValidPackageUri(packageUri);
     Uri packageBase = getBase(packageName);
     if (packageBase == null) {
@@ -51,9 +51,6 @@ abstract class PackagesBase implements Packages {
   /// Returns `null` if no package exists with that name, and that can be
   /// determined.
   Uri getBase(String packageName);
-
-  // TODO: inline to uri.normalizePath() when we move to 1.11
-  static Uri _normalizePath(Uri uri) => new Uri().resolveUri(uri);
 }
 
 /// A [Packages] implementation based on an existing map.
