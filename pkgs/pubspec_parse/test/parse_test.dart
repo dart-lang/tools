@@ -153,9 +153,9 @@ line 4, column 10: `42` is not a String.
          ^^^''');
     });
 
-    test('invalid version', () {
+    test('version', () {
       expectParseThrows({'name': 'sample', 'version': 'invalid'}, r'''
-line 3, column 13: Unsupported value for `version`.
+line 3, column 13: Could not parse "invalid".
  "version": "invalid"
             ^^^^^^^^^''');
     });

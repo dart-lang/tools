@@ -96,7 +96,7 @@ line 4, column 10: Could not parse version "not a version". Unknown text at "not
       'version': 'not a version',
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
     }, r'''
-line 5, column 15: Unsupported value for `version`.
+line 5, column 15: Could not parse version "not a version". Unknown text at "not a version".
    "version": "not a version",
               ^^^^^^^^^^^^^^^''');
   });
