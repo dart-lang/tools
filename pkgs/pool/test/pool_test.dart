@@ -55,7 +55,7 @@ void main() {
     test("can be called freely up to the limit", () {
       var pool = new Pool(50);
       for (var i = 0; i < 50; i++) {
-        pool.withResource(expectAsync(() => new Completer().future));
+        pool.withResource(expectAsync0(() => new Completer().future));
       }
     });
 
@@ -63,7 +63,7 @@ void main() {
       new FakeAsync().run((async) {
         var pool = new Pool(50);
         for (var i = 0; i < 50; i++) {
-          pool.withResource(expectAsync(() => new Completer().future));
+          pool.withResource(expectAsync0(() => new Completer().future));
         }
         pool.withResource(expectNoAsync());
 
@@ -75,7 +75,7 @@ void main() {
       new FakeAsync().run((async) {
         var pool = new Pool(50);
         for (var i = 0; i < 49; i++) {
-          pool.withResource(expectAsync(() => new Completer().future));
+          pool.withResource(expectAsync0(() => new Completer().future));
         }
 
         var completer = new Completer();
@@ -100,7 +100,7 @@ void main() {
     // Regression test for #3.
     test("can be called immediately before close()", () async {
       var pool = new Pool(1);
-      pool.withResource(expectAsync(() {}));
+      pool.withResource(expectAsync0(() {}));
       await pool.close();
     });
   });
@@ -160,7 +160,7 @@ void main() {
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
-        expect(pool.request(), throwsA(new isInstanceOf<TimeoutException>()));
+        expect(pool.request(), throwsA(new TypeMatcher<TimeoutException>()));
 
         async.elapse(new Duration(seconds: 6));
       });
@@ -270,7 +270,7 @@ void main() {
         var innerZone = Zone.current;
         expect(innerZone, isNot(equals(outerZone)));
 
-        resource.allowRelease(expectAsync(() {
+        resource.allowRelease(expectAsync0(() {
           expect(Zone.current, equals(innerZone));
         }));
       });
@@ -450,7 +450,7 @@ Function expectNoAsync() {
 ///
 /// This should only be called within a [FakeAsync.run] zone.
 Matcher get doesNotComplete => predicate((future) {
-      expect(future, new isInstanceOf<Future>());
+      expect(future, new TypeMatcher<Future>());
 
       var stack = new Trace.current(1);
       future.then((_) => registerException(
