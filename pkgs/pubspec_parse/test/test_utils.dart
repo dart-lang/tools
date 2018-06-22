@@ -89,6 +89,10 @@ Pubspec parse(Object content,
   }
 }
 
-void expectParseThrows(Object content, String expectedError) => expect(
-    () => parse(content, quietOnError: true),
-    _throwsParsedYamlException(expectedError));
+void expectParseThrows(
+  Object content,
+  String expectedError, {
+  bool skipTryPub = false,
+}) =>
+    expect(() => parse(content, quietOnError: true, skipTryPub: skipTryPub),
+        _throwsParsedYamlException(expectedError));

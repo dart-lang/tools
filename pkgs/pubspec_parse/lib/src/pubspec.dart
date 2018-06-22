@@ -14,7 +14,6 @@ part 'pubspec.g.dart';
 @JsonSerializable()
 class Pubspec {
   // TODO: executables
-  // TODO: publish_to
 
   final String name;
 
@@ -23,6 +22,15 @@ class Pubspec {
 
   final String description;
   final String homepage;
+
+  /// Specifies where to publish this package.
+  ///
+  /// Accepted values: `null`, `'none'` or an `http` or `https` URL.
+  ///
+  /// If not specified, the pub client defaults to `https://pub.dartlang.org`.
+  ///
+  /// [More information](https://www.dartlang.org/tools/pub/pubspec#publish_to).
+  final String publishTo;
 
   /// If there is exactly 1 value in [authors], returns it.
   ///
@@ -56,6 +64,7 @@ class Pubspec {
   Pubspec(
     this.name, {
     this.version,
+    this.publishTo,
     String author,
     List<String> authors,
     Map<String, VersionConstraint> environment,
@@ -72,6 +81,17 @@ class Pubspec {
         dependencyOverrides = dependencyOverrides ?? const {} {
     if (name == null || name.isEmpty) {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
+    }
+
+    if (publishTo != null && publishTo != 'none') {
+      try {
+        final targetUri = Uri.parse(publishTo);
+        if (!(targetUri.isScheme('http') || targetUri.isScheme('https'))) {
+          throw const FormatException('must be an http or https URL.');
+        }
+      } on FormatException catch (e) {
+        throw ArgumentError.value(publishTo, 'publishTo', e.message);
+      }
     }
   }
 

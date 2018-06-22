@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Add support for `publish_to` field.
+
 ## 0.1.2+3
 
 - Support the latest version of `package:json_annotation`.

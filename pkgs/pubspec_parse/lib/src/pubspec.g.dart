@@ -11,6 +11,7 @@ Pubspec _$PubspecFromJson(Map json) {
     final val = Pubspec($checkedConvert(json, 'name', (v) => v as String),
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _versionFromString(v as String)),
+        publishTo: $checkedConvert(json, 'publish_to', (v) => v as String),
         author: $checkedConvert(json, 'author', (v) => v as String),
         authors: $checkedConvert(json, 'authors',
             (v) => (v as List)?.map((e) => e as String)?.toList()),
@@ -28,6 +29,7 @@ Pubspec _$PubspecFromJson(Map json) {
             json, 'dependency_overrides', (v) => parseDeps(v as Map)));
     return val;
   }, fieldKeyMap: const {
+    'publishTo': 'publish_to',
     'devDependencies': 'dev_dependencies',
     'dependencyOverrides': 'dependency_overrides'
   });

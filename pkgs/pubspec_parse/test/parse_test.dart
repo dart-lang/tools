@@ -12,6 +12,7 @@ void main() {
     final value = parse({'name': 'sample'});
     expect(value.name, 'sample');
     expect(value.version, isNull);
+    expect(value.publishTo, isNull);
     expect(value.description, isNull);
     expect(value.homepage, isNull);
     // ignore: deprecated_member_use
@@ -30,6 +31,7 @@ void main() {
     final value = parse({
       'name': 'sample',
       'version': version.toString(),
+      'publish_to': 'none',
       'author': 'name@example.com',
       'environment': {'sdk': sdkConstraint.toString()},
       'description': 'description',
@@ -38,6 +40,7 @@ void main() {
     });
     expect(value.name, 'sample');
     expect(value.version, version);
+    expect(value.publishTo, 'none');
     expect(value.description, 'description');
     expect(value.homepage, 'homepage');
     // ignore: deprecated_member_use
@@ -59,6 +62,47 @@ void main() {
     expect(value.name, 'sample');
     expect(value.environment, hasLength(1));
     expect(value.environment, containsPair('sdk', isNull));
+  });
+
+  group('publish_to', () {
+    for (var entry in {
+      42: r'''
+line 3, column 16: Unsupported value for `publish_to`.
+ "publish_to": 42
+               ^^^''',
+      '##not a uri!': r'''
+line 3, column 16: must be an http or https URL.
+ "publish_to": "##not a uri!"
+               ^^^^^^^^^^^^^^''',
+      '/cool/beans': r'''
+line 3, column 16: must be an http or https URL.
+ "publish_to": "/cool/beans"
+               ^^^^^^^^^^^^^''',
+      'file:///Users/kevmoo/': r'''
+line 3, column 16: must be an http or https URL.
+ "publish_to": "file:///Users/kevmoo/"
+               ^^^^^^^^^^^^^^^^^^^^^^^'''
+    }.entries) {
+      test('cannot be `${entry.key}`', () {
+        expectParseThrows(
+          {'name': 'sample', 'publish_to': entry.key},
+          entry.value,
+          skipTryPub: true,
+        );
+      });
+    }
+
+    for (var entry in {
+      null: null,
+      'http': 'http://example.com',
+      'https': 'https://example.com',
+      'none': 'none'
+    }.entries) {
+      test('can be ${entry.key}', () {
+        final value = parse({'name': 'sample', 'publish_to': entry.value});
+        expect(value.publishTo, entry.value);
+      });
+    }
   });
 
   group('author, authors', () {
