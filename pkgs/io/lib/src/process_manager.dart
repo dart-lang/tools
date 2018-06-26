@@ -71,7 +71,7 @@ abstract class ProcessManager {
     Map<String, String> environment,
     bool includeParentEnvironment: true,
     bool runInShell: false,
-    io.ProcessStartMode mode: io.ProcessStartMode.NORMAL,
+    io.ProcessStartMode mode: io.ProcessStartMode.normal,
   }) async {
     final process = io.Process.start(
       executable,
@@ -99,7 +99,7 @@ abstract class ProcessManager {
     Map<String, String> environment,
     bool includeParentEnvironment: true,
     bool runInShell: false,
-    io.ProcessStartMode mode: io.ProcessStartMode.NORMAL,
+    io.ProcessStartMode mode: io.ProcessStartMode.normal,
   }) async {
     final process = io.Process.start(
       executable,
@@ -130,7 +130,7 @@ abstract class ProcessManager {
     Map<String, String> environment,
     bool includeParentEnvironment: true,
     bool runInShell: false,
-    io.ProcessStartMode mode: io.ProcessStartMode.NORMAL,
+    io.ProcessStartMode mode: io.ProcessStartMode.normal,
   }) async {
     return io.Process.start(
       executable,
@@ -159,7 +159,7 @@ class Spawn implements io.Process {
   void _onClosed() {}
 
   @override
-  bool kill([io.ProcessSignal signal = io.ProcessSignal.SIGTERM]) =>
+  bool kill([io.ProcessSignal signal = io.ProcessSignal.sigterm]) =>
       _delegate.kill(signal);
 
   @override

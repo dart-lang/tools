@@ -19,7 +19,7 @@ void main() {
 
   test('should allow a single subscriber', () async {
     final logs = <String>[];
-    final sub = sharedStdIn.transform(UTF8.decoder).listen(logs.add);
+    final sub = sharedStdIn.transform(utf8.decoder).listen(logs.add);
     fakeStdIn.add('Hello World');
     await sub.cancel();
     expect(logs, ['Hello World']);
@@ -27,7 +27,7 @@ void main() {
 
   test('should allow multiple subscribers', () async {
     final logs = <String>[];
-    final asUtf8 = sharedStdIn.transform(UTF8.decoder);
+    final asUtf8 = sharedStdIn.transform(utf8.decoder);
     var sub = asUtf8.listen(logs.add);
     fakeStdIn.add('Hello World');
     await sub.cancel();

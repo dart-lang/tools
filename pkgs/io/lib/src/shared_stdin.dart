@@ -36,7 +36,7 @@ class SharedStdIn extends Stream<List<int>> {
   /// Returns a future that completes with the next line.
   ///
   /// This is similar to the standard [Stdin.readLineSync], but asynchronous.
-  Future<String> nextLine({Encoding encoding: SYSTEM_ENCODING}) {
+  Future<String> nextLine({Encoding encoding: systemEncoding}) {
     return lines(encoding: encoding).first;
   }
 
@@ -51,8 +51,8 @@ class SharedStdIn extends Stream<List<int>> {
   /// ```
   ///
   /// ... but asynchronous.
-  Stream<String> lines({Encoding encoding: SYSTEM_ENCODING}) {
-    return transform(UTF8.decoder).transform(const LineSplitter());
+  Stream<String> lines({Encoding encoding: systemEncoding}) {
+    return transform(utf8.decoder).transform(const LineSplitter());
   }
 
   void _onInput(List<int> event) => _getCurrent().add(event);

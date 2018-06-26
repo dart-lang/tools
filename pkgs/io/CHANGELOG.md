@@ -1,3 +1,7 @@
+## 0.3.3
+
+* Updates for Dart 2 constants. Require at least Dart `2.0.0-dev.54`.
+
 ## 0.3.2+1
 
 * `ansi.dart`

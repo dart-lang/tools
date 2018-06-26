@@ -67,6 +67,6 @@ FutureOr<bool> isExecutable(
 }
 
 bool _isExecutable(FileStat stat) =>
-    stat.type == FileSystemEntityType.FILE &&
+    stat.type == FileSystemEntityType.file &&
     _FilePermissionRole.values.any(
         (role) => _hasPermission(stat, _FilePermission.execute, role: role));

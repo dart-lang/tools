@@ -35,10 +35,10 @@ void main() {
       stderrLog = <String>[];
 
       final stdoutController = new StreamController<List<int>>(sync: true);
-      stdoutController.stream.map(UTF8.decode).listen(stdoutLog.add);
+      stdoutController.stream.map(utf8.decode).listen(stdoutLog.add);
       final stdout = new IOSink(stdoutController);
       final stderrController = new StreamController<List<int>>(sync: true);
-      stderrController.stream.map(UTF8.decode).listen(stderrLog.add);
+      stderrController.stream.map(utf8.decode).listen(stderrLog.add);
       final stderr = new IOSink(stderrController);
 
       processManager = new ProcessManager(
@@ -82,7 +82,7 @@ void main() {
           'dart',
           [p.join('test', '_files', 'stdout_hello.dart')],
         );
-        expect(await spawn.stdout.transform(UTF8.decoder).first, 'Hello');
+        expect(await spawn.stdout.transform(utf8.decoder).first, 'Hello');
       });
 
       test('.stderr is readable', () async {
@@ -90,7 +90,7 @@ void main() {
           'dart',
           [p.join('test', '_files', 'stderr_hello.dart')],
         );
-        expect(await spawn.stderr.transform(UTF8.decoder).first, 'Hello');
+        expect(await spawn.stderr.transform(utf8.decoder).first, 'Hello');
       });
     });
   });
