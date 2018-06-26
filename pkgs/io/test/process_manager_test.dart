@@ -19,7 +19,7 @@ void main() {
   List<String> stderrLog;
 
   test('spawn functions should match the type definition of Process.start', () {
-    final isStartProcess = const isInstanceOf<StartProcess>();
+    final isStartProcess = const TypeMatcher<StartProcess>();
     expect(Process.start, isStartProcess);
     final manager = new ProcessManager();
     expect(manager.spawn, isStartProcess);
