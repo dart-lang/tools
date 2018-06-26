@@ -8,12 +8,12 @@ import 'package:csv/csv.dart';
 
 void main() {
   var csv = new CsvCodec(eol: "\n");
-  var data = csv.decode(new File("data.csv").readAsStringSync());
+  var data = csv.decoder.convert(new File("data.csv").readAsStringSync());
 
   // Remove comments and empty lines.
   data.removeWhere((row) => row.length < 3);
 
-  var file = new File("lib/src/generated.dart").openSync(mode: FileMode.WRITE);
+  var file = new File("lib/src/generated.dart").openSync(mode: FileMode.write);
   file.writeStringSync("""
     // Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
     // for details. All rights reserved. Use of this source code is governed by a
