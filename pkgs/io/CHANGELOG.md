@@ -2,6 +2,9 @@
 
 * Updates for Dart 2 constants. Require at least Dart `2.0.0-dev.54`.
 
+* Fix the type of `StartProcess` typedef to match `Process.start` from
+  `dart:io`.
+
 ## 0.3.2+1
 
 * `ansi.dart`

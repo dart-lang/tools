@@ -14,7 +14,7 @@ import 'shared_stdin.dart';
 /// Useful for taking different implementations of this base functionality.
 typedef Future<io.Process> StartProcess(
   String executable,
-  Iterable<String> arguments, {
+  List<String> arguments, {
   String workingDirectory,
   Map<String, String> environment,
   bool includeParentEnvironment,
