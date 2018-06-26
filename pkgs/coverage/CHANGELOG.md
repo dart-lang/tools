@@ -1,3 +1,8 @@
+## 0.12.1 - 2018-06-26
+
+ * Minor type, dartfmt fixes.
+ * Require package:args >= 1.4.0.
+
 ## 0.12.0 - 2018-06-26
 
  * BREAKING CHANGE: This version requires Dart SDK 2.0.0-dev.64.1 or later.
