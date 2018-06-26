@@ -99,8 +99,7 @@ Environment parseArgs(List<String> arguments) {
   parser.addOption('in', abbr: 'i', help: 'input(s): may be file or directory');
   parser.addOption('out',
       abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout');
-  parser.addOption('report-on',
-      allowMultiple: true,
+  parser.addMultiOption('report-on',
       help: 'which directories or files to report coverage on');
   parser.addOption('workers',
       abbr: 'j', defaultsTo: '1', help: 'number of workers');

@@ -81,8 +81,8 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
     VMServiceClient service, VMSourceReport report) async {
   var scriptRefs = report.ranges.map((r) => r.script).toSet();
   var scripts = <Uri, VMScript>{};
-  for (var script in await Future
-      .wait<VMScript>(scriptRefs.map((ref) => ref.load()).toList())) {
+  for (var script in await Future.wait<VMScript>(
+      scriptRefs.map((ref) => ref.load()).toList())) {
     scripts[script.uri] = script;
   }
 
