@@ -80,7 +80,7 @@ class Resolver {
   String resolveSymbolicLinks(String path) {
     var normalizedPath = p.normalize(path);
     var type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
-    if (type == FileSystemEntityType.NOT_FOUND) return null;
+    if (type == FileSystemEntityType.notFound) return null;
     return new File(normalizedPath).resolveSymbolicLinksSync();
   }
 

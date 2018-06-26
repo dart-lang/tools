@@ -59,11 +59,11 @@ Future<int> getOpenPort() async {
   ServerSocket socket;
 
   try {
-    socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
   } catch (_) {
     // try again v/ V6 only. Slight possibility that V4 is disabled
-    socket = await ServerSocket.bind(InternetAddress.LOOPBACK_IP_V6, 0,
-        v6Only: true);
+    socket =
+        await ServerSocket.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
   }
 
   try {
