@@ -29,10 +29,10 @@ void main() {
     expect(jsonResult.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(jsonResult, containsPair('type', 'CodeCoverage'));
 
-    List<Map<String, dynamic>> coverage = jsonResult['coverage'];
+    List coverage = jsonResult['coverage'];
     expect(coverage, isNotEmpty);
 
-    var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
+    var sources = coverage.fold({}, (Map map, value) {
       String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
@@ -50,7 +50,7 @@ void main() {
   test('createHitmap', () async {
     var resultString = await _getCoverageResult();
     Map<String, dynamic> jsonResult = json.decode(resultString);
-    List<Map<String, dynamic>> coverage = jsonResult['coverage'];
+    List coverage = jsonResult['coverage'];
     var hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 

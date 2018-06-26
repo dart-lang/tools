@@ -1,3 +1,7 @@
+## Unreleased changes
+
+ * Strong mode fixes as of Dart SDK 2.0.0-dev.64.1.
+
 ## 0.11.0 - 2018-04-12
 
  * BREAKING CHANGE: This version requires Dart SDK 2.0.0-dev.30 or later.
