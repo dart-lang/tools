@@ -8,7 +8,9 @@ import 'dart:io';
 
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
-Map<String, Map<int, int>> createHitmap(List<Map> jsonResult) {
+///
+/// `jsonResult` is expected to be a List<Map<String, dynamic>>.
+Map<String, Map<int, int>> createHitmap(List jsonResult) {
   // Map of source file to map of line to hit count for that line.
   var globalHitMap = <String, Map<int, int>>{};
 
@@ -73,7 +75,7 @@ Future<Map> parseCoverage(Iterable<File> files, int _) async {
   var globalHitmap = <String, Map<int, int>>{};
   for (var file in files) {
     String contents = file.readAsStringSync();
-    List<Map<String, dynamic>> jsonResult = json.decode(contents)['coverage'];
+    List jsonResult = json.decode(contents)['coverage'];
     mergeHitmaps(createHitmap(jsonResult), globalHitmap);
   }
   return globalHitmap;
