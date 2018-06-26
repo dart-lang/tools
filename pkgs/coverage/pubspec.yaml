@@ -1,10 +1,10 @@
 name: coverage
-version: 0.11.0
+version: 0.12.0
 author: Dart Team <misc@dartlang.org>
 description: Coverage data manipulation and formatting
 homepage: https://github.com/dart-lang/coverage
 environment:
-  sdk: '>=2.0.0-dev.30 <2.0.0'
+  sdk: '>=2.0.0-dev.64.1 <2.0.0'
 dependencies:
   args: '>=1.0.0 <2.0.0'
   logging: '>=0.9.0 <0.12.0'
