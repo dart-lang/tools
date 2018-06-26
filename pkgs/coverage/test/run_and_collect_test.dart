@@ -25,7 +25,7 @@ void main() {
     List<Map> coverage = json['coverage'];
     expect(coverage, isNotEmpty);
 
-    var sources = coverage.fold(<String, dynamic>{}, (Map map, Map value) {
+    var sources = coverage.fold({}, (Map map, value) {
       String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
@@ -48,7 +48,7 @@ void main() {
       11: 1,
       13: 0,
       17: 1,
-      18: 2,
+      18: 1,
       20: 0,
       27: 1,
       29: 1,
