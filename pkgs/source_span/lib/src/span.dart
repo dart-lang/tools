@@ -8,22 +8,22 @@ import 'span_mixin.dart';
 /// A class that describes a segment of source text.
 abstract class SourceSpan implements Comparable<SourceSpan> {
   /// The start location of this span.
-  final SourceLocation start;
+  SourceLocation get start;
 
   /// The end location of this span, exclusive.
-  final SourceLocation end;
+  SourceLocation get end;
 
   /// The source text for this span.
-  final String text;
+  String get text;
 
   /// The URL of the source (typically a file) of this span.
   ///
   /// This may be null, indicating that the source URL is unknown or
   /// unavailable.
-  final Uri sourceUrl;
+  Uri get sourceUrl;
 
   /// The length of this span, in characters.
-  final int length;
+  int get length;
 
   /// Creates a new span from [start] to [end] (exclusive) containing [text].
   ///
