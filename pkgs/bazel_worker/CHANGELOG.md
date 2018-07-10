@@ -1,3 +1,7 @@
+## 0.1.11
+
+* Added support for protobuf 0.9.0.
+
 ## 0.1.10
 
 * Update the SDK dependency to 2.0.0-dev.17.0.
