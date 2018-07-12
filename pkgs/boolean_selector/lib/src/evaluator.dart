@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:collection/collection.dart';
-
 import 'ast.dart';
 import 'visitor.dart';
 
@@ -17,7 +15,7 @@ class Evaluator implements Visitor<bool> {
 
   Evaluator(semantics)
       : _semantics = semantics is Iterable
-            ? DelegatingIterable.typed(semantics.toSet()).contains
+            ? semantics.toSet().contains
             : semantics as _Semantics;
 
   bool visitVariable(VariableNode node) => _semantics(node.name);

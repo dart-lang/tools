@@ -1,17 +1,18 @@
 language: dart
 sudo: false
 dart:
-  - stable
+  #- stable
   - dev
 dart_task:
   - test: -p vm
     xvfb: false
-  - test: -p firefox
+  # Set concurrency to 1 to avoid flakes on Travis
+  - test: -p firefox -j 1
   - dartanalyzer
 
 matrix:
   include:
-  - dart: stable
+  - dart: dev
     dart_task: dartfmt
 
 # Only building master means that we don't run two builds for each pull request.

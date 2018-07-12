@@ -8,16 +8,16 @@ import 'package:boolean_selector/src/ast.dart';
 import 'package:boolean_selector/src/parser.dart';
 
 /// A matcher that asserts that a value is a [ConditionalNode].
-Matcher _isConditionalNode = new isInstanceOf<ConditionalNode>();
+final _isConditionalNode = new TypeMatcher<ConditionalNode>();
 
 /// A matcher that asserts that a value is an [OrNode].
-Matcher _isOrNode = new isInstanceOf<OrNode>();
+final _isOrNode = new TypeMatcher<OrNode>();
 
 /// A matcher that asserts that a value is an [AndNode].
-Matcher _isAndNode = new isInstanceOf<AndNode>();
+final _isAndNode = new TypeMatcher<AndNode>();
 
 /// A matcher that asserts that a value is a [NotNode].
-Matcher _isNotNode = new isInstanceOf<NotNode>();
+final _isNotNode = new TypeMatcher<NotNode>();
 
 void main() {
   group("parses a conditional expression", () {

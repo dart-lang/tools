@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Now requires Dart 2.
+
 ## 1.0.3
 
 * Work around an inference bug in the new common front-end.
