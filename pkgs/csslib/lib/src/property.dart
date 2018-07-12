@@ -823,12 +823,7 @@ class Border implements _StyleProperty {
   String get cssExpression {
     return (top == left && bottom == right && top == right)
         ? "${left}px"
-        : "${top != null ? '$top' : '0'}px ${right != null
-            ? '$right'
-            : '0'}px ${bottom != null ? '$bottom' : '0'}px ${left !=
-                null
-            ? '$left'
-            : '0'}px";
+        : "${top != null ? '$top' : '0'}px ${right != null ? '$right' : '0'}px ${bottom != null ? '$bottom' : '0'}px ${left != null ? '$left' : '0'}px";
   }
 }
 
