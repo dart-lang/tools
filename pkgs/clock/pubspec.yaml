@@ -1,11 +1,11 @@
 name: clock
-version: 1.0.0
+version: 1.0.1
 description: A fakeable wrapper for dart:core clock APIs
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/clock
 
 environment:
-  sdk: '>=1.24.0 <2.0.0'
+  sdk: '>=2.0.0-dev.36.0 <3.0.0'
 
 dependencies:
   meta: '>=0.9.0 <2.0.0'
