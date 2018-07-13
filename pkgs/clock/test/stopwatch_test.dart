@@ -35,11 +35,11 @@ void main() {
     test("stop() does nothing", () {
       stopwatch.stop();
       expect(stopwatch.isRunning, isFalse);
-      expect(stopwatch.elapsed, equals(Duration.ZERO));
+      expect(stopwatch.elapsed, equals(Duration.zero));
     });
 
     group("reports no elapsed", () {
-      test("duration", () => expect(stopwatch.elapsed, equals(Duration.ZERO)));
+      test("duration", () => expect(stopwatch.elapsed, equals(Duration.zero)));
       test("ticks", () => expect(stopwatch.elapsedTicks, isZero));
       test("microseconds", () => expect(stopwatch.elapsedMicroseconds, isZero));
       test("milliseconds", () => expect(stopwatch.elapsedMilliseconds, isZero));
@@ -79,7 +79,7 @@ void main() {
         });
 
         test("sets the elapsed time to zero", () {
-          expect(stopwatch.elapsed, equals(Duration.ZERO));
+          expect(stopwatch.elapsed, equals(Duration.zero));
         });
 
         test("reports more elapsed time", () {
@@ -135,12 +135,12 @@ void main() {
         });
 
         test("sets the elapsed time to zero", () {
-          expect(stopwatch.elapsed, equals(Duration.ZERO));
+          expect(stopwatch.elapsed, equals(Duration.zero));
         });
 
         test("doesn't report more elapsed time", () {
           time = clock.microsFromNow(54321);
-          expect(stopwatch.elapsed, equals(Duration.ZERO));
+          expect(stopwatch.elapsed, equals(Duration.zero));
         });
       });
 

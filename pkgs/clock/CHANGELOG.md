@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Update to lowercase Dart core library constants.
+
 ## 1.0.0
 
 This release contains the `Clock` class that was defined in [`quiver`][]. It's
