@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Set max SDK version to <3.0.0.
+
 ## 1.0.3
 
 - Removed unneeded dependency constraint on SDK.
