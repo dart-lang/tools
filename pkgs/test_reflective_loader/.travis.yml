@@ -1,2 +1,3 @@
 language: dart
+dart: [dev, stable, 1.24.3]
 script: ./tool/travis.sh
