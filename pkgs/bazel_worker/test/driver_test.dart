@@ -238,7 +238,7 @@ class MockWorker implements Process {
   int get pid => throw new UnsupportedError('Not needed.');
 
   @override
-  bool kill([ProcessSignal = ProcessSignal.SIGTERM, int exitCode = 0]) {
+  bool kill([ProcessSignal = ProcessSignal.sigterm, int exitCode = 0]) {
     if (_killed) return false;
     () async {
       await _stdoutController.close();
