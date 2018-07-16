@@ -1,3 +1,7 @@
+## 0.14.4+1
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 0.14.4
 
 * Reduced whitespace in compact output for the `@page` at-rule and margin boxes.
