@@ -1,3 +1,7 @@
+## 1.1.7
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 1.1.6
 
 * Improve support for Dart 2 runtime semantics.
