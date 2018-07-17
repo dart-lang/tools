@@ -103,7 +103,7 @@ class PrettyPrintFormatter implements Formatter {
         if (v.containsKey(line)) {
           prefix = v[line].toString().padLeft(_prefix.length);
         }
-        buf.writeln('$prefix|${lines[line-1]}');
+        buf.writeln('$prefix|${lines[line - 1]}');
       }
     }
 
