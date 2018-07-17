@@ -111,7 +111,6 @@ main() {
     var printer = new Printer('output2.dart');
     printer.mark(ispan(0, 0));
 
-    bool first = true;
     var segments = INPUT.split('long');
     expect(segments.length, 6);
     printer.add(segments[0], projectMarks: true);
