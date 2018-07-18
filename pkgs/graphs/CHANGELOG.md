@@ -1,3 +1,7 @@
+# 0.1.2+1
+
+- Allow using non-dev Dart 2 SDK.
+
 # 0.1.2
 
 - `crawlAsync` surfaces exceptions while crawling through the result stream
