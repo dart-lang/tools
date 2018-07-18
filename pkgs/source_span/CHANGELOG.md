@@ -1,3 +1,7 @@
+# 1.4.1
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 # 1.4.0
 
 * The `new SourceFile()` constructor is deprecated. This constructed a source

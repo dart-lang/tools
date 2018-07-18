@@ -9,7 +9,7 @@ import 'package:source_span/src/colors.dart' as colors;
 main() {
   var file;
   setUp(() {
-    file = new SourceFile("""
+    file = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop
@@ -23,7 +23,7 @@ foo bar baz
   });
 
   test("gracefully handles a missing source URL", () {
-    var span = new SourceFile("foo bar baz").span(4, 7);
+    var span = new SourceFile.fromString("foo bar baz").span(4, 7);
     expect(span.highlight(), equals("""
 foo bar baz
     ^^^"""));
@@ -55,26 +55,29 @@ zip zap zop
 
   test("works for a point span at the end of the file with no trailing newline",
       () {
-    file = new SourceFile("zip zap zop");
+    file = new SourceFile.fromString("zip zap zop");
     expect(file.location(11).pointSpan().highlight(), equals("""
 zip zap zop
            ^"""));
   });
 
   test("works for a point span in an empty file", () {
-    expect(new SourceFile("").location(0).pointSpan().highlight(), equals("""
+    expect(new SourceFile.fromString("").location(0).pointSpan().highlight(),
+        equals("""
 
 ^"""));
   });
 
   test("works for a single-line file without a newline", () {
-    expect(new SourceFile("foo bar").span(0, 7).highlight(), equals("""
+    expect(
+        new SourceFile.fromString("foo bar").span(0, 7).highlight(), equals("""
 foo bar
 ^^^^^^^"""));
   });
 
   test("emits tabs for tabs", () {
-    expect(new SourceFile(" \t \t\tfoo bar").span(5, 8).highlight(), equals("""
+    expect(new SourceFile.fromString(" \t \t\tfoo bar").span(5, 8).highlight(),
+        equals("""
  \t \t\tfoo bar
  \t \t\t^^^"""));
   });

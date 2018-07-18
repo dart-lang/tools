@@ -8,7 +8,7 @@ import 'package:source_span/source_span.dart';
 main() {
   var file;
   setUp(() {
-    file = new SourceFile("""
+    file = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""", url: "foo.dart");
@@ -122,7 +122,7 @@ zip zap zop""", url: "foo.dart");
     });
 
     test("for span().expand() source URLs must match", () {
-      var other = new SourceFile("""
+      var other = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""", url: "bar.dart").span(10, 11);
@@ -139,11 +139,11 @@ zip zap zop""", url: "bar.dart").span(10, 11);
 
   group("new SourceFile()", () {
     test("handles CRLF correctly", () {
-      expect(new SourceFile("foo\r\nbar").getLine(6), equals(1));
+      expect(new SourceFile.fromString("foo\r\nbar").getLine(6), equals(1));
     });
 
     test("handles a lone CR correctly", () {
-      expect(new SourceFile("foo\rbar").getLine(5), equals(1));
+      expect(new SourceFile.fromString("foo\rbar").getLine(5), equals(1));
     });
   });
 
