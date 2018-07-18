@@ -232,8 +232,8 @@ main() {
     Uri file = directory.resolve(".packages");
     expect(
         loadPackagesFile(file),
-        throwsA(anyOf(new isInstanceOf<FileSystemException>(),
-            new isInstanceOf<HttpException>())));
+        throwsA(anyOf(new TypeMatcher<FileSystemException>(),
+            new TypeMatcher<HttpException>())));
   });
 
   generalTest("loadPackagesFile syntax error", {".packages": "syntax error"},
@@ -280,7 +280,7 @@ void httpTest(String name, Map description, Future httpTest(Uri directory)) {
     var serverSub;
     var uri;
     setUp(() {
-      return HttpServer.bind(InternetAddress.LOOPBACK_IP_V4, 0).then((server) {
+      return HttpServer.bind(InternetAddress.loopbackIPv4, 0).then((server) {
         uri = new Uri(
             scheme: "http", host: "127.0.0.1", port: server.port, path: "/");
         serverSub = server.listen((HttpRequest request) {

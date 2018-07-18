@@ -211,7 +211,7 @@ Future<List<int>> _httpGet(Uri uri) async {
   HttpClient client = new HttpClient();
   HttpClientRequest request = await client.getUrl(uri);
   HttpClientResponse response = await request.close();
-  if (response.statusCode != HttpStatus.OK) {
+  if (response.statusCode != HttpStatus.ok) {
     throw new HttpException('${response.statusCode} ${response.reasonPhrase}',
         uri: uri);
   }

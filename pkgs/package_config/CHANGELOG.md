@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Fix usage of SDK constants.
+
 ## 1.0.4
 
 - Set max SDK version to <3.0.0.
