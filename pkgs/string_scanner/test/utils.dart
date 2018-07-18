@@ -9,6 +9,7 @@ import 'package:test/test.dart';
 /// with the given [message].
 Matcher throwsStringScannerException(String text) {
   return throwsA(predicate((error) {
+    // ignore: deprecated_member_use
     expect(error, new isInstanceOf<StringScannerException>());
     expect(error.span.text, equals(text));
     return true;

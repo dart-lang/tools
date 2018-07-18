@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 1.0.2
 
 * `SpanScanner` no longer crashes when creating a span that contains a UTF-16
