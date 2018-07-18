@@ -1,3 +1,7 @@
+## 1.6.8
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 1.6.7+1
 
 * Fix Dart 2 runtime types in `IsolateChannel`.

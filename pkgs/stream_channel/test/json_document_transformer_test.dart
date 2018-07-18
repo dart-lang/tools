@@ -55,6 +55,6 @@ void main() {
   test("synchronously throws if an unencodable object is added", () {
     var transformed = channel.transform(jsonDocument);
     expect(() => transformed.sink.add(new Object()),
-        throwsA(new isInstanceOf<JsonUnsupportedObjectError>()));
+        throwsA(new TypeMatcher<JsonUnsupportedObjectError>()));
   });
 }
