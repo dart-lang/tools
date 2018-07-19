@@ -1,3 +1,7 @@
+## 1.1.5
+
+* Set max SDK version to `<3.0.0`.
+
 ## 1.1.4
 
 * Support source maps that depend on the uri of the location to resolve spans
