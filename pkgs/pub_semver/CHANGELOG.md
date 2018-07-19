@@ -1,3 +1,7 @@
+# 1.4.2
+
+* Set max SDK version to `<3.0.0`.
+
 # 1.4.1
 
 * Fix a bug where there upper bound of a version range with a build identifier
