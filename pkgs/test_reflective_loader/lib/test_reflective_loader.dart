@@ -21,7 +21,7 @@ const _AssertFailingTest assertFailingTest = const _AssertFailingTest();
  * A marker annotation used to annotate overridden test methods (so we cannot
  * rename them to `fail_`) which are expected to fail.
  */
-const _FailingTest failingTest = const _FailingTest();
+const FailingTest failingTest = const FailingTest(null);
 
 /**
  * A marker annotation used to instruct dart2js to keep reflection information
@@ -267,11 +267,11 @@ Future _runTest(ClassMirror classMirror, Symbol symbol) {
 typedef dynamic _TestFunction();
 
 /**
- * A marker annotation used to instruct dart2js to keep reflection information
- * for the annotated classes.
+ * A marker annotation used to annotate overridden test methods (so we cannot
+ * rename them to `fail_`) which are expected to fail.
  */
-class _ReflectiveTest {
-  const _ReflectiveTest();
+class FailingTest {
+  const FailingTest(String issueUri);
 }
 
 /**
@@ -294,14 +294,6 @@ class _AssertFailingTest {
 }
 
 /**
- * A marker annotation used to annotate overridden test methods (so we cannot
- * rename them to `fail_`) which are expected to fail.
- */
-class _FailingTest {
-  const _FailingTest();
-}
-
-/**
  * Information about a type based test group.
  */
 class _Group {
@@ -319,6 +311,14 @@ class _Group {
     TestTimeout timeout = _getAnnotationInstance(memberMirror, TestTimeout);
     tests.add(new _Test(isSolo, fullName, function, timeout?.timeout));
   }
+}
+
+/**
+ * A marker annotation used to instruct dart2js to keep reflection information
+ * for the annotated classes.
+ */
+class _ReflectiveTest {
+  const _ReflectiveTest();
 }
 
 /**
