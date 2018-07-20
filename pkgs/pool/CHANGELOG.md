@@ -1,3 +1,7 @@
+## 1.3.6
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 1.3.5
 
 - Updated SDK version to 2.0.0-dev.17.0
