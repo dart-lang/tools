@@ -1,3 +1,8 @@
+## 0.1.6
+
+- Make `FailingTest` public, with the URI of the issue that causes
+  the test to break.
+
 ## 0.1.5
 
 - Set max SDK version to `<3.0.0`, and adjust other dependencies.
