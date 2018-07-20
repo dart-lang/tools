@@ -70,7 +70,7 @@ void main() {
             'data': {
               'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
               'full': 'FormatException: bad format',
-              'stack': new isInstanceOf<String>()
+              'stack': new TypeMatcher<String>()
             }
           }
         }));
@@ -168,7 +168,7 @@ void main() {
               'data': {
                 'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
                 'full': 'FormatException: bad format',
-                'stack': new isInstanceOf<String>()
+                'stack': new TypeMatcher<String>()
               }
             }
           }));

@@ -69,7 +69,7 @@ void main() {
 
   test("sends a synchronous batch of requests", () {
     controller.expectRequest((request) {
-      expect(request, new isInstanceOf<List>());
+      expect(request, new TypeMatcher<List>());
       expect(request, hasLength(3));
       expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
       expect(
@@ -101,7 +101,7 @@ void main() {
 
   test("sends an asynchronous batch of requests", () {
     controller.expectRequest((request) {
-      expect(request, new isInstanceOf<List>());
+      expect(request, new TypeMatcher<List>());
       expect(request, hasLength(3));
       expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
       expect(
@@ -157,7 +157,7 @@ void main() {
 
     expect(controller.client.sendRequest("foo", {'param': 'value'}),
         throwsA(predicate((exception) {
-      expect(exception, new isInstanceOf<json_rpc.RpcException>());
+      expect(exception, new TypeMatcher<json_rpc.RpcException>());
       expect(exception.code, equals(error_code.SERVER_ERROR));
       expect(exception.message, equals('you are bad at requests'));
       expect(exception.data, equals('some junk'));

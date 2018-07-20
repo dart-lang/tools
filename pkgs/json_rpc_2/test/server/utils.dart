@@ -64,7 +64,7 @@ void expectErrorResponse(
 /// `invalid_params` error code.
 Matcher throwsInvalidParams(String message) {
   return throwsA(predicate((error) {
-    expect(error, new isInstanceOf<json_rpc.RpcException>());
+    expect(error, new TypeMatcher<json_rpc.RpcException>());
     expect(error.code, equals(error_code.INVALID_PARAMS));
     expect(error.message, equals(message));
     return true;
