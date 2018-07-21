@@ -1,3 +1,8 @@
+## 0.1.7
+
+- Update documentation comments.
+- Remove `@MirrorsUsed` annotation on `dart:mirrors`.
+
 ## 0.1.6
 
 - Make `FailingTest` public, with the URI of the issue that causes

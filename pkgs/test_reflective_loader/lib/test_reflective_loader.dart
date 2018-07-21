@@ -5,21 +5,18 @@
 library test_reflective_loader;
 
 import 'dart:async';
-@MirrorsUsed(metaTargets: 'ReflectiveTest')
 import 'dart:mirrors';
 
 import 'package:test/test.dart' as test_package;
 
 /**
- * A marker annotation used to annotate overridden test methods (so we cannot
- * rename them to `fail_`) which are expected to fail at `assert` in the
- * checked mode.
+ * A marker annotation used to annotate test methods which are expected to fail
+ * when asserts are enabled.
  */
 const _AssertFailingTest assertFailingTest = const _AssertFailingTest();
 
 /**
- * A marker annotation used to annotate overridden test methods (so we cannot
- * rename them to `fail_`) which are expected to fail.
+ * A marker annotation used to annotate test methods which are expected to fail.
  */
 const FailingTest failingTest = const FailingTest(null);
 
@@ -267,10 +264,12 @@ Future _runTest(ClassMirror classMirror, Symbol symbol) {
 typedef dynamic _TestFunction();
 
 /**
- * A marker annotation used to annotate overridden test methods (so we cannot
- * rename them to `fail_`) which are expected to fail.
+ * A marker annotation used to annotate test methods which are expected to fail.
  */
 class FailingTest {
+  /**
+   * Initialize this annotation with the given issue URI.
+   */
   const FailingTest(String issueUri);
 }
 
@@ -279,15 +278,17 @@ class FailingTest {
  * information.
  */
 class TestTimeout {
-  final test_package.Timeout timeout;
+  final test_package.Timeout _timeout;
 
-  const TestTimeout(this.timeout);
+  /**
+   * Initialize this annotation with the given timeout.
+   */
+  const TestTimeout(test_package.Timeout timeout) : _timeout = timeout;
 }
 
 /**
- * A marker annotation used to annotate overridden test methods (so we cannot
- * rename them to `fail_`) which are expected to fail at `assert` in the
- * checked mode.
+ * A marker annotation used to annotate test methods which are expected to fail
+ * when asserts are enabled.
  */
 class _AssertFailingTest {
   const _AssertFailingTest();
@@ -309,7 +310,7 @@ class _Group {
       _TestFunction function) {
     String fullName = _combineNames(this.name, name);
     TestTimeout timeout = _getAnnotationInstance(memberMirror, TestTimeout);
-    tests.add(new _Test(isSolo, fullName, function, timeout?.timeout));
+    tests.add(new _Test(isSolo, fullName, function, timeout?._timeout));
   }
 }
 
