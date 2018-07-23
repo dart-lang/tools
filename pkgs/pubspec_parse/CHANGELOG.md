@@ -1,3 +1,7 @@
+## 0.1.2+1
+
+- Support the Dart 2 stable release.
+
 ## 0.1.2
 
 - Allow superfluous `version` keys with `git` and `path` dependencies.
