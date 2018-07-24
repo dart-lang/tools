@@ -1,3 +1,7 @@
+## 0.1.2+2
+
+- Support `package:json_annotation` v1.
+
 ## 0.1.2+1
 
 - Support the Dart 2 stable release.
