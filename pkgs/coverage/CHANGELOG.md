@@ -1,7 +1,6 @@
 ## 0.12.2 - 2018-07-25
 
  * Dart SDK upper bound raised to <3.0.0.
- * Require package:args >= 1.4.0.
 
 ## 0.12.1 - 2018-06-26
 
