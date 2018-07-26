@@ -1,3 +1,7 @@
+## 0.1.8
+
+- Update `FailingTest` to add named parameters `issue` and `reason`.
+
 ## 0.1.7
 
 - Update documentation comments.

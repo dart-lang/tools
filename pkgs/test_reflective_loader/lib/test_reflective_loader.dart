@@ -18,7 +18,7 @@ const _AssertFailingTest assertFailingTest = const _AssertFailingTest();
 /**
  * A marker annotation used to annotate test methods which are expected to fail.
  */
-const FailingTest failingTest = const FailingTest(null);
+const FailingTest failingTest = const FailingTest();
 
 /**
  * A marker annotation used to instruct dart2js to keep reflection information
@@ -268,9 +268,12 @@ typedef dynamic _TestFunction();
  */
 class FailingTest {
   /**
-   * Initialize this annotation with the given issue URI.
+   * Initialize this annotation with the given arguments.
+   *
+   * [issue] is a full URI describing the failure and used for tracking.
+   * [reason] is a free form textual description.
    */
-  const FailingTest(String issueUri);
+  const FailingTest({String issue, String reason});
 }
 
 /**
