@@ -7,6 +7,7 @@
 
 library ray_trace;
 
+import 'dart:html';
 import 'dart:math';
 
 import 'package:benchmark_harness/benchmark_harness.dart';

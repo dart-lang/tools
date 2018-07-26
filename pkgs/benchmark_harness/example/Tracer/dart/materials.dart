@@ -7,9 +7,9 @@
 part of ray_trace;
 
 abstract class Materials {
-  final gloss;             // [0...infinity] 0 = matt
-  final transparency;      // 0=opaque
-  final reflection;        // [0...infinity] 0 = no reflection
+  final gloss; // [0...infinity] 0 = matt
+  final transparency; // 0=opaque
+  final reflection; // [0...infinity] 0 = no reflection
   var refraction = 0.50;
   var hasTexture = false;
 
@@ -19,22 +19,18 @@ abstract class Materials {
 
   wrapUp(t) {
     t = t % 2.0;
-    if(t < -1) t += 2.0;
-    if(t >= 1) t -= 2.0;
+    if (t < -1) t += 2.0;
+    if (t >= 1) t -= 2.0;
     return t;
   }
 }
 
-
 class Chessboard extends Materials {
   var colorEven, colorOdd, density;
 
-  Chessboard(this.colorEven,
-             this.colorOdd,
-             reflection,
-             transparency,
-             gloss,
-             this.density) : super(reflection, transparency, gloss) {
+  Chessboard(this.colorEven, this.colorOdd, reflection, transparency, gloss,
+      this.density)
+      : super(reflection, transparency, gloss) {
     this.hasTexture = true;
   }
 
@@ -48,7 +44,6 @@ class Chessboard extends Materials {
     }
   }
 }
-
 
 class Solid extends Materials {
   var color;

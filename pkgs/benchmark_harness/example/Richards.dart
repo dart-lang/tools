@@ -36,17 +36,14 @@
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
-
 main() {
   new Richards().report();
 }
-
 
 /**
  * Richards imulates the task dispatcher of an operating system.
  **/
 class Richards extends BenchmarkBase {
-
   const Richards() : super("Richards");
 
   void run() {
@@ -76,7 +73,7 @@ class Richards extends BenchmarkBase {
     if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
         scheduler.holdCount != EXPECTED_HOLD_COUNT) {
       print("Error during execution: queueCount = ${scheduler.queueCount}"
-            ", holdCount = ${scheduler.holdCount}.");
+          ", holdCount = ${scheduler.holdCount}.");
     }
     if (EXPECTED_QUEUE_COUNT != scheduler.queueCount) {
       throw "bad scheduler queue-count";
@@ -111,21 +108,19 @@ class Richards extends BenchmarkBase {
   static const int KIND_WORK = 1;
 }
 
-
 /**
  * A scheduler can be used to schedule a set of tasks based on their relative
  * priorities.  Scheduling is done by maintaining a list of task control blocks
  * which holds tasks and the data queue they are processing.
  */
 class Scheduler {
-
   int queueCount = 0;
   int holdCount = 0;
   TaskControlBlock currentTcb;
   int currentId;
   TaskControlBlock list;
   List<TaskControlBlock> blocks =
-    new List<TaskControlBlock>(Richards.NUMBER_OF_IDS);
+      new List<TaskControlBlock>(Richards.NUMBER_OF_IDS);
 
   /// Add an idle task to this scheduler.
   void addIdleTask(int id, int priority, Packet queue, int count) {
@@ -134,10 +129,8 @@ class Scheduler {
 
   /// Add a work task to this scheduler.
   void addWorkerTask(int id, int priority, Packet queue) {
-    addTask(id,
-            priority,
-            queue,
-            new WorkerTask(this, Richards.ID_HANDLER_A, 0));
+    addTask(
+        id, priority, queue, new WorkerTask(this, Richards.ID_HANDLER_A, 0));
   }
 
   /// Add a handler task to this scheduler.
@@ -221,15 +214,13 @@ class Scheduler {
   }
 }
 
-
 /**
  * A task control block manages a task and the queue of work packages associated
  * with it.
  */
 class TaskControlBlock {
-
   TaskControlBlock link;
-  int id;       // The id of this block.
+  int id; // The id of this block.
   int priority; // The priority of this block.
   Packet queue; // The queue of packages to be processed by the task.
   Task task;
@@ -270,8 +261,7 @@ class TaskControlBlock {
   }
 
   bool isHeldOrSuspended() {
-    return (state & STATE_HELD) != 0 ||
-           (state == STATE_SUSPENDED);
+    return (state & STATE_HELD) != 0 || (state == STATE_SUSPENDED);
   }
 
   void markAsSuspended() {
@@ -318,7 +308,6 @@ class TaskControlBlock {
  *  Abstract task that manipulates work packets.
  */
 abstract class Task {
-
   Scheduler scheduler; // The scheduler that manages this task.
 
   Task(this.scheduler);
@@ -331,8 +320,7 @@ abstract class Task {
  * device tasks.
  */
 class IdleTask extends Task {
-
-  int v1;    // A seed value that controls how the device tasks are scheduled.
+  int v1; // A seed value that controls how the device tasks are scheduled.
   int count; // The number of times this task should be scheduled.
 
   IdleTask(Scheduler scheduler, this.v1, this.count) : super(scheduler);
@@ -351,13 +339,11 @@ class IdleTask extends Task {
   String toString() => "IdleTask";
 }
 
-
 /**
  * A task that suspends itself after each time it has been run to simulate
  * waiting for data from an external device.
  */
 class DeviceTask extends Task {
-
   Packet v1;
 
   DeviceTask(Scheduler scheduler) : super(scheduler);
@@ -376,12 +362,10 @@ class DeviceTask extends Task {
   String toString() => "DeviceTask";
 }
 
-
 /**
  * A task that manipulates work packets.
  */
 class WorkerTask extends Task {
-
   int v1; // A seed used to specify how work packets are manipulated.
   int v2; // Another seed used to specify how work packets are manipulated.
 
@@ -409,12 +393,10 @@ class WorkerTask extends Task {
   String toString() => "WorkerTask";
 }
 
-
 /**
  * A task that manipulates work packets and then suspends itself.
  */
 class HandlerTask extends Task {
-
   Packet v1;
   Packet v2;
 
@@ -451,7 +433,6 @@ class HandlerTask extends Task {
   String toString() => "HandlerTask";
 }
 
-
 /**
  * A simple package of data that is manipulated by the tasks.  The exact layout
  * of the payload data carried by a packet is not importaint, and neither is the
@@ -460,10 +441,9 @@ class HandlerTask extends Task {
  * data and worklists.
  */
 class Packet {
-
   Packet link; // The tail of the linked list of packets.
-  int id;      // An ID for this packet.
-  int kind;    // The type of this packet.
+  int id; // An ID for this packet.
+  int kind; // The type of this packet.
   int a1 = 0;
 
   List<int> a2 = new List(Richards.DATA_SIZE);

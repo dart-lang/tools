@@ -1,7 +1,4 @@
-.children
-.project
-.DS_Store
-packages
+.dart_tool
+.packages
+.pub
 pubspec.lock
-*.sublime-workspace
-*.sublime-project

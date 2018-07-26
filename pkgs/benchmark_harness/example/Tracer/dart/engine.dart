@@ -18,7 +18,6 @@ class IntersectionInfo {
   String toString() => 'Intersection [$position]';
 }
 
-
 class Engine {
   int canvasWidth;
   int canvasHeight;
@@ -27,16 +26,21 @@ class Engine {
   int rayDepth;
   var canvas;
 
-  Engine({this.canvasWidth : 100, this.canvasHeight : 100,
-          this.pixelWidth : 2, this.pixelHeight : 2,
-          this.renderDiffuse : false, this.renderShadows : false,
-          this.renderHighlights : false, this.renderReflections : false,
-          this.rayDepth : 2}) {
+  Engine(
+      {this.canvasWidth: 100,
+      this.canvasHeight: 100,
+      this.pixelWidth: 2,
+      this.pixelHeight: 2,
+      this.renderDiffuse: false,
+      this.renderShadows: false,
+      this.renderHighlights: false,
+      this.renderReflections: false,
+      this.rayDepth: 2}) {
     canvasHeight = canvasHeight ~/ pixelHeight;
     canvasWidth = canvasWidth ~/ pixelWidth;
   }
 
-  void setPixel(int x, int y, Color color){
+  void setPixel(int x, int y, Color color) {
     var pxW, pxH;
     pxW = this.pixelWidth;
     pxH = this.pixelHeight;
@@ -60,8 +64,8 @@ class Engine {
     var canvasHeight = this.canvasHeight;
     var canvasWidth = this.canvasWidth;
 
-    for(var y = 0; y < canvasHeight; y++){
-      for(var x = 0; x < canvasWidth; x++){
+    for (var y = 0; y < canvasHeight; y++) {
+      for (var x = 0; x < canvasWidth; x++) {
         var yp = y * 1.0 / canvasHeight * 2 - 1;
         var xp = x * 1.0 / canvasWidth * 2 - 1;
 
@@ -75,9 +79,9 @@ class Engine {
     }
   }
 
-  Color getPixelColor(Ray ray, Scene scene){
+  Color getPixelColor(Ray ray, Scene scene) {
     var info = this.testIntersection(ray, scene, null);
-    if(info.isHit){
+    if (info.isHit) {
       var color = this.rayTrace(info, ray, scene, 0);
       return color;
     }
@@ -89,14 +93,14 @@ class Engine {
     IntersectionInfo best = new IntersectionInfo();
     best.distance = 2000;
 
-    for(var i=0; i < scene.shapes.length; i++){
+    for (var i = 0; i < scene.shapes.length; i++) {
       var shape = scene.shapes[i];
 
-      if(shape != exclude){
+      if (shape != exclude) {
         IntersectionInfo info = shape.intersect(ray);
         if (info.isHit &&
             (info.distance >= 0) &&
-            (info.distance < best.distance)){
+            (info.distance < best.distance)) {
           best = info;
           hits++;
         }
@@ -106,19 +110,18 @@ class Engine {
     return best;
   }
 
-  Ray getReflectionRay(Vector P, Vector N, Vector V){
+  Ray getReflectionRay(Vector P, Vector N, Vector V) {
     var c1 = -N.dot(V);
-    var R1 = N.multiplyScalar(2*c1) + V;
+    var R1 = N.multiplyScalar(2 * c1) + V;
     return new Ray(P, R1);
   }
 
   Color rayTrace(IntersectionInfo info, Ray ray, Scene scene, int depth) {
     // Calc ambient
     Color color = info.color.multiplyScalar(scene.background.ambience);
-    var oldColor = color;
     var shininess = pow(10, info.shape.material.gloss + 1);
 
-    for(var i = 0; i < scene.lights.length; i++) {
+    for (var i = 0; i < scene.lights.length; i++) {
       var light = scene.lights[i];
 
       // Calc diffuse lighting
@@ -136,12 +139,11 @@ class Engine {
       if (depth <= this.rayDepth) {
         // calculate reflection ray
         if (this.renderReflections && info.shape.material.reflection > 0) {
-          var reflectionRay = this.getReflectionRay(info.position,
-                                                    info.normal,
-                                                    ray.direction);
+          var reflectionRay =
+              this.getReflectionRay(info.position, info.normal, ray.direction);
           var refl = this.testIntersection(reflectionRay, scene, info.shape);
 
-          if (refl.isHit && refl.distance > 0){
+          if (refl.isHit && refl.distance > 0) {
             refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
           } else {
             refl.color = scene.background.color;
@@ -160,8 +162,7 @@ class Engine {
         var shadowRay = new Ray(info.position, v);
 
         shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
-        if (shadowInfo.isHit &&
-            shadowInfo.shape != info.shape
+        if (shadowInfo.isHit && shadowInfo.shape != info.shape
             /*&& shadowInfo.shape.type != 'PLANE'*/) {
           var vA = color.multiplyScalar(0.5);
           var dB = (0.5 * pow(shadowInfo.shape.material.transparency, 0.5));

@@ -1,38 +1,26 @@
 library result_emitter_test;
 
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:mock/mock.dart';
+import 'package:mockito/mockito.dart';
 
-import 'fixed-unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   benchmarkHarnessTest();
 }
 
-class MockResultEmitter extends Mock implements ScoreEmitter {
-  var hasEmitted = false;
-
-  MockResultEmitter() {
-    when(callsTo('emit')).alwaysCall(fakeEmit);
-  }
-
-  void fakeEmit(String name, double value) {
-    hasEmitted = true;
-  }
-
-  // Added to quiet an analyzer warning.
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+class MockResultEmitter extends Mock implements ScoreEmitter {}
 
 // Create a new benchmark which has an emitter.
 class BenchmarkWithResultEmitter extends BenchmarkBase {
-  const BenchmarkWithResultEmitter(ScoreEmitter emitter) : super("Template", emitter: emitter);
+  const BenchmarkWithResultEmitter(ScoreEmitter emitter)
+      : super("Template", emitter: emitter);
 
-  void run() { }
+  void run() {}
 
-  void setup() { }
+  void setup() {}
 
-  void teardown() { }
+  void teardown() {}
 }
 
 benchmarkHarnessTest() {
@@ -41,12 +29,13 @@ benchmarkHarnessTest() {
     return emitter;
   }
 
-  describe('ResultEmitter', () {
-    it('should be called when emitter is provided', () {
+  group('ResultEmitter', () {
+    test('should be called when emitter is provided', () {
       MockResultEmitter emitter = createMockEmitter();
       var testBenchmark = new BenchmarkWithResultEmitter(emitter);
       testBenchmark.report();
-      emitter.getLogs(callsTo('emit')).verify(happenedOnce);
+
+      verify(emitter.emit(any, any)).called(1);
     });
   });
 }

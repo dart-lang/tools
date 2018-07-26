@@ -47,7 +47,7 @@ class FluidMotion extends BenchmarkBase {
     framesTillAddingPoints = 0;
     framesBetweenAddingPoints = 5;
     solver = new FluidField.create(null, 128, 128, 20);
-    solver.setDisplayFunction((a){});
+    solver.setDisplayFunction((a) {});
     solver.setUICallback(prepareFrame);
   }
 
@@ -96,7 +96,6 @@ class FluidMotion extends BenchmarkBase {
   }
 }
 
-
 // Code from Oliver Hunt (http://nerget.com/fluidSim/pressure.js) starts here.
 
 class FluidField {
@@ -114,7 +113,7 @@ class FluidField {
   static FluidField _lastCreated;
 
   static bool approxEquals(double a, double b) => (a - b).abs() < 0.000001;
-  
+
   validate(expectedDens, expectedU, expectedV) {
     var sumDens = 0.0;
     var sumU = 0.0;
@@ -124,14 +123,13 @@ class FluidField {
       sumU += u[i];
       sumV += v[i];
     }
-    
+
     if (!approxEquals(sumDens, expectedDens) ||
         !approxEquals(sumU, expectedU) ||
         !approxEquals(sumV, expectedV)) {
       throw "Incorrect result";
     }
   }
-  
 
   // Allocates a new FluidField or return previously allocated field if the
   // size is too large.
@@ -143,16 +141,15 @@ class FluidField {
       _lastCreated = new FluidField(canvas, 64, 64, iterations);
     }
     assert((canvas == _lastCreated.canvas) &&
-           (iterations == _lastCreated.iterations));
+        (iterations == _lastCreated.iterations));
     return _lastCreated;
   }
 
-
-  FluidField(this.canvas, int hRes, int wRes, this.iterations) :
-      width = wRes,
-      height = hRes,
-      rowSize = (wRes + 2),
-      size = (wRes + 2) * (hRes + 2) {
+  FluidField(this.canvas, int hRes, int wRes, this.iterations)
+      : width = wRes,
+        height = hRes,
+        rowSize = (wRes + 2),
+        size = (wRes + 2) * (hRes + 2) {
     reset();
   }
 
@@ -167,15 +164,15 @@ class FluidField {
   }
 
   void addFields(Float64List x, Float64List s, double dt) {
-    for (var i=0; i< size ; i++) x[i] += dt*s[i];
+    for (var i = 0; i < size; i++) x[i] += dt * s[i];
   }
 
   void set_bnd(int b, Float64List x) {
-    if (b==1) {
+    if (b == 1) {
       var i = 1;
       for (; i <= width; i++) {
-        x[i] =  x[i + rowSize];
-        x[i + (height+1) *rowSize] = x[i + height * rowSize];
+        x[i] = x[i + rowSize];
+        x[i + (height + 1) * rowSize] = x[i + height * rowSize];
       }
 
       for (var j = 1; j <= height; j++) {
@@ -189,31 +186,31 @@ class FluidField {
       }
 
       for (var j = 1; j <= height; j++) {
-        x[j * rowSize] =  x[1 + j * rowSize];
-        x[(width + 1) + j * rowSize] =  x[width + j * rowSize];
+        x[j * rowSize] = x[1 + j * rowSize];
+        x[(width + 1) + j * rowSize] = x[width + j * rowSize];
       }
     } else {
       for (var i = 1; i <= width; i++) {
-        x[i] =  x[i + rowSize];
+        x[i] = x[i + rowSize];
         x[i + (height + 1) * rowSize] = x[i + height * rowSize];
       }
 
       for (var j = 1; j <= height; j++) {
-        x[j * rowSize] =  x[1 + j * rowSize];
-        x[(width + 1) + j * rowSize] =  x[width + j * rowSize];
+        x[j * rowSize] = x[1 + j * rowSize];
+        x[(width + 1) + j * rowSize] = x[width + j * rowSize];
       }
     }
     var maxEdge = (height + 1) * rowSize;
-    x[0]                 = 0.5 * (x[1] + x[rowSize]);
-    x[maxEdge]           = 0.5 * (x[1 + maxEdge] + x[height * rowSize]);
-    x[(width+1)]         = 0.5 * (x[width] + x[(width + 1) + rowSize]);
-    x[(width+1)+maxEdge] = 0.5 * (x[width + maxEdge] + x[(width + 1) +
-        height * rowSize]);
+    x[0] = 0.5 * (x[1] + x[rowSize]);
+    x[maxEdge] = 0.5 * (x[1 + maxEdge] + x[height * rowSize]);
+    x[(width + 1)] = 0.5 * (x[width] + x[(width + 1) + rowSize]);
+    x[(width + 1) + maxEdge] =
+        0.5 * (x[width + maxEdge] + x[(width + 1) + height * rowSize]);
   }
 
   void lin_solve(int b, Float64List x, Float64List x0, int a, int c) {
     if (a == 0 && c == 1) {
-      for (var j=1 ; j<=height; j++) {
+      for (var j = 1; j <= height; j++) {
         var currentRow = j * rowSize;
         ++currentRow;
         for (var i = 0; i < width; i++) {
@@ -224,16 +221,21 @@ class FluidField {
       set_bnd(b, x);
     } else {
       var invC = 1 / c;
-      for (var k=0 ; k<iterations; k++) {
-        for (var j=1 ; j<=height; j++) {
+      for (var k = 0; k < iterations; k++) {
+        for (var j = 1; j <= height; j++) {
           var lastRow = (j - 1) * rowSize;
           var currentRow = j * rowSize;
           var nextRow = (j + 1) * rowSize;
           var lastX = x[currentRow];
           ++currentRow;
-          for (var i=1; i<=width; i++)
+          for (var i = 1; i <= width; i++)
             lastX = x[currentRow] = (x0[currentRow] +
-                a*(lastX+x[++currentRow]+x[++lastRow]+x[++nextRow])) * invC;
+                    a *
+                        (lastX +
+                            x[++currentRow] +
+                            x[++lastRow] +
+                            x[++nextRow])) *
+                invC;
         }
         set_bnd(b, x);
       }
@@ -242,13 +244,13 @@ class FluidField {
 
   void diffuse(int b, Float64List x, Float64List x0, double dt) {
     var a = 0;
-    lin_solve(b, x, x0, a, 1 + 4*a);
+    lin_solve(b, x, x0, a, 1 + 4 * a);
   }
 
-  void lin_solve2(Float64List x, Float64List x0,
-                  Float64List y, Float64List y0, int a, int c) {
+  void lin_solve2(Float64List x, Float64List x0, Float64List y, Float64List y0,
+      int a, int c) {
     if (a == 0 && c == 1) {
-      for (var j=1 ; j <= height; j++) {
+      for (var j = 1; j <= height; j++) {
         var currentRow = j * rowSize;
         ++currentRow;
         for (var i = 0; i < width; i++) {
@@ -260,9 +262,9 @@ class FluidField {
       set_bnd(1, x);
       set_bnd(2, y);
     } else {
-      var invC = 1/c;
-      for (var k=0 ; k<iterations; k++) {
-        for (var j=1 ; j <= height; j++) {
+      var invC = 1 / c;
+      for (var k = 0; k < iterations; k++) {
+        for (var j = 1; j <= height; j++) {
           var lastRow = (j - 1) * rowSize;
           var currentRow = j * rowSize;
           var nextRow = (j + 1) * rowSize;
@@ -270,10 +272,16 @@ class FluidField {
           var lastY = y[currentRow];
           ++currentRow;
           for (var i = 1; i <= width; i++) {
-            lastX = x[currentRow] = (x0[currentRow] + a *
-                (lastX + x[currentRow] + x[lastRow] + x[nextRow])) * invC;
-            lastY = y[currentRow] = (y0[currentRow] + a *
-                (lastY + y[++currentRow] + y[++lastRow] + y[++nextRow])) * invC;
+            lastX = x[currentRow] = (x0[currentRow] +
+                    a * (lastX + x[currentRow] + x[lastRow] + x[nextRow])) *
+                invC;
+            lastY = y[currentRow] = (y0[currentRow] +
+                    a *
+                        (lastY +
+                            y[++currentRow] +
+                            y[++lastRow] +
+                            y[++nextRow])) *
+                invC;
           }
         }
         set_bnd(1, x);
@@ -282,33 +290,30 @@ class FluidField {
     }
   }
 
-  void diffuse2(Float64List x, Float64List x0, y,
-                Float64List y0, double dt) {
+  void diffuse2(Float64List x, Float64List x0, y, Float64List y0, double dt) {
     var a = 0;
     lin_solve2(x, x0, y, y0, a, 1 + 4 * a);
   }
 
-  void advect(int b, Float64List d, Float64List d0,
-              Float64List u, Float64List v, double dt) {
+  void advect(int b, Float64List d, Float64List d0, Float64List u,
+      Float64List v, double dt) {
     var Wdt0 = dt * width;
     var Hdt0 = dt * height;
     var Wp5 = width + 0.5;
     var Hp5 = height + 0.5;
-    for (var j = 1; j<= height; j++) {
+    for (var j = 1; j <= height; j++) {
       var pos = j * rowSize;
       for (var i = 1; i <= width; i++) {
         var x = i - Wdt0 * u[++pos];
         var y = j - Hdt0 * v[pos];
         if (x < 0.5)
           x = 0.5;
-        else if (x > Wp5)
-          x = Wp5;
+        else if (x > Wp5) x = Wp5;
         var i0 = x.toInt();
         var i1 = i0 + 1;
         if (y < 0.5)
           y = 0.5;
-        else if (y > Hp5)
-          y = Hp5;
+        else if (y > Hp5) y = Hp5;
         var j0 = y.toInt();
         var j1 = j0 + 1;
         var s1 = x - i0;
@@ -324,69 +329,74 @@ class FluidField {
     set_bnd(b, d);
   }
 
-  void project(Float64List u, Float64List v,
-               Float64List p, Float64List div) {
+  void project(Float64List u, Float64List v, Float64List p, Float64List div) {
     var h = -0.5 / sqrt(width * height);
-    for (var j = 1 ; j <= height; j++ ) {
+    for (var j = 1; j <= height; j++) {
       var row = j * rowSize;
       var previousRow = (j - 1) * rowSize;
       var prevValue = row - 1;
       var currentRow = row;
       var nextValue = row + 1;
       var nextRow = (j + 1) * rowSize;
-      for (var i = 1; i <= width; i++ ) {
-        div[++currentRow] = h * (u[++nextValue] - u[++prevValue] +
-            v[++nextRow] - v[++previousRow]);
+      for (var i = 1; i <= width; i++) {
+        div[++currentRow] = h *
+            (u[++nextValue] - u[++prevValue] + v[++nextRow] - v[++previousRow]);
         p[currentRow] = 0.0;
       }
     }
     set_bnd(0, div);
     set_bnd(0, p);
 
-    lin_solve(0, p, div, 1, 4 );
+    lin_solve(0, p, div, 1, 4);
     var wScale = 0.5 * width;
     var hScale = 0.5 * height;
-    for (var j = 1; j<= height; j++ ) {
+    for (var j = 1; j <= height; j++) {
       var prevPos = j * rowSize - 1;
       var currentPos = j * rowSize;
       var nextPos = j * rowSize + 1;
       var prevRow = (j - 1) * rowSize;
-      var currentRow = j * rowSize;
       var nextRow = (j + 1) * rowSize;
 
-      for (var i = 1; i<= width; i++) {
+      for (var i = 1; i <= width; i++) {
         u[++currentPos] -= wScale * (p[++nextPos] - p[++prevPos]);
-        v[currentPos]   -= hScale * (p[++nextRow] - p[++prevRow]);
+        v[currentPos] -= hScale * (p[++nextRow] - p[++prevRow]);
       }
     }
     set_bnd(1, u);
     set_bnd(2, v);
   }
 
-  void dens_step(Float64List x, Float64List x0,
-                 Float64List u, Float64List v, double dt) {
+  void dens_step(
+      Float64List x, Float64List x0, Float64List u, Float64List v, double dt) {
     addFields(x, x0, dt);
-    diffuse(0, x0, x, dt );
-    advect(0, x, x0, u, v, dt );
+    diffuse(0, x0, x, dt);
+    advect(0, x, x0, u, v, dt);
   }
 
-  void vel_step(Float64List u, Float64List v,
-                Float64List u0, Float64List v0, double dt) {
-    addFields(u, u0, dt );
-    addFields(v, v0, dt );
-    var temp = u0; u0 = u; u = temp;
-    temp = v0; v0 = v; v = temp;
-    diffuse2(u,u0,v,v0, dt);
+  void vel_step(
+      Float64List u, Float64List v, Float64List u0, Float64List v0, double dt) {
+    addFields(u, u0, dt);
+    addFields(v, v0, dt);
+    var temp = u0;
+    u0 = u;
+    u = temp;
+    temp = v0;
+    v0 = v;
+    v = temp;
+    diffuse2(u, u0, v, v0, dt);
     project(u, v, u0, v0);
-    temp = u0; u0 = u; u = temp;
-    temp = v0; v0 = v; v = temp;
+    temp = u0;
+    u0 = u;
+    u = temp;
+    temp = v0;
+    v0 = v;
+    v = temp;
     advect(1, u, u0, u0, v0, dt);
     advect(2, v, v0, u0, v0, dt);
-    project(u, v, u0, v0 );
+    project(u, v, u0, v0);
   }
 
   var uiCallback;
-
 
   void setDisplayFunction(func) {
     displayFunc = func;
@@ -424,7 +434,7 @@ class Field {
   }
 
   double getDensity(int x, int y) {
-    return dens[(x + 1) + (y + 1) * rowSize];  // rowSize from FluidField?
+    return dens[(x + 1) + (y + 1) * rowSize]; // rowSize from FluidField?
   }
 
   void setVelocity(int x, int y, double xv, double yv) {

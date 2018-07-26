@@ -12,14 +12,13 @@ class TemplateBenchmark extends BenchmarkBase {
   }
 
   // The benchmark code.
-  void run() {
-  }
+  void run() {}
 
   // Not measured setup code executed prior to the benchmark runs.
-  void setup() { }
+  void setup() {}
 
   // Not measures teardown code executed after the benchark runs.
-  void teardown() { }
+  void teardown() {}
 }
 
 main() {

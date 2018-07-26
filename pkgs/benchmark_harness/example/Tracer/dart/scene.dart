@@ -16,7 +16,6 @@ class Ray {
   }
 }
 
-
 class Camera {
   final position;
   final lookAt;
@@ -29,8 +28,8 @@ class Camera {
   }
 
   Ray getRay(double vx, double vy) {
-    var pos = screen -
-        (this.equator.multiplyScalar(vx) - this.up.multiplyScalar(vy));
+    var pos =
+        screen - (this.equator.multiplyScalar(vx) - this.up.multiplyScalar(vy));
     pos.y = pos.y * -1.0;
     var dir = pos - this.position;
     var ray = new Ray(pos, dir.normalize());
@@ -42,7 +41,6 @@ class Camera {
   }
 }
 
-
 class Background {
   final Color color;
   final double ambience;
@@ -50,16 +48,14 @@ class Background {
   Background(this.color, this.ambience);
 }
 
-
 class Scene {
   var camera;
   var shapes;
   var lights;
   var background;
   Scene() {
-    camera = new Camera(new Vector(0.0, 0.0, -0.5),
-                        new Vector(0.0, 0.0, 1.0),
-                        new Vector(0.0, 1.0, 0.0));
+    camera = new Camera(new Vector(0.0, 0.0, -0.5), new Vector(0.0, 0.0, 1.0),
+        new Vector(0.0, 1.0, 0.0));
     shapes = new List();
     lights = new List();
     background = new Background(new Color(0.0, 0.0, 0.5), 0.2);

@@ -15,12 +15,14 @@ part 'renderscene.dart';
 var checkNumber;
 
 main() {
-  var button = query('#render');
-  var canvas = query('#canvas');
-  var time = query('#time');
+  var button = querySelector('#render');
+  var canvas = querySelector('#canvas') as CanvasElement;
+  var time = querySelector('#time');
   button.onClick.listen((e) {
-    canvas.width = int.parse(query('#imageWidth').value);
-    canvas.height = int.parse(query('#imageHeight').value);
+    canvas.width =
+        int.parse((querySelector('#imageWidth') as InputElement).value);
+    canvas.height =
+        int.parse((querySelector('#imageHeight') as InputElement).value);
     var sw = new Stopwatch()..start();
     renderScene(e);
     sw.stop();

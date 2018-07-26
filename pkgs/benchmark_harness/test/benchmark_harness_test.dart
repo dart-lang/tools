@@ -5,7 +5,7 @@
 library benchmark_harness_test;
 
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('benchmark_harness', () {
