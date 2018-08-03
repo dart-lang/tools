@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:charcode/charcode.dart';
+import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 
 import 'exception.dart';
@@ -197,6 +198,7 @@ class StringScanner {
   /// position; if only [position] is passed, [length] defaults to 0.
   ///
   /// It's an error to pass [match] at the same time as [position] or [length].
+  @alwaysThrows
   void error(String message, {Match match, int position, int length}) {
     validateErrorArgs(string, match, position, length);
 

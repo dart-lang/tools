@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Add @alwaysThrows annotation to error method.
+
 ## 1.0.3
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

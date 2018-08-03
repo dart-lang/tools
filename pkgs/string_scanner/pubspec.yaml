@@ -1,5 +1,5 @@
 name: string_scanner
-version: 1.0.3
+version: 1.0.4
 
 description: A class for parsing strings using a sequence of patterns.
 author: Dart Team <misc@dartlang.org>
@@ -10,6 +10,7 @@ environment:
 
 dependencies:
   charcode: ^1.1.0
+  meta: ^1.1.0
   source_span: ^1.4.0
 
 dev_dependencies:
