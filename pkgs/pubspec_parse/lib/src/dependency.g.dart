@@ -1,7 +1,3 @@
-// Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'dependency.dart';
@@ -12,10 +8,8 @@ part of 'dependency.dart';
 
 SdkDependency _$SdkDependencyFromJson(Map json) {
   return $checkedNew('SdkDependency', json, () {
-    $checkKeys(json,
-        requiredKeys: const ['sdk'], disallowNullValues: const ['sdk']);
-    var val = new SdkDependency(
-        $checkedConvert(json, 'sdk', (v) => v as String),
+    $checkKeys(json, requiredKeys: ['sdk'], disallowNullValues: ['sdk']);
+    var val = SdkDependency($checkedConvert(json, 'sdk', (v) => v as String),
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _constraintFromString(v as String)));
     return val;
@@ -24,9 +18,8 @@ SdkDependency _$SdkDependencyFromJson(Map json) {
 
 GitDependency _$GitDependencyFromJson(Map json) {
   return $checkedNew('GitDependency', json, () {
-    $checkKeys(json,
-        requiredKeys: const ['url'], disallowNullValues: const ['url']);
-    var val = new GitDependency(
+    $checkKeys(json, requiredKeys: ['url'], disallowNullValues: ['url']);
+    var val = GitDependency(
         $checkedConvert(
             json, 'url', (v) => v == null ? null : parseGitUri(v as String)),
         $checkedConvert(json, 'ref', (v) => v as String),
@@ -38,13 +31,12 @@ GitDependency _$GitDependencyFromJson(Map json) {
 HostedDependency _$HostedDependencyFromJson(Map json) {
   return $checkedNew('HostedDependency', json, () {
     $checkKeys(json,
-        allowedKeys: const ['version', 'hosted'],
-        disallowNullValues: const ['hosted']);
-    var val = new HostedDependency(
+        allowedKeys: ['version', 'hosted'], disallowNullValues: ['hosted']);
+    var val = HostedDependency(
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _constraintFromString(v as String)),
         hosted: $checkedConvert(json, 'hosted',
-            (v) => v == null ? null : new HostedDetails.fromJson(v)));
+            (v) => v == null ? null : HostedDetails.fromJson(v)));
     return val;
   });
 }
@@ -52,10 +44,10 @@ HostedDependency _$HostedDependencyFromJson(Map json) {
 HostedDetails _$HostedDetailsFromJson(Map json) {
   return $checkedNew('HostedDetails', json, () {
     $checkKeys(json,
-        allowedKeys: const ['name', 'url'],
-        requiredKeys: const ['name'],
-        disallowNullValues: const ['name', 'url']);
-    var val = new HostedDetails(
+        allowedKeys: ['name', 'url'],
+        requiredKeys: ['name'],
+        disallowNullValues: ['name', 'url']);
+    var val = HostedDetails(
         $checkedConvert(json, 'name', (v) => v as String),
         $checkedConvert(
             json, 'url', (v) => v == null ? null : parseGitUri(v as String)));

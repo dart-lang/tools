@@ -26,7 +26,7 @@ void main() {
 
   test('all fields set', () {
     var version = new Version.parse('1.2.3');
-    var sdkConstraint = new VersionConstraint.parse('>=2.0.0-dev.54 <2.0.0');
+    var sdkConstraint = new VersionConstraint.parse('>=2.0.0-dev.54 <3.0.0');
     var value = parse({
       'name': 'sample',
       'version': version.toString(),

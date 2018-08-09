@@ -1,7 +1,3 @@
-// Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'pubspec.dart';
@@ -12,7 +8,7 @@ part of 'pubspec.dart';
 
 Pubspec _$PubspecFromJson(Map json) {
   return $checkedNew('Pubspec', json, () {
-    var val = new Pubspec($checkedConvert(json, 'name', (v) => v as String),
+    var val = Pubspec($checkedConvert(json, 'name', (v) => v as String),
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _versionFromString(v as String)),
         author: $checkedConvert(json, 'author', (v) => v as String),
@@ -31,7 +27,7 @@ Pubspec _$PubspecFromJson(Map json) {
         dependencyOverrides: $checkedConvert(
             json, 'dependency_overrides', (v) => parseDeps(v as Map)));
     return val;
-  }, fieldKeyMap: const {
+  }, fieldKeyMap: {
     'devDependencies': 'dev_dependencies',
     'dependencyOverrides': 'dependency_overrides'
   });
