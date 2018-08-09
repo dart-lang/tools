@@ -14,7 +14,7 @@ void main() {
   group('asyncCrawl', () {
     Future<List<String>> crawl(
         Map<String, List<String>> g, Iterable<String> roots) {
-      var graph = new AsyncGraph(g);
+      var graph = AsyncGraph(g);
       return crawlAsync(roots, graph.readNode, graph.children).toList();
     }
 
@@ -90,7 +90,7 @@ void main() {
         'a': ['b'],
       };
       var nodes = crawlAsync(['a'], (n) => n,
-          (k, n) => k == 'b' ? throw new ArgumentError() : graph[k]);
+          (k, n) => k == 'b' ? throw ArgumentError() : graph[k]);
       expect(nodes, emitsThrough(emitsError(isArgumentError)));
     });
 
@@ -98,8 +98,8 @@ void main() {
       var graph = {
         'a': ['b'],
       };
-      var nodes = crawlAsync(['a'],
-          (n) => n == 'b' ? throw new ArgumentError() : n, (k, n) => graph[k]);
+      var nodes = crawlAsync(['a'], (n) => n == 'b' ? throw ArgumentError() : n,
+          (k, n) => graph[k]);
       expect(nodes, emitsThrough(emitsError(isArgumentError)));
     });
   });

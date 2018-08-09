@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-final _empty = new Future<Null>.value(null);
+final _empty = Future<Null>.value(null);
 
 /// Finds and returns every node in a graph who's nodes and edges are
 /// asynchronously resolved.
@@ -30,18 +30,18 @@ final _empty = new Future<Null>.value(null);
 /// work may have already been started.
 Stream<V> crawlAsync<K, V>(Iterable<K> roots, FutureOr<V> Function(K) readNode,
     FutureOr<Iterable<K>> Function(K, V) children) {
-  final crawl = new _CrawlAsync(roots, readNode, children)..run();
+  final crawl = _CrawlAsync(roots, readNode, children)..run();
   return crawl.result.stream;
 }
 
 class _CrawlAsync<K, V> {
-  final result = new StreamController<V>();
+  final result = StreamController<V>();
 
   final FutureOr<V> Function(K) readNode;
   final FutureOr<Iterable<K>> Function(K, V) children;
   final Iterable<K> roots;
 
-  final _seen = new Set<K>();
+  final _seen = Set<K>();
 
   _CrawlAsync(this.roots, this.readNode, this.children);
 

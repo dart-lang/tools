@@ -28,10 +28,10 @@ List<List<V>> stronglyConnectedComponents<K, V>(
   final result = <List<V>>[];
   final lowLinks = <K, int>{};
   final indexes = <K, int>{};
-  final onStack = new Set<K>();
+  final onStack = Set<K>();
 
   var index = 0;
-  var lastVisited = new Queue<V>();
+  var lastVisited = Queue<V>();
 
   void strongConnect(V node) {
     var nodeKey = key(node);

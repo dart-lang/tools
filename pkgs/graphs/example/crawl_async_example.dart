@@ -29,14 +29,12 @@ Future<AnalysisContext> get analysisContext async {
     var libPath = await pathForUri(libUri);
     var packagePath = p.dirname(libPath);
 
-    var roots = new ContextLocator().locateRoots(includedPaths: [packagePath]);
+    var roots = ContextLocator().locateRoots(includedPaths: [packagePath]);
     if (roots.length != 1) {
-      throw new StateError(
-          'Expected to find exactly one context root, got $roots');
+      throw StateError('Expected to find exactly one context root, got $roots');
     }
 
-    _analysisContext =
-        new ContextBuilder().createContext(contextRoot: roots[0]);
+    _analysisContext = ContextBuilder().createContext(contextRoot: roots[0]);
   }
 
   return _analysisContext;
@@ -44,8 +42,8 @@ Future<AnalysisContext> get analysisContext async {
 
 Future<Iterable<Uri>> findImports(Uri from, Source source) async {
   return source.unit.directives
-      .where((d) => d is UriBasedDirective)
-      .map((d) => (d as UriBasedDirective).uri.stringValue)
+      .whereType<UriBasedDirective>()
+      .map((d) => d.uri.stringValue)
       .where((uri) => !uri.startsWith('dart:'))
       .map((import) => resolveImport(import, from));
 }
@@ -60,13 +58,12 @@ Future<CompilationUnit> parseUri(Uri uri) async {
 Future<String> pathForUri(Uri uri) async {
   var fileUri = await Isolate.resolvePackageUri(uri);
   if (fileUri == null || !fileUri.isScheme('file')) {
-    throw new StateError(
-        'Expected to resolve $uri to a file URI, got $fileUri');
+    throw StateError('Expected to resolve $uri to a file URI, got $fileUri');
   }
   return p.fromUri(fileUri);
 }
 
-Future<Source> read(Uri uri) async => new Source(uri, await parseUri(uri));
+Future<Source> read(Uri uri) async => Source(uri, await parseUri(uri));
 
 Uri resolveImport(String import, Uri from) {
   if (import.startsWith('package:')) return Uri.parse(import);

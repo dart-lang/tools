@@ -29,11 +29,11 @@ class Node {
 }
 
 void main() {
-  var nodeA = new Node('A', 1);
-  var nodeB = new Node('B', 2);
-  var nodeC = new Node('C', 3);
-  var nodeD = new Node('D', 4);
-  var graph = new Graph({
+  var nodeA = Node('A', 1);
+  var nodeB = Node('B', 2);
+  var nodeC = Node('C', 3);
+  var nodeD = Node('D', 4);
+  var graph = Graph({
     nodeA: [nodeB, nodeC],
     nodeB: [nodeC, nodeD],
     nodeC: [nodeB, nodeD]

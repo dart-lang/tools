@@ -11,7 +11,7 @@ void main() {
   group('strongly connected components', () {
     /// Run [stronglyConnectedComponents] on [g].
     List<List<String>> components(Map<String, List<String>> g) {
-      final graph = new Graph(g);
+      final graph = Graph(g);
       return stronglyConnectedComponents(
           graph.allNodes, graph.key, graph.children);
     }
@@ -53,7 +53,7 @@ void main() {
     test('includes the first passed root last in a cycle', () {
       // In cases where this is used to find a topological ordering the first
       // value in nodes should always come last.
-      var graph = new Graph({
+      var graph = Graph({
         'a': ['b'],
         'b': ['a']
       });
