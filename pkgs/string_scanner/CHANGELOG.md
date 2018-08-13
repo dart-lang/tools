@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.0.4
 
 * Add @alwaysThrows annotation to error method.
 
