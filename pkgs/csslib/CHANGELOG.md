@@ -1,3 +1,5 @@
+## 0.14.5
+
 * Fixed a crashed caused by parsing `:host()` without an argument and added an
   error message explaining that a selector argument is expected.
 
