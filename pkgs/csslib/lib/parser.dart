@@ -1379,12 +1379,15 @@ class _Parser {
   /// supports Selector Level 4 grammar:
   /// https://drafts.csswg.org/selectors-4/#typedef-compound-selector
   Selector processCompoundSelector() {
-    return processSelector()
-      ..simpleSelectorSequences.forEach((sequence) {
+    var selector = processSelector();
+    if (selector != null) {
+      for (var sequence in selector.simpleSelectorSequences) {
         if (!sequence.isCombinatorNone) {
           _error('compound selector can not contain combinator', sequence.span);
         }
-      });
+      }
+    }
+    return selector;
   }
 
   simpleSelectorSequence(bool forceCombinatorNone) {
@@ -1625,6 +1628,10 @@ class _Parser {
       } else if (!pseudoElement && (name == 'host' || name == 'host-context')) {
         _eat(TokenKind.LPAREN);
         var selector = processCompoundSelector();
+        if (selector == null) {
+          _errorExpected('a selector argument');
+          return null;
+        }
         _eat(TokenKind.RPAREN);
         var span = _makeSpan(start);
         return new PseudoClassFunctionSelector(pseudoName, selector, span);

@@ -1,3 +1,6 @@
+* Fixed a crashed caused by parsing `:host()` without an argument and added an
+  error message explaining that a selector argument is expected.
+
 ## 0.14.4+1
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

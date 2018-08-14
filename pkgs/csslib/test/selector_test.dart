@@ -82,6 +82,13 @@ void testSelectorFailures() {
       'found a number\n'
       '.foobar .1a-story .xyzzy\n'
       '        ^^');
+
+  selector(':host()', errors: errors..clear());
+  expect(
+      errors.first.toString(),
+      'error on line 1, column 7: expected a selector argument, but found )\n'
+      ':host()\n'
+      '      ^');
 }
 
 main() {
