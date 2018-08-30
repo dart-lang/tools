@@ -8,7 +8,8 @@ part of 'dependency.dart';
 
 SdkDependency _$SdkDependencyFromJson(Map json) {
   return $checkedNew('SdkDependency', json, () {
-    $checkKeys(json, requiredKeys: ['sdk'], disallowNullValues: ['sdk']);
+    $checkKeys(json,
+        requiredKeys: const ['sdk'], disallowNullValues: const ['sdk']);
     var val = SdkDependency($checkedConvert(json, 'sdk', (v) => v as String),
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _constraintFromString(v as String)));
@@ -18,7 +19,8 @@ SdkDependency _$SdkDependencyFromJson(Map json) {
 
 GitDependency _$GitDependencyFromJson(Map json) {
   return $checkedNew('GitDependency', json, () {
-    $checkKeys(json, requiredKeys: ['url'], disallowNullValues: ['url']);
+    $checkKeys(json,
+        requiredKeys: const ['url'], disallowNullValues: const ['url']);
     var val = GitDependency(
         $checkedConvert(
             json, 'url', (v) => v == null ? null : parseGitUri(v as String)),
@@ -31,7 +33,8 @@ GitDependency _$GitDependencyFromJson(Map json) {
 HostedDependency _$HostedDependencyFromJson(Map json) {
   return $checkedNew('HostedDependency', json, () {
     $checkKeys(json,
-        allowedKeys: ['version', 'hosted'], disallowNullValues: ['hosted']);
+        allowedKeys: const ['version', 'hosted'],
+        disallowNullValues: const ['hosted']);
     var val = HostedDependency(
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _constraintFromString(v as String)),
@@ -44,9 +47,9 @@ HostedDependency _$HostedDependencyFromJson(Map json) {
 HostedDetails _$HostedDetailsFromJson(Map json) {
   return $checkedNew('HostedDetails', json, () {
     $checkKeys(json,
-        allowedKeys: ['name', 'url'],
-        requiredKeys: ['name'],
-        disallowNullValues: ['name', 'url']);
+        allowedKeys: const ['name', 'url'],
+        requiredKeys: const ['name'],
+        disallowNullValues: const ['name', 'url']);
     var val = HostedDetails(
         $checkedConvert(json, 'name', (v) => v as String),
         $checkedConvert(
