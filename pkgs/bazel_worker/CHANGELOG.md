@@ -1,3 +1,7 @@
+## 0.1.13
+
+* Support protobuf 0.10.0.
+
 ## 0.1.12
 
 * Set max SDK version to `<3.0.0`.
