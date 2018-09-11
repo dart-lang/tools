@@ -1,0 +1,11 @@
+name: timing
+version: 0.1.0-dev
+description:
+author: Dart Team <misc@dartlang.org>
+homepage: https://github.com/dart-lang/timing
+
+environment:
+  sdk: ">=2.0.0 <3.0.0"
+
+dev_dependencies:
+  test: ^1.0.0
