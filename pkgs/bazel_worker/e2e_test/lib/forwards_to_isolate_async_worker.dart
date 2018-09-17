@@ -6,28 +6,22 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:bazel_worker/bazel_worker.dart';
+import 'package:bazel_worker/driver.dart';
 
 /// Example worker that just forwards requests to an isolate.
 class ForwardsToIsolateAsyncWorker extends AsyncWorkerLoop {
-  final StreamIterator _receivePortIterator;
-  final SendPort _sendPort;
+  final IsolateDriverConnection _isolateDriverConnection;
 
   static Future<ForwardsToIsolateAsyncWorker> create(
       ReceivePort receivePort) async {
-    // The first thing the isolate sends is a `SendPort` so we can communicate
-    // with it.
-    var receivePortIterator = new StreamIterator(receivePort);
-    await receivePortIterator.moveNext();
-    var sendPort = receivePortIterator.current as SendPort;
-    return new ForwardsToIsolateAsyncWorker(receivePortIterator, sendPort);
+    return new ForwardsToIsolateAsyncWorker(
+        await IsolateDriverConnection.create(receivePort));
   }
 
-  ForwardsToIsolateAsyncWorker(this._receivePortIterator, this._sendPort);
+  ForwardsToIsolateAsyncWorker(this._isolateDriverConnection);
 
-  Future<WorkResponse> performRequest(WorkRequest request) async {
-    // Send the request to the isolate, return the response from the isolate.
-    _sendPort.send(request.writeToBuffer());
-    await _receivePortIterator.moveNext();
-    return WorkResponse.fromBuffer(_receivePortIterator.current as List<int>);
+  Future<WorkResponse> performRequest(WorkRequest request) {
+    _isolateDriverConnection.writeRequest(request);
+    return _isolateDriverConnection.readResponse();
   }
 }

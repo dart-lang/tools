@@ -26,11 +26,17 @@ abstract class WorkerConnection {
 }
 
 abstract class AsyncWorkerConnection implements WorkerConnection {
-  /// Creates a [StdAsyncWorkerConnection], unless [sendPort] is specified, in
-  /// which case creates a [SendPortAsyncWorkerConnection].
-  factory AsyncWorkerConnection([SendPort sendPort]) => sendPort == null
-      ? new StdAsyncWorkerConnection()
-      : new SendPortAsyncWorkerConnection(sendPort);
+  /// Creates a [StdAsyncWorkerConnection] with the specified [inputStream]
+  /// and [outputStream], unless [sendPort] is specified, in which case
+  /// creates a [SendPortAsyncWorkerConnection].
+  factory AsyncWorkerConnection(
+          {Stream<List<int>> inputStream,
+          StreamSink<List<int>> outputStream,
+          SendPort sendPort}) =>
+      sendPort == null
+          ? new StdAsyncWorkerConnection(
+              inputStream: inputStream, outputStream: outputStream)
+          : new SendPortAsyncWorkerConnection(sendPort);
 
   @override
   Future<WorkRequest> readRequest();
@@ -68,7 +74,7 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
 /// Implementation of [AsyncWorkerConnection] for running in an isolate.
 class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
   final ReceivePort receivePort;
-  final StreamIterator receivePortIterator;
+  final StreamIterator<Uint8List> receivePortIterator;
   final SendPort sendPort;
 
   factory SendPortAsyncWorkerConnection(SendPort sendPort) {
@@ -78,14 +84,12 @@ class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
   }
 
   SendPortAsyncWorkerConnection._(this.receivePort, this.sendPort)
-      : receivePortIterator = new StreamIterator(receivePort);
+      : receivePortIterator = new StreamIterator(receivePort.cast());
 
   @override
   Future<WorkRequest> readRequest() async {
-    if (!await receivePortIterator.moveNext()) {
-      throw new StateError('Receive port closed.');
-    }
-    return new WorkRequest.fromBuffer(receivePortIterator.current as Uint8List);
+    if (!await receivePortIterator.moveNext()) return null;
+    return new WorkRequest.fromBuffer(receivePortIterator.current);
   }
 
   @override
