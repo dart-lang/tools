@@ -1,3 +1,9 @@
+## 0.1.14-dev
+
+* Allow workers to support running in isolates. To support running in isolates,
+  workers must modify their `main` method to accept a `SendPort` then use it
+  when creating the `AsyncWorkerConnection`. See `async_worker` in `e2e_test`.
+
 ## 0.1.13
 
 * Support protobuf 0.10.0.

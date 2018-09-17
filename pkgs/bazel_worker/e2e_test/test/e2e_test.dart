@@ -17,6 +17,10 @@ void main() {
       () => Process.start(dart, [p.join('bin', 'sync_worker.dart')]));
   runE2eTestForWorker('async worker',
       () => Process.start(dart, [p.join('bin', 'async_worker.dart')]));
+  runE2eTestForWorker(
+      'async worker in isolate',
+      () =>
+          Process.start(dart, [p.join('bin', 'async_worker_in_isolate.dart')]));
 }
 
 void runE2eTestForWorker(String groupName, SpawnWorker spawnWorker) {

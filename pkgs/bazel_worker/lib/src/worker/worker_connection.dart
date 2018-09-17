@@ -4,6 +4,8 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:typed_data';
 
 import '../async_message_grouper.dart';
 import '../sync_message_grouper.dart';
@@ -24,6 +26,12 @@ abstract class WorkerConnection {
 }
 
 abstract class AsyncWorkerConnection implements WorkerConnection {
+  /// Creates a [StdAsyncWorkerConnection], unless [sendPort] is specified, in
+  /// which case creates a [SendPortAsyncWorkerConnection].
+  factory AsyncWorkerConnection([SendPort sendPort]) => sendPort == null
+      ? new StdAsyncWorkerConnection()
+      : new SendPortAsyncWorkerConnection(sendPort);
+
   @override
   Future<WorkRequest> readRequest();
 }
@@ -54,6 +62,35 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
   @override
   void writeResponse(WorkResponse response) {
     _outputStream.add(protoToDelimitedBuffer(response));
+  }
+}
+
+/// Implementation of [AsyncWorkerConnection] for running in an isolate.
+class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
+  final ReceivePort receivePort;
+  final StreamIterator receivePortIterator;
+  final SendPort sendPort;
+
+  factory SendPortAsyncWorkerConnection(SendPort sendPort) {
+    var receivePort = new ReceivePort();
+    sendPort.send(receivePort.sendPort);
+    return SendPortAsyncWorkerConnection._(receivePort, sendPort);
+  }
+
+  SendPortAsyncWorkerConnection._(this.receivePort, this.sendPort)
+      : receivePortIterator = new StreamIterator(receivePort);
+
+  @override
+  Future<WorkRequest> readRequest() async {
+    if (!await receivePortIterator.moveNext()) {
+      throw new StateError('Receive port closed.');
+    }
+    return new WorkRequest.fromBuffer(receivePortIterator.current as Uint8List);
+  }
+
+  @override
+  void writeResponse(WorkResponse response) {
+    sendPort.send(response.writeToBuffer());
   }
 }
 

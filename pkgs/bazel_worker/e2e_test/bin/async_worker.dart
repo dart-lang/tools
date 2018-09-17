@@ -3,9 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:e2e_test/async_worker.dart';
 
-Future main() async {
-  await new ExampleAsyncWorker().run();
+/// This worker can run in one of two ways: normally, using stdin/stdout, or
+/// in an isolate, communicating over a [SendPort].
+Future main(List<String> args, [SendPort sendPort]) async {
+  await new ExampleAsyncWorker(sendPort).run();
 }
