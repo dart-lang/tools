@@ -4,10 +4,15 @@
 
 import 'dart:async';
 
+import 'package:json_annotation/json_annotation.dart';
+
 import 'clock.dart';
+
+part 'timing.g.dart';
 
 /// The timings of an operation, including its [startTime], [stopTime], and
 /// [duration].
+@JsonSerializable(nullable: false)
 class TimeSlice {
   /// The total duration of this operation, equivalent to taking the difference
   /// between [stopTime] and [startTime].
@@ -19,12 +24,18 @@ class TimeSlice {
 
   TimeSlice(this.startTime, this.stopTime);
 
+  factory TimeSlice.fromJson(Map<String, dynamic> json) =>
+      _$TimeSliceFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TimeSliceToJson(this);
+
   @override
   String toString() => '($startTime + $duration)';
 }
 
 /// The timings of an async operation, consist of several sync [slices] and
 /// includes total [startTime], [stopTime], and [duration].
+@JsonSerializable(nullable: false)
 class TimeSliceGroup implements TimeSlice {
   final List<TimeSlice> slices;
 
@@ -50,6 +61,13 @@ class TimeSliceGroup implements TimeSlice {
           (slice is TimeSliceGroup ? slice.innerDuration : slice.duration));
 
   TimeSliceGroup(List<TimeSlice> this.slices);
+
+  /// Constructs TimeSliceGroup from JSON representation
+  factory TimeSliceGroup.fromJson(Map<String, dynamic> json) =>
+      _$TimeSliceGroupFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$TimeSliceGroupToJson(this);
 
   @override
   String toString() => slices.toString();
@@ -139,6 +157,12 @@ class SyncTimeTracker implements TimeTracker {
 
   @override
   Duration get duration => stopTime?.difference(startTime);
+
+  /// Converts to JSON representation
+  ///
+  /// Can't be used before [isFinished]
+  @override
+  Map<String, dynamic> toJson() => _$TimeSliceToJson(this);
 }
 
 /// Async actions returning [Future] will be tracked as single sync time span
@@ -196,6 +220,10 @@ class NoOpTimeTracker implements TimeTracker {
 
   @override
   T track<T>(T Function() action) => action();
+
+  @override
+  Map<String, dynamic> toJson() =>
+      throw UnsupportedError('Unsupported in no-op implementation');
 }
 
 /// Track all async execution as disjoint time [slices] in ascending order.

@@ -11,3 +11,12 @@ await tracker.track(() async {
 // Use results
 print('${tracker.duration} ${tracker.innerDuration} ${tracker.slices}');
 ```
+
+
+## Building
+
+Use the following command to re-generate `lib/src/timing.g.dart` file:
+
+```bash
+pub run build_runner build
+```
