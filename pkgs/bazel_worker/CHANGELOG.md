@@ -1,4 +1,4 @@
-## 0.1.14-dev
+## 0.1.14
 
 * Allow workers to support running in isolates. To support running in isolates,
   workers must modify their `main` method to accept a `SendPort` then use it
