@@ -3,12 +3,17 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:bazel_worker/bazel_worker.dart';
 
 /// Example worker that just returns in its response all the arguments passed
 /// separated by newlines.
 class ExampleAsyncWorker extends AsyncWorkerLoop {
+  /// Set [sendPort] to run in an isolate.
+  ExampleAsyncWorker([SendPort sendPort])
+      : super(connection: new AsyncWorkerConnection(sendPort: sendPort));
+
   Future<WorkResponse> performRequest(WorkRequest request) async {
     return new WorkResponse()
       ..exitCode = 0

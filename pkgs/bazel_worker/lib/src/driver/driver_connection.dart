@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import '../async_message_grouper.dart';
 import '../worker_protocol.pb.dart';
@@ -77,4 +78,36 @@ class StdDriverConnection implements DriverConnection {
 
   @override
   Future cancel() => _messageGrouper.cancel();
+}
+
+/// [DriverConnection] that works with an isolate via a [SendPort].
+class IsolateDriverConnection implements DriverConnection {
+  final StreamIterator _receivePortIterator;
+  final SendPort _sendPort;
+
+  IsolateDriverConnection._(this._receivePortIterator, this._sendPort);
+
+  /// Creates a driver connection for a worker in an isolate. Provide the
+  /// [receivePort] attached to the [SendPort] that the isolate was created
+  /// with.
+  static Future<IsolateDriverConnection> create(ReceivePort receivePort) async {
+    var receivePortIterator = new StreamIterator(receivePort);
+    await receivePortIterator.moveNext();
+    var sendPort = receivePortIterator.current as SendPort;
+    return new IsolateDriverConnection._(receivePortIterator, sendPort);
+  }
+
+  @override
+  Future<WorkResponse> readResponse() async {
+    await _receivePortIterator.moveNext();
+    return WorkResponse.fromBuffer(_receivePortIterator.current as List<int>);
+  }
+
+  @override
+  void writeRequest(WorkRequest request) {
+    _sendPort.send(request.writeToBuffer());
+  }
+
+  @override
+  Future cancel() async {}
 }
