@@ -1,3 +1,8 @@
+## 0.10.8
+
+* Preserve source-map extensions in `SingleMapping`. Extensions are keys in the
+  json map that start with `"x_"`.
+
 ## 0.10.7
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

@@ -342,6 +342,16 @@ main() {
     expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));
   });
 
+  test('parse extensions', () {
+    var map = new Map.from(EXPECTED_MAP);
+    map["x_foo"] = "a";
+    map["x_bar"] = [3];
+    SingleMapping mapping = parseJson(map);
+    expect(mapping.toJson(), equals(map));
+    expect(mapping.extensions["x_foo"], equals("a"));
+    expect(mapping.extensions["x_bar"].first, equals(3));
+  });
+
   group("source files", () {
     group("from fromEntries()", () {
       test("are null for non-FileLocations", () {

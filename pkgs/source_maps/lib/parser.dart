@@ -278,8 +278,11 @@ class SingleMapping extends Mapping {
 
   final Uri _mapUrl;
 
+  final Map<String, dynamic> extensions;
+
   SingleMapping._(this.targetUrl, this.files, this.urls, this.names, this.lines)
-      : _mapUrl = null;
+      : _mapUrl = null,
+        extensions = {};
 
   factory SingleMapping.fromEntries(Iterable<builder.Entry> entries,
       [String fileUrl]) {
@@ -341,7 +344,8 @@ class SingleMapping extends Mapping {
         files = new List(map['sources'].length),
         sourceRoot = map['sourceRoot'],
         lines = <TargetLineEntry>[],
-        _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : mapUrl {
+        _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : mapUrl,
+        extensions = {} {
     var sourcesContent = map['sourcesContent'] == null
         ? const []
         : new List<String>.from(map['sourcesContent']);
@@ -414,6 +418,10 @@ class SingleMapping extends Mapping {
     if (!entries.isEmpty) {
       lines.add(new TargetLineEntry(line, entries));
     }
+
+    map.forEach((name, value) {
+      if (name.startsWith("x_")) extensions[name] = value;
+    });
   }
 
   /// Encodes the Mapping mappings as a json map.
@@ -471,6 +479,7 @@ class SingleMapping extends Mapping {
     if (includeSourceContents) {
       result['sourcesContent'] = files.map((file) => file?.getText(0)).toList();
     }
+    extensions.forEach((name, value) => result[name] = value);
 
     return result;
   }
