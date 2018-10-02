@@ -26,7 +26,7 @@ enum _FilePermissionRole {
 bool _hasPermission(
   FileStat stat,
   _FilePermission permission, {
-  _FilePermissionRole role: _FilePermissionRole.world,
+  _FilePermissionRole role = _FilePermissionRole.world,
 }) {
   final index = _permissionBitIndex(permission, role);
   return (stat.mode & (1 << index)) != 0;
@@ -55,7 +55,7 @@ int _permissionBitIndex(_FilePermission permission, _FilePermissionRole role) {
 FutureOr<bool> isExecutable(
   String path, {
   bool isWindows,
-  FutureOr<FileStat> getStat(String path): FileStat.stat,
+  FutureOr<FileStat> getStat(String path) = FileStat.stat,
 }) {
   // Windows has no concept of executable.
   if (isWindows ?? Platform.isWindows) return true;

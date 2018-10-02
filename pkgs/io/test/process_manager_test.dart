@@ -21,7 +21,7 @@ void main() {
   test('spawn functions should match the type definition of Process.start', () {
     final isStartProcess = const TypeMatcher<StartProcess>();
     expect(Process.start, isStartProcess);
-    final manager = new ProcessManager();
+    final manager = ProcessManager();
     expect(manager.spawn, isStartProcess);
     expect(manager.spawnBackground, isStartProcess);
     expect(manager.spawnDetached, isStartProcess);
@@ -29,19 +29,19 @@ void main() {
 
   group('spawn', () {
     setUp(() async {
-      fakeStdIn = new StreamController<String>(sync: true);
-      sharedStdIn = new SharedStdIn(fakeStdIn.stream.map((s) => s.codeUnits));
+      fakeStdIn = StreamController<String>(sync: true);
+      sharedStdIn = SharedStdIn(fakeStdIn.stream.map((s) => s.codeUnits));
       stdoutLog = <String>[];
       stderrLog = <String>[];
 
-      final stdoutController = new StreamController<List<int>>(sync: true);
+      final stdoutController = StreamController<List<int>>(sync: true);
       stdoutController.stream.map(utf8.decode).listen(stdoutLog.add);
-      final stdout = new IOSink(stdoutController);
-      final stderrController = new StreamController<List<int>>(sync: true);
+      final stdout = IOSink(stdoutController);
+      final stderrController = StreamController<List<int>>(sync: true);
       stderrController.stream.map(utf8.decode).listen(stderrLog.add);
-      final stderr = new IOSink(stderrController);
+      final stderr = IOSink(stderrController);
 
-      processManager = new ProcessManager(
+      processManager = ProcessManager(
         stdin: sharedStdIn,
         stdout: stdout,
         stderr: stderr,

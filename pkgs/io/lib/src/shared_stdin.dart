@@ -17,7 +17,7 @@ import 'package:meta/meta.dart';
 /// [SharedStdIn.terminate] *must* be invoked in order to close the underlying
 /// connection to [stdin], allowing your program to close automatically without
 /// hanging.
-final SharedStdIn sharedStdIn = new SharedStdIn(stdin);
+final SharedStdIn sharedStdIn = SharedStdIn(stdin);
 
 /// A singleton wrapper around `stdin` that allows new subscribers.
 ///
@@ -36,7 +36,7 @@ class SharedStdIn extends Stream<List<int>> {
   /// Returns a future that completes with the next line.
   ///
   /// This is similar to the standard [Stdin.readLineSync], but asynchronous.
-  Future<String> nextLine({Encoding encoding: systemEncoding}) {
+  Future<String> nextLine({Encoding encoding = systemEncoding}) {
     return lines(encoding: encoding).first;
   }
 
@@ -51,7 +51,7 @@ class SharedStdIn extends Stream<List<int>> {
   /// ```
   ///
   /// ... but asynchronous.
-  Stream<String> lines({Encoding encoding: systemEncoding}) {
+  Stream<String> lines({Encoding encoding = systemEncoding}) {
     return transform(utf8.decoder).transform(const LineSplitter());
   }
 
@@ -59,7 +59,7 @@ class SharedStdIn extends Stream<List<int>> {
 
   StreamController<List<int>> _getCurrent() {
     if (_current == null) {
-      _current = new StreamController<List<int>>(
+      _current = StreamController<List<int>>(
           onCancel: () {
             _current = null;
           },
@@ -76,11 +76,11 @@ class SharedStdIn extends Stream<List<int>> {
     bool cancelOnError,
   }) {
     if (_sub == null) {
-      throw new StateError('Stdin has already been terminated.');
+      throw StateError('Stdin has already been terminated.');
     }
     final controller = _getCurrent();
     if (controller.hasListener) {
-      throw new StateError(''
+      throw StateError(''
           'Subscriber already listening. The existing subscriber must cancel '
           'before another may be added.');
     }
@@ -95,7 +95,7 @@ class SharedStdIn extends Stream<List<int>> {
   /// Terminates the connection to `stdin`, closing all subscription.
   Future<Null> terminate() async {
     if (_sub == null) {
-      throw new StateError('Stdin has already been terminated.');
+      throw StateError('Stdin has already been terminated.');
     }
     await _sub.cancel();
     await _current?.close();

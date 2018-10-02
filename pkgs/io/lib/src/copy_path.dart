@@ -12,7 +12,7 @@ bool _doNothing(String from, String to) {
     return true;
   }
   if (p.isWithin(from, to)) {
-    throw new ArgumentError('Cannot copy from $from to $to');
+    throw ArgumentError('Cannot copy from $from to $to');
   }
   return false;
 }
@@ -30,15 +30,15 @@ Future<Null> copyPath(String from, String to) async {
   if (_doNothing(from, to)) {
     return;
   }
-  await new Directory(to).create(recursive: true);
-  await for (final file in new Directory(from).list(recursive: true)) {
+  await Directory(to).create(recursive: true);
+  await for (final file in Directory(from).list(recursive: true)) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
-      await new Directory(copyTo).create(recursive: true);
+      await Directory(copyTo).create(recursive: true);
     } else if (file is File) {
-      await new File(file.path).copy(copyTo);
+      await File(file.path).copy(copyTo);
     } else if (file is Link) {
-      await new Link(copyTo).create(await file.target(), recursive: true);
+      await Link(copyTo).create(await file.target(), recursive: true);
     }
   }
 }
@@ -56,15 +56,15 @@ void copyPathSync(String from, String to) {
   if (_doNothing(from, to)) {
     return;
   }
-  new Directory(to).createSync(recursive: true);
-  for (final file in new Directory(from).listSync(recursive: true)) {
+  Directory(to).createSync(recursive: true);
+  for (final file in Directory(from).listSync(recursive: true)) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
-      new Directory(copyTo).createSync(recursive: true);
+      Directory(copyTo).createSync(recursive: true);
     } else if (file is File) {
-      new File(file.path).copySync(copyTo);
+      File(file.path).copySync(copyTo);
     } else if (file is Link) {
-      new Link(copyTo).createSync(file.targetSync(), recursive: true);
+      Link(copyTo).createSync(file.targetSync(), recursive: true);
     }
   }
 }

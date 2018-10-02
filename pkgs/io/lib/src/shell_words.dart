@@ -22,9 +22,9 @@ import 'package:string_scanner/string_scanner.dart';
 ///
 /// Throws a [FormatException] if [command] isn't a valid shell command.
 List<String> shellSplit(String command) {
-  final scanner = new StringScanner(command);
+  final scanner = StringScanner(command);
   final results = <String>[];
-  final token = new StringBuffer();
+  final token = StringBuffer();
 
   // Whether a token is being parsed, as opposed to a separator character. This
   // is different than just [token.isEmpty], because empty quoted tokens can

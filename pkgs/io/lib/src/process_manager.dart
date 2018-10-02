@@ -46,9 +46,9 @@ abstract class ProcessManager {
     stderr ??= io.stderr;
     isWindows ??= io.Platform.isWindows;
     if (isWindows) {
-      return new _WindowsProcessManager(stdin, stdout, stderr);
+      return _WindowsProcessManager(stdin, stdout, stderr);
     }
-    return new _UnixProcessManager(stdin, stdout, stderr);
+    return _UnixProcessManager(stdin, stdout, stderr);
   }
 
   final Stream<List<int>> _stdin;
@@ -69,9 +69,9 @@ abstract class ProcessManager {
     Iterable<String> arguments, {
     String workingDirectory,
     Map<String, String> environment,
-    bool includeParentEnvironment: true,
-    bool runInShell: false,
-    io.ProcessStartMode mode: io.ProcessStartMode.normal,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+    io.ProcessStartMode mode = io.ProcessStartMode.normal,
   }) async {
     final process = io.Process.start(
       executable,
@@ -82,7 +82,7 @@ abstract class ProcessManager {
       runInShell: runInShell,
       mode: mode,
     );
-    return new _ForwardingSpawn(await process, _stdin, _stdout, _stderr);
+    return _ForwardingSpawn(await process, _stdin, _stdout, _stderr);
   }
 
   /// Spawns a process by invoking [executable] with [arguments].
@@ -97,9 +97,9 @@ abstract class ProcessManager {
     Iterable<String> arguments, {
     String workingDirectory,
     Map<String, String> environment,
-    bool includeParentEnvironment: true,
-    bool runInShell: false,
-    io.ProcessStartMode mode: io.ProcessStartMode.normal,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+    io.ProcessStartMode mode = io.ProcessStartMode.normal,
   }) async {
     final process = io.Process.start(
       executable,
@@ -110,7 +110,7 @@ abstract class ProcessManager {
       runInShell: runInShell,
       mode: mode,
     );
-    return new _ForwardingSpawn(
+    return _ForwardingSpawn(
       await process,
       const Stream.empty(),
       _stdout,
@@ -128,9 +128,9 @@ abstract class ProcessManager {
     Iterable<String> arguments, {
     String workingDirectory,
     Map<String, String> environment,
-    bool includeParentEnvironment: true,
-    bool runInShell: false,
-    io.ProcessStartMode mode: io.ProcessStartMode.normal,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+    io.ProcessStartMode mode = io.ProcessStartMode.normal,
   }) async {
     return io.Process.start(
       executable,
@@ -192,8 +192,8 @@ class _ForwardingSpawn extends Spawn {
     io.IOSink stdout,
     io.IOSink stderr,
   ) {
-    final stdoutSelf = new StreamController<List<int>>();
-    final stderrSelf = new StreamController<List<int>>();
+    final stdoutSelf = StreamController<List<int>>();
+    final stderrSelf = StreamController<List<int>>();
     final stdInSub = stdin.listen(delegate.stdin.add);
     final stdOutSub = delegate.stdout.listen((event) {
       stdout.add(event);
@@ -203,7 +203,7 @@ class _ForwardingSpawn extends Spawn {
       stderr.add(event);
       stderrSelf.add(event);
     });
-    return new _ForwardingSpawn._delegate(
+    return _ForwardingSpawn._delegate(
       delegate,
       stdInSub,
       stdOutSub,

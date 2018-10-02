@@ -13,8 +13,8 @@ void main() {
   SharedStdIn sharedStdIn;
 
   setUp(() async {
-    fakeStdIn = new StreamController<String>(sync: true);
-    sharedStdIn = new SharedStdIn(fakeStdIn.stream.map((s) => s.codeUnits));
+    fakeStdIn = StreamController<String>(sync: true);
+    sharedStdIn = SharedStdIn(fakeStdIn.stream.map((s) => s.codeUnits));
   });
 
   test('should allow a single subscriber', () async {
@@ -71,7 +71,7 @@ void main() {
   test('should allow listening for new lines multiple times', () async {
     expect(sharedStdIn.nextLine(), completion('Hello World'));
     fakeStdIn.add('Hello World\n');
-    await new Future<Null>.value();
+    await Future<Null>.value();
 
     expect(sharedStdIn.nextLine(), completion('Hello World'));
     fakeStdIn.add('Hello World\n');

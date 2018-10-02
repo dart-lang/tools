@@ -8,7 +8,7 @@ import 'package:io/io.dart';
 
 /// Runs `dartfmt` commands and `pub publish`.
 Future<Null> main() async {
-  final manager = new ProcessManager();
+  final manager = ProcessManager();
 
   // Runs dartfmt --version and outputs the result via stdout.
   print('Running dartfmt --version');
