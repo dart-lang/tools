@@ -1,3 +1,15 @@
+* Removed whitespace between comma-delimited expressions in compact output.
+
+  Before:
+  ```css
+  div{color:rgba(0, 0, 0, 0.5);}
+  ```
+
+  After:
+  ```css
+  div{color:rgba(0,0,0,0.5);}
+  ```
+
 ## 0.14.5
 
 * Fixed a crashed caused by parsing `:host()` without an argument and added an
