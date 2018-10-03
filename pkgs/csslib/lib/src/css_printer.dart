@@ -294,7 +294,10 @@ class CssPrinter extends Visitor {
       if (i > 0) emit(_newLine);
       emit("$_sp$_sp");
       declarations[i].visit(this);
-      emit(";");
+      // Don't emit the last semicolon in compact mode.
+      if (prettyPrint || i < declarationsLength - 1) {
+        emit(';');
+      }
     }
     if (declarationsLength > 0) emit(_newLine);
   }

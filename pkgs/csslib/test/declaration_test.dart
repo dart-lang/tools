@@ -879,14 +879,14 @@ div {
 }
 ''';
   final String generated =
-      'div{color:green!important;background:red blue green;}'
-      '.foo p[bar]{color:blue;}'
-      '@page{@top-left{color:red;}}'
+      'div{color:green!important;background:red blue green}'
+      '.foo p[bar]{color:blue}'
+      '@page{@top-left{color:red}}'
       '@page:first{}'
       '@page foo:first{}'
-      '@media screen AND (max-width:800px){div{font-size:24px;}}'
-      '@keyframes foo{0%{transform:scaleX(0);}}'
-      'div{color:rgba(0,0,0,0.2);}';
+      '@media screen AND (max-width:800px){div{font-size:24px}}'
+      '@keyframes foo{0%{transform:scaleX(0)}}'
+      'div{color:rgba(0,0,0,0.2)}';
 
   var stylesheet = parseCss(input, errors: errors);
 
