@@ -1,3 +1,5 @@
+## 0.14.6
+
 * Removed whitespace between comma-delimited expressions in compact output.
 
   Before:
