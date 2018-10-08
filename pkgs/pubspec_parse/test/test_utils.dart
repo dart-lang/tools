@@ -48,27 +48,38 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   }
 }
 
-Pubspec parse(Object content, {bool quietOnError = false}) {
+Pubspec parse(Object content,
+    {bool quietOnError = false, bool skipTryPub = false}) {
   quietOnError ??= false;
+  skipTryPub ??= false;
 
   var encoded = _encodeJson(content);
 
-  var pubResult = waitFor(tryPub(encoded));
+  ProcResult pubResult;
+  if (!skipTryPub) {
+    pubResult = waitFor(tryPub(encoded));
+    expect(pubResult, isNotNull);
+  }
 
   try {
     var value = new Pubspec.parse(encoded);
 
-    addTearDown(() {
-      expect(pubResult.cleanParse, isTrue,
-          reason:
-              'On success, parsing from the pub client should also succeed.');
-    });
+    if (pubResult != null) {
+      addTearDown(() {
+        expect(pubResult.cleanParse, isTrue,
+            reason:
+                'On success, parsing from the pub client should also succeed.');
+      });
+    }
     return value;
   } catch (e) {
-    addTearDown(() {
-      expect(pubResult.cleanParse, isFalse,
-          reason: 'On failure, parsing from the pub client should also fail.');
-    });
+    if (pubResult != null) {
+      addTearDown(() {
+        expect(pubResult.cleanParse, isFalse,
+            reason:
+                'On failure, parsing from the pub client should also fail.');
+      });
+    }
     if (e is ParsedYamlException) {
       if (!quietOnError) {
         _printDebugParsedYamlException(e);
