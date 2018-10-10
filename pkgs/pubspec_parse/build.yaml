@@ -10,3 +10,4 @@ targets:
         options:
           any_map: true
           checked: true
+          create_to_json: false

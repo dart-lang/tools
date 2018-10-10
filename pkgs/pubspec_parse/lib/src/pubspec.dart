@@ -11,7 +11,7 @@ import 'errors.dart';
 
 part 'pubspec.g.dart';
 
-@JsonSerializable(createToJson: false)
+@JsonSerializable()
 class Pubspec {
   // TODO: executables
   // TODO: publish_to

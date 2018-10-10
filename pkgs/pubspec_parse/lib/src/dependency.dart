@@ -103,7 +103,7 @@ abstract class Dependency {
   String toString() => '$runtimeType: $_info';
 }
 
-@JsonSerializable(createToJson: false)
+@JsonSerializable()
 class SdkDependency extends Dependency {
   @JsonKey(nullable: false, disallowNullValue: true, required: true)
   final String sdk;
@@ -116,7 +116,7 @@ class SdkDependency extends Dependency {
   String get _info => sdk;
 }
 
-@JsonSerializable(createToJson: false)
+@JsonSerializable()
 class GitDependency extends Dependency {
   @JsonKey(fromJson: parseGitUri, required: true, disallowNullValue: true)
   final Uri url;
@@ -190,7 +190,7 @@ class PathDependency extends Dependency {
   String get _info => 'path@$path';
 }
 
-@JsonSerializable(createToJson: false, disallowUnrecognizedKeys: true)
+@JsonSerializable(disallowUnrecognizedKeys: true)
 class HostedDependency extends Dependency {
   @JsonKey(fromJson: _constraintFromString)
   final VersionConstraint version;
@@ -206,7 +206,7 @@ class HostedDependency extends Dependency {
   String get _info => version.toString();
 }
 
-@JsonSerializable(createToJson: false, disallowUnrecognizedKeys: true)
+@JsonSerializable(disallowUnrecognizedKeys: true)
 class HostedDetails {
   @JsonKey(required: true, disallowNullValue: true)
   final String name;
