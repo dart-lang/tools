@@ -65,11 +65,11 @@ class Pubspec {
     Map<String, Dependency> dependencies,
     Map<String, Dependency> devDependencies,
     Map<String, Dependency> dependencyOverrides,
-  })  : this.authors = _normalizeAuthors(author, authors),
-        this.environment = environment ?? const {},
-        this.dependencies = dependencies ?? const {},
-        this.devDependencies = devDependencies ?? const {},
-        this.dependencyOverrides = dependencyOverrides ?? const {} {
+  })  : authors = _normalizeAuthors(author, authors),
+        environment = environment ?? const {},
+        dependencies = dependencies ?? const {},
+        devDependencies = devDependencies ?? const {},
+        dependencyOverrides = dependencyOverrides ?? const {} {
     if (name == null || name.isEmpty) {
       throw new ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }

@@ -199,7 +199,7 @@ class HostedDependency extends Dependency {
   final HostedDetails hosted;
 
   HostedDependency({VersionConstraint version, this.hosted})
-      : this.version = version ?? VersionConstraint.any,
+      : version = version ?? VersionConstraint.any,
         super._();
 
   @override
