@@ -50,11 +50,12 @@ class LcovFormatter implements Formatter {
       }
 
       buf.write('SF:$source\n');
-      v.keys.toList()
-        ..sort()
-        ..forEach((int k) {
-          buf.write('DA:$k,${v[k]}\n');
-        });
+      final lines = v.keys.toList()..sort();
+      lines.forEach((int k) {
+        buf.write('DA:$k,${v[k]}\n');
+      });
+      buf.write('LF:${lines.length}\n');
+      buf.write('LH:${lines.where((k) => v[k] > 0).length}\n');
       buf.write('end_of_record\n');
     }
 
