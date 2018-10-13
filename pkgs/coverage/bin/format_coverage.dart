@@ -77,11 +77,15 @@ Future<Null> main(List<String> arguments) async {
   if (env.verbose) {
     if (resolver.failed.length > 0) {
       print('Failed to resolve:');
-      resolver.failed.toSet().forEach((e) => print('  $e'));
+      for (String error in resolver.failed.toSet()) {
+        print('  $error');
+      }
     }
     if (loader.failed.length > 0) {
       print('Failed to load:');
-      loader.failed.toSet().forEach((e) => print('  $e'));
+      for (String error in loader.failed.toSet()) {
+        print('  $error');
+      }
     }
   }
   await env.output.close();
