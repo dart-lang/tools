@@ -10,15 +10,15 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
+  Resolver({String packagesPath, this.packageRoot, this.sdkRoot})
+      : packagesPath = packagesPath,
+        _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
+
   final String packagesPath;
   final String packageRoot;
   final String sdkRoot;
   final List<String> failed = [];
   Map<String, Uri> _packages;
-
-  Resolver({String packagesPath, this.packageRoot, this.sdkRoot})
-      : packagesPath = packagesPath,
-        _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -92,10 +92,10 @@ class Resolver {
 
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
-  final String workspacePath;
-
   /// Creates a Bazel resolver with the specified workspace path, if any.
   BazelResolver({this.workspacePath: ''});
+
+  final String workspacePath;
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
