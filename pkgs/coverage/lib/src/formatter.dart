@@ -19,16 +19,16 @@ abstract class Formatter {
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
 class LcovFormatter implements Formatter {
-  final Resolver resolver;
-  final String basePath;
-  final List<String> reportOn;
-
   /// Creates a new LCOV formatter.
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
   /// prefixed with one of the paths included. If [basePath] is provided, paths
   /// are reported relative to that path.
   LcovFormatter(this.resolver, {this.reportOn, this.basePath});
+
+  final Resolver resolver;
+  final String basePath;
+  final List<String> reportOn;
 
   @override
   Future<String> format(Map hitmap) async {
@@ -69,15 +69,15 @@ class LcovFormatter implements Formatter {
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
 class PrettyPrintFormatter implements Formatter {
-  final Resolver resolver;
-  final Loader loader;
-  final List<String> reportOn;
-
   /// Creates a new pretty-print formatter.
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
   /// prefixed with one of the paths included.
   PrettyPrintFormatter(this.resolver, this.loader, {this.reportOn});
+
+  final Resolver resolver;
+  final Loader loader;
+  final List<String> reportOn;
 
   @override
   Future<String> format(Map hitmap) async {

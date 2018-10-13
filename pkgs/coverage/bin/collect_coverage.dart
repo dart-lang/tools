@@ -34,13 +34,14 @@ Future<Null> main(List<String> arguments) async {
 }
 
 class Options {
+  Options(
+      this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume);
+
   final Uri serviceUri;
   final IOSink out;
   final Duration timeout;
   final bool waitPaused;
   final bool resume;
-  Options(
-      this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume);
 }
 
 Options _parseArgs(List<String> arguments) {
