@@ -43,26 +43,6 @@ connect. An optional `--connect-timeout` may be specified (in seconds).  The
 `--wait-paused` flag may be enabled, causing `collect_coverage` to wait until
 all isolates are paused before collecting coverage.
 
-#### Collecting coverage from Dartium
-
-```
-dartium --remote-debugging-port=NNNN
-# execute code in Dartium
-pub global run coverage:collect_coverage --uri=... -o coverage.json
-```
-
-or if the `pub global run` executables are on your PATH,
-
-```
-collect_coverage --port=NNNN -o coverage.json
-```
-
-As noted above, `collect_coverage` may be invoked before Dartium, in which case
-it will wait until it detects a Dartium remote debugging port, up to the
-(optional) timeout. Note that coverage cannot be run against a Dartium instance
-launched from Dart Editor, since the editor makes use of Dartium's remote
-debugging port.
-
 #### Formatting coverage data
 
 ```
