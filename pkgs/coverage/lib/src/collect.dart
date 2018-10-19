@@ -80,10 +80,9 @@ Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
 Future<List<Map<String, dynamic>>> _getCoverageJson(
     VMServiceClient service, VMSourceReport report) async {
   var scriptRefs = report.ranges.map((r) => r.script).toSet();
-  var scripts = <Uri, VMScript>{};
-  for (var script in await Future.wait<VMScript>(
-      scriptRefs.map((ref) => ref.load()).toList())) {
-    scripts[script.uri] = script;
+  var scripts = <VMScriptRef, VMScript>{};
+  for (var ref in scriptRefs) {
+    scripts[ref] = await ref.load();
   }
 
   // script uri -> { line -> hit count }
@@ -94,7 +93,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 
     hitMaps.putIfAbsent(range.script.uri, () => <int, int>{});
     var hitMap = hitMaps[range.script.uri];
-    var script = scripts[range.script.uri];
+    var script = scripts[range.script];
     for (VMScriptToken hit in range.hits ?? []) {
       var line = script.sourceLocation(hit).line + 1;
       hitMap[line] = hitMap.containsKey(line) ? hitMap[line] + 1 : 1;
@@ -108,27 +107,26 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
   // Output JSON
   var coverage = <Map<String, dynamic>>[];
   hitMaps.forEach((uri, hitMap) {
-    var script = scripts[uri];
-    coverage.add(_toScriptCoverageJson(script, hitMap));
+    coverage.add(_toScriptCoverageJson(uri, hitMap));
   });
   return coverage;
 }
 
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
 Map<String, dynamic> _toScriptCoverageJson(
-    VMScript script, Map<int, int> hitMap) {
+    Uri scriptUri, Map<int, int> hitMap) {
   var json = <String, dynamic>{};
   var hits = <int>[];
   hitMap.forEach((line, hitCount) {
     hits.add(line);
     hits.add(hitCount);
   });
-  json['source'] = '${script.uri}';
+  json['source'] = '$scriptUri';
   json['script'] = {
     'type': '@Script',
     'fixedId': true,
-    'id': 'libraries/1/scripts/${Uri.encodeComponent(script.uri.toString())}',
-    'uri': '${script.uri}',
+    'id': 'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
+    'uri': '$scriptUri',
     '_kind': 'library',
   };
   json['hits'] = hits;
