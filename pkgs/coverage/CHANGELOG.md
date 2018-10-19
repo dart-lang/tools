@@ -1,3 +1,11 @@
+## 0.12.3 - 2018-10-19
+
+ * Fixed dart-lang/coverage#194. During collection, we now track each script by
+   its (unique) VMScriptRef. This ensures we look up the correct script when
+   computing the affected line for each hit token. The hitmap remains URI
+   based, since in the end, we want a single, unified set of line to hitCount
+   mappings per script.
+
 ## 0.12.2 - 2018-07-25
 
  * Dart SDK upper bound raised to <3.0.0.
