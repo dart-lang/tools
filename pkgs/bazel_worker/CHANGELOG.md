@@ -1,3 +1,8 @@
+## 0.1.15
+
+* Update the worker_protocol.pb.dart file with the latest proto generator.
+* Require protobuf 0.10.4.
+
 ## 0.1.14
 
 * Allow workers to support running in isolates. To support running in isolates,
