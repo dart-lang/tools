@@ -1,3 +1,7 @@
+## 0.1.2+3
+
+- Support the latest version of `package:json_annotation`.
+
 ## 0.1.2+2
 
 - Support `package:json_annotation` v1.
