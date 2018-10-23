@@ -1,5 +1,5 @@
 name: timing
-version: 0.1.2-dev
+version: 0.1.1+1
 description: Timing is a simple package for tracking performance of both async and sync actions
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/timing
@@ -8,7 +8,7 @@ environment:
   sdk: ">=2.0.0 <3.0.0"
 
 dependencies:
-  json_annotation: ^1.0.0
+  json_annotation: '>=1.0.0 <3.0.0'
 
 dev_dependencies:
   build_runner: ^1.0.0
