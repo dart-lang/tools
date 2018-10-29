@@ -6,6 +6,7 @@ Dart.
 
 [![Build Status](https://travis-ci.org/dart-lang/coverage.svg?branch=master)](https://travis-ci.org/dart-lang/coverage)
 [![Coverage Status](https://coveralls.io/repos/dart-lang/coverage/badge.svg?branch=master)](https://coveralls.io/r/dart-lang/coverage)
+[![Pub](https://img.shields.io/pub/v/coverage.svg)](https://pub.dartlang.org/packages/coverage)
 
 
 Tools
