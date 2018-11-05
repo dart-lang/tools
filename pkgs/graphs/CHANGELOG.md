@@ -1,3 +1,8 @@
+# 0.1.3
+
+- Use `HashMap` and `HashSet` from `dart:collection` for 
+  `stronglyConnectedComponents`. Improves runtime performance.
+
 # 0.1.2+1
 
 - Allow using non-dev Dart 2 SDK.

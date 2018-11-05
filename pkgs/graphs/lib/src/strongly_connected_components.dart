@@ -26,9 +26,9 @@ import 'dart:math' show min;
 List<List<V>> stronglyConnectedComponents<K, V>(
     Iterable<V> nodes, K Function(V) key, Iterable<V> Function(V) children) {
   final result = <List<V>>[];
-  final lowLinks = <K, int>{};
-  final indexes = <K, int>{};
-  final onStack = Set<K>();
+  final lowLinks = HashMap<K, int>();
+  final indexes = HashMap<K, int>();
+  final onStack = HashSet<K>();
 
   var index = 0;
   var lastVisited = Queue<V>();
