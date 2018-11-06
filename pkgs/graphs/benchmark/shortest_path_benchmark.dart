@@ -13,7 +13,7 @@ void main() {
   final graph = HashMap<int, List<int>>();
 
   for (var i = 0; i < size * 5; i++) {
-    final toList = graph.putIfAbsent(_rnd.nextInt(size), () => List<int>());
+    final toList = graph.putIfAbsent(_rnd.nextInt(size), () => <int>[]);
 
     final toValue = _rnd.nextInt(size);
     if (!toList.contains(toValue)) {

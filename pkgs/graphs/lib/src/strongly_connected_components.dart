@@ -40,6 +40,7 @@ List<List<V>> stronglyConnectedComponents<K, V>(
     index++;
     lastVisited.addLast(node);
     onStack.add(nodeKey);
+    // ignore: omit_local_variable_types
     for (final V next in children(node) ?? const []) {
       var nextKey = key(next);
       if (!indexes.containsKey(nextKey)) {

@@ -1,14 +1,14 @@
 language: dart
+
 dart:
   - dev
   - stable
 
 dart_task:
   - test
-  - test -p chrome
-  - test -p firefox
+  - test -p chrome,firefox
   - dartfmt
-  - dartanalyzer
+  - dartanalyzer: --fatal-infos --fatal-warnings .
 
 matrix:
   exclude:
