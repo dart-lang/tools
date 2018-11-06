@@ -1,11 +1,11 @@
 name: graphs
-version: 0.1.3-dev
+version: 0.1.3
 description: Graph algorithms operation an graphs in any representation.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/graphs
 
 environment:
-  sdk: '>=2.0.0-dev.64.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dev_dependencies:
   pedantic: ^1.3.0
