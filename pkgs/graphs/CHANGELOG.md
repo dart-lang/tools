@@ -1,5 +1,6 @@
 # 0.1.3
 
+- Added `shortestPath` and `shortestPaths` functions.
 - Use `HashMap` and `HashSet` from `dart:collection` for 
   `stronglyConnectedComponents`. Improves runtime performance.
 
