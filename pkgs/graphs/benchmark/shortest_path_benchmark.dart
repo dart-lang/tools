@@ -21,27 +21,34 @@ void main() {
     }
   }
 
-  var mostPerSecond = 0;
+  var maxCount = 0;
+  var maxIteration = 0;
 
   final testOutput =
       shortestPath(0, size - 1, (v) => v, (e) => graph[e] ?? []).toString();
   print(testOutput);
   assert(testOutput == '[258, 252, 819, 999]');
 
-  for (var i = 0;; i++) {
+  final duration = const Duration(milliseconds: 100);
+
+  for (var i = 1;; i++) {
     var count = 0;
     final watch = Stopwatch()..start();
-    while (watch.elapsed < const Duration(milliseconds: 100)) {
+    while (watch.elapsed < duration) {
       count++;
       final length =
           shortestPath(0, size - 1, (v) => v, (e) => graph[e] ?? []).length;
       assert(length == 4, '$length');
     }
 
-    if (count > mostPerSecond) {
-      mostPerSecond = count;
+    if (count > maxCount) {
+      maxCount = count;
+      maxIteration = i;
     }
 
-    print('max iterations in 1s: $mostPerSecond\tafter $i iterations');
+    if (maxIteration == i || (i - maxIteration) % 20 == 0) {
+      print('max iterations in ${duration.inMilliseconds}ms: $maxCount\t'
+          'after $maxIteration of $i iterations');
+    }
   }
 }
