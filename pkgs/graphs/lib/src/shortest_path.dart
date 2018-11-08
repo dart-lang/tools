@@ -22,10 +22,6 @@ List<V> shortestPath<K, V>(
         V start, V target, K Function(V) key, Iterable<V> Function(V) edges) =>
     _shortestPaths(start, key, edges, target)[key(target)];
 
-List<V> shortestPathWithKey<K, V>(
-        V start, V target, K Function(V) key, Iterable<V> Function(V) edges) =>
-    _shortestPaths(start, key, edges, target)[key(target)];
-
 /// Returns a [Map] of the shortest paths from [start] to all of the nodes in
 /// the directed graph defined by [edges].
 ///
