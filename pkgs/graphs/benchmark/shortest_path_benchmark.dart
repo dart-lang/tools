@@ -21,14 +21,14 @@ void main() {
     }
   }
 
-  var counts = <int>[];
+  var mostPerSecond = 0;
 
   final testOutput =
       shortestPath(0, size - 1, (v) => v, (e) => graph[e] ?? []).toString();
   print(testOutput);
   assert(testOutput == '[258, 252, 819, 999]');
 
-  for (var i = 0; i < 50; i++) {
+  for (var i = 0;; i++) {
     var count = 0;
     final watch = Stopwatch()..start();
     while (watch.elapsed < const Duration(milliseconds: 100)) {
@@ -37,9 +37,11 @@ void main() {
           shortestPath(0, size - 1, (v) => v, (e) => graph[e] ?? []).length;
       assert(length == 4, '$length');
     }
-    print(count);
-    counts.add(count);
-  }
 
-  print('max iterations in 1s: ${(counts..sort()).last}');
+    if (count > mostPerSecond) {
+      mostPerSecond = count;
+    }
+
+    print('max iterations in 1s: $mostPerSecond\tafter $i iterations');
+  }
 }
