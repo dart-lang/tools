@@ -1,4 +1,4 @@
-# 0.1.4-dev
+# 0.1.3+1
 
 - Fixed a bug with non-identity `key` in `shortestPath` and `shortestPaths`.
 
