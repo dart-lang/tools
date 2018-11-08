@@ -49,7 +49,7 @@ Map<K, List<V>> _shortestPaths<K, V>(
   final distances = HashMap<K, List<V>>();
   distances[key(start)] = [];
 
-  if (start == target) {
+  if (target != null && key(start) == key(target)) {
     return distances;
   }
 
@@ -75,7 +75,7 @@ Map<K, List<V>> _shortestPaths<K, V>(
           existingPath.length > (distanceToCurrent.length + 1)) {
         final newOption = distanceToCurrent.followedBy(<V>[edge]).toList();
 
-        if (edge == target) {
+        if (target != null && key(edge) == key(target)) {
           assert(bestOption == null || bestOption.length > newOption.length);
           bestOption = newOption;
         }

@@ -1,3 +1,7 @@
+# 0.1.4-dev
+
+- Fixed a bug with non-identity `key` in `shortestPath` and `shortestPaths`.
+
 # 0.1.3
 
 - Added `shortestPath` and `shortestPaths` functions.
