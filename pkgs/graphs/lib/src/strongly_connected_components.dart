@@ -10,61 +10,72 @@ import 'dart:math' show min;
 ///
 /// The result will be a valid reverse topological order ordering of the
 /// strongly connected components. Components further from a root will appear in
-/// the result before the components which they are children of.
+/// the result before the components which they are connected to.
 ///
 /// Nodes within a strongly connected component have no ordering guarantees,
 /// except that if the first value in [nodes] is a valid root, and is contained
 /// in a cycle, it will be the last element of that cycle.
 ///
-/// [V] is the type of values in the graph nodes. [K] must be a type suitable
-/// for using as a Map or Set key, and [key] must provide a consistent key for
-/// every node. [children] should return the next reachable nodes.
-///
 /// [nodes] must contain at least a root of every tree in the graph if there are
 /// disjoint subgraphs but it may contain all nodes in the graph if the roots
 /// are not known.
-List<List<V>> stronglyConnectedComponents<K, V>(
-    Iterable<V> nodes, K Function(V) key, Iterable<V> Function(V) children) {
-  final result = <List<V>>[];
-  final lowLinks = HashMap<K, int>();
-  final indexes = HashMap<K, int>();
-  final onStack = HashSet<K>();
+///
+/// If [equals] is provided, it is used to compare nodes in the graph. If
+/// [equals] is omitted, the node's own [Object.==] is used instead.
+///
+/// Similarly, if [hashCode] is provided, it is used to produce a hash value
+/// for nodes to efficiently calculate the return value. If it is omitted, the
+/// key's own [Object.hashCode] is used.
+///
+/// If you supply one of [equals] or [hashCode], you should generally also to
+/// supply the other.
+List<List<T>> stronglyConnectedComponents<T>(
+  Iterable<T> nodes,
+  Iterable<T> Function(T) edges, {
+  bool equals(T key1, T key2),
+  int hashCode(T key),
+}) {
+  final result = <List<T>>[];
+  final lowLinks = HashMap<T, int>(equals: equals, hashCode: hashCode);
+  final indexes = HashMap<T, int>(equals: equals, hashCode: hashCode);
+  final onStack = HashSet<T>(equals: equals, hashCode: hashCode);
+
+  equals ??= _defaultEquals;
 
   var index = 0;
-  var lastVisited = Queue<V>();
+  var lastVisited = Queue<T>();
 
-  void strongConnect(V node) {
-    var nodeKey = key(node);
-    indexes[nodeKey] = index;
-    lowLinks[nodeKey] = index;
+  void strongConnect(T node) {
+    indexes[node] = index;
+    lowLinks[node] = index;
     index++;
     lastVisited.addLast(node);
-    onStack.add(nodeKey);
+    onStack.add(node);
     // ignore: omit_local_variable_types
-    for (final V next in children(node) ?? const []) {
-      var nextKey = key(next);
-      if (!indexes.containsKey(nextKey)) {
+    for (final T next in edges(node) ?? const []) {
+      if (!indexes.containsKey(next)) {
         strongConnect(next);
-        lowLinks[nodeKey] = min(lowLinks[nodeKey], lowLinks[nextKey]);
-      } else if (onStack.contains(nextKey)) {
-        lowLinks[nodeKey] = min(lowLinks[nodeKey], indexes[nextKey]);
+        lowLinks[node] = min(lowLinks[node], lowLinks[next]);
+      } else if (onStack.contains(next)) {
+        lowLinks[node] = min(lowLinks[node], indexes[next]);
       }
     }
-    if (lowLinks[nodeKey] == indexes[nodeKey]) {
-      final component = <V>[];
-      K nextKey;
+    if (lowLinks[node] == indexes[node]) {
+      final component = <T>[];
+      T next;
       do {
-        var next = lastVisited.removeLast();
-        nextKey = key(next);
-        onStack.remove(nextKey);
+        next = lastVisited.removeLast();
+        onStack.remove(next);
         component.add(next);
-      } while (nextKey != nodeKey);
+      } while (!equals(next, node));
       result.add(component);
     }
   }
 
   for (final node in nodes) {
-    if (!indexes.containsKey(key(node))) strongConnect(node);
+    if (!indexes.containsKey(node)) strongConnect(node);
   }
   return result;
 }
+
+bool _defaultEquals(a, b) => a == b;

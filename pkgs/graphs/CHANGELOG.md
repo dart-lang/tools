@@ -1,3 +1,12 @@
+# 0.2.0-dev
+
+- **BREAKING** `shortestPath`, `shortestPaths` and `stronglyConnectedComponents`
+  now have one generic parameter and have replaced the `key` parameter with
+  optional params: `{bool equals(T key1, T key2), int hashCode(T key)}`.
+  This follows the pattern used in `dart:collection` classes `HashMap` and 
+  `LinkedHashMap`. It improves the usability and performance of the case where
+  the source values are directly usable in a hash data structure.
+
 # 0.1.3+1
 
 - Fixed a bug with non-identity `key` in `shortestPath` and `shortestPaths`.
@@ -5,7 +14,7 @@
 # 0.1.3
 
 - Added `shortestPath` and `shortestPaths` functions.
-- Use `HashMap` and `HashSet` from `dart:collection` for 
+- Use `HashMap` and `HashSet` from `dart:collection` for
   `stronglyConnectedComponents`. Improves runtime performance.
 
 # 0.1.2+1

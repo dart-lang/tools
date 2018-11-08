@@ -25,7 +25,7 @@ void main() {
   var maxIteration = 0;
 
   final testOutput =
-      shortestPath(0, size - 1, (v) => v, (e) => graph[e] ?? []).toString();
+      shortestPath(0, size - 1, (e) => graph[e] ?? []).toString();
   print(testOutput);
   assert(testOutput == '[258, 252, 819, 999]');
 
@@ -36,8 +36,7 @@ void main() {
     final watch = Stopwatch()..start();
     while (watch.elapsed < duration) {
       count++;
-      final length =
-          shortestPath(0, size - 1, (v) => v, (e) => graph[e] ?? []).length;
+      final length = shortestPath(0, size - 1, (e) => graph[e] ?? []).length;
       assert(length == 4, '$length');
     }
 

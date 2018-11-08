@@ -9,6 +9,7 @@ import 'package:graphs/graphs.dart';
 /// Data is stored on the [Node] class.
 class Graph {
   final Map<Node, List<Node>> nodes;
+
   Graph(this.nodes);
 }
 
@@ -39,8 +40,8 @@ void main() {
     nodeC: [nodeB, nodeD]
   });
 
-  var components = stronglyConnectedComponents<Node, Node>(
-      graph.nodes.keys, (node) => node, (node) => graph.nodes[node]);
+  var components = stronglyConnectedComponents<Node>(
+      graph.nodes.keys, (node) => graph.nodes[node]);
 
   print(components);
 }

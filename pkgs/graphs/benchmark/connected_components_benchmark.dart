@@ -31,8 +31,8 @@ void main() {
     final watch = Stopwatch()..start();
     while (watch.elapsed < duration) {
       count++;
-      final length = stronglyConnectedComponents(
-          graph.keys, (v) => v, (e) => graph[e] ?? []).length;
+      final length =
+          stronglyConnectedComponents(graph.keys, (e) => graph[e] ?? []).length;
       assert(length == 244, '$length');
     }
 

@@ -21,24 +21,21 @@ class Graph {
   Node root;
 }
 class Node {
-  List<Node> children;
+  List<Node> edges;
   // Interesting data
 }
 ```
 
 Any representation can be adapted to the needs of the algorithm:
 
-- Some algorithms need to associate data with each node in the graph and it will
-  be keyed by some type `K` that must work as a key in a `HashMap`. If nodes
-  implement `hashCode` and `==`, or if they are known to have one instance per
-  logical node such that instance equality is sufficient, then the node can be
-  passed through directly.
-  - `(node) => node`
-  - `(node) => node.id`
-- Algorithms which need to traverse the graph take a `children` function which
+- Some algorithms need to associate data with each node in the graph. If the
+  node type `T` does not correctly or efficiently implement `hashCode` or `==`,
+  you may provide optional `equals` and/or `hashCode` functions are parameters.
+- Algorithms which need to traverse the graph take a `edges` function which
   provides the reachable nodes.
   - `(node) => graph[node]`
-  - `(node) => node.children`
+  - `(node) => node.edges`
+
 
 Graphs which are resolved asynchronously will have similar functions which
 return `FutureOr`.

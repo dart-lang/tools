@@ -10,12 +10,12 @@ final _empty = Future<Null>.value(null);
 /// Finds and returns every node in a graph who's nodes and edges are
 /// asynchronously resolved.
 ///
-/// Cycles are allowed. If this is an undirected graph the [children] function
+/// Cycles are allowed. If this is an undirected graph the [edges] function
 /// may be symmetric. In this case the [roots] may be any node in each connected
 /// graph.
 ///
 /// [V] is the type of values in the graph nodes. [K] must be a type suitable
-/// for using as a Map or Set key. [children] should return the next reachable
+/// for using as a Map or Set key. [edges] should return the next reachable
 /// nodes.
 ///
 /// There are no ordering guarantees. This is useful for ensuring some work is
@@ -26,12 +26,12 @@ final _empty = Future<Null>.value(null);
 /// the graph. If missing nodes are important they should be tracked within the
 /// [readNode] callback.
 ///
-/// If either [readNode] or [children] throws the error will be forwarded
+/// If either [readNode] or [edges] throws the error will be forwarded
 /// through the result stream and no further nodes will be crawled, though some
 /// work may have already been started.
 Stream<V> crawlAsync<K, V>(Iterable<K> roots, FutureOr<V> Function(K) readNode,
-    FutureOr<Iterable<K>> Function(K, V) children) {
-  final crawl = _CrawlAsync(roots, readNode, children)..run();
+    FutureOr<Iterable<K>> Function(K, V) edges) {
+  final crawl = _CrawlAsync(roots, readNode, edges)..run();
   return crawl.result.stream;
 }
 
@@ -39,12 +39,12 @@ class _CrawlAsync<K, V> {
   final result = StreamController<V>();
 
   final FutureOr<V> Function(K) readNode;
-  final FutureOr<Iterable<K>> Function(K, V) children;
+  final FutureOr<Iterable<K>> Function(K, V) edges;
   final Iterable<K> roots;
 
   final _seen = HashSet<K>();
 
-  _CrawlAsync(this.roots, this.readNode, this.children);
+  _CrawlAsync(this.roots, this.readNode, this.edges);
 
   /// Add all nodes in the graph to [result] and return a Future which fires
   /// after all nodes have been seen.
@@ -59,13 +59,13 @@ class _CrawlAsync<K, V> {
   }
 
   /// Resolve the node at [key] and output it, then start crawling all of it's
-  /// children.
+  /// edges.
   Future<Null> _crawlFrom(K key) async {
     var value = await readNode(key);
     if (value == null) return;
     if (result.isClosed) return;
     result.add(value);
-    var next = await children(key, value) ?? const [];
+    var next = await edges(key, value) ?? const [];
     await Future.wait(next.map(_visit), eagerError: true);
   }
 

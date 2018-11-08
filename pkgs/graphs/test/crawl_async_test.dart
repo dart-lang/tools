@@ -15,7 +15,7 @@ void main() {
     Future<List<String>> crawl(
         Map<String, List<String>> g, Iterable<String> roots) {
       var graph = AsyncGraph(g);
-      return crawlAsync(roots, graph.readNode, graph.children).toList();
+      return crawlAsync(roots, graph.readNode, graph.edges).toList();
     }
 
     test('empty result for empty graph', () async {
@@ -65,7 +65,7 @@ void main() {
       expect(result, allOf(contains('a'), contains('b')));
     });
 
-    test('allows null children', () async {
+    test('allows null edges', () async {
       var result = await crawl({
         'a': ['b'],
         'b': null,
@@ -85,7 +85,7 @@ void main() {
       expect(result, ['a']);
     });
 
-    test('surfaces exceptions for crawling children', () {
+    test('surfaces exceptions for crawling edges', () {
       var graph = {
         'a': ['b'],
       };

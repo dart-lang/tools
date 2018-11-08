@@ -3,20 +3,36 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:collection';
+
+import 'utils.dart';
 
 /// A representation of a Graph since none is specified in `lib/`.
 class Graph {
-  final Map<String, List<String>> graph;
+  final Map<String, List<String>> _graph;
 
-  Graph(this.graph);
+  Graph(this._graph);
 
-  String key(String node) => node;
-  List<String> children(String node) => graph[node];
-  Iterable<String> get allNodes => graph.keys;
+  List<String> edges(String node) => _graph[node];
+
+  Iterable<String> get allNodes => _graph.keys;
+}
+
+class BadGraph {
+  final Map<X, List<X>> _graph;
+
+  BadGraph(Map<String, List<String>> values)
+      : _graph = LinkedHashMap(equals: xEquals, hashCode: xHashCode)
+          ..addEntries(values.entries.map(
+              (e) => MapEntry(X(e.key), e?.value?.map((v) => X(v))?.toList())));
+
+  List<X> edges(X node) => _graph[node];
+
+  Iterable<X> get allNodes => _graph.keys;
 }
 
 /// A representation of a Graph where keys can asynchronously be resolved to
-/// real values or to children.
+/// real values or to edges.
 class AsyncGraph {
   final Map<String, List<String>> graph;
 
@@ -24,6 +40,6 @@ class AsyncGraph {
 
   Future<String> readNode(String node) async =>
       graph.containsKey(node) ? node : null;
-  Future<Iterable<String>> children(String key, String node) async =>
-      graph[key];
+
+  Future<Iterable<String>> edges(String key, String node) async => graph[key];
 }

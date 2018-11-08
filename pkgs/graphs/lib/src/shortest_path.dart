@@ -10,56 +10,94 @@ import 'dart:collection';
 /// If [start] `==` [target], an empty [List] is returned and [edges] is never
 /// called.
 ///
-/// [V] is the type of values in the graph nodes. [K] must be a type suitable
-/// for using as a Map or Set key, and [key] must provide a consistent key for
-/// every node.
-///
 /// [start], [target] and all values returned by [edges] must not be `null`.
 /// If asserts are enabled, an [AssertionError] is raised if these conditions
 /// are not met. If asserts are not enabled, violations result in undefined
 /// behavior.
-List<V> shortestPath<K, V>(
-        V start, V target, K Function(V) key, Iterable<V> Function(V) edges) =>
-    _shortestPaths<K, V>(start, key, edges, key(target))[key(target)];
+///
+/// If [equals] is provided, it is used to compare nodes in the graph. If
+/// [equals] is omitted, the node's own [Object.==] is used instead.
+///
+/// Similarly, if [hashCode] is provided, it is used to produce a hash value
+/// for nodes to efficiently calculate the return value. If it is omitted, the
+/// key's own [Object.hashCode] is used.
+///
+/// If you supply one of [equals] or [hashCode], you should generally also to
+/// supply the other.
+List<T> shortestPath<T>(
+  T start,
+  T target,
+  Iterable<T> Function(T) edges, {
+  bool equals(T key1, T key2),
+  int hashCode(T key),
+}) =>
+    _shortestPaths<T>(
+      start,
+      edges,
+      target: target,
+      equals: equals,
+      hashCode: hashCode,
+    )[target];
 
 /// Returns a [Map] of the shortest paths from [start] to all of the nodes in
 /// the directed graph defined by [edges].
 ///
 /// All return values will contain the key [start] with an empty [List] value.
 ///
-/// [V] is the type of values in the graph nodes. [K] must be a type suitable
-/// for using as a Map or Set key, and [key] must provide a consistent key for
-/// every node.
-///
 /// [start] and all values returned by [edges] must not be `null`.
 /// If asserts are enabled, an [AssertionError] is raised if these conditions
 /// are not met. If asserts are not enabled, violations result in undefined
 /// behavior.
-Map<K, List<V>> shortestPaths<K, V>(
-        V start, K Function(V) key, Iterable<V> Function(V) edges) =>
-    _shortestPaths<K, V>(start, key, edges);
+///
+/// If [equals] is provided, it is used to compare nodes in the graph. If
+/// [equals] is omitted, the node's own [Object.==] is used instead.
+///
+/// Similarly, if [hashCode] is provided, it is used to produce a hash value
+/// for nodes to efficiently calculate the return value. If it is omitted, the
+/// key's own [Object.hashCode] is used.
+///
+/// If you supply one of [equals] or [hashCode], you should generally also to
+/// supply the other.
+Map<T, List<T>> shortestPaths<T>(
+  T start,
+  Iterable<T> Function(T) edges, {
+  bool equals(T key1, T key2),
+  int hashCode(T key),
+}) =>
+    _shortestPaths<T>(
+      start,
+      edges,
+      equals: equals,
+      hashCode: hashCode,
+    );
 
-Map<K, List<V>> _shortestPaths<K, V>(
-    V start, K Function(V) key, Iterable<V> Function(V) edges,
-    [K targetKey]) {
+Map<T, List<T>> _shortestPaths<T>(
+  T start,
+  Iterable<T> Function(T) edges, {
+  T target,
+  bool equals(T key1, T key2),
+  int hashCode(T key),
+  bool isValidKey(potentialKey),
+}) {
   assert(start != null, '`start` cannot be null');
-  assert(key != null, '`key` cannot be null`.');
   assert(edges != null, '`edges` cannot be null');
 
-  final distances = HashMap<K, List<V>>();
-  distances[key(start)] = [];
+  final distances = HashMap<T, List<T>>(
+      equals: equals, hashCode: hashCode, isValidKey: isValidKey);
+  distances[start] = [];
 
-  if (key(start) == targetKey) {
+  equals ??= _defaultEquals;
+  if (equals(start, target)) {
     return distances;
   }
 
-  final toVisit = ListQueue<V>()..add(start);
+  final toVisit = ListQueue<T>()..add(start);
 
-  List<V> bestOption;
+  List<T> bestOption;
 
   while (toVisit.isNotEmpty) {
     final current = toVisit.removeFirst();
-    final distanceToCurrent = distances[key(current)];
+    final distanceToCurrent = distances[current];
 
     if (bestOption != null && distanceToCurrent.length >= bestOption.length) {
       // Skip any existing `toVisit` items that have no chance of being
@@ -69,18 +107,18 @@ Map<K, List<V>> _shortestPaths<K, V>(
 
     for (var edge in edges(current)) {
       assert(edge != null, '`edges` cannot return null values.');
-      final existingPath = distances[key(edge)];
+      final existingPath = distances[edge];
 
       if (existingPath == null ||
           existingPath.length > (distanceToCurrent.length + 1)) {
-        final newOption = distanceToCurrent.followedBy(<V>[edge]).toList();
+        final newOption = distanceToCurrent.followedBy(<T>[edge]).toList();
 
-        if (key(edge) == targetKey) {
+        if (equals(edge, target)) {
           assert(bestOption == null || bestOption.length > newOption.length);
           bestOption = newOption;
         }
 
-        distances[key(edge)] = newOption;
+        distances[edge] = newOption;
         if (bestOption == null || bestOption.length > newOption.length) {
           // Only add a node to visit if it might be a better path to the
           // target node
@@ -92,3 +130,5 @@ Map<K, List<V>> _shortestPaths<K, V>(
 
   return distances;
 }
+
+bool _defaultEquals(a, b) => a == b;
