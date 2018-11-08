@@ -20,7 +20,7 @@ import 'dart:collection';
 /// behavior.
 List<V> shortestPath<K, V>(
         V start, V target, K Function(V) key, Iterable<V> Function(V) edges) =>
-    _shortestPaths(start, key, edges, target)[key(target)];
+    _shortestPaths<K, V>(start, key, edges, key(target))[key(target)];
 
 /// Returns a [Map] of the shortest paths from [start] to all of the nodes in
 /// the directed graph defined by [edges].
@@ -37,11 +37,11 @@ List<V> shortestPath<K, V>(
 /// behavior.
 Map<K, List<V>> shortestPaths<K, V>(
         V start, K Function(V) key, Iterable<V> Function(V) edges) =>
-    _shortestPaths(start, key, edges);
+    _shortestPaths<K, V>(start, key, edges);
 
 Map<K, List<V>> _shortestPaths<K, V>(
     V start, K Function(V) key, Iterable<V> Function(V) edges,
-    [V target]) {
+    [K targetKey]) {
   assert(start != null, '`start` cannot be null');
   assert(key != null, '`key` cannot be null`.');
   assert(edges != null, '`edges` cannot be null');
@@ -49,7 +49,7 @@ Map<K, List<V>> _shortestPaths<K, V>(
   final distances = HashMap<K, List<V>>();
   distances[key(start)] = [];
 
-  if (target != null && key(start) == key(target)) {
+  if (key(start) == targetKey) {
     return distances;
   }
 
@@ -75,7 +75,7 @@ Map<K, List<V>> _shortestPaths<K, V>(
           existingPath.length > (distanceToCurrent.length + 1)) {
         final newOption = distanceToCurrent.followedBy(<V>[edge]).toList();
 
-        if (target != null && key(edge) == key(target)) {
+        if (key(edge) == targetKey) {
           assert(bestOption == null || bestOption.length > newOption.length);
           bestOption = newOption;
         }
