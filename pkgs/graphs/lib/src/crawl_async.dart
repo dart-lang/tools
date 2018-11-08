@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:collection';
 
 final _empty = Future<Null>.value(null);
 
@@ -41,7 +42,7 @@ class _CrawlAsync<K, V> {
   final FutureOr<Iterable<K>> Function(K, V) children;
   final Iterable<K> roots;
 
-  final _seen = Set<K>();
+  final _seen = HashSet<K>();
 
   _CrawlAsync(this.roots, this.readNode, this.children);
 
