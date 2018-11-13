@@ -98,7 +98,7 @@ Map<T, List<T>> _shortestPaths<T>(
     final currentPath = distances[current];
     final currentPathLength = currentPath.length;
 
-    if (bestOption != null && currentPathLength >= bestOption.length) {
+    if (bestOption != null && (currentPathLength + 1) >= bestOption.length) {
       // Skip any existing `toVisit` items that have no chance of being
       // better than bestOption (if it exists)
       continue;
@@ -108,8 +108,10 @@ Map<T, List<T>> _shortestPaths<T>(
       assert(edge != null, '`edges` cannot return null values.');
       final existingPath = distances[edge];
 
-      if (existingPath == null ||
-          existingPath.length > (currentPathLength + 1)) {
+      assert(existingPath == null ||
+          existingPath.length <= (currentPathLength + 1));
+
+      if (existingPath == null) {
         final newOption = List<T>(currentPathLength + 1)
           ..setAll(0, currentPath)
           ..[currentPathLength] = edge;
