@@ -113,7 +113,7 @@ Map<T, List<T>> _shortestPaths<T>(
 
       if (existingPath == null) {
         final newOption = List<T>(currentPathLength + 1)
-          ..setAll(0, currentPath)
+          ..setRange(0, currentPathLength, currentPath)
           ..[currentPathLength] = edge;
 
         if (equals(edge, target)) {
