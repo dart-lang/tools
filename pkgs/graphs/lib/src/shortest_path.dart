@@ -82,7 +82,7 @@ Map<T, List<T>> _shortestPaths<T>(
   assert(edges != null, '`edges` cannot be null');
 
   final distances = HashMap<T, List<T>>(equals: equals, hashCode: hashCode);
-  distances[start] = [];
+  distances[start] = List(0);
 
   equals ??= _defaultEquals;
   if (equals(start, target)) {
@@ -95,9 +95,10 @@ Map<T, List<T>> _shortestPaths<T>(
 
   while (toVisit.isNotEmpty) {
     final current = toVisit.removeFirst();
-    final distanceToCurrent = distances[current];
+    final currentPath = distances[current];
+    final currentPathLength = currentPath.length;
 
-    if (bestOption != null && distanceToCurrent.length >= bestOption.length) {
+    if (bestOption != null && currentPathLength >= bestOption.length) {
       // Skip any existing `toVisit` items that have no chance of being
       // better than bestOption (if it exists)
       continue;
@@ -108,8 +109,10 @@ Map<T, List<T>> _shortestPaths<T>(
       final existingPath = distances[edge];
 
       if (existingPath == null ||
-          existingPath.length > (distanceToCurrent.length + 1)) {
-        final newOption = distanceToCurrent.followedBy(<T>[edge]).toList();
+          existingPath.length > (currentPathLength + 1)) {
+        final newOption = List<T>(currentPathLength + 1)
+          ..setAll(0, currentPath)
+          ..[currentPathLength] = edge;
 
         if (equals(edge, target)) {
           assert(bestOption == null || bestOption.length > newOption.length);
