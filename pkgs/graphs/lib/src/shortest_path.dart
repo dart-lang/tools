@@ -77,13 +77,11 @@ Map<T, List<T>> _shortestPaths<T>(
   T target,
   bool equals(T key1, T key2),
   int hashCode(T key),
-  bool isValidKey(potentialKey),
 }) {
   assert(start != null, '`start` cannot be null');
   assert(edges != null, '`edges` cannot be null');
 
-  final distances = HashMap<T, List<T>>(
-      equals: equals, hashCode: hashCode, isValidKey: isValidKey);
+  final distances = HashMap<T, List<T>>(equals: equals, hashCode: hashCode);
   distances[start] = [];
 
   equals ??= _defaultEquals;
