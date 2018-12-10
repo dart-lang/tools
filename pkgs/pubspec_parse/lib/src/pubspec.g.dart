@@ -8,7 +8,7 @@ part of 'pubspec.dart';
 
 Pubspec _$PubspecFromJson(Map json) {
   return $checkedNew('Pubspec', json, () {
-    var val = Pubspec($checkedConvert(json, 'name', (v) => v as String),
+    final val = Pubspec($checkedConvert(json, 'name', (v) => v as String),
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _versionFromString(v as String)),
         author: $checkedConvert(json, 'author', (v) => v as String),

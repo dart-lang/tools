@@ -10,7 +10,7 @@ SdkDependency _$SdkDependencyFromJson(Map json) {
   return $checkedNew('SdkDependency', json, () {
     $checkKeys(json,
         requiredKeys: const ['sdk'], disallowNullValues: const ['sdk']);
-    var val = SdkDependency($checkedConvert(json, 'sdk', (v) => v as String),
+    final val = SdkDependency($checkedConvert(json, 'sdk', (v) => v as String),
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _constraintFromString(v as String)));
     return val;
@@ -21,7 +21,7 @@ GitDependency _$GitDependencyFromJson(Map json) {
   return $checkedNew('GitDependency', json, () {
     $checkKeys(json,
         requiredKeys: const ['url'], disallowNullValues: const ['url']);
-    var val = GitDependency(
+    final val = GitDependency(
         $checkedConvert(
             json, 'url', (v) => v == null ? null : parseGitUri(v as String)),
         $checkedConvert(json, 'ref', (v) => v as String),
@@ -35,7 +35,7 @@ HostedDependency _$HostedDependencyFromJson(Map json) {
     $checkKeys(json,
         allowedKeys: const ['version', 'hosted'],
         disallowNullValues: const ['hosted']);
-    var val = HostedDependency(
+    final val = HostedDependency(
         version: $checkedConvert(json, 'version',
             (v) => v == null ? null : _constraintFromString(v as String)),
         hosted: $checkedConvert(json, 'hosted',
@@ -50,7 +50,7 @@ HostedDetails _$HostedDetailsFromJson(Map json) {
         allowedKeys: const ['name', 'url'],
         requiredKeys: const ['name'],
         disallowNullValues: const ['name', 'url']);
-    var val = HostedDetails(
+    final val = HostedDetails(
         $checkedConvert(json, 'name', (v) => v as String),
         $checkedConvert(
             json, 'url', (v) => v == null ? null : parseGitUri(v as String)));
