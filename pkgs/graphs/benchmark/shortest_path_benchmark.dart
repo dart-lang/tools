@@ -21,7 +21,7 @@ void main() {
     }
   }
 
-  var maxCount = 0;
+  int minTicks;
   var maxIteration = 0;
 
   final testOutput =
@@ -29,24 +29,22 @@ void main() {
   print(testOutput);
   assert(testOutput == '[258, 252, 819, 999]');
 
-  final duration = const Duration(milliseconds: 100);
-
+  final watch = Stopwatch();
   for (var i = 1;; i++) {
-    var count = 0;
-    final watch = Stopwatch()..start();
-    while (watch.elapsed < duration) {
-      count++;
-      final length = shortestPath(0, size - 1, (e) => graph[e] ?? []).length;
-      assert(length == 4, '$length');
-    }
+    watch
+      ..reset()
+      ..start();
+    final length = shortestPath(0, size - 1, (e) => graph[e] ?? []).length;
+    watch.stop();
+    assert(length == 4, '$length');
 
-    if (count > maxCount) {
-      maxCount = count;
+    if (minTicks == null || watch.elapsedTicks < minTicks) {
+      minTicks = watch.elapsedTicks;
       maxIteration = i;
     }
 
-    if (maxIteration == i || (i - maxIteration) % 20 == 0) {
-      print('max iterations in ${duration.inMilliseconds}ms: $maxCount\t'
+    if (maxIteration == i || (i - maxIteration) % 100000 == 0) {
+      print('min ticks for one run: $minTicks\t'
           'after $maxIteration of $i iterations');
     }
   }
