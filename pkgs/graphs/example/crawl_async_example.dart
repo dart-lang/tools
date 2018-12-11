@@ -51,7 +51,7 @@ Future<Iterable<Uri>> findImports(Uri from, Source source) async {
 Future<CompilationUnit> parseUri(Uri uri) async {
   var path = await pathForUri(uri);
   var analysisSession = (await analysisContext).currentSession;
-  var parseResult = analysisSession.getParsedAstSync(path);
+  var parseResult = analysisSession.getParsedUnit(path);
   return parseResult.unit;
 }
 

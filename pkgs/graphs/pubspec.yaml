@@ -12,5 +12,5 @@ dev_dependencies:
   test: ^1.5.1
 
   # For examples
-  analyzer: ^0.33.0
+  analyzer: ^0.34.0
   path: ^1.1.0
