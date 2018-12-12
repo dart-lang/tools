@@ -1,6 +1,6 @@
 name: graphs
-version: 0.2.0-dev
-description: Graph algorithms operation an graphs in any representation.
+version: 0.2.0
+description: Graph algorithms that operate on graphs in any representation
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/graphs
 
