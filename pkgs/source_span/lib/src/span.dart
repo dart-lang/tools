@@ -48,10 +48,12 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// Formats [message] in a human-friendly way associated with this span.
   ///
   /// [color] may either be a [String], a [bool], or `null`. If it's a string,
-  /// it indicates an ANSII terminal color escape that should be used to
-  /// highlight the span's text. If it's `true`, it indicates that the text
-  /// should be highlighted using the default color. If it's `false` or `null`,
-  /// it indicates that the text shouldn't be highlighted.
+  /// it indicates an [ANSI terminal color
+  /// escape](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) that should
+  /// be used to highlight the span's text (for example, `"\u001b[31m"` will
+  /// color red). If it's `true`, it indicates that the text should be
+  /// highlighted using the default color. If it's `false` or `null`, it
+  /// indicates that the text shouldn't be highlighted.
   String message(String message, {color});
 
   /// Prints the text associated with this span in a user-friendly way.
@@ -61,10 +63,12 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// isn't a [SourceSpanWithContext], returns an empty string.
   ///
   /// [color] may either be a [String], a [bool], or `null`. If it's a string,
-  /// it indicates an ANSII terminal color escape that should be used to
-  /// highlight the span's text. If it's `true`, it indicates that the text
-  /// should be highlighted using the default color. If it's `false` or `null`,
-  /// it indicates that the text shouldn't be highlighted.
+  /// it indicates an [ANSI terminal color
+  /// escape](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) that should
+  /// be used to highlight the span's text (for example, `"\u001b[31m"` will
+  /// color red). If it's `true`, it indicates that the text should be
+  /// highlighted using the default color. If it's `false` or `null`, it
+  /// indicates that the text shouldn't be highlighted.
   String highlight({color});
 }
 
