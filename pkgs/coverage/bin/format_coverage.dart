@@ -224,7 +224,8 @@ List<File> filesToProcess(String absPath) {
   if (FileSystemEntity.isDirectorySync(absPath)) {
     return new Directory(absPath)
         .listSync(recursive: true)
-        .where((e) => e is File && filePattern.hasMatch(p.basename(e.path)))
+        .whereType<File>()
+        .where((e) => filePattern.hasMatch(p.basename(e.path)))
         .toList();
   }
   return <File>[new File(absPath)];
