@@ -9,7 +9,7 @@ import 'test_utils.dart';
 
 void main() {
   test('minimal set values', () {
-    var value = parse({'name': 'sample'});
+    final value = parse({'name': 'sample'});
     expect(value.name, 'sample');
     expect(value.version, isNull);
     expect(value.description, isNull);
@@ -25,9 +25,9 @@ void main() {
   });
 
   test('all fields set', () {
-    var version = Version.parse('1.2.3');
-    var sdkConstraint = VersionConstraint.parse('>=2.0.0-dev.54 <3.0.0');
-    var value = parse({
+    final version = Version.parse('1.2.3');
+    final sdkConstraint = VersionConstraint.parse('>=2.0.0-dev.54 <3.0.0');
+    final value = parse({
       'name': 'sample',
       'version': version.toString(),
       'author': 'name@example.com',
@@ -52,7 +52,7 @@ void main() {
   });
 
   test('environment values can be null', () {
-    var value = parse({
+    final value = parse({
       'name': 'sample',
       'environment': {'sdk': null}
     });
@@ -63,14 +63,14 @@ void main() {
 
   group('author, authors', () {
     test('one author', () {
-      var value = parse({'name': 'sample', 'author': 'name@example.com'});
+      final value = parse({'name': 'sample', 'author': 'name@example.com'});
       // ignore: deprecated_member_use
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
     });
 
     test('one author, via authors', () {
-      var value = parse({
+      final value = parse({
         'name': 'sample',
         'authors': ['name@example.com']
       });
@@ -80,7 +80,7 @@ void main() {
     });
 
     test('many authors', () {
-      var value = parse({
+      final value = parse({
         'name': 'sample',
         'authors': ['name@example.com', 'name2@example.com']
       });
@@ -90,7 +90,7 @@ void main() {
     });
 
     test('author and authors', () {
-      var value = parse({
+      final value = parse({
         'name': 'sample',
         'author': 'name@example.com',
         'authors': ['name2@example.com']
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('duplicate author values', () {
-      var value = parse({
+      final value = parse({
         'name': 'sample',
         'author': 'name@example.com',
         'authors': ['name@example.com', 'name@example.com']

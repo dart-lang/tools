@@ -10,13 +10,13 @@ ParsedYamlException parsedYamlException(String message, YamlNode yamlNode) =>
 
 ParsedYamlException parsedYamlExceptionFromError(
     CheckedFromJsonException error, StackTrace stack) {
-  var innerError = error.innerError;
+  final innerError = error.innerError;
   if (innerError is InvalidKeyException) {
-    var map = innerError.map;
+    final map = innerError.map;
     if (map is YamlMap) {
       // if the associated key exists, use that as the error node,
       // otherwise use the map itself
-      var node = map.nodes.keys.cast<YamlNode>().singleWhere((key) {
+      final node = map.nodes.keys.cast<YamlNode>().singleWhere((key) {
         return key.value == innerError.key;
       }, orElse: () => map);
 
@@ -27,7 +27,7 @@ ParsedYamlException parsedYamlExceptionFromError(
     return innerError;
   }
 
-  var yamlMap = error.map as YamlMap;
+  final yamlMap = error.map as YamlMap;
   var yamlNode = yamlMap.nodes[error.key];
 
   String message;

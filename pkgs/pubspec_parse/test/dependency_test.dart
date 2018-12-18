@@ -4,8 +4,8 @@
 
 import 'dart:io';
 
-import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
 
 import 'test_utils.dart';
@@ -49,20 +49,20 @@ line 6, column 4: Unsupported dependency key.
 
 void _hostedDependency() {
   test('null', () {
-    var dep = _dependency<HostedDependency>(null);
+    final dep = _dependency<HostedDependency>(null);
     expect(dep.version.toString(), 'any');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
   test('empty map', () {
-    var dep = _dependency<HostedDependency>({});
+    final dep = _dependency<HostedDependency>({});
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
   test('string version', () {
-    var dep = _dependency<HostedDependency>('^1.0.0');
+    final dep = _dependency<HostedDependency>('^1.0.0');
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
@@ -76,14 +76,14 @@ line 4, column 10: Could not parse version "not a version". Unknown text at "not
   });
 
   test('map w/ just version', () {
-    var dep = _dependency<HostedDependency>({'version': '^1.0.0'});
+    final dep = _dependency<HostedDependency>({'version': '^1.0.0'});
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
   test('map w/ version and hosted as Map', () {
-    var dep = _dependency<HostedDependency>({
+    final dep = _dependency<HostedDependency>({
       'version': '^1.0.0',
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
     });
@@ -115,7 +115,7 @@ line 10, column 4: Unsupported dependency key.
   });
 
   test('map w/ version and hosted as String', () {
-    var dep = _dependency<HostedDependency>(
+    final dep = _dependency<HostedDependency>(
         {'version': '^1.0.0', 'hosted': 'hosted_name'});
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted.name, 'hosted_name');
@@ -124,7 +124,7 @@ line 10, column 4: Unsupported dependency key.
   });
 
   test('map w/ hosted as String', () {
-    var dep = _dependency<HostedDependency>({'hosted': 'hosted_name'});
+    final dep = _dependency<HostedDependency>({'hosted': 'hosted_name'});
     expect(dep.version, VersionConstraint.any);
     expect(dep.hosted.name, 'hosted_name');
     expect(dep.hosted.url, isNull);
@@ -139,7 +139,7 @@ line 5, column 14: These keys had `null` values, which is not allowed: [hosted]
   });
 
   test('map w/ null version is fine', () {
-    var dep = _dependency<HostedDependency>({'version': null});
+    final dep = _dependency<HostedDependency>({'version': null});
     expect(dep.version, VersionConstraint.any);
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
@@ -148,14 +148,14 @@ line 5, column 14: These keys had `null` values, which is not allowed: [hosted]
 
 void _sdkDependency() {
   test('without version', () {
-    var dep = _dependency<SdkDependency>({'sdk': 'flutter'});
+    final dep = _dependency<SdkDependency>({'sdk': 'flutter'});
     expect(dep.sdk, 'flutter');
     expect(dep.version, isNull);
     expect(dep.toString(), 'SdkDependency: flutter');
   });
 
   test('with version', () {
-    var dep = _dependency<SdkDependency>(
+    final dep = _dependency<SdkDependency>(
         {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'});
     expect(dep.sdk, 'flutter');
     expect(dep.version.toString(), '>=1.2.3 <2.0.0');
@@ -179,7 +179,7 @@ line 5, column 11: Unsupported value for `sdk`.
 
 void _gitDependency() {
   test('string', () {
-    var dep = _dependency<GitDependency>({'git': 'url'});
+    final dep = _dependency<GitDependency>({'git': 'url'});
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
@@ -188,7 +188,7 @@ void _gitDependency() {
 
   test('string with version key is ignored', () {
     // Regression test for https://github.com/dart-lang/pubspec_parse/issues/13
-    var dep = _dependency<GitDependency>({'git': 'url', 'version': '^1.2.3'});
+    final dep = _dependency<GitDependency>({'git': 'url', 'version': '^1.2.3'});
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
@@ -196,11 +196,11 @@ void _gitDependency() {
   });
 
   test('string with user@ URL', () {
-    var skipTryParse = Platform.environment.containsKey('TRAVIS');
+    final skipTryParse = Platform.environment.containsKey('TRAVIS');
     if (skipTryParse) {
       print('FYI: not validating git@ URI on travis due to failure');
     }
-    var dep = _dependency<GitDependency>({'git': 'git@localhost:dep.git'},
+    final dep = _dependency<GitDependency>({'git': 'git@localhost:dep.git'},
         skipTryPub: skipTryParse);
     expect(dep.url.toString(), 'ssh://git@localhost/dep.git');
     expect(dep.path, isNull);
@@ -216,7 +216,7 @@ line 6, column 4: Unsupported dependency key.
   });
 
   test('map', () {
-    var dep = _dependency<GitDependency>({
+    final dep = _dependency<GitDependency>({
       'git': {'url': 'url', 'path': 'path', 'ref': 'ref'}
     });
     expect(dep.url.toString(), 'url');
@@ -267,13 +267,13 @@ line 6, column 12: Unsupported value for `url`.
 
 void _pathDependency() {
   test('valid', () {
-    var dep = _dependency<PathDependency>({'path': '../path'});
+    final dep = _dependency<PathDependency>({'path': '../path'});
     expect(dep.path, '../path');
     expect(dep.toString(), 'PathDependency: path@../path');
   });
 
   test('valid with version key is ignored', () {
-    var dep =
+    final dep =
         _dependency<PathDependency>({'path': '../path', 'version': '^1.2.3'});
     expect(dep.path, '../path');
     expect(dep.toString(), 'PathDependency: path@../path');
@@ -309,14 +309,14 @@ void _expectThrows(Object content, String expectedError) {
 }
 
 T _dependency<T extends Dependency>(Object content, {bool skipTryPub = false}) {
-  var value = parse({
+  final value = parse({
     'name': 'sample',
     'dependencies': {'dep': content}
   }, skipTryPub: skipTryPub);
   expect(value.name, 'sample');
   expect(value.dependencies, hasLength(1));
 
-  var entry = value.dependencies.entries.single;
+  final entry = value.dependencies.entries.single;
   expect(entry.key, 'dep');
 
   return entry.value as T;

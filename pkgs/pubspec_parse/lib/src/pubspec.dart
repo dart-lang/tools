@@ -78,7 +78,7 @@ class Pubspec {
   factory Pubspec.fromJson(Map json) => _$PubspecFromJson(json);
 
   factory Pubspec.parse(String yaml, {sourceUrl}) {
-    var item = loadYaml(yaml, sourceUrl: sourceUrl);
+    final item = loadYaml(yaml, sourceUrl: sourceUrl);
 
     if (item == null) {
       throw ArgumentError.notNull('yaml');
@@ -100,7 +100,7 @@ class Pubspec {
   }
 
   static List<String> _normalizeAuthors(String author, List<String> authors) {
-    var value = Set<String>();
+    final value = Set<String>();
     if (author != null) {
       value.add(author);
     }
@@ -115,7 +115,7 @@ Version _versionFromString(String input) => Version.parse(input);
 
 Map<String, VersionConstraint> _environmentMap(Map source) =>
     source.map((k, value) {
-      var key = k as String;
+      final key = k as String;
       if (key == 'dart') {
         // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
         // 'dart' is not allowed as a key!

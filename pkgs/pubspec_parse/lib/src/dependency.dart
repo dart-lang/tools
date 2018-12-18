@@ -12,7 +12,7 @@ part 'dependency.g.dart';
 
 Map<String, Dependency> parseDeps(Map source) =>
     source?.map((k, v) {
-      var key = k as String;
+      final key = k as String;
       Dependency value;
       try {
         value = _fromJson(v);
@@ -23,7 +23,7 @@ Map<String, Dependency> parseDeps(Map source) =>
           // extract the associated error information.
 
           var message = e.message;
-          var innerError = e.innerError;
+          final innerError = e.innerError;
           // json_annotation should handle FormatException...
           // https://github.com/dart-lang/json_serializable/issues/233
           if (innerError is FormatException) {
@@ -51,13 +51,13 @@ Dependency _fromJson(dynamic data) {
   }
 
   if (data is Map) {
-    var matchedKeys =
+    final matchedKeys =
         data.keys.cast<String>().where((key) => key != 'version').toList();
 
     if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
       return _$HostedDependencyFromJson(data);
     } else {
-      var weirdKey = matchedKeys.firstWhere((k) => !_sourceKeys.contains(k),
+      final weirdKey = matchedKeys.firstWhere((k) => !_sourceKeys.contains(k),
           orElse: () => null);
 
       if (weirdKey != null) {
@@ -69,7 +69,7 @@ Dependency _fromJson(dynamic data) {
             'A dependency may only have one source.');
       }
 
-      var key = matchedKeys.single;
+      final key = matchedKeys.single;
 
       try {
         switch (key) {
@@ -146,7 +146,7 @@ Uri parseGitUri(String value) => _tryParseScpUri(value) ?? Uri.parse(value);
 /// Supports URIs like `[user@]host.xz:path/to/repo.git/`
 /// See https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a
 Uri _tryParseScpUri(String value) {
-  var colonIndex = value.indexOf(':');
+  final colonIndex = value.indexOf(':');
 
   if (colonIndex < 0) {
     return null;
@@ -154,7 +154,7 @@ Uri _tryParseScpUri(String value) {
     // If the first colon is part of a scheme, it's not an scp-like URI
     return null;
   }
-  var slashIndex = value.indexOf('/');
+  final slashIndex = value.indexOf('/');
 
   if (slashIndex >= 0 && slashIndex < colonIndex) {
     // Per docs: This syntax is only recognized if there are no slashes before
@@ -164,11 +164,11 @@ Uri _tryParseScpUri(String value) {
     return null;
   }
 
-  var atIndex = value.indexOf('@');
+  final atIndex = value.indexOf('@');
   if (colonIndex > atIndex) {
-    var user = atIndex >= 0 ? value.substring(0, atIndex) : null;
-    var host = value.substring(atIndex + 1, colonIndex);
-    var path = value.substring(colonIndex + 1);
+    final user = atIndex >= 0 ? value.substring(0, atIndex) : null;
+    final host = value.substring(atIndex + 1, colonIndex);
+    final path = value.substring(colonIndex + 1);
     return Uri(scheme: 'ssh', userInfo: user, host: host, path: path);
   }
   return null;

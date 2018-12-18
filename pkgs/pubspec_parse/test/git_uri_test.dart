@@ -1,6 +1,5 @@
-import 'package:test/test.dart';
-
 import 'package:pubspec_parse/src/dependency.dart';
+import 'package:test/test.dart';
 
 void main() {
   for (var item in {
@@ -14,7 +13,7 @@ void main() {
     'file:///path/to/repo.git/': 'file:///path/to/repo.git/',
   }.entries) {
     test(item.key, () {
-      var uri = parseGitUri(item.key);
+      final uri = parseGitUri(item.key);
 
       printOnFailure(
           [uri.scheme, uri.userInfo, uri.host, uri.port, uri.path].join('\n'));

@@ -13,10 +13,10 @@ import 'package:test_process/test_process.dart';
 Future<ProcResult> tryPub(String content) async {
   await d.file('pubspec.yaml', content).create();
 
-  var proc = await TestProcess.start(_pubPath, ['get', '--offline'],
+  final proc = await TestProcess.start(_pubPath, ['get', '--offline'],
       workingDirectory: d.sandbox);
 
-  var result = await ProcResult.fromTestProcess(proc);
+  final result = await ProcResult.fromTestProcess(proc);
 
   printOnFailure([
     '-----BEGIN pub output-----',
@@ -25,7 +25,7 @@ Future<ProcResult> tryPub(String content) async {
   ].join('\n'));
 
   if (result.exitCode == 0) {
-    var lockContent =
+    final lockContent =
         File(p.join(d.sandbox, 'pubspec.lock')).readAsStringSync();
 
     printOnFailure([
@@ -47,9 +47,9 @@ class ProcResult {
   ProcResult(this.exitCode, this.lines);
 
   static Future<ProcResult> fromTestProcess(TestProcess proc) async {
-    var items = <ProcLine>[];
+    final items = <ProcLine>[];
 
-    var values = await Future.wait([
+    final values = await Future.wait([
       proc.exitCode,
       proc.stdoutStream().forEach((line) => items.add(ProcLine(false, line))),
       proc.stderrStream().forEach((line) => items.add(ProcLine(true, line))),
@@ -60,7 +60,7 @@ class ProcResult {
 
   @override
   String toString() {
-    var buffer = StringBuffer('Exit code: $exitCode');
+    final buffer = StringBuffer('Exit code: $exitCode');
     for (var line in lines) {
       buffer.write('\n$line');
     }
@@ -79,13 +79,13 @@ class ProcLine {
 }
 
 /// The path to the root directory of the SDK.
-final String _sdkDir = (() {
+final String _sdkDir = () {
   // The Dart executable is in "/path/to/sdk/bin/dart", so two levels up is
   // "/path/to/sdk".
-  var aboveExecutable = p.dirname(p.dirname(Platform.resolvedExecutable));
+  final aboveExecutable = p.dirname(p.dirname(Platform.resolvedExecutable));
   assert(FileSystemEntity.isFileSync(p.join(aboveExecutable, 'version')));
   return aboveExecutable;
-})();
+}();
 
 final String _pubPath =
     p.join(_sdkDir, 'bin', Platform.isWindows ? 'pub.bat' : 'pub');

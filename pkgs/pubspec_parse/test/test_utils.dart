@@ -17,7 +17,7 @@ String _encodeJson(Object input) =>
 
 Matcher _throwsParsedYamlException(String prettyValue) =>
     throwsA(const TypeMatcher<ParsedYamlException>().having((e) {
-      var message = e.formattedMessage;
+      final message = e.formattedMessage;
       printOnFailure("Actual error format:\nr'''\n$message'''");
       _printDebugParsedYamlException(e);
       return message;
@@ -28,7 +28,7 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   var innerStack = e.innerStack;
 
   if (e.innerError is CheckedFromJsonException) {
-    var cfje = e.innerError as CheckedFromJsonException;
+    final cfje = e.innerError as CheckedFromJsonException;
     if (cfje.innerError != null) {
       innerError = cfje.innerError;
       innerStack = cfje.innerStack;
@@ -36,12 +36,12 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   }
 
   if (innerError != null) {
-    var items = [innerError];
+    final items = [innerError];
     if (innerStack != null) {
       items.add(Trace.format(innerStack, terse: true));
     }
 
-    var content =
+    final content =
         LineSplitter.split(items.join('\n')).map((e) => '  $e').join('\n');
 
     printOnFailure('Inner error details:\n$content');
@@ -53,7 +53,7 @@ Pubspec parse(Object content,
   quietOnError ??= false;
   skipTryPub ??= false;
 
-  var encoded = _encodeJson(content);
+  final encoded = _encodeJson(content);
 
   ProcResult pubResult;
   if (!skipTryPub) {
@@ -62,7 +62,7 @@ Pubspec parse(Object content,
   }
 
   try {
-    var value = Pubspec.parse(encoded);
+    final value = Pubspec.parse(encoded);
 
     if (pubResult != null) {
       addTearDown(() {
