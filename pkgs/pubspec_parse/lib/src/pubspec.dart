@@ -45,10 +45,10 @@ class Pubspec {
   @JsonKey(fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> dependencies;
 
-  @JsonKey(name: 'dev_dependencies', fromJson: parseDeps, nullable: false)
+  @JsonKey(fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> devDependencies;
 
-  @JsonKey(name: 'dependency_overrides', fromJson: parseDeps, nullable: false)
+  @JsonKey(fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> dependencyOverrides;
 
   /// If [author] and [authors] are both provided, their values are combined
