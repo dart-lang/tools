@@ -62,7 +62,7 @@ Pubspec parse(Object content,
   }
 
   try {
-    var value = new Pubspec.parse(encoded);
+    var value = Pubspec.parse(encoded);
 
     if (pubResult != null) {
       addTearDown(() {

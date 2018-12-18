@@ -26,7 +26,7 @@ Future<ProcResult> tryPub(String content) async {
 
   if (result.exitCode == 0) {
     var lockContent =
-        new File(p.join(d.sandbox, 'pubspec.lock')).readAsStringSync();
+        File(p.join(d.sandbox, 'pubspec.lock')).readAsStringSync();
 
     printOnFailure([
       '-----BEGIN pubspec.lock-----',
@@ -51,20 +51,16 @@ class ProcResult {
 
     var values = await Future.wait([
       proc.exitCode,
-      proc
-          .stdoutStream()
-          .forEach((line) => items.add(new ProcLine(false, line))),
-      proc
-          .stderrStream()
-          .forEach((line) => items.add(new ProcLine(true, line))),
+      proc.stdoutStream().forEach((line) => items.add(ProcLine(false, line))),
+      proc.stderrStream().forEach((line) => items.add(ProcLine(true, line))),
     ]);
 
-    return new ProcResult(values[0] as int, items);
+    return ProcResult(values[0] as int, items);
   }
 
   @override
   String toString() {
-    var buffer = new StringBuffer('Exit code: $exitCode');
+    var buffer = StringBuffer('Exit code: $exitCode');
     for (var line in lines) {
       buffer.write('\n$line');
     }

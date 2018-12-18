@@ -6,7 +6,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:yaml/yaml.dart';
 
 ParsedYamlException parsedYamlException(String message, YamlNode yamlNode) =>
-    new ParsedYamlException._(message, yamlNode);
+    ParsedYamlException._(message, yamlNode);
 
 ParsedYamlException parsedYamlExceptionFromError(
     CheckedFromJsonException error, StackTrace stack) {
@@ -20,7 +20,7 @@ ParsedYamlException parsedYamlExceptionFromError(
         return key.value == innerError.key;
       }, orElse: () => map);
 
-      return new ParsedYamlException._(innerError.message, node,
+      return ParsedYamlException._(innerError.message, node,
           innerError: error, innerStack: stack);
     }
   } else if (innerError is ParsedYamlException) {
@@ -43,7 +43,7 @@ ParsedYamlException parsedYamlExceptionFromError(
     }
   }
 
-  return new ParsedYamlException._(message, yamlNode,
+  return ParsedYamlException._(message, yamlNode,
       innerError: error, innerStack: stack);
 }
 

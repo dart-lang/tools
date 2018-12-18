@@ -71,7 +71,7 @@ class Pubspec {
         devDependencies = devDependencies ?? const {},
         dependencyOverrides = dependencyOverrides ?? const {} {
     if (name == null || name.isEmpty) {
-      throw new ArgumentError.value(name, 'name', '"name" cannot be empty.');
+      throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }
   }
 
@@ -81,7 +81,7 @@ class Pubspec {
     var item = loadYaml(yaml, sourceUrl: sourceUrl);
 
     if (item == null) {
-      throw new ArgumentError.notNull('yaml');
+      throw ArgumentError.notNull('yaml');
     }
 
     if (item is! YamlMap) {
@@ -89,19 +89,18 @@ class Pubspec {
         throw parsedYamlException('Does not represent a YAML map.', item);
       }
 
-      throw new ArgumentError.value(
-          yaml, 'yaml', 'Does not represent a YAML map.');
+      throw ArgumentError.value(yaml, 'yaml', 'Does not represent a YAML map.');
     }
 
     try {
-      return new Pubspec.fromJson(item as YamlMap);
+      return Pubspec.fromJson(item as YamlMap);
     } on CheckedFromJsonException catch (error, stack) {
       throw parsedYamlExceptionFromError(error, stack);
     }
   }
 
   static List<String> _normalizeAuthors(String author, List<String> authors) {
-    var value = new Set<String>();
+    var value = Set<String>();
     if (author != null) {
       value.add(author);
     }
@@ -112,7 +111,7 @@ class Pubspec {
   }
 }
 
-Version _versionFromString(String input) => new Version.parse(input);
+Version _versionFromString(String input) => Version.parse(input);
 
 Map<String, VersionConstraint> _environmentMap(Map source) =>
     source.map((k, value) {
@@ -120,7 +119,7 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
       if (key == 'dart') {
         // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
         // 'dart' is not allowed as a key!
-        throw new InvalidKeyException(
+        throw InvalidKeyException(
             source, 'dart', 'Use "sdk" to for Dart SDK constraints.');
       }
 
@@ -129,16 +128,16 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
         constraint = null;
       } else if (value is String) {
         try {
-          constraint = new VersionConstraint.parse(value);
+          constraint = VersionConstraint.parse(value);
         } on FormatException catch (e) {
-          throw new CheckedFromJsonException(source, key, 'Pubspec', e.message);
+          throw CheckedFromJsonException(source, key, 'Pubspec', e.message);
         }
 
-        return new MapEntry(key, constraint);
+        return MapEntry(key, constraint);
       } else {
-        throw new CheckedFromJsonException(
+        throw CheckedFromJsonException(
             source, key, 'VersionConstraint', '`$value` is not a String.');
       }
 
-      return new MapEntry(key, constraint);
+      return MapEntry(key, constraint);
     });

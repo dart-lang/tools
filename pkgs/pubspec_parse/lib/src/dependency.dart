@@ -29,20 +29,20 @@ Map<String, Dependency> parseDeps(Map source) =>
           if (innerError is FormatException) {
             message = innerError.message;
           }
-          throw new CheckedFromJsonException(source, key, e.className, message);
+          throw CheckedFromJsonException(source, key, e.className, message);
         }
         rethrow;
       }
 
       if (value == null) {
-        throw new CheckedFromJsonException(
+        throw CheckedFromJsonException(
             source, key, 'Pubspec', 'Not a valid dependency value.');
       }
-      return new MapEntry(key, value);
+      return MapEntry(key, value);
     }) ??
     {};
 
-const _sourceKeys = const ['sdk', 'git', 'path', 'hosted'];
+const _sourceKeys = ['sdk', 'git', 'path', 'hosted'];
 
 /// Returns `null` if the data could not be parsed.
 Dependency _fromJson(dynamic data) {
@@ -61,11 +61,11 @@ Dependency _fromJson(dynamic data) {
           orElse: () => null);
 
       if (weirdKey != null) {
-        throw new InvalidKeyException(
+        throw InvalidKeyException(
             data, weirdKey, 'Unsupported dependency key.');
       }
       if (matchedKeys.length > 1) {
-        throw new CheckedFromJsonException(data, matchedKeys[1], 'Dependency',
+        throw CheckedFromJsonException(data, matchedKeys[1], 'Dependency',
             'A dependency may only have one source.');
       }
 
@@ -74,17 +74,17 @@ Dependency _fromJson(dynamic data) {
       try {
         switch (key) {
           case 'git':
-            return new GitDependency.fromData(data[key]);
+            return GitDependency.fromData(data[key]);
           case 'path':
-            return new PathDependency.fromData(data[key]);
+            return PathDependency.fromData(data[key]);
           case 'sdk':
             return _$SdkDependencyFromJson(data);
           case 'hosted':
             return _$HostedDependencyFromJson(data);
         }
-        throw new StateError('There is a bug in pubspec_parse.');
+        throw StateError('There is a bug in pubspec_parse.');
       } on ArgumentError catch (e) {
-        throw new CheckedFromJsonException(
+        throw CheckedFromJsonException(
             data, e.name, 'Dependency', e.message.toString());
       }
     }
@@ -134,7 +134,7 @@ class GitDependency extends Dependency {
       return _$GitDependencyFromJson(data);
     }
 
-    throw new ArgumentError.value(data, 'git', 'Must be a String or a Map.');
+    throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
   }
 
   @override
@@ -169,7 +169,7 @@ Uri _tryParseScpUri(String value) {
     var user = atIndex >= 0 ? value.substring(0, atIndex) : null;
     var host = value.substring(atIndex + 1, colonIndex);
     var path = value.substring(colonIndex + 1);
-    return new Uri(scheme: 'ssh', userInfo: user, host: host, path: path);
+    return Uri(scheme: 'ssh', userInfo: user, host: host, path: path);
   }
   return null;
 }
@@ -181,9 +181,9 @@ class PathDependency extends Dependency {
 
   factory PathDependency.fromData(Object data) {
     if (data is String) {
-      return new PathDependency(data);
+      return PathDependency(data);
     }
-    throw new ArgumentError.value(data, 'path', 'Must be a String.');
+    throw ArgumentError.value(data, 'path', 'Must be a String.');
   }
 
   @override
@@ -225,9 +225,9 @@ class HostedDetails {
       return _$HostedDetailsFromJson(data);
     }
 
-    throw new ArgumentError.value(data, 'hosted', 'Must be a Map or String.');
+    throw ArgumentError.value(data, 'hosted', 'Must be a Map or String.');
   }
 }
 
 VersionConstraint _constraintFromString(String input) =>
-    new VersionConstraint.parse(input);
+    VersionConstraint.parse(input);
