@@ -21,6 +21,8 @@ class Pubspec {
   final Version version;
 
   final String description;
+
+  /// This should be a URL pointing to the website for the package.
   final String homepage;
 
   /// Specifies where to publish this package.
@@ -31,6 +33,14 @@ class Pubspec {
   ///
   /// [More information](https://www.dartlang.org/tools/pub/pubspec#publish_to).
   final String publishTo;
+
+  /// Optional field to specify the source code repository of the package.
+  /// Useful when a package has both a home page and a repository.
+  final Uri repository;
+
+  /// Optional field to a web page where developers can report new issues or
+  /// view existing ones.
+  final Uri issueTracker;
 
   /// If there is exactly 1 value in [authors], returns it.
   ///
@@ -69,6 +79,8 @@ class Pubspec {
     List<String> authors,
     Map<String, VersionConstraint> environment,
     this.homepage,
+    this.repository,
+    this.issueTracker,
     this.documentation,
     this.description,
     Map<String, Dependency> dependencies,

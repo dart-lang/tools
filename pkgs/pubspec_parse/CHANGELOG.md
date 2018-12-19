@@ -1,6 +1,7 @@
 ## 0.1.3
 
 - Add support for `publish_to` field.
+- Support the proposed `repository` and `issue_tracker` URLs.
 
 ## 0.1.2+3
 

@@ -18,6 +18,10 @@ Pubspec _$PubspecFromJson(Map json) {
         environment: $checkedConvert(json, 'environment',
             (v) => v == null ? null : _environmentMap(v as Map)),
         homepage: $checkedConvert(json, 'homepage', (v) => v as String),
+        repository: $checkedConvert(json, 'repository',
+            (v) => v == null ? null : Uri.parse(v as String)),
+        issueTracker: $checkedConvert(json, 'issue_tracker',
+            (v) => v == null ? null : Uri.parse(v as String)),
         documentation:
             $checkedConvert(json, 'documentation', (v) => v as String),
         description: $checkedConvert(json, 'description', (v) => v as String),
@@ -30,6 +34,7 @@ Pubspec _$PubspecFromJson(Map json) {
     return val;
   }, fieldKeyMap: const {
     'publishTo': 'publish_to',
+    'issueTracker': 'issue_tracker',
     'devDependencies': 'dev_dependencies',
     'dependencyOverrides': 'dependency_overrides'
   });
