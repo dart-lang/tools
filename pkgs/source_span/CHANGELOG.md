@@ -1,3 +1,14 @@
+# 1.5.0
+
+* Improve the output of `SourceSpan.highlight()` and `SourceSpan.message()`:
+
+  * They now include line numbers.
+  * They will now print every line of a multiline span.
+  * They will now use Unicode box-drawing characters by default (this can be
+    controlled using [`term_glyph.ascii`][]).
+
+[`term_glyph.ascii`]: https://pub.dartlang.org/documentation/term_glyph/latest/term_glyph/ascii.html
+
 # 1.4.1
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

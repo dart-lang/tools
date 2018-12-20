@@ -3,10 +3,22 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
+import 'package:term_glyph/term_glyph.dart' as glyph;
+
 import 'package:source_span/source_span.dart';
 import 'package:source_span/src/colors.dart' as colors;
 
 main() {
+  bool oldAscii;
+  setUpAll(() {
+    oldAscii = glyph.ascii;
+    glyph.ascii = true;
+  });
+
+  tearDownAll(() {
+    glyph.ascii = oldAscii;
+  });
+
   var span;
   setUp(() {
     span = new SourceSpan(new SourceLocation(5, sourceUrl: "foo.dart"),
@@ -181,8 +193,10 @@ main() {
     test("prints the text being described", () {
       expect(span.message("oh no"), equals("""
 line 1, column 6 of foo.dart: oh no
-foo bar
-^^^^^^^"""));
+  ,
+1 | foo bar
+  | ^^^^^^^
+  '"""));
     });
 
     test("gracefully handles a missing source URL", () {
@@ -191,8 +205,10 @@ foo bar
 
       expect(span.message("oh no"), equalsIgnoringWhitespace("""
 line 1, column 6: oh no
-foo bar
-^^^^^^^"""));
+  ,
+1 | foo bar
+  | ^^^^^^^
+  '"""));
     });
 
     test("gracefully handles empty text", () {
@@ -205,22 +221,28 @@ foo bar
     test("doesn't colorize if color is false", () {
       expect(span.message("oh no", color: false), equals("""
 line 1, column 6 of foo.dart: oh no
-foo bar
-^^^^^^^"""));
+  ,
+1 | foo bar
+  | ^^^^^^^
+  '"""));
     });
 
     test("colorizes if color is true", () {
       expect(span.message("oh no", color: true), equals("""
 line 1, column 6 of foo.dart: oh no
-${colors.RED}foo bar${colors.NONE}
-${colors.RED}^^^^^^^${colors.NONE}"""));
+${colors.BLUE}  ,${colors.NONE}
+${colors.BLUE}1 |${colors.NONE} ${colors.RED}foo bar${colors.NONE}
+${colors.BLUE}  |${colors.NONE} ${colors.RED}^^^^^^^${colors.NONE}
+${colors.BLUE}  '${colors.NONE}"""));
     });
 
     test("uses the given color if it's passed", () {
       expect(span.message("oh no", color: colors.YELLOW), equals("""
 line 1, column 6 of foo.dart: oh no
-${colors.YELLOW}foo bar${colors.NONE}
-${colors.YELLOW}^^^^^^^${colors.NONE}"""));
+${colors.BLUE}  ,${colors.NONE}
+${colors.BLUE}1 |${colors.NONE} ${colors.YELLOW}foo bar${colors.NONE}
+${colors.BLUE}  |${colors.NONE} ${colors.YELLOW}^^^^^^^${colors.NONE}
+${colors.BLUE}  '${colors.NONE}"""));
     });
 
     test("with context, underlines the right column", () {
@@ -232,8 +254,10 @@ ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
 
       expect(spanWithContext.message("oh no", color: colors.YELLOW), equals("""
 line 1, column 6 of foo.dart: oh no
------${colors.YELLOW}foo bar${colors.NONE}-----
-     ${colors.YELLOW}^^^^^^^${colors.NONE}"""));
+${colors.BLUE}  ,${colors.NONE}
+${colors.BLUE}1 |${colors.NONE} -----${colors.YELLOW}foo bar${colors.NONE}-----
+${colors.BLUE}  |${colors.NONE}      ${colors.YELLOW}^^^^^^^${colors.NONE}
+${colors.BLUE}  '${colors.NONE}"""));
     });
   });
 

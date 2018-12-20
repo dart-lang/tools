@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:term_glyph/term_glyph.dart' as glyph;
+
 import 'location.dart';
 import 'span_mixin.dart';
 
@@ -54,6 +56,10 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// color red). If it's `true`, it indicates that the text should be
   /// highlighted using the default color. If it's `false` or `null`, it
   /// indicates that the text shouldn't be highlighted.
+  ///
+  /// This uses the full range of Unicode characters to highlight the source
+  /// span if [glyph.ascii] is `false` (the default), but only uses ASCII
+  /// characters if it's `true`.
   String message(String message, {color});
 
   /// Prints the text associated with this span in a user-friendly way.
@@ -69,6 +75,10 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// color red). If it's `true`, it indicates that the text should be
   /// highlighted using the default color. If it's `false` or `null`, it
   /// indicates that the text shouldn't be highlighted.
+  ///
+  /// This uses the full range of Unicode characters to highlight the source
+  /// span if [glyph.ascii] is `false` (the default), but only uses ASCII
+  /// characters if it's `true`.
   String highlight({color});
 }
 
