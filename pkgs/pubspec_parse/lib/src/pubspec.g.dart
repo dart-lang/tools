@@ -30,7 +30,9 @@ Pubspec _$PubspecFromJson(Map json) {
         devDependencies: $checkedConvert(
             json, 'dev_dependencies', (v) => parseDeps(v as Map)),
         dependencyOverrides: $checkedConvert(
-            json, 'dependency_overrides', (v) => parseDeps(v as Map)));
+            json, 'dependency_overrides', (v) => parseDeps(v as Map)),
+        flutter: $checkedConvert(json, 'flutter',
+            (v) => (v as Map)?.map((k, e) => MapEntry(k as String, e))));
     return val;
   }, fieldKeyMap: const {
     'publishTo': 'publish_to',

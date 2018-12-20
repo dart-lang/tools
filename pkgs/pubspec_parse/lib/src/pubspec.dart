@@ -69,6 +69,14 @@ class Pubspec {
   @JsonKey(fromJson: parseDeps, nullable: false)
   final Map<String, Dependency> dependencyOverrides;
 
+  /// Optional configuration specific to [Flutter](https://flutter.io/)
+  /// packages.
+  ///
+  /// May include
+  /// [assets](https://flutter.io/docs/development/ui/assets-and-images)
+  /// and other settings.
+  final Map<String, dynamic> flutter;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -86,6 +94,7 @@ class Pubspec {
     Map<String, Dependency> dependencies,
     Map<String, Dependency> devDependencies,
     Map<String, Dependency> dependencyOverrides,
+    this.flutter,
   })  : authors = _normalizeAuthors(author, authors),
         environment = environment ?? const {},
         dependencies = dependencies ?? const {},

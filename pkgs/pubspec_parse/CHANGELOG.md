@@ -1,7 +1,7 @@
 ## 0.1.3
 
-- Add support for `publish_to` field.
-- Support the proposed `repository` and `issue_tracker` URLs.
+- Added support for `flutter`, `issue_tracker`, `publish_to`, and `repository`
+  fields.
 
 ## 0.1.2+3
 

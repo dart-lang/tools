@@ -23,6 +23,7 @@ void main() {
     expect(value.dependencies, isEmpty);
     expect(value.devDependencies, isEmpty);
     expect(value.dependencyOverrides, isEmpty);
+    expect(value.flutter, isNull);
   });
 
   test('all fields set', () {
@@ -153,6 +154,14 @@ line 3, column 16: must be an http or https URL.
       // ignore: deprecated_member_use
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
+    });
+
+    test('flutter', () {
+      final value = parse({
+        'name': 'sample',
+        'flutter': {'key': 'value'},
+      });
+      expect(value.flutter, {'key': 'value'});
     });
   });
 
