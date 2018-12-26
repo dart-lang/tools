@@ -44,6 +44,16 @@ class Highlighter {
   /// alignment.
   static const _spacesPerTab = 4;
 
+  /// Creats a [Highlighter] that will return a message associated with [span]
+  /// when [write] is called.
+  ///
+  /// [color] may either be a [String], a [bool], or `null`. If it's a string,
+  /// it indicates an [ANSI terminal color
+  /// escape](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) that should
+  /// be used to highlight the span's text (for example, `"\u001b[31m"` will
+  /// color red). If it's `true`, it indicates that the text should be
+  /// highlighted using the default color. If it's `false` or `null`, it
+  /// indicates that the text shouldn't be highlighted.
   factory Highlighter(SourceSpan span, {color}) {
     if (color == true) color = colors.RED;
     if (color == false) color = null;
@@ -114,8 +124,6 @@ class Highlighter {
   ///
   /// This method should only be called once.
   String highlight() {
-    //if (_span.length == 0 && _span.context.isEmpty) return "";
-
     _writeSidebar(end: glyph.downEnd);
     _buffer.writeln();
 
@@ -123,7 +131,7 @@ class Highlighter {
     // those first.
     var lineStart =
         findLineStart(_span.context, _span.text, _span.start.column);
-    assert(lineStart != null); // enfoced by [new Highlighter]
+    assert(lineStart != null); // enforced by [new Highlighter]
 
     var context = _span.context;
     if (lineStart > 0) {
@@ -150,12 +158,13 @@ class Highlighter {
     if (lines.last.isEmpty && lines.length > 1) lines.removeLast();
 
     _writeFirstLine(lines.first);
+    var lastLineIndex = _span.end.line - _span.start.line;
     if (_multiline) {
       _writeIntermediateLines(
-          lines.skip(1).take(_span.end.line - _span.start.line - 1));
-      _writeLastLine(lines[_span.end.line - _span.start.line]);
+          lines.skip(1).take(lastLineIndex - 1));
+      _writeLastLine(lines[lastLineIndex]);
     }
-    _writeTrailingLines(lines.skip(1 + _span.end.line - _span.start.line));
+    _writeTrailingLines(lines.skip(lastLineIndex + 1));
 
     _writeSidebar(end: glyph.upEnd);
 
