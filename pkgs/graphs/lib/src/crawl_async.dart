@@ -29,6 +29,10 @@ final _empty = Future<Null>.value(null);
 /// If either [readNode] or [edges] throws the error will be forwarded
 /// through the result stream and no further nodes will be crawled, though some
 /// work may have already been started.
+///
+/// Crawling is eager, so calls to [edges] may overlap with other calls that
+/// have not completed. If the [edges] callback needs to be limited or throttled
+/// that must be done by wrapping it before calling [crawlAsync].
 Stream<V> crawlAsync<K, V>(Iterable<K> roots, FutureOr<V> Function(K) readNode,
     FutureOr<Iterable<K>> Function(K, V) edges) {
   final crawl = _CrawlAsync(roots, readNode, edges)..run();

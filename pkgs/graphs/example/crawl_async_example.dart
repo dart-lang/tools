@@ -11,12 +11,17 @@ import 'package:analyzer/dart/analysis/context_locator.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:graphs/graphs.dart';
 import 'package:path/path.dart' as p;
+import 'package:pool/pool.dart';
 
 /// Print a transitive set of imported URIs where libraries are read
 /// asynchronously.
 Future<Null> main() async {
-  var allImports = await crawlAsync(
-          [Uri.parse('package:graphs/graphs.dart')], read, findImports)
+  // Limits calls to [findImports].
+  var _pool = Pool(10);
+  var allImports = await crawlAsync<Uri, Source>(
+          [Uri.parse('package:graphs/graphs.dart')],
+          read,
+          (from, source) => _pool.withResource(() => findImports(from, source)))
       .toList();
   print(allImports.map((s) => s.uri).toList());
 }
