@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
@@ -12,27 +13,27 @@ import 'package:test/test.dart';
 void main() {
   group("request()", () {
     test("resources can be requested freely up to the limit", () {
-      var pool = new Pool(50);
+      var pool = Pool(50);
       for (var i = 0; i < 50; i++) {
         expect(pool.request(), completes);
       }
     });
 
     test("resources block past the limit", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50);
+      FakeAsync().run((async) {
+        var pool = Pool(50);
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
         expect(pool.request(), doesNotComplete);
 
-        async.elapse(new Duration(seconds: 1));
+        async.elapse(Duration(seconds: 1));
       });
     });
 
     test("a blocked resource is allocated when another is released", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50);
+      FakeAsync().run((async) {
+        var pool = Pool(50);
         for (var i = 0; i < 49; i++) {
           expect(pool.request(), completes);
         }
@@ -41,85 +42,85 @@ void main() {
           // This will only complete once [lastAllocatedResource] is released.
           expect(pool.request(), completes);
 
-          new Future.delayed(new Duration(microseconds: 1)).then((_) {
+          Future.delayed(Duration(microseconds: 1)).then((_) {
             lastAllocatedResource.release();
           });
         });
 
-        async.elapse(new Duration(seconds: 1));
+        async.elapse(Duration(seconds: 1));
       });
     });
   });
 
   group("withResource()", () {
     test("can be called freely up to the limit", () {
-      var pool = new Pool(50);
+      var pool = Pool(50);
       for (var i = 0; i < 50; i++) {
-        pool.withResource(expectAsync0(() => new Completer().future));
+        pool.withResource(expectAsync0(() => Completer().future));
       }
     });
 
     test("blocks the callback past the limit", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50);
+      FakeAsync().run((async) {
+        var pool = Pool(50);
         for (var i = 0; i < 50; i++) {
-          pool.withResource(expectAsync0(() => new Completer().future));
+          pool.withResource(expectAsync0(() => Completer().future));
         }
         pool.withResource(expectNoAsync());
 
-        async.elapse(new Duration(seconds: 1));
+        async.elapse(Duration(seconds: 1));
       });
     });
 
     test("a blocked resource is allocated when another is released", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50);
+      FakeAsync().run((async) {
+        var pool = Pool(50);
         for (var i = 0; i < 49; i++) {
-          pool.withResource(expectAsync0(() => new Completer().future));
+          pool.withResource(expectAsync0(() => Completer().future));
         }
 
-        var completer = new Completer();
+        var completer = Completer();
         pool.withResource(() => completer.future);
         var blockedResourceAllocated = false;
         pool.withResource(() {
           blockedResourceAllocated = true;
         });
 
-        new Future.delayed(new Duration(microseconds: 1)).then((_) {
+        Future.delayed(Duration(microseconds: 1)).then((_) {
           expect(blockedResourceAllocated, isFalse);
           completer.complete();
-          return new Future.delayed(new Duration(microseconds: 1));
+          return Future.delayed(Duration(microseconds: 1));
         }).then((_) {
           expect(blockedResourceAllocated, isTrue);
         });
 
-        async.elapse(new Duration(seconds: 1));
+        async.elapse(Duration(seconds: 1));
       });
     });
 
     // Regression test for #3.
     test("can be called immediately before close()", () async {
-      var pool = new Pool(1);
-      pool.withResource(expectAsync0(() {}));
+      var pool = Pool(1);
+      unawaited(pool.withResource(expectAsync0(() {})));
       await pool.close();
     });
   });
 
   group("with a timeout", () {
     test("doesn't time out if there are no pending requests", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50, timeout: new Duration(seconds: 5));
+      FakeAsync().run((async) {
+        var pool = Pool(50, timeout: Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
 
-        async.elapse(new Duration(seconds: 6));
+        async.elapse(Duration(seconds: 6));
       });
     });
 
     test("resets the timer if a resource is returned", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50, timeout: new Duration(seconds: 5));
+      FakeAsync().run((async) {
+        var pool = Pool(50, timeout: Duration(seconds: 5));
         for (var i = 0; i < 49; i++) {
           expect(pool.request(), completes);
         }
@@ -128,48 +129,48 @@ void main() {
           // This will only complete once [lastAllocatedResource] is released.
           expect(pool.request(), completes);
 
-          new Future.delayed(new Duration(seconds: 3)).then((_) {
+          Future.delayed(Duration(seconds: 3)).then((_) {
             lastAllocatedResource.release();
             expect(pool.request(), doesNotComplete);
           });
         });
 
-        async.elapse(new Duration(seconds: 6));
+        async.elapse(Duration(seconds: 6));
       });
     });
 
     test("resets the timer if a resource is requested", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50, timeout: new Duration(seconds: 5));
+      FakeAsync().run((async) {
+        var pool = Pool(50, timeout: Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
         expect(pool.request(), doesNotComplete);
 
-        new Future.delayed(new Duration(seconds: 3)).then((_) {
+        Future.delayed(Duration(seconds: 3)).then((_) {
           expect(pool.request(), doesNotComplete);
         });
 
-        async.elapse(new Duration(seconds: 6));
+        async.elapse(Duration(seconds: 6));
       });
     });
 
     test("times out if nothing happens", () {
-      new FakeAsync().run((async) {
-        var pool = new Pool(50, timeout: new Duration(seconds: 5));
+      FakeAsync().run((async) {
+        var pool = Pool(50, timeout: Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
-        expect(pool.request(), throwsA(new TypeMatcher<TimeoutException>()));
+        expect(pool.request(), throwsA(TypeMatcher<TimeoutException>()));
 
-        async.elapse(new Duration(seconds: 6));
+        async.elapse(Duration(seconds: 6));
       });
     });
   });
 
   group("allowRelease()", () {
     test("runs the callback once the resource limit is exceeded", () async {
-      var pool = new Pool(50);
+      var pool = Pool(50);
       for (var i = 0; i < 49; i++) {
         expect(pool.request(), completes);
       }
@@ -177,17 +178,17 @@ void main() {
       var resource = await pool.request();
       var onReleaseCalled = false;
       resource.allowRelease(() => onReleaseCalled = true);
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(onReleaseCalled, isFalse);
 
       expect(pool.request(), completes);
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(onReleaseCalled, isTrue);
     });
 
     test("runs the callback immediately if there are blocked requests",
         () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource = await pool.request();
 
       // This will be blocked until [resource.allowRelease] is called.
@@ -195,54 +196,54 @@ void main() {
 
       var onReleaseCalled = false;
       resource.allowRelease(() => onReleaseCalled = true);
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(onReleaseCalled, isTrue);
     });
 
     test("blocks the request until the callback completes", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource = await pool.request();
 
       var requestComplete = false;
-      pool.request().then((_) => requestComplete = true);
+      unawaited(pool.request().then((_) => requestComplete = true));
 
-      var completer = new Completer();
+      var completer = Completer();
       resource.allowRelease(() => completer.future);
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(requestComplete, isFalse);
 
       completer.complete();
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(requestComplete, isTrue);
     });
 
     test("completes requests in request order regardless of callback order",
         () async {
-      var pool = new Pool(2);
+      var pool = Pool(2);
       var resource1 = await pool.request();
       var resource2 = await pool.request();
 
       var request1Complete = false;
-      pool.request().then((_) => request1Complete = true);
+      unawaited(pool.request().then((_) => request1Complete = true));
       var request2Complete = false;
-      pool.request().then((_) => request2Complete = true);
+      unawaited(pool.request().then((_) => request2Complete = true));
 
       var onRelease1Called = false;
-      var completer1 = new Completer();
+      var completer1 = Completer();
       resource1.allowRelease(() {
         onRelease1Called = true;
         return completer1.future;
       });
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(onRelease1Called, isTrue);
 
       var onRelease2Called = false;
-      var completer2 = new Completer();
+      var completer2 = Completer();
       resource2.allowRelease(() {
         onRelease2Called = true;
         return completer2.future;
       });
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(onRelease2Called, isTrue);
       expect(request1Complete, isFalse);
       expect(request2Complete, isFalse);
@@ -251,18 +252,18 @@ void main() {
       // was triggered by the second blocking request, it should complete the
       // first one to preserve ordering.
       completer2.complete();
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(request1Complete, isTrue);
       expect(request2Complete, isFalse);
 
       completer1.complete();
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       expect(request1Complete, isTrue);
       expect(request2Complete, isTrue);
     });
 
     test("runs onRequest in the zone it was created", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource = await pool.request();
 
       var outerZone = Zone.current;
@@ -275,29 +276,29 @@ void main() {
         }));
       });
 
-      pool.request();
+      await pool.request();
     });
   });
 
   test("done doesn't complete without close", () async {
-    var pool = new Pool(1);
-    pool.done.then(expectAsync1((_) {}, count: 0));
+    var pool = Pool(1);
+    unawaited(pool.done.then(expectAsync1((_) {}, count: 0)));
 
     var resource = await pool.request();
     resource.release();
 
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
   });
 
   group("close()", () {
     test("disallows request() and withResource()", () {
-      var pool = new Pool(1)..close();
+      var pool = Pool(1)..close();
       expect(pool.request, throwsStateError);
       expect(() => pool.withResource(() {}), throwsStateError);
     });
 
     test("pending requests are fulfilled", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource1 = await pool.request();
       expect(
           pool.request().then((resource2) {
@@ -310,10 +311,10 @@ void main() {
     });
 
     test("pending requests are fulfilled with allowRelease", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource1 = await pool.request();
 
-      var completer = new Completer();
+      var completer = Completer();
       expect(
           pool.request().then((resource2) {
             expect(completer.isCompleted, isTrue);
@@ -323,13 +324,13 @@ void main() {
       expect(pool.close(), completes);
 
       resource1.allowRelease(() => completer.future);
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
 
       completer.complete();
     });
 
     test("doesn't complete until all resources are released", () async {
-      var pool = new Pool(2);
+      var pool = Pool(2);
       var resource1 = await pool.request();
       var resource2 = await pool.request();
       var resource3Future = pool.request();
@@ -347,11 +348,11 @@ void main() {
 
       resource1Released = true;
       resource1.release();
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
 
       resource2Released = true;
       resource2.release();
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
 
       var resource3 = await resource3Future;
       resource3Released = true;
@@ -359,12 +360,12 @@ void main() {
     });
 
     test("active onReleases complete as usual", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource = await pool.request();
 
       // Set up an onRelease callback whose completion is controlled by
       // [completer].
-      var completer = new Completer();
+      var completer = Completer();
       resource.allowRelease(() => completer.future);
       expect(
           pool.request().then((_) {
@@ -372,21 +373,21 @@ void main() {
           }),
           completes);
 
-      await new Future.delayed(Duration.zero);
-      pool.close();
+      await Future.delayed(Duration.zero);
+      unawaited(pool.close());
 
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       completer.complete();
     });
 
     test("inactive onReleases fire", () async {
-      var pool = new Pool(2);
+      var pool = Pool(2);
       var resource1 = await pool.request();
       var resource2 = await pool.request();
 
-      var completer1 = new Completer();
+      var completer1 = Completer();
       resource1.allowRelease(() => completer1.future);
-      var completer2 = new Completer();
+      var completer2 = Completer();
       resource2.allowRelease(() => completer2.future);
 
       expect(
@@ -396,42 +397,42 @@ void main() {
           }),
           completes);
 
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       completer1.complete();
 
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       completer2.complete();
     });
 
     test("new allowReleases fire immediately", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource = await pool.request();
 
-      var completer = new Completer();
+      var completer = Completer();
       expect(
           pool.close().then((_) {
             expect(completer.isCompleted, isTrue);
           }),
           completes);
 
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       resource.allowRelease(() => completer.future);
 
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       completer.complete();
     });
 
     test("an onRelease error is piped to the return value", () async {
-      var pool = new Pool(1);
+      var pool = Pool(1);
       var resource = await pool.request();
 
-      var completer = new Completer();
+      var completer = Completer();
       resource.allowRelease(() => completer.future);
 
       expect(pool.done, throwsA("oh no!"));
       expect(pool.close(), throwsA("oh no!"));
 
-      await new Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
       completer.completeError("oh no!");
     });
   });
@@ -440,20 +441,20 @@ void main() {
 /// Returns a function that will cause the test to fail if it's called.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
-Function expectNoAsync() {
-  var stack = new Trace.current(1);
+void Function() expectNoAsync() {
+  var stack = Trace.current(1);
   return () => registerException(
-      new TestFailure("Expected function not to be called."), stack);
+      TestFailure("Expected function not to be called."), stack);
 }
 
 /// A matcher for Futures that asserts that they don't complete.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
 Matcher get doesNotComplete => predicate((future) {
-      expect(future, new TypeMatcher<Future>());
+      expect(future, TypeMatcher<Future>());
 
-      var stack = new Trace.current(1);
+      var stack = Trace.current(1);
       future.then((_) => registerException(
-          new TestFailure("Expected future not to complete."), stack));
+          TestFailure("Expected future not to complete."), stack));
       return true;
     });
