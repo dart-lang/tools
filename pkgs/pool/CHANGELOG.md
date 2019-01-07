@@ -1,3 +1,7 @@
+## x.x.x
+
+* Throw ArgumentError if poolSize <= 0
+
 ## 1.3.6
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.
