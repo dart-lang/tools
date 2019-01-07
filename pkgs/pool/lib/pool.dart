@@ -117,7 +117,7 @@ class Pool {
   /// Future.
   ///
   /// The return value of [callback] is piped to the returned Future.
-  Future<T> withResource<T>(FutureOr<T> callback()) async {
+  Future<T> withResource<T>(FutureOr<T> Function() callback) async {
     if (isClosed) {
       throw StateError("withResource() may not be called on a closed Pool.");
     }
@@ -174,7 +174,7 @@ class Pool {
 
   /// If there are any pending requests, this will fire the oldest one after
   /// running [onRelease].
-  void _onResourceReleaseAllowed(onRelease()) {
+  void _onResourceReleaseAllowed(Function() onRelease) {
     _resetTimer();
 
     if (_requestedResources.isNotEmpty) {
@@ -196,7 +196,7 @@ class Pool {
   ///
   /// Futures returned by [_runOnRelease] always complete in the order they were
   /// created, even if earlier [onRelease] callbacks take longer to run.
-  Future<PoolResource> _runOnRelease(onRelease()) {
+  Future<PoolResource> _runOnRelease(Function() onRelease) {
     Future.sync(onRelease).then((value) {
       _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
     }).catchError((error, StackTrace stackTrace) {
@@ -242,7 +242,7 @@ class Pool {
 class PoolResource {
   final Pool _pool;
 
-  /// Whether [this] has been released yet.
+  /// Whether `this` has been released yet.
   bool _released = false;
 
   PoolResource._(this._pool);
@@ -269,7 +269,7 @@ class PoolResource {
   /// This is useful when a resource's main function is complete, but it may
   /// produce additional information later on. For example, an isolate's task
   /// may be complete, but it could still emit asynchronous errors.
-  void allowRelease(onRelease()) {
+  void allowRelease(Function() onRelease) {
     if (_released) {
       throw StateError("A PoolResource may only be released once.");
     }

@@ -161,7 +161,7 @@ void main() {
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
-        expect(pool.request(), throwsA(TypeMatcher<TimeoutException>()));
+        expect(pool.request(), throwsA(const TypeMatcher<TimeoutException>()));
 
         async.elapse(Duration(seconds: 6));
       });
@@ -456,7 +456,7 @@ void Function() expectNoAsync() {
 ///
 /// This should only be called within a [FakeAsync.run] zone.
 Matcher get doesNotComplete => predicate((future) {
-      expect(future, TypeMatcher<Future>());
+      expect(future, const TypeMatcher<Future>());
 
       var stack = Trace.current(1);
       future.then((_) => registerException(
