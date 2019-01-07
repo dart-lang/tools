@@ -79,6 +79,10 @@ class Pool {
   /// all pending [request] futures will throw a [TimeoutException]. This is
   /// intended to avoid deadlocks.
   Pool(this._maxAllocatedResources, {Duration timeout}) : _timeout = timeout {
+    if (_maxAllocatedResources <= 0) {
+      throw ArgumentError('pool limit should be > 0');
+    }
+
     if (timeout != null) {
       // Start the timer canceled since we only want to start counting down once
       // we've run out of available resources.
