@@ -80,7 +80,8 @@ class Pool {
   /// intended to avoid deadlocks.
   Pool(this._maxAllocatedResources, {Duration timeout}) : _timeout = timeout {
     if (_maxAllocatedResources <= 0) {
-      throw ArgumentError('pool limit should be > 0');
+      throw ArgumentError.value(_maxAllocatedResources, 'maxAllocatedResources',
+          'Must be greater than zero.');
     }
 
     if (timeout != null) {
