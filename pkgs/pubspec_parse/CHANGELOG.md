@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Added `lenient` named argument to `Pubspec.fromJson` to ignore format and type errors. 
+
 ## 0.1.3
 
 - Added support for `flutter`, `issue_tracker`, `publish_to`, and `repository`

@@ -48,10 +48,15 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   }
 }
 
-Pubspec parse(Object content,
-    {bool quietOnError = false, bool skipTryPub = false}) {
+Pubspec parse(
+  Object content, {
+  bool quietOnError = false,
+  bool skipTryPub = false,
+  bool lenient = false,
+}) {
   quietOnError ??= false;
   skipTryPub ??= false;
+  lenient ??= false;
 
   final encoded = _encodeJson(content);
 
@@ -62,7 +67,7 @@ Pubspec parse(Object content,
   }
 
   try {
-    final value = Pubspec.parse(encoded);
+    final value = Pubspec.parse(encoded, lenient: lenient);
 
     if (pubResult != null) {
       addTearDown(() {

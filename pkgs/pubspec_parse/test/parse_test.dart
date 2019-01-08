@@ -222,5 +222,91 @@ line 4, column 10: Could not parse version "silly". Unknown text at "silly".
   "sdk": "silly"
          ^^^^^^^''');
     });
+
+    test('bad repository url', () {
+      expectParseThrows({
+        'name': 'foo',
+        'repository': {'x': 'y'},
+      }, r'''
+line 3, column 16: Unsupported value for `repository`.
+ "repository": {
+               ^^''', skipTryPub: true);
+    });
+
+    test('bad issue_tracker url', () {
+      expectParseThrows({
+        'name': 'foo',
+        'issue_tracker': {'x': 'y'},
+      }, r'''
+line 3, column 19: Unsupported value for `issue_tracker`.
+ "issue_tracker": {
+                  ^^''', skipTryPub: true);
+    });
+  });
+
+  group('lenient', () {
+    test('null', () {
+      expect(() => parse(null, lenient: true), throwsArgumentError);
+    });
+
+    test('empty string', () {
+      expect(() => parse('', lenient: true), throwsArgumentError);
+    });
+
+    test('name cannot be empty', () {
+      expect(() => parse({}, lenient: true), throwsException);
+    });
+
+    test('bad repository url', () {
+      final value = parse(
+        {
+          'name': 'foo',
+          'repository': {'x': 'y'},
+        },
+        lenient: true,
+      );
+      expect(value.name, 'foo');
+      expect(value.repository, isNull);
+    });
+
+    test('bad issue_tracker url', () {
+      final value = parse(
+        {
+          'name': 'foo',
+          'issue_tracker': {'x': 'y'},
+        },
+        lenient: true,
+      );
+      expect(value.name, 'foo');
+      expect(value.issueTracker, isNull);
+    });
+
+    test('multiple bad values', () {
+      final value = parse(
+        {
+          'name': 'foo',
+          'repository': {'x': 'y'},
+          'issue_tracker': {'x': 'y'},
+        },
+        lenient: true,
+      );
+      expect(value.name, 'foo');
+      expect(value.repository, isNull);
+      expect(value.issueTracker, isNull);
+    });
+
+    test('deep error throws with lenient', () {
+      expect(
+          () => parse({
+                'name': 'foo',
+                'dependencies': {
+                  'foo': {
+                    'git': {'url': 1}
+                  },
+                },
+                'issue_tracker': {'x': 'y'},
+              }, skipTryPub: true, lenient: true),
+          throwsException);
+    });
   });
 }
