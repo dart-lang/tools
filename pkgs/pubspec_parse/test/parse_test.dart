@@ -24,6 +24,8 @@ void main() {
     expect(value.devDependencies, isEmpty);
     expect(value.dependencyOverrides, isEmpty);
     expect(value.flutter, isNull);
+    expect(value.repository, isNull);
+    expect(value.issueTracker, isNull);
   });
 
   test('all fields set', () {
@@ -37,7 +39,9 @@ void main() {
       'environment': {'sdk': sdkConstraint.toString()},
       'description': 'description',
       'homepage': 'homepage',
-      'documentation': 'documentation'
+      'documentation': 'documentation',
+      'repository': 'https://github.com/example/repo',
+      'issue_tracker': 'https://github.com/example/repo/issues',
     });
     expect(value.name, 'sample');
     expect(value.version, version);
@@ -53,6 +57,9 @@ void main() {
     expect(value.dependencies, isEmpty);
     expect(value.devDependencies, isEmpty);
     expect(value.dependencyOverrides, isEmpty);
+    expect(value.repository, Uri.parse('https://github.com/example/repo'));
+    expect(value.issueTracker,
+        Uri.parse('https://github.com/example/repo/issues'));
   });
 
   test('environment values can be null', () {
