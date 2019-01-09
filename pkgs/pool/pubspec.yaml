@@ -3,7 +3,7 @@ version: 1.4.0
 
 description: >-
   Manage a finite pool of resources.
-  Useful for controlling concurrent I/O requests on the file system or network.
+  Useful for controlling concurrent file system or network requests.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/pool
 
