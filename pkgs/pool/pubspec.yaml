@@ -1,7 +1,9 @@
 name: pool
 version: 1.4.0
 
-description: A class for managing a finite pool of resources.
+description: >-
+  Manage a finite pool of resources.
+  Useful for controlling concurrent I/O requests on the file system or network.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/pool
 
