@@ -1,12 +1,12 @@
 name: pool
-version: 1.4.0-dev
+version: 1.4.0
 
 description: A class for managing a finite pool of resources.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/pool
 
 environment:
-  sdk: '>=2.0.0-dev.17.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
   async: '>=1.4.0 <3.0.0'
