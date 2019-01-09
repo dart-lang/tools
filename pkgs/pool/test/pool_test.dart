@@ -27,7 +27,7 @@ void main() {
         }
         expect(pool.request(), doesNotComplete);
 
-        async.elapse(Duration(seconds: 1));
+        async.elapse(const Duration(seconds: 1));
       });
     });
 
@@ -42,12 +42,12 @@ void main() {
           // This will only complete once [lastAllocatedResource] is released.
           expect(pool.request(), completes);
 
-          Future.delayed(Duration(microseconds: 1)).then((_) {
+          Future.delayed(const Duration(microseconds: 1)).then((_) {
             lastAllocatedResource.release();
           });
         });
 
-        async.elapse(Duration(seconds: 1));
+        async.elapse(const Duration(seconds: 1));
       });
     });
   });
@@ -68,7 +68,7 @@ void main() {
         }
         pool.withResource(expectNoAsync());
 
-        async.elapse(Duration(seconds: 1));
+        async.elapse(const Duration(seconds: 1));
       });
     });
 
@@ -86,15 +86,15 @@ void main() {
           blockedResourceAllocated = true;
         });
 
-        Future.delayed(Duration(microseconds: 1)).then((_) {
+        Future.delayed(const Duration(microseconds: 1)).then((_) {
           expect(blockedResourceAllocated, isFalse);
           completer.complete();
-          return Future.delayed(Duration(microseconds: 1));
+          return Future.delayed(const Duration(microseconds: 1));
         }).then((_) {
           expect(blockedResourceAllocated, isTrue);
         });
 
-        async.elapse(Duration(seconds: 1));
+        async.elapse(const Duration(seconds: 1));
       });
     });
 
@@ -109,18 +109,18 @@ void main() {
   group("with a timeout", () {
     test("doesn't time out if there are no pending requests", () {
       FakeAsync().run((async) {
-        var pool = Pool(50, timeout: Duration(seconds: 5));
+        var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
 
-        async.elapse(Duration(seconds: 6));
+        async.elapse(const Duration(seconds: 6));
       });
     });
 
     test("resets the timer if a resource is returned", () {
       FakeAsync().run((async) {
-        var pool = Pool(50, timeout: Duration(seconds: 5));
+        var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 49; i++) {
           expect(pool.request(), completes);
         }
@@ -129,41 +129,41 @@ void main() {
           // This will only complete once [lastAllocatedResource] is released.
           expect(pool.request(), completes);
 
-          Future.delayed(Duration(seconds: 3)).then((_) {
+          Future.delayed(const Duration(seconds: 3)).then((_) {
             lastAllocatedResource.release();
             expect(pool.request(), doesNotComplete);
           });
         });
 
-        async.elapse(Duration(seconds: 6));
+        async.elapse(const Duration(seconds: 6));
       });
     });
 
     test("resets the timer if a resource is requested", () {
       FakeAsync().run((async) {
-        var pool = Pool(50, timeout: Duration(seconds: 5));
+        var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
         expect(pool.request(), doesNotComplete);
 
-        Future.delayed(Duration(seconds: 3)).then((_) {
+        Future.delayed(const Duration(seconds: 3)).then((_) {
           expect(pool.request(), doesNotComplete);
         });
 
-        async.elapse(Duration(seconds: 6));
+        async.elapse(const Duration(seconds: 6));
       });
     });
 
     test("times out if nothing happens", () {
       FakeAsync().run((async) {
-        var pool = Pool(50, timeout: Duration(seconds: 5));
+        var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
           expect(pool.request(), completes);
         }
         expect(pool.request(), throwsA(const TypeMatcher<TimeoutException>()));
 
-        async.elapse(Duration(seconds: 6));
+        async.elapse(const Duration(seconds: 6));
       });
     });
   });
@@ -434,6 +434,288 @@ void main() {
 
       await Future.delayed(Duration.zero);
       completer.completeError("oh no!");
+    });
+  });
+
+  group('forEach', () {
+    Pool pool;
+
+    tearDown(() async {
+      await pool.close();
+    });
+
+    const delayedToStringDuration = Duration(milliseconds: 10);
+
+    Future<String> delayedToString(int i) =>
+        Future.delayed(delayedToStringDuration, () => i.toString());
+
+    for (var itemCount in [0, 5]) {
+      for (var poolSize in [1, 5, 6]) {
+        test('poolSize: $poolSize, itemCount: $itemCount', () async {
+          pool = Pool(poolSize);
+
+          var finishedItems = 0;
+
+          await for (var item in pool.forEach(
+              Iterable.generate(itemCount, (i) {
+                expect(i, lessThanOrEqualTo(finishedItems + poolSize),
+                    reason: 'the iterator should be called lazily');
+                return i;
+              }),
+              delayedToString)) {
+            expect(int.parse(item), lessThan(itemCount));
+            finishedItems++;
+          }
+
+          expect(finishedItems, itemCount);
+        });
+      }
+    }
+
+    test('pool closed before listen', () async {
+      pool = Pool(2);
+
+      var stream = pool.forEach(Iterable<int>.generate(5), delayedToString);
+
+      await pool.close();
+
+      expect(stream.toList(), throwsStateError);
+    });
+
+    test('completes even if the pool is partially used', () async {
+      pool = Pool(2);
+
+      var resource = await pool.request();
+
+      var stream = pool.forEach(<int>[], delayedToString);
+
+      expect(await stream.length, 0);
+
+      resource.release();
+    });
+
+    test('stream paused longer than timeout', () async {
+      pool = Pool(2, timeout: delayedToStringDuration);
+
+      var resource = await pool.request();
+
+      var stream = pool.forEach<int, int>(
+          Iterable.generate(100, (i) {
+            expect(i, lessThan(20),
+                reason: 'The timeout should happen '
+                    'before the entire iterable is iterated.');
+            return i;
+          }), (i) async {
+        await Future.delayed(Duration(milliseconds: i));
+        return i;
+      });
+
+      await expectLater(
+          stream.toList,
+          throwsA(const TypeMatcher<TimeoutException>().having(
+              (te) => te.message,
+              'message',
+              contains('Pool deadlock: '
+                  'all resources have been allocated for too long.'))));
+
+      resource.release();
+    });
+
+    group('timing and timeout', () {
+      for (var poolSize in [2, 8, 64]) {
+        for (var otherTaskCount
+            in [0, 1, 7, 63].where((otc) => otc < poolSize)) {
+          test('poolSize: $poolSize, otherTaskCount: $otherTaskCount',
+              () async {
+            final itemCount = 128;
+            pool = Pool(poolSize, timeout: const Duration(milliseconds: 20));
+
+            var otherTasks = await Future.wait(
+                Iterable<int>.generate(otherTaskCount)
+                    .map((i) => pool.request()));
+
+            try {
+              var finishedItems = 0;
+
+              var watch = Stopwatch()..start();
+
+              await for (var item in pool.forEach(
+                  Iterable.generate(itemCount, (i) {
+                    expect(i, lessThanOrEqualTo(finishedItems + poolSize),
+                        reason: 'the iterator should be called lazily');
+                    return i;
+                  }),
+                  delayedToString)) {
+                expect(int.parse(item), lessThan(itemCount));
+                finishedItems++;
+              }
+
+              expect(finishedItems, itemCount);
+
+              final expectedElapsed =
+                  delayedToStringDuration.inMicroseconds * 3;
+
+              expect((watch.elapsed ~/ itemCount).inMicroseconds,
+                  lessThan(expectedElapsed / (poolSize - otherTaskCount)),
+                  reason: 'Average time per task should be '
+                      'proportionate to the available pool resources.');
+            } finally {
+              for (var task in otherTasks) {
+                task.release();
+              }
+            }
+          });
+        }
+      }
+    }, testOn: 'vm');
+
+    test('partial iteration', () async {
+      pool = Pool(5);
+      var stream = pool.forEach(Iterable<int>.generate(100), delayedToString);
+      expect(await stream.take(10).toList(), hasLength(10));
+    });
+
+    test('pool close during data with waiting to be done', () async {
+      pool = Pool(5);
+
+      var stream = pool.forEach(Iterable<int>.generate(100), delayedToString);
+
+      var dataCount = 0;
+      var subscription = stream.listen((data) {
+        dataCount++;
+        pool.close();
+      });
+
+      await subscription.asFuture();
+      expect(dataCount, 100);
+      await subscription.cancel();
+    });
+
+    test('pause and resume ', () async {
+      var generatedCount = 0;
+      var dataCount = 0;
+      final poolSize = 5;
+
+      pool = Pool(poolSize);
+
+      var stream = pool.forEach(
+          Iterable<int>.generate(40, (i) {
+            expect(generatedCount, lessThanOrEqualTo(dataCount + 2 * poolSize),
+                reason: 'The iterator should not be called '
+                    'much faster than the data is consumed.');
+            generatedCount++;
+            return i;
+          }),
+          delayedToString);
+
+      // ignore: cancel_subscriptions
+      StreamSubscription subscription;
+
+      subscription = stream.listen(
+        (data) {
+          dataCount++;
+
+          if (int.parse(data) % 3 == 1) {
+            subscription.pause(Future(() async {
+              await Future.delayed(const Duration(milliseconds: 100));
+            }));
+          }
+        },
+        onError: registerException,
+        onDone: expectAsync0(() {
+          expect(dataCount, 40);
+        }),
+      );
+    });
+
+    group('cancel', () {
+      final dataSize = 32;
+      for (var i = 1; i < 5; i++) {
+        test('with pool size $i', () async {
+          pool = Pool(i);
+
+          var stream =
+              pool.forEach(Iterable<int>.generate(dataSize), delayedToString);
+
+          var cancelCompleter = Completer<void>();
+
+          StreamSubscription subscription;
+
+          var eventCount = 0;
+          subscription = stream.listen((data) {
+            eventCount++;
+            if (int.parse(data) == dataSize ~/ 2) {
+              cancelCompleter.complete();
+            }
+          }, onError: registerException);
+
+          await cancelCompleter.future;
+
+          await subscription.cancel();
+
+          expect(eventCount, 1 + dataSize ~/ 2);
+        });
+      }
+    });
+
+    group('errors', () {
+      Future<void> errorInIterator(
+          {bool Function(int item, Object error, StackTrace stack)
+              onError}) async {
+        pool = Pool(20);
+
+        var listFuture = pool
+            .forEach(
+                Iterable.generate(100, (i) {
+                  if (i == 50) {
+                    throw StateError('error while generating item in iterator');
+                  }
+
+                  return i;
+                }),
+                delayedToString,
+                onError: onError)
+            .toList();
+
+        await expectLater(() async => listFuture, throwsStateError);
+      }
+
+      test('iteration, no onError', () async {
+        await errorInIterator();
+      });
+      test('iteration, with onError', () async {
+        await errorInIterator(onError: (i, e, s) => false);
+      });
+
+      test('error in action, no onError', () async {
+        pool = Pool(20);
+
+        var listFuture = pool.forEach(Iterable<int>.generate(100), (i) async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          if (i == 10) {
+            throw UnsupportedError('10 is not supported');
+          }
+          return i.toString();
+        }).toList();
+
+        await expectLater(() async => listFuture, throwsUnsupportedError);
+      });
+
+      test('error in action, no onError', () async {
+        pool = Pool(20);
+
+        var list = await pool.forEach(Iterable<int>.generate(100), (i) async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          if (i % 10 == 0) {
+            throw UnsupportedError('Multiples of 10 not supported');
+          }
+          return i.toString();
+        },
+            onError: (item, error, stack) =>
+                error is! UnsupportedError).toList();
+
+        expect(list, hasLength(90));
+      });
     });
   });
 

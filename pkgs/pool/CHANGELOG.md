@@ -1,4 +1,7 @@
-## x.x.x
+## 1.4.0
+
+* Add `forEach` to `Pool` to support efficient async processing of an
+  `Iterable`.
 
 * Throw ArgumentError if poolSize <= 0
 
