@@ -160,8 +160,7 @@ class Highlighter {
     _writeFirstLine(lines.first);
     var lastLineIndex = _span.end.line - _span.start.line;
     if (_multiline) {
-      _writeIntermediateLines(
-          lines.skip(1).take(lastLineIndex - 1));
+      _writeIntermediateLines(lines.skip(1).take(lastLineIndex - 1));
       _writeLastLine(lines[lastLineIndex]);
     }
     _writeTrailingLines(lines.skip(lastLineIndex + 1));
