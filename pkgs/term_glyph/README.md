@@ -1,6 +1,7 @@
 This library contains getters for useful Unicode glyphs as well as plain ASCII
 alternatives. It's intended to be used in command-line applications that may run
-on Windows and libraries that may be used by those applications.
+in places where Unicode isn't well-supported and libraries that may be used by
+those applications.
 
 We recommend that you import this library with the prefix "glyph". For example:
 
@@ -14,12 +15,12 @@ String bulletedList(List<String> items) =>
 
 ## ASCII Mode
 
-The default Windows `cmd.exe` shell is unable to display Unicode characters, so
-this package is able to transparently switch its glyphs to ASCII alternatives by
-setting [the `ascii` attribute][ascii]. When this attribute is `true`, all
-glyphs use ASCII characters instead. It currently defaults to `false`, although
-in the future it may default to `true` for applications running on the Dart VM
-on Windows. For example:
+Some shells are unable to display Unicode characters, so this package is able to
+transparently switch its glyphs to ASCII alternatives by setting [the `ascii`
+attribute][ascii]. When this attribute is `true`, all glyphs use ASCII
+characters instead. It currently defaults to `false`, although in the future it
+may default to `true` for applications running on the Dart VM on Windows. For
+example:
 
 [ascii]: https://www.dartdocs.org/documentation/term_glyph/latest/term_glyph/ascii.html
 
