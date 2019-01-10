@@ -170,7 +170,9 @@ class Pool {
 
         _resetTimer();
 
-        await resumeCompleter?.future;
+        if (resumeCompleter != null) {
+          await resumeCompleter.future;
+        }
 
         if (cancelPending) {
           break;

@@ -1,5 +1,5 @@
 name: pool
-version: 1.4.0
+version: 1.4.1-dev
 
 description: >-
   Manage a finite pool of resources.

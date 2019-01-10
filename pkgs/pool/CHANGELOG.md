@@ -1,3 +1,8 @@
+## 1.4.1
+
+* `forEach`: Avoid `await null` if the `Stream` is not paused.
+  Improves trivial benchmark by 40%. 
+
 ## 1.4.0
 
 * Add `forEach` to `Pool` to support efficient async processing of an
