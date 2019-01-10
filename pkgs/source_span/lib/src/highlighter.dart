@@ -127,8 +127,8 @@ class Highlighter {
     _writeSidebar(end: glyph.downEnd);
     _buffer.writeln();
 
-    // If [context] contains lines prior to the one [text] appears on, write
-    // those first.
+    // If [_span.context] contains lines prior to the one [_span.text] appears
+    // on, write those first.
     var lineStart =
         findLineStart(_span.context, _span.text, _span.start.column);
     assert(lineStart != null); // enforced by [new Highlighter]
