@@ -3,7 +3,7 @@
 //  source: third_party/bazel/src/main/protobuf/worker_protocol.proto
 
 // ignore: UNUSED_SHOWN_NAME
-import 'dart:core' show int, bool, double, String, List, override;
+import 'dart:core' show int, bool, double, String, List, Map, override;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
@@ -21,6 +21,7 @@ class Input extends $pb.GeneratedMessage {
   Input copyWith(void Function(Input) updates) => super.copyWith((message) => updates(message as Input));
   $pb.BuilderInfo get info_ => _i;
   static Input create() => new Input();
+  Input createEmptyInstance() => create();
   static $pb.PbList<Input> createRepeated() => new $pb.PbList<Input>();
   static Input getDefault() => _defaultInstance ??= create()..freeze();
   static Input _defaultInstance;
@@ -53,6 +54,7 @@ class WorkRequest extends $pb.GeneratedMessage {
   WorkRequest copyWith(void Function(WorkRequest) updates) => super.copyWith((message) => updates(message as WorkRequest));
   $pb.BuilderInfo get info_ => _i;
   static WorkRequest create() => new WorkRequest();
+  WorkRequest createEmptyInstance() => create();
   static $pb.PbList<WorkRequest> createRepeated() => new $pb.PbList<WorkRequest>();
   static WorkRequest getDefault() => _defaultInstance ??= create()..freeze();
   static WorkRequest _defaultInstance;
@@ -79,6 +81,7 @@ class WorkResponse extends $pb.GeneratedMessage {
   WorkResponse copyWith(void Function(WorkResponse) updates) => super.copyWith((message) => updates(message as WorkResponse));
   $pb.BuilderInfo get info_ => _i;
   static WorkResponse create() => new WorkResponse();
+  WorkResponse createEmptyInstance() => create();
   static $pb.PbList<WorkResponse> createRepeated() => new $pb.PbList<WorkResponse>();
   static WorkResponse getDefault() => _defaultInstance ??= create()..freeze();
   static WorkResponse _defaultInstance;

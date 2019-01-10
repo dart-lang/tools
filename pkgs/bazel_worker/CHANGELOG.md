@@ -1,3 +1,8 @@
+## 0.1.16
+
+* Update the worker_protocol.pb.dart file with the latest proto generator.
+* Require protobuf 0.11.0.
+
 ## 0.1.15
 
 * Update the worker_protocol.pb.dart file with the latest proto generator.
