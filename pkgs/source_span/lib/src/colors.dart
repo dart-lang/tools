@@ -7,4 +7,6 @@ const String RED = '\u001b[31m';
 
 const String YELLOW = '\u001b[33m';
 
+const String BLUE = '\u001b[34m';
+
 const String NONE = '\u001b[0m';

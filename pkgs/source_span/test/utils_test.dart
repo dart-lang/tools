@@ -32,9 +32,20 @@ main() {
       expect(index, 4);
     });
 
+    test('empty text in empty context', () {
+      var index = findLineStart('', '', 0);
+      expect(index, 0);
+    });
+
     test('found on the first line', () {
       var context = '0\n2\n45\n';
       var index = findLineStart(context, '0', 0);
+      expect(index, 0);
+    });
+
+    test('finds text that starts with a newline', () {
+      var context = '0\n2\n45\n';
+      var index = findLineStart(context, '\n2', 1);
       expect(index, 0);
     });
 
