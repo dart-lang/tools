@@ -18,6 +18,10 @@ final _sampleAppFileUri = p.toUri(p.absolute(testAppPath)).toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
+  test('collect throws when serviceUri is null', () {
+    expect(() => collect(null, true, false), throwsArgumentError);
+  });
+
   test('collect_coverage_api', () async {
     Map<String, dynamic> json = await _getCoverageResult();
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
