@@ -1,3 +1,9 @@
+## 0.12.4 - 2019-01-11
+
+ * `collect()` now immediately throws `ArgumentError` if a null URI is passed
+    in the `serviceUri` parameter to avoid a less-easily debuggable null
+    dereference later. See dart-lang/coverage#240 for details.
+
 ## 0.12.3 - 2018-10-19
 
  * Fixed dart-lang/coverage#194. During collection, we now track each script by
