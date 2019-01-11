@@ -9,9 +9,25 @@ import 'util.dart';
 
 const _retryInterval = const Duration(milliseconds: 200);
 
+/// Collects coverage for all isolates in the running VM.
+///
+/// Collects a hit-map containing merged coverage for all isolates in the Dart
+/// VM associated with the specified [serviceUri]. Returns a map suitable for
+/// input to the coverage formatters that ship with this package.
+///
+/// [serviceUri] must specify the http/https URI of the service port of a
+/// running Dart VM and must not be null.
+///
+/// If [resume] is true, all isolates will be resumed once coverage collection
+/// is complate.
+///
+/// If [waitPaused] is true, collection will not begin until all isolates are
+/// in the paused state.
 Future<Map<String, dynamic>> collect(
     Uri serviceUri, bool resume, bool waitPaused,
     {Duration timeout}) async {
+  if (serviceUri == null) throw ArgumentError('serviceUri must not be null');
+
   // Create websocket URI. Handle any trailing slashes.
   var pathSegments = serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()
     ..add('ws');
