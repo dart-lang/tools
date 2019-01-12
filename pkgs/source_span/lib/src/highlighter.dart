@@ -59,6 +59,7 @@ class Highlighter {
     if (color == false) color = null;
 
     var newSpan = _normalizeContext(span);
+    newSpan = _normalizeNewlines(newSpan);
     newSpan = _normalizeTrailingNewline(newSpan);
     newSpan = _normalizeEndOfLine(newSpan);
 
@@ -84,6 +85,29 @@ class Highlighter {
                   column: _lastColumn(span.text)),
               span.text,
               span.text);
+
+  /// Normalizes [span] to replace Windows-style newlines with Unix-style
+  /// newlines.
+  static SourceSpanWithContext _normalizeNewlines(SourceSpanWithContext span) {
+    var text = span.text;
+    if (!text.contains("\r\n")) return span;
+
+    var endOffset = span.end.offset;
+    for (var i = 0; i < text.length - 1; i++) {
+      if (text.codeUnitAt(i) == $cr && text.codeUnitAt(i + 1) == $lf) {
+        endOffset--;
+      }
+    }
+
+    return new SourceSpanWithContext(
+        span.start,
+        new SourceLocation(endOffset,
+            sourceUrl: span.sourceUrl,
+            line: span.end.line,
+            column: span.end.column),
+        text.replaceAll("\r\n", "\n"),
+        span.context.replaceAll("\r\n", "\n"));
+  }
 
   /// Normalizes [span] to remove a trailing newline from `span.context`.
   ///
