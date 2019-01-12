@@ -158,6 +158,15 @@ zip zap zop
     });
 
     test("highlights the full last line", () {
+      expect(file.span(4, 27).highlight(), equals("""
+  ,
+1 |   foo bar baz
+  | ,-----^
+2 | \\ whiz bang boom
+  '"""));
+    });
+
+    test("highlights the full last line with no trailing newline", () {
       expect(file.span(4, 26).highlight(), equals("""
   ,
 1 |   foo bar baz
@@ -176,7 +185,9 @@ zip zap zop
   '"""));
     });
 
-    test("highlights the full last line with no trailing newline", () {
+    test(
+        "highlights the full last line at the end of the file with no trailing"
+        " newline", () {
       var file = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom
@@ -305,21 +316,57 @@ whiz bang\tboom
     });
   });
 
-  test("supports lines of preceding and following context", () {
-    var span = new SourceSpanWithContext(
-        new SourceLocation(5, line: 2, column: 5, sourceUrl: "foo.dart"),
-        new SourceLocation(12, line: 2, column: 12, sourceUrl: "foo.dart"),
-        "foo bar",
-        "previous\nlines\n-----foo bar-----\nfollowing line\n");
+  group("supports lines of preceding and following context for a span", () {
+    test("within a single line", () {
+      var span = new SourceSpanWithContext(
+          new SourceLocation(20, line: 2, column: 5, sourceUrl: "foo.dart"),
+          new SourceLocation(27, line: 2, column: 12, sourceUrl: "foo.dart"),
+          "foo bar",
+          "previous\nlines\n-----foo bar-----\nfollowing line\n");
 
-    expect(span.highlight(color: colors.YELLOW), equals("""
-${colors.BLUE}  ,${colors.NONE}
-${colors.BLUE}1 |${colors.NONE} previous
-${colors.BLUE}2 |${colors.NONE} lines
-${colors.BLUE}3 |${colors.NONE} -----${colors.YELLOW}foo bar${colors.NONE}-----
-${colors.BLUE}  |${colors.NONE}      ${colors.YELLOW}^^^^^^^${colors.NONE}
-${colors.BLUE}4 |${colors.NONE} following line
-${colors.BLUE}  '${colors.NONE}"""));
+      expect(span.highlight(), equals("""
+  ,
+1 | previous
+2 | lines
+3 | -----foo bar-----
+  |      ^^^^^^^
+4 | following line
+  '"""));
+    });
+
+    test("covering a full line", () {
+      var span = new SourceSpanWithContext(
+          new SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
+          new SourceLocation(33, line: 3, column: 0, sourceUrl: "foo.dart"),
+          "-----foo bar-----\n",
+          "previous\nlines\n-----foo bar-----\nfollowing line\n");
+
+      expect(span.highlight(), equals("""
+  ,
+1 | previous
+2 | lines
+3 | -----foo bar-----
+  | ^^^^^^^^^^^^^^^^^
+4 | following line
+  '"""));
+    });
+
+    test("covering multiple full lines", () {
+      var span = new SourceSpanWithContext(
+          new SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
+          new SourceLocation(23, line: 4, column: 0, sourceUrl: "foo.dart"),
+          "foo\nbar\n",
+          "previous\nlines\nfoo\nbar\nfollowing line\n");
+
+      expect(span.highlight(), equals("""
+  ,
+1 |   previous
+2 |   lines
+3 | / foo
+4 | \\ bar
+5 |   following line
+  '"""));
+    });
   });
 
   group("colors", () {
