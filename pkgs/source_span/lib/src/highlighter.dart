@@ -58,64 +58,73 @@ class Highlighter {
     if (color == true) color = colors.RED;
     if (color == false) color = null;
 
-    // Normalize [span] to ensure that it's a [SourceSpanWithContext] whose
-    // context actually contains its text at the expected column. If it's not,
-    // adjust the start and end locations' line and column fields so that the
-    // highlighter can assume they match up with the context.
-    SourceSpanWithContext newSpan;
-    if (span is SourceSpanWithContext &&
-        findLineStart(span.context, span.text, span.start.column) != null) {
-      newSpan = span;
-    } else {
-      newSpan = new SourceSpanWithContext(
-          new SourceLocation(span.start.offset,
-              sourceUrl: span.sourceUrl, line: 0, column: 0),
-          new SourceLocation(span.end.offset,
-              sourceUrl: span.sourceUrl,
-              line: countCodeUnits(span.text, $lf),
-              column: _lastColumn(span.text)),
-          span.text,
-          span.text);
-    }
-
-    // Normalize [span] to remove a trailing newline from `span.context`. If
-    // necessary, also adjust `span.end` so that it doesn't point past where the
-    // trailing newline used to be.
-    if (newSpan.context.endsWith("\n")) {
-      var context = newSpan.context.substring(0, newSpan.context.length - 1);
-
-      var text = newSpan.text;
-      var start = newSpan.start;
-      var end = newSpan.end;
-      if (newSpan.text.endsWith("\n") && _isTextAtEndOfContext(newSpan)) {
-        text = newSpan.text.substring(0, newSpan.text.length - 1);
-        end = new SourceLocation(newSpan.end.offset - 1,
-            sourceUrl: newSpan.sourceUrl,
-            line: newSpan.end.line - 1,
-            column: _lastColumn(text));
-        start =
-            newSpan.start.offset == newSpan.end.offset ? end : newSpan.start;
-      }
-      newSpan = new SourceSpanWithContext(start, end, text, context);
-    }
-
-    // Normalize [span] so that the end location is at the end of a line, rather
-    // than on the beginning of the next line.
-    if (newSpan.end.column == 0 && newSpan.end.line != newSpan.start.line) {
-      assert(newSpan.text.endsWith("\n"));
-
-      var text = newSpan.text.substring(0, newSpan.text.length - 1);
-      newSpan = new SourceSpanWithContext(
-          newSpan.start,
-          new SourceLocation(span.end.offset - 1,
-              sourceUrl: span.sourceUrl,
-              line: span.end.line - 1,
-              column: _lastColumn(text)),
-          text,
-          newSpan.context);
-    }
+    var newSpan = _normalizeContext(span);
+    newSpan = _normalizeTrailingNewline(newSpan);
+    newSpan = _normalizeEndOfLine(newSpan);
 
     return new Highlighter._(newSpan, color);
+  }
+
+  /// Normalizes [span] to ensure that it's a [SourceSpanWithContext] whose
+  /// context actually contains its text at the expected column.
+  ///
+  /// If it's not already a [SourceSpanWithContext], adjust the start and end
+  /// locations' line and column fields so that the highlighter can assume they
+  /// match up with the context.
+  static SourceSpanWithContext _normalizeContext(SourceSpan span) =>
+      span is SourceSpanWithContext &&
+              findLineStart(span.context, span.text, span.start.column) != null
+          ? span
+          : new SourceSpanWithContext(
+              new SourceLocation(span.start.offset,
+                  sourceUrl: span.sourceUrl, line: 0, column: 0),
+              new SourceLocation(span.end.offset,
+                  sourceUrl: span.sourceUrl,
+                  line: countCodeUnits(span.text, $lf),
+                  column: _lastColumn(span.text)),
+              span.text,
+              span.text);
+
+  /// Normalizes [span] to remove a trailing newline from `span.context`.
+  ///
+  /// If necessary, also adjust `span.end` so that it doesn't point past where
+  /// the trailing newline used to be.
+  static SourceSpanWithContext _normalizeTrailingNewline(
+      SourceSpanWithContext span) {
+    if (!span.context.endsWith("\n")) return span;
+
+    var context = span.context.substring(0, span.context.length - 1);
+    var text = span.text;
+    var start = span.start;
+    var end = span.end;
+    if (span.text.endsWith("\n") && _isTextAtEndOfContext(span)) {
+      text = span.text.substring(0, span.text.length - 1);
+      end = new SourceLocation(span.end.offset - 1,
+          sourceUrl: span.sourceUrl,
+          line: span.end.line - 1,
+          column: _lastColumn(text));
+      start = span.start.offset == span.end.offset ? end : span.start;
+    }
+    return new SourceSpanWithContext(start, end, text, context);
+  }
+
+  /// Normalizes [span] so that the end location is at the end of a line, rather
+  /// than on the beginning of the next line.
+  static SourceSpanWithContext _normalizeEndOfLine(SourceSpanWithContext span) {
+    if (span.end.column != 0) return span;
+    if (span.end.line == span.start.line) return span;
+
+    assert(span.text.endsWith("\n"));
+
+    var text = span.text.substring(0, span.text.length - 1);
+    return new SourceSpanWithContext(
+        span.start,
+        new SourceLocation(span.end.offset - 1,
+            sourceUrl: span.sourceUrl,
+            line: span.end.line - 1,
+            column: _lastColumn(text)),
+        text,
+        span.context);
   }
 
   /// Returns the (0-based) column number of the last column of the last line in [text].
@@ -147,7 +156,7 @@ class Highlighter {
     // on, write those first.
     var lineStart =
         findLineStart(_span.context, _span.text, _span.start.column);
-    assert(lineStart != null); // enforced by [new Highlighter]
+    assert(lineStart != null); // enforced by [_normalizeContext]
 
     var context = _span.context;
     if (lineStart > 0) {
