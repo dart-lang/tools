@@ -99,6 +99,22 @@ class Highlighter {
       newSpan = new SourceSpanWithContext(start, end, text, context);
     }
 
+    // Normalize [span] so that the end location is at the end of a line, rather
+    // than on the beginning of the next line.
+    if (newSpan.end.column == 0 && newSpan.end.line != newSpan.start.line) {
+      assert(newSpan.text.endsWith("\n"));
+
+      var text = newSpan.text.substring(0, newSpan.text.length - 1);
+      newSpan = new SourceSpanWithContext(
+          newSpan.start,
+          new SourceLocation(span.end.offset - 1,
+              sourceUrl: span.sourceUrl,
+              line: span.end.line - 1,
+              column: _lastColumn(text)),
+          text,
+          newSpan.context);
+    }
+
     return new Highlighter._(newSpan, color);
   }
 
