@@ -291,8 +291,29 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   FileLocation get start => new FileLocation._(file, _start);
   FileLocation get end => new FileLocation._(file, _end);
   String get text => file.getText(_start, _end);
-  String get context => file.getText(file.getOffset(start.line),
-      end.line == file.lines - 1 ? null : file.getOffset(end.line + 1));
+
+  String get context {
+    var endLine = file.getLine(_end);
+    var endColumn = file.getColumn(_end);
+
+    int endOffset;
+    if (endColumn == 0 && endLine != 0) {
+      // If [end] is at the very beginning of the line, the span covers the
+      // previous newline, so we only want to include the previous line in the
+      // context.
+      endOffset = _end;
+    } else if (endLine == file.lines - 1) {
+      // If the span covers the last line of the file, the context should go all
+      // the way to the end of the file.
+      endOffset = file.length;
+    } else {
+      // Otherwise, the context should cover the full line on which [end]
+      // appears.
+      endOffset = file.getOffset(endLine + 1);
+    }
+
+    return file.getText(file.getOffset(file.getLine(_start)), endOffset);
+  }
 
   _FileSpan(this.file, this._start, this._end) {
     if (_end < _start) {

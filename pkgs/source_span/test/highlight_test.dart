@@ -158,6 +158,15 @@ zip zap zop
     });
 
     test("highlights the full last line", () {
+      expect(file.span(4, 27).highlight(), equals("""
+  ,
+1 |   foo bar baz
+  | ,-----^
+2 | \\ whiz bang boom
+  '"""));
+    });
+
+    test("highlights the full last line with no trailing newline", () {
       expect(file.span(4, 26).highlight(), equals("""
   ,
 1 |   foo bar baz
@@ -176,7 +185,9 @@ zip zap zop
   '"""));
     });
 
-    test("highlights the full last line with no trailing newline", () {
+    test(
+        "highlights the full last line at the end of the file with no trailing"
+        " newline", () {
       var file = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom
