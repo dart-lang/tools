@@ -4,7 +4,7 @@ The Dart project benchmark harness is the recommended starting point when buildi
 
 ## Learning more
 
-You can read more about [Benchmarking the Dart VM](https://www.dartlang.org/articles/benchmarking/).
+You can read more about [Benchmarking the Dart VM](https://www.dartlang.org/articles/server/benchmarking/).
 
 ## Interpreting Results
 
