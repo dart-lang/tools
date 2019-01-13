@@ -19,25 +19,35 @@
 // Translated first from Smalltalk to JavaScript, and finally to
 // Dart by Google 2008-2010.
 
-/**
- * A Dart implementation of the DeltaBlue constraint-solving
- * algorithm, as described in:
- *
- * "The DeltaBlue Algorithm: An Incremental Constraint Hierarchy Solver"
- *   Bjorn N. Freeman-Benson and John Maloney
- *   January 1990 Communications of the ACM,
- *   also available as University of Washington TR 89-08-06.
- *
- * Beware: this benchmark is written in a grotesque style where
- * the constraint model is built by side-effects from constructors.
- * I've kept it this way to avoid deviating too much from the original
- * implementation.
- */
+/// A Dart implementation of the DeltaBlue constraint-solving
+/// algorithm, as described in:
+///
+/// "The DeltaBlue Algorithm: An Incremental Constraint Hierarchy Solver"
+///   Bjorn N. Freeman-Benson and John Maloney
+///   January 1990 Communications of the ACM,
+///   also available as University of Washington TR 89-08-06.
+///
+/// Beware: this benchmark is written in a grotesque style where
+/// the constraint model is built by side-effects from constructors.
+/// I've kept it this way to avoid deviating too much from the original
+/// implementation.
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
+/// algorithm, as described in:
+///
+/// "The DeltaBlue Algorithm: An Incremental Constraint Hierarchy Solver"
+///   Bjorn N. Freeman-Benson and John Maloney
+///   January 1990 Communications of the ACM,
+///   also available as University of Washington TR 89-08-06.
+///
+/// Beware: this benchmark is written in a grotesque style where
+/// the constraint model is built by side-effects from constructors.
+/// I've kept it this way to avoid deviating too much from the original
+/// implementation.
+
 main() {
-  new DeltaBlue().report();
+  const DeltaBlue().report();
 }
 
 /// Benchmark class required to report results.
@@ -50,12 +60,10 @@ class DeltaBlue extends BenchmarkBase {
   }
 }
 
-/**
- * Strengths are used to measure the relative importance of constraints.
- * New strengths may be inserted in the strength hierarchy without
- * disrupting current constraints.  Strengths cannot be created outside
- * this class, so == can be used for value comparison.
- */
+/// Strengths are used to measure the relative importance of constraints.
+/// New strengths may be inserted in the strength hierarchy without
+/// disrupting current constraints.  Strengths cannot be created outside
+/// this class, so == can be used for value comparison.
 class Strength {
   final int value;
   final String name;
@@ -89,13 +97,13 @@ class Strength {
 }
 
 // Compile time computed constants.
-const REQUIRED = const Strength(0, "required");
-const STRONG_REFERRED = const Strength(1, "strongPreferred");
-const PREFERRED = const Strength(2, "preferred");
-const STRONG_DEFAULT = const Strength(3, "strongDefault");
-const NORMAL = const Strength(4, "normal");
-const WEAK_DEFAULT = const Strength(5, "weakDefault");
-const WEAKEST = const Strength(6, "weakest");
+const REQUIRED = Strength(0, "required");
+const STRONG_REFERRED = Strength(1, "strongPreferred");
+const PREFERRED = Strength(2, "preferred");
+const STRONG_DEFAULT = Strength(3, "strongDefault");
+const NORMAL = Strength(4, "normal");
+const WEAK_DEFAULT = Strength(5, "weakDefault");
+const WEAKEST = Strength(6, "weakest");
 
 abstract class Constraint {
   final Strength strength;
@@ -103,14 +111,23 @@ abstract class Constraint {
   const Constraint(this.strength);
 
   bool isSatisfied();
+
   void markUnsatisfied();
+
   void addToGraph();
+
   void removeFromGraph();
+
   void chooseMethod(int mark);
+
   void markInputs(int mark);
+
   bool inputsKnown(int mark);
+
   Variable output();
+
   void execute();
+
   void recalculate();
 
   /// Activate this constraint and attempt to satisfy it.
@@ -119,14 +136,12 @@ abstract class Constraint {
     planner.incrementalAdd(this);
   }
 
-  /**
-   * Attempt to find a way to enforce this constraint. If successful,
-   * record the solution, perhaps modifying the current dataflow
-   * graph. Answer the constraint that this constraint overrides, if
-   * there is one, or nil, if there isn't.
-   * Assume: I am not already satisfied.
-   */
-  Constraint satisfy(mark) {
+  /// Attempt to find a way to enforce this constraint. If successful,
+  /// record the solution, perhaps modifying the current dataflow
+  /// graph. Answer the constraint that this constraint overrides, if
+  /// there is one, or nil, if there isn't.
+  /// Assume: I am not already satisfied.
+  Constraint satisfy(int mark) {
     chooseMethod(mark);
     if (!isSatisfied()) {
       if (strength == REQUIRED) {
@@ -149,17 +164,13 @@ abstract class Constraint {
     removeFromGraph();
   }
 
-  /**
-   * Normal constraints are not input constraints.  An input constraint
-   * is one that depends on external state, such as the mouse, the
-   * keybord, a clock, or some arbitraty piece of imperative code.
-   */
+  /// Normal constraints are not input constraints.  An input constraint
+  /// is one that depends on external state, such as the mouse, the
+  /// keybord, a clock, or some arbitraty piece of imperative code.
   bool isInput() => false;
 }
 
-/**
- * Abstract superclass for constraints having a single possible output variable.
- */
+/// Abstract superclass for constraints having a single possible output variable.
 abstract class UnaryConstraint extends Constraint {
   final Variable myOutput;
   bool satisfied = false;
@@ -190,11 +201,9 @@ abstract class UnaryConstraint extends Constraint {
   /// Returns the current output variable.
   Variable output() => myOutput;
 
-  /**
-   * Calculate the walkabout strength, the stay flag, and, if it is
-   * 'stay', the value for the current output of this constraint. Assume
-   * this constraint is satisfied.
-   */
+  /// Calculate the walkabout strength, the stay flag, and, if it is
+  /// 'stay', the value for the current output of this constraint. Assume
+  /// this constraint is satisfied.
   void recalculate() {
     myOutput.walkStrength = strength;
     myOutput.stay = !isInput();
@@ -214,12 +223,10 @@ abstract class UnaryConstraint extends Constraint {
   }
 }
 
-/**
- * Variables that should, with some level of preference, stay the same.
- * Planners may exploit the fact that instances, if satisfied, will not
- * change their output during plan execution.  This is called "stay
- * optimization".
- */
+/// Variables that should, with some level of preference, stay the same.
+/// Planners may exploit the fact that instances, if satisfied, will not
+/// change their output during plan execution.  This is called "stay
+/// optimization".
 class StayConstraint extends UnaryConstraint {
   StayConstraint(Variable v, Strength str) : super(v, str);
 
@@ -228,10 +235,8 @@ class StayConstraint extends UnaryConstraint {
   }
 }
 
-/**
- * A unary input constraint used to mark a variable that the client
- * wishes to change.
- */
+/// A unary input constraint used to mark a variable that the client
+/// wishes to change.
 class EditConstraint extends UnaryConstraint {
   EditConstraint(Variable v, Strength str) : super(v, str);
 
@@ -248,10 +253,8 @@ const int NONE = 1;
 const int FORWARD = 2;
 const int BACKWARD = 0;
 
-/**
- * Abstract superclass for constraints having two possible output
- * variables.
- */
+/// Abstract superclass for constraints having two possible output
+/// variables.
 abstract class BinaryConstraint extends Constraint {
   Variable v1;
   Variable v2;
@@ -261,11 +264,9 @@ abstract class BinaryConstraint extends Constraint {
     addConstraint();
   }
 
-  /**
-   * Decides if this constraint can be satisfied and which way it
-   * should flow based on the relative strength of the variables related,
-   * and record that decision.
-   */
+  /// Decides if this constraint can be satisfied and which way it
+  /// should flow based on the relative strength of the variables related,
+  /// and record that decision.
   void chooseMethod(int mark) {
     if (v1.mark == mark) {
       direction =
@@ -309,11 +310,9 @@ abstract class BinaryConstraint extends Constraint {
   /// Returns the current output variable.
   Variable output() => direction == FORWARD ? v2 : v1;
 
-  /**
-   * Calculate the walkabout strength, the stay flag, and, if it is
-   * 'stay', the value for the current output of this
-   * constraint. Assume this constraint is satisfied.
-   */
+  /// Calculate the walkabout strength, the stay flag, and, if it is
+  /// 'stay', the value for the current output of this
+  /// constraint. Assume this constraint is satisfied.
   void recalculate() {
     Variable ihn = input(), out = output();
     out.walkStrength = Strength.weakest(strength, ihn.walkStrength);
@@ -338,12 +337,10 @@ abstract class BinaryConstraint extends Constraint {
   }
 }
 
-/**
- * Relates two variables by the linear scaling relationship: "v2 =
- * (v1 * scale) + offset". Either v1 or v2 may be changed to maintain
- * this relationship but the scale factor and offset are considered
- * read-only.
- */
+/// Relates two variables by the linear scaling relationship: "v2 =
+/// (v1 * scale) + offset". Either v1 or v2 may be changed to maintain
+/// this relationship but the scale factor and offset are considered
+/// read-only.
 
 class ScaleConstraint extends BinaryConstraint {
   final Variable scale;
@@ -380,11 +377,9 @@ class ScaleConstraint extends BinaryConstraint {
     }
   }
 
-  /**
-   * Calculate the walkabout strength, the stay flag, and, if it is
-   * 'stay', the value for the current output of this constraint. Assume
-   * this constraint is satisfied.
-   */
+  /// Calculate the walkabout strength, the stay flag, and, if it is
+  /// 'stay', the value for the current output of this constraint. Assume
+  /// this constraint is satisfied.
   void recalculate() {
     Variable ihn = input(), out = output();
     out.walkStrength = Strength.weakest(strength, ihn.walkStrength);
@@ -393,9 +388,7 @@ class ScaleConstraint extends BinaryConstraint {
   }
 }
 
-/**
- * Constrains two variables to have the same value.
- */
+/// Constrains two variables to have the same value.
 class EqualityConstraint extends BinaryConstraint {
   EqualityConstraint(Variable v1, Variable v2, Strength strength)
       : super(v1, v2, strength);
@@ -406,12 +399,10 @@ class EqualityConstraint extends BinaryConstraint {
   }
 }
 
-/**
- * A constrained variable. In addition to its value, it maintain the
- * structure of the constraint graph, the current dataflow graph, and
- * various parameters of interest to the DeltaBlue incremental
- * constraint solver.
- **/
+/// A constrained variable. In addition to its value, it maintain the
+/// structure of the constraint graph, the current dataflow graph, and
+/// various parameters of interest to the DeltaBlue incremental
+/// constraint solver.
 class Variable {
   List<Constraint> constraints = <Constraint>[];
   Constraint determinedBy;
@@ -423,10 +414,8 @@ class Variable {
 
   Variable(this.name, this.value);
 
-  /**
-   * Add the given constraint to the set of all constraints that refer
-   * this variable.
-   */
+  /// Add the given constraint to the set of all constraints that refer
+  /// this variable.
   void addConstraint(Constraint c) {
     constraints.add(c);
   }
@@ -441,38 +430,36 @@ class Variable {
 class Planner {
   int currentMark = 0;
 
-  /**
-   * Attempt to satisfy the given constraint and, if successful,
-   * incrementally update the dataflow graph.  Details: If satifying
-   * the constraint is successful, it may override a weaker constraint
-   * on its output. The algorithm attempts to resatisfy that
-   * constraint using some other method. This process is repeated
-   * until either a) it reaches a variable that was not previously
-   * determined by any constraint or b) it reaches a constraint that
-   * is too weak to be satisfied using any of its methods. The
-   * variables of constraints that have been processed are marked with
-   * a unique mark value so that we know where we've been. This allows
-   * the algorithm to avoid getting into an infinite loop even if the
-   * constraint graph has an inadvertent cycle.
-   */
+  /// Attempt to satisfy the given constraint and, if successful,
+  /// incrementally update the dataflow graph.  Details: If satifying
+  /// the constraint is successful, it may override a weaker constraint
+  /// on its output. The algorithm attempts to resatisfy that
+  /// constraint using some other method. This process is repeated
+  /// until either a) it reaches a variable that was not previously
+  /// determined by any constraint or b) it reaches a constraint that
+  /// is too weak to be satisfied using any of its methods. The
+  /// variables of constraints that have been processed are marked with
+  /// a unique mark value so that we know where we've been. This allows
+  /// the algorithm to avoid getting into an infinite loop even if the
+  /// constraint graph has an inadvertent cycle.
   void incrementalAdd(Constraint c) {
     int mark = newMark();
     for (Constraint overridden = c.satisfy(mark);
         overridden != null;
-        overridden = overridden.satisfy(mark));
+        overridden = overridden.satisfy(mark)) {
+      // NOOP
+    }
   }
 
-  /**
-   * Entry point for retracting a constraint. Remove the given
-   * constraint and incrementally update the dataflow graph.
-   * Details: Retracting the given constraint may allow some currently
-   * unsatisfiable downstream constraint to be satisfied. We therefore collect
-   * a list of unsatisfied downstream constraints and attempt to
-   * satisfy each one in turn. This list is traversed by constraint
-   * strength, strongest first, as a heuristic for avoiding
-   * unnecessarily adding and then overriding weak constraints.
-   * Assume: [c] is satisfied.
-   */
+  /// Entry point for retracting a constraint. Remove the given
+  /// constraint and incrementally update the dataflow graph.
+  /// Details: Retracting the given constraint may allow some currently
+  /// unsatisfiable downstream constraint to be satisfied. We therefore collect
+  /// a list of unsatisfied downstream constraints and attempt to
+  /// satisfy each one in turn. This list is traversed by constraint
+  /// strength, strongest first, as a heuristic for avoiding
+  /// unnecessarily adding and then overriding weak constraints.
+  /// Assume: [c] is satisfied.
   void incrementalRemove(Constraint c) {
     Variable out = c.output();
     c.markUnsatisfied();
@@ -491,30 +478,28 @@ class Planner {
   /// Select a previously unused mark value.
   int newMark() => ++currentMark;
 
-  /**
-   * Extract a plan for resatisfaction starting from the given source
-   * constraints, usually a set of input constraints. This method
-   * assumes that stay optimization is desired; the plan will contain
-   * only constraints whose output variables are not stay. Constraints
-   * that do no computation, such as stay and edit constraints, are
-   * not included in the plan.
-   * Details: The outputs of a constraint are marked when it is added
-   * to the plan under construction. A constraint may be appended to
-   * the plan when all its input variables are known. A variable is
-   * known if either a) the variable is marked (indicating that has
-   * been computed by a constraint appearing earlier in the plan), b)
-   * the variable is 'stay' (i.e. it is a constant at plan execution
-   * time), or c) the variable is not determined by any
-   * constraint. The last provision is for past states of history
-   * variables, which are not stay but which are also not computed by
-   * any constraint.
-   * Assume: [sources] are all satisfied.
-   */
+  /// Extract a plan for resatisfaction starting from the given source
+  /// constraints, usually a set of input constraints. This method
+  /// assumes that stay optimization is desired; the plan will contain
+  /// only constraints whose output variables are not stay. Constraints
+  /// that do no computation, such as stay and edit constraints, are
+  /// not included in the plan.
+  /// Details: The outputs of a constraint are marked when it is added
+  /// to the plan under construction. A constraint may be appended to
+  /// the plan when all its input variables are known. A variable is
+  /// known if either a) the variable is marked (indicating that has
+  /// been computed by a constraint appearing earlier in the plan), b)
+  /// the variable is 'stay' (i.e. it is a constant at plan execution
+  /// time), or c) the variable is not determined by any
+  /// constraint. The last provision is for past states of history
+  /// variables, which are not stay but which are also not computed by
+  /// any constraint.
+  /// Assume: [sources] are all satisfied.
   Plan makePlan(List<Constraint> sources) {
     int mark = newMark();
-    Plan plan = new Plan();
+    Plan plan = Plan();
     List<Constraint> todo = sources;
-    while (todo.length > 0) {
+    while (todo.isNotEmpty) {
       Constraint c = todo.removeLast();
       if (c.output().mark != mark && c.inputsKnown(mark)) {
         plan.addConstraint(c);
@@ -525,10 +510,8 @@ class Planner {
     return plan;
   }
 
-  /**
-   * Extract a plan for resatisfying starting from the output of the
-   * given [constraints], usually a set of input constraints.
-   */
+  /// Extract a plan for resatisfying starting from the output of the
+  /// given [constraints], usually a set of input constraints.
   Plan extractPlanFromConstraints(List<Constraint> constraints) {
     List<Constraint> sources = <Constraint>[];
     for (int i = 0; i < constraints.length; i++) {
@@ -539,22 +522,20 @@ class Planner {
     return makePlan(sources);
   }
 
-  /**
-   * Recompute the walkabout strengths and stay flags of all variables
-   * downstream of the given constraint and recompute the actual
-   * values of all variables whose stay flag is true. If a cycle is
-   * detected, remove the given constraint and answer
-   * false. Otherwise, answer true.
-   * Details: Cycles are detected when a marked variable is
-   * encountered downstream of the given constraint. The sender is
-   * assumed to have marked the inputs of the given constraint with
-   * the given mark. Thus, encountering a marked node downstream of
-   * the output constraint means that there is a path from the
-   * constraint's output to one of its inputs.
-   */
+  /// Recompute the walkabout strengths and stay flags of all variables
+  /// downstream of the given constraint and recompute the actual
+  /// values of all variables whose stay flag is true. If a cycle is
+  /// detected, remove the given constraint and answer
+  /// false. Otherwise, answer true.
+  /// Details: Cycles are detected when a marked variable is
+  /// encountered downstream of the given constraint. The sender is
+  /// assumed to have marked the inputs of the given constraint with
+  /// the given mark. Thus, encountering a marked node downstream of
+  /// the output constraint means that there is a path from the
+  /// constraint's output to one of its inputs.
   bool addPropagate(Constraint c, int mark) {
     List<Constraint> todo = <Constraint>[c];
-    while (todo.length > 0) {
+    while (todo.isNotEmpty) {
       Constraint d = todo.removeLast();
       if (d.output().mark == mark) {
         incrementalRemove(c);
@@ -566,18 +547,16 @@ class Planner {
     return true;
   }
 
-  /**
-   * Update the walkabout strengths and stay flags of all variables
-   * downstream of the given constraint. Answer a collection of
-   * unsatisfied constraints sorted in order of decreasing strength.
-   */
+  /// Update the walkabout strengths and stay flags of all variables
+  /// downstream of the given constraint. Answer a collection of
+  /// unsatisfied constraints sorted in order of decreasing strength.
   List<Constraint> removePropagateFrom(Variable out) {
     out.determinedBy = null;
     out.walkStrength = WEAKEST;
     out.stay = true;
     List<Constraint> unsatisfied = <Constraint>[];
     List<Variable> todo = <Variable>[out];
-    while (todo.length > 0) {
+    while (todo.isNotEmpty) {
       Variable v = todo.removeLast();
       for (int i = 0; i < v.constraints.length; i++) {
         Constraint c = v.constraints[i];
@@ -604,11 +583,9 @@ class Planner {
   }
 }
 
-/**
- * A Plan is an ordered list of constraints to be executed in sequence
- * to resatisfy all currently satisfiable constraints in the face of
- * one or more changing inputs.
- */
+/// A Plan is an ordered list of constraints to be executed in sequence
+/// to resatisfy all currently satisfiable constraints in the face of
+/// one or more changing inputs.
 class Plan {
   List<Constraint> list = <Constraint>[];
 
@@ -625,32 +602,30 @@ class Plan {
   }
 }
 
-/**
- * This is the standard DeltaBlue benchmark. A long chain of equality
- * constraints is constructed with a stay constraint on one end. An
- * edit constraint is then added to the opposite end and the time is
- * measured for adding and removing this constraint, and extracting
- * and executing a constraint satisfaction plan. There are two cases.
- * In case 1, the added constraint is stronger than the stay
- * constraint and values must propagate down the entire length of the
- * chain. In case 2, the added constraint is weaker than the stay
- * constraint so it cannot be accomodated. The cost in this case is,
- * of course, very low. Typical situations lie somewhere between these
- * two extremes.
- */
+/// This is the standard DeltaBlue benchmark. A long chain of equality
+/// constraints is constructed with a stay constraint on one end. An
+/// edit constraint is then added to the opposite end and the time is
+/// measured for adding and removing this constraint, and extracting
+/// and executing a constraint satisfaction plan. There are two cases.
+/// In case 1, the added constraint is stronger than the stay
+/// constraint and values must propagate down the entire length of the
+/// chain. In case 2, the added constraint is weaker than the stay
+/// constraint so it cannot be accomodated. The cost in this case is,
+/// of course, very low. Typical situations lie somewhere between these
+/// two extremes.
 void chainTest(int n) {
-  planner = new Planner();
-  Variable prev = null, first = null, last = null;
+  planner = Planner();
+  Variable prev, first, last;
   // Build chain of n equality constraints.
   for (int i = 0; i <= n; i++) {
-    Variable v = new Variable("v", 0);
-    if (prev != null) new EqualityConstraint(prev, v, REQUIRED);
+    Variable v = Variable("v", 0);
+    if (prev != null) EqualityConstraint(prev, v, REQUIRED);
     if (i == 0) first = v;
     if (i == n) last = v;
     prev = v;
   }
-  new StayConstraint(last, STRONG_DEFAULT);
-  EditConstraint edit = new EditConstraint(first, PREFERRED);
+  StayConstraint(last, STRONG_DEFAULT);
+  EditConstraint edit = EditConstraint(first, PREFERRED);
   Plan plan = planner.extractPlanFromConstraints(<Constraint>[edit]);
   for (int i = 0; i < 100; i++) {
     first.value = i;
@@ -661,25 +636,23 @@ void chainTest(int n) {
   }
 }
 
-/**
- * This test constructs a two sets of variables related to each
- * other by a simple linear transformation (scale and offset). The
- * time is measured to change a variable on either side of the
- * mapping and to change the scale and offset factors.
- */
+/// This test constructs a two sets of variables related to each
+/// other by a simple linear transformation (scale and offset). The
+/// time is measured to change a variable on either side of the
+/// mapping and to change the scale and offset factors.
 void projectionTest(int n) {
-  planner = new Planner();
-  Variable scale = new Variable("scale", 10);
-  Variable offset = new Variable("offset", 1000);
-  Variable src = null, dst = null;
+  planner = Planner();
+  Variable scale = Variable("scale", 10);
+  Variable offset = Variable("offset", 1000);
+  Variable src, dst;
 
   List<Variable> dests = <Variable>[];
   for (int i = 0; i < n; i++) {
-    src = new Variable("src", i);
-    dst = new Variable("dst", i);
+    src = Variable("src", i);
+    dst = Variable("dst", i);
     dests.add(dst);
-    new StayConstraint(src, NORMAL);
-    new ScaleConstraint(src, scale, offset, dst, REQUIRED);
+    StayConstraint(src, NORMAL);
+    ScaleConstraint(src, scale, offset, dst, REQUIRED);
   }
   change(src, 17);
   if (dst.value != 1170) print("Projection 1 failed");
@@ -696,7 +669,7 @@ void projectionTest(int n) {
 }
 
 void change(Variable v, int newValue) {
-  EditConstraint edit = new EditConstraint(v, PREFERRED);
+  EditConstraint edit = EditConstraint(v, PREFERRED);
   Plan plan = planner.extractPlanFromConstraints(<EditConstraint>[edit]);
   for (int i = 0; i < 10; i++) {
     v.value = newValue;

@@ -18,7 +18,7 @@ class Vector {
 
   Vector normalize() {
     var m = this.magnitude();
-    return new Vector(this.x / m, this.y / m, this.z / m);
+    return Vector(this.x / m, this.y / m, this.z / m);
   }
 
   double magnitude() {
@@ -26,7 +26,7 @@ class Vector {
   }
 
   Vector cross(Vector w) {
-    return new Vector(-this.z * w.y + this.y * w.z, this.z * w.x - this.x * w.z,
+    return Vector(-this.z * w.y + this.y * w.z, this.z * w.x - this.x * w.z,
         -this.y * w.x + this.x * w.y);
   }
 
@@ -35,19 +35,19 @@ class Vector {
   }
 
   Vector operator +(Vector w) {
-    return new Vector(w.x + x, w.y + y, w.z + z);
+    return Vector(w.x + x, w.y + y, w.z + z);
   }
 
   Vector operator -(Vector w) {
-    return new Vector(x - w.x, y - w.y, z - w.z);
+    return Vector(x - w.x, y - w.y, z - w.z);
   }
 
   Vector operator *(Vector w) {
-    return new Vector(x * w.x, y * w.y, z * w.z);
+    return Vector(x * w.x, y * w.y, z * w.z);
   }
 
   Vector multiplyScalar(double w) {
-    return new Vector(x * w, y * w, z * w);
+    return Vector(x * w, y * w, z * w);
   }
 
   String toString() {

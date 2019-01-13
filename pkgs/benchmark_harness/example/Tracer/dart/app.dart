@@ -23,7 +23,7 @@ main() {
         int.parse((querySelector('#imageWidth') as InputElement).value);
     canvas.height =
         int.parse((querySelector('#imageHeight') as InputElement).value);
-    var sw = new Stopwatch()..start();
+    var sw = Stopwatch()..start();
     renderScene(e);
     sw.stop();
     time.text = sw.elapsedMilliseconds.toString();

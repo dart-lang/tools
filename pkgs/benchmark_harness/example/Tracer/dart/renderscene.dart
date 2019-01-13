@@ -16,31 +16,30 @@ class Light {
 
 // 'event' null means that we are benchmarking
 void renderScene(event) {
-  var scene = new Scene();
-  scene.camera = new Camera(new Vector(0.0, 0.0, -15.0),
-      new Vector(-0.2, 0.0, 5.0), new Vector(0.0, 1.0, 0.0));
-  scene.background = new Background(new Color(0.5, 0.5, 0.5), 0.4);
+  var scene = Scene();
+  scene.camera = Camera(
+      Vector(0.0, 0.0, -15.0), Vector(-0.2, 0.0, 5.0), Vector(0.0, 1.0, 0.0));
+  scene.background = Background(Color(0.5, 0.5, 0.5), 0.4);
 
-  var sphere = new Sphere(new Vector(-1.5, 1.5, 2.0), 1.5,
-      new Solid(new Color(0.0, 0.5, 0.5), 0.3, 0.0, 0.0, 2.0));
+  var sphere = Sphere(Vector(-1.5, 1.5, 2.0), 1.5,
+      Solid(Color(0.0, 0.5, 0.5), 0.3, 0.0, 0.0, 2.0));
 
-  var sphere1 = new Sphere(new Vector(1.0, 0.25, 1.0), 0.5,
-      new Solid(new Color(0.9, 0.9, 0.9), 0.1, 0.0, 0.0, 1.5));
+  var sphere1 = Sphere(Vector(1.0, 0.25, 1.0), 0.5,
+      Solid(Color(0.9, 0.9, 0.9), 0.1, 0.0, 0.0, 1.5));
 
-  var plane = new Plane(
-      new Vector(0.1, 0.9, -0.5).normalize(),
+  var plane = Plane(
+      Vector(0.1, 0.9, -0.5).normalize(),
       1.2,
-      new Chessboard(new Color(1.0, 1.0, 1.0), new Color(0.0, 0.0, 0.0), 0.2,
-          0.0, 1.0, 0.7));
+      Chessboard(
+          Color(1.0, 1.0, 1.0), Color(0.0, 0.0, 0.0), 0.2, 0.0, 1.0, 0.7));
 
   scene.shapes.add(plane);
   scene.shapes.add(sphere);
   scene.shapes.add(sphere1);
 
-  var light = new Light(new Vector(5.0, 10.0, -1.0), new Color(0.8, 0.8, 0.8));
+  var light = Light(Vector(5.0, 10.0, -1.0), Color(0.8, 0.8, 0.8));
 
-  var light1 =
-      new Light(new Vector(-3.0, 5.0, -15.0), new Color(0.8, 0.8, 0.8), 100.0);
+  var light1 = Light(Vector(-3.0, 5.0, -15.0), Color(0.8, 0.8, 0.8), 100.0);
 
   scene.lights.add(light);
   scene.lights.add(light1);
@@ -76,7 +75,7 @@ void renderScene(event) {
   }
   int rayDepth = 2;
 
-  var raytracer = new Engine(
+  var raytracer = Engine(
       canvasWidth: imageWidth,
       canvasHeight: imageHeight,
       pixelWidth: pixelSize,

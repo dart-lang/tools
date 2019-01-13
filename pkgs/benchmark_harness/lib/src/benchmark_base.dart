@@ -7,9 +7,7 @@ class BenchmarkBase {
   final ScoreEmitter emitter;
 
   // Empty constructor.
-  const BenchmarkBase(String name, {ScoreEmitter emitter: const PrintEmitter()})
-      : this.name = name,
-        this.emitter = emitter;
+  const BenchmarkBase(this.name, {this.emitter = const PrintEmitter()});
 
   // The benchmark code.
   // This function is not used, if both [warmup] and [exercise] are overwritten.
@@ -38,7 +36,7 @@ class BenchmarkBase {
   static double measureFor(Function f, int minimumMillis) {
     int minimumMicros = minimumMillis * 1000;
     int iter = 0;
-    Stopwatch watch = new Stopwatch();
+    Stopwatch watch = Stopwatch();
     watch.start();
     int elapsed = 0;
     while (elapsed < minimumMicros) {
@@ -53,13 +51,9 @@ class BenchmarkBase {
   double measure() {
     setup();
     // Warmup for at least 100ms. Discard result.
-    measureFor(() {
-      this.warmup();
-    }, 100);
+    measureFor(warmup, 100);
     // Run the benchmark for at least 2000ms.
-    double result = measureFor(() {
-      this.exercise();
-    }, 2000);
+    double result = measureFor(exercise, 2000);
     teardown();
     return result;
   }

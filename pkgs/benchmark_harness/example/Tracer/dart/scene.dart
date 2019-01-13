@@ -32,7 +32,7 @@ class Camera {
         screen - (this.equator.multiplyScalar(vx) - this.up.multiplyScalar(vy));
     pos.y = pos.y * -1.0;
     var dir = pos - this.position;
-    var ray = new Ray(pos, dir.normalize());
+    var ray = Ray(pos, dir.normalize());
     return ray;
   }
 
@@ -54,10 +54,10 @@ class Scene {
   var lights;
   var background;
   Scene() {
-    camera = new Camera(new Vector(0.0, 0.0, -0.5), new Vector(0.0, 0.0, 1.0),
-        new Vector(0.0, 1.0, 0.0));
-    shapes = new List();
-    lights = new List();
-    background = new Background(new Color(0.0, 0.0, 0.5), 0.2);
+    camera = Camera(
+        Vector(0.0, 0.0, -0.5), Vector(0.0, 0.0, 1.0), Vector(0.0, 1.0, 0.0));
+    shapes = [];
+    lights = [];
+    background = Background(Color(0.0, 0.0, 0.5), 0.2);
   }
 }

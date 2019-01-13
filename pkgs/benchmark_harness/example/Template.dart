@@ -8,7 +8,7 @@ class TemplateBenchmark extends BenchmarkBase {
   const TemplateBenchmark() : super("Template");
 
   static void main() {
-    new TemplateBenchmark().report();
+    const TemplateBenchmark().report();
   }
 
   // The benchmark code.

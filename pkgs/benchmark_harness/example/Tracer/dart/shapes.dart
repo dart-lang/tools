@@ -23,7 +23,7 @@ class Plane extends BaseShape {
   Plane(pos, this.d, material) : super(pos, material);
 
   IntersectionInfo intersect(Ray ray) {
-    var info = new IntersectionInfo();
+    var info = IntersectionInfo();
 
     var Vd = this.position.dot(ray.direction);
     if (Vd == 0) return info; // no intersection
@@ -38,7 +38,7 @@ class Plane extends BaseShape {
     info.distance = t;
 
     if (this.material.hasTexture) {
-      var vU = new Vector(this.position.y, this.position.z, -this.position.x);
+      var vU = Vector(this.position.y, this.position.z, -this.position.x);
       var vV = vU.cross(this.position);
       var u = info.position.dot(vU);
       var v = info.position.dot(vV);
@@ -60,7 +60,7 @@ class Sphere extends BaseShape {
   Sphere(pos, this.radius, material) : super(pos, material);
 
   IntersectionInfo intersect(Ray ray) {
-    var info = new IntersectionInfo();
+    var info = IntersectionInfo();
     info.shape = this;
 
     var dst = ray.position - this.position;

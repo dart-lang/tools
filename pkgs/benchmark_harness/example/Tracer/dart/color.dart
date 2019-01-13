@@ -21,22 +21,22 @@ class Color {
   }
 
   Color operator +(Color c2) {
-    return new Color(red + c2.red, green + c2.green, blue + c2.blue);
+    return Color(red + c2.red, green + c2.green, blue + c2.blue);
   }
 
   Color addScalar(double s) {
-    var result = new Color(red + s, green + s, blue + s);
+    var result = Color(red + s, green + s, blue + s);
     result.limit();
     return result;
   }
 
   Color operator *(Color c2) {
-    var result = new Color(red * c2.red, green * c2.green, blue * c2.blue);
+    var result = Color(red * c2.red, green * c2.green, blue * c2.blue);
     return result;
   }
 
   Color multiplyScalar(double f) {
-    var result = new Color(red * f, green * f, blue * f);
+    var result = Color(red * f, green * f, blue * f);
     return result;
   }
 

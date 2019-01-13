@@ -41,5 +41,5 @@ class TracerBenchmark extends BenchmarkBase {
 }
 
 void main() {
-  new TracerBenchmark().report();
+  const TracerBenchmark().report();
 }

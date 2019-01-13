@@ -1,28 +1,26 @@
-/**
- * Copyright 2013 the V8 project authors. All rights reserved.
- * Copyright 2009 Oliver Hunt <http://nerget.com>
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
+/// Copyright 2013 the V8 project authors. All rights reserved.
+/// Copyright 2009 Oliver Hunt <http://nerget.com>
+///
+/// Permission is hereby granted, free of charge, to any person
+/// obtaining a copy of this software and associated documentation
+/// files (the "Software"), to deal in the Software without
+/// restriction, including without limitation the rights to use,
+/// copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the
+/// Software is furnished to do so, subject to the following
+/// conditions:
+///
+/// The above copyright notice and this permission notice shall be
+/// included in all copies or substantial portions of the Software.
+///
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+/// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+/// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+/// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+/// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+/// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+/// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+/// OTHER DEALINGS IN THE SOFTWARE.
 
 // Ported from the v8 benchmark suite by Google 2013.
 // Uses Float64List for data.
@@ -32,8 +30,58 @@ import 'dart:typed_data';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
+/// Copyright 2009 Oliver Hunt <http://nerget.com>
+///
+/// Permission is hereby granted, free of charge, to any person
+/// obtaining a copy of this software and associated documentation
+/// files (the "Software"), to deal in the Software without
+/// restriction, including without limitation the rights to use,
+/// copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the
+/// Software is furnished to do so, subject to the following
+/// conditions:
+///
+/// The above copyright notice and this permission notice shall be
+/// included in all copies or substantial portions of the Software.
+///
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+/// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+/// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+/// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+/// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+/// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+/// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+/// OTHER DEALINGS IN THE SOFTWARE.
+// Ported from the v8 benchmark suite by Google 2013.
+// Uses Float64List for data.
+
+/// Copyright 2009 Oliver Hunt <http://nerget.com>
+///
+/// Permission is hereby granted, free of charge, to any person
+/// obtaining a copy of this software and associated documentation
+/// files (the "Software"), to deal in the Software without
+/// restriction, including without limitation the rights to use,
+/// copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the
+/// Software is furnished to do so, subject to the following
+/// conditions:
+///
+/// The above copyright notice and this permission notice shall be
+/// included in all copies or substantial portions of the Software.
+///
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+/// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+/// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+/// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+/// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+/// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+/// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+/// OTHER DEALINGS IN THE SOFTWARE.
+// Ported from the v8 benchmark suite by Google 2013.
+// Uses Float64List for data.
+
 main() {
-  new FluidMotion().report();
+  const FluidMotion().report();
 }
 
 class FluidMotion extends BenchmarkBase {
@@ -46,7 +94,7 @@ class FluidMotion extends BenchmarkBase {
   static void setupFluidMotion() {
     framesTillAddingPoints = 0;
     framesBetweenAddingPoints = 5;
-    solver = new FluidField.create(null, 128, 128, 20);
+    solver = FluidField.create(null, 128, 128, 20);
     solver.setDisplayFunction((a) {});
     solver.setUICallback(prepareFrame);
   }
@@ -136,31 +184,28 @@ class FluidField {
   factory FluidField.create(canvas, int hRes, int wRes, int iterations) {
     final res = wRes * hRes;
     if ((res > 0) && (res < 1000000)) {
-      _lastCreated = new FluidField(canvas, hRes, wRes, iterations);
-    } else if (_lastCreated == null) {
-      _lastCreated = new FluidField(canvas, 64, 64, iterations);
+      _lastCreated = FluidField(canvas, hRes, wRes, iterations);
     }
+    _lastCreated ??= FluidField(canvas, 64, 64, iterations);
     assert((canvas == _lastCreated.canvas) &&
         (iterations == _lastCreated.iterations));
     return _lastCreated;
   }
 
-  FluidField(this.canvas, int hRes, int wRes, this.iterations)
-      : width = wRes,
-        height = hRes,
-        rowSize = (wRes + 2),
-        size = (wRes + 2) * (hRes + 2) {
+  FluidField(this.canvas, this.height, this.width, this.iterations)
+      : rowSize = width + 2,
+        size = (width + 2) * (height + 2) {
     reset();
   }
 
   void reset() {
     // All Float64List elements are initialized to 0.0.
-    dens = new Float64List(size);
-    dens_prev = new Float64List(size);
-    u = new Float64List(size);
-    u_prev = new Float64List(size);
-    v = new Float64List(size);
-    v_prev = new Float64List(size);
+    dens = Float64List(size);
+    dens_prev = Float64List(size);
+    u = Float64List(size);
+    u_prev = Float64List(size);
+    v = Float64List(size);
+    v_prev = Float64List(size);
   }
 
   void addFields(Float64List x, Float64List s, double dt) {
@@ -410,14 +455,14 @@ class FluidField {
     for (var i = 0; i < size; i++) {
       u[i] = v[i] = d[i] = 0.0;
     }
-    uiCallback(new Field(d, u, v, rowSize));
+    uiCallback(Field(d, u, v, rowSize));
   }
 
   void update() {
     queryUI(dens_prev, u_prev, v_prev);
     vel_step(u, v, u_prev, v_prev, dt);
     dens_step(dens, dens_prev, u, v, dt);
-    displayFunc(new Field(dens, u, v, rowSize));
+    displayFunc(Field(dens, u, v, rowSize));
   }
 }
 

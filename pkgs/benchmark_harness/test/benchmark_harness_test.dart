@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 void main() {
   group('benchmark_harness', () {
     test('run is called', () {
-      MockBenchmark benchmark = new MockBenchmark();
+      MockBenchmark benchmark = MockBenchmark();
       double micros = benchmark.measure();
       expect(micros, isPositive);
       expect(benchmark.runCount, isPositive);

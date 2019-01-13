@@ -25,14 +25,14 @@ class BenchmarkWithResultEmitter extends BenchmarkBase {
 
 benchmarkHarnessTest() {
   MockResultEmitter createMockEmitter() {
-    MockResultEmitter emitter = new MockResultEmitter();
+    MockResultEmitter emitter = MockResultEmitter();
     return emitter;
   }
 
   group('ResultEmitter', () {
     test('should be called when emitter is provided', () {
       MockResultEmitter emitter = createMockEmitter();
-      var testBenchmark = new BenchmarkWithResultEmitter(emitter);
+      var testBenchmark = BenchmarkWithResultEmitter(emitter);
       testBenchmark.report();
 
       verify(emitter.emit(any, any)).called(1);
