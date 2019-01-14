@@ -175,6 +175,21 @@ zip zap zop
   '"""));
     });
 
+    test("highlights the full last line with a trailing Windows newline", () {
+      var file = new SourceFile.fromString("""
+foo bar baz\r
+whiz bang boom\r
+zip zap zop\r
+""");
+
+      expect(file.span(4, 29).highlight(), equals("""
+  ,
+1 |   foo bar baz
+  | ,-----^
+2 | \\ whiz bang boom
+  '"""));
+    });
+
     test("highlights the full last line at the end of the file", () {
       expect(file.span(4, 39).highlight(), equals("""
   ,
@@ -186,8 +201,8 @@ zip zap zop
     });
 
     test(
-        "highlights the full last line at the end of the file with no trailing"
-        " newline", () {
+        "highlights the full last line at the end of the file with no trailing "
+        "newline", () {
       var file = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom

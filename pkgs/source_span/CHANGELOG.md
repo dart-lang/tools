@@ -3,6 +3,9 @@
 * Produce better source span highlights for multi-line spans that cover the
   entire last line of the span, including the newline.
 
+* Produce better source span highlights for spans that contain Windows-style
+  newlines.
+
 # 1.5.0
 
 * Improve the output of `SourceSpan.highlight()` and `SourceSpan.message()`:
