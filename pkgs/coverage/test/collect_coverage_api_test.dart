@@ -77,5 +77,5 @@ Future<Map<String, dynamic>> _collectCoverage() async {
   });
   Uri serviceUri = await serviceUriCompleter.future;
 
-  return collect(serviceUri, true, false, timeout: timeout);
+  return collect(serviceUri, true, true, timeout: timeout);
 }
