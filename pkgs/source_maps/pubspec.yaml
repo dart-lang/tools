@@ -13,3 +13,4 @@ dependencies:
 
 dev_dependencies:
   test: ^1.2.0
+  term_glyph: ^1.0.0

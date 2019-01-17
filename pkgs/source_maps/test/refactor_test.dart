@@ -8,8 +8,13 @@ import 'package:test/test.dart';
 import 'package:source_maps/refactor.dart';
 import 'package:source_maps/parser.dart' show parse, Mapping;
 import 'package:source_span/source_span.dart';
+import 'package:term_glyph/term_glyph.dart' as term_glyph;
 
 main() {
+  setUpAll(() {
+    term_glyph.ascii = true;
+  });
+
   group('conflict detection', () {
     var original = "0123456789abcdefghij";
     var file = new SourceFile(original);
@@ -64,48 +69,64 @@ main() {
     expect(
         _span(1, 1, map, file),
         "line 1, column 1: \n"
-        "0123456789\n"
-        "^");
+        "  ,\n"
+        "1 | 0123456789\n"
+        "  | ^\n"
+        "  '");
     expect(
         _span(1, 5, map, file),
         "line 1, column 1: \n"
-        "0123456789\n"
-        "^");
+        "  ,\n"
+        "1 | 0123456789\n"
+        "  | ^\n"
+        "  '");
     expect(
         _span(2, 1, map, file),
         "line 2, column 1: \n"
-        "0*23456789\n"
-        "^");
+        "  ,\n"
+        "2 | 0*23456789\n"
+        "  | ^\n"
+        "  '");
     expect(
         _span(2, 8, map, file),
         "line 2, column 1: \n"
-        "0*23456789\n"
-        "^");
+        "  ,\n"
+        "2 | 0*23456789\n"
+        "  | ^\n"
+        "  '");
 
     // Line 3 is modified part way: mappings before the edits have the right
     // mapping, after the edits the mapping is null.
     expect(
         _span(3, 1, map, file),
         "line 3, column 1: \n"
-        "01*3456789\n"
-        "^");
+        "  ,\n"
+        "3 | 01*3456789\n"
+        "  | ^\n"
+        "  '");
     expect(
         _span(3, 5, map, file),
         "line 3, column 1: \n"
-        "01*3456789\n"
-        "^");
+        "  ,\n"
+        "3 | 01*3456789\n"
+        "  | ^\n"
+        "  '");
 
     // Start of edits map to beginning of the edit secion:
     expect(
         _span(3, 6, map, file),
         "line 3, column 6: \n"
-        "01*3456789\n"
-        "     ^");
+        "  ,\n"
+        "3 | 01*3456789\n"
+        "  |      ^\n"
+        "  '");
     expect(
         _span(3, 7, map, file),
         "line 3, column 6: \n"
-        "01*3456789\n"
-        "     ^");
+        "  ,\n"
+        "3 | 01*3456789\n"
+        "  |      ^\n"
+        "  '");
 
     // Lines added have no mapping (they should inherit the last mapping),
     // but the end of the edit region continues were we left off:
@@ -113,50 +134,66 @@ main() {
     expect(
         _span(4, 5, map, file),
         "line 3, column 8: \n"
-        "01*3456789\n"
-        "       ^");
+        "  ,\n"
+        "3 | 01*3456789\n"
+        "  |        ^\n"
+        "  '");
 
     // Subsequent lines are still mapped correctly:
     // a (in a___cd...)
     expect(
         _span(5, 1, map, file),
         "line 4, column 1: \n"
-        "abcdefghij\n"
-        "^");
+        "  ,\n"
+        "4 | abcdefghij\n"
+        "  | ^\n"
+        "  '");
     // _ (in a___cd...)
     expect(
         _span(5, 2, map, file),
         "line 4, column 2: \n"
-        "abcdefghij\n"
-        " ^");
+        "  ,\n"
+        "4 | abcdefghij\n"
+        "  |  ^\n"
+        "  '");
     // _ (in a___cd...)
     expect(
         _span(5, 3, map, file),
         "line 4, column 2: \n"
-        "abcdefghij\n"
-        " ^");
+        "  ,\n"
+        "4 | abcdefghij\n"
+        "  |  ^\n"
+        "  '");
     // _ (in a___cd...)
     expect(
         _span(5, 4, map, file),
         "line 4, column 2: \n"
-        "abcdefghij\n"
-        " ^");
+        "  ,\n"
+        "4 | abcdefghij\n"
+        "  |  ^\n"
+        "  '");
     // c (in a___cd...)
     expect(
         _span(5, 5, map, file),
         "line 4, column 3: \n"
-        "abcdefghij\n"
-        "  ^");
+        "  ,\n"
+        "4 | abcdefghij\n"
+        "  |   ^\n"
+        "  '");
     expect(
         _span(6, 1, map, file),
         "line 5, column 1: \n"
-        "abcd*fghij\n"
-        "^");
+        "  ,\n"
+        "5 | abcd*fghij\n"
+        "  | ^\n"
+        "  '");
     expect(
         _span(6, 8, map, file),
         "line 5, column 1: \n"
-        "abcd*fghij\n"
-        "^");
+        "  ,\n"
+        "5 | abcd*fghij\n"
+        "  | ^\n"
+        "  '");
   });
 }
 
