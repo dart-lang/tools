@@ -88,7 +88,7 @@ class SourceFile {
   ///
   /// If [end] isn't passed, it defaults to the end of the file.
   FileSpan span(int start, [int end]) {
-    if (end == null) end = length - 1;
+    if (end == null) end = length;
     return new _FileSpan(this, start, end);
   }
 

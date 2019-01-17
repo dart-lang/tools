@@ -157,7 +157,7 @@ zip zap zop""", url: "bar.dart").span(10, 11);
     test("end defaults to the end of the file", () {
       var span = file.span(5);
       expect(span.start, equals(file.location(5)));
-      expect(span.end, equals(file.location(file.length - 1)));
+      expect(span.end, equals(file.location(file.length)));
     });
   });
 
@@ -251,6 +251,10 @@ zip zap zop""", url: "bar.dart").span(10, 11);
   group("FileSpan", () {
     test("text returns a substring of the source", () {
       expect(file.span(8, 15).text, equals("baz\nwhi"));
+    });
+
+    test("text includes the last char when end is defaulted to EOF", () {
+      expect(file.span(29).text, equals("p zap zop"));
     });
 
     test("context contains the span's text", () {

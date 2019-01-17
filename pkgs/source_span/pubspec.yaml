@@ -1,5 +1,5 @@
 name: source_span
-version: 1.5.1
+version: 1.5.2-dev
 
 description: A library for identifying source spans and locations.
 author: Dart Team <misc@dartlang.org>

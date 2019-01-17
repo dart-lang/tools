@@ -1,3 +1,9 @@
+# 1.5.2
+
+* `SourceFile.span()` now goes to the end of the file by default, rather than
+  ending one character before the end of the file. This matches the documented
+  behavior.
+
 # 1.5.1
 
 * Produce better source span highlights for multi-line spans that cover the
