@@ -80,15 +80,19 @@ void testSelectorFailures() {
       errors[0].toString(),
       'error on line 1, column 9: name must start with a alpha character, but '
       'found a number\n'
-      '.foobar .1a-story .xyzzy\n'
-      '        ^^');
+      '  ╷\n'
+      '1 │ .foobar .1a-story .xyzzy\n'
+      '  │         ^^\n'
+      '  ╵');
 
   selector(':host()', errors: errors..clear());
   expect(
       errors.first.toString(),
       'error on line 1, column 7: expected a selector argument, but found )\n'
-      ':host()\n'
-      '      ^');
+      '  ╷\n'
+      '1 │ :host()\n'
+      '  │       ^\n'
+      '  ╵');
 }
 
 main() {

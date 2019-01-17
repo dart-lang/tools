@@ -401,26 +401,40 @@ void undefinedVars() {
 
   var errorStrings = [
     'error on line 5, column 14: Variable is not defined.\n'
-        '  var-a: var(b);\n'
-        '             ^^',
+        '  ╷\n'
+        '5 │   var-a: var(b);\n'
+        '  │              ^^\n'
+        '  ╵',
     'error on line 6, column 14: Variable is not defined.\n'
-        '  var-b: var(c);\n'
-        '             ^^',
+        '  ╷\n'
+        '6 │   var-b: var(c);\n'
+        '  │              ^^\n'
+        '  ╵',
     'error on line 9, column 16: Variable is not defined.\n'
-        '  var-one: var(two);\n'
-        '               ^^^^',
+        '  ╷\n'
+        '9 │   var-one: var(two);\n'
+        '  │                ^^^^\n'
+        '  ╵',
     'error on line 12, column 17: Variable is not defined.\n'
-        '  var-four: var(five);\n'
-        '                ^^^^^',
+        '   ╷\n'
+        '12 │   var-four: var(five);\n'
+        '   │                 ^^^^^\n'
+        '   ╵',
     'error on line 13, column 17: Variable is not defined.\n'
-        '  var-five: var(six);\n'
-        '                ^^^^',
+        '   ╷\n'
+        '13 │   var-five: var(six);\n'
+        '   │                 ^^^^\n'
+        '   ╵',
     'error on line 16, column 18: Variable is not defined.\n'
-        '  var-def-1: var(def-2);\n'
-        '                 ^^^^^^',
+        '   ╷\n'
+        '16 │   var-def-1: var(def-2);\n'
+        '   │                  ^^^^^^\n'
+        '   ╵',
     'error on line 17, column 18: Variable is not defined.\n'
-        '  var-def-2: var(def-3);\n'
-        '                 ^^^^^^',
+        '   ╷\n'
+        '17 │   var-def-2: var(def-3);\n'
+        '   │                  ^^^^^^\n'
+        '   ╵',
   ];
 
   var generated = r'''
