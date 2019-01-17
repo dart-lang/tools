@@ -4,6 +4,9 @@
   ending one character before the end of the file. This matches the documented
   behavior.
 
+* `FileSpan.context` now includes the full line on which the span appears for
+  empty spans at the beginning and end of lines.
+
 # 1.5.1
 
 * Produce better source span highlights for multi-line spans that cover the

@@ -300,7 +300,17 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
     if (endColumn == 0 && endLine != 0) {
       // If [end] is at the very beginning of the line, the span covers the
       // previous newline, so we only want to include the previous line in the
-      // context.
+      // context...
+
+      if (length == 0) {
+        // ...unless this is a point span, in which case we want to include the
+        // next line (or the last line if this is the end of the file).
+        return endLine == file.lines - 1
+            ? file.getText(file.getOffset(endLine - 1))
+            : file.getText(
+                file.getOffset(endLine), file.getOffset(endLine + 1));
+      }
+
       endOffset = _end;
     } else if (endLine == file.lines - 1) {
       // If the span covers the last line of the file, the context should go all
