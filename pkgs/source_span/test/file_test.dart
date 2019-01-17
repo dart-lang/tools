@@ -257,10 +257,42 @@ zip zap zop""", url: "bar.dart").span(10, 11);
       expect(file.span(29).text, equals("p zap zop"));
     });
 
-    test("context contains the span's text", () {
-      var span = file.span(8, 15);
-      expect(span.context.contains(span.text), isTrue);
-      expect(span.context, equals('foo bar baz\nwhiz bang boom\n'));
+    group("context", () {
+      test("contains the span's text", () {
+        var span = file.span(8, 15);
+        expect(span.context.contains(span.text), isTrue);
+        expect(span.context, equals('foo bar baz\nwhiz bang boom\n'));
+      });
+
+      test("contains the previous line for a point span at the end of a line",
+          () {
+        var span = file.span(25, 25);
+        expect(span.context, equals('whiz bang boom\n'));
+      });
+
+      test("contains the next line for a point span at the beginning of a line",
+          () {
+        var span = file.span(12, 12);
+        expect(span.context, equals('whiz bang boom\n'));
+      });
+
+      group("contains the last line for a point span at the end of a file", () {
+        test("without a newline", () {
+          var span = file.span(file.length, file.length);
+          expect(span.context, equals('zip zap zop'));
+        });
+
+        test("with a newline", () {
+          file = new SourceFile.fromString("""
+foo bar baz
+whiz bang boom
+zip zap zop
+""", url: "foo.dart");
+
+          var span = file.span(file.length, file.length);
+          expect(span.context, equals('zip zap zop\n'));
+        });
+      });
     });
 
     group("union()", () {

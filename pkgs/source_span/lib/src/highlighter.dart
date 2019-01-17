@@ -202,12 +202,14 @@ class Highlighter {
 
     var lines = context.split("\n");
 
-    // Trim a trailing newline so we don't add an empty line to the end of the
-    // highlight.
-    if (lines.last.isEmpty && lines.length > 1) lines.removeLast();
+    var lastLineIndex = _span.end.line - _span.start.line;
+    if (lines.last.isEmpty && lines.length > lastLineIndex + 1) {
+      // Trim a trailing newline so we don't add an empty line to the end of the
+      // highlight.
+      lines.removeLast();
+    }
 
     _writeFirstLine(lines.first);
-    var lastLineIndex = _span.end.line - _span.start.line;
     if (_multiline) {
       _writeIntermediateLines(lines.skip(1).take(lastLineIndex - 1));
       _writeLastLine(lines[lastLineIndex]);
