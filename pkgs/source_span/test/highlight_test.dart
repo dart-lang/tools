@@ -157,6 +157,20 @@ zip zap zop
   '"""));
     });
 
+    test("highlights the full last line if it's empty", () {
+      var file = new SourceFile.fromString("""
+foo
+
+bar
+""");
+
+      expect(file.span(4, 9).highlight(), equals("""
+  ,
+2 | / 
+3 | \\ bar
+  '"""));
+    });
+
     test("highlights the full last line", () {
       expect(file.span(4, 27).highlight(), equals("""
   ,
@@ -214,6 +228,20 @@ zip zap zop""");
   | ,-----^
 2 | | whiz bang boom
 3 | \\ zip zap zop
+  '"""));
+    });
+
+    test("highlights the full last line if it's empty", () {
+      var file = new SourceFile.fromString("""
+foo
+
+bar
+""");
+
+      expect(file.span(0, 5).highlight(), equals("""
+  ,
+1 | / foo
+2 | \\ 
   '"""));
     });
   });

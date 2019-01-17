@@ -7,6 +7,9 @@
 * `FileSpan.context` now includes the full line on which the span appears for
   empty spans at the beginning and end of lines.
 
+* Fix an edge case where `FileSpan.highlight()` could crash when highlighting a
+  span that ended with an empty line.
+
 # 1.5.1
 
 * Produce better source span highlights for multi-line spans that cover the
