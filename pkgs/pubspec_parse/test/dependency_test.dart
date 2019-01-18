@@ -20,29 +20,39 @@ void main() {
     test('List', () {
       _expectThrows([], r'''
 line 4, column 10: Not a valid dependency value.
-  "dep": []
-         ^^''');
+  ╷
+4 │   "dep": []
+  │          ^^
+  ╵''');
     });
 
     test('int', () {
       _expectThrows(42, r'''
 line 4, column 10: Not a valid dependency value.
-  "dep": 42
-         ^^^''');
+  ╷
+4 │     "dep": 42
+  │ ┌──────────^
+5 │ │  }
+  │ └─^
+  ╵''');
     });
 
     test('map with too many keys', () {
       _expectThrows({'path': 'a', 'git': 'b'}, r'''
 line 5, column 12: A dependency may only have one source.
-   "path": "a",
-           ^^^''');
+  ╷
+5 │    "path": "a",
+  │            ^^^
+  ╵''');
     });
 
     test('map with unsupported keys', () {
       _expectThrows({'bob': 'a', 'jones': 'b'}, r'''
 line 6, column 4: Unsupported dependency key.
-   "jones": "b"
-   ^^^^^^^''');
+  ╷
+6 │    "jones": "b"
+  │    ^^^^^^^
+  ╵''');
     });
   });
 }
@@ -71,8 +81,10 @@ void _hostedDependency() {
   test('bad string version', () {
     _expectThrows('not a version', r'''
 line 4, column 10: Could not parse version "not a version". Unknown text at "not a version".
-  "dep": "not a version"
-         ^^^^^^^^^^^^^^^''');
+  ╷
+4 │   "dep": "not a version"
+  │          ^^^^^^^^^^^^^^^
+  ╵''');
   });
 
   test('map w/ just version', () {
@@ -99,8 +111,10 @@ line 4, column 10: Could not parse version "not a version". Unknown text at "not
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
     }, r'''
 line 5, column 15: Could not parse version "not a version". Unknown text at "not a version".
-   "version": "not a version",
-              ^^^^^^^^^^^^^^^''');
+  ╷
+5 │    "version": "not a version",
+  │               ^^^^^^^^^^^^^^^
+  ╵''');
   });
 
   test('map w/ extra keys should fail', () {
@@ -110,8 +124,10 @@ line 5, column 15: Could not parse version "not a version". Unknown text at "not
       'not_supported': null
     }, r'''
 line 10, column 4: Unsupported dependency key.
-   "not_supported": null
-   ^^^^^^^^^^^^^^^''');
+  ╷
+10│    "not_supported": null
+  │    ^^^^^^^^^^^^^^^
+  ╵''');
   });
 
   test('map w/ version and hosted as String', () {
@@ -134,8 +150,12 @@ line 10, column 4: Unsupported dependency key.
   test('map w/ null hosted should error', () {
     _expectThrows({'hosted': null}, r'''
 line 5, column 14: These keys had `null` values, which is not allowed: [hosted]
-   "hosted": null
-             ^^^^^''');
+  ╷
+5 │      "hosted": null
+  │ ┌──────────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 
   test('map w/ null version is fine', () {
@@ -165,15 +185,23 @@ void _sdkDependency() {
   test('null content', () {
     _expectThrows({'sdk': null}, r'''
 line 5, column 11: These keys had `null` values, which is not allowed: [sdk]
-   "sdk": null
-          ^^^^^''');
+  ╷
+5 │      "sdk": null
+  │ ┌───────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 
   test('number content', () {
     _expectThrows({'sdk': 42}, r'''
 line 5, column 11: Unsupported value for `sdk`.
-   "sdk": 42
-          ^^^''');
+  ╷
+5 │      "sdk": 42
+  │ ┌───────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 }
 
@@ -211,8 +239,10 @@ void _gitDependency() {
   test('string with random extra key fails', () {
     _expectThrows({'git': 'url', 'bob': '^1.2.3'}, r'''
 line 6, column 4: Unsupported dependency key.
-   "bob": "^1.2.3"
-   ^^^^^''');
+  ╷
+6 │    "bob": "^1.2.3"
+  │    ^^^^^
+  ╵''');
   });
 
   test('map', () {
@@ -228,22 +258,32 @@ line 6, column 4: Unsupported dependency key.
   test('git - null content', () {
     _expectThrows({'git': null}, r'''
 line 5, column 11: Must be a String or a Map.
-   "git": null
-          ^^^^^''');
+  ╷
+5 │      "git": null
+  │ ┌───────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 
   test('git - int content', () {
     _expectThrows({'git': 42}, r'''
 line 5, column 11: Must be a String or a Map.
-   "git": 42
-          ^^^''');
+  ╷
+5 │      "git": 42
+  │ ┌───────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 
   test('git - empty map', () {
     _expectThrows({'git': {}}, r'''
 line 5, column 11: Required keys are missing: url.
-   "git": {}
-          ^^''');
+  ╷
+5 │    "git": {}
+  │           ^^
+  ╵''');
   });
 
   test('git - null url', () {
@@ -251,8 +291,12 @@ line 5, column 11: Required keys are missing: url.
       'git': {'url': null}
     }, r'''
 line 6, column 12: These keys had `null` values, which is not allowed: [url]
-    "url": null
-           ^^^^^''');
+  ╷
+6 │       "url": null
+  │ ┌────────────^
+7 │ │    }
+  │ └───^
+  ╵''');
   });
 
   test('git - int url', () {
@@ -260,8 +304,12 @@ line 6, column 12: These keys had `null` values, which is not allowed: [url]
       'git': {'url': 42}
     }, r'''
 line 6, column 12: Unsupported value for `url`.
-    "url": 42
-           ^^^''');
+  ╷
+6 │       "url": 42
+  │ ┌────────────^
+7 │ │    }
+  │ └───^
+  ╵''');
   });
 }
 
@@ -282,22 +330,32 @@ void _pathDependency() {
   test('valid with random extra key fails', () {
     _expectThrows({'path': '../path', 'bob': '^1.2.3'}, r'''
 line 6, column 4: Unsupported dependency key.
-   "bob": "^1.2.3"
-   ^^^^^''');
+  ╷
+6 │    "bob": "^1.2.3"
+  │    ^^^^^
+  ╵''');
   });
 
   test('null content', () {
     _expectThrows({'path': null}, r'''
 line 5, column 12: Must be a String.
-   "path": null
-           ^^^^^''');
+  ╷
+5 │      "path": null
+  │ ┌────────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 
   test('int content', () {
     _expectThrows({'path': 42}, r'''
 line 5, column 12: Must be a String.
-   "path": 42
-           ^^^''');
+  ╷
+5 │      "path": 42
+  │ ┌────────────^
+6 │ │   }
+  │ └──^
+  ╵''');
   });
 }
 

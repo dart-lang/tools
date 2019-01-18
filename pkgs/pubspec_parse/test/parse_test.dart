@@ -76,20 +76,28 @@ void main() {
     for (var entry in {
       42: r'''
 line 3, column 16: Unsupported value for `publish_to`.
- "publish_to": 42
-               ^^^''',
+  ╷
+3 │  "publish_to": 42
+  │                ^^
+  ╵''',
       '##not a uri!': r'''
 line 3, column 16: must be an http or https URL.
- "publish_to": "##not a uri!"
-               ^^^^^^^^^^^^^^''',
+  ╷
+3 │  "publish_to": "##not a uri!"
+  │                ^^^^^^^^^^^^^^
+  ╵''',
       '/cool/beans': r'''
 line 3, column 16: must be an http or https URL.
- "publish_to": "/cool/beans"
-               ^^^^^^^^^^^^^''',
+  ╷
+3 │  "publish_to": "/cool/beans"
+  │                ^^^^^^^^^^^^^
+  ╵''',
       'file:///Users/kevmoo/': r'''
 line 3, column 16: must be an http or https URL.
- "publish_to": "file:///Users/kevmoo/"
-               ^^^^^^^^^^^^^^^^^^^^^^^'''
+  ╷
+3 │  "publish_to": "file:///Users/kevmoo/"
+  │                ^^^^^^^^^^^^^^^^^^^^^^^
+  ╵'''
     }.entries) {
       test('cannot be `${entry.key}`', () {
         expectParseThrows(
@@ -182,15 +190,19 @@ line 3, column 16: must be an http or https URL.
     test('array', () {
       expectParseThrows([], r'''
 line 1, column 1: Does not represent a YAML map.
-[]
-^^''');
+  ╷
+1 │ []
+  │ ^^
+  ╵''');
     });
 
     test('missing name', () {
       expectParseThrows({}, r'''
 line 1, column 1: "name" cannot be empty.
-{}
-^^''');
+  ╷
+1 │ {}
+  │ ^^
+  ╵''');
     });
 
     test('"dart" is an invalid environment key', () {
@@ -199,8 +211,10 @@ line 1, column 1: "name" cannot be empty.
         'environment': {'dart': 'cool'}
       }, r'''
 line 4, column 3: Use "sdk" to for Dart SDK constraints.
-  "dart": "cool"
-  ^^^^^^''');
+  ╷
+4 │   "dart": "cool"
+  │   ^^^^^^
+  ╵''');
     });
 
     test('environment values cannot be int', () {
@@ -209,15 +223,21 @@ line 4, column 3: Use "sdk" to for Dart SDK constraints.
         'environment': {'sdk': 42}
       }, r'''
 line 4, column 10: `42` is not a String.
-  "sdk": 42
-         ^^^''');
+  ╷
+4 │     "sdk": 42
+  │ ┌──────────^
+5 │ │  }
+  │ └─^
+  ╵''');
     });
 
     test('version', () {
       expectParseThrows({'name': 'sample', 'version': 'invalid'}, r'''
 line 3, column 13: Could not parse "invalid".
- "version": "invalid"
-            ^^^^^^^^^''');
+  ╷
+3 │  "version": "invalid"
+  │             ^^^^^^^^^
+  ╵''');
     });
 
     test('invalid environment value', () {
@@ -226,8 +246,10 @@ line 3, column 13: Could not parse "invalid".
         'environment': {'sdk': 'silly'}
       }, r'''
 line 4, column 10: Could not parse version "silly". Unknown text at "silly".
-  "sdk": "silly"
-         ^^^^^^^''');
+  ╷
+4 │   "sdk": "silly"
+  │          ^^^^^^^
+  ╵''');
     });
 
     test('bad repository url', () {
@@ -236,8 +258,12 @@ line 4, column 10: Could not parse version "silly". Unknown text at "silly".
         'repository': {'x': 'y'},
       }, r'''
 line 3, column 16: Unsupported value for `repository`.
- "repository": {
-               ^^''', skipTryPub: true);
+  ╷
+3 │    "repository": {
+  │ ┌────────────────^
+4 │ │   "x": "y"
+5 │ └  }
+  ╵''', skipTryPub: true);
     });
 
     test('bad issue_tracker url', () {
@@ -246,8 +272,12 @@ line 3, column 16: Unsupported value for `repository`.
         'issue_tracker': {'x': 'y'},
       }, r'''
 line 3, column 19: Unsupported value for `issue_tracker`.
- "issue_tracker": {
-                  ^^''', skipTryPub: true);
+  ╷
+3 │    "issue_tracker": {
+  │ ┌───────────────────^
+4 │ │   "x": "y"
+5 │ └  }
+  ╵''', skipTryPub: true);
     });
   });
 
