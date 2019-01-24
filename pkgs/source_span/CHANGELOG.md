@@ -1,3 +1,9 @@
+# 1.5.3
+
+* Fix an edge case where `FileSpan.highlight()` would put the highlight
+  indicator in the wrong position when highlighting a point span after the end
+  of a file.
+
 # 1.5.2
 
 * `SourceFile.span()` now goes to the end of the file by default, rather than

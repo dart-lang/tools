@@ -82,7 +82,7 @@ class Highlighter {
               new SourceLocation(span.end.offset,
                   sourceUrl: span.sourceUrl,
                   line: countCodeUnits(span.text, $lf),
-                  column: _lastColumn(span.text)),
+                  column: _lastLineLength(span.text)),
               span.text,
               span.text);
 
@@ -126,34 +126,55 @@ class Highlighter {
       end = new SourceLocation(span.end.offset - 1,
           sourceUrl: span.sourceUrl,
           line: span.end.line - 1,
-          column: _lastColumn(text));
+          column: _lastLineLength(text));
       start = span.start.offset == span.end.offset ? end : span.start;
     }
     return new SourceSpanWithContext(start, end, text, context);
   }
 
-  /// Normalizes [span] so that the end location is at the end of a line, rather
-  /// than on the beginning of the next line.
+  /// Normalizes [span] so that the end location is at the end of a line rather
+  /// than at the beginning of the next line.
   static SourceSpanWithContext _normalizeEndOfLine(SourceSpanWithContext span) {
     if (span.end.column != 0) return span;
-    if (span.end.line == span.start.line) return span;
 
-    assert(span.text.endsWith("\n"));
+    if (span.length == 0) {
+      if (span.end.offset == 0) return span;
 
-    var text = span.text.substring(0, span.text.length - 1);
-    return new SourceSpanWithContext(
-        span.start,
-        new SourceLocation(span.end.offset - 1,
-            sourceUrl: span.sourceUrl,
-            line: span.end.line - 1,
-            column: _lastColumn(text)),
-        text,
-        span.context);
+      // If [span] is a point span with an empty context, there's no useful
+      // adjustment we can do.
+      if (span.context.isEmpty) return span;
+
+      var location = new SourceLocation(span.end.offset - 1,
+          sourceUrl: span.sourceUrl,
+          line: span.end.line - 1,
+          column: _lastLineLength(span.context));
+      return new SourceSpanWithContext(location, location, "", span.context);
+    } else {
+      if (span.end.line == span.start.line) return span;
+
+      var text = span.text.substring(0, span.text.length - 1);
+
+      return new SourceSpanWithContext(
+          span.start,
+          new SourceLocation(span.end.offset - 1,
+              sourceUrl: span.sourceUrl,
+              line: span.end.line - 1,
+              column: _lastLineLength(text)),
+          text,
+          span.context);
+    }
   }
 
-  /// Returns the (0-based) column number of the last column of the last line in [text].
-  static int _lastColumn(String text) =>
-      text.length - text.lastIndexOf("\n") + 1;
+  /// Returns the length of the last line in [text], whether or not it ends in a
+  /// newline.
+  static int _lastLineLength(String text) {
+    if (text.isEmpty) return 0;
+
+    // The "- 1" here avoids counting the newline itself.
+    return text.codeUnitAt(text.length - 1) == $lf
+        ? text.length - text.lastIndexOf("\n", text.length - 2) - 1
+        : text.length - text.lastIndexOf("\n") - 1;
+  }
 
   /// Returns whether [span]'s text runs all the way to the end of its context.
   static bool _isTextAtEndOfContext(SourceSpanWithContext span) =>
