@@ -15,7 +15,7 @@ void main() {
     expect(value.publishTo, isNull);
     expect(value.description, isNull);
     expect(value.homepage, isNull);
-    // ignore: deprecated_member_use
+    // ignore: deprecated_member_use_from_same_package
     expect(value.author, isNull);
     expect(value.authors, isEmpty);
     expect(value.environment, isEmpty);
@@ -48,7 +48,7 @@ void main() {
     expect(value.publishTo, 'none');
     expect(value.description, 'description');
     expect(value.homepage, 'homepage');
-    // ignore: deprecated_member_use
+    // ignore: deprecated_member_use_from_same_package
     expect(value.author, 'name@example.com');
     expect(value.authors, ['name@example.com']);
     expect(value.environment, hasLength(1));
@@ -124,7 +124,7 @@ line 3, column 16: must be an http or https URL.
   group('author, authors', () {
     test('one author', () {
       final value = parse({'name': 'sample', 'author': 'name@example.com'});
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use_from_same_package
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
     });
@@ -134,7 +134,7 @@ line 3, column 16: must be an http or https URL.
         'name': 'sample',
         'authors': ['name@example.com']
       });
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use_from_same_package
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
     });
@@ -144,7 +144,7 @@ line 3, column 16: must be an http or https URL.
         'name': 'sample',
         'authors': ['name@example.com', 'name2@example.com']
       });
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use_from_same_package
       expect(value.author, isNull);
       expect(value.authors, ['name@example.com', 'name2@example.com']);
     });
@@ -155,7 +155,7 @@ line 3, column 16: must be an http or https URL.
         'author': 'name@example.com',
         'authors': ['name2@example.com']
       });
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use_from_same_package
       expect(value.author, isNull);
       expect(value.authors, ['name@example.com', 'name2@example.com']);
     });
@@ -166,7 +166,7 @@ line 3, column 16: must be an http or https URL.
         'author': 'name@example.com',
         'authors': ['name@example.com', 'name@example.com']
       });
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use_from_same_package
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
     });
