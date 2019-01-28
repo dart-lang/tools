@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/** Representations of CSS styles. */
+/// Representations of CSS styles.
 
 part of csslib.parser;
 
@@ -11,46 +11,34 @@ part of csslib.parser;
 //              the complexity can be removed.
 //              See https://github.com/dart-lang/csslib/issues/7
 
-/**
- * Base for all style properties (e.g., Color, Font, Border, Margin, etc.)
- */
+/// Base for all style properties (e.g., Color, Font, Border, Margin, etc.)
 abstract class _StyleProperty {
-  /**
-   * Returns the expression part of a CSS declaration.  Declaration is:
-   *
-   *     property:expression;
-   *
-   * E.g., if property is color then expression could be rgba(255,255,0) the
-   *       CSS declaration would be 'color:rgba(255,255,0);'.
-   *
-   * then _cssExpression would return 'rgba(255,255,0)'.  See
-   * <http://www.w3.org/TR/CSS21/grammar.html>
-   */
+  /// Returns the expression part of a CSS declaration.  Declaration is:
+  ///
+  ///     property:expression;
+  ///
+  /// E.g., if property is color then expression could be rgba(255,255,0) the
+  ///       CSS declaration would be 'color:rgba(255,255,0);'.
+  ///
+  /// then _cssExpression would return 'rgba(255,255,0)'.  See
+  /// <http://www.w3.org/TR/CSS21/grammar.html>
   String get cssExpression;
 }
 
-/**
- * Base interface for Color, HSL and RGB.
- */
+/// Base interface for Color, HSL and RGB.
 abstract class ColorBase {
-  /**
-   * Canonical form for color #rrggbb with alpha blending (0.0 == full
-   * transparency and 1.0 == fully opaque). If _argb length is 6 it's an
-   * rrggbb otherwise it's aarrggbb.
-   */
+  /// Canonical form for color #rrggbb with alpha blending (0.0 == full
+  /// transparency and 1.0 == fully opaque). If _argb length is 6 it's an
+  /// rrggbb otherwise it's aarrggbb.
   String toHexArgbString();
 
-  /**
-   * Return argb as a value (int).
-   */
+  /// Return argb as a value (int).
   int get argbValue;
 }
 
-/**
- * General purpse Color class.  Represent a color as an ARGB value that can be
- * converted to and from num, hex string, hsl, hsla, rgb, rgba and SVG pre-
- * defined color constant.
- */
+/// General purpse Color class.  Represent a color as an ARGB value that can be
+/// converted to and from num, hex string, hsl, hsla, rgb, rgba and SVG pre-
+/// defined color constant.
 class Color implements _StyleProperty, ColorBase {
   // If _argb length is 6 it's an rrggbb otherwise it's aarrggbb.
   final String _argb;
@@ -59,25 +47,21 @@ class Color implements _StyleProperty, ColorBase {
   //              converting from Color to an Rgba or Hsla for reading only.
   //              Usefulness of creating an Rgba or Hsla is limited.
 
-  /**
-   * Create a color with an integer representing the rgb value of red, green,
-   * and blue.  The value 0xffffff is the color white #ffffff (CSS style).
-   * The [rgb] value of 0xffd700 would map to #ffd700 or the constant
-   * Color.gold, where ff is red intensity, d7 is green intensity, and 00 is
-   * blue intensity.
-   */
+  /// Create a color with an integer representing the rgb value of red, green,
+  /// and blue.  The value 0xffffff is the color white #ffffff (CSS style).
+  /// The [rgb] value of 0xffd700 would map to #ffd700 or the constant
+  /// Color.gold, where ff is red intensity, d7 is green intensity, and 00 is
+  /// blue intensity.
   Color(int rgb, [num alpha]) : this._argb = Color._rgbToArgbString(rgb, alpha);
 
-  /**
-   * RGB takes three values. The [red], [green], and [blue] parameters are
-   * the intensity of those components where '0' is the least and '256' is the
-   * greatest.
-   *
-   * If [alpha] is provided, it is the level of translucency which ranges from
-   * '0' (completely transparent) to '1.0' (completely opaque).  It will
-   * internally be mapped to an int between '0' and '255' like the other color
-   * components.
-   */
+  /// RGB takes three values. The [red], [green], and [blue] parameters are
+  /// the intensity of those components where '0' is the least and '256' is the
+  /// greatest.
+  ///
+  /// If [alpha] is provided, it is the level of translucency which ranges from
+  /// '0' (completely transparent) to '1.0' (completely opaque).  It will
+  /// internally be mapped to an int between '0' and '255' like the other color
+  /// components.
   Color.createRgba(int red, int green, int blue, [num alpha])
       : this._argb = Color.convertToHexString(
             Color._clamp(red, 0, 255),
@@ -85,26 +69,22 @@ class Color implements _StyleProperty, ColorBase {
             Color._clamp(blue, 0, 255),
             alpha != null ? Color._clamp(alpha, 0, 1) : alpha);
 
-  /**
-   * Creates a new color from a CSS color string. For more information, see
-   * <https://developer.mozilla.org/en/CSS/color>.
-   */
+  /// Creates a new color from a CSS color string. For more information, see
+  /// <https://developer.mozilla.org/en/CSS/color>.
   Color.css(String color) : this._argb = Color._convertCssToArgb(color);
 
   // TODO(jmesserly): I found the use of percents a bit suprising.
-  /**
-   * HSL takes three values.  The [hueDegree] degree on the color wheel; '0' is
-   * the least and '100' is the greatest.  The value '0' or '360' is red, '120'
-   * is green, '240' is blue. Numbers in between reflect different shades.
-   * The [saturationPercent] percentage; where'0' is the least and '100' is the
-   * greatest (100 represents full color).  The [lightnessPercent] percentage;
-   * where'0' is the least and '100' is the greatest.  The value 0 is dark or
-   * black, 100 is light or white and 50 is a medium lightness.
-   *
-   * If [alpha] is provided, it is the level of translucency which ranges from
-   * '0' (completely transparent foreground) to '1.0' (completely opaque
-   * foreground).
-   */
+  /// HSL takes three values.  The [hueDegree] degree on the color wheel; '0' is
+  /// the least and '100' is the greatest.  The value '0' or '360' is red, '120'
+  /// is green, '240' is blue. Numbers in between reflect different shades.
+  /// The [saturationPercent] percentage; where'0' is the least and '100' is the
+  /// greatest (100 represents full color).  The [lightnessPercent] percentage;
+  /// where'0' is the least and '100' is the greatest.  The value 0 is dark or
+  /// black, 100 is light or white and 50 is a medium lightness.
+  ///
+  /// If [alpha] is provided, it is the level of translucency which ranges from
+  /// '0' (completely transparent foreground) to '1.0' (completely opaque
+  /// foreground).
   Color.createHsla(num hueDegree, num saturationPercent, num lightnessPercent,
       [num alpha])
       : this._argb = new Hsla(
@@ -114,21 +94,19 @@ class Color implements _StyleProperty, ColorBase {
                 alpha != null ? Color._clamp(alpha, 0, 1) : alpha)
             .toHexArgbString();
 
-  /**
-   * The hslaRaw takes three values.  The [hue] degree on the color wheel; '0'
-   * is the least and '1' is the greatest.  The value '0' or '1' is red, the
-   * ratio of 120/360 is green, and the ratio of 240/360 is blue.  Numbers in
-   * between reflect different shades.  The [saturation] is a percentage; '0'
-   * is the least and '1' is the greatest.  The value of '1' is equivalent to
-   * 100% (full colour).  The [lightness] is a percentage; '0' is the least and
-   * '1' is the greatest.  The value of '0' is dark (black), the value of '1'
-   * is light (white), and the value of '.50' is a medium lightness.
-   *
-   * The fourth optional parameter is:
-   *   [alpha]      level of translucency range of values is 0..1, zero is a
-   *                completely transparent foreground and 1 is a completely
-   *                opaque foreground.
-   */
+  /// The hslaRaw takes three values.  The [hue] degree on the color wheel; '0'
+  /// is the least and '1' is the greatest.  The value '0' or '1' is red, the
+  /// ratio of 120/360 is green, and the ratio of 240/360 is blue.  Numbers in
+  /// between reflect different shades.  The [saturation] is a percentage; '0'
+  /// is the least and '1' is the greatest.  The value of '1' is equivalent to
+  /// 100% (full colour).  The [lightness] is a percentage; '0' is the least and
+  /// '1' is the greatest.  The value of '0' is dark (black), the value of '1'
+  /// is light (white), and the value of '.50' is a medium lightness.
+  ///
+  /// The fourth optional parameter is:
+  ///   [alpha]      level of translucency range of values is 0..1, zero is a
+  ///                completely transparent foreground and 1 is a completely
+  ///                opaque foreground.
   Color.hslaRaw(num hue, num saturation, num lightness, [num alpha])
       : this._argb = new Hsla(
                 Color._clamp(hue, 0, 1),
@@ -137,9 +115,7 @@ class Color implements _StyleProperty, ColorBase {
                 alpha != null ? Color._clamp(alpha, 0, 1) : alpha)
             .toHexArgbString();
 
-  /**
-   * Generate a real constant for pre-defined colors (no leading #).
-   */
+  /// Generate a real constant for pre-defined colors (no leading #).
   const Color.hex(this._argb);
 
   // TODO(jmesserly): this is needed by the example so leave it exposed for now.
@@ -237,11 +213,10 @@ class Color implements _StyleProperty, ColorBase {
   static const int _rgbaCss = 2;
   static const int _hslCss = 3;
   static const int _hslaCss = 4;
-  /**
-   * Parse CSS expressions of the from #rgb, rgb(r,g,b), rgba(r,g,b,a),
-   * hsl(h,s,l), hsla(h,s,l,a) and SVG colors (e.g., darkSlateblue, etc.) and
-   * convert to argb.
-   */
+
+  /// Parse CSS expressions of the from #rgb, rgb(r,g,b), rgba(r,g,b,a),
+  /// hsl(h,s,l), hsla(h,s,l,a) and SVG colors (e.g., darkSlateblue, etc.) and
+  /// convert to argb.
   static String _convertCssToArgb(String value) {
     // TODO(terry): Better parser/regex for converting CSS properties.
     String color = value.trim().replaceAll("\\s", "");
@@ -320,17 +295,15 @@ class Color implements _StyleProperty, ColorBase {
   static num _clamp(num value, num min, num max) =>
       math.max(math.min(max, value), min);
 
-  /**
-   * Change the tint (make color lighter) or shade (make color darker) of all
-   * parts of [rgba] (r, g and b).  The [amount] is percentage darker between
-   * -1 to 0 for darker and 0 to 1 for lighter; '0' is no change.  The [amount]
-   * will darken or lighten the rgb values; it will not change the alpha value.
-   * If [amount] is outside of the value -1 to +1 then [amount] is changed to
-   * either the min or max direction -1 or 1.
-   *
-   * Darker will approach the color #000000 (black) and lighter will approach
-   * the color #ffffff (white).
-   */
+  /// Change the tint (make color lighter) or shade (make color darker) of all
+  /// parts of [rgba] (r, g and b).  The [amount] is percentage darker between
+  /// -1 to 0 for darker and 0 to 1 for lighter; '0' is no change.  The [amount]
+  /// will darken or lighten the rgb values; it will not change the alpha value.
+  /// If [amount] is outside of the value -1 to +1 then [amount] is changed to
+  /// either the min or max direction -1 or 1.
+  ///
+  /// Darker will approach the color #000000 (black) and lighter will approach
+  /// the color #ffffff (white).
   static Rgba _createNewTintShadeFromRgba(Rgba rgba, num amount) {
     int r, g, b;
     num tintShade = Color._clamp(amount, -1, 1);
@@ -353,12 +326,10 @@ class Color implements _StyleProperty, ColorBase {
 
   // TODO(terry): This does an okay lighter/darker; better would be convert to
   //              HSL then change the lightness.
-  /**
-   * The parameter [v] is the color to change (r, g, or b) in the range '0' to
-   * '255'. The parameter [delta] is a number between '-1' and '1'.  A value
-   * between '-1' and '0' is darker and a value between '0' and '1' is lighter
-   * ('0' imples no change).
-   */
+  /// The parameter [v] is the color to change (r, g, or b) in the range '0' to
+  /// '255'. The parameter [delta] is a number between '-1' and '1'.  A value
+  /// between '-1' and '0' is darker and a value between '0' and '1' is lighter
+  /// ('0' imples no change).
   static num _changeTintShadeColor(num v, num delta) =>
       Color._clamp(((1 - delta) * v + (delta * 255)).round(), 0, 255);
 
@@ -513,9 +484,7 @@ class Color implements _StyleProperty, ColorBase {
   static final Color yellowGreen = const Color.hex("9acd32");
 }
 
-/**
- * Rgba class for users that want to interact with a color as a RGBA value.
- */
+/// Rgba class for users that want to interact with a color as a RGBA value.
 class Rgba implements _StyleProperty, ColorBase {
   // TODO(terry): Consider consolidating rgba to a single 32-bit int, make sure
   //              it works under JS and Dart VM.
@@ -635,24 +604,20 @@ class Rgba implements _StyleProperty, ColorBase {
   int get hashCode => toHexArgbString().hashCode;
 }
 
-/**
- * Hsl class support to interact with a color as a hsl with hue, saturation, and
- * lightness with optional alpha blending.  The hue is a ratio of 360 degrees
- * 360° = 1 or 0, (1° == (1/360)), saturation and lightness is a 0..1 fraction
- * (1 == 100%) and alpha is a 0..1 fraction.
- */
+/// Hsl class support to interact with a color as a hsl with hue, saturation,
+/// and lightness with optional alpha blending.  The hue is a ratio of 360
+/// degrees 360° = 1 or 0, (1° == (1/360)), saturation and lightness is a 0..1
+/// fraction (1 == 100%) and alpha is a 0..1 fraction.
 class Hsla implements _StyleProperty, ColorBase {
   final num _h; // Value from 0..1
   final num _s; // Value from 0..1
   final num _l; // Value from 0..1
   final num _a; // Value from 0..1
 
-  /**
-   * [hue] is a 0..1 fraction of 360 degrees (360 == 0).
-   * [saturation] is a 0..1 fraction (100% == 1).
-   * [lightness] is a 0..1 fraction (100% == 1).
-   * [alpha] is a 0..1 fraction, alpha blending between 0..1, 1 == 100% opaque.
-   */
+  /// [hue] is a 0..1 fraction of 360 degrees (360 == 0).
+  /// [saturation] is a 0..1 fraction (100% == 1).
+  /// [lightness] is a 0..1 fraction (100% == 1).
+  /// [alpha] is a 0..1 fraction, alpha blending between 0..1, 1 == 100% opaque.
   Hsla(num hue, num saturation, num lightness, [num alpha])
       : this._h = (hue == 1) ? 0 : Color._clamp(hue, 0, 1),
         this._s = Color._clamp(saturation, 0, 1),
@@ -730,39 +695,25 @@ class Hsla implements _StyleProperty, ColorBase {
     return new Hsla(h, s, l, a);
   }
 
-  /**
-   * Returns 0..1 fraction (ratio of 360°, e.g. 1° == 1/360).
-   */
+  /// Returns 0..1 fraction (ratio of 360°, e.g. 1° == 1/360).
   num get hue => _h;
 
-  /**
-   * Returns 0..1 fraction (1 == 100%)
-   */
+  /// Returns 0..1 fraction (1 == 100%)
   num get saturation => _s;
 
-  /**
-   * Returns 0..1 fraction (1 == 100%).
-   */
+  /// Returns 0..1 fraction (1 == 100%).
   num get lightness => _l;
 
-  /**
-   * Returns number as degrees 0..360.
-   */
+  /// Returns number as degrees 0..360.
   num get hueDegrees => (_h * 360).round();
 
-  /**
-   * Returns number as percentage 0..100
-   */
+  /// Returns number as percentage 0..100
   num get saturationPercentage => (_s * 100).round();
 
-  /**
-   * Returns number as percentage 0..100.
-   */
+  /// Returns number as percentage 0..100.
   num get lightnessPercentage => (_l * 100).round();
 
-  /**
-   * Returns number as 0..1
-   */
+  /// Returns number as 0..1
   num get alpha => _a;
 
   bool operator ==(other) => Color.equal(this, other);
@@ -787,7 +738,7 @@ class Hsla implements _StyleProperty, ColorBase {
   int get hashCode => toHexArgbString().hashCode;
 }
 
-/** X,Y position. */
+/// X,Y position.
 class PointXY implements _StyleProperty {
   final num x, y;
   const PointXY(this.x, this.y);
@@ -799,9 +750,7 @@ class PointXY implements _StyleProperty {
 }
 
 // TODO(terry): Implement style and color.
-/**
- * Supports border for measuring with layout.
- */
+/// Supports border for measuring with layout.
 class Border implements _StyleProperty {
   final int top, left, bottom, right;
 
@@ -823,39 +772,42 @@ class Border implements _StyleProperty {
   String get cssExpression {
     return (top == left && bottom == right && top == right)
         ? "${left}px"
-        : "${top != null ? '$top' : '0'}px ${right != null ? '$right' : '0'}px ${bottom != null ? '$bottom' : '0'}px ${left != null ? '$left' : '0'}px";
+        : "${top != null ? '$top' : '0'}px "
+        "${right != null ? '$right' : '0'}px "
+        "${bottom != null ? '$bottom' : '0'}px "
+        "${left != null ? '$left' : '0'}px";
   }
 }
 
-/** Font style constants. */
+/// Font style constants.
 class FontStyle {
-  /** Font style [normal] default. */
+  /// Font style [normal] default.
   static const String normal = "normal";
-  /**
-   * Font style [italic] use explicity crafted italic font otherwise inclined
-   * on the fly like oblique.
-   */
+
+  /// Font style [italic] use explicity crafted italic font otherwise inclined
+  /// on the fly like oblique.
   static const String italic = "italic";
-  /**
-   * Font style [oblique] is rarely used. The normal style of a font is inclined
-   * on the fly to the right by 8-12 degrees.
-   */
+
+  /// Font style [oblique] is rarely used. The normal style of a font is
+  /// inclined on the fly to the right by 8-12 degrees.
   static const String oblique = "oblique";
 }
 
-/** Font variant constants. */
+/// Font variant constants.
 class FontVariant {
-  /** Font style [normal] default. */
+  /// Font style [normal] default.
   static const String normal = "normal";
-  /** Font variant [smallCaps]. */
+
+  /// Font variant [smallCaps].
   static const String smallCaps = "small-caps";
 }
 
-/** Font weight constants values 100, 200, 300, 400, 500, 600, 700, 800, 900. */
+/// Font weight constants values 100, 200, 300, 400, 500, 600, 700, 800, 900.
 class FontWeight {
-  /** Font weight normal [default] */
+  /// Font weight normal [default]
   static const int normal = 400;
-  /** Font weight bold */
+
+  /// Font weight bold
   static const int bold = 700;
 
   static const int wt100 = 100;
@@ -869,73 +821,80 @@ class FontWeight {
   static const int wt900 = 900;
 }
 
-/** Generic font family names. */
+/// Generic font family names.
 class FontGeneric {
-  /** Generic family sans-serif font (w/o serifs). */
+  /// Generic family sans-serif font (w/o serifs).
   static const String sansSerif = "sans-serif";
-  /** Generic family serif font. */
+
+  /// Generic family serif font.
   static const String serif = "serif";
-  /** Generic family fixed-width font. */
+
+  /// Generic family fixed-width font.
   static const monospace = "monospace";
-  /** Generic family emulate handwriting font. */
+
+  /// Generic family emulate handwriting font.
   static const String cursive = "cursive";
-  /** Generic family decorative font. */
+
+  /// Generic family decorative font.
   static const String fantasy = "fantasy";
 }
 
-/**
- * List of most common font families across different platforms.  Use the
- * collection names in the Font class (e.g., Font.SANS_SERIF, Font.FONT_SERIF,
- * Font.MONOSPACE, Font.CURSIVE or Font.FANTASY).  These work best on all
- * platforms using the fonts that best match availability on each platform.
- * See <http://www.angelfire.com/al4/rcollins/style/fonts.html> for a good
- * description of fonts available between platforms and browsers.
- */
+/// List of most common font families across different platforms.  Use the
+/// collection names in the Font class (e.g., Font.SANS_SERIF, Font.FONT_SERIF,
+/// Font.MONOSPACE, Font.CURSIVE or Font.FANTASY).  These work best on all
+/// platforms using the fonts that best match availability on each platform.
+/// See <http://www.angelfire.com/al4/rcollins/style/fonts.html> for a good
+/// description of fonts available between platforms and browsers.
 class FontFamily {
-  /** Sans-Serif font for Windows similar to Helvetica on Mac bold/italic. */
+  /// Sans-Serif font for Windows similar to Helvetica on Mac bold/italic.
   static const String arial = "arial";
-  /** Sans-Serif font for Windows less common already bolded. */
+
+  /// Sans-Serif font for Windows less common already bolded.
   static const String arialBlack = "arial black";
-  /** Sans-Serif font for Mac since 1984, similar to Arial/Helvetica. */
+
+  /// Sans-Serif font for Mac since 1984, similar to Arial/Helvetica.
   static const String geneva = "geneva";
-  /** Sans-Serif font for Windows most readable sans-serif font for displays. */
+
+  /// Sans-Serif font for Windows most readable sans-serif font for displays.
   static const String verdana = "verdana";
-  /** Sans-Serif font for Mac since 1984 is identical to Arial. */
+
+  /// Sans-Serif font for Mac since 1984 is identical to Arial.
   static const String helvetica = "helvetica";
 
-  /** Serif font for Windows traditional font with “old-style” numerals. */
+  /// Serif font for Windows traditional font with “old-style” numerals.
   static const String georgia = "georgia";
-  /**
-   * Serif font for Mac. PCs may have the non-scalable Times use Times New
-   * Roman instead.  Times is more compact than Times New Roman.
-   */
+
+  /// Serif font for Mac. PCs may have the non-scalable Times use Times New
+  /// Roman instead.  Times is more compact than Times New Roman.
   static const String times = "times";
-  /**
-   * Serif font for Windows most common serif font and default serif font for
-   * most browsers.
-   */
+
+  /// Serif font for Windows most common serif font and default serif font for
+  /// most browsers.
   static const String timesNewRoman = "times new roman";
 
-  /**
-   * Monospace font for Mac/Windows most common. Scalable on Mac not scalable
-   * on Windows.
-   */
+  /// Monospace font for Mac/Windows most common. Scalable on Mac not scalable
+  /// on Windows.
   static const String courier = "courier";
-  /** Monospace font for Mac/Windows scalable on both platforms. */
+
+  /// Monospace font for Mac/Windows scalable on both platforms.
   static const String courierNew = "courier new";
 
-  /** Cursive font for Windows and default cursive font for IE. */
+  /// Cursive font for Windows and default cursive font for IE.
   static const String comicSansMs = "comic sans ms";
-  /** Cursive font for Mac on Macs 2000 and newer. */
+
+  /// Cursive font for Mac on Macs 2000 and newer.
   static const String textile = "textile";
-  /** Cursive font for older Macs. */
+
+  /// Cursive font for older Macs.
   static const String appleChancery = "apple chancery";
-  /** Cursive font for some PCs. */
+
+  /// Cursive font for some PCs.
   static const String zaphChancery = "zaph chancery";
 
-  /** Fantasy font on most Mac/Windows/Linux platforms. */
+  /// Fantasy font on most Mac/Windows/Linux platforms.
   static const String impact = "impact";
-  /** Fantasy font for Windows. */
+
+  /// Fantasy font for Windows.
   static const String webdings = "webdings";
 }
 
@@ -946,11 +905,9 @@ class LineHeight {
 }
 
 // TODO(terry): Support @font-face fule.
-/**
- * Font style support for size, family, weight, style, variant, and lineheight.
- */
+/// Font style support for size, family, weight, style, variant, and lineheight.
 class Font implements _StyleProperty {
-  /** Collection of most common sans-serif fonts in order. */
+  /// Collection of most common sans-serif fonts in order.
   static const List<String> sansSerif = const [
     FontFamily.arial,
     FontFamily.verdana,
@@ -959,27 +916,30 @@ class Font implements _StyleProperty {
     FontGeneric.sansSerif
   ];
 
-  /** Collection of most common serif fonts in order. */
+  /// Collection of most common serif fonts in order.
   static const List<String> serif = const [
     FontFamily.georgia,
     FontFamily.timesNewRoman,
     FontFamily.times,
     FontGeneric.serif
   ];
-  /** Collection of most common monospace fonts in order. */
+
+  /// Collection of most common monospace fonts in order.
   static const List<String> monospace = const [
     FontFamily.courierNew,
     FontFamily.courier,
     FontGeneric.monospace
   ];
-  /** Collection of most common cursive fonts in order. */
+
+  /// Collection of most common cursive fonts in order.
   static const List<String> cursive = const [
     FontFamily.textile,
     FontFamily.appleChancery,
     FontFamily.zaphChancery,
     FontGeneric.fantasy
   ];
-  /** Collection of most common fantasy fonts in order. */
+
+  /// Collection of most common fantasy fonts in order.
   static const List<String> fantasy = const [
     FontFamily.comicSansMs,
     FontFamily.impact,
@@ -989,30 +949,26 @@ class Font implements _StyleProperty {
 
   // TODO(terry): Should support the values xx-small, small, large, xx-large,
   //              etc. (mapped to a pixel sized font)?
-  /** Font size in pixels. */
+  /// Font size in pixels.
   final num size;
 
   // TODO(terry): _family should be an immutable list, wrapper class to do this
   //              should exist in Dart.
-  /**
-   * Family specifies a list of fonts, the browser will sequentially select the
-   * the first known/supported font.  There are two types of font families the
-   * family-name (e.g., arial, times, courier, etc) or the generic-family (e.g.,
-   * serif, sans-seric, etc.)
-   */
+  /// Family specifies a list of fonts, the browser will sequentially select the
+  /// the first known/supported font.  There are two types of font families the
+  /// family-name (e.g., arial, times, courier, etc) or the generic-family
+  /// (e.g., serif, sans-seric, etc.)
   final List<String> family;
 
-  /** Font weight from 100, 200, 300, 400, 500, 600, 700, 800, 900 */
+  /// Font weight from 100, 200, 300, 400, 500, 600, 700, 800, 900
   final int weight;
 
-  /** Style of a font normal, italic, oblique. */
+  /// Style of a font normal, italic, oblique.
   final String style;
 
-  /**
-   * Font variant NORMAL (default) or SMALL_CAPS.  Different set of font glyph
-   * lower case letters designed to have to fit within the font-height and
-   * weight of the corresponding lowercase letters.
-   */
+  /// Font variant NORMAL (default) or SMALL_CAPS.  Different set of font glyph
+  /// lower case letters designed to have to fit within the font-height and
+  /// weight of the corresponding lowercase letters.
   final String variant;
 
   final LineHeight lineHeight;
@@ -1028,12 +984,10 @@ class Font implements _StyleProperty {
   // height.  Classic typography suggest the ratio be 1.5.  See
   // <http://www.pearsonified.com/2011/12/golden-ratio-typography.php> and
   // <http://meyerweb.com/eric/thoughts/2008/05/06/line-height-abnormal/>.
-  /**
-   * Create a font using [size] of font in pixels, [family] name of font(s)
-   * using [FontFamily], [style] of the font using [FontStyle], [variant] using
-   * [FontVariant], and [lineHeight] extra space (leading) around the font in
-   * pixels, if not specified it's 1.2 the font size.
-   */
+  /// Create a font using [size] of font in pixels, [family] name of font(s)
+  /// using [FontFamily], [style] of the font using [FontStyle], [variant] using
+  /// [FontVariant], and [lineHeight] extra space (leading) around the font in
+  /// pixels, if not specified it's 1.2 the font size.
   const Font(
       {this.size,
       this.family,
@@ -1042,10 +996,8 @@ class Font implements _StyleProperty {
       this.variant,
       this.lineHeight});
 
-  /**
-   * Merge the two fonts and return the result. See [Style.merge] for
-   * more information.
-   */
+  /// Merge the two fonts and return the result. See [Style.merge] for
+  /// more information.
   factory Font.merge(Font a, Font b) {
     if (a == null) return b;
     if (b == null) return a;
@@ -1060,14 +1012,12 @@ class Font implements _StyleProperty {
         variant = _mergeVal(a.variant, b.variant),
         lineHeight = _mergeVal(a.lineHeight, b.lineHeight);
 
-  /**
-   * Shorthand CSS format for font is:
-   *
-   *    font-style font-variant font-weight font-size/line-height font-family
-   *
-   * The font-size and font-family values are required. If any of the other
-   * values are missing the default value is used.
-   */
+  /// Shorthand CSS format for font is:
+  ///
+  ///    font-style font-variant font-weight font-size/line-height font-family
+  ///
+  /// The font-size and font-family values are required. If any of the other
+  /// values are missing the default value is used.
   String get cssExpression {
     // TODO(jimhug): include variant, style, other options
     if (weight != null) {
@@ -1088,15 +1038,13 @@ class Font implements _StyleProperty {
       style: style,
       variant: variant);
 
-  /**
-   * The lineHeight, provides an indirect means to specify the leading. The
-   * leading is the difference between the font-size height and the (used)
-   * value of line height in pixels.  If lineHeight is not specified it's
-   * automatically computed as 1.2 of the font size.  Firefox is 1.2, Safari is
-   * ~1.2, and CSS suggest a ration from 1 to 1.2 of the font-size when
-   * computing line-height. The Font class constructor has the computation for
-   * _lineHeight.
-   */
+  /// The lineHeight, provides an indirect means to specify the leading. The
+  /// leading is the difference between the font-size height and the (used)
+  /// value of line height in pixels.  If lineHeight is not specified it's
+  /// automatically computed as 1.2 of the font size.  Firefox is 1.2, Safari is
+  /// ~1.2, and CSS suggest a ration from 1 to 1.2 of the font-size when
+  /// computing line-height. The Font class constructor has the computation for
+  /// _lineHeight.
   num get lineHeightInPixels {
     if (lineHeight != null) {
       if (lineHeight.inPixels) {
@@ -1127,66 +1075,56 @@ class Font implements _StyleProperty {
 
   // TODO(terry): This is fragile should probably just iterate through the list
   //              of fonts construction the font-family string.
-  /** Return fonts as a comma seperated list sans the square brackets. */
+  /// Return fonts as a comma seperated list sans the square brackets.
   String get _fontsAsString {
     String fonts = family.toString();
     return fonts.length > 2 ? fonts.substring(1, fonts.length - 1) : "";
   }
 }
 
-/**
- * This class stores the sizes of the box edges in the CSS [box model][]. Each
- * edge area is placed around the sides of the content box. The innermost area
- * is the [Style.padding] area which has a background and surrounds the content.
- * The content and padding area is surrounded by the [Style.border], which
- * itself is surrounded by the transparent [Style.margin]. This box represents
- * the eges of padding, border, or margin depending on which accessor was used
- * to retrieve it.
- *
- * [box model]: https://developer.mozilla.org/en/CSS/box_model
- */
+/// This class stores the sizes of the box edges in the CSS [box model][]. Each
+/// edge area is placed around the sides of the content box. The innermost area
+/// is the [Style.padding] area which has a background and surrounds the
+/// content.  The content and padding area is surrounded by the [Style.border],
+/// which itself is surrounded by the transparent [Style.margin]. This box
+/// represents the eges of padding, border, or margin depending on which
+/// accessor was used to retrieve it.
+///
+/// [box model]: https://developer.mozilla.org/en/CSS/box_model
 class BoxEdge {
-  /** The size of the left edge, or null if the style has no edge. */
+  /// The size of the left edge, or null if the style has no edge.
   final num left;
 
-  /** The size of the top edge, or null if the style has no edge. */
+  /// The size of the top edge, or null if the style has no edge.
   final num top;
 
-  /** The size of the right edge, or null if the style has no edge. */
+  /// The size of the right edge, or null if the style has no edge.
   final num right;
 
-  /** The size of the bottom edge, or null if the style has no edge. */
+  /// The size of the bottom edge, or null if the style has no edge.
   final num bottom;
 
-  /**
-   * Creates a box edge with the specified [left], [top], [right], and
-   * [bottom] width.
-   */
+  /// Creates a box edge with the specified [left], [top], [right], and
+  /// [bottom] width.
   const BoxEdge([this.left, this.top, this.right, this.bottom]);
 
-  /**
-   * Creates a box edge with the specified [top], [right], [bottom], and
-   * [left] width. This matches the typical CSS order:
-   * <https://developer.mozilla.org/en/CSS/margin>
-   * <https://developer.mozilla.org/en/CSS/border-width>
-   * <https://developer.mozilla.org/en/CSS/padding>.
-   */
+  /// Creates a box edge with the specified [top], [right], [bottom], and
+  /// [left] width. This matches the typical CSS order:
+  /// <https://developer.mozilla.org/en/CSS/margin>
+  /// <https://developer.mozilla.org/en/CSS/border-width>
+  /// <https://developer.mozilla.org/en/CSS/padding>.
   const BoxEdge.clockwiseFromTop(this.top, this.right, this.bottom, this.left);
 
-  /**
-   * This is a helper to creates a box edge with the same [left], [top]
-   * [right], and [bottom] widths.
-   */
+  /// This is a helper to creates a box edge with the same [left], [top]
+  /// [right], and [bottom] widths.
   const BoxEdge.uniform(num size)
       : top = size,
         left = size,
         bottom = size,
         right = size;
 
-  /**
-   * Takes a possibly null box edge, with possibly null metrics, and fills
-   * them in with 0 instead.
-   */
+  /// Takes a possibly null box edge, with possibly null metrics, and fills
+  /// them in with 0 instead.
   factory BoxEdge.nonNull(BoxEdge other) {
     if (other == null) return const BoxEdge(0, 0, 0, 0);
     num left = other.left;
@@ -1213,10 +1151,8 @@ class BoxEdge {
     return make ? new BoxEdge(left, top, right, bottom) : other;
   }
 
-  /**
-   * Merge the two box edge sizes and return the result. See [Style.merge] for
-   * more information.
-   */
+  /// Merge the two box edge sizes and return the result. See [Style.merge] for
+  /// more information.
   factory BoxEdge.merge(BoxEdge x, BoxEdge y) {
     if (x == null) return y;
     if (y == null) return x;
@@ -1229,16 +1165,12 @@ class BoxEdge {
         right = _mergeVal(x.right, y.right),
         bottom = _mergeVal(x.bottom, y.bottom);
 
-  /**
-   * The total size of the horizontal edges. Equal to [left] + [right], where
-   * null is interpreted as 0px.
-   */
+  /// The total size of the horizontal edges. Equal to [left] + [right], where
+  /// null is interpreted as 0px.
   num get width => (left != null ? left : 0) + (right != null ? right : 0);
 
-  /**
-   * The total size of the vertical edges. Equal to [top] + [bottom], where
-   * null is interpreted as 0px.
-   */
+  /// The total size of the vertical edges. Equal to [top] + [bottom], where
+  /// null is interpreted as 0px.
   num get height => (top != null ? top : 0) + (bottom != null ? bottom : 0);
 }
 

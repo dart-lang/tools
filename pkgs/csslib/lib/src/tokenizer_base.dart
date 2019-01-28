@@ -5,7 +5,7 @@
 
 part of csslib.parser;
 
-/** Tokenizer state to support look ahead for Less' nested selectors. */
+/// Tokenizer state to support look ahead for Less' nested selectors.
 class TokenizerState {
   final int index;
   final int startIndex;
@@ -19,27 +19,21 @@ class TokenizerState {
         inSelector = base.inSelector;
 }
 
-/**
- * The base class for our tokenizer. The hand coded parts are in this file, with
- * the generated parts in the subclass Tokenizer.
- */
+/// The base class for our tokenizer. The hand coded parts are in this file,
+/// with the generated parts in the subclass Tokenizer.
 abstract class TokenizerBase {
   final SourceFile _file;
   final String _text;
 
   bool _inString;
 
-  /**
-   * Changes tokenization when in a pseudo function expression.  If true then
-   * minus signs are handled as operators instead of identifiers.
-   */
+  /// Changes tokenization when in a pseudo function expression.  If true then
+  /// minus signs are handled as operators instead of identifiers.
   bool inSelectorExpression = false;
 
-  /**
-   * Changes tokenization when in selectors. If true, it prevents identifiers
-   * from being treated as units. This would break things like ":lang(fr)" or
-   * the HTML (unknown) tag name "px", which is legal to use in a selector.
-   */
+  /// Changes tokenization when in selectors. If true, it prevents identifiers
+  /// from being treated as units. This would break things like ":lang(fr)" or
+  /// the HTML (unknown) tag name "px", which is legal to use in a selector.
   // TODO(jmesserly): is this a problem elsewhere? "fr" for example will be
   // processed as a "fraction" unit token, preventing it from working in
   // places where an identifier is expected. This was breaking selectors like:
@@ -60,10 +54,10 @@ abstract class TokenizerBase {
   Token next();
   int getIdentifierKind();
 
-  /** Snapshot of Tokenizer scanning state. */
+  /// Snapshot of Tokenizer scanning state.
   TokenizerState get mark => new TokenizerState(this);
 
-  /** Restore Tokenizer scanning state. */
+  /// Restore Tokenizer scanning state.
   void restore(TokenizerState markedData) {
     _index = markedData.index;
     _startIndex = markedData.startIndex;

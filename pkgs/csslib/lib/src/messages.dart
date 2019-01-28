@@ -12,7 +12,7 @@ import 'options.dart';
 // TODO(terry): Remove the global messages, use some object that tracks
 //              compilation state.
 
-/** The global [Messages] for tracking info/warnings/messages. */
+/// The global [Messages] for tracking info/warnings/messages.
 Messages messages;
 
 // Color constants used for generating messages.
@@ -21,7 +21,7 @@ final String RED_COLOR = '\u001b[31m';
 final String MAGENTA_COLOR = '\u001b[35m';
 final String NO_COLOR = '\u001b[0m';
 
-/** Map between error levels and their display color. */
+/// Map between error levels and their display color.
 final Map<Level, String> _ERROR_COLORS = (() {
   var colorsMap = new Map<Level, String>();
   colorsMap[Level.SEVERE] = RED_COLOR;
@@ -30,7 +30,7 @@ final Map<Level, String> _ERROR_COLORS = (() {
   return colorsMap;
 })();
 
-/** Map between error levels and their friendly name. */
+/// Map between error levels and their friendly name.
 final Map<Level, String> _ERROR_LABEL = (() {
   var labels = new Map<Level, String>();
   labels[Level.SEVERE] = 'error';
@@ -39,7 +39,7 @@ final Map<Level, String> _ERROR_LABEL = (() {
   return labels;
 })();
 
-/** A single message from the compiler. */
+/// A single message from the compiler.
 class Message {
   final Level level;
   final String message;
@@ -71,12 +71,10 @@ class Message {
 
 typedef void PrintHandler(Message obj);
 
-/**
- * This class tracks and prints information, warnings, and errors emitted by the
- * compiler.
- */
+/// This class tracks and prints information, warnings, and errors emitted by
+/// the compiler.
 class Messages {
-  /** Called on every error. Set to blank function to supress printing. */
+  /// Called on every error. Set to blank function to supress printing.
   final PrintHandler printHandler;
 
   final PreprocessorOptions options;
@@ -86,7 +84,7 @@ class Messages {
   Messages({PreprocessorOptions options, this.printHandler: print})
       : options = options != null ? options : new PreprocessorOptions();
 
-  /** Report a compile-time CSS error. */
+  /// Report a compile-time CSS error.
   void error(String message, SourceSpan span) {
     var msg = new Message(Level.SEVERE, message,
         span: span, useColors: options.useColors);
@@ -96,7 +94,7 @@ class Messages {
     printHandler(msg);
   }
 
-  /** Report a compile-time CSS warning. */
+  /// Report a compile-time CSS warning.
   void warning(String message, SourceSpan span) {
     if (options.warningsAsErrors) {
       error(message, span);
@@ -108,7 +106,7 @@ class Messages {
     }
   }
 
-  /** Report and informational message about what the compiler is doing. */
+  /// Report and informational message about what the compiler is doing.
   void info(String message, SourceSpan span) {
     var msg = new Message(Level.INFO, message,
         span: span, useColors: options.useColors);
@@ -118,7 +116,7 @@ class Messages {
     if (options.verbose) printHandler(msg);
   }
 
-  /** Merge [newMessages] to this message lsit. */
+  /// Merge [newMessages] to this message lsit.
   void mergeMessages(Messages newMessages) {
     messages.addAll(newMessages.messages);
     newMessages.messages

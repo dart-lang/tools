@@ -69,7 +69,7 @@ span {
 }''');
 }
 
-/** Tests top-level mixins that includes another mixin. */
+/// Tests top-level mixins that includes another mixin.
 void topLevelMixinMultiRulesets() {
   compileAndValidate(r'''
 @mixin a {
@@ -173,7 +173,7 @@ a:hover {
 }''');
 }
 
-/** Tests selector groups and other combinators. */
+/// Tests selector groups and other combinators.
 void topLevelMixinSelectors() {
   compileAndValidate(r'''
 @mixin a {

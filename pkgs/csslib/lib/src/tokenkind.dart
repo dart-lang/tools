@@ -51,28 +51,28 @@ class TokenKind {
   //          character in the TokenChar list at the bottom of this file.  The
   //          order of the above tokens should be the same order as TokenChar.
 
-  /** [TokenKind] representing integer tokens. */
+  /// [TokenKind] representing integer tokens.
   static const int INTEGER = 60;
 
-  /** [TokenKind] representing hex integer tokens. */
+  /// [TokenKind] representing hex integer tokens.
   static const int HEX_INTEGER = 61;
 
-  /** [TokenKind] representing double tokens. */
+  /// [TokenKind] representing double tokens.
   static const int DOUBLE = 62;
 
-  /** [TokenKind] representing whitespace tokens. */
+  /// [TokenKind] representing whitespace tokens.
   static const int WHITESPACE = 63;
 
-  /** [TokenKind] representing comment tokens. */
+  /// [TokenKind] representing comment tokens.
   static const int COMMENT = 64;
 
-  /** [TokenKind] representing error tokens. */
+  /// [TokenKind] representing error tokens.
   static const int ERROR = 65;
 
-  /** [TokenKind] representing incomplete string tokens. */
+  /// [TokenKind] representing incomplete string tokens.
   static const int INCOMPLETE_STRING = 66;
 
-  /** [TokenKind] representing incomplete comment tokens. */
+  /// [TokenKind] representing incomplete comment tokens.
   static const int INCOMPLETE_COMMENT = 67;
 
   static const int VAR_DEFINITION = 400; // var-NNN-NNN
@@ -477,10 +477,8 @@ class TokenKind {
   //              see http://www.w3schools.com/cssref/pr_list-style-type.asp
   //              for list of possible values.
 
-  /**
-   * Check if name is a pre-defined CSS name.  Used by error handler to report
-   * if name is unknown or used improperly.
-   */
+  /// Check if name is a pre-defined CSS name.  Used by error handler to report
+  /// if name is unknown or used improperly.
   static bool isPredefinedName(String name) {
     var nameLen = name.length;
     // TODO(terry): Add more pre-defined names (hidden, bolder, inherit, etc.).
@@ -494,7 +492,7 @@ class TokenKind {
     return true;
   }
 
-  /** Return the token that matches the unit ident found. */
+  /// Return the token that matches the unit ident found.
   static int matchList(
       var identList, String tokenField, String text, int offset, int length) {
     for (final entry in identList) {
@@ -526,22 +524,22 @@ class TokenKind {
     return -1; // Not a unit token.
   }
 
-  /** Return the token that matches the unit ident found. */
+  /// Return the token that matches the unit ident found.
   static int matchUnits(String text, int offset, int length) {
     return matchList(_UNITS, 'unit', text, offset, length);
   }
 
-  /** Return the token that matches the directive name found. */
+  /// Return the token that matches the directive name found.
   static int matchDirectives(String text, int offset, int length) {
     return matchList(_DIRECTIVES, 'type', text, offset, length);
   }
 
-  /** Return the token that matches the margin directive name found. */
+  /// Return the token that matches the margin directive name found.
   static int matchMarginDirectives(String text, int offset, int length) {
     return matchList(MARGIN_DIRECTIVES, 'type', text, offset, length);
   }
 
-  /** Return the token that matches the media operator found. */
+  /// Return the token that matches the media operator found.
   static int matchMediaOperator(String text, int offset, int length) {
     return matchList(MEDIA_OPERATORS, 'type', text, offset, length);
   }
@@ -556,7 +554,7 @@ class TokenKind {
     return null;
   }
 
-  /** Return the unit token as its pretty name. */
+  /// Return the unit token as its pretty name.
   static String unitToString(int unitTokenToFind) {
     if (unitTokenToFind == TokenKind.PERCENT) {
       return '%';
@@ -572,17 +570,15 @@ class TokenKind {
     return '<BAD UNIT>'; // Not a unit token.
   }
 
-  /**
-   * Match color name, case insensitive match and return the associated color
-   * entry from _EXTENDED_COLOR_NAMES list, return [:null:] if not found.
-   */
+  /// Match color name, case insensitive match and return the associated color
+  /// entry from _EXTENDED_COLOR_NAMES list, return [:null:] if not found.
   static Map matchColorName(String text) {
     var name = text.toLowerCase();
     return _EXTENDED_COLOR_NAMES.firstWhere((e) => e['name'] == name,
         orElse: () => null);
   }
 
-  /** Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES. */
+  /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
   static int colorValue(Map entry) {
     assert(entry != null);
     return entry['value'];

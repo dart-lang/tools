@@ -18,10 +18,8 @@ part of csslib.parser;
 //                  div { color: red; }
 // <http://www.w3.org/TR/css3-syntax/#at-rules>
 
-/**
- * Analysis phase will validate/fixup any new CSS feature or any SASS style
- * feature.
- */
+/// Analysis phase will validate/fixup any new CSS feature or any Sass style
+/// feature.
 class Analyzer {
   final List<StyleSheet> _styleSheets;
   final Messages _messages;
@@ -57,139 +55,137 @@ class Analyzer {
   }
 }
 
-/**
- * Traverse all rulesets looking for nested ones.  If a ruleset is in a
- * declaration group (implies nested selector) then generate new ruleset(s) at
- * level 0 of CSS using selector inheritance syntax (flattens the nesting).
- *
- * How the AST works for a rule [RuleSet] and nested rules.  First of all a
- * CSS rule [RuleSet] consist of a selector and a declaration e.g.,
- *
- *    selector {
- *      declaration
- *    }
- *
- * AST structure of a [RuleSet] is:
- *
- *    RuleSet
- *       SelectorGroup
- *         List<Selector>
- *            List<SimpleSelectorSequence>
- *              Combinator      // +, >, ~, DESCENDENT, or NONE
- *              SimpleSelector  // class, id, element, namespace, attribute
- *        DeclarationGroup
- *          List                // Declaration or RuleSet
- *
- * For the simple rule:
- *
- *    div + span { color: red; }
- *
- * the AST [RuleSet] is:
- *
- *    RuleSet
- *       SelectorGroup
- *         List<Selector>
- *          [0]
- *            List<SimpleSelectorSequence>
- *              [0] Combinator = COMBINATOR_NONE
- *                  ElementSelector (name = div)
- *              [1] Combinator = COMBINATOR_PLUS
- *                  ElementSelector (name = span)
- *        DeclarationGroup
- *          List                // Declarations or RuleSets
- *            [0]
- *              Declaration (property = color, expression = red)
- *
- * Usually a SelectorGroup contains 1 Selector.  Consider the selectors:
- *
- *    div { color: red; }
- *    a { color: red; }
- *
- * are equivalent to
- *
- *    div, a { color : red; }
- *
- * In the above the RuleSet would have a SelectorGroup with 2 selectors e.g.,
- *
- *    RuleSet
- *       SelectorGroup
- *         List<Selector>
- *          [0]
- *            List<SimpleSelectorSequence>
- *              [0] Combinator = COMBINATOR_NONE
- *                  ElementSelector (name = div)
- *          [1]
- *            List<SimpleSelectorSequence>
- *              [0] Combinator = COMBINATOR_NONE
- *                  ElementSelector (name = a)
- *        DeclarationGroup
- *          List                // Declarations or RuleSets
- *            [0]
- *              Declaration (property = color, expression = red)
- *
- * For a nested rule e.g.,
- *
- *    div {
- *      color : blue;
- *      a { color : red; }
- *    }
- *
- * Would map to the follow CSS rules:
- *
- *    div { color: blue; }
- *    div a { color: red; }
- *
- * The AST for the former nested rule is:
- *
- *    RuleSet
- *       SelectorGroup
- *         List<Selector>
- *          [0]
- *            List<SimpleSelectorSequence>
- *              [0] Combinator = COMBINATOR_NONE
- *                  ElementSelector (name = div)
- *        DeclarationGroup
- *          List                // Declarations or RuleSets
- *            [0]
- *              Declaration (property = color, expression = blue)
- *            [1]
- *              RuleSet
- *                SelectorGroup
- *                  List<Selector>
- *                    [0]
- *                      List<SimpleSelectorSequence>
- *                        [0] Combinator = COMBINATOR_NONE
- *                            ElementSelector (name = a)
- *                DeclarationGroup
- *                  List                // Declarations or RuleSets
- *                    [0]
- *                      Declaration (property = color, expression = red)
- *
- * Nested rules is a terse mechanism to describe CSS inheritance.  The analyzer
- * will flatten and expand the nested rules to it's flatten strucure.  Using the
- * all parent [RuleSets] (selector expressions) and applying each nested
- * [RuleSet] to the list of [Selectors] in a [SelectorGroup].
- *
- * Then result is a style sheet where all nested rules have been flatten and
- * expanded.
- */
+/// Traverse all rulesets looking for nested ones.  If a ruleset is in a
+/// declaration group (implies nested selector) then generate new ruleset(s) at
+/// level 0 of CSS using selector inheritance syntax (flattens the nesting).
+///
+/// How the AST works for a rule [RuleSet] and nested rules.  First of all a
+/// CSS rule [RuleSet] consist of a selector and a declaration e.g.,
+///
+///     selector {
+///       declaration
+///     }
+///
+/// AST structure of a [RuleSet] is:
+///
+///     RuleSet
+///        SelectorGroup
+///          List<Selector>
+///             List<SimpleSelectorSequence>
+///               Combinator      // +, >, ~, DESCENDENT, or NONE
+///               SimpleSelector  // class, id, element, namespace, attribute
+///         DeclarationGroup
+///           List                // Declaration or RuleSet
+///
+/// For the simple rule:
+///
+///     div + span { color: red; }
+///
+/// the AST [RuleSet] is:
+///
+///     RuleSet
+///        SelectorGroup
+///          List<Selector>
+///           [0]
+///             List<SimpleSelectorSequence>
+///               [0] Combinator = COMBINATOR_NONE
+///                   ElementSelector (name = div)
+///               [1] Combinator = COMBINATOR_PLUS
+///                   ElementSelector (name = span)
+///         DeclarationGroup
+///           List                // Declarations or RuleSets
+///             [0]
+///               Declaration (property = color, expression = red)
+///
+/// Usually a SelectorGroup contains 1 Selector.  Consider the selectors:
+///
+///     div { color: red; }
+///     a { color: red; }
+///
+/// are equivalent to
+///
+///     div, a { color : red; }
+///
+/// In the above the RuleSet would have a SelectorGroup with 2 selectors e.g.,
+///
+///     RuleSet
+///        SelectorGroup
+///          List<Selector>
+///           [0]
+///             List<SimpleSelectorSequence>
+///               [0] Combinator = COMBINATOR_NONE
+///                   ElementSelector (name = div)
+///           [1]
+///             List<SimpleSelectorSequence>
+///               [0] Combinator = COMBINATOR_NONE
+///                   ElementSelector (name = a)
+///         DeclarationGroup
+///           List                // Declarations or RuleSets
+///             [0]
+///               Declaration (property = color, expression = red)
+///
+/// For a nested rule e.g.,
+///
+///     div {
+///       color : blue;
+///       a { color : red; }
+///     }
+///
+/// Would map to the follow CSS rules:
+///
+///     div { color: blue; }
+///     div a { color: red; }
+///
+/// The AST for the former nested rule is:
+///
+///     RuleSet
+///        SelectorGroup
+///          List<Selector>
+///           [0]
+///             List<SimpleSelectorSequence>
+///               [0] Combinator = COMBINATOR_NONE
+///                   ElementSelector (name = div)
+///         DeclarationGroup
+///           List                // Declarations or RuleSets
+///             [0]
+///               Declaration (property = color, expression = blue)
+///             [1]
+///               RuleSet
+///                 SelectorGroup
+///                   List<Selector>
+///                     [0]
+///                       List<SimpleSelectorSequence>
+///                         [0] Combinator = COMBINATOR_NONE
+///                             ElementSelector (name = a)
+///                 DeclarationGroup
+///                   List                // Declarations or RuleSets
+///                     [0]
+///                       Declaration (property = color, expression = red)
+///
+/// Nested rules is a terse mechanism to describe CSS inheritance.  The analyzer
+/// will flatten and expand the nested rules to it's flatten strucure.  Using
+/// the all parent [RuleSets] (selector expressions) and applying each nested
+/// [RuleSet] to the list of [Selectors] in a [SelectorGroup].
+///
+/// Then result is a style sheet where all nested rules have been flatten and
+/// expanded.
 class ExpandNestedSelectors extends Visitor {
-  /** Parent [RuleSet] if a nested rule otherwise [:null:]. */
+  /// Parent [RuleSet] if a nested rule otherwise [:null:].
   RuleSet _parentRuleSet;
 
-  /** Top-most rule if nested rules. */
+  /// Top-most rule if nested rules.
   SelectorGroup _topLevelSelectorGroup;
 
-  /** SelectorGroup at each nesting level. */
+  /// SelectorGroup at each nesting level.
   SelectorGroup _nestedSelectorGroup;
 
-  /** Declaration (sans the nested selectors). */
+  /// Declaration (sans the nested selectors).
   DeclarationGroup _flatDeclarationGroup;
 
-  /** Each nested selector get's a flatten RuleSet. */
+  /// Each nested selector get's a flatten RuleSet.
   List<RuleSet> _expandedRuleSets = [];
 
-  /** Maping of a nested rule set to the fully expanded list of RuleSet(s). */
+  /// Maping of a nested rule set to the fully expanded list of RuleSet(s).
   final Map<RuleSet, List<RuleSet>> _expansions = new Map();
 
   void visitRuleSet(RuleSet node) {
@@ -232,11 +228,9 @@ class ExpandNestedSelectors extends Visitor {
     }
   }
 
-  /**
-   * Build up the list of all inherited sequences from the parent selector
-   * [node] is the current nested selector and it's parent is the last entry in
-   * the [_nestedSelectorGroup].
-   */
+  /// Build up the list of all inherited sequences from the parent selector
+  /// [node] is the current nested selector and it's parent is the last entry in
+  /// the [_nestedSelectorGroup].
   SelectorGroup _mergeToFlatten(RuleSet node) {
     // Create a new SelectorGroup for this nesting level.
     var nestedSelectors = _nestedSelectorGroup.selectors;
@@ -255,10 +249,8 @@ class ExpandNestedSelectors extends Visitor {
     return new SelectorGroup(newSelectors, node.span);
   }
 
-  /**
-   * Merge the nested selector sequences [current] to the [parent] sequences or
-   * substitue any & with the parent selector.
-   */
+  /// Merge the nested selector sequences [current] to the [parent] sequences or
+  /// substitue any & with the parent selector.
   List<SimpleSelectorSequence> _mergeNestedSelector(
       List<SimpleSelectorSequence> parent,
       List<SimpleSelectorSequence> current) {
@@ -291,12 +283,10 @@ class ExpandNestedSelectors extends Visitor {
     return newSequence;
   }
 
-  /**
-   * Return selector sequences with first sequence combinator being a
-   * descendant.  Used for nested selectors when the parent selector needs to
-   * be prefixed to a nested selector or to substitute the this (&) with the
-   * parent selector.
-   */
+  /// Return selector sequences with first sequence combinator being a
+  /// descendant.  Used for nested selectors when the parent selector needs to
+  /// be prefixed to a nested selector or to substitute the this (&) with the
+  /// parent selector.
   List<SimpleSelectorSequence> _convertToDescendentSequence(
       List<SimpleSelectorSequence> sequences) {
     if (sequences.isEmpty) return sequences;
@@ -376,9 +366,8 @@ class ExpandNestedSelectors extends Visitor {
     super.visitMarginGroup(node);
   }
 
-  /**
-   * Replace the rule set that contains nested rules with the flatten rule sets.
-   */
+  /// Replace the rule set that contains nested rules with the flatten rule
+  /// sets.
   void flatten(StyleSheet styleSheet) {
     // TODO(terry): Iterate over topLevels instead of _expansions it's already
     //              a map (this maybe quadratic).
@@ -401,10 +390,9 @@ class _MediaRulesReplacer extends Visitor {
   List<RuleSet> _newRules;
   bool _foundAndReplaced = false;
 
-  /**
-   * Look for the [ruleSet] inside of an @media directive; if found then replace
-   * with the [newRules].  If [ruleSet] is found and replaced return true.
-   */
+  /// Look for the [ruleSet] inside of an @media directive; if found then
+  /// replace with the [newRules].  If [ruleSet] is found and replaced return
+  /// true.
   static bool replace(
       StyleSheet styleSheet, RuleSet ruleSet, List<RuleSet> newRules) {
     var visitor = new _MediaRulesReplacer(ruleSet, newRules);
@@ -423,14 +411,12 @@ class _MediaRulesReplacer extends Visitor {
   }
 }
 
-/**
- * Expand all @include at the top-level the ruleset(s) associated with the
- * mixin.
- */
+/// Expand all @include at the top-level the ruleset(s) associated with the
+/// mixin.
 class TopLevelIncludes extends Visitor {
   StyleSheet _styleSheet;
   final Messages _messages;
-  /** Map of variable name key to it's definition. */
+  /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = new Map<String, MixinDefinition>();
   MixinDefinition currDef;
 
@@ -504,17 +490,16 @@ class TopLevelIncludes extends Visitor {
   }
 }
 
-/** @include as a top-level with ruleset(s). */
+/// @include as a top-level with ruleset(s).
 class _TopLevelIncludeReplacer extends Visitor {
   final Messages _messages;
   final IncludeDirective _include;
   final List<TreeNode> _newRules;
   bool _foundAndReplaced = false;
 
-  /**
-   * Look for the [ruleSet] inside of an @media directive; if found then replace
-   * with the [newRules].  If [ruleSet] is found and replaced return true.
-   */
+  /// Look for the [ruleSet] inside of an @media directive; if found then
+  /// replace with the [newRules].  If [ruleSet] is found and replaced return
+  /// true.
   static bool replace(Messages messages, StyleSheet styleSheet,
       IncludeDirective include, List<TreeNode> newRules) {
     var visitor = new _TopLevelIncludeReplacer(messages, include, newRules);
@@ -546,11 +531,9 @@ class _TopLevelIncludeReplacer extends Visitor {
   }
 }
 
-/**
- * Utility function to match an include to a list of either Declarations or
- * RuleSets, depending on type of mixin (ruleset or declaration).  The include
- * can be an include in a declaration or an include directive (top-level).
- */
+/// Utility function to match an include to a list of either Declarations or
+/// RuleSets, depending on type of mixin (ruleset or declaration).  The include
+/// can be an include in a declaration or an include directive (top-level).
 int _findInclude(List list, var node) {
   IncludeDirective matchNode =
       (node is IncludeMixinAtDeclaration) ? node.include : node;
@@ -564,10 +547,8 @@ int _findInclude(List list, var node) {
   return -1;
 }
 
-/**
- * Stamp out a mixin with the defined args substituted with the user's
- * parameters.
- */
+/// Stamp out a mixin with the defined args substituted with the user's
+/// parameters.
 class CallMixin extends Visitor {
   final MixinDefinition mixinDef;
   List _definedArgs;
@@ -576,7 +557,7 @@ class CallMixin extends Visitor {
 
   final varUsages = new Map<String, Map<Expressions, Set<int>>>();
 
-  /** Only var defs with more than one expression (comma separated). */
+  /// Only var defs with more than one expression (comma separated).
   final Map<String, VarDefinition> varDefs;
 
   CallMixin(this.mixinDef, [this.varDefs]) {
@@ -587,10 +568,8 @@ class CallMixin extends Visitor {
     }
   }
 
-  /**
-   * Given a mixin's defined arguments return a cloned mixin defintion that has
-   * replaced all defined arguments with user's supplied VarUsages.
-   */
+  /// Given a mixin's defined arguments return a cloned mixin defintion that has
+  /// replaced all defined arguments with user's supplied VarUsages.
   MixinDefinition transform(List<List<Expression>> callArgs) {
     // TODO(terry): Handle default arguments and varArgs.
     // Transform mixin with callArgs.
@@ -626,7 +605,7 @@ class CallMixin extends Visitor {
     return mixinDef.clone();
   }
 
-  /** Rip apart var def with multiple parameters. */
+  /// Rip apart var def with multiple parameters.
   List<List<Expression>> _varDefsAsCallArgs(var callArg) {
     var defArgs = <List<Expression>>[];
     if (callArg is List && callArg[0] is VarUsage) {
@@ -691,18 +670,18 @@ class CallMixin extends Visitor {
   }
 }
 
-/** Expand all @include inside of a declaration associated with a mixin. */
+/// Expand all @include inside of a declaration associated with a mixin.
 class DeclarationIncludes extends Visitor {
   StyleSheet _styleSheet;
   final Messages _messages;
-  /** Map of variable name key to it's definition. */
+  /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = new Map<String, MixinDefinition>();
-  /** Cache of mixin called with parameters. */
+  /// Cache of mixin called with parameters.
   final Map<String, CallMixin> callMap = new Map<String, CallMixin>();
   MixinDefinition currDef;
   DeclarationGroup currDeclGroup;
 
-  /** Var definitions with more than 1 expression. */
+  /// Var definitions with more than 1 expression.
   final Map<String, VarDefinition> varDefs = new Map<String, VarDefinition>();
 
   static void expand(Messages messages, List<StyleSheet> styleSheets) {
@@ -837,16 +816,14 @@ class DeclarationIncludes extends Visitor {
   }
 }
 
-/** @include as a top-level with ruleset(s). */
+/// @include as a top-level with ruleset(s).
 class _IncludeReplacer extends Visitor {
   final _include;
   final List<TreeNode> _newDeclarations;
   bool _foundAndReplaced = false;
 
-  /**
-   * Look for the [ruleSet] inside of a @media directive; if found then replace
-   * with the [newRules].
-   */
+  /// Look for the [ruleSet] inside of a @media directive; if found then replace
+  /// with the [newRules].
   static void replace(
       StyleSheet ss, var include, List<TreeNode> newDeclarations) {
     var visitor = new _IncludeReplacer(include, newDeclarations);
@@ -867,9 +844,8 @@ class _IncludeReplacer extends Visitor {
   }
 }
 
-/**
- * Remove all @mixin and @include and any NoOp used as placeholder for @include.
- */
+/// Remove all @mixin and @include and any NoOp used as placeholder for
+/// @include.
 class MixinsAndIncludes extends Visitor {
   static void remove(StyleSheet styleSheet) {
     new MixinsAndIncludes()..visitStyleSheet(styleSheet);
@@ -899,7 +875,7 @@ class MixinsAndIncludes extends Visitor {
   }
 }
 
-/** Find all @extend to create inheritance. */
+/// Find all @extend to create inheritance.
 class AllExtends extends Visitor {
   final Map<String, List<SelectorGroup>> inherits =
       new Map<String, List<SelectorGroup>>();
@@ -957,9 +933,7 @@ class AllExtends extends Visitor {
 // TODO(terry): Need to handle merging selector sequences
 // TODO(terry): Need to handle @extend-Only selectors.
 // TODO(terry): Need to handle !optional glag.
-/**
- * Changes any selector that matches @extend.
- */
+/// Changes any selector that matches @extend.
 class InheritExtends extends Visitor {
   final Messages _messages;
   final AllExtends _allExtends;

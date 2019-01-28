@@ -6,14 +6,14 @@ part of csslib.visitor;
 
 // TODO(terry): Enable class for debug only; when conditional imports enabled.
 
-/** Helper function to dump the CSS AST. */
+/// Helper function to dump the CSS AST.
 String treeToDebugString(StyleSheet styleSheet, [bool useSpan = false]) {
   var to = new TreeOutput();
   new _TreePrinter(to, useSpan)..visitTree(styleSheet);
   return to.toString();
 }
 
-/** Tree dump for debug output of the CSS AST. */
+/// Tree dump for debug output of the CSS AST.
 class _TreePrinter extends Visitor {
   final TreeOutput output;
   final bool useSpan;
@@ -226,10 +226,8 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
-  /**
-   * Added optional newLine for handling @include at top-level vs/ inside of
-   * a declaration group.
-   */
+  /// Added optional newLine for handling @include at top-level vs/ inside of
+  /// a declaration group.
   void visitIncludeDirective(IncludeDirective node) {
     heading('IncludeDirective ${node.name}', node);
     var flattened = node.args.expand((e) => e).toList();

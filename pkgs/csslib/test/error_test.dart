@@ -9,9 +9,7 @@ import 'package:test/test.dart';
 
 import 'testing.dart';
 
-/**
- * Test for unsupported font-weights values of bolder, lighter and inherit.
- */
+/// Test for unsupported font-weights values of bolder, lighter and inherit.
 void testUnsupportedFontWeights() {
   var errors = <Message>[];
 
@@ -71,10 +69,8 @@ error on line 1, column 24: Unknown property value inherit
 }''');
 }
 
-/**
- * Test for unsupported line-height values of units other than px, pt and
- * inherit.
- */
+/// Test for unsupported line-height values of units other than px, pt and
+/// inherit.
 void testUnsupportedLineHeights() {
   var errors = <Message>[];
 
@@ -132,7 +128,7 @@ error on line 1, column 24: Unknown property value inherit
 }''');
 }
 
-/** Test for bad selectors. */
+/// Test for bad selectors.
 void testBadSelectors() {
   var errors = <Message>[];
 
@@ -171,7 +167,7 @@ error on line 1, column 1: Not a valid class selector expected .className
 }''');
 }
 
-/** Test for bad hex values. */
+/// Test for bad hex values.
 void testBadHexValues() {
   var errors = <Message>[];
 
