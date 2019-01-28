@@ -709,7 +709,7 @@ class KeyFrameDirective extends Directive {
    * Either @keyframe or keyframe prefixed with @-webkit-, @-moz-, @-ms-, @-o-.
    */
   final int _keyframeName;
-  final name;
+  final Identifier name;
   final List<KeyFrameBlock> _blocks;
 
   KeyFrameDirective(this._keyframeName, this.name, SourceSpan span)
@@ -736,11 +736,11 @@ class KeyFrameDirective extends Directive {
   }
 
   KeyFrameDirective clone() {
-    var cloneBlocks = [];
+    var directive = KeyFrameDirective(_keyframeName, name.clone(), span);
     for (var block in _blocks) {
-      cloneBlocks.add(block.clone());
+      directive.add(block.clone());
     }
-    return new KeyFrameDirective(_keyframeName, cloneBlocks, span);
+    return directive;
   }
 
   visit(VisitorBase visitor) => visitor.visitKeyFrameDirective(this);
