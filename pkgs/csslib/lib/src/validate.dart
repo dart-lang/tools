@@ -17,9 +17,9 @@ List<String> classes = [];
 List<String> ids = [];
 
 class Validate {
-  static int _classNameCheck(var selector, int matches) {
-    if (selector.isCombinatorDescendant() ||
-        (selector.isCombinatorNone() && matches == 0)) {
+  static int _classNameCheck(SimpleSelectorSequence selector, int matches) {
+    if (selector.isCombinatorDescendant ||
+        (selector.isCombinatorNone && matches == 0)) {
       if (matches < 0) {
         String tooMany = selector.simpleSelector.toString();
         throw new CssSelectorException(
@@ -35,11 +35,11 @@ class Validate {
     }
   }
 
-  static int _elementIdCheck(var selector, int matches) {
-    if (selector.isCombinatorNone() && matches == 0) {
+  static int _elementIdCheck(SimpleSelectorSequence selector, int matches) {
+    if (selector.isCombinatorNone && matches == 0) {
       // Perfect just one element id returns matches of -1.
       return -1;
-    } else if (selector.isCombinatorDescendant()) {
+    } else if (selector.isCombinatorDescendant) {
       String tooMany = selector.simpleSelector.toString();
       throw new CssSelectorException(
           'Use of Id selector must be singleton starting at $tooMany');
