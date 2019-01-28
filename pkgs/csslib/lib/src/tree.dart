@@ -900,7 +900,6 @@ class ContentDirective extends Directive {
 class Declaration extends TreeNode {
   final Identifier _property;
   final Expression _expression;
-<<<<<<< HEAD
 
   /// Style exposed to Dart.
   DartStyleExpression dartStyle;
