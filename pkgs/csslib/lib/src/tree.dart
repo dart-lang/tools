@@ -908,7 +908,7 @@ class Declaration extends TreeNode {
   final Identifier _property;
   final Expression _expression;
   /** Style exposed to Dart. */
-  dynamic dartStyle;
+  DartStyleExpression dartStyle;
   final bool important;
 
   /**

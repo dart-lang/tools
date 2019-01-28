@@ -1215,7 +1215,7 @@ class _Parser {
       Declaration decl = processDeclaration(dartStyles);
       if (decl != null) {
         if (decl.hasDartStyle) {
-          var newDartStyle = decl.dartStyle as DartStyleExpression;
+          var newDartStyle = decl.dartStyle;
 
           // Replace or add latest Dart style.
           bool replaced = false;
@@ -1241,8 +1241,7 @@ class _Parser {
     // declarations.
     for (var decl in decls) {
       if (decl is Declaration) {
-        if (decl.hasDartStyle &&
-            dartStyles.indexOf(decl.dartStyle as DartStyleExpression) < 0) {
+        if (decl.hasDartStyle && dartStyles.indexOf(decl.dartStyle) < 0) {
           // Dart style not live, ignore these styles in this Declarations.
           decl.dartStyle = null;
         }
@@ -1300,7 +1299,7 @@ class _Parser {
           Declaration decl = processDeclaration(dartStyles);
           if (decl != null) {
             if (decl.hasDartStyle) {
-              var newDartStyle = decl.dartStyle as DartStyleExpression;
+              var newDartStyle = decl.dartStyle;
 
               // Replace or add latest Dart style.
               bool replaced = false;
@@ -1326,8 +1325,7 @@ class _Parser {
     // Fixup declaration to only have dartStyle that are live for this set of
     // declarations.
     for (var decl in decls) {
-      if (decl.hasDartStyle &&
-          dartStyles.indexOf(decl.dartStyle as DartStyleExpression) < 0) {
+      if (decl.hasDartStyle && dartStyles.indexOf(decl.dartStyle) < 0) {
         // Dart style not live, ignore these styles in this Declarations.
         decl.dartStyle = null;
       }
@@ -2217,8 +2215,10 @@ class _Parser {
   }
 
   // TODO(terry): Need to handle auto.
-  num marginValue(var exprTerm) {
-    if (exprTerm is UnitTerm || exprTerm is NumberTerm) {
+  num marginValue(Expression exprTerm) {
+    if (exprTerm is UnitTerm) {
+      return exprTerm.value as num;
+    } else if (exprTerm is NumberTerm) {
       return exprTerm.value as num;
     }
     return null;
