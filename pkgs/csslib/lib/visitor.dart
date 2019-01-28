@@ -116,9 +116,9 @@ abstract class VisitorBase {
   visitWidthExpression(WidthExpression node);
 }
 
-/** Base vistor class for the style sheet AST. */
+/// Base vistor class for the style sheet AST.
 class Visitor implements VisitorBase {
-  /** Helper function to walk a list of nodes. */
+  /// Helper function to walk a list of nodes.
   void _visitNodeList(List<TreeNode> list) {
     // Don't use iterable otherwise the list can't grow while using Visitor.
     // It certainly can't have items deleted before the index being iterated

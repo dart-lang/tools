@@ -82,10 +82,8 @@ void testSimpleTerms() {
   expect(errors.first.span.text, '%');
 }
 
-/**
- * Declarations with comments, references with single-quotes, double-quotes,
- * no quotes.  Hex values with # and letters, and functions (rgba, url, etc.)
- */
+/// Declarations with comments, references with single-quotes, double-quotes,
+/// no quotes.  Hex values with # and letters, and functions (rgba, url, etc.)
 void testDeclarations() {
   var errors = <Message>[];
   final String input = r'''
@@ -1072,16 +1070,14 @@ div {
   expect(prettyPrint(stylesheet), input4);
 }
 
-/**
- *  Test IE specific declaration syntax:
- *    IE6 property name prefixed with _ (normal CSS property name can start
- *    with an underscore).
- *
- *    IE7 or below property add asterisk before the CSS property.
- *
- *    IE8 or below add \9 at end of declaration expression e.g.,
- *        background: red\9;
- */
+///  Test IE specific declaration syntax:
+///    IE6 property name prefixed with _ (normal CSS property name can start
+///    with an underscore).
+///
+///    IE7 or below property add asterisk before the CSS property.
+///
+///    IE8 or below add \9 at end of declaration expression e.g.,
+///        background: red\9;
 void testIEDeclaration() {
   var errors = <Message>[];
 

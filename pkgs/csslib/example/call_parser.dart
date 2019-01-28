@@ -10,11 +10,9 @@ const _default = const css.PreprocessorOptions(
     warningsAsErrors: true,
     inputFile: 'memory');
 
-/**
- * Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
- * CSS will allow any property/value pairs regardless of validity; all of our
- * tests (by default) will ensure that the CSS is really valid.
- */
+/// Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
+/// CSS will allow any property/value pairs regardless of validity; all of our
+/// tests (by default) will ensure that the CSS is really valid.
 StyleSheet parseCss(String cssInput,
     {List<css.Message> errors, css.PreprocessorOptions opts}) {
   return css.parse(cssInput,

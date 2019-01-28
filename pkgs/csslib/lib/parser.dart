@@ -29,7 +29,7 @@ enum ClauseType {
   disjunction,
 }
 
-/** Used for parser lookup ahead (used for nested selectors Less support). */
+/// Used for parser lookup ahead (used for nested selectors Less support).
 class ParserState extends TokenizerState {
   final Token peekToken;
   final Token previousToken;
@@ -49,11 +49,11 @@ void _createMessages({List<Message> errors, PreprocessorOptions options}) {
   messages = new Messages(options: options, printHandler: errors.add);
 }
 
-/** CSS checked mode enabled. */
+/// CSS checked mode enabled.
 bool get isChecked => messages.options.checked;
 
 // TODO(terry): Remove nested name parameter.
-/** Parse and analyze the CSS file. */
+/// Parse and analyze the CSS file.
 StyleSheet compile(input,
     {List<Message> errors,
     PreprocessorOptions options,
@@ -82,18 +82,16 @@ StyleSheet compile(input,
   return tree;
 }
 
-/** Analyze the CSS file. */
+/// Analyze the CSS file.
 void analyze(List<StyleSheet> styleSheets,
     {List<Message> errors, PreprocessorOptions options}) {
   _createMessages(errors: errors, options: options);
   new Analyzer(styleSheets, messages).run();
 }
 
-/**
- * Parse the [input] CSS stylesheet into a tree. The [input] can be a [String],
- * or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
- * [errors] list will contain each error/warning as a [Message].
- */
+/// Parse the [input] CSS stylesheet into a tree. The [input] can be a [String],
+/// or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
+/// [errors] list will contain each error/warning as a [Message].
 StyleSheet parse(input, {List<Message> errors, PreprocessorOptions options}) {
   var source = _inputAsString(input);
 
@@ -103,11 +101,9 @@ StyleSheet parse(input, {List<Message> errors, PreprocessorOptions options}) {
   return new _Parser(file, source).parse();
 }
 
-/**
- * Parse the [input] CSS selector into a tree. The [input] can be a [String],
- * or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
- * [errors] list will contain each error/warning as a [Message].
- */
+/// Parse the [input] CSS selector into a tree. The [input] can be a [String],
+/// or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
+/// [errors] list will contain each error/warning as a [Message].
 // TODO(jmesserly): should rename "parseSelector" and return Selector
 StyleSheet selector(input, {List<Message> errors}) {
   var source = _inputAsString(input);
@@ -126,8 +122,9 @@ SelectorGroup parseSelectorGroup(input, {List<Message> errors}) {
 
   var file = new SourceFile.fromString(source);
   return (new _Parser(file, source)
-        // TODO(jmesserly): this fix should be applied to the parser. It's tricky
-        // because by the time the flag is set one token has already been fetched.
+        // TODO(jmesserly): this fix should be applied to the parser. It's
+        // tricky because by the time the flag is set one token has already
+        // been fetched.
         ..tokenizer.inSelector = true)
       .processSelectorGroup();
 }
@@ -165,7 +162,7 @@ String _inputAsString(input) {
 
 // TODO(terry): Consider removing this class when all usages can be eliminated
 //               or replaced with compile API.
-/** Public parsing interface for csslib. */
+/// Public parsing interface for csslib.
 class Parser {
   final _Parser _parser;
 
@@ -185,14 +182,12 @@ final _legacyPseudoElements = new Set<String>.from(const [
   'first-line',
 ]);
 
-/** A simple recursive descent parser for CSS. */
+/// A simple recursive descent parser for CSS.
 class _Parser {
   final Tokenizer tokenizer;
 
-  /**
-   * File containing the source being parsed, used to report errors with
-   * source-span locations.
-   */
+  /// File containing the source being parsed, used to report errors with
+  /// source-span locations.
   final SourceFile file;
 
   Token _previousToken;
@@ -204,7 +199,7 @@ class _Parser {
     _peekToken = tokenizer.next();
   }
 
-  /** Main entry point for parsing an entire CSS file. */
+  /// Main entry point for parsing an entire CSS file.
   StyleSheet parse() {
     List<TreeNode> productions = [];
 
@@ -224,7 +219,7 @@ class _Parser {
     return new StyleSheet(productions, _makeSpan(start));
   }
 
-  /** Main entry point for parsing a simple selector sequence. */
+  /// Main entry point for parsing a simple selector sequence.
   StyleSheet parseSelector() {
     List<TreeNode> productions = [];
 
@@ -241,7 +236,7 @@ class _Parser {
     return new StyleSheet.selector(productions, _makeSpan(start));
   }
 
-  /** Generate an error if [file] has not been completely consumed. */
+  /// Generate an error if [file] has not been completely consumed.
   void checkEndOfFile() {
     if (!(_peekKind(TokenKind.END_OF_FILE) ||
         _peekKind(TokenKind.INCOMPLETE_COMMENT))) {
@@ -249,7 +244,7 @@ class _Parser {
     }
   }
 
-  /** Guard to break out of parser when an unexpected end of file is found. */
+  /// Guard to break out of parser when an unexpected end of file is found.
   // TODO(jimhug): Failure to call this method can lead to inifinite parser
   //   loops.  Consider embracing exceptions for more errors to reduce
   //   the danger here.
@@ -279,16 +274,16 @@ class _Parser {
     return _peekToken.kind == kind;
   }
 
-  /* Is the next token a legal identifier?  This includes pseudo-keywords. */
+  // Is the next token a legal identifier?  This includes pseudo-keywords.
   bool _peekIdentifier() {
     return TokenKind.isIdentifier(_peekToken.kind);
   }
 
-  /** Marks the parser/tokenizer look ahead to support Less nested selectors. */
+  /// Marks the parser/tokenizer look ahead to support Less nested selectors.
   ParserState get _mark =>
       new ParserState(_peekToken, _previousToken, tokenizer);
 
-  /** Restores the parser/tokenizer state to state remembered by _mark. */
+  /// Restores the parser/tokenizer state to state remembered by _mark.
   void _restore(ParserState markedData) {
     tokenizer.restore(markedData);
     _peekToken = markedData.peekToken;
@@ -350,22 +345,20 @@ class _Parser {
   // Top level productions
   ///////////////////////////////////////////////////////////////////
 
-  /**
-   * The media_query_list production below replaces the media_list production
-   * from CSS2 the new grammar is:
-   *
-   *   media_query_list
-   *    : S* [media_query [ ',' S* media_query ]* ]?
-   *   media_query
-   *    : [ONLY | NOT]? S* media_type S* [ AND S* expression ]*
-   *    | expression [ AND S* expression ]*
-   *   media_type
-   *    : IDENT
-   *   expression
-   *    : '(' S* media_feature S* [ ':' S* expr ]? ')' S*
-   *   media_feature
-   *    : IDENT
-   */
+  /// The media_query_list production below replaces the media_list production
+  /// from CSS2 the new grammar is:
+  ///
+  ///     media_query_list
+  ///      : S* [media_query [ ',' S* media_query ]* ]?
+  ///     media_query
+  ///      : [ONLY | NOT]? S* media_type S* [ AND S* expression ]*
+  ///      | expression [ AND S* expression ]*
+  ///     media_type
+  ///      : IDENT
+  ///     expression
+  ///      : '(' S* media_feature S* [ ':' S* expr ]? ')' S*
+  ///     media_feature
+  ///      : IDENT
   List<MediaQuery> processMediaQueryList() {
     var mediaQueries = <MediaQuery>[];
 
@@ -459,28 +452,26 @@ class _Parser {
     return null;
   }
 
-  /**
-   * Directive grammar:
-   *
-   *  import:             '@import' [string | URI] media_list?
-   *  media:              '@media' media_query_list '{' ruleset '}'
-   *  page:               '@page' [':' IDENT]? '{' declarations '}'
-   *  stylet:             '@stylet' IDENT '{' ruleset '}'
-   *  media_query_list:   IDENT [',' IDENT]
-   *  keyframes:          '@-webkit-keyframes ...' (see grammar below).
-   *  font_face:          '@font-face' '{' declarations '}'
-   *  namespace:          '@namespace name url("xmlns")
-   *  host:               '@host '{' ruleset '}'
-   *  mixin:              '@mixin name [(args,...)] '{' declarations/ruleset '}'
-   *  include:            '@include name [(@arg,@arg1)]
-   *                      '@include name [(@arg...)]
-   *  content:            '@content'
-   *  -moz-document:      '@-moz-document' [ <url> | url-prefix(<string>) |
-   *                          domain(<string>) | regexp(<string) ]# '{'
-   *                        declarations
-   *                      '}'
-   *  supports:           '@supports' supports_condition group_rule_body
-   */
+  /// Directive grammar:
+  ///
+  ///     import:             '@import' [string | URI] media_list?
+  ///     media:              '@media' media_query_list '{' ruleset '}'
+  ///     page:               '@page' [':' IDENT]? '{' declarations '}'
+  ///     stylet:             '@stylet' IDENT '{' ruleset '}'
+  ///     media_query_list:   IDENT [',' IDENT]
+  ///     keyframes:          '@-webkit-keyframes ...' (see grammar below).
+  ///     font_face:          '@font-face' '{' declarations '}'
+  ///     namespace:          '@namespace name url("xmlns")
+  ///     host:               '@host '{' ruleset '}'
+  ///     mixin:              '@mixin name [(args,...)] '{' declarations/ruleset '}'
+  ///     include:            '@include name [(@arg,@arg1)]
+  ///                         '@include name [(@arg...)]
+  ///     content:            '@content'
+  ///     -moz-document:      '@-moz-document' [ <url> | url-prefix(<string>) |
+  ///                             domain(<string>) | regexp(<string) ]# '{'
+  ///                           declarations
+  ///                         '}'
+  ///     supports:           '@supports' supports_condition group_rule_body
   Directive processDirective() {
     var start = _peekToken.span;
 
@@ -553,22 +544,20 @@ class _Parser {
         return new HostDirective(rules, _makeSpan(start));
 
       case TokenKind.DIRECTIVE_PAGE:
-        /*
-         * @page S* IDENT? pseudo_page?
-         *      S* '{' S*
-         *      [ declaration | margin ]?
-         *      [ ';' S* [ declaration | margin ]? ]* '}' S*
-         *
-         * pseudo_page :
-         *      ':' [ "left" | "right" | "first" ]
-         *
-         * margin :
-         *      margin_sym S* '{' declaration [ ';' S* declaration? ]* '}' S*
-         *
-         * margin_sym : @top-left-corner, @top-left, @bottom-left, etc.
-         *
-         * See http://www.w3.org/TR/css3-page/#CSS21
-         */
+        // @page S* IDENT? pseudo_page?
+        //      S* '{' S*
+        //      [ declaration | margin ]?
+        //      [ ';' S* [ declaration | margin ]? ]* '}' S*
+        //
+        // pseudo_page :
+        //      ':' [ "left" | "right" | "first" ]
+        //
+        // margin :
+        //      margin_sym S* '{' declaration [ ';' S* declaration? ]* '}' S*
+        //
+        // margin_sym : @top-left-corner, @top-left, @bottom-left, etc.
+        //
+        // See http://www.w3.org/TR/css3-page/#CSS21
         _next();
 
         // Page name
@@ -638,18 +627,17 @@ class _Parser {
         }
         // TODO(terry): End of workaround.
 
-        /*  Key frames grammar:
-         *
-         *  @[browser]? keyframes [IDENT|STRING] '{' keyframes-blocks '}';
-         *
-         *  browser: [-webkit-, -moz-, -ms-, -o-]
-         *
-         *  keyframes-blocks:
-         *    [keyframe-selectors '{' declarations '}']* ;
-         *
-         *  keyframe-selectors:
-         *    ['from'|'to'|PERCENTAGE] [',' ['from'|'to'|PERCENTAGE] ]* ;
-         */
+        // Key frames grammar:
+        //
+        //     @[browser]? keyframes [IDENT|STRING] '{' keyframes-blocks '}';
+        //
+        //     browser: [-webkit-, -moz-, -ms-, -o-]
+        //
+        //     keyframes-blocks:
+        //       [keyframe-selectors '{' declarations '}']* ;
+        //
+        //     keyframe-selectors:
+        //       ['from'|'to'|PERCENTAGE] [',' ['from'|'to'|PERCENTAGE] ]* ;
         _next();
 
         Identifier name;
@@ -683,12 +671,11 @@ class _Parser {
         return new FontFaceDirective(processDeclarations(), _makeSpan(start));
 
       case TokenKind.DIRECTIVE_STYLET:
-        /* Stylet grammar:
-         *
-         *  @stylet IDENT '{'
-         *    ruleset
-         *  '}'
-         */
+        // Stylet grammar:
+        //
+        //     @stylet IDENT '{'
+        //       ruleset
+        //     '}'
         _next();
 
         var name;
@@ -714,12 +701,10 @@ class _Parser {
         return new StyletDirective(name, productions, _makeSpan(start));
 
       case TokenKind.DIRECTIVE_NAMESPACE:
-        /* Namespace grammar:
-         *
-         * @namespace S* [namespace_prefix S*]? [STRING|URI] S* ';' S*
-         * namespace_prefix : IDENT
-         *
-         */
+        // Namespace grammar:
+        //
+        // @namespace S* [namespace_prefix S*]? [STRING|URI] S* ';' S*
+        // namespace_prefix : IDENT
         _next();
 
         Identifier prefix;
@@ -771,16 +756,14 @@ class _Parser {
     return null;
   }
 
-  /**
-   * Parse the mixin beginning token offset [start]. Returns a [MixinDefinition]
-   * node.
-   *
-   * Mixin grammar:
-   *
-   *  @mixin IDENT [(args,...)] '{'
-   *    [ruleset | property | directive]*
-   *  '}'
-   */
+  /// Parse the mixin beginning token offset [start]. Returns a
+  /// [MixinDefinition] node.
+  ///
+  /// Mixin grammar:
+  ///
+  ///     @mixin IDENT [(args,...)] '{'
+  ///       [ruleset | property | directive]*
+  ///     '}'
   MixinDefinition processMixin() {
     _next();
 
@@ -877,10 +860,8 @@ class _Parser {
     return mixinDirective;
   }
 
-  /**
-   * Returns a VarDefinitionDirective or VarDefinition if a varaible otherwise
-   * return the token id of a directive or -1 if neither.
-   */
+  /// Returns a VarDefinitionDirective or VarDefinition if a varaible otherwise
+  /// return the token id of a directive or -1 if neither.
   dynamic // VarDefinitionDirective | VarDefinition | int
       processVariableOrDirective({bool mixinParameter: false}) {
     var start = _peekToken.span;
@@ -944,10 +925,9 @@ class _Parser {
   }
 
   IncludeDirective processInclude(SourceSpan span, {bool eatSemiColon: true}) {
-    /* Stylet grammar:
-    *
-     *  @include IDENT [(args,...)];
-     */
+    // Stylet grammar:
+    //
+    //     @include IDENT [(args,...)];
     _next();
 
     var name;
@@ -1145,29 +1125,28 @@ class _Parser {
     return nodes;
   }
 
-  /**
-   * Look ahead to see if what should be a declaration is really a selector.
-   * If it's a selector than it's a nested selector.  This support's Less'
-   * nested selector syntax (requires a look ahead). E.g.,
-   *
-   *    div {
-   *      width : 20px;
-   *      span {
-   *        color: red;
-   *      }
-   *    }
-   *
-   * Two tag name selectors div and span equivalent to:
-   *
-   *    div {
-   *      width: 20px;
-   *    }
-   *    div span {
-   *      color: red;
-   *    }
-   *
-   * Return [:null:] if no selector or [SelectorGroup] if a selector was parsed.
-   */
+  /// Look ahead to see if what should be a declaration is really a selector.
+  /// If it's a selector than it's a nested selector.  This support's Less'
+  /// nested selector syntax (requires a look ahead). E.g.,
+  ///
+  ///     div {
+  ///       width : 20px;
+  ///       span {
+  ///         color: red;
+  ///       }
+  ///     }
+  ///
+  /// Two tag name selectors div and span equivalent to:
+  ///
+  ///     div {
+  ///       width: 20px;
+  ///     }
+  ///     div span {
+  ///       color: red;
+  ///     }
+  ///
+  /// Return [:null:] if no selector or [SelectorGroup] if a selector was
+  /// parsed.
   SelectorGroup _nestedSelector() {
     Messages oldMessages = messages;
     _createMessages();
@@ -1355,9 +1334,7 @@ class _Parser {
     return null;
   }
 
-  /**
-   * Return list of selectors
-   */
+  /// Return list of selectors
   Selector processSelector() {
     var simpleSequences = <SimpleSelectorSequence>[];
     var start = _peekToken.span;
@@ -1464,24 +1441,22 @@ class _Parser {
     return null;
   }
 
-  /**
-   * Simple selector grammar:
-   *
-   *    simple_selector_sequence
-   *       : [ type_selector | universal ]
-   *         [ HASH | class | attrib | pseudo | negation ]*
-   *       | [ HASH | class | attrib | pseudo | negation ]+
-   *    type_selector
-   *       : [ namespace_prefix ]? element_name
-   *    namespace_prefix
-   *       : [ IDENT | '*' ]? '|'
-   *    element_name
-   *       : IDENT
-   *    universal
-   *       : [ namespace_prefix ]? '*'
-   *    class
-   *       : '.' IDENT
-   */
+  /// Simple selector grammar:
+  ///
+  ///     simple_selector_sequence
+  ///        : [ type_selector | universal ]
+  ///          [ HASH | class | attrib | pseudo | negation ]*
+  ///        | [ HASH | class | attrib | pseudo | negation ]+
+  ///     type_selector
+  ///        : [ namespace_prefix ]? element_name
+  ///     namespace_prefix
+  ///        : [ IDENT | '*' ]? '|'
+  ///     element_name
+  ///        : IDENT
+  ///     universal
+  ///        : [ namespace_prefix ]? '*'
+  ///     class
+  ///        : '.' IDENT
   SimpleSelector simpleSelector() {
     // TODO(terry): Natalie makes a good point parsing of namespace and element
     //              are essentially the same (asterisk or identifier) other
@@ -1550,9 +1525,7 @@ class _Parser {
     return false;
   }
 
-  /**
-   * type_selector | universal | HASH | class | attrib | pseudo
-   */
+  /// type_selector | universal | HASH | class | attrib | pseudo
   SimpleSelector simpleSelectorTail() {
     // Check for HASH | class | attrib | pseudo | negation
     var start = _peekToken.span;
@@ -1677,16 +1650,14 @@ class _Parser {
         : new PseudoClassSelector(pseudoName, _makeSpan(start));
   }
 
-  /**
-   *  In CSS3, the expressions are identifiers, strings, or of the form "an+b".
-   *
-   *    : [ [ PLUS | '-' | DIMENSION | NUMBER | STRING | IDENT ] S* ]+
-   *
-   *    num               [0-9]+|[0-9]*\.[0-9]+
-   *    PLUS              '+'
-   *    DIMENSION         {num}{ident}
-   *    NUMBER            {num}
-   */
+  /// In CSS3, the expressions are identifiers, strings, or of the form "an+b".
+  ///
+  ///     : [ [ PLUS | '-' | DIMENSION | NUMBER | STRING | IDENT ] S* ]+
+  ///
+  ///     num               [0-9]+|[0-9]*\.[0-9]+
+  ///     PLUS              '+'
+  ///     DIMENSION         {num}{ident}
+  ///     NUMBER            {num}
   TreeNode /* SelectorExpression | LiteralTerm */ processSelectorExpression() {
     var start = _peekToken.span;
 
@@ -1749,25 +1720,23 @@ class _Parser {
     return new SelectorExpression(expressions, _makeSpan(start));
   }
 
-  //  Attribute grammar:
+  // Attribute grammar:
   //
-  //  attributes :
-  //    '[' S* IDENT S* [ ATTRIB_MATCHES S* [ IDENT | STRING ] S* ]? ']'
+  //     attributes :
+  //       '[' S* IDENT S* [ ATTRIB_MATCHES S* [ IDENT | STRING ] S* ]? ']'
   //
-  //  ATTRIB_MATCHES :
-  //    [ '=' | INCLUDES | DASHMATCH | PREFIXMATCH | SUFFIXMATCH | SUBSTRMATCH ]
+  //     ATTRIB_MATCHES :
+  //       [ '=' | INCLUDES | DASHMATCH | PREFIXMATCH | SUFFIXMATCH | SUBSTRMATCH ]
   //
-  //  INCLUDES:         '~='
+  //     INCLUDES:         '~='
   //
-  //  DASHMATCH:        '|='
+  //     DASHMATCH:        '|='
   //
-  //  PREFIXMATCH:      '^='
+  //     PREFIXMATCH:      '^='
   //
-  //  SUFFIXMATCH:      '$='
+  //     SUFFIXMATCH:      '$='
   //
-  //  SUBSTRMATCH:      '*='
-  //
-  //
+  //     SUBSTRMATCH:      '*='
   AttributeSelector processAttribute() {
     var start = _peekToken.span;
 
@@ -1822,7 +1791,6 @@ class _Parser {
   //   property: expr prio? \9; - IE8 and below property, /9 before semi-colon
   //   *IDENT                   - IE7 or below
   //   _IDENT                   - IE6 property (automatically a valid ident)
-  //
   Declaration processDeclaration(List<DartStyleExpression> dartStyles) {
     Declaration decl;
 
@@ -1893,7 +1861,7 @@ class _Parser {
     return decl;
   }
 
-  /** List of styles exposed to the Dart UI framework. */
+  /// List of styles exposed to the Dart UI framework.
   static const int _fontPartFont = 0;
   static const int _fontPartVariant = 1;
   static const int _fontPartWeight = 2;
@@ -1987,14 +1955,12 @@ class _Parser {
   DartStyleExpression buildDartStyleNode(
       int styleType, Expressions exprs, List<DartStyleExpression> dartStyles) {
     switch (styleType) {
-      /*
-       * Properties in order:
-       *
-       *   font-style font-variant font-weight font-size/line-height font-family
-       *
-       * The font-size and font-family values are required. If other values are
-       * missing; a default, if it exist, will be used.
-       */
+      // Properties in order:
+      //
+      //     font-style font-variant font-weight font-size/line-height font-family
+      //
+      // The font-size and font-family values are required. If other values are
+      // missing; a default, if it exist, will be used.
       case _fontPartFont:
         var processor = new ExpressionsProcessor(exprs);
         return _mergeFontStyles(processor.processFont(), dartStyles);
@@ -2011,31 +1977,31 @@ class _Parser {
         var processor = new ExpressionsProcessor(exprs);
         return _mergeFontStyles(processor.processFontSize(), dartStyles);
       case _fontPartStyle:
-        /* Possible style values:
-         *   normal [default]
-         *   italic
-         *   oblique
-         *   inherit
-         */
+        // Possible style values:
+        //   normal [default]
+        //   italic
+        //   oblique
+        //   inherit
+
         // TODO(terry): TBD
         break;
       case _fontPartVariant:
-        /* Possible variant values:
-         *   normal  [default]
-         *   small-caps
-         *   inherit
-         */
+        // Possible variant values:
+        //   normal  [default]
+        //   small-caps
+        //   inherit
+
         // TODO(terry): TBD
         break;
       case _fontPartWeight:
-        /* Possible weight values:
-         *   normal [default]
-         *   bold
-         *   bolder
-         *   lighter
-         *   100 - 900
-         *   inherit
-         */
+        // Possible weight values:
+        //   normal [default]
+        //   bold
+        //   bolder
+        //   lighter
+        //   100 - 900
+        //   inherit
+
         // TODO(terry): Only 'normal', 'bold', or values of 100-900 supoorted
         //              need to handle bolder, lighter, and inherit.  See
         //              https://github.com/dart-lang/csslib/issues/1
@@ -2165,16 +2131,14 @@ class _Parser {
     return null;
   }
 
-  /**
-   * Margins are of the format:
-   *
-   *   top,right,bottom,left      (4 parameters)
-   *   top,right/left, bottom     (3 parameters)
-   *   top/bottom,right/left      (2 parameters)
-   *   top/right/bottom/left      (1 parameter)
-   *
-   * The values of the margins can be a unit or unitless or auto.
-   */
+  /// Margins are of the format:
+  ///
+  /// * top,right,bottom,left      (4 parameters)
+  /// * top,right/left, bottom     (3 parameters)
+  /// * top/bottom,right/left      (2 parameters)
+  /// * top/right/bottom/left      (1 parameter)
+  ///
+  /// The values of the margins can be a unit or unitless or auto.
   BoxEdge processFourNums(Expressions exprs) {
     num top;
     num right;
@@ -2230,7 +2194,6 @@ class _Parser {
   //
   //  operator:     '/' | ','
   //  term:         (see processTerm)
-  //
   Expressions processExpr([bool ieFilter = false]) {
     var start = _peekToken.span;
     var expressions = new Expressions(_makeSpan(start));
@@ -2250,8 +2213,8 @@ class _Parser {
           op = new OperatorComma(_makeSpan(opStart));
           break;
         case TokenKind.BACKSLASH:
-          // Backslash outside of string; detected IE8 or older signaled by \9 at
-          // end of an expression.
+          // Backslash outside of string; detected IE8 or older signaled by \9
+          // at end of an expression.
           var ie8Start = _peekToken.span;
 
           _next();
@@ -2295,26 +2258,26 @@ class _Parser {
 
   static const int MAX_UNICODE = 0x10FFFF;
 
-  //  Term grammar:
+  // Term grammar:
   //
-  //  term:
-  //    unary_operator?
-  //    [ term_value ]
-  //    | STRING S* | IDENT S* | URI S* | UNICODERANGE S* | hexcolor
+  //     term:
+  //       unary_operator?
+  //       [ term_value ]
+  //       | STRING S* | IDENT S* | URI S* | UNICODERANGE S* | hexcolor
   //
-  //  term_value:
-  //    NUMBER S* | PERCENTAGE S* | LENGTH S* | EMS S* | EXS S* | ANGLE S* |
-  //    TIME S* | FREQ S* | function
+  //     term_value:
+  //       NUMBER S* | PERCENTAGE S* | LENGTH S* | EMS S* | EXS S* | ANGLE S* |
+  //       TIME S* | FREQ S* | function
   //
-  //  NUMBER:       {num}
-  //  PERCENTAGE:   {num}%
-  //  LENGTH:       {num}['px' | 'cm' | 'mm' | 'in' | 'pt' | 'pc']
-  //  EMS:          {num}'em'
-  //  EXS:          {num}'ex'
-  //  ANGLE:        {num}['deg' | 'rad' | 'grad']
-  //  TIME:         {num}['ms' | 's']
-  //  FREQ:         {num}['hz' | 'khz']
-  //  function:     IDENT '(' expr ')'
+  //     NUMBER:       {num}
+  //     PERCENTAGE:   {num}%
+  //     LENGTH:       {num}['px' | 'cm' | 'mm' | 'in' | 'pt' | 'pc']
+  //     EMS:          {num}'em'
+  //     EXS:          {num}'ex'
+  //     ANGLE:        {num}['deg' | 'rad' | 'grad']
+  //     TIME:         {num}['ms' | 's']
+  //     FREQ:         {num}['hz' | 'khz']
+  //     function:     IDENT '(' expr ')'
   //
   dynamic /* Expression | List<Expression> | ... */ processTerm(
       [bool ieFilter = false]) {
@@ -2408,8 +2371,8 @@ class _Parser {
             // IE filter:progid:
             return processIEFilter(start);
           } else {
-            // Handle filter:<name> where name is any filter e.g., alpha, chroma,
-            // Wave, blur, etc.
+            // Handle filter:<name> where name is any filter e.g., alpha,
+            // chroma, Wave, blur, etc.
             return processIEFilter(start);
           }
         }
@@ -2489,7 +2452,7 @@ class _Parser {
     return t != null ? processDimension(t, value, _makeSpan(start)) : null;
   }
 
-  /** Process all dimension units. */
+  /// Process all dimension units.
   LiteralTerm processDimension(Token t, var value, SourceSpan span) {
     LiteralTerm term;
     var unitType = this._peek();
@@ -2623,14 +2586,12 @@ class _Parser {
 
   // TODO(terry): Should probably understand IE's non-standard filter syntax to
   //              fully support calc, var(), etc.
-  /**
-   * IE's filter property breaks CSS value parsing.  IE's format can be:
-   *
-   *    filter: progid:DXImageTransform.MS.gradient(Type=0, Color='#9d8b83');
-   *
-   * We'll just parse everything after the 'progid:' look for the left paren
-   * then parse to the right paren ignoring everything in between.
-   */
+  /// IE's filter property breaks CSS value parsing.  IE's format can be:
+  ///
+  ///    filter: progid:DXImageTransform.MS.gradient(Type=0, Color='#9d8b83');
+  ///
+  /// We'll just parse everything after the 'progid:' look for the left paren
+  /// then parse to the right paren ignoring everything in between.
   processIEFilter(FileSpan startAfterProgidColon) {
     // Support non-functional filters (i.e. filter: FlipH)
     var kind = _peek();
@@ -2661,16 +2622,16 @@ class _Parser {
     }
   }
 
-  //  TODO(terry): Hack to gobble up the calc expression as a string looking
-  //               for the matching RPAREN the expression is not parsed into the
-  //               AST.
+  // TODO(terry): Hack to gobble up the calc expression as a string looking
+  //              for the matching RPAREN the expression is not parsed into the
+  //              AST.
   //
-  //  grammar should be:
+  // grammar should be:
   //
-  //    <calc()> = calc( <calc-sum> )
-  //    <calc-sum> = <calc-product> [ [ '+' | '-' ] <calc-product> ]*
-  //    <calc-product> = <calc-value> [ '*' <calc-value> | '/' <number> ]*
-  //    <calc-value> = <number> | <dimension> | <percentage> | ( <calc-sum> )
+  //     <calc()> = calc( <calc-sum> )
+  //     <calc-sum> = <calc-product> [ [ '+' | '-' ] <calc-product> ]*
+  //     <calc-product> = <calc-value> [ '*' <calc-value> | '/' <number> ]*
+  //     <calc-value> = <number> | <dimension> | <percentage> | ( <calc-sum> )
   //
   String processCalcExpression() {
     var inString = tokenizer._inString;
@@ -2728,7 +2689,8 @@ class _Parser {
 
     switch (name) {
       case 'url':
-        // URI term sucks up everything inside of quotes(' or ") or between parens
+        // URI term sucks up everything inside of quotes(' or ") or between
+        // parens.
         var urlParam = processQuotedString(true);
 
         // TODO(terry): Better error message and checking for mismatched quotes.
@@ -2742,9 +2704,10 @@ class _Parser {
 
         return new UriTerm(urlParam, _makeSpan(start));
       case 'var':
-        // TODO(terry): Consider handling var in IE specific filter/progid.  This
-        //              will require parsing entire IE specific syntax e.g.,
-        //              param = value or progid:com_id, etc. for example:
+        // TODO(terry): Consider handling var in IE specific filter/progid.
+        //              This will require parsing entire IE specific syntax
+        //              e.g. `param = value` or `progid:com_id`, etc.
+        //              for example:
         //
         //    var-blur: Blur(Add = 0, Direction = 225, Strength = 10);
         //    var-gradient: progid:DXImageTransform.Microsoft.gradient"
@@ -2841,21 +2804,20 @@ class ExpressionsProcessor {
 
   // TODO(terry): Only handles ##px unit.
   FontExpression processFontSize() {
-    /* font-size[/line-height]
-     *
-     * Possible size values:
-     *   xx-small
-     *   small
-     *   medium [default]
-     *   large
-     *   x-large
-     *   xx-large
-     *   smaller
-     *   larger
-     *   ##length in px, pt, etc.
-     *   ##%, percent of parent elem's font-size
-     *   inherit
-     */
+    // font-size[/line-height]
+    //
+    // Possible size values:
+    // * xx-small
+    // * small
+    // * medium [default]
+    // * large
+    // * x-large
+    // * xx-large
+    // * smaller
+    // * larger
+    // * ##length in px, pt, etc.
+    // * ##%, percent of parent elem's font-size
+    // * inherit
     LengthTerm size;
     LineHeight lineHt;
     var nextIsLineHeight = false;
@@ -2888,10 +2850,9 @@ class ExpressionsProcessor {
   FontExpression processFontFamily() {
     var family = <String>[];
 
-    /* Possible family values:
-     * font-family: arial, Times new roman ,Lucida Sans Unicode,Courier;
-     * font-family: "Times New Roman", arial, Lucida Sans Unicode, Courier;
-     */
+    // Possible family values:
+    // * font-family: arial, Times new roman ,Lucida Sans Unicode,Courier;
+    // * font-family: "Times New Roman", arial, Lucida Sans Unicode, Courier;
     var moreFamilies = false;
 
     for (; _index < _exprs.expressions.length; _index++) {
@@ -2939,10 +2900,8 @@ class ExpressionsProcessor {
   }
 }
 
-/**
- * Escapes [text] for use in a CSS string.
- * [single] specifies single quote `'` vs double quote `"`.
- */
+/// Escapes [text] for use in a CSS string.
+/// [single] specifies single quote `'` vs double quote `"`.
 String _escapeString(String text, {bool single: false}) {
   StringBuffer result = null;
 

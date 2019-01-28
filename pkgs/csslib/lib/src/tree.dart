@@ -105,7 +105,7 @@ class Selector extends TreeNode {
 }
 
 class SimpleSelectorSequence extends TreeNode {
-  /** +, >, ~, NONE */
+  /// +, >, ~, NONE
   int combinator;
   final SimpleSelector simpleSelector;
 
@@ -151,9 +151,8 @@ class SimpleSelectorSequence extends TreeNode {
   String toString() => simpleSelector.name;
 }
 
-/* All other selectors (element, #id, .class, attribute, pseudo, negation,
- * namespace, *) are derived from this selector.
- */
+// All other selectors (element, #id, .class, attribute, pseudo, negation,
+// namespace, *) are derived from this selector.
 abstract class SimpleSelector extends TreeNode {
   final _name; // Wildcard, ThisOperator, Identifier, Negation, others?
 
@@ -378,9 +377,7 @@ class NoOp extends TreeNode {
 }
 
 class StyleSheet extends TreeNode {
-  /**
-   * Contains charset, ruleset, directives (media, page, etc.), and selectors.
-   */
+  /// Contains charset, ruleset, directives (media, page, etc.), and selectors.
   final List<TreeNode> topLevels;
 
   StyleSheet(this.topLevels, SourceSpan span) : super(span) {
@@ -389,7 +386,7 @@ class StyleSheet extends TreeNode {
     }
   }
 
-  /** Selectors only in this tree. */
+  /// Selectors only in this tree.
   StyleSheet.selector(this.topLevels, SourceSpan span) : super(span);
 
   StyleSheet clone() {
@@ -554,10 +551,10 @@ class ViewportDirective extends Directive {
 }
 
 class ImportDirective extends Directive {
-  /** import name specified. */
+  /// import name specified.
   final String import;
 
-  /** Any media queries for this import. */
+  /// Any media queries for this import.
   final List<MediaQuery> mediaQueries;
 
   ImportDirective(this.import, this.mediaQueries, SourceSpan span)
@@ -574,10 +571,9 @@ class ImportDirective extends Directive {
   visit(VisitorBase visitor) => visitor.visitImportDirective(this);
 }
 
-/**
- *  MediaExpression grammar:
- *    '(' S* media_feature S* [ ':' S* expr ]? ')' S*
- */
+/// MediaExpression grammar:
+///
+///     '(' S* media_feature S* [ ':' S* expr ]? ')' S*
 class MediaExpression extends TreeNode {
   final bool andOperator;
   final Identifier _mediaFeature;
@@ -597,19 +593,18 @@ class MediaExpression extends TreeNode {
   visit(VisitorBase visitor) => visitor.visitMediaExpression(this);
 }
 
-/**
- * MediaQuery grammar:
- *    : [ONLY | NOT]? S* media_type S* [ AND S* media_expression ]*
- *    | media_expression [ AND S* media_expression ]*
- *   media_type
- *    : IDENT
- *   media_expression
- *    : '(' S* media_feature S* [ ':' S* expr ]? ')' S*
- *   media_feature
- *    : IDENT
- */
+/// MediaQuery grammar:
+///
+///      : [ONLY | NOT]? S* media_type S* [ AND S* media_expression ]*
+///      | media_expression [ AND S* media_expression ]*
+///     media_type
+///      : IDENT
+///     media_expression
+///      : '(' S* media_feature S* [ ':' S* expr ]? ')' S*
+///     media_feature
+///      : IDENT
 class MediaQuery extends TreeNode {
-  /** not, only or no operator. */
+  /// not, only or no operator.
   final int _mediaUnary;
   final Identifier _mediaType;
   final List<MediaExpression> expressions;
@@ -705,9 +700,7 @@ class CharsetDirective extends Directive {
 }
 
 class KeyFrameDirective extends Directive {
-  /*
-   * Either @keyframe or keyframe prefixed with @-webkit-, @-moz-, @-ms-, @-o-.
-   */
+  // Either @keyframe or keyframe prefixed with @-webkit-, @-moz-, @-ms-, @-o-.
   final int _keyframeName;
   final Identifier name;
   final List<KeyFrameBlock> _blocks;
@@ -790,10 +783,10 @@ class StyletDirective extends Directive {
 }
 
 class NamespaceDirective extends Directive {
-  /** Namespace prefix. */
+  /// Namespace prefix.
   final String _prefix;
 
-  /** URI associated with this namespace. */
+  /// URI associated with this namespace.
   final String _uri;
 
   NamespaceDirective(this._prefix, this._uri, SourceSpan span) : super(span);
@@ -805,7 +798,7 @@ class NamespaceDirective extends Directive {
   String get prefix => _prefix.length > 0 ? '$_prefix ' : '';
 }
 
-/** To support Less syntax @name: expression */
+/// To support Less syntax @name: expression
 class VarDefinitionDirective extends Directive {
   final VarDefinition def;
 
@@ -836,7 +829,7 @@ class MixinDefinition extends Directive {
   visit(VisitorBase visitor) => visitor.visitMixinDefinition(this);
 }
 
-/** Support a Sass @mixin. See http://sass-lang.com for description. */
+/// Support a Sass @mixin. See http://sass-lang.com for description.
 class MixinRulesetDirective extends MixinDefinition {
   final List<TreeNode> rulesets;
 
@@ -879,7 +872,7 @@ class MixinDeclarationDirective extends MixinDefinition {
   visit(VisitorBase visitor) => visitor.visitMixinDeclarationDirective(this);
 }
 
-/** To support consuming a SASS mixin @include. */
+/// To support consuming a Sass mixin @include.
 class IncludeDirective extends Directive {
   final String name;
   final List<List<Expression>> args;
@@ -897,7 +890,7 @@ class IncludeDirective extends Directive {
   visit(VisitorBase visitor) => visitor.visitIncludeDirective(this);
 }
 
-/** To support SASS @content. */
+/// To support Sass @content.
 class ContentDirective extends Directive {
   ContentDirective(SourceSpan span) : super(span);
 
@@ -907,18 +900,18 @@ class ContentDirective extends Directive {
 class Declaration extends TreeNode {
   final Identifier _property;
   final Expression _expression;
-  /** Style exposed to Dart. */
+
+  /// Style exposed to Dart.
   DartStyleExpression dartStyle;
   final bool important;
 
-  /**
-   * IE CSS hacks that can only be read by a particular IE version.
-   *   7 implies IE 7 or older property (e.g., *background: blue;)
-   *   Note:  IE 8 or older property (e.g., background: green\9;) is handled
-   *          by IE8Term in declaration expression handling.
-   *   Note:  IE 6 only property with a leading underscore is a valid IDENT
-   *          since an ident can start with underscore (e.g., _background: red;)
-   */
+  /// IE CSS hacks that can only be read by a particular IE version.
+  /// 7 implies IE 7 or older property (e.g., `*background: blue;`)
+  ///
+  /// * Note:  IE 8 or older property (e.g., `background: green\9;`) is handled
+  ///   by IE8Term in declaration expression handling.
+  /// * Note:  IE 6 only property with a leading underscore is a valid IDENT
+  ///   since an ident can start with underscore (e.g., `_background: red;`)
   final bool isIE7;
 
   Declaration(this._property, this._expression, this.dartStyle, SourceSpan span,
@@ -959,13 +952,12 @@ class VarDefinition extends Declaration {
   visit(VisitorBase visitor) => visitor.visitVarDefinition(this);
 }
 
-/**
- * Node for usage of @include mixin[(args,...)] found in a declaration group
- * instead of at a ruleset (toplevel) e.g.,
- * div {
- *   @include mixin1;
- * }
- */
+/// Node for usage of @include mixin[(args,...)] found in a declaration group
+/// instead of at a ruleset (toplevel) e.g.,
+///
+///     div {
+///       @include mixin1;
+///     }
 class IncludeMixinAtDeclaration extends Declaration {
   final IncludeDirective include;
 
@@ -993,7 +985,7 @@ class ExtendDeclaration extends Declaration {
 }
 
 class DeclarationGroup extends TreeNode {
-  /** Can be either Declaration or RuleSet (if nested selector). */
+  /// Can be either Declaration or RuleSet (if nested selector).
   final List<TreeNode> declarations;
 
   DeclarationGroup(this.declarations, SourceSpan span) : super(span);
@@ -1238,7 +1230,7 @@ class ViewportTerm extends UnitTerm {
   visit(VisitorBase visitor) => visitor.visitViewportTerm(this);
 }
 
-/** Type to signal a bad hex value for HexColorTerm.value. */
+/// Type to signal a bad hex value for HexColorTerm.value.
 class BAD_HEX_VALUE {}
 
 class HexColorTerm extends LiteralTerm {
@@ -1258,11 +1250,9 @@ class FunctionTerm extends LiteralTerm {
   visit(VisitorBase visitor) => visitor.visitFunctionTerm(this);
 }
 
-/**
- * A "\9" was encountered at the end of the expression and before a semi-colon.
- * This is an IE trick to ignore a property or value except by IE 8 and older
- * browsers.
- */
+/// A "\9" was encountered at the end of the expression and before a semi-colon.
+/// This is an IE trick to ignore a property or value except by IE 8 and older
+/// browsers.
 class IE8Term extends LiteralTerm {
   IE8Term(SourceSpan span) : super('\\9', '\\9', span);
   IE8Term clone() => new IE8Term(span);
@@ -1347,11 +1337,9 @@ abstract class DartStyleExpression extends TreeNode {
 
   DartStyleExpression(this._styleType, SourceSpan span) : super(span);
 
-  /*
-   * Merges give 2 DartStyleExpression (or derived from DartStyleExpression,
-   * e.g., FontExpression, etc.) will merge if the two expressions are of the
-   * same property name (implies same exact type e.g, FontExpression).
-   */
+  // Merges give 2 DartStyleExpression (or derived from DartStyleExpression,
+  // e.g., FontExpression, etc.) will merge if the two expressions are of the
+  // same property name (implies same exact type e.g, FontExpression).
   merged(DartStyleExpression newDartExpr);
 
   bool get isUnknown => _styleType == 0 || _styleType == null;
@@ -1397,9 +1385,7 @@ class FontExpression extends DartStyleExpression {
     return null;
   }
 
-  /**
-   * Merge the two FontExpression and return the result.
-   */
+  /// Merge the two FontExpression and return the result.
   factory FontExpression.merge(FontExpression x, FontExpression y) {
     return new FontExpression._merge(x, y, y.span);
   }
@@ -1442,7 +1428,7 @@ abstract class BoxExpression extends DartStyleExpression {
 
 class MarginExpression extends BoxExpression {
   // TODO(terry): Does auto for margin need to be exposed to Dart UI framework?
-  /** Margin expression ripped apart. */
+  /// Margin expression ripped apart.
   MarginExpression(SourceSpan span, {num top, num right, num bottom, num left})
       : super(DartStyleExpression.marginStyle, span,
             new BoxEdge(left, top, right, bottom));
@@ -1460,9 +1446,7 @@ class MarginExpression extends BoxExpression {
     return null;
   }
 
-  /**
-   * Merge the two MarginExpressions and return the result.
-   */
+  /// Merge the two MarginExpressions and return the result.
   factory MarginExpression.merge(MarginExpression x, MarginExpression y) {
     return new MarginExpression._merge(x, y, y.span);
   }
@@ -1478,7 +1462,7 @@ class MarginExpression extends BoxExpression {
 }
 
 class BorderExpression extends BoxExpression {
-  /** Border expression ripped apart. */
+  /// Border expression ripped apart.
   BorderExpression(SourceSpan span, {num top, num right, num bottom, num left})
       : super(DartStyleExpression.borderStyle, span,
             new BoxEdge(left, top, right, bottom));
@@ -1496,9 +1480,7 @@ class BorderExpression extends BoxExpression {
     return null;
   }
 
-  /**
-   * Merge the two BorderExpression and return the result.
-   */
+  /// Merge the two BorderExpression and return the result.
   factory BorderExpression.merge(BorderExpression x, BorderExpression y) {
     return new BorderExpression._merge(x, y, y.span);
   }
@@ -1555,7 +1537,7 @@ class WidthExpression extends DartStyleExpression {
 }
 
 class PaddingExpression extends BoxExpression {
-  /** Padding expression ripped apart. */
+  /// Padding expression ripped apart.
   PaddingExpression(SourceSpan span, {num top, num right, num bottom, num left})
       : super(DartStyleExpression.paddingStyle, span,
             new BoxEdge(left, top, right, bottom));
@@ -1573,9 +1555,7 @@ class PaddingExpression extends BoxExpression {
     return null;
   }
 
-  /**
-   * Merge the two PaddingExpression and return the result.
-   */
+  /// Merge the two PaddingExpression and return the result.
   factory PaddingExpression.merge(PaddingExpression x, PaddingExpression y) {
     return new PaddingExpression._merge(x, y, y.span);
   }

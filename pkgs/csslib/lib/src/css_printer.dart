@@ -4,29 +4,25 @@
 
 part of csslib.visitor;
 
-/**
- * Visitor that produces a formatted string representation of the CSS tree.
- */
+/// Visitor that produces a formatted string representation of the CSS tree.
 class CssPrinter extends Visitor {
   StringBuffer _buff = new StringBuffer();
   bool prettyPrint = true;
 
-  /**
-   * Walk the [tree] Stylesheet. [pretty] if true emits line breaks, extra
-   * spaces, friendly property values, etc., if false emits compacted output.
-   */
+  /// Walk the [tree] Stylesheet. [pretty] if true emits line breaks, extra
+  /// spaces, friendly property values, etc., if false emits compacted output.
   void visitTree(StyleSheet tree, {bool pretty: false}) {
     prettyPrint = pretty;
     _buff = new StringBuffer();
     visitStyleSheet(tree);
   }
 
-  /** Appends [str] to the output buffer. */
+  /// Appends [str] to the output buffer.
   void emit(String str) {
     _buff.write(str);
   }
 
-  /** Returns the output buffer. */
+  /// Returns the output buffer.
   String toString() => _buff.toString().trim();
 
   String get _newLine => prettyPrint ? '\n' : '';
@@ -155,11 +151,9 @@ class CssPrinter extends Visitor {
     emit('$_newLine}');
   }
 
-  /**
-   *  @page : pseudoPage {
-   *    decls
-   *  }
-   */
+  ///  @page : pseudoPage {
+  ///    decls
+  ///  }
   void visitPageDirective(PageDirective node) {
     emit('$_newLine@page');
     if (node.hasIdent || node.hasPseudoPage) {
@@ -177,7 +171,7 @@ class CssPrinter extends Visitor {
     emit('}');
   }
 
-  /** @charset "charset encoding" */
+  /// @charset "charset encoding"
   void visitCharsetDirective(CharsetDirective node) {
     emit('$_newLine@charset "${node.charEncoding}";');
   }
@@ -265,10 +259,8 @@ class CssPrinter extends Visitor {
     emit('}');
   }
 
-  /**
-   * Added optional newLine for handling @include at top-level vs/ inside of
-   * a declaration group.
-   */
+  /// Added optional newLine for handling @include at top-level vs/ inside of
+  /// a declaration group.
   void visitIncludeDirective(IncludeDirective node, [bool topLevel = true]) {
     if (topLevel) emit(_newLine);
     emit('@include ${node.name}');

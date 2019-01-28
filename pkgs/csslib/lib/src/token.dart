@@ -4,28 +4,26 @@
 
 part of csslib.parser;
 
-/**
- * A single token in the Dart language.
- */
+/// A single token in the Dart language.
 class Token {
-  /** A member of [TokenKind] specifying what kind of token this is. */
+  /// A member of [TokenKind] specifying what kind of token this is.
   final int kind;
 
-  /** The location where this token was parsed from. */
+  /// The location where this token was parsed from.
   final FileSpan span;
 
-  /** The start offset of this token. */
+  /// The start offset of this token.
   int get start => span.start.offset;
 
-  /** The end offset of this token. */
+  /// The end offset of this token.
   int get end => span.end.offset;
 
-  /** Returns the source text corresponding to this [Token]. */
+  /// Returns the source text corresponding to this [Token].
   String get text => span.text;
 
   Token(this.kind, this.span);
 
-  /** Returns a pretty representation of this token for error messages. **/
+  /// Returns a pretty representation of this token for error messages.
   String toString() {
     var kindText = TokenKind.kindToString(kind);
     var actualText = text.trim();
@@ -40,24 +38,22 @@ class Token {
   }
 }
 
-/** A token containing a parsed literal value. */
+/// A token containing a parsed literal value.
 class LiteralToken extends Token {
   var value;
   LiteralToken(int kind, FileSpan span, this.value) : super(kind, span);
 }
 
-/** A token containing error information. */
+/// A token containing error information.
 class ErrorToken extends Token {
   String message;
   ErrorToken(int kind, FileSpan span, this.message) : super(kind, span);
 }
 
-/**
- * CSS ident-token.
- *
- * See <http://dev.w3.org/csswg/css-syntax/#typedef-ident-token> and
- * <http://dev.w3.org/csswg/css-syntax/#ident-token-diagram>.
- */
+/// CSS ident-token.
+///
+/// See <http://dev.w3.org/csswg/css-syntax/#typedef-ident-token> and
+/// <http://dev.w3.org/csswg/css-syntax/#ident-token-diagram>.
 class IdentifierToken extends Token {
   final String text;
 
