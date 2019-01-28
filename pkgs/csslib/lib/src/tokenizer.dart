@@ -13,12 +13,12 @@ class Tokenizer extends TokenizerBase {
   final QUESTION_MARK = '?'.codeUnitAt(0);
 
   /** CDATA keyword. */
-  final List CDATA_NAME = 'CDATA'.codeUnits;
+  final List<int> CDATA_NAME = 'CDATA'.codeUnits;
 
   Tokenizer(SourceFile file, String text, bool skipWhitespace, [int index = 0])
       : super(file, text, skipWhitespace, index);
 
-  Token next({unicodeRange: false}) {
+  Token next({bool unicodeRange: false}) {
     // keep track of our starting position
     _startIndex = _index;
 

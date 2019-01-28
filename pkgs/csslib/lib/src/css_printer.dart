@@ -425,7 +425,7 @@ class CssPrinter extends Visitor {
   }
 
   void visitHexColorTerm(HexColorTerm node) {
-    var mappedName;
+    String mappedName;
     if (_isTesting && (node.value is! BAD_HEX_VALUE)) {
       mappedName = TokenKind.hexToColorName(node.value);
     }

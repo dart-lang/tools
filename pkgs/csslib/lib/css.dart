@@ -59,7 +59,7 @@ void _compile(String inputPath, bool verbose) {
   }
 }
 
-_time(String message, callback(), bool printTime) {
+T _time<T>(String message, T Function() callback, bool printTime) {
   if (!printTime) return callback();
   final watch = new Stopwatch();
   watch.start();

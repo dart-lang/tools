@@ -908,7 +908,7 @@ class Declaration extends TreeNode {
   final Identifier _property;
   final Expression _expression;
   /** Style exposed to Dart. */
-  dynamic dartStyle;
+  DartStyleExpression dartStyle;
   final bool important;
 
   /**
@@ -922,7 +922,7 @@ class Declaration extends TreeNode {
   final bool isIE7;
 
   Declaration(this._property, this._expression, this.dartStyle, SourceSpan span,
-      {important: false, ie7: false})
+      {bool important: false, bool ie7: false})
       : this.important = important,
         this.isIE7 = ie7,
         super(span);
@@ -1285,7 +1285,7 @@ class GroupTerm extends Expression {
 }
 
 class ItemTerm extends NumberTerm {
-  ItemTerm(var value, String t, SourceSpan span) : super(value, t, span);
+  ItemTerm(dynamic value, String t, SourceSpan span) : super(value, t, span);
 
   ItemTerm clone() => new ItemTerm(value, text, span);
   visit(VisitorBase visitor) => visitor.visitItemTerm(this);
@@ -1375,14 +1375,14 @@ class FontExpression extends DartStyleExpression {
   // TODO(terry): Only px/pt for now need to handle all possible units to
   //              support calc expressions on units.
   FontExpression(SourceSpan span,
-      {dynamic size,
+      {Object /* LengthTerm | num */ size,
       List<String> family,
       int weight,
       String style,
       String variant,
       LineHeight lineHeight})
       : font = new Font(
-            size: size is LengthTerm ? size.value : size,
+            size: size is LengthTerm ? size.value : size as num,
             family: family,
             weight: weight,
             style: style,
