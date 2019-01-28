@@ -1,3 +1,8 @@
+## 0.1.18
+
+* Add a `trackWork` optional named argument to `BazelDriver.doWork`. This allows
+  the caller to know when a work request is actually sent to a worker.
+
 ## 0.1.17
 
 * Allow protobuf 0.13.0.

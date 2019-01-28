@@ -50,8 +50,15 @@ class BazelWorkerDriver {
         this._maxWorkers = maxWorkers ?? 4,
         this._maxRetries = maxRetries ?? 4;
 
-  Future<WorkResponse> doWork(WorkRequest request) {
-    var attempt = new _WorkAttempt(request);
+  /// Waits for an available worker, and then sends [WorkRequest] to it.
+  ///
+  /// If [trackWork] is provided it will be invoked with a [Future] once the
+  /// [request] has been actually sent to the worker. This allows the caller
+  /// to determine when actual work is being done versus just waiting for an
+  /// available worker.
+  Future<WorkResponse> doWork(WorkRequest request,
+      {Function(Future<WorkResponse>) trackWork}) {
+    var attempt = new _WorkAttempt(request, trackWork: trackWork);
     _workQueue.add(attempt);
     _runWorkQueue();
     return attempt.response;
@@ -125,8 +132,13 @@ class BazelWorkerDriver {
 
     runZoned(() async {
       var connection = _workerConnections[worker];
+
       connection.writeRequest(attempt.request);
-      var response = await connection.readResponse();
+      var responseFuture = connection.readResponse();
+      if (attempt.trackWork != null) {
+        attempt.trackWork(responseFuture);
+      }
+      var response = await responseFuture;
 
       // It is possible for us to complete with an error response due to an
       // unhandled async error before we get here.
@@ -206,12 +218,13 @@ class BazelWorkerDriver {
 class _WorkAttempt {
   final WorkRequest request;
   final responseCompleter = new Completer<WorkResponse>();
+  final Function(Future<WorkResponse>) trackWork;
 
   Future<WorkResponse> get response => responseCompleter.future;
 
   int timesRetried = 0;
 
-  _WorkAttempt(this.request);
+  _WorkAttempt(this.request, {this.trackWork});
 }
 
 final _workerConnections = new Expando<DriverConnection>('connection');

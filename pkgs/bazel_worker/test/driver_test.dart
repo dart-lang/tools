@@ -69,6 +69,18 @@ void main() {
       }
     });
 
+    test('trackWork gets invoked when a worker is actually ready', () async {
+      var maxWorkers = 2;
+      driver = new BazelWorkerDriver(MockWorker.spawn, maxWorkers: maxWorkers);
+      var tracking = <Future>[];
+      await _doRequests(driver: driver, count: 10, trackWork: (Future response) {
+          // We should never be tracking more than `maxWorkers` jobs at a time.
+          expect(tracking.length, lessThan(maxWorkers));
+          tracking.add(response);
+          response.then((_) => tracking.remove(response));
+        });
+    });
+
     group('failing workers', () {
       /// A driver which spawns [numBadWorkers] failing workers and then good
       /// ones after that, and which will retry [maxRetries] times.
@@ -130,7 +142,10 @@ void main() {
 
 /// Runs [count] of fake work requests through [driver], and asserts that they
 /// all completed.
-Future _doRequests({BazelWorkerDriver driver, int count}) async {
+Future _doRequests(
+    {BazelWorkerDriver driver,
+    int count,
+    Function(Future<WorkResponse>) trackWork}) async {
   // If we create a driver, we need to make sure and terminate it.
   var terminateDriver = driver == null;
   driver ??= new BazelWorkerDriver(MockWorker.spawn);
@@ -139,7 +154,8 @@ Future _doRequests({BazelWorkerDriver driver, int count}) async {
   var requests = new List.generate(count, (_) => new WorkRequest());
   var responses = new List.generate(count, (_) => new WorkResponse());
   MockWorker.responseQueue.addAll(responses);
-  var actualResponses = await Future.wait(requests.map(driver.doWork));
+  var actualResponses = await Future.wait(
+      requests.map((request) => driver.doWork(request, trackWork: trackWork)));
   expect(actualResponses, unorderedEquals(responses));
   if (terminateDriver) await driver.terminateWorkers();
 }
@@ -163,7 +179,9 @@ class MockWorkerLoop extends AsyncWorkerLoop {
 class ThrowingMockWorkerLoop extends MockWorkerLoop {
   final MockWorker _mockWorker;
 
-  ThrowingMockWorkerLoop(this._mockWorker, Queue<WorkResponse> responseQueue,
+  ThrowingMockWorkerLoop(
+      this._mockWorker,
+      Queue<WorkResponse> responseQueue,
       AsyncWorkerConnection connection)
       : super(responseQueue, connection: connection);
 
