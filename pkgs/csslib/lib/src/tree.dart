@@ -514,7 +514,7 @@ class SupportsConjunction extends SupportsCondition {
   SupportsConjunction(this.conditions, SourceSpan span) : super(span);
 
   SupportsConjunction clone() {
-    var clonedConditions = <SupportsCondition>[];
+    var clonedConditions = <SupportsConditionInParens>[];
     for (var condition in conditions) {
       clonedConditions.add(condition.clone());
     }
@@ -530,7 +530,7 @@ class SupportsDisjunction extends SupportsCondition {
   SupportsDisjunction(this.conditions, SourceSpan span) : super(span);
 
   SupportsDisjunction clone() {
-    var clonedConditions = <SupportsCondition>[];
+    var clonedConditions = <SupportsConditionInParens>[];
     for (var condition in conditions) {
       clonedConditions.add(condition.clone());
     }
