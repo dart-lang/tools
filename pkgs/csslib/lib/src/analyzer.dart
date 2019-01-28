@@ -416,6 +416,7 @@ class _MediaRulesReplacer extends Visitor {
 class TopLevelIncludes extends Visitor {
   StyleSheet _styleSheet;
   final Messages _messages;
+
   /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = new Map<String, MixinDefinition>();
   MixinDefinition currDef;
@@ -674,8 +675,10 @@ class CallMixin extends Visitor {
 class DeclarationIncludes extends Visitor {
   StyleSheet _styleSheet;
   final Messages _messages;
+
   /// Map of variable name key to it's definition.
   final Map<String, MixinDefinition> map = new Map<String, MixinDefinition>();
+
   /// Cache of mixin called with parameters.
   final Map<String, CallMixin> callMap = new Map<String, CallMixin>();
   MixinDefinition currDef;
