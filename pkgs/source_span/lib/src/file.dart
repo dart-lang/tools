@@ -304,9 +304,9 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
 
       if (length == 0) {
         // ...unless this is a point span, in which case we want to include the
-        // next line (or the last line if this is the end of the file).
+        // next line (or the empty string if this is the end of the file).
         return endLine == file.lines - 1
-            ? file.getText(file.getOffset(endLine - 1))
+            ? ""
             : file.getText(
                 file.getOffset(endLine), file.getOffset(endLine + 1));
       }

@@ -136,33 +136,18 @@ class Highlighter {
   /// than at the beginning of the next line.
   static SourceSpanWithContext _normalizeEndOfLine(SourceSpanWithContext span) {
     if (span.end.column != 0) return span;
+    if (span.end.line == span.start.line) return span;
 
-    if (span.length == 0) {
-      if (span.end.offset == 0) return span;
+    var text = span.text.substring(0, span.text.length - 1);
 
-      // If [span] is a point span with an empty context, there's no useful
-      // adjustment we can do.
-      if (span.context.isEmpty) return span;
-
-      var location = new SourceLocation(span.end.offset - 1,
-          sourceUrl: span.sourceUrl,
-          line: span.end.line - 1,
-          column: _lastLineLength(span.context));
-      return new SourceSpanWithContext(location, location, "", span.context);
-    } else {
-      if (span.end.line == span.start.line) return span;
-
-      var text = span.text.substring(0, span.text.length - 1);
-
-      return new SourceSpanWithContext(
-          span.start,
-          new SourceLocation(span.end.offset - 1,
-              sourceUrl: span.sourceUrl,
-              line: span.end.line - 1,
-              column: _lastLineLength(text)),
-          text,
-          span.context);
-    }
+    return new SourceSpanWithContext(
+        span.start,
+        new SourceLocation(span.end.offset - 1,
+            sourceUrl: span.sourceUrl,
+            line: span.end.line - 1,
+            column: _lastLineLength(text)),
+        text,
+        span.context);
   }
 
   /// Returns the length of the last line in [text], whether or not it ends in a

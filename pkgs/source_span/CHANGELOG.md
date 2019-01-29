@@ -1,3 +1,8 @@
+# 1.5.4
+
+* `FileSpan.highlight()` now properly highlights point spans at the beginning of
+  lines.
+
 # 1.5.3
 
 * Fix an edge case where `FileSpan.highlight()` would put the highlight

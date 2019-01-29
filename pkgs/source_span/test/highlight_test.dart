@@ -45,77 +45,84 @@ zip zap zop
   '"""));
   });
 
-  test("works for a point span", () {
-    expect(file.location(4).pointSpan().highlight(), equals("""
+  group("highlights a point span", () {
+    test("in the middle of a line", () {
+      expect(file.location(4).pointSpan().highlight(), equals("""
   ,
 1 | foo bar baz
   |     ^
   '"""));
-  });
+    });
 
-  test("works for a point span at the beginning of the file", () {
-    expect(file.location(0).pointSpan().highlight(), equals("""
+    test("at the beginning of the file", () {
+      expect(file.location(0).pointSpan().highlight(), equals("""
   ,
 1 | foo bar baz
   | ^
   '"""));
-  });
+    });
 
-  test("works for a point span at the end of a line", () {
-    expect(file.location(11).pointSpan().highlight(), equals("""
+    test("at the beginning of a line", () {
+      expect(file.location(12).pointSpan().highlight(), equals("""
+  ,
+2 | whiz bang boom
+  | ^
+  '"""));
+    });
+
+    test("at the end of a line", () {
+      expect(file.location(11).pointSpan().highlight(), equals("""
   ,
 1 | foo bar baz
   |            ^
   '"""));
-  });
+    });
 
-  test("works for a point span at the end of the file", () {
-    expect(file.location(38).pointSpan().highlight(), equals("""
+    test("at the end of the file", () {
+      expect(file.location(38).pointSpan().highlight(), equals("""
   ,
 3 | zip zap zop
   |            ^
   '"""));
-  });
+    });
 
-  test("works for a point span after the end of the file", () {
-    expect(file.location(39).pointSpan().highlight(), equals("""
+    test("after the end of the file", () {
+      expect(file.location(39).pointSpan().highlight(), equals("""
   ,
-3 | zip zap zop
-  |            ^
+4 | 
+  | ^
   '"""));
-  });
+    });
 
-  test("works for a point span at the end of the file with no trailing newline",
-      () {
-    file = new SourceFile.fromString("zip zap zop");
-    expect(file.location(10).pointSpan().highlight(), equals("""
+    test("at the end of the file with no trailing newline", () {
+      file = new SourceFile.fromString("zip zap zop");
+      expect(file.location(10).pointSpan().highlight(), equals("""
   ,
 1 | zip zap zop
   |           ^
   '"""));
-  });
+    });
 
-  test(
-      "works for a point span after the end of the file with no trailing newline",
-      () {
-    file = new SourceFile.fromString("zip zap zop");
-    expect(file.location(11).pointSpan().highlight(), equals("""
+    test("after the end of the file with no trailing newline", () {
+      file = new SourceFile.fromString("zip zap zop");
+      expect(file.location(11).pointSpan().highlight(), equals("""
   ,
 1 | zip zap zop
   |            ^
   '"""));
-  });
+    });
 
-  test("works for a point span in an empty file", () {
-    expect(new SourceFile.fromString("").location(0).pointSpan().highlight(),
-        equals("""
+    test("in an empty file", () {
+      expect(new SourceFile.fromString("").location(0).pointSpan().highlight(),
+          equals("""
   ,
 1 | 
   | ^
   '"""));
+    });
   });
 
-  test("works for a single-line file without a newline", () {
+  test("highlights a single-line file without a newline", () {
     expect(
         new SourceFile.fromString("foo bar").span(0, 7).highlight(), equals("""
   ,

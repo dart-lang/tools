@@ -276,13 +276,13 @@ zip zap zop""", url: "bar.dart").span(10, 11);
         expect(span.context, equals('whiz bang boom\n'));
       });
 
-      group("contains the last line for a point span at the end of a file", () {
-        test("without a newline", () {
+      group("for a point span at the end of a file", () {
+        test("without a newline, contains the last line", () {
           var span = file.span(file.length, file.length);
           expect(span.context, equals('zip zap zop'));
         });
 
-        test("with a newline", () {
+        test("with a newline, contains an empty line", () {
           file = new SourceFile.fromString("""
 foo bar baz
 whiz bang boom
@@ -290,7 +290,7 @@ zip zap zop
 """, url: "foo.dart");
 
           var span = file.span(file.length, file.length);
-          expect(span.context, equals('zip zap zop\n'));
+          expect(span.context, isEmpty);
         });
       });
     });
