@@ -112,7 +112,8 @@ class BazelWorkerDriver {
         // When the worker exits we should retry running the work queue in case
         // there is more work to be done. This is primarily just a defensive
         // thing but is cheap to do.
-        worker.exitCode.then((exitCode) {
+        // exitCode can be null: https://github.com/dart-lang/sdk/issues/35874
+        worker.exitCode?.then((exitCode) {
           _idleWorkers.remove(worker);
           _readyWorkers.remove(worker);
           _runWorkQueue();
