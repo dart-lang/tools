@@ -77,7 +77,10 @@ class StdDriverConnection implements DriverConnection {
   }
 
   @override
-  Future cancel() => _messageGrouper.cancel();
+  Future cancel() async {
+    await _outputStream.close();
+    await _messageGrouper.cancel();
+  }
 }
 
 /// [DriverConnection] that works with an isolate via a [SendPort].
