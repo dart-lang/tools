@@ -44,7 +44,7 @@ void main() {
   });
 
   test('Multiple clients can connect', () async {
-    var connections = await handler.connections;
+    var connections = handler.connections;
     await webdriver.get('http://localhost:${server.port}');
     await connections.next;
     await webdriver.get('http://localhost:${server.port}');
@@ -52,7 +52,7 @@ void main() {
   });
 
   test('Routes data correctly', () async {
-    var connections = await handler.connections;
+    var connections = handler.connections;
     await webdriver.get('http://localhost:${server.port}');
     var connectionA = await connections.next;
     await webdriver.get('http://localhost:${server.port}');

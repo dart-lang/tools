@@ -46,7 +46,8 @@ class SseClient extends StreamChannelMixin<String> {
 
   /// Add messages to this [StreamSink] to send them to the server.
   ///
-  /// The message added to the sink has to be JSON encodable.
+  /// The message added to the sink has to be JSON encodable. Messages that fail
+  /// to encode will be logged through a [Logger].
   @override
   StreamSink<String> get sink => _outgoingController.sink;
 
