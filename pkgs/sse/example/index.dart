@@ -9,7 +9,7 @@ void main() {
   var channel = SseClient('/sseHandler');
 
   channel.stream.listen((s) {
-    // Listen for messages and send the back.
+    // Listen for messages and send them back.
     channel.sink.add(s);
   });
 }
