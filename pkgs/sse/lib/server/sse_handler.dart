@@ -1,3 +1,7 @@
+// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -26,6 +30,7 @@ class SseConnection extends StreamChannelMixin<String> {
   SseConnection(this._sink, this._clientId) {
     _outgoingController.stream.listen((data) {
       if (!_closeCompleter.isCompleted) {
+        // JSON encode the message to escape new lines.
         _sink.add('data: ${json.encode(data)}\n');
         _sink.add('\n');
       }
@@ -34,12 +39,11 @@ class SseConnection extends StreamChannelMixin<String> {
 
   Future get onClose => _closeCompleter.future;
 
-  ///
   /// The message added to the sink has to be JSON encodable.
   @override
   StreamSink<String> get sink => _outgoingController.sink;
 
-// Add messages to this [StreamSink] to send them to the server.
+  // Add messages to this [StreamSink] to send them to the server.
   /// [Stream] of messages sent from the server to this client.
   ///
   /// A message is a decoded JSON object.
