@@ -1,3 +1,7 @@
+// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 @TestOn('vm')
 import 'dart:async';
 import 'dart:io';
@@ -40,7 +44,7 @@ void main() {
   });
 
   test('Multiple clients can connect', () async {
-    var connections = await handler.connections;
+    var connections = handler.connections;
     await webdriver.get('http://localhost:${server.port}');
     await connections.next;
     await webdriver.get('http://localhost:${server.port}');
@@ -48,7 +52,7 @@ void main() {
   });
 
   test('Routes data correctly', () async {
-    var connections = await handler.connections;
+    var connections = handler.connections;
     await webdriver.get('http://localhost:${server.port}');
     var connectionA = await connections.next;
     await webdriver.get('http://localhost:${server.port}');

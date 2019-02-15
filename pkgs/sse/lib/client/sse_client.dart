@@ -1,8 +1,13 @@
+// Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
 import 'package:http/browser_client.dart';
+import 'package:logging/logging.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:uuid/uuid.dart';
 
@@ -16,6 +21,8 @@ class SseClient extends StreamChannelMixin<String> {
   final _outgoingController = new StreamController<String>();
 
   final _client = new BrowserClient()..withCredentials = true;
+
+  final _logger = Logger('SseClient');
 
   EventSource _eventSource;
 
@@ -39,7 +46,8 @@ class SseClient extends StreamChannelMixin<String> {
 
   /// Add messages to this [StreamSink] to send them to the server.
   ///
-  /// The message added to the sink has to be JSON encodable.
+  /// The message added to the sink has to be JSON encodable. Messages that fail
+  /// to encode will be logged through a [Logger].
   @override
   StreamSink<String> get sink => _outgoingController.sink;
 
@@ -79,8 +87,8 @@ class SseClient extends StreamChannelMixin<String> {
     var encoded = jsonEncode(message);
     try {
       await _client.post(_serverUrl, body: encoded);
-    } catch (_) {
-      // Ignore any error
+    } catch (e) {
+      _logger.warning('Unable to encode outgoing message: $e');
     }
   }
 }
