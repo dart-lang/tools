@@ -54,7 +54,6 @@ linter:
     - await_only_futures
     - camel_case_types
     - constant_identifier_names
-    - control_flow_in_finally
     - empty_constructor_bodies
     - implementation_imports
     - library_names
