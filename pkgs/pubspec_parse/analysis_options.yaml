@@ -12,6 +12,8 @@ linter:
   rules:
     - always_declare_return_types
     - annotate_overrides
+    - avoid_bool_literals_in_conditional_expressions
+    - avoid_classes_with_only_static_members
     - avoid_empty_else
     - avoid_function_literals_in_foreach_calls
     - avoid_init_to_null
@@ -21,12 +23,16 @@ linter:
     - avoid_return_types_on_setters
     - avoid_returning_null
     - avoid_returning_null_for_future
+    - avoid_returning_null_for_void
+    - avoid_returning_this
     - avoid_shadowing_type_parameters
+    - avoid_single_cascade_in_expression_statements
     - avoid_types_as_parameter_names
     - avoid_unused_constructor_parameters
     - await_only_futures
     - camel_case_types
     - cancel_subscriptions
+    - cascade_invocations
     - comment_references
     - constant_identifier_names
     - control_flow_in_finally
@@ -34,10 +40,12 @@ linter:
     - empty_catches
     - empty_constructor_bodies
     - empty_statements
+    - file_names
     - hash_and_equals
     - implementation_imports
     - invariant_booleans
     - iterable_contains_unrelated_type
+    - join_return_with_assignment
     - library_names
     - library_prefixes
     - list_remove_unrelated_type
@@ -53,7 +61,8 @@ linter:
     - package_names
     - package_prefixed_library_names
     - prefer_adjacent_string_concatenation
-    - prefer_collection_literals
+    # TODO: reenable this once we want to pin the SDK to >=2.2.0
+    # - prefer_collection_literals
     - prefer_conditional_assignment
     - prefer_const_constructors
     - prefer_contains
@@ -64,11 +73,11 @@ linter:
     - prefer_interpolation_to_compose_strings
     - prefer_is_empty
     - prefer_is_not_empty
+    - prefer_null_aware_operators
     - prefer_single_quotes
     - prefer_typing_uninitialized_variables
     - recursive_getters
     - slash_for_doc_comments
-    - super_goes_last
     - test_types_in_equals
     - throw_in_finally
     - type_init_formals
@@ -87,3 +96,4 @@ linter:
     - use_function_type_syntax_for_parameters
     - use_rethrow_when_possible
     - valid_regexps
+    - void_checks

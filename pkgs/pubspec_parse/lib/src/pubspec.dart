@@ -126,8 +126,7 @@ class Pubspec {
           return _$PubspecFromJson(json);
         } on CheckedFromJsonException catch (e) {
           if (e.map == json && json.containsKey(e.key)) {
-            json = Map.from(json);
-            json.remove(e.key);
+            json = Map.from(json)..remove(e.key);
             continue;
           }
           rethrow;
