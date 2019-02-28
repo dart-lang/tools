@@ -120,6 +120,15 @@ zip zap zop
   | ^
   '"""));
     });
+
+    test("on an empty line", () {
+      var file = new SourceFile.fromString("foo\n\nbar");
+      expect(file.location(4).pointSpan().highlight(), equals("""
+  ,
+2 | 
+  | ^
+  '"""));
+    });
   });
 
   test("highlights a single-line file without a newline", () {
@@ -128,6 +137,15 @@ zip zap zop
   ,
 1 | foo bar
   | ^^^^^^^
+  '"""));
+  });
+
+  test("highlights a single empty line", () {
+    expect(new SourceFile.fromString("foo\n\nbar").span(4, 5).highlight(),
+        equals("""
+  ,
+2 | 
+  | ^
   '"""));
   });
 
@@ -275,6 +293,27 @@ bar
       expect(file.span(0, 5).highlight(), equals("""
   ,
 1 | / foo
+2 | \\ 
+  '"""));
+    });
+
+    test("highlights multiple empty lines", () {
+      var file = new SourceFile.fromString("foo\n\n\n\nbar");
+      expect(file.span(4, 7).highlight(), equals("""
+  ,
+2 | / 
+3 | | 
+4 | \\ 
+  '"""));
+    });
+
+    // Regression test for #32
+    test("highlights the end of a line and an empty line", () {
+      var file = new SourceFile.fromString("foo\n\n");
+      expect(file.span(3, 5).highlight(), equals("""
+  ,
+1 |   foo
+  | ,----^
 2 | \\ 
   '"""));
     });

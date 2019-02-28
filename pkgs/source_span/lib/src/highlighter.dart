@@ -117,6 +117,10 @@ class Highlighter {
       SourceSpanWithContext span) {
     if (!span.context.endsWith("\n")) return span;
 
+    // If there's a full blank line on the end of [span.context], it's probably
+    // significant, so we shouldn't trim it.
+    if (span.text.endsWith("\n\n")) return span;
+
     var context = span.context.substring(0, span.context.length - 1);
     var text = span.text;
     var start = span.start;
@@ -156,9 +160,13 @@ class Highlighter {
     if (text.isEmpty) return 0;
 
     // The "- 1" here avoids counting the newline itself.
-    return text.codeUnitAt(text.length - 1) == $lf
-        ? text.length - text.lastIndexOf("\n", text.length - 2) - 1
-        : text.length - text.lastIndexOf("\n") - 1;
+    if (text.codeUnitAt(text.length - 1) == $lf) {
+      return text.length == 1
+          ? 0
+          : text.length - text.lastIndexOf("\n", text.length - 2) - 1;
+    } else {
+      return text.length - text.lastIndexOf("\n") - 1;
+    }
   }
 
   /// Returns whether [span]'s text runs all the way to the end of its context.

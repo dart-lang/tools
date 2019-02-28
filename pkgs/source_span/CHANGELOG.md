@@ -1,3 +1,8 @@
+# 1.5.5
+
+* Fix a bug where `FileSpan.highlight()` would crash for spans that covered a
+  trailing newline and a single additional empty line.
+
 # 1.5.4
 
 * `FileSpan.highlight()` now properly highlights point spans at the beginning of
