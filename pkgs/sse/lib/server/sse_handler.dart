@@ -96,7 +96,7 @@ class SseHandler {
   }
 
   shelf.Response _createSseConnection(shelf.Request req, String path) {
-    if (_isClosed) return null;
+    if (_isClosed) return shelf.Response.notFound('');
     req.hijack((channel) async {
       var sink = utf8.encoder.startChunkedConversion(channel.sink);
       sink.add(_sseHeaders(req.headers['origin']));
@@ -115,7 +115,7 @@ class SseHandler {
 
       _connectionController.add(connection);
     });
-    return null;
+    return shelf.Response.notFound('');
   }
 
   String _getOriginalPath(shelf.Request req) => req.requestedUri.path;

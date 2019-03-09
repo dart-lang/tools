@@ -43,7 +43,11 @@ void main() {
             listDirectories: true, defaultDocument: 'index.html'));
 
     server = await io.serve(cascade.handler, 'localhost', 0);
-    webdriver = await createDriver();
+    webdriver = await createDriver(desired: {
+      'chromeOptions': {
+        'args': ['--headless']
+      }
+    });
   });
 
   tearDown(() async {
