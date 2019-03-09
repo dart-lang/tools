@@ -7,7 +7,6 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:logging/logging.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
@@ -21,23 +20,27 @@ String _sseHeaders(String origin) => 'HTTP/1.1 200 OK\r\n'
 
 /// A bi-directional SSE connection between server and browser.
 class SseConnection extends StreamChannelMixin<String> {
+  // Incoming messages from the Browser client.
   final _incomingController = StreamController<String>();
+  // Outgoing messages to the Browser client.
   final _outgoingController = StreamController<String>();
-  final _closeCompleter = Completer<Null>();
+
   final Sink _sink;
   final String _clientId;
 
+  var _isClosed = false;
+
   SseConnection(this._sink, this._clientId) {
     _outgoingController.stream.listen((data) {
-      if (!_closeCompleter.isCompleted) {
+      if (!_isClosed) {
         // JSON encode the message to escape new lines.
         _sink.add('data: ${json.encode(data)}\n');
         _sink.add('\n');
       }
     });
+    _outgoingController.onCancel = _close;
+    _incomingController.onCancel = _close;
   }
-
-  Future get onClose => _closeCompleter.future;
 
   /// The message added to the sink has to be JSON encodable.
   @override
@@ -50,8 +53,13 @@ class SseConnection extends StreamChannelMixin<String> {
   @override
   Stream<String> get stream => _incomingController.stream;
 
-  void close() {
-    if (!_closeCompleter.isCompleted) _closeCompleter.complete();
+  void _close() {
+    if (!_isClosed) {
+      _isClosed = true;
+      _sink.close();
+      if (!_outgoingController.isClosed) _outgoingController.close();
+      if (!_incomingController.isClosed) _incomingController.close();
+    }
   }
 }
 
@@ -64,18 +72,27 @@ class SseHandler {
   final _logger = Logger('SseHandler');
   final Uri _uri;
 
-  final Set<SseConnection> _connections = Set<SseConnection>();
+  final _connections = <SseConnection>{};
 
   final _connectionController = StreamController<SseConnection>();
 
-  SseHandler(this._uri);
+  StreamQueue<SseConnection> _connectionsStream;
 
+  SseHandler(this._uri);
   StreamQueue<SseConnection> get connections =>
-      StreamQueue(_connectionController.stream);
+      _connectionsStream ??= StreamQueue(_connectionController.stream);
 
   shelf.Handler get handler => _handle;
 
   int get numberOfClients => _connections.length;
+
+  void close() {
+    if (!_connectionController.isClosed) _connectionController.close();
+    for (var connection in _connections) {
+      connection.sink.close();
+      _connections.remove(connection);
+    }
+  }
 
   shelf.Response _createSseConnection(shelf.Request req, String path) {
     req.hijack((channel) async {
@@ -84,14 +101,12 @@ class SseHandler {
       var clientId = req.url.queryParameters['sseClientId'];
       var connection = SseConnection(sink, clientId);
       _connections.add(connection);
-      unawaited(connection.onClose.then((_) {
+      // Remove connection when it is remotely closed.
+      channel.stream.listen((_) {}, onDone: () {
+        connection.sink.close();
         _connections.remove(connection);
-      }));
-      channel.stream.listen((_) {
-        // SSE is unidirectional. Responses are handled through POST requests.
-      }, onDone: () {
-        connection.close();
       });
+
       _connectionController.add(connection);
     });
     return null;

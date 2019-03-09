@@ -14,7 +14,6 @@ dependencies:
   async: ^2.0.8
   http: ^0.12.0+1
   logging: ^0.11.3+2
-  pedantic: ^1.4.0
   stream_channel: ^1.6.8
   shelf: ^0.7.4
   uuid: ^1.0.3

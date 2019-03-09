@@ -55,12 +55,12 @@ void main() {
     var connections = handler.connections;
     await webdriver.get('http://localhost:${server.port}');
     var connectionA = await connections.next;
+    connectionA.sink.add('foo');
+    expect(await connectionA.stream.first, 'foo');
+
     await webdriver.get('http://localhost:${server.port}');
     var connectionB = await connections.next;
-
-    connectionA.sink.add('foo');
     connectionB.sink.add('bar');
-    await connectionA.onClose;
     expect(await connectionB.stream.first, 'bar');
   });
 
@@ -69,8 +69,8 @@ void main() {
     await webdriver.get('http://localhost:${server.port}');
     var connection = await handler.connections.next;
     expect(handler.numberOfClients, 1);
-    connection.close();
-    await connection.onClose;
+    await connection.sink.close();
+    await pumpEventQueue();
     expect(handler.numberOfClients, 0);
   });
 
@@ -83,7 +83,8 @@ void main() {
     var closeButton = await webdriver.findElement(const By.tagName('button'));
     await closeButton.click();
 
-    await connection.onClose;
+    // Stream should complete.
+    await connection.stream.toList();
     expect(handler.numberOfClients, 0);
   });
 
