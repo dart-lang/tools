@@ -88,7 +88,7 @@ void main() {
     expect(handler.numberOfClients, 0);
   });
 
-  test('Cancelling the listener closes the conneciton', () async {
+  test('Cancelling the listener closes the connection', () async {
     expect(handler.numberOfClients, 0);
     await webdriver.get('http://localhost:${server.port}');
     var connection = await handler.connections.next;
@@ -110,6 +110,21 @@ void main() {
     // Should complete since the connection is closed.
     await connection.stream.toList();
     expect(handler.numberOfClients, 0);
+  });
+
+  test('Closing the handler prevents new connections', () async {
+    expect(handler.numberOfClients, 0);
+    await webdriver.get('http://localhost:${server.port}');
+    var connection = await handler.connections.next;
+    expect(handler.numberOfClients, 1);
+
+    handler.close();
+    // Should complete since the connection is closed.
+    await connection.stream.toList();
+    assert(handler.numberOfClients == 0);
+
+    await webdriver.get('http://localhost:${server.port}');
+    expect(await handler.connections.hasNext, isFalse);
   });
 
   test('Disconnects when navigating away', () async {
