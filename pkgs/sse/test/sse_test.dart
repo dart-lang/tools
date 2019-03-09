@@ -83,7 +83,31 @@ void main() {
     var closeButton = await webdriver.findElement(const By.tagName('button'));
     await closeButton.click();
 
-    // Stream should complete.
+    // Should complete since the connection is closed.
+    await connection.stream.toList();
+    expect(handler.numberOfClients, 0);
+  });
+
+  test('Cancelling the listener closes the conneciton', () async {
+    expect(handler.numberOfClients, 0);
+    await webdriver.get('http://localhost:${server.port}');
+    var connection = await handler.connections.next;
+    expect(handler.numberOfClients, 1);
+
+    var sub = connection.stream.listen((_) {});
+    await sub.cancel();
+    await pumpEventQueue();
+    expect(handler.numberOfClients, 0);
+  });
+
+  test('Can close the handler which closes the connections', () async {
+    expect(handler.numberOfClients, 0);
+    await webdriver.get('http://localhost:${server.port}');
+    var connection = await handler.connections.next;
+    expect(handler.numberOfClients, 1);
+
+    handler.close();
+    // Should complete since the connection is closed.
     await connection.stream.toList();
     expect(handler.numberOfClients, 0);
   });

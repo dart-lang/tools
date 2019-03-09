@@ -88,7 +88,7 @@ class SseHandler {
 
   void close() {
     if (!_connectionController.isClosed) _connectionController.close();
-    for (var connection in _connections) {
+    for (var connection in _connections.toList()) {
       connection.sink.close();
       _connections.remove(connection);
     }
@@ -101,8 +101,12 @@ class SseHandler {
       var clientId = req.url.queryParameters['sseClientId'];
       var connection = SseConnection(sink, clientId);
       _connections.add(connection);
-      // Remove connection when it is remotely closed.
-      channel.stream.listen((_) {}, onDone: () {
+      // Remove connection when it is remotely closed or the stream is
+      // cancelled.
+      channel.stream.listen((_) {
+        // SSE is unidirectional. Responses are handled through POST requests.
+      }, onDone: () {
+        // Trigger closing the connection.
         connection.sink.close();
         _connections.remove(connection);
       });
