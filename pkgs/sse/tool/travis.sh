@@ -23,10 +23,6 @@ if [[ $ANALYSIS_STATUS -ne 0 ]]; then
   STATUS=$ANALYSIS_STATUS
 fi
 
-# Start chromedriver.
-chromedriver --port=4444 --url-base=wd/hub &
-PIDC=$!
-
 # Run tests.
 pub run test -r expanded -p vm -j 1
 TEST_STATUS=$?

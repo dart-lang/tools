@@ -17,6 +17,21 @@ void main() {
   HttpServer server;
   WebDriver webdriver;
   SseHandler handler;
+  Process chromeDriver;
+
+  setUpAll(() async {
+    try {
+      chromeDriver = await Process.start(
+          'chromedriver', ['--port=4444', '--url-base=wd/hub']);
+    } catch (e) {
+      throw StateError(
+          'Could not start ChromeDriver. Is it installed?\nError: $e');
+    }
+  });
+
+  tearDownAll(() {
+    chromeDriver.kill();
+  });
 
   setUp(() async {
     handler = SseHandler(Uri.parse('/test'));
