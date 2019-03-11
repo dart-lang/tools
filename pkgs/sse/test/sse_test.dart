@@ -119,33 +119,6 @@ void main() {
     expect(handler.numberOfClients, 0);
   });
 
-  test('Can close the handler which closes the connections', () async {
-    expect(handler.numberOfClients, 0);
-    await webdriver.get('http://localhost:${server.port}');
-    var connection = await handler.connections.next;
-    expect(handler.numberOfClients, 1);
-
-    handler.close();
-    // Should complete since the connection is closed.
-    await connection.stream.toList();
-    expect(handler.numberOfClients, 0);
-  });
-
-  test('Closing the handler prevents new connections', () async {
-    expect(handler.numberOfClients, 0);
-    await webdriver.get('http://localhost:${server.port}');
-    var connection = await handler.connections.next;
-    expect(handler.numberOfClients, 1);
-
-    handler.close();
-    // Should complete since the connection is closed.
-    await connection.stream.toList();
-    assert(handler.numberOfClients == 0);
-
-    await webdriver.get('http://localhost:${server.port}');
-    expect(await handler.connections.hasNext, isFalse);
-  });
-
   test('Disconnects when navigating away', () async {
     await webdriver.get('http://localhost:${server.port}');
     expect(handler.numberOfClients, 1);

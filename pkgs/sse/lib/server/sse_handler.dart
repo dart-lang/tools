@@ -21,17 +21,17 @@ String _sseHeaders(String origin) => 'HTTP/1.1 200 OK\r\n'
 
 /// A bi-directional SSE connection between server and browser.
 class SseConnection extends StreamChannelMixin<String> {
-  // Incoming messages from the Browser client.
+  /// Incoming messages from the Browser client.
   final _incomingController = StreamController<String>();
-  // Outgoing messages to the Browser client.
+
+  /// Outgoing messages to the Browser client.
   final _outgoingController = StreamController<String>();
 
   final Sink _sink;
-  final String _clientId;
 
   final _closedCompleter = Completer<void>();
 
-  SseConnection(this._sink, this._clientId) {
+  SseConnection(this._sink) {
     _outgoingController.stream.listen((data) {
       if (!_closedCompleter.isCompleted) {
         // JSON encode the message to escape new lines.
@@ -75,7 +75,6 @@ class SseHandler {
   final _connections = <String, SseConnection>{};
   final _connectionController = StreamController<SseConnection>();
 
-  var _isClosed = false;
   StreamQueue<SseConnection> _connectionsStream;
 
   SseHandler(this._uri);
@@ -87,22 +86,12 @@ class SseHandler {
 
   int get numberOfClients => _connections.length;
 
-  void close() {
-    _isClosed = true;
-    if (!_connectionController.isClosed) _connectionController.close();
-    for (var connection in _connections.values.toList()) {
-      connection.sink.close();
-      _connections.remove(connection._clientId);
-    }
-  }
-
   shelf.Response _createSseConnection(shelf.Request req, String path) {
-    if (_isClosed) return shelf.Response.notFound('');
     req.hijack((channel) async {
       var sink = utf8.encoder.startChunkedConversion(channel.sink);
       sink.add(_sseHeaders(req.headers['origin']));
       var clientId = req.url.queryParameters['sseClientId'];
-      var connection = SseConnection(sink, clientId);
+      var connection = SseConnection(sink);
       _connections[clientId] = connection;
       unawaited(connection._closedCompleter.future.then((_) {
         _connections.remove(clientId);
