@@ -17,6 +17,21 @@ void main() {
   HttpServer server;
   WebDriver webdriver;
   SseHandler handler;
+  Process chromeDriver;
+
+  setUpAll(() async {
+    try {
+      chromeDriver = await Process.start(
+          'chromedriver', ['--port=4444', '--url-base=wd/hub']);
+    } catch (e) {
+      throw StateError(
+          'Could not start ChromeDriver. Is it installed?\nError: $e');
+    }
+  });
+
+  tearDownAll(() {
+    chromeDriver.kill();
+  });
 
   setUp(() async {
     handler = SseHandler(Uri.parse('/test'));
@@ -28,7 +43,11 @@ void main() {
             listDirectories: true, defaultDocument: 'index.html'));
 
     server = await io.serve(cascade.handler, 'localhost', 0);
-    webdriver = await createDriver();
+    webdriver = await createDriver(desired: {
+      'chromeOptions': {
+        'args': ['--headless']
+      }
+    });
   });
 
   tearDown(() async {
@@ -55,12 +74,12 @@ void main() {
     var connections = handler.connections;
     await webdriver.get('http://localhost:${server.port}');
     var connectionA = await connections.next;
+    connectionA.sink.add('foo');
+    expect(await connectionA.stream.first, 'foo');
+
     await webdriver.get('http://localhost:${server.port}');
     var connectionB = await connections.next;
-
-    connectionA.sink.add('foo');
     connectionB.sink.add('bar');
-    await connectionA.onClose;
     expect(await connectionB.stream.first, 'bar');
   });
 
@@ -69,8 +88,8 @@ void main() {
     await webdriver.get('http://localhost:${server.port}');
     var connection = await handler.connections.next;
     expect(handler.numberOfClients, 1);
-    connection.close();
-    await connection.onClose;
+    await connection.sink.close();
+    await pumpEventQueue();
     expect(handler.numberOfClients, 0);
   });
 
@@ -83,7 +102,20 @@ void main() {
     var closeButton = await webdriver.findElement(const By.tagName('button'));
     await closeButton.click();
 
-    await connection.onClose;
+    // Should complete since the connection is closed.
+    await connection.stream.toList();
+    expect(handler.numberOfClients, 0);
+  });
+
+  test('Cancelling the listener closes the connection', () async {
+    expect(handler.numberOfClients, 0);
+    await webdriver.get('http://localhost:${server.port}');
+    var connection = await handler.connections.next;
+    expect(handler.numberOfClients, 1);
+
+    var sub = connection.stream.listen((_) {});
+    await sub.cancel();
+    await pumpEventQueue();
     expect(handler.numberOfClients, 0);
   });
 

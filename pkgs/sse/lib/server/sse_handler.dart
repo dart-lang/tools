@@ -21,23 +21,27 @@ String _sseHeaders(String origin) => 'HTTP/1.1 200 OK\r\n'
 
 /// A bi-directional SSE connection between server and browser.
 class SseConnection extends StreamChannelMixin<String> {
+  /// Incoming messages from the Browser client.
   final _incomingController = StreamController<String>();
-  final _outgoingController = StreamController<String>();
-  final _closeCompleter = Completer<Null>();
-  final Sink _sink;
-  final String _clientId;
 
-  SseConnection(this._sink, this._clientId) {
+  /// Outgoing messages to the Browser client.
+  final _outgoingController = StreamController<String>();
+
+  final Sink _sink;
+
+  final _closedCompleter = Completer<void>();
+
+  SseConnection(this._sink) {
     _outgoingController.stream.listen((data) {
-      if (!_closeCompleter.isCompleted) {
+      if (!_closedCompleter.isCompleted) {
         // JSON encode the message to escape new lines.
         _sink.add('data: ${json.encode(data)}\n');
         _sink.add('\n');
       }
     });
+    _outgoingController.onCancel = _close;
+    _incomingController.onCancel = _close;
   }
-
-  Future get onClose => _closeCompleter.future;
 
   /// The message added to the sink has to be JSON encodable.
   @override
@@ -50,8 +54,13 @@ class SseConnection extends StreamChannelMixin<String> {
   @override
   Stream<String> get stream => _incomingController.stream;
 
-  void close() {
-    if (!_closeCompleter.isCompleted) _closeCompleter.complete();
+  void _close() {
+    if (!_closedCompleter.isCompleted) {
+      _closedCompleter.complete();
+      _sink.close();
+      if (!_outgoingController.isClosed) _outgoingController.close();
+      if (!_incomingController.isClosed) _incomingController.close();
+    }
   }
 }
 
@@ -63,15 +72,15 @@ class SseConnection extends StreamChannelMixin<String> {
 class SseHandler {
   final _logger = Logger('SseHandler');
   final Uri _uri;
-
-  final Set<SseConnection> _connections = Set<SseConnection>();
-
+  final _connections = <String, SseConnection>{};
   final _connectionController = StreamController<SseConnection>();
+
+  StreamQueue<SseConnection> _connectionsStream;
 
   SseHandler(this._uri);
 
   StreamQueue<SseConnection> get connections =>
-      StreamQueue(_connectionController.stream);
+      _connectionsStream ??= StreamQueue(_connectionController.stream);
 
   shelf.Handler get handler => _handle;
 
@@ -82,19 +91,22 @@ class SseHandler {
       var sink = utf8.encoder.startChunkedConversion(channel.sink);
       sink.add(_sseHeaders(req.headers['origin']));
       var clientId = req.url.queryParameters['sseClientId'];
-      var connection = SseConnection(sink, clientId);
-      _connections.add(connection);
-      unawaited(connection.onClose.then((_) {
-        _connections.remove(connection);
+      var connection = SseConnection(sink);
+      _connections[clientId] = connection;
+      unawaited(connection._closedCompleter.future.then((_) {
+        _connections.remove(clientId);
       }));
+      // Remove connection when it is remotely closed or the stream is
+      // cancelled.
       channel.stream.listen((_) {
         // SSE is unidirectional. Responses are handled through POST requests.
       }, onDone: () {
-        connection.close();
+        connection._close();
       });
+
       _connectionController.add(connection);
     });
-    return null;
+    return shelf.Response.notFound('');
   }
 
   String _getOriginalPath(shelf.Request req) => req.requestedUri.path;
@@ -122,11 +134,7 @@ class SseHandler {
       var clientId = req.url.queryParameters['sseClientId'];
       var message = await req.readAsString();
       var jsonObject = json.decode(message) as String;
-      for (var connection in _connections) {
-        if (connection._clientId == clientId) {
-          connection._incomingController.add(jsonObject);
-        }
-      }
+      _connections[clientId]?._incomingController?.add(jsonObject);
     } catch (e, st) {
       _logger.fine('Failed to handle incoming message. $e $st');
     }
