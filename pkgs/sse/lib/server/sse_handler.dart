@@ -134,8 +134,7 @@ class SseHandler {
       var clientId = req.url.queryParameters['sseClientId'];
       var message = await req.readAsString();
       var jsonObject = json.decode(message) as String;
-      var connection = _connections[clientId];
-      if (connection != null) connection._incomingController.add(jsonObject);
+      _connections[clientId]?._incomingController?.add(jsonObject);
     } catch (e, st) {
       _logger.fine('Failed to handle incoming message. $e $st');
     }
