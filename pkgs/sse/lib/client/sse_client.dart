@@ -31,7 +31,7 @@ class SseClient extends StreamChannelMixin<String> {
   /// [serverUrl] is the URL under which the server is listening for
   /// incoming bi-directional SSE connections.
   SseClient(String serverUrl) {
-    var clientId = '${Uuid().v1()}';
+    var clientId = Uuid().v1();
     _eventSource = new EventSource('$serverUrl?sseClientId=$clientId',
         withCredentials: true);
     _serverUrl = '$serverUrl?sseClientId=$clientId';
