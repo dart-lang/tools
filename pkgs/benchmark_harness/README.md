@@ -56,6 +56,9 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 
 ## Example
 
+Create a dart file in the [`benchmark/`](https://www.dartlang.org/tools/pub/package-layout#tests-and-benchmarks)
+folder of your package.
+
 ```
 // Import BenchmarkBase class.
 import 'package:benchmark_harness/benchmark_harness.dart';
