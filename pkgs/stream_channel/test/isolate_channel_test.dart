@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
