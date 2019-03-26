@@ -10,9 +10,9 @@ void main() {
   MultiChannel channel1;
   MultiChannel channel2;
   setUp(() {
-    controller = new StreamChannelController();
-    channel1 = new MultiChannel<int>(controller.local);
-    channel2 = new MultiChannel<int>(controller.foreign);
+    controller = StreamChannelController();
+    channel1 = MultiChannel<int>(controller.local);
+    channel2 = MultiChannel<int>(controller.foreign);
   });
 
   group("the default virtual channel", () {

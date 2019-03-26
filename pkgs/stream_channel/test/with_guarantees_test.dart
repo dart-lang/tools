@@ -12,16 +12,16 @@ void main() {
   StreamController sinkController;
   StreamChannel channel;
   setUp(() {
-    streamController = new StreamController();
-    sinkController = new StreamController();
-    channel = new StreamChannel.withGuarantees(
+    streamController = StreamController();
+    sinkController = StreamController();
+    channel = StreamChannel.withGuarantees(
         streamController.stream, sinkController.sink);
   });
 
   group("with a broadcast stream", () {
     setUp(() {
-      streamController = new StreamController.broadcast();
-      channel = new StreamChannel.withGuarantees(
+      streamController = StreamController.broadcast();
+      channel = StreamChannel.withGuarantees(
           streamController.stream, sinkController.sink);
     });
 
@@ -121,17 +121,17 @@ void main() {
     expect(channel.sink.close(), completes);
     expect(() => channel.sink.add(1), throwsStateError);
     expect(() => channel.sink.addError("oh no"), throwsStateError);
-    expect(() => channel.sink.addStream(new Stream.fromIterable([])),
+    expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
   });
 
   test("events can't be added while a stream is being added", () {
-    var controller = new StreamController();
+    var controller = StreamController();
     channel.sink.addStream(controller.stream);
 
     expect(() => channel.sink.add(1), throwsStateError);
     expect(() => channel.sink.addError("oh no"), throwsStateError);
-    expect(() => channel.sink.addStream(new Stream.fromIterable([])),
+    expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
     expect(() => channel.sink.close(), throwsStateError);
 
@@ -140,9 +140,9 @@ void main() {
 
   group("with allowSinkErrors: false", () {
     setUp(() {
-      streamController = new StreamController();
-      sinkController = new StreamController();
-      channel = new StreamChannel.withGuarantees(
+      streamController = StreamController();
+      sinkController = StreamController();
+      channel = StreamChannel.withGuarantees(
           streamController.stream, sinkController.sink,
           allowSinkErrors: false);
     });
@@ -180,7 +180,7 @@ void main() {
         "adding an error via via addStream causes the stream to emit a done "
         "event", () async {
       var canceled = false;
-      var controller = new StreamController(onCancel: () {
+      var controller = StreamController(onCancel: () {
         canceled = true;
       });
 

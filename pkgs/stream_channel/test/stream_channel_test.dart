@@ -14,17 +14,17 @@ void main() {
   StreamController sinkController;
   StreamChannel channel;
   setUp(() {
-    streamController = new StreamController();
-    sinkController = new StreamController();
-    channel = new StreamChannel(streamController.stream, sinkController.sink);
+    streamController = StreamController();
+    sinkController = StreamController();
+    channel = StreamChannel(streamController.stream, sinkController.sink);
   });
 
   test("pipe() pipes data from each channel's stream into the other's sink",
       () {
-    var otherStreamController = new StreamController();
-    var otherSinkController = new StreamController();
-    var otherChannel = new StreamChannel(
-        otherStreamController.stream, otherSinkController.sink);
+    var otherStreamController = StreamController();
+    var otherSinkController = StreamController();
+    var otherChannel =
+        StreamChannel(otherStreamController.stream, otherSinkController.sink);
     channel.pipe(otherChannel);
 
     streamController.add(1);
@@ -43,7 +43,7 @@ void main() {
   test("transform() transforms the channel", () async {
     var transformed = channel
         .cast<List<int>>()
-        .transform(new StreamChannelTransformer.fromCodec(utf8));
+        .transform(StreamChannelTransformer.fromCodec(utf8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     streamController.close();
@@ -76,7 +76,7 @@ void main() {
 
   test("transformSink() transforms only the sink", () async {
     var transformed = channel.cast<String>().transformSink(
-        new StreamSinkTransformer.fromStreamTransformer(const LineSplitter()));
+        StreamSinkTransformer.fromStreamTransformer(const LineSplitter()));
 
     streamController.add("fbl\nthp");
     streamController.close();
@@ -91,7 +91,7 @@ void main() {
   });
 
   test("changeStream() changes the stream", () {
-    var newController = new StreamController();
+    var newController = StreamController();
     var changed = channel.changeStream((stream) {
       expect(stream, equals(channel.stream));
       return newController.stream;
@@ -107,7 +107,7 @@ void main() {
   });
 
   test("changeSink() changes the sink", () {
-    var newController = new StreamController();
+    var newController = StreamController();
     var changed = channel.changeSink((sink) {
       expect(sink, equals(channel.sink));
       return newController.sink;

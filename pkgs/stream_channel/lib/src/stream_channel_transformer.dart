@@ -45,7 +45,7 @@ class StreamChannelTransformer<S, T> {
           StreamChannelTransformer transformer) =>
       transformer is StreamChannelTransformer<S, T>
           ? transformer
-          : new TypeSafeStreamChannelTransformer(transformer);
+          : TypeSafeStreamChannelTransformer(transformer);
 
   /// Creates a [StreamChannelTransformer] from existing stream and sink
   /// transformers.
@@ -58,7 +58,7 @@ class StreamChannelTransformer<S, T> {
   /// and all output from its stream is decoded using [Codec.decoder].
   StreamChannelTransformer.fromCodec(Codec<S, T> codec)
       : this(codec.decoder,
-            new StreamSinkTransformer.fromStreamTransformer(codec.encoder));
+            StreamSinkTransformer.fromStreamTransformer(codec.encoder));
 
   /// Transforms the events sent to and emitted by [channel].
   ///
@@ -68,7 +68,7 @@ class StreamChannelTransformer<S, T> {
   /// `channel.straem`, the transformer will transform them and pass the
   /// transformed versions to the returned channel's stream.
   StreamChannel<S> bind(StreamChannel<T> channel) =>
-      new StreamChannel<S>.withCloseGuarantee(
+      StreamChannel<S>.withCloseGuarantee(
           channel.stream.transform(_streamTransformer),
           _sinkTransformer.bind(channel.sink));
 }

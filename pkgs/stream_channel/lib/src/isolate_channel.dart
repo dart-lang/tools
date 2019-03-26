@@ -41,10 +41,10 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
   factory IsolateChannel.connectReceive(ReceivePort receivePort) {
     // We can't use a [StreamChannelCompleter] here because we need the return
     // value to be an [IsolateChannel].
-    var streamCompleter = new StreamCompleter<T>();
-    var sinkCompleter = new StreamSinkCompleter<T>();
+    var streamCompleter = StreamCompleter<T>();
+    var sinkCompleter = StreamSinkCompleter<T>();
     var channel =
-        new IsolateChannel<T>._(streamCompleter.stream, sinkCompleter.sink);
+        IsolateChannel<T>._(streamCompleter.stream, sinkCompleter.sink);
 
     // The first message across the ReceivePort should be a SendPort pointing to
     // the remote end. If it's not, we'll make the stream emit an error
@@ -52,11 +52,9 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
     StreamSubscription<dynamic> subscription;
     subscription = receivePort.listen((message) {
       if (message is SendPort) {
-        var controller = new StreamChannelController<T>(
-            allowForeignErrors: false, sync: true);
-        new SubscriptionStream(subscription)
-            .cast<T>()
-            .pipe(controller.local.sink);
+        var controller =
+            StreamChannelController<T>(allowForeignErrors: false, sync: true);
+        SubscriptionStream(subscription).cast<T>().pipe(controller.local.sink);
         controller.local.stream
             .listen((data) => message.send(data), onDone: receivePort.close);
 
@@ -66,9 +64,9 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
       }
 
       streamCompleter.setError(
-          new StateError('Unexpected Isolate response "$message".'),
+          StateError('Unexpected Isolate response "$message".'),
           StackTrace.current);
-      sinkCompleter.setDestinationSink(new NullStreamSink<T>());
+      sinkCompleter.setDestinationSink(NullStreamSink<T>());
       subscription.cancel();
     });
 
@@ -85,21 +83,20 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
   /// The connection protocol is guaranteed to remain compatible across versions
   /// at least until the next major version release.
   factory IsolateChannel.connectSend(SendPort sendPort) {
-    var receivePort = new ReceivePort();
+    var receivePort = ReceivePort();
     sendPort.send(receivePort.sendPort);
-    return new IsolateChannel(receivePort, sendPort);
+    return IsolateChannel(receivePort, sendPort);
   }
 
   /// Creates a stream channel that receives messages from [receivePort] and
   /// sends them over [sendPort].
   factory IsolateChannel(ReceivePort receivePort, SendPort sendPort) {
     var controller =
-        new StreamChannelController<T>(allowForeignErrors: false, sync: true);
+        StreamChannelController<T>(allowForeignErrors: false, sync: true);
     receivePort.cast<T>().pipe(controller.local.sink);
     controller.local.stream
         .listen((data) => sendPort.send(data), onDone: receivePort.close);
-    return new IsolateChannel._(
-        controller.foreign.stream, controller.foreign.sink);
+    return IsolateChannel._(controller.foreign.stream, controller.foreign.sink);
   }
 
   IsolateChannel._(this.stream, this.sink);

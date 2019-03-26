@@ -52,12 +52,12 @@ class StreamChannelController<T> {
   /// the foreign channel's sink. If any are, the connection will close and the
   /// error will be forwarded to the foreign channel's [StreamSink.done] future.
   /// This guarantees that the local stream will never emit errors.
-  StreamChannelController({bool allowForeignErrors: true, bool sync: false}) {
-    var localToForeignController = new StreamController<T>(sync: sync);
-    var foreignToLocalController = new StreamController<T>(sync: sync);
-    _local = new StreamChannel<T>.withGuarantees(
+  StreamChannelController({bool allowForeignErrors = true, bool sync = false}) {
+    var localToForeignController = StreamController<T>(sync: sync);
+    var foreignToLocalController = StreamController<T>(sync: sync);
+    _local = StreamChannel<T>.withGuarantees(
         foreignToLocalController.stream, localToForeignController.sink);
-    _foreign = new StreamChannel<T>.withGuarantees(
+    _foreign = StreamChannel<T>.withGuarantees(
         localToForeignController.stream, foreignToLocalController.sink,
         allowSinkErrors: allowForeignErrors);
   }

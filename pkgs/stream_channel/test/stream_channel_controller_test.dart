@@ -9,7 +9,7 @@ void main() {
   group("asynchronously", () {
     StreamChannelController controller;
     setUp(() {
-      controller = new StreamChannelController();
+      controller = StreamChannelController();
     });
 
     test("forwards events from the local sink to the foreign stream", () {
@@ -33,7 +33,7 @@ void main() {
     test(
         "with allowForeignErrors: false, shuts down the connection if an "
         "error is added to the foreign channel", () {
-      controller = new StreamChannelController(allowForeignErrors: false);
+      controller = StreamChannelController(allowForeignErrors: false);
 
       controller.foreign.sink.addError("oh no");
       expect(controller.foreign.sink.done, throwsA("oh no"));
@@ -46,7 +46,7 @@ void main() {
   group("synchronously", () {
     StreamChannelController controller;
     setUp(() {
-      controller = new StreamChannelController(sync: true);
+      controller = StreamChannelController(sync: true);
     });
 
     test(

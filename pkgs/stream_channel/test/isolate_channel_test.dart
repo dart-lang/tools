@@ -15,10 +15,10 @@ void main() {
   SendPort sendPort;
   StreamChannel channel;
   setUp(() {
-    receivePort = new ReceivePort();
-    var receivePortForSend = new ReceivePort();
+    receivePort = ReceivePort();
+    var receivePortForSend = ReceivePort();
     sendPort = receivePortForSend.sendPort;
-    channel = new IsolateChannel(receivePortForSend, receivePort.sendPort);
+    channel = IsolateChannel(receivePortForSend, receivePort.sendPort);
   });
 
   tearDown(() {
@@ -46,17 +46,17 @@ void main() {
     expect(channel.sink.close(), completes);
     expect(() => channel.sink.add(1), throwsStateError);
     expect(() => channel.sink.addError("oh no"), throwsStateError);
-    expect(() => channel.sink.addStream(new Stream.fromIterable([])),
+    expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
   });
 
   test("events can't be added while a stream is being added", () {
-    var controller = new StreamController();
+    var controller = StreamController();
     channel.sink.addStream(controller.stream);
 
     expect(() => channel.sink.add(1), throwsStateError);
     expect(() => channel.sink.addError("oh no"), throwsStateError);
-    expect(() => channel.sink.addStream(new Stream.fromIterable([])),
+    expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
     expect(() => channel.sink.close(), throwsStateError);
 
@@ -107,7 +107,7 @@ void main() {
     test("the sink closes as soon as an error is added via addStream",
         () async {
       var canceled = false;
-      var controller = new StreamController(onCancel: () {
+      var controller = StreamController(onCancel: () {
         canceled = true;
       });
 
@@ -128,7 +128,7 @@ void main() {
   group("connect constructors", () {
     ReceivePort connectPort;
     setUp(() {
-      connectPort = new ReceivePort();
+      connectPort = ReceivePort();
     });
 
     tearDown(() {
@@ -136,8 +136,8 @@ void main() {
     });
 
     test("create a connected pair of channels", () {
-      var channel1 = new IsolateChannel<int>.connectReceive(connectPort);
-      var channel2 = new IsolateChannel<int>.connectSend(connectPort.sendPort);
+      var channel1 = IsolateChannel<int>.connectReceive(connectPort);
+      var channel2 = IsolateChannel<int>.connectSend(connectPort.sendPort);
 
       channel1.sink.add(1);
       channel1.sink.add(2);
@@ -152,7 +152,7 @@ void main() {
 
     test("the receiving channel produces an error if it gets the wrong message",
         () {
-      var connectedChannel = new IsolateChannel.connectReceive(connectPort);
+      var connectedChannel = IsolateChannel.connectReceive(connectPort);
       connectPort.sendPort.send("wrong value");
 
       expect(connectedChannel.stream.toList(), throwsStateError);

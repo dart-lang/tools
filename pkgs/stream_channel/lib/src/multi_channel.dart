@@ -58,8 +58,7 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   /// [inner].
   ///
   /// The inner channel must take JSON-like objects.
-  factory MultiChannel(StreamChannel<dynamic> inner) =>
-      new _MultiChannel<T>(inner);
+  factory MultiChannel(StreamChannel<dynamic> inner) => _MultiChannel<T>(inner);
 
   /// Creates a new virtual channel.
   ///
@@ -93,7 +92,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   StreamSink<T> get sink => _mainController.foreign.sink;
 
   /// The controller for this channel.
-  final _mainController = new StreamChannelController<T>(sync: true);
+  final _mainController = StreamChannelController<T>(sync: true);
 
   /// A map from input IDs to [StreamChannelController]s that should be used to
   /// communicate over those channels.
@@ -101,11 +100,11 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
 
   /// Input IDs of controllers in [_controllers] that we've received messages
   /// for but that have not yet had a local [virtualChannel] created.
-  final _pendingIds = new Set<int>();
+  final _pendingIds = Set<int>();
 
   /// Input IDs of virtual channels that used to exist but have since been
   /// closed.
-  final _closedIds = new Set<int>();
+  final _closedIds = Set<int>();
 
   /// The next id to use for a local virtual channel.
   ///
@@ -149,7 +148,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
         // counterpart yet, create a controller for it to buffer incoming
         // messages for when a local connection is created.
         _pendingIds.add(id);
-        return new StreamChannelController(sync: true);
+        return StreamChannelController(sync: true);
       });
 
       if (message.length > 1) {
@@ -187,8 +186,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
     // If the inner channel has already closed, create new virtual channels in a
     // closed state.
     if (_inner == null) {
-      return new VirtualChannel._(
-          this, inputId, new Stream.empty(), new NullStreamSink());
+      return VirtualChannel._(this, inputId, Stream.empty(), NullStreamSink());
     }
 
     StreamChannelController<T> controller;
@@ -198,16 +196,16 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
       controller = _controllers[inputId];
     } else if (_controllers.containsKey(inputId) ||
         _closedIds.contains(inputId)) {
-      throw new ArgumentError("A virtual channel with id $id already exists.");
+      throw ArgumentError("A virtual channel with id $id already exists.");
     } else {
-      controller = new StreamChannelController(sync: true);
+      controller = StreamChannelController(sync: true);
       _controllers[inputId] = controller;
     }
 
     controller.local.stream.listen(
         (message) => _inner.sink.add([outputId, message]),
         onDone: () => _closeChannel(inputId, outputId));
-    return new VirtualChannel._(
+    return VirtualChannel._(
         this, outputId, controller.foreign.stream, controller.foreign.sink);
   }
 
@@ -234,7 +232,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
 
     // Convert this to a list because the close is dispatched synchronously, and
     // that could conceivably remove a controller from [_controllers].
-    for (var controller in new List.from(_controllers.values)) {
+    for (var controller in List.from(_controllers.values)) {
       controller.local.sink.close();
     }
     _controllers.clear();

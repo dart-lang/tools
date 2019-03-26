@@ -13,10 +13,10 @@ void main() {
   StreamController<String> sinkController;
   StreamChannel<String> channel;
   setUp(() {
-    streamController = new StreamController<String>();
-    sinkController = new StreamController<String>();
+    streamController = StreamController<String>();
+    sinkController = StreamController<String>();
     channel =
-        new StreamChannel<String>(streamController.stream, sinkController.sink);
+        StreamChannel<String>(streamController.stream, sinkController.sink);
   });
 
   test("decodes JSON emitted by the channel", () {
@@ -33,16 +33,16 @@ void main() {
   });
 
   test("supports the reviver function", () {
-    var transformed = channel.transform(
-        new JsonDocumentTransformer(reviver: (key, value) => "decoded"));
+    var transformed = channel
+        .transform(JsonDocumentTransformer(reviver: (key, value) => "decoded"));
     streamController.add('{"foo": "bar"}');
     expect(transformed.stream.first, completion(equals("decoded")));
   });
 
   test("supports the toEncodable function", () {
-    var transformed = channel.transform(
-        new JsonDocumentTransformer(toEncodable: (object) => "encoded"));
-    transformed.sink.add(new Object());
+    var transformed = channel
+        .transform(JsonDocumentTransformer(toEncodable: (object) => "encoded"));
+    transformed.sink.add(Object());
     expect(sinkController.stream.first, completion(equals('"encoded"')));
   });
 
@@ -54,7 +54,7 @@ void main() {
 
   test("synchronously throws if an unencodable object is added", () {
     var transformed = channel.transform(jsonDocument);
-    expect(() => transformed.sink.add(new Object()),
-        throwsA(new TypeMatcher<JsonUnsupportedObjectError>()));
+    expect(() => transformed.sink.add(Object()),
+        throwsA(TypeMatcher<JsonUnsupportedObjectError>()));
   });
 }

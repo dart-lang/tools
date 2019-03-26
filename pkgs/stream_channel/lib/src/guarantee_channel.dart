@@ -31,18 +31,17 @@ class GuaranteeChannel<T> extends StreamChannelMixin<T> {
   bool _disconnected = false;
 
   GuaranteeChannel(Stream<T> innerStream, StreamSink<T> innerSink,
-      {bool allowSinkErrors: true}) {
-    _sink =
-        new _GuaranteeSink<T>(innerSink, this, allowErrors: allowSinkErrors);
+      {bool allowSinkErrors = true}) {
+    _sink = _GuaranteeSink<T>(innerSink, this, allowErrors: allowSinkErrors);
 
     // Enforce the single-subscription guarantee by changing a broadcast stream
     // to single-subscription.
     if (innerStream.isBroadcast) {
       innerStream =
-          innerStream.transform(new SingleSubscriptionTransformer<T, T>());
+          innerStream.transform(SingleSubscriptionTransformer<T, T>());
     }
 
-    _streamController = new StreamController<T>(
+    _streamController = StreamController<T>(
         onListen: () {
           // If the sink has disconnected, we've already called
           // [_streamController.close].
@@ -80,7 +79,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   final GuaranteeChannel<T> _channel;
 
   Future get done => _doneCompleter.future;
-  final _doneCompleter = new Completer();
+  final _doneCompleter = Completer();
 
   /// Whether connection is disconnected.
   ///
@@ -108,13 +107,13 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   /// the underlying sink is closed.
   final bool _allowErrors;
 
-  _GuaranteeSink(this._inner, this._channel, {bool allowErrors: true})
+  _GuaranteeSink(this._inner, this._channel, {bool allowErrors = true})
       : _allowErrors = allowErrors;
 
   void add(T data) {
-    if (_closed) throw new StateError("Cannot add event after closing.");
+    if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
-      throw new StateError("Cannot add event while adding stream.");
+      throw StateError("Cannot add event while adding stream.");
     }
     if (_disconnected) return;
 
@@ -122,9 +121,9 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   }
 
   void addError(error, [StackTrace stackTrace]) {
-    if (_closed) throw new StateError("Cannot add event after closing.");
+    if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
-      throw new StateError("Cannot add event while adding stream.");
+      throw StateError("Cannot add event while adding stream.");
     }
     if (_disconnected) return;
 
@@ -153,13 +152,13 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   }
 
   Future addStream(Stream<T> stream) {
-    if (_closed) throw new StateError("Cannot add stream after closing.");
+    if (_closed) throw StateError("Cannot add stream after closing.");
     if (_inAddStream) {
-      throw new StateError("Cannot add stream while adding stream.");
+      throw StateError("Cannot add stream while adding stream.");
     }
-    if (_disconnected) return new Future.value();
+    if (_disconnected) return Future.value();
 
-    _addStreamCompleter = new Completer.sync();
+    _addStreamCompleter = Completer.sync();
     _addStreamSubscription = stream.listen(_inner.add,
         onError: _addError, onDone: _addStreamCompleter.complete);
     return _addStreamCompleter.future.then((_) {
@@ -170,7 +169,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
   Future close() {
     if (_inAddStream) {
-      throw new StateError("Cannot close sink while adding stream.");
+      throw StateError("Cannot close sink while adding stream.");
     }
 
     if (_closed) return done;

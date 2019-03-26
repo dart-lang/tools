@@ -10,7 +10,7 @@ import '../stream_channel.dart';
 import 'stream_channel_transformer.dart';
 
 /// The canonical instance of [JsonDocumentTransformer].
-final jsonDocument = new JsonDocumentTransformer();
+final jsonDocument = JsonDocumentTransformer();
 
 /// A [StreamChannelTransformer] that transforms JSON documents—strings that
 /// contain individual objects encoded as JSON—into decoded Dart objects.
@@ -31,16 +31,16 @@ class JsonDocumentTransformer
   /// The [reviver] and [toEncodable] arguments work the same way as the
   /// corresponding arguments to [new JsonCodec].
   JsonDocumentTransformer({reviver(key, value), toEncodable(object)})
-      : _codec = new JsonCodec(reviver: reviver, toEncodable: toEncodable);
+      : _codec = JsonCodec(reviver: reviver, toEncodable: toEncodable);
 
   JsonDocumentTransformer._(this._codec);
 
   StreamChannel<Object> bind(StreamChannel<String> channel) {
     var stream = channel.stream.map(_codec.decode);
-    var sink = new StreamSinkTransformer<Object, String>.fromHandlers(
+    var sink = StreamSinkTransformer<Object, String>.fromHandlers(
         handleData: (data, sink) {
       sink.add(_codec.encode(data));
     }).bind(channel.sink);
-    return new StreamChannel.withCloseGuarantee(stream, sink);
+    return StreamChannel.withCloseGuarantee(stream, sink);
   }
 }

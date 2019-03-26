@@ -8,18 +8,18 @@ import 'package:async/async.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
-final _delayTransformer = new StreamTransformer.fromHandlers(
-    handleData: (data, sink) => new Future.microtask(() => sink.add(data)),
-    handleDone: (sink) => new Future.microtask(() => sink.close()));
+final _delayTransformer = StreamTransformer.fromHandlers(
+    handleData: (data, sink) => Future.microtask(() => sink.add(data)),
+    handleDone: (sink) => Future.microtask(() => sink.close()));
 
 final _delaySinkTransformer =
-    new StreamSinkTransformer.fromStreamTransformer(_delayTransformer);
+    StreamSinkTransformer.fromStreamTransformer(_delayTransformer);
 
 void main() {
   StreamChannelController controller;
   StreamChannel channel;
   setUp(() {
-    controller = new StreamChannelController();
+    controller = StreamChannelController();
 
     // Add a bunch of layers of asynchronous dispatch between the channel and
     // the underlying controllers.
@@ -30,7 +30,7 @@ void main() {
       sink = _delaySinkTransformer.bind(sink);
     }
 
-    channel = new StreamChannel.withCloseGuarantee(stream, sink);
+    channel = StreamChannel.withCloseGuarantee(stream, sink);
   });
 
   test(

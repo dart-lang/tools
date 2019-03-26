@@ -72,7 +72,7 @@ abstract class StreamChannel<T> {
   /// [StreamChannel] documentation. If they don't do so natively,
   /// [StreamChannel.withGuarantees] should be used instead.
   factory StreamChannel(Stream<T> stream, StreamSink<T> sink) =>
-      new _StreamChannel<T>(stream, sink);
+      _StreamChannel<T>(stream, sink);
 
   /// Creates a new [StreamChannel] that communicates over [stream] and [sink].
   ///
@@ -85,8 +85,8 @@ abstract class StreamChannel<T> {
   /// [sink]. If any are, the connection will close and the error will be
   /// forwarded to [sink].done.
   factory StreamChannel.withGuarantees(Stream<T> stream, StreamSink<T> sink,
-          {bool allowSinkErrors: true}) =>
-      new GuaranteeChannel(stream, sink, allowSinkErrors: allowSinkErrors);
+          {bool allowSinkErrors = true}) =>
+      GuaranteeChannel(stream, sink, allowSinkErrors: allowSinkErrors);
 
   /// Creates a new [StreamChannel] that communicates over [stream] and [sink].
   ///
@@ -99,7 +99,7 @@ abstract class StreamChannel<T> {
   /// [StreamChannel.withGuarantees].
   factory StreamChannel.withCloseGuarantee(
           Stream<T> stream, StreamSink<T> sink) =>
-      new CloseGuaranteeChannel(stream, sink);
+      CloseGuaranteeChannel(stream, sink);
 
   /// Connects this to [other], so that any values emitted by either are sent
   /// directly to the other.
@@ -162,11 +162,11 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
       changeSink(transformer.bind);
 
   StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream)) =>
-      new StreamChannel.withCloseGuarantee(change(stream), sink);
+      StreamChannel.withCloseGuarantee(change(stream), sink);
 
   StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink)) =>
-      new StreamChannel.withCloseGuarantee(stream, change(sink));
+      StreamChannel.withCloseGuarantee(stream, change(sink));
 
-  StreamChannel<S> cast<S>() => new StreamChannel(
+  StreamChannel<S> cast<S>() => StreamChannel(
       DelegatingStream.typed(stream), DelegatingStreamSink.typed(sink));
 }

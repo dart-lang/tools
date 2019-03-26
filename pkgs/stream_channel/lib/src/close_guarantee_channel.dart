@@ -27,8 +27,8 @@ class CloseGuaranteeChannel<T> extends StreamChannelMixin<T> {
   bool _disconnected = false;
 
   CloseGuaranteeChannel(Stream<T> innerStream, StreamSink<T> innerSink) {
-    _sink = new _CloseGuaranteeSink<T>(innerSink, this);
-    _stream = new _CloseGuaranteeStream<T>(innerStream, this);
+    _sink = _CloseGuaranteeSink<T>(innerSink, this);
+    _stream = _CloseGuaranteeStream<T>(innerStream, this);
   }
 }
 

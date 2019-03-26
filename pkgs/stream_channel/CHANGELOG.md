@@ -1,3 +1,8 @@
+## 1.6.9
+
+* Require `2.0.0` or newer SDK.
+* Drop unnecessary `new` and `const`.
+
 ## 1.6.8
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

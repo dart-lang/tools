@@ -38,11 +38,11 @@ class Disconnector<T> implements StreamChannelTransformer<T, T> {
         _sinks.clear();
         return Future.wait(futures, eagerError: true);
       });
-  final _disconnectMemo = new AsyncMemoizer();
+  final _disconnectMemo = AsyncMemoizer();
 
   StreamChannel<T> bind(StreamChannel<T> channel) {
     return channel.changeSink((innerSink) {
-      var sink = new _DisconnectorSink<T>(innerSink);
+      var sink = _DisconnectorSink<T>(innerSink);
 
       if (isDisconnected) {
         // Ignore errors here, because otherwise there would be no way for the
@@ -84,9 +84,9 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   _DisconnectorSink(this._inner);
 
   void add(T data) {
-    if (_closed) throw new StateError("Cannot add event after closing.");
+    if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
-      throw new StateError("Cannot add event while adding stream.");
+      throw StateError("Cannot add event while adding stream.");
     }
     if (_isDisconnected) return;
 
@@ -94,9 +94,9 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   }
 
   void addError(error, [StackTrace stackTrace]) {
-    if (_closed) throw new StateError("Cannot add event after closing.");
+    if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
-      throw new StateError("Cannot add event while adding stream.");
+      throw StateError("Cannot add event while adding stream.");
     }
     if (_isDisconnected) return;
 
@@ -104,13 +104,13 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   }
 
   Future addStream(Stream<T> stream) {
-    if (_closed) throw new StateError("Cannot add stream after closing.");
+    if (_closed) throw StateError("Cannot add stream after closing.");
     if (_inAddStream) {
-      throw new StateError("Cannot add stream while adding stream.");
+      throw StateError("Cannot add stream while adding stream.");
     }
-    if (_isDisconnected) return new Future.value();
+    if (_isDisconnected) return Future.value();
 
-    _addStreamCompleter = new Completer.sync();
+    _addStreamCompleter = Completer.sync();
     _addStreamSubscription = stream.listen(_inner.add,
         onError: _inner.addError, onDone: _addStreamCompleter.complete);
     return _addStreamCompleter.future.then((_) {
@@ -121,7 +121,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
 
   Future close() {
     if (_inAddStream) {
-      throw new StateError("Cannot close sink while adding stream.");
+      throw StateError("Cannot close sink while adding stream.");
     }
 
     _closed = true;
