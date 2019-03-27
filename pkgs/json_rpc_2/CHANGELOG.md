@@ -1,3 +1,7 @@
+## 2.0.9
+
+* Allow `stream_channel` version 2.x
+
 ## 2.0.8
 
 * Updated SDK version to 2.0.0-dev.17.0
