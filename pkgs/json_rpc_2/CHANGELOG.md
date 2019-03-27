@@ -1,4 +1,4 @@
-## 2.0.9
+## 2.0.10
 
 * Allow `stream_channel` version 2.x
 
