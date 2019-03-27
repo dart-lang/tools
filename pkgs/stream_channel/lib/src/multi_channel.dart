@@ -45,6 +45,7 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   /// The default input stream.
   ///
   /// This connects to the remote [sink].
+  @override
   Stream<T> get stream;
 
   /// The default output stream.
@@ -52,6 +53,7 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   /// This connects to the remote [stream]. If this is closed, the remote
   /// [stream] will close, but other virtual channels will remain open and new
   /// virtual channels may be opened.
+  @override
   StreamSink<T> get sink;
 
   /// Creates a new [MultiChannel] that sends and receives messages over
@@ -88,7 +90,9 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   /// The subscription to [_inner].stream.
   StreamSubscription<dynamic> _innerStreamSubscription;
 
+  @override
   Stream<T> get stream => _mainController.foreign.stream;
+  @override
   StreamSink<T> get sink => _mainController.foreign.sink;
 
   /// The controller for this channel.
@@ -165,6 +169,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
         onError: _mainController.local.sink.addError);
   }
 
+  @override
   VirtualChannel<T> virtualChannel([int id]) {
     int inputId;
     int outputId;
@@ -256,10 +261,13 @@ class VirtualChannel<T> extends StreamChannelMixin<T>
   /// except that it will be JSON-serializable.
   final int id;
 
+  @override
   final Stream<T> stream;
+  @override
   final StreamSink<T> sink;
 
   VirtualChannel._(this._parent, this.id, this.stream, this.sink);
 
+  @override
   VirtualChannel<T> virtualChannel([id]) => _parent.virtualChannel(id);
 }

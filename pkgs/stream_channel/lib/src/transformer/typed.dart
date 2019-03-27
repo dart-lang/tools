@@ -12,6 +12,7 @@ class TypeSafeStreamChannelTransformer<S, T>
 
   TypeSafeStreamChannelTransformer(this._inner);
 
+  @override
   StreamChannel<S> bind(StreamChannel<T> channel) =>
       _inner.bind(channel).cast();
 }

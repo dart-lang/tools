@@ -14,7 +14,9 @@ class DelegatingStreamChannel<T> extends StreamChannelMixin<T> {
   /// The inner channel to which methods are forwarded.
   final StreamChannel<T> _inner;
 
+  @override
   Stream<T> get stream => _inner.stream;
+  @override
   StreamSink<T> get sink => _inner.sink;
 
   DelegatingStreamChannel(this._inner);

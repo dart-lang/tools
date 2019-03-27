@@ -24,7 +24,9 @@ import '../stream_channel.dart';
 /// ensure that they always close the [sink] of every [IsolateChannel] they use
 /// to avoid leaving dangling [ReceivePort]s.
 class IsolateChannel<T> extends StreamChannelMixin<T> {
+  @override
   final Stream<T> stream;
+  @override
   final StreamSink<T> sink;
 
   /// Connects to a remote channel that was created with

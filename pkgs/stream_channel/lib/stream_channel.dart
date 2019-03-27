@@ -138,7 +138,9 @@ abstract class StreamChannel<T> {
 /// This is distinct from [StreamChannel] so that it can use
 /// [StreamChannelMixin].
 class _StreamChannel<T> extends StreamChannelMixin<T> {
+  @override
   final Stream<T> stream;
+  @override
   final StreamSink<T> sink;
 
   _StreamChannel(this.stream, this.sink);
@@ -147,26 +149,33 @@ class _StreamChannel<T> extends StreamChannelMixin<T> {
 /// A mixin that implements the instance methods of [StreamChannel] in terms of
 /// [stream] and [sink].
 abstract class StreamChannelMixin<T> implements StreamChannel<T> {
+  @override
   void pipe(StreamChannel<T> other) {
     stream.pipe(other.sink);
     other.stream.pipe(sink);
   }
 
+  @override
   StreamChannel<S> transform<S>(StreamChannelTransformer<S, T> transformer) =>
       transformer.bind(this);
 
+  @override
   StreamChannel<T> transformStream(StreamTransformer<T, T> transformer) =>
       changeStream(transformer.bind);
 
+  @override
   StreamChannel<T> transformSink(StreamSinkTransformer<T, T> transformer) =>
       changeSink(transformer.bind);
 
+  @override
   StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream)) =>
       StreamChannel.withCloseGuarantee(change(stream), sink);
 
+  @override
   StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink)) =>
       StreamChannel.withCloseGuarantee(stream, change(sink));
 
+  @override
   StreamChannel<S> cast<S>() => StreamChannel(
       DelegatingStream.typed(stream), DelegatingStreamSink.typed(sink));
 }

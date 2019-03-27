@@ -40,6 +40,7 @@ class Disconnector<T> implements StreamChannelTransformer<T, T> {
       });
   final _disconnectMemo = AsyncMemoizer();
 
+  @override
   StreamChannel<T> bind(StreamChannel<T> channel) {
     return channel.changeSink((innerSink) {
       var sink = _DisconnectorSink<T>(innerSink);
@@ -62,6 +63,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   /// The inner sink.
   final StreamSink<T> _inner;
 
+  @override
   Future get done => _inner.done;
 
   /// Whether [Disconnector.disconnect] has been called.
@@ -83,6 +85,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
 
   _DisconnectorSink(this._inner);
 
+  @override
   void add(T data) {
     if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
@@ -93,6 +96,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
     _inner.add(data);
   }
 
+  @override
   void addError(error, [StackTrace stackTrace]) {
     if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
@@ -103,6 +107,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
     _inner.addError(error, stackTrace);
   }
 
+  @override
   Future addStream(Stream<T> stream) {
     if (_closed) throw StateError("Cannot add stream after closing.");
     if (_inAddStream) {
@@ -119,6 +124,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
     });
   }
 
+  @override
   Future close() {
     if (_inAddStream) {
       throw StateError("Cannot close sink while adding stream.");

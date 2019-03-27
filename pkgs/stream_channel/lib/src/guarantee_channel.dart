@@ -12,8 +12,10 @@ import '../stream_channel.dart';
 ///
 /// This is exposed via [new StreamChannel.withGuarantees].
 class GuaranteeChannel<T> extends StreamChannelMixin<T> {
+  @override
   Stream<T> get stream => _streamController.stream;
 
+  @override
   StreamSink<T> get sink => _sink;
   _GuaranteeSink<T> _sink;
 
@@ -78,6 +80,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   /// The [GuaranteeChannel] this belongs to.
   final GuaranteeChannel<T> _channel;
 
+  @override
   Future get done => _doneCompleter.future;
   final _doneCompleter = Completer();
 
@@ -110,6 +113,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   _GuaranteeSink(this._inner, this._channel, {bool allowErrors = true})
       : _allowErrors = allowErrors;
 
+  @override
   void add(T data) {
     if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
@@ -120,6 +124,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
     _inner.add(data);
   }
 
+  @override
   void addError(error, [StackTrace stackTrace]) {
     if (_closed) throw StateError("Cannot add event after closing.");
     if (_inAddStream) {
@@ -151,6 +156,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
     _inner.close().catchError((_) {});
   }
 
+  @override
   Future addStream(Stream<T> stream) {
     if (_closed) throw StateError("Cannot add stream after closing.");
     if (_inAddStream) {
@@ -167,6 +173,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
     });
   }
 
+  @override
   Future close() {
     if (_inAddStream) {
       throw StateError("Cannot close sink while adding stream.");

@@ -14,9 +14,11 @@ import '../stream_channel.dart';
 ///
 /// This is exposed via [new StreamChannel.withCloseGuarantee].
 class CloseGuaranteeChannel<T> extends StreamChannelMixin<T> {
+  @override
   Stream<T> get stream => _stream;
   _CloseGuaranteeStream<T> _stream;
 
+  @override
   StreamSink<T> get sink => _sink;
   _CloseGuaranteeSink<T> _sink;
 
@@ -45,6 +47,7 @@ class _CloseGuaranteeStream<T> extends Stream<T> {
 
   _CloseGuaranteeStream(this._inner, this._channel);
 
+  @override
   StreamSubscription<T> listen(void onData(T event),
       {Function onError, void onDone(), bool cancelOnError}) {
     // If the channel is already disconnected, we shouldn't dispatch anything
@@ -73,6 +76,7 @@ class _CloseGuaranteeSink<T> extends DelegatingStreamSink<T> {
 
   _CloseGuaranteeSink(StreamSink<T> inner, this._channel) : super(inner);
 
+  @override
   Future close() {
     var done = super.close();
     _channel._disconnected = true;

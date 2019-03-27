@@ -35,6 +35,7 @@ class JsonDocumentTransformer
 
   JsonDocumentTransformer._(this._codec);
 
+  @override
   StreamChannel<Object> bind(StreamChannel<String> channel) {
     var stream = channel.stream.map(_codec.decode);
     var sink = StreamSinkTransformer<Object, String>.fromHandlers(

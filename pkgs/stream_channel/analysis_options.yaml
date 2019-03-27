@@ -8,5 +8,6 @@ analyzer:
 
 linter:
   rules:
+    - annotate_overrides
     - comment_references
     - prefer_typing_uninitialized_variables
