@@ -8,7 +8,6 @@ import 'dart:convert';
 import 'package:async/async.dart';
 
 import '../stream_channel.dart';
-import 'transformer/typed.dart';
 
 /// A [StreamChannelTransformer] transforms the events being passed to and
 /// emitted by a [StreamChannel].
@@ -31,21 +30,6 @@ class StreamChannelTransformer<S, T> {
 
   /// The transformer to use on the channel's sink.
   final StreamSinkTransformer<S, T> _sinkTransformer;
-
-  /// Creates a wrapper that coerces the type of [transformer].
-  ///
-  /// This soundly converts a [StreamChannelTransformer] to a
-  /// `StreamChannelTransformer<S, T>`, regardless of its original generic type,
-  /// by asserting that the events emitted by the transformed channel's stream
-  /// are instances of `T` whenever they're provided. If they're not, the stream
-  /// throws a [CastError]. This also means that calls to [StreamSink.add] on
-  /// the transformed channel's sink may throw a [CastError] if the argument
-  /// type doesn't match the reified type of the sink.
-  static StreamChannelTransformer<S, T> typed<S, T>(
-          StreamChannelTransformer transformer) =>
-      transformer is StreamChannelTransformer<S, T>
-          ? transformer
-          : TypeSafeStreamChannelTransformer(transformer);
 
   /// Creates a [StreamChannelTransformer] from existing stream and sink
   /// transformers.
