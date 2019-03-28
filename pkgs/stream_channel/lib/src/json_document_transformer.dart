@@ -9,9 +9,6 @@ import 'package:async/async.dart';
 import '../stream_channel.dart';
 import 'stream_channel_transformer.dart';
 
-/// The canonical instance of [JsonDocumentTransformer].
-final jsonDocument = JsonDocumentTransformer();
-
 /// A [StreamChannelTransformer] that transforms JSON documents—strings that
 /// contain individual objects encoded as JSON—into decoded Dart objects.
 ///
@@ -21,26 +18,18 @@ final jsonDocument = JsonDocumentTransformer();
 /// If the transformed channel emits invalid JSON, this emits a
 /// [FormatException]. If an unencodable object is added to the sink, it
 /// synchronously throws a [JsonUnsupportedObjectError].
-class JsonDocumentTransformer
-    implements StreamChannelTransformer<Object, String> {
-  /// The underlying codec that implements the encoding and decoding logic.
-  final JsonCodec _codec;
+final StreamChannelTransformer<Object, String> jsonDocument =
+    const _JsonDocument();
 
-  /// Creates a new transformer.
-  ///
-  /// The [reviver] and [toEncodable] arguments work the same way as the
-  /// corresponding arguments to [new JsonCodec].
-  JsonDocumentTransformer({reviver(key, value), toEncodable(object)})
-      : _codec = JsonCodec(reviver: reviver, toEncodable: toEncodable);
-
-  JsonDocumentTransformer._(this._codec);
+class _JsonDocument implements StreamChannelTransformer<Object, String> {
+  const _JsonDocument();
 
   @override
   StreamChannel<Object> bind(StreamChannel<String> channel) {
-    var stream = channel.stream.map(_codec.decode);
+    var stream = channel.stream.map(jsonDecode);
     var sink = StreamSinkTransformer<Object, String>.fromHandlers(
         handleData: (data, sink) {
-      sink.add(_codec.encode(data));
+      sink.add(jsonEncode(data));
     }).bind(channel.sink);
     return StreamChannel.withCloseGuarantee(stream, sink);
   }

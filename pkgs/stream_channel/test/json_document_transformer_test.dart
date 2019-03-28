@@ -32,20 +32,6 @@ void main() {
         completion(equals(jsonEncode({"foo": "bar"}))));
   });
 
-  test("supports the reviver function", () {
-    var transformed = channel
-        .transform(JsonDocumentTransformer(reviver: (key, value) => "decoded"));
-    streamController.add('{"foo": "bar"}');
-    expect(transformed.stream.first, completion(equals("decoded")));
-  });
-
-  test("supports the toEncodable function", () {
-    var transformed = channel
-        .transform(JsonDocumentTransformer(toEncodable: (object) => "encoded"));
-    transformed.sink.add(Object());
-    expect(sinkController.stream.first, completion(equals('"encoded"')));
-  });
-
   test("emits a stream error when incoming JSON is malformed", () {
     var transformed = channel.transform(jsonDocument);
     streamController.add("{invalid");
