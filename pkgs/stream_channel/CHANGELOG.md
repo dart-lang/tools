@@ -1,3 +1,10 @@
+## 2.0.0
+
+* **Breaking change** `IsolateChannel` requires a separate import
+  `package:stram_channel/isolate_channel.dart`.
+  `package:stream_channel/stream_channel.dart` will now not trigger any platform
+  concerns due to importing `dart:isolate`.
+
 ## 1.7.0
 
 * Make `IsolateChannel` available through
