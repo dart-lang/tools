@@ -81,7 +81,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   final GuaranteeChannel<T> _channel;
 
   @override
-  Future get done => _doneCompleter.future;
+  Future<void> get done => _doneCompleter.future;
   final _doneCompleter = Completer();
 
   /// Whether connection is disconnected.
@@ -157,7 +157,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   }
 
   @override
-  Future addStream(Stream<T> stream) {
+  Future<void> addStream(Stream<T> stream) {
     if (_closed) throw StateError("Cannot add stream after closing.");
     if (_inAddStream) {
       throw StateError("Cannot add stream while adding stream.");
@@ -174,7 +174,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   }
 
   @override
-  Future close() {
+  Future<void> close() {
     if (_inAddStream) {
       throw StateError("Cannot close sink while adding stream.");
     }

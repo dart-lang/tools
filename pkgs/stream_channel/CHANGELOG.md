@@ -10,6 +10,7 @@
   available.
 * Remove `StreamChannelTransformer.typed`. Use `.cast` on the transformed
   channel instead.
+* Change `Future<dynamic>` returns to `Future<void>`.
 
 ## 1.7.0
 

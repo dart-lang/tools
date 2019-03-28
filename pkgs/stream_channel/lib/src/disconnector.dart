@@ -33,7 +33,7 @@ class Disconnector<T> implements StreamChannelTransformer<T, T> {
   /// Returns a future that completes when all inner sinks' [StreamSink.close]
   /// futures have completed. Note that a [StreamController]'s sink won't close
   /// until the corresponding stream has a listener.
-  Future disconnect() => _disconnectMemo.runOnce(() {
+  Future<void> disconnect() => _disconnectMemo.runOnce(() {
         var futures = _sinks.map((sink) => sink._disconnect()).toList();
         _sinks.clear();
         return Future.wait(futures, eagerError: true);
@@ -64,7 +64,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   final StreamSink<T> _inner;
 
   @override
-  Future get done => _inner.done;
+  Future<void> get done => _inner.done;
 
   /// Whether [Disconnector.disconnect] has been called.
   var _isDisconnected = false;
@@ -108,7 +108,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   }
 
   @override
-  Future addStream(Stream<T> stream) {
+  Future<void> addStream(Stream<T> stream) {
     if (_closed) throw StateError("Cannot add stream after closing.");
     if (_inAddStream) {
       throw StateError("Cannot add stream while adding stream.");
@@ -125,7 +125,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   }
 
   @override
-  Future close() {
+  Future<void> close() {
     if (_inAddStream) {
       throw StateError("Cannot close sink while adding stream.");
     }
@@ -138,7 +138,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   ///
   /// This closes the underlying sink and stops forwarding events. It returns
   /// the [StreamSink.close] future for the underlying sink.
-  Future _disconnect() {
+  Future<void> _disconnect() {
     _isDisconnected = true;
     var future = _inner.close();
 

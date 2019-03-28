@@ -77,7 +77,7 @@ class _CloseGuaranteeSink<T> extends DelegatingStreamSink<T> {
   _CloseGuaranteeSink(StreamSink<T> inner, this._channel) : super(inner);
 
   @override
-  Future close() {
+  Future<void> close() {
     var done = super.close();
     _channel._disconnected = true;
     if (_channel._subscription != null) {
