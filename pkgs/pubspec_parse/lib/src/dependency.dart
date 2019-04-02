@@ -21,15 +21,7 @@ Map<String, Dependency> parseDeps(Map source) =>
           // This is likely a "synthetic" map created from a String value
           // Use `source` to throw this exception with an actual YamlMap and
           // extract the associated error information.
-
-          var message = e.message;
-          final innerError = e.innerError;
-          // json_annotation should handle FormatException...
-          // https://github.com/dart-lang/json_serializable/issues/233
-          if (innerError is FormatException) {
-            message = innerError.message;
-          }
-          throw CheckedFromJsonException(source, key, e.className, message);
+          throw CheckedFromJsonException(source, key, e.className, e.message);
         }
         rethrow;
       }
