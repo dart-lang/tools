@@ -12,7 +12,7 @@ import 'shared_stdin.dart';
 /// Type definition for both [io.Process.start] and [ProcessManager.spawn].
 ///
 /// Useful for taking different implementations of this base functionality.
-typedef Future<io.Process> StartProcess(
+typedef StartProcess = Future<io.Process> Function(
   String executable,
   List<String> arguments, {
   String workingDirectory,

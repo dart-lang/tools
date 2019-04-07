@@ -44,6 +44,7 @@ linter:
     - prefer_contains
     - prefer_final_fields
     - prefer_final_locals
+    - prefer_generic_function_type_aliases
     - prefer_initializing_formals
     - prefer_interpolation_to_compose_strings
     - prefer_is_empty
@@ -51,7 +52,7 @@ linter:
     - recursive_getters
     - slash_for_doc_comments
     - type_init_formals
-    - unnecessary_const
     - unnecessary_brace_in_string_interps
+    - unnecessary_const
     - unnecessary_new
     - unnecessary_this
