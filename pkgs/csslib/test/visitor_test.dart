@@ -12,7 +12,7 @@ import 'testing.dart';
 
 class ClassVisitor extends Visitor {
   final List expectedClasses;
-  final Set<String> foundClasses = new Set();
+  final Set<String> foundClasses = Set();
 
   ClassVisitor(this.expectedClasses);
 
@@ -42,7 +42,7 @@ void testClassVisitors() {
   expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
-  var clsVisits = new ClassVisitor(['foobar'])..visitTree(s);
+  var clsVisits = ClassVisitor(['foobar'])..visitTree(s);
   expect(clsVisits.matches, true);
 
   in1 = '''
@@ -56,8 +56,7 @@ void testClassVisitors() {
   expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
-  clsVisits = new ClassVisitor(['foobar1', 'xyzzy', 'foo', 'hello'])
-    ..visitTree(s);
+  clsVisits = ClassVisitor(['foobar1', 'xyzzy', 'foo', 'hello'])..visitTree(s);
   expect(clsVisits.matches, true);
 
   expect(prettyPrint(s), r'''
@@ -82,7 +81,7 @@ class PolyfillEmitter extends CssPrinter {
 }
 
 String polyfillPrint(String prefix, StyleSheet ss) =>
-    (new PolyfillEmitter(prefix)..visitTree(ss, pretty: true)).toString();
+    (PolyfillEmitter(prefix)..visitTree(ss, pretty: true)).toString();
 
 void testPolyFill() {
   var errors = <Message>[];

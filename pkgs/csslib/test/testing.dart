@@ -12,16 +12,16 @@ import 'package:csslib/src/options.dart';
 
 export 'package:csslib/src/options.dart';
 
-const simpleOptionsWithCheckedAndWarningsAsErrors = const PreprocessorOptions(
+const simpleOptionsWithCheckedAndWarningsAsErrors = PreprocessorOptions(
     useColors: false,
     checked: true,
     warningsAsErrors: true,
     inputFile: 'memory');
 
 const simpleOptions =
-    const PreprocessorOptions(useColors: false, inputFile: 'memory');
+    PreprocessorOptions(useColors: false, inputFile: 'memory');
 
-const options = const PreprocessorOptions(
+const options = PreprocessorOptions(
     useColors: false, warningsAsErrors: true, inputFile: 'memory');
 
 /// Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
@@ -40,8 +40,8 @@ StyleSheet parseCss(String cssInput,
 StyleSheet compileCss(String cssInput,
         {List<Message> errors,
         PreprocessorOptions opts,
-        bool polyfill: false,
-        List<StyleSheet> includes: null}) =>
+        bool polyfill = false,
+        List<StyleSheet> includes}) =>
     compile(cssInput,
         errors: errors,
         options:
@@ -54,10 +54,10 @@ StyleSheet polyFillCompileCss(input,
     compileCss(input, errors: errors, polyfill: true, opts: opts);
 
 /// CSS emitter walks the style sheet tree and emits readable CSS.
-final _emitCss = new CssPrinter();
+final _emitCss = CssPrinter();
 
 /// Simple Visitor does nothing but walk tree.
-final _cssVisitor = new Visitor();
+final _cssVisitor = Visitor();
 
 /// Pretty printer for CSS.
 String prettyPrint(StyleSheet ss) {

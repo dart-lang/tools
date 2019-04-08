@@ -8,8 +8,8 @@ part of csslib.visitor;
 
 /// Helper function to dump the CSS AST.
 String treeToDebugString(StyleSheet styleSheet, [bool useSpan = false]) {
-  var to = new TreeOutput();
-  new _TreePrinter(to, useSpan)..visitTree(styleSheet);
+  var to = TreeOutput();
+  _TreePrinter(to, useSpan)..visitTree(styleSheet);
   return to.toString();
 }
 

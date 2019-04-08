@@ -6,14 +6,14 @@ part of csslib.visitor;
 
 /// Visitor that produces a formatted string representation of the CSS tree.
 class CssPrinter extends Visitor {
-  StringBuffer _buff = new StringBuffer();
+  StringBuffer _buff = StringBuffer();
   bool prettyPrint = true;
 
   /// Walk the [tree] Stylesheet. [pretty] if true emits line breaks, extra
   /// spaces, friendly property values, etc., if false emits compacted output.
-  void visitTree(StyleSheet tree, {bool pretty: false}) {
+  void visitTree(StyleSheet tree, {bool pretty = false}) {
     prettyPrint = pretty;
-    _buff = new StringBuffer();
+    _buff = StringBuffer();
     visitStyleSheet(tree);
   }
 
@@ -177,7 +177,7 @@ class CssPrinter extends Visitor {
   }
 
   void visitImportDirective(ImportDirective node) {
-    bool isStartingQuote(String ch) => ('\'"'.indexOf(ch[0]) >= 0);
+    bool isStartingQuote(String ch) => ('\'"'.contains(ch[0]));
 
     if (_isTesting) {
       // Emit assuming url() was parsed; most suite tests use url function.
@@ -223,7 +223,7 @@ class CssPrinter extends Visitor {
   }
 
   void visitNamespaceDirective(NamespaceDirective node) {
-    bool isStartingQuote(String ch) => ('\'"'.indexOf(ch) >= 0);
+    bool isStartingQuote(String ch) => ('\'"'.contains(ch));
 
     if (isStartingQuote(node._uri)) {
       emit(' @namespace ${node.prefix}"${node._uri}"');

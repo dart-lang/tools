@@ -436,12 +436,12 @@ class Visitor implements VisitorBase {
 
   visitBinaryExpression(BinaryExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitUnaryExpression(UnaryExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitIdentifier(Identifier node) {}
@@ -456,36 +456,36 @@ class Visitor implements VisitorBase {
 
   visitFontExpression(FontExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitBoxExpression(BoxExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitMarginExpression(MarginExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitBorderExpression(BorderExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitHeightExpression(HeightExpression node) {
     // TODO(terry): TB
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitPaddingExpression(PaddingExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   visitWidthExpression(WidthExpression node) {
     // TODO(terry): TBD
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 }

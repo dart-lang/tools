@@ -18,8 +18,8 @@ abstract class TreeNode {
 
   /// A multiline string showing the node and its children.
   String toDebugString() {
-    var to = new TreeOutput();
-    var tp = new _TreePrinter(to, true);
+    var to = TreeOutput();
+    var tp = _TreePrinter(to, true);
     this.visit(tp);
     return to.buf.toString();
   }
@@ -33,7 +33,7 @@ abstract class Expression extends TreeNode {
 /// Simple class to provide a textual dump of trees for debugging.
 class TreeOutput {
   int depth = 0;
-  final StringBuffer buf = new StringBuffer();
+  final StringBuffer buf = StringBuffer();
   VisitorBase printer;
 
   void write(String s) {

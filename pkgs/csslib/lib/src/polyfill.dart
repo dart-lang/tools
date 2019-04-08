@@ -8,10 +8,9 @@ part of csslib.parser;
 /// understand (var, calc, etc.).
 class PolyFill {
   final Messages _messages;
-  Map<String, VarDefinition> _allVarDefinitions =
-      new Map<String, VarDefinition>();
+  Map<String, VarDefinition> _allVarDefinitions = Map<String, VarDefinition>();
 
-  Set<StyleSheet> allStyleSheets = new Set<StyleSheet>();
+  Set<StyleSheet> allStyleSheets = Set<StyleSheet>();
 
   /// [_pseudoElements] list of known pseudo attributes found in HTML, any
   /// CSS pseudo-elements 'name::custom-element' is mapped to the manged name
@@ -20,20 +19,20 @@ class PolyFill {
 
   /// Run the analyzer on every file that is a style sheet or any component that
   /// has a style tag.
-  void process(StyleSheet styleSheet, {List<StyleSheet> includes: null}) {
+  void process(StyleSheet styleSheet, {List<StyleSheet> includes}) {
     if (includes != null) {
       processVarDefinitions(includes);
     }
     processVars(styleSheet);
 
     // Remove all var definitions for this style sheet.
-    new _RemoveVarDefinitions().visitTree(styleSheet);
+    _RemoveVarDefinitions().visitTree(styleSheet);
   }
 
   /// Process all includes looking for var definitions.
   void processVarDefinitions(List<StyleSheet> includes) {
     for (var include in includes) {
-      _allVarDefinitions = (new _VarDefinitionsIncludes(_allVarDefinitions)
+      _allVarDefinitions = (_VarDefinitionsIncludes(_allVarDefinitions)
             ..visitTree(include))
           .varDefs;
     }
@@ -42,7 +41,7 @@ class PolyFill {
   void processVars(StyleSheet styleSheet) {
     // Build list of all var definitions.
     var mainStyleSheetVarDefs =
-        (new _VarDefAndUsage(this._messages, _allVarDefinitions)
+        (_VarDefAndUsage(this._messages, _allVarDefinitions)
               ..visitTree(styleSheet))
             .varDefs;
 
@@ -82,7 +81,7 @@ class _VarDefinitionsIncludes extends Visitor {
 class _VarDefAndUsage extends Visitor {
   final Messages _messages;
   final Map<String, VarDefinition> _knownVarDefs;
-  final Map<String, VarDefinition> varDefs = new Map<String, VarDefinition>();
+  final Map<String, VarDefinition> varDefs = Map<String, VarDefinition>();
 
   VarDefinition currVarDefinition;
   List<Expression> currentExpressions;

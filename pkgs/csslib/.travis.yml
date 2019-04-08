@@ -1,15 +1,19 @@
 language: dart
 
 dart:
+  - 2.0.0
   - dev
 
 dart_task:
   - test: --platform vm
   - test: --platform firefox -j 1
-  - dartanalyzer
 
 matrix:
   include:
+    - dart: dev
+      dartanalyzer: --fatal-infos --fatal-warnings .
+    - dart: stable
+      dartanalyzer: --fatal-warnings .
     - dart: dev
       dart_task: dartfmt
 

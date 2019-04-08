@@ -55,7 +55,7 @@ abstract class TokenizerBase {
   int getIdentifierKind();
 
   /// Snapshot of Tokenizer scanning state.
-  TokenizerState get mark => new TokenizerState(this);
+  TokenizerState get mark => TokenizerState(this);
 
   /// Restore Tokenizer scanning state.
   void restore(TokenizerState markedData) {
@@ -106,11 +106,11 @@ abstract class TokenizerBase {
   }
 
   Token _finishToken(int kind) {
-    return new Token(kind, _file.span(_startIndex, _index));
+    return Token(kind, _file.span(_startIndex, _index));
   }
 
-  Token _errorToken([String message = null]) {
-    return new ErrorToken(
+  Token _errorToken([String message]) {
+    return ErrorToken(
         TokenKind.ERROR, _file.span(_startIndex, _index), message);
   }
 
@@ -248,14 +248,14 @@ abstract class TokenizerBase {
   }
 
   Token _makeStringToken(List<int> buf, bool isPart) {
-    final s = new String.fromCharCodes(buf);
+    final s = String.fromCharCodes(buf);
     final kind = isPart ? TokenKind.STRING_PART : TokenKind.STRING;
-    return new LiteralToken(kind, _file.span(_startIndex, _index), s);
+    return LiteralToken(kind, _file.span(_startIndex, _index), s);
   }
 
   Token makeIEFilter(int start, int end) {
     var filter = _text.substring(start, end);
-    return new LiteralToken(TokenKind.STRING, _file.span(start, end), filter);
+    return LiteralToken(TokenKind.STRING, _file.span(start, end), filter);
   }
 
   Token _makeRawStringToken(bool isMultiline) {
@@ -268,8 +268,7 @@ abstract class TokenizerBase {
     } else {
       s = _text.substring(_startIndex + 2, _index - 1);
     }
-    return new LiteralToken(
-        TokenKind.STRING, _file.span(_startIndex, _index), s);
+    return LiteralToken(TokenKind.STRING, _file.span(_startIndex, _index), s);
   }
 
   Token finishMultilineString(int quote) {
@@ -306,7 +305,7 @@ abstract class TokenizerBase {
         _maybeEatChar(TokenChar.NEWLINE);
         return finishMultilineString(quote);
       } else {
-        return _makeStringToken(new List<int>(), false);
+        return _makeStringToken(List<int>(), false);
       }
     }
     return finishStringBody(quote);
@@ -342,7 +341,7 @@ abstract class TokenizerBase {
   }
 
   Token finishStringBody(int quote) {
-    var buf = new List<int>();
+    var buf = List<int>();
     while (true) {
       int ch = _nextChar();
       if (ch == quote) {

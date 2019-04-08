@@ -23,7 +23,7 @@ final String NO_COLOR = '\u001b[0m';
 
 /// Map between error levels and their display color.
 final Map<Level, String> _ERROR_COLORS = (() {
-  var colorsMap = new Map<Level, String>();
+  var colorsMap = Map<Level, String>();
   colorsMap[Level.SEVERE] = RED_COLOR;
   colorsMap[Level.WARNING] = MAGENTA_COLOR;
   colorsMap[Level.INFO] = GREEN_COLOR;
@@ -32,7 +32,7 @@ final Map<Level, String> _ERROR_COLORS = (() {
 
 /// Map between error levels and their friendly name.
 final Map<Level, String> _ERROR_LABEL = (() {
-  var labels = new Map<Level, String>();
+  var labels = Map<Level, String>();
   labels[Level.SEVERE] = 'error';
   labels[Level.WARNING] = 'warning';
   labels[Level.INFO] = 'info';
@@ -46,12 +46,12 @@ class Message {
   final SourceSpan span;
   final bool useColors;
 
-  Message(this.level, this.message, {SourceSpan span, bool useColors: false})
+  Message(this.level, this.message, {SourceSpan span, bool useColors = false})
       : this.span = span,
         this.useColors = useColors;
 
   String toString() {
-    var output = new StringBuffer();
+    var output = StringBuffer();
     bool colors = useColors && _ERROR_COLORS.containsKey(level);
     var levelColor = colors ? _ERROR_COLORS[level] : null;
     if (colors) output.write(levelColor);
@@ -69,7 +69,7 @@ class Message {
   }
 }
 
-typedef void PrintHandler(Message obj);
+typedef PrintHandler = void Function(Message obj);
 
 /// This class tracks and prints information, warnings, and errors emitted by
 /// the compiler.
@@ -81,12 +81,12 @@ class Messages {
 
   final List<Message> messages = <Message>[];
 
-  Messages({PreprocessorOptions options, this.printHandler: print})
-      : options = options != null ? options : new PreprocessorOptions();
+  Messages({PreprocessorOptions options, this.printHandler = print})
+      : options = options != null ? options : PreprocessorOptions();
 
   /// Report a compile-time CSS error.
   void error(String message, SourceSpan span) {
-    var msg = new Message(Level.SEVERE, message,
+    var msg = Message(Level.SEVERE, message,
         span: span, useColors: options.useColors);
 
     messages.add(msg);
@@ -99,7 +99,7 @@ class Messages {
     if (options.warningsAsErrors) {
       error(message, span);
     } else {
-      var msg = new Message(Level.WARNING, message,
+      var msg = Message(Level.WARNING, message,
           span: span, useColors: options.useColors);
 
       messages.add(msg);
@@ -108,8 +108,8 @@ class Messages {
 
   /// Report and informational message about what the compiler is doing.
   void info(String message, SourceSpan span) {
-    var msg = new Message(Level.INFO, message,
-        span: span, useColors: options.useColors);
+    var msg =
+        Message(Level.INFO, message, span: span, useColors: options.useColors);
 
     messages.add(msg);
 

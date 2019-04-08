@@ -18,7 +18,7 @@ class Tokenizer extends TokenizerBase {
   Tokenizer(SourceFile file, String text, bool skipWhitespace, [int index = 0])
       : super(file, text, skipWhitespace, index);
 
-  Token next({bool unicodeRange: false}) {
+  Token next({bool unicodeRange = false}) {
     // keep track of our starting position
     _startIndex = _index;
 
@@ -241,7 +241,7 @@ class Tokenizer extends TokenizerBase {
         (_peekChar() == '-'.codeUnitAt(0));
   }
 
-  Token _errorToken([String message = null]) {
+  Token _errorToken([String message]) {
     return _finishToken(TokenKind.ERROR);
   }
 
@@ -314,9 +314,9 @@ class Tokenizer extends TokenizerBase {
     }
 
     var span = _file.span(_startIndex, _index);
-    var text = new String.fromCharCodes(chars);
+    var text = String.fromCharCodes(chars);
 
-    return new IdentifierToken(text, getIdentifierKind(), span);
+    return IdentifierToken(text, getIdentifierKind(), span);
   }
 
   Token finishNumber() {

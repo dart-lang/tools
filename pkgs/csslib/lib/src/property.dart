@@ -87,7 +87,7 @@ class Color implements _StyleProperty, ColorBase {
   /// foreground).
   Color.createHsla(num hueDegree, num saturationPercent, num lightnessPercent,
       [num alpha])
-      : this._argb = new Hsla(
+      : this._argb = Hsla(
                 Color._clamp(hueDegree, 0, 360) / 360,
                 Color._clamp(saturationPercent, 0, 100) / 100,
                 Color._clamp(lightnessPercent, 0, 100) / 100,
@@ -108,7 +108,7 @@ class Color implements _StyleProperty, ColorBase {
   ///                completely transparent foreground and 1 is a completely
   ///                opaque foreground.
   Color.hslaRaw(num hue, num saturation, num lightness, [num alpha])
-      : this._argb = new Hsla(
+      : this._argb = Hsla(
                 Color._clamp(hue, 0, 1),
                 Color._clamp(saturation, 0, 1),
                 Color._clamp(lightness, 0, 1),
@@ -154,10 +154,10 @@ class Color implements _StyleProperty, ColorBase {
     int g = Color.hexToInt(_argb.substring(nextIndex, nextIndex + 2));
     nextIndex += 2;
     int b = Color.hexToInt(_argb.substring(nextIndex, nextIndex + 2));
-    return new Rgba(r, g, b, a);
+    return Rgba(r, g, b, a);
   }
 
-  Hsla get hsla => new Hsla.fromRgba(rgba);
+  Hsla get hsla => Hsla.fromRgba(rgba);
 
   int get argbValue => Color.hexToInt(_argb);
 
@@ -167,12 +167,12 @@ class Color implements _StyleProperty, ColorBase {
 
   Color darker(num amount) {
     Rgba newRgba = Color._createNewTintShadeFromRgba(rgba, -amount);
-    return new Color.hex("${newRgba.toHexArgbString()}");
+    return Color.hex("${newRgba.toHexArgbString()}");
   }
 
   Color lighter(num amount) {
     Rgba newRgba = Color._createNewTintShadeFromRgba(rgba, amount);
-    return new Color.hex("${newRgba.toHexArgbString()}");
+    return Color.hex("${newRgba.toHexArgbString()}");
   }
 
   static bool equal(ColorBase curr, other) {
@@ -224,7 +224,7 @@ class Color implements _StyleProperty, ColorBase {
       String v = color.substring(1);
       Color.hexToInt(v); // Valid hexadecimal, throws if not.
       return v;
-    } else if (color.length > 0 && color[color.length - 1] == ')') {
+    } else if (color.isNotEmpty && color[color.length - 1] == ')') {
       int type;
       if (color.indexOf("rgb(") == 0 || color.indexOf("RGB(") == 0) {
         color = color.substring(4);
@@ -239,7 +239,7 @@ class Color implements _StyleProperty, ColorBase {
         type = _hslaCss;
         color = color.substring(5);
       } else {
-        throw new UnsupportedError('CSS property not implemented');
+        throw UnsupportedError('CSS property not implemented');
       }
 
       color = color.substring(0, color.length - 1); // Strip close paren.
@@ -255,9 +255,9 @@ class Color implements _StyleProperty, ColorBase {
         case _rgbaCss:
           return Color.convertToHexString(args[0], args[1], args[2], args[3]);
         case _hslCss:
-          return new Hsla(args[0], args[1], args[2]).toHexArgbString();
+          return Hsla(args[0], args[1], args[2]).toHexArgbString();
         case _hslaCss:
-          return new Hsla(args[0], args[1], args[2], args[3]).toHexArgbString();
+          return Hsla(args[0], args[1], args[2], args[3]).toHexArgbString();
         default:
           // Type not defined UnsupportedOperationException should have thrown.
           assert(false);
@@ -321,7 +321,7 @@ class Color implements _StyleProperty, ColorBase {
       g = Color._changeTintShadeColor(rgba.g, tintShade).round().toInt();
       b = Color._changeTintShadeColor(rgba.b, tintShade).round().toInt();
     }
-    return new Rgba(r, g, b, rgba.a);
+    return Rgba(r, g, b, rgba.a);
   }
 
   // TODO(terry): This does an okay lighter/darker; better would be convert to
@@ -500,12 +500,12 @@ class Rgba implements _StyleProperty, ColorBase {
         this.a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
   factory Rgba.fromString(String hexValue) =>
-      new Color.css("#${Color._convertCssToArgb(hexValue)}").rgba;
+      Color.css("#${Color._convertCssToArgb(hexValue)}").rgba;
 
   factory Rgba.fromColor(Color color) => color.rgba;
 
   factory Rgba.fromArgbValue(num value) {
-    return new Rgba(
+    return Rgba(
         ((value.toInt() & 0xff000000) >> 0x18), // a
         ((value.toInt() & 0xff0000) >> 0x10), // r
         ((value.toInt() & 0xff00) >> 8), // g
@@ -545,7 +545,7 @@ class Rgba implements _StyleProperty, ColorBase {
       b = (255 * Rgba._hueToRGB(var1, var2, h - (1 / 3))).round().toInt();
     }
 
-    return new Rgba(r, g, b, a);
+    return Rgba(r, g, b, a);
   }
 
   static num _hueToRGB(num v1, num v2, num vH) {
@@ -595,8 +595,8 @@ class Rgba implements _StyleProperty, ColorBase {
     return value;
   }
 
-  Color get color => new Color.createRgba(r, g, b, a);
-  Hsla get hsla => new Hsla.fromRgba(this);
+  Color get color => Color.createRgba(r, g, b, a);
+  Hsla get hsla => Hsla.fromRgba(this);
 
   Rgba darker(num amount) => Color._createNewTintShadeFromRgba(this, -amount);
   Rgba lighter(num amount) => Color._createNewTintShadeFromRgba(this, amount);
@@ -625,7 +625,7 @@ class Hsla implements _StyleProperty, ColorBase {
         this._a = (alpha != null) ? Color._clamp(alpha, 0, 1) : alpha;
 
   factory Hsla.fromString(String hexValue) {
-    Rgba rgba = new Color.css("#${Color._convertCssToArgb(hexValue)}").rgba;
+    Rgba rgba = Color.css("#${Color._convertCssToArgb(hexValue)}").rgba;
     return _createFromRgba(rgba.r, rgba.g, rgba.b, rgba.a);
   }
 
@@ -668,7 +668,7 @@ class Hsla implements _StyleProperty, ColorBase {
     num maxRgb = math.max(r, math.max(g, b));
     l = (maxRgb + minRgb) / 2;
     if (l <= 0) {
-      return new Hsla(0, 0, l); // Black;
+      return Hsla(0, 0, l); // Black;
     }
 
     num vm = maxRgb - minRgb;
@@ -676,7 +676,7 @@ class Hsla implements _StyleProperty, ColorBase {
     if (s > 0) {
       s /= (l < 0.5) ? (maxRgb + minRgb) : (2 - maxRgb - minRgb);
     } else {
-      return new Hsla(0, 0, l); // White
+      return Hsla(0, 0, l); // White
     }
 
     num r2, g2, b2;
@@ -692,7 +692,7 @@ class Hsla implements _StyleProperty, ColorBase {
     }
     h /= 6;
 
-    return new Hsla(h, s, l, a);
+    return Hsla(h, s, l, a);
   }
 
   /// Returns 0..1 fraction (ratio of 360°, e.g. 1° == 1/360).
@@ -722,18 +722,17 @@ class Hsla implements _StyleProperty, ColorBase {
       ? "hsl($hueDegrees,$saturationPercentage,$lightnessPercentage)"
       : "hsla($hueDegrees,$saturationPercentage,$lightnessPercentage,$_a)";
 
-  String toHexArgbString() => new Rgba.fromHsla(this).toHexArgbString();
+  String toHexArgbString() => Rgba.fromHsla(this).toHexArgbString();
 
   int get argbValue => Color.hexToInt(this.toHexArgbString());
 
-  Color get color => new Color.createHsla(_h, _s, _l, _a);
-  Rgba get rgba => new Rgba.fromHsla(this);
+  Color get color => Color.createHsla(_h, _s, _l, _a);
+  Rgba get rgba => Rgba.fromHsla(this);
 
-  Hsla darker(num amount) =>
-      new Hsla.fromRgba(new Rgba.fromHsla(this).darker(amount));
+  Hsla darker(num amount) => Hsla.fromRgba(Rgba.fromHsla(this).darker(amount));
 
   Hsla lighter(num amount) =>
-      new Hsla.fromRgba(new Rgba.fromHsla(this).lighter(amount));
+      Hsla.fromRgba(Rgba.fromHsla(this).lighter(amount));
 
   int get hashCode => toHexArgbString().hashCode;
 }
@@ -773,9 +772,9 @@ class Border implements _StyleProperty {
     return (top == left && bottom == right && top == right)
         ? "${left}px"
         : "${top != null ? '$top' : '0'}px "
-        "${right != null ? '$right' : '0'}px "
-        "${bottom != null ? '$bottom' : '0'}px "
-        "${left != null ? '$left' : '0'}px";
+            "${right != null ? '$right' : '0'}px "
+            "${bottom != null ? '$bottom' : '0'}px "
+            "${left != null ? '$left' : '0'}px";
   }
 }
 
@@ -901,14 +900,14 @@ class FontFamily {
 class LineHeight {
   final num height;
   final bool inPixels;
-  const LineHeight(this.height, {this.inPixels: true});
+  const LineHeight(this.height, {this.inPixels = true});
 }
 
 // TODO(terry): Support @font-face fule.
 /// Font style support for size, family, weight, style, variant, and lineheight.
 class Font implements _StyleProperty {
   /// Collection of most common sans-serif fonts in order.
-  static const List<String> sansSerif = const [
+  static const List<String> sansSerif = [
     FontFamily.arial,
     FontFamily.verdana,
     FontFamily.geneva,
@@ -917,7 +916,7 @@ class Font implements _StyleProperty {
   ];
 
   /// Collection of most common serif fonts in order.
-  static const List<String> serif = const [
+  static const List<String> serif = [
     FontFamily.georgia,
     FontFamily.timesNewRoman,
     FontFamily.times,
@@ -925,14 +924,14 @@ class Font implements _StyleProperty {
   ];
 
   /// Collection of most common monospace fonts in order.
-  static const List<String> monospace = const [
+  static const List<String> monospace = [
     FontFamily.courierNew,
     FontFamily.courier,
     FontGeneric.monospace
   ];
 
   /// Collection of most common cursive fonts in order.
-  static const List<String> cursive = const [
+  static const List<String> cursive = [
     FontFamily.textile,
     FontFamily.appleChancery,
     FontFamily.zaphChancery,
@@ -940,7 +939,7 @@ class Font implements _StyleProperty {
   ];
 
   /// Collection of most common fantasy fonts in order.
-  static const List<String> fantasy = const [
+  static const List<String> fantasy = [
     FontFamily.comicSansMs,
     FontFamily.impact,
     FontFamily.webdings,
@@ -1001,7 +1000,7 @@ class Font implements _StyleProperty {
   factory Font.merge(Font a, Font b) {
     if (a == null) return b;
     if (b == null) return a;
-    return new Font._merge(a, b);
+    return Font._merge(a, b);
   }
 
   Font._merge(Font a, Font b)
@@ -1031,7 +1030,7 @@ class Font implements _StyleProperty {
     return '${size}px $_fontsAsString';
   }
 
-  Font scale(num ratio) => new Font(
+  Font scale(num ratio) => Font(
       size: size * ratio,
       family: family,
       weight: weight,
@@ -1148,7 +1147,7 @@ class BoxEdge {
       make = true;
       bottom = 0;
     }
-    return make ? new BoxEdge(left, top, right, bottom) : other;
+    return make ? BoxEdge(left, top, right, bottom) : other;
   }
 
   /// Merge the two box edge sizes and return the result. See [Style.merge] for
@@ -1156,7 +1155,7 @@ class BoxEdge {
   factory BoxEdge.merge(BoxEdge x, BoxEdge y) {
     if (x == null) return y;
     if (y == null) return x;
-    return new BoxEdge._merge(x, y);
+    return BoxEdge._merge(x, y);
   }
 
   BoxEdge._merge(BoxEdge x, BoxEdge y)

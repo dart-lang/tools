@@ -4,7 +4,7 @@
 import 'package:csslib/parser.dart' as css;
 import 'package:csslib/visitor.dart';
 
-const _default = const css.PreprocessorOptions(
+const _default = css.PreprocessorOptions(
     useColors: false,
     checked: true,
     warningsAsErrors: true,
@@ -20,7 +20,7 @@ StyleSheet parseCss(String cssInput,
 }
 
 // Pretty printer for CSS.
-var emitCss = new CssPrinter();
+var emitCss = CssPrinter();
 String prettyPrint(StyleSheet ss) =>
     (emitCss..visitTree(ss, pretty: true)).toString();
 

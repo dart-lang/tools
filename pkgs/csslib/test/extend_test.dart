@@ -199,13 +199,13 @@ input.second + label {
 }
 ''',
       '.btn > .btn, '
-      'input.second + label > .btn, '
-      '.btn > input.second + label, '
-      'input.second + label > input.second + label, '
-      'input.second + label > input.second + label {\n'
-      '  margin-left: 5px;\n}\n'
-      'input.second + label {\n'
-      '}');
+          'input.second + label > .btn, '
+          '.btn > input.second + label, '
+          'input.second + label > input.second + label, '
+          'input.second + label > input.second + label {\n'
+          '  margin-left: 5px;\n}\n'
+          'input.second + label {\n'
+          '}');
 
   // TODO(terry): Optimize merge selectors would be:
   //
@@ -226,13 +226,13 @@ input.second + label {
 }
 ''',
       '.btn + .btn, '
-      'input.second + label + .btn, '
-      '.btn + input.second + label, '
-      'input.second + label + input.second + label, '
-      'input.second + label + input.second + label {\n'
-      '  margin-left: 5px;\n}\n'
-      'input.second + label {\n'
-      '  color: #00f;\n}');
+          'input.second + label + .btn, '
+          '.btn + input.second + label, '
+          'input.second + label + input.second + label, '
+          'input.second + label + input.second + label {\n'
+          '  margin-left: 5px;\n}\n'
+          'input.second + label {\n'
+          '  color: #00f;\n}');
 }
 
 main() {

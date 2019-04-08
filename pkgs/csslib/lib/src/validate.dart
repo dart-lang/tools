@@ -22,7 +22,7 @@ class Validate {
         (selector.isCombinatorNone && matches == 0)) {
       if (matches < 0) {
         String tooMany = selector.simpleSelector.toString();
-        throw new CssSelectorException(
+        throw CssSelectorException(
             'Can not mix Id selector with class selector(s). Id '
             'selector must be singleton too many starting at $tooMany');
       }
@@ -30,7 +30,7 @@ class Validate {
       return matches + 1;
     } else {
       String error = selector.toString();
-      throw new CssSelectorException(
+      throw CssSelectorException(
           'Selectors can not have combinators (>, +, or ~) before $error');
     }
   }
@@ -41,11 +41,11 @@ class Validate {
       return -1;
     } else if (selector.isCombinatorDescendant) {
       String tooMany = selector.simpleSelector.toString();
-      throw new CssSelectorException(
+      throw CssSelectorException(
           'Use of Id selector must be singleton starting at $tooMany');
     } else {
       String error = selector.simpleSelector.toString();
-      throw new CssSelectorException(
+      throw CssSelectorException(
           'Selectors can not have combinators (>, +, or ~) before $error');
     }
   }
@@ -105,13 +105,12 @@ class Validate {
           }
         } else {
           String badSelector = simpleSelector.toString();
-          throw new CssSelectorException(
-              'Invalid template selector $badSelector');
+          throw CssSelectorException('Invalid template selector $badSelector');
         }
 
         if (!found) {
           String unknownName = simpleSelector.toString();
-          throw new CssSelectorException('Unknown selector name $unknownName');
+          throw CssSelectorException('Unknown selector name $unknownName');
         }
       }
     }

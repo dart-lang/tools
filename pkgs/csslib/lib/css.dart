@@ -20,7 +20,7 @@ void main(List<String> arguments) {
   var options = _parseOptions(arguments);
   if (options == null) return;
 
-  messages = new Messages(options: options);
+  messages = Messages(options: options);
 
   _time('Total time spent on ${options.inputFile}', () {
     _compile(options.inputFile, options.verbose);
@@ -36,24 +36,24 @@ void _compile(String inputPath, bool verbose) {
   try {
     // Read the file.
     var filename = path.basename(inputPath);
-    var contents = new File(inputPath).readAsStringSync();
-    var file = new SourceFile.fromString(contents, url: path.toUri(inputPath));
+    var contents = File(inputPath).readAsStringSync();
+    var file = SourceFile.fromString(contents, url: path.toUri(inputPath));
 
     // Parse the CSS.
-    StyleSheet tree = _time(
-        'Parse $filename', () => new Parser(file, contents).parse(), verbose);
+    StyleSheet tree =
+        _time('Parse $filename', () => Parser(file, contents).parse(), verbose);
 
-    _time('Analyzer $filename', () => new Analyzer([tree], messages), verbose)
+    _time('Analyzer $filename', () => Analyzer([tree], messages), verbose)
         .run();
 
     // Emit the processed CSS.
-    var emitter = new CssPrinter();
+    var emitter = CssPrinter();
     _time('Codegen $filename', () => emitter.visitTree(tree, pretty: true),
         verbose);
 
     // Write the contents to a file.
     var outPath = path.join(path.dirname(inputPath), '_$filename');
-    new File(outPath).writeAsStringSync(emitter.toString());
+    File(outPath).writeAsStringSync(emitter.toString());
   } catch (e) {
     messages.error('error processing $inputPath. Original message:\n $e', null);
   }
@@ -61,7 +61,7 @@ void _compile(String inputPath, bool verbose) {
 
 T _time<T>(String message, T Function() callback, bool printTime) {
   if (!printTime) return callback();
-  final watch = new Stopwatch();
+  final watch = Stopwatch();
   watch.start();
   var result = callback();
   watch.stop();
@@ -71,7 +71,7 @@ T _time<T>(String message, T Function() callback, bool printTime) {
 }
 
 void _printMessage(String message, int duration) {
-  var buf = new StringBuffer();
+  var buf = StringBuffer();
   buf.write(message);
   for (int i = message.length; i < 60; i++) buf.write(' ');
   buf.write(' -- ');
@@ -81,7 +81,7 @@ void _printMessage(String message, int duration) {
   print(buf.toString());
 }
 
-PreprocessorOptions _fromArgs(ArgResults args) => new PreprocessorOptions(
+PreprocessorOptions _fromArgs(ArgResults args) => PreprocessorOptions(
     warningsAsErrors: args['warnings_as_errors'],
     throwOnWarnings: args['throw_on_warnings'],
     throwOnErrors: args['throw_on_errors'],
@@ -90,11 +90,11 @@ PreprocessorOptions _fromArgs(ArgResults args) => new PreprocessorOptions(
     lessSupport: args['less'],
     useColors: args['colors'],
     polyfill: args['polyfill'],
-    inputFile: args.rest.length > 0 ? args.rest[0] : null);
+    inputFile: args.rest.isNotEmpty ? args.rest[0] : null);
 
 // tool.dart [options...] <css file>
 PreprocessorOptions _parseOptions(List<String> arguments) {
-  var parser = new ArgParser()
+  var parser = ArgParser()
     ..addFlag('verbose',
         abbr: 'v',
         defaultsTo: false,
@@ -128,7 +128,7 @@ PreprocessorOptions _parseOptions(List<String> arguments) {
 
   try {
     var results = parser.parse(arguments);
-    if (results['help'] || results.rest.length == 0) {
+    if (results['help'] || results.rest.isEmpty) {
       _showUsage(parser);
       return null;
     }
