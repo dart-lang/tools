@@ -8,9 +8,9 @@ library testing;
 import 'package:csslib/parser.dart';
 import 'package:csslib/visitor.dart';
 import 'package:csslib/src/messages.dart';
-import 'package:csslib/src/options.dart';
+import 'package:csslib/src/preprocessor_options.dart';
 
-export 'package:csslib/src/options.dart';
+export 'package:csslib/src/preprocessor_options.dart';
 
 const simpleOptionsWithCheckedAndWarningsAsErrors = PreprocessorOptions(
     useColors: false,

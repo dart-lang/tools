@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library csslib.src.options;
-
 class PreprocessorOptions {
   /// Generate polyfill code (e.g., var, etc.)
   final bool polyfill;

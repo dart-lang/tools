@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of csslib.visitor;
+part of '../visitor.dart';
 
 /// Visitor that produces a formatted string representation of the CSS tree.
 class CssPrinter extends Visitor {

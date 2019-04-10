@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of csslib.parser;
+part of '../parser.dart';
 
 // TODO(terry): Need to be consistent with tokens either they're ASCII tokens
 //              e.g., ASTERISK or they're CSS e.g., PSEUDO, COMBINATOR_*.

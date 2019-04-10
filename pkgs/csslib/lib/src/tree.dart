@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of csslib.visitor;
+part of '../visitor.dart';
 
 /////////////////////////////////////////////////////////////////////////
 // CSS specific types:
