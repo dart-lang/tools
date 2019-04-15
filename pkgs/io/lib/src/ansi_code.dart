@@ -100,7 +100,7 @@ class AnsiCode {
       _isNoop(type == AnsiCodeType.reset, value, forScript)
           ? value
           : "${_escapeValue(forScript: forScript)}$value"
-          "${reset._escapeValue(forScript: forScript)}";
+              "${reset._escapeValue(forScript: forScript)}";
 
   @override
   String toString() => "$name ${type._name} ($code)";
