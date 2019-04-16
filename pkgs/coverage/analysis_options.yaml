@@ -13,8 +13,6 @@ analyzer:
   errors:
     # treat missing required parameters as a warning (not a hint)
     missing_required_param: warning
-    # allow overriding fields (if they use super, ideally...)
-    strong_mode_invalid_field_override: ignore
     # allow type narrowing
     strong_mode_down_cast_composite: ignore
     # allow having TODOs in the code
@@ -70,7 +68,6 @@ linter:
     - slash_for_doc_comments
     - sort_constructors_first
     - sort_unnamed_constructors_first
-    - super_goes_last
     - type_annotate_public_apis # subset of always_specify_types
     - type_init_formals
     - unnecessary_brace_in_string_interps
