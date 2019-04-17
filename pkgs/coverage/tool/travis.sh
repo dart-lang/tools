@@ -34,7 +34,7 @@ if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "dev" ]; then
   echo "Collecting coverage on port $OBS_PORT..."
 
   # Start tests in one VM.
-  dart \
+  dart --disable-service-auth-codes \
     --enable-vm-service=$OBS_PORT \
     --pause-isolates-on-exit \
     test/test_all.dart &
