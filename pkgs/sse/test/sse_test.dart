@@ -36,10 +36,8 @@ void main() {
   setUp(() async {
     handler = SseHandler(Uri.parse('/test'));
 
-    var cascade = new shelf.Cascade()
-        .add(handler.handler)
-        .add(_faviconHandler)
-        .add(createStaticHandler('test/web',
+    var cascade = shelf.Cascade().add(handler.handler).add(_faviconHandler).add(
+        createStaticHandler('test/web',
             listDirectories: true, defaultDocument: 'index.html'));
 
     server = await io.serve(cascade.handler, 'localhost', 0);
@@ -130,7 +128,7 @@ void main() {
 
 FutureOr<shelf.Response> _faviconHandler(shelf.Request request) {
   if (request.url.path.endsWith('favicon.ico')) {
-    return new shelf.Response.ok('');
+    return shelf.Response.ok('');
   }
-  return new shelf.Response.notFound('');
+  return shelf.Response.notFound('');
 }

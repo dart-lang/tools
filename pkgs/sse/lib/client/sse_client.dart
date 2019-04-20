@@ -16,11 +16,11 @@ import 'package:uuid/uuid.dart';
 /// The client can send any JSON-encodable messages to the server by adding
 /// them to the [sink] and listen to messages from the server on the [stream].
 class SseClient extends StreamChannelMixin<String> {
-  final _incomingController = new StreamController<String>();
+  final _incomingController = StreamController<String>();
 
-  final _outgoingController = new StreamController<String>();
+  final _outgoingController = StreamController<String>();
 
-  final _client = new BrowserClient()..withCredentials = true;
+  final _client = BrowserClient()..withCredentials = true;
 
   final _logger = Logger('SseClient');
 
@@ -32,8 +32,8 @@ class SseClient extends StreamChannelMixin<String> {
   /// incoming bi-directional SSE connections.
   SseClient(String serverUrl) {
     var clientId = Uuid().v1();
-    _eventSource = new EventSource('$serverUrl?sseClientId=$clientId',
-        withCredentials: true);
+    _eventSource =
+        EventSource('$serverUrl?sseClientId=$clientId', withCredentials: true);
     _serverUrl = '$serverUrl?sseClientId=$clientId';
     _outgoingController.stream
         .listen(_onOutgoingMessage, onDone: _onOutgoingDone);
@@ -69,7 +69,7 @@ class SseClient extends StreamChannelMixin<String> {
     if (data == 'close') {
       close();
     } else {
-      throw new UnsupportedError('Illegal Control Message "$data"');
+      throw UnsupportedError('Illegal Control Message "$data"');
     }
   }
 
