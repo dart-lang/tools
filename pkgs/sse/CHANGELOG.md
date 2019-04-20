@@ -1,3 +1,7 @@
+## 2.0.2
+
+- Support the latest `package:stream_channel`.
+
 ## 2.0.1
 
 - Update to `package:uuid` version 2.0.
