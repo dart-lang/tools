@@ -1,6 +1,7 @@
 ## 2.0.2
 
 - Support the latest `package:stream_channel`.
+- Require Dart SDK `>=2.1.0 <3.0.0`.
 
 ## 2.0.1
 
