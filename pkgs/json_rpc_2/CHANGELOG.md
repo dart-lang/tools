@@ -1,3 +1,8 @@
+## 2.1.0
+
+* `Server` and related classes can now take an `onUnhandledError` callback to
+  notify callers of unhandled exceptions.
+
 ## 2.0.10
 
 * Allow `stream_channel` version 2.x

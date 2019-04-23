@@ -23,9 +23,10 @@ class ServerController {
   json_rpc.Server get server => _server;
   json_rpc.Server _server;
 
-  ServerController() {
+  ServerController({json_rpc.ErrorCallback onUnhandledError}) {
     _server = new json_rpc.Server(
-        new StreamChannel(_requestController.stream, _responseController.sink));
+        new StreamChannel(_requestController.stream, _responseController.sink),
+        onUnhandledError: onUnhandledError);
     _server.listen();
   }
 

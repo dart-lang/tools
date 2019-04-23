@@ -15,6 +15,9 @@ import 'exception.dart';
 import 'parameters.dart';
 import 'utils.dart';
 
+/// A callback for unhandled exceptions.
+typedef ErrorCallback = void Function(dynamic error, dynamic stackTrace);
+
 /// A JSON-RPC 2.0 server.
 ///
 /// A server exposes methods that are called by requests, to which it provides
@@ -51,13 +54,24 @@ class Server {
   /// endpoint closes the connection.
   bool get isClosed => _manager.isClosed;
 
+  /// A callback that is fired on unhandled exceptions.
+  ///
+  /// In the case where a user provided callback results in an exception that
+  /// cannot be properly routed back to the client, this handler will be
+  /// invoked. If it is not set, the exception will be swallowed.
+  final ErrorCallback onUnhandledError;
+
   /// Creates a [Server] that communicates over [channel].
   ///
   /// Note that the server won't begin listening to [requests] until
   /// [Server.listen] is called.
-  Server(StreamChannel<String> channel)
+  ///
+  /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
+  /// If this is not provided, unhandled exceptions will be swallowed.
+  Server(StreamChannel<String> channel, {ErrorCallback onUnhandledError})
       : this.withoutJson(
-            jsonDocument.bind(channel).transform(respondToFormatExceptions));
+            jsonDocument.bind(channel).transform(respondToFormatExceptions),
+            onUnhandledError: onUnhandledError);
 
   /// Creates a [Server] that communicates using decoded messages over
   /// [channel].
@@ -67,7 +81,10 @@ class Server {
   ///
   /// Note that the server won't begin listening to [requests] until
   /// [Server.listen] is called.
-  Server.withoutJson(StreamChannel channel)
+  ///
+  /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
+  /// If this is not provided, unhandled exceptions will be swallowed.
+  Server.withoutJson(StreamChannel channel, {this.onUnhandledError})
       : _manager = new ChannelManager("Server", channel);
 
   /// Starts listening to the underlying stream.
@@ -175,9 +192,11 @@ class Server {
             request.containsKey('id')) {
           return error.serialize(request);
         } else {
+          onUnhandledError?.call(error, stackTrace);
           return null;
         }
       } else if (!request.containsKey('id')) {
+        onUnhandledError?.call(error, stackTrace);
         return null;
       }
       final chain = new Chain.forTrace(stackTrace);
