@@ -225,6 +225,8 @@ class _Parser {
       var selector = processSelector();
       if (selector != null) {
         productions.add(selector);
+      } else {
+        break; // Prevent infinite loop if we can't parse something.
       }
     }
 
