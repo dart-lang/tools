@@ -17,7 +17,7 @@ import 'package:clock/clock.dart';
 T runWithTiming<T>(T callback()) {
   var stopwatch = clock.stopwatch()..start();
   var result = callback();
-  print("It took ${stopwatch.elapsed}!");
+  print('It took ${stopwatch.elapsed}!');
   return result;
 }
 ```
@@ -35,13 +35,13 @@ import 'package:fake_async/fake_async.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test("runWithTiming() prints the elapsed time", () {
-    new FakeAsync().run((async) {
+  test('runWithTiming() prints the elapsed time', () {
+    FakeAsync().run((async) {
       expect(() {
         runWithTiming(() {
-          async.elapse(new Duration(seconds: 10));
+          async.elapse(Duration(seconds: 10));
         });
-      }, prints("It took 0:00:10.000000!"));
+      }, prints('It took 0:00:10.000000!'));
     });
   });
 }
