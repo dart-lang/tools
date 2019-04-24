@@ -58,14 +58,6 @@ void testSelectorSuccesses() {
   selectorAst = selector(':host-context(.foo)', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(compactOuptut(selectorAst), ':host-context(.foo)');
-
-  selectorAst = selector('.a /deep/ .b', errors: errors..clear());
-  expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), '.a /deep/ .b');
-
-  selectorAst = selector('.x >>> .y', errors: errors..clear());
-  expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), '.x >>> .y');
 }
 
 // TODO(terry): Move this failure case to a failure_test.dart when the analyzer

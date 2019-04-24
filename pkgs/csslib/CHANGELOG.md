@@ -1,3 +1,8 @@
+## 0.16.0
+
+- Removed support for the shadow-piercing comibnators `/deep/` and `>>>`. These
+  were dropped from the Shadow DOM specification.
+
 ## 0.15.0
 
 - **BREAKING**
