@@ -1,3 +1,7 @@
+## 0.1.5
+
+- Update SDK requirement to `>=2.2.0 <3.0.0`.
+
 ## 0.1.4
 
 - Added `lenient` named argument to `Pubspec.fromJson` to ignore format and type errors. 

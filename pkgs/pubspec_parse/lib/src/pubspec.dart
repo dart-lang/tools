@@ -166,7 +166,7 @@ class Pubspec {
   }
 
   static List<String> _normalizeAuthors(String author, List<String> authors) {
-    final value = Set<String>();
+    final value = <String>{};
     if (author != null) {
       value.add(author);
     }
