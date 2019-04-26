@@ -210,7 +210,7 @@ line 1, column 1: "name" cannot be empty.
         'name': 'sample',
         'environment': {'dart': 'cool'}
       }, r'''
-line 4, column 3: Use "sdk" to for Dart SDK constraints.
+line 4, column 3: Unrecognized keys: [dart]; supported keys: [sdk]
   ╷
 4 │   "dart": "cool"
   │   ^^^^^^

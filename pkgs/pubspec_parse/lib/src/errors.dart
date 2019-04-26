@@ -11,13 +11,13 @@ ParsedYamlException parsedYamlException(String message, YamlNode yamlNode) =>
 ParsedYamlException parsedYamlExceptionFromError(
     CheckedFromJsonException error, StackTrace stack) {
   final innerError = error.innerError;
-  if (innerError is InvalidKeyException) {
+  if (innerError is UnrecognizedKeysException) {
     final map = innerError.map;
     if (map is YamlMap) {
       // if the associated key exists, use that as the error node,
       // otherwise use the map itself
-      final node = map.nodes.keys.cast<YamlNode>().singleWhere((key) {
-        return key.value == innerError.key;
+      final node = map.nodes.keys.cast<YamlNode>().firstWhere((key) {
+        return innerError.unrecognizedKeys.contains(key.value);
       }, orElse: () => map);
 
       return ParsedYamlException._(innerError.message, node,
@@ -71,16 +71,4 @@ class ParsedYamlException implements Exception {
 
   @override
   String toString() => message;
-}
-
-/// Package-private class representing an invalid key.
-///
-/// Used instead of [CheckedFromJsonException] when highlighting a bad [key]
-/// is desired, instead of the associated value.
-class InvalidKeyException implements Exception {
-  final Map map;
-  final String key;
-  final String message;
-
-  InvalidKeyException(this.map, this.key, this.message);
 }

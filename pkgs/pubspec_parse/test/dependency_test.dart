@@ -48,7 +48,7 @@ line 5, column 12: A dependency may only have one source.
 
     test('map with unsupported keys', () {
       _expectThrows({'bob': 'a', 'jones': 'b'}, r'''
-line 6, column 4: Unsupported dependency key.
+line 6, column 4: Unrecognized keys: [jones]; supported keys: [sdk, git, path, hosted]
   ╷
 6 │    "jones": "b"
   │    ^^^^^^^
@@ -123,7 +123,7 @@ line 5, column 15: Could not parse version "not a version". Unknown text at "not
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
       'not_supported': null
     }, r'''
-line 10, column 4: Unsupported dependency key.
+line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git, path, hosted]
   ╷
 10│    "not_supported": null
   │    ^^^^^^^^^^^^^^^
@@ -238,7 +238,7 @@ void _gitDependency() {
 
   test('string with random extra key fails', () {
     _expectThrows({'git': 'url', 'bob': '^1.2.3'}, r'''
-line 6, column 4: Unsupported dependency key.
+line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hosted]
   ╷
 6 │    "bob": "^1.2.3"
   │    ^^^^^
@@ -329,7 +329,7 @@ void _pathDependency() {
 
   test('valid with random extra key fails', () {
     _expectThrows({'path': '../path', 'bob': '^1.2.3'}, r'''
-line 6, column 4: Unsupported dependency key.
+line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hosted]
   ╷
 6 │    "bob": "^1.2.3"
   │    ^^^^^

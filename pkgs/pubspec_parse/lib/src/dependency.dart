@@ -6,8 +6,6 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
-import 'errors.dart';
-
 part 'dependency.g.dart';
 
 Map<String, Dependency> parseDeps(Map source) =>
@@ -53,8 +51,7 @@ Dependency _fromJson(dynamic data) {
           orElse: () => null);
 
       if (weirdKey != null) {
-        throw InvalidKeyException(
-            data, weirdKey, 'Unsupported dependency key.');
+        throw UnrecognizedKeysException([weirdKey], data, _sourceKeys);
       }
       if (matchedKeys.length > 1) {
         throw CheckedFromJsonException(data, matchedKeys[1], 'Dependency',

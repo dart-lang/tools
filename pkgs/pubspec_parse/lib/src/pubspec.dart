@@ -185,8 +185,7 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
       if (key == 'dart') {
         // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
         // 'dart' is not allowed as a key!
-        throw InvalidKeyException(
-            source, 'dart', 'Use "sdk" to for Dart SDK constraints.');
+        throw UnrecognizedKeysException(['dart'], source, ['sdk']);
       }
 
       VersionConstraint constraint;
