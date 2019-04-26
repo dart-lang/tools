@@ -1,7 +1,7 @@
 name: browser_launcher
 description: A standardized way to launch web browsers.
 
-version: 0.1.0-dev
+version: 0.1.0
 
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/browser_launcher
