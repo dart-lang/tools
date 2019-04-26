@@ -1,8 +1,9 @@
 language: dart
-sudo: false
+
 dart:
-  #- stable
+  - 2.0.0
   - dev
+
 dart_task:
   - test: -p vm
     xvfb: false

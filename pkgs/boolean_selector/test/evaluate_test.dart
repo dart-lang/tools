@@ -57,6 +57,6 @@ void _expectEval(String expression, bool result, {semantics}) {
 ///
 /// By default, "true" is true and all other variables are "false".
 bool _eval(String expression, {semantics}) {
-  var selector = new BooleanSelector.parse(expression);
+  var selector = BooleanSelector.parse(expression);
   return selector.evaluate(semantics ?? ["true"]);
 }

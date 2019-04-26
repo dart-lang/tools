@@ -20,10 +20,10 @@ import 'src/none.dart';
 /// same parsed structure are considered equal.
 abstract class BooleanSelector {
   /// A selector that accepts all inputs.
-  static const all = const All();
+  static const all = All();
 
   /// A selector that accepts no inputs.
-  static const none = const None();
+  static const none = None();
 
   /// All the variables in this selector, in the order they appear.
   Iterable<String> get variables;

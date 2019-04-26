@@ -35,31 +35,31 @@ class IdentifierToken implements Token {
 /// An enumeration of types of tokens.
 class TokenType {
   /// A `(` character.
-  static const leftParen = const TokenType._("left paren");
+  static const leftParen = TokenType._("left paren");
 
   /// A `)` character.
-  static const rightParen = const TokenType._("right paren");
+  static const rightParen = TokenType._("right paren");
 
   /// A `||` sequence.
-  static const or = const TokenType._("or");
+  static const or = TokenType._("or");
 
   /// A `&&` sequence.
-  static const and = const TokenType._("and");
+  static const and = TokenType._("and");
 
   /// A `!` character.
-  static const not = const TokenType._("not");
+  static const not = TokenType._("not");
 
   /// A `?` character.
-  static const questionMark = const TokenType._("question mark");
+  static const questionMark = TokenType._("question mark");
 
   /// A `:` character.
-  static const colon = const TokenType._("colon");
+  static const colon = TokenType._("colon");
 
   /// A named identifier.
-  static const identifier = const TokenType._("identifier");
+  static const identifier = TokenType._("identifier");
 
   /// The end of the selector.
-  static const endOfFile = const TokenType._("end of file");
+  static const endOfFile = TokenType._("end of file");
 
   /// The name of the token type.
   final String name;

@@ -10,14 +10,14 @@ import 'package:boolean_selector/src/token.dart';
 void main() {
   group("peek()", () {
     test("returns the next token without consuming it", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       expect(scanner.peek().type, equals(TokenType.leftParen));
       expect(scanner.peek().type, equals(TokenType.leftParen));
       expect(scanner.peek().type, equals(TokenType.leftParen));
     });
 
     test("returns an end-of-file token at the end of a file", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       scanner.next();
       scanner.next();
 
@@ -28,7 +28,7 @@ void main() {
     });
 
     test("throws a StateError if called after end-of-file was consumed", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       scanner.next();
       scanner.next();
       scanner.next();
@@ -38,14 +38,14 @@ void main() {
 
   group("next()", () {
     test("consumes and returns the next token", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       expect(scanner.next().type, equals(TokenType.leftParen));
       expect(scanner.peek().type, equals(TokenType.rightParen));
       expect(scanner.next().type, equals(TokenType.rightParen));
     });
 
     test("returns an end-of-file token at the end of a file", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       scanner.next();
       scanner.next();
 
@@ -56,7 +56,7 @@ void main() {
     });
 
     test("throws a StateError if called after end-of-file was consumed", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       scanner.next();
       scanner.next();
       scanner.next();
@@ -66,19 +66,19 @@ void main() {
 
   group("scan()", () {
     test("consumes a matching token and returns true", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       expect(scanner.scan(TokenType.leftParen), isTrue);
       expect(scanner.peek().type, equals(TokenType.rightParen));
     });
 
     test("doesn't consume a matching token and returns false", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       expect(scanner.scan(TokenType.questionMark), isFalse);
       expect(scanner.peek().type, equals(TokenType.leftParen));
     });
 
     test("throws a StateError called after end-of-file was consumed", () {
-      var scanner = new Scanner("( )");
+      var scanner = Scanner("( )");
       scanner.next();
       scanner.next();
       scanner.next();
@@ -146,7 +146,7 @@ void main() {
   });
 
   test("scans multiple tokens", () {
-    var scanner = new Scanner("(foo && bar)");
+    var scanner = Scanner("(foo && bar)");
 
     var token = scanner.next();
     expect(token.type, equals(TokenType.leftParen));
@@ -183,34 +183,34 @@ void main() {
 
   group("ignores", () {
     test("a single-line comment", () {
-      var scanner = new Scanner("( // &&\n// ||\n)");
+      var scanner = Scanner("( // &&\n// ||\n)");
       expect(scanner.next().type, equals(TokenType.leftParen));
       expect(scanner.next().type, equals(TokenType.rightParen));
       expect(scanner.next().type, equals(TokenType.endOfFile));
     });
 
     test("a single-line comment without a trailing newline", () {
-      var scanner = new Scanner("( // &&");
+      var scanner = Scanner("( // &&");
       expect(scanner.next().type, equals(TokenType.leftParen));
       expect(scanner.next().type, equals(TokenType.endOfFile));
     });
 
     test("a multi-line comment", () {
-      var scanner = new Scanner("( /* && * /\n|| */\n)");
+      var scanner = Scanner("( /* && * /\n|| */\n)");
       expect(scanner.next().type, equals(TokenType.leftParen));
       expect(scanner.next().type, equals(TokenType.rightParen));
       expect(scanner.next().type, equals(TokenType.endOfFile));
     });
 
     test("a multi-line nested comment", () {
-      var scanner = new Scanner("(/* && /* ? /* || */ : */ ! */)");
+      var scanner = Scanner("(/* && /* ? /* || */ : */ ! */)");
       expect(scanner.next().type, equals(TokenType.leftParen));
       expect(scanner.next().type, equals(TokenType.rightParen));
       expect(scanner.next().type, equals(TokenType.endOfFile));
     });
 
     test("Dart's notion of whitespace", () {
-      var scanner = new Scanner("( \t \n)");
+      var scanner = Scanner("( \t \n)");
       expect(scanner.next().type, equals(TokenType.leftParen));
       expect(scanner.next().type, equals(TokenType.rightParen));
       expect(scanner.next().type, equals(TokenType.endOfFile));
@@ -264,4 +264,4 @@ void _expectSimpleScan(String selector, TokenType type) {
 }
 
 /// Scans a single token from [selector].
-dynamic _scan(String selector) => new Scanner(selector).next();
+dynamic _scan(String selector) => Scanner(selector).next();

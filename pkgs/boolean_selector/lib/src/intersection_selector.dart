@@ -21,10 +21,9 @@ class IntersectionSelector implements BooleanSelector {
       _selector1.evaluate(semantics) && _selector2.evaluate(semantics);
 
   BooleanSelector intersection(BooleanSelector other) =>
-      new IntersectionSelector(this, other);
+      IntersectionSelector(this, other);
 
-  BooleanSelector union(BooleanSelector other) =>
-      new UnionSelector(this, other);
+  BooleanSelector union(BooleanSelector other) => UnionSelector(this, other);
 
   void validate(bool isDefined(String variable)) {
     _selector1.validate(isDefined);

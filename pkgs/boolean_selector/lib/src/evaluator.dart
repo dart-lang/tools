@@ -5,7 +5,7 @@
 import 'ast.dart';
 import 'visitor.dart';
 
-typedef bool _Semantics(String variable);
+typedef _Semantics = bool Function(String variable);
 
 /// A visitor for evaluating boolean selectors against a specific set of
 /// semantics.

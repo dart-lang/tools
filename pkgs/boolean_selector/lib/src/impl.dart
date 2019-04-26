@@ -24,32 +24,32 @@ class BooleanSelectorImpl implements BooleanSelector {
   /// This will throw a [SourceSpanFormatException] if the selector is
   /// malformed or if it uses an undefined variable.
   BooleanSelectorImpl.parse(String selector)
-      : _selector = new Parser(selector).parse();
+      : _selector = Parser(selector).parse();
 
   BooleanSelectorImpl._(this._selector);
 
   Iterable<String> get variables => _selector.variables;
 
-  bool evaluate(semantics) => _selector.accept(new Evaluator(semantics));
+  bool evaluate(semantics) => _selector.accept(Evaluator(semantics));
 
   BooleanSelector intersection(BooleanSelector other) {
     if (other == BooleanSelector.all) return this;
     if (other == BooleanSelector.none) return other;
     return other is BooleanSelectorImpl
-        ? new BooleanSelectorImpl._(new AndNode(_selector, other._selector))
-        : new IntersectionSelector(this, other);
+        ? BooleanSelectorImpl._(AndNode(_selector, other._selector))
+        : IntersectionSelector(this, other);
   }
 
   BooleanSelector union(BooleanSelector other) {
     if (other == BooleanSelector.all) return other;
     if (other == BooleanSelector.none) return this;
     return other is BooleanSelectorImpl
-        ? new BooleanSelectorImpl._(new OrNode(_selector, other._selector))
-        : new UnionSelector(this, other);
+        ? BooleanSelectorImpl._(OrNode(_selector, other._selector))
+        : UnionSelector(this, other);
   }
 
   void validate(bool isDefined(String variable)) {
-    _selector.accept(new Validator(isDefined));
+    _selector.accept(Validator(isDefined));
   }
 
   String toString() => _selector.toString();

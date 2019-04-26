@@ -18,7 +18,7 @@ class Parser {
   /// The scanner that tokenizes the selector.
   final Scanner _scanner;
 
-  Parser(String selector) : _scanner = new Scanner(selector);
+  Parser(String selector) : _scanner = Scanner(selector);
 
   /// Parses the selector.
   ///
@@ -27,7 +27,7 @@ class Parser {
     var selector = _conditional();
 
     if (_scanner.peek().type != TokenType.endOfFile) {
-      throw new SourceSpanFormatException(
+      throw SourceSpanFormatException(
           "Expected end of input.", _scanner.peek().span);
     }
 
@@ -45,12 +45,11 @@ class Parser {
 
     var whenTrue = _conditional();
     if (!_scanner.scan(TokenType.colon)) {
-      throw new SourceSpanFormatException(
-          'Expected ":".', _scanner.peek().span);
+      throw SourceSpanFormatException('Expected ":".', _scanner.peek().span);
     }
 
     var whenFalse = _conditional();
-    return new ConditionalNode(condition, whenTrue, whenFalse);
+    return ConditionalNode(condition, whenTrue, whenFalse);
   }
 
   /// Parses a logical or:
@@ -60,7 +59,7 @@ class Parser {
   Node _or() {
     var left = _and();
     if (!_scanner.scan(TokenType.or)) return left;
-    return new OrNode(left, _or());
+    return OrNode(left, _or());
   }
 
   /// Parses a logical and:
@@ -70,7 +69,7 @@ class Parser {
   Node _and() {
     var left = _simpleExpression();
     if (!_scanner.scan(TokenType.and)) return left;
-    return new AndNode(left, _and());
+    return AndNode(left, _and());
   }
 
   /// Parses a simple expression:
@@ -84,21 +83,21 @@ class Parser {
     switch (token.type) {
       case TokenType.not:
         var child = _simpleExpression();
-        return new NotNode(child, token.span.expand(child.span));
+        return NotNode(child, token.span.expand(child.span));
 
       case TokenType.leftParen:
         var child = _conditional();
         if (!_scanner.scan(TokenType.rightParen)) {
-          throw new SourceSpanFormatException(
+          throw SourceSpanFormatException(
               'Expected ")".', _scanner.peek().span);
         }
         return child;
 
       case TokenType.identifier:
-        return new VariableNode((token as IdentifierToken).name, token.span);
+        return VariableNode((token as IdentifierToken).name, token.span);
 
       default:
-        throw new SourceSpanFormatException("Expected expression.", token.span);
+        throw SourceSpanFormatException("Expected expression.", token.span);
     }
   }
 }

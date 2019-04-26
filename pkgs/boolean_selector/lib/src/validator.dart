@@ -7,7 +7,7 @@ import 'package:source_span/source_span.dart';
 import 'ast.dart';
 import 'visitor.dart';
 
-typedef bool _IsDefined(String variable);
+typedef _IsDefined = bool Function(String variable);
 
 /// An AST visitor that ensures that all variables are valid.
 class Validator extends RecursiveVisitor {
@@ -17,6 +17,6 @@ class Validator extends RecursiveVisitor {
 
   void visitVariable(VariableNode node) {
     if (_isDefined(node.name)) return;
-    throw new SourceSpanFormatException("Undefined variable.", node.span);
+    throw SourceSpanFormatException("Undefined variable.", node.span);
   }
 }

@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 import 'package:boolean_selector/boolean_selector.dart';
 
-var _selector = new BooleanSelector.parse("foo && bar && baz");
+var _selector = BooleanSelector.parse("foo && bar && baz");
 
 void main() {
   test("throws if any variables are undefined", () {

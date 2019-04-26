@@ -8,16 +8,16 @@ import 'package:boolean_selector/src/ast.dart';
 import 'package:boolean_selector/src/parser.dart';
 
 /// A matcher that asserts that a value is a [ConditionalNode].
-final _isConditionalNode = new TypeMatcher<ConditionalNode>();
+final _isConditionalNode = TypeMatcher<ConditionalNode>();
 
 /// A matcher that asserts that a value is an [OrNode].
-final _isOrNode = new TypeMatcher<OrNode>();
+final _isOrNode = TypeMatcher<OrNode>();
 
 /// A matcher that asserts that a value is an [AndNode].
-final _isAndNode = new TypeMatcher<AndNode>();
+final _isAndNode = TypeMatcher<AndNode>();
 
 /// A matcher that asserts that a value is a [NotNode].
-final _isNotNode = new TypeMatcher<NotNode>();
+final _isNotNode = TypeMatcher<NotNode>();
 
 void main() {
   group("parses a conditional expression", () {
@@ -249,7 +249,7 @@ void main() {
 }
 
 /// Parses [selector] and returns its root node.
-dynamic _parse(String selector) => new Parser(selector).parse();
+dynamic _parse(String selector) => Parser(selector).parse();
 
 /// A matcher that asserts that a value is a [VariableNode] with the given
 /// [name].
@@ -263,4 +263,4 @@ void _expectToString(String selector, [String result]) {
       reason: 'Expected toString of "$selector" to be "$result".');
 }
 
-String _toString(String selector) => new Parser(selector).parse().toString();
+String _toString(String selector) => Parser(selector).parse().toString();

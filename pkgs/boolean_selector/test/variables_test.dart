@@ -8,29 +8,29 @@ import 'package:boolean_selector/boolean_selector.dart';
 
 void main() {
   test("a variable reports itself", () {
-    expect(new BooleanSelector.parse("foo").variables, equals(["foo"]));
+    expect(BooleanSelector.parse("foo").variables, equals(["foo"]));
   });
 
   test("a negation reports its contents", () {
-    expect(new BooleanSelector.parse("!foo").variables, equals(["foo"]));
+    expect(BooleanSelector.parse("!foo").variables, equals(["foo"]));
   });
 
   test("a parenthesized expression reports its contents", () {
-    expect(new BooleanSelector.parse("(foo)").variables, equals(["foo"]));
+    expect(BooleanSelector.parse("(foo)").variables, equals(["foo"]));
   });
 
   test("an or reports its contents", () {
-    expect(new BooleanSelector.parse("foo || bar").variables,
-        equals(["foo", "bar"]));
+    expect(
+        BooleanSelector.parse("foo || bar").variables, equals(["foo", "bar"]));
   });
 
   test("an and reports its contents", () {
-    expect(new BooleanSelector.parse("foo && bar").variables,
-        equals(["foo", "bar"]));
+    expect(
+        BooleanSelector.parse("foo && bar").variables, equals(["foo", "bar"]));
   });
 
   test("a conditional reports its contents", () {
-    expect(new BooleanSelector.parse("foo ? bar : baz").variables,
+    expect(BooleanSelector.parse("foo ? bar : baz").variables,
         equals(["foo", "bar", "baz"]));
   });
 

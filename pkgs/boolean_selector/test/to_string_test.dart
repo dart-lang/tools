@@ -82,5 +82,4 @@ void _expectToString(String selector, [String result]) {
       reason: 'Expected toString of "$selector" to be "$result".');
 }
 
-String _toString(String selector) =>
-    new BooleanSelector.parse(selector).toString();
+String _toString(String selector) => BooleanSelector.parse(selector).toString();

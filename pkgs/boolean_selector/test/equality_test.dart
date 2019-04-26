@@ -36,17 +36,17 @@ void main() {
   });
 
   test("redundant parens don't matter", () {
-    expect(new BooleanSelector.parse("foo && (bar && baz)"),
-        equals(new BooleanSelector.parse("foo && (bar && baz)")));
+    expect(BooleanSelector.parse("foo && (bar && baz)"),
+        equals(BooleanSelector.parse("foo && (bar && baz)")));
   });
 
   test("meaningful parens do matter", () {
-    expect(new BooleanSelector.parse("(foo && bar) || baz"),
-        equals(new BooleanSelector.parse("foo && bar || baz")));
+    expect(BooleanSelector.parse("(foo && bar) || baz"),
+        equals(BooleanSelector.parse("foo && bar || baz")));
   });
 }
 
 void _expectEqualsSelf(String selector) {
-  expect(new BooleanSelector.parse(selector),
-      equals(new BooleanSelector.parse(selector)));
+  expect(
+      BooleanSelector.parse(selector), equals(BooleanSelector.parse(selector)));
 }
