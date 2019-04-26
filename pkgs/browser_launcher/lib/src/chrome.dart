@@ -60,8 +60,7 @@ class Chrome {
 
   /// Starts Chrome with the given arguments and a specific port.
   ///
-  /// Only one instance of Chrome can run at a time. Each url in [urls] will be
-  /// loaded in a separate tab.
+  /// Each url in [urls] will be loaded in a separate tab.
   static Future<Chrome> startWithDebugPort(
     List<String> urls, {
     int debugPort,

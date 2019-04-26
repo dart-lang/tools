@@ -1,7 +1,7 @@
 name: browser_launcher
-description: A standardized way to launch web browsers.
+description: A package that provides a standardized way to launch web browsers.
 
-version: 0.1.0
+version: 0.1.1-dev
 
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/browser_launcher
