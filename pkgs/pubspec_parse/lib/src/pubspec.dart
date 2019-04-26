@@ -4,10 +4,9 @@
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:yaml/yaml.dart';
+import 'package:checked_yaml/checked_yaml.dart';
 
 import 'dependency.dart';
-import 'errors.dart';
 
 part 'pubspec.g.dart';
 
@@ -108,7 +107,7 @@ class Pubspec {
       try {
         final targetUri = Uri.parse(publishTo);
         if (!(targetUri.isScheme('http') || targetUri.isScheme('https'))) {
-          throw const FormatException('must be an http or https URL.');
+          throw const FormatException('Must be an http or https URL.');
         }
       } on FormatException catch (e) {
         throw ArgumentError.value(publishTo, 'publishTo', e.message);
@@ -144,25 +143,9 @@ class Pubspec {
   factory Pubspec.parse(String yaml, {sourceUrl, bool lenient = false}) {
     lenient ??= false;
 
-    final item = loadYaml(yaml, sourceUrl: sourceUrl);
-
-    if (item == null) {
-      throw ArgumentError.notNull('yaml');
-    }
-
-    if (item is! YamlMap) {
-      if (item is YamlNode) {
-        throw parsedYamlException('Does not represent a YAML map.', item);
-      }
-
-      throw ArgumentError.value(yaml, 'yaml', 'Does not represent a YAML map.');
-    }
-
-    try {
-      return Pubspec.fromJson(item as YamlMap, lenient: lenient);
-    } on CheckedFromJsonException catch (error, stack) {
-      throw parsedYamlExceptionFromError(error, stack);
-    }
+    return checkedYamlDecode(
+        yaml, (map) => Pubspec.fromJson(map, lenient: lenient),
+        sourceUrl: sourceUrl);
   }
 
   static List<String> _normalizeAuthors(String author, List<String> authors) {
@@ -185,7 +168,13 @@ Map<String, VersionConstraint> _environmentMap(Map source) =>
       if (key == 'dart') {
         // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
         // 'dart' is not allowed as a key!
-        throw UnrecognizedKeysException(['dart'], source, ['sdk']);
+        throw CheckedFromJsonException(
+          source,
+          'dart',
+          'VersionConstraint',
+          'Use "sdk" to for Dart SDK constraints.',
+          badKey: true,
+        );
       }
 
       VersionConstraint constraint;

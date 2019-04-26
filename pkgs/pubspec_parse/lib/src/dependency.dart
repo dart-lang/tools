@@ -47,20 +47,21 @@ Dependency _fromJson(dynamic data) {
     if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
       return _$HostedDependencyFromJson(data);
     } else {
-      final weirdKey = matchedKeys.firstWhere((k) => !_sourceKeys.contains(k),
-          orElse: () => null);
+      final firstUnrecognizedKey = matchedKeys
+          .firstWhere((k) => !_sourceKeys.contains(k), orElse: () => null);
 
-      if (weirdKey != null) {
-        throw UnrecognizedKeysException([weirdKey], data, _sourceKeys);
-      }
-      if (matchedKeys.length > 1) {
-        throw CheckedFromJsonException(data, matchedKeys[1], 'Dependency',
-            'A dependency may only have one source.');
-      }
+      return $checkedNew<Dependency>('Dependency', data, () {
+        if (firstUnrecognizedKey != null) {
+          throw UnrecognizedKeysException(
+              [firstUnrecognizedKey], data, _sourceKeys);
+        }
+        if (matchedKeys.length > 1) {
+          throw CheckedFromJsonException(data, matchedKeys[1], 'Dependency',
+              'A dependency may only have one source.');
+        }
 
-      final key = matchedKeys.single;
+        final key = matchedKeys.single;
 
-      try {
         switch (key) {
           case 'git':
             return GitDependency.fromData(data[key]);
@@ -72,10 +73,7 @@ Dependency _fromJson(dynamic data) {
             return _$HostedDependencyFromJson(data);
         }
         throw StateError('There is a bug in pubspec_parse.');
-      } on ArgumentError catch (e) {
-        throw CheckedFromJsonException(
-            data, e.name, 'Dependency', e.message.toString());
-      }
+      });
     }
   }
 

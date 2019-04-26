@@ -9,5 +9,4 @@ export 'src/dependency.dart'
         GitDependency,
         SdkDependency,
         PathDependency;
-export 'src/errors.dart' show ParsedYamlException;
 export 'src/pubspec.dart' show Pubspec;

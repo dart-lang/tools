@@ -5,6 +5,7 @@
 import 'dart:cli';
 import 'dart:convert';
 
+import 'package:checked_yaml/checked_yaml.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -25,10 +26,11 @@ Matcher _throwsParsedYamlException(String prettyValue) =>
 
 void _printDebugParsedYamlException(ParsedYamlException e) {
   var innerError = e.innerError;
-  var innerStack = e.innerStack;
+  StackTrace innerStack;
 
-  if (e.innerError is CheckedFromJsonException) {
-    final cfje = e.innerError as CheckedFromJsonException;
+  if (innerError is CheckedFromJsonException) {
+    final cfje = innerError as CheckedFromJsonException;
+
     if (cfje.innerError != null) {
       innerError = cfje.innerError;
       innerStack = cfje.innerStack;
@@ -98,6 +100,14 @@ void expectParseThrows(
   Object content,
   String expectedError, {
   bool skipTryPub = false,
+  bool lenient = false,
 }) =>
-    expect(() => parse(content, quietOnError: true, skipTryPub: skipTryPub),
-        _throwsParsedYamlException(expectedError));
+    expect(
+      () => parse(
+            content,
+            lenient: lenient,
+            quietOnError: true,
+            skipTryPub: skipTryPub,
+          ),
+      _throwsParsedYamlException(expectedError),
+    );

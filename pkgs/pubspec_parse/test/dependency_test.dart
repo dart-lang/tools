@@ -18,32 +18,41 @@ void main() {
 
   group('errors', () {
     test('List', () {
-      _expectThrows([], r'''
-line 4, column 10: Not a valid dependency value.
+      _expectThrows(
+        [],
+        r'''
+line 4, column 10: Unsupported value for "dep". Not a valid dependency value.
   ╷
 4 │   "dep": []
   │          ^^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('int', () {
-      _expectThrows(42, r'''
-line 4, column 10: Not a valid dependency value.
+      _expectThrows(
+        42,
+        r'''
+line 4, column 10: Unsupported value for "dep". Not a valid dependency value.
   ╷
 4 │     "dep": 42
   │ ┌──────────^
 5 │ │  }
   │ └─^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('map with too many keys', () {
-      _expectThrows({'path': 'a', 'git': 'b'}, r'''
-line 5, column 12: A dependency may only have one source.
+      _expectThrows(
+        {'path': 'a', 'git': 'b'},
+        r'''
+line 5, column 12: Unsupported value for "path". A dependency may only have one source.
   ╷
 5 │    "path": "a",
   │            ^^^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('map with unsupported keys', () {
@@ -79,12 +88,15 @@ void _hostedDependency() {
   });
 
   test('bad string version', () {
-    _expectThrows('not a version', r'''
-line 4, column 10: Could not parse version "not a version". Unknown text at "not a version".
+    _expectThrows(
+      'not a version',
+      r'''
+line 4, column 10: Unsupported value for "dep". Could not parse version "not a version". Unknown text at "not a version".
   ╷
 4 │   "dep": "not a version"
   │          ^^^^^^^^^^^^^^^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('map w/ just version', () {
@@ -106,15 +118,18 @@ line 4, column 10: Could not parse version "not a version". Unknown text at "not
   });
 
   test('map w/ bad version value', () {
-    _expectThrows({
-      'version': 'not a version',
-      'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
-    }, r'''
-line 5, column 15: Could not parse version "not a version". Unknown text at "not a version".
+    _expectThrows(
+      {
+        'version': 'not a version',
+        'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
+      },
+      r'''
+line 5, column 15: Unsupported value for "version". Could not parse version "not a version". Unknown text at "not a version".
   ╷
 5 │    "version": "not a version",
   │               ^^^^^^^^^^^^^^^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('map w/ extra keys should fail', () {
@@ -148,14 +163,15 @@ line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git
   });
 
   test('map w/ null hosted should error', () {
-    _expectThrows({'hosted': null}, r'''
-line 5, column 14: These keys had `null` values, which is not allowed: [hosted]
+    _expectThrows(
+      {'hosted': null},
+      r'''
+line 5, column 4: These keys had `null` values, which is not allowed: [hosted]
   ╷
-5 │      "hosted": null
-  │ ┌──────────────^
-6 │ │   }
-  │ └──^
-  ╵''');
+5 │    "hosted": null
+  │    ^^^^^^^^
+  ╵''',
+    );
   });
 
   test('map w/ null version is fine', () {
@@ -183,25 +199,29 @@ void _sdkDependency() {
   });
 
   test('null content', () {
-    _expectThrows({'sdk': null}, r'''
-line 5, column 11: These keys had `null` values, which is not allowed: [sdk]
+    _expectThrows(
+      {'sdk': null},
+      r'''
+line 5, column 4: These keys had `null` values, which is not allowed: [sdk]
   ╷
-5 │      "sdk": null
-  │ ┌───────────^
-6 │ │   }
-  │ └──^
-  ╵''');
+5 │    "sdk": null
+  │    ^^^^^
+  ╵''',
+    );
   });
 
   test('number content', () {
-    _expectThrows({'sdk': 42}, r'''
-line 5, column 11: Unsupported value for `sdk`.
+    _expectThrows(
+      {'sdk': 42},
+      r'''
+line 5, column 11: Unsupported value for "sdk".
   ╷
 5 │      "sdk": 42
   │ ┌───────────^
 6 │ │   }
   │ └──^
-  ╵''');
+  ╵''',
+    );
   });
 }
 
@@ -256,25 +276,31 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
   });
 
   test('git - null content', () {
-    _expectThrows({'git': null}, r'''
-line 5, column 11: Must be a String or a Map.
+    _expectThrows(
+      {'git': null},
+      r'''
+line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   ╷
 5 │      "git": null
   │ ┌───────────^
 6 │ │   }
   │ └──^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('git - int content', () {
-    _expectThrows({'git': 42}, r'''
-line 5, column 11: Must be a String or a Map.
+    _expectThrows(
+      {'git': 42},
+      r'''
+line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   ╷
 5 │      "git": 42
   │ ┌───────────^
 6 │ │   }
   │ └──^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('git - empty map', () {
@@ -287,29 +313,33 @@ line 5, column 11: Required keys are missing: url.
   });
 
   test('git - null url', () {
-    _expectThrows({
-      'git': {'url': null}
-    }, r'''
-line 6, column 12: These keys had `null` values, which is not allowed: [url]
+    _expectThrows(
+      {
+        'git': {'url': null}
+      },
+      r'''
+line 6, column 5: These keys had `null` values, which is not allowed: [url]
   ╷
-6 │       "url": null
-  │ ┌────────────^
-7 │ │    }
-  │ └───^
-  ╵''');
+6 │     "url": null
+  │     ^^^^^
+  ╵''',
+    );
   });
 
   test('git - int url', () {
-    _expectThrows({
-      'git': {'url': 42}
-    }, r'''
-line 6, column 12: Unsupported value for `url`.
+    _expectThrows(
+      {
+        'git': {'url': 42}
+      },
+      r'''
+line 6, column 12: Unsupported value for "url".
   ╷
 6 │       "url": 42
   │ ┌────────────^
 7 │ │    }
   │ └───^
-  ╵''');
+  ╵''',
+    );
   });
 }
 
@@ -337,25 +367,31 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
   });
 
   test('null content', () {
-    _expectThrows({'path': null}, r'''
-line 5, column 12: Must be a String.
+    _expectThrows(
+      {'path': null},
+      r'''
+line 5, column 12: Unsupported value for "path". Must be a String.
   ╷
 5 │      "path": null
   │ ┌────────────^
 6 │ │   }
   │ └──^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('int content', () {
-    _expectThrows({'path': 42}, r'''
-line 5, column 12: Must be a String.
+    _expectThrows(
+      {'path': 42},
+      r'''
+line 5, column 12: Unsupported value for "path". Must be a String.
   ╷
 5 │      "path": 42
   │ ┌────────────^
 6 │ │   }
   │ └──^
-  ╵''');
+  ╵''',
+    );
   });
 }
 

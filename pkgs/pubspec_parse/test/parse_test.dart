@@ -75,29 +75,29 @@ void main() {
   group('publish_to', () {
     for (var entry in {
       42: r'''
-line 3, column 16: Unsupported value for `publish_to`.
+line 3, column 16: Unsupported value for "publish_to".
   ╷
 3 │  "publish_to": 42
   │                ^^
   ╵''',
       '##not a uri!': r'''
-line 3, column 16: must be an http or https URL.
+line 3, column 16: Unsupported value for "publish_to". Must be an http or https URL.
   ╷
 3 │  "publish_to": "##not a uri!"
   │                ^^^^^^^^^^^^^^
   ╵''',
       '/cool/beans': r'''
-line 3, column 16: must be an http or https URL.
+line 3, column 16: Unsupported value for "publish_to". Must be an http or https URL.
   ╷
 3 │  "publish_to": "/cool/beans"
   │                ^^^^^^^^^^^^^
   ╵''',
       'file:///Users/kevmoo/': r'''
-line 3, column 16: must be an http or https URL.
+line 3, column 16: Unsupported value for "publish_to". Must be an http or https URL.
   ╷
 3 │  "publish_to": "file:///Users/kevmoo/"
   │                ^^^^^^^^^^^^^^^^^^^^^^^
-  ╵'''
+  ╵''',
     }.entries) {
       test('cannot be `${entry.key}`', () {
         expectParseThrows(
@@ -182,14 +182,30 @@ line 3, column 16: must be an http or https URL.
 
   group('invalid', () {
     test('null', () {
-      expect(() => parse(null), throwsArgumentError);
+      expectParseThrows(
+        null,
+        r'''
+line 1, column 1: Not a map
+  ╷
+1 │ null
+  │ ^^^^
+  ╵''',
+      );
     });
     test('empty string', () {
-      expect(() => parse(''), throwsArgumentError);
+      expectParseThrows(
+        '',
+        r'''
+line 1, column 1: Not a map
+  ╷
+1 │ ""
+  │ ^^
+  ╵''',
+      );
     });
     test('array', () {
       expectParseThrows([], r'''
-line 1, column 1: Does not represent a YAML map.
+line 1, column 1: Not a map
   ╷
 1 │ []
   │ ^^
@@ -210,7 +226,7 @@ line 1, column 1: "name" cannot be empty.
         'name': 'sample',
         'environment': {'dart': 'cool'}
       }, r'''
-line 4, column 3: Unrecognized keys: [dart]; supported keys: [sdk]
+line 4, column 3: Use "sdk" to for Dart SDK constraints.
   ╷
 4 │   "dart": "cool"
   │   ^^^^^^
@@ -218,26 +234,32 @@ line 4, column 3: Unrecognized keys: [dart]; supported keys: [sdk]
     });
 
     test('environment values cannot be int', () {
-      expectParseThrows({
-        'name': 'sample',
-        'environment': {'sdk': 42}
-      }, r'''
-line 4, column 10: `42` is not a String.
+      expectParseThrows(
+        {
+          'name': 'sample',
+          'environment': {'sdk': 42}
+        },
+        r'''
+line 4, column 10: Unsupported value for "sdk". `42` is not a String.
   ╷
 4 │     "sdk": 42
   │ ┌──────────^
 5 │ │  }
   │ └─^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('version', () {
-      expectParseThrows({'name': 'sample', 'version': 'invalid'}, r'''
-line 3, column 13: Could not parse "invalid".
+      expectParseThrows(
+        {'name': 'sample', 'version': 'invalid'},
+        r'''
+line 3, column 13: Unsupported value for "version". Could not parse "invalid".
   ╷
 3 │  "version": "invalid"
   │             ^^^^^^^^^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('invalid environment value', () {
@@ -245,7 +267,7 @@ line 3, column 13: Could not parse "invalid".
         'name': 'sample',
         'environment': {'sdk': 'silly'}
       }, r'''
-line 4, column 10: Could not parse version "silly". Unknown text at "silly".
+line 4, column 10: Unsupported value for "sdk". Could not parse version "silly". Unknown text at "silly".
   ╷
 4 │   "sdk": "silly"
   │          ^^^^^^^
@@ -253,45 +275,80 @@ line 4, column 10: Could not parse version "silly". Unknown text at "silly".
     });
 
     test('bad repository url', () {
-      expectParseThrows({
-        'name': 'foo',
-        'repository': {'x': 'y'},
-      }, r'''
-line 3, column 16: Unsupported value for `repository`.
+      expectParseThrows(
+        {
+          'name': 'foo',
+          'repository': {'x': 'y'},
+        },
+        r'''
+line 3, column 16: Unsupported value for "repository".
   ╷
 3 │    "repository": {
   │ ┌────────────────^
 4 │ │   "x": "y"
 5 │ └  }
-  ╵''', skipTryPub: true);
+  ╵''',
+        skipTryPub: true,
+      );
     });
 
     test('bad issue_tracker url', () {
-      expectParseThrows({
-        'name': 'foo',
-        'issue_tracker': {'x': 'y'},
-      }, r'''
-line 3, column 19: Unsupported value for `issue_tracker`.
+      expectParseThrows(
+        {
+          'name': 'foo',
+          'issue_tracker': {'x': 'y'},
+        },
+        r'''
+line 3, column 19: Unsupported value for "issue_tracker".
   ╷
 3 │    "issue_tracker": {
   │ ┌───────────────────^
 4 │ │   "x": "y"
 5 │ └  }
-  ╵''', skipTryPub: true);
+  ╵''',
+        skipTryPub: true,
+      );
     });
   });
 
   group('lenient', () {
     test('null', () {
-      expect(() => parse(null, lenient: true), throwsArgumentError);
+      expectParseThrows(
+        null,
+        r'''
+line 1, column 1: Not a map
+  ╷
+1 │ null
+  │ ^^^^
+  ╵''',
+        lenient: true,
+      );
     });
 
     test('empty string', () {
-      expect(() => parse('', lenient: true), throwsArgumentError);
+      expectParseThrows(
+        '',
+        r'''
+line 1, column 1: Not a map
+  ╷
+1 │ ""
+  │ ^^
+  ╵''',
+        lenient: true,
+      );
     });
 
     test('name cannot be empty', () {
-      expect(() => parse({}, lenient: true), throwsException);
+      expectParseThrows(
+        {},
+        r'''
+line 1, column 1: "name" cannot be empty.
+  ╷
+1 │ {}
+  │ ^^
+  ╵''',
+        lenient: true,
+      );
     });
 
     test('bad repository url', () {
