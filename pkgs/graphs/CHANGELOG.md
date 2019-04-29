@@ -1,4 +1,8 @@
-# 0.2.0-dev
+# 0.2.1
+
+- Require Dart SDK `>=2.2.0 <3.0.0`.
+
+# 0.2.0
 
 - **BREAKING** `shortestPath`, `shortestPaths` and `stronglyConnectedComponents`
   now have one generic parameter and have replaced the `key` parameter with

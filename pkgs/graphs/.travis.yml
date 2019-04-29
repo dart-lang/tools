@@ -2,17 +2,16 @@ language: dart
 
 dart:
   - dev
-  - stable
+  - 2.2.0
 
 dart_task:
   - test
   - test -p chrome,firefox
-  - dartfmt
   - dartanalyzer: --fatal-infos --fatal-warnings .
 
 matrix:
-  exclude:
-    - dart: stable
+  include:
+    - dart: dev
       dart_task: dartfmt
 
 branches:
