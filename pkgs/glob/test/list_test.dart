@@ -22,52 +22,52 @@ void main() {
 
   group("list()", () {
     test("fails if the context doesn't match the system context", () {
-      expect(new Glob("*", context: p.url).list, throwsStateError);
+      expect(Glob("*", context: p.url).list, throwsStateError);
     });
 
     test("reports exceptions for non-existent case-sensitive directories", () {
-      expect(new Glob("non/existent/**", caseSensitive: true).list().toList(),
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("non/existent/**", caseSensitive: true).list().toList(),
+          throwsA(isA<FileSystemException>()));
     });
 
     test("reports exceptions for non-existent case-insensitive directories",
         () {
-      expect(new Glob("non/existent/**", caseSensitive: false).list().toList(),
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("non/existent/**", caseSensitive: false).list().toList(),
+          throwsA(isA<FileSystemException>()));
     });
   });
 
   group("listSync()", () {
     test("fails if the context doesn't match the system context", () {
-      expect(new Glob("*", context: p.url).listSync, throwsStateError);
+      expect(Glob("*", context: p.url).listSync, throwsStateError);
     });
 
     test("reports exceptions for non-existent case-sensitive directories", () {
-      expect(new Glob("non/existent/**", caseSensitive: true).listSync,
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("non/existent/**", caseSensitive: true).listSync,
+          throwsA(isA<FileSystemException>()));
     });
 
     test("reports exceptions for non-existent case-insensitive directories",
         () {
-      expect(new Glob("non/existent/**", caseSensitive: false).listSync,
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("non/existent/**", caseSensitive: false).listSync,
+          throwsA(isA<FileSystemException>()));
     });
   });
 
   group("when case-sensitive", () {
     test("lists literals case-sensitively", () {
-      expect(new Glob("foo/BAZ/qux", caseSensitive: true).listSync,
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("foo/BAZ/qux", caseSensitive: true).listSync,
+          throwsA(isA<FileSystemException>()));
     });
 
     test("lists ranges case-sensitively", () {
-      expect(new Glob("foo/[BX][A-Z]z/qux", caseSensitive: true).listSync,
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("foo/[BX][A-Z]z/qux", caseSensitive: true).listSync,
+          throwsA(isA<FileSystemException>()));
     });
 
     test("options preserve case-sensitivity", () {
-      expect(new Glob("foo/{BAZ,ZAP}/qux", caseSensitive: true).listSync,
-          throwsA(new isInstanceOf<FileSystemException>()));
+      expect(Glob("foo/{BAZ,ZAP}/qux", caseSensitive: true).listSync,
+          throwsA(isA<FileSystemException>()));
     });
   });
 
@@ -215,7 +215,7 @@ void main() {
 
     group("with symlinks", () {
       setUp(() async {
-        await new Link(p.join(d.sandbox, "dir", "link"))
+        await Link(p.join(d.sandbox, "dir", "link"))
             .create(p.join(d.sandbox, "foo", "baz"), recursive: true);
       });
 
@@ -235,7 +235,7 @@ void main() {
       });
 
       test("shouldn't crash on broken symlinks", () async {
-        await new Directory(p.join(d.sandbox, "foo")).delete(recursive: true);
+        await Directory(p.join(d.sandbox, "foo")).delete(recursive: true);
 
         expect(await list("dir/**"), equals([p.join("dir", "link")]));
       });
@@ -313,16 +313,16 @@ void main() {
   });
 }
 
-typedef FutureOr<List<String>> ListFn(String glob,
+typedef ListFn = FutureOr<List<String>> Function(String glob,
     {bool recursive, bool followLinks, bool caseSensitive});
 
 /// Runs [callback] in two groups with two values of [listFn]: one that uses
 /// [Glob.list], one that uses [Glob.listSync].
 void syncAndAsync(FutureOr callback(ListFn listFn)) {
   group("async", () {
-    callback((pattern, {recursive: false, followLinks: true, caseSensitive}) {
+    callback((pattern, {recursive = false, followLinks = true, caseSensitive}) {
       var glob =
-          new Glob(pattern, recursive: recursive, caseSensitive: caseSensitive);
+          Glob(pattern, recursive: recursive, caseSensitive: caseSensitive);
 
       return glob
           .list(root: d.sandbox, followLinks: followLinks)
@@ -332,9 +332,9 @@ void syncAndAsync(FutureOr callback(ListFn listFn)) {
   });
 
   group("sync", () {
-    callback((pattern, {recursive: false, followLinks: true, caseSensitive}) {
+    callback((pattern, {recursive = false, followLinks = true, caseSensitive}) {
       var glob =
-          new Glob(pattern, recursive: recursive, caseSensitive: caseSensitive);
+          Glob(pattern, recursive: recursive, caseSensitive: caseSensitive);
 
       return glob
           .listSync(root: d.sandbox, followLinks: followLinks)

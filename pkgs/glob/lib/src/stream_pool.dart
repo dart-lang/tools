@@ -12,7 +12,7 @@ class StreamPool<T> {
   final StreamController<T> _controller;
 
   /// Subscriptions to the streams that make up the pool.
-  final _subscriptions = new Map<Stream<T>, StreamSubscription<T>>();
+  final _subscriptions = Map<Stream<T>, StreamSubscription<T>>();
 
   /// Whether this pool should be closed when it becomes empty.
   bool _closeWhenEmpty = false;
@@ -25,7 +25,7 @@ class StreamPool<T> {
       // Create the controller as sync so that any sync input streams will be
       // forwarded synchronously. Async input streams will have their asynchrony
       // preserved, since _controller.add will be called asynchronously.
-      : _controller = new StreamController<T>(sync: true);
+      : _controller = StreamController<T>(sync: true);
 
   /// Creates a new stream pool where [stream] can be listened to more than
   /// once.
@@ -36,7 +36,7 @@ class StreamPool<T> {
       // Create the controller as sync so that any sync input streams will be
       // forwarded synchronously. Async input streams will have their asynchrony
       // preserved, since _controller.add will be called asynchronously.
-      : _controller = new StreamController<T>.broadcast(sync: true);
+      : _controller = StreamController<T>.broadcast(sync: true);
 
   /// Adds [stream] as a member of this pool.
   ///

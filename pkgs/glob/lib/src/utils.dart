@@ -43,7 +43,7 @@ class GlobMatch implements Match {
   String operator [](int group) => this.group(group);
 
   String group(int group) {
-    if (group != 0) throw new RangeError.range(group, 0, 0);
+    if (group != 0) throw RangeError.range(group, 0, 0);
     return input;
   }
 
@@ -51,7 +51,7 @@ class GlobMatch implements Match {
       groupIndices.map((index) => group(index)).toList();
 }
 
-final _quote = new RegExp(r"[+*?{}|[\]\\().^$-]");
+final _quote = RegExp(r"[+*?{}|[\]\\().^$-]");
 
 /// Returns [contents] with characters that are meaningful in regular
 /// expressions backslash-escaped.

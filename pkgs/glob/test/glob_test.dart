@@ -19,13 +19,13 @@ void main() {
 
   group("Glob.matches()", () {
     test("returns whether the path matches the glob", () {
-      var glob = new Glob("foo*");
+      var glob = Glob("foo*");
       expect(glob.matches("foobar"), isTrue);
       expect(glob.matches("baz"), isFalse);
     });
 
     test("only matches the entire path", () {
-      var glob = new Glob("foo");
+      var glob = Glob("foo");
       expect(glob.matches("foo/bar"), isFalse);
       expect(glob.matches("bar/foo"), isFalse);
     });
@@ -33,36 +33,36 @@ void main() {
 
   group("Glob.matchAsPrefix()", () {
     test("returns a match if the path matches the glob", () {
-      var glob = new Glob("foo*");
-      expect(glob.matchAsPrefix("foobar"), new isInstanceOf<Match>());
+      var glob = Glob("foo*");
+      expect(glob.matchAsPrefix("foobar"), isA<Match>());
       expect(glob.matchAsPrefix("baz"), isNull);
     });
 
     test("returns null for start > 0", () {
-      var glob = new Glob("*");
+      var glob = Glob("*");
       expect(glob.matchAsPrefix("foobar", 1), isNull);
     });
   });
 
   group("Glob.allMatches()", () {
     test("returns a single match if the path matches the glob", () {
-      var matches = new Glob("foo*").allMatches("foobar");
+      var matches = Glob("foo*").allMatches("foobar");
       expect(matches, hasLength(1));
-      expect(matches.first, new isInstanceOf<Match>());
+      expect(matches.first, isA<Match>());
     });
 
     test("returns an empty list if the path doesn't match the glob", () {
-      expect(new Glob("foo*").allMatches("baz"), isEmpty);
+      expect(Glob("foo*").allMatches("baz"), isEmpty);
     });
 
     test("returns no matches for start > 0", () {
-      var glob = new Glob("*");
+      var glob = Glob("*");
       expect(glob.allMatches("foobar", 1), isEmpty);
     });
   });
 
   group("GlobMatch", () {
-    var glob = new Glob("foo*");
+    var glob = Glob("foo*");
     var match = glob.matchAsPrefix("foobar");
 
     test("returns the string as input", () {
@@ -94,18 +94,18 @@ void main() {
   });
 
   test("globs are case-sensitive by default for Posix and URL contexts", () {
-    expect("foo", contains(new Glob("foo", context: p.posix)));
-    expect("FOO", isNot(contains(new Glob("foo", context: p.posix))));
-    expect("foo", isNot(contains(new Glob("FOO", context: p.posix))));
+    expect("foo", contains(Glob("foo", context: p.posix)));
+    expect("FOO", isNot(contains(Glob("foo", context: p.posix))));
+    expect("foo", isNot(contains(Glob("FOO", context: p.posix))));
 
-    expect("foo", contains(new Glob("foo", context: p.url)));
-    expect("FOO", isNot(contains(new Glob("foo", context: p.url))));
-    expect("foo", isNot(contains(new Glob("FOO", context: p.url))));
+    expect("foo", contains(Glob("foo", context: p.url)));
+    expect("FOO", isNot(contains(Glob("foo", context: p.url))));
+    expect("foo", isNot(contains(Glob("FOO", context: p.url))));
   });
 
   test("globs are case-insensitive by default for Windows contexts", () {
-    expect("foo", contains(new Glob("foo", context: p.windows)));
-    expect("FOO", contains(new Glob("foo", context: p.windows)));
-    expect("foo", contains(new Glob("FOO", context: p.windows)));
+    expect("foo", contains(Glob("foo", context: p.windows)));
+    expect("FOO", contains(Glob("foo", context: p.windows)));
+    expect("foo", contains(Glob("FOO", context: p.windows)));
   });
 }

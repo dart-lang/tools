@@ -8,89 +8,89 @@ import 'package:test/test.dart';
 
 void main() {
   test("supports backslash-escaped characters", () {
-    expect(r"*[]{,}?()", contains(new Glob(r"\*\[\]\{\,\}\?\(\)")));
+    expect(r"*[]{,}?()", contains(Glob(r"\*\[\]\{\,\}\?\(\)")));
     if (p.style != p.Style.windows) {
-      expect(r"foo\bar", contains(new Glob(r"foo\\bar")));
+      expect(r"foo\bar", contains(Glob(r"foo\\bar")));
     }
   });
 
   test("disallows an empty glob", () {
-    expect(() => new Glob(""), throwsFormatException);
+    expect(() => Glob(""), throwsFormatException);
   });
 
   group("range", () {
     test("supports either ^ or ! for negated ranges", () {
-      var bang = new Glob("fo[!a-z]");
+      var bang = Glob("fo[!a-z]");
       expect("foo", isNot(contains(bang)));
       expect("fo2", contains(bang));
 
-      var caret = new Glob("fo[^a-z]");
+      var caret = Glob("fo[^a-z]");
       expect("foo", isNot(contains(caret)));
       expect("fo2", contains(caret));
     });
 
     test("supports backslash-escaped characters", () {
-      var glob = new Glob(r"fo[\*\--\]]");
+      var glob = Glob(r"fo[\*\--\]]");
       expect("fo]", contains(glob));
       expect("fo-", contains(glob));
       expect("fo*", contains(glob));
     });
 
     test("disallows inverted ranges", () {
-      expect(() => new Glob(r"[z-a]"), throwsFormatException);
+      expect(() => Glob(r"[z-a]"), throwsFormatException);
     });
 
     test("disallows empty ranges", () {
-      expect(() => new Glob(r"[]"), throwsFormatException);
+      expect(() => Glob(r"[]"), throwsFormatException);
     });
 
     test("disallows unclosed ranges", () {
-      expect(() => new Glob(r"[abc"), throwsFormatException);
-      expect(() => new Glob(r"[-"), throwsFormatException);
+      expect(() => Glob(r"[abc"), throwsFormatException);
+      expect(() => Glob(r"[-"), throwsFormatException);
     });
 
     test("disallows dangling ]", () {
-      expect(() => new Glob(r"abc]"), throwsFormatException);
+      expect(() => Glob(r"abc]"), throwsFormatException);
     });
 
     test("disallows explicit /", () {
-      expect(() => new Glob(r"[/]"), throwsFormatException);
-      expect(() => new Glob(r"[ -/]"), throwsFormatException);
-      expect(() => new Glob(r"[/-~]"), throwsFormatException);
+      expect(() => Glob(r"[/]"), throwsFormatException);
+      expect(() => Glob(r"[ -/]"), throwsFormatException);
+      expect(() => Glob(r"[/-~]"), throwsFormatException);
     });
   });
 
   group("options", () {
     test("allows empty branches", () {
-      var glob = new Glob("foo{,bar}");
+      var glob = Glob("foo{,bar}");
       expect("foo", contains(glob));
       expect("foobar", contains(glob));
     });
 
     test("disallows empty options", () {
-      expect(() => new Glob("{}"), throwsFormatException);
+      expect(() => Glob("{}"), throwsFormatException);
     });
 
     test("disallows single options", () {
-      expect(() => new Glob("{foo}"), throwsFormatException);
+      expect(() => Glob("{foo}"), throwsFormatException);
     });
 
     test("disallows unclosed options", () {
-      expect(() => new Glob("{foo,bar"), throwsFormatException);
-      expect(() => new Glob("{foo,"), throwsFormatException);
+      expect(() => Glob("{foo,bar"), throwsFormatException);
+      expect(() => Glob("{foo,"), throwsFormatException);
     });
 
     test("disallows dangling }", () {
-      expect(() => new Glob("foo}"), throwsFormatException);
+      expect(() => Glob("foo}"), throwsFormatException);
     });
 
     test("disallows dangling ] in options", () {
-      expect(() => new Glob(r"{abc]}"), throwsFormatException);
+      expect(() => Glob(r"{abc]}"), throwsFormatException);
     });
   });
 
   test("disallows unescaped parens", () {
-    expect(() => new Glob("foo(bar"), throwsFormatException);
-    expect(() => new Glob("foo)bar"), throwsFormatException);
+    expect(() => Glob("foo(bar"), throwsFormatException);
+    expect(() => Glob("foo)bar"), throwsFormatException);
   });
 }

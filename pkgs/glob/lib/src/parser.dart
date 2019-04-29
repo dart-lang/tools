@@ -8,8 +8,8 @@ import 'package:string_scanner/string_scanner.dart';
 import 'ast.dart';
 import 'utils.dart';
 
-const _HYPHEN = 0x2D;
-const _SLASH = 0x2F;
+const _hyphen = 0x2D;
+const _slash = 0x2F;
 
 /// A parser for globs.
 class Parser {
@@ -22,8 +22,8 @@ class Parser {
   /// Whether this glob is case-sensitive.
   final bool _caseSensitive;
 
-  Parser(String component, this._context, {bool caseSensitive: true})
-      : _scanner = new StringScanner(component),
+  Parser(String component, this._context, {bool caseSensitive = true})
+      : _scanner = StringScanner(component),
         _caseSensitive = caseSensitive;
 
   /// Parses an entire glob.
@@ -32,7 +32,7 @@ class Parser {
   /// Parses a [SequenceNode].
   ///
   /// If [inOptions] is true, this is parsing within an [OptionsNode].
-  SequenceNode _parseSequence({bool inOptions: false}) {
+  SequenceNode _parseSequence({bool inOptions = false}) {
     var nodes = <AstNode>[];
 
     if (_scanner.isDone) {
@@ -44,13 +44,13 @@ class Parser {
       nodes.add(_parseNode(inOptions: inOptions));
     }
 
-    return new SequenceNode(nodes, caseSensitive: _caseSensitive);
+    return SequenceNode(nodes, caseSensitive: _caseSensitive);
   }
 
   /// Parses an [AstNode].
   ///
   /// If [inOptions] is true, this is parsing within an [OptionsNode].
-  AstNode _parseNode({bool inOptions: false}) {
+  AstNode _parseNode({bool inOptions = false}) {
     var star = _parseStar();
     if (star != null) return star;
 
@@ -72,8 +72,8 @@ class Parser {
   AstNode _parseStar() {
     if (!_scanner.scan('*')) return null;
     return _scanner.scan('*')
-        ? new DoubleStarNode(_context, caseSensitive: _caseSensitive)
-        : new StarNode(caseSensitive: _caseSensitive);
+        ? DoubleStarNode(_context, caseSensitive: _caseSensitive)
+        : StarNode(caseSensitive: _caseSensitive);
   }
 
   /// Tries to parse an [AnyCharNode].
@@ -81,7 +81,7 @@ class Parser {
   /// Returns `null` if there's not one to parse.
   AstNode _parseAnyChar() {
     if (!_scanner.scan('?')) return null;
-    return new AnyCharNode(caseSensitive: _caseSensitive);
+    return AnyCharNode(caseSensitive: _caseSensitive);
   }
 
   /// Tries to parse an [RangeNode].
@@ -94,7 +94,7 @@ class Parser {
 
     readRangeChar() {
       var char = _scanner.readChar();
-      if (negated || char != _SLASH) return char;
+      if (negated || char != _slash) return char;
       _scanner.error('"/" may not be used in a range.',
           position: _scanner.position - 1);
     }
@@ -108,8 +108,8 @@ class Parser {
 
       if (_scanner.scan('-')) {
         if (_scanner.matches(']')) {
-          ranges.add(new Range.singleton(char));
-          ranges.add(new Range.singleton(_HYPHEN));
+          ranges.add(Range.singleton(char));
+          ranges.add(Range.singleton(_hyphen));
           continue;
         }
 
@@ -122,14 +122,13 @@ class Parser {
           _scanner.error("Range out of order.",
               position: start, length: _scanner.position - start);
         }
-        ranges.add(new Range(char, end));
+        ranges.add(Range(char, end));
       } else {
-        ranges.add(new Range.singleton(char));
+        ranges.add(Range.singleton(char));
       }
     }
 
-    return new RangeNode(ranges,
-        negated: negated, caseSensitive: _caseSensitive);
+    return RangeNode(ranges, negated: negated, caseSensitive: _caseSensitive);
   }
 
   /// Tries to parse an [OptionsNode].
@@ -148,18 +147,17 @@ class Parser {
     if (options.length == 1) _scanner.expect(',');
     _scanner.expect('}');
 
-    return new OptionsNode(options, caseSensitive: _caseSensitive);
+    return OptionsNode(options, caseSensitive: _caseSensitive);
   }
 
   /// Parses a [LiteralNode].
-  AstNode _parseLiteral({bool inOptions: false}) {
+  AstNode _parseLiteral({bool inOptions = false}) {
     // If we're in an options block, we want to stop parsing as soon as we hit a
     // comma. Otherwise, commas are fair game for literals.
-    var regExp =
-        new RegExp(inOptions ? r'[^*{[?\\}\],()]*' : r'[^*{[?\\}\]()]*');
+    var regExp = RegExp(inOptions ? r'[^*{[?\\}\],()]*' : r'[^*{[?\\}\]()]*');
 
     _scanner.scan(regExp);
-    var buffer = new StringBuffer()..write(_scanner.lastMatch[0]);
+    var buffer = StringBuffer()..write(_scanner.lastMatch[0]);
 
     while (_scanner.scan('\\')) {
       buffer.writeCharCode(_scanner.readChar());
@@ -172,7 +170,7 @@ class Parser {
     }
     if (!inOptions && _scanner.matches('}')) _scanner.error('unexpected "}"');
 
-    return new LiteralNode(buffer.toString(),
+    return LiteralNode(buffer.toString(),
         context: _context, caseSensitive: _caseSensitive);
   }
 }

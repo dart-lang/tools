@@ -2,16 +2,16 @@ language: dart
 
 dart:
   - dev
-  - stable
+  - 2.1.0
 
 # See https://docs.travis-ci.com/user/languages/dart/ for details.
 dart_task:
   - test: --platform vm,firefox
-  - dartanalyzer
+  - dartanalyzer: --fatal-warnings --fatal-infos .
 
 matrix:
   include:
-    - dart: stable
+    - dart: dev
       dart_task: dartfmt
 
 # Only building master means that we don't run two builds for each pull request.

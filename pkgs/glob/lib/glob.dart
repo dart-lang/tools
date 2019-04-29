@@ -13,7 +13,7 @@ import 'src/parser.dart';
 import 'src/utils.dart';
 
 /// Regular expression used to quote globs.
-final _quoteRegExp = new RegExp(r'[*{[?\\}\],\-()]');
+final _quoteRegExp = RegExp(r'[*{[?\\}\],\-()]');
 
 /// A glob for matching and listing files and directories.
 ///
@@ -99,13 +99,13 @@ class Glob implements Pattern {
   /// regardless of case. This defaults to `false` when [context] is Windows and
   /// `true` otherwise.
   factory Glob(String pattern,
-      {p.Context context, bool recursive: false, bool caseSensitive}) {
+      {p.Context context, bool recursive = false, bool caseSensitive}) {
     context ??= p.context;
     caseSensitive ??= context.style == p.Style.windows ? false : true;
     if (recursive) pattern += "{,/**}";
 
-    var parser = new Parser(pattern, context, caseSensitive: caseSensitive);
-    return new Glob._(pattern, context, parser.parse(), recursive);
+    var parser = Parser(pattern, context, caseSensitive: caseSensitive);
+    return Glob._(pattern, context, parser.parse(), recursive);
   }
 
   Glob._(this.pattern, this.context, this._ast, this.recursive);
@@ -120,13 +120,13 @@ class Glob implements Pattern {
   /// [root] defaults to the current working directory.
   ///
   /// [followLinks] works the same as for [Directory.list].
-  Stream<FileSystemEntity> list({String root, bool followLinks: true}) {
+  Stream<FileSystemEntity> list({String root, bool followLinks = true}) {
     if (context.style != p.style) {
-      throw new StateError("Can't list glob \"$this\"; it matches "
+      throw StateError("Can't list glob \"$this\"; it matches "
           "${context.style} paths, but this platform uses ${p.style} paths.");
     }
 
-    if (_listTree == null) _listTree = new ListTree(_ast);
+    if (_listTree == null) _listTree = ListTree(_ast);
     return _listTree.list(root: root, followLinks: followLinks);
   }
 
@@ -141,13 +141,13 @@ class Glob implements Pattern {
   /// [root] defaults to the current working directory.
   ///
   /// [followLinks] works the same as for [Directory.list].
-  List<FileSystemEntity> listSync({String root, bool followLinks: true}) {
+  List<FileSystemEntity> listSync({String root, bool followLinks = true}) {
     if (context.style != p.style) {
-      throw new StateError("Can't list glob \"$this\"; it matches "
+      throw StateError("Can't list glob \"$this\"; it matches "
           "${context.style} paths, but this platform uses ${p.style} paths.");
     }
 
-    if (_listTree == null) _listTree = new ListTree(_ast);
+    if (_listTree == null) _listTree = ListTree(_ast);
     return _listTree.listSync(root: root, followLinks: followLinks);
   }
 
@@ -163,14 +163,14 @@ class Glob implements Pattern {
         (_contextIsAbsolute || context.isAbsolute(path))) {
       var absolutePath = context.normalize(context.absolute(path));
       if (_ast.matches(toPosixPath(context, absolutePath))) {
-        return new GlobMatch(path, this);
+        return GlobMatch(path, this);
       }
     }
 
     if (_patternCanMatchRelative) {
       var relativePath = context.relative(path);
       if (_ast.matches(toPosixPath(context, relativePath))) {
-        return new GlobMatch(path, this);
+        return GlobMatch(path, this);
       }
     }
 
