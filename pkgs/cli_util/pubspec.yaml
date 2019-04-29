@@ -5,7 +5,7 @@ description: A library to help in building Dart command-line apps.
 homepage: https://github.com/dart-lang/cli_util
 
 environment:
-  sdk: '>=2.0.0-dev.55.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
   path: '>=1.0.0 <2.0.0'

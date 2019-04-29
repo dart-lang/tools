@@ -1,9 +1,9 @@
 language: dart
 dart:
+  - 2.0.0
   - dev
+
 script: ./tool/travis.sh
-dist: trusty
-sudo: false
 
 branches:
   only:
