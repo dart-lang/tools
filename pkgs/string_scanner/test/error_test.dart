@@ -9,7 +9,7 @@ import 'utils.dart';
 
 void main() {
   test('defaults to the last match', () {
-    var scanner = new StringScanner('foo bar baz');
+    var scanner = StringScanner('foo bar baz');
     scanner.expect('foo ');
     scanner.expect('bar');
     expect(() => scanner.error('oh no!'), throwsStringScannerException('bar'));
@@ -17,7 +17,7 @@ void main() {
 
   group("with match", () {
     test('supports an earlier match', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
       var match = scanner.lastMatch;
       scanner.expect('bar');
@@ -26,8 +26,7 @@ void main() {
     });
 
     test('supports a match on a previous line', () {
-      var scanner =
-          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner = StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar baz\ndo ');
       scanner.expect('re');
       var match = scanner.lastMatch;
@@ -37,8 +36,7 @@ void main() {
     });
 
     test('supports a multiline match', () {
-      var scanner =
-          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner = StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar ');
       scanner.expect('baz\ndo');
       var match = scanner.lastMatch;
@@ -48,7 +46,7 @@ void main() {
     });
 
     test('supports a match after position', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
       scanner.expect('bar');
       var match = scanner.lastMatch;
@@ -60,59 +58,57 @@ void main() {
 
   group("with position and/or length", () {
     test('defaults to length 0', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
       expect(() => scanner.error('oh no!', position: 1),
           throwsStringScannerException(''));
     });
 
     test('defaults to the current position', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
       expect(() => scanner.error('oh no!', length: 3),
           throwsStringScannerException('bar'));
     });
 
     test('supports an earlier position', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
       expect(() => scanner.error('oh no!', position: 1, length: 2),
           throwsStringScannerException('oo'));
     });
 
     test('supports a position on a previous line', () {
-      var scanner =
-          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner = StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar baz\ndo re mi\nearth');
       expect(() => scanner.error('oh no!', position: 15, length: 2),
           throwsStringScannerException('re'));
     });
 
     test('supports a multiline length', () {
-      var scanner =
-          new StringScanner('foo bar baz\ndo re mi\nearth fire water');
+      var scanner = StringScanner('foo bar baz\ndo re mi\nearth fire water');
       scanner.expect('foo bar baz\ndo re mi\nearth');
       expect(() => scanner.error('oh no!', position: 8, length: 8),
           throwsStringScannerException('baz\ndo r'));
     });
 
     test('supports a position after the current one', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       expect(() => scanner.error('oh no!', position: 4, length: 3),
           throwsStringScannerException('bar'));
     });
 
     test('supports a length of zero', () {
-      var scanner = new StringScanner('foo bar baz');
+      var scanner = StringScanner('foo bar baz');
       expect(() => scanner.error('oh no!', position: 4, length: 0),
           throwsStringScannerException(''));
     });
   });
 
   group("argument errors", () {
-    var scanner;
+    StringScanner scanner;
     setUp(() {
-      scanner = new StringScanner('foo bar baz');
+      scanner = StringScanner('foo bar baz');
       scanner.scan('foo');
     });
 

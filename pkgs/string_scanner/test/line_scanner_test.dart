@@ -7,9 +7,9 @@ import 'package:string_scanner/string_scanner.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var scanner;
+  LineScanner scanner;
   setUp(() {
-    scanner = new LineScanner('foo\nbar\r\nbaz');
+    scanner = LineScanner('foo\nbar\r\nbaz');
   });
 
   test('begins with line and column 0', () {
@@ -162,7 +162,7 @@ void main() {
   test("state= rejects a foreign state", () {
     scanner.scan('foo\nb');
 
-    expect(() => new LineScanner(scanner.string).state = scanner.state,
+    expect(() => LineScanner(scanner.string).state = scanner.state,
         throwsArgumentError);
   });
 }

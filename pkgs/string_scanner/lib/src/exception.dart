@@ -4,6 +4,8 @@
 
 import 'package:source_span/source_span.dart';
 
+import 'string_scanner.dart';
+
 /// An exception thrown by a [StringScanner] that failed to parse a string.
 class StringScannerException extends SourceSpanFormatException {
   String get source => super.source;

@@ -8,9 +8,9 @@ import 'package:test/test.dart';
 
 void main() {
   group('with an empty string', () {
-    var scanner;
+    StringScanner scanner;
     setUp(() {
-      scanner = new StringScanner('');
+      scanner = StringScanner('');
     });
 
     test('is done', () {
@@ -55,19 +55,19 @@ void main() {
     });
 
     test("scan returns false and doesn't change the state", () {
-      expect(scanner.scan(new RegExp('.')), isFalse);
+      expect(scanner.scan(RegExp('.')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
 
     test("expect throws a FormatException and doesn't change the state", () {
-      expect(() => scanner.expect(new RegExp('.')), throwsFormatException);
+      expect(() => scanner.expect(RegExp('.')), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
 
     test("matches returns false and doesn't change the state", () {
-      expect(scanner.matches(new RegExp('.')), isFalse);
+      expect(scanner.matches(RegExp('.')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
@@ -90,9 +90,9 @@ void main() {
   });
 
   group('at the beginning of a string', () {
-    var scanner;
+    StringScanner scanner;
     setUp(() {
-      scanner = new StringScanner('foo bar');
+      scanner = StringScanner('foo bar');
     });
 
     test('is not done', () {
@@ -155,24 +155,24 @@ void main() {
     });
 
     test("a matching scan returns true and changes the state", () {
-      expect(scanner.scan(new RegExp('f(..)')), isTrue);
+      expect(scanner.scan(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
     });
 
     test("a non-matching scan returns false and sets lastMatch to null", () {
-      expect(scanner.matches(new RegExp('f(..)')), isTrue);
+      expect(scanner.matches(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch, isNotNull);
 
-      expect(scanner.scan(new RegExp('b(..)')), isFalse);
+      expect(scanner.scan(RegExp('b(..)')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
       expect(scanner.rest, equals('foo bar'));
     });
 
     test("a matching expect changes the state", () {
-      scanner.expect(new RegExp('f(..)'));
+      scanner.expect(RegExp('f(..)'));
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
@@ -181,17 +181,17 @@ void main() {
     test(
         "a non-matching expect throws a FormatException and sets lastMatch to "
         "null", () {
-      expect(scanner.matches(new RegExp('f(..)')), isTrue);
+      expect(scanner.matches(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch, isNotNull);
 
-      expect(() => scanner.expect(new RegExp('b(..)')), throwsFormatException);
+      expect(() => scanner.expect(RegExp('b(..)')), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
       expect(scanner.rest, equals('foo bar'));
     });
 
     test("a matching matches returns true and only changes lastMatch", () {
-      expect(scanner.matches(new RegExp('f(..)')), isTrue);
+      expect(scanner.matches(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(0));
       expect(scanner.rest, equals('foo bar'));
@@ -199,7 +199,7 @@ void main() {
 
     test("a non-matching matches returns false and doesn't change the state",
         () {
-      expect(scanner.matches(new RegExp('b(..)')), isFalse);
+      expect(scanner.matches(RegExp('b(..)')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
       expect(scanner.rest, equals('foo bar'));
@@ -222,7 +222,7 @@ void main() {
       expect(scanner.position, equals(1));
       expect(scanner.rest, equals('oo bar'));
 
-      expect(scanner.scan(new RegExp('oo.')), isTrue);
+      expect(scanner.scan(RegExp('oo.')), isTrue);
       expect(scanner.lastMatch[0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
@@ -248,12 +248,12 @@ void main() {
     });
 
     test('scans multiple times', () {
-      expect(scanner.scan(new RegExp('f(..)')), isTrue);
+      expect(scanner.scan(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
 
-      expect(scanner.scan(new RegExp(' b(..)')), isTrue);
+      expect(scanner.scan(RegExp(' b(..)')), isTrue);
       expect(scanner.lastMatch[1], equals('ar'));
       expect(scanner.position, equals(7));
       expect(scanner.rest, equals(''));
@@ -263,9 +263,9 @@ void main() {
   });
 
   group('after a scan', () {
-    var scanner;
+    StringScanner scanner;
     setUp(() {
-      scanner = new StringScanner('foo bar');
+      scanner = StringScanner('foo bar');
       expect(scanner.scan('foo'), isTrue);
     });
 
@@ -289,9 +289,9 @@ void main() {
   });
 
   group('at the end of a string', () {
-    var scanner;
+    StringScanner scanner;
     setUp(() {
-      scanner = new StringScanner('foo bar');
+      scanner = StringScanner('foo bar');
       expect(scanner.scan('foo bar'), isTrue);
     });
 
@@ -333,19 +333,19 @@ void main() {
     });
 
     test("scan returns false and sets lastMatch to null", () {
-      expect(scanner.scan(new RegExp('.')), isFalse);
+      expect(scanner.scan(RegExp('.')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(7));
     });
 
     test("expect throws a FormatException and sets lastMatch to null", () {
-      expect(() => scanner.expect(new RegExp('.')), throwsFormatException);
+      expect(() => scanner.expect(RegExp('.')), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(7));
     });
 
     test("matches returns false sets lastMatch to null", () {
-      expect(scanner.matches(new RegExp('.')), isFalse);
+      expect(scanner.matches(RegExp('.')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(7));
     });
@@ -367,7 +367,7 @@ void main() {
       expect(scanner.position, equals(1));
       expect(scanner.rest, equals('oo bar'));
 
-      expect(scanner.scan(new RegExp('oo.')), isTrue);
+      expect(scanner.scan(RegExp('oo.')), isTrue);
       expect(scanner.lastMatch[0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
@@ -395,24 +395,22 @@ void main() {
 
   group('a scanner constructed with a custom position', () {
     test('starts scanning from that position', () {
-      var scanner = new StringScanner('foo bar', position: 1);
+      var scanner = StringScanner('foo bar', position: 1);
       expect(scanner.position, equals(1));
       expect(scanner.rest, equals('oo bar'));
 
-      expect(scanner.scan(new RegExp('oo.')), isTrue);
+      expect(scanner.scan(RegExp('oo.')), isTrue);
       expect(scanner.lastMatch[0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
     });
 
     test('throws an ArgumentError if the position is -1', () {
-      expect(() => new StringScanner('foo bar', position: -1),
-          throwsArgumentError);
+      expect(() => StringScanner('foo bar', position: -1), throwsArgumentError);
     });
 
     test('throws an ArgumentError if the position is beyond the string', () {
-      expect(
-          () => new StringScanner('foo bar', position: 8), throwsArgumentError);
+      expect(() => StringScanner('foo bar', position: 8), throwsArgumentError);
     });
   });
 }

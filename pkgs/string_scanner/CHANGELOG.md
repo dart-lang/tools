@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Update Dart SDK constraint to `>=2.0.0 <3.0.0`.
+
 ## 1.0.4
 
 * Add @alwaysThrows annotation to error method.

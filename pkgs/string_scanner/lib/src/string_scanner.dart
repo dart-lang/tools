@@ -12,7 +12,7 @@ import 'utils.dart';
 /// When compiled to JS, forward slashes are always escaped in [RegExp.pattern].
 ///
 /// See issue 17998.
-final _slashAutoEscape = new RegExp("/").pattern == "\\/";
+final _slashAutoEscape = RegExp("/").pattern == "\\/";
 
 /// A class that scans through a string using [Pattern]s.
 class StringScanner {
@@ -29,7 +29,7 @@ class StringScanner {
   int get position => _position;
   set position(int position) {
     if (position < 0 || position > string.length) {
-      throw new ArgumentError("Invalid position $position");
+      throw ArgumentError("Invalid position $position");
     }
 
     _position = position;
@@ -84,7 +84,7 @@ class StringScanner {
   /// This returns `null` if [offset] points outside the string. It doesn't
   /// affect [lastMatch].
   int peekChar([int offset]) {
-    if (offset == null) offset = 0;
+    offset ??= 0;
     var index = position + offset;
     if (index < 0 || index >= string.length) return null;
     return string.codeUnitAt(index);
@@ -115,7 +115,7 @@ class StringScanner {
       } else if (character == $double_quote) {
         name = r'"\""';
       } else {
-        name = '"${new String.fromCharCode(character)}"';
+        name = '"${String.fromCharCode(character)}"';
       }
     }
 
@@ -181,7 +181,7 @@ class StringScanner {
   /// Unlike [String.substring], [end] defaults to [position] rather than the
   /// end of the string.
   String substring(int start, [int end]) {
-    if (end == null) end = position;
+    end ??= position;
     return string.substring(start, end);
   }
 
@@ -203,20 +203,18 @@ class StringScanner {
     validateErrorArgs(string, match, position, length);
 
     if (match == null && position == null && length == null) match = lastMatch;
-    if (position == null) {
-      position = match == null ? this.position : match.start;
-    }
-    if (length == null) length = match == null ? 0 : match.end - match.start;
+    position ??= match == null ? this.position : match.start;
+    length ??= match == null ? 0 : match.end - match.start;
 
-    var sourceFile = new SourceFile.fromString(string, url: sourceUrl);
+    var sourceFile = SourceFile.fromString(string, url: sourceUrl);
     var span = sourceFile.span(position, position + length);
-    throw new StringScannerException(message, span, string);
+    throw StringScannerException(message, span, string);
   }
 
   // TODO(nweiz): Make this handle long lines more gracefully.
   /// Throws a [FormatException] describing that [name] is expected at the
   /// current position in the string.
   void _fail(String name) {
-    error("expected $name.", position: this.position, length: 0);
+    error("expected $name.", position: position, length: 0);
   }
 }

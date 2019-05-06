@@ -12,26 +12,26 @@ import 'string_scanner.dart';
 import 'utils.dart';
 
 /// A subclass of [LineScanner] that exposes matched ranges as source map
-/// [Span]s.
+/// [FileSpan]s.
 class SpanScanner extends StringScanner implements LineScanner {
   /// The source of the scanner.
   ///
-  /// This caches line break information and is used to generate [Span]s.
+  /// This caches line break information and is used to generate [FileSpan]s.
   final SourceFile _sourceFile;
 
   int get line => _sourceFile.getLine(position);
   int get column => _sourceFile.getColumn(position);
 
-  LineScannerState get state => new _SpanScannerState(this, position);
+  LineScannerState get state => _SpanScannerState(this, position);
 
   set state(LineScannerState state) {
     if (state is! _SpanScannerState ||
         !identical((state as _SpanScannerState)._scanner, this)) {
-      throw new ArgumentError("The given LineScannerState was not returned by "
+      throw ArgumentError("The given LineScannerState was not returned by "
           "this LineScanner.");
     }
 
-    this.position = state.position;
+    position = state.position;
   }
 
   /// The [FileSpan] for [lastMatch].
@@ -57,7 +57,7 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// [FileSpan]s as well as for error reporting. It can be a [String], a
   /// [Uri], or `null`.
   SpanScanner(String string, {sourceUrl, int position})
-      : _sourceFile = new SourceFile.fromString(string, url: sourceUrl),
+      : _sourceFile = SourceFile.fromString(string, url: sourceUrl),
         super(string, sourceUrl: sourceUrl, position: position);
 
   /// Creates a new [SpanScanner] that eagerly computes line and column numbers.
@@ -76,9 +76,9 @@ class SpanScanner extends StringScanner implements LineScanner {
 
   /// Creates a new [SpanScanner] that scans within [span].
   ///
-  /// This scans through [span.text], but emits new spans from [span.file] in
+  /// This scans through [span]`.text, but emits new spans from [span]`.file` in
   /// their appropriate relative positions. The [string] field contains only
-  /// [span.text], and [position], [line], and [column] are all relative to the
+  /// [span]`.text`, and [position], [line], and [column] are all relative to the
   /// span.
   factory SpanScanner.within(FileSpan span) = RelativeSpanScanner;
 
@@ -103,13 +103,11 @@ class SpanScanner extends StringScanner implements LineScanner {
     validateErrorArgs(string, match, position, length);
 
     if (match == null && position == null && length == null) match = lastMatch;
-    if (position == null) {
-      position = match == null ? this.position : match.start;
-    }
-    if (length == null) length = match == null ? 0 : match.end - match.start;
+    position ??= match == null ? this.position : match.start;
+    length ??= match == null ? 0 : match.end - match.start;
 
     var span = _sourceFile.span(position, position + length);
-    throw new StringScannerException(message, span, string);
+    throw StringScannerException(message, span, string);
   }
 }
 

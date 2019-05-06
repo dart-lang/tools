@@ -10,23 +10,22 @@ import 'utils.dart';
 
 void main() {
   testForImplementation("lazy", ([String string]) {
-    return new SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
+    return SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
   });
 
   testForImplementation("eager", ([String string]) {
-    return new SpanScanner.eager(string ?? 'foo\nbar\nbaz',
-        sourceUrl: 'source');
+    return SpanScanner.eager(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
   });
 
   group("within", () {
     var text = 'first\nbefore: foo\nbar\nbaz :after\nlast';
     var startOffset = text.indexOf('foo');
 
-    var scanner;
+    SpanScanner scanner;
     setUp(() {
-      var file = new SourceFile.fromString(text, url: 'source');
-      scanner = new SpanScanner.within(
-          file.span(startOffset, text.indexOf(' :after')));
+      var file = SourceFile.fromString(text, url: 'source');
+      scanner =
+          SpanScanner.within(file.span(startOffset, text.indexOf(' :after')));
     });
 
     test("string only includes the span text", () {
@@ -104,9 +103,10 @@ void main() {
   });
 }
 
-void testForImplementation(String name, SpanScanner create([String string])) {
+void testForImplementation(
+    String name, SpanScanner Function([String string]) create) {
   group("for a $name scanner", () {
-    var scanner;
+    SpanScanner scanner;
     setUp(() => scanner = create());
 
     test("tracks the span for the last match", () {

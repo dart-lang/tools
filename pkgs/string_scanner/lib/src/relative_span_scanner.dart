@@ -19,7 +19,7 @@ import 'utils.dart';
 class RelativeSpanScanner extends StringScanner implements SpanScanner {
   /// The source of the scanner.
   ///
-  /// This caches line break information and is used to generate [Span]s.
+  /// This caches line break information and is used to generate [SourceSpan]s.
   final SourceFile _sourceFile;
 
   /// The start location of the span within which this scanner is scanning.
@@ -40,16 +40,16 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
         : column;
   }
 
-  LineScannerState get state => new _SpanScannerState(this, position);
+  LineScannerState get state => _SpanScannerState(this, position);
 
   set state(LineScannerState state) {
     if (state is! _SpanScannerState ||
         !identical((state as _SpanScannerState)._scanner, this)) {
-      throw new ArgumentError("The given LineScannerState was not returned by "
+      throw ArgumentError("The given LineScannerState was not returned by "
           "this LineScanner.");
     }
 
-    this.position = state.position;
+    position = state.position;
   }
 
   FileSpan get lastSpan => _lastSpan;
@@ -86,14 +86,12 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
     validateErrorArgs(string, match, position, length);
 
     if (match == null && position == null && length == null) match = lastMatch;
-    if (position == null) {
-      position = match == null ? this.position : match.start;
-    }
-    if (length == null) length = match == null ? 1 : match.end - match.start;
+    position ??= match == null ? this.position : match.start;
+    length ??= match == null ? 1 : match.end - match.start;
 
     var span = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + position + length);
-    throw new StringScannerException(message, span, string);
+    throw StringScannerException(message, span, string);
   }
 }
 

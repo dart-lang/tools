@@ -9,7 +9,7 @@ import 'string_scanner.dart';
 // Note that much of this code is duplicated in eager_span_scanner.dart.
 
 /// A regular expression matching newlines across platforms.
-final _newlineRegExp = new RegExp(r"\r\n?|\n");
+final _newlineRegExp = RegExp(r"\r\n?|\n");
 
 /// A subclass of [StringScanner] that tracks line and column information.
 class LineScanner extends StringScanner {
@@ -29,7 +29,7 @@ class LineScanner extends StringScanner {
   ///
   /// This does not include the scanner's match information.
   LineScannerState get state =>
-      new LineScannerState._(this, position, line, column);
+      LineScannerState._(this, position, line, column);
 
   /// Whether the current position is between a CR character and an LF
   /// charactet.
@@ -37,7 +37,7 @@ class LineScanner extends StringScanner {
 
   set state(LineScannerState state) {
     if (!identical(state._scanner, this)) {
-      throw new ArgumentError("The given LineScannerState was not returned by "
+      throw ArgumentError("The given LineScannerState was not returned by "
           "this LineScanner.");
     }
 

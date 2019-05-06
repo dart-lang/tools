@@ -5,13 +5,8 @@
 import 'package:string_scanner/string_scanner.dart';
 import 'package:test/test.dart';
 
-/// Returns a matcher that asserts that a closure throws a [FormatException]
-/// with the given [message].
-Matcher throwsStringScannerException(String text) {
-  return throwsA(predicate((error) {
-    // ignore: deprecated_member_use
-    expect(error, new isInstanceOf<StringScannerException>());
-    expect(error.span.text, equals(text));
-    return true;
-  }));
-}
+/// Returns a matcher that asserts that a closure throws a
+/// [StringScannerException] with the given [text].
+Matcher throwsStringScannerException(String text) =>
+    throwsA(const TypeMatcher<StringScannerException>()
+        .having((e) => e.span.text, 'span.text', text));

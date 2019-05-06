@@ -11,7 +11,7 @@ import 'span_scanner.dart';
 // sdk#23770 is fully complete, we should move the shared code into a mixin.
 
 /// A regular expression matching newlines across platforms.
-final _newlineRegExp = new RegExp(r"\r\n?|\n");
+final _newlineRegExp = RegExp(r"\r\n?|\n");
 
 /// A [SpanScanner] that tracks the line and column eagerly, like [LineScanner].
 class EagerSpanScanner extends SpanScanner {
@@ -22,14 +22,14 @@ class EagerSpanScanner extends SpanScanner {
   int _column = 0;
 
   LineScannerState get state =>
-      new _EagerSpanScannerState(this, position, line, column);
+      _EagerSpanScannerState(this, position, line, column);
 
   bool get _betweenCRLF => peekChar(-1) == $cr && peekChar() == $lf;
 
   set state(LineScannerState state) {
     if (state is! _EagerSpanScannerState ||
         !identical((state as _EagerSpanScannerState)._scanner, this)) {
-      throw new ArgumentError("The given LineScannerState was not returned by "
+      throw ArgumentError("The given LineScannerState was not returned by "
           "this LineScanner.");
     }
 
