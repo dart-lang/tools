@@ -113,7 +113,7 @@ class VersionUnion implements VersionConstraint {
     if (newRanges.isEmpty) return VersionConstraint.empty;
     if (newRanges.length == 1) return newRanges.single;
 
-    return new VersionUnion.fromRanges(newRanges);
+    return VersionUnion.fromRanges(newRanges);
   }
 
   VersionConstraint difference(VersionConstraint other) {
@@ -125,7 +125,7 @@ class VersionUnion implements VersionConstraint {
     theirRanges.moveNext();
     var current = ourRanges.current;
 
-    theirNextRange() {
+    bool theirNextRange() {
       if (theirRanges.moveNext()) return true;
 
       // If there are no more of their ranges, none of the rest of our ranges
@@ -137,14 +137,14 @@ class VersionUnion implements VersionConstraint {
       return false;
     }
 
-    ourNextRange({bool includeCurrent: true}) {
+    bool ourNextRange({bool includeCurrent = true}) {
       if (includeCurrent) newRanges.add(current);
       if (!ourRanges.moveNext()) return false;
       current = ourRanges.current;
       return true;
     }
 
-    while (true) {
+    for (;;) {
       // If the current ranges are disjoint, move the lowest one forward.
       if (strictlyLower(theirRanges.current, current)) {
         if (!theirNextRange()) break;
@@ -187,7 +187,7 @@ class VersionUnion implements VersionConstraint {
 
     if (newRanges.isEmpty) return VersionConstraint.empty;
     if (newRanges.length == 1) return newRanges.single;
-    return new VersionUnion.fromRanges(newRanges);
+    return VersionUnion.fromRanges(newRanges);
   }
 
   /// Returns [constraint] as a list of ranges.
@@ -197,11 +197,11 @@ class VersionUnion implements VersionConstraint {
     if (constraint.isEmpty) return [];
     if (constraint is VersionUnion) return constraint.ranges;
     if (constraint is VersionRange) return [constraint];
-    throw new ArgumentError('Unknown VersionConstraint type $constraint.');
+    throw ArgumentError('Unknown VersionConstraint type $constraint.');
   }
 
   VersionConstraint union(VersionConstraint other) =>
-      new VersionConstraint.unionOf([this, other]);
+      VersionConstraint.unionOf([this, other]);
 
   bool operator ==(other) {
     if (other is! VersionUnion) return false;

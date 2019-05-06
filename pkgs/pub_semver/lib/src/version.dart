@@ -16,7 +16,7 @@ final _equality = const IterableEquality();
 /// A parsed semantic version number.
 class Version implements VersionConstraint, VersionRange {
   /// No released version: i.e. "0.0.0".
-  static Version get none => new Version(0, 0, 0);
+  static Version get none => Version(0, 0, 0);
 
   /// Compares [a] and [b] to see which takes priority over the other.
   ///
@@ -92,12 +92,9 @@ class Version implements VersionConstraint, VersionRange {
       this._text)
       : preRelease = preRelease == null ? [] : _splitParts(preRelease),
         build = build == null ? [] : _splitParts(build) {
-    if (major < 0)
-      throw new ArgumentError('Major version must be non-negative.');
-    if (minor < 0)
-      throw new ArgumentError('Minor version must be non-negative.');
-    if (patch < 0)
-      throw new ArgumentError('Patch version must be non-negative.');
+    if (major < 0) throw ArgumentError('Major version must be non-negative.');
+    if (minor < 0) throw ArgumentError('Minor version must be non-negative.');
+    if (patch < 0) throw ArgumentError('Patch version must be non-negative.');
   }
 
   /// Creates a new [Version] object.
@@ -106,27 +103,27 @@ class Version implements VersionConstraint, VersionRange {
     if (pre != null) text += "-$pre";
     if (build != null) text += "+$build";
 
-    return new Version._(major, minor, patch, pre, build, text);
+    return Version._(major, minor, patch, pre, build, text);
   }
 
   /// Creates a new [Version] by parsing [text].
   factory Version.parse(String text) {
-    final match = COMPLETE_VERSION.firstMatch(text);
+    final match = completeVersion.firstMatch(text);
     if (match == null) {
-      throw new FormatException('Could not parse "$text".');
+      throw FormatException('Could not parse "$text".');
     }
 
     try {
-      int major = int.parse(match[1]);
-      int minor = int.parse(match[2]);
-      int patch = int.parse(match[3]);
+      var major = int.parse(match[1]);
+      var minor = int.parse(match[2]);
+      var patch = int.parse(match[3]);
 
-      String preRelease = match[5];
-      String build = match[8];
+      var preRelease = match[5];
+      var build = match[8];
 
-      return new Version._(major, minor, patch, preRelease, build, text);
+      return Version._(major, minor, patch, preRelease, build, text);
     } on FormatException {
-      throw new FormatException('Could not parse "$text".');
+      throw FormatException('Could not parse "$text".');
     }
   }
 
@@ -135,7 +132,7 @@ class Version implements VersionConstraint, VersionRange {
   /// This is the highest-numbered stable (non-prerelease) version. If there
   /// are no stable versions, it's just the highest-numbered version.
   static Version primary(List<Version> versions) {
-    var primary;
+    Version primary;
     for (var version in versions) {
       if (primary == null ||
           (!version.isPreRelease && primary.isPreRelease) ||
@@ -195,7 +192,7 @@ class Version implements VersionConstraint, VersionRange {
   /// and patch.
   Version get nextMajor {
     if (isPreRelease && minor == 0 && patch == 0) {
-      return new Version(major, minor, patch);
+      return Version(major, minor, patch);
     }
 
     return _incrementMajor();
@@ -208,7 +205,7 @@ class Version implements VersionConstraint, VersionRange {
   /// Otherwise, it increments the minor version and resets the patch.
   Version get nextMinor {
     if (isPreRelease && patch == 0) {
-      return new Version(major, minor, patch);
+      return Version(major, minor, patch);
     }
 
     return _incrementMinor();
@@ -220,7 +217,7 @@ class Version implements VersionConstraint, VersionRange {
   /// suffix. Otherwise, it increments the patch version.
   Version get nextPatch {
     if (isPreRelease) {
-      return new Version(major, minor, patch);
+      return Version(major, minor, patch);
     }
 
     return _incrementPatch();
@@ -240,14 +237,14 @@ class Version implements VersionConstraint, VersionRange {
   }
 
   /// Returns the first possible pre-release of this version.
-  Version get firstPreRelease => new Version(major, minor, patch, pre: "0");
+  Version get firstPreRelease => Version(major, minor, patch, pre: "0");
 
   /// Returns whether this is the first possible pre-release of its version.
   bool get isFirstPreRelease => preRelease.length == 1 && preRelease.first == 0;
 
-  Version _incrementMajor() => new Version(major + 1, 0, 0);
-  Version _incrementMinor() => new Version(major, minor + 1, 0);
-  Version _incrementPatch() => new Version(major, minor, patch + 1);
+  Version _incrementMajor() => Version(major + 1, 0, 0);
+  Version _incrementMinor() => Version(major, minor + 1, 0);
+  Version _incrementPatch() => Version(major, minor, patch + 1);
 
   /// Tests if [other] matches this version exactly.
   bool allows(Version other) => this == other;
@@ -264,7 +261,7 @@ class Version implements VersionConstraint, VersionRange {
 
     if (other is VersionRange) {
       if (other.min == this) {
-        return new VersionRange(
+        return VersionRange(
             min: other.min,
             max: other.max,
             includeMin: true,
@@ -273,7 +270,7 @@ class Version implements VersionConstraint, VersionRange {
       }
 
       if (other.max == this) {
-        return new VersionRange(
+        return VersionRange(
             min: other.min,
             max: other.max,
             includeMin: other.includeMin,
@@ -282,7 +279,7 @@ class Version implements VersionConstraint, VersionRange {
       }
     }
 
-    return new VersionConstraint.unionOf([this, other]);
+    return VersionConstraint.unionOf([this, other]);
   }
 
   VersionConstraint difference(VersionConstraint other) =>

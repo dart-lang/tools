@@ -8,13 +8,13 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'utils.dart';
 
-main() {
+void main() {
   test('any', () {
     expect(VersionConstraint.any.isAny, isTrue);
     expect(
         VersionConstraint.any,
-        allows(new Version.parse('0.0.0-blah'), new Version.parse('1.2.3'),
-            new Version.parse('12345.678.90')));
+        allows(Version.parse('0.0.0-blah'), Version.parse('1.2.3'),
+            Version.parse('12345.678.90')));
   });
 
   test('empty', () {
@@ -22,141 +22,132 @@ main() {
     expect(VersionConstraint.empty.isAny, isFalse);
     expect(
         VersionConstraint.empty,
-        doesNotAllow(new Version.parse('0.0.0-blah'),
-            new Version.parse('1.2.3'), new Version.parse('12345.678.90')));
+        doesNotAllow(Version.parse('0.0.0-blah'), Version.parse('1.2.3'),
+            Version.parse('12345.678.90')));
   });
 
   group('parse()', () {
     test('parses an exact version', () {
-      var constraint = new VersionConstraint.parse('1.2.3-alpha');
+      var constraint = VersionConstraint.parse('1.2.3-alpha');
 
       expect(constraint is Version, isTrue);
-      expect(constraint, equals(new Version(1, 2, 3, pre: 'alpha')));
+      expect(constraint, equals(Version(1, 2, 3, pre: 'alpha')));
     });
 
     test('parses "any"', () {
-      var constraint = new VersionConstraint.parse('any');
+      var constraint = VersionConstraint.parse('any');
 
       expect(constraint is VersionConstraint, isTrue);
       expect(
           constraint,
-          allows(new Version.parse('0.0.0'), new Version.parse('1.2.3'),
-              new Version.parse('12345.678.90')));
+          allows(Version.parse('0.0.0'), Version.parse('1.2.3'),
+              Version.parse('12345.678.90')));
     });
 
     test('parses a ">" minimum version', () {
-      var constraint = new VersionConstraint.parse('>1.2.3');
+      var constraint = VersionConstraint.parse('>1.2.3');
 
       expect(constraint,
-          allows(new Version.parse('1.2.3+foo'), new Version.parse('1.2.4')));
+          allows(Version.parse('1.2.3+foo'), Version.parse('1.2.4')));
       expect(
           constraint,
-          doesNotAllow(new Version.parse('1.2.1'),
-              new Version.parse('1.2.3-build'), new Version.parse('1.2.3')));
+          doesNotAllow(Version.parse('1.2.1'), Version.parse('1.2.3-build'),
+              Version.parse('1.2.3')));
     });
 
     test('parses a ">=" minimum version', () {
-      var constraint = new VersionConstraint.parse('>=1.2.3');
+      var constraint = VersionConstraint.parse('>=1.2.3');
 
       expect(
           constraint,
-          allows(new Version.parse('1.2.3'), new Version.parse('1.2.3+foo'),
-              new Version.parse('1.2.4')));
-      expect(
-          constraint,
-          doesNotAllow(
-              new Version.parse('1.2.1'), new Version.parse('1.2.3-build')));
+          allows(Version.parse('1.2.3'), Version.parse('1.2.3+foo'),
+              Version.parse('1.2.4')));
+      expect(constraint,
+          doesNotAllow(Version.parse('1.2.1'), Version.parse('1.2.3-build')));
     });
 
     test('parses a "<" maximum version', () {
-      var constraint = new VersionConstraint.parse('<1.2.3');
+      var constraint = VersionConstraint.parse('<1.2.3');
 
       expect(constraint,
-          allows(new Version.parse('1.2.1'), new Version.parse('1.2.2+foo')));
+          allows(Version.parse('1.2.1'), Version.parse('1.2.2+foo')));
       expect(
           constraint,
-          doesNotAllow(new Version.parse('1.2.3'),
-              new Version.parse('1.2.3+foo'), new Version.parse('1.2.4')));
+          doesNotAllow(Version.parse('1.2.3'), Version.parse('1.2.3+foo'),
+              Version.parse('1.2.4')));
     });
 
     test('parses a "<=" maximum version', () {
-      var constraint = new VersionConstraint.parse('<=1.2.3');
+      var constraint = VersionConstraint.parse('<=1.2.3');
 
       expect(
           constraint,
-          allows(new Version.parse('1.2.1'), new Version.parse('1.2.3-build'),
-              new Version.parse('1.2.3')));
-      expect(
-          constraint,
-          doesNotAllow(
-              new Version.parse('1.2.3+foo'), new Version.parse('1.2.4')));
+          allows(Version.parse('1.2.1'), Version.parse('1.2.3-build'),
+              Version.parse('1.2.3')));
+      expect(constraint,
+          doesNotAllow(Version.parse('1.2.3+foo'), Version.parse('1.2.4')));
     });
 
     test('parses a series of space-separated constraints', () {
-      var constraint = new VersionConstraint.parse('>1.0.0 >=1.2.3 <1.3.0');
+      var constraint = VersionConstraint.parse('>1.0.0 >=1.2.3 <1.3.0');
 
-      expect(constraint,
-          allows(new Version.parse('1.2.3'), new Version.parse('1.2.5')));
+      expect(
+          constraint, allows(Version.parse('1.2.3'), Version.parse('1.2.5')));
       expect(
           constraint,
-          doesNotAllow(new Version.parse('1.2.3-pre'),
-              new Version.parse('1.3.0'), new Version.parse('3.4.5')));
+          doesNotAllow(Version.parse('1.2.3-pre'), Version.parse('1.3.0'),
+              Version.parse('3.4.5')));
     });
 
     test('parses a pre-release-only constraint', () {
-      var constraint = new VersionConstraint.parse('>=1.0.0-dev.2 <1.0.0');
-      expect(
-          constraint,
-          allows(new Version.parse('1.0.0-dev.2'),
-              new Version.parse('1.0.0-dev.3')));
-      expect(
-          constraint,
-          doesNotAllow(
-              new Version.parse('1.0.0-dev.1'), new Version.parse('1.0.0')));
+      var constraint = VersionConstraint.parse('>=1.0.0-dev.2 <1.0.0');
+      expect(constraint,
+          allows(Version.parse('1.0.0-dev.2'), Version.parse('1.0.0-dev.3')));
+      expect(constraint,
+          doesNotAllow(Version.parse('1.0.0-dev.1'), Version.parse('1.0.0')));
     });
 
     test('ignores whitespace around comparison operators', () {
-      var constraint = new VersionConstraint.parse(' >1.0.0>=1.2.3 < 1.3.0');
+      var constraint = VersionConstraint.parse(' >1.0.0>=1.2.3 < 1.3.0');
 
-      expect(constraint,
-          allows(new Version.parse('1.2.3'), new Version.parse('1.2.5')));
+      expect(
+          constraint, allows(Version.parse('1.2.3'), Version.parse('1.2.5')));
       expect(
           constraint,
-          doesNotAllow(new Version.parse('1.2.3-pre'),
-              new Version.parse('1.3.0'), new Version.parse('3.4.5')));
+          doesNotAllow(Version.parse('1.2.3-pre'), Version.parse('1.3.0'),
+              Version.parse('3.4.5')));
     });
 
     test('does not allow "any" to be mixed with other constraints', () {
-      expect(() => new VersionConstraint.parse('any 1.0.0'),
-          throwsFormatException);
+      expect(() => VersionConstraint.parse('any 1.0.0'), throwsFormatException);
     });
 
     test('parses a "^" version', () {
-      expect(new VersionConstraint.parse('^0.0.3'),
-          equals(new VersionConstraint.compatibleWith(v003)));
+      expect(VersionConstraint.parse('^0.0.3'),
+          equals(VersionConstraint.compatibleWith(v003)));
 
-      expect(new VersionConstraint.parse('^0.7.2'),
-          equals(new VersionConstraint.compatibleWith(v072)));
+      expect(VersionConstraint.parse('^0.7.2'),
+          equals(VersionConstraint.compatibleWith(v072)));
 
-      expect(new VersionConstraint.parse('^1.2.3'),
-          equals(new VersionConstraint.compatibleWith(v123)));
+      expect(VersionConstraint.parse('^1.2.3'),
+          equals(VersionConstraint.compatibleWith(v123)));
 
-      var min = new Version.parse('0.7.2-pre+1');
-      expect(new VersionConstraint.parse('^0.7.2-pre+1'),
-          equals(new VersionConstraint.compatibleWith(min)));
+      var min = Version.parse('0.7.2-pre+1');
+      expect(VersionConstraint.parse('^0.7.2-pre+1'),
+          equals(VersionConstraint.compatibleWith(min)));
     });
 
     test('does not allow "^" to be mixed with other constraints', () {
-      expect(() => new VersionConstraint.parse('>=1.2.3 ^1.0.0'),
+      expect(() => VersionConstraint.parse('>=1.2.3 ^1.0.0'),
           throwsFormatException);
-      expect(() => new VersionConstraint.parse('^1.0.0 <1.2.3'),
+      expect(() => VersionConstraint.parse('^1.0.0 <1.2.3'),
           throwsFormatException);
     });
 
     test('ignores whitespace around "^"', () {
-      var constraint = new VersionConstraint.parse(' ^ 1.2.3 ');
+      var constraint = VersionConstraint.parse(' ^ 1.2.3 ');
 
-      expect(constraint, equals(new VersionConstraint.compatibleWith(v123)));
+      expect(constraint, equals(VersionConstraint.compatibleWith(v123)));
     });
 
     test('throws FormatException on a bad string', () {
@@ -172,23 +163,23 @@ main() {
       ];
 
       for (var text in bad) {
-        expect(() => new VersionConstraint.parse(text), throwsFormatException);
+        expect(() => VersionConstraint.parse(text), throwsFormatException);
       }
     });
   });
 
   group('compatibleWith()', () {
     test('returns the range of compatible versions', () {
-      var constraint = new VersionConstraint.compatibleWith(v072);
+      var constraint = VersionConstraint.compatibleWith(v072);
 
       expect(
           constraint,
-          equals(new VersionRange(
+          equals(VersionRange(
               min: v072, includeMin: true, max: v072.nextBreaking)));
     });
 
     test('toString() uses "^"', () {
-      var constraint = new VersionConstraint.compatibleWith(v072);
+      var constraint = VersionConstraint.compatibleWith(v072);
 
       expect(constraint.toString(), equals('^0.7.2'));
     });

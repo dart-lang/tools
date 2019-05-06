@@ -8,7 +8,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'utils.dart';
 
-main() {
+void main() {
   test('none', () {
     expect(Version.none.toString(), equals('0.0.0'));
   });
@@ -29,8 +29,8 @@ main() {
     // appears in the list.
     for (var i = 0; i < versions.length; i++) {
       for (var j = 0; j < versions.length; j++) {
-        var a = new Version.parse(versions[i]);
-        var b = new Version.parse(versions[j]);
+        var a = Version.parse(versions[i]);
+        var b = Version.parse(versions[j]);
         expect(Version.prioritize(a, b), equals(i.compareTo(j)));
       }
     }
@@ -52,8 +52,8 @@ main() {
     // appears in the list.
     for (var i = 0; i < versions.length; i++) {
       for (var j = 0; j < versions.length; j++) {
-        var a = new Version.parse(versions[i]);
-        var b = new Version.parse(versions[j]);
+        var a = Version.parse(versions[i]);
+        var b = Version.parse(versions[j]);
         expect(Version.antiprioritize(a, b), equals(i.compareTo(j)));
       }
     }
@@ -61,9 +61,9 @@ main() {
 
   group('constructor', () {
     test('throws on negative numbers', () {
-      expect(() => new Version(-1, 1, 1), throwsArgumentError);
-      expect(() => new Version(1, -1, 1), throwsArgumentError);
-      expect(() => new Version(1, 1, -1), throwsArgumentError);
+      expect(() => Version(-1, 1, 1), throwsArgumentError);
+      expect(() => Version(1, -1, 1), throwsArgumentError);
+      expect(() => Version(1, 1, -1), throwsArgumentError);
     });
   });
 
@@ -93,8 +93,8 @@ main() {
       // appears in the list.
       for (var i = 0; i < versions.length; i++) {
         for (var j = 0; j < versions.length; j++) {
-          var a = new Version.parse(versions[i]);
-          var b = new Version.parse(versions[j]);
+          var a = Version.parse(versions[i]);
+          var b = Version.parse(versions[j]);
           expect(a.compareTo(b), equals(i.compareTo(j)));
         }
       }
@@ -103,8 +103,8 @@ main() {
     test('operators', () {
       for (var i = 0; i < versions.length; i++) {
         for (var j = 0; j < versions.length; j++) {
-          var a = new Version.parse(versions[i]);
-          var b = new Version.parse(versions[j]);
+          var a = Version.parse(versions[i]);
+          var b = Version.parse(versions[j]);
           expect(a < b, equals(i < j));
           expect(a > b, equals(i > j));
           expect(a <= b, equals(i <= j));
@@ -116,13 +116,11 @@ main() {
     });
 
     test('equality', () {
-      expect(new Version.parse('01.2.3'), equals(new Version.parse('1.2.3')));
-      expect(new Version.parse('1.02.3'), equals(new Version.parse('1.2.3')));
-      expect(new Version.parse('1.2.03'), equals(new Version.parse('1.2.3')));
-      expect(
-          new Version.parse('1.2.3-01'), equals(new Version.parse('1.2.3-1')));
-      expect(
-          new Version.parse('1.2.3+01'), equals(new Version.parse('1.2.3+1')));
+      expect(Version.parse('01.2.3'), equals(Version.parse('1.2.3')));
+      expect(Version.parse('1.02.3'), equals(Version.parse('1.2.3')));
+      expect(Version.parse('1.2.03'), equals(Version.parse('1.2.3')));
+      expect(Version.parse('1.2.3-01'), equals(Version.parse('1.2.3-1')));
+      expect(Version.parse('1.2.3+01'), equals(Version.parse('1.2.3+1')));
     });
   });
 
@@ -131,17 +129,17 @@ main() {
     expect(
         v123,
         doesNotAllow(
-            new Version.parse('2.2.3'),
-            new Version.parse('1.3.3'),
-            new Version.parse('1.2.4'),
-            new Version.parse('1.2.3-dev'),
-            new Version.parse('1.2.3+build')));
+            Version.parse('2.2.3'),
+            Version.parse('1.3.3'),
+            Version.parse('1.2.4'),
+            Version.parse('1.2.3-dev'),
+            Version.parse('1.2.3+build')));
   });
 
   test('allowsAll()', () {
     expect(v123.allowsAll(v123), isTrue);
     expect(v123.allowsAll(v003), isFalse);
-    expect(v123.allowsAll(new VersionRange(min: v114, max: v124)), isFalse);
+    expect(v123.allowsAll(VersionRange(min: v114, max: v124)), isFalse);
     expect(v123.allowsAll(VersionConstraint.any), isFalse);
     expect(v123.allowsAll(VersionConstraint.empty), isTrue);
   });
@@ -149,7 +147,7 @@ main() {
   test('allowsAny()', () {
     expect(v123.allowsAny(v123), isTrue);
     expect(v123.allowsAny(v003), isFalse);
-    expect(v123.allowsAny(new VersionRange(min: v114, max: v124)), isTrue);
+    expect(v123.allowsAny(VersionRange(min: v114, max: v124)), isTrue);
     expect(v123.allowsAny(VersionConstraint.any), isTrue);
     expect(v123.allowsAny(VersionConstraint.empty), isFalse);
   });
@@ -162,12 +160,10 @@ main() {
     expect(v123.intersect(v114).isEmpty, isTrue);
 
     // Intersecting a range returns the version if the range allows it.
-    expect(
-        v123.intersect(new VersionRange(min: v114, max: v124)), equals(v123));
+    expect(v123.intersect(VersionRange(min: v114, max: v124)), equals(v123));
 
     // Intersecting a range allows no versions if the range doesn't allow it.
-    expect(
-        v114.intersect(new VersionRange(min: v123, max: v124)).isEmpty, isTrue);
+    expect(v114.intersect(VersionRange(min: v123, max: v124)).isEmpty, isTrue);
   });
 
   group('union()', () {
@@ -185,27 +181,27 @@ main() {
     });
 
     test("with a range returns the range if it contains the version", () {
-      var range = new VersionRange(min: v114, max: v124);
+      var range = VersionRange(min: v114, max: v124);
       expect(v123.union(range), equals(range));
     });
 
     test("with a range with the version on the edge, expands the range", () {
       expect(
-          v124.union(new VersionRange(
+          v124.union(VersionRange(
               min: v114, max: v124, alwaysIncludeMaxPreRelease: true)),
-          equals(new VersionRange(min: v114, max: v124, includeMax: true)));
+          equals(VersionRange(min: v114, max: v124, includeMax: true)));
       expect(
-          v124.firstPreRelease.union(new VersionRange(min: v114, max: v124)),
-          equals(new VersionRange(
+          v124.firstPreRelease.union(VersionRange(min: v114, max: v124)),
+          equals(VersionRange(
               min: v114, max: v124.firstPreRelease, includeMax: true)));
-      expect(v114.union(new VersionRange(min: v114, max: v124)),
-          equals(new VersionRange(min: v114, max: v124, includeMin: true)));
+      expect(v114.union(VersionRange(min: v114, max: v124)),
+          equals(VersionRange(min: v114, max: v124, includeMin: true)));
     });
 
     test(
         "with a range allows both the range and the version if the range "
         "doesn't contain the version", () {
-      var result = v123.union(new VersionRange(min: v003, max: v114));
+      var result = v123.union(VersionRange(min: v003, max: v114));
       expect(result, allows(v123));
       expect(result, allows(v010));
     });
@@ -222,13 +218,12 @@ main() {
 
     test("returns an empty constraint with a range that contains the version",
         () {
-      expect(v123.difference(new VersionRange(min: v114, max: v124)), isEmpty);
+      expect(v123.difference(VersionRange(min: v114, max: v124)), isEmpty);
     });
 
     test("returns the version constraint with a range that doesn't contain it",
         () {
-      expect(v123.difference(new VersionRange(min: v140, max: v300)),
-          equals(v123));
+      expect(v123.difference(VersionRange(min: v140, max: v300)), equals(v123));
     });
   });
 
@@ -242,13 +237,13 @@ main() {
     expect(v200.nextMajor, equals(v300));
 
     // Ignores pre-release if not on a major version.
-    expect(new Version.parse('1.2.3-dev').nextMajor, equals(v200));
+    expect(Version.parse('1.2.3-dev').nextMajor, equals(v200));
 
     // Just removes it if on a major version.
-    expect(new Version.parse('2.0.0-dev').nextMajor, equals(v200));
+    expect(Version.parse('2.0.0-dev').nextMajor, equals(v200));
 
     // Strips build suffix.
-    expect(new Version.parse('1.2.3+patch').nextMajor, equals(v200));
+    expect(Version.parse('1.2.3+patch').nextMajor, equals(v200));
   });
 
   test('nextMinor', () {
@@ -256,13 +251,13 @@ main() {
     expect(v130.nextMinor, equals(v140));
 
     // Ignores pre-release if not on a minor version.
-    expect(new Version.parse('1.2.3-dev').nextMinor, equals(v130));
+    expect(Version.parse('1.2.3-dev').nextMinor, equals(v130));
 
     // Just removes it if on a minor version.
-    expect(new Version.parse('1.3.0-dev').nextMinor, equals(v130));
+    expect(Version.parse('1.3.0-dev').nextMinor, equals(v130));
 
     // Strips build suffix.
-    expect(new Version.parse('1.2.3+patch').nextMinor, equals(v130));
+    expect(Version.parse('1.2.3+patch').nextMinor, equals(v130));
   });
 
   test('nextPatch', () {
@@ -270,10 +265,10 @@ main() {
     expect(v200.nextPatch, equals(v201));
 
     // Just removes pre-release version if present.
-    expect(new Version.parse('1.2.4-dev').nextPatch, equals(v124));
+    expect(Version.parse('1.2.4-dev').nextPatch, equals(v124));
 
     // Strips build suffix.
-    expect(new Version.parse('1.2.3+patch').nextPatch, equals(v124));
+    expect(Version.parse('1.2.3+patch').nextPatch, equals(v124));
   });
 
   test('nextBreaking', () {
@@ -282,56 +277,56 @@ main() {
     expect(v003.nextBreaking, equals(v010));
 
     // Removes pre-release version if present.
-    expect(new Version.parse('1.2.3-dev').nextBreaking, equals(v200));
+    expect(Version.parse('1.2.3-dev').nextBreaking, equals(v200));
 
     // Strips build suffix.
-    expect(new Version.parse('1.2.3+patch').nextBreaking, equals(v200));
+    expect(Version.parse('1.2.3+patch').nextBreaking, equals(v200));
   });
 
   test('parse()', () {
-    expect(new Version.parse('0.0.0'), equals(new Version(0, 0, 0)));
-    expect(new Version.parse('12.34.56'), equals(new Version(12, 34, 56)));
+    expect(Version.parse('0.0.0'), equals(Version(0, 0, 0)));
+    expect(Version.parse('12.34.56'), equals(Version(12, 34, 56)));
 
-    expect(new Version.parse('1.2.3-alpha.1'),
-        equals(new Version(1, 2, 3, pre: 'alpha.1')));
-    expect(new Version.parse('1.2.3-x.7.z-92'),
-        equals(new Version(1, 2, 3, pre: 'x.7.z-92')));
+    expect(Version.parse('1.2.3-alpha.1'),
+        equals(Version(1, 2, 3, pre: 'alpha.1')));
+    expect(Version.parse('1.2.3-x.7.z-92'),
+        equals(Version(1, 2, 3, pre: 'x.7.z-92')));
 
-    expect(new Version.parse('1.2.3+build.1'),
-        equals(new Version(1, 2, 3, build: 'build.1')));
-    expect(new Version.parse('1.2.3+x.7.z-92'),
-        equals(new Version(1, 2, 3, build: 'x.7.z-92')));
+    expect(Version.parse('1.2.3+build.1'),
+        equals(Version(1, 2, 3, build: 'build.1')));
+    expect(Version.parse('1.2.3+x.7.z-92'),
+        equals(Version(1, 2, 3, build: 'x.7.z-92')));
 
-    expect(new Version.parse('1.0.0-rc-1+build-1'),
-        equals(new Version(1, 0, 0, pre: 'rc-1', build: 'build-1')));
+    expect(Version.parse('1.0.0-rc-1+build-1'),
+        equals(Version(1, 0, 0, pre: 'rc-1', build: 'build-1')));
 
-    expect(() => new Version.parse('1.0'), throwsFormatException);
-    expect(() => new Version.parse('1.2.3.4'), throwsFormatException);
-    expect(() => new Version.parse('1234'), throwsFormatException);
-    expect(() => new Version.parse('-2.3.4'), throwsFormatException);
-    expect(() => new Version.parse('1.3-pre'), throwsFormatException);
-    expect(() => new Version.parse('1.3+build'), throwsFormatException);
-    expect(() => new Version.parse('1.3+bu?!3ild'), throwsFormatException);
+    expect(() => Version.parse('1.0'), throwsFormatException);
+    expect(() => Version.parse('1.2.3.4'), throwsFormatException);
+    expect(() => Version.parse('1234'), throwsFormatException);
+    expect(() => Version.parse('-2.3.4'), throwsFormatException);
+    expect(() => Version.parse('1.3-pre'), throwsFormatException);
+    expect(() => Version.parse('1.3+build'), throwsFormatException);
+    expect(() => Version.parse('1.3+bu?!3ild'), throwsFormatException);
   });
 
   group('toString()', () {
     test('returns the version string', () {
-      expect(new Version(0, 0, 0).toString(), equals('0.0.0'));
-      expect(new Version(12, 34, 56).toString(), equals('12.34.56'));
+      expect(Version(0, 0, 0).toString(), equals('0.0.0'));
+      expect(Version(12, 34, 56).toString(), equals('12.34.56'));
 
-      expect(new Version(1, 2, 3, pre: 'alpha.1').toString(),
-          equals('1.2.3-alpha.1'));
-      expect(new Version(1, 2, 3, pre: 'x.7.z-92').toString(),
+      expect(
+          Version(1, 2, 3, pre: 'alpha.1').toString(), equals('1.2.3-alpha.1'));
+      expect(Version(1, 2, 3, pre: 'x.7.z-92').toString(),
           equals('1.2.3-x.7.z-92'));
 
-      expect(new Version(1, 2, 3, build: 'build.1').toString(),
+      expect(Version(1, 2, 3, build: 'build.1').toString(),
           equals('1.2.3+build.1'));
-      expect(new Version(1, 2, 3, pre: 'pre', build: 'bui').toString(),
+      expect(Version(1, 2, 3, pre: 'pre', build: 'bui').toString(),
           equals('1.2.3-pre+bui'));
     });
 
     test('preserves leading zeroes', () {
-      expect(new Version.parse('001.02.0003-01.dev+pre.002').toString(),
+      expect(Version.parse('001.02.0003-01.dev+pre.002').toString(),
           equals('001.02.0003-01.dev+pre.002'));
     });
   });

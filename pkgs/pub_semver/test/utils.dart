@@ -7,24 +7,24 @@ import 'package:test/test.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 /// Some stock example versions to use in tests.
-final v003 = new Version.parse('0.0.3');
-final v010 = new Version.parse('0.1.0');
-final v072 = new Version.parse('0.7.2');
-final v080 = new Version.parse('0.8.0');
-final v114 = new Version.parse('1.1.4');
-final v123 = new Version.parse('1.2.3');
-final v124 = new Version.parse('1.2.4');
-final v130 = new Version.parse('1.3.0');
-final v140 = new Version.parse('1.4.0');
-final v200 = new Version.parse('2.0.0');
-final v201 = new Version.parse('2.0.1');
-final v234 = new Version.parse('2.3.4');
-final v250 = new Version.parse('2.5.0');
-final v300 = new Version.parse('3.0.0');
+final v003 = Version.parse('0.0.3');
+final v010 = Version.parse('0.1.0');
+final v072 = Version.parse('0.7.2');
+final v080 = Version.parse('0.8.0');
+final v114 = Version.parse('1.1.4');
+final v123 = Version.parse('1.2.3');
+final v124 = Version.parse('1.2.4');
+final v130 = Version.parse('1.3.0');
+final v140 = Version.parse('1.4.0');
+final v200 = Version.parse('2.0.0');
+final v201 = Version.parse('2.0.1');
+final v234 = Version.parse('2.3.4');
+final v250 = Version.parse('2.5.0');
+final v300 = Version.parse('3.0.0');
 
 /// A range that allows pre-release versions of its max version.
 final includeMaxPreReleaseRange =
-    new VersionRange(max: v200, alwaysIncludeMaxPreRelease: true);
+    VersionRange(max: v200, alwaysIncludeMaxPreRelease: true);
 
 /// A [Matcher] that tests if a [VersionConstraint] allows or does not allow a
 /// given list of [Version]s.
@@ -84,7 +84,7 @@ Matcher allows(Version v1,
     Version v7,
     Version v8]) {
   var versions = _makeVersionList(v1, v2, v3, v4, v5, v6, v7, v8);
-  return new _VersionConstraintMatcher(versions, true);
+  return _VersionConstraintMatcher(versions, true);
 }
 
 /// Gets a [Matcher] that validates that a [VersionConstraint] allows none of
@@ -98,7 +98,7 @@ Matcher doesNotAllow(Version v1,
     Version v7,
     Version v8]) {
   var versions = _makeVersionList(v1, v2, v3, v4, v5, v6, v7, v8);
-  return new _VersionConstraintMatcher(versions, false);
+  return _VersionConstraintMatcher(versions, false);
 }
 
 List<Version> _makeVersionList(Version v1,

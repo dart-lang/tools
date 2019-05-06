@@ -1,3 +1,8 @@
+# 1.4.3
+
+- Update Dart SDK constraint to `>=2.0.0 <3.0.0`.
+- Update `package:collection` constraint to `^1.0.0`.
+
 # 1.4.2
 
 * Set max SDK version to `<3.0.0`.

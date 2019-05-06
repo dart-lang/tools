@@ -60,11 +60,11 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
   factory VersionRange(
       {Version min,
       Version max,
-      bool includeMin: false,
-      bool includeMax: false,
-      bool alwaysIncludeMaxPreRelease: false}) {
+      bool includeMin = false,
+      bool includeMax = false,
+      bool alwaysIncludeMaxPreRelease = false}) {
     if (min != null && max != null && min > max) {
-      throw new ArgumentError(
+      throw ArgumentError(
           'Minimum version ("$min") must be less than maximum ("$max").');
     }
 
@@ -79,7 +79,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       max = max.firstPreRelease;
     }
 
-    return new VersionRange._(min, max, includeMin, includeMax);
+    return VersionRange._(min, max, includeMin, includeMax);
   }
 
   VersionRange._(this.min, this.max, this.includeMin, this.includeMax);
@@ -123,14 +123,14 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     if (other is Version) return allows(other);
 
     if (other is VersionUnion) {
-      return other.ranges.every((constraint) => allowsAll(constraint));
+      return other.ranges.every(allowsAll);
     }
 
     if (other is VersionRange) {
       return !allowsLower(other, this) && !allowsHigher(other, this);
     }
 
-    throw new ArgumentError('Unknown VersionConstraint type $other.');
+    throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
   bool allowsAny(VersionConstraint other) {
@@ -138,14 +138,14 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     if (other is Version) return allows(other);
 
     if (other is VersionUnion) {
-      return other.ranges.any((constraint) => allowsAny(constraint));
+      return other.ranges.any(allowsAny);
     }
 
     if (other is VersionRange) {
       return !strictlyLower(other, this) && !strictlyHigher(other, this);
     }
 
-    throw new ArgumentError('Unknown VersionConstraint type $other.');
+    throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
   VersionConstraint intersect(VersionConstraint other) {
@@ -167,8 +167,8 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         intersectIncludeMin = other.includeMin;
       } else {
         if (strictlyLower(other, this)) return VersionConstraint.empty;
-        intersectMin = this.min;
-        intersectIncludeMin = this.includeMin;
+        intersectMin = min;
+        intersectIncludeMin = includeMin;
       }
 
       Version intersectMax;
@@ -177,13 +177,13 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         intersectMax = other.max;
         intersectIncludeMax = other.includeMax;
       } else {
-        intersectMax = this.max;
-        intersectIncludeMax = this.includeMax;
+        intersectMax = max;
+        intersectIncludeMax = includeMax;
       }
 
       if (intersectMin == null && intersectMax == null) {
         // Open range.
-        return new VersionRange();
+        return VersionRange();
       }
 
       // If the range is just a single version.
@@ -195,7 +195,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       }
 
       // If we got here, there is an actual range.
-      return new VersionRange(
+      return VersionRange(
           min: intersectMin,
           max: intersectMax,
           includeMin: intersectIncludeMin,
@@ -203,7 +203,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
           alwaysIncludeMaxPreRelease: true);
     }
 
-    throw new ArgumentError('Unknown VersionConstraint type $other.');
+    throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
   VersionConstraint union(VersionConstraint other) {
@@ -211,24 +211,24 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       if (allows(other)) return this;
 
       if (other == min) {
-        return new VersionRange(
-            min: this.min,
-            max: this.max,
+        return VersionRange(
+            min: min,
+            max: max,
             includeMin: true,
-            includeMax: this.includeMax,
+            includeMax: includeMax,
             alwaysIncludeMaxPreRelease: true);
       }
 
       if (other == max) {
-        return new VersionRange(
-            min: this.min,
-            max: this.max,
-            includeMin: this.includeMin,
+        return VersionRange(
+            min: min,
+            max: max,
+            includeMin: includeMin,
             includeMax: true,
             alwaysIncludeMaxPreRelease: true);
       }
 
-      return new VersionConstraint.unionOf([this, other]);
+      return VersionConstraint.unionOf([this, other]);
     }
 
     if (other is VersionRange) {
@@ -237,14 +237,14 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       var edgesTouch = (max == other.min && (includeMax || other.includeMin)) ||
           (min == other.max && (includeMin || other.includeMax));
       if (!edgesTouch && !allowsAny(other)) {
-        return new VersionConstraint.unionOf([this, other]);
+        return VersionConstraint.unionOf([this, other]);
       }
 
       Version unionMin;
       bool unionIncludeMin;
       if (allowsLower(this, other)) {
-        unionMin = this.min;
-        unionIncludeMin = this.includeMin;
+        unionMin = min;
+        unionIncludeMin = includeMin;
       } else {
         unionMin = other.min;
         unionIncludeMin = other.includeMin;
@@ -253,14 +253,14 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       Version unionMax;
       bool unionIncludeMax;
       if (allowsHigher(this, other)) {
-        unionMax = this.max;
-        unionIncludeMax = this.includeMax;
+        unionMax = max;
+        unionIncludeMax = includeMax;
       } else {
         unionMax = other.max;
         unionIncludeMax = other.includeMax;
       }
 
-      return new VersionRange(
+      return VersionRange(
           min: unionMin,
           max: unionMax,
           includeMin: unionIncludeMin,
@@ -268,7 +268,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
           alwaysIncludeMaxPreRelease: true);
     }
 
-    return new VersionConstraint.unionOf([this, other]);
+    return VersionConstraint.unionOf([this, other]);
   }
 
   VersionConstraint difference(VersionConstraint other) {
@@ -279,7 +279,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
       if (other == min) {
         if (!includeMin) return this;
-        return new VersionRange(
+        return VersionRange(
             min: min,
             max: max,
             includeMin: false,
@@ -289,7 +289,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
       if (other == max) {
         if (!includeMax) return this;
-        return new VersionRange(
+        return VersionRange(
             min: min,
             max: max,
             includeMin: includeMin,
@@ -297,14 +297,14 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
             alwaysIncludeMaxPreRelease: true);
       }
 
-      return new VersionUnion.fromRanges([
-        new VersionRange(
+      return VersionUnion.fromRanges([
+        VersionRange(
             min: min,
             max: other,
             includeMin: includeMin,
             includeMax: false,
             alwaysIncludeMaxPreRelease: true),
-        new VersionRange(
+        VersionRange(
             min: other,
             max: max,
             includeMin: false,
@@ -322,7 +322,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         assert(min != null);
         before = min;
       } else {
-        before = new VersionRange(
+        before = VersionRange(
             min: min,
             max: other.min,
             includeMin: includeMin,
@@ -338,7 +338,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         assert(max != null);
         after = max;
       } else {
-        after = new VersionRange(
+        after = VersionRange(
             min: other.max,
             max: max,
             includeMin: !other.includeMax,
@@ -349,7 +349,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       if (before == null && after == null) return VersionConstraint.empty;
       if (before == null) return after;
       if (after == null) return before;
-      return new VersionUnion.fromRanges([before, after]);
+      return VersionUnion.fromRanges([before, after]);
     } else if (other is VersionUnion) {
       var ranges = <VersionRange>[];
       var current = this;
@@ -377,10 +377,10 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
       }
 
       if (ranges.isEmpty) return current;
-      return new VersionUnion.fromRanges(ranges..add(current));
+      return VersionUnion.fromRanges(ranges..add(current));
     }
 
-    throw new ArgumentError('Unknown VersionConstraint type $other.');
+    throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
   int compareTo(VersionRange other) {
@@ -398,7 +398,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     return _compareMax(other);
   }
 
-  /// Compares the maximum values of [this] and [other].
+  /// Compares the maximum values of `this` and [other].
   int _compareMax(VersionRange other) {
     if (max == null) {
       if (other.max == null) return 0;
@@ -414,18 +414,16 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
   }
 
   String toString() {
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
 
     if (min != null) {
-      buffer.write(includeMin ? '>=' : '>');
-      buffer.write(min);
+      buffer..write(includeMin ? '>=' : '>')..write(min);
     }
 
     if (max != null) {
       if (min != null) buffer.write(' ');
       if (includeMax) {
-        buffer.write('<=');
-        buffer.write(max);
+        buffer..write('<=')..write(max);
       } else {
         buffer.write('<');
         if (max.isFirstPreRelease) {
