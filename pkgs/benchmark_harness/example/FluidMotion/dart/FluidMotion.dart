@@ -209,7 +209,9 @@ class FluidField {
   }
 
   void addFields(Float64List x, Float64List s, double dt) {
-    for (var i = 0; i < size; i++) x[i] += dt * s[i];
+    for (var i = 0; i < size; i++) {
+      x[i] += dt * s[i];
+    }
   }
 
   void set_bnd(int b, Float64List x) {
@@ -273,7 +275,7 @@ class FluidField {
           var nextRow = (j + 1) * rowSize;
           var lastX = x[currentRow];
           ++currentRow;
-          for (var i = 1; i <= width; i++)
+          for (var i = 1; i <= width; i++) {
             lastX = x[currentRow] = (x0[currentRow] +
                     a *
                         (lastX +
@@ -281,6 +283,7 @@ class FluidField {
                             x[++lastRow] +
                             x[++nextRow])) *
                 invC;
+          }
         }
         set_bnd(b, x);
       }

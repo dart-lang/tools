@@ -424,7 +424,9 @@ class Packet {
     link = null;
     if (queue == null) return this;
     Packet peek, next = queue;
-    while ((peek = next.link) != null) next = peek;
+    while ((peek = next.link) != null) {
+      next = peek;
+    }
     next.link = this;
     return queue;
   }
