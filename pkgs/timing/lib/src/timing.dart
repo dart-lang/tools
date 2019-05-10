@@ -60,7 +60,7 @@ class TimeSliceGroup implements TimeSlice {
           duration +
           (slice is TimeSliceGroup ? slice.innerDuration : slice.duration));
 
-  TimeSliceGroup(List<TimeSlice> this.slices);
+  TimeSliceGroup(this.slices);
 
   /// Constructs TimeSliceGroup from JSON representation
   factory TimeSliceGroup.fromJson(Map<String, dynamic> json) =>
