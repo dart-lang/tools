@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:checked_yaml/checked_yaml.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:checked_yaml/checked_yaml.dart';
 
 import 'dependency.dart';
 
@@ -160,10 +160,11 @@ class Pubspec {
   }
 }
 
-Version _versionFromString(String input) => Version.parse(input);
+Version _versionFromString(String input) =>
+    input == null ? null : Version.parse(input);
 
 Map<String, VersionConstraint> _environmentMap(Map source) =>
-    source.map((k, value) {
+    source?.map((k, value) {
       final key = k as String;
       if (key == 'dart') {
         // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342

@@ -9,14 +9,14 @@ part of 'pubspec.dart';
 Pubspec _$PubspecFromJson(Map json) {
   return $checkedNew('Pubspec', json, () {
     final val = Pubspec($checkedConvert(json, 'name', (v) => v as String),
-        version: $checkedConvert(json, 'version',
-            (v) => v == null ? null : _versionFromString(v as String)),
+        version: $checkedConvert(
+            json, 'version', (v) => _versionFromString(v as String)),
         publishTo: $checkedConvert(json, 'publish_to', (v) => v as String),
         author: $checkedConvert(json, 'author', (v) => v as String),
         authors: $checkedConvert(json, 'authors',
             (v) => (v as List)?.map((e) => e as String)?.toList()),
-        environment: $checkedConvert(json, 'environment',
-            (v) => v == null ? null : _environmentMap(v as Map)),
+        environment: $checkedConvert(
+            json, 'environment', (v) => _environmentMap(v as Map)),
         homepage: $checkedConvert(json, 'homepage', (v) => v as String),
         repository: $checkedConvert(json, 'repository',
             (v) => v == null ? null : Uri.parse(v as String)),
