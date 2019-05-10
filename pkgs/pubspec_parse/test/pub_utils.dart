@@ -13,8 +13,13 @@ import 'package:test_process/test_process.dart';
 Future<ProcResult> tryPub(String content) async {
   await d.file('pubspec.yaml', content).create();
 
-  final proc = await TestProcess.start(_pubPath, ['get', '--offline'],
-      workingDirectory: d.sandbox);
+  final proc = await TestProcess.start(
+    _pubPath,
+    ['get', '--offline'],
+    workingDirectory: d.sandbox,
+    // Don't pass current process VM options to child
+    environment: Map.from(Platform.environment)..remove('DART_VM_OPTIONS'),
+  );
 
   final result = await ProcResult.fromTestProcess(proc);
 
