@@ -1,12 +1,18 @@
 language: dart
 
 dart:
+  - 2.0.0
   - dev
 
 dart_task:
-- dartfmt
 - dartanalyzer: --fatal-infos --fatal-warnings .
 - test
+
+matrix:
+  include:
+  # Only validate formatting using the dev release
+  - dart: dev
+    dart_task: dartfmt
 
 branches:
   only:
