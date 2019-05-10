@@ -2,6 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// TODO(kevmoo) Remove when github.com/dart-lang/sdk/commit/dac5a56422 lands
+// in a shipped SDK.
+// ignore_for_file: deprecated_member_use
+library parse_test;
+
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
