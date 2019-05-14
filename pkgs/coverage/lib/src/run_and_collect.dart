@@ -11,7 +11,7 @@ import 'util.dart';
 
 Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     {List<String> scriptArgs,
-    bool checked: false,
+    bool checked = false,
     String packageRoot,
     Duration timeout}) async {
   var dartArgs = [

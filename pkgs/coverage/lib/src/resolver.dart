@@ -93,7 +93,7 @@ class Resolver {
 /// Bazel URI resolver.
 class BazelResolver extends Resolver {
   /// Creates a Bazel resolver with the specified workspace path, if any.
-  BazelResolver({this.workspacePath: ''});
+  BazelResolver({this.workspacePath = ''});
 
   final String workspacePath;
 
