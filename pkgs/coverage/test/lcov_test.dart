@@ -39,8 +39,8 @@ void main() {
     test('format()', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
-      var formatter = new LcovFormatter(resolver);
+      var resolver = Resolver(packagesPath: '.packages');
+      var formatter = LcovFormatter(resolver);
 
       String res = await formatter.format(hitmap);
 
@@ -52,8 +52,8 @@ void main() {
     test('format() includes files in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
-      var formatter = new LcovFormatter(resolver, reportOn: ['lib/', 'test/']);
+      var resolver = Resolver(packagesPath: '.packages');
+      var formatter = LcovFormatter(resolver, reportOn: ['lib/', 'test/']);
 
       String res = await formatter.format(hitmap);
 
@@ -65,8 +65,8 @@ void main() {
     test('format() excludes files not in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
-      var formatter = new LcovFormatter(resolver, reportOn: ['lib/']);
+      var resolver = Resolver(packagesPath: '.packages');
+      var formatter = LcovFormatter(resolver, reportOn: ['lib/']);
 
       String res = await formatter.format(hitmap);
 
@@ -78,8 +78,8 @@ void main() {
     test('format() uses paths relative to basePath', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
-      var formatter = new LcovFormatter(resolver, basePath: p.absolute('lib'));
+      var resolver = Resolver(packagesPath: '.packages');
+      var formatter = LcovFormatter(resolver, basePath: p.absolute('lib'));
 
       String res = await formatter.format(hitmap);
 
@@ -93,8 +93,8 @@ void main() {
     test('format()', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
-      var formatter = new PrettyPrintFormatter(resolver, new Loader());
+      var resolver = Resolver(packagesPath: '.packages');
+      var formatter = PrettyPrintFormatter(resolver, Loader());
 
       String res = await formatter.format(hitmap);
 
@@ -108,7 +108,7 @@ void main() {
       expect(res, contains('|  return _withTimeout(() async {'),
           reason: 'be careful if you change lib/src/util.dart');
 
-      var hitLineRegexp = new RegExp(r'\s+(\d+)\|  return a \+ b;');
+      var hitLineRegexp = RegExp(r'\s+(\d+)\|  return a \+ b;');
       var match = hitLineRegexp.allMatches(res).single;
 
       var hitCount = int.parse(match[1]);
@@ -118,9 +118,9 @@ void main() {
     test('format() includes files in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
-      var formatter = new PrettyPrintFormatter(resolver, new Loader(),
-          reportOn: ['lib/', 'test/']);
+      var resolver = Resolver(packagesPath: '.packages');
+      var formatter =
+          PrettyPrintFormatter(resolver, Loader(), reportOn: ['lib/', 'test/']);
 
       String res = await formatter.format(hitmap);
 
@@ -132,9 +132,9 @@ void main() {
     test('format() excludes files not in reportOn list', () async {
       var hitmap = await _getHitMap();
 
-      var resolver = new Resolver(packagesPath: '.packages');
+      var resolver = Resolver(packagesPath: '.packages');
       var formatter =
-          new PrettyPrintFormatter(resolver, new Loader(), reportOn: ['lib/']);
+          PrettyPrintFormatter(resolver, Loader(), reportOn: ['lib/']);
 
       String res = await formatter.format(hitmap);
 
@@ -160,10 +160,10 @@ Future<Map> _getHitMap() async {
   var sampleProcess = await Process.start('dart', sampleAppArgs);
 
   // Capture the VM service URI.
-  Completer<Uri> serviceUriCompleter = new Completer<Uri>();
+  Completer<Uri> serviceUriCompleter = Completer<Uri>();
   sampleProcess.stdout
       .transform(utf8.decoder)
-      .transform(new LineSplitter())
+      .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
       Uri serviceUri = extractObservatoryUri(line);
@@ -181,7 +181,7 @@ Future<Map> _getHitMap() async {
   // wait for sample app to terminate.
   var exitCode = await sampleProcess.exitCode;
   if (exitCode != 0) {
-    throw new ProcessException(
+    throw ProcessException(
         'dart', sampleAppArgs, 'Fatal error. Exit code: $exitCode', exitCode);
   }
   sampleProcess.stderr.drain<List<int>>();

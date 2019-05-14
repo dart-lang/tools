@@ -19,7 +19,7 @@ abstract class Formatter {
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
 class LcovFormatter implements Formatter {
-  /// Creates a new LCOV formatter.
+  /// Creates a LCOV formatter.
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
   /// prefixed with one of the paths included. If [basePath] is provided, paths
@@ -33,7 +33,7 @@ class LcovFormatter implements Formatter {
   @override
   Future<String> format(Map hitmap) async {
     _PathFilter pathFilter = _getPathFilter(reportOn);
-    var buf = new StringBuffer();
+    var buf = StringBuffer();
     for (var key in hitmap.keys) {
       Map<int, int> v = hitmap[key];
       var source = resolver.resolve(key);
@@ -69,7 +69,7 @@ class LcovFormatter implements Formatter {
 /// Returns a [Future] that completes as soon as all map entries have been
 /// emitted.
 class PrettyPrintFormatter implements Formatter {
-  /// Creates a new pretty-print formatter.
+  /// Creates a pretty-print formatter.
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
   /// prefixed with one of the paths included.
@@ -82,7 +82,7 @@ class PrettyPrintFormatter implements Formatter {
   @override
   Future<String> format(Map hitmap) async {
     _PathFilter pathFilter = _getPathFilter(reportOn);
-    var buf = new StringBuffer();
+    var buf = StringBuffer();
     for (var key in hitmap.keys) {
       Map<int, int> v = hitmap[key];
       var source = resolver.resolve(key);

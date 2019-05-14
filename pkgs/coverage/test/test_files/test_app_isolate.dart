@@ -10,14 +10,14 @@ String fooSync(int x) {
   if (x == 42) {
     return '*' * x;
   }
-  return new List.generate(x, (_) => 'xyzzy').join(' ');
+  return List.generate(x, (_) => 'xyzzy').join(' ');
 }
 
 Future<String> fooAsync(int x) async {
   if (x == 42) {
     return '*' * x;
   }
-  return new List.generate(x, (_) => 'xyzzy').join(' ');
+  return List.generate(x, (_) => 'xyzzy').join(' ');
 }
 
 /// The number of covered lines is tested and expected to be 4.

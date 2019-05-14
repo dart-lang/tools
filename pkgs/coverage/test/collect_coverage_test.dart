@@ -90,7 +90,7 @@ void main() {
     var tempDir = await Directory.systemTemp.createTemp('coverage.test.');
 
     try {
-      var outputFile = new File(p.join(tempDir.path, 'coverage.json'));
+      var outputFile = File(p.join(tempDir.path, 'coverage.json'));
 
       var coverageResults = await _getCoverageResult();
       await outputFile.writeAsString(coverageResults, flush: true);
@@ -123,10 +123,10 @@ Future<String> _collectCoverage() async {
   Process sampleProcess = await runTestApp(openPort);
 
   // Capture the VM service URI.
-  Completer<Uri> serviceUriCompleter = new Completer<Uri>();
+  Completer<Uri> serviceUriCompleter = Completer<Uri>();
   sampleProcess.stdout
       .transform(utf8.decoder)
-      .transform(new LineSplitter())
+      .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
       Uri serviceUri = extractObservatoryUri(line);
