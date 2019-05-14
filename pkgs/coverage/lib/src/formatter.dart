@@ -32,10 +32,10 @@ class LcovFormatter implements Formatter {
 
   @override
   Future<String> format(Map hitmap) async {
-    _PathFilter pathFilter = _getPathFilter(reportOn);
-    var buf = StringBuffer();
+    final _PathFilter pathFilter = _getPathFilter(reportOn);
+    final buf = StringBuffer();
     for (var key in hitmap.keys) {
-      Map<int, int> v = hitmap[key];
+      final Map<int, int> v = hitmap[key];
       var source = resolver.resolve(key);
       if (source == null) {
         continue;
@@ -81,11 +81,11 @@ class PrettyPrintFormatter implements Formatter {
 
   @override
   Future<String> format(Map hitmap) async {
-    _PathFilter pathFilter = _getPathFilter(reportOn);
-    var buf = StringBuffer();
+    final _PathFilter pathFilter = _getPathFilter(reportOn);
+    final buf = StringBuffer();
     for (var key in hitmap.keys) {
-      Map<int, int> v = hitmap[key];
-      var source = resolver.resolve(key);
+      final Map<int, int> v = hitmap[key];
+      final source = resolver.resolve(key);
       if (source == null) {
         continue;
       }
@@ -94,7 +94,7 @@ class PrettyPrintFormatter implements Formatter {
         continue;
       }
 
-      var lines = await loader.load(source);
+      final lines = await loader.load(source);
       if (lines == null) {
         continue;
       }
@@ -119,6 +119,6 @@ typedef _PathFilter = bool Function(String path);
 _PathFilter _getPathFilter(List<String> reportOn) {
   if (reportOn == null) return (String path) => true;
 
-  var absolutePaths = reportOn.map(p.absolute).toList();
+  final absolutePaths = reportOn.map(p.absolute).toList();
   return (String path) => absolutePaths.any((item) => path.startsWith(item));
 }

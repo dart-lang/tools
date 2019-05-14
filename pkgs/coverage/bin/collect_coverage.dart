@@ -17,9 +17,9 @@ Future<Null> main(List<String> arguments) async {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  var options = _parseArgs(arguments);
+  final options = _parseArgs(arguments);
   await Chain.capture(() async {
-    var coverage = await collect(
+    final coverage = await collect(
         options.serviceUri, options.resume, options.waitPaused,
         timeout: options.timeout);
     options.out.write(json.encode(coverage));
@@ -45,7 +45,7 @@ class Options {
 }
 
 Options _parseArgs(List<String> arguments) {
-  var parser = ArgParser()
+  final parser = ArgParser()
     ..addOption('host',
         abbr: 'H',
         help: 'remote VM host. DEPRECATED: use --uri',
@@ -67,7 +67,7 @@ Options _parseArgs(List<String> arguments) {
         abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
-  var args = parser.parse(arguments);
+  final args = parser.parse(arguments);
 
   void printUsage() {
     print('Usage: dart collect_coverage.dart --uri=http://... [OPTION...]\n');
@@ -102,10 +102,10 @@ Options _parseArgs(List<String> arguments) {
   if (args['out'] == 'stdout') {
     out = stdout;
   } else {
-    var outfile = File(args['out'])..createSync(recursive: true);
+    final outfile = File(args['out'])..createSync(recursive: true);
     out = outfile.openWrite();
   }
-  var timeout = (args['connect-timeout'] == null)
+  final timeout = (args['connect-timeout'] == null)
       ? null
       : Duration(seconds: int.parse(args['connect-timeout']));
   return Options(

@@ -18,16 +18,16 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 void main() {
   test('runAndCollect', () async {
     // use runAndCollect and verify that the results match w/ running manually
-    var json = await runAndCollect(testAppPath);
+    final json = await runAndCollect(testAppPath);
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    List<Map> coverage = json['coverage'];
+    final List<Map> coverage = json['coverage'];
     expect(coverage, isNotEmpty);
 
-    var sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
+    final sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
         (Map<String, dynamic> map, dynamic value) {
-      String sourceUri = value['source'];
+      final String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
@@ -40,11 +40,11 @@ void main() {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
 
-    var hitMap = createHitmap(coverage);
+    final hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 
-    Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
-    Map<int, int> expectedHits = {
+    final Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
+    final Map<int, int> expectedHits = {
       10: 1,
       11: 1,
       13: 0,

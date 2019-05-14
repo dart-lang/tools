@@ -14,7 +14,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     bool checked = false,
     String packageRoot,
     Duration timeout}) async {
-  var dartArgs = [
+  final dartArgs = [
     '--enable-vm-service',
     '--pause_isolates_on_exit',
   ];
@@ -33,26 +33,26 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     dartArgs.addAll(scriptArgs);
   }
 
-  var process = await Process.start('dart', dartArgs);
-  var serviceUriCompleter = Completer<Uri>();
+  final process = await Process.start('dart', dartArgs);
+  final serviceUriCompleter = Completer<Uri>();
   process.stdout
       .transform(utf8.decoder)
       .transform(const LineSplitter())
       .listen((line) {
-    var uri = extractObservatoryUri(line);
+    final uri = extractObservatoryUri(line);
     if (uri != null) {
       serviceUriCompleter.complete(uri);
     }
   });
 
-  var serviceUri = await serviceUriCompleter.future;
+  final serviceUri = await serviceUriCompleter.future;
   Map<String, dynamic> coverage;
   try {
     coverage = await collect(serviceUri, true, true, timeout: timeout);
   } finally {
     await process.stderr.drain<List<int>>();
   }
-  int exitStatus = await process.exitCode;
+  final exitStatus = await process.exitCode;
   if (exitStatus != 0) {
     throw "Process exited with exit code $exitStatus";
   }

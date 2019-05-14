@@ -29,9 +29,9 @@ Future<Map<String, dynamic>> collect(
   if (serviceUri == null) throw ArgumentError('serviceUri must not be null');
 
   // Create websocket URI. Handle any trailing slashes.
-  var pathSegments = serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()
-    ..add('ws');
-  var uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
+  final pathSegments =
+      serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()..add('ws');
+  final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
 
   VMServiceClient vmService;
   await retry(() async {
@@ -58,22 +58,22 @@ Future<Map<String, dynamic>> collect(
 }
 
 Future<Map<String, dynamic>> _getAllCoverage(VMServiceClient service) async {
-  var vm = await service.getVM();
-  var allCoverage = <Map<String, dynamic>>[];
+  final vm = await service.getVM();
+  final allCoverage = <Map<String, dynamic>>[];
 
   for (var isolateRef in vm.isolates) {
-    var isolate = await isolateRef.load();
-    var report = await isolate.getSourceReport(forceCompile: true);
-    var coverage = await _getCoverageJson(service, report);
+    final isolate = await isolateRef.load();
+    final report = await isolate.getSourceReport(forceCompile: true);
+    final coverage = await _getCoverageJson(service, report);
     allCoverage.addAll(coverage);
   }
   return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
 Future _resumeIsolates(VMServiceClient service) async {
-  var vm = await service.getVM();
+  final vm = await service.getVM();
   for (var isolateRef in vm.isolates) {
-    var isolate = await isolateRef.load();
+    final isolate = await isolateRef.load();
     if (isolate.isPaused) {
       await isolateRef.resume();
     }
@@ -82,9 +82,9 @@ Future _resumeIsolates(VMServiceClient service) async {
 
 Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
   Future allPaused() async {
-    var vm = await service.getVM();
+    final vm = await service.getVM();
     for (var isolateRef in vm.isolates) {
-      var isolate = await isolateRef.load();
+      final isolate = await isolateRef.load();
       if (!isolate.isPaused) throw "Unpaused isolates remaining.";
     }
   }
@@ -95,33 +95,33 @@ Future _waitIsolatesPaused(VMServiceClient service, {Duration timeout}) async {
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
 Future<List<Map<String, dynamic>>> _getCoverageJson(
     VMServiceClient service, VMSourceReport report) async {
-  var scriptRefs = report.ranges.map((r) => r.script).toSet();
-  var scripts = <VMScriptRef, VMScript>{};
+  final scriptRefs = report.ranges.map((r) => r.script).toSet();
+  final scripts = <VMScriptRef, VMScript>{};
   for (var ref in scriptRefs) {
     scripts[ref] = await ref.load();
   }
 
   // script uri -> { line -> hit count }
-  var hitMaps = <Uri, Map<int, int>>{};
+  final hitMaps = <Uri, Map<int, int>>{};
   for (var range in report.ranges) {
     // Not returned in scripts section of source report.
     if (range.script.uri.scheme == 'evaluate') continue;
 
     hitMaps.putIfAbsent(range.script.uri, () => <int, int>{});
-    var hitMap = hitMaps[range.script.uri];
-    var script = scripts[range.script];
+    final hitMap = hitMaps[range.script.uri];
+    final script = scripts[range.script];
     for (VMScriptToken hit in range.hits ?? []) {
-      var line = script.sourceLocation(hit).line + 1;
+      final line = script.sourceLocation(hit).line + 1;
       hitMap[line] = hitMap.containsKey(line) ? hitMap[line] + 1 : 1;
     }
     for (VMScriptToken miss in range.misses ?? []) {
-      var line = script.sourceLocation(miss).line + 1;
+      final line = script.sourceLocation(miss).line + 1;
       hitMap.putIfAbsent(line, () => 0);
     }
   }
 
   // Output JSON
-  var coverage = <Map<String, dynamic>>[];
+  final coverage = <Map<String, dynamic>>[];
   hitMaps.forEach((uri, hitMap) {
     coverage.add(_toScriptCoverageJson(uri, hitMap));
   });
@@ -131,8 +131,8 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
 Map<String, dynamic> _toScriptCoverageJson(
     Uri scriptUri, Map<int, int> hitMap) {
-  var json = <String, dynamic>{};
-  var hits = <int>[];
+  final json = <String, dynamic>{};
+  final hits = <int>[];
   hitMap.forEach((line, hitCount) {
     hits.add(line);
     hits.add(hitCount);

@@ -30,7 +30,7 @@ class Environment {
 Future<Null> main(List<String> arguments) async {
   final env = parseArgs(arguments);
 
-  List<File> files = filesToProcess(env.input);
+  final List<File> files = filesToProcess(env.input);
   if (env.verbose) {
     print('Environment:');
     print('  # files: ${files.length}');
@@ -41,8 +41,8 @@ Future<Null> main(List<String> arguments) async {
     print('  report-on: ${env.reportOn}');
   }
 
-  var clock = Stopwatch()..start();
-  var hitmap = await parseCoverage(files, env.workers);
+  final clock = Stopwatch()..start();
+  final hitmap = await parseCoverage(files, env.workers);
 
   // All workers are done. Process the data.
   if (env.verbose) {
@@ -50,13 +50,13 @@ Future<Null> main(List<String> arguments) async {
   }
 
   String output;
-  var resolver = env.bazel
+  final resolver = env.bazel
       ? BazelResolver(workspacePath: env.bazelWorkspace)
       : Resolver(
           packagesPath: env.packagesPath,
           packageRoot: env.pkgRoot,
           sdkRoot: env.sdkRoot);
-  var loader = Loader();
+  final loader = Loader();
   if (env.prettyPrint) {
     output =
         await PrettyPrintFormatter(resolver, loader, reportOn: env.reportOn)
@@ -95,7 +95,7 @@ Future<Null> main(List<String> arguments) async {
 /// processing.
 Environment parseArgs(List<String> arguments) {
   final env = Environment();
-  var parser = ArgParser();
+  final parser = ArgParser();
 
   parser.addOption('sdk-root', abbr: 's', help: 'path to the SDK root');
   parser.addOption('package-root', abbr: 'p', help: 'path to the package root');
@@ -126,7 +126,7 @@ Environment parseArgs(List<String> arguments) {
       abbr: 'v', negatable: false, help: 'verbose output');
   parser.addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
-  var args = parser.parse(arguments);
+  final args = parser.parse(arguments);
 
   void printUsage() {
     print('Usage: dart format_coverage.dart [OPTION...]\n');
@@ -182,8 +182,8 @@ Environment parseArgs(List<String> arguments) {
   if (args['out'] == 'stdout') {
     env.output = stdout;
   } else {
-    var outpath = p.absolute(p.normalize(args['out']));
-    var outfile = File(outpath)..createSync(recursive: true);
+    final outpath = p.absolute(p.normalize(args['out']));
+    final outfile = File(outpath)..createSync(recursive: true);
     env.output = outfile.openWrite();
   }
 
@@ -220,7 +220,7 @@ Environment parseArgs(List<String> arguments) {
 /// are contained by it if it is a directory, or a [List] containing the file if
 /// it is a file.
 List<File> filesToProcess(String absPath) {
-  var filePattern = RegExp(r'^dart-cov-\d+-\d+.json$');
+  final filePattern = RegExp(r'^dart-cov-\d+-\d+.json$');
   if (FileSystemEntity.isDirectorySync(absPath)) {
     return Directory(absPath)
         .listSync(recursive: true)

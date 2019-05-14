@@ -21,20 +21,20 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('collect_coverage', () async {
-    var resultString = await _getCoverageResult();
+    final resultString = await _getCoverageResult();
 
     // analyze the output json
-    Map<String, dynamic> jsonResult = json.decode(resultString);
+    final Map<String, dynamic> jsonResult = json.decode(resultString);
 
     expect(jsonResult.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(jsonResult, containsPair('type', 'CodeCoverage'));
 
-    List coverage = jsonResult['coverage'];
+    final List coverage = jsonResult['coverage'];
     expect(coverage, isNotEmpty);
 
-    var sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
+    final sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
         (Map<String, dynamic> map, dynamic value) {
-      String sourceUri = value['source'];
+      final String sourceUri = value['source'];
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
@@ -49,14 +49,14 @@ void main() {
   });
 
   test('createHitmap', () async {
-    var resultString = await _getCoverageResult();
-    Map<String, dynamic> jsonResult = json.decode(resultString);
-    List coverage = jsonResult['coverage'];
-    var hitMap = createHitmap(coverage);
+    final resultString = await _getCoverageResult();
+    final Map<String, dynamic> jsonResult = json.decode(resultString);
+    final List coverage = jsonResult['coverage'];
+    final hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 
-    Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
-    Map<int, int> expectedHits = {
+    final Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
+    final Map<int, int> expectedHits = {
       10: 1,
       11: 1,
       13: 0,
@@ -87,15 +87,15 @@ void main() {
   });
 
   test('parseCoverage', () async {
-    var tempDir = await Directory.systemTemp.createTemp('coverage.test.');
+    final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
 
     try {
-      var outputFile = File(p.join(tempDir.path, 'coverage.json'));
+      final outputFile = File(p.join(tempDir.path, 'coverage.json'));
 
-      var coverageResults = await _getCoverageResult();
+      final coverageResults = await _getCoverageResult();
       await outputFile.writeAsString(coverageResults, flush: true);
 
-      var parsedResult = await parseCoverage([outputFile], 1);
+      final parsedResult = await parseCoverage([outputFile], 1);
 
       expect(parsedResult, contains(_sampleAppFileUri));
       expect(parsedResult, contains(_isolateLibFileUri));
@@ -117,29 +117,29 @@ Future<String> _getCoverageResult() async {
 Future<String> _collectCoverage() async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
-  var openPort = await getOpenPort();
+  final openPort = await getOpenPort();
 
   // Run the sample app with the right flags.
-  Process sampleProcess = await runTestApp(openPort);
+  final Process sampleProcess = await runTestApp(openPort);
 
   // Capture the VM service URI.
-  Completer<Uri> serviceUriCompleter = Completer<Uri>();
+  final serviceUriCompleter = Completer<Uri>();
   sampleProcess.stdout
       .transform(utf8.decoder)
       .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
-      Uri serviceUri = extractObservatoryUri(line);
+      final Uri serviceUri = extractObservatoryUri(line);
       if (serviceUri != null) {
         serviceUriCompleter.complete(serviceUri);
       }
     }
   });
-  Uri serviceUri = await serviceUriCompleter.future;
+  final Uri serviceUri = await serviceUriCompleter.future;
 
   // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
-  var toolResult = await Process.run('dart', [
+  final toolResult = await Process.run('dart', [
     _collectAppPath,
     '--uri',
     '$serviceUri',

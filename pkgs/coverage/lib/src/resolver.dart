@@ -23,7 +23,7 @@ class Resolver {
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
   String resolve(String scriptUri) {
-    var uri = Uri.parse(scriptUri);
+    final uri = Uri.parse(scriptUri);
     if (uri.scheme == 'dart') {
       if (sdkRoot == null) {
         // No sdk-root given, do not resolve dart: URIs.
@@ -40,11 +40,12 @@ class Resolver {
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll('-', '_');
-        var pathSegments = [sdkRoot, path]..addAll(uri.pathSegments.sublist(1));
+        final pathSegments = [sdkRoot, path]
+          ..addAll(uri.pathSegments.sublist(1));
         filePath = p.joinAll(pathSegments);
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.
-        var lib = uri.path;
+        final lib = uri.path;
         filePath = p.join(sdkRoot, lib, '$lib.dart');
       }
       return resolveSymbolicLinks(filePath);
@@ -55,15 +56,15 @@ class Resolver {
         return null;
       }
 
-      var packageName = uri.pathSegments[0];
+      final packageName = uri.pathSegments[0];
       if (_packages != null) {
-        var packageUri = _packages[packageName];
+        final packageUri = _packages[packageName];
         if (packageUri == null) {
           failed.add('$uri');
           return null;
         }
-        var packagePath = p.fromUri(packageUri);
-        var pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
+        final packagePath = p.fromUri(packageUri);
+        final pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
         return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
       }
       return resolveSymbolicLinks(p.join(packageRoot, uri.path));
@@ -78,14 +79,14 @@ class Resolver {
 
   /// Returns a canonicalized path, or `null` if the path cannot be resolved.
   String resolveSymbolicLinks(String path) {
-    var normalizedPath = p.normalize(path);
-    var type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
+    final normalizedPath = p.normalize(path);
+    final type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
     if (type == FileSystemEntityType.notFound) return null;
     return File(normalizedPath).resolveSymbolicLinksSync();
   }
 
   static Map<String, Uri> _parsePackages(String packagesPath) {
-    var source = File(packagesPath).readAsBytesSync();
+    final source = File(packagesPath).readAsBytesSync();
     return packages_file.parse(source, Uri.file(packagesPath));
   }
 }
@@ -101,7 +102,7 @@ class BazelResolver extends Resolver {
   /// import could not be resolved.
   @override
   String resolve(String scriptUri) {
-    var uri = Uri.parse(scriptUri);
+    final uri = Uri.parse(scriptUri);
     if (uri.scheme == 'dart') {
       // Ignore the SDK
       return null;
@@ -111,11 +112,11 @@ class BazelResolver extends Resolver {
       return _resolveBazelPackage(uri.pathSegments);
     }
     if (uri.scheme == 'file') {
-      var runfilesPathSegment = '.runfiles/$workspacePath';
-      runfilesPathSegment = runfilesPathSegment.replaceAll(RegExp(r'/*$'), '/');
-      var runfilesPos = uri.path.indexOf(runfilesPathSegment);
+      final runfilesPathSegment =
+          '.runfiles/$workspacePath'.replaceAll(RegExp(r'/*$'), '/');
+      final runfilesPos = uri.path.indexOf(runfilesPathSegment);
       if (runfilesPos >= 0) {
-        int pathStart = runfilesPos + runfilesPathSegment.length;
+        final pathStart = runfilesPos + runfilesPathSegment.length;
         return uri.path.substring(pathStart);
       }
       return null;
@@ -129,9 +130,9 @@ class BazelResolver extends Resolver {
   }
 
   String _extractHttpPath(Uri uri) {
-    int packagesPos = uri.pathSegments.indexOf('packages');
+    final packagesPos = uri.pathSegments.indexOf('packages');
     if (packagesPos >= 0) {
-      var workspacePath = uri.pathSegments.sublist(packagesPos + 1);
+      final workspacePath = uri.pathSegments.sublist(packagesPos + 1);
       return _resolveBazelPackage(workspacePath);
     }
     return uri.pathSegments.join('/');
@@ -139,14 +140,11 @@ class BazelResolver extends Resolver {
 
   String _resolveBazelPackage(List<String> pathSegments) {
     // TODO(cbracken) belongs in a Bazel package
-    var packageName = pathSegments[0];
-    var pathInPackage = pathSegments.sublist(1).join('/');
-    String packagePath;
-    if (packageName.contains('.')) {
-      packagePath = packageName.replaceAll('.', '/');
-    } else {
-      packagePath = 'third_party/dart/$packageName';
-    }
+    final packageName = pathSegments[0];
+    final pathInPackage = pathSegments.sublist(1).join('/');
+    final packagePath = packageName.contains('.')
+        ? packageName.replaceAll('.', '/')
+        : 'third_party/dart/$packageName';
     return '$packagePath/lib/$pathInPackage';
   }
 }
