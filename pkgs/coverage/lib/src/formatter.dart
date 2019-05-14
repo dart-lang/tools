@@ -114,7 +114,7 @@ class PrettyPrintFormatter implements Formatter {
 
 const _prefix = '       ';
 
-typedef bool _PathFilter(String path);
+typedef _PathFilter = bool Function(String path);
 
 _PathFilter _getPathFilter(List<String> reportOn) {
   if (reportOn == null) return (String path) => true;
