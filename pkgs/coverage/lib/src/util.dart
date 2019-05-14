@@ -21,7 +21,7 @@ Future<dynamic> retry(Future f(), Duration interval, {Duration timeout}) async {
       var msg = duration.inSeconds == 0
           ? '${duration.inMilliseconds}ms'
           : '${duration.inSeconds}s';
-      throw new StateError('Failed to complete within $msg');
+      throw StateError('Failed to complete within $msg');
     });
   }
 
@@ -31,7 +31,7 @@ Future<dynamic> retry(Future f(), Duration interval, {Duration timeout}) async {
         return await f();
       } catch (_) {
         if (keepGoing) {
-          await new Future<dynamic>.delayed(interval);
+          await Future<dynamic>.delayed(interval);
         }
       }
     }
@@ -46,7 +46,7 @@ Uri extractObservatoryUri(String str) {
   int msgPos = str.indexOf(kObservatoryListening);
   if (msgPos == -1) return null;
   int startPos = msgPos + kObservatoryListening.length;
-  int endPos = str.indexOf(new RegExp(r'(\s|$)'), startPos);
+  int endPos = str.indexOf(RegExp(r'(\s|$)'), startPos);
   try {
     return Uri.parse(str.substring(startPos, endPos));
   } on FormatException {

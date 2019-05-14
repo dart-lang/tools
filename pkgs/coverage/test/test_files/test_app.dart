@@ -20,7 +20,7 @@ Future<Null> main() async {
     }
   }
 
-  ReceivePort port = new ReceivePort();
+  ReceivePort port = ReceivePort();
 
   Isolate isolate =
       await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);

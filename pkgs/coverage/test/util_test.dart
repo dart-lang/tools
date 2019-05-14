@@ -8,12 +8,12 @@ import 'package:coverage/src/util.dart';
 import 'package:test/test.dart';
 
 const _failCount = 5;
-const _delay = const Duration(milliseconds: 10);
+const _delay = Duration(milliseconds: 10);
 
 void main() {
   test('retry', () async {
     int count = 0;
-    var stopwatch = new Stopwatch()..start();
+    var stopwatch = Stopwatch()..start();
 
     Future failCountTimes() async {
       expect(stopwatch.elapsed, greaterThanOrEqualTo(_delay * count));
@@ -35,7 +35,7 @@ void main() {
   group('retry with timeout', () {
     test('if it finishes', () async {
       int count = 0;
-      var stopwatch = new Stopwatch()..start();
+      var stopwatch = Stopwatch()..start();
 
       Future failCountTimes() async {
         expect(stopwatch.elapsed, greaterThanOrEqualTo(_delay * count));
@@ -58,7 +58,7 @@ void main() {
 
     test('if it does not finish', () async {
       int count = 0;
-      var stopwatch = new Stopwatch()..start();
+      var stopwatch = Stopwatch()..start();
 
       var caught = false;
       var countAfterError = 0;
@@ -84,7 +84,7 @@ void main() {
         expect(countAfterError, 0,
             reason: 'Execution should stop after a timeout');
 
-        await new Future<dynamic>.delayed(_delay * 3);
+        await Future<dynamic>.delayed(_delay * 3);
 
         expect(countAfterError, 0, reason: 'Even after a delay');
       }

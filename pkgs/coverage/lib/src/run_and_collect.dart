@@ -34,7 +34,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
   }
 
   var process = await Process.start('dart', dartArgs);
-  var serviceUriCompleter = new Completer<Uri>();
+  var serviceUriCompleter = Completer<Uri>();
   process.stdout
       .transform(utf8.decoder)
       .transform(const LineSplitter())

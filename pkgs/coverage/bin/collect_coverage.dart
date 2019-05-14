@@ -45,7 +45,7 @@ class Options {
 }
 
 Options _parseArgs(List<String> arguments) {
-  var parser = new ArgParser()
+  var parser = ArgParser()
     ..addOption('host',
         abbr: 'H',
         help: 'remote VM host. DEPRECATED: use --uri',
@@ -102,12 +102,12 @@ Options _parseArgs(List<String> arguments) {
   if (args['out'] == 'stdout') {
     out = stdout;
   } else {
-    var outfile = new File(args['out'])..createSync(recursive: true);
+    var outfile = File(args['out'])..createSync(recursive: true);
     out = outfile.openWrite();
   }
   var timeout = (args['connect-timeout'] == null)
       ? null
-      : new Duration(seconds: int.parse(args['connect-timeout']));
-  return new Options(
+      : Duration(seconds: int.parse(args['connect-timeout']));
+  return Options(
       serviceUri, out, timeout, args['wait-paused'], args['resume-isolates']);
 }

@@ -63,10 +63,10 @@ Future<Map<String, dynamic>> _collectCoverage() async {
   var sampleProcess = await runTestApp(openPort);
 
   // Capture the VM service URI.
-  Completer<Uri> serviceUriCompleter = new Completer<Uri>();
+  Completer<Uri> serviceUriCompleter = Completer<Uri>();
   sampleProcess.stdout
       .transform(utf8.decoder)
-      .transform(new LineSplitter())
+      .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
       Uri serviceUri = extractObservatoryUri(line);

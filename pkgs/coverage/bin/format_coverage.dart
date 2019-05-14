@@ -41,7 +41,7 @@ Future<Null> main(List<String> arguments) async {
     print('  report-on: ${env.reportOn}');
   }
 
-  var clock = new Stopwatch()..start();
+  var clock = Stopwatch()..start();
   var hitmap = await parseCoverage(files, env.workers);
 
   // All workers are done. Process the data.
@@ -51,19 +51,19 @@ Future<Null> main(List<String> arguments) async {
 
   String output;
   var resolver = env.bazel
-      ? new BazelResolver(workspacePath: env.bazelWorkspace)
-      : new Resolver(
+      ? BazelResolver(workspacePath: env.bazelWorkspace)
+      : Resolver(
           packagesPath: env.packagesPath,
           packageRoot: env.pkgRoot,
           sdkRoot: env.sdkRoot);
-  var loader = new Loader();
+  var loader = Loader();
   if (env.prettyPrint) {
     output =
-        await new PrettyPrintFormatter(resolver, loader, reportOn: env.reportOn)
+        await PrettyPrintFormatter(resolver, loader, reportOn: env.reportOn)
             .format(hitmap);
   } else {
     assert(env.lcov);
-    output = await new LcovFormatter(resolver,
+    output = await LcovFormatter(resolver,
             reportOn: env.reportOn, basePath: env.baseDirectory)
         .format(hitmap);
   }
@@ -94,8 +94,8 @@ Future<Null> main(List<String> arguments) async {
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
 Environment parseArgs(List<String> arguments) {
-  final env = new Environment();
-  var parser = new ArgParser();
+  final env = Environment();
+  var parser = ArgParser();
 
   parser.addOption('sdk-root', abbr: 's', help: 'path to the SDK root');
   parser.addOption('package-root', abbr: 'p', help: 'path to the package root');
@@ -183,7 +183,7 @@ Environment parseArgs(List<String> arguments) {
     env.output = stdout;
   } else {
     var outpath = p.absolute(p.normalize(args['out']));
-    var outfile = new File(outpath)..createSync(recursive: true);
+    var outfile = File(outpath)..createSync(recursive: true);
     env.output = outfile.openWrite();
   }
 
@@ -220,13 +220,13 @@ Environment parseArgs(List<String> arguments) {
 /// are contained by it if it is a directory, or a [List] containing the file if
 /// it is a file.
 List<File> filesToProcess(String absPath) {
-  var filePattern = new RegExp(r'^dart-cov-\d+-\d+.json$');
+  var filePattern = RegExp(r'^dart-cov-\d+-\d+.json$');
   if (FileSystemEntity.isDirectorySync(absPath)) {
-    return new Directory(absPath)
+    return Directory(absPath)
         .listSync(recursive: true)
         .whereType<File>()
         .where((e) => filePattern.hasMatch(p.basename(e.path)))
         .toList();
   }
-  return <File>[new File(absPath)];
+  return <File>[File(absPath)];
 }

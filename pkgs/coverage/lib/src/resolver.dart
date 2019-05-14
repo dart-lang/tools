@@ -81,12 +81,12 @@ class Resolver {
     var normalizedPath = p.normalize(path);
     var type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
     if (type == FileSystemEntityType.notFound) return null;
-    return new File(normalizedPath).resolveSymbolicLinksSync();
+    return File(normalizedPath).resolveSymbolicLinksSync();
   }
 
   static Map<String, Uri> _parsePackages(String packagesPath) {
-    var source = new File(packagesPath).readAsBytesSync();
-    return packages_file.parse(source, new Uri.file(packagesPath));
+    var source = File(packagesPath).readAsBytesSync();
+    return packages_file.parse(source, Uri.file(packagesPath));
   }
 }
 
@@ -112,8 +112,7 @@ class BazelResolver extends Resolver {
     }
     if (uri.scheme == 'file') {
       var runfilesPathSegment = '.runfiles/$workspacePath';
-      runfilesPathSegment =
-          runfilesPathSegment.replaceAll(new RegExp(r'/*$'), '/');
+      runfilesPathSegment = runfilesPathSegment.replaceAll(RegExp(r'/*$'), '/');
       var runfilesPos = uri.path.indexOf(runfilesPathSegment);
       if (runfilesPos >= 0) {
         int pathStart = runfilesPos + runfilesPathSegment.length;
@@ -160,7 +159,7 @@ class Loader {
   /// Returns `null` if the resource could not be loaded.
   Future<List<String>> load(String path) async {
     try {
-      return new File(path).readAsLines();
+      return File(path).readAsLines();
     } catch (_) {
       failed.add(path);
       return null;

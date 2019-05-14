@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 void main() {
   group('Bazel resolver', () {
     const workspace = 'foo';
-    final resolver = new BazelResolver(workspacePath: workspace);
+    final resolver = BazelResolver(workspacePath: workspace);
 
     test('does not resolve SDK URIs', () {
       expect(resolver.resolve('dart:convert'), null);
