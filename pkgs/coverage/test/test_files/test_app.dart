@@ -13,26 +13,26 @@ import 'test_app_isolate.dart';
 Future<Null> main() async {
   for (var i = 0; i < 10; i++) {
     for (var j = 0; j < 10; j++) {
-      var sum = usedMethod(i, j);
+      final sum = usedMethod(i, j);
       if (sum != (i + j)) {
         throw 'bad method!';
       }
     }
   }
 
-  ReceivePort port = ReceivePort();
+  final ReceivePort port = ReceivePort();
 
-  Isolate isolate =
+  final Isolate isolate =
       await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);
   isolate.addOnExitListener(port.sendPort);
   isolate.resume(isolate.pauseCapability);
 
-  int value = await port.first;
+  final int value = await port.first;
   if (value != 3) {
     throw 'expected 3!';
   }
 
-  int result = await retry(() async => 42, const Duration(seconds: 1));
+  final int result = await retry(() async => 42, const Duration(seconds: 1));
   print(result);
 }
 

@@ -28,8 +28,8 @@ void isolateTask(dynamic threeThings) {
 
   fooSync(42);
   fooAsync(42).then((_) {
-    SendPort port = threeThings.first;
-    int sum = threeThings[1] + threeThings[2];
+    final SendPort port = threeThings.first;
+    final int sum = threeThings[1] + threeThings[2];
     port.send(sum);
   });
 }
