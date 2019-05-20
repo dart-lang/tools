@@ -1,3 +1,7 @@
+## 0.1.21
+
+* Make `TestStdinAsync` behave like a `Stream<Uint8List>`
+
 ## 0.1.20
 
 * Close worker `outputStream` on `cancel`.

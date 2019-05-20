@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bazel_worker/bazel_worker.dart';
 
@@ -50,12 +51,12 @@ class TestStdinSync implements TestStdin {
 /// Note: You must call [close] in order for the loop to exit properly.
 class TestStdinAsync implements TestStdin {
   /// Controls the stream for async delivery of bytes.
-  final StreamController<List<int>> _controller = new StreamController();
-  StreamController<List<int>> get controller => _controller;
+  final StreamController<Uint8List> _controller = new StreamController();
+  StreamController<Uint8List> get controller => _controller;
 
   /// Adds all the [bytes] to this stream.
   void addInputBytes(List<int> bytes) {
-    _controller.add(bytes);
+    _controller.add(Uint8List.fromList(bytes));
   }
 
   /// Closes this stream. This is necessary for the [AsyncWorkerLoop] to exit.
@@ -64,7 +65,7 @@ class TestStdinAsync implements TestStdin {
   }
 
   @override
-  StreamSubscription<List<int>> listen(onData(List<int> bytes),
+  StreamSubscription<Uint8List> listen(onData(Uint8List bytes),
       {Function onError, void onDone(), bool cancelOnError}) {
     return _controller.stream.listen(onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
