@@ -41,6 +41,7 @@ main() {
     var map = ctx.asMap();
     expect(map.keys.map((dir) => dir.path),
         unorderedEquals([directory.path, fooDir.path, barDir.path]));
+    return null;
   });
 }
 
