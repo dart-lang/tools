@@ -1,15 +1,18 @@
 language: dart
 
 dart:
+  - 2.2.0
   - dev
 
 dart_task:
   - test: -x presubmit-only
   - test: --run-skipped -t presubmit-only
-  - dartfmt
 
 matrix:
   include:
+    # Only validate formatting using the dev release
+    - dart: dev
+      dart_task: dartfmt
     - dart: dev
       dart_task:
         dartanalyzer: --fatal-infos --fatal-warnings .

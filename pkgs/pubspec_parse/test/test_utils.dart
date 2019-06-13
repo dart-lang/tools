@@ -104,10 +104,10 @@ void expectParseThrows(
 }) =>
     expect(
       () => parse(
-            content,
-            lenient: lenient,
-            quietOnError: true,
-            skipTryPub: skipTryPub,
-          ),
+        content,
+        lenient: lenient,
+        quietOnError: true,
+        skipTryPub: skipTryPub,
+      ),
       _throwsParsedYamlException(expectedError),
     );
