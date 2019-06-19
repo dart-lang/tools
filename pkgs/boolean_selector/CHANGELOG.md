@@ -1,3 +1,7 @@
+## 1.0.5
+
+* Update package metadata & add `example/` folder
+
 ## 1.0.4
 
 * Now requires Dart 2.
