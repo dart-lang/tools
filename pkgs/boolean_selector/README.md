@@ -21,9 +21,9 @@ using [`BooleanSelector.evaluate()`][evaluate]. The variables may be supplied as
 a list of strings, or as a function that takes a variable name and returns its
 value. For example:
 
-[parse]: https://www.dartdocs.org/documentation/boolean_selector/latest/boolean_selector/BooleanSelector/BooleanSelector.parse.html
+[parse]: https://pub.dev/documentation/boolean_selector/latest/boolean_selector/BooleanSelector/BooleanSelector.parse.html
 
-[evaluate]: https://www.dartdocs.org/documentation/boolean_selector/latest/boolean_selector/BooleanSelector/evaluate.html
+[evaluate]: https://pub.dev/documentation/boolean_selector/latest/boolean_selector/BooleanSelector/evaluate.html
 
 ```dart
 import 'package:boolean_selector/boolean_selector.dart';
