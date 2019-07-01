@@ -25,8 +25,9 @@ void testCSSFile(File cssFile) {
 main() {
   final libraryUri = currentMirrorSystem().findLibrary(#samples_test).uri;
   final cssDir = Directory.fromUri(libraryUri.resolve('examples'));
-  for (var element in cssDir.listSync())
+  for (var element in cssDir.listSync()) {
     if (element is File && element.uri.pathSegments.last.endsWith('.css')) {
       test(element.uri.pathSegments.last, () => testCSSFile(element));
     }
+  }
 }

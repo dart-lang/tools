@@ -57,21 +57,23 @@ class TreeOutput {
   }
 
   String toValue(value) {
-    if (value == null)
+    if (value == null) {
       return 'null';
-    else if (value is Identifier)
+    } else if (value is Identifier) {
       return value.name;
-    else
+    } else {
       return value.toString();
+    }
   }
 
   void writeNode(String label, TreeNode node) {
     write('${label}: ');
     depth += 1;
-    if (node != null)
+    if (node != null) {
       node.visit(printer);
-    else
+    } else {
       writeln('null');
+    }
     depth -= 1;
   }
 
