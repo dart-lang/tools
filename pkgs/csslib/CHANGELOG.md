@@ -1,3 +1,7 @@
+## 0.16.1
+	
+- Fixed a crash caused by parsing certain calc() expressions and variables names that contain numbers.
+
 ## 0.16.0
 
 - Removed support for the shadow-piercing comibnators `/deep/` and `>>>`. These

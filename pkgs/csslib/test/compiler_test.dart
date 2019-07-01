@@ -727,6 +727,27 @@ void testEmitter() {
 }''');
 }
 
+void testExpressionParsing() {
+  var errors = <Message>[];
+  var input = r'''
+.foobar {
+  border-radius: calc(0 - 1px);
+  border-width: calc(0 + 1px);
+}''';
+  var stylesheet = parseCss(input, errors: errors);
+
+  expect(stylesheet != null, true);
+  expect(errors.isEmpty, true, reason: errors.toString());
+
+  walkTree(stylesheet);
+
+  expect(prettyPrint(stylesheet), r'''
+.foobar {
+  border-radius: calc(0 - 1px);
+  border-width: calc(0 + 1px);
+}''');
+}
+
 main() {
   test('Classes', testClass);
   test('Classes 2', testClass2);
@@ -744,4 +765,5 @@ main() {
   test('stringEscape', testStringEscape);
   test('Parse List<int> as input', testArrayOfChars);
   test('Simple Emitter', testEmitter);
+  test('Expression parsing', testExpressionParsing);
 }

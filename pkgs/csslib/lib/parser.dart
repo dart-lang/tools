@@ -1681,14 +1681,8 @@ class _Parser {
       }
 
       if (keepParsing && value != null) {
-        LiteralTerm unitTerm;
-        // Don't process the dimension if MINUS or PLUS is next.
-        if (_peek() != TokenKind.MINUS && _peek() != TokenKind.PLUS) {
-          unitTerm = processDimension(termToken, value, _makeSpan(start));
-        }
-        if (unitTerm == null) {
-          unitTerm = LiteralTerm(value, value.name, _makeSpan(start));
-        }
+        LiteralTerm unitTerm =
+            processDimension(termToken, value, _makeSpan(start));
         expressions.add(unitTerm);
 
         value = null;
@@ -2498,12 +2492,13 @@ class _Parser {
         _next(); // Skip the unit
         break;
       default:
-        if (value != null && t != null) {
-          term = (value is Identifier)
-              ? LiteralTerm(value, value.name, span)
-              : NumberTerm(value, t.text, span);
+        if (value != null) {
+          if (value is Identifier) {
+            term = LiteralTerm(value, value.name, span);
+          } else if (t != null) {
+            term = NumberTerm(value, t.text, span);
+          }
         }
-        break;
     }
 
     return term;

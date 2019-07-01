@@ -34,10 +34,12 @@ void simpleVar() {
   var-c: #00ff00;
   var-b: var(c);
   var-a: var(b);
+  var-level-1-normal: 1px;
 }
 .testIt {
   color: var(color-foreground);
   background: var(color-background);
+  border-radius: var(level-1-normal);
 }
 ''';
 
@@ -48,10 +50,12 @@ void simpleVar() {
   var-c: #0f0;
   var-b: var(c);
   var-a: var(b);
+  var-level-1-normal: 1px;
 }
 .testIt {
   color: var(color-foreground);
   background: var(color-background);
+  border-radius: var(level-1-normal);
 }''';
 
   final generatedPolyfill = '''
@@ -60,6 +64,7 @@ void simpleVar() {
 .testIt {
   color: #00f;
   background: #f00;
+  border-radius: 1px;
 }''';
 
   compileAndValidate(input, generated);
