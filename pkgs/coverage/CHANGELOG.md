@@ -1,5 +1,8 @@
 ## dev
 
+ * Disables WebSocket compression for coverage collection. Since almost all
+   coverage collection runs happen over the loopback interface to localhost,
+   this improves performance and reduces CPU usage.
  * Migrates implementation of VM service protocol library from
    `package:vm_service_client`, which is no longer maintained, to
    `package:vm_service_lib`, which is.
