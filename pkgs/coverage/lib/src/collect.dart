@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:vm_service_lib/vm_service_lib.dart';
-import 'package:vm_service_lib/vm_service_lib_io.dart';
 import 'util.dart';
 
 const _retryInterval = Duration(milliseconds: 200);
@@ -37,7 +37,13 @@ Future<Map<String, dynamic>> collect(
   VmService service;
   await retry(() async {
     try {
-      service = await vmServiceConnectUri('$uri', log: StdoutLog());
+      final options = const CompressionOptions(enabled: false);
+      final socket = await WebSocket.connect('$uri', compression: options);
+      final controller = StreamController<String>();
+      socket.listen((dynamic data) => controller.add(data));
+      service = VmService(
+          controller.stream, (String message) => socket.add(message),
+          log: StdoutLog(), disposeHandler: () => socket.close());
       await service.getVM().timeout(_retryInterval);
     } on TimeoutException {
       service.dispose();
