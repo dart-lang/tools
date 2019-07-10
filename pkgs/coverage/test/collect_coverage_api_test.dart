@@ -19,7 +19,7 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('collect throws when serviceUri is null', () {
-    expect(() => collect(null, true, false), throwsArgumentError);
+    expect(() => collect(null, true, false, false), throwsArgumentError);
   });
 
   test('collect_coverage_api', () async {
@@ -77,5 +77,5 @@ Future<Map<String, dynamic>> _collectCoverage() async {
   });
   final Uri serviceUri = await serviceUriCompleter.future;
 
-  return collect(serviceUri, true, true, timeout: timeout);
+  return collect(serviceUri, true, true, false, timeout: timeout);
 }

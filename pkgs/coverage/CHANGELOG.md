@@ -1,5 +1,9 @@
 ## dev
 
+ * BREAKING CHANGE: Skips collecting coverage for `dart:` libaries by default,
+   which provides a significant performance boost. To restore the previous
+   behaviour and collect coverage for these libraries, use the `--include-dart`
+   flag.
  * Disables WebSocket compression for coverage collection. Since almost all
    coverage collection runs happen over the loopback interface to localhost,
    this improves performance and reduces CPU usage.
