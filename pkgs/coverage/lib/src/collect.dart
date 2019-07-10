@@ -25,7 +25,7 @@ const _retryInterval = Duration(milliseconds: 200);
 /// If [waitPaused] is true, collection will not begin until all isolates are
 /// in the paused state.
 Future<Map<String, dynamic>> collect(
-    Uri serviceUri, bool resume, bool waitPaused,
+    Uri serviceUri, bool resume, bool waitPaused, bool includeDart,
     {Duration timeout}) async {
   if (serviceUri == null) throw ArgumentError('serviceUri must not be null');
 
@@ -55,7 +55,7 @@ Future<Map<String, dynamic>> collect(
       await _waitIsolatesPaused(service, timeout: timeout);
     }
 
-    return await _getAllCoverage(service);
+    return await _getAllCoverage(service, includeDart);
   } finally {
     if (resume) {
       await _resumeIsolates(service);
@@ -64,7 +64,8 @@ Future<Map<String, dynamic>> collect(
   }
 }
 
-Future<Map<String, dynamic>> _getAllCoverage(VmService service) async {
+Future<Map<String, dynamic>> _getAllCoverage(
+    VmService service, bool includeDart) async {
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
 
@@ -74,7 +75,8 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service) async {
       <String>[SourceReportKind.kCoverage],
       forceCompile: true,
     );
-    final coverage = await _getCoverageJson(service, isolateRef, report);
+    final coverage =
+        await _getCoverageJson(service, isolateRef, report, includeDart);
     allCoverage.addAll(coverage);
   }
   return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
@@ -137,8 +139,8 @@ int _getLineFromTokenPos(Script script, int tokenPos) {
 }
 
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
-Future<List<Map<String, dynamic>>> _getCoverageJson(
-    VmService service, IsolateRef isolateRef, SourceReport report) async {
+Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
+    IsolateRef isolateRef, SourceReport report, bool includeDart) async {
   // script uri -> { line -> hit count }
   final hitMaps = <Uri, Map<int, int>>{};
   final scripts = <ScriptRef, Script>{};
@@ -148,6 +150,9 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 
     // Not returned in scripts section of source report.
     if (scriptUri.scheme == 'evaluate') continue;
+
+    // Skip scripts from dart:.
+    if (!includeDart && scriptUri.scheme == 'dart') continue;
 
     if (!scripts.containsKey(scriptRef)) {
       scripts[scriptRef] = await service.getObject(isolateRef.id, scriptRef.id);

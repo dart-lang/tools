@@ -19,8 +19,8 @@ Future<Null> main(List<String> arguments) async {
 
   final options = _parseArgs(arguments);
   await Chain.capture(() async {
-    final coverage = await collect(
-        options.serviceUri, options.resume, options.waitPaused,
+    final coverage = await collect(options.serviceUri, options.resume,
+        options.waitPaused, options.includeDart,
         timeout: options.timeout);
     options.out.write(json.encode(coverage));
     await options.out.close();
@@ -34,14 +34,15 @@ Future<Null> main(List<String> arguments) async {
 }
 
 class Options {
-  Options(
-      this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume);
+  Options(this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume,
+      this.includeDart);
 
   final Uri serviceUri;
   final IOSink out;
   final Duration timeout;
   final bool waitPaused;
   final bool resume;
+  final bool includeDart;
 }
 
 Options _parseArgs(List<String> arguments) {
@@ -65,6 +66,8 @@ Options _parseArgs(List<String> arguments) {
         help: 'wait for all isolates to be paused before collecting coverage')
     ..addFlag('resume-isolates',
         abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
+    ..addFlag('include-dart',
+        abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   final args = parser.parse(arguments);
@@ -108,6 +111,6 @@ Options _parseArgs(List<String> arguments) {
   final timeout = (args['connect-timeout'] == null)
       ? null
       : Duration(seconds: int.parse(args['connect-timeout']));
-  return Options(
-      serviceUri, out, timeout, args['wait-paused'], args['resume-isolates']);
+  return Options(serviceUri, out, timeout, args['wait-paused'],
+      args['resume-isolates'], args['include-dart']);
 }

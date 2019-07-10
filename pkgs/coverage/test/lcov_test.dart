@@ -176,7 +176,7 @@ Future<Map> _getHitMap() async {
 
   // collect hit map.
   final List<Map> coverageJson =
-      (await collect(serviceUri, true, true))['coverage'];
+      (await collect(serviceUri, true, true, false))['coverage'];
   final hitMap = createHitmap(coverageJson);
 
   // wait for sample app to terminate.
