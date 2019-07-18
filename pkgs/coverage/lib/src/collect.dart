@@ -164,6 +164,9 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
 
     // Collect hits and misses.
     final coverage = range.coverage;
+
+    if (coverage == null) continue;
+
     for (final tokenPos in coverage.hits) {
       final line = _getLineFromTokenPos(script, tokenPos);
       if (line == null) {

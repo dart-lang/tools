@@ -1,3 +1,7 @@
+## 0.13.1 - 2019-07-18
+
+ * Handle scenario where the VM returns empty coverage information for a range.
+
 ## 0.13.0 - 2019-07-10
 
  * BREAKING CHANGE: Skips collecting coverage for `dart:` libaries by default,
