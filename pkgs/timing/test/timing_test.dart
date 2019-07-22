@@ -2,15 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: only_throw_errors
+
 import 'dart:async';
 
 import 'package:test/test.dart';
 import 'package:timing/src/clock.dart';
 import 'package:timing/src/timing.dart';
 
-_noop() {}
+void _noop() {}
 
-main() {
+void main() {
   DateTime time;
   final startTime = DateTime(2017);
   DateTime fakeClock() => time;
@@ -24,7 +26,7 @@ main() {
     time = startTime;
   });
 
-  canHandleSync([additionalExpects() = _noop]) {
+  void canHandleSync([additionalExpects() = _noop]) {
     test('Can track sync code', () {
       expect(tracker.isStarted, false);
       expect(tracker.isTracking, false);
@@ -66,7 +68,7 @@ main() {
                 time = time.add(const Duration(seconds: 5));
                 throw 'error';
               }),
-          throwsA(TypeMatcher<String>()));
+          throwsA(const TypeMatcher<String>()));
       expect(tracker.startTime, startTime);
       expect(tracker.stopTime, time);
       expect(tracker.duration, const Duration(seconds: 5));
@@ -92,7 +94,7 @@ main() {
     });
   }
 
-  canHandleAsync([additionalExpects() = _noop]) {
+  void canHandleAsync([additionalExpects() = _noop]) {
     test('Can track async code', () async {
       expect(tracker.isStarted, false);
       expect(tracker.isTracking, false);
@@ -132,7 +134,7 @@ main() {
     });
 
     test('Can track in case of unhandled async exceptions', () async {
-      var future = scopedTrack(() {
+      final future = scopedTrack(() {
         time = time.add(const Duration(seconds: 1));
         return Future(() {
           time = time.add(const Duration(seconds: 2));
@@ -141,7 +143,7 @@ main() {
           time = time.add(const Duration(seconds: 4));
         });
       });
-      await expectLater(future, throwsA(TypeMatcher<String>()));
+      await expectLater(future, throwsA(const TypeMatcher<String>()));
       expect(tracker.isFinished, true);
       expect(tracker.startTime, startTime);
       expect(tracker.stopTime, time);
@@ -206,7 +208,7 @@ main() {
     canHandleAsync();
 
     test('Can not distinguish own async code', () async {
-      var future = scopedTrack(() => Future(() {
+      final future = scopedTrack(() => Future(() {
             time = time.add(const Duration(seconds: 5));
           }));
       time = time.add(const Duration(seconds: 10));
@@ -237,8 +239,8 @@ main() {
     });
 
     test('Can track complex async innerDuration', () async {
-      var completer = Completer();
-      var future = scopedTrack(() async {
+      final completer = Completer();
+      final future = scopedTrack(() async {
         time = time.add(const Duration(seconds: 1)); // Tracked sync
         await Future.value();
         time = time.add(const Duration(seconds: 2)); // Tracked async
@@ -288,7 +290,7 @@ main() {
     test('Can exclude complex nested sync', () {
       tracker = asyncTracker = AsyncTimeTracker(trackNested: false);
       nestedAsyncTracker = AsyncTimeTracker(trackNested: false);
-      var nestedAsyncTracker2 = AsyncTimeTracker(trackNested: false);
+      final nestedAsyncTracker2 = AsyncTimeTracker(trackNested: false);
       scopedTrack(() {
         time = time.add(const Duration(seconds: 1));
         nestedAsyncTracker.track(() {
@@ -323,7 +325,7 @@ main() {
         'exclude grand-childrens from parent', () {
       tracker = asyncTracker = AsyncTimeTracker(trackNested: true);
       nestedAsyncTracker = AsyncTimeTracker(trackNested: false);
-      var nestedAsyncTracker2 = AsyncTimeTracker();
+      final nestedAsyncTracker2 = AsyncTimeTracker();
       scopedTrack(() {
         time = time.add(const Duration(seconds: 1));
         nestedAsyncTracker.track(() {
@@ -383,8 +385,8 @@ main() {
       tracker = asyncTracker = AsyncTimeTracker(trackNested: false);
       await scopedTrack(() async {
         time = time.add(const Duration(seconds: 1));
-        var completer = Completer();
-        var future = completer.future.then((_) {
+        final completer = Completer();
+        final future = completer.future.then((_) {
           time = time.add(const Duration(seconds: 2));
         });
         await nestedAsyncTracker.track(() async {

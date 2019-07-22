@@ -127,8 +127,8 @@ class SyncTimeTracker implements TimeTracker {
     if (!isTracking) {
       throw StateError('Can be only called while tracking');
     }
-    var _now = now();
-    var prevSlice = TimeSlice(_startTime, _now);
+    final _now = now();
+    final prevSlice = TimeSlice(_startTime, _now);
     _startTime = _now;
     return prevSlice;
   }
@@ -236,7 +236,7 @@ class NoOpTimeTracker implements TimeTracker {
 class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
   final bool trackNested;
 
-  static const _ZoneKey = #timing_AsyncTimeTracker;
+  static const _zoneKey = #timing_AsyncTimeTracker;
 
   AsyncTimeTracker({this.trackNested = true}) : super([]);
 
@@ -246,14 +246,14 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
       return action();
     }
 
-    var isNestedRun = slices.isNotEmpty &&
+    final isNestedRun = slices.isNotEmpty &&
         slices.last is SyncTimeTracker &&
         (slices.last as SyncTimeTracker).isTracking;
-    var isExcludedNestedTrack = !trackNested && zone[_ZoneKey] != this;
+    final isExcludedNestedTrack = !trackNested && zone[_zoneKey] != this;
 
     // Exclude nested sync tracks
     if (isNestedRun && isExcludedNestedTrack) {
-      var timer = slices.last as SyncTimeTracker;
+      final timer = slices.last as SyncTimeTracker;
       // Split already tracked time into new slice.
       // Replace tracker in slices.last with splitted slice, to indicate for
       // recursive calls that we not tracking.
@@ -278,7 +278,7 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
       return action();
     }
 
-    var timer = SyncTimeTracker();
+    final timer = SyncTimeTracker();
     slices.add(timer);
 
     // Pass to parent zone, in case of overwritten clock
@@ -287,18 +287,18 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
 
   static final asyncTimeTrackerZoneSpecification = ZoneSpecification(
     run: <R>(Zone self, ZoneDelegate parent, Zone zone, R Function() f) {
-      var tracker = self[_ZoneKey] as AsyncTimeTracker;
+      final tracker = self[_zoneKey] as AsyncTimeTracker;
       return tracker._trackSyncSlice(parent, zone, () => parent.run(zone, f));
     },
     runUnary: <R, T>(Zone self, ZoneDelegate parent, Zone zone, R Function(T) f,
         T arg) {
-      var tracker = self[_ZoneKey] as AsyncTimeTracker;
+      final tracker = self[_zoneKey] as AsyncTimeTracker;
       return tracker._trackSyncSlice(
           parent, zone, () => parent.runUnary(zone, f, arg));
     },
     runBinary: <R, T1, T2>(Zone self, ZoneDelegate parent, Zone zone,
         R Function(T1, T2) f, T1 arg1, T2 arg2) {
-      var tracker = self[_ZoneKey] as AsyncTimeTracker;
+      final tracker = self[_zoneKey] as AsyncTimeTracker;
       return tracker._trackSyncSlice(
           parent, zone, () => parent.runBinary(zone, f, arg1, arg2));
     },
@@ -310,9 +310,9 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
       throw StateError('Can not be tracked twice');
     }
     _tracking = true;
-    var result = runZoned(action,
+    final result = runZoned(action,
         zoneSpecification: asyncTimeTrackerZoneSpecification,
-        zoneValues: {_ZoneKey: this});
+        zoneValues: {_zoneKey: this});
     if (result is Future) {
       return result
           // Break possible sync processing of future completion, so slice trackers can be finished
