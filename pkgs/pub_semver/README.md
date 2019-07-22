@@ -1,6 +1,7 @@
 Handles version numbers and version constraints in the same way that [pub][]
-does. The semantics here very closely follow the [Semantic Versioning][semver]
-spec. It differs from semver in a few corner cases:
+does. The semantics here very closely follow the
+[Semantic Versioning spec version 2.0.0-rc.1][semver]. It differs from semver
+in a few corner cases:
 
  *  **Version ordering does take build suffixes into account.** This is unlike
     semver 2.0.0 but like earlier versions of semver. Version `1.2.3+1` is
@@ -94,5 +95,5 @@ spec. It differs from semver in a few corner cases:
     constraint greater than or equal to a given version, but less than its next
     breaking one.
 
-[pub]: http://pub.dartlang.org/
-[semver]: http://semver.org/
+[pub]: https://pub.dev
+[semver]: https://semver.org/spec/v2.0.0-rc.1.html
