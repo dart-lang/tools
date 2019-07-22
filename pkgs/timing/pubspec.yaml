@@ -1,6 +1,8 @@
 name: timing
-description: Timing is a simple package for tracking performance of both async and sync actions
 version: 0.1.1+2
+description: >-
+  A simple package for tracking the performance of synchronous and asynchronous
+  actions.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/timing
 
