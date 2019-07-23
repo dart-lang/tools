@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:vm_service_lib/vm_service_lib.dart';
+
 import 'util.dart';
 
 const _retryInterval = Duration(milliseconds: 200);
@@ -24,8 +25,8 @@ const _retryInterval = Duration(milliseconds: 200);
 ///
 /// If [waitPaused] is true, collection will not begin until all isolates are
 /// in the paused state.
-Future<Map<String, dynamic>> collect(
-    Uri serviceUri, bool resume, bool waitPaused, bool includeDart,
+Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
+    bool waitPaused, bool includeDart, Set<String> scopedOutput,
     {Duration timeout}) async {
   if (serviceUri == null) throw ArgumentError('serviceUri must not be null');
 
@@ -55,7 +56,7 @@ Future<Map<String, dynamic>> collect(
       await _waitIsolatesPaused(service, timeout: timeout);
     }
 
-    return await _getAllCoverage(service, includeDart);
+    return await _getAllCoverage(service, includeDart, scopedOutput);
   } finally {
     if (resume) {
       await _resumeIsolates(service);
@@ -65,19 +66,37 @@ Future<Map<String, dynamic>> collect(
 }
 
 Future<Map<String, dynamic>> _getAllCoverage(
-    VmService service, bool includeDart) async {
+    VmService service, bool includeDart, Set<String> scopedOutput) async {
+  scopedOutput ??= Set<String>();
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
 
   for (var isolateRef in vm.isolates) {
-    final SourceReport report = await service.getSourceReport(
-      isolateRef.id,
-      <String>[SourceReportKind.kCoverage],
-      forceCompile: true,
-    );
-    final coverage =
-        await _getCoverageJson(service, isolateRef, report, includeDart);
-    allCoverage.addAll(coverage);
+    if (scopedOutput.isNotEmpty) {
+      final scripts = await service.getScripts(isolateRef.id);
+      for (var script in scripts.scripts) {
+        final uri = Uri.parse(script.uri);
+        if (uri.scheme != 'package') continue;
+        final scope = uri.path.split('/').first;
+        // Skip scripts which should not be included in the report.
+        if (!scopedOutput.contains(scope)) continue;
+        final scriptReport = await service.getSourceReport(
+            isolateRef.id, <String>[SourceReportKind.kCoverage],
+            forceCompile: true, scriptId: script.id);
+        final coverage = await _getCoverageJson(
+            service, isolateRef, scriptReport, includeDart);
+        allCoverage.addAll(coverage);
+      }
+    } else {
+      final SourceReport isolateReport = await service.getSourceReport(
+        isolateRef.id,
+        <String>[SourceReportKind.kCoverage],
+        forceCompile: true,
+      );
+      final coverage = await _getCoverageJson(
+          service, isolateRef, isolateReport, includeDart);
+      allCoverage.addAll(coverage);
+    }
   }
   return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
 }
