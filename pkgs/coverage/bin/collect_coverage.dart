@@ -20,7 +20,7 @@ Future<Null> main(List<String> arguments) async {
   final options = _parseArgs(arguments);
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
-        options.waitPaused, options.includeDart,
+        options.waitPaused, options.includeDart, options.scopedOutput,
         timeout: options.timeout);
     options.out.write(json.encode(coverage));
     await options.out.close();
@@ -35,7 +35,7 @@ Future<Null> main(List<String> arguments) async {
 
 class Options {
   Options(this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume,
-      this.includeDart);
+      this.includeDart, this.scopedOutput);
 
   final Uri serviceUri;
   final IOSink out;
@@ -43,6 +43,7 @@ class Options {
   final bool waitPaused;
   final bool resume;
   final bool includeDart;
+  final Set<String> scopedOutput;
 }
 
 Options _parseArgs(List<String> arguments) {
@@ -60,6 +61,9 @@ Options _parseArgs(List<String> arguments) {
         abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
     ..addOption('connect-timeout',
         abbr: 't', help: 'connect timeout in seconds')
+    ..addMultiOption('scope-output',
+        help: 'restrict coverage results so that only scripts that start with '
+            'the provided package path are considered')
     ..addFlag('wait-paused',
         abbr: 'w',
         defaultsTo: false,
@@ -101,6 +105,9 @@ Options _parseArgs(List<String> arguments) {
     }
   }
 
+  // ignore: avoid_as
+  final scopedOutput = args['scope-output'] as List<String> ?? [];
+
   IOSink out;
   if (args['out'] == 'stdout') {
     out = stdout;
@@ -112,5 +119,5 @@ Options _parseArgs(List<String> arguments) {
       ? null
       : Duration(seconds: int.parse(args['connect-timeout']));
   return Options(serviceUri, out, timeout, args['wait-paused'],
-      args['resume-isolates'], args['include-dart']);
+      args['resume-isolates'], args['include-dart'], scopedOutput.toSet());
 }

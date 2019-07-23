@@ -19,11 +19,12 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('collect throws when serviceUri is null', () {
-    expect(() => collect(null, true, false, false), throwsArgumentError);
+    expect(() => collect(null, true, false, false, Set<String>()),
+        throwsArgumentError);
   });
 
   test('collect_coverage_api', () async {
-    final Map<String, dynamic> json = await _getCoverageResult();
+    final Map<String, dynamic> json = await _collectCoverage();
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
@@ -45,18 +46,33 @@ void main() {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
   });
+
+  test('collect_coverage_api with scoped output', () async {
+    final Map<String, dynamic> json =
+        await _collectCoverage(scopedOutput: Set<String>()..add('coverage'));
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
+    expect(json, containsPair('type', 'CodeCoverage'));
+
+    final List coverage = json['coverage'];
+    expect(coverage, isNotEmpty);
+
+    final sources = coverage.fold(<String, dynamic>{},
+        (Map<String, dynamic> map, dynamic value) {
+      final String sourceUri = value['source'];
+      map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
+      return map;
+    });
+
+    for (var key in sources.keys) {
+      final uri = Uri.parse(key);
+      expect(uri.path.startsWith('coverage'), isTrue);
+    }
+  });
 }
 
-Map _coverageData;
-
-Future<Map<String, dynamic>> _getCoverageResult() async {
-  if (_coverageData == null) {
-    _coverageData = await _collectCoverage();
-  }
-  return _coverageData;
-}
-
-Future<Map<String, dynamic>> _collectCoverage() async {
+Future<Map<String, dynamic>> _collectCoverage(
+    {Set<String> scopedOutput}) async {
+  scopedOutput ??= Set<String>();
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -77,5 +93,5 @@ Future<Map<String, dynamic>> _collectCoverage() async {
   });
   final Uri serviceUri = await serviceUriCompleter.future;
 
-  return collect(serviceUri, true, true, false, timeout: timeout);
+  return collect(serviceUri, true, true, false, scopedOutput, timeout: timeout);
 }
