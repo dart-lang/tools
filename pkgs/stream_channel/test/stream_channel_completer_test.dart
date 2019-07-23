@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -62,14 +63,14 @@ void main() {
       streamController.add(1);
       streamController.add(2);
       streamController.add(3);
-      streamController.close();
+      unawaited(streamController.close());
     });
 
     test("forwards events through the sink", () async {
       completer.channel.sink.add(1);
       completer.channel.sink.add(2);
       completer.channel.sink.add(3);
-      completer.channel.sink.close();
+      unawaited(completer.channel.sink.close());
       await pumpEventQueue();
 
       completer.setChannel(innerChannel);

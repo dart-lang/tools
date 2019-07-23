@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -71,7 +72,7 @@ void main() {
       canceled = true;
     });
     expect(channel.sink.addStream(controller.stream), completes);
-    disconnector.disconnect();
+    unawaited(disconnector.disconnect());
 
     await pumpEventQueue();
     expect(canceled, isTrue);

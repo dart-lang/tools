@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -46,11 +47,11 @@ void main() {
         .transform(StreamChannelTransformer.fromCodec(utf8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
-    streamController.close();
+    unawaited(streamController.close());
     expect(await transformed.stream.toList(), equals(["foobar"]));
 
     transformed.sink.add("fblthp");
-    transformed.sink.close();
+    unawaited(transformed.sink.close());
     expect(
         sinkController.stream.toList(),
         completion(equals([
@@ -65,12 +66,12 @@ void main() {
     streamController.add("hello world");
     streamController.add(" what\nis");
     streamController.add("\nup");
-    streamController.close();
+    unawaited(streamController.close());
     expect(await transformed.stream.toList(),
         equals(["hello world what", "is", "up"]));
 
     transformed.sink.add("fbl\nthp");
-    transformed.sink.close();
+    unawaited(transformed.sink.close());
     expect(sinkController.stream.toList(), completion(equals(["fbl\nthp"])));
   });
 
@@ -79,13 +80,13 @@ void main() {
         StreamSinkTransformer.fromStreamTransformer(const LineSplitter()));
 
     streamController.add("fbl\nthp");
-    streamController.close();
+    unawaited(streamController.close());
     expect(await transformed.stream.toList(), equals(["fbl\nthp"]));
 
     transformed.sink.add("hello world");
     transformed.sink.add(" what\nis");
     transformed.sink.add("\nup");
-    transformed.sink.close();
+    unawaited(transformed.sink.close());
     expect(sinkController.stream.toList(),
         completion(equals(["hello world what", "is", "up"])));
   });

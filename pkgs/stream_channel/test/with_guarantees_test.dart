@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -32,7 +33,7 @@ void main() {
       await pumpEventQueue();
 
       expect(channel.stream.toList(), completion(equals([1, 2, 3])));
-      streamController.close();
+      unawaited(streamController.close());
     });
 
     test("only allows a single subscription", () {
@@ -58,14 +59,14 @@ void main() {
   });
 
   test("after the stream closes, the sink ignores events", () async {
-    streamController.close();
+    unawaited(streamController.close());
 
     // Wait for the done event to be delivered.
     await channel.stream.toList();
     channel.sink.add(1);
     channel.sink.add(2);
     channel.sink.add(3);
-    channel.sink.close();
+    unawaited(channel.sink.close());
 
     // None of our channel.sink additions should make it to the other endpoint.
     sinkController.stream.listen(expectAsync1((_) {}, count: 0),
@@ -75,28 +76,28 @@ void main() {
 
   test("canceling the stream's subscription has no effect on the sink",
       () async {
-    channel.stream.listen(null).cancel();
+    unawaited(channel.stream.listen(null).cancel());
     await pumpEventQueue();
 
     channel.sink.add(1);
     channel.sink.add(2);
     channel.sink.add(3);
-    channel.sink.close();
+    unawaited(channel.sink.close());
     expect(sinkController.stream.toList(), completion(equals([1, 2, 3])));
   });
 
   test("canceling the stream's subscription doesn't stop a done event",
       () async {
-    channel.stream.listen(null).cancel();
+    unawaited(channel.stream.listen(null).cancel());
     await pumpEventQueue();
 
-    streamController.close();
+    unawaited(streamController.close());
     await pumpEventQueue();
 
     channel.sink.add(1);
     channel.sink.add(2);
     channel.sink.add(3);
-    channel.sink.close();
+    unawaited(channel.sink.close());
 
     // The sink should be ignoring events because the stream closed.
     sinkController.stream.listen(expectAsync1((_) {}, count: 0),

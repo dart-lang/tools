@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -143,13 +144,13 @@ void main() {
         "virtual channels", () async {
       // First close the default channel so we can test the new channel as the
       // last living virtual channel.
-      channel1.sink.close();
+      unawaited(channel1.sink.close());
 
       await channel2.stream.toList();
       expect(controller.local.sink.done, completes);
       expect(controller.foreign.sink.done, completes);
 
-      virtual1.sink.close();
+      unawaited(virtual1.sink.close());
     });
 
     test(
@@ -243,13 +244,13 @@ void main() {
         "virtual channels", () async {
       // First close the default channel so we can test the new channel as the
       // last living virtual channel.
-      channel2.sink.close();
+      unawaited(channel2.sink.close());
 
       await channel1.stream.toList();
       expect(controller.local.sink.done, completes);
       expect(controller.foreign.sink.done, completes);
 
-      virtual2.sink.close();
+      unawaited(virtual2.sink.close());
     });
 
     test(
@@ -287,7 +288,7 @@ void main() {
         "created", () async {
       virtual1 = channel1.virtualChannel();
 
-      virtual1.sink.close();
+      unawaited(virtual1.sink.close());
       await pumpEventQueue();
 
       expect(channel2.virtualChannel(virtual1.id).stream.toList(),
@@ -317,8 +318,8 @@ void main() {
     });
 
     test("closes, more virtual channels are created closed", () async {
-      channel2.sink.close();
-      virtual2.sink.close();
+      unawaited(channel2.sink.close());
+      unawaited(virtual2.sink.close());
 
       // Wait for the existing channels to emit done events.
       await channel1.stream.toList();
@@ -359,14 +360,14 @@ void main() {
       });
 
       test("after the stream closes, the sink ignores events", () async {
-        channel1.sink.close();
+        unawaited(channel1.sink.close());
 
         // Wait for the done event to be delivered.
         await channel2.stream.toList();
         channel2.sink.add(1);
         channel2.sink.add(2);
         channel2.sink.add(3);
-        channel2.sink.close();
+        unawaited(channel2.sink.close());
 
         // None of our channel.sink additions should make it to the other endpoint.
         channel1.stream.listen(expectAsync1((_) {}, count: 0));
@@ -375,28 +376,28 @@ void main() {
 
       test("canceling the stream's subscription has no effect on the sink",
           () async {
-        channel1.stream.listen(null).cancel();
+        unawaited(channel1.stream.listen(null).cancel());
         await pumpEventQueue();
 
         channel1.sink.add(1);
         channel1.sink.add(2);
         channel1.sink.add(3);
-        channel1.sink.close();
+        unawaited(channel1.sink.close());
         expect(channel2.stream.toList(), completion(equals([1, 2, 3])));
       });
 
       test("canceling the stream's subscription doesn't stop a done event",
           () async {
-        channel1.stream.listen(null).cancel();
+        unawaited(channel1.stream.listen(null).cancel());
         await pumpEventQueue();
 
-        channel2.sink.close();
+        unawaited(channel2.sink.close());
         await pumpEventQueue();
 
         channel1.sink.add(1);
         channel1.sink.add(2);
         channel1.sink.add(3);
-        channel1.sink.close();
+        unawaited(channel1.sink.close());
 
         // The sink should be ignoring events because the channel closed.
         channel2.stream.listen(expectAsync1((_) {}, count: 0));
@@ -426,14 +427,14 @@ void main() {
       });
 
       test("after the stream closes, the sink ignores events", () async {
-        virtual1.sink.close();
+        unawaited(virtual1.sink.close());
 
         // Wait for the done event to be delivered.
         await virtual2.stream.toList();
         virtual2.sink.add(1);
         virtual2.sink.add(2);
         virtual2.sink.add(3);
-        virtual2.sink.close();
+        unawaited(virtual2.sink.close());
 
         // None of our virtual.sink additions should make it to the other endpoint.
         virtual1.stream.listen(expectAsync1((_) {}, count: 0));
@@ -442,28 +443,28 @@ void main() {
 
       test("canceling the stream's subscription has no effect on the sink",
           () async {
-        virtual1.stream.listen(null).cancel();
+        unawaited(virtual1.stream.listen(null).cancel());
         await pumpEventQueue();
 
         virtual1.sink.add(1);
         virtual1.sink.add(2);
         virtual1.sink.add(3);
-        virtual1.sink.close();
+        unawaited(virtual1.sink.close());
         expect(virtual2.stream.toList(), completion(equals([1, 2, 3])));
       });
 
       test("canceling the stream's subscription doesn't stop a done event",
           () async {
-        virtual1.stream.listen(null).cancel();
+        unawaited(virtual1.stream.listen(null).cancel());
         await pumpEventQueue();
 
-        virtual2.sink.close();
+        unawaited(virtual2.sink.close());
         await pumpEventQueue();
 
         virtual1.sink.add(1);
         virtual1.sink.add(2);
         virtual1.sink.add(3);
-        virtual1.sink.close();
+        unawaited(virtual1.sink.close());
 
         // The sink should be ignoring events because the stream closed.
         virtual2.stream.listen(expectAsync1((_) {}, count: 0));

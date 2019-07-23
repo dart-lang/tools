@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -54,7 +55,7 @@ void main() {
   test(
       "closing the event sink before events are emitted causes the stream to "
       "close immediately", () async {
-    channel.sink.close();
+    unawaited(channel.sink.close());
     channel.stream.listen(expectAsync1((_) {}, count: 0),
         onError: expectAsync2((_, __) {}, count: 0),
         onDone: expectAsync0(() {}));
@@ -62,7 +63,7 @@ void main() {
     controller.local.sink.add(1);
     controller.local.sink.add(2);
     controller.local.sink.add(3);
-    controller.local.sink.close();
+    unawaited(controller.local.sink.close());
 
     await pumpEventQueue();
   });
