@@ -1,3 +1,8 @@
+## 0.13.2 - 2019-07-18
+
+ * Add new multi-flag option `--scope-output` which restricts coverage output
+   so that only scripts that start with the provided path are considered.
+
 ## 0.13.1 - 2019-07-18
 
  * Handle scenario where the VM returns empty coverage information for a range.
