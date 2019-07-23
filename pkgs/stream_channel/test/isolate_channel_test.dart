@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
@@ -82,7 +83,7 @@ void main() {
 
     test("cancelling the stream's subscription has no effect on the sink",
         () async {
-      channel.stream.listen(null).cancel();
+      unawaited(channel.stream.listen(null).cancel());
       await pumpEventQueue();
 
       channel.sink.add(1);
