@@ -63,7 +63,7 @@ Options _parseArgs(List<String> arguments) {
         abbr: 't', help: 'connect timeout in seconds')
     ..addMultiOption('scope-output',
         help: 'restrict coverage results so that only scripts that start with '
-            'the provided path are considered')
+            'the provided package path are considered')
     ..addFlag('wait-paused',
         abbr: 'w',
         defaultsTo: false,
