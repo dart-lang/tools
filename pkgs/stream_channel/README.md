@@ -7,10 +7,10 @@ protocol. For example, the [`test`][test] package re-uses its test suite
 communication protocol for both WebSocket connections to browser suites and
 Isolate connections to VM tests.
 
-[test]: https://pub.dartlang.org/packages/test
+[test]: https://pub.dev/packages/test
 
 This package also contains utilities for dealing with `StreamChannel`s and with
 two-way communications in general. For documentation of these utilities, see
 [the API docs][api].
 
-[api]: https://www.dartdocs.org/documentation/stream_channel/latest
+[api]: https://pub.dev/documentation/stream_channel/latest/
