@@ -1,7 +1,9 @@
 name: stream_channel
 version: 2.0.1-dev
 
-description: An abstraction for two-way communication channels.
+description: >-
+  An abstraction for two-way communication channels based on the Dart Stream
+  class.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/stream_channel
 
