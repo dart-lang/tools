@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Require Dart `2.2.0` or later.
+
 ## 2.0.0
 
 **Breaking changes**
