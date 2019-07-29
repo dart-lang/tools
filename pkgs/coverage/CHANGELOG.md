@@ -15,7 +15,7 @@
 
 ## 0.13.0 - 2019-07-10
 
- * BREAKING CHANGE: Skips collecting coverage for `dart:` libaries by default,
+ * BREAKING CHANGE: Skips collecting coverage for `dart:` libraries by default,
    which provides a significant performance boost. To restore the previous
    behaviour and collect coverage for these libraries, use the `--include-dart`
    flag.
