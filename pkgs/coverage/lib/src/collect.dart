@@ -21,7 +21,7 @@ const _retryInterval = Duration(milliseconds: 200);
 /// running Dart VM and must not be null.
 ///
 /// If [resume] is true, all isolates will be resumed once coverage collection
-/// is complate.
+/// is complete.
 ///
 /// If [waitPaused] is true, collection will not begin until all isolates are
 /// in the paused state.
