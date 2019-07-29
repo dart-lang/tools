@@ -1,3 +1,9 @@
+## 0.13.3
+
+ * Migrates implementation of VM service protocol library from
+   `package:vm_service_lib`, which is no longer maintained, to
+   `package:vm_service`, which is.
+
 ## 0.13.2 - 2019-07-18
 
  * Add new multi-flag option `--scope-output` which restricts coverage output
