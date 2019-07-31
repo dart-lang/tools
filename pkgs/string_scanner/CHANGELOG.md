@@ -88,10 +88,7 @@ than 1.0.0. For example, `string_scanner: ">=0.1.5 <2.0.0"`.
 
 ## 0.0.3
 
-* Make `StringScannerException` inherit from source_map's
-  [`SpanFormatException`][].
-
-[SpanFormatException]: (http://www.dartdocs.org/documentation/source_maps/0.9.2/index.html#source_maps/source_maps.SpanFormatException)
+* Make `StringScannerException` inherit from source_map's `SpanFormatException`.
 
 ## 0.0.2
 
@@ -111,4 +108,4 @@ than 1.0.0. For example, `string_scanner: ">=0.1.5 <2.0.0"`.
 * Add a `SpanScanner` subclass of `LineScanner` that exposes matched ranges as
   [source map][] `Span` objects.
 
-[source_map]: http://pub.dartlang.org/packages/source_maps
+[source_map]: https://pub.dev/packages/source_maps
