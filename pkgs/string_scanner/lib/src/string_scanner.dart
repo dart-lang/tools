@@ -9,11 +9,6 @@ import 'package:source_span/source_span.dart';
 import 'exception.dart';
 import 'utils.dart';
 
-/// When compiled to JS, forward slashes are always escaped in [RegExp.pattern].
-///
-/// See issue 17998.
-final _slashAutoEscape = RegExp("/").pattern == "\\/";
-
 /// A class that scans through a string using [Pattern]s.
 class StringScanner {
   /// The URL of the source of the string being scanned.
@@ -148,7 +143,6 @@ class StringScanner {
     if (name == null) {
       if (pattern is RegExp) {
         var source = pattern.pattern;
-        if (!_slashAutoEscape) source = source.replaceAll("/", "\\/");
         name = "/$source/";
       } else {
         name =
