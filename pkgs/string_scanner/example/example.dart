@@ -1,10 +1,14 @@
-This package exposes a `StringScanner` type that makes it easy to parse a string
-using a series of `Pattern`s. For example:
+// Copyright (c) 2019, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
 
-```dart
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:string_scanner/string_scanner.dart';
+
+void main(List<String> args) {
+  print(parseNumber(args.single));
+}
 
 num parseNumber(String source) {
   // Scan a number ("1", "1.5", "-3").
@@ -34,4 +38,3 @@ num parseNumber(String source) {
 
   return (negative ? -1 : 1) * number;
 }
-```
