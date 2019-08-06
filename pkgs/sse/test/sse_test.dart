@@ -41,11 +41,13 @@ void main() {
             listDirectories: true, defaultDocument: 'index.html'));
 
     server = await io.serve(cascade.handler, 'localhost', 0);
-    webdriver = await createDriver(desired: {
-      'chromeOptions': {
-        'args': ['--headless']
-      }
-    });
+    var capabilities = Capabilities.chrome
+      ..addAll({
+        Capabilities.chromeOptions: {
+          'args': ['--headless']
+        }
+      });
+    webdriver = await createDriver(desired: capabilities);
   });
 
   tearDown(() async {
