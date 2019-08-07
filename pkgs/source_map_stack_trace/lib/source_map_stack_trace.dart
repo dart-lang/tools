@@ -23,22 +23,22 @@ import 'package:stack_trace/stack_trace.dart';
 /// [packageRoot] is deprecated and shouldn't be used in new code. This throws
 /// an [ArgumentError] if [packageRoot] and [packageResolver] are both passed.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified: false,
+    {bool minified = false,
     SyncPackageResolver packageResolver,
     sdkRoot,
     @Deprecated("Use the packageResolver parameter instead.") packageRoot}) {
   if (packageRoot != null) {
     if (packageResolver != null) {
-      throw new ArgumentError(
+      throw ArgumentError(
           "packageResolver and packageRoot may not both be passed.");
     }
 
-    packageResolver = new SyncPackageResolver.root(packageRoot);
+    packageResolver = SyncPackageResolver.root(packageRoot);
   }
 
   if (stackTrace is Chain) {
-    return new Chain(stackTrace.traces.map((trace) {
-      return new Trace.from(mapStackTrace(sourceMap, trace,
+    return Chain(stackTrace.traces.map((trace) {
+      return Trace.from(mapStackTrace(sourceMap, trace,
           minified: minified,
           packageResolver: packageResolver,
           sdkRoot: sdkRoot));
@@ -46,14 +46,13 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
   }
 
   if (sdkRoot != null && sdkRoot is! String && sdkRoot is! Uri) {
-    throw new ArgumentError(
-        'sdkRoot must be a String or a Uri, was "$sdkRoot".');
+    throw ArgumentError('sdkRoot must be a String or a Uri, was "$sdkRoot".');
   }
 
   var sdkLib = sdkRoot == null ? null : "$sdkRoot/lib";
 
-  var trace = new Trace.from(stackTrace);
-  return new Trace(trace.frames.map((frame) {
+  var trace = Trace.from(stackTrace);
+  return Trace(trace.frames.map((frame) {
     // If there's no line information, there's no way to translate this frame.
     // We could return it as-is, but these lines are usually not useful anyways.
     if (frame.line == null) return null;
@@ -91,7 +90,7 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
       }
     }
 
-    return new Frame(
+    return Frame(
         Uri.parse(sourceUrl),
         span.start.line + 1,
         span.start.column + 1,
@@ -108,27 +107,26 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 String _prettifyMember(String member) {
   return member
       // Get rid of the noise that Firefox sometimes adds.
-      .replaceAll(new RegExp(r"/?<$"), "")
+      .replaceAll(RegExp(r"/?<$"), "")
       // Get rid of arity indicators and named arguments.
-      .replaceAll(new RegExp(r"\$\d+(\$[a-zA-Z_0-9]+)*$"), "")
+      .replaceAll(RegExp(r"\$\d+(\$[a-zA-Z_0-9]+)*$"), "")
       // Convert closures to <fn>.
       .replaceAllMapped(
-          new RegExp(r"(_+)closure\d*\.call$"),
+          RegExp(r"(_+)closure\d*\.call$"),
           // The number of underscores before "closure" indicates how nested it
           // is.
           (match) => ".<fn>" * match[1].length)
       // Get rid of explicitly-generated calls.
-      .replaceAll(new RegExp(r"\.call$"), "")
+      .replaceAll(RegExp(r"\.call$"), "")
       // Get rid of the top-level method prefix.
-      .replaceAll(new RegExp(r"^dart\."), "")
+      .replaceAll(RegExp(r"^dart\."), "")
       // Get rid of library namespaces.
-      .replaceAll(new RegExp(r"[a-zA-Z_0-9]+\$"), "")
+      .replaceAll(RegExp(r"[a-zA-Z_0-9]+\$"), "")
       // Get rid of the static method prefix. The class name also exists in the
       // invocation, so we're not getting rid of any information.
-      .replaceAll(new RegExp(r"^[a-zA-Z_0-9]+.(static|dart)."), "")
+      .replaceAll(RegExp(r"^[a-zA-Z_0-9]+.(static|dart)."), "")
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
-      .replaceAllMapped(
-          new RegExp(r"([a-zA-Z0-9]+)_"), (match) => match[1] + ".");
+      .replaceAllMapped(RegExp(r"([a-zA-Z0-9]+)_"), (match) => match[1] + ".");
 }
