@@ -11,18 +11,18 @@ import 'package:source_map_stack_trace/source_map_stack_trace.dart';
 import 'package:test/test.dart';
 
 /// A simple [Mapping] for tests that don't need anything special.
-final _simpleMapping = parseJson((new SourceMapBuilder()
+final _simpleMapping = parseJson((SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1, line: 1, column: 3, sourceUrl: "foo.dart"),
+          SourceMapSpan.identifier(
+              SourceLocation(1, line: 1, column: 3, sourceUrl: "foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(18, line: 15, column: 0), "\n" * 10)))
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(18, line: 15, column: 0), "\n" * 10)))
     .build("foo.dart.js.map"));
 
 void main() {
   test("maps a JS line and column to a Dart line and span", () {
-    var trace = new Trace.parse("foo.dart.js 10:11  foo");
+    var trace = Trace.parse("foo.dart.js 10:11  foo");
     var frame = _mapTrace(_simpleMapping, trace).frames.first;
     expect(frame.uri, equals(Uri.parse("foo.dart")));
 
@@ -33,7 +33,7 @@ void main() {
   });
 
   test("ignores JS frames without line info", () {
-    var trace = new Trace.parse("""
+    var trace = Trace.parse("""
 foo.dart.js 10:11  foo
 foo.dart.js        bar
 foo.dart.js 10:11  baz
@@ -46,7 +46,7 @@ foo.dart.js 10:11  baz
   });
 
   test("ignores JS frames without corresponding spans", () {
-    var trace = new Trace.parse("""
+    var trace = Trace.parse("""
 foo.dart.js 10:11  foo
 foo.dart.js 1:1   bar
 foo.dart.js 10:11  baz
@@ -60,37 +60,37 @@ foo.dart.js 10:11  baz
   });
 
   test("include frames from JS files not covered by the source map bundle", () {
-    var trace = new Trace.parse("""
+    var trace = Trace.parse("""
 foo.dart.js 10:11  foo
 jquery.js 10:1  foo
 bar.dart.js 10:11  foo
 """);
-    var builder = new SourceMapBuilder()
+    var builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1,
+          SourceMapSpan.identifier(
+              SourceLocation(1,
                   line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
     var sourceMapJson1 = builder.build("foo.dart.js.map");
     sourceMapJson1['file'] = "foo.dart.js";
 
-    builder = new SourceMapBuilder()
+    builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1,
+          SourceMapSpan.identifier(
+              SourceLocation(1,
                   line: 1, column: 3, sourceUrl: "packages/bar/bar.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
     var sourceMapJson2 = builder.build("bar.dart.js.map");
     sourceMapJson2['file'] = "bar.dart.js";
 
     var bundle = [sourceMapJson1, sourceMapJson2];
     var mapping = parseJsonExtended(bundle);
     var frames = _mapTrace(mapping, trace,
-            packageResolver: new SyncPackageResolver.root("packages/"))
+            packageResolver: SyncPackageResolver.root("packages/"))
         .frames;
 
     expect(frames.length, equals(3));
@@ -111,14 +111,14 @@ bar.dart.js 10:11  foo
   });
 
   test("falls back to column 0 for unlisted column", () {
-    var trace = new Trace.parse("foo.dart.js 10  foo");
-    var builder = new SourceMapBuilder()
+    var trace = Trace.parse("foo.dart.js 10  foo");
+    var builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1, line: 1, column: 3, sourceUrl: "foo.dart"),
+          SourceMapSpan.identifier(
+              SourceLocation(1, line: 1, column: 3, sourceUrl: "foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
     var frame = _mapTrace(mapping, trace).frames.first;
@@ -128,15 +128,15 @@ bar.dart.js 10:11  foo
   });
 
   test("uses package: URIs for frames within packageRoot", () {
-    var trace = new Trace.parse("foo.dart.js 10  foo");
-    var builder = new SourceMapBuilder()
+    var trace = Trace.parse("foo.dart.js 10  foo");
+    var builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1,
+          SourceMapSpan.identifier(
+              SourceLocation(1,
                   line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
     var frame =
@@ -147,19 +147,19 @@ bar.dart.js 10:11  foo
   });
 
   test("uses package: URIs for frames within packageResolver.packageRoot", () {
-    var trace = new Trace.parse("foo.dart.js 10  foo");
-    var builder = new SourceMapBuilder()
+    var trace = Trace.parse("foo.dart.js 10  foo");
+    var builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1,
+          SourceMapSpan.identifier(
+              SourceLocation(1,
                   line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
     var mappedTrace = _mapTrace(mapping, trace,
-        packageResolver: new SyncPackageResolver.root("packages/"));
+        packageResolver: SyncPackageResolver.root("packages/"));
     var frame = mappedTrace.frames.first;
     expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
     expect(frame.line, equals(2));
@@ -168,20 +168,20 @@ bar.dart.js 10:11  foo
 
   test("uses package: URIs for frames within a packageResolver.packageMap URL",
       () {
-    var trace = new Trace.parse("foo.dart.js 10  foo");
-    var builder = new SourceMapBuilder()
+    var trace = Trace.parse("foo.dart.js 10  foo");
+    var builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1,
+          SourceMapSpan.identifier(
+              SourceLocation(1,
                   line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
     var mappedTrace = _mapTrace(mapping, trace,
         packageResolver:
-            new SyncPackageResolver.config({"foo": Uri.parse("packages/foo")}));
+            SyncPackageResolver.config({"foo": Uri.parse("packages/foo")}));
     var frame = mappedTrace.frames.first;
     expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
     expect(frame.line, equals(2));
@@ -189,15 +189,15 @@ bar.dart.js 10:11  foo
   });
 
   test("uses dart: URIs for frames within sdkRoot", () {
-    var trace = new Trace.parse("foo.dart.js 10  foo");
-    var builder = new SourceMapBuilder()
+    var trace = Trace.parse("foo.dart.js 10  foo");
+    var builder = SourceMapBuilder()
       ..addSpan(
-          new SourceMapSpan.identifier(
-              new SourceLocation(1,
+          SourceMapSpan.identifier(
+              SourceLocation(1,
                   line: 1, column: 3, sourceUrl: "sdk/lib/async/foo.dart"),
               "qux"),
-          new SourceSpan(new SourceLocation(8, line: 5, column: 0),
-              new SourceLocation(12, line: 9, column: 1), "\n" * 4));
+          SourceSpan(SourceLocation(8, line: 5, column: 0),
+              SourceLocation(12, line: 9, column: 1), "\n" * 4));
 
     var mapping = parseJson(builder.build("foo.dart.js.map"));
     var frame = _mapTrace(mapping, trace, sdkRoot: "sdk/").frames.first;
@@ -207,9 +207,9 @@ bar.dart.js 10:11  foo
   });
 
   test("converts a stack chain", () {
-    var trace = new Chain([
-      new Trace.parse("foo.dart.js 10:11  foo"),
-      new Trace.parse("foo.dart.js 10:11  bar")
+    var trace = Chain([
+      Trace.parse("foo.dart.js 10:11  foo"),
+      Trace.parse("foo.dart.js 10:11  bar")
     ]);
     var traces = _mapChain(_simpleMapping, trace).traces;
 
@@ -282,11 +282,11 @@ bar.dart.js 10:11  foo
 /// Like [mapStackTrace], but is guaranteed to return a [Trace] so it can be
 /// inspected.
 Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified: false,
+    {bool minified = false,
     SyncPackageResolver packageResolver,
     sdkRoot,
     packageRoot}) {
-  return new Trace.from(mapStackTrace(sourceMap, stackTrace,
+  return Trace.from(mapStackTrace(sourceMap, stackTrace,
       minified: minified,
       packageResolver: packageResolver,
       sdkRoot: sdkRoot,
@@ -296,11 +296,11 @@ Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
 /// Like [mapStackTrace], but is guaranteed to return a [Chain] so it can be
 /// inspected.
 Chain _mapChain(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified: false,
+    {bool minified = false,
     SyncPackageResolver packageResolver,
     sdkRoot,
     packageRoot}) {
-  return new Chain.forTrace(mapStackTrace(sourceMap, stackTrace,
+  return Chain.forTrace(mapStackTrace(sourceMap, stackTrace,
       minified: minified,
       packageResolver: packageResolver,
       sdkRoot: sdkRoot,
@@ -309,6 +309,6 @@ Chain _mapChain(Mapping sourceMap, StackTrace stackTrace,
 
 /// Runs the mapper's prettification logic on [member] and returns the result.
 String _prettify(String member) {
-  var trace = new Trace([new Frame(Uri.parse("foo.dart.js"), 10, 11, member)]);
+  var trace = Trace([Frame(Uri.parse("foo.dart.js"), 10, 11, member)]);
   return _mapTrace(_simpleMapping, trace).frames.first.member;
 }
