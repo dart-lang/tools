@@ -1,5 +1,5 @@
 name: timing
-version: 0.1.1+3
+version: 0.1.1+2
 description: >-
   A simple package for tracking the performance of synchronous and asynchronous
   actions.
