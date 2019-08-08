@@ -1,3 +1,7 @@
+## 0.1.1+3
+
+- Support the latest version of `package:json_annotation`.
+
 ## 0.1.1+2
 
 - Require Dart 2.2 or later.
