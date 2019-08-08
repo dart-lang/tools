@@ -1,6 +1,7 @@
 ## 0.1.5
 
 - Update SDK requirement to `>=2.2.0 <3.0.0`.
+- Support the latest `package:json_annotation`.
 
 ## 0.1.4
 
