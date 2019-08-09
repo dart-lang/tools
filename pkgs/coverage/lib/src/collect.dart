@@ -25,6 +25,9 @@ const _retryInterval = Duration(milliseconds: 200);
 ///
 /// If [waitPaused] is true, collection will not begin until all isolates are
 /// in the paused state.
+///
+/// If [includeDart] is true, code coverage for core `dart:*` libraries will be
+/// collected.
 Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String> scopedOutput,
     {Duration timeout}) async {
