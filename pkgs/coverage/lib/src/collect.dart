@@ -28,9 +28,13 @@ const _retryInterval = Duration(milliseconds: 200);
 ///
 /// If [includeDart] is true, code coverage for core `dart:*` libraries will be
 /// collected.
+///
+/// If [scopedOutput] is non-empty, coverage will be restricted so that only
+/// scripts that start with any of the provided paths are considered.
 Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String> scopedOutput,
     {Duration timeout}) async {
+  scopedOutput ??= Set<String>();
   if (serviceUri == null) throw ArgumentError('serviceUri must not be null');
 
   // Create websocket URI. Handle any trailing slashes.
