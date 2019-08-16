@@ -116,6 +116,82 @@ main() {
         () => doParse(singleRelativeSample * 2, base), throwsFormatException);
   });
 
+  test("disallow default package", () {
+    expect(() => doParse(":foo", base, allowDefaultPackage: false),
+        throwsFormatException);
+  });
+
+  test("allow default package", () {
+    var packages = doParse(":foo", base, allowDefaultPackage: true);
+    expect(packages.defaultPackageName, "foo");
+  });
+
+  test("allow default package name with dot", () {
+    var packages = doParse(":foo.bar", base, allowDefaultPackage: true);
+    expect(packages.defaultPackageName, "foo.bar");
+  });
+
+  test("not two default packages", () {
+    expect(() => doParse(":foo\n:bar", base, allowDefaultPackage: true),
+        throwsFormatException);
+  });
+
+  test("default package invalid package name", () {
+    // Not a valid *package name*.
+    expect(() => doParse(":foo/bar", base, allowDefaultPackage: true),
+        throwsFormatException);
+  });
+
+  group("metadata", () {
+    var packages = doParse(
+        ":foo\n"
+        "foo:foo#metafoo=1\n"
+        "bar:bar#metabar=2\n"
+        "baz:baz\n"
+        "qux:qux#metaqux1=3&metaqux2=4\n",
+        base,
+        allowDefaultPackage: true);
+    test("non-existing", () {
+      // non-package name.
+      expect(packages.packageMetadata("///", "f"), null);
+      expect(packages.packageMetadata("", "f"), null);
+      // unconfigured package name.
+      expect(packages.packageMetadata("absent", "f"), null);
+      // package name without that metadata
+      expect(packages.packageMetadata("foo", "notfoo"), null);
+    });
+    test("lookup", () {
+      expect(packages.packageMetadata("foo", "metafoo"), "1");
+      expect(packages.packageMetadata("bar", "metabar"), "2");
+      expect(packages.packageMetadata("qux", "metaqux1"), "3");
+      expect(packages.packageMetadata("qux", "metaqux2"), "4");
+    });
+    test("by library URI", () {
+      expect(
+          packages.libraryMetadata(
+              Uri.parse("package:foo/index.dart"), "metafoo"),
+          "1");
+      expect(
+          packages.libraryMetadata(
+              Uri.parse("package:bar/index.dart"), "metabar"),
+          "2");
+      expect(
+          packages.libraryMetadata(
+              Uri.parse("package:qux/index.dart"), "metaqux1"),
+          "3");
+      expect(
+          packages.libraryMetadata(
+              Uri.parse("package:qux/index.dart"), "metaqux2"),
+          "4");
+    });
+    test("by default package", () {
+      expect(
+          packages.libraryMetadata(
+              Uri.parse("file:///whatever.dart"), "metafoo"),
+          "1");
+    });
+  });
+
   for (String invalidSample in invalid) {
     test("invalid '$invalidSample'", () {
       var result;
@@ -130,8 +206,10 @@ main() {
   }
 }
 
-Packages doParse(String sample, Uri baseUri) {
-  Map<String, Uri> map = parse(sample.codeUnits, baseUri);
+Packages doParse(String sample, Uri baseUri,
+    {bool allowDefaultPackage = false}) {
+  Map<String, Uri> map = parse(sample.codeUnits, baseUri,
+      allowDefaultPackage: allowDefaultPackage);
   return new MapPackages(map);
 }
 

@@ -59,22 +59,22 @@ abstract class PackageContext {
   static PackageContext findAll(Directory directory,
       {Packages root: Packages.noPackages}) {
     if (!directory.existsSync()) {
-      throw new ArgumentError("Directory not found: $directory");
+      throw ArgumentError("Directory not found: $directory");
     }
     var contexts = <PackageContext>[];
     void findRoots(Directory directory) {
       Packages packages;
       List<PackageContext> oldContexts;
-      File packagesFile = new File(path.join(directory.path, ".packages"));
+      File packagesFile = File(path.join(directory.path, ".packages"));
       if (packagesFile.existsSync()) {
         packages = _loadPackagesFile(packagesFile);
         oldContexts = contexts;
         contexts = [];
       } else {
         Directory packagesDir =
-            new Directory(path.join(directory.path, "packages"));
+            Directory(path.join(directory.path, "packages"));
         if (packagesDir.existsSync()) {
-          packages = new FilePackagesDirectoryPackages(packagesDir);
+          packages = FilePackagesDirectoryPackages(packagesDir);
           oldContexts = contexts;
           contexts = [];
         }
@@ -87,7 +87,7 @@ abstract class PackageContext {
         }
       }
       if (packages != null) {
-        oldContexts.add(new _PackageContext(directory, packages, contexts));
+        oldContexts.add(_PackageContext(directory, packages, contexts));
         contexts = oldContexts;
       }
     }
@@ -97,7 +97,7 @@ abstract class PackageContext {
     if (contexts.length == 1 && contexts[0].directory == directory) {
       return contexts[0];
     }
-    return new _PackageContext(directory, root, contexts);
+    return _PackageContext(directory, root, contexts);
   }
 }
 
@@ -106,10 +106,10 @@ class _PackageContext implements PackageContext {
   final Packages packages;
   final List<PackageContext> children;
   _PackageContext(this.directory, this.packages, List<PackageContext> children)
-      : children = new List<PackageContext>.unmodifiable(children);
+      : children = List<PackageContext>.unmodifiable(children);
 
   Map<Directory, Packages> asMap() {
-    var result = new HashMap<Directory, Packages>();
+    var result = HashMap<Directory, Packages>();
     recurse(_PackageContext current) {
       result[current.directory] = current.packages;
       for (var child in current.children) {
@@ -124,7 +124,7 @@ class _PackageContext implements PackageContext {
   PackageContext operator [](Directory directory) {
     String path = directory.path;
     if (!path.startsWith(this.directory.path)) {
-      throw new ArgumentError("Not inside $path: $directory");
+      throw ArgumentError("Not inside $path: $directory");
     }
     _PackageContext current = this;
     // The current path is know to agree with directory until deltaIndex.
@@ -160,8 +160,8 @@ class _PackageContext implements PackageContext {
 }
 
 Packages _loadPackagesFile(File file) {
-  var uri = new Uri.file(file.path);
+  var uri = Uri.file(file.path);
   var bytes = file.readAsBytesSync();
   var map = pkgfile.parse(bytes, uri);
-  return new MapPackages(map);
+  return MapPackages(map);
 }

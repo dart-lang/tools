@@ -1,3 +1,10 @@
+## 1.1.0
+
+- Allow parsing files with default-package entries and metadata.
+  A default-package entry has an empty key and a valid package name
+  as value.
+  Metadata is attached as fragments to base URIs.
+
 ## 1.0.5
 
 - Fix usage of SDK constants.

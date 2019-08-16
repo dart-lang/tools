@@ -45,6 +45,32 @@ abstract class Packages {
   /// and getting `packages` from such a `Packages` object will throw.
   Iterable<String> get packages;
 
+  /// Retrieve metadata associated with a package.
+  ///
+  /// Metadata have string keys and values, and are looked up by key.
+  ///
+  /// Returns `null` if the argument is not a valid package name,
+  /// or if the package is not one of the packages configured by
+  /// this packages object, or if the package does not have associated
+  /// metadata with the provided [key].
+  ///
+  /// Not all `Packages` objects can support metadata.
+  /// Those will always return `null`.
+  String packageMetadata(String packageName, String key);
+
+  /// Retrieve metadata associated with a library.
+  ///
+  /// If [libraryUri] is a `package:` URI, the returned value
+  /// is the same that would be returned by [packageMetadata] with
+  /// the package's name and the same key.
+  ///
+  /// If [libraryUri] is not a `package:` URI, and this [Packages]
+  /// object has a [defaultPackageName], then the [key] is looked
+  /// up on the default package instead.
+  ///
+  /// Otherwise the result is `null`.
+  String libraryMetadata(Uri libraryUri, String key);
+
   /// Return the names-to-base-URI mapping of the available packages.
   ///
   /// Returns a map from package name to a base URI.
@@ -55,4 +81,14 @@ abstract class Packages {
   /// Some `Packages` objects are unable to find the package names,
   /// and calling `asMap` on such a `Packages` object will throw.
   Map<String, Uri> asMap();
+
+  /// The name of the "default package".
+  ///
+  /// A default package is a package that *non-package* libraries
+  /// may be considered part of for some purposes.
+  ///
+  /// The value is `null` if there is no default package.
+  /// Not all implementations of [Packages] supports a default package,
+  /// and will always have a `null` value for those.
+  String get defaultPackageName;
 }

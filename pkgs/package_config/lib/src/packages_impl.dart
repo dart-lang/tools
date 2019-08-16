@@ -26,6 +26,12 @@ class NoPackages implements Packages {
   Iterable<String> get packages => new Iterable<String>.empty();
 
   Map<String, Uri> asMap() => const <String, Uri>{};
+
+  String get defaultPackageName => null;
+
+  String packageMetadata(String packageName, String key) => null;
+
+  String libraryMetadata(Uri libraryUri, String key) => null;
 }
 
 /// Base class for [Packages] implementations.
@@ -51,6 +57,12 @@ abstract class PackagesBase implements Packages {
   /// Returns `null` if no package exists with that name, and that can be
   /// determined.
   Uri getBase(String packageName);
+
+  String get defaultPackageName => null;
+
+  String packageMetadata(String packageName, String key) => null;
+
+  String libraryMetadata(Uri libraryUri, String key) => null;
 }
 
 /// A [Packages] implementation based on an existing map.
@@ -58,11 +70,34 @@ class MapPackages extends PackagesBase {
   final Map<String, Uri> _mapping;
   MapPackages(this._mapping);
 
-  Uri getBase(String packageName) => _mapping[packageName];
+  Uri getBase(String packageName) =>
+      packageName.isEmpty ? null : _mapping[packageName];
 
   Iterable<String> get packages => _mapping.keys;
 
   Map<String, Uri> asMap() => new UnmodifiableMapView<String, Uri>(_mapping);
+
+  String get defaultPackageName => _mapping[""]?.toString();
+
+  String packageMetadata(String packageName, String key) {
+    if (packageName.isEmpty) return null;
+    Uri uri = _mapping[packageName];
+    if (uri == null || !uri.hasFragment) return null;
+    // This can be optimized, either by caching the map or by
+    // parsing incrementally instead of parsing the entire fragment.
+    return Uri.splitQueryString(uri.fragment)[key];
+  }
+
+  String libraryMetadata(Uri libraryUri, String key) {
+    if (libraryUri.isScheme("package")) {
+      return packageMetadata(libraryUri.pathSegments.first, key);
+    }
+    var defaultPackageNameUri = _mapping[""];
+    if (defaultPackageNameUri != null) {
+      return packageMetadata(defaultPackageNameUri.toString(), key);
+    }
+    return null;
+  }
 }
 
 /// A [Packages] implementation based on a remote (e.g., HTTP) directory.

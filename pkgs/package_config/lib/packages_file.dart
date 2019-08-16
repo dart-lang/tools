@@ -22,8 +22,15 @@ import "src/util.dart" show isValidPackageName;
 /// If the content was read from a file, `baseLocation` should be the
 /// location of that file.
 ///
+/// If [allowDefaultPackage] is set to true, an entry with an empty package name
+/// is accepted. This entry does not correspond to a package, but instead
+/// represents a *default package* which non-package libraries may be considered
+/// part of in some cases. The value of that entry must be a valid package name.
+///
 /// Returns a simple mapping from package name to package location.
-Map<String, Uri> parse(List<int> source, Uri baseLocation) {
+/// If default package is allowed, the map maps the empty string to the default package's name.
+Map<String, Uri> parse(List<int> source, Uri baseLocation,
+    {bool allowDefaultPackage = false}) {
   int index = 0;
   Map<String, Uri> result = <String, Uri>{};
   while (index < source.length) {
@@ -36,7 +43,10 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation) {
       continue;
     }
     if (char == $colon) {
-      throw new FormatException("Missing package name", source, index - 1);
+      if (!allowDefaultPackage) {
+        throw FormatException("Missing package name", source, index - 1);
+      }
+      separatorIndex = index - 1;
     }
     isComment = char == $hash;
     while (index < source.length) {
@@ -50,22 +60,36 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation) {
     }
     if (isComment) continue;
     if (separatorIndex < 0) {
-      throw new FormatException("No ':' on line", source, index - 1);
+      throw FormatException("No ':' on line", source, index - 1);
     }
     var packageName = new String.fromCharCodes(source, start, separatorIndex);
-    if (!isValidPackageName(packageName)) {
-      throw new FormatException("Not a valid package name", packageName, 0);
+    if (packageName.isEmpty
+        ? !allowDefaultPackage
+        : !isValidPackageName(packageName)) {
+      throw FormatException("Not a valid package name", packageName, 0);
     }
-    var packageUri = new String.fromCharCodes(source, separatorIndex + 1, end);
-    var packageLocation = Uri.parse(packageUri);
-    packageLocation = baseLocation.resolveUri(packageLocation);
-    if (!packageLocation.path.endsWith('/')) {
-      packageLocation =
-          packageLocation.replace(path: packageLocation.path + "/");
+    var packageValue =
+        new String.fromCharCodes(source, separatorIndex + 1, end);
+    Uri packageLocation;
+    if (packageName.isEmpty) {
+      if (!isValidPackageName(packageValue)) {
+        throw FormatException(
+            "Default package entry value is not a valid package name");
+      }
+      packageLocation = Uri(path: packageValue);
+    } else {
+      packageLocation = baseLocation.resolve(packageValue);
+      if (!packageLocation.path.endsWith('/')) {
+        packageLocation =
+            packageLocation.replace(path: packageLocation.path + "/");
+      }
     }
     if (result.containsKey(packageName)) {
-      throw new FormatException(
-          "Same package name occured twice.", source, start);
+      if (packageName.isEmpty) {
+        throw FormatException(
+            "More than one default package entry", source, start);
+      }
+      throw FormatException("Same package name occured twice", source, start);
     }
     result[packageName] = packageLocation;
   }
