@@ -1,4 +1,4 @@
-## unreleased
+## 0.1.3
 
 - widen the version constraint on `package:webkit_inspection_protocol`
 
