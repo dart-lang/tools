@@ -40,6 +40,7 @@ class SseClient extends StreamChannelMixin<String> {
     _eventSource.addEventListener('message', _onIncomingMessage);
     _eventSource.addEventListener('control', _onIncomingControlMessage);
     _eventSource.onError.listen(_incomingController.addError);
+    _startPostingMessages();
   }
 
   Stream<Event> get onOpen => _eventSource.onOpen;
@@ -83,12 +84,21 @@ class SseClient extends StreamChannelMixin<String> {
     close();
   }
 
+  final _messages = StreamController<dynamic>();
+
   void _onOutgoingMessage(dynamic message) async {
-    var encoded = jsonEncode(message);
-    try {
-      await _client.post(_serverUrl, body: encoded);
-    } catch (e) {
-      _logger.warning('Unable to encode outgoing message: $e');
+    _messages.add(message);
+  }
+
+  void _startPostingMessages() async {
+    await for (var message in _messages.stream) {
+      try {
+        await _client.post(_serverUrl, body: jsonEncode(message));
+      } on JsonUnsupportedObjectError catch (e) {
+        _logger.warning('Unable to encode outgoing message: $e');
+      } on ArgumentError catch (e) {
+        _logger.warning('Invalid argument: $e');
+      }
     }
   }
 }
