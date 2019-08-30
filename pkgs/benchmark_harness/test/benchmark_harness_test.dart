@@ -4,14 +4,22 @@
 
 library benchmark_harness_test;
 
+import 'dart:async';
+
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('benchmark_harness', () {
     test('run is called', () {
-      var benchmark = MockBenchmark();
-      var micros = benchmark.measure();
+      final benchmark = MockBenchmark();
+      final micros = benchmark.measure();
+      expect(micros, isPositive);
+      expect(benchmark.runCount, isPositive);
+    });
+    test('async run is awaited', () async {
+      final benchmark = MockAsyncBenchmark();
+      final micros = await benchmark.measure();
       expect(micros, isPositive);
       expect(benchmark.runCount, isPositive);
     });
@@ -25,6 +33,17 @@ class MockBenchmark extends BenchmarkBase {
 
   @override
   void run() {
+    runCount++;
+  }
+}
+
+class MockAsyncBenchmark extends AsyncBenchmarkBase {
+  int runCount = 0;
+  MockAsyncBenchmark() : super('mock benchmark');
+
+  @override
+  Future<void> run() async {
+    await Future<void>.delayed(Duration.zero);
     runCount++;
   }
 }
