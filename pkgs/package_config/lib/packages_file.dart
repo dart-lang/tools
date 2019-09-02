@@ -162,10 +162,10 @@ void write(StringSink output, Map<String, Uri> packageMapping,
     if (baseUri != null) {
       uri = _relativize(uri, baseUri);
     }
-    output.write(uri);
     if (!uri.path.endsWith('/')) {
-      output.write('/');
+      uri = uri.replace(path: uri.path + '/');
     }
+    output.write(uri);
     output.writeln();
   });
 }
