@@ -4,6 +4,7 @@
 
 library package_config.parse_write_test;
 
+import "dart:convert" show utf8;
 import "package:package_config/packages_file.dart";
 import "package:test/test.dart";
 
@@ -31,6 +32,40 @@ main() {
             var content = writeToString(map, baseUri: packagesFile).codeUnits;
             var resultMap = parse(content, packagesFile);
             expect(resultMap, map);
+          });
+
+          test("write with defaultPackageName", () {
+            var content = writeToString(
+              {'': Uri.parse('my_pkg')}..addAll(map),
+              allowDefaultPackage: true,
+            ).codeUnits;
+            var resultMap = parse(
+              content,
+              packagesFile,
+              allowDefaultPackage: true,
+            );
+            expect(resultMap[''].toString(), 'my_pkg');
+            expect(
+              resultMap,
+              {'': Uri.parse('my_pkg')}..addAll(map),
+            );
+          });
+
+          test("write with defaultPackageName (utf8)", () {
+            var content = utf8.encode(writeToString(
+              {'': Uri.parse('my_pkg')}..addAll(map),
+              allowDefaultPackage: true,
+            ));
+            var resultMap = parse(
+              content,
+              packagesFile,
+              allowDefaultPackage: true,
+            );
+            expect(resultMap[''].toString(), 'my_pkg');
+            expect(
+              resultMap,
+              {'': Uri.parse('my_pkg')}..addAll(map),
+            );
           });
         });
       }
@@ -82,8 +117,16 @@ main() {
   });
 }
 
-String writeToString(Map<String, Uri> map, {Uri baseUri, String comment}) {
+String writeToString(
+  Map<String, Uri> map, {
+  Uri baseUri,
+  String comment,
+  bool allowDefaultPackage = false,
+}) {
   var buffer = new StringBuffer();
-  write(buffer, map, baseUri: baseUri, comment: comment);
+  write(buffer, map,
+      baseUri: baseUri,
+      comment: comment,
+      allowDefaultPackage: allowDefaultPackage);
   return buffer.toString();
 }

@@ -1,3 +1,6 @@
+## 1.2.0
+ - Added support for writing default-package entries.
+
 ## 1.1.0
 
 - Allow parsing files with default-package entries and metadata.

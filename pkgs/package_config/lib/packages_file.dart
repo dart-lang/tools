@@ -106,10 +106,15 @@ Map<String, Uri> parse(List<int> source, Uri baseLocation,
 /// If [baseUri] is provided, package locations will be made relative
 /// to the base URI, if possible, before writing.
 ///
+/// If [allowDefaultPackage] is `true`, the [packageMapping] may contain an
+/// empty string mapping to the _default package name_.
+///
 /// All the keys of [packageMapping] must be valid package names,
 /// and the values must be URIs that do not have the `package:` scheme.
 void write(StringSink output, Map<String, Uri> packageMapping,
-    {Uri baseUri, String comment}) {
+    {Uri baseUri, String comment, bool allowDefaultPackage = false}) {
+  ArgumentError.checkNotNull(allowDefaultPackage, 'allowDefaultPackage');
+
   if (baseUri != null && !baseUri.isAbsolute) {
     throw new ArgumentError.value(baseUri, "baseUri", "Must be absolute");
   }
@@ -128,6 +133,21 @@ void write(StringSink output, Map<String, Uri> packageMapping,
   }
 
   packageMapping.forEach((String packageName, Uri uri) {
+    // If [packageName] is empty then [uri] is the _default package name_.
+    if (allowDefaultPackage && packageName.isEmpty) {
+      final defaultPackageName = uri.toString();
+      if (!isValidPackageName(defaultPackageName)) {
+        throw ArgumentError.value(
+          defaultPackageName,
+          'defaultPackageName',
+          '"$defaultPackageName" is not a valid package name',
+        );
+      }
+      output.write(':');
+      output.write(defaultPackageName);
+      output.writeln();
+      return;
+    }
     // Validate packageName.
     if (!isValidPackageName(packageName)) {
       throw new ArgumentError('"$packageName" is not a valid package name');
