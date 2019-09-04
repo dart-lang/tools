@@ -1,3 +1,7 @@
+## 2.0.3
+
+- Fix an issue where messages could come out of order.
+
 ## 2.0.2
 
 - Support the latest `package:stream_channel`.
