@@ -113,11 +113,11 @@ class Chrome {
   /// Starts Chrome with the given arguments.
   ///
   /// Each url in [urls] will be loaded in a separate tab.
-  static Future<void> start(
+  static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
   }) async {
-    await _startProcess(urls, args: args);
+    return await _startProcess(urls, args: args);
   }
 
   static Future<Process> _startProcess(
