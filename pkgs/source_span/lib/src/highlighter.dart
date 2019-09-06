@@ -181,7 +181,7 @@ class Highlighter {
         // In a purely mathematical world, floor(log10(n)) would give the number of
         // digits in n, but floating point errors render that unreliable in
         // practice.
-        _paddingBeforeSidebar = _span.end.line.toString().length + 1;
+        _paddingBeforeSidebar = (_span.end.line + 1).toString().length + 1;
 
   /// Returns the highlighted span text.
   ///
