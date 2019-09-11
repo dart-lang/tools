@@ -1,3 +1,7 @@
+## 2.1.0
+
+- Support Firefox.
+
 ## 2.0.3
 
 - Fix an issue where messages could come out of order.

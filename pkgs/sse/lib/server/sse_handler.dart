@@ -12,12 +12,12 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
 String _sseHeaders(String origin) => 'HTTP/1.1 200 OK\r\n'
-    'Content-Type: text/event-stream\r\n'
-    'Cache-Control: no-cache\r\n'
-    'Connection: keep-alive\r\n'
-    'Access-Control-Allow-Credentials: true\r\n'
-    'Access-Control-Allow-Origin: $origin\r\n'
-    '\r\n';
+    'Content-Type: text/event-stream\n\n'
+    'Cache-Control: no-cache\n\n'
+    'Connection: keep-alive\n\n'
+    'Access-Control-Allow-Credentials: true\n\n'
+    'Access-Control-Allow-Origin: $origin\n\n'
+    '\n\n';
 
 /// A bi-directional SSE connection between server and browser.
 class SseConnection extends StreamChannelMixin<String> {
@@ -140,7 +140,12 @@ class SseHandler {
     }
     return shelf.Response.ok('', headers: {
       'access-control-allow-credentials': 'true',
-      'access-control-allow-origin': req.headers['origin']
+      'access-control-allow-origin': _originFor(req),
     });
   }
+
+  String _originFor(shelf.Request req) =>
+      // Firefox does not set header "origin".
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1508661
+      req.headers['origin'] ?? req.headers['host'];
 }
