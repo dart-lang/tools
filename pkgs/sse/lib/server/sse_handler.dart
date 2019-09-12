@@ -11,13 +11,14 @@ import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
+// RFC 2616 requires carriage return delimiters.
 String _sseHeaders(String origin) => 'HTTP/1.1 200 OK\r\n'
-    'Content-Type: text/event-stream\n\n'
-    'Cache-Control: no-cache\n\n'
-    'Connection: keep-alive\n\n'
-    'Access-Control-Allow-Credentials: true\n\n'
-    'Access-Control-Allow-Origin: $origin\n\n'
-    '\n\n';
+    'Content-Type: text/event-stream\r\n'
+    'Cache-Control: no-cache\r\n'
+    'Connection: keep-alive\r\n'
+    'Access-Control-Allow-Credentials: true\r\n'
+    'Access-Control-Allow-Origin: $origin\r\n'
+    '\r\n\r\n';
 
 /// A bi-directional SSE connection between server and browser.
 class SseConnection extends StreamChannelMixin<String> {
