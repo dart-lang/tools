@@ -1,3 +1,7 @@
+## 0.1.22
+
+* Require protobuf 0.14.0.
+
 ## 0.1.21
 
 * Make `TestStdinAsync` behave like a `Stream<Uint8List>`
