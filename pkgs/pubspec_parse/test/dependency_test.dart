@@ -47,20 +47,20 @@ line 4, column 10: Unsupported value for "dep". Not a valid dependency value.
       _expectThrows(
         {'path': 'a', 'git': 'b'},
         r'''
-line 5, column 12: Unsupported value for "path". A dependency may only have one source.
+line 6, column 11: Unsupported value for "git". A dependency may only have one source.
   ╷
-5 │    "path": "a",
-  │            ^^^
+6 │    "git": "b"
+  │           ^^^
   ╵''',
       );
     });
 
     test('map with unsupported keys', () {
       _expectThrows({'bob': 'a', 'jones': 'b'}, r'''
-line 6, column 4: Unrecognized keys: [jones]; supported keys: [sdk, git, path, hosted]
+line 5, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hosted]
   ╷
-6 │    "jones": "b"
-  │    ^^^^^^^
+5 │    "bob": "a",
+  │    ^^^^^
   ╵''');
     });
   });
