@@ -26,7 +26,7 @@ for more details.
 #### Collecting coverage from the VM
 
 ```
-dart --pause-isolates-on-exit --enable-vm-service=NNNN script.dart
+dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN script.dart
 pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates
 ```
 
