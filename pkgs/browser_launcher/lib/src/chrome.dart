@@ -86,6 +86,7 @@ class Chrome {
       '--no-default-browser-check',
       '--disable-default-apps',
       '--disable-translate',
+      '--start-maximized',
     ];
     if (headless) {
       args.add('--headless');

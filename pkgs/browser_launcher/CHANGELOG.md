@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Start Chrome maximized.
+
 ## 0.1.3
 
 - widen the version constraint on `package:webkit_inspection_protocol`
