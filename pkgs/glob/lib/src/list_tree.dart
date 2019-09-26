@@ -3,13 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 
 import 'ast.dart';
+import 'io.dart';
 import 'utils.dart';
 
 /// The errno for a file or directory not existing on Mac and Linux.

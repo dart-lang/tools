@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
 import 'src/ast.dart';
+import 'src/io.dart';
 import 'src/list_tree.dart';
 import 'src/parser.dart';
 import 'src/utils.dart';

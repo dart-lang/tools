@@ -1,3 +1,7 @@
+## 1.2.0
+
+* Support running on Node.js.
+
 ## 1.1.7
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.
