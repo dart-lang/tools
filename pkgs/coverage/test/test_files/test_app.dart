@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:developer';
 import 'dart:isolate';
 
 // explicitly using a package import to validate hitmap coverage of packages
@@ -24,6 +25,10 @@ Future<Null> main() async {
 
   final Isolate isolate =
       await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);
+  await Service.controlWebServer(enable: true);
+  final isolateID = Service.getIsolateID(isolate);
+  print('isolateId = $isolateID');
+
   isolate.addOnExitListener(port.sendPort);
   isolate.resume(isolate.pauseCapability);
 
