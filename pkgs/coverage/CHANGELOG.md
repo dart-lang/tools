@@ -1,3 +1,7 @@
+## 0.13.4
+ * Added a new named argument to `collect` for filtering the
+   coverage results by a set of VM isolate IDs.
+
 ## 0.13.3
 
  * Migrates implementation of VM service protocol library from

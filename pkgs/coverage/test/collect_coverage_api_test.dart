@@ -68,10 +68,31 @@ void main() {
       expect(uri.path.startsWith('coverage'), isTrue);
     }
   });
+
+  test('collect_coverage_api with isolateIds', () async {
+    final Map<String, dynamic> json = await _collectCoverage(isolateIds: true);
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
+    expect(json, containsPair('type', 'CodeCoverage'));
+
+    final List coverage = json['coverage'];
+    expect(coverage, isNotEmpty);
+
+    final Map<String, dynamic> testAppCoverage =
+        _getScriptCoverage(coverage, 'test_app.dart');
+    List<int> hits = testAppCoverage['hits'];
+    _expectHitCount(hits, 44, 0);
+    _expectHitCount(hits, 48, 0);
+
+    final Map<String, dynamic> isolateCoverage =
+        _getScriptCoverage(coverage, 'test_app_isolate.dart');
+    hits = isolateCoverage['hits'];
+    _expectHitCount(hits, 9, 1);
+    _expectHitCount(hits, 16, 1);
+  });
 }
 
 Future<Map<String, dynamic>> _collectCoverage(
-    {Set<String> scopedOutput}) async {
+    {Set<String> scopedOutput, bool isolateIds = false}) async {
   scopedOutput ??= Set<String>();
   final openPort = await getOpenPort();
 
@@ -80,6 +101,7 @@ Future<Map<String, dynamic>> _collectCoverage(
 
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
+  final isolateIdCompleter = Completer<String>();
   sampleProcess.stdout
       .transform(utf8.decoder)
       .transform(LineSplitter())
@@ -90,8 +112,40 @@ Future<Map<String, dynamic>> _collectCoverage(
         serviceUriCompleter.complete(serviceUri);
       }
     }
+    if (line.contains('isolateId = ')) {
+      isolateIdCompleter.complete(line.split(' = ')[1]);
+    }
   });
-  final Uri serviceUri = await serviceUriCompleter.future;
 
-  return collect(serviceUri, true, true, false, scopedOutput, timeout: timeout);
+  final Uri serviceUri = await serviceUriCompleter.future;
+  final String isolateId = await isolateIdCompleter.future;
+  final Set<String> isolateIdSet = isolateIds ? Set.of([isolateId]) : null;
+
+  return collect(serviceUri, true, true, false, scopedOutput,
+      timeout: timeout, isolateIds: isolateIdSet);
+}
+
+// Returns the first coverage hitmap for the script with with the specified
+// script filename, ignoring leading path.
+Map<String, dynamic> _getScriptCoverage(
+    List<Map<String, dynamic>> coverage, String filename) {
+  for (Map<String, dynamic> isolateCoverage in coverage) {
+    final Uri script = Uri.parse(isolateCoverage['script']['uri']);
+    if (script.pathSegments.last == filename) {
+      return isolateCoverage;
+    }
+  }
+  return null;
+}
+
+/// Tests that the specified hitmap has the specified hit count for the
+/// specified line.
+void _expectHitCount(List<int> hits, int line, int hitCount) {
+  final int hitIndex = hits.indexOf(line);
+  if (hitIndex < 0) {
+    fail('No hit count for line $line');
+  }
+  final int actual = hits[hitIndex + 1];
+  expect(actual, equals(hitCount),
+      reason: 'Expected line $line to have $hitCount hits, but found $actual.');
 }
