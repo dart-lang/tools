@@ -1,9 +1,7 @@
-## 0.13.4
- * Added a new named argument to `collect` for filtering the
-   coverage results by a set of VM isolate IDs.
+## 0.13.3 - 2019-09-27
 
-## 0.13.3
-
+ * Adds a new named argument to `collect` to filter coverage results by a set
+   of VM isolate IDs.
  * Migrates implementation of VM service protocol library from
    `package:vm_service_lib`, which is no longer maintained, to
    `package:vm_service`, which is.
