@@ -27,6 +27,11 @@ const FailingTest failingTest = const FailingTest();
 const _ReflectiveTest reflectiveTest = const _ReflectiveTest();
 
 /**
+ * A marker annotation used to annotate test methods that should be skipped.
+ */
+const SkippedTest skippedTest = const SkippedTest();
+
+/**
  * A marker annotation used to annotate "solo" groups and tests.
  */
 const _SoloTest soloTest = const _SoloTest();
@@ -115,14 +120,18 @@ void defineReflectiveTests(Type type) {
         _hasAnnotationInstance(memberMirror, soloTest);
     // test_
     if (memberName.startsWith('test_')) {
-      group.addTest(isSolo, memberName, memberMirror, () {
-        if (_hasFailingTestAnnotation(memberMirror) ||
-            _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror)) {
-          return _runFailingTest(classMirror, symbol);
-        } else {
-          return _runTest(classMirror, symbol);
-        }
-      });
+      if (_hasSkippedTestAnnotation(memberMirror)) {
+        group.addSkippedTest(memberName);
+      } else {
+        group.addTest(isSolo, memberName, memberMirror, () {
+          if (_hasFailingTestAnnotation(memberMirror) ||
+              _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror)) {
+            return _runFailingTest(classMirror, symbol);
+          } else {
+            return _runTest(classMirror, symbol);
+          }
+        });
+      }
       return;
     }
     // solo_test_
@@ -143,6 +152,10 @@ void defineReflectiveTests(Type type) {
         return _runFailingTest(classMirror, symbol);
       });
     }
+    // skip_test_
+    if (memberName.startsWith('skip_test_')) {
+      group.addSkippedTest(memberName);
+    }
   });
 
   // Support for the case of missing enclosing [defineReflectiveSuite].
@@ -160,7 +173,7 @@ void _addTestsIfTopLevelSuite() {
           for (_Test test in group.tests) {
             if (allTests || test.isSolo) {
               test_package.test(test.name, test.function,
-                  timeout: test.timeout);
+                  timeout: test.timeout, skip: test.isSkipped);
             }
           }
         }
@@ -210,6 +223,9 @@ bool _hasAssertFailingTestAnnotation(MethodMirror method) =>
 
 bool _hasFailingTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, failingTest);
+
+bool _hasSkippedTestAnnotation(MethodMirror method) =>
+    _hasAnnotationInstance(method, skippedTest);
 
 Future _invokeSymbolIfExists(InstanceMirror instanceMirror, Symbol symbol) {
   var invocationResult = null;
@@ -277,6 +293,19 @@ class FailingTest {
 }
 
 /**
+ * A marker annotation used to annotate test methods which are skipped.
+ */
+class SkippedTest {
+  /**
+   * Initialize this annotation with the given arguments.
+   *
+   * [issue] is a full URI describing the failure and used for tracking.
+   * [reason] is a free form textual description.
+   */
+  const SkippedTest({String issue, String reason});
+}
+
+/**
  * A marker annotation used to annotate test methods with additional timeout
  * information.
  */
@@ -308,6 +337,11 @@ class _Group {
   _Group(this.isSolo, this.name);
 
   bool get hasSoloTest => tests.any((test) => test.isSolo);
+
+  void addSkippedTest(String name) {
+    String fullName = _combineNames(this.name, name);
+    tests.add(new _Test.skipped(isSolo, fullName));
+  }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
       _TestFunction function) {
@@ -341,5 +375,13 @@ class _Test {
   final _TestFunction function;
   final test_package.Timeout timeout;
 
-  _Test(this.isSolo, this.name, this.function, this.timeout);
+  final bool isSkipped;
+
+  _Test(this.isSolo, this.name, this.function, this.timeout)
+      : isSkipped = false;
+
+  _Test.skipped(this.isSolo, this.name)
+      : isSkipped = true,
+        function = null,
+        timeout = null;
 }

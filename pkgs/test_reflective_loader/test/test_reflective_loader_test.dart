@@ -35,4 +35,14 @@ class TestReflectiveLoaderTest {
   Future test_fails_throws_async() {
     return new Future.error('foo');
   }
+
+  @skippedTest
+  void test_fails_but_skipped() {
+    throw 'foo';
+  }
+
+  @skippedTest
+  void test_times_out_but_skipped() {
+    while (true) {}
+  }
 }
