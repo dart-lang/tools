@@ -379,6 +379,7 @@ class _Test {
 
   _Test(this.isSolo, this.name, this.function, this.timeout)
       : isSkipped = false;
+
   _Test.skipped(this.isSolo, this.name)
       : isSkipped = true,
         function = null,
