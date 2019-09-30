@@ -1,3 +1,7 @@
+## 0.1.9
+
+- Add `@SkippedTest` annotation and `skip_test` prefix.
+
 ## 0.1.8
 
 - Update `FailingTest` to add named parameters `issue` and `reason`.
