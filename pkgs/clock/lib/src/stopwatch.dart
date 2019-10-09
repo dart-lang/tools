@@ -19,7 +19,7 @@ import 'clock.dart';
 /// We can't really know how frequently the clock is updated, and that may not
 /// even make sense for some implementations, so we just pretend we follow the
 /// system's frequency.
-final _frequency = new Stopwatch().frequency;
+final _frequency = Stopwatch().frequency;
 
 /// A stopwatch that gets its notion of the current time from a [Clock].
 class ClockStopwatch implements Stopwatch {
@@ -40,7 +40,7 @@ class ClockStopwatch implements Stopwatch {
 
   int get frequency => _frequency;
   int get elapsedTicks => (elapsedMicroseconds * frequency) ~/ 1000000;
-  Duration get elapsed => new Duration(microseconds: elapsedMicroseconds);
+  Duration get elapsed => Duration(microseconds: elapsedMicroseconds);
   int get elapsedMilliseconds => elapsedMicroseconds ~/ 1000;
   bool get isRunning => _start != null;
 

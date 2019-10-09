@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'src/default.dart';
+
 export 'src/clock.dart';
 export 'src/default.dart';
 
-import 'src/default.dart';
-
 /// Returns current time.
 @Deprecated("Pass around an instance of Clock instead.")
-typedef DateTime TimeFunction();
+typedef TimeFunction = DateTime Function();
 
 /// Returns the current system time.
 @Deprecated("Use new DateTime.now() instead.")
-DateTime systemTime() => new DateTime.now();
+DateTime systemTime() => DateTime.now();
 
 /// Returns the current time as reported by [clock].
 @Deprecated("Use clock.now() instead.")

@@ -22,7 +22,7 @@ import 'package:meta/meta.dart';
 ///
 /// This array uses 1-based month numbers, i.e. January is the 1-st element in
 /// the array, not the 0-th.
-const _daysInMonth = const [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const _daysInMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /// Returns the number of days in the specified month.
 ///
@@ -42,7 +42,7 @@ int daysInMonth(int year, int month) =>
 bool isLeapYear(int year) =>
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 
-/// Takes a [date] that may be outside the allowed range of dates for a given
+/// Takes a `date` that may be outside the allowed range of dates for a given
 /// [month] in a given [year] and returns the closest date that is within the
 /// allowed range.
 ///
@@ -58,4 +58,4 @@ bool isLeapYear(int year) =>
 /// doesn't have 31-st date.
 int clampDayOfMonth(
         {@required int year, @required int month, @required int day}) =>
-    day.clamp(1, daysInMonth(year, month));
+    day.clamp(1, daysInMonth(year, month)) as int;

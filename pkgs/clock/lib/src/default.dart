@@ -18,29 +18,31 @@ import 'clock.dart';
 
 /// The key for the [Zone] value that controls the current implementation of
 /// [clock].
-final _clockKey = new Object();
+final _clockKey = Object();
 
 /// The key for the [Zone] value that controls whether nested zones can override
 /// [clock].
-final _isFinalKey = new Object();
+final _isFinalKey = Object();
 
 /// The default implementation of [clock] for the current [Zone].
 ///
 /// This defaults to the system clock. It can be set within a zone using
 /// [withClock].
-Clock get clock => Zone.current[_clockKey] ?? const Clock();
+Clock get clock => Zone.current[_clockKey] as Clock ?? const Clock();
 
 /// Runs [callback] with the given value for the top-level [clock] field.
 ///
 /// This is [Zone]-scoped, so asynchronous callbacks spawned within [callback]
 /// will also use the new value for [clock].
 ///
+// ignore: deprecated_member_use_from_same_package
 /// If [isFinal] is `true`, calls to [withClock] within [callback] will throw a
 /// [StateError]. However, this parameter is deprecated and should be avoided.
-T withClock<T>(Clock clock, T callback(), {@deprecated bool isFinal: false}) {
-  if (Zone.current[_isFinalKey] ?? false) {
-    throw new StateError(
-        "Cannot call withClock() within a call to withClock(isFinal: true).");
+T withClock<T>(Clock clock, T Function() callback,
+    {@deprecated bool isFinal = false}) {
+  if ((Zone.current[_isFinalKey] ?? false) == true) {
+    throw StateError(
+        "Cannot call withClock() within a call to withClock(isFinal = true).");
   }
 
   return runZoned(callback,

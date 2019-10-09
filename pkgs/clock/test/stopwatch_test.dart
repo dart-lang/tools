@@ -21,7 +21,7 @@ import 'utils.dart';
 void main() {
   test("returns the system frequency", () {
     expect(fixed(1990, 11, 8).stopwatch().frequency,
-        equals(new Stopwatch().frequency));
+        equals(Stopwatch().frequency));
   });
 
   group("before it starts", () {
@@ -52,7 +52,7 @@ void main() {
     Stopwatch stopwatch;
     setUp(() {
       time = date(1990, 11, 8);
-      clock = new Clock(() => time);
+      clock = Clock(() => time);
       stopwatch = clock.stopwatch()..start();
       time = clock.microsFromNow(12345);
     });
@@ -90,12 +90,13 @@ void main() {
 
       group("reports elapsed", () {
         test("duration", () {
-          expect(stopwatch.elapsed, equals(new Duration(microseconds: 12345)));
+          expect(
+              stopwatch.elapsed, equals(const Duration(microseconds: 12345)));
         });
 
         test("ticks", () {
           expect(stopwatch.elapsedTicks,
-              equals((new Stopwatch().frequency * 12345) ~/ 1000000));
+              equals((Stopwatch().frequency * 12345) ~/ 1000000));
         });
 
         test("microseconds", () {
@@ -146,12 +147,13 @@ void main() {
 
       group("reports elapsed", () {
         test("duration", () {
-          expect(stopwatch.elapsed, equals(new Duration(microseconds: 12345)));
+          expect(
+              stopwatch.elapsed, equals(const Duration(microseconds: 12345)));
         });
 
         test("ticks", () {
           expect(stopwatch.elapsedTicks,
-              equals((new Stopwatch().frequency * 12345) ~/ 1000000));
+              equals((Stopwatch().frequency * 12345) ~/ 1000000));
         });
 
         test("microseconds", () {

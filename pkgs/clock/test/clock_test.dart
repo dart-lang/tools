@@ -18,10 +18,10 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
-main() {
+void main() {
   Clock clock;
   setUp(() {
-    clock = new Clock.fixed(date(2013));
+    clock = Clock.fixed(date(2013));
   });
 
   test('should return a non-null value from system clock', () {
@@ -33,17 +33,15 @@ main() {
   test('should be close enough to system clock', () {
     // At 10ms the test doesn't seem to be flaky.
     var epsilon = 10;
-    expect(
-        new DateTime.now().difference(new Clock().now()).inMilliseconds.abs(),
+    expect(DateTime.now().difference(const Clock().now()).inMilliseconds.abs(),
         lessThan(epsilon));
-    expect(
-        new DateTime.now().difference(const Clock().now()).inMilliseconds.abs(),
+    expect(DateTime.now().difference(const Clock().now()).inMilliseconds.abs(),
         lessThan(epsilon));
   });
 
   test('should return time provided by a custom function', () {
     var time = date(2013);
-    var fixedClock = new Clock(() => time);
+    var fixedClock = Clock(() => time);
     expect(fixedClock.now(), date(2013));
 
     time = date(2014);
@@ -51,7 +49,7 @@ main() {
   });
 
   test('should return fixed time', () {
-    expect(new Clock.fixed(date(2013)).now(), date(2013));
+    expect(Clock.fixed(date(2013)).now(), date(2013));
   });
 
   test('should return time Duration ago', () {
@@ -71,7 +69,7 @@ main() {
             seconds: 1,
             milliseconds: 1,
             microseconds: 1000),
-        new DateTime(2012, 12, 30, 22, 58, 58, 998));
+        DateTime(2012, 12, 30, 22, 58, 58, 998));
   });
 
   test('should return time parts from now', () {
@@ -83,47 +81,47 @@ main() {
             seconds: 1,
             milliseconds: 1,
             microseconds: 1000),
-        new DateTime(2013, 1, 2, 1, 1, 1, 2));
+        DateTime(2013, 1, 2, 1, 1, 1, 2));
   });
 
   test('should return time micros ago', () {
-    expect(clock.microsAgo(1000), new DateTime(2012, 12, 31, 23, 59, 59, 999));
+    expect(clock.microsAgo(1000), DateTime(2012, 12, 31, 23, 59, 59, 999));
   });
 
   test('should return time micros from now', () {
-    expect(clock.microsFromNow(1000), new DateTime(2013, 1, 1, 0, 0, 0, 1));
+    expect(clock.microsFromNow(1000), DateTime(2013, 1, 1, 0, 0, 0, 1));
   });
 
   test('should return time millis ago', () {
-    expect(clock.millisAgo(1000), new DateTime(2012, 12, 31, 23, 59, 59, 000));
+    expect(clock.millisAgo(1000), DateTime(2012, 12, 31, 23, 59, 59, 000));
   });
 
   test('should return time millis from now', () {
-    expect(clock.millisFromNow(3), new DateTime(2013, 1, 1, 0, 0, 0, 3));
+    expect(clock.millisFromNow(3), DateTime(2013, 1, 1, 0, 0, 0, 3));
   });
 
   test('should return time seconds ago', () {
-    expect(clock.secondsAgo(10), new DateTime(2012, 12, 31, 23, 59, 50, 000));
+    expect(clock.secondsAgo(10), DateTime(2012, 12, 31, 23, 59, 50, 000));
   });
 
   test('should return time seconds from now', () {
-    expect(clock.secondsFromNow(3), new DateTime(2013, 1, 1, 0, 0, 3, 0));
+    expect(clock.secondsFromNow(3), DateTime(2013, 1, 1, 0, 0, 3, 0));
   });
 
   test('should return time minutes ago', () {
-    expect(clock.minutesAgo(10), new DateTime(2012, 12, 31, 23, 50, 0, 000));
+    expect(clock.minutesAgo(10), DateTime(2012, 12, 31, 23, 50, 0, 000));
   });
 
   test('should return time minutes from now', () {
-    expect(clock.minutesFromNow(3), new DateTime(2013, 1, 1, 0, 3, 0, 0));
+    expect(clock.minutesFromNow(3), DateTime(2013, 1, 1, 0, 3, 0, 0));
   });
 
   test('should return time hours ago', () {
-    expect(clock.hoursAgo(10), new DateTime(2012, 12, 31, 14, 0, 0, 000));
+    expect(clock.hoursAgo(10), DateTime(2012, 12, 31, 14, 0, 0, 000));
   });
 
   test('should return time hours from now', () {
-    expect(clock.hoursFromNow(3), new DateTime(2013, 1, 1, 3, 0, 0, 0));
+    expect(clock.hoursFromNow(3), DateTime(2013, 1, 1, 3, 0, 0, 0));
   });
 
   test('should return time days ago', () {

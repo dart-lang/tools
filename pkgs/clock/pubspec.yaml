@@ -5,10 +5,11 @@ author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/clock
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: '>=2.1.1 <3.0.0'
 
 dependencies:
   meta: '>=0.9.0 <2.0.0'
 
 dev_dependencies:
   test: ^1.0.0
+  pedantic: ^1.8.0

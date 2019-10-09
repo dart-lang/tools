@@ -22,7 +22,7 @@ import 'utils.dart';
 
 void main() {
   test("the default clock returns the system time", () {
-    expect(new DateTime.now().difference(clock.now()).inMilliseconds.abs(),
+    expect(DateTime.now().difference(clock.now()).inMilliseconds.abs(),
         lessThan(100));
   });
 
@@ -30,7 +30,7 @@ void main() {
     group("overrides the clock", () {
       test("synchronously", () {
         var time = date(1990, 11, 8);
-        withClock(new Clock(() => time), () {
+        withClock(Clock(() => time), () {
           expect(clock.now(), equals(time));
           time = date(2016, 6, 26);
           expect(clock.now(), equals(time));
@@ -39,8 +39,8 @@ void main() {
 
       test("asynchronously", () {
         var time = date(1990, 11, 8);
-        withClock(new Clock.fixed(time), () {
-          expect(new Future(() async {
+        withClock(Clock.fixed(time), () {
+          expect(Future(() async {
             expect(clock.now(), equals(time));
           }), completes);
         });
@@ -48,13 +48,13 @@ void main() {
 
       test("within another withClock() call", () {
         var outerTime = date(1990, 11, 8);
-        withClock(new Clock.fixed(outerTime), () {
+        withClock(Clock.fixed(outerTime), () {
           expect(clock.now(), equals(outerTime));
 
           var innerTime = date(2016, 11, 8);
-          withClock(new Clock.fixed(innerTime), () {
+          withClock(Clock.fixed(innerTime), () {
             expect(clock.now(), equals(innerTime));
-            expect(new Future(() async {
+            expect(Future(() async {
               expect(clock.now(), equals(innerTime));
             }), completes);
           });
@@ -66,7 +66,7 @@ void main() {
 
     test("with isFinal: true doesn't allow nested calls", () {
       var outerTime = date(1990, 11, 8);
-      withClock(new Clock.fixed(outerTime), () {
+      withClock(Clock.fixed(outerTime), () {
         expect(clock.now(), equals(outerTime));
 
         expect(() => withClock(fixed(2016, 11, 8), neverCalledVoid),

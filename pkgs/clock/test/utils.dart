@@ -17,9 +17,9 @@ import 'package:clock/clock.dart';
 /// A utility function for tersely constructing a [DateTime] with no time
 /// component.
 DateTime date(int year, [int month, int day]) =>
-    new DateTime(year, month ?? 1, day ?? 1);
+    DateTime(year, month ?? 1, day ?? 1);
 
 /// Returns a clock that always returns a date with the given [year], [month],
 /// and [day].
 Clock fixed(int year, [int month, int day]) =>
-    new Clock.fixed(date(year, month, day));
+    Clock.fixed(date(year, month, day));
