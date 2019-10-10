@@ -86,8 +86,8 @@ void main() {
     final Map<String, dynamic> isolateCoverage =
         _getScriptCoverage(coverage, 'test_app_isolate.dart');
     hits = isolateCoverage['hits'];
-    _expectHitCount(hits, 9, 1);
-    _expectHitCount(hits, 16, 1);
+    _expectHitCount(hits, 11, 1);
+    _expectHitCount(hits, 18, 1);
   });
 }
 

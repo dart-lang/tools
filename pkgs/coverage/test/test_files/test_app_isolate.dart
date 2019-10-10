@@ -6,15 +6,17 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+const int answer = 42;
+
 String fooSync(int x) {
-  if (x == 42) {
+  if (x == answer) {
     return '*' * x;
   }
   return List.generate(x, (_) => 'xyzzy').join(' ');
 }
 
 Future<String> fooAsync(int x) async {
-  if (x == 42) {
+  if (x == answer) {
     return '*' * x;
   }
   return List.generate(x, (_) => 'xyzzy').join(' ');
@@ -26,8 +28,8 @@ Future<String> fooAsync(int x) async {
 void isolateTask(dynamic threeThings) {
   sleep(const Duration(milliseconds: 500));
 
-  fooSync(42);
-  fooAsync(42).then((_) {
+  fooSync(answer);
+  fooAsync(answer).then((_) {
     final SendPort port = threeThings.first;
     final int sum = threeThings[1] + threeThings[2];
     port.send(sum);
