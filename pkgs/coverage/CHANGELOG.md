@@ -1,3 +1,9 @@
+## 0.13.3+1 - 2019-10-10
+
+* Loosen the dependency on the `vm_service` package from `^1.0.0` to `>=1.0.0
+  <3.0.0`. Ensures dependency version range compatibility with the latest
+  versions of package `test`.
+
 ## 0.13.3 - 2019-09-27
 
  * Adds a new named argument to `collect` to filter coverage results by a set
