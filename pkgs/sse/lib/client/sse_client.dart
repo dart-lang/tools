@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
-import 'package:http/browser_client.dart';
 import 'package:logging/logging.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:uuid/uuid.dart';
@@ -19,8 +18,6 @@ class SseClient extends StreamChannelMixin<String> {
   final _incomingController = StreamController<String>();
 
   final _outgoingController = StreamController<String>();
-
-  final _client = BrowserClient()..withCredentials = true;
 
   final _logger = Logger('SseClient');
 
@@ -62,7 +59,6 @@ class SseClient extends StreamChannelMixin<String> {
     _eventSource.close();
     _incomingController.close();
     _outgoingController.close();
-    _client.close();
   }
 
   void _onIncomingControlMessage(Event message) {
@@ -93,7 +89,10 @@ class SseClient extends StreamChannelMixin<String> {
   void _startPostingMessages() async {
     await for (var message in _messages.stream) {
       try {
-        await _client.post(_serverUrl, body: jsonEncode(message));
+        await HttpRequest.request(_serverUrl,
+            method: 'POST',
+            sendData: jsonEncode(message),
+            withCredentials: true);
       } on JsonUnsupportedObjectError catch (e) {
         _logger.warning('Unable to encode outgoing message: $e');
       } on ArgumentError catch (e) {

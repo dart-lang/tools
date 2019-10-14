@@ -1,3 +1,7 @@
+## 2.1.2
+
+- Remove `package:http` dependency.
+
 ## 2.1.1
 
 - Use proper headers delimiter.
