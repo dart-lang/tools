@@ -1,3 +1,8 @@
+# 1.5.6
+
+* Fix padding around line numbers that are powers of 10 in
+  `FileSpan.highlight()`.
+
 # 1.5.5
 
 * Fix a bug where `FileSpan.highlight()` would crash for spans that covered a

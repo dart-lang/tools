@@ -530,4 +530,30 @@ ${colors.BLUE}3 |${colors.NONE} ${colors.RED}\\ zip zap zop${colors.NONE}
 ${colors.BLUE}  '${colors.NONE}"""));
     });
   });
+
+  group("line numbers have appropriate padding", () {
+    test("with line number 9", () {
+      expect(
+          SourceFile.fromString("\n" * 8 + "foo bar baz\n")
+              .span(8, 11)
+              .highlight(),
+          equals("""
+  ,
+9 | foo bar baz
+  | ^^^
+  '"""));
+    });
+
+    test("with line number 10", () {
+      expect(
+          SourceFile.fromString("\n" * 9 + "foo bar baz\n")
+              .span(9, 12)
+              .highlight(),
+          equals("""
+   ,
+10 | foo bar baz
+   | ^^^
+   '"""));
+    });
+  });
 }
