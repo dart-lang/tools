@@ -10,5 +10,5 @@ import 'package:e2e_test/async_worker.dart';
 /// This worker can run in one of two ways: normally, using stdin/stdout, or
 /// in an isolate, communicating over a [SendPort].
 Future main(List<String> args, [SendPort sendPort]) async {
-  await new ExampleAsyncWorker(sendPort).run();
+  await ExampleAsyncWorker(sendPort).run();
 }

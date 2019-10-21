@@ -33,12 +33,11 @@ class StdDriverConnection implements DriverConnection {
 
   StdDriverConnection(
       {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
-      : _messageGrouper = new AsyncMessageGrouper(inputStream ?? stdin),
+      : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
         _outputStream = outputStream ?? stdout;
 
-  factory StdDriverConnection.forWorker(Process worker) =>
-      new StdDriverConnection(
-          inputStream: worker.stdout, outputStream: worker.stdin);
+  factory StdDriverConnection.forWorker(Process worker) => StdDriverConnection(
+      inputStream: worker.stdout, outputStream: worker.stdin);
 
   /// Note: This will attempts to recover from invalid proto messages by parsing
   /// them as strings. This is a common error case for workers (they print a
@@ -53,12 +52,12 @@ class StdDriverConnection implements DriverConnection {
 
     WorkResponse response;
     try {
-      response = new WorkResponse.fromBuffer(buffer);
+      response = WorkResponse.fromBuffer(buffer);
     } catch (_) {
       try {
         // Try parsing the message as a string and set that as the output.
         var output = utf8.decode(buffer);
-        var response = new WorkResponse()
+        var response = WorkResponse()
           ..exitCode = EXIT_CODE_ERROR
           ..output = 'Worker sent an invalid response:\n$output';
         return response;
@@ -94,10 +93,10 @@ class IsolateDriverConnection implements DriverConnection {
   /// [receivePort] attached to the [SendPort] that the isolate was created
   /// with.
   static Future<IsolateDriverConnection> create(ReceivePort receivePort) async {
-    var receivePortIterator = new StreamIterator(receivePort);
+    var receivePortIterator = StreamIterator(receivePort);
     await receivePortIterator.moveNext();
     var sendPort = receivePortIterator.current as SendPort;
-    return new IsolateDriverConnection._(receivePortIterator, sendPort);
+    return IsolateDriverConnection._(receivePortIterator, sendPort);
   }
 
   @override

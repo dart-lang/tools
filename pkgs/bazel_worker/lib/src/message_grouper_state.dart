@@ -27,7 +27,7 @@ class MessageGrouperState {
     if (!_lengthReader.done) {
       _lengthReader.readByte(byte);
       if (_lengthReader.done) {
-        _messageReader = new _MessageReader(_lengthReader.length);
+        _messageReader = _MessageReader(_lengthReader.length);
       }
     } else {
       assert(_messageReader != null);
@@ -45,7 +45,7 @@ class MessageGrouperState {
 
   /// Reset the state so that we are ready to receive the next message.
   void reset() {
-    _lengthReader = new _LengthReader();
+    _lengthReader = _LengthReader();
     _messageReader = null;
   }
 }
@@ -83,7 +83,7 @@ class _LengthReader {
     // Check for the last byte in the length, and then read it.
     if ((byte & 0x80) == 0) {
       _done = true;
-      var reader = new CodedBufferReader(_buffer);
+      var reader = CodedBufferReader(_buffer);
       _length = reader.readInt32();
     }
   }
@@ -112,7 +112,7 @@ class _MessageReader {
   int _numMessageBytesReceived = 0;
 
   _MessageReader(int length)
-      : _message = new Uint8List(length),
+      : _message = Uint8List(length),
         _length = length,
         _done = length == 0;
 

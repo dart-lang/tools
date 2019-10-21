@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:async/async.dart';
+import 'package:pedantic/pedantic.dart';
 
 import 'message_grouper.dart';
 import 'message_grouper_state.dart';
@@ -14,7 +15,7 @@ import 'message_grouper_state.dart';
 /// base-128 encoded lengths interleaved with raw data.
 class AsyncMessageGrouper implements MessageGrouper {
   /// Current state for reading in messages;
-  final _state = new MessageGrouperState();
+  final _state = MessageGrouperState();
 
   /// The input stream.
   final StreamQueue<List<int>> _inputQueue;
@@ -23,10 +24,10 @@ class AsyncMessageGrouper implements MessageGrouper {
   bool _inputQueueCancelled = false;
 
   /// The current buffer.
-  final Queue<int> _buffer = new Queue<int>();
+  final Queue<int> _buffer = Queue<int>();
 
   AsyncMessageGrouper(Stream<List<int>> inputStream)
-      : _inputQueue = new StreamQueue(inputStream);
+      : _inputQueue = StreamQueue(inputStream);
 
   /// Returns the next full message that is received, or null if none are left.
   Future<List<int>> get next async {
@@ -41,7 +42,7 @@ class AsyncMessageGrouper implements MessageGrouper {
       }
 
       // If there is nothing left in the queue then cancel the subscription.
-      if (message == null) _cancel();
+      if (message == null) unawaited(_cancel());
 
       return message;
     } catch (e) {
@@ -57,7 +58,7 @@ class AsyncMessageGrouper implements MessageGrouper {
       _inputQueueCancelled = true;
       return _inputQueue.cancel();
     }
-    return new Future.value(null);
+    return Future.value(null);
   }
 
   /// Stop listening to the stream for further updates.

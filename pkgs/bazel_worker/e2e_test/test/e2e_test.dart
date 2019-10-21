@@ -27,7 +27,7 @@ void runE2eTestForWorker(String groupName, SpawnWorker spawnWorker) {
   BazelWorkerDriver driver;
   group(groupName, () {
     setUp(() {
-      driver = new BazelWorkerDriver(spawnWorker);
+      driver = BazelWorkerDriver(spawnWorker);
     });
 
     tearDown(() async {
@@ -48,10 +48,9 @@ void runE2eTestForWorker(String groupName, SpawnWorker spawnWorker) {
 /// completed with the correct response.
 Future _doRequests(BazelWorkerDriver driver, {int count}) async {
   count ??= 100;
-  var requests = new List.generate(count, (requestNum) {
-    var request = new WorkRequest();
-    request.arguments
-        .addAll(new List.generate(requestNum, (argNum) => '$argNum'));
+  var requests = List.generate(count, (requestNum) {
+    var request = WorkRequest();
+    request.arguments.addAll(List.generate(requestNum, (argNum) => '$argNum'));
     return request;
   });
   var responses = await Future.wait(requests.map(driver.doWork));

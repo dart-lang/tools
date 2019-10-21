@@ -10,7 +10,7 @@ import '../constants.dart';
 import '../worker_protocol.pb.dart';
 import 'driver_connection.dart';
 
-typedef Future<Process> SpawnWorker();
+typedef SpawnWorker = Future<Process> Function();
 
 /// A driver for talking to a bazel worker.
 ///
@@ -39,7 +39,7 @@ class BazelWorkerDriver {
   final _spawningWorkers = <Future<Process>>[];
 
   /// Work requests that haven't been started yet.
-  final _workQueue = new Queue<_WorkAttempt>();
+  final _workQueue = Queue<_WorkAttempt>();
 
   /// Factory method that spawns a worker process.
   final SpawnWorker _spawnWorker;
@@ -58,7 +58,7 @@ class BazelWorkerDriver {
   /// available worker.
   Future<WorkResponse> doWork(WorkRequest request,
       {Function(Future<WorkResponse>) trackWork}) {
-    var attempt = new _WorkAttempt(request, trackWork: trackWork);
+    var attempt = _WorkAttempt(request, trackWork: trackWork);
     _workQueue.add(attempt);
     _runWorkQueue();
     return attempt.response;
@@ -88,7 +88,7 @@ class BazelWorkerDriver {
     if (_workQueue.isEmpty) return;
     if (_numWorkers == _maxWorkers && _idleWorkers.isEmpty) return;
     if (_numWorkers > _maxWorkers) {
-      throw new StateError('Internal error, created to many workers. Please '
+      throw StateError('Internal error, created to many workers. Please '
           'file a bug at https://github.com/dart-lang/bazel_worker/issues/new');
     }
 
@@ -106,7 +106,7 @@ class BazelWorkerDriver {
         _spawningWorkers.remove(futureWorker);
         _readyWorkers.add(worker);
 
-        _workerConnections[worker] = new StdDriverConnection.forWorker(worker);
+        _workerConnections[worker] = StdDriverConnection.forWorker(worker);
         _runWorker(worker, attempt);
 
         // When the worker exits we should retry running the work queue in case
@@ -148,11 +148,11 @@ class BazelWorkerDriver {
           rescheduled = _tryReschedule(attempt);
           if (rescheduled) return;
           stderr.writeln('Failed to run request ${attempt.request}');
-          response = new WorkResponse()
+          response = WorkResponse()
             ..exitCode = EXIT_CODE_ERROR
             ..output =
                 'Invalid response from worker, this probably means it wrote '
-                'invalid output or died.';
+                    'invalid output or died.';
         }
         attempt.responseCompleter.complete(response);
         _cleanUp(worker);
@@ -164,7 +164,7 @@ class BazelWorkerDriver {
       if (!attempt.responseCompleter.isCompleted) {
         rescheduled = _tryReschedule(attempt);
         if (rescheduled) return;
-        var response = new WorkResponse()
+        var response = WorkResponse()
           ..exitCode = EXIT_CODE_ERROR
           ..output = 'Error running worker:\n$e\n$s';
         attempt.responseCompleter.complete(response);
@@ -218,7 +218,7 @@ class BazelWorkerDriver {
 /// [WorkResponse], and the number of times it has been retried.
 class _WorkAttempt {
   final WorkRequest request;
-  final responseCompleter = new Completer<WorkResponse>();
+  final responseCompleter = Completer<WorkResponse>();
   final Function(Future<WorkResponse>) trackWork;
 
   Future<WorkResponse> get response => responseCompleter.future;
@@ -228,4 +228,4 @@ class _WorkAttempt {
   _WorkAttempt(this.request, {this.trackWork});
 }
 
-final _workerConnections = new Expando<DriverConnection>('connection');
+final _workerConnections = Expando<DriverConnection>('connection');

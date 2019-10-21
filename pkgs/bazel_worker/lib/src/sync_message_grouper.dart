@@ -9,7 +9,7 @@ import 'message_grouper_state.dart';
 
 /// Groups bytes in delimited proto format into the bytes for each message.
 class SyncMessageGrouper implements MessageGrouper {
-  final _state = new MessageGrouperState();
+  final _state = MessageGrouperState();
   final Stdin _stdin;
 
   SyncMessageGrouper(this._stdin);

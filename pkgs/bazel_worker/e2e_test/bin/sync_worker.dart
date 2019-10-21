@@ -5,5 +5,5 @@
 import 'package:e2e_test/sync_worker.dart';
 
 void main() {
-  new ExampleSyncWorker().run();
+  ExampleSyncWorker().run();
 }

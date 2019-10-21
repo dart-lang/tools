@@ -8,7 +8,7 @@ import 'package:bazel_worker/bazel_worker.dart';
 /// separated by newlines.
 class ExampleSyncWorker extends SyncWorkerLoop {
   WorkResponse performRequest(WorkRequest request) {
-    return new WorkResponse()
+    return WorkResponse()
       ..exitCode = 0
       ..output = request.arguments.join('\n');
   }

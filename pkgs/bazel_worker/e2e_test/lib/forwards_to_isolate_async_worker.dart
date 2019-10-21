@@ -14,7 +14,7 @@ class ForwardsToIsolateAsyncWorker extends AsyncWorkerLoop {
 
   static Future<ForwardsToIsolateAsyncWorker> create(
       ReceivePort receivePort) async {
-    return new ForwardsToIsolateAsyncWorker(
+    return ForwardsToIsolateAsyncWorker(
         await IsolateDriverConnection.create(receivePort));
   }
 

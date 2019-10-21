@@ -1,3 +1,5 @@
+include: package:pedantic/analysis_options.yaml
+
 analyzer:
 
 linter:
@@ -20,7 +22,6 @@ linter:
     - prefer_is_not_empty
     - slash_for_doc_comments
     - sort_unnamed_constructors_first
-    - super_goes_last
     # - type_annotate_public_apis
     - type_init_formals
     - unnecessary_brace_in_string_interps

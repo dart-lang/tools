@@ -34,9 +34,9 @@ abstract class AsyncWorkerConnection implements WorkerConnection {
           StreamSink<List<int>> outputStream,
           SendPort sendPort}) =>
       sendPort == null
-          ? new StdAsyncWorkerConnection(
+          ? StdAsyncWorkerConnection(
               inputStream: inputStream, outputStream: outputStream)
-          : new SendPortAsyncWorkerConnection(sendPort);
+          : SendPortAsyncWorkerConnection(sendPort);
 
   @override
   Future<WorkRequest> readRequest();
@@ -54,7 +54,7 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
 
   StdAsyncWorkerConnection(
       {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
-      : _messageGrouper = new AsyncMessageGrouper(inputStream ?? stdin),
+      : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
         _outputStream = outputStream ?? stdout;
 
   @override
@@ -62,7 +62,7 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
     var buffer = await _messageGrouper.next;
     if (buffer == null) return null;
 
-    return new WorkRequest.fromBuffer(buffer);
+    return WorkRequest.fromBuffer(buffer);
   }
 
   @override
@@ -78,18 +78,18 @@ class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
   final SendPort sendPort;
 
   factory SendPortAsyncWorkerConnection(SendPort sendPort) {
-    var receivePort = new ReceivePort();
+    var receivePort = ReceivePort();
     sendPort.send(receivePort.sendPort);
     return SendPortAsyncWorkerConnection._(receivePort, sendPort);
   }
 
   SendPortAsyncWorkerConnection._(this.receivePort, this.sendPort)
-      : receivePortIterator = new StreamIterator(receivePort.cast());
+      : receivePortIterator = StreamIterator(receivePort.cast());
 
   @override
   Future<WorkRequest> readRequest() async {
     if (!await receivePortIterator.moveNext()) return null;
-    return new WorkRequest.fromBuffer(receivePortIterator.current);
+    return WorkRequest.fromBuffer(receivePortIterator.current);
   }
 
   @override
@@ -105,7 +105,7 @@ class StdSyncWorkerConnection implements SyncWorkerConnection {
   final Stdout _stdoutStream;
 
   StdSyncWorkerConnection({Stdin stdinStream, Stdout stdoutStream})
-      : _messageGrouper = new SyncMessageGrouper(stdinStream ?? stdin),
+      : _messageGrouper = SyncMessageGrouper(stdinStream ?? stdin),
         _stdoutStream = stdoutStream ?? stdout;
 
   @override
@@ -113,7 +113,7 @@ class StdSyncWorkerConnection implements SyncWorkerConnection {
     var buffer = _messageGrouper.next;
     if (buffer == null) return null;
 
-    return new WorkRequest.fromBuffer(buffer);
+    return WorkRequest.fromBuffer(buffer);
   }
 
   @override

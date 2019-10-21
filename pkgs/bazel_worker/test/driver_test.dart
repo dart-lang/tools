@@ -24,7 +24,7 @@ void main() {
         () async {
       int maxWorkers = 4;
       int maxIdleWorkers = 2;
-      driver = new BazelWorkerDriver(MockWorker.spawn,
+      driver = BazelWorkerDriver(MockWorker.spawn,
           maxWorkers: maxWorkers, maxIdleWorkers: maxIdleWorkers);
       for (int i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
@@ -39,7 +39,7 @@ void main() {
     test('can run multiple requests through one worker', () async {
       int maxWorkers = 1;
       int maxIdleWorkers = 1;
-      driver = new BazelWorkerDriver(MockWorker.spawn,
+      driver = BazelWorkerDriver(MockWorker.spawn,
           maxWorkers: maxWorkers, maxIdleWorkers: maxIdleWorkers);
       for (int i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
@@ -49,8 +49,8 @@ void main() {
     });
 
     test('can run one request through multiple workers', () async {
-      driver = new BazelWorkerDriver(MockWorker.spawn,
-          maxWorkers: 4, maxIdleWorkers: 4);
+      driver =
+          BazelWorkerDriver(MockWorker.spawn, maxWorkers: 4, maxIdleWorkers: 4);
       for (int i = 0; i < 10; i++) {
         await _doRequests(driver: driver, count: 1);
         expect(MockWorker.liveWorkers.length, 1);
@@ -60,7 +60,7 @@ void main() {
 
     test('can run with maxIdleWorkers == 0', () async {
       int maxWorkers = 4;
-      driver = new BazelWorkerDriver(MockWorker.spawn,
+      driver = BazelWorkerDriver(MockWorker.spawn,
           maxWorkers: maxWorkers, maxIdleWorkers: 0);
       for (int i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
@@ -71,14 +71,17 @@ void main() {
 
     test('trackWork gets invoked when a worker is actually ready', () async {
       var maxWorkers = 2;
-      driver = new BazelWorkerDriver(MockWorker.spawn, maxWorkers: maxWorkers);
+      driver = BazelWorkerDriver(MockWorker.spawn, maxWorkers: maxWorkers);
       var tracking = <Future>[];
-      await _doRequests(driver: driver, count: 10, trackWork: (Future response) {
-          // We should never be tracking more than `maxWorkers` jobs at a time.
-          expect(tracking.length, lessThan(maxWorkers));
-          tracking.add(response);
-          response.then((_) => tracking.remove(response));
-        });
+      await _doRequests(
+          driver: driver,
+          count: 10,
+          trackWork: (Future response) {
+            // We should never be tracking more than `maxWorkers` jobs at a time.
+            expect(tracking.length, lessThan(maxWorkers));
+            tracking.add(response);
+            response.then((_) => tracking.remove(response));
+          });
     });
 
     group('failing workers', () {
@@ -86,17 +89,17 @@ void main() {
       /// ones after that, and which will retry [maxRetries] times.
       void createDriver({int maxRetries = 2, int numBadWorkers = 2}) {
         int numSpawned = 0;
-        driver = new BazelWorkerDriver(
-            () async => new MockWorker(workerLoopFactory: (MockWorker worker) {
-                  var connection = new StdAsyncWorkerConnection(
+        driver = BazelWorkerDriver(
+            () async => MockWorker(workerLoopFactory: (MockWorker worker) {
+                  var connection = StdAsyncWorkerConnection(
                       inputStream: worker._stdinController.stream,
                       outputStream: worker._stdoutController.sink);
                   if (numSpawned < numBadWorkers) {
                     numSpawned++;
-                    return new ThrowingMockWorkerLoop(
+                    return ThrowingMockWorkerLoop(
                         worker, MockWorker.responseQueue, connection);
                   } else {
-                    return new MockWorkerLoop(MockWorker.responseQueue,
+                    return MockWorkerLoop(MockWorker.responseQueue,
                         connection: connection);
                   }
                 }),
@@ -105,9 +108,9 @@ void main() {
 
       test('should retry up to maxRetries times', () async {
         createDriver();
-        var expectedResponse = new WorkResponse();
+        var expectedResponse = WorkResponse();
         MockWorker.responseQueue.addAll([null, null, expectedResponse]);
-        var actualResponse = await driver.doWork(new WorkRequest());
+        var actualResponse = await driver.doWork(WorkRequest());
         // The first 2 null responses are thrown away, and we should get the
         // third one.
         expect(actualResponse, expectedResponse);
@@ -118,8 +121,8 @@ void main() {
 
       test('should fail if it exceeds maxRetries failures', () async {
         createDriver(maxRetries: 2, numBadWorkers: 3);
-        MockWorker.responseQueue.addAll([null, null, new WorkResponse()]);
-        var actualResponse = await driver.doWork(new WorkRequest());
+        MockWorker.responseQueue.addAll([null, null, WorkResponse()]);
+        var actualResponse = await driver.doWork(WorkRequest());
         // Should actually get a bad response.
         expect(actualResponse.exitCode, 15);
         expect(
@@ -148,11 +151,11 @@ Future _doRequests(
     Function(Future<WorkResponse>) trackWork}) async {
   // If we create a driver, we need to make sure and terminate it.
   var terminateDriver = driver == null;
-  driver ??= new BazelWorkerDriver(MockWorker.spawn);
+  driver ??= BazelWorkerDriver(MockWorker.spawn);
   count ??= 100;
   terminateDriver ??= true;
-  var requests = new List.generate(count, (_) => new WorkRequest());
-  var responses = new List.generate(count, (_) => new WorkResponse());
+  var requests = List.generate(count, (_) => WorkRequest());
+  var responses = List.generate(count, (_) => WorkResponse());
   MockWorker.responseQueue.addAll(responses);
   var actualResponses = await Future.wait(
       requests.map((request) => driver.doWork(request, trackWork: trackWork)));
@@ -179,9 +182,7 @@ class MockWorkerLoop extends AsyncWorkerLoop {
 class ThrowingMockWorkerLoop extends MockWorkerLoop {
   final MockWorker _mockWorker;
 
-  ThrowingMockWorkerLoop(
-      this._mockWorker,
-      Queue<WorkResponse> responseQueue,
+  ThrowingMockWorkerLoop(this._mockWorker, Queue<WorkResponse> responseQueue,
       AsyncWorkerConnection connection)
       : super(responseQueue, connection: connection);
 
@@ -205,7 +206,7 @@ class ThrowingMockWorkerLoop extends MockWorkerLoop {
 /// If there are no items left in [responseQueue] then it will throw.
 class MockWorker implements Process {
   /// Spawns a new [MockWorker].
-  static Future<MockWorker> spawn() async => new MockWorker();
+  static Future<MockWorker> spawn() async => MockWorker();
 
   /// Worker loop that handles reading requests and responding.
   AsyncWorkerLoop _workerLoop;
@@ -213,7 +214,7 @@ class MockWorker implements Process {
   /// Static queue of pending responses, these are shared by all workers.
   ///
   /// If this is empty and a request is received then it will throw.
-  static final responseQueue = new Queue<WorkResponse>();
+  static final responseQueue = Queue<WorkResponse>();
 
   /// Static list of all live workers.
   static final liveWorkers = <MockWorker>[];
@@ -226,37 +227,37 @@ class MockWorker implements Process {
     liveWorkers.add(this);
     var workerLoop = workerLoopFactory != null
         ? workerLoopFactory(this)
-        : new MockWorkerLoop(responseQueue,
-            connection: new StdAsyncWorkerConnection(
+        : MockWorkerLoop(responseQueue,
+            connection: StdAsyncWorkerConnection(
                 inputStream: this._stdinController.stream,
                 outputStream: this._stdoutController.sink));
     _workerLoop = workerLoop..run();
   }
 
   Future<int> get exitCode => _exitCodeCompleter.future;
-  final _exitCodeCompleter = new Completer<int>();
+  final _exitCodeCompleter = Completer<int>();
 
   @override
   Stream<List<int>> get stdout => _stdoutController.stream;
-  final _stdoutController = new StreamController<List<int>>();
+  final _stdoutController = StreamController<List<int>>();
 
   @override
   Stream<List<int>> get stderr => _stderrController.stream;
-  final _stderrController = new StreamController<List<int>>();
+  final _stderrController = StreamController<List<int>>();
 
   @override
   IOSink get stdin {
-    _stdin ??= new IOSink(_stdinController.sink);
+    _stdin ??= IOSink(_stdinController.sink);
     return _stdin;
   }
 
   IOSink _stdin;
-  final _stdinController = new StreamController<List<int>>();
+  final _stdinController = StreamController<List<int>>();
 
-  int get pid => throw new UnsupportedError('Not needed.');
+  int get pid => throw UnsupportedError('Not needed.');
 
   @override
-  bool kill([ProcessSignal = ProcessSignal.sigterm, int exitCode = 0]) {
+  bool kill([processSignal = ProcessSignal.sigterm, int exitCode = 0]) {
     if (_killed) return false;
     () async {
       await _stdoutController.close();

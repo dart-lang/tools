@@ -23,7 +23,7 @@ abstract class TestStdin implements Stdin {
 /// A [Stdin] mock object which only implements `readByteSync`.
 class TestStdinSync implements TestStdin {
   /// Pending bytes to be delivered synchronously.
-  final Queue<int> pendingBytes = new Queue<int>();
+  final Queue<int> pendingBytes = Queue<int>();
 
   /// Adds all the [bytes] to this stream.
   void addInputBytes(List<int> bytes) {
@@ -42,7 +42,7 @@ class TestStdinSync implements TestStdin {
 
   @override
   void noSuchMethod(Invocation invocation) {
-    throw new StateError('Unexpected invocation ${invocation.memberName}.');
+    throw StateError('Unexpected invocation ${invocation.memberName}.');
   }
 }
 
@@ -51,7 +51,7 @@ class TestStdinSync implements TestStdin {
 /// Note: You must call [close] in order for the loop to exit properly.
 class TestStdinAsync implements TestStdin {
   /// Controls the stream for async delivery of bytes.
-  final StreamController<Uint8List> _controller = new StreamController();
+  final StreamController<Uint8List> _controller = StreamController();
   StreamController<Uint8List> get controller => _controller;
 
   /// Adds all the [bytes] to this stream.
@@ -73,7 +73,7 @@ class TestStdinAsync implements TestStdin {
 
   @override
   void noSuchMethod(Invocation invocation) {
-    throw new StateError('Unexpected invocation ${invocation.memberName}.');
+    throw StateError('Unexpected invocation ${invocation.memberName}.');
   }
 }
 
@@ -88,7 +88,7 @@ class TestStdoutStream implements Stdout {
 
   @override
   void noSuchMethod(Invocation invocation) {
-    throw new StateError('Unexpected invocation ${invocation.memberName}.');
+    throw StateError('Unexpected invocation ${invocation.memberName}.');
   }
 }
 
@@ -123,7 +123,7 @@ class TestSyncWorkerConnection extends StdSyncWorkerConnection
 /// A [SyncWorkerLoop] for testing.
 class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   final List<WorkRequest> requests = <WorkRequest>[];
-  final Queue<WorkResponse> _responses = new Queue<WorkResponse>();
+  final Queue<WorkResponse> _responses = Queue<WorkResponse>();
 
   @override
   final String printMessage;
@@ -165,7 +165,7 @@ class TestAsyncWorkerConnection extends StdAsyncWorkerConnection
 /// A [AsyncWorkerLoop] for testing.
 class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   final List<WorkRequest> requests = <WorkRequest>[];
-  final Queue<WorkResponse> _responses = new Queue<WorkResponse>();
+  final Queue<WorkResponse> _responses = Queue<WorkResponse>();
 
   @override
   final String printMessage;

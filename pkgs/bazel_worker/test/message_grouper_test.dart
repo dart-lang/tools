@@ -14,13 +14,13 @@ import 'package:bazel_worker/testing.dart';
 
 void main() {
   group('AsyncMessageGrouper', () {
-    runTests(() => new TestStdinAsync(),
-        (Stdin stdinStream) => new AsyncMessageGrouper(stdinStream));
+    runTests(() => TestStdinAsync(),
+        (Stdin stdinStream) => AsyncMessageGrouper(stdinStream));
   });
 
   group('SyncMessageGrouper', () {
-    runTests(() => new TestStdinSync(),
-        (Stdin stdinStream) => new SyncMessageGrouper(stdinStream));
+    runTests(() => TestStdinSync(),
+        (Stdin stdinStream) => SyncMessageGrouper(stdinStream));
   });
 }
 

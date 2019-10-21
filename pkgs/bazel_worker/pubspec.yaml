@@ -10,7 +10,8 @@ environment:
 
 dependencies:
   async: '>1.9.0 <3.0.0'
-  protobuf: ^0.14.0
+  pedantic: ^1.8.0
+  protobuf: '>=0.14.0 <2.0.0'
 
 dev_dependencies:
   test: ^1.2.0

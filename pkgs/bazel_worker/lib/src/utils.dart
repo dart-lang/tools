@@ -7,14 +7,14 @@ import 'dart:typed_data';
 import 'package:protobuf/protobuf.dart';
 
 List<int> protoToDelimitedBuffer(GeneratedMessage message) {
-  var messageBuffer = new CodedBufferWriter();
+  var messageBuffer = CodedBufferWriter();
   message.writeToCodedBufferWriter(messageBuffer);
 
-  var delimiterBuffer = new CodedBufferWriter();
+  var delimiterBuffer = CodedBufferWriter();
   delimiterBuffer.writeInt32NoTag(messageBuffer.lengthInBytes);
 
-  var result = new Uint8List(
-      messageBuffer.lengthInBytes + delimiterBuffer.lengthInBytes);
+  var result =
+      Uint8List(messageBuffer.lengthInBytes + delimiterBuffer.lengthInBytes);
 
   delimiterBuffer.writeTo(result);
   messageBuffer.writeTo(result, delimiterBuffer.lengthInBytes);

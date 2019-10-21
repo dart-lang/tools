@@ -12,10 +12,10 @@ import 'package:bazel_worker/bazel_worker.dart';
 class ExampleAsyncWorker extends AsyncWorkerLoop {
   /// Set [sendPort] to run in an isolate.
   ExampleAsyncWorker([SendPort sendPort])
-      : super(connection: new AsyncWorkerConnection(sendPort: sendPort));
+      : super(connection: AsyncWorkerConnection(sendPort: sendPort));
 
   Future<WorkResponse> performRequest(WorkRequest request) async {
-    return new WorkResponse()
+    return WorkResponse()
       ..exitCode = 0
       ..output = request.arguments.join('\n');
   }

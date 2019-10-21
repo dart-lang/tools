@@ -13,38 +13,38 @@ import 'package:bazel_worker/testing.dart';
 void main() {
   group('SyncWorkerLoop', () {
     runTests(
-        () => new TestStdinSync(),
+        () => TestStdinSync(),
         (Stdin stdinStream, Stdout stdoutStream) =>
-            new TestSyncWorkerConnection(stdinStream, stdoutStream),
+            TestSyncWorkerConnection(stdinStream, stdoutStream),
         (TestSyncWorkerConnection connection) =>
-            new TestSyncWorkerLoop(connection));
+            TestSyncWorkerLoop(connection));
   });
 
   group('AsyncWorkerLoop', () {
     runTests(
-        () => new TestStdinAsync(),
+        () => TestStdinAsync(),
         (Stdin stdinStream, Stdout stdoutStream) =>
-            new TestAsyncWorkerConnection(stdinStream, stdoutStream),
+            TestAsyncWorkerConnection(stdinStream, stdoutStream),
         (TestAsyncWorkerConnection connection) =>
-            new TestAsyncWorkerLoop(connection));
+            TestAsyncWorkerLoop(connection));
   });
 
   group('SyncWorkerLoopWithPrint', () {
     runTests(
-        () => new TestStdinSync(),
+        () => TestStdinSync(),
         (Stdin stdinStream, Stdout stdoutStream) =>
-            new TestSyncWorkerConnection(stdinStream, stdoutStream),
+            TestSyncWorkerConnection(stdinStream, stdoutStream),
         (TestSyncWorkerConnection connection) =>
-            new TestSyncWorkerLoop(connection, printMessage: 'Goodbye!'));
+            TestSyncWorkerLoop(connection, printMessage: 'Goodbye!'));
   });
 
   group('AsyncWorkerLoopWithPrint', () {
     runTests(
-        () => new TestStdinAsync(),
+        () => TestStdinAsync(),
         (Stdin stdinStream, Stdout stdoutStream) =>
-            new TestAsyncWorkerConnection(stdinStream, stdoutStream),
+            TestAsyncWorkerConnection(stdinStream, stdoutStream),
         (TestAsyncWorkerConnection connection) =>
-            new TestAsyncWorkerLoop(connection, printMessage: 'Goodbye!'));
+            TestAsyncWorkerLoop(connection, printMessage: 'Goodbye!'));
   });
 }
 
@@ -59,24 +59,24 @@ void runTests<T extends TestWorkerConnection>(
 
   setUp(() {
     stdinStream = stdinFactory();
-    stdoutStream = new TestStdoutStream();
+    stdoutStream = TestStdoutStream();
     connection = workerConnectionFactory(stdinStream, stdoutStream);
     workerLoop = workerLoopFactory(connection);
   });
 
   test('basic', () async {
-    var request = new WorkRequest();
+    var request = WorkRequest();
     request.arguments.addAll(['--foo=bar']);
     stdinStream.addInputBytes(protoToDelimitedBuffer(request));
     stdinStream.close();
 
-    var response = new WorkResponse()..output = 'Hello World';
+    var response = WorkResponse()..output = 'Hello World';
     workerLoop.enqueueResponse(response);
 
     // Make sure `print` never gets called in the parent zone.
     var printMessages = <String>[];
     await runZoned(() => workerLoop.run(), zoneSpecification:
-        new ZoneSpecification(print: (self, parent, zone, message) {
+        ZoneSpecification(print: (self, parent, zone, message) {
       printMessages.add(message);
     }));
     expect(printMessages, isEmpty,
@@ -96,7 +96,7 @@ void runTests<T extends TestWorkerConnection>(
   });
 
   test('Exception in the worker.', () async {
-    var request = new WorkRequest();
+    var request = WorkRequest();
     request.arguments.addAll(['--foo=bar']);
     stdinStream.addInputBytes(protoToDelimitedBuffer(request));
     stdinStream.close();
@@ -125,7 +125,7 @@ void runTests<T extends TestWorkerConnection>(
       (stdinStream as TestStdinSync).pendingBytes.clear();
       await workerLoop.run();
     } else if (stdinStream is TestStdinAsync) {
-      var done = new Completer();
+      var done = Completer();
       workerLoop.run().then((_) => done.complete(null));
       (stdinStream as TestStdinAsync).controller.addError('Error!!');
       await done.future;

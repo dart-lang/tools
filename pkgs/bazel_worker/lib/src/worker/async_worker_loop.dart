@@ -16,7 +16,7 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
   final AsyncWorkerConnection connection;
 
   AsyncWorkerLoop({AsyncWorkerConnection connection})
-      : this.connection = connection ?? new StdAsyncWorkerConnection();
+      : this.connection = connection ?? StdAsyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
   Future<WorkResponse> performRequest(WorkRequest request);
@@ -29,10 +29,10 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
       try {
         var request = await connection.readRequest();
         if (request == null) break;
-        var printMessages = new StringBuffer();
+        var printMessages = StringBuffer();
         response = await runZoned(() => performRequest(request),
             zoneSpecification:
-                new ZoneSpecification(print: (self, parent, zone, message) {
+                ZoneSpecification(print: (self, parent, zone, message) {
           printMessages.writeln();
           printMessages.write(message);
         }));
@@ -42,7 +42,7 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
         // In case they forget to set this.
         response.exitCode ??= EXIT_CODE_OK;
       } catch (e, s) {
-        response = new WorkResponse()
+        response = WorkResponse()
           ..exitCode = EXIT_CODE_ERROR
           ..output = '$e\n$s';
       }
