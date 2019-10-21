@@ -1,3 +1,9 @@
+## 0.1.23-dev
+
+* Added a tool for updating generated proto files and updated them
+  using the latest version of the protoc_plugin package.
+  * This required a lower bound bump of the `protobuf` package to `0.14.4`.
+
 ## 0.1.22
 
 * Require protobuf 0.14.0.

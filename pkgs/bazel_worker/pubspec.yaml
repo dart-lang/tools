@@ -1,5 +1,5 @@
 name: bazel_worker
-version: 0.1.22
+version: 0.1.23-dev
 
 description: Tools for creating a bazel persistent worker.
 author: Dart Team <misc@dartlang.org>
@@ -11,7 +11,7 @@ environment:
 dependencies:
   async: '>1.9.0 <3.0.0'
   pedantic: ^1.8.0
-  protobuf: '>=0.14.0 <2.0.0'
+  protobuf: '>=0.14.4 <2.0.0'
 
 dev_dependencies:
   test: ^1.2.0
