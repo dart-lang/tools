@@ -41,18 +41,16 @@ String get _executable {
 
 /// Manager for an instance of Chrome.
 class Chrome {
-  Chrome._(
-    this.debugPort,
-    this.chromeConnection, {
-    Process process,
-    Directory dataDir,
-  })  : _process = process,
+  Chrome._(this.debugPort, this.chromeConnection,
+      {Process process, Directory dataDir, this.deleteDataDir = false})
+      : _process = process,
         _dataDir = dataDir;
 
   final int debugPort;
   final ChromeConnection chromeConnection;
   final Process _process;
   final Directory _dataDir;
+  final bool deleteDataDir;
 
   /// Connects to an instance of Chrome with an open debug port.
   static Future<Chrome> fromExisting(int port) async =>
@@ -61,12 +59,14 @@ class Chrome {
   /// Starts Chrome with the given arguments and a specific port.
   ///
   /// Each url in [urls] will be loaded in a separate tab.
-  static Future<Chrome> startWithDebugPort(
-    List<String> urls, {
-    int debugPort,
-    bool headless = false,
-  }) async {
-    final dataDir = Directory.systemTemp.createTempSync();
+  static Future<Chrome> startWithDebugPort(List<String> urls,
+      {int debugPort, bool headless = false, String userDataDir}) async {
+    Directory dataDir;
+    if (userDataDir == null) {
+      dataDir = Directory.systemTemp.createTempSync();
+    } else {
+      dataDir = Directory(userDataDir);
+    }
     final port = debugPort == null || debugPort == 0
         ? await findUnusedPort()
         : debugPort;
@@ -108,6 +108,7 @@ class Chrome {
       ChromeConnection('localhost', port),
       process: process,
       dataDir: dataDir,
+      deleteDataDir: userDataDir = null,
     ));
   }
 
@@ -150,8 +151,10 @@ class Chrome {
       // Chrome starts another process as soon as it dies that modifies the
       // profile information. Give it some time before attempting to delete
       // the directory.
-      await Future.delayed(Duration(milliseconds: 500));
-      await _dataDir?.delete(recursive: true);
+      if (deleteDataDir) {
+        await Future.delayed(Duration(milliseconds: 500));
+        await _dataDir?.delete(recursive: true);
+      }
     } catch (_) {
       // Silently fail if we can't clean up the profile information.
       // It is a system tmp directory so it should get cleaned up eventually.
