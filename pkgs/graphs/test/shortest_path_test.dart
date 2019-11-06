@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 
 import 'utils/utils.dart';
 
-Matcher _throwsAssertionError(messageMatcher) =>
+Matcher _throwsAssertionError(dynamic messageMatcher) =>
     throwsA(const TypeMatcher<AssertionError>()
         .having((ae) => ae.message, 'message', messageMatcher));
 
@@ -44,9 +44,9 @@ void main() {
   });
 
   test('null return value from `edges` throws', () {
-    expect(shortestPath(1, 1, (input) => null), [],
+    expect(shortestPath(1, 1, (input) => null), <dynamic>[],
         reason: 'self target short-circuits');
-    expect(shortestPath(1, 1, (input) => [null]), [],
+    expect(shortestPath(1, 1, (input) => [null]), <dynamic>[],
         reason: 'self target short-circuits');
 
     expect(() => shortestPath(1, 2, (input) => null), throwsNoSuchMethodError);
