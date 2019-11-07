@@ -25,12 +25,11 @@ class SourceSpanWithContext extends SourceSpanBase {
       SourceLocation start, SourceLocation end, String text, this._context)
       : super(start, end, text) {
     if (!context.contains(text)) {
-      throw new ArgumentError(
-          'The context line "$context" must contain "$text".');
+      throw ArgumentError('The context line "$context" must contain "$text".');
     }
 
     if (findLineStart(context, text, start.column) == null) {
-      throw new ArgumentError('The span text "$text" must start at '
+      throw ArgumentError('The span text "$text" must start at '
           'column ${start.column + 1} in a line within "$context".');
     }
   }

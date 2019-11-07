@@ -8,33 +8,30 @@ import 'package:source_span/source_span.dart';
 main() {
   var location;
   setUp(() {
-    location =
-        new SourceLocation(15, line: 2, column: 6, sourceUrl: "foo.dart");
+    location = SourceLocation(15, line: 2, column: 6, sourceUrl: "foo.dart");
   });
 
   group('errors', () {
     group('for new SourceLocation()', () {
       test('offset may not be negative', () {
-        expect(() => new SourceLocation(-1), throwsRangeError);
+        expect(() => SourceLocation(-1), throwsRangeError);
       });
 
       test('line may not be negative', () {
-        expect(() => new SourceLocation(0, line: -1), throwsRangeError);
+        expect(() => SourceLocation(0, line: -1), throwsRangeError);
       });
 
       test('column may not be negative', () {
-        expect(() => new SourceLocation(0, column: -1), throwsRangeError);
+        expect(() => SourceLocation(0, column: -1), throwsRangeError);
       });
     });
 
     test('for distance() source URLs must match', () {
-      expect(
-          () => location.distance(new SourceLocation(0)), throwsArgumentError);
+      expect(() => location.distance(SourceLocation(0)), throwsArgumentError);
     });
 
     test('for compareTo() source URLs must match', () {
-      expect(
-          () => location.compareTo(new SourceLocation(0)), throwsArgumentError);
+      expect(() => location.compareTo(SourceLocation(0)), throwsArgumentError);
     });
   });
 
@@ -51,13 +48,13 @@ main() {
     });
 
     test('gracefully handles a missing source URL', () {
-      var location = new SourceLocation(15, line: 2, column: 6);
+      var location = SourceLocation(15, line: 2, column: 6);
       expect(location.toolString, equals('unknown source:3:7'));
     });
   });
 
   test("distance returns the absolute distance between locations", () {
-    var other = new SourceLocation(10, sourceUrl: "foo.dart");
+    var other = SourceLocation(10, sourceUrl: "foo.dart");
     expect(location.distance(other), equals(5));
     expect(other.distance(location), equals(5));
   });
@@ -71,7 +68,7 @@ main() {
 
   group("compareTo()", () {
     test("sorts by offset", () {
-      var other = new SourceLocation(20, sourceUrl: "foo.dart");
+      var other = SourceLocation(20, sourceUrl: "foo.dart");
       expect(location.compareTo(other), lessThan(0));
       expect(other.compareTo(location), greaterThan(0));
     });
@@ -83,17 +80,17 @@ main() {
 
   group("equality", () {
     test("two locations with the same offset and source are equal", () {
-      var other = new SourceLocation(15, sourceUrl: "foo.dart");
+      var other = SourceLocation(15, sourceUrl: "foo.dart");
       expect(location, equals(other));
     });
 
     test("a different offset isn't equal", () {
-      var other = new SourceLocation(10, sourceUrl: "foo.dart");
+      var other = SourceLocation(10, sourceUrl: "foo.dart");
       expect(location, isNot(equals(other)));
     });
 
     test("a different source isn't equal", () {
-      var other = new SourceLocation(15, sourceUrl: "bar.dart");
+      var other = SourceLocation(15, sourceUrl: "bar.dart");
       expect(location, isNot(equals(other)));
     });
   });

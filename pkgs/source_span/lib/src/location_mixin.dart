@@ -21,17 +21,17 @@ abstract class SourceLocationMixin implements SourceLocation {
 
   int distance(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw new ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
           "\"${other.sourceUrl}\" don't match.");
     }
     return (offset - other.offset).abs();
   }
 
-  SourceSpan pointSpan() => new SourceSpan(this, this, "");
+  SourceSpan pointSpan() => SourceSpan(this, this, "");
 
   int compareTo(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw new ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
           "\"${other.sourceUrl}\" don't match.");
     }
     return offset - other.offset;

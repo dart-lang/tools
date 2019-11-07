@@ -21,7 +21,7 @@ main() {
 
   var file;
   setUp(() {
-    file = new SourceFile.fromString("""
+    file = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop
@@ -37,7 +37,7 @@ zip zap zop
   });
 
   test("gracefully handles a missing source URL", () {
-    var span = new SourceFile.fromString("foo bar baz").span(4, 7);
+    var span = SourceFile.fromString("foo bar baz").span(4, 7);
     expect(span.highlight(), equals("""
   ,
 1 | foo bar baz
@@ -95,7 +95,7 @@ zip zap zop
     });
 
     test("at the end of the file with no trailing newline", () {
-      file = new SourceFile.fromString("zip zap zop");
+      file = SourceFile.fromString("zip zap zop");
       expect(file.location(10).pointSpan().highlight(), equals("""
   ,
 1 | zip zap zop
@@ -104,7 +104,7 @@ zip zap zop
     });
 
     test("after the end of the file with no trailing newline", () {
-      file = new SourceFile.fromString("zip zap zop");
+      file = SourceFile.fromString("zip zap zop");
       expect(file.location(11).pointSpan().highlight(), equals("""
   ,
 1 | zip zap zop
@@ -113,7 +113,7 @@ zip zap zop
     });
 
     test("in an empty file", () {
-      expect(new SourceFile.fromString("").location(0).pointSpan().highlight(),
+      expect(SourceFile.fromString("").location(0).pointSpan().highlight(),
           equals("""
   ,
 1 | 
@@ -122,7 +122,7 @@ zip zap zop
     });
 
     test("on an empty line", () {
-      var file = new SourceFile.fromString("foo\n\nbar");
+      var file = SourceFile.fromString("foo\n\nbar");
       expect(file.location(4).pointSpan().highlight(), equals("""
   ,
 2 | 
@@ -132,8 +132,7 @@ zip zap zop
   });
 
   test("highlights a single-line file without a newline", () {
-    expect(
-        new SourceFile.fromString("foo bar").span(0, 7).highlight(), equals("""
+    expect(SourceFile.fromString("foo bar").span(0, 7).highlight(), equals("""
   ,
 1 | foo bar
   | ^^^^^^^
@@ -141,8 +140,8 @@ zip zap zop
   });
 
   test("highlights a single empty line", () {
-    expect(new SourceFile.fromString("foo\n\nbar").span(4, 5).highlight(),
-        equals("""
+    expect(
+        SourceFile.fromString("foo\n\nbar").span(4, 5).highlight(), equals("""
   ,
 2 | 
   | ^
@@ -194,7 +193,7 @@ zip zap zop
     });
 
     test("highlights the full first line even if it's indented", () {
-      var file = new SourceFile.fromString("""
+      var file = SourceFile.fromString("""
   foo bar baz
   whiz bang boom
   zip zap zop
@@ -210,7 +209,7 @@ zip zap zop
     });
 
     test("highlights the full first line if it's empty", () {
-      var file = new SourceFile.fromString("""
+      var file = SourceFile.fromString("""
 foo
 
 bar
@@ -242,7 +241,7 @@ bar
     });
 
     test("highlights the full last line with a trailing Windows newline", () {
-      var file = new SourceFile.fromString("""
+      var file = SourceFile.fromString("""
 foo bar baz\r
 whiz bang boom\r
 zip zap zop\r
@@ -269,7 +268,7 @@ zip zap zop\r
     test(
         "highlights the full last line at the end of the file with no trailing "
         "newline", () {
-      var file = new SourceFile.fromString("""
+      var file = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""");
@@ -284,7 +283,7 @@ zip zap zop""");
     });
 
     test("highlights the full last line if it's empty", () {
-      var file = new SourceFile.fromString("""
+      var file = SourceFile.fromString("""
 foo
 
 bar
@@ -298,7 +297,7 @@ bar
     });
 
     test("highlights multiple empty lines", () {
-      var file = new SourceFile.fromString("foo\n\n\n\nbar");
+      var file = SourceFile.fromString("foo\n\n\n\nbar");
       expect(file.span(4, 7).highlight(), equals("""
   ,
 2 | / 
@@ -309,7 +308,7 @@ bar
 
     // Regression test for #32
     test("highlights the end of a line and an empty line", () {
-      var file = new SourceFile.fromString("foo\n\n");
+      var file = SourceFile.fromString("foo\n\n");
       expect(file.span(3, 5).highlight(), equals("""
   ,
 1 |   foo
@@ -322,7 +321,7 @@ bar
   group("prints tabs as spaces", () {
     group("in a single-line span", () {
       test("before the highlighted section", () {
-        var span = new SourceFile.fromString("foo\tbar baz").span(4, 7);
+        var span = SourceFile.fromString("foo\tbar baz").span(4, 7);
 
         expect(span.highlight(), equals("""
   ,
@@ -332,7 +331,7 @@ bar
       });
 
       test("within the highlighted section", () {
-        var span = new SourceFile.fromString("foo bar\tbaz bang").span(4, 11);
+        var span = SourceFile.fromString("foo bar\tbaz bang").span(4, 11);
 
         expect(span.highlight(), equals("""
   ,
@@ -342,7 +341,7 @@ bar
       });
 
       test("after the highlighted section", () {
-        var span = new SourceFile.fromString("foo bar\tbaz").span(4, 7);
+        var span = SourceFile.fromString("foo bar\tbaz").span(4, 7);
 
         expect(span.highlight(), equals("""
   ,
@@ -354,7 +353,7 @@ bar
 
     group("in a multi-line span", () {
       test("before the highlighted section", () {
-        var span = new SourceFile.fromString("""
+        var span = SourceFile.fromString("""
 foo\tbar baz
 whiz bang boom
 """).span(4, 21);
@@ -369,7 +368,7 @@ whiz bang boom
       });
 
       test("within the first highlighted line", () {
-        var span = new SourceFile.fromString("""
+        var span = SourceFile.fromString("""
 foo bar\tbaz
 whiz bang boom
 """).span(4, 21);
@@ -384,7 +383,7 @@ whiz bang boom
       });
 
       test("within a middle highlighted line", () {
-        var span = new SourceFile.fromString("""
+        var span = SourceFile.fromString("""
 foo bar baz
 whiz\tbang boom
 zip zap zop
@@ -401,7 +400,7 @@ zip zap zop
       });
 
       test("within the last highlighted line", () {
-        var span = new SourceFile.fromString("""
+        var span = SourceFile.fromString("""
 foo bar baz
 whiz\tbang boom
 """).span(4, 21);
@@ -416,7 +415,7 @@ whiz\tbang boom
       });
 
       test("after the highlighted section", () {
-        var span = new SourceFile.fromString("""
+        var span = SourceFile.fromString("""
 foo bar baz
 whiz bang\tboom
 """).span(4, 21);
@@ -434,9 +433,9 @@ whiz bang\tboom
 
   group("supports lines of preceding and following context for a span", () {
     test("within a single line", () {
-      var span = new SourceSpanWithContext(
-          new SourceLocation(20, line: 2, column: 5, sourceUrl: "foo.dart"),
-          new SourceLocation(27, line: 2, column: 12, sourceUrl: "foo.dart"),
+      var span = SourceSpanWithContext(
+          SourceLocation(20, line: 2, column: 5, sourceUrl: "foo.dart"),
+          SourceLocation(27, line: 2, column: 12, sourceUrl: "foo.dart"),
           "foo bar",
           "previous\nlines\n-----foo bar-----\nfollowing line\n");
 
@@ -451,9 +450,9 @@ whiz bang\tboom
     });
 
     test("covering a full line", () {
-      var span = new SourceSpanWithContext(
-          new SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
-          new SourceLocation(33, line: 3, column: 0, sourceUrl: "foo.dart"),
+      var span = SourceSpanWithContext(
+          SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
+          SourceLocation(33, line: 3, column: 0, sourceUrl: "foo.dart"),
           "-----foo bar-----\n",
           "previous\nlines\n-----foo bar-----\nfollowing line\n");
 
@@ -468,9 +467,9 @@ whiz bang\tboom
     });
 
     test("covering multiple full lines", () {
-      var span = new SourceSpanWithContext(
-          new SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
-          new SourceLocation(23, line: 4, column: 0, sourceUrl: "foo.dart"),
+      var span = SourceSpanWithContext(
+          SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
+          SourceLocation(23, line: 4, column: 0, sourceUrl: "foo.dart"),
           "foo\nbar\n",
           "previous\nlines\nfoo\nbar\nfollowing line\n");
 

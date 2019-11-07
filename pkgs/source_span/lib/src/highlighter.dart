@@ -36,7 +36,7 @@ class Highlighter {
       _multiline ? 3 : 1;
 
   /// The buffer to which to write the result.
-  final _buffer = new StringBuffer();
+  final _buffer = StringBuffer();
 
   /// The number of spaces to render for hard tabs that appear in `_span.text`.
   ///
@@ -63,7 +63,7 @@ class Highlighter {
     newSpan = _normalizeTrailingNewline(newSpan);
     newSpan = _normalizeEndOfLine(newSpan);
 
-    return new Highlighter._(newSpan, color);
+    return Highlighter._(newSpan, color);
   }
 
   /// Normalizes [span] to ensure that it's a [SourceSpanWithContext] whose
@@ -76,10 +76,10 @@ class Highlighter {
       span is SourceSpanWithContext &&
               findLineStart(span.context, span.text, span.start.column) != null
           ? span
-          : new SourceSpanWithContext(
-              new SourceLocation(span.start.offset,
+          : SourceSpanWithContext(
+              SourceLocation(span.start.offset,
                   sourceUrl: span.sourceUrl, line: 0, column: 0),
-              new SourceLocation(span.end.offset,
+              SourceLocation(span.end.offset,
                   sourceUrl: span.sourceUrl,
                   line: countCodeUnits(span.text, $lf),
                   column: _lastLineLength(span.text)),
@@ -99,9 +99,9 @@ class Highlighter {
       }
     }
 
-    return new SourceSpanWithContext(
+    return SourceSpanWithContext(
         span.start,
-        new SourceLocation(endOffset,
+        SourceLocation(endOffset,
             sourceUrl: span.sourceUrl,
             line: span.end.line,
             column: span.end.column),
@@ -127,13 +127,13 @@ class Highlighter {
     var end = span.end;
     if (span.text.endsWith("\n") && _isTextAtEndOfContext(span)) {
       text = span.text.substring(0, span.text.length - 1);
-      end = new SourceLocation(span.end.offset - 1,
+      end = SourceLocation(span.end.offset - 1,
           sourceUrl: span.sourceUrl,
           line: span.end.line - 1,
           column: _lastLineLength(text));
       start = span.start.offset == span.end.offset ? end : span.start;
     }
-    return new SourceSpanWithContext(start, end, text, context);
+    return SourceSpanWithContext(start, end, text, context);
   }
 
   /// Normalizes [span] so that the end location is at the end of a line rather
@@ -144,9 +144,9 @@ class Highlighter {
 
     var text = span.text.substring(0, span.text.length - 1);
 
-    return new SourceSpanWithContext(
+    return SourceSpanWithContext(
         span.start,
-        new SourceLocation(span.end.offset - 1,
+        SourceLocation(span.end.offset - 1,
             sourceUrl: span.sourceUrl,
             line: span.end.line - 1,
             column: _lastLineLength(text)),

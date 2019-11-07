@@ -26,7 +26,7 @@ abstract class SourceSpanMixin implements SourceSpan {
 
   SourceSpan union(SourceSpan other) {
     if (sourceUrl != other.sourceUrl) {
-      throw new ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
           " \"${other.sourceUrl}\" don't match.");
     }
 
@@ -36,16 +36,16 @@ abstract class SourceSpanMixin implements SourceSpan {
     var endSpan = end == this.end ? this : other;
 
     if (beginSpan.end.compareTo(endSpan.start) < 0) {
-      throw new ArgumentError("Spans $this and $other are disjoint.");
+      throw ArgumentError("Spans $this and $other are disjoint.");
     }
 
     var text = beginSpan.text +
         endSpan.text.substring(beginSpan.end.distance(endSpan.start));
-    return new SourceSpan(start, end, text);
+    return SourceSpan(start, end, text);
   }
 
   String message(String message, {color}) {
-    var buffer = new StringBuffer();
+    var buffer = StringBuffer();
     buffer.write('line ${start.line + 1}, column ${start.column + 1}');
     if (sourceUrl != null) buffer.write(' of ${p.prettyUri(sourceUrl)}');
     buffer.write(': $message');
@@ -61,7 +61,7 @@ abstract class SourceSpanMixin implements SourceSpan {
 
   String highlight({color}) {
     if (this is! SourceSpanWithContext && this.length == 0) return "";
-    return new Highlighter(this, color: color).highlight();
+    return Highlighter(this, color: color).highlight();
   }
 
   bool operator ==(other) =>

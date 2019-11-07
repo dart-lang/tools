@@ -8,7 +8,7 @@ import 'package:source_span/source_span.dart';
 main() {
   var file;
   setUp(() {
-    file = new SourceFile.fromString("""
+    file = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""", url: "foo.dart");
@@ -109,8 +109,7 @@ zip zap zop""", url: "foo.dart");
 
     group("for span().union()", () {
       test("source URLs must match", () {
-        var other =
-            new SourceSpan(new SourceLocation(10), new SourceLocation(11), "_");
+        var other = SourceSpan(SourceLocation(10), SourceLocation(11), "_");
 
         expect(() => file.span(9, 10).union(other), throwsArgumentError);
       });
@@ -122,7 +121,7 @@ zip zap zop""", url: "foo.dart");
     });
 
     test("for span().expand() source URLs must match", () {
-      var other = new SourceFile.fromString("""
+      var other = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""", url: "bar.dart").span(10, 11);
@@ -139,11 +138,11 @@ zip zap zop""", url: "bar.dart").span(10, 11);
 
   group("new SourceFile()", () {
     test("handles CRLF correctly", () {
-      expect(new SourceFile.fromString("foo\r\nbar").getLine(6), equals(1));
+      expect(SourceFile.fromString("foo\r\nbar").getLine(6), equals(1));
     });
 
     test("handles a lone CR correctly", () {
-      expect(new SourceFile.fromString("foo\rbar").getLine(5), equals(1));
+      expect(SourceFile.fromString("foo\rbar").getLine(5), equals(1));
     });
   });
 
@@ -283,7 +282,7 @@ zip zap zop""", url: "bar.dart").span(10, 11);
         });
 
         test("with a newline, contains an empty line", () {
-          file = new SourceFile.fromString("""
+          file = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop
@@ -348,8 +347,8 @@ zip zap zop
       });
 
       test("returns a base SourceSpan for a SourceSpan input", () {
-        var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
-            new SourceLocation(5, sourceUrl: "foo.dart"), "hey, ");
+        var other = SourceSpan(SourceLocation(0, sourceUrl: "foo.dart"),
+            SourceLocation(5, sourceUrl: "foo.dart"), "hey, ");
         var result = span.union(other);
         expect(result, isNot(isA<FileSpan>()));
         expect(result.start, equals(other.start));

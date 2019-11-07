@@ -72,7 +72,7 @@ class SourceFile {
   /// or equal to `0xFFFF`.
   SourceFile.decoded(Iterable<int> decodedChars, {url})
       : url = url is String ? Uri.parse(url) : url,
-        _decodedChars = new Uint32List.fromList(decodedChars.toList()) {
+        _decodedChars = Uint32List.fromList(decodedChars.toList()) {
     for (var i = 0; i < _decodedChars.length; i++) {
       var c = _decodedChars[i];
       if (c == _CR) {
@@ -89,18 +89,18 @@ class SourceFile {
   /// If [end] isn't passed, it defaults to the end of the file.
   FileSpan span(int start, [int end]) {
     if (end == null) end = length;
-    return new _FileSpan(this, start, end);
+    return _FileSpan(this, start, end);
   }
 
   /// Returns a location in [this] at [offset].
-  FileLocation location(int offset) => new FileLocation._(this, offset);
+  FileLocation location(int offset) => FileLocation._(this, offset);
 
   /// Gets the 0-based line corresponding to [offset].
   int getLine(int offset) {
     if (offset < 0) {
-      throw new RangeError("Offset may not be negative, was $offset.");
+      throw RangeError("Offset may not be negative, was $offset.");
     } else if (offset > length) {
-      throw new RangeError("Offset $offset must not be greater than the number "
+      throw RangeError("Offset $offset must not be greater than the number "
           "of characters in the file, $length.");
     }
 
@@ -163,24 +163,24 @@ class SourceFile {
   /// is used to more efficiently compute the column.
   int getColumn(int offset, {int line}) {
     if (offset < 0) {
-      throw new RangeError("Offset may not be negative, was $offset.");
+      throw RangeError("Offset may not be negative, was $offset.");
     } else if (offset > length) {
-      throw new RangeError("Offset $offset must be not be greater than the "
+      throw RangeError("Offset $offset must be not be greater than the "
           "number of characters in the file, $length.");
     }
 
     if (line == null) {
       line = getLine(offset);
     } else if (line < 0) {
-      throw new RangeError("Line may not be negative, was $line.");
+      throw RangeError("Line may not be negative, was $line.");
     } else if (line >= lines) {
-      throw new RangeError("Line $line must be less than the number of "
+      throw RangeError("Line $line must be less than the number of "
           "lines in the file, $lines.");
     }
 
     var lineStart = _lineStarts[line];
     if (lineStart > offset) {
-      throw new RangeError("Line $line comes after offset $offset.");
+      throw RangeError("Line $line comes after offset $offset.");
     }
 
     return offset - lineStart;
@@ -193,18 +193,18 @@ class SourceFile {
     if (column == null) column = 0;
 
     if (line < 0) {
-      throw new RangeError("Line may not be negative, was $line.");
+      throw RangeError("Line may not be negative, was $line.");
     } else if (line >= lines) {
-      throw new RangeError("Line $line must be less than the number of "
+      throw RangeError("Line $line must be less than the number of "
           "lines in the file, $lines.");
     } else if (column < 0) {
-      throw new RangeError("Column may not be negative, was $column.");
+      throw RangeError("Column may not be negative, was $column.");
     }
 
     var result = _lineStarts[line] + column;
     if (result > length ||
         (line + 1 < lines && result >= _lineStarts[line + 1])) {
-      throw new RangeError("Line $line doesn't have $column columns.");
+      throw RangeError("Line $line doesn't have $column columns.");
     }
 
     return result;
@@ -214,7 +214,7 @@ class SourceFile {
   ///
   /// If [end] isn't passed, it defaults to the end of the file.
   String getText(int start, [int end]) =>
-      new String.fromCharCodes(_decodedChars.sublist(start, end));
+      String.fromCharCodes(_decodedChars.sublist(start, end));
 }
 
 /// A [SourceLocation] within a [SourceFile].
@@ -234,14 +234,14 @@ class FileLocation extends SourceLocationMixin implements SourceLocation {
 
   FileLocation._(this.file, this.offset) {
     if (offset < 0) {
-      throw new RangeError("Offset may not be negative, was $offset.");
+      throw RangeError("Offset may not be negative, was $offset.");
     } else if (offset > file.length) {
-      throw new RangeError("Offset $offset must not be greater than the number "
+      throw RangeError("Offset $offset must not be greater than the number "
           "of characters in the file, ${file.length}.");
     }
   }
 
-  FileSpan pointSpan() => new _FileSpan(file, offset, offset);
+  FileSpan pointSpan() => _FileSpan(file, offset, offset);
 }
 
 /// A [SourceSpan] within a [SourceFile].
@@ -288,8 +288,8 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
 
   Uri get sourceUrl => file.url;
   int get length => _end - _start;
-  FileLocation get start => new FileLocation._(file, _start);
-  FileLocation get end => new FileLocation._(file, _end);
+  FileLocation get start => FileLocation._(file, _start);
+  FileLocation get end => FileLocation._(file, _end);
   String get text => file.getText(_start, _end);
 
   String get context {
@@ -327,12 +327,12 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
 
   _FileSpan(this.file, this._start, this._end) {
     if (_end < _start) {
-      throw new ArgumentError('End $_end must come after start $_start.');
+      throw ArgumentError('End $_end must come after start $_start.');
     } else if (_end > file.length) {
-      throw new RangeError("End $_end must not be greater than the number "
+      throw RangeError("End $_end must not be greater than the number "
           "of characters in the file, ${file.length}.");
     } else if (_start < 0) {
-      throw new RangeError("Start may not be negative, was $_start.");
+      throw RangeError("Start may not be negative, was $_start.");
     }
   }
 
@@ -351,11 +351,11 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
 
     if (other is _FileSpan) {
       if (this._start > other._end || other._start > this._end) {
-        throw new ArgumentError("Spans $this and $other are disjoint.");
+        throw ArgumentError("Spans $this and $other are disjoint.");
       }
     } else {
       if (this._start > other.end.offset || other.start.offset > this._end) {
-        throw new ArgumentError("Spans $this and $other are disjoint.");
+        throw ArgumentError("Spans $this and $other are disjoint.");
       }
     }
 
@@ -382,18 +382,18 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   /// between the two will be covered by the returned span.
   FileSpan expand(FileSpan other) {
     if (sourceUrl != other.sourceUrl) {
-      throw new ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
           " \"${other.sourceUrl}\" don't match.");
     }
 
     if (other is _FileSpan) {
       var start = math.min(this._start, other._start);
       var end = math.max(this._end, other._end);
-      return new _FileSpan(file, start, end);
+      return _FileSpan(file, start, end);
     } else {
       var start = math.min(this._start, other.start.offset);
       var end = math.max(this._end, other.end.offset);
-      return new _FileSpan(file, start, end);
+      return _FileSpan(file, start, end);
     }
   }
 }

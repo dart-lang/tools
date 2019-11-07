@@ -33,7 +33,7 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// before [end]. [text] must have a number of characters equal to the
   /// distance between [start] and [end].
   factory SourceSpan(SourceLocation start, SourceLocation end, String text) =>
-      new SourceSpanBase(start, end, text);
+      SourceSpanBase(start, end, text);
 
   /// Creates a new span that's the union of [this] and [other].
   ///
@@ -91,12 +91,12 @@ class SourceSpanBase extends SourceSpanMixin {
 
   SourceSpanBase(this.start, this.end, this.text) {
     if (end.sourceUrl != start.sourceUrl) {
-      throw new ArgumentError("Source URLs \"${start.sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"${start.sourceUrl}\" and "
           " \"${end.sourceUrl}\" don't match.");
     } else if (end.offset < start.offset) {
-      throw new ArgumentError('End $end must come after start $start.');
+      throw ArgumentError('End $end must come after start $start.');
     } else if (text.length != start.distance(end)) {
-      throw new ArgumentError('Text "$text" must be ${start.distance(end)} '
+      throw ArgumentError('Text "$text" must be ${start.distance(end)} '
           'characters long.');
     }
   }
