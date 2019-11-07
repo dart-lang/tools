@@ -51,7 +51,7 @@ abstract class SourceSpanMixin implements SourceSpan {
     buffer.write(': $message');
 
     var highlight = this.highlight(color: color);
-    if (!highlight.isEmpty) {
+    if (highlight.isNotEmpty) {
       buffer.writeln();
       buffer.write(highlight);
     }
