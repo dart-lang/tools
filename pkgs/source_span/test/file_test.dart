@@ -241,7 +241,7 @@ zip zap zop""", url: "bar.dart").span(10, 11);
     test("pointSpan() returns a FileSpan", () {
       var location = file.location(15);
       var span = location.pointSpan();
-      expect(span, new isInstanceOf<FileSpan>());
+      expect(span, isA<FileSpan>());
       expect(span.start, equals(location));
       expect(span.end, equals(location));
       expect(span.text, isEmpty);
@@ -344,14 +344,14 @@ zip zap zop
       });
 
       test("returns a FileSpan for a FileSpan input", () {
-        expect(span.union(file.span(0, 5)), new isInstanceOf<FileSpan>());
+        expect(span.union(file.span(0, 5)), isA<FileSpan>());
       });
 
       test("returns a base SourceSpan for a SourceSpan input", () {
         var other = new SourceSpan(new SourceLocation(0, sourceUrl: "foo.dart"),
             new SourceLocation(5, sourceUrl: "foo.dart"), "hey, ");
         var result = span.union(other);
-        expect(result, isNot(new isInstanceOf<FileSpan>()));
+        expect(result, isNot(isA<FileSpan>()));
         expect(result.start, equals(other.start));
         expect(result.end, equals(span.end));
         expect(result.text, equals("hey, ar baz\n"));
