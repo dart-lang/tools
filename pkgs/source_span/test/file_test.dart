@@ -5,8 +5,8 @@
 import 'package:test/test.dart';
 import 'package:source_span/source_span.dart';
 
-main() {
-  var file;
+void main() {
+  SourceFile file;
   setUp(() {
     file = SourceFile.fromString("""
 foo bar baz
@@ -109,7 +109,7 @@ zip zap zop""", url: "foo.dart");
 
     group("for span().union()", () {
       test("source URLs must match", () {
-        var other = SourceSpan(SourceLocation(10), SourceLocation(11), "_");
+        final other = SourceSpan(SourceLocation(10), SourceLocation(11), "_");
 
         expect(() => file.span(9, 10).union(other), throwsArgumentError);
       });
@@ -121,7 +121,7 @@ zip zap zop""", url: "foo.dart");
     });
 
     test("for span().expand() source URLs must match", () {
-      var other = SourceFile.fromString("""
+      final other = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""", url: "bar.dart").span(10, 11);
@@ -148,13 +148,13 @@ zip zap zop""", url: "bar.dart").span(10, 11);
 
   group("span()", () {
     test("returns a span between the given offsets", () {
-      var span = file.span(5, 10);
+      final span = file.span(5, 10);
       expect(span.start, equals(file.location(5)));
       expect(span.end, equals(file.location(10)));
     });
 
     test("end defaults to the end of the file", () {
-      var span = file.span(5);
+      final span = file.span(5);
       expect(span.start, equals(file.location(5)));
       expect(span.end, equals(file.location(file.length)));
     });
@@ -238,8 +238,8 @@ zip zap zop""", url: "bar.dart").span(10, 11);
     });
 
     test("pointSpan() returns a FileSpan", () {
-      var location = file.location(15);
-      var span = location.pointSpan();
+      final location = file.location(15);
+      final span = location.pointSpan();
       expect(span, isA<FileSpan>());
       expect(span.start, equals(location));
       expect(span.end, equals(location));
@@ -258,26 +258,26 @@ zip zap zop""", url: "bar.dart").span(10, 11);
 
     group("context", () {
       test("contains the span's text", () {
-        var span = file.span(8, 15);
+        final span = file.span(8, 15);
         expect(span.context.contains(span.text), isTrue);
         expect(span.context, equals('foo bar baz\nwhiz bang boom\n'));
       });
 
       test("contains the previous line for a point span at the end of a line",
           () {
-        var span = file.span(25, 25);
+        final span = file.span(25, 25);
         expect(span.context, equals('whiz bang boom\n'));
       });
 
       test("contains the next line for a point span at the beginning of a line",
           () {
-        var span = file.span(12, 12);
+        final span = file.span(12, 12);
         expect(span.context, equals('whiz bang boom\n'));
       });
 
       group("for a point span at the end of a file", () {
         test("without a newline, contains the last line", () {
-          var span = file.span(file.length, file.length);
+          final span = file.span(file.length, file.length);
           expect(span.context, equals('zip zap zop'));
         });
 
@@ -288,57 +288,57 @@ whiz bang boom
 zip zap zop
 """, url: "foo.dart");
 
-          var span = file.span(file.length, file.length);
+          final span = file.span(file.length, file.length);
           expect(span.context, isEmpty);
         });
       });
     });
 
     group("union()", () {
-      var span;
+      FileSpan span;
       setUp(() {
         span = file.span(5, 12);
       });
 
       test("works with a preceding adjacent span", () {
-        var other = file.span(0, 5);
-        var result = span.union(other);
+        final other = file.span(0, 5);
+        final result = span.union(other);
         expect(result.start, equals(other.start));
         expect(result.end, equals(span.end));
         expect(result.text, equals("foo bar baz\n"));
       });
 
       test("works with a preceding overlapping span", () {
-        var other = file.span(0, 8);
-        var result = span.union(other);
+        final other = file.span(0, 8);
+        final result = span.union(other);
         expect(result.start, equals(other.start));
         expect(result.end, equals(span.end));
         expect(result.text, equals("foo bar baz\n"));
       });
 
       test("works with a following adjacent span", () {
-        var other = file.span(12, 16);
-        var result = span.union(other);
+        final other = file.span(12, 16);
+        final result = span.union(other);
         expect(result.start, equals(span.start));
         expect(result.end, equals(other.end));
         expect(result.text, equals("ar baz\nwhiz"));
       });
 
       test("works with a following overlapping span", () {
-        var other = file.span(9, 16);
-        var result = span.union(other);
+        final other = file.span(9, 16);
+        final result = span.union(other);
         expect(result.start, equals(span.start));
         expect(result.end, equals(other.end));
         expect(result.text, equals("ar baz\nwhiz"));
       });
 
       test("works with an internal overlapping span", () {
-        var other = file.span(7, 10);
+        final other = file.span(7, 10);
         expect(span.union(other), equals(span));
       });
 
       test("works with an external overlapping span", () {
-        var other = file.span(0, 16);
+        final other = file.span(0, 16);
         expect(span.union(other), equals(other));
       });
 
@@ -347,9 +347,9 @@ zip zap zop
       });
 
       test("returns a base SourceSpan for a SourceSpan input", () {
-        var other = SourceSpan(SourceLocation(0, sourceUrl: "foo.dart"),
+        final other = SourceSpan(SourceLocation(0, sourceUrl: "foo.dart"),
             SourceLocation(5, sourceUrl: "foo.dart"), "hey, ");
-        var result = span.union(other);
+        final result = span.union(other);
         expect(result, isNot(isA<FileSpan>()));
         expect(result.start, equals(other.start));
         expect(result.end, equals(span.end));
@@ -358,50 +358,50 @@ zip zap zop
     });
 
     group("expand()", () {
-      var span;
+      FileSpan span;
       setUp(() {
         span = file.span(5, 12);
       });
 
       test("works with a preceding nonadjacent span", () {
-        var other = file.span(0, 3);
-        var result = span.expand(other);
+        final other = file.span(0, 3);
+        final result = span.expand(other);
         expect(result.start, equals(other.start));
         expect(result.end, equals(span.end));
         expect(result.text, equals("foo bar baz\n"));
       });
 
       test("works with a preceding overlapping span", () {
-        var other = file.span(0, 8);
-        var result = span.expand(other);
+        final other = file.span(0, 8);
+        final result = span.expand(other);
         expect(result.start, equals(other.start));
         expect(result.end, equals(span.end));
         expect(result.text, equals("foo bar baz\n"));
       });
 
       test("works with a following nonadjacent span", () {
-        var other = file.span(14, 16);
-        var result = span.expand(other);
+        final other = file.span(14, 16);
+        final result = span.expand(other);
         expect(result.start, equals(span.start));
         expect(result.end, equals(other.end));
         expect(result.text, equals("ar baz\nwhiz"));
       });
 
       test("works with a following overlapping span", () {
-        var other = file.span(9, 16);
-        var result = span.expand(other);
+        final other = file.span(9, 16);
+        final result = span.expand(other);
         expect(result.start, equals(span.start));
         expect(result.end, equals(other.end));
         expect(result.text, equals("ar baz\nwhiz"));
       });
 
       test("works with an internal overlapping span", () {
-        var other = file.span(7, 10);
+        final other = file.span(7, 10);
         expect(span.expand(other), equals(span));
       });
 
       test("works with an external overlapping span", () {
-        var other = file.span(0, 16);
+        final other = file.span(0, 16);
         expect(span.expand(other), equals(other));
       });
     });

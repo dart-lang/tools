@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/test.dart';
 import 'package:source_span/source_span.dart';
+import 'package:test/test.dart';
 
-main() {
-  var location;
+void main() {
+  SourceLocation location;
   setUp(() {
     location = SourceLocation(15, line: 2, column: 6, sourceUrl: "foo.dart");
   });
@@ -48,19 +48,19 @@ main() {
     });
 
     test('gracefully handles a missing source URL', () {
-      var location = SourceLocation(15, line: 2, column: 6);
+      final location = SourceLocation(15, line: 2, column: 6);
       expect(location.toolString, equals('unknown source:3:7'));
     });
   });
 
   test("distance returns the absolute distance between locations", () {
-    var other = SourceLocation(10, sourceUrl: "foo.dart");
+    final other = SourceLocation(10, sourceUrl: "foo.dart");
     expect(location.distance(other), equals(5));
     expect(other.distance(location), equals(5));
   });
 
   test("pointSpan returns an empty span at location", () {
-    var span = location.pointSpan();
+    final span = location.pointSpan();
     expect(span.start, equals(location));
     expect(span.end, equals(location));
     expect(span.text, isEmpty);
@@ -68,7 +68,7 @@ main() {
 
   group("compareTo()", () {
     test("sorts by offset", () {
-      var other = SourceLocation(20, sourceUrl: "foo.dart");
+      final other = SourceLocation(20, sourceUrl: "foo.dart");
       expect(location.compareTo(other), lessThan(0));
       expect(other.compareTo(location), greaterThan(0));
     });
@@ -80,17 +80,17 @@ main() {
 
   group("equality", () {
     test("two locations with the same offset and source are equal", () {
-      var other = SourceLocation(15, sourceUrl: "foo.dart");
+      final other = SourceLocation(15, sourceUrl: "foo.dart");
       expect(location, equals(other));
     });
 
     test("a different offset isn't equal", () {
-      var other = SourceLocation(10, sourceUrl: "foo.dart");
+      final other = SourceLocation(10, sourceUrl: "foo.dart");
       expect(location, isNot(equals(other)));
     });
 
     test("a different source isn't equal", () {
-      var other = SourceLocation(15, sourceUrl: "bar.dart");
+      final other = SourceLocation(15, sourceUrl: "bar.dart");
       expect(location, isNot(equals(other)));
     });
   });

@@ -2,13 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:term_glyph/term_glyph.dart' as glyph;
-import 'package:test/test.dart';
+// ignore_for_file: prefer_interpolation_to_compose_strings
 
 import 'package:source_span/source_span.dart';
 import 'package:source_span/src/colors.dart' as colors;
+import 'package:term_glyph/term_glyph.dart' as glyph;
+import 'package:test/test.dart';
 
-main() {
+void main() {
   bool oldAscii;
   setUpAll(() {
     oldAscii = glyph.ascii;
@@ -19,7 +20,7 @@ main() {
     glyph.ascii = oldAscii;
   });
 
-  var file;
+  SourceFile file;
   setUp(() {
     file = SourceFile.fromString("""
 foo bar baz
@@ -37,7 +38,7 @@ zip zap zop
   });
 
   test("gracefully handles a missing source URL", () {
-    var span = SourceFile.fromString("foo bar baz").span(4, 7);
+    final span = SourceFile.fromString("foo bar baz").span(4, 7);
     expect(span.highlight(), equals("""
   ,
 1 | foo bar baz
@@ -122,7 +123,7 @@ zip zap zop
     });
 
     test("on an empty line", () {
-      var file = SourceFile.fromString("foo\n\nbar");
+      final file = SourceFile.fromString("foo\n\nbar");
       expect(file.location(4).pointSpan().highlight(), equals("""
   ,
 2 | 
@@ -193,7 +194,7 @@ zip zap zop
     });
 
     test("highlights the full first line even if it's indented", () {
-      var file = SourceFile.fromString("""
+      final file = SourceFile.fromString("""
   foo bar baz
   whiz bang boom
   zip zap zop
@@ -209,7 +210,7 @@ zip zap zop
     });
 
     test("highlights the full first line if it's empty", () {
-      var file = SourceFile.fromString("""
+      final file = SourceFile.fromString("""
 foo
 
 bar
@@ -241,7 +242,7 @@ bar
     });
 
     test("highlights the full last line with a trailing Windows newline", () {
-      var file = SourceFile.fromString("""
+      final file = SourceFile.fromString("""
 foo bar baz\r
 whiz bang boom\r
 zip zap zop\r
@@ -268,7 +269,7 @@ zip zap zop\r
     test(
         "highlights the full last line at the end of the file with no trailing "
         "newline", () {
-      var file = SourceFile.fromString("""
+      final file = SourceFile.fromString("""
 foo bar baz
 whiz bang boom
 zip zap zop""");
@@ -283,7 +284,7 @@ zip zap zop""");
     });
 
     test("highlights the full last line if it's empty", () {
-      var file = SourceFile.fromString("""
+      final file = SourceFile.fromString("""
 foo
 
 bar
@@ -297,7 +298,7 @@ bar
     });
 
     test("highlights multiple empty lines", () {
-      var file = SourceFile.fromString("foo\n\n\n\nbar");
+      final file = SourceFile.fromString("foo\n\n\n\nbar");
       expect(file.span(4, 7).highlight(), equals("""
   ,
 2 | / 
@@ -308,7 +309,7 @@ bar
 
     // Regression test for #32
     test("highlights the end of a line and an empty line", () {
-      var file = SourceFile.fromString("foo\n\n");
+      final file = SourceFile.fromString("foo\n\n");
       expect(file.span(3, 5).highlight(), equals("""
   ,
 1 |   foo
@@ -321,7 +322,7 @@ bar
   group("prints tabs as spaces", () {
     group("in a single-line span", () {
       test("before the highlighted section", () {
-        var span = SourceFile.fromString("foo\tbar baz").span(4, 7);
+        final span = SourceFile.fromString("foo\tbar baz").span(4, 7);
 
         expect(span.highlight(), equals("""
   ,
@@ -331,7 +332,7 @@ bar
       });
 
       test("within the highlighted section", () {
-        var span = SourceFile.fromString("foo bar\tbaz bang").span(4, 11);
+        final span = SourceFile.fromString("foo bar\tbaz bang").span(4, 11);
 
         expect(span.highlight(), equals("""
   ,
@@ -341,7 +342,7 @@ bar
       });
 
       test("after the highlighted section", () {
-        var span = SourceFile.fromString("foo bar\tbaz").span(4, 7);
+        final span = SourceFile.fromString("foo bar\tbaz").span(4, 7);
 
         expect(span.highlight(), equals("""
   ,
@@ -353,7 +354,7 @@ bar
 
     group("in a multi-line span", () {
       test("before the highlighted section", () {
-        var span = SourceFile.fromString("""
+        final span = SourceFile.fromString("""
 foo\tbar baz
 whiz bang boom
 """).span(4, 21);
@@ -368,7 +369,7 @@ whiz bang boom
       });
 
       test("within the first highlighted line", () {
-        var span = SourceFile.fromString("""
+        final span = SourceFile.fromString("""
 foo bar\tbaz
 whiz bang boom
 """).span(4, 21);
@@ -383,7 +384,7 @@ whiz bang boom
       });
 
       test("within a middle highlighted line", () {
-        var span = SourceFile.fromString("""
+        final span = SourceFile.fromString("""
 foo bar baz
 whiz\tbang boom
 zip zap zop
@@ -400,7 +401,7 @@ zip zap zop
       });
 
       test("within the last highlighted line", () {
-        var span = SourceFile.fromString("""
+        final span = SourceFile.fromString("""
 foo bar baz
 whiz\tbang boom
 """).span(4, 21);
@@ -415,7 +416,7 @@ whiz\tbang boom
       });
 
       test("after the highlighted section", () {
-        var span = SourceFile.fromString("""
+        final span = SourceFile.fromString("""
 foo bar baz
 whiz bang\tboom
 """).span(4, 21);
@@ -433,7 +434,7 @@ whiz bang\tboom
 
   group("supports lines of preceding and following context for a span", () {
     test("within a single line", () {
-      var span = SourceSpanWithContext(
+      final span = SourceSpanWithContext(
           SourceLocation(20, line: 2, column: 5, sourceUrl: "foo.dart"),
           SourceLocation(27, line: 2, column: 12, sourceUrl: "foo.dart"),
           "foo bar",
@@ -450,7 +451,7 @@ whiz bang\tboom
     });
 
     test("covering a full line", () {
-      var span = SourceSpanWithContext(
+      final span = SourceSpanWithContext(
           SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
           SourceLocation(33, line: 3, column: 0, sourceUrl: "foo.dart"),
           "-----foo bar-----\n",
@@ -467,7 +468,7 @@ whiz bang\tboom
     });
 
     test("covering multiple full lines", () {
-      var span = SourceSpanWithContext(
+      final span = SourceSpanWithContext(
           SourceLocation(15, line: 2, column: 0, sourceUrl: "foo.dart"),
           SourceLocation(23, line: 4, column: 0, sourceUrl: "foo.dart"),
           "foo\nbar\n",
@@ -495,38 +496,38 @@ whiz bang\tboom
 
     test("colorizes if color is true", () {
       expect(file.span(4, 7).highlight(color: true), equals("""
-${colors.BLUE}  ,${colors.NONE}
-${colors.BLUE}1 |${colors.NONE} foo ${colors.RED}bar${colors.NONE} baz
-${colors.BLUE}  |${colors.NONE}     ${colors.RED}^^^${colors.NONE}
-${colors.BLUE}  '${colors.NONE}"""));
+${colors.blue}  ,${colors.none}
+${colors.blue}1 |${colors.none} foo ${colors.red}bar${colors.none} baz
+${colors.blue}  |${colors.none}     ${colors.red}^^^${colors.none}
+${colors.blue}  '${colors.none}"""));
     });
 
     test("uses the given color if it's passed", () {
-      expect(file.span(4, 7).highlight(color: colors.YELLOW), equals("""
-${colors.BLUE}  ,${colors.NONE}
-${colors.BLUE}1 |${colors.NONE} foo ${colors.YELLOW}bar${colors.NONE} baz
-${colors.BLUE}  |${colors.NONE}     ${colors.YELLOW}^^^${colors.NONE}
-${colors.BLUE}  '${colors.NONE}"""));
+      expect(file.span(4, 7).highlight(color: colors.yellow), equals("""
+${colors.blue}  ,${colors.none}
+${colors.blue}1 |${colors.none} foo ${colors.yellow}bar${colors.none} baz
+${colors.blue}  |${colors.none}     ${colors.yellow}^^^${colors.none}
+${colors.blue}  '${colors.none}"""));
     });
 
     test("colorizes a multiline span", () {
       expect(file.span(4, 34).highlight(color: true), equals("""
-${colors.BLUE}  ,${colors.NONE}
-${colors.BLUE}1 |${colors.NONE}   foo ${colors.RED}bar baz${colors.NONE}
-${colors.BLUE}  |${colors.NONE} ${colors.RED},-----^${colors.NONE}
-${colors.BLUE}2 |${colors.NONE} ${colors.RED}| whiz bang boom${colors.NONE}
-${colors.BLUE}3 |${colors.NONE} ${colors.RED}| zip zap${colors.NONE} zop
-${colors.BLUE}  |${colors.NONE} ${colors.RED}'-------^${colors.NONE}
-${colors.BLUE}  '${colors.NONE}"""));
+${colors.blue}  ,${colors.none}
+${colors.blue}1 |${colors.none}   foo ${colors.red}bar baz${colors.none}
+${colors.blue}  |${colors.none} ${colors.red},-----^${colors.none}
+${colors.blue}2 |${colors.none} ${colors.red}| whiz bang boom${colors.none}
+${colors.blue}3 |${colors.none} ${colors.red}| zip zap${colors.none} zop
+${colors.blue}  |${colors.none} ${colors.red}'-------^${colors.none}
+${colors.blue}  '${colors.none}"""));
     });
 
     test("colorizes a multiline span that highlights full lines", () {
       expect(file.span(0, 39).highlight(color: true), equals("""
-${colors.BLUE}  ,${colors.NONE}
-${colors.BLUE}1 |${colors.NONE} ${colors.RED}/ foo bar baz${colors.NONE}
-${colors.BLUE}2 |${colors.NONE} ${colors.RED}| whiz bang boom${colors.NONE}
-${colors.BLUE}3 |${colors.NONE} ${colors.RED}\\ zip zap zop${colors.NONE}
-${colors.BLUE}  '${colors.NONE}"""));
+${colors.blue}  ,${colors.none}
+${colors.blue}1 |${colors.none} ${colors.red}/ foo bar baz${colors.none}
+${colors.blue}2 |${colors.none} ${colors.red}| whiz bang boom${colors.none}
+${colors.blue}3 |${colors.none} ${colors.red}\\ zip zap zop${colors.none}
+${colors.blue}  '${colors.none}"""));
     });
   });
 

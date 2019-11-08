@@ -44,8 +44,8 @@ class Highlighter {
   /// alignment.
   static const _spacesPerTab = 4;
 
-  /// Creats a [Highlighter] that will return a message associated with [span]
-  /// when [write] is called.
+  /// Creates a [Highlighter] that will return a message associated with [span]
+  /// when [highlight] is called.
   ///
   /// [color] may either be a [String], a [bool], or `null`. If it's a string,
   /// it indicates an [ANSI terminal color
@@ -55,7 +55,7 @@ class Highlighter {
   /// highlighted using the default color. If it's `false` or `null`, it
   /// indicates that the text shouldn't be highlighted.
   factory Highlighter(SourceSpan span, {color}) {
-    if (color == true) color = colors.RED;
+    if (color == true) color = colors.red;
     if (color == false) color = null;
 
     var newSpan = _normalizeContext(span);
@@ -63,7 +63,7 @@ class Highlighter {
     newSpan = _normalizeTrailingNewline(newSpan);
     newSpan = _normalizeEndOfLine(newSpan);
 
-    return Highlighter._(newSpan, color);
+    return Highlighter._(newSpan, color as String);
   }
 
   /// Normalizes [span] to ensure that it's a [SourceSpanWithContext] whose
@@ -89,7 +89,7 @@ class Highlighter {
   /// Normalizes [span] to replace Windows-style newlines with Unix-style
   /// newlines.
   static SourceSpanWithContext _normalizeNewlines(SourceSpanWithContext span) {
-    var text = span.text;
+    final text = span.text;
     if (!text.contains("\r\n")) return span;
 
     var endOffset = span.end.offset;
@@ -121,7 +121,7 @@ class Highlighter {
     // significant, so we shouldn't trim it.
     if (span.text.endsWith("\n\n")) return span;
 
-    var context = span.context.substring(0, span.context.length - 1);
+    final context = span.context.substring(0, span.context.length - 1);
     var text = span.text;
     var start = span.start;
     var end = span.end;
@@ -142,7 +142,7 @@ class Highlighter {
     if (span.end.column != 0) return span;
     if (span.end.line == span.start.line) return span;
 
-    var text = span.text.substring(0, span.text.length - 1);
+    final text = span.text.substring(0, span.text.length - 1);
 
     return SourceSpanWithContext(
         span.start,
@@ -192,7 +192,7 @@ class Highlighter {
 
     // If [_span.context] contains lines prior to the one [_span.text] appears
     // on, write those first.
-    var lineStart =
+    final lineStart =
         findLineStart(_span.context, _span.text, _span.start.column);
     assert(lineStart != null); // enforced by [_normalizeContext]
 
@@ -202,7 +202,7 @@ class Highlighter {
       // [findLineStart] is guaranteed to return a position immediately after a
       // newline. Including that newline would add an extra empty line to the
       // end of [lines].
-      var lines = context.substring(0, lineStart - 1).split("\n");
+      final lines = context.substring(0, lineStart - 1).split("\n");
       var lineNumber = _span.start.line - lines.length;
       for (var line in lines) {
         _writeSidebar(line: lineNumber);
@@ -214,9 +214,9 @@ class Highlighter {
       context = context.substring(lineStart);
     }
 
-    var lines = context.split("\n");
+    final lines = context.split("\n");
 
-    var lastLineIndex = _span.end.line - _span.start.line;
+    final lastLineIndex = _span.end.line - _span.start.line;
     if (lines.last.isEmpty && lines.length > lastLineIndex + 1) {
       // Trim a trailing newline so we don't add an empty line to the end of the
       // highlight.
@@ -242,15 +242,14 @@ class Highlighter {
     var startColumn = math.min(_span.start.column, line.length);
     var endColumn = math.min(
         startColumn + _span.end.offset - _span.start.offset, line.length);
-    var textBefore = line.substring(0, startColumn);
+    final textBefore = line.substring(0, startColumn);
 
     // If the span covers the entire first line other than initial whitespace,
     // don't bother pointing out exactly where it begins.
     if (_multiline && _isOnlyWhitespace(textBefore)) {
       _buffer.write(" ");
       _colorize(() {
-        _buffer.write(glyph.glyphOrAscii("┌", "/"));
-        _buffer.write(" ");
+        _buffer..write(glyph.glyphOrAscii("┌", "/"))..write(" ");
         _writeText(line);
       });
       _buffer.writeln();
@@ -259,15 +258,15 @@ class Highlighter {
 
     _buffer.write(" " * _paddingAfterSidebar);
     _writeText(textBefore);
-    var textInside = line.substring(startColumn, endColumn);
+    final textInside = line.substring(startColumn, endColumn);
     _colorize(() => _writeText(textInside));
     _writeText(line.substring(endColumn));
     _buffer.writeln();
 
     // Adjust the start and end column to account for any tabs that were
     // converted to spaces.
-    var tabsBefore = _countTabs(textBefore);
-    var tabsInside = _countTabs(textInside);
+    final tabsBefore = _countTabs(textBefore);
+    final tabsInside = _countTabs(textInside);
     startColumn = startColumn + tabsBefore * (_spacesPerTab - 1);
     endColumn = endColumn + (tabsBefore + tabsInside) * (_spacesPerTab - 1);
 
@@ -277,9 +276,10 @@ class Highlighter {
     if (_multiline) {
       _buffer.write(" ");
       _colorize(() {
-        _buffer.write(glyph.topLeftCorner);
-        _buffer.write(glyph.horizontalLine * (startColumn + 1));
-        _buffer.write("^");
+        _buffer
+          ..write(glyph.topLeftCorner)
+          ..write(glyph.horizontalLine * (startColumn + 1))
+          ..write("^");
       });
     } else {
       _buffer.write(" " * (startColumn + 1));
@@ -300,8 +300,7 @@ class Highlighter {
 
       _buffer.write(" ");
       _colorize(() {
-        _buffer.write(glyph.verticalLine);
-        _buffer.write(" ");
+        _buffer..write(glyph.verticalLine)..write(" ");
         _writeText(line);
       });
       _buffer.writeln();
@@ -323,8 +322,7 @@ class Highlighter {
     if (_multiline && endColumn == line.length) {
       _buffer.write(" ");
       _colorize(() {
-        _buffer.write(glyph.glyphOrAscii("└", "\\"));
-        _buffer.write(" ");
+        _buffer..write(glyph.glyphOrAscii("└", "\\"))..write(" ");
         _writeText(line);
       });
       _buffer.writeln();
@@ -332,10 +330,9 @@ class Highlighter {
     }
 
     _buffer.write(" ");
-    var textInside = line.substring(0, endColumn);
+    final textInside = line.substring(0, endColumn);
     _colorize(() {
-      _buffer.write(glyph.verticalLine);
-      _buffer.write(" ");
+      _buffer..write(glyph.verticalLine)..write(" ");
       _writeText(textInside);
     });
     _writeText(line.substring(endColumn));
@@ -343,7 +340,7 @@ class Highlighter {
 
     // Adjust the end column to account for any tabs that were converted to
     // spaces.
-    var tabsInside = _countTabs(textInside);
+    final tabsInside = _countTabs(textInside);
     endColumn = endColumn + tabsInside * (_spacesPerTab - 1);
 
     // Write the highlight for the final line, which is an arrow pointing to the
@@ -351,9 +348,10 @@ class Highlighter {
     _writeSidebar();
     _buffer.write(" ");
     _colorize(() {
-      _buffer.write(glyph.bottomLeftCorner);
-      _buffer.write(glyph.horizontalLine * endColumn);
-      _buffer.write("^");
+      _buffer
+        ..write(glyph.bottomLeftCorner)
+        ..write(glyph.horizontalLine * endColumn)
+        ..write("^");
     });
     _buffer.writeln();
   }
@@ -395,7 +393,7 @@ class Highlighter {
         _buffer.write(" " * _paddingBeforeSidebar);
       }
       _buffer.write(end ?? glyph.verticalLine);
-    }, color: colors.BLUE);
+    }, color: colors.blue);
   }
 
   /// Returns the number of hard tabs in [text].
@@ -419,9 +417,9 @@ class Highlighter {
   /// enabled.
   ///
   /// If [color] is passed, it's used as the color; otherwise, [_color] is used.
-  void _colorize(void callback(), {String color}) {
+  void _colorize(void Function() callback, {String color}) {
     if (_color != null) _buffer.write(color ?? _color);
     callback();
-    if (_color != null) _buffer.write(colors.NONE);
+    if (_color != null) _buffer.write(colors.none);
   }
 }

@@ -5,18 +5,18 @@
 import 'package:test/test.dart';
 import 'package:source_span/src/utils.dart';
 
-main() {
+void main() {
   group('find line start', () {
     test('skip entries in wrong column', () {
-      var context = '0_bb\n1_bbb\n2b____\n3bbb\n';
-      var index = findLineStart(context, 'b', 1);
+      final context = '0_bb\n1_bbb\n2b____\n3bbb\n';
+      final index = findLineStart(context, 'b', 1);
       expect(index, 11);
       expect(context.substring(index - 1, index + 3), '\n2b_');
     });
 
     test('end of line column for empty text', () {
-      var context = '0123\n56789\nabcdefgh\n';
-      var index = findLineStart(context, '', 5);
+      final context = '0123\n56789\nabcdefgh\n';
+      final index = findLineStart(context, '', 5);
       expect(index, 5);
       expect(context[index], '5');
     });
@@ -33,25 +33,25 @@ main() {
     });
 
     test('empty text in empty context', () {
-      var index = findLineStart('', '', 0);
+      final index = findLineStart('', '', 0);
       expect(index, 0);
     });
 
     test('found on the first line', () {
-      var context = '0\n2\n45\n';
-      var index = findLineStart(context, '0', 0);
+      final context = '0\n2\n45\n';
+      final index = findLineStart(context, '0', 0);
       expect(index, 0);
     });
 
     test('finds text that starts with a newline', () {
-      var context = '0\n2\n45\n';
-      var index = findLineStart(context, '\n2', 1);
+      final context = '0\n2\n45\n';
+      final index = findLineStart(context, '\n2', 1);
       expect(index, 0);
     });
 
     test('not found', () {
-      var context = '0\n2\n45\n';
-      var index = findLineStart(context, '0', 1);
+      final context = '0\n2\n45\n';
+      final index = findLineStart(context, '0', 1);
       expect(index, isNull);
     });
   });

@@ -12,8 +12,8 @@ import 'span_mixin.dart';
 import 'span_with_context.dart';
 
 // Constants to determine end-of-lines.
-const int _LF = 10;
-const int _CR = 13;
+const int _lf = 10;
+const int _cr = 13;
 
 /// A class representing a source file.
 ///
@@ -71,28 +71,28 @@ class SourceFile {
   /// forwards-compatibility, callers should only pass in characters less than
   /// or equal to `0xFFFF`.
   SourceFile.decoded(Iterable<int> decodedChars, {url})
-      : url = url is String ? Uri.parse(url) : url,
+      : url = url is String ? Uri.parse(url) : url as Uri,
         _decodedChars = Uint32List.fromList(decodedChars.toList()) {
     for (var i = 0; i < _decodedChars.length; i++) {
       var c = _decodedChars[i];
-      if (c == _CR) {
+      if (c == _cr) {
         // Return not followed by newline is treated as a newline
-        var j = i + 1;
-        if (j >= _decodedChars.length || _decodedChars[j] != _LF) c = _LF;
+        final j = i + 1;
+        if (j >= _decodedChars.length || _decodedChars[j] != _lf) c = _lf;
       }
-      if (c == _LF) _lineStarts.add(i + 1);
+      if (c == _lf) _lineStarts.add(i + 1);
     }
   }
 
-  /// Returns a span in [this] from [start] to [end] (exclusive).
+  /// Returns a span from [start] to [end] (exclusive).
   ///
   /// If [end] isn't passed, it defaults to the end of the file.
   FileSpan span(int start, [int end]) {
-    if (end == null) end = length;
+    end ??= length;
     return _FileSpan(this, start, end);
   }
 
-  /// Returns a location in [this] at [offset].
+  /// Returns a location at [offset].
   FileLocation location(int offset) => FileLocation._(this, offset);
 
   /// Gets the 0-based line corresponding to [offset].
@@ -143,10 +143,10 @@ class SourceFile {
   ///
   /// Returns the index of the line in [_lineStarts].
   int _binarySearch(int offset) {
-    int min = 0;
-    int max = _lineStarts.length - 1;
+    var min = 0;
+    var max = _lineStarts.length - 1;
     while (min < max) {
-      var half = min + ((max - min) ~/ 2);
+      final half = min + ((max - min) ~/ 2);
       if (_lineStarts[half] > offset) {
         max = half;
       } else {
@@ -178,7 +178,7 @@ class SourceFile {
           "lines in the file, $lines.");
     }
 
-    var lineStart = _lineStarts[line];
+    final lineStart = _lineStarts[line];
     if (lineStart > offset) {
       throw RangeError("Line $line comes after offset $offset.");
     }
@@ -190,7 +190,7 @@ class SourceFile {
   ///
   /// [column] defaults to 0.
   int getOffset(int line, [int column]) {
-    if (column == null) column = 0;
+    column ??= 0;
 
     if (line < 0) {
       throw RangeError("Line may not be negative, was $line.");
@@ -201,7 +201,7 @@ class SourceFile {
       throw RangeError("Column may not be negative, was $column.");
     }
 
-    var result = _lineStarts[line] + column;
+    final result = _lineStarts[line] + column;
     if (result > length ||
         (line + 1 < lines && result >= _lineStarts[line + 1])) {
       throw RangeError("Line $line doesn't have $column columns.");
@@ -224,12 +224,19 @@ class SourceFile {
 ///
 /// A [FileLocation] can be created using [SourceFile.location].
 class FileLocation extends SourceLocationMixin implements SourceLocation {
-  /// The [file] that [this] belongs to.
+  /// The [file] that `this` belongs to.
   final SourceFile file;
 
+  @override
   final int offset;
+
+  @override
   Uri get sourceUrl => file.url;
+
+  @override
   int get line => file.getLine(offset);
+
+  @override
   int get column => file.getColumn(offset);
 
   FileLocation._(this.file, this.offset) {
@@ -241,27 +248,31 @@ class FileLocation extends SourceLocationMixin implements SourceLocation {
     }
   }
 
+  @override
   FileSpan pointSpan() => _FileSpan(file, offset, offset);
 }
 
 /// A [SourceSpan] within a [SourceFile].
 ///
 /// Unlike the base [SourceSpan], [FileSpan] lazily computes its line and column
-/// values based on its offset and the contents of [file]. [FileSpan.message] is
-/// also able to provide more context then [SourceSpan.message], and
-/// [FileSpan.union] will return a [FileSpan] if possible.
+/// values based on its offset and the contents of [file]. [SourceSpan.message]
+/// is also able to provide more context then [SourceSpan.message], and
+/// [SourceSpan.union] will return a [FileSpan] if possible.
 ///
 /// A [FileSpan] can be created using [SourceFile.span].
 abstract class FileSpan implements SourceSpanWithContext {
-  /// The [file] that [this] belongs to.
+  /// The [file] that `this` belongs to.
   SourceFile get file;
 
+  @override
   FileLocation get start;
+
+  @override
   FileLocation get end;
 
-  /// Returns a new span that covers both [this] and [other].
+  /// Returns a new span that covers both `this` and [other].
   ///
-  /// Unlike [union], [other] may be disjoint from [this]. If it is, the text
+  /// Unlike [union], [other] may be disjoint from `this`. If it is, the text
   /// between the two will be covered by the returned span.
   FileSpan expand(FileSpan other);
 }
@@ -272,6 +283,7 @@ abstract class FileSpan implements SourceSpanWithContext {
 /// to make certain operations more efficient. If we used `is FileSpan`, that
 /// would break if external classes implemented the interface.
 class _FileSpan extends SourceSpanMixin implements FileSpan {
+  @override
   final SourceFile file;
 
   /// The offset of the beginning of the span.
@@ -286,15 +298,25 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   /// objects.
   final int _end;
 
+  @override
   Uri get sourceUrl => file.url;
+
+  @override
   int get length => _end - _start;
+
+  @override
   FileLocation get start => FileLocation._(file, _start);
+
+  @override
   FileLocation get end => FileLocation._(file, _end);
+
+  @override
   String get text => file.getText(_start, _end);
 
+  @override
   String get context {
-    var endLine = file.getLine(_end);
-    var endColumn = file.getColumn(_end);
+    final endLine = file.getLine(_end);
+    final endColumn = file.getColumn(_end);
 
     int endOffset;
     if (endColumn == 0 && endLine != 0) {
@@ -336,25 +358,27 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
     }
   }
 
+  @override
   int compareTo(SourceSpan other) {
     if (other is! _FileSpan) return super.compareTo(other);
 
-    _FileSpan otherFile = other;
-    var result = _start.compareTo(otherFile._start);
+    final otherFile = other as _FileSpan;
+    final result = _start.compareTo(otherFile._start);
     return result == 0 ? _end.compareTo(otherFile._end) : result;
   }
 
+  @override
   SourceSpan union(SourceSpan other) {
     if (other is! FileSpan) return super.union(other);
 
-    _FileSpan span = expand(other);
+    final span = expand(other as _FileSpan);
 
     if (other is _FileSpan) {
-      if (this._start > other._end || other._start > this._end) {
+      if (_start > other._end || other._start > _end) {
         throw ArgumentError("Spans $this and $other are disjoint.");
       }
     } else {
-      if (this._start > other.end.offset || other.start.offset > this._end) {
+      if (_start > other.end.offset || other.start.offset > _end) {
         throw ArgumentError("Spans $this and $other are disjoint.");
       }
     }
@@ -362,6 +386,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
     return span;
   }
 
+  @override
   bool operator ==(other) {
     if (other is! FileSpan) return super == other;
     if (other is! _FileSpan) {
@@ -374,25 +399,27 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   }
 
   // Eliminates dart2js warning about overriding `==`, but not `hashCode`
+  @override
   int get hashCode => super.hashCode;
 
-  /// Returns a new span that covers both [this] and [other].
+  /// Returns a new span that covers both `this` and [other].
   ///
-  /// Unlike [union], [other] may be disjoint from [this]. If it is, the text
+  /// Unlike [union], [other] may be disjoint from `this`. If it is, the text
   /// between the two will be covered by the returned span.
+  @override
   FileSpan expand(FileSpan other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"$sourceUrl\" and "
           " \"${other.sourceUrl}\" don't match.");
     }
 
     if (other is _FileSpan) {
-      var start = math.min(this._start, other._start);
-      var end = math.max(this._end, other._end);
+      final start = math.min(_start, other._start);
+      final end = math.max(_end, other._end);
       return _FileSpan(file, start, end);
     } else {
-      var start = math.min(this._start, other.start.offset);
-      var end = math.max(this._end, other.end.offset);
+      final start = math.min(_start, other.start.offset);
+      final end = math.max(_end, other.end.offset);
       return _FileSpan(file, start, end);
     }
   }

@@ -4,12 +4,12 @@
 
 /// Returns the minimum of [obj1] and [obj2] according to
 /// [Comparable.compareTo].
-Comparable min(Comparable obj1, Comparable obj2) =>
+T min<T extends Comparable>(T obj1, T obj2) =>
     obj1.compareTo(obj2) > 0 ? obj2 : obj1;
 
 /// Returns the maximum of [obj1] and [obj2] according to
 /// [Comparable.compareTo].
-Comparable max(Comparable obj1, Comparable obj2) =>
+T max<T extends Comparable>(T obj1, T obj2) =>
     obj1.compareTo(obj2) > 0 ? obj1 : obj2;
 
 /// Returns the number of instances of [codeUnit] in [string].
@@ -31,7 +31,7 @@ int findLineStart(String context, String text, int column) {
   if (text.isEmpty) {
     var beginningOfLine = 0;
     while (true) {
-      var index = context.indexOf("\n", beginningOfLine);
+      final index = context.indexOf("\n", beginningOfLine);
       if (index == -1) {
         return context.length - beginningOfLine >= column
             ? beginningOfLine
@@ -46,10 +46,11 @@ int findLineStart(String context, String text, int column) {
   var index = context.indexOf(text);
   while (index != -1) {
     // Start looking before [index] in case [text] starts with a newline.
-    var lineStart = index == 0 ? 0 : context.lastIndexOf('\n', index - 1) + 1;
-    var textColumn = index - lineStart;
+    final lineStart = index == 0 ? 0 : context.lastIndexOf('\n', index - 1) + 1;
+    final textColumn = index - lineStart;
     if (column == textColumn) return lineStart;
     index = context.indexOf(text, index + 1);
   }
+  // ignore: avoid_returning_null
   return null;
 }

@@ -16,58 +16,69 @@ import 'utils.dart';
 /// [start] comes before [end], and that [text] has a number of characters equal
 /// to the distance between [start] and [end].
 abstract class SourceSpanMixin implements SourceSpan {
+  @override
   Uri get sourceUrl => start.sourceUrl;
+
+  @override
   int get length => end.offset - start.offset;
 
+  @override
   int compareTo(SourceSpan other) {
-    var result = start.compareTo(other.start);
+    final result = start.compareTo(other.start);
     return result == 0 ? end.compareTo(other.end) : result;
   }
 
+  @override
   SourceSpan union(SourceSpan other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"$sourceUrl\" and "
           " \"${other.sourceUrl}\" don't match.");
     }
 
-    var start = min(this.start, other.start);
-    var end = max(this.end, other.end);
-    var beginSpan = start == this.start ? this : other;
-    var endSpan = end == this.end ? this : other;
+    final start = min(this.start, other.start);
+    final end = max(this.end, other.end);
+    final beginSpan = start == this.start ? this : other;
+    final endSpan = end == this.end ? this : other;
 
     if (beginSpan.end.compareTo(endSpan.start) < 0) {
       throw ArgumentError("Spans $this and $other are disjoint.");
     }
 
-    var text = beginSpan.text +
+    final text = beginSpan.text +
         endSpan.text.substring(beginSpan.end.distance(endSpan.start));
     return SourceSpan(start, end, text);
   }
 
+  @override
   String message(String message, {color}) {
-    var buffer = StringBuffer();
-    buffer.write('line ${start.line + 1}, column ${start.column + 1}');
+    final buffer = StringBuffer()
+      ..write('line ${start.line + 1}, column ${start.column + 1}');
     if (sourceUrl != null) buffer.write(' of ${p.prettyUri(sourceUrl)}');
     buffer.write(': $message');
 
-    var highlight = this.highlight(color: color);
+    final highlight = this.highlight(color: color);
     if (highlight.isNotEmpty) {
-      buffer.writeln();
-      buffer.write(highlight);
+      buffer
+        ..writeln()
+        ..write(highlight);
     }
 
     return buffer.toString();
   }
 
+  @override
   String highlight({color}) {
-    if (this is! SourceSpanWithContext && this.length == 0) return "";
+    if (this is! SourceSpanWithContext && length == 0) return "";
     return Highlighter(this, color: color).highlight();
   }
 
+  @override
   bool operator ==(other) =>
       other is SourceSpan && start == other.start && end == other.end;
 
+  @override
   int get hashCode => start.hashCode + (31 * end.hashCode);
 
+  @override
   String toString() => '<$runtimeType: from $start to $end "$text">';
 }

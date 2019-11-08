@@ -14,35 +14,42 @@ import 'span.dart';
 
 /// A mixin for easily implementing [SourceLocation].
 abstract class SourceLocationMixin implements SourceLocation {
+  @override
   String get toolString {
-    var source = sourceUrl == null ? 'unknown source' : sourceUrl;
+    final source = sourceUrl == null ? 'unknown source' : sourceUrl;
     return '$source:${line + 1}:${column + 1}';
   }
 
+  @override
   int distance(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"$sourceUrl\" and "
           "\"${other.sourceUrl}\" don't match.");
     }
     return (offset - other.offset).abs();
   }
 
+  @override
   SourceSpan pointSpan() => SourceSpan(this, this, "");
 
+  @override
   int compareTo(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"$sourceUrl\" and "
           "\"${other.sourceUrl}\" don't match.");
     }
     return offset - other.offset;
   }
 
+  @override
   bool operator ==(other) =>
       other is SourceLocation &&
       sourceUrl == other.sourceUrl &&
       offset == other.offset;
 
+  @override
   int get hashCode => sourceUrl.hashCode + offset;
 
+  @override
   String toString() => '<$runtimeType: $offset $toolString>';
 }

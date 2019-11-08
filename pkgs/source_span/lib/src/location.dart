@@ -32,7 +32,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   ///
   /// This prints 1-based lines and columns.
   String get toolString {
-    var source = sourceUrl == null ? 'unknown source' : sourceUrl;
+    final source = sourceUrl == null ? 'unknown source' : sourceUrl;
     return '$source:${line + 1}:${column + 1}';
   }
 
@@ -42,9 +42,9 @@ class SourceLocation implements Comparable<SourceLocation> {
   /// means that [line] defaults to 0 and [column] defaults to [offset].
   ///
   /// [sourceUrl] may be either a [String], a [Uri], or `null`.
-  SourceLocation(int offset, {sourceUrl, int line, int column})
-      : sourceUrl = sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl,
-        offset = offset,
+  SourceLocation(this.offset, {sourceUrl, int line, int column})
+      : sourceUrl =
+            sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri,
         line = line == null ? 0 : line,
         column = column == null ? offset : column {
     if (offset < 0) {
@@ -56,12 +56,12 @@ class SourceLocation implements Comparable<SourceLocation> {
     }
   }
 
-  /// Returns the distance in characters between [this] and [other].
+  /// Returns the distance in characters between `this` and [other].
   ///
   /// This always returns a non-negative value.
   int distance(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"$sourceUrl\" and "
           "\"${other.sourceUrl}\" don't match.");
     }
     return (offset - other.offset).abs();
@@ -72,22 +72,26 @@ class SourceLocation implements Comparable<SourceLocation> {
 
   /// Compares two locations.
   ///
-  /// [other] must have the same source URL as [this].
+  /// [other] must have the same source URL as `this`.
+  @override
   int compareTo(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"${sourceUrl}\" and "
+      throw ArgumentError("Source URLs \"$sourceUrl\" and "
           "\"${other.sourceUrl}\" don't match.");
     }
     return offset - other.offset;
   }
 
+  @override
   bool operator ==(other) =>
       other is SourceLocation &&
       sourceUrl == other.sourceUrl &&
       offset == other.offset;
 
+  @override
   int get hashCode => sourceUrl.hashCode + offset;
 
+  @override
   String toString() => '<$runtimeType: $offset $toolString>';
 }
 

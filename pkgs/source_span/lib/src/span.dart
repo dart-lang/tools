@@ -6,6 +6,7 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'location.dart';
 import 'span_mixin.dart';
+import 'span_with_context.dart';
 
 /// A class that describes a segment of source text.
 abstract class SourceSpan implements Comparable<SourceSpan> {
@@ -35,16 +36,17 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   factory SourceSpan(SourceLocation start, SourceLocation end, String text) =>
       SourceSpanBase(start, end, text);
 
-  /// Creates a new span that's the union of [this] and [other].
+  /// Creates a new span that's the union of `this` and [other].
   ///
   /// The two spans must have the same source URL and may not be disjoint.
-  /// [text] is computed by combining [this.text] and [other.text].
+  /// [text] is computed by combining `this.text` and `other.text`.
   SourceSpan union(SourceSpan other);
 
   /// Compares two spans.
   ///
-  /// [other] must have the same source URL as [this]. This orders spans by
+  /// [other] must have the same source URL as `this`. This orders spans by
   /// [start] then [length].
+  @override
   int compareTo(SourceSpan other);
 
   /// Formats [message] in a human-friendly way associated with this span.
@@ -85,8 +87,11 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
 /// A base class for source spans with [start], [end], and [text] known at
 /// construction time.
 class SourceSpanBase extends SourceSpanMixin {
+  @override
   final SourceLocation start;
+  @override
   final SourceLocation end;
+  @override
   final String text;
 
   SourceSpanBase(this.start, this.end, this.text) {

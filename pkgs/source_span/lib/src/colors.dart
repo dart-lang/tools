@@ -3,10 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 // Color constants used for generating messages.
-const String RED = '\u001b[31m';
+const String red = '\u001b[31m';
 
-const String YELLOW = '\u001b[33m';
+const String yellow = '\u001b[33m';
 
-const String BLUE = '\u001b[34m';
+const String blue = '\u001b[34m';
 
-const String NONE = '\u001b[0m';
+const String none = '\u001b[0m';

@@ -20,16 +20,17 @@ class SourceSpanException implements Exception {
 
   SourceSpanException(this._message, this._span);
 
-  /// Returns a string representation of [this].
+  /// Returns a string representation of `this`.
   ///
   /// [color] may either be a [String], a [bool], or `null`. If it's a string,
-  /// it indicates an ANSII terminal color escape that should be used to
+  /// it indicates an ANSI terminal color escape that should be used to
   /// highlight the span's text. If it's `true`, it indicates that the text
   /// should be highlighted using the default color. If it's `false` or `null`,
   /// it indicates that the text shouldn't be highlighted.
+  @override
   String toString({color}) {
     if (span == null) return message;
-    return "Error on " + span.message(message, color: color);
+    return "Error on ${span.message(message, color: color)}";
   }
 }
 
@@ -37,11 +38,12 @@ class SourceSpanException implements Exception {
 class SourceSpanFormatException extends SourceSpanException
     implements FormatException {
   // This is a getter so that subclasses can override it.
-  dynamic get source => _source;
-  final _source;
+  @override
+  final dynamic source;
 
-  int get offset => span == null ? null : span.start.offset;
+  @override
+  int get offset => span?.start?.offset;
 
-  SourceSpanFormatException(String message, SourceSpan span, [this._source])
+  SourceSpanFormatException(String message, SourceSpan span, [this.source])
       : super(message, span);
 }
