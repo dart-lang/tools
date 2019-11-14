@@ -214,7 +214,7 @@ class SourceFile {
   ///
   /// If [end] isn't passed, it defaults to the end of the file.
   String getText(int start, [int end]) =>
-      String.fromCharCodes(_decodedChars, start, end);
+      String.fromCharCodes(_decodedChars.sublist(start, end));
 }
 
 /// A [SourceLocation] within a [SourceFile].
