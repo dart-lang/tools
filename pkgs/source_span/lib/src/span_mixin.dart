@@ -31,7 +31,7 @@ abstract class SourceSpanMixin implements SourceSpan {
   @override
   SourceSpan union(SourceSpan other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"$sourceUrl\" and "
+      throw ArgumentError('Source URLs \"$sourceUrl\" and '
           " \"${other.sourceUrl}\" don't match.");
     }
 
@@ -41,7 +41,7 @@ abstract class SourceSpanMixin implements SourceSpan {
     final endSpan = end == this.end ? this : other;
 
     if (beginSpan.end.compareTo(endSpan.start) < 0) {
-      throw ArgumentError("Spans $this and $other are disjoint.");
+      throw ArgumentError('Spans $this and $other are disjoint.');
     }
 
     final text = beginSpan.text +
@@ -68,7 +68,7 @@ abstract class SourceSpanMixin implements SourceSpan {
 
   @override
   String highlight({color}) {
-    if (this is! SourceSpanWithContext && length == 0) return "";
+    if (this is! SourceSpanWithContext && length == 0) return '';
     return Highlighter(this, color: color).highlight();
   }
 

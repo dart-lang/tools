@@ -48,11 +48,11 @@ class SourceLocation implements Comparable<SourceLocation> {
         line = line == null ? 0 : line,
         column = column == null ? offset : column {
     if (offset < 0) {
-      throw RangeError("Offset may not be negative, was $offset.");
+      throw RangeError('Offset may not be negative, was $offset.');
     } else if (line != null && line < 0) {
-      throw RangeError("Line may not be negative, was $line.");
+      throw RangeError('Line may not be negative, was $line.');
     } else if (column != null && column < 0) {
-      throw RangeError("Column may not be negative, was $column.");
+      throw RangeError('Column may not be negative, was $column.');
     }
   }
 
@@ -61,14 +61,14 @@ class SourceLocation implements Comparable<SourceLocation> {
   /// This always returns a non-negative value.
   int distance(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"$sourceUrl\" and "
+      throw ArgumentError('Source URLs \"$sourceUrl\" and '
           "\"${other.sourceUrl}\" don't match.");
     }
     return (offset - other.offset).abs();
   }
 
   /// Returns a span that covers only a single point: this location.
-  SourceSpan pointSpan() => SourceSpan(this, this, "");
+  SourceSpan pointSpan() => SourceSpan(this, this, '');
 
   /// Compares two locations.
   ///
@@ -76,7 +76,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   @override
   int compareTo(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError("Source URLs \"$sourceUrl\" and "
+      throw ArgumentError('Source URLs \"$sourceUrl\" and '
           "\"${other.sourceUrl}\" don't match.");
     }
     return offset - other.offset;
