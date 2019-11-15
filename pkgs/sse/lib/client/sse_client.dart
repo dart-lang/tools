@@ -25,6 +25,8 @@ class SseClient extends StreamChannelMixin<String> {
 
   String _serverUrl;
 
+  Timer _errorTimer;
+
   /// [serverUrl] is the URL under which the server is listening for
   /// incoming bi-directional SSE connections.
   SseClient(String serverUrl) {
@@ -36,7 +38,20 @@ class SseClient extends StreamChannelMixin<String> {
         .listen(_onOutgoingMessage, onDone: _onOutgoingDone);
     _eventSource.addEventListener('message', _onIncomingMessage);
     _eventSource.addEventListener('control', _onIncomingControlMessage);
-    _eventSource.onError.listen(_incomingController.addError);
+    _eventSource.onOpen.listen((_) {
+      _errorTimer?.cancel();
+    });
+    _eventSource.onError.listen((error) {
+      if (!(_errorTimer?.isActive ?? false)) {
+        // By default the SSE client uses keep-alive.
+        // Allow for a retry to connect before giving up.
+        _errorTimer = Timer(const Duration(seconds: 5), () {
+          _incomingController.addError(error);
+          _eventSource.close();
+        });
+      }
+    });
+
     _startPostingMessages();
   }
 
