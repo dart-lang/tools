@@ -169,7 +169,7 @@ class ListTree {
 
   /// List all entities that match this glob beneath [root].
   Stream<FileSystemEntity> list({String root, bool followLinks = true}) {
-    if (root == null) root = '.';
+    root ??= '.';
     var group = StreamGroup<FileSystemEntity>();
     for (var rootDir in _trees.keys) {
       var dir = rootDir == '.' ? root : rootDir;
@@ -179,20 +179,15 @@ class ListTree {
 
     if (!_canOverlap) return group.stream;
 
-    // TODO(nweiz): Rather than filtering here, avoid double-listing directories
+    // TODO: Rather than filtering here, avoid double-listing directories
     // in the first place.
-    var seen = Set();
-    return group.stream.where((entity) {
-      if (seen.contains(entity.path)) return false;
-      seen.add(entity.path);
-      return true;
-    });
+    var seen = Set<String>();
+    return group.stream.where((entity) => seen.add(entity.path));
   }
 
   /// Synchronosuly list all entities that match this glob beneath [root].
   List<FileSystemEntity> listSync({String root, bool followLinks = true}) {
-    if (root == null) root = '.';
-
+    root ??= '.';
     var result = _trees.keys.expand((rootDir) {
       var dir = rootDir == '.' ? root : rootDir;
       return _trees[rootDir].listSync(dir, followLinks: followLinks);
@@ -200,14 +195,10 @@ class ListTree {
 
     if (!_canOverlap) return result.toList();
 
-    // TODO(nweiz): Rather than filtering here, avoid double-listing directories
+    // TODO: Rather than filtering here, avoid double-listing directories
     // in the first place.
     var seen = Set<String>();
-    return result.where((entity) {
-      if (seen.contains(entity.path)) return false;
-      seen.add(entity.path);
-      return true;
-    }).toList();
+    return result.where((entity) => seen.add(entity.path)).toList();
   }
 }
 
