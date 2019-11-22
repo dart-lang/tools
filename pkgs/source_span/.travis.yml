@@ -13,7 +13,8 @@ matrix:
     - dart: dev
       dart_task: dartfmt
     - dart: dev
-      dart_task: dartanalyzer
+      dart_task:
+        dartanalyzer: --fatal-warnings --fatal-infos .
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

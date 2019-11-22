@@ -30,7 +30,7 @@ class SourceSpanException implements Exception {
   @override
   String toString({color}) {
     if (span == null) return message;
-    return "Error on ${span.message(message, color: color)}";
+    return 'Error on ${span.message(message, color: color)}';
   }
 }
 

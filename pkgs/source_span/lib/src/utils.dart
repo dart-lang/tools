@@ -31,7 +31,7 @@ int findLineStart(String context, String text, int column) {
   if (text.isEmpty) {
     var beginningOfLine = 0;
     while (true) {
-      final index = context.indexOf("\n", beginningOfLine);
+      final index = context.indexOf('\n', beginningOfLine);
       if (index == -1) {
         return context.length - beginningOfLine >= column
             ? beginningOfLine

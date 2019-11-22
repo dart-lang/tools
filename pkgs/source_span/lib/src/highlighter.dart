@@ -90,7 +90,7 @@ class Highlighter {
   /// newlines.
   static SourceSpanWithContext _normalizeNewlines(SourceSpanWithContext span) {
     final text = span.text;
-    if (!text.contains("\r\n")) return span;
+    if (!text.contains('\r\n')) return span;
 
     var endOffset = span.end.offset;
     for (var i = 0; i < text.length - 1; i++) {
@@ -105,8 +105,8 @@ class Highlighter {
             sourceUrl: span.sourceUrl,
             line: span.end.line,
             column: span.end.column),
-        text.replaceAll("\r\n", "\n"),
-        span.context.replaceAll("\r\n", "\n"));
+        text.replaceAll('\r\n', '\n'),
+        span.context.replaceAll('\r\n', '\n'));
   }
 
   /// Normalizes [span] to remove a trailing newline from `span.context`.
@@ -115,17 +115,17 @@ class Highlighter {
   /// the trailing newline used to be.
   static SourceSpanWithContext _normalizeTrailingNewline(
       SourceSpanWithContext span) {
-    if (!span.context.endsWith("\n")) return span;
+    if (!span.context.endsWith('\n')) return span;
 
     // If there's a full blank line on the end of [span.context], it's probably
     // significant, so we shouldn't trim it.
-    if (span.text.endsWith("\n\n")) return span;
+    if (span.text.endsWith('\n\n')) return span;
 
     final context = span.context.substring(0, span.context.length - 1);
     var text = span.text;
     var start = span.start;
     var end = span.end;
-    if (span.text.endsWith("\n") && _isTextAtEndOfContext(span)) {
+    if (span.text.endsWith('\n') && _isTextAtEndOfContext(span)) {
       text = span.text.substring(0, span.text.length - 1);
       end = SourceLocation(span.end.offset - 1,
           sourceUrl: span.sourceUrl,
@@ -163,9 +163,9 @@ class Highlighter {
     if (text.codeUnitAt(text.length - 1) == $lf) {
       return text.length == 1
           ? 0
-          : text.length - text.lastIndexOf("\n", text.length - 2) - 1;
+          : text.length - text.lastIndexOf('\n', text.length - 2) - 1;
     } else {
-      return text.length - text.lastIndexOf("\n") - 1;
+      return text.length - text.lastIndexOf('\n') - 1;
     }
   }
 
@@ -202,11 +202,11 @@ class Highlighter {
       // [findLineStart] is guaranteed to return a position immediately after a
       // newline. Including that newline would add an extra empty line to the
       // end of [lines].
-      final lines = context.substring(0, lineStart - 1).split("\n");
+      final lines = context.substring(0, lineStart - 1).split('\n');
       var lineNumber = _span.start.line - lines.length;
       for (var line in lines) {
         _writeSidebar(line: lineNumber);
-        _buffer.write(" " * _paddingAfterSidebar);
+        _buffer.write(' ' * _paddingAfterSidebar);
         _writeText(line);
         _buffer.writeln();
         lineNumber++;
@@ -214,7 +214,7 @@ class Highlighter {
       context = context.substring(lineStart);
     }
 
-    final lines = context.split("\n");
+    final lines = context.split('\n');
 
     final lastLineIndex = _span.end.line - _span.start.line;
     if (lines.last.isEmpty && lines.length > lastLineIndex + 1) {
@@ -247,16 +247,16 @@ class Highlighter {
     // If the span covers the entire first line other than initial whitespace,
     // don't bother pointing out exactly where it begins.
     if (_multiline && _isOnlyWhitespace(textBefore)) {
-      _buffer.write(" ");
+      _buffer.write(' ');
       _colorize(() {
-        _buffer..write(glyph.glyphOrAscii("┌", "/"))..write(" ");
+        _buffer..write(glyph.glyphOrAscii('┌', '/'))..write(' ');
         _writeText(line);
       });
       _buffer.writeln();
       return;
     }
 
-    _buffer.write(" " * _paddingAfterSidebar);
+    _buffer.write(' ' * _paddingAfterSidebar);
     _writeText(textBefore);
     final textInside = line.substring(startColumn, endColumn);
     _colorize(() => _writeText(textInside));
@@ -274,17 +274,17 @@ class Highlighter {
     // single-line span, and a pointer to the beginning of a multi-line span.
     _writeSidebar();
     if (_multiline) {
-      _buffer.write(" ");
+      _buffer.write(' ');
       _colorize(() {
         _buffer
           ..write(glyph.topLeftCorner)
           ..write(glyph.horizontalLine * (startColumn + 1))
-          ..write("^");
+          ..write('^');
       });
     } else {
-      _buffer.write(" " * (startColumn + 1));
+      _buffer.write(' ' * (startColumn + 1));
       _colorize(
-          () => _buffer.write("^" * math.max(endColumn - startColumn, 1)));
+          () => _buffer.write('^' * math.max(endColumn - startColumn, 1)));
     }
     _buffer.writeln();
   }
@@ -298,9 +298,9 @@ class Highlighter {
     for (var line in lines) {
       _writeSidebar(line: lineNumber);
 
-      _buffer.write(" ");
+      _buffer.write(' ');
       _colorize(() {
-        _buffer..write(glyph.verticalLine)..write(" ");
+        _buffer..write(glyph.verticalLine)..write(' ');
         _writeText(line);
       });
       _buffer.writeln();
@@ -320,19 +320,19 @@ class Highlighter {
     // If the span covers the entire last line, don't bother pointing out
     // exactly where it ends.
     if (_multiline && endColumn == line.length) {
-      _buffer.write(" ");
+      _buffer.write(' ');
       _colorize(() {
-        _buffer..write(glyph.glyphOrAscii("└", "\\"))..write(" ");
+        _buffer..write(glyph.glyphOrAscii('└', '\\'))..write(' ');
         _writeText(line);
       });
       _buffer.writeln();
       return;
     }
 
-    _buffer.write(" ");
+    _buffer.write(' ');
     final textInside = line.substring(0, endColumn);
     _colorize(() {
-      _buffer..write(glyph.verticalLine)..write(" ");
+      _buffer..write(glyph.verticalLine)..write(' ');
       _writeText(textInside);
     });
     _writeText(line.substring(endColumn));
@@ -346,12 +346,12 @@ class Highlighter {
     // Write the highlight for the final line, which is an arrow pointing to the
     // end of the span.
     _writeSidebar();
-    _buffer.write(" ");
+    _buffer.write(' ');
     _colorize(() {
       _buffer
         ..write(glyph.bottomLeftCorner)
         ..write(glyph.horizontalLine * endColumn)
-        ..write("^");
+        ..write('^');
     });
     _buffer.writeln();
   }
@@ -362,7 +362,7 @@ class Highlighter {
     var lineNumber = _span.end.line + 1;
     for (var line in lines) {
       _writeSidebar(line: lineNumber);
-      _buffer.write(" " * _paddingAfterSidebar);
+      _buffer.write(' ' * _paddingAfterSidebar);
       _writeText(line);
       _buffer.writeln();
       lineNumber++;
@@ -374,7 +374,7 @@ class Highlighter {
   void _writeText(String text) {
     for (var char in text.codeUnits) {
       if (char == $tab) {
-        _buffer.write(" " * _spacesPerTab);
+        _buffer.write(' ' * _spacesPerTab);
       } else {
         _buffer.writeCharCode(char);
       }
@@ -390,7 +390,7 @@ class Highlighter {
         // numbers to human-friendly 1-indexed line numbers.
         _buffer.write((line + 1).toString().padRight(_paddingBeforeSidebar));
       } else {
-        _buffer.write(" " * _paddingBeforeSidebar);
+        _buffer.write(' ' * _paddingBeforeSidebar);
       }
       _buffer.write(end ?? glyph.verticalLine);
     }, color: colors.blue);

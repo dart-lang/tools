@@ -384,23 +384,23 @@ zip zap zop
         final result = span.expand(other);
         expect(result.start, equals(span.start));
         expect(result.end, equals(other.end));
-        expect(result.text, equals("ar baz\nwhiz"));
+        expect(result.text, equals('ar baz\nwhiz'));
       });
 
-      test("works with a following overlapping span", () {
+      test('works with a following overlapping span', () {
         final other = file.span(9, 16);
         final result = span.expand(other);
         expect(result.start, equals(span.start));
         expect(result.end, equals(other.end));
-        expect(result.text, equals("ar baz\nwhiz"));
+        expect(result.text, equals('ar baz\nwhiz'));
       });
 
-      test("works with an internal overlapping span", () {
+      test('works with an internal overlapping span', () {
         final other = file.span(7, 10);
         expect(span.expand(other), equals(span));
       });
 
-      test("works with an external overlapping span", () {
+      test('works with an external overlapping span', () {
         final other = file.span(0, 16);
         expect(span.expand(other), equals(other));
       });
