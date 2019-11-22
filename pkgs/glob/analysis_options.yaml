@@ -28,6 +28,7 @@ linter:
     - package_api_docs
     - package_names
     - package_prefixed_library_names
+    - prefer_conditional_assignment
     - prefer_equal_for_default_values
     - prefer_final_fields
     - prefer_generic_function_type_aliases

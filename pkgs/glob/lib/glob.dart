@@ -52,32 +52,20 @@ class Glob implements Pattern {
   ListTree _listTree;
 
   /// Whether [context]'s current directory is absolute.
-  bool get _contextIsAbsolute {
-    if (_contextIsAbsoluteCache == null) {
-      _contextIsAbsoluteCache = context.isAbsolute(context.current);
-    }
-    return _contextIsAbsoluteCache;
-  }
+  bool get _contextIsAbsolute =>
+      _contextIsAbsoluteCache ??= context.isAbsolute(context.current);
 
   bool _contextIsAbsoluteCache;
 
   /// Whether [pattern] could match absolute paths.
-  bool get _patternCanMatchAbsolute {
-    if (_patternCanMatchAbsoluteCache == null) {
-      _patternCanMatchAbsoluteCache = _ast.canMatchAbsolute;
-    }
-    return _patternCanMatchAbsoluteCache;
-  }
+  bool get _patternCanMatchAbsolute =>
+      _patternCanMatchAbsoluteCache ??= _ast.canMatchAbsolute;
 
   bool _patternCanMatchAbsoluteCache;
 
   /// Whether [pattern] could match relative paths.
-  bool get _patternCanMatchRelative {
-    if (_patternCanMatchRelativeCache == null) {
-      _patternCanMatchRelativeCache = _ast.canMatchRelative;
-    }
-    return _patternCanMatchRelativeCache;
-  }
+  bool get _patternCanMatchRelative =>
+      _patternCanMatchRelativeCache ??= _ast.canMatchRelative;
 
   bool _patternCanMatchRelativeCache;
 
@@ -126,7 +114,7 @@ class Glob implements Pattern {
           "${context.style} paths, but this platform uses ${p.style} paths.");
     }
 
-    if (_listTree == null) _listTree = ListTree(_ast);
+    _listTree ??= ListTree(_ast);
     return _listTree.list(root: root, followLinks: followLinks);
   }
 
@@ -147,7 +135,7 @@ class Glob implements Pattern {
           "${context.style} paths, but this platform uses ${p.style} paths.");
     }
 
-    if (_listTree == null) _listTree = ListTree(_ast);
+    _listTree ??= ListTree(_ast);
     return _listTree.listSync(root: root, followLinks: followLinks);
   }
 

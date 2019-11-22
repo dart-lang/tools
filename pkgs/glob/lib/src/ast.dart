@@ -44,9 +44,7 @@ abstract class AstNode {
 
   /// Returns whether this glob matches [string].
   bool matches(String string) {
-    if (_regExp == null) {
-      _regExp = RegExp('^${_toRegExp()}\$', caseSensitive: caseSensitive);
-    }
+    _regExp ??= RegExp('^${_toRegExp()}\$', caseSensitive: caseSensitive);
     return _regExp.hasMatch(string);
   }
 
@@ -122,7 +120,7 @@ class SequenceNode extends AstNode {
     List<AstNode> currentComponent;
 
     addNode(AstNode node) {
-      if (currentComponent == null) currentComponent = [];
+      currentComponent ??= [];
       currentComponent.add(node);
     }
 
