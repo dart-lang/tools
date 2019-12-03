@@ -1,3 +1,10 @@
+## 0.13.3+2 - 2019-12-02
+
+* Tighten the dependency on the `vm_service` package from `>=1.0.0 <3.0.0` down
+  to `>=1.0.0 <2.1.2` in order to exclude version `2.1.2` which is broken on
+  the current stable Dart VM due to a missing SDK constraint in its pubspec.yaml.
+  The breakage was introduced in: https://github.com/dart-lang/sdk/commit/9e636b5ab4de850fb19bc262e0686fdf14bfbfc0.
+
 ## 0.13.3+1 - 2019-10-10
 
 * Loosen the dependency on the `vm_service` package from `^1.0.0` to `>=1.0.0
