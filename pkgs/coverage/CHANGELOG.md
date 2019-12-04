@@ -1,3 +1,10 @@
+## 0.13.3+3 - 2019-12-03
+
+* Re-loosen the dependency on the `vm_service` package from `>=1.0.0 < 2.1.2`
+  to `>=1.0.0 <3.0.0` now that breakage introduced in version `2.1.2` has been
+  resolved. Fixed in:
+  https://github.com/dart-lang/sdk/commit/7a911ce3f1e945f2cbd1967c6109127e3acbab5a.
+
 ## 0.13.3+2 - 2019-12-02
 
 * Tighten the dependency on the `vm_service` package from `>=1.0.0 <3.0.0` down
