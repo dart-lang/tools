@@ -17,20 +17,20 @@ void main() {
     expect(scanner.column, equals(0));
   });
 
-  group("scan()", () {
-    test("consuming no newlines increases the column but not the line", () {
+  group('scan()', () {
+    test('consuming no newlines increases the column but not the line', () {
       scanner.scan('foo');
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(3));
     });
 
-    test("consuming a newline resets the column and increases the line", () {
+    test('consuming a newline resets the column and increases the line', () {
       scanner.expect('foo\nba');
       expect(scanner.line, equals(1));
       expect(scanner.column, equals(2));
     });
 
-    test("consuming multiple newlines resets the column and increases the line",
+    test('consuming multiple newlines resets the column and increases the line',
         () {
       scanner.expect('foo\nbar\r\nb');
       expect(scanner.line, equals(2));
@@ -48,15 +48,15 @@ void main() {
     });
   });
 
-  group("readChar()", () {
-    test("on a non-newline character increases the column but not the line",
+  group('readChar()', () {
+    test('on a non-newline character increases the column but not the line',
         () {
       scanner.readChar();
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(1));
     });
 
-    test("consuming a newline resets the column and increases the line", () {
+    test('consuming a newline resets the column and increases the line', () {
       scanner.expect('foo');
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(3));
@@ -81,15 +81,15 @@ void main() {
     });
   });
 
-  group("scanChar()", () {
-    test("on a non-newline character increases the column but not the line",
+  group('scanChar()', () {
+    test('on a non-newline character increases the column but not the line',
         () {
       scanner.scanChar($f);
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(1));
     });
 
-    test("consuming a newline resets the column and increases the line", () {
+    test('consuming a newline resets the column and increases the line', () {
       scanner.expect('foo');
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(3));
@@ -114,28 +114,28 @@ void main() {
     });
   });
 
-  group("position=", () {
-    test("forward through newlines sets the line and column", () {
+  group('position=', () {
+    test('forward through newlines sets the line and column', () {
       scanner.position = 10; // "foo\nbar\r\nb"
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(1));
     });
 
-    test("forward through no newlines sets the column", () {
+    test('forward through no newlines sets the column', () {
       scanner.position = 2; // "fo"
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(2));
     });
 
-    test("backward through newlines sets the line and column", () {
-      scanner.scan("foo\nbar\r\nbaz");
+    test('backward through newlines sets the line and column', () {
+      scanner.scan('foo\nbar\r\nbaz');
       scanner.position = 2; // "fo"
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(2));
     });
 
-    test("backward through no newlines sets the column", () {
-      scanner.scan("foo\nbar\r\nbaz");
+    test('backward through no newlines sets the column', () {
+      scanner.scan('foo\nbar\r\nbaz');
       scanner.position = 10; // "foo\nbar\r\nb"
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(1));
@@ -148,7 +148,7 @@ void main() {
     });
   });
 
-  test("state= restores the line, column, and position", () {
+  test('state= restores the line, column, and position', () {
     scanner.scan('foo\nb');
     var state = scanner.state;
 
@@ -159,7 +159,7 @@ void main() {
     expect(scanner.column, equals(1));
   });
 
-  test("state= rejects a foreign state", () {
+  test('state= rejects a foreign state', () {
     scanner.scan('foo\nb');
 
     expect(() => LineScanner(scanner.string).state = scanner.state,

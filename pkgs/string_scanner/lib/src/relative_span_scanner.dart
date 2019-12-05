@@ -27,10 +27,12 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   /// This is used to convert between span-relative and file-relative fields.
   final FileLocation _startLocation;
 
+  @override
   int get line =>
       _sourceFile.getLine(_startLocation.offset + position) -
       _startLocation.line;
 
+  @override
   int get column {
     var line = _sourceFile.getLine(_startLocation.offset + position);
     var column =
@@ -40,24 +42,29 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
         : column;
   }
 
+  @override
   LineScannerState get state => _SpanScannerState(this, position);
 
+  @override
   set state(LineScannerState state) {
     if (state is! _SpanScannerState ||
         !identical((state as _SpanScannerState)._scanner, this)) {
-      throw ArgumentError("The given LineScannerState was not returned by "
-          "this LineScanner.");
+      throw ArgumentError('The given LineScannerState was not returned by '
+          'this LineScanner.');
     }
 
     position = state.position;
   }
 
+  @override
   FileSpan get lastSpan => _lastSpan;
   FileSpan _lastSpan;
 
+  @override
   FileLocation get location =>
       _sourceFile.location(_startLocation.offset + position);
 
+  @override
   FileSpan get emptySpan => location.pointSpan();
 
   RelativeSpanScanner(FileSpan span)
@@ -65,12 +72,14 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
         _startLocation = span.start,
         super(span.text, sourceUrl: span.sourceUrl);
 
+  @override
   FileSpan spanFrom(LineScannerState startState, [LineScannerState endState]) {
     var endPosition = endState == null ? position : endState.position;
     return _sourceFile.span(_startLocation.offset + startState.position,
         _startLocation.offset + endPosition);
   }
 
+  @override
   bool matches(Pattern pattern) {
     if (!super.matches(pattern)) {
       _lastSpan = null;
@@ -82,6 +91,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
     return true;
   }
 
+  @override
   void error(String message, {Match match, int position, int length}) {
     validateErrorArgs(string, match, position, length);
 
@@ -100,8 +110,11 @@ class _SpanScannerState implements LineScannerState {
   /// The [SpanScanner] that created this.
   final RelativeSpanScanner _scanner;
 
+  @override
   final int position;
+  @override
   int get line => _scanner._sourceFile.getLine(position);
+  @override
   int get column => _scanner._sourceFile.getColumn(position);
 
   _SpanScannerState(this._scanner, this.position);

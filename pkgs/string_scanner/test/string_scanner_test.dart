@@ -72,7 +72,7 @@ void main() {
       expect(scanner.position, equals(0));
     });
 
-    test("substring returns the empty string", () {
+    test('substring returns the empty string', () {
       expect(scanner.substring(0), isEmpty);
     });
 
@@ -130,38 +130,38 @@ void main() {
       expect(scanner.position, equals(0));
     });
 
-    test("a matching scanChar returns true moves forward", () {
+    test('a matching scanChar returns true moves forward', () {
       expect(scanner.scanChar($f), isTrue);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(1));
     });
 
-    test("a non-matching scanChar returns false and does nothing", () {
+    test('a non-matching scanChar returns false and does nothing', () {
       expect(scanner.scanChar($x), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
 
-    test("a matching expectChar moves forward", () {
+    test('a matching expectChar moves forward', () {
       scanner.expectChar($f);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(1));
     });
 
-    test("a non-matching expectChar fails", () {
+    test('a non-matching expectChar fails', () {
       expect(() => scanner.expectChar($x), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(0));
     });
 
-    test("a matching scan returns true and changes the state", () {
+    test('a matching scan returns true and changes the state', () {
       expect(scanner.scan(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
     });
 
-    test("a non-matching scan returns false and sets lastMatch to null", () {
+    test('a non-matching scan returns false and sets lastMatch to null', () {
       expect(scanner.matches(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch, isNotNull);
 
@@ -171,7 +171,7 @@ void main() {
       expect(scanner.rest, equals('foo bar'));
     });
 
-    test("a matching expect changes the state", () {
+    test('a matching expect changes the state', () {
       scanner.expect(RegExp('f(..)'));
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(3));
@@ -179,8 +179,8 @@ void main() {
     });
 
     test(
-        "a non-matching expect throws a FormatException and sets lastMatch to "
-        "null", () {
+        'a non-matching expect throws a FormatException and sets lastMatch to '
+        'null', () {
       expect(scanner.matches(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch, isNotNull);
 
@@ -190,7 +190,7 @@ void main() {
       expect(scanner.rest, equals('foo bar'));
     });
 
-    test("a matching matches returns true and only changes lastMatch", () {
+    test('a matching matches returns true and only changes lastMatch', () {
       expect(scanner.matches(RegExp('f(..)')), isTrue);
       expect(scanner.lastMatch[1], equals('oo'));
       expect(scanner.position, equals(0));
@@ -205,15 +205,15 @@ void main() {
       expect(scanner.rest, equals('foo bar'));
     });
 
-    test("substring from the beginning returns the empty string", () {
+    test('substring from the beginning returns the empty string', () {
       expect(scanner.substring(0), isEmpty);
     });
 
-    test("substring with a custom end returns the substring", () {
+    test('substring with a custom end returns the substring', () {
       expect(scanner.substring(0, 3), equals('foo'));
     });
 
-    test("substring with the string length returns the whole string", () {
+    test('substring with the string length returns the whole string', () {
       expect(scanner.substring(0, 7), equals('foo bar'));
     });
 
@@ -332,33 +332,33 @@ void main() {
       expect(scanner.position, equals(7));
     });
 
-    test("scan returns false and sets lastMatch to null", () {
+    test('scan returns false and sets lastMatch to null', () {
       expect(scanner.scan(RegExp('.')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(7));
     });
 
-    test("expect throws a FormatException and sets lastMatch to null", () {
+    test('expect throws a FormatException and sets lastMatch to null', () {
       expect(() => scanner.expect(RegExp('.')), throwsFormatException);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(7));
     });
 
-    test("matches returns false sets lastMatch to null", () {
+    test('matches returns false sets lastMatch to null', () {
       expect(scanner.matches(RegExp('.')), isFalse);
       expect(scanner.lastMatch, isNull);
       expect(scanner.position, equals(7));
     });
 
-    test("substring from the beginning returns the whole string", () {
+    test('substring from the beginning returns the whole string', () {
       expect(scanner.substring(0), equals('foo bar'));
     });
 
-    test("substring with a custom start returns a substring from there", () {
+    test('substring with a custom start returns a substring from there', () {
       expect(scanner.substring(4), equals('bar'));
     });
 
-    test("substring with a custom start and end returns that substring", () {
+    test('substring with a custom start and end returns that substring', () {
       expect(scanner.substring(3, 5), equals(' b'));
     });
 

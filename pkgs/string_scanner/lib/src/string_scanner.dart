@@ -24,7 +24,7 @@ class StringScanner {
   int get position => _position;
   set position(int position) {
     if (position < 0 || position > string.length) {
-      throw ArgumentError("Invalid position $position");
+      throw ArgumentError('Invalid position $position');
     }
 
     _position = position;
@@ -68,7 +68,7 @@ class StringScanner {
   /// This throws a [FormatException] if the string has been fully consumed. It
   /// doesn't affect [lastMatch].
   int readChar() {
-    if (isDone) _fail("more input");
+    if (isDone) _fail('more input');
     return string.codeUnitAt(_position++);
   }
 
@@ -144,10 +144,10 @@ class StringScanner {
     if (name == null) {
       if (pattern is RegExp) {
         var source = pattern.pattern;
-        name = "/$source/";
+        name = '/$source/';
       } else {
         name =
-            pattern.toString().replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+            pattern.toString().replaceAll('\\', '\\\\').replaceAll('"', '\\"');
         name = '"$name"';
       }
     }
@@ -158,7 +158,7 @@ class StringScanner {
   /// [FormatException].
   void expectDone() {
     if (isDone) return;
-    _fail("no more input");
+    _fail('no more input');
   }
 
   /// Returns whether or not [pattern] matches at the current position of the
@@ -210,6 +210,6 @@ class StringScanner {
   /// Throws a [FormatException] describing that [name] is expected at the
   /// current position in the string.
   void _fail(String name) {
-    error("expected $name.", position: position, length: 0);
+    error('expected $name.', position: position, length: 0);
   }
 }

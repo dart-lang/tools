@@ -11,26 +11,30 @@ import 'span_scanner.dart';
 // sdk#23770 is fully complete, we should move the shared code into a mixin.
 
 /// A regular expression matching newlines across platforms.
-final _newlineRegExp = RegExp(r"\r\n?|\n");
+final _newlineRegExp = RegExp(r'\r\n?|\n');
 
 /// A [SpanScanner] that tracks the line and column eagerly, like [LineScanner].
 class EagerSpanScanner extends SpanScanner {
+  @override
   int get line => _line;
   int _line = 0;
 
+  @override
   int get column => _column;
   int _column = 0;
 
+  @override
   LineScannerState get state =>
       _EagerSpanScannerState(this, position, line, column);
 
   bool get _betweenCRLF => peekChar(-1) == $cr && peekChar() == $lf;
 
+  @override
   set state(LineScannerState state) {
     if (state is! _EagerSpanScannerState ||
         !identical((state as _EagerSpanScannerState)._scanner, this)) {
-      throw ArgumentError("The given LineScannerState was not returned by "
-          "this LineScanner.");
+      throw ArgumentError('The given LineScannerState was not returned by '
+          'this LineScanner.');
     }
 
     super.position = state.position;
@@ -38,6 +42,7 @@ class EagerSpanScanner extends SpanScanner {
     _column = state.column;
   }
 
+  @override
   set position(int newPosition) {
     var oldPosition = position;
     super.position = newPosition;
@@ -67,12 +72,14 @@ class EagerSpanScanner extends SpanScanner {
   EagerSpanScanner(String string, {sourceUrl, int position})
       : super(string, sourceUrl: sourceUrl, position: position);
 
+  @override
   bool scanChar(int character) {
     if (!super.scanChar(character)) return false;
     _adjustLineAndColumn(character);
     return true;
   }
 
+  @override
   int readChar() {
     var character = super.readChar();
     _adjustLineAndColumn(character);
@@ -89,6 +96,7 @@ class EagerSpanScanner extends SpanScanner {
     }
   }
 
+  @override
   bool scan(Pattern pattern) {
     if (!super.scan(pattern)) return false;
 
@@ -115,8 +123,11 @@ class EagerSpanScanner extends SpanScanner {
 /// A class representing the state of an [EagerSpanScanner].
 class _EagerSpanScannerState implements LineScannerState {
   final EagerSpanScanner _scanner;
+  @override
   final int position;
+  @override
   final int line;
+  @override
   final int column;
 
   _EagerSpanScannerState(this._scanner, this.position, this.line, this.column);

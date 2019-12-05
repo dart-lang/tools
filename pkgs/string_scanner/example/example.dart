@@ -16,18 +16,18 @@ num parseNumber(String source) {
 
   // [Scanner.scan] tries to consume a [Pattern] and returns whether or not it
   // succeeded. It will move the scan pointer past the end of the pattern.
-  var negative = scanner.scan("-");
+  var negative = scanner.scan('-');
 
   // [Scanner.expect] consumes a [Pattern] and throws a [FormatError] if it
   // fails. Like [Scanner.scan], it will move the scan pointer forward.
-  scanner.expect(RegExp(r"\d+"));
+  scanner.expect(RegExp(r'\d+'));
 
   // [Scanner.lastMatch] holds the [MatchData] for the most recent call to
   // [Scanner.scan], [Scanner.expect], or [Scanner.matches].
   var number = num.parse(scanner.lastMatch[0]);
 
-  if (scanner.scan(".")) {
-    scanner.expect(RegExp(r"\d+"));
+  if (scanner.scan('.')) {
+    scanner.expect(RegExp(r'\d+'));
     var decimal = scanner.lastMatch[0];
     number += int.parse(decimal) / math.pow(10, decimal.length);
   }

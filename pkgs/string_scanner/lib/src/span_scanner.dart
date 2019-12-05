@@ -19,16 +19,20 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// This caches line break information and is used to generate [FileSpan]s.
   final SourceFile _sourceFile;
 
+  @override
   int get line => _sourceFile.getLine(position);
+  @override
   int get column => _sourceFile.getColumn(position);
 
+  @override
   LineScannerState get state => _SpanScannerState(this, position);
 
+  @override
   set state(LineScannerState state) {
     if (state is! _SpanScannerState ||
         !identical((state as _SpanScannerState)._scanner, this)) {
-      throw ArgumentError("The given LineScannerState was not returned by "
-          "this LineScanner.");
+      throw ArgumentError('The given LineScannerState was not returned by '
+          'this LineScanner.');
     }
 
     position = state.position;
@@ -89,6 +93,7 @@ class SpanScanner extends StringScanner implements LineScanner {
     return _sourceFile.span(startState.position, endPosition);
   }
 
+  @override
   bool matches(Pattern pattern) {
     if (!super.matches(pattern)) {
       _lastSpan = null;
@@ -99,6 +104,7 @@ class SpanScanner extends StringScanner implements LineScanner {
     return true;
   }
 
+  @override
   void error(String message, {Match match, int position, int length}) {
     validateErrorArgs(string, match, position, length);
 
@@ -116,8 +122,11 @@ class _SpanScannerState implements LineScannerState {
   /// The [SpanScanner] that created this.
   final SpanScanner _scanner;
 
+  @override
   final int position;
+  @override
   int get line => _scanner._sourceFile.getLine(position);
+  @override
   int get column => _scanner._sourceFile.getColumn(position);
 
   _SpanScannerState(this._scanner, this.position);

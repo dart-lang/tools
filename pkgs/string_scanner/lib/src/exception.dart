@@ -8,6 +8,7 @@ import 'string_scanner.dart';
 
 /// An exception thrown by a [StringScanner] that failed to parse a string.
 class StringScannerException extends SourceSpanFormatException {
+  @override
   String get source => super.source as String;
 
   /// The URL of the source file being parsed.

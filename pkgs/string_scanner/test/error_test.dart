@@ -15,7 +15,7 @@ void main() {
     expect(() => scanner.error('oh no!'), throwsStringScannerException('bar'));
   });
 
-  group("with match", () {
+  group('with match', () {
     test('supports an earlier match', () {
       var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
@@ -56,7 +56,7 @@ void main() {
     });
   });
 
-  group("with position and/or length", () {
+  group('with position and/or length', () {
     test('defaults to length 0', () {
       var scanner = StringScanner('foo bar baz');
       scanner.expect('foo ');
@@ -105,39 +105,39 @@ void main() {
     });
   });
 
-  group("argument errors", () {
+  group('argument errors', () {
     StringScanner scanner;
     setUp(() {
       scanner = StringScanner('foo bar baz');
       scanner.scan('foo');
     });
 
-    test("if match is passed with position", () {
+    test('if match is passed with position', () {
       expect(
-          () => scanner.error("oh no!", match: scanner.lastMatch, position: 1),
+          () => scanner.error('oh no!', match: scanner.lastMatch, position: 1),
           throwsArgumentError);
     });
 
-    test("if match is passed with length", () {
-      expect(() => scanner.error("oh no!", match: scanner.lastMatch, length: 1),
+    test('if match is passed with length', () {
+      expect(() => scanner.error('oh no!', match: scanner.lastMatch, length: 1),
           throwsArgumentError);
     });
 
-    test("if position is negative", () {
-      expect(() => scanner.error("oh no!", position: -1), throwsArgumentError);
+    test('if position is negative', () {
+      expect(() => scanner.error('oh no!', position: -1), throwsArgumentError);
     });
 
-    test("if position is outside the string", () {
-      expect(() => scanner.error("oh no!", position: 100), throwsArgumentError);
+    test('if position is outside the string', () {
+      expect(() => scanner.error('oh no!', position: 100), throwsArgumentError);
     });
 
-    test("if position + length is outside the string", () {
-      expect(() => scanner.error("oh no!", position: 7, length: 7),
+    test('if position + length is outside the string', () {
+      expect(() => scanner.error('oh no!', position: 7, length: 7),
           throwsArgumentError);
     });
 
-    test("if length is negative", () {
-      expect(() => scanner.error("oh no!", length: -1), throwsArgumentError);
+    test('if length is negative', () {
+      expect(() => scanner.error('oh no!', length: -1), throwsArgumentError);
     });
   });
 }

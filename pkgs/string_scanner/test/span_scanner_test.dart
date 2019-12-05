@@ -9,15 +9,15 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  testForImplementation("lazy", ([String string]) {
+  testForImplementation('lazy', ([String string]) {
     return SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
   });
 
-  testForImplementation("eager", ([String string]) {
+  testForImplementation('eager', ([String string]) {
     return SpanScanner.eager(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
   });
 
-  group("within", () {
+  group('within', () {
     var text = 'first\nbefore: foo\nbar\nbaz :after\nlast';
     var startOffset = text.indexOf('foo');
 
@@ -28,24 +28,24 @@ void main() {
           SpanScanner.within(file.span(startOffset, text.indexOf(' :after')));
     });
 
-    test("string only includes the span text", () {
-      expect(scanner.string, equals("foo\nbar\nbaz"));
+    test('string only includes the span text', () {
+      expect(scanner.string, equals('foo\nbar\nbaz'));
     });
 
-    test("line and column are span-relative", () {
+    test('line and column are span-relative', () {
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(0));
 
-      scanner.scan("foo");
+      scanner.scan('foo');
       expect(scanner.line, equals(0));
       expect(scanner.column, equals(3));
 
-      scanner.scan("\n");
+      scanner.scan('\n');
       expect(scanner.line, equals(1));
       expect(scanner.column, equals(0));
     });
 
-    test("tracks the span for the last match", () {
+    test('tracks the span for the last match', () {
       scanner.scan('fo');
       scanner.scan('o\nba');
 
@@ -63,7 +63,7 @@ void main() {
       expect(span.text, equals('o\nba'));
     });
 
-    test(".spanFrom() returns a span from a previous state", () {
+    test('.spanFrom() returns a span from a previous state', () {
       scanner.scan('fo');
       var state = scanner.state;
       scanner.scan('o\nba');
@@ -73,7 +73,7 @@ void main() {
       expect(span.text, equals('o\nbar\nba'));
     });
 
-    test(".emptySpan returns an empty span at the current location", () {
+    test('.emptySpan returns an empty span at the current location', () {
       scanner.scan('foo\nba');
 
       var span = scanner.emptySpan;
@@ -90,14 +90,14 @@ void main() {
       expect(span.text, equals(''));
     });
 
-    test(".error() uses an absolute span", () {
-      scanner.expect("foo");
+    test('.error() uses an absolute span', () {
+      scanner.expect('foo');
       expect(
-          () => scanner.error('oh no!'), throwsStringScannerException("foo"));
+          () => scanner.error('oh no!'), throwsStringScannerException('foo'));
     });
 
-    test(".isDone returns true at the end of the span", () {
-      scanner.expect("foo\nbar\nbaz");
+    test('.isDone returns true at the end of the span', () {
+      scanner.expect('foo\nbar\nbaz');
       expect(scanner.isDone, isTrue);
     });
   });
@@ -105,11 +105,11 @@ void main() {
 
 void testForImplementation(
     String name, SpanScanner Function([String string]) create) {
-  group("for a $name scanner", () {
+  group('for a $name scanner', () {
     SpanScanner scanner;
     setUp(() => scanner = create());
 
-    test("tracks the span for the last match", () {
+    test('tracks the span for the last match', () {
       scanner.scan('fo');
       scanner.scan('o\nba');
 
@@ -127,7 +127,7 @@ void testForImplementation(
       expect(span.text, equals('o\nba'));
     });
 
-    test(".spanFrom() returns a span from a previous state", () {
+    test('.spanFrom() returns a span from a previous state', () {
       scanner.scan('fo');
       var state = scanner.state;
       scanner.scan('o\nba');
@@ -137,7 +137,7 @@ void testForImplementation(
       expect(span.text, equals('o\nbar\nba'));
     });
 
-    test(".spanFrom() handles surrogate pairs correctly", () {
+    test('.spanFrom() handles surrogate pairs correctly', () {
       scanner = create('fo\u{12345}o');
       scanner.scan('fo');
       var state = scanner.state;
@@ -146,7 +146,7 @@ void testForImplementation(
       expect(span.text, equals('\u{12345}o'));
     });
 
-    test(".emptySpan returns an empty span at the current location", () {
+    test('.emptySpan returns an empty span at the current location', () {
       scanner.scan('foo\nba');
 
       var span = scanner.emptySpan;

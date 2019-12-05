@@ -12,19 +12,19 @@ void validateErrorArgs(String string, Match match, int position, int length) {
 
   if (position != null) {
     if (position < 0) {
-      throw RangeError("position must be greater than or equal to 0.");
+      throw RangeError('position must be greater than or equal to 0.');
     } else if (position > string.length) {
-      throw RangeError("position must be less than or equal to the "
-          "string length.");
+      throw RangeError('position must be less than or equal to the '
+          'string length.');
     }
   }
 
   if (length != null && length < 0) {
-    throw RangeError("length must be greater than or equal to 0.");
+    throw RangeError('length must be greater than or equal to 0.');
   }
 
   if (position != null && length != null && position + length > string.length) {
-    throw RangeError("position plus length must not go beyond the end of "
-        "the string.");
+    throw RangeError('position plus length must not go beyond the end of '
+        'the string.');
   }
 }

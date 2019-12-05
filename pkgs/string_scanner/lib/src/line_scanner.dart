@@ -9,7 +9,7 @@ import 'string_scanner.dart';
 // Note that much of this code is duplicated in eager_span_scanner.dart.
 
 /// A regular expression matching newlines across platforms.
-final _newlineRegExp = RegExp(r"\r\n?|\n");
+final _newlineRegExp = RegExp(r'\r\n?|\n');
 
 /// A subclass of [StringScanner] that tracks line and column information.
 class LineScanner extends StringScanner {
@@ -37,8 +37,8 @@ class LineScanner extends StringScanner {
 
   set state(LineScannerState state) {
     if (!identical(state._scanner, this)) {
-      throw ArgumentError("The given LineScannerState was not returned by "
-          "this LineScanner.");
+      throw ArgumentError('The given LineScannerState was not returned by '
+          'this LineScanner.');
     }
 
     super.position = state.position;
@@ -46,6 +46,7 @@ class LineScanner extends StringScanner {
     _column = state.column;
   }
 
+  @override
   set position(int newPosition) {
     var oldPosition = position;
     super.position = newPosition;
@@ -75,12 +76,14 @@ class LineScanner extends StringScanner {
   LineScanner(String string, {sourceUrl, int position})
       : super(string, sourceUrl: sourceUrl, position: position);
 
+  @override
   bool scanChar(int character) {
     if (!super.scanChar(character)) return false;
     _adjustLineAndColumn(character);
     return true;
   }
 
+  @override
   int readChar() {
     var character = super.readChar();
     _adjustLineAndColumn(character);
@@ -97,6 +100,7 @@ class LineScanner extends StringScanner {
     }
   }
 
+  @override
   bool scan(Pattern pattern) {
     if (!super.scan(pattern)) return false;
 
