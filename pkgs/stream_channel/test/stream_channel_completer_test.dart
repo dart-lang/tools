@@ -20,8 +20,8 @@ void main() {
     innerChannel = StreamChannel(streamController.stream, sinkController.sink);
   });
 
-  group("when a channel is set before accessing", () {
-    test("forwards events through the stream", () {
+  group('when a channel is set before accessing', () {
+    test('forwards events through the stream', () {
       completer.setChannel(innerChannel);
       expect(completer.channel.stream.toList(), completion(equals([1, 2, 3])));
 
@@ -31,7 +31,7 @@ void main() {
       streamController.close();
     });
 
-    test("forwards events through the sink", () {
+    test('forwards events through the sink', () {
       completer.setChannel(innerChannel);
       expect(sinkController.stream.toList(), completion(equals([1, 2, 3])));
 
@@ -41,21 +41,21 @@ void main() {
       completer.channel.sink.close();
     });
 
-    test("forwards an error through the stream", () {
-      completer.setError("oh no");
-      expect(completer.channel.stream.first, throwsA("oh no"));
+    test('forwards an error through the stream', () {
+      completer.setError('oh no');
+      expect(completer.channel.stream.first, throwsA('oh no'));
     });
 
-    test("drops sink events", () {
-      completer.setError("oh no");
+    test('drops sink events', () {
+      completer.setError('oh no');
       expect(completer.channel.sink.done, completes);
       completer.channel.sink.add(1);
-      completer.channel.sink.addError("oh no");
+      completer.channel.sink.addError('oh no');
     });
   });
 
-  group("when a channel is set after accessing", () {
-    test("forwards events through the stream", () async {
+  group('when a channel is set after accessing', () {
+    test('forwards events through the stream', () async {
       expect(completer.channel.stream.toList(), completion(equals([1, 2, 3])));
       await pumpEventQueue();
 
@@ -66,7 +66,7 @@ void main() {
       unawaited(streamController.close());
     });
 
-    test("forwards events through the sink", () async {
+    test('forwards events through the sink', () async {
       completer.channel.sink.add(1);
       completer.channel.sink.add(2);
       completer.channel.sink.add(3);
@@ -77,25 +77,25 @@ void main() {
       expect(sinkController.stream.toList(), completion(equals([1, 2, 3])));
     });
 
-    test("forwards an error through the stream", () async {
-      expect(completer.channel.stream.first, throwsA("oh no"));
+    test('forwards an error through the stream', () async {
+      expect(completer.channel.stream.first, throwsA('oh no'));
       await pumpEventQueue();
 
-      completer.setError("oh no");
+      completer.setError('oh no');
     });
 
-    test("drops sink events", () async {
+    test('drops sink events', () async {
       expect(completer.channel.sink.done, completes);
       completer.channel.sink.add(1);
-      completer.channel.sink.addError("oh no");
+      completer.channel.sink.addError('oh no');
       await pumpEventQueue();
 
-      completer.setError("oh no");
+      completer.setError('oh no');
     });
   });
 
-  group("forFuture", () {
-    test("forwards a StreamChannel", () {
+  group('forFuture', () {
+    test('forwards a StreamChannel', () {
       var channel =
           StreamChannelCompleter.fromFuture(Future.value(innerChannel));
       channel.sink.add(1);
@@ -107,9 +107,9 @@ void main() {
       expect(channel.stream.toList(), completion(equals([2])));
     });
 
-    test("forwards an error", () {
-      var channel = StreamChannelCompleter.fromFuture(Future.error("oh no"));
-      expect(channel.stream.toList(), throwsA("oh no"));
+    test('forwards an error', () {
+      var channel = StreamChannelCompleter.fromFuture(Future.error('oh no'));
+      expect(channel.stream.toList(), throwsA('oh no'));
     });
   });
 

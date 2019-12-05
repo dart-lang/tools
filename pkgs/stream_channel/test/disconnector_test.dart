@@ -23,8 +23,8 @@ void main() {
         .transform(disconnector);
   });
 
-  group("before disconnection", () {
-    test("forwards events from the sink as normal", () {
+  group('before disconnection', () {
+    test('forwards events from the sink as normal', () {
       channel.sink.add(1);
       channel.sink.add(2);
       channel.sink.add(3);
@@ -33,7 +33,7 @@ void main() {
       expect(sinkController.stream.toList(), completion(equals([1, 2, 3])));
     });
 
-    test("forwards events to the stream as normal", () {
+    test('forwards events to the stream as normal', () {
       streamController.add(1);
       streamController.add(2);
       streamController.add(3);
@@ -47,7 +47,7 @@ void main() {
 
       expect(channel.sink.close(), completes);
       expect(() => channel.sink.add(1), throwsStateError);
-      expect(() => channel.sink.addError("oh no"), throwsStateError);
+      expect(() => channel.sink.addError('oh no'), throwsStateError);
       expect(() => channel.sink.addStream(Stream.fromIterable([])),
           throwsStateError);
     });
@@ -57,7 +57,7 @@ void main() {
       channel.sink.addStream(controller.stream);
 
       expect(() => channel.sink.add(1), throwsStateError);
-      expect(() => channel.sink.addError("oh no"), throwsStateError);
+      expect(() => channel.sink.addError('oh no'), throwsStateError);
       expect(() => channel.sink.addStream(Stream.fromIterable([])),
           throwsStateError);
       expect(() => channel.sink.close(), throwsStateError);
@@ -66,7 +66,7 @@ void main() {
     });
   });
 
-  test("cancels addStream when disconnected", () async {
+  test('cancels addStream when disconnected', () async {
     var canceled = false;
     var controller = StreamController(onCancel: () {
       canceled = true;
@@ -78,7 +78,7 @@ void main() {
     expect(canceled, isTrue);
   });
 
-  test("disconnect() returns the close future from the inner sink", () async {
+  test('disconnect() returns the close future from the inner sink', () async {
     var streamController = StreamController();
     var sinkController = StreamController();
     var disconnector = Disconnector();
@@ -104,12 +104,12 @@ void main() {
     expect(disconnectFutureFired, isTrue);
   });
 
-  group("after disconnection", () {
+  group('after disconnection', () {
     setUp(() {
       disconnector.disconnect();
     });
 
-    test("closes the inner sink and ignores events to the outer sink", () {
+    test('closes the inner sink and ignores events to the outer sink', () {
       channel.sink.add(1);
       channel.sink.add(2);
       channel.sink.add(3);
@@ -118,21 +118,21 @@ void main() {
       expect(sinkController.stream.toList(), completion(isEmpty));
     });
 
-    test("closes the stream", () {
+    test('closes the stream', () {
       expect(channel.stream.toList(), completion(isEmpty));
     });
 
-    test("completes done", () {
+    test('completes done', () {
       sinkController.stream.listen(null); // Work around sdk#19095.
       expect(channel.sink.done, completes);
     });
 
-    test("still emits state errors after explicit close", () {
+    test('still emits state errors after explicit close', () {
       sinkController.stream.listen(null); // Work around sdk#19095.
       expect(channel.sink.close(), completes);
 
       expect(() => channel.sink.add(1), throwsStateError);
-      expect(() => channel.sink.addError("oh no"), throwsStateError);
+      expect(() => channel.sink.addError('oh no'), throwsStateError);
     });
   });
 }

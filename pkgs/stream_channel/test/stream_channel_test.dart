@@ -41,16 +41,16 @@ void main() {
     expect(sinkController.stream.toList(), completion(equals([4, 5, 6])));
   });
 
-  test("transform() transforms the channel", () async {
+  test('transform() transforms the channel', () async {
     var transformed = channel
         .cast<List<int>>()
         .transform(StreamChannelTransformer.fromCodec(utf8));
 
     streamController.add([102, 111, 111, 98, 97, 114]);
     unawaited(streamController.close());
-    expect(await transformed.stream.toList(), equals(["foobar"]));
+    expect(await transformed.stream.toList(), equals(['foobar']));
 
-    transformed.sink.add("fblthp");
+    transformed.sink.add('fblthp');
     unawaited(transformed.sink.close());
     expect(
         sinkController.stream.toList(),
@@ -59,39 +59,39 @@ void main() {
         ])));
   });
 
-  test("transformStream() transforms only the stream", () async {
+  test('transformStream() transforms only the stream', () async {
     var transformed =
         channel.cast<String>().transformStream(const LineSplitter());
 
-    streamController.add("hello world");
-    streamController.add(" what\nis");
-    streamController.add("\nup");
+    streamController.add('hello world');
+    streamController.add(' what\nis');
+    streamController.add('\nup');
     unawaited(streamController.close());
     expect(await transformed.stream.toList(),
-        equals(["hello world what", "is", "up"]));
+        equals(['hello world what', 'is', 'up']));
 
-    transformed.sink.add("fbl\nthp");
+    transformed.sink.add('fbl\nthp');
     unawaited(transformed.sink.close());
-    expect(sinkController.stream.toList(), completion(equals(["fbl\nthp"])));
+    expect(sinkController.stream.toList(), completion(equals(['fbl\nthp'])));
   });
 
-  test("transformSink() transforms only the sink", () async {
+  test('transformSink() transforms only the sink', () async {
     var transformed = channel.cast<String>().transformSink(
         StreamSinkTransformer.fromStreamTransformer(const LineSplitter()));
 
-    streamController.add("fbl\nthp");
+    streamController.add('fbl\nthp');
     unawaited(streamController.close());
-    expect(await transformed.stream.toList(), equals(["fbl\nthp"]));
+    expect(await transformed.stream.toList(), equals(['fbl\nthp']));
 
-    transformed.sink.add("hello world");
-    transformed.sink.add(" what\nis");
-    transformed.sink.add("\nup");
+    transformed.sink.add('hello world');
+    transformed.sink.add(' what\nis');
+    transformed.sink.add('\nup');
     unawaited(transformed.sink.close());
     expect(sinkController.stream.toList(),
-        completion(equals(["hello world what", "is", "up"])));
+        completion(equals(['hello world what', 'is', 'up'])));
   });
 
-  test("changeStream() changes the stream", () {
+  test('changeStream() changes the stream', () {
     var newController = StreamController();
     var changed = channel.changeStream((stream) {
       expect(stream, equals(channel.stream));
@@ -107,7 +107,7 @@ void main() {
     expect(changed.stream.toList(), completion(equals([10])));
   });
 
-  test("changeSink() changes the sink", () {
+  test('changeSink() changes the sink', () {
     var newController = StreamController();
     var changed = channel.changeSink((sink) {
       expect(sink, equals(channel.sink));

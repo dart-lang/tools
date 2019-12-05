@@ -104,11 +104,11 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
 
   /// Input IDs of controllers in [_controllers] that we've received messages
   /// for but that have not yet had a local [virtualChannel] created.
-  final _pendingIds = Set<int>();
+  final _pendingIds = <int>{};
 
   /// Input IDs of virtual channels that used to exist but have since been
   /// closed.
-  final _closedIds = Set<int>();
+  final _closedIds = <int>{};
 
   /// The next id to use for a local virtual channel.
   ///
@@ -201,7 +201,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
       controller = _controllers[inputId];
     } else if (_controllers.containsKey(inputId) ||
         _closedIds.contains(inputId)) {
-      throw ArgumentError("A virtual channel with id $id already exists.");
+      throw ArgumentError('A virtual channel with id $id already exists.');
     } else {
       controller = StreamChannelController(sync: true);
       _controllers[inputId] = controller;

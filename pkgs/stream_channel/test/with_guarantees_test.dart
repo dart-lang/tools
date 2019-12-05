@@ -19,14 +19,14 @@ void main() {
         streamController.stream, sinkController.sink);
   });
 
-  group("with a broadcast stream", () {
+  group('with a broadcast stream', () {
     setUp(() {
       streamController = StreamController.broadcast();
       channel = StreamChannel.withGuarantees(
           streamController.stream, sinkController.sink);
     });
 
-    test("buffers events", () async {
+    test('buffers events', () async {
       streamController.add(1);
       streamController.add(2);
       streamController.add(3);
@@ -36,15 +36,15 @@ void main() {
       unawaited(streamController.close());
     });
 
-    test("only allows a single subscription", () {
+    test('only allows a single subscription', () {
       channel.stream.listen(null);
       expect(() => channel.stream.listen(null), throwsStateError);
     });
   });
 
   test(
-      "closing the event sink causes the stream to close before it emits any "
-      "more events", () {
+      'closing the event sink causes the stream to close before it emits any '
+      'more events', () {
     streamController.add(1);
     streamController.add(2);
     streamController.add(3);
@@ -58,7 +58,7 @@ void main() {
         completes);
   });
 
-  test("after the stream closes, the sink ignores events", () async {
+  test('after the stream closes, the sink ignores events', () async {
     unawaited(streamController.close());
 
     // Wait for the done event to be delivered.
@@ -105,12 +105,12 @@ void main() {
     await pumpEventQueue();
   });
 
-  test("forwards errors to the other endpoint", () {
-    channel.sink.addError("error");
-    expect(sinkController.stream.first, throwsA("error"));
+  test('forwards errors to the other endpoint', () {
+    channel.sink.addError('error');
+    expect(sinkController.stream.first, throwsA('error'));
   });
 
-  test("Sink.done completes once the stream is done", () {
+  test('Sink.done completes once the stream is done', () {
     channel.stream.listen(null);
     expect(channel.sink.done, completes);
     streamController.close();
@@ -121,7 +121,7 @@ void main() {
 
     expect(channel.sink.close(), completes);
     expect(() => channel.sink.add(1), throwsStateError);
-    expect(() => channel.sink.addError("oh no"), throwsStateError);
+    expect(() => channel.sink.addError('oh no'), throwsStateError);
     expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
   });
@@ -131,7 +131,7 @@ void main() {
     channel.sink.addStream(controller.stream);
 
     expect(() => channel.sink.add(1), throwsStateError);
-    expect(() => channel.sink.addError("oh no"), throwsStateError);
+    expect(() => channel.sink.addError('oh no'), throwsStateError);
     expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
     expect(() => channel.sink.close(), throwsStateError);
@@ -139,7 +139,7 @@ void main() {
     controller.close();
   });
 
-  group("with allowSinkErrors: false", () {
+  group('with allowSinkErrors: false', () {
     setUp(() {
       streamController = StreamController();
       sinkController = StreamController();
@@ -148,15 +148,15 @@ void main() {
           allowSinkErrors: false);
     });
 
-    test("forwards errors to Sink.done but not the stream", () {
-      channel.sink.addError("oh no");
-      expect(channel.sink.done, throwsA("oh no"));
+    test('forwards errors to Sink.done but not the stream', () {
+      channel.sink.addError('oh no');
+      expect(channel.sink.done, throwsA('oh no'));
       sinkController.stream
           .listen(null, onError: expectAsync1((_) {}, count: 0));
     });
 
-    test("adding an error causes the stream to emit a done event", () {
-      expect(channel.sink.done, throwsA("oh no"));
+    test('adding an error causes the stream to emit a done event', () {
+      expect(channel.sink.done, throwsA('oh no'));
 
       streamController.add(1);
       streamController.add(2);
@@ -165,21 +165,21 @@ void main() {
       expect(
           channel.stream
               .listen(expectAsync1((event) {
-                if (event == 2) channel.sink.addError("oh no");
+                if (event == 2) channel.sink.addError('oh no');
               }, count: 2))
               .asFuture(),
           completes);
     });
 
-    test("adding an error closes the inner sink", () {
-      channel.sink.addError("oh no");
-      expect(channel.sink.done, throwsA("oh no"));
+    test('adding an error closes the inner sink', () {
+      channel.sink.addError('oh no');
+      expect(channel.sink.done, throwsA('oh no'));
       expect(sinkController.stream.toList(), completion(isEmpty));
     });
 
     test(
-        "adding an error via via addStream causes the stream to emit a done "
-        "event", () async {
+        'adding an error via via addStream causes the stream to emit a done '
+        'event', () async {
       var canceled = false;
       var controller = StreamController(onCancel: () {
         canceled = true;
@@ -188,8 +188,8 @@ void main() {
       // This future shouldn't get the error, because it's sent to [Sink.done].
       expect(channel.sink.addStream(controller.stream), completes);
 
-      controller.addError("oh no");
-      expect(channel.sink.done, throwsA("oh no"));
+      controller.addError('oh no');
+      expect(channel.sink.done, throwsA('oh no'));
       await pumpEventQueue();
       expect(canceled, isTrue);
 

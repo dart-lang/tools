@@ -117,11 +117,11 @@ abstract class StreamChannel<T> {
 
   /// Returns a copy of this with [stream] replaced by [change]'s return
   /// value.
-  StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream));
+  StreamChannel<T> changeStream(Stream<T> Function(Stream<T>) change);
 
   /// Returns a copy of this with [sink] replaced by [change]'s return
   /// value.
-  StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink));
+  StreamChannel<T> changeSink(StreamSink<T> Function(StreamSink<T>) change);
 
   /// Returns a copy of this with the generic type coerced to [S].
   ///
@@ -167,11 +167,11 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
       changeSink(transformer.bind);
 
   @override
-  StreamChannel<T> changeStream(Stream<T> change(Stream<T> stream)) =>
+  StreamChannel<T> changeStream(Stream<T> Function(Stream<T>) change) =>
       StreamChannel.withCloseGuarantee(change(stream), sink);
 
   @override
-  StreamChannel<T> changeSink(StreamSink<T> change(StreamSink<T> sink)) =>
+  StreamChannel<T> changeSink(StreamSink<T> Function(StreamSink<T>) change) =>
       StreamChannel.withCloseGuarantee(stream, change(sink));
 
   @override

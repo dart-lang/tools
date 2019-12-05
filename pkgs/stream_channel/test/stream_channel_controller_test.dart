@@ -6,13 +6,13 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group("asynchronously", () {
+  group('asynchronously', () {
     StreamChannelController controller;
     setUp(() {
       controller = StreamChannelController();
     });
 
-    test("forwards events from the local sink to the foreign stream", () {
+    test('forwards events from the local sink to the foreign stream', () {
       controller.local.sink
         ..add(1)
         ..add(2)
@@ -21,7 +21,7 @@ void main() {
       expect(controller.foreign.stream.toList(), completion(equals([1, 2, 3])));
     });
 
-    test("forwards events from the foreign sink to the local stream", () {
+    test('forwards events from the foreign sink to the local stream', () {
       controller.foreign.sink
         ..add(1)
         ..add(2)
@@ -31,27 +31,27 @@ void main() {
     });
 
     test(
-        "with allowForeignErrors: false, shuts down the connection if an "
-        "error is added to the foreign channel", () {
+        'with allowForeignErrors: false, shuts down the connection if an '
+        'error is added to the foreign channel', () {
       controller = StreamChannelController(allowForeignErrors: false);
 
-      controller.foreign.sink.addError("oh no");
-      expect(controller.foreign.sink.done, throwsA("oh no"));
+      controller.foreign.sink.addError('oh no');
+      expect(controller.foreign.sink.done, throwsA('oh no'));
       expect(controller.foreign.stream.toList(), completion(isEmpty));
       expect(controller.local.sink.done, completes);
       expect(controller.local.stream.toList(), completion(isEmpty));
     });
   });
 
-  group("synchronously", () {
+  group('synchronously', () {
     StreamChannelController controller;
     setUp(() {
       controller = StreamChannelController(sync: true);
     });
 
     test(
-        "synchronously forwards events from the local sink to the foreign "
-        "stream", () {
+        'synchronously forwards events from the local sink to the foreign '
+        'stream', () {
       var receivedEvent = false;
       var receivedError = false;
       var receivedDone = false;
@@ -59,7 +59,7 @@ void main() {
         expect(event, equals(1));
         receivedEvent = true;
       }), onError: expectAsync1((error) {
-        expect(error, equals("oh no"));
+        expect(error, equals('oh no'));
         receivedError = true;
       }), onDone: expectAsync0(() {
         receivedDone = true;
@@ -68,7 +68,7 @@ void main() {
       controller.local.sink.add(1);
       expect(receivedEvent, isTrue);
 
-      controller.local.sink.addError("oh no");
+      controller.local.sink.addError('oh no');
       expect(receivedError, isTrue);
 
       controller.local.sink.close();
@@ -76,8 +76,8 @@ void main() {
     });
 
     test(
-        "synchronously forwards events from the foreign sink to the local "
-        "stream", () {
+        'synchronously forwards events from the foreign sink to the local '
+        'stream', () {
       var receivedEvent = false;
       var receivedError = false;
       var receivedDone = false;
@@ -85,7 +85,7 @@ void main() {
         expect(event, equals(1));
         receivedEvent = true;
       }), onError: expectAsync1((error) {
-        expect(error, equals("oh no"));
+        expect(error, equals('oh no'));
         receivedError = true;
       }), onDone: expectAsync0(() {
         receivedDone = true;
@@ -94,7 +94,7 @@ void main() {
       controller.foreign.sink.add(1);
       expect(receivedEvent, isTrue);
 
-      controller.foreign.sink.addError("oh no");
+      controller.foreign.sink.addError('oh no');
       expect(receivedError, isTrue);
 
       controller.foreign.sink.close();

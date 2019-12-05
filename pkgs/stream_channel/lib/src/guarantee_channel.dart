@@ -115,9 +115,9 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
   @override
   void add(T data) {
-    if (_closed) throw StateError("Cannot add event after closing.");
+    if (_closed) throw StateError('Cannot add event after closing.');
     if (_inAddStream) {
-      throw StateError("Cannot add event while adding stream.");
+      throw StateError('Cannot add event while adding stream.');
     }
     if (_disconnected) return;
 
@@ -126,9 +126,9 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
   @override
   void addError(error, [StackTrace stackTrace]) {
-    if (_closed) throw StateError("Cannot add event after closing.");
+    if (_closed) throw StateError('Cannot add event after closing.');
     if (_inAddStream) {
-      throw StateError("Cannot add event while adding stream.");
+      throw StateError('Cannot add event while adding stream.');
     }
     if (_disconnected) return;
 
@@ -158,9 +158,9 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
   @override
   Future<void> addStream(Stream<T> stream) {
-    if (_closed) throw StateError("Cannot add stream after closing.");
+    if (_closed) throw StateError('Cannot add stream after closing.');
     if (_inAddStream) {
-      throw StateError("Cannot add stream while adding stream.");
+      throw StateError('Cannot add stream while adding stream.');
     }
     if (_disconnected) return Future.value();
 
@@ -176,7 +176,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   @override
   Future<void> close() {
     if (_inAddStream) {
-      throw StateError("Cannot close sink while adding stream.");
+      throw StateError('Cannot close sink while adding stream.');
     }
 
     if (_closed) return done;

@@ -28,7 +28,7 @@ void main() {
     channel.sink.close();
   });
 
-  test("the channel can send messages", () {
+  test('the channel can send messages', () {
     channel.sink.add(1);
     channel.sink.add(2);
     channel.sink.add(3);
@@ -36,7 +36,7 @@ void main() {
     expect(receivePort.take(3).toList(), completion(equals([1, 2, 3])));
   });
 
-  test("the channel can receive messages", () {
+  test('the channel can receive messages', () {
     sendPort.send(1);
     sendPort.send(2);
     sendPort.send(3);
@@ -47,7 +47,7 @@ void main() {
   test("events can't be added to an explicitly-closed sink", () {
     expect(channel.sink.close(), completes);
     expect(() => channel.sink.add(1), throwsStateError);
-    expect(() => channel.sink.addError("oh no"), throwsStateError);
+    expect(() => channel.sink.addError('oh no'), throwsStateError);
     expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
   });
@@ -57,7 +57,7 @@ void main() {
     channel.sink.addStream(controller.stream);
 
     expect(() => channel.sink.add(1), throwsStateError);
-    expect(() => channel.sink.addError("oh no"), throwsStateError);
+    expect(() => channel.sink.addError('oh no'), throwsStateError);
     expect(() => channel.sink.addStream(Stream.fromIterable([])),
         throwsStateError);
     expect(() => channel.sink.close(), throwsStateError);
@@ -65,10 +65,10 @@ void main() {
     controller.close();
   });
 
-  group("stream channel rules", () {
+  group('stream channel rules', () {
     test(
-        "closing the sink causes the stream to close before it emits any more "
-        "events", () {
+        'closing the sink causes the stream to close before it emits any more '
+        'events', () {
       sendPort.send(1);
       sendPort.send(2);
       sendPort.send(3);
@@ -92,10 +92,10 @@ void main() {
       expect(receivePort.take(3).toList(), completion(equals([1, 2, 3])));
     });
 
-    test("the sink closes as soon as an error is added", () async {
-      channel.sink.addError("oh no");
+    test('the sink closes as soon as an error is added', () async {
+      channel.sink.addError('oh no');
       channel.sink.add(1);
-      expect(channel.sink.done, throwsA("oh no"));
+      expect(channel.sink.done, throwsA('oh no'));
 
       // Since the sink is closed, the stream should also be closed.
       expect(channel.stream.isEmpty, completion(isTrue));
@@ -106,7 +106,7 @@ void main() {
       await pumpEventQueue();
     });
 
-    test("the sink closes as soon as an error is added via addStream",
+    test('the sink closes as soon as an error is added via addStream',
         () async {
       var canceled = false;
       var controller = StreamController(onCancel: () {
@@ -116,8 +116,8 @@ void main() {
       // This future shouldn't get the error, because it's sent to [Sink.done].
       expect(channel.sink.addStream(controller.stream), completes);
 
-      controller.addError("oh no");
-      expect(channel.sink.done, throwsA("oh no"));
+      controller.addError('oh no');
+      expect(channel.sink.done, throwsA('oh no'));
       await pumpEventQueue();
       expect(canceled, isTrue);
 
@@ -127,7 +127,7 @@ void main() {
     });
   });
 
-  group("connect constructors", () {
+  group('connect constructors', () {
     ReceivePort connectPort;
     setUp(() {
       connectPort = ReceivePort();
@@ -137,7 +137,7 @@ void main() {
       connectPort.close();
     });
 
-    test("create a connected pair of channels", () {
+    test('create a connected pair of channels', () {
       var channel1 = IsolateChannel<int>.connectReceive(connectPort);
       var channel2 = IsolateChannel<int>.connectSend(connectPort.sendPort);
 
@@ -152,10 +152,10 @@ void main() {
       expect(channel1.stream.take(3).toList(), completion(equals([4, 5, 6])));
     });
 
-    test("the receiving channel produces an error if it gets the wrong message",
+    test('the receiving channel produces an error if it gets the wrong message',
         () {
       var connectedChannel = IsolateChannel.connectReceive(connectPort);
-      connectPort.sendPort.send("wrong value");
+      connectPort.sendPort.send('wrong value');
 
       expect(connectedChannel.stream.toList(), throwsStateError);
       expect(connectedChannel.sink.done, completes);

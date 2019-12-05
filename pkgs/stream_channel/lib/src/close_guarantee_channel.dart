@@ -48,8 +48,8 @@ class _CloseGuaranteeStream<T> extends Stream<T> {
   _CloseGuaranteeStream(this._inner, this._channel);
 
   @override
-  StreamSubscription<T> listen(void onData(T event),
-      {Function onError, void onDone(), bool cancelOnError}) {
+  StreamSubscription<T> listen(void Function(T) onData,
+      {Function onError, void Function() onDone, bool cancelOnError}) {
     // If the channel is already disconnected, we shouldn't dispatch anything
     // but a done event.
     if (_channel._disconnected) {

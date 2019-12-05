@@ -35,8 +35,8 @@ void main() {
   });
 
   test(
-      "closing the event sink causes the stream to close before it emits any "
-      "more events", () async {
+      'closing the event sink causes the stream to close before it emits any '
+      'more events', () async {
     controller.local.sink.add(1);
     controller.local.sink.add(2);
     controller.local.sink.add(3);
@@ -53,8 +53,8 @@ void main() {
   });
 
   test(
-      "closing the event sink before events are emitted causes the stream to "
-      "close immediately", () async {
+      'closing the event sink before events are emitted causes the stream to '
+      'close immediately', () async {
     unawaited(channel.sink.close());
     channel.stream.listen(expectAsync1((_) {}, count: 0),
         onError: expectAsync2((_, __) {}, count: 0),

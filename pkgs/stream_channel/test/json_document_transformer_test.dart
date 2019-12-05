@@ -19,26 +19,26 @@ void main() {
         StreamChannel<String>(streamController.stream, sinkController.sink);
   });
 
-  test("decodes JSON emitted by the channel", () {
+  test('decodes JSON emitted by the channel', () {
     var transformed = channel.transform(jsonDocument);
     streamController.add('{"foo": "bar"}');
-    expect(transformed.stream.first, completion(equals({"foo": "bar"})));
+    expect(transformed.stream.first, completion(equals({'foo': 'bar'})));
   });
 
-  test("encodes objects added to the channel", () {
+  test('encodes objects added to the channel', () {
     var transformed = channel.transform(jsonDocument);
-    transformed.sink.add({"foo": "bar"});
+    transformed.sink.add({'foo': 'bar'});
     expect(sinkController.stream.first,
-        completion(equals(jsonEncode({"foo": "bar"}))));
+        completion(equals(jsonEncode({'foo': 'bar'}))));
   });
 
-  test("emits a stream error when incoming JSON is malformed", () {
+  test('emits a stream error when incoming JSON is malformed', () {
     var transformed = channel.transform(jsonDocument);
-    streamController.add("{invalid");
+    streamController.add('{invalid');
     expect(transformed.stream.first, throwsFormatException);
   });
 
-  test("synchronously throws if an unencodable object is added", () {
+  test('synchronously throws if an unencodable object is added', () {
     var transformed = channel.transform(jsonDocument);
     expect(() => transformed.sink.add(Object()),
         throwsA(TypeMatcher<JsonUnsupportedObjectError>()));

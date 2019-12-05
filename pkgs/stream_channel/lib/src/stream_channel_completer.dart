@@ -52,7 +52,7 @@ class StreamChannelCompleter<T> {
   /// Either [setChannel] or [setError] may be called at most once. Trying to
   /// call either of them again will fail.
   void setChannel(StreamChannel<T> channel) {
-    if (_set) throw StateError("The channel has already been set.");
+    if (_set) throw StateError('The channel has already been set.');
     _set = true;
 
     _streamCompleter.setSourceStream(channel.stream);
@@ -67,7 +67,7 @@ class StreamChannelCompleter<T> {
   /// Either [setChannel] or [setError] may be called at most once. Trying to
   /// call either of them again will fail.
   void setError(error, [StackTrace stackTrace]) {
-    if (_set) throw StateError("The channel has already been set.");
+    if (_set) throw StateError('The channel has already been set.');
     _set = true;
 
     _streamCompleter.setError(error, stackTrace);
