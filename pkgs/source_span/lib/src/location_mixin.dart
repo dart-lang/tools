@@ -16,7 +16,7 @@ import 'span.dart';
 abstract class SourceLocationMixin implements SourceLocation {
   @override
   String get toolString {
-    final source = sourceUrl == null ? 'unknown source' : sourceUrl;
+    final source = sourceUrl ?? 'unknown source';
     return '$source:${line + 1}:${column + 1}';
   }
 

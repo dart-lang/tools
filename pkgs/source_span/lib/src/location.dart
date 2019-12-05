@@ -32,7 +32,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   ///
   /// This prints 1-based lines and columns.
   String get toolString {
-    final source = sourceUrl == null ? 'unknown source' : sourceUrl;
+    final source = sourceUrl ?? 'unknown source';
     return '$source:${line + 1}:${column + 1}';
   }
 
@@ -45,8 +45,8 @@ class SourceLocation implements Comparable<SourceLocation> {
   SourceLocation(this.offset, {sourceUrl, int line, int column})
       : sourceUrl =
             sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri,
-        line = line == null ? 0 : line,
-        column = column == null ? offset : column {
+        line = line ?? 0,
+        column = column ?? offset {
     if (offset < 0) {
       throw RangeError('Offset may not be negative, was $offset.');
     } else if (line != null && line < 0) {
