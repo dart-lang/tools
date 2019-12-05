@@ -48,12 +48,13 @@ class Highlighter {
   /// when [highlight] is called.
   ///
   /// [color] may either be a [String], a [bool], or `null`. If it's a string,
-  /// it indicates an [ANSI terminal color
-  /// escape](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) that should
+  /// it indicates an [ANSI terminal color escape][] that should
   /// be used to highlight the span's text (for example, `"\u001b[31m"` will
   /// color red). If it's `true`, it indicates that the text should be
   /// highlighted using the default color. If it's `false` or `null`, it
   /// indicates that the text shouldn't be highlighted.
+  ///
+  /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
   factory Highlighter(SourceSpan span, {color}) {
     if (color == true) color = colors.red;
     if (color == false) color = null;

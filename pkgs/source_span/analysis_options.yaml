@@ -27,8 +27,7 @@ linter:
   - camel_case_types
   - cancel_subscriptions
   - cascade_invocations
-  # Enable once https://github.com/dart-lang/sdk/issues/31761 is fixed
-  #- comment_references
+  - comment_references
   - constant_identifier_names
   - control_flow_in_finally
   - directives_ordering
