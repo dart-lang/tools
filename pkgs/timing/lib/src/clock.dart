@@ -16,5 +16,5 @@ const _zoneKey = #timing_Clock;
 DateTime now() => (Zone.current[_zoneKey] as _Clock ?? _defaultClock)();
 
 /// Runs [f], with [clock] scoped whenever [now] is called.
-T scopeClock<T>(DateTime clock(), T f()) =>
+T scopeClock<T>(DateTime Function() clock, T Function() f) =>
     runZoned(f, zoneValues: {_zoneKey: clock});

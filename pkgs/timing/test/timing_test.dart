@@ -20,13 +20,14 @@ void main() {
   TimeTracker tracker;
   TimeTracker nestedTracker;
 
-  T scopedTrack<T>(T f()) => scopeClock(fakeClock, () => tracker.track(f));
+  T scopedTrack<T>(T Function() f) =>
+      scopeClock(fakeClock, () => tracker.track(f));
 
   setUp(() {
     time = startTime;
   });
 
-  void canHandleSync([additionalExpects() = _noop]) {
+  void canHandleSync([void Function() additionalExpects = _noop]) {
     test('Can track sync code', () {
       expect(tracker.isStarted, false);
       expect(tracker.isTracking, false);
@@ -94,7 +95,7 @@ void main() {
     });
   }
 
-  void canHandleAsync([additionalExpects() = _noop]) {
+  void canHandleAsync([void Function() additionalExpects = _noop]) {
     test('Can track async code', () async {
       expect(tracker.isStarted, false);
       expect(tracker.isTracking, false);
