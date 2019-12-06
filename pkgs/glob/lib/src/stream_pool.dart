@@ -12,7 +12,7 @@ class StreamPool<T> {
   final StreamController<T> _controller;
 
   /// Subscriptions to the streams that make up the pool.
-  final _subscriptions = Map<Stream<T>, StreamSubscription<T>>();
+  final _subscriptions = <Stream<T>, StreamSubscription<T>>{};
 
   /// Whether this pool should be closed when it becomes empty.
   bool _closeWhenEmpty = false;

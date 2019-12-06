@@ -56,7 +56,7 @@ class ListTree {
   /// A map from filesystem roots to the list tree for those roots.
   ///
   /// A relative glob will use `.` as its root.
-  final _trees = Map<String, _ListTreeNode>();
+  final _trees = <String, _ListTreeNode>{};
 
   /// Whether paths listed might overlap.
   ///
@@ -81,7 +81,7 @@ class ListTree {
       // root's just ".".
       if (firstNode is LiteralNode) {
         var text = firstNode.text;
-        if (Platform.isWindows) text.replaceAll("/", "\\");
+        if (Platform.isWindows) text.replaceAll('/', '\\');
         if (p.isAbsolute(text)) {
           // If the path is absolute, the root should be the only thing in the
           // first component.
@@ -181,7 +181,7 @@ class ListTree {
 
     // TODO: Rather than filtering here, avoid double-listing directories
     // in the first place.
-    var seen = Set<String>();
+    var seen = <String>{};
     return group.stream.where((entity) => seen.add(entity.path));
   }
 
@@ -197,7 +197,7 @@ class ListTree {
 
     // TODO: Rather than filtering here, avoid double-listing directories
     // in the first place.
-    var seen = Set<String>();
+    var seen = <String>{};
     return result.where((entity) => seen.add(entity.path)).toList();
   }
 }
@@ -266,7 +266,7 @@ class _ListTreeNode {
 
   /// Creates a node with no children and no validator.
   _ListTreeNode()
-      : children = Map<SequenceNode, _ListTreeNode>(),
+      : children = <SequenceNode, _ListTreeNode>{},
         _validator = null;
 
   /// Creates a recursive node the given [validator].
@@ -469,7 +469,8 @@ class _ListTreeNode {
     return _validator.matches(toPosixPath(p.context, path));
   }
 
-  String toString() => "($_validator) $children";
+  @override
+  String toString() => '($_validator) $children';
 }
 
 /// Joins each [components] into a new glob where each component is separated by

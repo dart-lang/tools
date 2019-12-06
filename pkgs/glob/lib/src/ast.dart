@@ -57,14 +57,17 @@ class SequenceNode extends AstNode {
   /// The nodes in the sequence.
   final List<AstNode> nodes;
 
+  @override
   bool get canMatchAbsolute => nodes.first.canMatchAbsolute;
 
+  @override
   bool get canMatchRelative => nodes.first.canMatchRelative;
 
   SequenceNode(Iterable<AstNode> nodes, {bool caseSensitive = true})
       : nodes = nodes.toList(),
         super._(caseSensitive);
 
+  @override
   OptionsNode flattenOptions() {
     if (nodes.isEmpty) {
       return OptionsNode([this], caseSensitive: caseSensitive);
@@ -119,12 +122,12 @@ class SequenceNode extends AstNode {
     var componentsToReturn = <SequenceNode>[];
     List<AstNode> currentComponent;
 
-    addNode(AstNode node) {
+    void addNode(AstNode node) {
       currentComponent ??= [];
       currentComponent.add(node);
     }
 
-    finishComponent() {
+    void finishComponent() {
       if (currentComponent == null) return;
       componentsToReturn
           .add(SequenceNode(currentComponent, caseSensitive: caseSensitive));
@@ -145,7 +148,7 @@ class SequenceNode extends AstNode {
       }
 
       var text = literal.text;
-      if (context.style == p.Style.windows) text = text.replaceAll("/", "\\");
+      if (context.style == p.Style.windows) text = text.replaceAll('/', '\\');
       Iterable<String> components = context.split(text);
 
       // If the first component is absolute, that means it's a separator (on
@@ -160,7 +163,7 @@ class SequenceNode extends AstNode {
             // roots properly. That means that if there is a root, it'll still
             // have backslashes, where forward slashes are required for globs.
             // So we switch it back here.
-            root = root.replaceAll("\\", "/");
+            root = root.replaceAll('\\', '/');
           }
           addNode(LiteralNode(root, caseSensitive: caseSensitive));
         }
@@ -186,14 +189,18 @@ class SequenceNode extends AstNode {
     return componentsToReturn;
   }
 
+  @override
   String _toRegExp() => nodes.map((node) => node._toRegExp()).join();
 
+  @override
   bool operator ==(Object other) =>
       other is SequenceNode &&
       const IterableEquality().equals(nodes, other.nodes);
 
+  @override
   int get hashCode => const IterableEquality().hash(nodes);
 
+  @override
   String toString() => nodes.join();
 }
 
@@ -201,12 +208,16 @@ class SequenceNode extends AstNode {
 class StarNode extends AstNode {
   StarNode({bool caseSensitive = true}) : super._(caseSensitive);
 
+  @override
   String _toRegExp() => '[^/]*';
 
+  @override
   bool operator ==(Object other) => other is StarNode;
 
+  @override
   int get hashCode => 0;
 
+  @override
   String toString() => '*';
 }
 
@@ -220,6 +231,7 @@ class DoubleStarNode extends AstNode {
   DoubleStarNode(this._context, {bool caseSensitive = true})
       : super._(caseSensitive);
 
+  @override
   String _toRegExp() {
     // Double star shouldn't match paths with a leading "../", since these paths
     // wouldn't be listed with this glob. We only check for "../" at the
@@ -245,10 +257,13 @@ class DoubleStarNode extends AstNode {
     return buffer.toString();
   }
 
+  @override
   bool operator ==(Object other) => other is DoubleStarNode;
 
+  @override
   int get hashCode => 1;
 
+  @override
   String toString() => '**';
 }
 
@@ -256,12 +271,16 @@ class DoubleStarNode extends AstNode {
 class AnyCharNode extends AstNode {
   AnyCharNode({bool caseSensitive = true}) : super._(caseSensitive);
 
+  @override
   String _toRegExp() => '[^/]';
 
+  @override
   bool operator ==(Object other) => other is AnyCharNode;
 
+  @override
   int get hashCode => 2;
 
+  @override
   String toString() => '?';
 }
 
@@ -279,6 +298,7 @@ class RangeNode extends AstNode {
       : ranges = ranges.toSet(),
         super._(caseSensitive);
 
+  @override
   OptionsNode flattenOptions() {
     if (negated || ranges.any((range) => !range.isSingleton)) {
       return super.flattenOptions();
@@ -294,6 +314,7 @@ class RangeNode extends AstNode {
     }), caseSensitive: caseSensitive);
   }
 
+  @override
   String _toRegExp() {
     var buffer = StringBuffer();
 
@@ -323,13 +344,16 @@ class RangeNode extends AstNode {
     return buffer.toString();
   }
 
+  @override
   bool operator ==(Object other) =>
       other is RangeNode &&
       other.negated == negated &&
       SetEquality().equals(ranges, other.ranges);
 
+  @override
   int get hashCode => (negated ? 1 : 3) * const SetEquality().hash(ranges);
 
+  @override
   String toString() {
     var buffer = StringBuffer()..write('[');
     for (var range in ranges) {
@@ -348,27 +372,34 @@ class OptionsNode extends AstNode {
   /// The options to match.
   final List<SequenceNode> options;
 
+  @override
   bool get canMatchAbsolute => options.any((node) => node.canMatchAbsolute);
 
+  @override
   bool get canMatchRelative => options.any((node) => node.canMatchRelative);
 
   OptionsNode(Iterable<SequenceNode> options, {bool caseSensitive = true})
       : options = options.toList(),
         super._(caseSensitive);
 
+  @override
   OptionsNode flattenOptions() =>
       OptionsNode(options.expand((option) => option.flattenOptions().options),
           caseSensitive: caseSensitive);
 
+  @override
   String _toRegExp() =>
       '(?:${options.map((option) => option._toRegExp()).join("|")})';
 
+  @override
   bool operator ==(Object other) =>
       other is OptionsNode &&
       const UnorderedIterableEquality().equals(options, other.options);
 
+  @override
   int get hashCode => const UnorderedIterableEquality().hash(options);
 
+  @override
   String toString() => '{${options.join(',')}}';
 }
 
@@ -382,23 +413,29 @@ class LiteralNode extends AstNode {
   /// This is used to determine whether this could match an absolute path.
   final p.Context _context;
 
+  @override
   bool get canMatchAbsolute {
     var nativeText =
         _context.style == p.Style.windows ? text.replaceAll('/', '\\') : text;
     return _context.isAbsolute(nativeText);
   }
 
+  @override
   bool get canMatchRelative => !canMatchAbsolute;
 
   LiteralNode(this.text, {p.Context context, bool caseSensitive = true})
       : _context = context,
         super._(caseSensitive);
 
+  @override
   String _toRegExp() => regExpQuote(text);
 
+  @override
   bool operator ==(Object other) => other is LiteralNode && other.text == text;
 
+  @override
   int get hashCode => text.hashCode;
 
+  @override
   String toString() => text;
 }

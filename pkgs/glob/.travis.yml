@@ -2,7 +2,7 @@ language: dart
 
 dart:
   - dev
-  - 2.1.0
+  - 2.2.0
 
 # See https://docs.travis-ci.com/user/languages/dart/ for details.
 dart_task:

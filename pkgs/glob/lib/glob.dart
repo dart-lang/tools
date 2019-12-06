@@ -90,7 +90,7 @@ class Glob implements Pattern {
       {p.Context context, bool recursive = false, bool caseSensitive}) {
     context ??= p.context;
     caseSensitive ??= context.style == p.Style.windows ? false : true;
-    if (recursive) pattern += "{,/**}";
+    if (recursive) pattern += '{,/**}';
 
     var parser = Parser(pattern, context, caseSensitive: caseSensitive);
     return Glob._(pattern, context, parser.parse(), recursive);
@@ -111,7 +111,7 @@ class Glob implements Pattern {
   Stream<FileSystemEntity> list({String root, bool followLinks = true}) {
     if (context.style != p.style) {
       throw StateError("Can't list glob \"$this\"; it matches "
-          "${context.style} paths, but this platform uses ${p.style} paths.");
+          '${context.style} paths, but this platform uses ${p.style} paths.');
     }
 
     _listTree ??= ListTree(_ast);
@@ -132,7 +132,7 @@ class Glob implements Pattern {
   List<FileSystemEntity> listSync({String root, bool followLinks = true}) {
     if (context.style != p.style) {
       throw StateError("Can't list glob \"$this\"; it matches "
-          "${context.style} paths, but this platform uses ${p.style} paths.");
+          '${context.style} paths, but this platform uses ${p.style} paths.');
     }
 
     _listTree ??= ListTree(_ast);
@@ -142,6 +142,7 @@ class Glob implements Pattern {
   /// Returns whether this glob matches [path].
   bool matches(String path) => matchAsPrefix(path) != null;
 
+  @override
   Match matchAsPrefix(String path, [int start = 0]) {
     // Globs are like anchored RegExps in that they only match entire paths, so
     // if the match starts anywhere after the first character it can't succeed.
@@ -165,10 +166,12 @@ class Glob implements Pattern {
     return null;
   }
 
+  @override
   Iterable<Match> allMatches(String path, [int start = 0]) {
     var match = matchAsPrefix(path, start);
     return match == null ? [] : [match];
   }
 
+  @override
   String toString() => pattern;
 }

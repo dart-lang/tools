@@ -92,7 +92,7 @@ class Parser {
     if (_scanner.matches(']')) _scanner.error('unexpected "]".');
     var negated = _scanner.scan('!') || _scanner.scan('^');
 
-    readRangeChar() {
+    int readRangeChar() {
       var char = _scanner.readChar();
       if (negated || char != _slash) return char;
       _scanner.error('"/" may not be used in a range.',
@@ -119,7 +119,7 @@ class Parser {
         var end = readRangeChar();
 
         if (end < char) {
-          _scanner.error("Range out of order.",
+          _scanner.error('Range out of order.',
               position: start, length: _scanner.position - start);
         }
         ranges.add(Range(char, end));
