@@ -28,8 +28,8 @@ List<T> shortestPath<T>(
   T start,
   T target,
   Iterable<T> Function(T) edges, {
-  bool equals(T key1, T key2),
-  int hashCode(T key),
+  bool Function(T, T) equals,
+  int Function(T) hashCode,
 }) =>
     _shortestPaths<T>(
       start,
@@ -61,8 +61,8 @@ List<T> shortestPath<T>(
 Map<T, List<T>> shortestPaths<T>(
   T start,
   Iterable<T> Function(T) edges, {
-  bool equals(T key1, T key2),
-  int hashCode(T key),
+  bool Function(T, T) equals,
+  int Function(T) hashCode,
 }) =>
     _shortestPaths<T>(
       start,
@@ -75,8 +75,8 @@ Map<T, List<T>> _shortestPaths<T>(
   T start,
   Iterable<T> Function(T) edges, {
   T target,
-  bool equals(T key1, T key2),
-  int hashCode(T key),
+  bool Function(T, T) equals,
+  int Function(T) hashCode,
 }) {
   assert(start != null, '`start` cannot be null');
   assert(edges != null, '`edges` cannot be null');
