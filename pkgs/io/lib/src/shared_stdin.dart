@@ -57,22 +57,18 @@ class SharedStdIn extends Stream<List<int>> {
 
   void _onInput(List<int> event) => _getCurrent().add(event);
 
-  StreamController<List<int>> _getCurrent() {
-    if (_current == null) {
-      _current = StreamController<List<int>>(
+  StreamController<List<int>> _getCurrent() =>
+      _current ??= StreamController<List<int>>(
           onCancel: () {
             _current = null;
           },
           sync: true);
-    }
-    return _current;
-  }
 
   @override
   StreamSubscription<List<int>> listen(
-    void onData(List<int> event), {
+    void Function(List<int> event) onData, {
     Function onError,
-    void onDone(),
+    void Function() onDone,
     bool cancelOnError,
   }) {
     if (_sub == null) {

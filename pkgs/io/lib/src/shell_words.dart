@@ -139,7 +139,7 @@ List<String> shellSplit(String command) {
 void _checkUnmatchedQuote(StringScanner scanner, int openingQuote) {
   if (!scanner.isDone) return;
   final type = scanner.substring(openingQuote, openingQuote + 1) == '"'
-      ? "double"
-      : "single";
-  scanner.error("Unmatched $type quote.", position: openingQuote, length: 1);
+      ? 'double'
+      : 'single';
+  scanner.error('Unmatched $type quote.', position: openingQuote, length: 1);
 }

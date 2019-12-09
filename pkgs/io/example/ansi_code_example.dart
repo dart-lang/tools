@@ -26,7 +26,7 @@ void _preview(String name, List<AnsiCode> values, bool forScript) {
   print(wrapWith('** $name **', [styleBold, styleUnderlined]));
   for (var code in values) {
     final header =
-        "${code.name.padRight(longest)} ${code.code.toString().padLeft(3)}";
+        '${code.name.padRight(longest)} ${code.code.toString().padLeft(3)}';
 
     print("$header: ${code.wrap('Sample', forScript: forScript)}");
   }

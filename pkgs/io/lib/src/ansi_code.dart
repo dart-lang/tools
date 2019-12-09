@@ -30,7 +30,7 @@ bool _isNoop(bool skip, String input, bool forScript) =>
 
 /// Allows overriding [ansiOutputEnabled] to [enableAnsiOutput] for the code run
 /// within [body].
-T overrideAnsiOutput<T>(bool enableAnsiOutput, T body()) =>
+T overrideAnsiOutput<T>(bool enableAnsiOutput, T Function() body) =>
     runZoned(body, zoneValues: <Object, Object>{AnsiCode: enableAnsiOutput});
 
 /// The type of code represented by [AnsiCode].
@@ -76,10 +76,10 @@ class AnsiCode {
   const AnsiCode._(this.name, this.type, this.code, this.reset);
 
   /// Represents the value escaped for use in terminal output.
-  String get escape => "$_ansiEscapeLiteral[${code}m";
+  String get escape => '$_ansiEscapeLiteral[${code}m';
 
   /// Represents the value as an unescaped literal suitable for scripts.
-  String get escapeForScript => "$_ansiEscapeForScript[${code}m";
+  String get escapeForScript => '$_ansiEscapeForScript[${code}m';
 
   String _escapeValue({bool forScript = false}) {
     forScript ??= false;
@@ -99,11 +99,11 @@ class AnsiCode {
   String wrap(String value, {bool forScript = false}) =>
       _isNoop(type == AnsiCodeType.reset, value, forScript)
           ? value
-          : "${_escapeValue(forScript: forScript)}$value"
-              "${reset._escapeValue(forScript: forScript)}";
+          : '${_escapeValue(forScript: forScript)}$value'
+              '${reset._escapeValue(forScript: forScript)}';
 
   @override
-  String toString() => "$name ${type._name} ($code)";
+  String toString() => '$name ${type._name} ($code)';
 }
 
 /// Returns a [String] formatted with [codes].
@@ -137,19 +137,19 @@ String wrapWith(String value, Iterable<AnsiCode> codes,
         foreground++;
         if (foreground > 1) {
           throw ArgumentError.value(codes, 'codes',
-              "Cannot contain more than one foreground color code.");
+              'Cannot contain more than one foreground color code.');
         }
         break;
       case AnsiCodeType.background:
         background++;
         if (background > 1) {
           throw ArgumentError.value(codes, 'codes',
-              "Cannot contain more than one foreground color code.");
+              'Cannot contain more than one foreground color code.');
         }
         break;
       case AnsiCodeType.reset:
         throw ArgumentError.value(
-            codes, 'codes', "Cannot contain reset codes.");
+            codes, 'codes', 'Cannot contain reset codes.');
         break;
     }
   }
@@ -158,7 +158,7 @@ String wrapWith(String value, Iterable<AnsiCode> codes,
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
   return "$escapeValue[${sortedCodes.join(';')}m$value"
-      "${resetAll._escapeValue(forScript: forScript)}";
+      '${resetAll._escapeValue(forScript: forScript)}';
 }
 
 //

@@ -55,7 +55,7 @@ int _permissionBitIndex(_FilePermission permission, _FilePermissionRole role) {
 FutureOr<bool> isExecutable(
   String path, {
   bool isWindows,
-  FutureOr<FileStat> getStat(String path) = FileStat.stat,
+  FutureOr<FileStat> Function(String path) getStat = FileStat.stat,
 }) {
   // Windows has no concept of executable.
   if (isWindows ?? Platform.isWindows) return true;

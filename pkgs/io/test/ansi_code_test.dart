@@ -13,18 +13,18 @@ const sampleInput = 'sample input';
 
 void main() {
   group('ansiOutputEnabled', () {
-    test("default value matches dart:io", () {
+    test('default value matches dart:io', () {
       expect(ansiOutputEnabled,
           stdout.supportsAnsiEscapes && stderr.supportsAnsiEscapes);
     });
 
-    test("override true", () {
+    test('override true', () {
       overrideAnsiOutput(true, () {
         expect(ansiOutputEnabled, isTrue);
       });
     });
 
-    test("override false", () {
+    test('override false', () {
       overrideAnsiOutput(false, () {
         expect(ansiOutputEnabled, isFalse);
       });
@@ -51,11 +51,11 @@ void main() {
       final foreground = foregroundColors[i];
       expect(foreground.type, AnsiCodeType.foreground);
       expect(foreground.name.toLowerCase(), foreground.name,
-          reason: "All names should be lower case");
+          reason: 'All names should be lower case');
       final background = backgroundColors[i];
       expect(background.type, AnsiCodeType.background);
       expect(background.name.toLowerCase(), background.name,
-          reason: "All names should be lower case");
+          reason: 'All names should be lower case');
 
       expect(foreground.name, background.name);
 
@@ -68,7 +68,7 @@ void main() {
     for (var style in styles) {
       expect(style.type, AnsiCodeType.style);
       expect(style.name.toLowerCase(), style.name,
-          reason: "All names should be lower case");
+          reason: 'All names should be lower case');
       if (style == styleBold) {
         expect(style.reset, resetBold);
       } else {
@@ -84,25 +84,25 @@ void main() {
           forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
       group('wrap', () {
-        _test("color", () {
+        _test('color', () {
           final expected = '$escapeLiteral[34m$sampleInput$escapeLiteral[0m';
 
           expect(blue.wrap(sampleInput, forScript: forScript), expected);
         });
 
-        _test("style", () {
+        _test('style', () {
           final expected = '$escapeLiteral[1m$sampleInput$escapeLiteral[22m';
 
           expect(styleBold.wrap(sampleInput, forScript: forScript), expected);
         });
 
-        _test("style", () {
+        _test('style', () {
           final expected = '$escapeLiteral[34m$sampleInput$escapeLiteral[0m';
 
           expect(blue.wrap(sampleInput, forScript: forScript), expected);
         });
 
-        test("empty", () {
+        test('empty', () {
           expect(blue.wrap('', forScript: forScript), '');
         });
 
@@ -112,27 +112,27 @@ void main() {
       });
 
       group('wrapWith', () {
-        _test("foreground", () {
+        _test('foreground', () {
           final expected = '$escapeLiteral[34m$sampleInput$escapeLiteral[0m';
 
           expect(wrapWith(sampleInput, [blue], forScript: forScript), expected);
         });
 
-        _test("background", () {
+        _test('background', () {
           final expected = '$escapeLiteral[44m$sampleInput$escapeLiteral[0m';
 
           expect(wrapWith(sampleInput, [backgroundBlue], forScript: forScript),
               expected);
         });
 
-        _test("style", () {
+        _test('style', () {
           final expected = '$escapeLiteral[1m$sampleInput$escapeLiteral[0m';
 
           expect(wrapWith(sampleInput, [styleBold], forScript: forScript),
               expected);
         });
 
-        _test("2 styles", () {
+        _test('2 styles', () {
           final expected = '$escapeLiteral[1;3m$sampleInput$escapeLiteral[0m';
 
           expect(
@@ -141,13 +141,13 @@ void main() {
               expected);
         });
 
-        _test("2 foregrounds", () {
+        _test('2 foregrounds', () {
           expect(
               () => wrapWith(sampleInput, [blue, white], forScript: forScript),
               throwsArgumentError);
         });
 
-        _test("multi", () {
+        _test('multi', () {
           final expected =
               '$escapeLiteral[1;4;34;107m$sampleInput$escapeLiteral[0m';
 
@@ -162,7 +162,7 @@ void main() {
           expect(wrapWith(sampleInput, []), sampleInput);
         });
 
-        _test("empty", () {
+        _test('empty', () {
           expect(
               wrapWith('', [blue, backgroundWhite, styleBold],
                   forScript: forScript),
@@ -180,5 +180,5 @@ void main() {
   }
 }
 
-void _test<T>(String name, T body()) =>
+void _test<T>(String name, T Function() body) =>
     test(name, () => overrideAnsiOutput<T>(true, body));
