@@ -97,7 +97,7 @@ class Pool {
   /// until one of them is released.
   Future<PoolResource> request() {
     if (isClosed) {
-      throw StateError("request() may not be called on a closed Pool.");
+      throw StateError('request() may not be called on a closed Pool.');
     }
 
     if (_allocatedResources < _maxAllocatedResources) {
@@ -119,7 +119,7 @@ class Pool {
   /// The return value of [callback] is piped to the returned Future.
   Future<T> withResource<T>(FutureOr<T> Function() callback) async {
     if (isClosed) {
-      throw StateError("withResource() may not be called on a closed Pool.");
+      throw StateError('withResource() may not be called on a closed Pool.');
     }
 
     var resource = await request();
@@ -324,8 +324,8 @@ class Pool {
     for (var completer in _requestedResources) {
       completer.completeError(
           TimeoutException(
-              "Pool deadlock: all resources have been "
-              "allocated for too long.",
+              'Pool deadlock: all resources have been '
+              'allocated for too long.',
               _timeout),
           Chain.current());
     }
@@ -350,7 +350,7 @@ class PoolResource {
   /// no longer allocated, and that a new [PoolResource] may be allocated.
   void release() {
     if (_released) {
-      throw StateError("A PoolResource may only be released once.");
+      throw StateError('A PoolResource may only be released once.');
     }
     _released = true;
     _pool._onResourceReleased();
@@ -370,7 +370,7 @@ class PoolResource {
   /// may be complete, but it could still emit asynchronous errors.
   void allowRelease(Function() onRelease) {
     if (_released) {
-      throw StateError("A PoolResource may only be released once.");
+      throw StateError('A PoolResource may only be released once.');
     }
     _released = true;
     _pool._onResourceReleaseAllowed(onRelease);

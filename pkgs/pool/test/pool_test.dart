@@ -11,15 +11,15 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group("request()", () {
-    test("resources can be requested freely up to the limit", () {
+  group('request()', () {
+    test('resources can be requested freely up to the limit', () {
       var pool = Pool(50);
       for (var i = 0; i < 50; i++) {
         expect(pool.request(), completes);
       }
     });
 
-    test("resources block past the limit", () {
+    test('resources block past the limit', () {
       FakeAsync().run((async) {
         var pool = Pool(50);
         for (var i = 0; i < 50; i++) {
@@ -31,7 +31,7 @@ void main() {
       });
     });
 
-    test("a blocked resource is allocated when another is released", () {
+    test('a blocked resource is allocated when another is released', () {
       FakeAsync().run((async) {
         var pool = Pool(50);
         for (var i = 0; i < 49; i++) {
@@ -52,15 +52,15 @@ void main() {
     });
   });
 
-  group("withResource()", () {
-    test("can be called freely up to the limit", () {
+  group('withResource()', () {
+    test('can be called freely up to the limit', () {
       var pool = Pool(50);
       for (var i = 0; i < 50; i++) {
         pool.withResource(expectAsync0(() => Completer().future));
       }
     });
 
-    test("blocks the callback past the limit", () {
+    test('blocks the callback past the limit', () {
       FakeAsync().run((async) {
         var pool = Pool(50);
         for (var i = 0; i < 50; i++) {
@@ -72,7 +72,7 @@ void main() {
       });
     });
 
-    test("a blocked resource is allocated when another is released", () {
+    test('a blocked resource is allocated when another is released', () {
       FakeAsync().run((async) {
         var pool = Pool(50);
         for (var i = 0; i < 49; i++) {
@@ -99,14 +99,14 @@ void main() {
     });
 
     // Regression test for #3.
-    test("can be called immediately before close()", () async {
+    test('can be called immediately before close()', () async {
       var pool = Pool(1);
       unawaited(pool.withResource(expectAsync0(() {})));
       await pool.close();
     });
   });
 
-  group("with a timeout", () {
+  group('with a timeout', () {
     test("doesn't time out if there are no pending requests", () {
       FakeAsync().run((async) {
         var pool = Pool(50, timeout: const Duration(seconds: 5));
@@ -118,7 +118,7 @@ void main() {
       });
     });
 
-    test("resets the timer if a resource is returned", () {
+    test('resets the timer if a resource is returned', () {
       FakeAsync().run((async) {
         var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 49; i++) {
@@ -139,7 +139,7 @@ void main() {
       });
     });
 
-    test("resets the timer if a resource is requested", () {
+    test('resets the timer if a resource is requested', () {
       FakeAsync().run((async) {
         var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
@@ -155,7 +155,7 @@ void main() {
       });
     });
 
-    test("times out if nothing happens", () {
+    test('times out if nothing happens', () {
       FakeAsync().run((async) {
         var pool = Pool(50, timeout: const Duration(seconds: 5));
         for (var i = 0; i < 50; i++) {
@@ -168,8 +168,8 @@ void main() {
     });
   });
 
-  group("allowRelease()", () {
-    test("runs the callback once the resource limit is exceeded", () async {
+  group('allowRelease()', () {
+    test('runs the callback once the resource limit is exceeded', () async {
       var pool = Pool(50);
       for (var i = 0; i < 49; i++) {
         expect(pool.request(), completes);
@@ -186,7 +186,7 @@ void main() {
       expect(onReleaseCalled, isTrue);
     });
 
-    test("runs the callback immediately if there are blocked requests",
+    test('runs the callback immediately if there are blocked requests',
         () async {
       var pool = Pool(1);
       var resource = await pool.request();
@@ -200,7 +200,7 @@ void main() {
       expect(onReleaseCalled, isTrue);
     });
 
-    test("blocks the request until the callback completes", () async {
+    test('blocks the request until the callback completes', () async {
       var pool = Pool(1);
       var resource = await pool.request();
 
@@ -217,7 +217,7 @@ void main() {
       expect(requestComplete, isTrue);
     });
 
-    test("completes requests in request order regardless of callback order",
+    test('completes requests in request order regardless of callback order',
         () async {
       var pool = Pool(2);
       var resource1 = await pool.request();
@@ -262,7 +262,7 @@ void main() {
       expect(request2Complete, isTrue);
     });
 
-    test("runs onRequest in the zone it was created", () async {
+    test('runs onRequest in the zone it was created', () async {
       var pool = Pool(1);
       var resource = await pool.request();
 
@@ -290,14 +290,14 @@ void main() {
     await Future.delayed(Duration.zero);
   });
 
-  group("close()", () {
-    test("disallows request() and withResource()", () {
+  group('close()', () {
+    test('disallows request() and withResource()', () {
       var pool = Pool(1)..close();
       expect(pool.request, throwsStateError);
       expect(() => pool.withResource(() {}), throwsStateError);
     });
 
-    test("pending requests are fulfilled", () async {
+    test('pending requests are fulfilled', () async {
       var pool = Pool(1);
       var resource1 = await pool.request();
       expect(
@@ -310,7 +310,7 @@ void main() {
       resource1.release();
     });
 
-    test("pending requests are fulfilled with allowRelease", () async {
+    test('pending requests are fulfilled with allowRelease', () async {
       var pool = Pool(1);
       var resource1 = await pool.request();
 
@@ -359,7 +359,7 @@ void main() {
       resource3.release();
     });
 
-    test("active onReleases complete as usual", () async {
+    test('active onReleases complete as usual', () async {
       var pool = Pool(1);
       var resource = await pool.request();
 
@@ -380,7 +380,7 @@ void main() {
       completer.complete();
     });
 
-    test("inactive onReleases fire", () async {
+    test('inactive onReleases fire', () async {
       var pool = Pool(2);
       var resource1 = await pool.request();
       var resource2 = await pool.request();
@@ -404,7 +404,7 @@ void main() {
       completer2.complete();
     });
 
-    test("new allowReleases fire immediately", () async {
+    test('new allowReleases fire immediately', () async {
       var pool = Pool(1);
       var resource = await pool.request();
 
@@ -422,18 +422,18 @@ void main() {
       completer.complete();
     });
 
-    test("an onRelease error is piped to the return value", () async {
+    test('an onRelease error is piped to the return value', () async {
       var pool = Pool(1);
       var resource = await pool.request();
 
       var completer = Completer();
       resource.allowRelease(() => completer.future);
 
-      expect(pool.done, throwsA("oh no!"));
-      expect(pool.close(), throwsA("oh no!"));
+      expect(pool.done, throwsA('oh no!'));
+      expect(pool.close(), throwsA('oh no!'));
 
       await Future.delayed(Duration.zero);
-      completer.completeError("oh no!");
+      completer.completeError('oh no!');
     });
   });
 
@@ -719,7 +719,7 @@ void main() {
     });
   });
 
-  test("throw error when pool limit <= 0", () {
+  test('throw error when pool limit <= 0', () {
     expect(() => Pool(-1), throwsArgumentError);
     expect(() => Pool(0), throwsArgumentError);
   });
@@ -731,7 +731,7 @@ void main() {
 void Function() expectNoAsync() {
   var stack = Trace.current(1);
   return () => registerException(
-      TestFailure("Expected function not to be called."), stack);
+      TestFailure('Expected function not to be called.'), stack);
 }
 
 /// A matcher for Futures that asserts that they don't complete.
@@ -742,6 +742,6 @@ Matcher get doesNotComplete => predicate((future) {
 
       var stack = Trace.current(1);
       future.then((_) => registerException(
-          TestFailure("Expected future not to complete."), stack));
+          TestFailure('Expected future not to complete.'), stack));
       return true;
     });
