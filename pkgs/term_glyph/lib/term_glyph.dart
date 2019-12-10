@@ -10,10 +10,10 @@ import 'src/generated/glyph_set.dart';
 import 'src/generated/unicode_glyph_set.dart';
 
 /// A [GlyphSet] that always returns ASCII glyphs.
-const GlyphSet asciiGlyphs = const AsciiGlyphSet();
+const GlyphSet asciiGlyphs = AsciiGlyphSet();
 
 /// A [GlyphSet] that always returns Unicode glyphs.
-const GlyphSet unicodeGlyphs = const UnicodeGlyphSet();
+const GlyphSet unicodeGlyphs = UnicodeGlyphSet();
 
 /// Returns [asciiGlyphs] if [ascii] is `true` or [unicodeGlyphs] otherwise.
 ///

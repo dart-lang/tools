@@ -8,13 +8,13 @@ import 'package:csv/csv.dart';
 import 'package:meta/meta.dart';
 
 void main() {
-  var csv = new CsvCodec(eol: "\n");
-  var data = csv.decoder.convert(new File("data.csv").readAsStringSync());
+  var csv = CsvCodec(eol: "\n");
+  var data = csv.decoder.convert(File("data.csv").readAsStringSync());
 
   // Remove comments and empty lines.
   data.removeWhere((row) => row.length < 3);
 
-  new Directory("lib/src/generated").createSync(recursive: true);
+  Directory("lib/src/generated").createSync(recursive: true);
 
   _writeGlyphSetInterface(data);
   _writeGlyphSet(data, ascii: false);
@@ -29,8 +29,8 @@ void main() {
 
 /// Writes `lib/src/generated/glyph_set.dart`.
 void _writeGlyphSetInterface(List<List> data) {
-  var file = new File("lib/src/generated/glyph_set.dart")
-      .openSync(mode: FileMode.write);
+  var file =
+      File("lib/src/generated/glyph_set.dart").openSync(mode: FileMode.write);
   file.writeStringSync(r"""
     // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
     // for details. All rights reserved. Use of this source code is governed by a
@@ -84,9 +84,9 @@ void _writeGlyphSetInterface(List<List> data) {
 /// If [ascii] is `true`, this writes the ASCII glyph set. Otherwise it writes
 /// the Unicode glyph set.
 void _writeGlyphSet(List<List> data, {@required bool ascii}) {
-  var file = new File(
-          "lib/src/generated/${ascii ? "ascii" : "unicode"}_glyph_set.dart")
-      .openSync(mode: FileMode.write);
+  var file =
+      File("lib/src/generated/${ascii ? "ascii" : "unicode"}_glyph_set.dart")
+          .openSync(mode: FileMode.write);
 
   var className = "${ascii ? "Ascii" : "Unicode"}GlyphSet";
   file.writeStringSync("""
@@ -126,8 +126,8 @@ void _writeGlyphSet(List<List> data, {@required bool ascii}) {
 
 /// Writes `lib/src/generated/top_level.dart`.
 void _writeTopLevel(List<List> data) {
-  var file = new File("lib/src/generated/top_level.dart")
-      .openSync(mode: FileMode.write);
+  var file =
+      File("lib/src/generated/top_level.dart").openSync(mode: FileMode.write);
 
   file.writeStringSync("""
     // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
