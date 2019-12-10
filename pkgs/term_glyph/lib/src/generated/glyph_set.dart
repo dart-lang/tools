@@ -14,17 +14,17 @@
 ///
 /// /// Adds a vertical line to the left of [text].
 /// ///
-/// /// If [ascii] is `true`, this uses plain ASCII for the line. If it's
-/// /// `false`, this uses Unicode characters. If it's `null`, it defaults
-/// /// to [glyph.ascii].
-/// void addVerticalLine(String text, {bool ascii}) {
+/// /// If [unicode] is `true`, this uses Unicode for the line. If it's
+/// /// `false`, this uses plain ASCII characters. If it's `null`, it
+/// /// defaults to [glyph.ascii].
+/// void addVerticalLine(String text, {bool unicode}) {
 ///   var glyphs =
-///       (ascii ?? glyph.ascii) ? glyph.asciiGlyphs : glyph.unicodeGlyphs;
+///       (unicode ?? !glyph.ascii) ? glyph.unicodeGlyphs : glyph.asciiGlyphs;
 ///
 ///   return text
-///       .split("\n")
-///       .map((line) => "${glyphs.verticalLine} $line")
-///       .join("\n");
+///       .split('\n')
+///       .map((line) => '${glyphs.verticalLine} $line')
+///       .join('\n');
 /// }
 /// ```
 abstract class GlyphSet {
