@@ -30,7 +30,7 @@ class TextEditTransaction {
   /// with the [replacement]. [replacement] can be either a string or a
   /// [NestedPrinter].
   void edit(int begin, int end, replacement) {
-    _edits.add(new _TextEdit(begin, end, replacement));
+    _edits.add(_TextEdit(begin, end, replacement));
   }
 
   /// Create a source map [SourceLocation] for [offset].
@@ -45,7 +45,7 @@ class TextEditTransaction {
   /// Throws [UnsupportedError] if the edits were overlapping. If no edits were
   /// made, the printer simply contains the original string.
   NestedPrinter commit() {
-    var printer = new NestedPrinter();
+    var printer = NestedPrinter();
     if (_edits.length == 0) {
       return printer..add(original, location: _loc(0), isOriginal: true);
     }
@@ -56,7 +56,7 @@ class TextEditTransaction {
     int consumed = 0;
     for (var edit in _edits) {
       if (consumed > edit.begin) {
-        var sb = new StringBuffer();
+        var sb = StringBuffer();
         sb
           ..write(file.location(edit.begin).toolString)
           ..write(': overlapping edits. Insert at offset ')
@@ -65,7 +65,7 @@ class TextEditTransaction {
           ..write(consumed)
           ..write(' input characters. List of edits:');
         for (var e in _edits) sb..write('\n    ')..write(e);
-        throw new UnsupportedError(sb.toString());
+        throw UnsupportedError(sb.toString());
       }
 
       // Add characters from the original string between this edit and the last

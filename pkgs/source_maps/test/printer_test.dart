@@ -12,7 +12,7 @@ import 'common.dart';
 
 main() {
   test('printer', () {
-    var printer = new Printer('output.dart');
+    var printer = Printer('output.dart');
     printer
       ..add('var ')
       ..mark(inputVar1)
@@ -29,7 +29,7 @@ main() {
 
   test('printer projecting marks', () {
     var out = INPUT.replaceAll('long', '_s');
-    var printer = new Printer('output2.dart');
+    var printer = Printer('output2.dart');
 
     var segments = INPUT.split('long');
     expect(segments.length, 6);
@@ -56,12 +56,12 @@ main() {
     expect(printer.map.split(';').length, 8);
 
     asFixed(SourceMapSpan s) =>
-        new SourceMapSpan(s.start, s.end, s.text, isIdentifier: s.isIdentifier);
+        SourceMapSpan(s.start, s.end, s.text, isIdentifier: s.isIdentifier);
 
     // The result is the same if we use fixed positions
-    var printer2 = new Printer('output2.dart');
+    var printer2 = Printer('output2.dart');
     printer2
-      ..mark(new SourceLocation(0, sourceUrl: 'input.dart').pointSpan())
+      ..mark(SourceLocation(0, sourceUrl: 'input.dart').pointSpan())
       ..add(segments[0], projectMarks: true)
       ..mark(asFixed(inputVar1))
       ..add('_s')
@@ -84,7 +84,7 @@ main() {
 
   group('nested printer', () {
     test('simple use', () {
-      var printer = new NestedPrinter();
+      var printer = NestedPrinter();
       printer
         ..add('var ')
         ..add('x = 3;\n', span: inputVar1)
@@ -97,12 +97,12 @@ main() {
     });
 
     test('nested use', () {
-      var printer = new NestedPrinter();
+      var printer = NestedPrinter();
       printer
         ..add('var ')
-        ..add(new NestedPrinter()..add('x = 3;\n', span: inputVar1))
+        ..add(NestedPrinter()..add('x = 3;\n', span: inputVar1))
         ..add('f(', span: inputFunction)
-        ..add(new NestedPrinter()..add('y) => ', span: inputVar2))
+        ..add(NestedPrinter()..add('y) => ', span: inputVar2))
         ..add('x + y;\n', span: inputExpr)
         ..build('output.dart');
       expect(printer.text, OUTPUT);
@@ -113,7 +113,7 @@ main() {
       var out = INPUT.replaceAll('long', '_s');
       var lines = INPUT.trim().split('\n');
       expect(lines.length, 7);
-      var printer = new NestedPrinter();
+      var printer = NestedPrinter();
       for (int i = 0; i < lines.length; i++) {
         if (i == 5) printer.indent++;
         printer.addLine(lines[i].replaceAll('long', '_s').trim());

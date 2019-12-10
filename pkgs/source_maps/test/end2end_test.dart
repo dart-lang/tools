@@ -29,7 +29,7 @@ main() {
   });
 
   test('build + parse', () {
-    var map = (new SourceMapBuilder()
+    var map = (SourceMapBuilder()
           ..addSpan(inputVar1, outputVar1)
           ..addSpan(inputFunction, outputFunction)
           ..addSpan(inputVar2, outputVar2)
@@ -43,7 +43,7 @@ main() {
   });
 
   test('build + parse - no symbols', () {
-    var map = (new SourceMapBuilder()
+    var map = (SourceMapBuilder()
           ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
           ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
           ..addSpan(inputVar2NoSymbol, outputVar2NoSymbol)
@@ -57,7 +57,7 @@ main() {
   });
 
   test('build + parse, repeated entries', () {
-    var map = (new SourceMapBuilder()
+    var map = (SourceMapBuilder()
           ..addSpan(inputVar1, outputVar1)
           ..addSpan(inputVar1, outputVar1)
           ..addSpan(inputFunction, outputFunction)
@@ -75,7 +75,7 @@ main() {
   });
 
   test('build + parse - no symbols, repeated entries', () {
-    var map = (new SourceMapBuilder()
+    var map = (SourceMapBuilder()
           ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
           ..addSpan(inputVar1NoSymbol, outputVar1NoSymbol)
           ..addSpan(inputFunctionNoSymbol, outputFunctionNoSymbol)
@@ -92,7 +92,7 @@ main() {
   });
 
   test('build + parse with file', () {
-    var json = (new SourceMapBuilder()
+    var json = (SourceMapBuilder()
           ..addSpan(inputVar1, outputVar1)
           ..addSpan(inputFunction, outputFunction)
           ..addSpan(inputVar2, outputVar2)
@@ -107,8 +107,8 @@ main() {
 
   test('printer projecting marks + parse', () {
     var out = INPUT.replaceAll('long', '_s');
-    var file = new SourceFile(out, url: 'output2.dart');
-    var printer = new Printer('output2.dart');
+    var file = SourceFile(out, url: 'output2.dart');
+    var printer = Printer('output2.dart');
     printer.mark(ispan(0, 0));
 
     var segments = INPUT.split('long');
@@ -135,7 +135,7 @@ main() {
     checkHelper(SourceMapSpan inputSpan, int adjustment) {
       var start = inputSpan.start.offset - adjustment;
       var end = (inputSpan.end.offset - adjustment) - 2;
-      var span = new SourceMapFileSpan(file.span(start, end),
+      var span = SourceMapFileSpan(file.span(start, end),
           isIdentifier: inputSpan.isIdentifier);
       check(span, mapping, inputSpan, true);
     }

@@ -10,61 +10,61 @@ import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
 import 'common.dart';
 
-const Map<String, dynamic> MAP_WITH_NO_SOURCE_LOCATION = const {
+const Map<String, dynamic> MAP_WITH_NO_SOURCE_LOCATION = {
   'version': 3,
   'sourceRoot': '',
-  'sources': const ['input.dart'],
-  'names': const [],
+  'sources': ['input.dart'],
+  'names': [],
   'mappings': 'A',
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION = const {
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION = {
   'version': 3,
   'sourceRoot': '',
-  'sources': const ['input.dart'],
-  'names': const [],
+  'sources': ['input.dart'],
+  'names': [],
   'mappings': 'AAAA',
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME = const {
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME = {
   'version': 3,
   'sourceRoot': '',
-  'sources': const ['input.dart'],
-  'names': const ['var'],
+  'sources': ['input.dart'],
+  'names': ['var'],
   'mappings': 'AAAAA',
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_1 = const {
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_1 = {
   'version': 3,
   'sourceRoot': 'pkg/',
-  'sources': const ['input1.dart'],
-  'names': const ['var1'],
+  'sources': ['input1.dart'],
+  'names': ['var1'],
   'mappings': 'AAAAA',
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_2 = const {
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_2 = {
   'version': 3,
   'sourceRoot': 'pkg/',
-  'sources': const ['input2.dart'],
-  'names': const ['var2'],
+  'sources': ['input2.dart'],
+  'names': ['var2'],
   'mappings': 'AAAAA',
   'file': 'output2.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_3 = const {
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_3 = {
   'version': 3,
   'sourceRoot': 'pkg/',
-  'sources': const ['input3.dart'],
-  'names': const ['var3'],
+  'sources': ['input3.dart'],
+  'names': ['var3'],
   'mappings': 'AAAAA',
   'file': '3/output.dart'
 };
 
-const List SOURCE_MAP_BUNDLE = const [
+const List SOURCE_MAP_BUNDLE = [
   MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
   MAP_WITH_SOURCE_LOCATION_AND_NAME_2,
   MAP_WITH_SOURCE_LOCATION_AND_NAME_3,
@@ -135,14 +135,14 @@ main() {
   });
 
   test('parse with source root', () {
-    var inputMap = new Map.from(MAP_WITH_SOURCE_LOCATION);
+    var inputMap = Map.from(MAP_WITH_SOURCE_LOCATION);
     inputMap['sourceRoot'] = '/pkg/';
     var mapping = parseJson(inputMap) as SingleMapping;
     expect(mapping.spanFor(0, 0).sourceUrl, Uri.parse("/pkg/input.dart"));
     expect(
         mapping
             .spanForLocation(
-                new SourceLocation(0, sourceUrl: Uri.parse("ignored.dart")))
+                SourceLocation(0, sourceUrl: Uri.parse("ignored.dart")))
             .sourceUrl,
         Uri.parse("/pkg/input.dart"));
 
@@ -155,7 +155,7 @@ main() {
   });
 
   test('parse with map URL', () {
-    var inputMap = new Map.from(MAP_WITH_SOURCE_LOCATION);
+    var inputMap = Map.from(MAP_WITH_SOURCE_LOCATION);
     inputMap['sourceRoot'] = 'pkg/';
     var mapping = parseJson(inputMap, mapUrl: "file:///path/to/map");
     expect(mapping.spanFor(0, 0).sourceUrl,
@@ -169,20 +169,20 @@ main() {
     test('simple', () {
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
-                  sourceUrl: new Uri.file('/path/to/output.dart')))
+              .spanForLocation(SourceLocation(0,
+                  sourceUrl: Uri.file('/path/to/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
-                  sourceUrl: new Uri.file('/path/to/output2.dart')))
+              .spanForLocation(SourceLocation(0,
+                  sourceUrl: Uri.file('/path/to/output2.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
-                  sourceUrl: new Uri.file('/path/to/3/output.dart')))
+              .spanForLocation(SourceLocation(0,
+                  sourceUrl: Uri.file('/path/to/3/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input3.dart"));
 
@@ -200,19 +200,19 @@ main() {
     test('package uris', () {
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
+              .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('package:1/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
+              .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('package:2/output2.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
+              .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('package:3/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input3.dart"));
@@ -263,7 +263,7 @@ main() {
     });
 
     test('build bundle incrementally', () {
-      var mapping = new MappingBundle();
+      var mapping = MappingBundle();
 
       mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
           mapUrl: "file:///path/to/map"));
@@ -291,19 +291,19 @@ main() {
     test('different paths', () {
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
+              .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('http://localhost/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input1.dart"));
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
+              .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('http://localhost/output2.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input2.dart"));
       expect(
           mapping
-              .spanForLocation(new SourceLocation(0,
+              .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('http://localhost/3/output.dart')))
               .sourceUrl,
           Uri.parse("file:///path/to/pkg/input3.dart"));
@@ -343,7 +343,7 @@ main() {
   });
 
   test('parse extensions', () {
-    var map = new Map.from(EXPECTED_MAP);
+    var map = Map.from(EXPECTED_MAP);
     map["x_foo"] = "a";
     map["x_bar"] = [3];
     SingleMapping mapping = parseJson(map);
@@ -355,16 +355,15 @@ main() {
   group("source files", () {
     group("from fromEntries()", () {
       test("are null for non-FileLocations", () {
-        var mapping = new SingleMapping.fromEntries([
-          new Entry(new SourceLocation(10, line: 1, column: 8),
-              outputVar1.start, null)
+        var mapping = SingleMapping.fromEntries([
+          Entry(SourceLocation(10, line: 1, column: 8), outputVar1.start, null)
         ]);
         expect(mapping.files, equals([null]));
       });
 
       test("use a file location's file", () {
-        var mapping = new SingleMapping.fromEntries(
-            [new Entry(inputVar1.start, outputVar1.start, null)]);
+        var mapping = SingleMapping.fromEntries(
+            [Entry(inputVar1.start, outputVar1.start, null)]);
         expect(mapping.files, equals([input]));
       });
     });
@@ -377,14 +376,14 @@ main() {
         });
 
         test("with null sourcesContent values", () {
-          var map = new Map.from(EXPECTED_MAP);
+          var map = Map.from(EXPECTED_MAP);
           map["sourcesContent"] = [null];
           var mapping = parseJson(map) as SingleMapping;
           expect(mapping.files, equals([null]));
         });
 
         test("with a too-short sourcesContent", () {
-          var map = new Map.from(EXPECTED_MAP);
+          var map = Map.from(EXPECTED_MAP);
           map["sourcesContent"] = [];
           var mapping = parseJson(map) as SingleMapping;
           expect(mapping.files, equals([null]));
@@ -392,7 +391,7 @@ main() {
       });
 
       test("are parsed from sourcesContent", () {
-        var map = new Map.from(EXPECTED_MAP);
+        var map = Map.from(EXPECTED_MAP);
         map["sourcesContent"] = ["hello, world!"];
         var mapping = parseJson(map) as SingleMapping;
 

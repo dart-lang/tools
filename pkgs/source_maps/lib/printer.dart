@@ -17,8 +17,8 @@ const int _CR = 13;
 /// maps locations.
 class Printer {
   final String filename;
-  final StringBuffer _buff = new StringBuffer();
-  final SourceMapBuilder _maps = new SourceMapBuilder();
+  final StringBuffer _buff = StringBuffer();
+  final SourceMapBuilder _maps = SourceMapBuilder();
   String get text => _buff.toString();
   String get map => _maps.toJson(filename);
 
@@ -38,7 +38,7 @@ class Printer {
   /// adds a source map location on each new line, projecting that every new
   /// line in the target file (printed here) corresponds to a new line in the
   /// source file.
-  void add(String str, {projectMarks: false}) {
+  void add(String str, {projectMarks = false}) {
     var chars = str.runes.toList();
     var length = chars.length;
     for (int i = 0; i < length; i++) {
@@ -52,7 +52,7 @@ class Printer {
             var file = (_loc as FileLocation).file;
             mark(file.location(file.getOffset(_loc.line + 1)));
           } else {
-            mark(new SourceLocation(0,
+            mark(SourceLocation(0,
                 sourceUrl: _loc.sourceUrl, line: _loc.line + 1, column: 0));
           }
         }
@@ -84,10 +84,8 @@ class Printer {
       loc = mark.start;
       if (mark is SourceMapSpan && mark.isIdentifier) identifier = mark.text;
     }
-    _maps.addLocation(
-        loc,
-        new SourceLocation(_buff.length, line: _line, column: _column),
-        identifier);
+    _maps.addLocation(loc,
+        SourceLocation(_buff.length, line: _line, column: _column), identifier);
     _loc = loc;
   }
 }
@@ -113,7 +111,7 @@ class NestedPrinter implements NestedItem {
 
   /// Item used to indicate that the following item is copied from the original
   /// source code, and hence we should preserve source-maps on every new line.
-  static final _ORIGINAL = new Object();
+  static final _ORIGINAL = Object();
 
   NestedPrinter([this.indent = 0]);
 
@@ -133,7 +131,7 @@ class NestedPrinter implements NestedItem {
   /// Setting [isOriginal] will make this printer propagate source map locations
   /// on every line-break.
   void add(object,
-      {SourceLocation location, SourceSpan span, bool isOriginal: false}) {
+      {SourceLocation location, SourceSpan span, bool isOriginal = false}) {
     if (object is! String || location != null || span != null || isOriginal) {
       _flush();
       assert(location == null || span == null);
@@ -180,7 +178,7 @@ class NestedPrinter implements NestedItem {
 
   /// Appends a string merging it with any previous strings, if possible.
   void _appendString(String s) {
-    if (_buff == null) _buff = new StringBuffer();
+    if (_buff == null) _buff = StringBuffer();
     _buff.write(s);
   }
 
@@ -200,7 +198,7 @@ class NestedPrinter implements NestedItem {
   /// printer, including source map location tokens.
   String toString() {
     _flush();
-    return (new StringBuffer()..writeAll(_items)).toString();
+    return (StringBuffer()..writeAll(_items)).toString();
   }
 
   /// [Printer] used during the last call to [build], if any.
@@ -216,7 +214,7 @@ class NestedPrinter implements NestedItem {
   /// calling this function, you can use [text] and [map] to retrieve the
   /// geenrated code and source map information, respectively.
   void build(String filename) {
-    writeTo(printer = new Printer(filename));
+    writeTo(printer = Printer(filename));
   }
 
   /// Implements the [NestedItem] interface.
@@ -237,7 +235,7 @@ class NestedPrinter implements NestedItem {
         // every new-line.
         propagate = true;
       } else {
-        throw new UnsupportedError('Unknown item type: $item');
+        throw UnsupportedError('Unknown item type: $item');
       }
     }
   }

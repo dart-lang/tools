@@ -17,10 +17,10 @@ main() {
 
   group('conflict detection', () {
     var original = "0123456789abcdefghij";
-    var file = new SourceFile(original);
+    var file = SourceFile(original);
 
     test('no conflict, in order', () {
-      var txn = new TextEditTransaction(original, file);
+      var txn = TextEditTransaction(original, file);
       txn.edit(2, 4, '.');
       txn.edit(5, 5, '|');
       txn.edit(6, 6, '-');
@@ -29,7 +29,7 @@ main() {
     });
 
     test('no conflict, out of order', () {
-      var txn = new TextEditTransaction(original, file);
+      var txn = TextEditTransaction(original, file);
       txn.edit(2, 4, '.');
       txn.edit(5, 5, '|');
 
@@ -41,7 +41,7 @@ main() {
     });
 
     test('conflict', () {
-      var txn = new TextEditTransaction(original, file);
+      var txn = TextEditTransaction(original, file);
       txn.edit(2, 4, '.');
       txn.edit(3, 3, '-');
       expect(
@@ -54,8 +54,8 @@ main() {
   test('generated source maps', () {
     var original =
         "0123456789\n0*23456789\n01*3456789\nabcdefghij\nabcd*fghij\n";
-    var file = new SourceFile(original);
-    var txn = new TextEditTransaction(original, file);
+    var file = SourceFile(original);
+    var txn = TextEditTransaction(original, file);
     txn.edit(27, 29, '__\n    ');
     txn.edit(34, 35, '___');
     var printer = (txn.commit()..build(''));

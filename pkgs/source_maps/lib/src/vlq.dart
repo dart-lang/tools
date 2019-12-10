@@ -40,7 +40,7 @@ final int MIN_INT32 = -pow(2, 31);
 /// Creates the VLQ encoding of [value] as a sequence of characters
 Iterable<String> encodeVlq(int value) {
   if (value < MIN_INT32 || value > MAX_INT32) {
-    throw new ArgumentError('expected 32 bit int, got: $value');
+    throw ArgumentError('expected 32 bit int, got: $value');
   }
   var res = <String>[];
   int signBit = 0;
@@ -69,10 +69,10 @@ int decodeVlq(Iterator<String> chars) {
   bool stop = false;
   int shift = 0;
   while (!stop) {
-    if (!chars.moveNext()) throw new StateError('incomplete VLQ value');
+    if (!chars.moveNext()) throw StateError('incomplete VLQ value');
     var char = chars.current;
     if (!_digits.containsKey(char)) {
-      throw new FormatException('invalid character in VLQ encoding: $char');
+      throw FormatException('invalid character in VLQ encoding: $char');
     }
     var digit = _digits[char];
     stop = (digit & VLQ_CONTINUATION_BIT) == 0;
@@ -95,7 +95,7 @@ int decodeVlq(Iterator<String> chars) {
 
   // TODO(sigmund): can we detect this earlier?
   if (result < MIN_INT32 || result > MAX_INT32) {
-    throw new FormatException(
+    throw FormatException(
         'expected an encoded 32 bit int, but we got: $result');
   }
   return result;

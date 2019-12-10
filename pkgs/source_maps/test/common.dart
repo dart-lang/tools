@@ -19,11 +19,11 @@ int longName(int longVar2) {
   return longVar1 + longVar2;
 }
 ''';
-var input = new SourceFile(INPUT, url: 'input.dart');
+var input = SourceFile(INPUT, url: 'input.dart');
 
 /// A span in the input file
 SourceMapSpan ispan(int start, int end, [bool isIdentifier = false]) =>
-    new SourceMapFileSpan(input.span(start, end), isIdentifier: isIdentifier);
+    SourceMapFileSpan(input.span(start, end), isIdentifier: isIdentifier);
 
 SourceMapSpan inputVar1 = ispan(30, 38, true);
 SourceMapSpan inputFunction = ispan(74, 82, true);
@@ -40,11 +40,11 @@ const String OUTPUT = '''
 var x = 3;
 f(y) => x + y;
 ''';
-var output = new SourceFile(OUTPUT, url: 'output.dart');
+var output = SourceFile(OUTPUT, url: 'output.dart');
 
 /// A span in the output file
 SourceMapSpan ospan(int start, int end, [bool isIdentifier = false]) =>
-    new SourceMapFileSpan(output.span(start, end), isIdentifier: isIdentifier);
+    SourceMapFileSpan(output.span(start, end), isIdentifier: isIdentifier);
 
 SourceMapSpan outputVar1 = ospan(4, 5, true);
 SourceMapSpan outputFunction = ospan(11, 12, true);
@@ -62,11 +62,11 @@ SourceMapSpan outputExpr = ospan(19, 24);
 ///
 /// This mapping is stored in the tests so we can independently test the builder
 /// and parser algorithms without relying entirely on end2end tests.
-const Map<String, dynamic> EXPECTED_MAP = const {
+const Map<String, dynamic> EXPECTED_MAP = {
   'version': 3,
   'sourceRoot': '',
-  'sources': const ['input.dart'],
-  'names': const ['longVar1', 'longName', 'longVar2'],
+  'sources': ['input.dart'],
+  'names': ['longVar1', 'longName', 'longVar2'],
   'mappings': 'IACIA;AAGAC,EAAaC,MACR',
   'file': 'output.dart'
 };

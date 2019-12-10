@@ -17,7 +17,7 @@ class SourceMapSpan extends SourceSpanBase {
   final bool isIdentifier;
 
   SourceMapSpan(SourceLocation start, SourceLocation end, String text,
-      {this.isIdentifier: false})
+      {this.isIdentifier = false})
       : super(start, end, text);
 
   /// Creates a [SourceMapSpan] for an identifier with value [text] starting at
@@ -27,7 +27,7 @@ class SourceMapSpan extends SourceSpanBase {
   SourceMapSpan.identifier(SourceLocation start, String text)
       : this(
             start,
-            new SourceLocation(start.offset + text.length,
+            SourceLocation(start.offset + text.length,
                 sourceUrl: start.sourceUrl,
                 line: start.line,
                 column: start.column + text.length),
@@ -48,7 +48,7 @@ class SourceMapFileSpan implements SourceMapSpan, FileSpan {
   Uri get sourceUrl => _inner.sourceUrl;
   int get length => _inner.length;
 
-  SourceMapFileSpan(this._inner, {this.isIdentifier: false});
+  SourceMapFileSpan(this._inner, {this.isIdentifier = false});
 
   int compareTo(SourceSpan other) => _inner.compareTo(other);
   String highlight({color}) => _inner.highlight(color: color);

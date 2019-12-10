@@ -22,10 +22,9 @@ class SourceMapBuilder {
   void addFromOffset(SourceLocation source, SourceFile targetFile,
       int targetOffset, String identifier) {
     if (targetFile == null) {
-      throw new ArgumentError('targetFile cannot be null');
+      throw ArgumentError('targetFile cannot be null');
     }
-    _entries
-        .add(new Entry(source, targetFile.location(targetOffset), identifier));
+    _entries.add(Entry(source, targetFile.location(targetOffset), identifier));
   }
 
   /// Adds an entry mapping [target] to [source].
@@ -40,18 +39,18 @@ class SourceMapBuilder {
     }
 
     var name = isIdentifier ? source.text : null;
-    _entries.add(new Entry(source.start, target.start, name));
+    _entries.add(Entry(source.start, target.start, name));
   }
 
   /// Adds an entry mapping [target] to [source].
   void addLocation(
       SourceLocation source, SourceLocation target, String identifier) {
-    _entries.add(new Entry(source, target, identifier));
+    _entries.add(Entry(source, target, identifier));
   }
 
   /// Encodes all mappings added to this builder as a json map.
   Map build(String fileUrl) {
-    return new SingleMapping.fromEntries(this._entries, fileUrl).toJson();
+    return SingleMapping.fromEntries(this._entries, fileUrl).toJson();
   }
 
   /// Encodes all mappings added to this builder as a json string.
