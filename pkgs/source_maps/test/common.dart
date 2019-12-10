@@ -19,7 +19,7 @@ int longName(int longVar2) {
   return longVar1 + longVar2;
 }
 ''';
-var input = SourceFile(INPUT, url: 'input.dart');
+var input = SourceFile.fromString(INPUT, url: 'input.dart');
 
 /// A span in the input file
 SourceMapSpan ispan(int start, int end, [bool isIdentifier = false]) =>
@@ -40,7 +40,7 @@ const String OUTPUT = '''
 var x = 3;
 f(y) => x + y;
 ''';
-var output = SourceFile(OUTPUT, url: 'output.dart');
+var output = SourceFile.fromString(OUTPUT, url: 'output.dart');
 
 /// A span in the output file
 SourceMapSpan ospan(int start, int end, [bool isIdentifier = false]) =>

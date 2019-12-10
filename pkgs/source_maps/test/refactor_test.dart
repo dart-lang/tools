@@ -17,7 +17,7 @@ main() {
 
   group('conflict detection', () {
     var original = "0123456789abcdefghij";
-    var file = SourceFile(original);
+    var file = SourceFile.fromString(original);
 
     test('no conflict, in order', () {
       var txn = TextEditTransaction(original, file);
@@ -54,7 +54,7 @@ main() {
   test('generated source maps', () {
     var original =
         "0123456789\n0*23456789\n01*3456789\nabcdefghij\nabcd*fghij\n";
-    var file = SourceFile(original);
+    var file = SourceFile.fromString(original);
     var txn = TextEditTransaction(original, file);
     txn.edit(27, 29, '__\n    ');
     txn.edit(34, 35, '___');

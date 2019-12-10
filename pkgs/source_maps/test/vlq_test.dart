@@ -37,17 +37,17 @@ main() {
     expect(encodeVlq(min_int).join(''), 'hgggggE');
     expect(decodeVlq('hgggggE'.split('').iterator), min_int);
 
-    expect(() => encodeVlq(max_int + 1), throws);
-    expect(() => encodeVlq(max_int + 2), throws);
-    expect(() => encodeVlq(min_int - 1), throws);
-    expect(() => encodeVlq(min_int - 2), throws);
+    expect(() => encodeVlq(max_int + 1), throwsA(anything));
+    expect(() => encodeVlq(max_int + 2), throwsA(anything));
+    expect(() => encodeVlq(min_int - 1), throwsA(anything));
+    expect(() => encodeVlq(min_int - 2), throwsA(anything));
 
     // if we allowed more than 32 bits, these would be the expected encodings
     // for the large numbers above.
-    expect(() => decodeVlq('ggggggE'.split('').iterator), throws);
-    expect(() => decodeVlq('igggggE'.split('').iterator), throws);
-    expect(() => decodeVlq('jgggggE'.split('').iterator), throws);
-    expect(() => decodeVlq('lgggggE'.split('').iterator), throws);
+    expect(() => decodeVlq('ggggggE'.split('').iterator), throwsA(anything));
+    expect(() => decodeVlq('igggggE'.split('').iterator), throwsA(anything));
+    expect(() => decodeVlq('jgggggE'.split('').iterator), throwsA(anything));
+    expect(() => decodeVlq('lgggggE'.split('').iterator), throwsA(anything));
   },
       // This test uses integers so large they overflow in JS.
       testOn: "dart-vm");

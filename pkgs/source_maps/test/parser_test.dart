@@ -238,7 +238,7 @@ main() {
     });
 
     test('missing path', () {
-      expect(() => mapping.spanFor(0, 0), throws);
+      expect(() => mapping.spanFor(0, 0), throwsA(anything));
     });
 
     test('incomplete paths', () {
@@ -336,7 +336,7 @@ main() {
       expect(mapping.toJson(), equals(expected));
     }
     // Invalid for this case
-    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throws);
+    expect(() => parseJson(SOURCE_MAP_BUNDLE as dynamic), throwsA(anything));
 
     var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE) as MappingBundle;
     expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));

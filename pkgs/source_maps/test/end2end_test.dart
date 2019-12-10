@@ -107,7 +107,7 @@ main() {
 
   test('printer projecting marks + parse', () {
     var out = INPUT.replaceAll('long', '_s');
-    var file = SourceFile(out, url: 'output2.dart');
+    var file = SourceFile.fromString(out, url: 'output2.dart');
     var printer = Printer('output2.dart');
     printer.mark(ispan(0, 0));
 
