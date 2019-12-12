@@ -19,34 +19,34 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  test("returns the system frequency", () {
+  test('returns the system frequency', () {
     expect(fixed(1990, 11, 8).stopwatch().frequency,
         equals(Stopwatch().frequency));
   });
 
-  group("before it starts", () {
+  group('before it starts', () {
     Stopwatch stopwatch;
     setUp(() {
       stopwatch = clock.stopwatch();
     });
 
-    test("is not running", () => expect(stopwatch.isRunning, isFalse));
+    test('is not running', () => expect(stopwatch.isRunning, isFalse));
 
-    test("stop() does nothing", () {
+    test('stop() does nothing', () {
       stopwatch.stop();
       expect(stopwatch.isRunning, isFalse);
       expect(stopwatch.elapsed, equals(Duration.zero));
     });
 
-    group("reports no elapsed", () {
-      test("duration", () => expect(stopwatch.elapsed, equals(Duration.zero)));
-      test("ticks", () => expect(stopwatch.elapsedTicks, isZero));
-      test("microseconds", () => expect(stopwatch.elapsedMicroseconds, isZero));
-      test("milliseconds", () => expect(stopwatch.elapsedMilliseconds, isZero));
+    group('reports no elapsed', () {
+      test('duration', () => expect(stopwatch.elapsed, equals(Duration.zero)));
+      test('ticks', () => expect(stopwatch.elapsedTicks, isZero));
+      test('microseconds', () => expect(stopwatch.elapsedMicroseconds, isZero));
+      test('milliseconds', () => expect(stopwatch.elapsedMilliseconds, isZero));
     });
   });
 
-  group("when 12345μs have elapsed", () {
+  group('when 12345μs have elapsed', () {
     DateTime time;
     Clock clock;
     Stopwatch stopwatch;
@@ -57,64 +57,64 @@ void main() {
       time = clock.microsFromNow(12345);
     });
 
-    group("and the stopwatch is active", () {
-      test("is running", () {
+    group('and the stopwatch is active', () {
+      test('is running', () {
         expect(stopwatch.isRunning, isTrue);
       });
 
-      test("reports more elapsed time", () {
+      test('reports more elapsed time', () {
         time = clock.microsFromNow(54321);
         expect(stopwatch.elapsedMicroseconds, equals(66666));
       });
 
-      test("start does nothing", () {
+      test('start does nothing', () {
         stopwatch.start();
         expect(stopwatch.isRunning, isTrue);
         expect(stopwatch.elapsedMicroseconds, equals(12345));
       });
 
-      group("reset()", () {
+      group('reset()', () {
         setUp(() {
           stopwatch.reset();
         });
 
-        test("sets the elapsed time to zero", () {
+        test('sets the elapsed time to zero', () {
           expect(stopwatch.elapsed, equals(Duration.zero));
         });
 
-        test("reports more elapsed time", () {
+        test('reports more elapsed time', () {
           time = clock.microsFromNow(54321);
           expect(stopwatch.elapsedMicroseconds, equals(54321));
         });
       });
 
-      group("reports elapsed", () {
-        test("duration", () {
+      group('reports elapsed', () {
+        test('duration', () {
           expect(
               stopwatch.elapsed, equals(const Duration(microseconds: 12345)));
         });
 
-        test("ticks", () {
+        test('ticks', () {
           expect(stopwatch.elapsedTicks,
               equals((Stopwatch().frequency * 12345) ~/ 1000000));
         });
 
-        test("microseconds", () {
+        test('microseconds', () {
           expect(stopwatch.elapsedMicroseconds, equals(12345));
         });
 
-        test("milliseconds", () {
+        test('milliseconds', () {
           expect(stopwatch.elapsedMilliseconds, equals(12));
         });
       });
     });
 
-    group("and the stopwatch is inactive, reports that as", () {
+    group('and the stopwatch is inactive, reports that as', () {
       setUp(() {
         stopwatch.stop();
       });
 
-      test("is not running", () {
+      test('is not running', () {
         expect(stopwatch.isRunning, isFalse);
       });
 
@@ -123,19 +123,19 @@ void main() {
         expect(stopwatch.elapsedMicroseconds, equals(12345));
       });
 
-      test("start starts reporting more elapsed time", () {
+      test('start starts reporting more elapsed time', () {
         stopwatch.start();
         expect(stopwatch.isRunning, isTrue);
         time = clock.microsFromNow(54321);
         expect(stopwatch.elapsedMicroseconds, equals(66666));
       });
 
-      group("reset()", () {
+      group('reset()', () {
         setUp(() {
           stopwatch.reset();
         });
 
-        test("sets the elapsed time to zero", () {
+        test('sets the elapsed time to zero', () {
           expect(stopwatch.elapsed, equals(Duration.zero));
         });
 
@@ -145,22 +145,22 @@ void main() {
         });
       });
 
-      group("reports elapsed", () {
-        test("duration", () {
+      group('reports elapsed', () {
+        test('duration', () {
           expect(
               stopwatch.elapsed, equals(const Duration(microseconds: 12345)));
         });
 
-        test("ticks", () {
+        test('ticks', () {
           expect(stopwatch.elapsedTicks,
               equals((Stopwatch().frequency * 12345) ~/ 1000000));
         });
 
-        test("microseconds", () {
+        test('microseconds', () {
           expect(stopwatch.elapsedMicroseconds, equals(12345));
         });
 
-        test("milliseconds", () {
+        test('milliseconds', () {
           expect(stopwatch.elapsedMilliseconds, equals(12));
         });
       });

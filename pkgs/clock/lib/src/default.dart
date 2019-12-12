@@ -42,7 +42,7 @@ T withClock<T>(Clock clock, T Function() callback,
     {@deprecated bool isFinal = false}) {
   if ((Zone.current[_isFinalKey] ?? false) == true) {
     throw StateError(
-        "Cannot call withClock() within a call to withClock(isFinal = true).");
+        'Cannot call withClock() within a call to withClock(isFinal = true).');
   }
 
   return runZoned(callback,

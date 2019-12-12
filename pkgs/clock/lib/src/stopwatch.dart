@@ -38,25 +38,34 @@ class ClockStopwatch implements Stopwatch {
 
   ClockStopwatch(this._clock);
 
+  @override
   int get frequency => _frequency;
+  @override
   int get elapsedTicks => (elapsedMicroseconds * frequency) ~/ 1000000;
+  @override
   Duration get elapsed => Duration(microseconds: elapsedMicroseconds);
+  @override
   int get elapsedMilliseconds => elapsedMicroseconds ~/ 1000;
+  @override
   bool get isRunning => _start != null;
 
+  @override
   int get elapsedMicroseconds =>
       _elapsed +
       (_start == null ? 0 : _clock.now().difference(_start).inMicroseconds);
 
+  @override
   void start() {
     _start ??= _clock.now();
   }
 
+  @override
   void stop() {
     _elapsed = elapsedMicroseconds;
     _start = null;
   }
 
+  @override
   void reset() {
     _elapsed = 0;
     if (_start != null) _start = _clock.now();

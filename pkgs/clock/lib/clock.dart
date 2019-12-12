@@ -18,17 +18,17 @@ export 'src/clock.dart';
 export 'src/default.dart';
 
 /// Returns current time.
-@Deprecated("Pass around an instance of Clock instead.")
+@Deprecated('Pass around an instance of Clock instead.')
 typedef TimeFunction = DateTime Function();
 
 /// Returns the current system time.
-@Deprecated("Use new DateTime.now() instead.")
+@Deprecated('Use new DateTime.now() instead.')
 DateTime systemTime() => DateTime.now();
 
 /// Returns the current time as reported by [clock].
-@Deprecated("Use clock.now() instead.")
+@Deprecated('Use clock.now() instead.')
 DateTime get now => clock.now();
 
 /// Returns a stopwatch that uses the current time as reported by [clock].
-@Deprecated("Use clock.stopwatch() instead.")
+@Deprecated('Use clock.stopwatch() instead.')
 Stopwatch getStopwatch() => clock.stopwatch();

@@ -21,14 +21,14 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  test("the default clock returns the system time", () {
+  test('the default clock returns the system time', () {
     expect(DateTime.now().difference(clock.now()).inMilliseconds.abs(),
         lessThan(100));
   });
 
-  group("withClock()", () {
-    group("overrides the clock", () {
-      test("synchronously", () {
+  group('withClock()', () {
+    group('overrides the clock', () {
+      test('synchronously', () {
         var time = date(1990, 11, 8);
         withClock(Clock(() => time), () {
           expect(clock.now(), equals(time));
@@ -37,7 +37,7 @@ void main() {
         });
       });
 
-      test("asynchronously", () {
+      test('asynchronously', () {
         var time = date(1990, 11, 8);
         withClock(Clock.fixed(time), () {
           expect(Future(() async {
@@ -46,7 +46,7 @@ void main() {
         });
       });
 
-      test("within another withClock() call", () {
+      test('within another withClock() call', () {
         var outerTime = date(1990, 11, 8);
         withClock(Clock.fixed(outerTime), () {
           expect(clock.now(), equals(outerTime));

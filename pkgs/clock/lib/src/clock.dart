@@ -177,6 +177,6 @@ class Clock {
   Stopwatch stopwatch() => ClockStopwatch(this);
 
   /// Returns a new stopwatch that uses the current time as reported by `this`.
-  @Deprecated("Use stopwatch() instead.")
+  @Deprecated('Use stopwatch() instead.')
   Stopwatch getStopwatch() => stopwatch();
 }

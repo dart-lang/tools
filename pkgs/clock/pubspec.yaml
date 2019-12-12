@@ -1,5 +1,5 @@
 name: clock
-version: 1.0.1
+version: 1.0.2-dev
 description: A fakeable wrapper for dart:core clock APIs
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/clock
