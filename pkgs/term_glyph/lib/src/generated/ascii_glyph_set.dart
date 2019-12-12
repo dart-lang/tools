@@ -14,370 +14,124 @@ class AsciiGlyphSet implements GlyphSet {
   /// otherwise.
   @override
   String glyphOrAscii(String glyph, String alternative) => alternative;
-
-  /// A bullet point.
-  ///
-  /// Always '*' for [this].
   @override
   String get bullet => '*';
-
-  /// A left-pointing arrow.
-  ///
-  /// Note that the Unicode arrow glyphs may overlap with adjacent characters in some
-  /// terminal fonts, and should generally be surrounding by spaces.
-  ///
-  /// Always '<' for [this].
   @override
   String get leftArrow => '<';
-
-  /// A right-pointing arrow.
-  ///
-  /// Note that the Unicode arrow glyphs may overlap with adjacent characters in some
-  /// terminal fonts, and should generally be surrounding by spaces.
-  ///
-  /// Always '>' for [this].
   @override
   String get rightArrow => '>';
-
-  /// An upwards-pointing arrow.
-  ///
-  /// Always '^' for [this].
   @override
   String get upArrow => '^';
-
-  /// A downwards-pointing arrow.
-  ///
-  /// Always 'v' for [this].
   @override
   String get downArrow => 'v';
-
-  /// A two-character left-pointing arrow.
-  ///
-  /// Always '<=' for [this].
   @override
   String get longLeftArrow => '<=';
-
-  /// A two-character right-pointing arrow.
-  ///
-  /// Always '=>' for [this].
   @override
   String get longRightArrow => '=>';
-
-  /// A horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLine => '-';
-
-  /// A vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLine => '|';
-
-  /// The upper left-hand corner of a box.
-  ///
-  /// Always ',' for [this].
   @override
   String get topLeftCorner => ',';
-
-  /// The upper right-hand corner of a box.
-  ///
-  /// Always ',' for [this].
   @override
   String get topRightCorner => ',';
-
-  /// The lower left-hand corner of a box.
-  ///
-  /// Always "'" for [this].
   @override
   String get bottomLeftCorner => "'";
-
-  /// The lower right-hand corner of a box.
-  ///
-  /// Always "'" for [this].
   @override
   String get bottomRightCorner => "'";
-
-  /// An intersection of vertical and horizontal box lines.
-  ///
-  /// Always '+' for [this].
   @override
   String get cross => '+';
-
-  /// A horizontal box line with a vertical line going up from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeUp => '+';
-
-  /// A horizontal box line with a vertical line going down from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeDown => '+';
-
-  /// A vertical box line with a horizontal line going left from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeLeft => '+';
-
-  /// A vertical box line with a horizontal line going right from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeRight => '+';
-
-  /// The top half of a vertical box line.
-  ///
-  /// Always "'" for [this].
   @override
   String get upEnd => "'";
-
-  /// The bottom half of a vertical box line.
-  ///
-  /// Always ',' for [this].
   @override
   String get downEnd => ',';
-
-  /// The left half of a horizontal box line.
-  ///
-  /// Always '-' for [this].
   @override
   String get leftEnd => '-';
-
-  /// The right half of a horizontal box line.
-  ///
-  /// Always '-' for [this].
   @override
   String get rightEnd => '-';
-
-  /// A bold horizontal line that can be used to draw a box.
-  ///
-  /// Always '=' for [this].
   @override
   String get horizontalLineBold => '=';
-
-  /// A bold vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineBold => '|';
-
-  /// The bold upper left-hand corner of a box.
-  ///
-  /// Always ',' for [this].
   @override
   String get topLeftCornerBold => ',';
-
-  /// The bold upper right-hand corner of a box.
-  ///
-  /// Always ',' for [this].
   @override
   String get topRightCornerBold => ',';
-
-  /// The bold lower left-hand corner of a box.
-  ///
-  /// Always "'" for [this].
   @override
   String get bottomLeftCornerBold => "'";
-
-  /// The bold lower right-hand corner of a box.
-  ///
-  /// Always "'" for [this].
   @override
   String get bottomRightCornerBold => "'";
-
-  /// An intersection of bold vertical and horizontal box lines.
-  ///
-  /// Always '+' for [this].
   @override
   String get crossBold => '+';
-
-  /// A bold horizontal box line with a vertical line going up from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeUpBold => '+';
-
-  /// A bold horizontal box line with a vertical line going down from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeDownBold => '+';
-
-  /// A bold vertical box line with a horizontal line going left from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeLeftBold => '+';
-
-  /// A bold vertical box line with a horizontal line going right from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeRightBold => '+';
-
-  /// The top half of a bold vertical box line.
-  ///
-  /// Always "'" for [this].
   @override
   String get upEndBold => "'";
-
-  /// The bottom half of a bold vertical box line.
-  ///
-  /// Always ',' for [this].
   @override
   String get downEndBold => ',';
-
-  /// The left half of a bold horizontal box line.
-  ///
-  /// Always '-' for [this].
   @override
   String get leftEndBold => '-';
-
-  /// The right half of a bold horizontal box line.
-  ///
-  /// Always '-' for [this].
   @override
   String get rightEndBold => '-';
-
-  /// A double horizontal line that can be used to draw a box.
-  ///
-  /// Always '=' for [this].
   @override
   String get horizontalLineDouble => '=';
-
-  /// A double vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineDouble => '|';
-
-  /// The double upper left-hand corner of a box.
-  ///
-  /// Always ',' for [this].
   @override
   String get topLeftCornerDouble => ',';
-
-  /// The double upper right-hand corner of a box.
-  ///
-  /// Always ',' for [this].
   @override
   String get topRightCornerDouble => ',';
-
-  /// The double lower left-hand corner of a box.
-  ///
-  /// Always '"' for [this].
   @override
   String get bottomLeftCornerDouble => '"';
-
-  /// The double lower right-hand corner of a box.
-  ///
-  /// Always '"' for [this].
   @override
   String get bottomRightCornerDouble => '"';
-
-  /// An intersection of double vertical and horizontal box lines.
-  ///
-  /// Always '+' for [this].
   @override
   String get crossDouble => '+';
-
-  /// A double horizontal box line with a vertical line going up from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeUpDouble => '+';
-
-  /// A double horizontal box line with a vertical line going down from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeDownDouble => '+';
-
-  /// A double vertical box line with a horizontal line going left from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeLeftDouble => '+';
-
-  /// A double vertical box line with a horizontal line going right from the middle.
-  ///
-  /// Always '+' for [this].
   @override
   String get teeRightDouble => '+';
-
-  /// A dashed horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLineDoubleDash => '-';
-
-  /// A bold dashed horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLineDoubleDashBold => '-';
-
-  /// A dashed vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineDoubleDash => '|';
-
-  /// A bold dashed vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineDoubleDashBold => '|';
-
-  /// A dashed horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLineTripleDash => '-';
-
-  /// A bold dashed horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLineTripleDashBold => '-';
-
-  /// A dashed vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineTripleDash => '|';
-
-  /// A bold dashed vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineTripleDashBold => '|';
-
-  /// A dashed horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLineQuadrupleDash => '-';
-
-  /// A bold dashed horizontal line that can be used to draw a box.
-  ///
-  /// Always '-' for [this].
   @override
   String get horizontalLineQuadrupleDashBold => '-';
-
-  /// A dashed vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineQuadrupleDash => '|';
-
-  /// A bold dashed vertical line that can be used to draw a box.
-  ///
-  /// Always '|' for [this].
   @override
   String get verticalLineQuadrupleDashBold => '|';
 }

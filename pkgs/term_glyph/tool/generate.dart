@@ -110,13 +110,7 @@ void _writeGlyphSet(List<List> data, {@required bool ascii}) {
 
   var index = ascii ? 2 : 1;
   for (var glyph in data) {
-    for (var line in glyph[3].split('\n')) {
-      file.writeStringSync('/// $line\n');
-    }
-
     file.writeStringSync('''
-      ///
-      /// Always ${_quote(glyph[index])} for [this].
       @override
       String get ${glyph[0]} => ${_quote(glyph[index])};
     ''');
