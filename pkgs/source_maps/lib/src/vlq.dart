@@ -28,7 +28,7 @@ const String BASE64_DIGITS =
 
 final Map<String, int> _digits = () {
   var map = <String, int>{};
-  for (int i = 0; i < 64; i++) {
+  for (var i = 0; i < 64; i++) {
     map[BASE64_DIGITS[i]] = i;
   }
   return map;
@@ -43,14 +43,14 @@ Iterable<String> encodeVlq(int value) {
     throw ArgumentError('expected 32 bit int, got: $value');
   }
   var res = <String>[];
-  int signBit = 0;
+  var signBit = 0;
   if (value < 0) {
     signBit = 1;
     value = -value;
   }
   value = (value << 1) | signBit;
   do {
-    int digit = value & VLQ_BASE_MASK;
+    var digit = value & VLQ_BASE_MASK;
     value >>= VLQ_BASE_SHIFT;
     if (value > 0) {
       digit |= VLQ_CONTINUATION_BIT;
@@ -65,9 +65,9 @@ Iterable<String> encodeVlq(int value) {
 /// iterator is advanced until a stop character is found (a character without
 /// the [VLQ_CONTINUATION_BIT]).
 int decodeVlq(Iterator<String> chars) {
-  int result = 0;
-  bool stop = false;
-  int shift = 0;
+  var result = 0;
+  var stop = false;
+  var shift = 0;
   while (!stop) {
     if (!chars.moveNext()) throw StateError('incomplete VLQ value');
     var char = chars.current;
@@ -89,7 +89,7 @@ int decodeVlq(Iterator<String> chars) {
   //   5 (101 binary) becomes -2
   //   6 (110 binary) becomes 3
   //   7 (111 binary) becomes -3
-  bool negate = (result & 1) == 1;
+  var negate = (result & 1) == 1;
   result = result >> 1;
   result = negate ? -result : result;
 

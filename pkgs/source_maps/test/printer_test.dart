@@ -10,7 +10,7 @@ import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
 import 'common.dart';
 
-main() {
+void main() {
   test('printer', () {
     var printer = Printer('output.dart');
     printer
@@ -55,7 +55,7 @@ main() {
     // 8 new lines in the source map:
     expect(printer.map.split(';').length, 8);
 
-    asFixed(SourceMapSpan s) =>
+    SourceMapSpan asFixed(SourceMapSpan s) =>
         SourceMapSpan(s.start, s.end, s.text, isIdentifier: s.isIdentifier);
 
     // The result is the same if we use fixed positions
@@ -114,7 +114,7 @@ main() {
       var lines = INPUT.trim().split('\n');
       expect(lines.length, 7);
       var printer = NestedPrinter();
-      for (int i = 0; i < lines.length; i++) {
+      for (var i = 0; i < lines.length; i++) {
         if (i == 5) printer.indent++;
         printer.addLine(lines[i].replaceAll('long', '_s').trim());
         if (i == 5) printer.indent--;

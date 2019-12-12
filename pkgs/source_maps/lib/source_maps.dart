@@ -37,8 +37,8 @@
 /// [pkg]: http://pub.dartlang.org/packages/source_maps
 library source_maps;
 
-export "builder.dart";
-export "parser.dart";
-export "printer.dart";
-export "refactor.dart";
+export 'builder.dart';
+export 'parser.dart';
+export 'printer.dart';
+export 'refactor.dart';
 export 'src/source_map_span.dart';

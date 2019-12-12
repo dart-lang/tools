@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 import 'package:source_maps/source_maps.dart';
 import 'common.dart';
 
-main() {
+void main() {
   test('builder - with span', () {
     var map = (SourceMapBuilder()
           ..addSpan(inputVar1, outputVar1)

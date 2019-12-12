@@ -136,32 +136,34 @@ class MultiSectionMapping extends Mapping {
         throw FormatException('section missing url or map');
       }
     }
-    if (_lineStart.length == 0) {
+    if (_lineStart.isEmpty) {
       throw FormatException('expected at least one section');
     }
   }
 
   int _indexFor(line, column) {
-    for (int i = 0; i < _lineStart.length; i++) {
+    for (var i = 0; i < _lineStart.length; i++) {
       if (line < _lineStart[i]) return i - 1;
       if (line == _lineStart[i] && column < _columnStart[i]) return i - 1;
     }
     return _lineStart.length - 1;
   }
 
+  @override
   SourceMapSpan spanFor(int line, int column,
       {Map<String, SourceFile> files, String uri}) {
     // TODO(jacobr): perhaps verify that targetUrl matches the actual uri
     // or at least ends in the same file name.
-    int index = _indexFor(line, column);
+    var index = _indexFor(line, column);
     return _maps[index].spanFor(
         line - _lineStart[index], column - _columnStart[index],
         files: files);
   }
 
+  @override
   String toString() {
-    var buff = StringBuffer("$runtimeType : [");
-    for (int i = 0; i < _lineStart.length; i++) {
+    var buff = StringBuffer('$runtimeType : [');
+    for (var i = 0; i < _lineStart.length; i++) {
       buff
         ..write('(')
         ..write(_lineStart[i])
@@ -177,9 +179,9 @@ class MultiSectionMapping extends Mapping {
 }
 
 class MappingBundle extends Mapping {
-  Map<String, SingleMapping> _mappings = {};
+  final Map<String, SingleMapping> _mappings = {};
 
-  MappingBundle() {}
+  MappingBundle();
 
   MappingBundle.fromJson(List json, {String mapUrl}) {
     for (var map in json) {
@@ -187,7 +189,7 @@ class MappingBundle extends Mapping {
     }
   }
 
-  addMapping(SingleMapping mapping) {
+  void addMapping(SingleMapping mapping) {
     // TODO(jacobr): verify that targetUrl is valid uri instead of a windows
     // path.
     _mappings[mapping.targetUrl] = mapping;
@@ -196,6 +198,7 @@ class MappingBundle extends Mapping {
   /// Encodes the Mapping mappings as a json map.
   List toJson() => _mappings.values.map((v) => v.toJson()).toList();
 
+  @override
   String toString() {
     var buff = StringBuffer();
     for (var map in _mappings.values) {
@@ -206,6 +209,7 @@ class MappingBundle extends Mapping {
 
   bool containsMapping(String url) => _mappings.containsKey(url);
 
+  @override
   SourceMapSpan spanFor(int line, int column,
       {Map<String, SourceFile> files, String uri}) {
     if (uri == null) {
@@ -223,7 +227,7 @@ class MappingBundle extends Mapping {
     // urls as "package:package_name" would be one path segment when we want
     // "package" and "package_name" to be sepearate path segments.
 
-    bool onBoundary = true;
+    var onBoundary = true;
     var separatorCodeUnits = ['/'.codeUnitAt(0), ':'.codeUnitAt(0)];
     for (var i = 0; i < uri.length; ++i) {
       if (onBoundary) {
@@ -245,7 +249,7 @@ class MappingBundle extends Mapping {
     var offset = line * 1000000 + column;
     var location = SourceLocation(offset,
         line: line, column: column, sourceUrl: Uri.parse(uri));
-    return SourceMapSpan(location, location, "");
+    return SourceMapSpan(location, location, '');
   }
 }
 
@@ -351,18 +355,18 @@ class SingleMapping extends Mapping {
       files[i] = SourceFile.fromString(source, url: urls[i]);
     }
 
-    int line = 0;
-    int column = 0;
-    int srcUrlId = 0;
-    int srcLine = 0;
-    int srcColumn = 0;
-    int srcNameId = 0;
+    var line = 0;
+    var column = 0;
+    var srcUrlId = 0;
+    var srcLine = 0;
+    var srcColumn = 0;
+    var srcNameId = 0;
     var tokenizer = _MappingTokenizer(map['mappings']);
     var entries = <TargetEntry>[];
 
     while (tokenizer.hasTokens) {
       if (tokenizer.nextKind.isNewLine) {
-        if (!entries.isEmpty) {
+        if (entries.isNotEmpty) {
           lines.add(TargetLineEntry(line, entries));
           entries = <TargetEntry>[];
         }
@@ -410,12 +414,12 @@ class SingleMapping extends Mapping {
       }
       if (tokenizer.nextKind.isNewSegment) tokenizer._consumeNewSegment();
     }
-    if (!entries.isEmpty) {
+    if (entries.isNotEmpty) {
       lines.add(TargetLineEntry(line, entries));
     }
 
     map.forEach((name, value) {
-      if (name.startsWith("x_")) extensions[name] = value;
+      if (name.startsWith('x_')) extensions[name] = value;
     });
   }
 
@@ -434,9 +438,9 @@ class SingleMapping extends Mapping {
     var first = true;
 
     for (var entry in lines) {
-      int nextLine = entry.line;
+      var nextLine = entry.line;
       if (nextLine > line) {
-        for (int i = line; i < nextLine; ++i) {
+        for (var i = line; i < nextLine; ++i) {
           buff.write(';');
         }
         line = nextLine;
@@ -464,7 +468,7 @@ class SingleMapping extends Mapping {
 
     var result = {
       'version': 3,
-      'sourceRoot': sourceRoot == null ? '' : sourceRoot,
+      'sourceRoot': sourceRoot ?? '',
       'sources': urls,
       'names': names,
       'mappings': buff.toString()
@@ -486,7 +490,7 @@ class SingleMapping extends Mapping {
     return newValue;
   }
 
-  _segmentError(int seen, int line) =>
+  StateError _segmentError(int seen, int line) =>
       StateError('Invalid entry in sourcemap, expected 1, 4, or 5'
           ' values, but got $seen.\ntargeturl: $targetUrl, line: $line');
 
@@ -494,7 +498,7 @@ class SingleMapping extends Mapping {
   /// number. In particular, the resulting entry is the last entry whose line
   /// number is lower or equal to [line].
   TargetLineEntry _findLine(int line) {
-    int index = binarySearch(lines, (e) => e.line > line);
+    var index = binarySearch(lines, (e) => e.line > line);
     return (index <= 0) ? null : lines[index - 1];
   }
 
@@ -504,13 +508,14 @@ class SingleMapping extends Mapping {
   /// [lineEntry] corresponds to a line prior to [line], then the result will be
   /// the very last entry on that line.
   TargetEntry _findColumn(int line, int column, TargetLineEntry lineEntry) {
-    if (lineEntry == null || lineEntry.entries.length == 0) return null;
+    if (lineEntry == null || lineEntry.entries.isEmpty) return null;
     if (lineEntry.line != line) return lineEntry.entries.last;
     var entries = lineEntry.entries;
-    int index = binarySearch(entries, (e) => e.column > column);
+    var index = binarySearch(entries, (e) => e.column > column);
     return (index <= 0) ? null : entries[index - 1];
   }
 
+  @override
   SourceMapSpan spanFor(int line, int column,
       {Map<String, SourceFile> files, String uri}) {
     var entry = _findColumn(line, column, _findLine(line));
@@ -544,8 +549,9 @@ class SingleMapping extends Mapping {
     }
   }
 
+  @override
   String toString() {
-    return (StringBuffer("$runtimeType : [")
+    return (StringBuffer('$runtimeType : [')
           ..write('targetUrl: ')
           ..write(targetUrl)
           ..write(', sourceRoot: ')
@@ -597,6 +603,7 @@ class TargetLineEntry {
   List<TargetEntry> entries;
   TargetLineEntry(this.line, this.entries);
 
+  @override
   String toString() => '$runtimeType: $line $entries';
 }
 
@@ -614,6 +621,7 @@ class TargetEntry {
       this.sourceColumn,
       this.sourceNameId]);
 
+  @override
   String toString() => '$runtimeType: '
       '($column, $sourceUrlId, $sourceLine, $sourceColumn, $sourceNameId)';
 }
@@ -628,7 +636,9 @@ class _MappingTokenizer implements Iterator<String> {
         _length = internal.length;
 
   // Iterator API is used by decodeVlq to consume VLQ entries.
+  @override
   bool moveNext() => ++index < _length;
+  @override
   String get current =>
       (index >= 0 && index < _length) ? _internal[index] : null;
 
@@ -653,15 +663,16 @@ class _MappingTokenizer implements Iterator<String> {
 
   // Print the state of the iterator, with colors indicating the current
   // position.
+  @override
   String toString() {
     var buff = StringBuffer();
-    for (int i = 0; i < index; i++) {
+    for (var i = 0; i < index; i++) {
       buff.write(_internal[i]);
     }
     buff.write('[31m');
-    buff.write(current == null ? '' : current);
+    buff.write(current ?? '');
     buff.write('[0m');
-    for (int i = index + 1; i < _internal.length; i++) {
+    for (var i = index + 1; i < _internal.length; i++) {
       buff.write(_internal[i]);
     }
     buff.write(' ($index)');

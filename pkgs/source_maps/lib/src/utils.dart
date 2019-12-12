@@ -10,13 +10,13 @@ library source_maps.utils;
 /// and all items after `n` match too. The result is -1 when there are no
 /// items, 0 when all items match, and list.length when none does.
 // TODO(sigmund): remove this function after dartbug.com/5624 is fixed.
-int binarySearch(List list, bool matches(item)) {
-  if (list.length == 0) return -1;
+int binarySearch(List list, bool Function(dynamic) matches) {
+  if (list.isEmpty) return -1;
   if (matches(list.first)) return 0;
   if (!matches(list.last)) return list.length;
 
-  int min = 0;
-  int max = list.length - 1;
+  var min = 0;
+  var max = list.length - 1;
   while (min < max) {
     var half = min + ((max - min) ~/ 2);
     if (matches(list[half])) {

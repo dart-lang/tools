@@ -71,7 +71,7 @@ const Map<String, dynamic> EXPECTED_MAP = {
   'file': 'output.dart'
 };
 
-check(SourceSpan outputSpan, Mapping mapping, SourceMapSpan inputSpan,
+void check(SourceSpan outputSpan, Mapping mapping, SourceMapSpan inputSpan,
     bool realOffsets) {
   var line = outputSpan.start.line;
   var column = outputSpan.start.column;

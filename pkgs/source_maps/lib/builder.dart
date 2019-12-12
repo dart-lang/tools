@@ -34,9 +34,7 @@ class SourceMapBuilder {
   /// identifier whose value will be stored in the source map. [isIdenfier]
   /// takes precedence over [target]'s `isIdentifier` value.
   void addSpan(SourceSpan source, SourceSpan target, {bool isIdentifier}) {
-    if (isIdentifier == null) {
-      isIdentifier = source is SourceMapSpan ? source.isIdentifier : false;
-    }
+    isIdentifier ??= source is SourceMapSpan ? source.isIdentifier : false;
 
     var name = isIdentifier ? source.text : null;
     _entries.add(Entry(source.start, target.start, name));
@@ -50,7 +48,7 @@ class SourceMapBuilder {
 
   /// Encodes all mappings added to this builder as a json map.
   Map build(String fileUrl) {
-    return SingleMapping.fromEntries(this._entries, fileUrl).toJson();
+    return SingleMapping.fromEntries(_entries, fileUrl).toJson();
   }
 
   /// Encodes all mappings added to this builder as a json string.
@@ -75,8 +73,9 @@ class Entry implements Comparable<Entry> {
   /// location in the target file. We sort primarily by the target offset
   /// because source map files are encoded by printing each mapping in order as
   /// they appear in the target file.
+  @override
   int compareTo(Entry other) {
-    int res = target.compareTo(other.target);
+    var res = target.compareTo(other.target);
     if (res != 0) return res;
     res = source.sourceUrl
         .toString()

@@ -41,7 +41,7 @@ class Printer {
   void add(String str, {projectMarks = false}) {
     var chars = str.runes.toList();
     var length = chars.length;
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       var c = chars[i];
       if (c == _LF || (c == _CR && (i + 1 == length || chars[i + 1] != _LF))) {
         // Return not followed by line-feed is treated as a new line.
@@ -66,7 +66,9 @@ class Printer {
   /// Append a [total] number of spaces in the target file. Typically used for
   /// formatting indentation.
   void addSpaces(int total) {
-    for (int i = 0; i < total; i++) _buff.write(' ');
+    for (var i = 0; i < total; i++) {
+      _buff.write(' ');
+    }
     _column += total;
   }
 
@@ -76,8 +78,8 @@ class Printer {
   /// this also records the name of the identifier in the source map
   /// information.
   void mark(mark) {
-    var loc;
-    var identifier = null;
+    SourceLocation loc;
+    String identifier;
     if (mark is SourceLocation) {
       loc = mark;
     } else if (mark is SourceSpan) {
@@ -101,7 +103,7 @@ class NestedPrinter implements NestedItem {
   /// Items recoded by this printer, which can be [String] literals,
   /// [NestedItem]s, and source map information like [SourceLocation] and
   /// [SourceSpan].
-  List _items = [];
+  final _items = <dynamic>[];
 
   /// Internal buffer to merge consecutive strings added to this printer.
   StringBuffer _buff;
@@ -178,7 +180,7 @@ class NestedPrinter implements NestedItem {
 
   /// Appends a string merging it with any previous strings, if possible.
   void _appendString(String s) {
-    if (_buff == null) _buff = StringBuffer();
+    _buff ??= StringBuffer();
     _buff.write(s);
   }
 
@@ -191,11 +193,14 @@ class NestedPrinter implements NestedItem {
   }
 
   void _indent(int indent) {
-    for (int i = 0; i < indent; i++) _appendString('  ');
+    for (var i = 0; i < indent; i++) {
+      _appendString('  ');
+    }
   }
 
   /// Returns a string representation of all the contents appended to this
   /// printer, including source map location tokens.
+  @override
   String toString() {
     _flush();
     return (StringBuffer()..writeAll(_items)).toString();
@@ -218,9 +223,10 @@ class NestedPrinter implements NestedItem {
   }
 
   /// Implements the [NestedItem] interface.
+  @override
   void writeTo(Printer printer) {
     _flush();
-    bool propagate = false;
+    var propagate = false;
     for (var item in _items) {
       if (item is NestedItem) {
         item.writeTo(printer);

@@ -9,7 +9,7 @@ import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
 import 'common.dart';
 
-main() {
+void main() {
   test('end-to-end setup', () {
     expect(inputVar1.text, 'longVar1');
     expect(inputFunction.text, 'longName');
@@ -132,7 +132,7 @@ main() {
     expect(printer.text, out);
 
     var mapping = parse(printer.map);
-    checkHelper(SourceMapSpan inputSpan, int adjustment) {
+    void checkHelper(SourceMapSpan inputSpan, int adjustment) {
       var start = inputSpan.start.offset - adjustment;
       var end = (inputSpan.end.offset - adjustment) - 2;
       var span = SourceMapFileSpan(file.span(start, end),

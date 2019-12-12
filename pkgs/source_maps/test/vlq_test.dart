@@ -8,7 +8,7 @@ import 'dart:math';
 import 'package:test/test.dart';
 import 'package:source_maps/src/vlq.dart';
 
-main() {
+void main() {
   test('encode and decode - simple values', () {
     expect(encodeVlq(1).join(''), 'C');
     expect(encodeVlq(2).join(''), 'E');
@@ -21,7 +21,7 @@ main() {
   });
 
   test('encode and decode', () {
-    for (int i = -10000; i < 10000; i++) {
+    for (var i = -10000; i < 10000; i++) {
       _checkEncodeDecode(i);
     }
   });
@@ -50,10 +50,10 @@ main() {
     expect(() => decodeVlq('lgggggE'.split('').iterator), throwsA(anything));
   },
       // This test uses integers so large they overflow in JS.
-      testOn: "dart-vm");
+      testOn: 'dart-vm');
 }
 
-_checkEncodeDecode(int value) {
+void _checkEncodeDecode(int value) {
   var encoded = encodeVlq(value);
   expect(decodeVlq(encoded.iterator), value);
   expect(decodeVlq(encoded.join('').split('').iterator), value);

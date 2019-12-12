@@ -24,7 +24,7 @@ class TextEditTransaction {
   /// Creates a new transaction.
   TextEditTransaction(this.original, this.file);
 
-  bool get hasEdits => _edits.length > 0;
+  bool get hasEdits => _edits.isNotEmpty;
 
   /// Edit the original text, replacing text on the range [begin] and [end]
   /// with the [replacement]. [replacement] can be either a string or a
@@ -46,14 +46,14 @@ class TextEditTransaction {
   /// made, the printer simply contains the original string.
   NestedPrinter commit() {
     var printer = NestedPrinter();
-    if (_edits.length == 0) {
+    if (_edits.isEmpty) {
       return printer..add(original, location: _loc(0), isOriginal: true);
     }
 
     // Sort edits by start location.
     _edits.sort();
 
-    int consumed = 0;
+    var consumed = 0;
     for (var edit in _edits) {
       if (consumed > edit.begin) {
         var sb = StringBuffer();
@@ -64,7 +64,9 @@ class TextEditTransaction {
           ..write(' but have consumed ')
           ..write(consumed)
           ..write(' input characters. List of edits:');
-        for (var e in _edits) sb..write('\n    ')..write(e);
+        for (var e in _edits) {
+          sb..write('\n    ')..write(e);
+        }
         throw UnsupportedError(sb.toString());
       }
 
@@ -95,10 +97,12 @@ class _TextEdit implements Comparable<_TextEdit> {
 
   int get length => end - begin;
 
+  @override
   String toString() => '(Edit @ $begin,$end: "$replace")';
 
+  @override
   int compareTo(_TextEdit other) {
-    int diff = begin - other.begin;
+    var diff = begin - other.begin;
     if (diff != 0) return diff;
     return end - other.end;
   }
@@ -107,8 +111,8 @@ class _TextEdit implements Comparable<_TextEdit> {
 /// Returns all whitespace characters at the start of [charOffset]'s line.
 String guessIndent(String code, int charOffset) {
   // Find the beginning of the line
-  int lineStart = 0;
-  for (int i = charOffset - 1; i >= 0; i--) {
+  var lineStart = 0;
+  for (var i = charOffset - 1; i >= 0; i--) {
     var c = code.codeUnitAt(i);
     if (c == _LF || c == _CR) {
       lineStart = i + 1;
@@ -117,8 +121,8 @@ String guessIndent(String code, int charOffset) {
   }
 
   // Grab all the whitespace
-  int whitespaceEnd = code.length;
-  for (int i = lineStart; i < code.length; i++) {
+  var whitespaceEnd = code.length;
+  for (var i = lineStart; i < code.length; i++) {
     var c = code.codeUnitAt(i);
     if (c != _SPACE && c != _TAB) {
       whitespaceEnd = i;

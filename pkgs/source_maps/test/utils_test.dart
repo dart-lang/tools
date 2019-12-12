@@ -8,7 +8,7 @@ library test.utils_test;
 import 'package:test/test.dart';
 import 'package:source_maps/src/utils.dart';
 
-main() {
+void main() {
   group('binary search', () {
     test('empty', () {
       expect(binarySearch([], (x) => true), -1);
@@ -30,12 +30,12 @@ main() {
     });
 
     test('compare with linear search', () {
-      for (int size = 0; size < 100; size++) {
+      for (var size = 0; size < 100; size++) {
         var list = [];
-        for (int i = 0; i < size; i++) {
+        for (var i = 0; i < size; i++) {
           list.add(i);
         }
-        for (int pos = 0; pos <= size; pos++) {
+        for (var pos = 0; pos <= size; pos++) {
           expect(binarySearch(list, (x) => x >= pos),
               _linearSearch(list, (x) => x >= pos));
         }
@@ -44,9 +44,9 @@ main() {
   });
 }
 
-_linearSearch(list, predicate) {
+int _linearSearch(list, predicate) {
   if (list.length == 0) return -1;
-  for (int i = 0; i < list.length; i++) {
+  for (var i = 0; i < list.length; i++) {
     if (predicate(list[i])) return i;
   }
   return list.length;

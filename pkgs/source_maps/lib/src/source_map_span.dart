@@ -38,24 +38,38 @@ class SourceMapSpan extends SourceSpanBase {
 /// A wrapper aruond a [FileSpan] that implements [SourceMapSpan].
 class SourceMapFileSpan implements SourceMapSpan, FileSpan {
   final FileSpan _inner;
+  @override
   final bool isIdentifier;
 
+  @override
   SourceFile get file => _inner.file;
+  @override
   FileLocation get start => _inner.start;
+  @override
   FileLocation get end => _inner.end;
+  @override
   String get text => _inner.text;
+  @override
   String get context => _inner.context;
+  @override
   Uri get sourceUrl => _inner.sourceUrl;
+  @override
   int get length => _inner.length;
 
   SourceMapFileSpan(this._inner, {this.isIdentifier = false});
 
+  @override
   int compareTo(SourceSpan other) => _inner.compareTo(other);
+  @override
   String highlight({color}) => _inner.highlight(color: color);
+  @override
   SourceSpan union(SourceSpan other) => _inner.union(other);
+  @override
   FileSpan expand(FileSpan other) => _inner.expand(other);
+  @override
   String message(String message, {color}) =>
       _inner.message(message, color: color);
+  @override
   String toString() =>
-      _inner.toString().replaceAll("FileSpan", "SourceMapFileSpan");
+      _inner.toString().replaceAll('FileSpan', 'SourceMapFileSpan');
 }
