@@ -165,5 +165,7 @@ void main() {
         });
       });
     });
+  }, onPlatform: {
+    'js': const Skip('Web does not have enough precision'),
   });
 }

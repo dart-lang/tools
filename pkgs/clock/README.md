@@ -4,8 +4,8 @@ Different `Clock`s can have a different notion of the current time, and the
 default top-level [`clock`][]'s notion can be swapped out to reliably test
 timing-dependent code.
 
-[`Clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock-class.html
-[`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
+[`Clock`]: https://pub.dev/documentation/clock/latest/clock/Clock-class.html
+[`clock`]: https://pub.dev/documentation/clock/latest/clock/clock.html
 
 For example, you can use `clock` in your libraries like this:
 
@@ -14,7 +14,7 @@ For example, you can use `clock` in your libraries like this:
 import 'package:clock/clock.dart';
 
 /// Runs [callback] and prints how long it took.
-T runWithTiming<T>(T callback()) {
+T runWithTiming<T>(T Function() callback) {
   var stopwatch = clock.stopwatch()..start();
   var result = callback();
   print('It took ${stopwatch.elapsed}!');
