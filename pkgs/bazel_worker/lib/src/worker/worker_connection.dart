@@ -43,6 +43,7 @@ abstract class AsyncWorkerConnection implements WorkerConnection {
 }
 
 abstract class SyncWorkerConnection implements WorkerConnection {
+  @override
   WorkRequest readRequest();
 }
 

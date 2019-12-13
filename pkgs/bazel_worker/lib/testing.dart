@@ -26,11 +26,13 @@ class TestStdinSync implements TestStdin {
   final Queue<int> pendingBytes = Queue<int>();
 
   /// Adds all the [bytes] to this stream.
+  @override
   void addInputBytes(List<int> bytes) {
     pendingBytes.addAll(bytes);
   }
 
   /// Add a -1 to signal EOF.
+  @override
   void close() {
     pendingBytes.add(-1);
   }
@@ -55,18 +57,20 @@ class TestStdinAsync implements TestStdin {
   StreamController<Uint8List> get controller => _controller;
 
   /// Adds all the [bytes] to this stream.
+  @override
   void addInputBytes(List<int> bytes) {
     _controller.add(Uint8List.fromList(bytes));
   }
 
   /// Closes this stream. This is necessary for the [AsyncWorkerLoop] to exit.
+  @override
   void close() {
     _controller.close();
   }
 
   @override
-  StreamSubscription<Uint8List> listen(onData(Uint8List bytes),
-      {Function onError, void onDone(), bool cancelOnError}) {
+  StreamSubscription<Uint8List> listen(void Function(Uint8List bytes) onData,
+      {Function onError, void Function() onDone, bool cancelOnError}) {
     return _controller.stream.listen(onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
@@ -108,6 +112,7 @@ abstract class TestWorkerLoop implements WorkerLoop {
 /// A [StdSyncWorkerConnection] which records its responses.
 class TestSyncWorkerConnection extends StdSyncWorkerConnection
     implements TestWorkerConnection {
+  @override
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestSyncWorkerConnection(Stdin stdinStream, Stdout stdoutStream)
@@ -141,6 +146,7 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   /// Adds [response] to the queue. These will be returned from
   /// [performResponse] in the order they are added, otherwise it will throw
   /// if the queue is empty.
+  @override
   void enqueueResponse(WorkResponse response) {
     _responses.addLast(response);
   }
@@ -149,6 +155,7 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
 /// A [StdAsyncWorkerConnection] which records its responses.
 class TestAsyncWorkerConnection extends StdAsyncWorkerConnection
     implements TestWorkerConnection {
+  @override
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestAsyncWorkerConnection(
@@ -183,6 +190,7 @@ class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   /// Adds [response] to the queue. These will be returned from
   /// [performResponse] in the order they are added, otherwise it will throw
   /// if the queue is empty.
+  @override
   void enqueueResponse(WorkResponse response) {
     _responses.addLast(response);
   }

@@ -15,12 +15,14 @@ abstract class SyncWorkerLoop implements WorkerLoop {
   final SyncWorkerConnection connection;
 
   SyncWorkerLoop({SyncWorkerConnection connection})
-      : this.connection = connection ?? StdSyncWorkerConnection();
+      : connection = connection ?? StdSyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
+  @override
   WorkResponse performRequest(WorkRequest request);
 
   /// Run the worker loop. Blocks until [connection#readRequest] returns `null`.
+  @override
   void run() {
     while (true) {
       WorkResponse response;

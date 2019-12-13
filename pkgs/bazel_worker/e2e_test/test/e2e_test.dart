@@ -54,7 +54,7 @@ Future _doRequests(BazelWorkerDriver driver, {int count}) async {
     return request;
   });
   var responses = await Future.wait(requests.map(driver.doWork));
-  for (int i = 0; i < responses.length; i++) {
+  for (var i = 0; i < responses.length; i++) {
     var request = requests[i];
     var response = responses[i];
     expect(response.exitCode, EXIT_CODE_OK);

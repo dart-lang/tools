@@ -14,6 +14,7 @@ class ExampleAsyncWorker extends AsyncWorkerLoop {
   ExampleAsyncWorker([SendPort sendPort])
       : super(connection: AsyncWorkerConnection(sendPort: sendPort));
 
+  @override
   Future<WorkResponse> performRequest(WorkRequest request) async {
     return WorkResponse()
       ..exitCode = 0

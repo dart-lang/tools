@@ -16,13 +16,15 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
   final AsyncWorkerConnection connection;
 
   AsyncWorkerLoop({AsyncWorkerConnection connection})
-      : this.connection = connection ?? StdAsyncWorkerConnection();
+      : connection = connection ?? StdAsyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
+  @override
   Future<WorkResponse> performRequest(WorkRequest request);
 
   /// Run the worker loop. The returned [Future] doesn't complete until
   /// [connection#readRequest] returns `null`.
+  @override
   Future run() async {
     while (true) {
       WorkResponse response;

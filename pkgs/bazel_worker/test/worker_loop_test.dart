@@ -49,9 +49,9 @@ void main() {
 }
 
 void runTests<T extends TestWorkerConnection>(
-    TestStdin stdinFactory(),
-    T workerConnectionFactory(Stdin stdin, Stdout stdout),
-    TestWorkerLoop workerLoopFactory(T connection)) {
+    TestStdin Function() stdinFactory,
+    T Function(Stdin, Stdout) workerConnectionFactory,
+    TestWorkerLoop Function(T) workerLoopFactory) {
   TestStdin stdinStream;
   TestStdoutStream stdoutStream;
   T connection;

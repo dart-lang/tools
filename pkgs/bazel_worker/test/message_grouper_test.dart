@@ -24,8 +24,8 @@ void main() {
   });
 }
 
-void runTests(TestStdin stdinFactory(),
-    MessageGrouper messageGrouperFactory(Stdin stdinStream)) {
+void runTests(TestStdin Function() stdinFactory,
+    MessageGrouper Function(Stdin) messageGrouperFactory) {
   MessageGrouper messageGrouper;
 
   TestStdin stdinStream;
@@ -47,7 +47,7 @@ void runTests(TestStdin stdinFactory(),
   /// Make a simple message having the given [length]
   List<int> makeMessage(int length) {
     var result = <int>[];
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       result.add(i & 0xff);
     }
     return result;
@@ -74,14 +74,14 @@ void runTests(TestStdin stdinFactory(),
     var len = 0x155;
     var msg = makeMessage(len);
     var encodedLen = [0xd5, 0x02];
-    await check([]..addAll(encodedLen)..addAll(msg), [msg]);
+    await check([...encodedLen, ...msg], [msg]);
   });
 
   test('Message with 3-byte length', () async {
     var len = 0x4103;
     var msg = makeMessage(len);
     var encodedLen = [0x83, 0x82, 0x01];
-    await check([]..addAll(encodedLen)..addAll(msg), [msg]);
+    await check([...encodedLen, ...msg], [msg]);
   });
 
   test('Multiple messages', () async {

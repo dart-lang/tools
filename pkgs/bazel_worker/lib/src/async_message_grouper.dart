@@ -30,6 +30,7 @@ class AsyncMessageGrouper implements MessageGrouper {
       : _inputQueue = StreamQueue(inputStream);
 
   /// Returns the next full message that is received, or null if none are left.
+  @override
   Future<List<int>> get next async {
     try {
       List<int> message;

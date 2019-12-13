@@ -46,9 +46,9 @@ class BazelWorkerDriver {
 
   BazelWorkerDriver(this._spawnWorker,
       {int maxIdleWorkers, int maxWorkers, int maxRetries})
-      : this._maxIdleWorkers = maxIdleWorkers ?? 4,
-        this._maxWorkers = maxWorkers ?? 4,
-        this._maxRetries = maxRetries ?? 4;
+      : _maxIdleWorkers = maxIdleWorkers ?? 4,
+        _maxWorkers = maxWorkers ?? 4,
+        _maxRetries = maxRetries ?? 4;
 
   /// Waits for an available worker, and then sends [WorkRequest] to it.
   ///
@@ -129,7 +129,7 @@ class BazelWorkerDriver {
   /// Once the worker responds then it will be added back to the pool of idle
   /// workers.
   void _runWorker(Process worker, _WorkAttempt attempt) {
-    bool rescheduled = false;
+    var rescheduled = false;
 
     runZoned(() async {
       var connection = _workerConnections[worker];

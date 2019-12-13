@@ -8,7 +8,7 @@
 set -e
 
 # Verify that the libraries are error free.
-dartanalyzer --fatal-warnings \
+dartanalyzer --fatal-infos --fatal-warnings \
   lib/bazel_worker.dart \
   lib/driver.dart \
   lib/testing.dart \
@@ -19,6 +19,6 @@ pub run test
 
 pushd e2e_test
 pub get
-dartanalyzer --fatal-warnings test/e2e_test.dart
+dartanalyzer --fatal-infos --fatal-warnings test/e2e_test.dart
 pub run test
 popd

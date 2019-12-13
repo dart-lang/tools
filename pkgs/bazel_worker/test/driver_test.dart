@@ -22,11 +22,11 @@ void main() {
 
     test('can run multiple batches of requests through multiple workers',
         () async {
-      int maxWorkers = 4;
-      int maxIdleWorkers = 2;
+      var maxWorkers = 4;
+      var maxIdleWorkers = 2;
       driver = BazelWorkerDriver(MockWorker.spawn,
           maxWorkers: maxWorkers, maxIdleWorkers: maxIdleWorkers);
-      for (int i = 0; i < 10; i++) {
+      for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
         expect(MockWorker.liveWorkers.length, maxIdleWorkers);
         // No workers should be killed while there is ongoing work, but they
@@ -37,11 +37,11 @@ void main() {
     });
 
     test('can run multiple requests through one worker', () async {
-      int maxWorkers = 1;
-      int maxIdleWorkers = 1;
+      var maxWorkers = 1;
+      var maxIdleWorkers = 1;
       driver = BazelWorkerDriver(MockWorker.spawn,
           maxWorkers: maxWorkers, maxIdleWorkers: maxIdleWorkers);
-      for (int i = 0; i < 10; i++) {
+      for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
         expect(MockWorker.liveWorkers.length, 1);
         expect(MockWorker.deadWorkers.length, 0);
@@ -51,7 +51,7 @@ void main() {
     test('can run one request through multiple workers', () async {
       driver =
           BazelWorkerDriver(MockWorker.spawn, maxWorkers: 4, maxIdleWorkers: 4);
-      for (int i = 0; i < 10; i++) {
+      for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver, count: 1);
         expect(MockWorker.liveWorkers.length, 1);
         expect(MockWorker.deadWorkers.length, 0);
@@ -59,10 +59,10 @@ void main() {
     });
 
     test('can run with maxIdleWorkers == 0', () async {
-      int maxWorkers = 4;
+      var maxWorkers = 4;
       driver = BazelWorkerDriver(MockWorker.spawn,
           maxWorkers: maxWorkers, maxIdleWorkers: 0);
-      for (int i = 0; i < 10; i++) {
+      for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
         expect(MockWorker.liveWorkers.length, 0);
         expect(MockWorker.deadWorkers.length, maxWorkers * (i + 1));
@@ -88,7 +88,7 @@ void main() {
       /// A driver which spawns [numBadWorkers] failing workers and then good
       /// ones after that, and which will retry [maxRetries] times.
       void createDriver({int maxRetries = 2, int numBadWorkers = 2}) {
-        int numSpawned = 0;
+        var numSpawned = 0;
         driver = BazelWorkerDriver(
             () async => MockWorker(workerLoopFactory: (MockWorker worker) {
                   var connection = StdAsyncWorkerConnection(
@@ -172,6 +172,7 @@ class MockWorkerLoop extends AsyncWorkerLoop {
   MockWorkerLoop(this._responseQueue, {AsyncWorkerConnection connection})
       : super(connection: connection);
 
+  @override
   Future<WorkResponse> performRequest(WorkRequest request) async {
     print('Performing request $request');
     return _responseQueue.removeFirst();
@@ -223,17 +224,18 @@ class MockWorker implements Process {
   static final deadWorkers = <MockWorker>[];
 
   /// Standard constructor, creates the [_workerLoop].
-  MockWorker({WorkerLoop workerLoopFactory(MockWorker mockWorker)}) {
+  MockWorker({WorkerLoop Function(MockWorker) workerLoopFactory}) {
     liveWorkers.add(this);
     var workerLoop = workerLoopFactory != null
         ? workerLoopFactory(this)
         : MockWorkerLoop(responseQueue,
             connection: StdAsyncWorkerConnection(
-                inputStream: this._stdinController.stream,
-                outputStream: this._stdoutController.sink));
+                inputStream: _stdinController.stream,
+                outputStream: _stdoutController.sink));
     _workerLoop = workerLoop..run();
   }
 
+  @override
   Future<int> get exitCode => _exitCodeCompleter.future;
   final _exitCodeCompleter = Completer<int>();
 
@@ -254,6 +256,7 @@ class MockWorker implements Process {
   IOSink _stdin;
   final _stdinController = StreamController<List<int>>();
 
+  @override
   int get pid => throw UnsupportedError('Not needed.');
 
   @override
@@ -270,5 +273,5 @@ class MockWorker implements Process {
     return true;
   }
 
-  bool _killed = false;
+  final _killed = false;
 }

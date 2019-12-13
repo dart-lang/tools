@@ -105,7 +105,7 @@ class _MessageReader {
     return _message;
   }
 
-  Uint8List _message;
+  final Uint8List _message;
 
   /// If [_done] is `false`, the number of message bytes that have been received
   /// so far.  Otherwise zero.

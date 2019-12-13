@@ -17,6 +17,7 @@ class SyncMessageGrouper implements MessageGrouper {
   /// Blocks until the next full message is received, and then returns it.
   ///
   /// Returns null at end of file.
+  @override
   List<int> get next {
     try {
       List<int> message;
