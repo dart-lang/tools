@@ -28,7 +28,7 @@ class Parser {
 
     if (_scanner.peek().type != TokenType.endOfFile) {
       throw SourceSpanFormatException(
-          "Expected end of input.", _scanner.peek().span);
+          'Expected end of input.', _scanner.peek().span);
     }
 
     return selector;
@@ -97,7 +97,7 @@ class Parser {
         return VariableNode((token as IdentifierToken).name, token.span);
 
       default:
-        throw SourceSpanFormatException("Expected expression.", token.span);
+        throw SourceSpanFormatException('Expected expression.', token.span);
     }
   }
 }

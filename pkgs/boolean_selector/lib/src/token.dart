@@ -21,7 +21,9 @@ class Token {
 
 /// A token representing an identifier.
 class IdentifierToken implements Token {
+  @override
   final type = TokenType.identifier;
+  @override
   final FileSpan span;
 
   /// The name of the identifier.
@@ -29,42 +31,44 @@ class IdentifierToken implements Token {
 
   IdentifierToken(this.name, this.span);
 
+  @override
   String toString() => 'identifier "$name"';
 }
 
 /// An enumeration of types of tokens.
 class TokenType {
   /// A `(` character.
-  static const leftParen = TokenType._("left paren");
+  static const leftParen = TokenType._('left paren');
 
   /// A `)` character.
-  static const rightParen = TokenType._("right paren");
+  static const rightParen = TokenType._('right paren');
 
   /// A `||` sequence.
-  static const or = TokenType._("or");
+  static const or = TokenType._('or');
 
   /// A `&&` sequence.
-  static const and = TokenType._("and");
+  static const and = TokenType._('and');
 
   /// A `!` character.
-  static const not = TokenType._("not");
+  static const not = TokenType._('not');
 
   /// A `?` character.
-  static const questionMark = TokenType._("question mark");
+  static const questionMark = TokenType._('question mark');
 
   /// A `:` character.
-  static const colon = TokenType._("colon");
+  static const colon = TokenType._('colon');
 
   /// A named identifier.
-  static const identifier = TokenType._("identifier");
+  static const identifier = TokenType._('identifier');
 
   /// The end of the selector.
-  static const endOfFile = TokenType._("end of file");
+  static const endOfFile = TokenType._('end of file');
 
   /// The name of the token type.
   final String name;
 
   const TokenType._(this.name);
 
+  @override
   String toString() => name;
 }

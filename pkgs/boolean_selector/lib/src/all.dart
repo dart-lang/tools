@@ -8,17 +8,23 @@ import '../boolean_selector.dart';
 class All implements BooleanSelector {
   // TODO(nweiz): Stop explicitly providing a type argument when sdk#32412 is
   // fixed.
+  @override
   final variables = const <String>[];
 
   const All();
 
+  @override
   bool evaluate(semantics) => true;
 
+  @override
   BooleanSelector intersection(BooleanSelector other) => other;
 
+  @override
   BooleanSelector union(BooleanSelector other) => this;
 
-  void validate(bool isDefined(String variable)) {}
+  @override
+  void validate(bool Function(String variable) isDefined) {}
 
-  String toString() => "<all>";
+  @override
+  String toString() => '<all>';
 }

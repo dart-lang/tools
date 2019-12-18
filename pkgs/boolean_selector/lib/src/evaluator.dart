@@ -18,16 +18,21 @@ class Evaluator implements Visitor<bool> {
             ? semantics.toSet().contains
             : semantics as _Semantics;
 
+  @override
   bool visitVariable(VariableNode node) => _semantics(node.name);
 
+  @override
   bool visitNot(NotNode node) => !node.child.accept(this);
 
+  @override
   bool visitOr(OrNode node) =>
       node.left.accept(this) || node.right.accept(this);
 
+  @override
   bool visitAnd(AndNode node) =>
       node.left.accept(this) && node.right.accept(this);
 
+  @override
   bool visitConditional(ConditionalNode node) => node.condition.accept(this)
       ? node.whenTrue.accept(this)
       : node.whenFalse.accept(this);

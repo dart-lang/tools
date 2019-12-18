@@ -6,11 +6,11 @@ import 'package:test/test.dart';
 
 import 'package:boolean_selector/boolean_selector.dart';
 
-var _selector = BooleanSelector.parse("foo && bar && baz");
+var _selector = BooleanSelector.parse('foo && bar && baz');
 
 void main() {
-  test("throws if any variables are undefined", () {
-    expect(() => _selector.validate((variable) => variable == "bar"),
+  test('throws if any variables are undefined', () {
+    expect(() => _selector.validate((variable) => variable == 'bar'),
         throwsFormatException);
   });
 

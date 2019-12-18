@@ -20,22 +20,27 @@ abstract class Visitor<T> {
 abstract class RecursiveVisitor implements Visitor {
   const RecursiveVisitor();
 
+  @override
   void visitVariable(VariableNode node) {}
 
+  @override
   void visitNot(NotNode node) {
     node.child.accept(this);
   }
 
+  @override
   void visitOr(OrNode node) {
     node.left.accept(this);
     node.right.accept(this);
   }
 
+  @override
   void visitAnd(AndNode node) {
     node.left.accept(this);
     node.right.accept(this);
   }
 
+  @override
   void visitConditional(ConditionalNode node) {
     node.condition.accept(this);
     node.whenTrue.accept(this);

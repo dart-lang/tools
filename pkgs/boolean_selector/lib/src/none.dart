@@ -8,17 +8,23 @@ import '../boolean_selector.dart';
 class None implements BooleanSelector {
   // TODO(nweiz): Stop explicitly providing a type argument when sdk#32412 is
   // fixed.
+  @override
   final variables = const <String>[];
 
   const None();
 
+  @override
   bool evaluate(semantics) => false;
 
+  @override
   BooleanSelector intersection(BooleanSelector other) => this;
 
+  @override
   BooleanSelector union(BooleanSelector other) => other;
 
-  void validate(bool isDefined(String variable)) {}
+  @override
+  void validate(bool Function(String) isDefined) {}
 
-  String toString() => "<none>";
+  @override
+  String toString() => '<none>';
 }

@@ -12,28 +12,36 @@ class UnionSelector implements BooleanSelector {
 
   UnionSelector(this._selector1, this._selector2);
 
+  @override
   List<String> get variables =>
       _selector1.variables.toList()..addAll(_selector2.variables);
 
+  @override
   bool evaluate(semantics) =>
       _selector1.evaluate(semantics) || _selector2.evaluate(semantics);
 
+  @override
   BooleanSelector intersection(BooleanSelector other) =>
       IntersectionSelector(this, other);
 
+  @override
   BooleanSelector union(BooleanSelector other) => UnionSelector(this, other);
 
-  void validate(bool isDefined(String variable)) {
+  @override
+  void validate(bool Function(String variable) isDefined) {
     _selector1.validate(isDefined);
     _selector2.validate(isDefined);
   }
 
-  String toString() => "($_selector1) && ($_selector2)";
+  @override
+  String toString() => '($_selector1) && ($_selector2)';
 
+  @override
   bool operator ==(other) =>
       other is UnionSelector &&
       _selector1 == other._selector1 &&
       _selector2 == other._selector2;
 
+  @override
   int get hashCode => _selector1.hashCode ^ _selector2.hashCode;
 }

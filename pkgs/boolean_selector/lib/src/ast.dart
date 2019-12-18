@@ -21,52 +21,65 @@ abstract class Node {
   Iterable<String> get variables;
 
   /// Calls the appropriate [Visitor] method on [this] and returns the result.
-  accept(Visitor visitor);
+  dynamic accept(Visitor visitor);
 }
 
 /// A single variable.
 class VariableNode implements Node {
+  @override
   final FileSpan span;
 
   /// The variable name.
   final String name;
 
+  @override
   Iterable<String> get variables => [name];
 
   VariableNode(this.name, [this.span]);
 
-  accept(Visitor visitor) => visitor.visitVariable(this);
+  @override
+  dynamic accept(Visitor visitor) => visitor.visitVariable(this);
 
+  @override
   String toString() => name;
 
+  @override
   bool operator ==(other) => other is VariableNode && name == other.name;
 
+  @override
   int get hashCode => name.hashCode;
 }
 
 /// A negation expression.
 class NotNode implements Node {
+  @override
   final FileSpan span;
 
   /// The expression being negated.
   final Node child;
 
+  @override
   Iterable<String> get variables => child.variables;
 
   NotNode(this.child, [this.span]);
 
-  accept(Visitor visitor) => visitor.visitNot(this);
+  @override
+  dynamic accept(Visitor visitor) => visitor.visitNot(this);
 
+  @override
   String toString() =>
-      child is VariableNode || child is NotNode ? "!$child" : "!($child)";
+      child is VariableNode || child is NotNode ? '!$child' : '!($child)';
 
+  @override
   bool operator ==(other) => other is NotNode && child == other.child;
 
+  @override
   int get hashCode => ~child.hashCode;
 }
 
 /// An or expression.
 class OrNode implements Node {
+  @override
   FileSpan get span => _expandSafe(left.span, right.span);
 
   /// The left-hand branch of the expression.
@@ -75,6 +88,7 @@ class OrNode implements Node {
   /// The right-hand branch of the expression.
   final Node right;
 
+  @override
   Iterable<String> get variables sync* {
     yield* left.variables;
     yield* right.variables;
@@ -82,24 +96,29 @@ class OrNode implements Node {
 
   OrNode(this.left, this.right);
 
-  accept(Visitor visitor) => visitor.visitOr(this);
+  @override
+  dynamic accept(Visitor visitor) => visitor.visitOr(this);
 
+  @override
   String toString() {
-    var string1 = left is AndNode || left is ConditionalNode ? "($left)" : left;
+    var string1 = left is AndNode || left is ConditionalNode ? '($left)' : left;
     var string2 =
-        right is AndNode || right is ConditionalNode ? "($right)" : right;
+        right is AndNode || right is ConditionalNode ? '($right)' : right;
 
-    return "$string1 || $string2";
+    return '$string1 || $string2';
   }
 
+  @override
   bool operator ==(other) =>
       other is OrNode && left == other.left && right == other.right;
 
+  @override
   int get hashCode => left.hashCode ^ right.hashCode;
 }
 
 /// An and expression.
 class AndNode implements Node {
+  @override
   FileSpan get span => _expandSafe(left.span, right.span);
 
   /// The left-hand branch of the expression.
@@ -108,6 +127,7 @@ class AndNode implements Node {
   /// The right-hand branch of the expression.
   final Node right;
 
+  @override
   Iterable<String> get variables sync* {
     yield* left.variables;
     yield* right.variables;
@@ -115,24 +135,29 @@ class AndNode implements Node {
 
   AndNode(this.left, this.right);
 
-  accept(Visitor visitor) => visitor.visitAnd(this);
+  @override
+  dynamic accept(Visitor visitor) => visitor.visitAnd(this);
 
+  @override
   String toString() {
-    var string1 = left is OrNode || left is ConditionalNode ? "($left)" : left;
+    var string1 = left is OrNode || left is ConditionalNode ? '($left)' : left;
     var string2 =
-        right is OrNode || right is ConditionalNode ? "($right)" : right;
+        right is OrNode || right is ConditionalNode ? '($right)' : right;
 
-    return "$string1 && $string2";
+    return '$string1 && $string2';
   }
 
+  @override
   bool operator ==(other) =>
       other is AndNode && left == other.left && right == other.right;
 
+  @override
   int get hashCode => left.hashCode ^ right.hashCode;
 }
 
 /// A ternary conditional expression.
 class ConditionalNode implements Node {
+  @override
   FileSpan get span => _expandSafe(condition.span, whenFalse.span);
 
   /// The condition expression to check.
@@ -144,6 +169,7 @@ class ConditionalNode implements Node {
   /// The branch to run if the condition is false.
   final Node whenFalse;
 
+  @override
   Iterable<String> get variables sync* {
     yield* condition.variables;
     yield* whenTrue.variables;
@@ -152,21 +178,25 @@ class ConditionalNode implements Node {
 
   ConditionalNode(this.condition, this.whenTrue, this.whenFalse);
 
-  accept(Visitor visitor) => visitor.visitConditional(this);
+  @override
+  dynamic accept(Visitor visitor) => visitor.visitConditional(this);
 
+  @override
   String toString() {
     var conditionString =
-        condition is ConditionalNode ? "($condition)" : condition;
-    var trueString = whenTrue is ConditionalNode ? "($whenTrue)" : whenTrue;
-    return "$conditionString ? $trueString : $whenFalse";
+        condition is ConditionalNode ? '($condition)' : condition;
+    var trueString = whenTrue is ConditionalNode ? '($whenTrue)' : whenTrue;
+    return '$conditionString ? $trueString : $whenFalse';
   }
 
+  @override
   bool operator ==(other) =>
       other is ConditionalNode &&
       condition == other.condition &&
       whenTrue == other.whenTrue &&
       whenFalse == other.whenFalse;
 
+  @override
   int get hashCode =>
       condition.hashCode ^ whenTrue.hashCode ^ whenFalse.hashCode;
 }

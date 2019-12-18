@@ -10,6 +10,7 @@ class IntersectionSelector implements BooleanSelector {
   final BooleanSelector _selector1;
   final BooleanSelector _selector2;
 
+  @override
   Iterable<String> get variables sync* {
     yield* _selector1.variables;
     yield* _selector2.variables;
@@ -17,25 +18,32 @@ class IntersectionSelector implements BooleanSelector {
 
   IntersectionSelector(this._selector1, this._selector2);
 
+  @override
   bool evaluate(semantics) =>
       _selector1.evaluate(semantics) && _selector2.evaluate(semantics);
 
+  @override
   BooleanSelector intersection(BooleanSelector other) =>
       IntersectionSelector(this, other);
 
+  @override
   BooleanSelector union(BooleanSelector other) => UnionSelector(this, other);
 
-  void validate(bool isDefined(String variable)) {
+  @override
+  void validate(bool Function(String variable) isDefined) {
     _selector1.validate(isDefined);
     _selector2.validate(isDefined);
   }
 
-  String toString() => "($_selector1) && ($_selector2)";
+  @override
+  String toString() => '($_selector1) && ($_selector2)';
 
+  @override
   bool operator ==(other) =>
       other is IntersectionSelector &&
       _selector1 == other._selector1 &&
       _selector2 == other._selector2;
 
+  @override
   int get hashCode => _selector1.hashCode ^ _selector2.hashCode;
 }

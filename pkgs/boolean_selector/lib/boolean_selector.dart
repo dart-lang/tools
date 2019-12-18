@@ -54,5 +54,5 @@ abstract class BooleanSelector {
   ///
   /// The [isDefined] function should return `true` for any variables that are
   /// considered valid, and `false` for any invalid or undefined variables.
-  void validate(bool isDefined(String variable));
+  void validate(bool Function(String variable) isDefined);
 }

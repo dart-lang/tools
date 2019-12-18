@@ -7,41 +7,41 @@ import 'package:test/test.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 
 void main() {
-  group("operator:", () {
-    test("conditional", () {
-      _expectEval("true ? true : false", true);
-      _expectEval("true ? false : true", false);
-      _expectEval("false ? true : false", false);
-      _expectEval("false ? false : true", true);
+  group('operator:', () {
+    test('conditional', () {
+      _expectEval('true ? true : false', true);
+      _expectEval('true ? false : true', false);
+      _expectEval('false ? true : false', false);
+      _expectEval('false ? false : true', true);
     });
 
-    test("or", () {
-      _expectEval("true || true", true);
-      _expectEval("true || false", true);
-      _expectEval("false || true", true);
-      _expectEval("false || false", false);
+    test('or', () {
+      _expectEval('true || true', true);
+      _expectEval('true || false', true);
+      _expectEval('false || true', true);
+      _expectEval('false || false', false);
     });
 
-    test("and", () {
-      _expectEval("true && true", true);
-      _expectEval("true && false", false);
-      _expectEval("false && true", false);
-      _expectEval("false && false", false);
+    test('and', () {
+      _expectEval('true && true', true);
+      _expectEval('true && false', false);
+      _expectEval('false && true', false);
+      _expectEval('false && false', false);
     });
 
-    test("not", () {
-      _expectEval("!true", false);
-      _expectEval("!false", true);
+    test('not', () {
+      _expectEval('!true', false);
+      _expectEval('!false', true);
     });
   });
 
-  test("with a semantics function", () {
-    _expectEval("foo", false,
-        semantics: (String variable) => variable.contains("a"));
-    _expectEval("bar", true,
-        semantics: (String variable) => variable.contains("a"));
-    _expectEval("baz", true,
-        semantics: (String variable) => variable.contains("a"));
+  test('with a semantics function', () {
+    _expectEval('foo', false,
+        semantics: (String variable) => variable.contains('a'));
+    _expectEval('bar', true,
+        semantics: (String variable) => variable.contains('a'));
+    _expectEval('baz', true,
+        semantics: (String variable) => variable.contains('a'));
   });
 }
 
@@ -58,5 +58,5 @@ void _expectEval(String expression, bool result, {semantics}) {
 /// By default, "true" is true and all other variables are "false".
 bool _eval(String expression, {semantics}) {
   var selector = BooleanSelector.parse(expression);
-  return selector.evaluate(semantics ?? ["true"]);
+  return selector.evaluate(semantics ?? ['true']);
 }

@@ -28,10 +28,13 @@ class BooleanSelectorImpl implements BooleanSelector {
 
   BooleanSelectorImpl._(this._selector);
 
+  @override
   Iterable<String> get variables => _selector.variables;
 
+  @override
   bool evaluate(semantics) => _selector.accept(Evaluator(semantics));
 
+  @override
   BooleanSelector intersection(BooleanSelector other) {
     if (other == BooleanSelector.all) return this;
     if (other == BooleanSelector.none) return other;
@@ -40,6 +43,7 @@ class BooleanSelectorImpl implements BooleanSelector {
         : IntersectionSelector(this, other);
   }
 
+  @override
   BooleanSelector union(BooleanSelector other) {
     if (other == BooleanSelector.all) return other;
     if (other == BooleanSelector.none) return this;
@@ -48,14 +52,18 @@ class BooleanSelectorImpl implements BooleanSelector {
         : UnionSelector(this, other);
   }
 
-  void validate(bool isDefined(String variable)) {
+  @override
+  void validate(bool Function(String variable) isDefined) {
     _selector.accept(Validator(isDefined));
   }
 
+  @override
   String toString() => _selector.toString();
 
+  @override
   bool operator ==(other) =>
       other is BooleanSelectorImpl && _selector == other._selector;
 
+  @override
   int get hashCode => _selector.hashCode;
 }

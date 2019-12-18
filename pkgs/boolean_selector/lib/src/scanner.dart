@@ -9,19 +9,19 @@ import 'token.dart';
 /// A regular expression matching both whitespace and single-line comments.
 ///
 /// This will only match if consumes at least one character.
-final _whitespaceAndSingleLineComments = RegExp(r"([ \t\n]+|//[^\n]*(\n|$))+");
+final _whitespaceAndSingleLineComments = RegExp(r'([ \t\n]+|//[^\n]*(\n|$))+');
 
 /// A regular expression matching the body of a multi-line comment, after `/*`
 /// but before `*/` or a nested `/*`.
 ///
 /// This will only match if it consumes at least one character.
-final _multiLineCommentBody = RegExp(r"([^/*]|/[^*]|\*[^/])+");
+final _multiLineCommentBody = RegExp(r'([^/*]|/[^*]|\*[^/])+');
 
 /// A regular expression matching a hyphenated identifier.
 ///
 /// This is like a standard Dart identifier, except that it can also contain
 /// hyphens.
-final _hyphenatedIdentifier = RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
+final _hyphenatedIdentifier = RegExp(r'[a-zA-Z_-][a-zA-Z0-9_-]*');
 
 /// A scanner that converts a boolean selector string into a stream of tokens.
 class Scanner {
@@ -40,17 +40,14 @@ class Scanner {
   ///
   /// Throws a [StateError] if a [TokenType.endOfFile] token has already been
   /// consumed.
-  Token peek() {
-    if (_next == null) _next = _getNext();
-    return _next;
-  }
+  Token peek() => _next ??= _getNext();
 
   /// Consumes and returns the next token in the stream.
   ///
   /// Throws a [StateError] if a [TokenType.endOfFile] token has already been
   /// consumed.
   Token next() {
-    var token = _next == null ? _getNext() : _next;
+    var token = _next ?? _getNext();
     _endOfFileEmitted = token.type == TokenType.endOfFile;
     _next = null;
     return token;
@@ -69,7 +66,7 @@ class Scanner {
 
   /// Scan and return the next token in the stream.
   Token _getNext() {
-    if (_endOfFileEmitted) throw StateError("No more tokens.");
+    if (_endOfFileEmitted) throw StateError('No more tokens.');
 
     _consumeWhitespace();
     if (_scanner.isDone) {
@@ -111,7 +108,7 @@ class Scanner {
   /// This validates that the next two characters are `||`.
   Token _scanOr() {
     var start = _scanner.state;
-    _scanner.expect("||");
+    _scanner.expect('||');
     return Token(TokenType.or, _scanner.spanFrom(start));
   }
 
@@ -120,13 +117,13 @@ class Scanner {
   /// This validates that the next two characters are `&&`.
   Token _scanAnd() {
     var start = _scanner.state;
-    _scanner.expect("&&");
+    _scanner.expect('&&');
     return Token(TokenType.and, _scanner.spanFrom(start));
   }
 
   /// Scans and returns an identifier token.
   Token _scanIdentifier() {
-    _scanner.expect(_hyphenatedIdentifier, name: "expression");
+    _scanner.expect(_hyphenatedIdentifier, name: 'expression');
     return IdentifierToken(_scanner.lastMatch[0], _scanner.lastSpan);
   }
 
@@ -143,12 +140,12 @@ class Scanner {
   ///
   /// Returns whether or not a comment was consumed.
   bool _multiLineComment() {
-    if (!_scanner.scan("/*")) return false;
+    if (!_scanner.scan('/*')) return false;
 
     while (_scanner.scan(_multiLineCommentBody) || _multiLineComment()) {
       // Do nothing.
     }
-    _scanner.expect("*/");
+    _scanner.expect('*/');
 
     return true;
   }

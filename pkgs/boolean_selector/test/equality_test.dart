@@ -7,42 +7,42 @@ import 'package:test/test.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 
 void main() {
-  test("variable", () {
-    _expectEqualsSelf("foo");
+  test('variable', () {
+    _expectEqualsSelf('foo');
   });
 
-  test("not", () {
-    _expectEqualsSelf("!foo");
+  test('not', () {
+    _expectEqualsSelf('!foo');
   });
 
-  test("or", () {
-    _expectEqualsSelf("foo || bar");
+  test('or', () {
+    _expectEqualsSelf('foo || bar');
   });
 
-  test("and", () {
-    _expectEqualsSelf("foo && bar");
+  test('and', () {
+    _expectEqualsSelf('foo && bar');
   });
 
-  test("conditional", () {
-    _expectEqualsSelf("foo ? bar : baz");
+  test('conditional', () {
+    _expectEqualsSelf('foo ? bar : baz');
   });
 
-  test("all", () {
+  test('all', () {
     expect(BooleanSelector.all, equals(BooleanSelector.all));
   });
 
-  test("none", () {
+  test('none', () {
     expect(BooleanSelector.none, equals(BooleanSelector.none));
   });
 
   test("redundant parens don't matter", () {
-    expect(BooleanSelector.parse("foo && (bar && baz)"),
-        equals(BooleanSelector.parse("foo && (bar && baz)")));
+    expect(BooleanSelector.parse('foo && (bar && baz)'),
+        equals(BooleanSelector.parse('foo && (bar && baz)')));
   });
 
-  test("meaningful parens do matter", () {
-    expect(BooleanSelector.parse("(foo && bar) || baz"),
-        equals(BooleanSelector.parse("foo && bar || baz")));
+  test('meaningful parens do matter', () {
+    expect(BooleanSelector.parse('(foo && bar) || baz'),
+        equals(BooleanSelector.parse('foo && bar || baz')));
   });
 }
 

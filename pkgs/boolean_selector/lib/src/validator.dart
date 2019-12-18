@@ -15,8 +15,9 @@ class Validator extends RecursiveVisitor {
 
   Validator(this._isDefined);
 
+  @override
   void visitVariable(VariableNode node) {
     if (_isDefined(node.name)) return;
-    throw SourceSpanFormatException("Undefined variable.", node.span);
+    throw SourceSpanFormatException('Undefined variable.', node.span);
   }
 }

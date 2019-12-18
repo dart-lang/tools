@@ -7,38 +7,38 @@ import 'package:test/test.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 
 void main() {
-  test("a variable reports itself", () {
-    expect(BooleanSelector.parse("foo").variables, equals(["foo"]));
+  test('a variable reports itself', () {
+    expect(BooleanSelector.parse('foo').variables, equals(['foo']));
   });
 
-  test("a negation reports its contents", () {
-    expect(BooleanSelector.parse("!foo").variables, equals(["foo"]));
+  test('a negation reports its contents', () {
+    expect(BooleanSelector.parse('!foo').variables, equals(['foo']));
   });
 
-  test("a parenthesized expression reports its contents", () {
-    expect(BooleanSelector.parse("(foo)").variables, equals(["foo"]));
+  test('a parenthesized expression reports its contents', () {
+    expect(BooleanSelector.parse('(foo)').variables, equals(['foo']));
   });
 
-  test("an or reports its contents", () {
+  test('an or reports its contents', () {
     expect(
-        BooleanSelector.parse("foo || bar").variables, equals(["foo", "bar"]));
+        BooleanSelector.parse('foo || bar').variables, equals(['foo', 'bar']));
   });
 
-  test("an and reports its contents", () {
+  test('an and reports its contents', () {
     expect(
-        BooleanSelector.parse("foo && bar").variables, equals(["foo", "bar"]));
+        BooleanSelector.parse('foo && bar').variables, equals(['foo', 'bar']));
   });
 
-  test("a conditional reports its contents", () {
-    expect(BooleanSelector.parse("foo ? bar : baz").variables,
-        equals(["foo", "bar", "baz"]));
+  test('a conditional reports its contents', () {
+    expect(BooleanSelector.parse('foo ? bar : baz').variables,
+        equals(['foo', 'bar', 'baz']));
   });
 
-  test("BooleanSelector.all reports no variables", () {
+  test('BooleanSelector.all reports no variables', () {
     expect(BooleanSelector.all.variables, isEmpty);
   });
 
-  test("BooleanSelector.none reports no variables", () {
+  test('BooleanSelector.none reports no variables', () {
     expect(BooleanSelector.none.variables, isEmpty);
   });
 }
