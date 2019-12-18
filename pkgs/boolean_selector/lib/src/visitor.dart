@@ -17,7 +17,7 @@ abstract class Visitor<T> {
 ///
 /// The default implementations of this visitor's methods just traverse the AST
 /// and do nothing with it.
-abstract class RecursiveVisitor implements Visitor {
+abstract class RecursiveVisitor implements Visitor<void> {
   const RecursiveVisitor();
 
   @override

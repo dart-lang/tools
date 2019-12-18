@@ -21,7 +21,7 @@ abstract class Node {
   Iterable<String> get variables;
 
   /// Calls the appropriate [Visitor] method on [this] and returns the result.
-  dynamic accept(Visitor visitor);
+  T accept<T>(Visitor<T> visitor);
 }
 
 /// A single variable.
@@ -38,7 +38,7 @@ class VariableNode implements Node {
   VariableNode(this.name, [this.span]);
 
   @override
-  dynamic accept(Visitor visitor) => visitor.visitVariable(this);
+  T accept<T>(Visitor<T> visitor) => visitor.visitVariable(this);
 
   @override
   String toString() => name;
@@ -64,7 +64,7 @@ class NotNode implements Node {
   NotNode(this.child, [this.span]);
 
   @override
-  dynamic accept(Visitor visitor) => visitor.visitNot(this);
+  T accept<T>(Visitor<T> visitor) => visitor.visitNot(this);
 
   @override
   String toString() =>
@@ -97,7 +97,7 @@ class OrNode implements Node {
   OrNode(this.left, this.right);
 
   @override
-  dynamic accept(Visitor visitor) => visitor.visitOr(this);
+  T accept<T>(Visitor<T> visitor) => visitor.visitOr(this);
 
   @override
   String toString() {
@@ -136,7 +136,7 @@ class AndNode implements Node {
   AndNode(this.left, this.right);
 
   @override
-  dynamic accept(Visitor visitor) => visitor.visitAnd(this);
+  T accept<T>(Visitor<T> visitor) => visitor.visitAnd(this);
 
   @override
   String toString() {
@@ -179,7 +179,7 @@ class ConditionalNode implements Node {
   ConditionalNode(this.condition, this.whenTrue, this.whenFalse);
 
   @override
-  dynamic accept(Visitor visitor) => visitor.visitConditional(this);
+  T accept<T>(Visitor<T> visitor) => visitor.visitConditional(this);
 
   @override
   String toString() {
