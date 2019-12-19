@@ -13,7 +13,7 @@ final completeVersion = RegExp('${startVersion.pattern}\$');
 
 /// Parses a comparison operator ("<", ">", "<=", or ">=") at the beginning of
 /// a string.
-final startComparison = RegExp(r"^[<>]=?");
+final startComparison = RegExp(r'^[<>]=?');
 
 /// The "compatible with" operator.
-const compatibleWithChar = "^";
+const compatibleWithChar = '^';

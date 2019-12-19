@@ -83,9 +83,13 @@ class Version implements VersionConstraint, VersionRange {
   /// of the parsed version.
   final String _text;
 
+  @override
   Version get min => this;
+  @override
   Version get max => this;
+  @override
   bool get includeMin => true;
+  @override
   bool get includeMax => true;
 
   Version._(this.major, this.minor, this.patch, String preRelease, String build,
@@ -99,9 +103,9 @@ class Version implements VersionConstraint, VersionRange {
 
   /// Creates a new [Version] object.
   factory Version(int major, int minor, int patch, {String pre, String build}) {
-    var text = "$major.$minor.$patch";
-    if (pre != null) text += "-$pre";
-    if (build != null) text += "+$build";
+    var text = '$major.$minor.$patch';
+    if (pre != null) text += '-$pre';
+    if (build != null) text += '+$build';
 
     return Version._(major, minor, patch, pre, build, text);
   }
@@ -157,15 +161,16 @@ class Version implements VersionConstraint, VersionRange {
     }).toList();
   }
 
-  bool operator ==(other) {
-    if (other is! Version) return false;
-    return major == other.major &&
-        minor == other.minor &&
-        patch == other.patch &&
-        _equality.equals(preRelease, other.preRelease) &&
-        _equality.equals(build, other.build);
-  }
+  @override
+  bool operator ==(Object other) =>
+      other is Version &&
+      major == other.major &&
+      minor == other.minor &&
+      patch == other.patch &&
+      _equality.equals(preRelease, other.preRelease) &&
+      _equality.equals(build, other.build);
 
+  @override
   int get hashCode =>
       major ^
       minor ^
@@ -178,7 +183,9 @@ class Version implements VersionConstraint, VersionRange {
   bool operator <=(Version other) => compareTo(other) <= 0;
   bool operator >=(Version other) => compareTo(other) >= 0;
 
+  @override
   bool get isAny => false;
+  @override
   bool get isEmpty => false;
 
   /// Whether or not this is a pre-release version.
@@ -237,7 +244,7 @@ class Version implements VersionConstraint, VersionRange {
   }
 
   /// Returns the first possible pre-release of this version.
-  Version get firstPreRelease => Version(major, minor, patch, pre: "0");
+  Version get firstPreRelease => Version(major, minor, patch, pre: '0');
 
   /// Returns whether this is the first possible pre-release of its version.
   bool get isFirstPreRelease => preRelease.length == 1 && preRelease.first == 0;
@@ -247,15 +254,20 @@ class Version implements VersionConstraint, VersionRange {
   Version _incrementPatch() => Version(major, minor, patch + 1);
 
   /// Tests if [other] matches this version exactly.
+  @override
   bool allows(Version other) => this == other;
 
+  @override
   bool allowsAll(VersionConstraint other) => other.isEmpty || other == this;
 
+  @override
   bool allowsAny(VersionConstraint other) => other.allows(this);
 
+  @override
   VersionConstraint intersect(VersionConstraint other) =>
       other.allows(this) ? this : VersionConstraint.empty;
 
+  @override
   VersionConstraint union(VersionConstraint other) {
     if (other.allows(this)) return other;
 
@@ -282,9 +294,11 @@ class Version implements VersionConstraint, VersionRange {
     return VersionConstraint.unionOf([this, other]);
   }
 
+  @override
   VersionConstraint difference(VersionConstraint other) =>
       other.allows(this) ? VersionConstraint.empty : this;
 
+  @override
   int compareTo(VersionRange other) {
     if (other is Version) {
       if (major != other.major) return major.compareTo(other.major);
@@ -307,6 +321,7 @@ class Version implements VersionConstraint, VersionRange {
     }
   }
 
+  @override
   String toString() => _text;
 
   /// Compares a dot-separated component of two versions.
@@ -338,7 +353,7 @@ class Version implements VersionConstraint, VersionRange {
           return 1;
         } else {
           // Compare two strings.
-          return aPart.compareTo(bPart);
+          return (aPart as String).compareTo(bPart as String);
         }
       }
     }

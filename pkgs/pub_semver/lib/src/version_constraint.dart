@@ -54,7 +54,7 @@ abstract class VersionConstraint {
     skipWhitespace();
 
     // Handle the "any" constraint.
-    if (text == "any") return any;
+    if (text == 'any') return any;
 
     // Try to parse and consume a version number.
     Version matchVersion() {
@@ -190,7 +190,7 @@ abstract class VersionConstraint {
       Iterable<VersionConstraint> constraints) {
     var constraint = VersionRange();
     for (var other in constraints) {
-      constraint = constraint.intersect(other);
+      constraint = constraint.intersect(other) as VersionRange;
     }
     return constraint;
   }
@@ -201,23 +201,16 @@ abstract class VersionConstraint {
   /// [constraints] is empty, this returns a constraint that allows no versions.
   factory VersionConstraint.unionOf(Iterable<VersionConstraint> constraints) {
     var flattened = constraints.expand((constraint) {
-      if (constraint.isEmpty) return [];
+      if (constraint.isEmpty) return <VersionRange>[];
       if (constraint is VersionUnion) return constraint.ranges;
-      return [constraint];
+      if (constraint is VersionRange) return [constraint];
+      throw ArgumentError('Unknown VersionConstraint type $constraint.');
     }).toList();
 
     if (flattened.isEmpty) return VersionConstraint.empty;
 
     if (flattened.any((constraint) => constraint.isAny)) {
       return VersionConstraint.any;
-    }
-
-    // Only allow Versions and VersionRanges here so we can more easily reason
-    // about everything in [flattened]. _EmptyVersions and VersionUnions are
-    // filtered out above.
-    for (var constraint in flattened) {
-      if (constraint is VersionRange) continue;
-      throw ArgumentError('Unknown VersionConstraint type $constraint.');
     }
 
     flattened.sort();
@@ -230,7 +223,8 @@ abstract class VersionConstraint {
               !areAdjacent(merged.last, constraint))) {
         merged.add(constraint);
       } else {
-        merged[merged.length - 1] = merged.last.union(constraint);
+        merged[merged.length - 1] =
+            merged.last.union(constraint) as VersionRange;
       }
     }
 
@@ -271,21 +265,30 @@ abstract class VersionConstraint {
 class _EmptyVersion implements VersionConstraint {
   const _EmptyVersion();
 
+  @override
   bool get isEmpty => true;
 
+  @override
   bool get isAny => false;
 
+  @override
   bool allows(Version other) => false;
 
+  @override
   bool allowsAll(VersionConstraint other) => other.isEmpty;
 
+  @override
   bool allowsAny(VersionConstraint other) => false;
 
+  @override
   VersionConstraint intersect(VersionConstraint other) => this;
 
+  @override
   VersionConstraint union(VersionConstraint other) => other;
 
+  @override
   VersionConstraint difference(VersionConstraint other) => this;
 
+  @override
   String toString() => '<empty>';
 }

@@ -84,6 +84,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
   VersionRange._(this.min, this.max, this.includeMin, this.includeMax);
 
+  @override
   bool operator ==(other) {
     if (other is! VersionRange) return false;
 
@@ -93,17 +94,21 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         includeMax == other.includeMax;
   }
 
+  @override
   int get hashCode =>
       min.hashCode ^
       (max.hashCode * 3) ^
       (includeMin.hashCode * 5) ^
       (includeMax.hashCode * 7);
 
+  @override
   bool get isEmpty => false;
 
+  @override
   bool get isAny => min == null && max == null;
 
   /// Tests if [other] falls within this version range.
+  @override
   bool allows(Version other) {
     if (min != null) {
       if (other < min) return false;
@@ -118,6 +123,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     return true;
   }
 
+  @override
   bool allowsAll(VersionConstraint other) {
     if (other.isEmpty) return true;
     if (other is Version) return allows(other);
@@ -133,6 +139,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
+  @override
   bool allowsAny(VersionConstraint other) {
     if (other.isEmpty) return false;
     if (other is Version) return allows(other);
@@ -148,6 +155,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
+  @override
   VersionConstraint intersect(VersionConstraint other) {
     if (other.isEmpty) return other;
     if (other is VersionUnion) return other.intersect(this);
@@ -206,6 +214,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
+  @override
   VersionConstraint union(VersionConstraint other) {
     if (other is Version) {
       if (allows(other)) return this;
@@ -271,6 +280,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     return VersionConstraint.unionOf([this, other]);
   }
 
+  @override
   VersionConstraint difference(VersionConstraint other) {
     if (other.isEmpty) return this;
 
@@ -383,6 +393,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     throw ArgumentError('Unknown VersionConstraint type $other.');
   }
 
+  @override
   int compareTo(VersionRange other) {
     if (min == null) {
       if (other.min == null) return _compareMax(other);
@@ -413,6 +424,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     return 0;
   }
 
+  @override
   String toString() {
     var buffer = StringBuffer();
 
@@ -429,7 +441,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         if (max.isFirstPreRelease) {
           // Since `"<$max"` would parse the same as `"<$max-0"`, we just emit
           // `<$max` to avoid confusing "-0" suffixes.
-          buffer.write("${max.major}.${max.minor}.${max.patch}");
+          buffer.write('${max.major}.${max.minor}.${max.patch}');
         } else {
           buffer.write(max);
 
@@ -439,7 +451,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
               min.isPreRelease &&
               equalsWithoutPreRelease(min, max);
           if (!max.isPreRelease && max.build.isEmpty && !minIsPreReleaseOfMax) {
-            buffer.write("-∞");
+            buffer.write('-∞');
           }
         }
       }
@@ -454,5 +466,6 @@ class CompatibleWithVersionRange extends VersionRange {
   CompatibleWithVersionRange(Version version)
       : super._(version, version.nextBreaking.firstPreRelease, true, false);
 
+  @override
   String toString() => '^$min';
 }

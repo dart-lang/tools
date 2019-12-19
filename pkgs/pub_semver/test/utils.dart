@@ -34,16 +34,19 @@ class _VersionConstraintMatcher implements Matcher {
 
   _VersionConstraintMatcher(this._expected, this._allow);
 
+  @override
   bool matches(item, Map matchState) =>
       (item is VersionConstraint) &&
       _expected.every((version) => item.allows(version) == _allow);
 
+  @override
   Description describe(Description description) {
     description.addAll(' ${_allow ? "allows" : "does not allow"} versions ',
         ', ', '', _expected);
     return description;
   }
 
+  @override
   Description describeMismatch(
       item, Description mismatchDescription, Map matchState, bool verbose) {
     if (item is! VersionConstraint) {

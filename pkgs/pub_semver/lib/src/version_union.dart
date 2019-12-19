@@ -25,8 +25,10 @@ class VersionUnion implements VersionConstraint {
   ///   those constraints that they don't match.
   final List<VersionRange> ranges;
 
+  @override
   bool get isEmpty => false;
 
+  @override
   bool get isAny => false;
 
   /// Creates a union from a list of ranges with no pre-processing.
@@ -37,9 +39,11 @@ class VersionUnion implements VersionConstraint {
   /// VersionConstraint.unionOf] instead.
   VersionUnion.fromRanges(this.ranges);
 
+  @override
   bool allows(Version version) =>
       ranges.any((constraint) => constraint.allows(version));
 
+  @override
   bool allowsAll(VersionConstraint other) {
     var ourRanges = ranges.iterator;
     var theirRanges = _rangesFor(other).iterator;
@@ -61,6 +65,7 @@ class VersionUnion implements VersionConstraint {
     return theirRanges.current == null;
   }
 
+  @override
   bool allowsAny(VersionConstraint other) {
     var ourRanges = ranges.iterator;
     var theirRanges = _rangesFor(other).iterator;
@@ -86,6 +91,7 @@ class VersionUnion implements VersionConstraint {
     return false;
   }
 
+  @override
   VersionConstraint intersect(VersionConstraint other) {
     var ourRanges = ranges.iterator;
     var theirRanges = _rangesFor(other).iterator;
@@ -98,7 +104,7 @@ class VersionUnion implements VersionConstraint {
     while (ourRanges.current != null && theirRanges.current != null) {
       var intersection = ourRanges.current.intersect(theirRanges.current);
 
-      if (!intersection.isEmpty) newRanges.add(intersection);
+      if (!intersection.isEmpty) newRanges.add(intersection as VersionRange);
 
       // Move the constraint with the lower max value forward. This ensures that
       // we keep both lists in sync as much as possible, and that large ranges
@@ -116,6 +122,7 @@ class VersionUnion implements VersionConstraint {
     return VersionUnion.fromRanges(newRanges);
   }
 
+  @override
   VersionConstraint difference(VersionConstraint other) {
     var ourRanges = ranges.iterator;
     var theirRanges = _rangesFor(other).iterator;
@@ -200,15 +207,18 @@ class VersionUnion implements VersionConstraint {
     throw ArgumentError('Unknown VersionConstraint type $constraint.');
   }
 
+  @override
   VersionConstraint union(VersionConstraint other) =>
       VersionConstraint.unionOf([this, other]);
 
-  bool operator ==(other) {
-    if (other is! VersionUnion) return false;
-    return const ListEquality().equals(ranges, other.ranges);
-  }
+  @override
+  bool operator ==(Object other) =>
+      other is VersionUnion &&
+      const ListEquality().equals(ranges, other.ranges);
 
+  @override
   int get hashCode => const ListEquality().hash(ranges);
 
-  String toString() => ranges.join(" or ");
+  @override
+  String toString() => ranges.join(' or ');
 }

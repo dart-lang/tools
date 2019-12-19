@@ -152,14 +152,14 @@ void main() {
 
     test('throws FormatException on a bad string', () {
       var bad = [
-        "", "   ", // Empty string.
-        "foo", // Bad text.
-        ">foo", // Bad text after operator.
-        "^foo", // Bad text after "^".
-        "1.0.0 foo", "1.0.0foo", // Bad text after version.
-        "anything", // Bad text after "any".
-        "<>1.0.0", // Multiple operators.
-        "1.0.0<" // Trailing operator.
+        '', '   ', // Empty string.
+        'foo', // Bad text.
+        '>foo', // Bad text after operator.
+        '^foo', // Bad text after "^".
+        '1.0.0 foo', '1.0.0foo', // Bad text after version.
+        'anything', // Bad text after "any".
+        '<>1.0.0', // Multiple operators.
+        '1.0.0<' // Trailing operator.
       ];
 
       for (var text in bad) {

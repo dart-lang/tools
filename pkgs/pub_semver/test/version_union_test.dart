@@ -82,7 +82,7 @@ void main() {
           ])));
     });
 
-    test("merges overlapping ranges", () {
+    test('merges overlapping ranges', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v003, max: v072),
@@ -96,7 +96,7 @@ void main() {
           ])));
     });
 
-    test("merges adjacent ranges", () {
+    test('merges adjacent ranges', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v003, max: v072, includeMax: true),
@@ -128,7 +128,7 @@ void main() {
           isNot(equals(VersionRange(min: v003, max: v080))));
     });
 
-    test("merges version numbers into ranges", () {
+    test('merges version numbers into ranges', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v003, max: v072),
@@ -142,7 +142,7 @@ void main() {
           ])));
     });
 
-    test("merges adjacent version numbers into ranges", () {
+    test('merges adjacent version numbers into ranges', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(
@@ -319,7 +319,7 @@ void main() {
             isTrue);
       });
 
-      test("returns false if no constraint matches", () {
+      test('returns false if no constraint matches', () {
         expect(
             union.allowsAny(VersionConstraint.unionOf([
               v003,
@@ -331,8 +331,8 @@ void main() {
     });
   });
 
-  group("intersect()", () {
-    test("with an overlapping version, returns that version", () {
+  group('intersect()', () {
+    test('with an overlapping version, returns that version', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v010, max: v080),
@@ -341,7 +341,7 @@ void main() {
           equals(v072));
     });
 
-    test("with a non-overlapping version, returns an empty constraint", () {
+    test('with a non-overlapping version, returns an empty constraint', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v010, max: v080),
@@ -350,7 +350,7 @@ void main() {
           isEmpty);
     });
 
-    test("with an overlapping range, returns that range", () {
+    test('with an overlapping range, returns that range', () {
       var range = VersionRange(min: v072, max: v080);
       expect(
           VersionConstraint.unionOf([
@@ -360,7 +360,7 @@ void main() {
           equals(range));
     });
 
-    test("with a non-overlapping range, returns an empty constraint", () {
+    test('with a non-overlapping range, returns an empty constraint', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v010, max: v080),
@@ -369,7 +369,7 @@ void main() {
           isEmpty);
     });
 
-    test("with a parially-overlapping range, returns the overlapping parts",
+    test('with a parially-overlapping range, returns the overlapping parts',
         () {
       expect(
           VersionConstraint.unionOf([
@@ -382,13 +382,13 @@ void main() {
           ])));
     });
 
-    group("for a union,", () {
+    group('for a union,', () {
       var union = VersionConstraint.unionOf([
         VersionRange(min: v003, max: v080),
         VersionRange(min: v123, max: v130)
       ]);
 
-      test("returns the overlapping parts", () {
+      test('returns the overlapping parts', () {
         expect(
             union.intersect(VersionConstraint.unionOf([
               v010,
@@ -415,7 +415,7 @@ void main() {
     });
   });
 
-  group("difference()", () {
+  group('difference()', () {
     test("ignores ranges that don't intersect", () {
       expect(
           VersionConstraint.unionOf([
@@ -432,7 +432,7 @@ void main() {
           ])));
     });
 
-    test("removes overlapping portions", () {
+    test('removes overlapping portions', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v010, max: v080),
@@ -446,7 +446,7 @@ void main() {
           ])));
     });
 
-    test("removes multiple portions from the same range", () {
+    test('removes multiple portions from the same range', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v010, max: v114),
@@ -462,7 +462,7 @@ void main() {
           ])));
     });
 
-    test("removes the same range from multiple ranges", () {
+    test('removes the same range from multiple ranges', () {
       expect(
           VersionConstraint.unionOf([
             VersionRange(min: v010, max: v072),

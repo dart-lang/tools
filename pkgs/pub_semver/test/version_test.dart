@@ -167,11 +167,11 @@ void main() {
   });
 
   group('union()', () {
-    test("with the same version returns the version", () {
+    test('with the same version returns the version', () {
       expect(v123.union(v123), equals(v123));
     });
 
-    test("with a different version returns a version that matches both", () {
+    test('with a different version returns a version that matches both', () {
       var result = v123.union(v080);
       expect(result, allows(v123));
       expect(result, allows(v080));
@@ -180,12 +180,12 @@ void main() {
       expect(result, doesNotAllow(v114));
     });
 
-    test("with a range returns the range if it contains the version", () {
+    test('with a range returns the range if it contains the version', () {
       var range = VersionRange(min: v114, max: v124);
       expect(v123.union(range), equals(range));
     });
 
-    test("with a range with the version on the edge, expands the range", () {
+    test('with a range with the version on the edge, expands the range', () {
       expect(
           v124.union(VersionRange(
               min: v114, max: v124, alwaysIncludeMaxPreRelease: true)),
@@ -199,7 +199,7 @@ void main() {
     });
 
     test(
-        "with a range allows both the range and the version if the range "
+        'with a range allows both the range and the version if the range '
         "doesn't contain the version", () {
       var result = v123.union(VersionRange(min: v003, max: v114));
       expect(result, allows(v123));
@@ -208,15 +208,15 @@ void main() {
   });
 
   group('difference()', () {
-    test("with the same version returns an empty constraint", () {
+    test('with the same version returns an empty constraint', () {
       expect(v123.difference(v123), isEmpty);
     });
 
-    test("with a different version returns the original version", () {
+    test('with a different version returns the original version', () {
       expect(v123.difference(v080), equals(v123));
     });
 
-    test("returns an empty constraint with a range that contains the version",
+    test('returns an empty constraint with a range that contains the version',
         () {
       expect(v123.difference(VersionRange(min: v114, max: v124)), isEmpty);
     });
