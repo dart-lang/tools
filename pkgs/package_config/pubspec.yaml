@@ -1,11 +1,11 @@
-name: package_config
-version: 1.2.0
-description: Support for working with Package Resolution config files.
+name: package_config_2
+version: 2.0.0
+description: Support for working with Package Configuration files.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/package_config
 
 environment:
-  sdk: '>=2.0.0-dev <3.0.0'
+  sdk: '>=2.5.0-dev <3.0.0'
 
 dependencies:
   charcode: ^1.1.0

@@ -1,3 +1,6 @@
+## 2.0.0
+ - Based on new JSON file format with more content.
+
 ## 1.2.0
  - Added support for writing default-package entries.
  - Fixed bug when writing `Uri`s containing a fragment.
