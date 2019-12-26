@@ -14,7 +14,7 @@
 //       from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 // A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
 // OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -36,19 +36,20 @@
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
-main() {
+void main() {
   const Richards().report();
 }
 
 /// Richards imulates the task dispatcher of an operating system.
 class Richards extends BenchmarkBase {
-  const Richards() : super("Richards");
+  const Richards() : super('Richards');
 
+  @override
   void run() {
-    Scheduler scheduler = Scheduler();
+    var scheduler = Scheduler();
     scheduler.addIdleTask(ID_IDLE, 0, null, COUNT);
 
-    Packet queue = Packet(null, ID_WORKER, KIND_WORK);
+    var queue = Packet(null, ID_WORKER, KIND_WORK);
     queue = Packet(queue, ID_WORKER, KIND_WORK);
     scheduler.addWorkerTask(ID_WORKER, 1000, queue);
 
@@ -70,14 +71,14 @@ class Richards extends BenchmarkBase {
 
     if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
         scheduler.holdCount != EXPECTED_HOLD_COUNT) {
-      print("Error during execution: queueCount = ${scheduler.queueCount}"
-          ", holdCount = ${scheduler.holdCount}.");
+      print('Error during execution: queueCount = ${scheduler.queueCount}'
+          ', holdCount = ${scheduler.holdCount}.');
     }
     if (EXPECTED_QUEUE_COUNT != scheduler.queueCount) {
-      throw "bad scheduler queue-count";
+      throw 'bad scheduler queue-count';
     }
     if (EXPECTED_HOLD_COUNT != scheduler.holdCount) {
-      throw "bad scheduler hold-count";
+      throw 'bad scheduler hold-count';
     }
   }
 
@@ -164,7 +165,7 @@ class Scheduler {
 
   /// Release a task that is currently blocked and return the next block to run.
   TaskControlBlock release(int id) {
-    TaskControlBlock tcb = blocks[id];
+    var tcb = blocks[id];
     if (tcb == null) return tcb;
     tcb.markAsNotHeld();
     if (tcb.priority > currentTcb.priority) return tcb;
@@ -192,7 +193,7 @@ class Scheduler {
   /// associated with the packet and make the task runnable if it is currently
   /// suspended.
   TaskControlBlock queue(Packet packet) {
-    TaskControlBlock t = blocks[packet.id];
+    var t = blocks[packet.id];
     if (t == null) return t;
     queueCount++;
     packet.link = null;
@@ -282,7 +283,8 @@ class TaskControlBlock {
     return task;
   }
 
-  String toString() => "tcb { $task@$state }";
+  @override
+  String toString() => 'tcb { $task@$state }';
 }
 
 ///  Abstract task that manipulates work packets.
@@ -302,6 +304,7 @@ class IdleTask extends Task {
 
   IdleTask(Scheduler scheduler, this.v1, this.count) : super(scheduler);
 
+  @override
   TaskControlBlock run(Packet packet) {
     count--;
     if (count == 0) return scheduler.holdCurrent();
@@ -313,7 +316,8 @@ class IdleTask extends Task {
     return scheduler.release(Richards.ID_DEVICE_B);
   }
 
-  String toString() => "IdleTask";
+  @override
+  String toString() => 'IdleTask';
 }
 
 /// A task that suspends itself after each time it has been run to simulate
@@ -323,10 +327,11 @@ class DeviceTask extends Task {
 
   DeviceTask(Scheduler scheduler) : super(scheduler);
 
+  @override
   TaskControlBlock run(Packet packet) {
     if (packet == null) {
       if (v1 == null) return scheduler.suspendCurrent();
-      Packet v = v1;
+      var v = v1;
       v1 = null;
       return scheduler.queue(v);
     }
@@ -334,7 +339,8 @@ class DeviceTask extends Task {
     return scheduler.holdCurrent();
   }
 
-  String toString() => "DeviceTask";
+  @override
+  String toString() => 'DeviceTask';
 }
 
 /// A task that manipulates work packets.
@@ -344,6 +350,7 @@ class WorkerTask extends Task {
 
   WorkerTask(Scheduler scheduler, this.v1, this.v2) : super(scheduler);
 
+  @override
   TaskControlBlock run(Packet packet) {
     if (packet == null) {
       return scheduler.suspendCurrent();
@@ -355,7 +362,7 @@ class WorkerTask extends Task {
     }
     packet.id = v1;
     packet.a1 = 0;
-    for (int i = 0; i < Richards.DATA_SIZE; i++) {
+    for (var i = 0; i < Richards.DATA_SIZE; i++) {
       v2++;
       if (v2 > 26) v2 = 1;
       packet.a2[i] = v2;
@@ -363,7 +370,8 @@ class WorkerTask extends Task {
     return scheduler.queue(packet);
   }
 
-  String toString() => "WorkerTask";
+  @override
+  String toString() => 'WorkerTask';
 }
 
 /// A task that manipulates work packets and then suspends itself.
@@ -373,6 +381,7 @@ class HandlerTask extends Task {
 
   HandlerTask(Scheduler scheduler) : super(scheduler);
 
+  @override
   TaskControlBlock run(Packet packet) {
     if (packet != null) {
       if (packet.kind == Richards.KIND_WORK) {
@@ -382,7 +391,7 @@ class HandlerTask extends Task {
       }
     }
     if (v1 != null) {
-      int count = v1.a1;
+      var count = v1.a1;
       Packet v;
       if (count < Richards.DATA_SIZE) {
         if (v2 != null) {
@@ -401,7 +410,8 @@ class HandlerTask extends Task {
     return scheduler.suspendCurrent();
   }
 
-  String toString() => "HandlerTask";
+  @override
+  String toString() => 'HandlerTask';
 }
 
 /// A simple package of data that is manipulated by the tasks.  The exact layout
@@ -431,5 +441,6 @@ class Packet {
     return queue;
   }
 
-  String toString() => "Packet";
+  @override
+  String toString() => 'Packet';
 }

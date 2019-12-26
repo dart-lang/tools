@@ -14,24 +14,27 @@ class MockResultEmitter extends Mock implements ScoreEmitter {}
 // Create a new benchmark which has an emitter.
 class BenchmarkWithResultEmitter extends BenchmarkBase {
   const BenchmarkWithResultEmitter(ScoreEmitter emitter)
-      : super("Template", emitter: emitter);
+      : super('Template', emitter: emitter);
 
+  @override
   void run() {}
 
+  @override
   void setup() {}
 
+  @override
   void teardown() {}
 }
 
-benchmarkHarnessTest() {
+void benchmarkHarnessTest() {
   MockResultEmitter createMockEmitter() {
-    MockResultEmitter emitter = MockResultEmitter();
+    var emitter = MockResultEmitter();
     return emitter;
   }
 
   group('ResultEmitter', () {
     test('should be called when emitter is provided', () {
-      MockResultEmitter emitter = createMockEmitter();
+      var emitter = createMockEmitter();
       var testBenchmark = BenchmarkWithResultEmitter(emitter);
       testBenchmark.report();
 

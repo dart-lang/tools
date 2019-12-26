@@ -20,21 +20,19 @@ part 'shapes.dart';
 part 'vector.dart';
 part 'renderscene.dart';
 
-// Dummy HTML definition.
-
-query(a) {}
-
 // Variable used to hold a number that can be used to verify that
 // the scene was ray traced correctly.
-var checkNumber;
+int checkNumber;
 
 class TracerBenchmark extends BenchmarkBase {
-  const TracerBenchmark() : super("Tracer");
+  const TracerBenchmark() : super('Tracer');
 
+  @override
   void warmup() {
     renderScene(null);
   }
 
+  @override
   void exercise() {
     renderScene(null);
   }

@@ -1,9 +1,11 @@
+import 'dart:html';
+
 /// Copyright 2013 the V8 project authors. All rights reserved.
 /// Copyright 2009 Oliver Hunt <http://nerget.com>
 ///
 /// Permission is hereby granted, free of charge, to any person
 /// obtaining a copy of this software and associated documentation
-/// files (the "Software"), to deal in the Software without
+/// files (the 'Software'), to deal in the Software without
 /// restriction, including without limitation the rights to use,
 /// copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the
@@ -13,7 +15,7 @@
 /// The above copyright notice and this permission notice shall be
 /// included in all copies or substantial portions of the Software.
 ///
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+/// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
 /// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 /// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 /// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
@@ -34,7 +36,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 ///
 /// Permission is hereby granted, free of charge, to any person
 /// obtaining a copy of this software and associated documentation
-/// files (the "Software"), to deal in the Software without
+/// files (the 'Software'), to deal in the Software without
 /// restriction, including without limitation the rights to use,
 /// copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the
@@ -44,7 +46,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 /// The above copyright notice and this permission notice shall be
 /// included in all copies or substantial portions of the Software.
 ///
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+/// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
 /// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 /// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 /// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
@@ -59,7 +61,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 ///
 /// Permission is hereby granted, free of charge, to any person
 /// obtaining a copy of this software and associated documentation
-/// files (the "Software"), to deal in the Software without
+/// files (the 'Software'), to deal in the Software without
 /// restriction, including without limitation the rights to use,
 /// copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the
@@ -69,7 +71,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 /// The above copyright notice and this permission notice shall be
 /// included in all copies or substantial portions of the Software.
 ///
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+/// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
 /// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 /// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 /// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
@@ -80,7 +82,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 // Ported from the v8 benchmark suite by Google 2013.
 // Uses Float64List for data.
 
-main() {
+void main() {
   const FluidMotion().report();
 }
 
@@ -101,7 +103,7 @@ class FluidMotion extends BenchmarkBase {
 
   static void runFluidMotion() {
     setupFluidMotion();
-    for (int i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
       solver.update();
     }
     solver.validate(758.9012130174812, -352.56376676179076, -357.3690235879736);
@@ -135,10 +137,12 @@ class FluidMotion extends BenchmarkBase {
 
   // Overrides of BenchmarkBase.
 
+  @override
   void warmup() {
     runFluidMotion();
   }
 
+  @override
   void exercise() {
     runFluidMotion();
   }
@@ -147,7 +151,7 @@ class FluidMotion extends BenchmarkBase {
 // Code from Oliver Hunt (http://nerget.com/fluidSim/pressure.js) starts here.
 
 class FluidField {
-  final canvas;
+  final CanvasElement canvas;
   final int iterations;
   final double dt = 0.1;
   final int size;
@@ -156,17 +160,17 @@ class FluidField {
   Float64List v, v_prev;
   final int width, height;
   final int rowSize;
-  var displayFunc;
+  void Function(Field) displayFunc;
 
   static FluidField _lastCreated;
 
   static bool approxEquals(double a, double b) => (a - b).abs() < 0.000001;
 
-  validate(expectedDens, expectedU, expectedV) {
+  void validate(double expectedDens, double expectedU, double expectedV) {
     var sumDens = 0.0;
     var sumU = 0.0;
     var sumV = 0.0;
-    for (int i = 0; i < dens.length; i++) {
+    for (var i = 0; i < dens.length; i++) {
       sumDens += dens[i];
       sumU += u[i];
       sumV += v[i];
@@ -175,13 +179,14 @@ class FluidField {
     if (!approxEquals(sumDens, expectedDens) ||
         !approxEquals(sumU, expectedU) ||
         !approxEquals(sumV, expectedV)) {
-      throw "Incorrect result";
+      throw 'Incorrect result';
     }
   }
 
   // Allocates a new FluidField or return previously allocated field if the
   // size is too large.
-  factory FluidField.create(canvas, int hRes, int wRes, int iterations) {
+  factory FluidField.create(
+      CanvasElement canvas, int hRes, int wRes, int iterations) {
     final res = wRes * hRes;
     if ((res > 0) && (res < 1000000)) {
       _lastCreated = FluidField(canvas, hRes, wRes, iterations);
@@ -223,13 +228,13 @@ class FluidField {
       }
 
       for (var j = 1; j <= height; j++) {
-        x[j * rowSize] = -x[1 + j * rowSize];
-        x[(width + 1) + j * rowSize] = -x[width + j * rowSize];
+        x[j * rowSize] = x[1 + j * rowSize];
+        x[(width + 1) + j * rowSize] = -1 * x[width + j * rowSize];
       }
     } else if (b == 2) {
       for (var i = 1; i <= width; i++) {
-        x[i] = -x[i + rowSize];
-        x[i + (height + 1) * rowSize] = -x[i + height * rowSize];
+        x[i] = -1 * x[i + rowSize];
+        x[i + (height + 1) * rowSize] = -1 * x[i + height * rowSize];
       }
 
       for (var j = 1; j <= height; j++) {
@@ -338,7 +343,8 @@ class FluidField {
     }
   }
 
-  void diffuse2(Float64List x, Float64List x0, y, Float64List y0, double dt) {
+  void diffuse2(
+      Float64List x, Float64List x0, Float64List y, Float64List y0, double dt) {
     var a = 0;
     lin_solve2(x, x0, y, y0, a, 1 + 4 * a);
   }
@@ -444,13 +450,13 @@ class FluidField {
     project(u, v, u0, v0);
   }
 
-  var uiCallback;
+  void Function(Field) uiCallback;
 
-  void setDisplayFunction(func) {
+  void setDisplayFunction(void Function(Field) func) {
     displayFunc = func;
   }
 
-  void setUICallback(callback) {
+  void setUICallback(void Function(Field) callback) {
     uiCallback = callback;
   }
 

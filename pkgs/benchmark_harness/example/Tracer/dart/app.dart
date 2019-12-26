@@ -12,9 +12,9 @@ part 'vector.dart';
 part 'renderscene.dart';
 
 // used to check if raytrace was correct (used by benchmarks)
-var checkNumber;
+int checkNumber;
 
-main() {
+void main() {
   var button = querySelector('#render');
   var canvas = querySelector('#canvas') as CanvasElement;
   var time = querySelector('#time');

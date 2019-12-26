@@ -20,7 +20,7 @@ class BenchmarkBase {
 
   // Exercices the benchmark. By default invokes [run] 10 times.
   void exercise() {
-    for (int i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
       run();
     }
   }
@@ -34,11 +34,11 @@ class BenchmarkBase {
   // Measures the score for this benchmark by executing it repeately until
   // time minimum has been reached.
   static double measureFor(Function f, int minimumMillis) {
-    int minimumMicros = minimumMillis * 1000;
-    int iter = 0;
-    Stopwatch watch = Stopwatch();
+    var minimumMicros = minimumMillis * 1000;
+    var iter = 0;
+    var watch = Stopwatch();
     watch.start();
-    int elapsed = 0;
+    var elapsed = 0;
     while (elapsed < minimumMicros) {
       f();
       elapsed = watch.elapsedMicroseconds;
@@ -53,7 +53,7 @@ class BenchmarkBase {
     // Warmup for at least 100ms. Discard result.
     measureFor(warmup, 100);
     // Run the benchmark for at least 2000ms.
-    double result = measureFor(exercise, 2000);
+    var result = measureFor(exercise, 2000);
     teardown();
     return result;
   }

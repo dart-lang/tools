@@ -7,36 +7,38 @@
 part of ray_trace;
 
 class Ray {
-  final position;
-  final direction;
+  final Vector position;
+  final Vector direction;
 
   Ray(this.position, this.direction);
+
+  @override
   String toString() {
     return 'Ray [$position, $direction]';
   }
 }
 
 class Camera {
-  final position;
-  final lookAt;
-  final up;
-  var equator, screen;
+  final Vector position;
+  final Vector lookAt;
+  final Vector up;
+  Vector equator, screen;
 
   Camera(this.position, this.lookAt, this.up) {
-    this.equator = lookAt.normalize().cross(this.up);
-    this.screen = this.position + this.lookAt;
+    equator = lookAt.normalize().cross(up);
+    screen = position + lookAt;
   }
 
   Ray getRay(double vx, double vy) {
-    var pos =
-        screen - (this.equator.multiplyScalar(vx) - this.up.multiplyScalar(vy));
+    var pos = screen - (equator.multiplyScalar(vx) - up.multiplyScalar(vy));
     pos.y = pos.y * -1.0;
-    var dir = pos - this.position;
+    var dir = pos - position;
     var ray = Ray(pos, dir.normalize());
     return ray;
   }
 
-  toString() {
+  @override
+  String toString() {
     return 'Camera []';
   }
 }
@@ -49,10 +51,11 @@ class Background {
 }
 
 class Scene {
-  var camera;
-  var shapes;
-  var lights;
-  var background;
+  Camera camera;
+  List<BaseShape> shapes;
+  List<Light> lights;
+  Background background;
+
   Scene() {
     camera = Camera(
         Vector(0.0, 0.0, -0.5), Vector(0.0, 0.0, 1.0), Vector(0.0, 1.0, 0.0));

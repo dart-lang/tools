@@ -46,14 +46,15 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 /// I've kept it this way to avoid deviating too much from the original
 /// implementation.
 
-main() {
+void main() {
   const DeltaBlue().report();
 }
 
 /// Benchmark class required to report results.
 class DeltaBlue extends BenchmarkBase {
-  const DeltaBlue() : super("DeltaBlue");
+  const DeltaBlue() : super('DeltaBlue');
 
+  @override
   void run() {
     chainTest(100);
     projectionTest(100);
@@ -97,13 +98,13 @@ class Strength {
 }
 
 // Compile time computed constants.
-const REQUIRED = Strength(0, "required");
-const STRONG_REFERRED = Strength(1, "strongPreferred");
-const PREFERRED = Strength(2, "preferred");
-const STRONG_DEFAULT = Strength(3, "strongDefault");
-const NORMAL = Strength(4, "normal");
-const WEAK_DEFAULT = Strength(5, "weakDefault");
-const WEAKEST = Strength(6, "weakest");
+const REQUIRED = Strength(0, 'required');
+const STRONG_REFERRED = Strength(1, 'strongPreferred');
+const PREFERRED = Strength(2, 'preferred');
+const STRONG_DEFAULT = Strength(3, 'strongDefault');
+const NORMAL = Strength(4, 'normal');
+const WEAK_DEFAULT = Strength(5, 'weakDefault');
+const WEAKEST = Strength(6, 'weakest');
 
 abstract class Constraint {
   final Strength strength;
@@ -145,16 +146,16 @@ abstract class Constraint {
     chooseMethod(mark);
     if (!isSatisfied()) {
       if (strength == REQUIRED) {
-        print("Could not satisfy a required constraint!");
+        print('Could not satisfy a required constraint!');
       }
       return null;
     }
     markInputs(mark);
-    Variable out = output();
-    Constraint overridden = out.determinedBy;
+    var out = output();
+    var overridden = out.determinedBy;
     if (overridden != null) overridden.markUnsatisfied();
     out.determinedBy = this;
-    if (!planner.addPropagate(this, mark)) print("Cycle encountered");
+    if (!planner.addPropagate(this, mark)) print('Cycle encountered');
     out.mark = mark;
     return overridden;
   }
@@ -180,30 +181,36 @@ abstract class UnaryConstraint extends Constraint {
   }
 
   /// Adds this constraint to the constraint graph
+  @override
   void addToGraph() {
     myOutput.addConstraint(this);
     satisfied = false;
   }
 
   /// Decides if this constraint can be satisfied and records that decision.
+  @override
   void chooseMethod(int mark) {
     satisfied = (myOutput.mark != mark) &&
         Strength.stronger(strength, myOutput.walkStrength);
   }
 
   /// Returns true if this constraint is satisfied in the current solution.
+  @override
   bool isSatisfied() => satisfied;
 
+  @override
   void markInputs(int mark) {
     // has no inputs.
   }
 
   /// Returns the current output variable.
+  @override
   Variable output() => myOutput;
 
   /// Calculate the walkabout strength, the stay flag, and, if it is
   /// 'stay', the value for the current output of this constraint. Assume
   /// this constraint is satisfied.
+  @override
   void recalculate() {
     myOutput.walkStrength = strength;
     myOutput.stay = !isInput();
@@ -211,12 +218,15 @@ abstract class UnaryConstraint extends Constraint {
   }
 
   /// Records that this constraint is unsatisfied.
+  @override
   void markUnsatisfied() {
     satisfied = false;
   }
 
+  @override
   bool inputsKnown(int mark) => true;
 
+  @override
   void removeFromGraph() {
     if (myOutput != null) myOutput.removeConstraint(this);
     satisfied = false;
@@ -230,6 +240,7 @@ abstract class UnaryConstraint extends Constraint {
 class StayConstraint extends UnaryConstraint {
   StayConstraint(Variable v, Strength str) : super(v, str);
 
+  @override
   void execute() {
     // Stay constraints do nothing.
   }
@@ -241,8 +252,10 @@ class EditConstraint extends UnaryConstraint {
   EditConstraint(Variable v, Strength str) : super(v, str);
 
   /// Edits indicate that a variable is to be changed by imperative code.
+  @override
   bool isInput() => true;
 
+  @override
   void execute() {
     // Edit constraints do nothing.
   }
@@ -267,6 +280,7 @@ abstract class BinaryConstraint extends Constraint {
   /// Decides if this constraint can be satisfied and which way it
   /// should flow based on the relative strength of the variables related,
   /// and record that decision.
+  @override
   void chooseMethod(int mark) {
     if (v1.mark == mark) {
       direction =
@@ -290,6 +304,7 @@ abstract class BinaryConstraint extends Constraint {
   }
 
   /// Add this constraint to the constraint graph.
+  @override
   void addToGraph() {
     v1.addConstraint(this);
     v2.addConstraint(this);
@@ -297,9 +312,11 @@ abstract class BinaryConstraint extends Constraint {
   }
 
   /// Answer true if this constraint is satisfied in the current solution.
+  @override
   bool isSatisfied() => direction != NONE;
 
   /// Mark the input variable with the given mark.
+  @override
   void markInputs(int mark) {
     input().mark = mark;
   }
@@ -308,28 +325,33 @@ abstract class BinaryConstraint extends Constraint {
   Variable input() => direction == FORWARD ? v1 : v2;
 
   /// Returns the current output variable.
+  @override
   Variable output() => direction == FORWARD ? v2 : v1;
 
   /// Calculate the walkabout strength, the stay flag, and, if it is
   /// 'stay', the value for the current output of this
   /// constraint. Assume this constraint is satisfied.
+  @override
   void recalculate() {
-    Variable ihn = input(), out = output();
+    var ihn = input(), out = output();
     out.walkStrength = Strength.weakest(strength, ihn.walkStrength);
     out.stay = ihn.stay;
     if (out.stay) execute();
   }
 
   /// Record the fact that this constraint is unsatisfied.
+  @override
   void markUnsatisfied() {
     direction = NONE;
   }
 
+  @override
   bool inputsKnown(int mark) {
-    Variable i = input();
+    var i = input();
     return i.mark == mark || i.stay || i.determinedBy == null;
   }
 
+  @override
   void removeFromGraph() {
     if (v1 != null) v1.removeConstraint(this);
     if (v2 != null) v2.removeConstraint(this);
@@ -351,24 +373,28 @@ class ScaleConstraint extends BinaryConstraint {
       : super(src, dest, strength);
 
   /// Adds this constraint to the constraint graph.
+  @override
   void addToGraph() {
     super.addToGraph();
     scale.addConstraint(this);
     offset.addConstraint(this);
   }
 
+  @override
   void removeFromGraph() {
     super.removeFromGraph();
     if (scale != null) scale.removeConstraint(this);
     if (offset != null) offset.removeConstraint(this);
   }
 
+  @override
   void markInputs(int mark) {
     super.markInputs(mark);
     scale.mark = offset.mark = mark;
   }
 
   /// Enforce this constraint. Assume that it is satisfied.
+  @override
   void execute() {
     if (direction == FORWARD) {
       v2.value = v1.value * scale.value + offset.value;
@@ -380,8 +406,9 @@ class ScaleConstraint extends BinaryConstraint {
   /// Calculate the walkabout strength, the stay flag, and, if it is
   /// 'stay', the value for the current output of this constraint. Assume
   /// this constraint is satisfied.
+  @override
   void recalculate() {
-    Variable ihn = input(), out = output();
+    var ihn = input(), out = output();
     out.walkStrength = Strength.weakest(strength, ihn.walkStrength);
     out.stay = ihn.stay && scale.stay && offset.stay;
     if (out.stay) execute();
@@ -394,6 +421,7 @@ class EqualityConstraint extends BinaryConstraint {
       : super(v1, v2, strength);
 
   /// Enforce this constraint. Assume that it is satisfied.
+  @override
   void execute() {
     output().value = input().value;
   }
@@ -443,8 +471,8 @@ class Planner {
   /// the algorithm to avoid getting into an infinite loop even if the
   /// constraint graph has an inadvertent cycle.
   void incrementalAdd(Constraint c) {
-    int mark = newMark();
-    for (Constraint overridden = c.satisfy(mark);
+    var mark = newMark();
+    for (var overridden = c.satisfy(mark);
         overridden != null;
         overridden = overridden.satisfy(mark)) {
       // NOOP
@@ -461,14 +489,14 @@ class Planner {
   /// unnecessarily adding and then overriding weak constraints.
   /// Assume: [c] is satisfied.
   void incrementalRemove(Constraint c) {
-    Variable out = c.output();
+    var out = c.output();
     c.markUnsatisfied();
     c.removeFromGraph();
-    List<Constraint> unsatisfied = removePropagateFrom(out);
-    Strength strength = REQUIRED;
+    var unsatisfied = removePropagateFrom(out);
+    var strength = REQUIRED;
     do {
-      for (int i = 0; i < unsatisfied.length; i++) {
-        Constraint u = unsatisfied[i];
+      for (var i = 0; i < unsatisfied.length; i++) {
+        var u = unsatisfied[i];
         if (u.strength == strength) incrementalAdd(u);
       }
       strength = strength.nextWeaker();
@@ -496,11 +524,11 @@ class Planner {
   /// any constraint.
   /// Assume: [sources] are all satisfied.
   Plan makePlan(List<Constraint> sources) {
-    int mark = newMark();
-    Plan plan = Plan();
-    List<Constraint> todo = sources;
+    var mark = newMark();
+    var plan = Plan();
+    var todo = sources;
     while (todo.isNotEmpty) {
-      Constraint c = todo.removeLast();
+      var c = todo.removeLast();
       if (c.output().mark != mark && c.inputsKnown(mark)) {
         plan.addConstraint(c);
         c.output().mark = mark;
@@ -513,9 +541,9 @@ class Planner {
   /// Extract a plan for resatisfying starting from the output of the
   /// given [constraints], usually a set of input constraints.
   Plan extractPlanFromConstraints(List<Constraint> constraints) {
-    List<Constraint> sources = <Constraint>[];
-    for (int i = 0; i < constraints.length; i++) {
-      Constraint c = constraints[i];
+    var sources = <Constraint>[];
+    for (var i = 0; i < constraints.length; i++) {
+      var c = constraints[i];
       // if not in plan already and eligible for inclusion.
       if (c.isInput() && c.isSatisfied()) sources.add(c);
     }
@@ -534,9 +562,9 @@ class Planner {
   /// the output constraint means that there is a path from the
   /// constraint's output to one of its inputs.
   bool addPropagate(Constraint c, int mark) {
-    List<Constraint> todo = <Constraint>[c];
+    var todo = <Constraint>[c];
     while (todo.isNotEmpty) {
-      Constraint d = todo.removeLast();
+      var d = todo.removeLast();
       if (d.output().mark == mark) {
         incrementalRemove(c);
         return false;
@@ -554,17 +582,17 @@ class Planner {
     out.determinedBy = null;
     out.walkStrength = WEAKEST;
     out.stay = true;
-    List<Constraint> unsatisfied = <Constraint>[];
-    List<Variable> todo = <Variable>[out];
+    var unsatisfied = <Constraint>[];
+    var todo = <Variable>[out];
     while (todo.isNotEmpty) {
-      Variable v = todo.removeLast();
-      for (int i = 0; i < v.constraints.length; i++) {
-        Constraint c = v.constraints[i];
+      var v = todo.removeLast();
+      for (var i = 0; i < v.constraints.length; i++) {
+        var c = v.constraints[i];
         if (!c.isSatisfied()) unsatisfied.add(c);
       }
-      Constraint determining = v.determinedBy;
-      for (int i = 0; i < v.constraints.length; i++) {
-        Constraint next = v.constraints[i];
+      var determining = v.determinedBy;
+      for (var i = 0; i < v.constraints.length; i++) {
+        var next = v.constraints[i];
         if (next != determining && next.isSatisfied()) {
           next.recalculate();
           todo.add(next.output());
@@ -575,9 +603,9 @@ class Planner {
   }
 
   void addConstraintsConsumingTo(Variable v, List<Constraint> coll) {
-    Constraint determining = v.determinedBy;
-    for (int i = 0; i < v.constraints.length; i++) {
-      Constraint c = v.constraints[i];
+    var determining = v.determinedBy;
+    for (var i = 0; i < v.constraints.length; i++) {
+      var c = v.constraints[i];
       if (c != determining && c.isSatisfied()) coll.add(c);
     }
   }
@@ -596,7 +624,7 @@ class Plan {
   int size() => list.length;
 
   void execute() {
-    for (int i = 0; i < list.length; i++) {
+    for (var i = 0; i < list.length; i++) {
       list[i].execute();
     }
   }
@@ -617,21 +645,21 @@ void chainTest(int n) {
   planner = Planner();
   Variable prev, first, last;
   // Build chain of n equality constraints.
-  for (int i = 0; i <= n; i++) {
-    Variable v = Variable("v", 0);
+  for (var i = 0; i <= n; i++) {
+    var v = Variable('v', 0);
     if (prev != null) EqualityConstraint(prev, v, REQUIRED);
     if (i == 0) first = v;
     if (i == n) last = v;
     prev = v;
   }
   StayConstraint(last, STRONG_DEFAULT);
-  EditConstraint edit = EditConstraint(first, PREFERRED);
-  Plan plan = planner.extractPlanFromConstraints(<Constraint>[edit]);
-  for (int i = 0; i < 100; i++) {
+  var edit = EditConstraint(first, PREFERRED);
+  var plan = planner.extractPlanFromConstraints(<Constraint>[edit]);
+  for (var i = 0; i < 100; i++) {
     first.value = i;
     plan.execute();
     if (last.value != i) {
-      print("Chain test failed.\n{last.value)\n{i}");
+      print('Chain test failed.\n{last.value)\n{i}');
     }
   }
 }
@@ -642,36 +670,36 @@ void chainTest(int n) {
 /// mapping and to change the scale and offset factors.
 void projectionTest(int n) {
   planner = Planner();
-  Variable scale = Variable("scale", 10);
-  Variable offset = Variable("offset", 1000);
+  var scale = Variable('scale', 10);
+  var offset = Variable('offset', 1000);
   Variable src, dst;
 
-  List<Variable> dests = <Variable>[];
-  for (int i = 0; i < n; i++) {
-    src = Variable("src", i);
-    dst = Variable("dst", i);
+  var dests = <Variable>[];
+  for (var i = 0; i < n; i++) {
+    src = Variable('src', i);
+    dst = Variable('dst', i);
     dests.add(dst);
     StayConstraint(src, NORMAL);
     ScaleConstraint(src, scale, offset, dst, REQUIRED);
   }
   change(src, 17);
-  if (dst.value != 1170) print("Projection 1 failed");
+  if (dst.value != 1170) print('Projection 1 failed');
   change(dst, 1050);
-  if (src.value != 5) print("Projection 2 failed");
+  if (src.value != 5) print('Projection 2 failed');
   change(scale, 5);
-  for (int i = 0; i < n - 1; i++) {
-    if (dests[i].value != i * 5 + 1000) print("Projection 3 failed");
+  for (var i = 0; i < n - 1; i++) {
+    if (dests[i].value != i * 5 + 1000) print('Projection 3 failed');
   }
   change(offset, 2000);
-  for (int i = 0; i < n - 1; i++) {
-    if (dests[i].value != i * 5 + 2000) print("Projection 4 failed");
+  for (var i = 0; i < n - 1; i++) {
+    if (dests[i].value != i * 5 + 2000) print('Projection 4 failed');
   }
 }
 
 void change(Variable v, int newValue) {
-  EditConstraint edit = EditConstraint(v, PREFERRED);
-  Plan plan = planner.extractPlanFromConstraints(<EditConstraint>[edit]);
-  for (int i = 0; i < 10; i++) {
+  var edit = EditConstraint(v, PREFERRED);
+  var plan = planner.extractPlanFromConstraints(<EditConstraint>[edit]);
+  for (var i = 0; i < 10; i++) {
     v.value = newValue;
     plan.execute();
   }

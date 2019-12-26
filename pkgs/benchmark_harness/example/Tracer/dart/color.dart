@@ -14,10 +14,9 @@ class Color {
   Color(this.red, this.green, this.blue);
 
   void limit() {
-    this.red = (this.red > 0.0) ? ((this.red > 1.0) ? 1.0 : this.red) : 0.0;
-    this.green =
-        (this.green > 0.0) ? ((this.green > 1.0) ? 1.0 : this.green) : 0.0;
-    this.blue = (this.blue > 0.0) ? ((this.blue > 1.0) ? 1.0 : this.blue) : 0.0;
+    red = (red > 0.0) ? ((red > 1.0) ? 1.0 : red) : 0.0;
+    green = (green > 0.0) ? ((green > 1.0) ? 1.0 : green) : 0.0;
+    blue = (blue > 0.0) ? ((blue > 1.0) ? 1.0 : blue) : 0.0;
   }
 
   Color operator +(Color c2) {
@@ -41,21 +40,22 @@ class Color {
   }
 
   Color blend(Color c2, double w) {
-    var result = this.multiplyScalar(1.0 - w) + c2.multiplyScalar(w);
+    var result = multiplyScalar(1.0 - w) + c2.multiplyScalar(w);
     return result;
   }
 
   int brightness() {
-    var r = (this.red * 255).toInt();
-    var g = (this.green * 255).toInt();
-    var b = (this.blue * 255).toInt();
+    var r = (red * 255).toInt();
+    var g = (green * 255).toInt();
+    var b = (blue * 255).toInt();
     return (r * 77 + g * 150 + b * 29) >> 8;
   }
 
+  @override
   String toString() {
-    var r = (this.red * 255).toInt();
-    var g = (this.green * 255).toInt();
-    var b = (this.blue * 255).toInt();
+    var r = (red * 255).toInt();
+    var g = (green * 255).toInt();
+    var b = (blue * 255).toInt();
 
     return 'rgb($r,$g,$b)';
   }

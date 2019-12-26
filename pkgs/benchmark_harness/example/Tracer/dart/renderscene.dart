@@ -7,9 +7,9 @@
 part of ray_trace;
 
 class Light {
-  final position;
-  final color;
-  final intensity;
+  final Vector position;
+  final Color color;
+  final double intensity;
 
   Light(this.position, this.color, [this.intensity = 10.0]);
 }
@@ -46,7 +46,7 @@ void renderScene(event) {
 
   int imageWidth, imageHeight, pixelSize;
   bool renderDiffuse, renderShadows, renderHighlights, renderReflections;
-  var canvas;
+  CanvasElement canvas;
   if (event == null) {
     imageWidth = 100;
     imageHeight = 100;
@@ -71,9 +71,9 @@ void renderScene(event) {
         (querySelector('#renderHighlights') as CheckboxInputElement).checked;
     renderReflections =
         (querySelector('#renderReflections') as CheckboxInputElement).checked;
-    canvas = querySelector("#canvas");
+    canvas = querySelector('#canvas') as CanvasElement;
   }
-  int rayDepth = 2;
+  var rayDepth = 2;
 
   var raytracer = Engine(
       canvasWidth: imageWidth,

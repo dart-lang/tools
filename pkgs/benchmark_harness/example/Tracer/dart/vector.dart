@@ -11,27 +11,26 @@ class Vector {
   Vector(this.x, this.y, this.z);
 
   void copy(Vector v) {
-    this.x = v.x;
-    this.y = v.y;
-    this.z = v.z;
+    x = v.x;
+    y = v.y;
+    z = v.z;
   }
 
   Vector normalize() {
-    var m = this.magnitude();
-    return Vector(this.x / m, this.y / m, this.z / m);
+    var m = magnitude();
+    return Vector(x / m, y / m, z / m);
   }
 
   double magnitude() {
-    return sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+    return sqrt((x * x) + (y * y) + (z * z));
   }
 
   Vector cross(Vector w) {
-    return Vector(-this.z * w.y + this.y * w.z, this.z * w.x - this.x * w.z,
-        -this.y * w.x + this.x * w.y);
+    return Vector(-z * w.y + y * w.z, z * w.x - x * w.z, -y * w.x + x * w.y);
   }
 
   double dot(Vector w) {
-    return this.x * w.x + this.y * w.y + this.z * w.z;
+    return x * w.x + y * w.y + z * w.z;
   }
 
   Vector operator +(Vector w) {
@@ -50,6 +49,7 @@ class Vector {
     return Vector(x * w, y * w, z * w);
   }
 
+  @override
   String toString() {
     return 'Vector [$x, $y ,$z ]';
   }

@@ -10,8 +10,8 @@ import 'package:test/test.dart';
 void main() {
   group('benchmark_harness', () {
     test('run is called', () {
-      MockBenchmark benchmark = MockBenchmark();
-      double micros = benchmark.measure();
+      var benchmark = MockBenchmark();
+      var micros = benchmark.measure();
       expect(micros, isPositive);
       expect(benchmark.runCount, isPositive);
     });
@@ -23,6 +23,7 @@ class MockBenchmark extends BenchmarkBase {
 
   MockBenchmark() : super('mock benchmark');
 
+  @override
   void run() {
     runCount++;
   }

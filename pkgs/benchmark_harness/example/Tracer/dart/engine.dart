@@ -9,12 +9,17 @@ part of ray_trace;
 class IntersectionInfo {
   bool isHit = false;
   int hitCount = 0;
-  var shape, position, normal, color, distance;
+  BaseShape shape;
+  Vector position;
+  Vector normal;
+  Color color;
+  double distance;
 
   IntersectionInfo() {
-    this.color = Color(0.0, 0.0, 0.0);
+    color = Color(0.0, 0.0, 0.0);
   }
 
+  @override
   String toString() => 'Intersection [$position]';
 }
 
@@ -24,10 +29,10 @@ class Engine {
   int pixelWidth, pixelHeight;
   bool renderDiffuse, renderShadows, renderHighlights, renderReflections;
   int rayDepth;
-  var canvas;
+  CanvasRenderingContext2D canvas;
 
   Engine(
-      {this.canvasWidth = 100,
+      {canvasWidth = 100,
       this.canvasHeight = 100,
       this.pixelWidth = 2,
       this.pixelHeight = 2,
@@ -41,13 +46,13 @@ class Engine {
   }
 
   void setPixel(int x, int y, Color color) {
-    var pxW, pxH;
-    pxW = this.pixelWidth;
-    pxH = this.pixelHeight;
+    int pxW, pxH;
+    pxW = pixelWidth;
+    pxH = pixelHeight;
 
-    if (this.canvas != null) {
-      this.canvas.fillStyle = color.toString();
-      this.canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
+    if (canvas != null) {
+      canvas.fillStyle = color.toString();
+      canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
     } else {
       if (x == y) {
         checkNumber += color.brightness();
@@ -56,10 +61,10 @@ class Engine {
   }
 
   // 'canvas' can be null if raytracer runs as benchmark
-  void renderScene(Scene scene, canvas) {
+  void renderScene(Scene scene, CanvasElement canvas) {
     checkNumber = 0;
     /* Get canvas */
-    this.canvas = canvas == null ? null : canvas.getContext("2d");
+    this.canvas = canvas?.context2D;
 
     var canvasHeight = this.canvasHeight;
     var canvasWidth = this.canvasWidth;
@@ -70,34 +75,34 @@ class Engine {
         var xp = x * 1.0 / canvasWidth * 2 - 1;
 
         var ray = scene.camera.getRay(xp, yp);
-        this.setPixel(x, y, this.getPixelColor(ray, scene));
+        setPixel(x, y, getPixelColor(ray, scene));
       }
     }
     if ((canvas == null) && (checkNumber != 2321)) {
       // Used for benchmarking.
-      throw "Scene rendered incorrectly";
+      throw 'Scene rendered incorrectly';
     }
   }
 
   Color getPixelColor(Ray ray, Scene scene) {
-    var info = this.testIntersection(ray, scene, null);
+    var info = testIntersection(ray, scene, null);
     if (info.isHit) {
-      var color = this.rayTrace(info, ray, scene, 0);
+      var color = rayTrace(info, ray, scene, 0);
       return color;
     }
     return scene.background.color;
   }
 
   IntersectionInfo testIntersection(Ray ray, Scene scene, BaseShape exclude) {
-    int hits = 0;
-    IntersectionInfo best = IntersectionInfo();
+    var hits = 0;
+    var best = IntersectionInfo();
     best.distance = 2000;
 
     for (var i = 0; i < scene.shapes.length; i++) {
       var shape = scene.shapes[i];
 
       if (shape != exclude) {
-        IntersectionInfo info = shape.intersect(ray);
+        var info = shape.intersect(ray);
         if (info.isHit &&
             (info.distance >= 0) &&
             (info.distance < best.distance)) {
@@ -118,7 +123,7 @@ class Engine {
 
   Color rayTrace(IntersectionInfo info, Ray ray, Scene scene, int depth) {
     // Calc ambient
-    Color color = info.color.multiplyScalar(scene.background.ambience);
+    var color = info.color.multiplyScalar(scene.background.ambience);
     var shininess = pow(10, info.shape.material.gloss + 1);
 
     for (var i = 0; i < scene.lights.length; i++) {
@@ -127,7 +132,7 @@ class Engine {
       // Calc diffuse lighting
       var v = (light.position - info.position).normalize();
 
-      if (this.renderDiffuse) {
+      if (renderDiffuse) {
         var L = v.dot(info.normal);
         if (L > 0.0) {
           color = color + info.color * light.color.multiplyScalar(L);
@@ -136,15 +141,15 @@ class Engine {
 
       // The greater the depth the more accurate the colours, but
       // this is exponentially (!) expensive
-      if (depth <= this.rayDepth) {
+      if (depth <= rayDepth) {
         // calculate reflection ray
-        if (this.renderReflections && info.shape.material.reflection > 0) {
+        if (renderReflections && info.shape.material.reflection > 0) {
           var reflectionRay =
-              this.getReflectionRay(info.position, info.normal, ray.direction);
-          var refl = this.testIntersection(reflectionRay, scene, info.shape);
+              getReflectionRay(info.position, info.normal, ray.direction);
+          var refl = testIntersection(reflectionRay, scene, info.shape);
 
           if (refl.isHit && refl.distance > 0) {
-            refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
+            refl.color = rayTrace(refl, reflectionRay, scene, depth + 1);
           } else {
             refl.color = scene.background.color;
           }
@@ -156,12 +161,12 @@ class Engine {
       }
       /* Render shadows and highlights */
 
-      IntersectionInfo shadowInfo = IntersectionInfo();
+      var shadowInfo = IntersectionInfo();
 
-      if (this.renderShadows) {
+      if (renderShadows) {
         var shadowRay = Ray(info.position, v);
 
-        shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
+        shadowInfo = testIntersection(shadowRay, scene, info.shape);
         if (shadowInfo.isHit && shadowInfo.shape != info.shape
             /*&& shadowInfo.shape.type != 'PLANE'*/) {
           var vA = color.multiplyScalar(0.5);
@@ -170,7 +175,7 @@ class Engine {
         }
       }
       // Phong specular highlights
-      if (this.renderHighlights &&
+      if (renderHighlights &&
           !shadowInfo.isHit &&
           (info.shape.material.gloss > 0)) {
         var Lv = (info.shape.position - light.position).normalize();
@@ -179,7 +184,7 @@ class Engine {
 
         var H = (E - Lv).normalize();
 
-        var glossWeight = pow(max(info.normal.dot(H), 0), shininess);
+        var glossWeight = pow(max(info.normal.dot(H), 0), shininess).toDouble();
         color = light.color.multiplyScalar(glossWeight) + color;
       }
     }
@@ -187,6 +192,7 @@ class Engine {
     return color;
   }
 
+  @override
   String toString() {
     return 'Engine [canvasWidth: $canvasWidth, canvasHeight: $canvasHeight]';
   }

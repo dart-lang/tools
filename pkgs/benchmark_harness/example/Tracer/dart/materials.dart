@@ -7,17 +7,17 @@
 part of ray_trace;
 
 abstract class Materials {
-  final gloss; // [0...infinity] 0 = matt
-  final transparency; // 0=opaque
-  final reflection; // [0...infinity] 0 = no reflection
+  final double gloss; // [0...infinity] 0 = matt
+  final double transparency; // 0=opaque
+  final double reflection; // [0...infinity] 0 = no reflection
   var refraction = 0.50;
   var hasTexture = false;
 
   Materials(this.reflection, this.transparency, this.gloss);
 
-  Color getColor(num u, num v);
+  Color getColor(double u, double v);
 
-  wrapUp(t) {
+  double wrapUp(double t) {
     t = t % 2.0;
     if (t < -1) t += 2.0;
     if (t >= 1) t -= 2.0;
@@ -26,35 +26,37 @@ abstract class Materials {
 }
 
 class Chessboard extends Materials {
-  var colorEven, colorOdd, density;
+  Color colorEven, colorOdd;
+  double density;
 
-  Chessboard(this.colorEven, this.colorOdd, reflection, transparency, gloss,
-      this.density)
+  Chessboard(this.colorEven, this.colorOdd, double reflection,
+      double transparency, double gloss, this.density)
       : super(reflection, transparency, gloss) {
-    this.hasTexture = true;
+    hasTexture = true;
   }
 
-  Color getColor(num u, num v) {
-    var t = this.wrapUp(u * this.density) * this.wrapUp(v * this.density);
+  @override
+  Color getColor(double u, double v) {
+    var t = wrapUp(u * density) * wrapUp(v * density);
 
     if (t < 0.0) {
-      return this.colorEven;
+      return colorEven;
     } else {
-      return this.colorOdd;
+      return colorOdd;
     }
   }
 }
 
 class Solid extends Materials {
-  var color;
+  Color color;
 
-  Solid(this.color, reflection, refraction, transparency, gloss)
+  Solid(this.color, double reflection, double refraction, double transparency,
+      double gloss)
       : super(reflection, transparency, gloss) {
-    this.hasTexture = false;
+    hasTexture = false;
     this.refraction = refraction;
   }
 
-  Color getColor(num u, num v) {
-    return this.color;
-  }
+  @override
+  Color getColor(num u, num v) => color;
 }
