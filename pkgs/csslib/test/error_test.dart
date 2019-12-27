@@ -15,7 +15,7 @@ void testUnsupportedFontWeights() {
 
   // TODO(terry): Need to support bolder.
   // font-weight value bolder.
-  var input = ".foobar { font-weight: bolder; }";
+  var input = '.foobar { font-weight: bolder; }';
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
@@ -34,7 +34,7 @@ error on line 1, column 24: Unknown property value bolder
 
   // TODO(terry): Need to support lighter.
   // font-weight value lighter.
-  input = ".foobar { font-weight: lighter; }";
+  input = '.foobar { font-weight: lighter; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -52,7 +52,7 @@ error on line 1, column 24: Unknown property value lighter
 
   // TODO(terry): Need to support inherit.
   // font-weight value inherit.
-  input = ".foobar { font-weight: inherit; }";
+  input = '.foobar { font-weight: inherit; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -75,7 +75,7 @@ void testUnsupportedLineHeights() {
   var errors = <Message>[];
 
   // line-height value in percentge unit.
-  var input = ".foobar { line-height: 120%; }";
+  var input = '.foobar { line-height: 120%; }';
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
@@ -93,7 +93,7 @@ error on line 1, column 24: Unexpected value for line-height
 
   // TODO(terry): Need to support all units.
   // line-height value in cm unit.
-  input = ".foobar { line-height: 20cm; }";
+  input = '.foobar { line-height: 20cm; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -111,7 +111,7 @@ error on line 1, column 24: Unexpected unit for line-height
 
   // TODO(terry): Need to support inherit.
   // line-height value inherit.
-  input = ".foobar { line-height: inherit; }";
+  input = '.foobar { line-height: inherit; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -133,7 +133,7 @@ void testBadSelectors() {
   var errors = <Message>[];
 
   // Invalid id selector.
-  var input = "# foo { color: #ff00ff; }";
+  var input = '# foo { color: #ff00ff; }';
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
@@ -150,7 +150,7 @@ error on line 1, column 1: Not a valid ID selector expected #id
 }''');
 
   // Invalid class selector.
-  input = ". foo { color: #ff00ff; }";
+  input = '. foo { color: #ff00ff; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -172,7 +172,7 @@ void testBadHexValues() {
   var errors = <Message>[];
 
   // Invalid hex value.
-  var input = ".foobar { color: #AH787; }";
+  var input = '.foobar { color: #AH787; }';
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
@@ -189,7 +189,7 @@ error on line 1, column 18: Bad hex number
 }''');
 
   // Bad color constant.
-  input = ".foobar { color: redder; }";
+  input = '.foobar { color: redder; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -207,7 +207,7 @@ error on line 1, column 18: Unknown property value redder
 }''');
 
   // Bad hex color #<space>ffffff.
-  input = ".foobar { color: # ffffff; }";
+  input = '.foobar { color: # ffffff; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -225,7 +225,7 @@ error on line 1, column 18: Expected hex number
 }''');
 
   // Bad hex color #<space>123fff.
-  input = ".foobar { color: # 123fff; }";
+  input = '.foobar { color: # 123fff; }';
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
@@ -370,7 +370,7 @@ div {
   expect(errorMessage.span.text, '\n');
 }
 
-main() {
+void main() {
   test('font-weight value errors', testUnsupportedFontWeights);
   test('line-height value errors', testUnsupportedLineHeights);
   test('bad selectors', testBadSelectors);

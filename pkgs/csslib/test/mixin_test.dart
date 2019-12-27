@@ -640,7 +640,7 @@ foo {
   expect(error.span.end.offset, 56);
 }
 
-main() {
+void main() {
   group('Basic mixin', () {
     test('include grammar', includeGrammar);
     test('empty mixin content', emptyMixin);

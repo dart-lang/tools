@@ -186,8 +186,9 @@ class ExpandNestedSelectors extends Visitor {
   List<RuleSet> _expandedRuleSets = [];
 
   /// Maping of a nested rule set to the fully expanded list of RuleSet(s).
-  final Map<RuleSet, List<RuleSet>> _expansions = Map();
+  final _expansions = <RuleSet, List<RuleSet>>{};
 
+  @override
   void visitRuleSet(RuleSet node) {
     final oldParent = _parentRuleSet;
 
@@ -238,8 +239,8 @@ class ExpandNestedSelectors extends Visitor {
 
     // Create a merged set of previous parent selectors and current selectors.
     var newSelectors = <Selector>[];
-    for (Selector selector in selectors) {
-      for (Selector nestedSelector in nestedSelectors) {
+    for (var selector in selectors) {
+      for (var nestedSelector in nestedSelectors) {
         var seq = _mergeNestedSelector(nestedSelector.simpleSelectorSequences,
             selector.simpleSelectorSequences);
         newSelectors.add(Selector(seq, node.span));
@@ -300,6 +301,7 @@ class ExpandNestedSelectors extends Visitor {
     return newSequences;
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var span = node.span;
 
@@ -338,6 +340,7 @@ class ExpandNestedSelectors extends Visitor {
   // Record all declarations in a nested selector (Declaration, VarDefinition
   // and MarginGroup) but not the nested rule in the Declaration.
 
+  @override
   void visitDeclaration(Declaration node) {
     if (_parentRuleSet != null) {
       _flatDeclarationGroup.declarations.add(node);
@@ -345,6 +348,7 @@ class ExpandNestedSelectors extends Visitor {
     super.visitDeclaration(node);
   }
 
+  @override
   void visitVarDefinition(VarDefinition node) {
     if (_parentRuleSet != null) {
       _flatDeclarationGroup.declarations.add(node);
@@ -352,6 +356,7 @@ class ExpandNestedSelectors extends Visitor {
     super.visitVarDefinition(node);
   }
 
+  @override
   void visitExtendDeclaration(ExtendDeclaration node) {
     if (_parentRuleSet != null) {
       _flatDeclarationGroup.declarations.add(node);
@@ -359,6 +364,7 @@ class ExpandNestedSelectors extends Visitor {
     super.visitExtendDeclaration(node);
   }
 
+  @override
   void visitMarginGroup(MarginGroup node) {
     if (_parentRuleSet != null) {
       _flatDeclarationGroup.declarations.add(node);
@@ -386,8 +392,8 @@ class ExpandNestedSelectors extends Visitor {
 }
 
 class _MediaRulesReplacer extends Visitor {
-  RuleSet _ruleSet;
-  List<RuleSet> _newRules;
+  final RuleSet _ruleSet;
+  final List<RuleSet> _newRules;
   bool _foundAndReplaced = false;
 
   /// Look for the [ruleSet] inside of an @media directive; if found then
@@ -402,6 +408,7 @@ class _MediaRulesReplacer extends Visitor {
 
   _MediaRulesReplacer(this._ruleSet, this._newRules);
 
+  @override
   visitMediaDirective(MediaDirective node) {
     var index = node.rules.indexOf(_ruleSet);
     if (index != -1) {
@@ -418,7 +425,7 @@ class TopLevelIncludes extends Visitor {
   final Messages _messages;
 
   /// Map of variable name key to it's definition.
-  final Map<String, MixinDefinition> map = Map<String, MixinDefinition>();
+  final map = <String, MixinDefinition>{};
   MixinDefinition currDef;
 
   static void expand(Messages messages, List<StyleSheet> styleSheets) {
@@ -434,12 +441,14 @@ class TopLevelIncludes extends Visitor {
     }
   }
 
+  @override
   void visitStyleSheet(StyleSheet ss) {
     _styleSheet = ss;
     super.visitStyleSheet(ss);
     _styleSheet = null;
   }
 
+  @override
   void visitIncludeDirective(IncludeDirective node) {
     if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
@@ -449,7 +458,7 @@ class TopLevelIncludes extends Visitor {
       } else if (currDef is MixinRulesetDirective && _anyRulesets(currDef)) {
         // currDef is MixinRulesetDirective
         MixinRulesetDirective mixinRuleset = currDef;
-        int index = mixinRuleset.rulesets.indexOf(node);
+        var index = mixinRuleset.rulesets.indexOf(node);
         mixinRuleset.rulesets.removeAt(index);
         _messages.warning(
             'Using declaration mixin ${node.name} as top-level mixin',
@@ -457,7 +466,7 @@ class TopLevelIncludes extends Visitor {
       }
     } else {
       if (currDef is MixinRulesetDirective) {
-        MixinRulesetDirective rulesetDirect = currDef as MixinRulesetDirective;
+        var rulesetDirect = currDef as MixinRulesetDirective;
         rulesetDirect.rulesets.removeWhere((entry) {
           if (entry == node) {
             _messages.warning('Undefined mixin ${node.name}', node.span);
@@ -470,6 +479,7 @@ class TopLevelIncludes extends Visitor {
     super.visitIncludeDirective(node);
   }
 
+  @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     currDef = node;
 
@@ -480,6 +490,7 @@ class TopLevelIncludes extends Visitor {
     currDef = null;
   }
 
+  @override
   void visitMixinDeclarationDirective(MixinDeclarationDirective node) {
     currDef = node;
 
@@ -493,7 +504,6 @@ class TopLevelIncludes extends Visitor {
 
 /// @include as a top-level with ruleset(s).
 class _TopLevelIncludeReplacer extends Visitor {
-  final Messages _messages;
   final IncludeDirective _include;
   final List<TreeNode> _newRules;
   bool _foundAndReplaced = false;
@@ -503,13 +513,14 @@ class _TopLevelIncludeReplacer extends Visitor {
   /// true.
   static bool replace(Messages messages, StyleSheet styleSheet,
       IncludeDirective include, List<TreeNode> newRules) {
-    var visitor = _TopLevelIncludeReplacer(messages, include, newRules);
+    var visitor = _TopLevelIncludeReplacer(include, newRules);
     visitor.visitStyleSheet(styleSheet);
     return visitor._foundAndReplaced;
   }
 
-  _TopLevelIncludeReplacer(this._messages, this._include, this._newRules);
+  _TopLevelIncludeReplacer(this._include, this._newRules);
 
+  @override
   visitStyleSheet(StyleSheet node) {
     var index = node.topLevels.indexOf(_include);
     if (index != -1) {
@@ -520,6 +531,7 @@ class _TopLevelIncludeReplacer extends Visitor {
     super.visitStyleSheet(node);
   }
 
+  @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     var index = node.rulesets.indexOf(_include as dynamic);
     if (index != -1) {
@@ -556,7 +568,7 @@ class CallMixin extends Visitor {
   Expressions _currExpressions;
   int _currIndex = -1;
 
-  final varUsages = Map<String, Map<Expressions, Set<int>>>();
+  final varUsages = <String, Map<Expressions, Set<int>>>{};
 
   /// Only var defs with more than one expression (comma separated).
   final Map<String, VarDefinition> varDefs;
@@ -580,7 +592,7 @@ class CallMixin extends Visitor {
       if (definedArg is VarDefinition) {
         varDef = definedArg;
       } else if (definedArg is VarDefinitionDirective) {
-        VarDefinitionDirective varDirective = definedArg;
+        var varDirective = definedArg;
         varDef = varDirective.def;
       }
       var callArg = callArgs[index];
@@ -622,6 +634,7 @@ class CallMixin extends Visitor {
     return defArgs;
   }
 
+  @override
   void visitExpressions(Expressions node) {
     var oldExpressions = _currExpressions;
     var oldIndex = _currIndex;
@@ -636,35 +649,38 @@ class CallMixin extends Visitor {
   }
 
   void _addExpression(Map<Expressions, Set<int>> expressions) {
-    var indexSet = Set<int>();
+    var indexSet = <int>{};
     indexSet.add(_currIndex);
     expressions[_currExpressions] = indexSet;
   }
 
+  @override
   void visitVarUsage(VarUsage node) {
     assert(_currIndex != -1);
     assert(_currExpressions != null);
     if (varUsages.containsKey(node.name)) {
-      Map<Expressions, Set<int>> expressions = varUsages[node.name];
-      Set<int> allIndexes = expressions[_currExpressions];
+      var expressions = varUsages[node.name];
+      var allIndexes = expressions[_currExpressions];
       if (allIndexes == null) {
         _addExpression(expressions);
       } else {
         allIndexes.add(_currIndex);
       }
     } else {
-      var newExpressions = Map<Expressions, Set<int>>();
+      var newExpressions = <Expressions, Set<int>>{};
       _addExpression(newExpressions);
       varUsages[node.name] = newExpressions;
     }
     super.visitVarUsage(node);
   }
 
+  @override
   void visitMixinDeclarationDirective(MixinDeclarationDirective node) {
     _definedArgs = node.definedArgs;
     super.visitMixinDeclarationDirective(node);
   }
 
+  @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     _definedArgs = node.definedArgs;
     super.visitMixinRulesetDirective(node);
@@ -677,15 +693,15 @@ class DeclarationIncludes extends Visitor {
   final Messages _messages;
 
   /// Map of variable name key to it's definition.
-  final Map<String, MixinDefinition> map = Map<String, MixinDefinition>();
+  final Map<String, MixinDefinition> map = <String, MixinDefinition>{};
 
   /// Cache of mixin called with parameters.
-  final Map<String, CallMixin> callMap = Map<String, CallMixin>();
+  final Map<String, CallMixin> callMap = <String, CallMixin>{};
   MixinDefinition currDef;
   DeclarationGroup currDeclGroup;
 
   /// Var definitions with more than 1 expression.
-  final Map<String, VarDefinition> varDefs = Map<String, VarDefinition>();
+  final varDefs = <String, VarDefinition>{};
 
   static void expand(Messages messages, List<StyleSheet> styleSheets) {
     DeclarationIncludes(messages, styleSheets);
@@ -706,18 +722,21 @@ class DeclarationIncludes extends Visitor {
     return callMap[mixinDef.name];
   }
 
+  @override
   void visitStyleSheet(StyleSheet ss) {
     _styleSheet = ss;
     super.visitStyleSheet(ss);
     _styleSheet = null;
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     currDeclGroup = node;
     super.visitDeclarationGroup(node);
     currDeclGroup = null;
   }
 
+  @override
   void visitIncludeMixinAtDeclaration(IncludeMixinAtDeclaration node) {
     if (map.containsKey(node.include.name)) {
       var mixinDef = map[node.include.name];
@@ -730,7 +749,7 @@ class DeclarationIncludes extends Visitor {
             currDeclGroup.declarations.replaceRange(index, index + 1, [NoOp()]);
           }
           _messages.warning(
-              "Using top-level mixin ${node.include.name} as a declaration",
+              'Using top-level mixin ${node.include.name} as a declaration',
               node.span);
         } else {
           // We're a list of @include(s) inside of a mixin ruleset - convert
@@ -757,12 +776,13 @@ class DeclarationIncludes extends Visitor {
             _styleSheet, node, mixinDef.declarations.declarations);
       }
     } else {
-      _messages.warning("Undefined mixin ${node.include.name}", node.span);
+      _messages.warning('Undefined mixin ${node.include.name}', node.span);
     }
 
     super.visitIncludeMixinAtDeclaration(node);
   }
 
+  @override
   void visitIncludeDirective(IncludeDirective node) {
     if (map.containsKey(node.name)) {
       var mixinDef = map[node.name];
@@ -783,6 +803,7 @@ class DeclarationIncludes extends Visitor {
     super.visitIncludeDirective(node);
   }
 
+  @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     currDef = node;
 
@@ -793,6 +814,7 @@ class DeclarationIncludes extends Visitor {
     currDef = null;
   }
 
+  @override
   void visitMixinDeclarationDirective(MixinDeclarationDirective node) {
     currDef = node;
 
@@ -803,6 +825,7 @@ class DeclarationIncludes extends Visitor {
     currDef = null;
   }
 
+  @override
   void visitVarDefinition(VarDefinition node) {
     // Only record var definitions that have multiple expressions (comma
     // separated for mixin parameter substitution.
@@ -813,6 +836,7 @@ class DeclarationIncludes extends Visitor {
     super.visitVarDefinition(node);
   }
 
+  @override
   void visitVarDefinitionDirective(VarDefinitionDirective node) {
     visitVarDefinition(node.def);
   }
@@ -822,7 +846,6 @@ class DeclarationIncludes extends Visitor {
 class _IncludeReplacer extends Visitor {
   final _include;
   final List<TreeNode> _newDeclarations;
-  bool _foundAndReplaced = false;
 
   /// Look for the [ruleSet] inside of a @media directive; if found then replace
   /// with the [newRules].
@@ -834,13 +857,13 @@ class _IncludeReplacer extends Visitor {
 
   _IncludeReplacer(this._include, this._newDeclarations);
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var index = _findInclude(node.declarations, _include);
     if (index != -1) {
       node.declarations.insertAll(index + 1, _newDeclarations);
       // Change @include to NoOp so it's processed only once.
       node.declarations.replaceRange(index, index + 1, [NoOp()]);
-      _foundAndReplaced = true;
     }
     super.visitDeclarationGroup(node);
   }
@@ -856,6 +879,7 @@ class MixinsAndIncludes extends Visitor {
   bool _nodesToRemove(node) =>
       node is IncludeDirective || node is MixinDefinition || node is NoOp;
 
+  @override
   void visitStyleSheet(StyleSheet ss) {
     var index = ss.topLevels.length;
     while (--index >= 0) {
@@ -866,6 +890,7 @@ class MixinsAndIncludes extends Visitor {
     super.visitStyleSheet(ss);
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var index = node.declarations.length;
     while (--index >= 0) {
@@ -879,13 +904,13 @@ class MixinsAndIncludes extends Visitor {
 
 /// Find all @extend to create inheritance.
 class AllExtends extends Visitor {
-  final Map<String, List<SelectorGroup>> inherits =
-      Map<String, List<SelectorGroup>>();
+  final inherits = <String, List<SelectorGroup>>{};
 
   SelectorGroup _currSelectorGroup;
   int _currDeclIndex;
-  final List<int> _extendsToRemove = [];
+  final _extendsToRemove = <int>[];
 
+  @override
   void visitRuleSet(RuleSet node) {
     var oldSelectorGroup = _currSelectorGroup;
     _currSelectorGroup = node.selectorGroup;
@@ -895,8 +920,9 @@ class AllExtends extends Visitor {
     _currSelectorGroup = oldSelectorGroup;
   }
 
+  @override
   void visitExtendDeclaration(ExtendDeclaration node) {
-    var inheritName = "";
+    var inheritName = '';
     for (var selector in node.selectors) {
       inheritName += selector.toString();
     }
@@ -912,6 +938,7 @@ class AllExtends extends Visitor {
     super.visitExtendDeclaration(node);
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var oldDeclIndex = _currDeclIndex;
 
@@ -937,25 +964,25 @@ class AllExtends extends Visitor {
 // TODO(terry): Need to handle !optional glag.
 /// Changes any selector that matches @extend.
 class InheritExtends extends Visitor {
-  final Messages _messages;
   final AllExtends _allExtends;
 
-  InheritExtends(this._messages, this._allExtends);
+  InheritExtends(Messages messages, this._allExtends);
 
+  @override
   void visitSelectorGroup(SelectorGroup node) {
     for (var selectorsIndex = 0;
         selectorsIndex < node.selectors.length;
         selectorsIndex++) {
       var selectors = node.selectors[selectorsIndex];
       var isLastNone = false;
-      var selectorName = "";
+      var selectorName = '';
       for (var index = 0;
           index < selectors.simpleSelectorSequences.length;
           index++) {
         var simpleSeq = selectors.simpleSelectorSequences[index];
         var namePart = simpleSeq.simpleSelector.toString();
         selectorName = (isLastNone) ? (selectorName + namePart) : namePart;
-        List<SelectorGroup> matches = _allExtends.inherits[selectorName];
+        var matches = _allExtends.inherits[selectorName];
         if (matches != null) {
           for (var match in matches) {
             // Create a new group.

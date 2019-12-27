@@ -346,7 +346,7 @@ void testNewerCss() {
 
 void testMediaQueries() {
   var errors = <Message>[];
-  String input = '''
+  var input = '''
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   .todo-item .toggle {
     background: none;
@@ -355,7 +355,7 @@ void testMediaQueries() {
     height: 40px;
   }
 }''';
-  String generated = '''
+  var generated = '''
 @media screen AND (-webkit-min-device-pixel-ratio:0) {
 .todo-item .toggle {
   background: none;
@@ -556,15 +556,15 @@ div {
   expect(prettyPrint(styleSheet), expected);
 
   // Test all document functions combined.
-  css = '@-moz-document ' +
-      'url(http://www.w3.org/), ' +
-      "url-prefix('http://www.w3.org/Style/'), " +
-      'domain("google.com"), ' +
+  css = '@-moz-document '
+      'url(http://www.w3.org/), '
+      "url-prefix('http://www.w3.org/Style/'), "
+      'domain("google.com"), '
       'regexp("https:.*") { div { color: #000; } }';
-  expected = '@-moz-document ' +
-      'url("http://www.w3.org/"), ' +
-      'url-prefix("http://www.w3.org/Style/"), ' +
-      'domain("google.com"), ' +
+  expected = '@-moz-document '
+      'url("http://www.w3.org/"), '
+      'url-prefix("http://www.w3.org/Style/"), '
+      'domain("google.com"), '
       'regexp("https:.*") {\ndiv {\n  color: #000;\n}\n}';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
@@ -609,13 +609,13 @@ body {
     box-shadow: 0 0 2px black inset;
   }
 }''';
-  expected = '@supports (box-shadow: 0 0 2px #000 inset) or ' +
-      '(-moz-box-shadow: 0 0 2px #000 inset) or ' +
-      '(-webkit-box-shadow: 0 0 2px #000 inset) or ' +
-      '(-o-box-shadow: 0 0 2px #000 inset) {\n' +
-      '.box {\n' +
-      '  box-shadow: 0 0 2px #000 inset;\n' +
-      '}\n' +
+  expected = '@supports (box-shadow: 0 0 2px #000 inset) or '
+      '(-moz-box-shadow: 0 0 2px #000 inset) or '
+      '(-webkit-box-shadow: 0 0 2px #000 inset) or '
+      '(-o-box-shadow: 0 0 2px #000 inset) {\n'
+      '.box {\n'
+      '  box-shadow: 0 0 2px #000 inset;\n'
+      '}\n'
       '}';
   expectCss(css, expected);
 
@@ -629,13 +629,13 @@ body {
   }
 }''';
 
-  expected = '@supports ' +
-      '((transition-property: color) or (animation-name: foo)) and ' +
-      '(transform: rotate(10deg)) {\n' +
-      'div {\n' +
-      '  transition-property: color;\n' +
-      '  transform: rotate(10deg);\n' +
-      '}\n' +
+  expected = '@supports '
+      '((transition-property: color) or (animation-name: foo)) and '
+      '(transform: rotate(10deg)) {\n'
+      'div {\n'
+      '  transition-property: color;\n'
+      '  transform: rotate(10deg);\n'
+      '}\n'
       '}';
   expectCss(css, expected);
 
@@ -893,8 +893,8 @@ div {
   expect(compactOuptut(stylesheet), generated);
 
   // Check namespace directive compactly emitted.
-  final String input2 = "@namespace a url(http://www.example.org/a);";
-  final String generated2 = "@namespace a url(http://www.example.org/a);";
+  final String input2 = '@namespace a url(http://www.example.org/a);';
+  final String generated2 = '@namespace a url(http://www.example.org/a);';
 
   var stylesheet2 = parseCss(input2, errors: errors..clear());
 
@@ -995,14 +995,14 @@ html|*:not(:link):not(:visited) {
 
 void testIE() {
   var errors = <Message>[];
-  final String input = ".test {\n"
-      "  filter: progid:DXImageTransform.Microsoft.gradient"
+  final String input = '.test {\n'
+      '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
-      "}";
-  final String generated = ".test {\n"
-      "  filter: progid:DXImageTransform.Microsoft.gradient"
+      '}';
+  final String generated = '.test {\n'
+      '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
-      "}";
+      '}';
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
@@ -1010,17 +1010,17 @@ void testIE() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
-  final String input2 = ".test {\n"
-      "  filter: progid:DXImageTransform.Microsoft.gradient"
+  final String input2 = '.test {\n'
+      '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
-      "        progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
-      "}";
+      '        progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n'
+      '}';
 
-  final String generated2 = ".test {\n"
-      "  filter: progid:DXImageTransform.Microsoft.gradient"
+  final String generated2 = '.test {\n'
+      '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
-      "         progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n"
-      "}";
+      '         progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n'
+      '}';
 
   stylesheet = parseCss(input2, errors: errors..clear(), opts: simpleOptions);
 
@@ -1391,7 +1391,7 @@ void vendorPrefixedCalc() {
   expectCss(css, css);
 }
 
-main() {
+void main() {
   test('Simple Terms', testSimpleTerms);
   test('Declarations', testDeclarations);
   test('Identifiers', testIdentifiers);

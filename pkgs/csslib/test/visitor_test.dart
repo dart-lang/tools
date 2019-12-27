@@ -12,16 +12,17 @@ import 'testing.dart';
 
 class ClassVisitor extends Visitor {
   final List expectedClasses;
-  final Set<String> foundClasses = Set();
+  final foundClasses = <String>{};
 
   ClassVisitor(this.expectedClasses);
 
+  @override
   void visitClassSelector(ClassSelector node) {
     foundClasses.add(node.name);
   }
 
   bool get matches {
-    bool match = true;
+    var match = true;
     foundClasses.forEach((value) {
       match = match && expectedClasses.contains(value);
     });
@@ -75,6 +76,7 @@ class PolyfillEmitter extends CssPrinter {
 
   PolyfillEmitter(this._prefix);
 
+  @override
   void visitClassSelector(ClassSelector node) {
     emit('.${_prefix}_${node.name}');
   }
@@ -107,7 +109,7 @@ div.myComponent_xyzzy {
   expect(emitted, generated);
 }
 
-main() {
+void main() {
   test('Class Visitors', testClassVisitors);
   test('Polyfill', testPolyFill);
 }

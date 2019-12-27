@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import 'testing.dart';
 
 void main() {
-  test("excercise debug", () {
+  test('excercise debug', () {
     var style = parseCss(_input);
 
     var debugValue = style.toDebugString();

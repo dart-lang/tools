@@ -235,12 +235,12 @@ input.second + label {
           '  color: #00f;\n}');
 }
 
-main() {
-  test("Simple Extend", simpleExtend);
-  test("complex", complexSelectors);
-  test("multiple", multipleExtends);
-  test("chaining", chaining);
-  test("nested selectors", nestedSelectors);
-  test("nested many selector sequences", nestedMulty);
-  test("N-way extends", nWayExtends);
+void main() {
+  test('Simple Extend', simpleExtend);
+  test('complex', complexSelectors);
+  test('multiple', multipleExtends);
+  test('chaining', chaining);
+  test('nested selectors', nestedSelectors);
+  test('nested many selector sequences', nestedMulty);
+  test('N-way extends', nWayExtends);
 }

@@ -87,7 +87,7 @@ void testSelectorFailures() {
       '  ╵');
 }
 
-main() {
+void main() {
   test('Valid Selectors', testSelectorSuccesses);
   test('Invalid Selectors', testSelectorFailures);
 }

@@ -21,6 +21,7 @@ class _TreePrinter extends Visitor {
     output.printer = this;
   }
 
+  @override
   void visitTree(StyleSheet tree) => visitStylesheet(tree);
 
   void heading(String heading, node) {
@@ -38,14 +39,17 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitTopLevelProduction(TopLevelProduction node) {
     heading('TopLevelProduction', node);
   }
 
+  @override
   void visitDirective(Directive node) {
     heading('Directive', node);
   }
 
+  @override
   void visitCalcTerm(CalcTerm node) {
     heading('CalcTerm', node);
     output.depth++;
@@ -53,6 +57,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitCssComment(CssComment node) {
     heading('Comment', node);
     output.depth++;
@@ -60,6 +65,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitCommentDefinition(CommentDefinition node) {
     heading('CommentDefinition (CDO/CDC)', node);
     output.depth++;
@@ -67,6 +73,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitMediaExpression(MediaExpression node) {
     heading('MediaExpression', node);
     output.writeValue('feature', node.mediaFeature);
@@ -81,6 +88,7 @@ class _TreePrinter extends Visitor {
     output.writeNodeList('media expressions', query.expressions);
   }
 
+  @override
   void visitMediaDirective(MediaDirective node) {
     heading('MediaDirective', node);
     output.depth++;
@@ -90,6 +98,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitDocumentDirective(DocumentDirective node) {
     heading('DocumentDirective', node);
     output.depth++;
@@ -98,6 +107,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSupportsDirective(SupportsDirective node) {
     heading('SupportsDirective', node);
     output.depth++;
@@ -106,6 +116,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSupportsConditionInParens(SupportsConditionInParens node) {
     heading('SupportsConditionInParens', node);
     output.depth++;
@@ -113,6 +124,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSupportsNegation(SupportsNegation node) {
     heading('SupportsNegation', node);
     output.depth++;
@@ -120,6 +132,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSupportsConjunction(SupportsConjunction node) {
     heading('SupportsConjunction', node);
     output.depth++;
@@ -127,6 +140,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSupportsDisjunction(SupportsDisjunction node) {
     heading('SupportsDisjunction', node);
     output.depth++;
@@ -134,6 +148,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitViewportDirective(ViewportDirective node) {
     heading('ViewportDirective', node);
     output.depth++;
@@ -141,6 +156,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitPageDirective(PageDirective node) {
     heading('PageDirective', node);
     output.depth++;
@@ -149,11 +165,13 @@ class _TreePrinter extends Visitor {
     output.depth;
   }
 
+  @override
   void visitCharsetDirective(CharsetDirective node) {
     heading('Charset Directive', node);
     output.writeValue('charset encoding', node.charEncoding);
   }
 
+  @override
   void visitImportDirective(ImportDirective node) {
     heading('ImportDirective', node);
     output.depth++;
@@ -163,10 +181,12 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitContentDirective(ContentDirective node) {
-    print("ContentDirective not implemented");
+    print('ContentDirective not implemented');
   }
 
+  @override
   void visitKeyFrameDirective(KeyFrameDirective node) {
     heading('KeyFrameDirective', node);
     output.depth++;
@@ -176,6 +196,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitKeyFrameBlock(KeyFrameBlock node) {
     heading('KeyFrameBlock', node);
     output.depth++;
@@ -183,10 +204,12 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitFontFaceDirective(FontFaceDirective node) {
     // TODO(terry): To Be Implemented
   }
 
+  @override
   void visitStyletDirective(StyletDirective node) {
     heading('StyletDirective', node);
     output.writeValue('dartClassName', node.dartClassName);
@@ -195,6 +218,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitNamespaceDirective(NamespaceDirective node) {
     heading('NamespaceDirective', node);
     output.depth++;
@@ -203,6 +227,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitVarDefinitionDirective(VarDefinitionDirective node) {
     heading('Less variable definition', node);
     output.depth++;
@@ -210,6 +235,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     heading('Mixin top-level ${node.name}', node);
     output.writeNodeList('parameters', node.definedArgs);
@@ -218,6 +244,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitMixinDeclarationDirective(MixinDeclarationDirective node) {
     heading('Mixin declaration ${node.name}', node);
     output.writeNodeList('parameters', node.definedArgs);
@@ -228,12 +255,14 @@ class _TreePrinter extends Visitor {
 
   /// Added optional newLine for handling @include at top-level vs/ inside of
   /// a declaration group.
+  @override
   void visitIncludeDirective(IncludeDirective node) {
     heading('IncludeDirective ${node.name}', node);
     var flattened = node.args.expand((e) => e).toList();
     output.writeNodeList('parameters', flattened);
   }
 
+  @override
   void visitIncludeMixinAtDeclaration(IncludeMixinAtDeclaration node) {
     heading('IncludeMixinAtDeclaration ${node.include.name}', node);
     output.depth++;
@@ -241,6 +270,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitExtendDeclaration(ExtendDeclaration node) {
     heading('ExtendDeclaration', node);
     output.depth++;
@@ -248,6 +278,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitRuleSet(RuleSet node) {
     heading('Ruleset', node);
     output.depth++;
@@ -255,6 +286,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     heading('DeclarationGroup', node);
     output.depth++;
@@ -262,6 +294,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitMarginGroup(MarginGroup node) {
     heading('MarginGroup', node);
     output.depth++;
@@ -270,6 +303,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitDeclaration(Declaration node) {
     heading('Declaration', node);
     output.depth++;
@@ -283,6 +317,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitVarDefinition(VarDefinition node) {
     heading('Var', node);
     output.depth++;
@@ -292,6 +327,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSelectorGroup(SelectorGroup node) {
     heading('Selector Group', node);
     output.depth++;
@@ -299,6 +335,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSelector(Selector node) {
     heading('Selector', node);
     output.depth++;
@@ -307,21 +344,22 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSimpleSelectorSequence(SimpleSelectorSequence node) {
     heading('SimpleSelectorSequence', node);
     output.depth++;
     if (node.isCombinatorNone) {
-      output.writeValue('combinator', "NONE");
+      output.writeValue('combinator', 'NONE');
     } else if (node.isCombinatorDescendant) {
-      output.writeValue('combinator', "descendant");
+      output.writeValue('combinator', 'descendant');
     } else if (node.isCombinatorPlus) {
-      output.writeValue('combinator', "+");
+      output.writeValue('combinator', '+');
     } else if (node.isCombinatorGreater) {
-      output.writeValue('combinator', ">");
+      output.writeValue('combinator', '>');
     } else if (node.isCombinatorTilde) {
-      output.writeValue('combinator', "~");
+      output.writeValue('combinator', '~');
     } else {
-      output.writeValue('combinator', "ERROR UNKNOWN");
+      output.writeValue('combinator', 'ERROR UNKNOWN');
     }
 
     super.visitSimpleSelectorSequence(node);
@@ -329,6 +367,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitNamespaceSelector(NamespaceSelector node) {
     heading('Namespace Selector', node);
     output.depth++;
@@ -339,6 +378,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitElementSelector(ElementSelector node) {
     heading('Element Selector', node);
     output.depth++;
@@ -346,16 +386,18 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitAttributeSelector(AttributeSelector node) {
     heading('AttributeSelector', node);
     output.depth++;
     super.visitAttributeSelector(node);
-    String tokenStr = node.matchOperatorAsTokenString();
+    var tokenStr = node.matchOperatorAsTokenString();
     output.writeValue('operator', '${node.matchOperator()} (${tokenStr})');
     output.writeValue('value', node.valueToString());
     output.depth--;
   }
 
+  @override
   void visitIdSelector(IdSelector node) {
     heading('Id Selector', node);
     output.depth++;
@@ -363,6 +405,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitClassSelector(ClassSelector node) {
     heading('Class Selector', node);
     output.depth++;
@@ -370,6 +413,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitPseudoClassSelector(PseudoClassSelector node) {
     heading('Pseudo Class Selector', node);
     output.depth++;
@@ -377,6 +421,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitPseudoElementSelector(PseudoElementSelector node) {
     heading('Pseudo Element Selector', node);
     output.depth++;
@@ -384,6 +429,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitPseudoClassFunctionSelector(PseudoClassFunctionSelector node) {
     heading('Pseudo Class Function Selector', node);
     output.depth++;
@@ -392,6 +438,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitPseudoElementFunctionSelector(PseudoElementFunctionSelector node) {
     heading('Pseudo Element Function Selector', node);
     output.depth++;
@@ -400,6 +447,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitSelectorExpression(SelectorExpression node) {
     heading('Selector Expression', node);
     output.depth++;
@@ -407,6 +455,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitNegationSelector(NegationSelector node) {
     super.visitNegationSelector(node);
     output.depth++;
@@ -415,6 +464,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitUnicodeRangeTerm(UnicodeRangeTerm node) {
     heading('UnicodeRangeTerm', node);
     output.depth++;
@@ -423,6 +473,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitLiteralTerm(LiteralTerm node) {
     heading('LiteralTerm', node);
     output.depth++;
@@ -430,6 +481,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitHexColorTerm(HexColorTerm node) {
     heading('HexColorTerm', node);
     output.depth++;
@@ -438,6 +490,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitNumberTerm(NumberTerm node) {
     heading('NumberTerm', node);
     output.depth++;
@@ -445,6 +498,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitUnitTerm(UnitTerm node) {
     output.depth++;
     output.writeValue('value', node.text);
@@ -452,11 +506,13 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitLengthTerm(LengthTerm node) {
     heading('LengthTerm', node);
     super.visitLengthTerm(node);
   }
 
+  @override
   void visitPercentageTerm(PercentageTerm node) {
     heading('PercentageTerm', node);
     output.depth++;
@@ -464,6 +520,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitEmTerm(EmTerm node) {
     heading('EmTerm', node);
     output.depth++;
@@ -471,6 +528,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitExTerm(ExTerm node) {
     heading('ExTerm', node);
     output.depth++;
@@ -478,21 +536,25 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitAngleTerm(AngleTerm node) {
     heading('AngleTerm', node);
     super.visitAngleTerm(node);
   }
 
+  @override
   void visitTimeTerm(TimeTerm node) {
     heading('TimeTerm', node);
     super.visitTimeTerm(node);
   }
 
+  @override
   void visitFreqTerm(FreqTerm node) {
     heading('FreqTerm', node);
     super.visitFreqTerm(node);
   }
 
+  @override
   void visitFractionTerm(FractionTerm node) {
     heading('FractionTerm', node);
     output.depth++;
@@ -500,6 +562,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitUriTerm(UriTerm node) {
     heading('UriTerm', node);
     output.depth++;
@@ -507,6 +570,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitFunctionTerm(FunctionTerm node) {
     heading('FunctionTerm', node);
     output.depth++;
@@ -514,6 +578,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitGroupTerm(GroupTerm node) {
     heading('GroupTerm', node);
     output.depth++;
@@ -521,32 +586,39 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitItemTerm(ItemTerm node) {
     heading('ItemTerm', node);
     super.visitItemTerm(node);
   }
 
+  @override
   void visitIE8Term(IE8Term node) {
     heading('IE8Term', node);
     visitLiteralTerm(node);
   }
 
+  @override
   void visitOperatorSlash(OperatorSlash node) {
     heading('OperatorSlash', node);
   }
 
+  @override
   void visitOperatorComma(OperatorComma node) {
     heading('OperatorComma', node);
   }
 
+  @override
   void visitOperatorPlus(OperatorPlus node) {
     heading('OperatorPlus', node);
   }
 
+  @override
   void visitOperatorMinus(OperatorMinus node) {
     heading('OperatorMinus', node);
   }
 
+  @override
   void visitVarUsage(VarUsage node) {
     heading('Var', node);
     output.depth++;
@@ -555,6 +627,7 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitExpressions(Expressions node) {
     heading('Expressions', node);
     output.depth++;
@@ -562,52 +635,64 @@ class _TreePrinter extends Visitor {
     output.depth--;
   }
 
+  @override
   void visitBinaryExpression(BinaryExpression node) {
     heading('BinaryExpression', node);
     // TODO(terry): TBD
   }
 
+  @override
   void visitUnaryExpression(UnaryExpression node) {
     heading('UnaryExpression', node);
     // TODO(terry): TBD
   }
 
+  @override
   void visitIdentifier(Identifier node) {
     heading('Identifier(${output.toValue(node.name)})', node);
   }
 
+  @override
   void visitWildcard(Wildcard node) {
     heading('Wildcard(*)', node);
   }
 
+  @override
   void visitDartStyleExpression(DartStyleExpression node) {
     heading('DartStyleExpression', node);
   }
 
+  @override
   void visitFontExpression(FontExpression node) {
     heading('Dart Style FontExpression', node);
   }
 
+  @override
   void visitBoxExpression(BoxExpression node) {
     heading('Dart Style BoxExpression', node);
   }
 
+  @override
   void visitMarginExpression(MarginExpression node) {
     heading('Dart Style MarginExpression', node);
   }
 
+  @override
   void visitBorderExpression(BorderExpression node) {
     heading('Dart Style BorderExpression', node);
   }
 
+  @override
   void visitHeightExpression(HeightExpression node) {
     heading('Dart Style HeightExpression', node);
   }
 
+  @override
   void visitPaddingExpression(PaddingExpression node) {
     heading('Dart Style PaddingExpression', node);
   }
 
+  @override
   void visitWidthExpression(WidthExpression node) {
     heading('Dart Style WidthExpression', node);
   }

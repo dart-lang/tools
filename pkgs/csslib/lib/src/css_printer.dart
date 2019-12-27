@@ -11,6 +11,7 @@ class CssPrinter extends Visitor {
 
   /// Walk the [tree] Stylesheet. [pretty] if true emits line breaks, extra
   /// spaces, friendly property values, etc., if false emits compacted output.
+  @override
   void visitTree(StyleSheet tree, {bool pretty = false}) {
     prettyPrint = pretty;
     _buff = StringBuffer();
@@ -23,6 +24,7 @@ class CssPrinter extends Visitor {
   }
 
   /// Returns the output buffer.
+  @override
   String toString() => _buff.toString().trim();
 
   String get _newLine => prettyPrint ? '\n' : '';
@@ -34,20 +36,24 @@ class CssPrinter extends Visitor {
   //              flag for obfuscation.
   bool get _isTesting => !prettyPrint;
 
+  @override
   void visitCalcTerm(CalcTerm node) {
     emit('${node.text}(');
     node.expr.visit(this);
     emit(')');
   }
 
+  @override
   void visitCssComment(CssComment node) {
     emit('/* ${node.comment} */');
   }
 
+  @override
   void visitCommentDefinition(CommentDefinition node) {
     emit('<!-- ${node.comment} -->');
   }
 
+  @override
   void visitMediaExpression(MediaExpression node) {
     emit(node.andOperator ? ' AND ' : ' ');
     emit('(${node.mediaFeature}');
@@ -58,6 +64,7 @@ class CssPrinter extends Visitor {
     emit(')');
   }
 
+  @override
   void visitMediaQuery(MediaQuery query) {
     var unary = query.hasUnary ? ' ${query.unary}' : '';
     var mediaType = query.hasMediaType ? ' ${query.mediaType}' : '';
@@ -76,6 +83,7 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitDocumentDirective(DocumentDirective node) {
     emit('$_newLine@-moz-document ');
     node.functions.first.visit(this);
@@ -90,6 +98,7 @@ class CssPrinter extends Visitor {
     emit('$_newLine}');
   }
 
+  @override
   void visitSupportsDirective(SupportsDirective node) {
     emit('$_newLine@supports ');
     node.condition.visit(this);
@@ -100,17 +109,20 @@ class CssPrinter extends Visitor {
     emit('$_newLine}');
   }
 
+  @override
   void visitSupportsConditionInParens(SupportsConditionInParens node) {
     emit('(');
     node.condition.visit(this);
     emit(')');
   }
 
+  @override
   void visitSupportsNegation(SupportsNegation node) {
     emit('not$_sp');
     node.condition.visit(this);
   }
 
+  @override
   void visitSupportsConjunction(SupportsConjunction node) {
     node.conditions.first.visit(this);
     for (var condition in node.conditions.skip(1)) {
@@ -119,6 +131,7 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitSupportsDisjunction(SupportsDisjunction node) {
     node.conditions.first.visit(this);
     for (var condition in node.conditions.skip(1)) {
@@ -127,12 +140,14 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitViewportDirective(ViewportDirective node) {
     emit('@${node.name}$_sp{$_newLine');
     node.declarations.visit(this);
     emit('}');
   }
 
+  @override
   void visitMediaDirective(MediaDirective node) {
     emit('$_newLine@media');
     emitMediaQueries(node.mediaQueries);
@@ -143,6 +158,7 @@ class CssPrinter extends Visitor {
     emit('$_newLine}');
   }
 
+  @override
   void visitHostDirective(HostDirective node) {
     emit('$_newLine@host$_sp{');
     for (var ruleset in node.rules) {
@@ -154,6 +170,7 @@ class CssPrinter extends Visitor {
   ///  @page : pseudoPage {
   ///    decls
   ///  }
+  @override
   void visitPageDirective(PageDirective node) {
     emit('$_newLine@page');
     if (node.hasIdent || node.hasPseudoPage) {
@@ -172,10 +189,12 @@ class CssPrinter extends Visitor {
   }
 
   /// @charset "charset encoding"
+  @override
   void visitCharsetDirective(CharsetDirective node) {
     emit('$_newLine@charset "${node.charEncoding}";');
   }
 
+  @override
   void visitImportDirective(ImportDirective node) {
     bool isStartingQuote(String ch) => ('\'"'.contains(ch[0]));
 
@@ -193,6 +212,7 @@ class CssPrinter extends Visitor {
     emit(';');
   }
 
+  @override
   void visitKeyFrameDirective(KeyFrameDirective node) {
     emit('$_newLine${node.keyFrameName} ');
     node.name.visit(this);
@@ -203,6 +223,7 @@ class CssPrinter extends Visitor {
     emit('}');
   }
 
+  @override
   void visitFontFaceDirective(FontFaceDirective node) {
     emit('$_newLine@font-face ');
     emit('$_sp{$_newLine');
@@ -210,6 +231,7 @@ class CssPrinter extends Visitor {
     emit('}');
   }
 
+  @override
   void visitKeyFrameBlock(KeyFrameBlock node) {
     emit('$_sp$_sp');
     node._blockSelectors.visit(this);
@@ -218,10 +240,12 @@ class CssPrinter extends Visitor {
     emit('$_sp$_sp}$_newLine');
   }
 
+  @override
   void visitStyletDirective(StyletDirective node) {
     emit('/* @stylet export as ${node.dartClassName} */\n');
   }
 
+  @override
   void visitNamespaceDirective(NamespaceDirective node) {
     bool isStartingQuote(String ch) => ('\'"'.contains(ch));
 
@@ -240,11 +264,13 @@ class CssPrinter extends Visitor {
     emit(';');
   }
 
+  @override
   void visitVarDefinitionDirective(VarDefinitionDirective node) {
     visitVarDefinition(node.def);
     emit(';$_newLine');
   }
 
+  @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
     emit('@mixin ${node.name} {');
     for (var ruleset in node.rulesets) {
@@ -253,6 +279,7 @@ class CssPrinter extends Visitor {
     emit('}');
   }
 
+  @override
   void visitMixinDeclarationDirective(MixinDeclarationDirective node) {
     emit('@mixin ${node.name} {\n');
     visitDeclarationGroup(node.declarations);
@@ -261,30 +288,34 @@ class CssPrinter extends Visitor {
 
   /// Added optional newLine for handling @include at top-level vs/ inside of
   /// a declaration group.
+  @override
   void visitIncludeDirective(IncludeDirective node, [bool topLevel = true]) {
     if (topLevel) emit(_newLine);
     emit('@include ${node.name}');
     emit(';');
   }
 
+  @override
   void visitContentDirective(ContentDirective node) {
     // TODO(terry): TBD
   }
 
+  @override
   void visitRuleSet(RuleSet node) {
-    emit("$_newLine");
+    emit('$_newLine');
     node._selectorGroup.visit(this);
-    emit("$_sp{$_newLine");
+    emit('$_sp{$_newLine');
     node._declarationGroup.visit(this);
-    emit("}");
+    emit('}');
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     var declarations = node.declarations;
     var declarationsLength = declarations.length;
     for (var i = 0; i < declarationsLength; i++) {
       if (i > 0) emit(_newLine);
-      emit("$_sp$_sp");
+      emit('$_sp$_sp');
       declarations[i].visit(this);
       // Don't emit the last semicolon in compact mode.
       if (prettyPrint || i < declarationsLength - 1) {
@@ -294,17 +325,19 @@ class CssPrinter extends Visitor {
     if (declarationsLength > 0) emit(_newLine);
   }
 
+  @override
   void visitMarginGroup(MarginGroup node) {
     var margin_sym_name =
         TokenKind.idToValue(TokenKind.MARGIN_DIRECTIVES, node.margin_sym);
 
-    emit("@$margin_sym_name$_sp{$_newLine");
+    emit('@$margin_sym_name$_sp{$_newLine');
 
     visitDeclarationGroup(node);
 
-    emit("}$_newLine");
+    emit('}$_newLine');
   }
 
+  @override
   void visitDeclaration(Declaration node) {
     emit('${node.property}:$_sp');
     node._expression.visit(this);
@@ -313,23 +346,27 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitVarDefinition(VarDefinition node) {
-    emit("var-${node.definedName}: ");
+    emit('var-${node.definedName}: ');
     node._expression.visit(this);
   }
 
+  @override
   void visitIncludeMixinAtDeclaration(IncludeMixinAtDeclaration node) {
     // Don't emit a new line we're inside of a declaration group.
     visitIncludeDirective(node.include, false);
   }
 
+  @override
   void visitExtendDeclaration(ExtendDeclaration node) {
-    emit("@extend ");
+    emit('@extend ');
     for (var selector in node.selectors) {
       selector.visit(this);
     }
   }
 
+  @override
   void visitSelectorGroup(SelectorGroup node) {
     var selectors = node.selectors;
     var selectorsLength = selectors.length;
@@ -339,61 +376,74 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitSimpleSelectorSequence(SimpleSelectorSequence node) {
     emit('${node._combinatorToString}');
     node.simpleSelector.visit(this);
   }
 
+  @override
   void visitSimpleSelector(SimpleSelector node) {
     emit(node.name);
   }
 
+  @override
   void visitNamespaceSelector(NamespaceSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitElementSelector(ElementSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitAttributeSelector(AttributeSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitIdSelector(IdSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitClassSelector(ClassSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitPseudoClassSelector(PseudoClassSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitPseudoElementSelector(PseudoElementSelector node) {
     emit(node.toString());
   }
 
+  @override
   void visitPseudoClassFunctionSelector(PseudoClassFunctionSelector node) {
-    emit(":${node.name}(");
+    emit(':${node.name}(');
     node.argument.visit(this);
     emit(')');
   }
 
+  @override
   void visitPseudoElementFunctionSelector(PseudoElementFunctionSelector node) {
-    emit("::${node.name}(");
+    emit('::${node.name}(');
     node.expression.visit(this);
     emit(')');
   }
 
+  @override
   void visitNegationSelector(NegationSelector node) {
     emit(':not(');
     node.negationArg.visit(this);
     emit(')');
   }
 
+  @override
   void visitSelectorExpression(SelectorExpression node) {
     var expressions = node.expressions;
     var expressionsLength = expressions.length;
@@ -404,82 +454,97 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitUnicodeRangeTerm(UnicodeRangeTerm node) {
     if (node.hasSecond) {
-      emit("U+${node.first}-${node.second}");
+      emit('U+${node.first}-${node.second}');
     } else {
-      emit("U+${node.first}");
+      emit('U+${node.first}');
     }
   }
 
+  @override
   void visitLiteralTerm(LiteralTerm node) {
     emit(node.text);
   }
 
+  @override
   void visitHexColorTerm(HexColorTerm node) {
     String mappedName;
     if (_isTesting && (node.value is! BAD_HEX_VALUE)) {
       mappedName = TokenKind.hexToColorName(node.value);
     }
-    if (mappedName == null) {
-      mappedName = '#${node.text}';
-    }
+    mappedName ??= '#${node.text}';
 
     emit(mappedName);
   }
 
+  @override
   void visitNumberTerm(NumberTerm node) {
     visitLiteralTerm(node);
   }
 
+  @override
   void visitUnitTerm(UnitTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitLengthTerm(LengthTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitPercentageTerm(PercentageTerm node) {
     emit('${node.text}%');
   }
 
+  @override
   void visitEmTerm(EmTerm node) {
     emit('${node.text}em');
   }
 
+  @override
   void visitExTerm(ExTerm node) {
     emit('${node.text}ex');
   }
 
+  @override
   void visitAngleTerm(AngleTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitTimeTerm(TimeTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitFreqTerm(FreqTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitFractionTerm(FractionTerm node) {
     emit('${node.text}fr');
   }
 
+  @override
   void visitUriTerm(UriTerm node) {
     emit('url("${node.text}")');
   }
 
+  @override
   void visitResolutionTerm(ResolutionTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitViewportTerm(ViewportTerm node) {
     emit(node.toString());
   }
 
+  @override
   void visitFunctionTerm(FunctionTerm node) {
     // TODO(terry): Optimize rgb to a hexcolor.
     emit('${node.text}(');
@@ -487,6 +552,7 @@ class CssPrinter extends Visitor {
     emit(')');
   }
 
+  @override
   void visitGroupTerm(GroupTerm node) {
     emit('(');
     var terms = node._terms;
@@ -498,30 +564,37 @@ class CssPrinter extends Visitor {
     emit(')');
   }
 
+  @override
   void visitItemTerm(ItemTerm node) {
     emit('[${node.text}]');
   }
 
+  @override
   void visitIE8Term(IE8Term node) {
     visitLiteralTerm(node);
   }
 
+  @override
   void visitOperatorSlash(OperatorSlash node) {
     emit('/');
   }
 
+  @override
   void visitOperatorComma(OperatorComma node) {
     emit(',');
   }
 
+  @override
   void visitOperatorPlus(OperatorPlus node) {
     emit('+');
   }
 
+  @override
   void visitOperatorMinus(OperatorMinus node) {
     emit('-');
   }
 
+  @override
   void visitVarUsage(VarUsage node) {
     emit('var(${node.name}');
     if (node.defaultValues.isNotEmpty) {
@@ -534,6 +607,7 @@ class CssPrinter extends Visitor {
     emit(')');
   }
 
+  @override
   void visitExpressions(Expressions node) {
     var expressions = node.expressions;
     var expressionsLength = expressions.length;
@@ -558,24 +632,29 @@ class CssPrinter extends Visitor {
     }
   }
 
+  @override
   void visitBinaryExpression(BinaryExpression node) {
     // TODO(terry): TBD
     throw UnimplementedError;
   }
 
+  @override
   void visitUnaryExpression(UnaryExpression node) {
     // TODO(terry): TBD
     throw UnimplementedError;
   }
 
+  @override
   void visitIdentifier(Identifier node) {
     emit(node.name);
   }
 
+  @override
   void visitWildcard(Wildcard node) {
     emit('*');
   }
 
+  @override
   void visitDartStyleExpression(DartStyleExpression node) {
     // TODO(terry): TBD
     throw UnimplementedError;

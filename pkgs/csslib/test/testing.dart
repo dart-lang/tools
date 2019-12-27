@@ -31,8 +31,7 @@ StyleSheet parseCss(String cssInput,
         {List<Message> errors, PreprocessorOptions opts}) =>
     parse(cssInput,
         errors: errors,
-        options:
-            opts == null ? simpleOptionsWithCheckedAndWarningsAsErrors : opts);
+        options: opts ?? simpleOptionsWithCheckedAndWarningsAsErrors);
 
 /// Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
 /// CSS will allow any property/value pairs regardless of validity; all of our
@@ -44,8 +43,7 @@ StyleSheet compileCss(String cssInput,
         List<StyleSheet> includes}) =>
     compile(cssInput,
         errors: errors,
-        options:
-            opts == null ? simpleOptionsWithCheckedAndWarningsAsErrors : opts,
+        options: opts ?? simpleOptionsWithCheckedAndWarningsAsErrors,
         polyfill: polyfill,
         includes: includes);
 

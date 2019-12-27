@@ -24,6 +24,7 @@ class Token {
   Token(this.kind, this.span);
 
   /// Returns a pretty representation of this token for error messages.
+  @override
   String toString() {
     var kindText = TokenKind.kindToString(kind);
     var actualText = text.trim();
@@ -55,6 +56,7 @@ class ErrorToken extends Token {
 /// See <http://dev.w3.org/csswg/css-syntax/#typedef-ident-token> and
 /// <http://dev.w3.org/csswg/css-syntax/#ident-token-diagram>.
 class IdentifierToken extends Token {
+  @override
   final String text;
 
   IdentifierToken(this.text, int kind, FileSpan span) : super(kind, span);

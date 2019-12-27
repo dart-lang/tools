@@ -8,9 +8,9 @@ part of '../parser.dart';
 /// understand (var, calc, etc.).
 class PolyFill {
   final Messages _messages;
-  Map<String, VarDefinition> _allVarDefinitions = Map<String, VarDefinition>();
+  Map<String, VarDefinition> _allVarDefinitions = <String, VarDefinition>{};
 
-  Set<StyleSheet> allStyleSheets = Set<StyleSheet>();
+  Set<StyleSheet> allStyleSheets = <StyleSheet>{};
 
   /// [_pseudoElements] list of known pseudo attributes found in HTML, any
   /// CSS pseudo-elements 'name::custom-element' is mapped to the manged name
@@ -40,10 +40,9 @@ class PolyFill {
 
   void processVars(StyleSheet styleSheet) {
     // Build list of all var definitions.
-    var mainStyleSheetVarDefs =
-        (_VarDefAndUsage(this._messages, _allVarDefinitions)
-              ..visitTree(styleSheet))
-            .varDefs;
+    var mainStyleSheetVarDefs = (_VarDefAndUsage(_messages, _allVarDefinitions)
+          ..visitTree(styleSheet))
+        .varDefs;
 
     // Resolve all definitions to a non-VarUsage (terminal expression).
     mainStyleSheetVarDefs.forEach((key, value) {
@@ -61,16 +60,19 @@ class _VarDefinitionsIncludes extends Visitor {
 
   _VarDefinitionsIncludes(this.varDefs);
 
+  @override
   void visitTree(StyleSheet tree) {
     visitStyleSheet(tree);
   }
 
+  @override
   visitVarDefinition(VarDefinition node) {
     // Replace with latest variable definition.
     varDefs[node.definedName] = node;
     super.visitVarDefinition(node);
   }
 
+  @override
   void visitVarDefinitionDirective(VarDefinitionDirective node) {
     visitVarDefinition(node.def);
   }
@@ -81,17 +83,19 @@ class _VarDefinitionsIncludes extends Visitor {
 class _VarDefAndUsage extends Visitor {
   final Messages _messages;
   final Map<String, VarDefinition> _knownVarDefs;
-  final Map<String, VarDefinition> varDefs = Map<String, VarDefinition>();
+  final varDefs = <String, VarDefinition>{};
 
   VarDefinition currVarDefinition;
   List<Expression> currentExpressions;
 
   _VarDefAndUsage(this._messages, this._knownVarDefs);
 
+  @override
   void visitTree(StyleSheet tree) {
     visitStyleSheet(tree);
   }
 
+  @override
   visitVarDefinition(VarDefinition node) {
     // Replace with latest variable definition.
     currVarDefinition = node;
@@ -104,16 +108,19 @@ class _VarDefAndUsage extends Visitor {
     currVarDefinition = null;
   }
 
+  @override
   void visitVarDefinitionDirective(VarDefinitionDirective node) {
     visitVarDefinition(node.def);
   }
 
+  @override
   void visitExpressions(Expressions node) {
     currentExpressions = node.expressions;
     super.visitExpressions(node);
     currentExpressions = null;
   }
 
+  @override
   void visitVarUsage(VarUsage node) {
     if (currVarDefinition != null && currVarDefinition.badUsage) return;
 
@@ -154,7 +161,7 @@ class _VarDefAndUsage extends Visitor {
       }
       // Remove var usage that points at an undefined definition.
       expressions.removeAt(index);
-      _messages.warning("Variable is not defined.", node.span);
+      _messages.warning('Variable is not defined.', node.span);
     }
 
     var oldExpressions = currentExpressions;
@@ -199,15 +206,18 @@ class _VarDefAndUsage extends Visitor {
 
 /// Remove all var definitions.
 class _RemoveVarDefinitions extends Visitor {
+  @override
   void visitTree(StyleSheet tree) {
     visitStyleSheet(tree);
   }
 
+  @override
   void visitStyleSheet(StyleSheet ss) {
     ss.topLevels.removeWhere((e) => e is VarDefinitionDirective);
     super.visitStyleSheet(ss);
   }
 
+  @override
   void visitDeclarationGroup(DeclarationGroup node) {
     node.declarations.removeWhere((e) => e is VarDefinition);
     super.visitDeclarationGroup(node);

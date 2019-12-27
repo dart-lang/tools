@@ -18,6 +18,7 @@ class Tokenizer extends TokenizerBase {
   Tokenizer(SourceFile file, String text, bool skipWhitespace, [int index = 0])
       : super(file, text, skipWhitespace, index);
 
+  @override
   Token next({bool unicodeRange = false}) {
     // keep track of our starting position
     _startIndex = _index;
@@ -33,7 +34,7 @@ class Tokenizer extends TokenizerBase {
       case TokenChar.END_OF_FILE:
         return _finishToken(TokenKind.END_OF_FILE);
       case TokenChar.AT:
-        int peekCh = _peekChar();
+        var peekCh = _peekChar();
         if (TokenizerHelpers.isIdentifierStart(peekCh)) {
           var oldIndex = _index;
           var oldStartIndex = _startIndex;
@@ -43,7 +44,7 @@ class Tokenizer extends TokenizerBase {
           finishIdentifier();
 
           // Is it a directive?
-          int tokId = TokenKind.matchDirectives(
+          var tokId = TokenKind.matchDirectives(
               _text, _startIndex, _index - _startIndex);
           if (tokId == -1) {
             // No, is it a margin directive?
@@ -62,10 +63,10 @@ class Tokenizer extends TokenizerBase {
         }
         return _finishToken(TokenKind.AT);
       case TokenChar.DOT:
-        int start = _startIndex; // Start where the dot started.
+        var start = _startIndex; // Start where the dot started.
         if (maybeEatDigit()) {
           // looks like a number dot followed by digit(s).
-          Token number = finishNumber();
+          var number = finishNumber();
           if (number.kind == TokenKind.INTEGER) {
             // It's a number but it's preceeded by a dot, so make it a double.
             _startIndex = start;
@@ -175,7 +176,7 @@ class Tokenizer extends TokenizerBase {
         }
         return _finishToken(TokenKind.DOLLAR);
       case TokenChar.BANG:
-        Token tok = finishIdentifier();
+        var tok = finishIdentifier();
         return (tok == null) ? _finishToken(TokenKind.BANG) : tok;
       default:
         // TODO(jmesserly): this is used for IE8 detection; I'm not sure it's
@@ -241,13 +242,15 @@ class Tokenizer extends TokenizerBase {
         (_peekChar() == '-'.codeUnitAt(0));
   }
 
+  @override
   Token _errorToken([String message]) {
     return _finishToken(TokenKind.ERROR);
   }
 
+  @override
   int getIdentifierKind() {
     // Is the identifier a unit type?
-    int tokId = -1;
+    var tokId = -1;
 
     // Don't match units in selectors or selector expressions.
     if (!inSelectorExpression && !inSelector) {
@@ -268,10 +271,10 @@ class Tokenizer extends TokenizerBase {
     var chars = <int>[];
 
     // backup so we can start with the first character
-    int validateFrom = _index;
+    var validateFrom = _index;
     _index = _startIndex;
     while (_index < _text.length) {
-      int ch = _text.codeUnitAt(_index);
+      var ch = _text.codeUnitAt(_index);
 
       // If the previous character was "\" we need to escape. T
       // http://www.w3.org/TR/CSS21/syndata.html#characters
@@ -279,7 +282,7 @@ class Tokenizer extends TokenizerBase {
       // otherwise, include the character in the identifier and don't treat it
       // specially.
       if (ch == 92 /*\*/ && _inString) {
-        int startHex = ++_index;
+        var startHex = ++_index;
         eatHexDigits(startHex + 6);
         if (_index != startHex) {
           // Parse the hex digits and add that character.
@@ -319,6 +322,7 @@ class Tokenizer extends TokenizerBase {
     return IdentifierToken(text, getIdentifierKind(), span);
   }
 
+  @override
   Token finishNumber() {
     eatDigits();
 
@@ -395,7 +399,7 @@ class Tokenizer extends TokenizerBase {
 
   Token finishHtmlComment() {
     while (true) {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == 0) {
         return _finishToken(TokenKind.INCOMPLETE_COMMENT);
       } else if (ch == TokenChar.MINUS) {
@@ -413,9 +417,10 @@ class Tokenizer extends TokenizerBase {
     }
   }
 
+  @override
   Token finishMultiLineComment() {
     while (true) {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == 0) {
         return _finishToken(TokenKind.INCOMPLETE_COMMENT);
       } else if (ch == 42 /*'*'*/) {

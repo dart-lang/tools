@@ -13,16 +13,21 @@ class Identifier extends TreeNode {
 
   Identifier(this.name, SourceSpan span) : super(span);
 
+  @override
   Identifier clone() => Identifier(name, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitIdentifier(this);
 
+  @override
   String toString() => name;
 }
 
 class Wildcard extends TreeNode {
   Wildcard(SourceSpan span) : super(span);
+  @override
   Wildcard clone() => Wildcard(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitWildcard(this);
 
   String get name => '*';
@@ -30,7 +35,9 @@ class Wildcard extends TreeNode {
 
 class ThisOperator extends TreeNode {
   ThisOperator(SourceSpan span) : super(span);
+  @override
   ThisOperator clone() => ThisOperator(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitThisOperator(this);
 
   String get name => '&';
@@ -38,7 +45,9 @@ class ThisOperator extends TreeNode {
 
 class Negation extends TreeNode {
   Negation(SourceSpan span) : super(span);
+  @override
   Negation clone() => Negation(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitNegation(this);
 
   String get name => 'not';
@@ -53,10 +62,13 @@ class CalcTerm extends LiteralTerm {
   CalcTerm(var value, String t, this.expr, SourceSpan span)
       : super(value, t, span);
 
+  @override
   CalcTerm clone() => CalcTerm(value, text, expr.clone(), span);
+  @override
   visit(VisitorBase visitor) => visitor.visitCalcTerm(this);
 
-  String toString() => "$text($expr)";
+  @override
+  String toString() => '$text($expr)';
 }
 
 // /*  ....   */
@@ -64,14 +76,18 @@ class CssComment extends TreeNode {
   final String comment;
 
   CssComment(this.comment, SourceSpan span) : super(span);
+  @override
   CssComment clone() => CssComment(comment, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitCssComment(this);
 }
 
 // CDO/CDC (Comment Definition Open <!-- and Comment Definition Close -->).
 class CommentDefinition extends CssComment {
   CommentDefinition(String comment, SourceSpan span) : super(comment, span);
+  @override
   CommentDefinition clone() => CommentDefinition(comment, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitCommentDefinition(this);
 }
 
@@ -80,8 +96,10 @@ class SelectorGroup extends TreeNode {
 
   SelectorGroup(this.selectors, SourceSpan span) : super(span);
 
+  @override
   SelectorGroup clone() => SelectorGroup(selectors, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSelectorGroup(this);
 }
 
@@ -94,6 +112,7 @@ class Selector extends TreeNode {
 
   int get length => simpleSelectorSequences.length;
 
+  @override
   Selector clone() {
     var simpleSequences =
         simpleSelectorSequences.map((ss) => ss.clone()).toList();
@@ -101,6 +120,7 @@ class Selector extends TreeNode {
     return Selector(simpleSequences, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSelector(this);
 }
 
@@ -136,11 +156,14 @@ class SimpleSelectorSequence extends TreeNode {
     }
   }
 
+  @override
   SimpleSelectorSequence clone() =>
       SimpleSelectorSequence(simpleSelector, span, combinator);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSimpleSelectorSequence(this);
 
+  @override
   String toString() => simpleSelector.name;
 }
 
@@ -157,16 +180,20 @@ abstract class SimpleSelector extends TreeNode {
 
   bool get isThis => _name is ThisOperator;
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSimpleSelector(this);
 }
 
 // element name
 class ElementSelector extends SimpleSelector {
   ElementSelector(name, SourceSpan span) : super(name, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitElementSelector(this);
 
+  @override
   ElementSelector clone() => ElementSelector(_name, span);
 
+  @override
   String toString() => name;
 }
 
@@ -184,11 +211,14 @@ class NamespaceSelector extends SimpleSelector {
 
   SimpleSelector get nameAsSimpleSelector => _name;
 
-  NamespaceSelector clone() => NamespaceSelector(_namespace, "", span);
+  @override
+  NamespaceSelector clone() => NamespaceSelector(_namespace, '', span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitNamespaceSelector(this);
 
-  String toString() => "$namespace|${nameAsSimpleSelector.name}";
+  @override
+  String toString() => '$namespace|${nameAsSimpleSelector.name}';
 }
 
 // [attr op value]
@@ -254,39 +284,51 @@ class AttributeSelector extends SimpleSelector {
     }
   }
 
+  @override
   AttributeSelector clone() => AttributeSelector(_name, _op, _value, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitAttributeSelector(this);
 
-  String toString() => "[$name${matchOperator()}${valueToString()}]";
+  @override
+  String toString() => '[$name${matchOperator()}${valueToString()}]';
 }
 
 // #id
 class IdSelector extends SimpleSelector {
   IdSelector(Identifier name, SourceSpan span) : super(name, span);
+  @override
   IdSelector clone() => IdSelector(_name, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitIdSelector(this);
 
-  String toString() => "#$_name";
+  @override
+  String toString() => '#$_name';
 }
 
 // .class
 class ClassSelector extends SimpleSelector {
   ClassSelector(Identifier name, SourceSpan span) : super(name, span);
+  @override
   ClassSelector clone() => ClassSelector(_name, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitClassSelector(this);
 
-  String toString() => ".$_name";
+  @override
+  String toString() => '.$_name';
 }
 
 // :pseudoClass
 class PseudoClassSelector extends SimpleSelector {
   PseudoClassSelector(Identifier name, SourceSpan span) : super(name, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitPseudoClassSelector(this);
 
+  @override
   PseudoClassSelector clone() => PseudoClassSelector(_name, span);
 
-  String toString() => ":$name";
+  @override
+  String toString() => ':$name';
 }
 
 // ::pseudoElement
@@ -297,10 +339,13 @@ class PseudoElementSelector extends SimpleSelector {
   PseudoElementSelector(Identifier name, SourceSpan span,
       {this.isLegacy = false})
       : super(name, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitPseudoElementSelector(this);
 
+  @override
   PseudoElementSelector clone() => PseudoElementSelector(_name, span);
 
+  @override
   String toString() => "${isLegacy ? ':' : '::'}$name";
 }
 
@@ -311,6 +356,7 @@ class PseudoClassFunctionSelector extends PseudoClassSelector {
   PseudoClassFunctionSelector(Identifier name, this._argument, SourceSpan span)
       : super(name, span);
 
+  @override
   PseudoClassFunctionSelector clone() =>
       PseudoClassFunctionSelector(_name, _argument, span);
 
@@ -318,6 +364,7 @@ class PseudoClassFunctionSelector extends PseudoClassSelector {
   Selector get selector => _argument as Selector;
   SelectorExpression get expression => _argument as SelectorExpression;
 
+  @override
   visit(VisitorBase visitor) => visitor.visitPseudoClassFunctionSelector(this);
 }
 
@@ -329,9 +376,11 @@ class PseudoElementFunctionSelector extends PseudoElementSelector {
       Identifier name, this.expression, SourceSpan span)
       : super(name, span);
 
+  @override
   PseudoElementFunctionSelector clone() =>
       PseudoElementFunctionSelector(_name, expression, span);
 
+  @override
   visit(VisitorBase visitor) =>
       visitor.visitPseudoElementFunctionSelector(this);
 }
@@ -341,10 +390,12 @@ class SelectorExpression extends TreeNode {
 
   SelectorExpression(this.expressions, SourceSpan span) : super(span);
 
+  @override
   SelectorExpression clone() {
     return SelectorExpression(expressions.map((e) => e.clone()).toList(), span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSelectorExpression(this);
 }
 
@@ -355,16 +406,20 @@ class NegationSelector extends SimpleSelector {
   NegationSelector(this.negationArg, SourceSpan span)
       : super(Negation(span), span);
 
+  @override
   NegationSelector clone() => NegationSelector(negationArg, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitNegationSelector(this);
 }
 
 class NoOp extends TreeNode {
   NoOp() : super(null);
 
+  @override
   NoOp clone() => NoOp();
 
+  @override
   visit(VisitorBase visitor) => visitor.visitNoOp(this);
 }
 
@@ -381,17 +436,21 @@ class StyleSheet extends TreeNode {
   /// Selectors only in this tree.
   StyleSheet.selector(this.topLevels, SourceSpan span) : super(span);
 
+  @override
   StyleSheet clone() {
     var clonedTopLevels = topLevels.map((e) => e.clone()).toList();
     return StyleSheet(clonedTopLevels, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitStyleSheet(this);
 }
 
 class TopLevelProduction extends TreeNode {
   TopLevelProduction(SourceSpan span) : super(span);
+  @override
   TopLevelProduction clone() => TopLevelProduction(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitTopLevelProduction(this);
 }
 
@@ -405,12 +464,14 @@ class RuleSet extends TopLevelProduction {
   SelectorGroup get selectorGroup => _selectorGroup;
   DeclarationGroup get declarationGroup => _declarationGroup;
 
+  @override
   RuleSet clone() {
     var cloneSelectorGroup = _selectorGroup.clone();
     var cloneDeclarationGroup = _declarationGroup.clone();
     return RuleSet(cloneSelectorGroup, cloneDeclarationGroup, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitRuleSet(this);
 }
 
@@ -420,7 +481,9 @@ class Directive extends TreeNode {
   bool get isBuiltIn => true; // Known CSS directive?
   bool get isExtension => false; // SCSS extension?
 
+  @override
   Directive clone() => Directive(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitDirective(this);
 }
 
@@ -431,6 +494,7 @@ class DocumentDirective extends Directive {
   DocumentDirective(this.functions, this.groupRuleBody, SourceSpan span)
       : super(span);
 
+  @override
   DocumentDirective clone() {
     var clonedFunctions = <LiteralTerm>[];
     for (var function in functions) {
@@ -443,6 +507,7 @@ class DocumentDirective extends Directive {
     return DocumentDirective(clonedFunctions, clonedGroupRuleBody, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitDocumentDirective(this);
 }
 
@@ -453,6 +518,7 @@ class SupportsDirective extends Directive {
   SupportsDirective(this.condition, this.groupRuleBody, SourceSpan span)
       : super(span);
 
+  @override
   SupportsDirective clone() {
     var clonedCondition = condition.clone();
     var clonedGroupRuleBody = <TreeNode>[];
@@ -462,6 +528,7 @@ class SupportsDirective extends Directive {
     return SupportsDirective(clonedCondition, clonedGroupRuleBody, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSupportsDirective(this);
 }
 
@@ -481,9 +548,11 @@ class SupportsConditionInParens extends SupportsCondition {
       : condition = condition,
         super(span);
 
+  @override
   SupportsConditionInParens clone() =>
       SupportsConditionInParens(condition.clone(), span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSupportsConditionInParens(this);
 }
 
@@ -492,8 +561,10 @@ class SupportsNegation extends SupportsCondition {
 
   SupportsNegation(this.condition, SourceSpan span) : super(span);
 
+  @override
   SupportsNegation clone() => SupportsNegation(condition.clone(), span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSupportsNegation(this);
 }
 
@@ -502,6 +573,7 @@ class SupportsConjunction extends SupportsCondition {
 
   SupportsConjunction(this.conditions, SourceSpan span) : super(span);
 
+  @override
   SupportsConjunction clone() {
     var clonedConditions = <SupportsConditionInParens>[];
     for (var condition in conditions) {
@@ -510,6 +582,7 @@ class SupportsConjunction extends SupportsCondition {
     return SupportsConjunction(clonedConditions, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSupportsConjunction(this);
 }
 
@@ -518,6 +591,7 @@ class SupportsDisjunction extends SupportsCondition {
 
   SupportsDisjunction(this.conditions, SourceSpan span) : super(span);
 
+  @override
   SupportsDisjunction clone() {
     var clonedConditions = <SupportsConditionInParens>[];
     for (var condition in conditions) {
@@ -526,6 +600,7 @@ class SupportsDisjunction extends SupportsCondition {
     return SupportsDisjunction(clonedConditions, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitSupportsDisjunction(this);
 }
 
@@ -536,9 +611,11 @@ class ViewportDirective extends Directive {
   ViewportDirective(this.name, this.declarations, SourceSpan span)
       : super(span);
 
+  @override
   ViewportDirective clone() =>
       ViewportDirective(name, declarations.clone(), span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitViewportDirective(this);
 }
 
@@ -552,6 +629,7 @@ class ImportDirective extends Directive {
   ImportDirective(this.import, this.mediaQueries, SourceSpan span)
       : super(span);
 
+  @override
   ImportDirective clone() {
     var cloneMediaQueries = <MediaQuery>[];
     for (var mediaQuery in mediaQueries) {
@@ -560,6 +638,7 @@ class ImportDirective extends Directive {
     return ImportDirective(import, cloneMediaQueries, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitImportDirective(this);
 }
 
@@ -577,11 +656,13 @@ class MediaExpression extends TreeNode {
 
   String get mediaFeature => _mediaFeature.name;
 
+  @override
   MediaExpression clone() {
     var clonedExprs = exprs.clone();
     return MediaExpression(andOperator, _mediaFeature, clonedExprs, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMediaExpression(this);
 }
 
@@ -612,6 +693,7 @@ class MediaQuery extends TreeNode {
   String get unary =>
       TokenKind.idToValue(TokenKind.MEDIA_OPERATORS, _mediaUnary).toUpperCase();
 
+  @override
   MediaQuery clone() {
     var cloneExpressions = <MediaExpression>[];
     for (var expr in expressions) {
@@ -620,6 +702,7 @@ class MediaQuery extends TreeNode {
     return MediaQuery(_mediaUnary, _mediaType, cloneExpressions, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMediaQuery(this);
 }
 
@@ -629,6 +712,7 @@ class MediaDirective extends Directive {
 
   MediaDirective(this.mediaQueries, this.rules, SourceSpan span) : super(span);
 
+  @override
   MediaDirective clone() {
     var cloneQueries = <MediaQuery>[];
     for (var mediaQuery in mediaQueries) {
@@ -641,6 +725,7 @@ class MediaDirective extends Directive {
     return MediaDirective(cloneQueries, cloneRules, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMediaDirective(this);
 }
 
@@ -649,6 +734,7 @@ class HostDirective extends Directive {
 
   HostDirective(this.rules, SourceSpan span) : super(span);
 
+  @override
   HostDirective clone() {
     var cloneRules = <TreeNode>[];
     for (var rule in rules) {
@@ -657,6 +743,7 @@ class HostDirective extends Directive {
     return HostDirective(cloneRules, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitHostDirective(this);
 }
 
@@ -669,6 +756,7 @@ class PageDirective extends Directive {
       this._ident, this._pseudoPage, this._declsMargin, SourceSpan span)
       : super(span);
 
+  @override
   PageDirective clone() {
     var cloneDeclsMargin = <DeclarationGroup>[];
     for (var declMargin in _declsMargin) {
@@ -677,6 +765,7 @@ class PageDirective extends Directive {
     return PageDirective(_ident, _pseudoPage, cloneDeclsMargin, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitPageDirective(this);
 
   bool get hasIdent => _ident != null && _ident.isNotEmpty;
@@ -687,7 +776,9 @@ class CharsetDirective extends Directive {
   final String charEncoding;
 
   CharsetDirective(this.charEncoding, SourceSpan span) : super(span);
+  @override
   CharsetDirective clone() => CharsetDirective(charEncoding, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitCharsetDirective(this);
 }
 
@@ -720,6 +811,7 @@ class KeyFrameDirective extends Directive {
     return null;
   }
 
+  @override
   KeyFrameDirective clone() {
     var directive = KeyFrameDirective(_keyframeName, name.clone(), span);
     for (var block in _blocks) {
@@ -728,6 +820,7 @@ class KeyFrameDirective extends Directive {
     return directive;
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitKeyFrameDirective(this);
 }
 
@@ -738,8 +831,10 @@ class KeyFrameBlock extends Expression {
   KeyFrameBlock(this._blockSelectors, this._declarations, SourceSpan span)
       : super(span);
 
+  @override
   KeyFrameBlock clone() =>
       KeyFrameBlock(_blockSelectors.clone(), _declarations.clone(), span);
+  @override
   visit(VisitorBase visitor) => visitor.visitKeyFrameBlock(this);
 }
 
@@ -748,7 +843,9 @@ class FontFaceDirective extends Directive {
 
   FontFaceDirective(this._declarations, SourceSpan span) : super(span);
 
+  @override
   FontFaceDirective clone() => FontFaceDirective(_declarations.clone(), span);
+  @override
   visit(VisitorBase visitor) => visitor.visitFontFaceDirective(this);
 }
 
@@ -759,9 +856,12 @@ class StyletDirective extends Directive {
   StyletDirective(this.dartClassName, this.rules, SourceSpan span)
       : super(span);
 
+  @override
   bool get isBuiltIn => false;
+  @override
   bool get isExtension => true;
 
+  @override
   StyletDirective clone() {
     var cloneRules = <TreeNode>[];
     for (var rule in rules) {
@@ -770,6 +870,7 @@ class StyletDirective extends Directive {
     return StyletDirective(dartClassName, cloneRules, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitStyletDirective(this);
 }
 
@@ -782,8 +883,10 @@ class NamespaceDirective extends Directive {
 
   NamespaceDirective(this._prefix, this._uri, SourceSpan span) : super(span);
 
+  @override
   NamespaceDirective clone() => NamespaceDirective(_prefix, _uri, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitNamespaceDirective(this);
 
   String get prefix => _prefix.isNotEmpty ? '$_prefix ' : '';
@@ -795,8 +898,10 @@ class VarDefinitionDirective extends Directive {
 
   VarDefinitionDirective(this.def, SourceSpan span) : super(span);
 
+  @override
   VarDefinitionDirective clone() => VarDefinitionDirective(def.clone(), span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitVarDefinitionDirective(this);
 }
 
@@ -808,6 +913,7 @@ class MixinDefinition extends Directive {
   MixinDefinition(this.name, this.definedArgs, this.varArgs, SourceSpan span)
       : super(span);
 
+  @override
   MixinDefinition clone() {
     var cloneDefinedArgs = <TreeNode>[];
     for (var definedArg in definedArgs) {
@@ -816,6 +922,7 @@ class MixinDefinition extends Directive {
     return MixinDefinition(name, cloneDefinedArgs, varArgs, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMixinDefinition(this);
 }
 
@@ -827,6 +934,7 @@ class MixinRulesetDirective extends MixinDefinition {
       this.rulesets, SourceSpan span)
       : super(name, args, varArgs, span);
 
+  @override
   MixinRulesetDirective clone() {
     var clonedArgs = <VarDefinition>[];
     for (var arg in definedArgs) {
@@ -840,6 +948,7 @@ class MixinRulesetDirective extends MixinDefinition {
         name, clonedArgs, varArgs, clonedRulesets, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMixinRulesetDirective(this);
 }
 
@@ -850,6 +959,7 @@ class MixinDeclarationDirective extends MixinDefinition {
       this.declarations, SourceSpan span)
       : super(name, args, varArgs, span);
 
+  @override
   MixinDeclarationDirective clone() {
     var clonedArgs = <TreeNode>[];
     for (var arg in definedArgs) {
@@ -859,6 +969,7 @@ class MixinDeclarationDirective extends MixinDefinition {
         name, clonedArgs, varArgs, declarations.clone(), span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMixinDeclarationDirective(this);
 }
 
@@ -869,6 +980,7 @@ class IncludeDirective extends Directive {
 
   IncludeDirective(this.name, this.args, SourceSpan span) : super(span);
 
+  @override
   IncludeDirective clone() {
     var cloneArgs = <List<Expression>>[];
     for (var arg in args) {
@@ -877,6 +989,7 @@ class IncludeDirective extends Directive {
     return IncludeDirective(name, cloneArgs, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitIncludeDirective(this);
 }
 
@@ -884,6 +997,7 @@ class IncludeDirective extends Directive {
 class ContentDirective extends Directive {
   ContentDirective(SourceSpan span) : super(span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitContentDirective(this);
 }
 
@@ -905,9 +1019,8 @@ class Declaration extends TreeNode {
   final bool isIE7;
 
   Declaration(this._property, this._expression, this.dartStyle, SourceSpan span,
-      {bool important = false, bool ie7 = false})
-      : this.important = important,
-        this.isIE7 = ie7,
+      {this.important = false, bool ie7 = false})
+      : isIE7 = ie7,
         super(span);
 
   String get property => isIE7 ? '*${_property.name}' : _property.name;
@@ -915,10 +1028,12 @@ class Declaration extends TreeNode {
 
   bool get hasDartStyle => dartStyle != null;
 
+  @override
   Declaration clone() =>
       Declaration(_property.clone(), _expression.clone(), dartStyle, span,
           important: important);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitDeclaration(this);
 }
 
@@ -936,9 +1051,11 @@ class VarDefinition extends Declaration {
 
   String get definedName => _property.name;
 
+  @override
   VarDefinition clone() => VarDefinition(
       _property.clone(), expression != null ? expression.clone() : null, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitVarDefinition(this);
 }
 
@@ -954,9 +1071,11 @@ class IncludeMixinAtDeclaration extends Declaration {
   IncludeMixinAtDeclaration(this.include, SourceSpan span)
       : super(null, null, null, span);
 
+  @override
   IncludeMixinAtDeclaration clone() =>
       IncludeMixinAtDeclaration(include.clone(), span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitIncludeMixinAtDeclaration(this);
 }
 
@@ -966,11 +1085,13 @@ class ExtendDeclaration extends Declaration {
   ExtendDeclaration(this.selectors, SourceSpan span)
       : super(null, null, null, span);
 
+  @override
   ExtendDeclaration clone() {
     var newSelector = selectors.map((s) => s.clone()).toList();
     return ExtendDeclaration(newSelector, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitExtendDeclaration(this);
 }
 
@@ -980,11 +1101,13 @@ class DeclarationGroup extends TreeNode {
 
   DeclarationGroup(this.declarations, SourceSpan span) : super(span);
 
+  @override
   DeclarationGroup clone() {
     var clonedDecls = declarations.map((d) => d.clone()).toList();
     return DeclarationGroup(clonedDecls, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitDeclarationGroup(this);
 }
 
@@ -993,8 +1116,10 @@ class MarginGroup extends DeclarationGroup {
 
   MarginGroup(this.margin_sym, List<TreeNode> decls, SourceSpan span)
       : super(decls, span);
+  @override
   MarginGroup clone() =>
       MarginGroup(margin_sym, super.clone().declarations, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitMarginGroup(this);
 }
 
@@ -1004,6 +1129,7 @@ class VarUsage extends Expression {
 
   VarUsage(this.name, this.defaultValues, SourceSpan span) : super(span);
 
+  @override
   VarUsage clone() {
     var clonedValues = <Expression>[];
     for (var expr in defaultValues) {
@@ -1012,30 +1138,39 @@ class VarUsage extends Expression {
     return VarUsage(name, clonedValues, span);
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitVarUsage(this);
 }
 
 class OperatorSlash extends Expression {
   OperatorSlash(SourceSpan span) : super(span);
+  @override
   OperatorSlash clone() => OperatorSlash(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitOperatorSlash(this);
 }
 
 class OperatorComma extends Expression {
   OperatorComma(SourceSpan span) : super(span);
+  @override
   OperatorComma clone() => OperatorComma(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitOperatorComma(this);
 }
 
 class OperatorPlus extends Expression {
   OperatorPlus(SourceSpan span) : super(span);
+  @override
   OperatorPlus clone() => OperatorPlus(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitOperatorPlus(this);
 }
 
 class OperatorMinus extends Expression {
   OperatorMinus(SourceSpan span) : super(span);
+  @override
   OperatorMinus clone() => OperatorMinus(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitOperatorMinus(this);
 }
 
@@ -1047,8 +1182,10 @@ class UnicodeRangeTerm extends Expression {
 
   bool get hasSecond => second != null;
 
+  @override
   UnicodeRangeTerm clone() => UnicodeRangeTerm(first, second, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitUnicodeRangeTerm(this);
 }
 
@@ -1061,14 +1198,18 @@ class LiteralTerm extends Expression {
 
   LiteralTerm(this.value, this.text, SourceSpan span) : super(span);
 
+  @override
   LiteralTerm clone() => LiteralTerm(value, text, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitLiteralTerm(this);
 }
 
 class NumberTerm extends LiteralTerm {
   NumberTerm(value, String t, SourceSpan span) : super(value, t, span);
+  @override
   NumberTerm clone() => NumberTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitNumberTerm(this);
 }
 
@@ -1077,12 +1218,15 @@ class UnitTerm extends LiteralTerm {
 
   UnitTerm(value, String t, SourceSpan span, this.unit) : super(value, t, span);
 
+  @override
   UnitTerm clone() => UnitTerm(value, text, span, unit);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitUnitTerm(this);
 
   String unitToString() => TokenKind.unitToString(unit);
 
+  @override
   String toString() => '$text${unitToString()}';
 }
 
@@ -1097,25 +1241,33 @@ class LengthTerm extends UnitTerm {
         this.unit == TokenKind.UNIT_LENGTH_PT ||
         this.unit == TokenKind.UNIT_LENGTH_PC);
   }
+  @override
   LengthTerm clone() => LengthTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitLengthTerm(this);
 }
 
 class PercentageTerm extends LiteralTerm {
   PercentageTerm(value, String t, SourceSpan span) : super(value, t, span);
+  @override
   PercentageTerm clone() => PercentageTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitPercentageTerm(this);
 }
 
 class EmTerm extends LiteralTerm {
   EmTerm(value, String t, SourceSpan span) : super(value, t, span);
+  @override
   EmTerm clone() => EmTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitEmTerm(this);
 }
 
 class ExTerm extends LiteralTerm {
   ExTerm(value, String t, SourceSpan span) : super(value, t, span);
+  @override
   ExTerm clone() => ExTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitExTerm(this);
 }
 
@@ -1129,7 +1281,9 @@ class AngleTerm extends UnitTerm {
         this.unit == TokenKind.UNIT_ANGLE_TURN);
   }
 
+  @override
   AngleTerm clone() => AngleTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitAngleTerm(this);
 }
 
@@ -1142,7 +1296,9 @@ class TimeTerm extends UnitTerm {
         this.unit == TokenKind.UNIT_TIME_S);
   }
 
+  @override
   TimeTerm clone() => TimeTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitTimeTerm(this);
 }
 
@@ -1153,21 +1309,27 @@ class FreqTerm extends UnitTerm {
     assert(unit == TokenKind.UNIT_FREQ_HZ || unit == TokenKind.UNIT_FREQ_KHZ);
   }
 
+  @override
   FreqTerm clone() => FreqTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitFreqTerm(this);
 }
 
 class FractionTerm extends LiteralTerm {
   FractionTerm(var value, String t, SourceSpan span) : super(value, t, span);
 
+  @override
   FractionTerm clone() => FractionTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitFractionTerm(this);
 }
 
 class UriTerm extends LiteralTerm {
   UriTerm(String value, SourceSpan span) : super(value, value, span);
 
+  @override
   UriTerm clone() => UriTerm(value, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitUriTerm(this);
 }
 
@@ -1180,7 +1342,9 @@ class ResolutionTerm extends UnitTerm {
         unit == TokenKind.UNIT_RESOLUTION_DPPX);
   }
 
+  @override
   ResolutionTerm clone() => ResolutionTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitResolutionTerm(this);
 }
 
@@ -1191,7 +1355,9 @@ class ChTerm extends UnitTerm {
     assert(unit == TokenKind.UNIT_CH);
   }
 
+  @override
   ChTerm clone() => ChTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitChTerm(this);
 }
 
@@ -1202,7 +1368,9 @@ class RemTerm extends UnitTerm {
     assert(unit == TokenKind.UNIT_REM);
   }
 
+  @override
   RemTerm clone() => RemTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitRemTerm(this);
 }
 
@@ -1216,7 +1384,9 @@ class ViewportTerm extends UnitTerm {
         unit == TokenKind.UNIT_VIEWPORT_VMAX);
   }
 
+  @override
   ViewportTerm clone() => ViewportTerm(value, text, span, unit);
+  @override
   visit(VisitorBase visitor) => visitor.visitViewportTerm(this);
 }
 
@@ -1226,7 +1396,9 @@ class BAD_HEX_VALUE {}
 class HexColorTerm extends LiteralTerm {
   HexColorTerm(var value, String t, SourceSpan span) : super(value, t, span);
 
+  @override
   HexColorTerm clone() => HexColorTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitHexColorTerm(this);
 }
 
@@ -1236,7 +1408,9 @@ class FunctionTerm extends LiteralTerm {
   FunctionTerm(var value, String t, this._params, SourceSpan span)
       : super(value, t, span);
 
+  @override
   FunctionTerm clone() => FunctionTerm(value, text, _params.clone(), span);
+  @override
   visit(VisitorBase visitor) => visitor.visitFunctionTerm(this);
 }
 
@@ -1245,7 +1419,9 @@ class FunctionTerm extends LiteralTerm {
 /// browsers.
 class IE8Term extends LiteralTerm {
   IE8Term(SourceSpan span) : super('\\9', '\\9', span);
+  @override
   IE8Term clone() => IE8Term(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitIE8Term(this);
 }
 
@@ -1260,14 +1436,18 @@ class GroupTerm extends Expression {
     _terms.add(term);
   }
 
+  @override
   GroupTerm clone() => GroupTerm(span);
+  @override
   visit(VisitorBase visitor) => visitor.visitGroupTerm(this);
 }
 
 class ItemTerm extends NumberTerm {
   ItemTerm(dynamic value, String t, SourceSpan span) : super(value, t, span);
 
+  @override
   ItemTerm clone() => ItemTerm(value, text, span);
+  @override
   visit(VisitorBase visitor) => visitor.visitItemTerm(this);
 }
 
@@ -1280,6 +1460,7 @@ class Expressions extends Expression {
     expressions.add(expression);
   }
 
+  @override
   Expressions clone() {
     var clonedExprs = Expressions(span);
     for (var expr in expressions) {
@@ -1288,6 +1469,7 @@ class Expressions extends Expression {
     return clonedExprs;
   }
 
+  @override
   visit(VisitorBase visitor) => visitor.visitExpressions(this);
 }
 
@@ -1298,7 +1480,9 @@ class BinaryExpression extends Expression {
 
   BinaryExpression(this.op, this.x, this.y, SourceSpan span) : super(span);
 
+  @override
   BinaryExpression clone() => BinaryExpression(op, x.clone(), y.clone(), span);
+  @override
   visit(VisitorBase visitor) => visitor.visitBinaryExpression(this);
 }
 
@@ -1308,7 +1492,9 @@ class UnaryExpression extends Expression {
 
   UnaryExpression(this.op, this.self, SourceSpan span) : super(span);
 
+  @override
   UnaryExpression clone() => UnaryExpression(op, self.clone(), span);
+  @override
   visit(VisitorBase visitor) => visitor.visitUnaryExpression(this);
 }
 
@@ -1340,8 +1526,9 @@ abstract class DartStyleExpression extends TreeNode {
   bool get isWidth => _styleType == widthStyle;
   bool get isBoxExpression => isMargin || isBorder || isPadding;
 
-  bool isSame(DartStyleExpression other) => this._styleType == other._styleType;
+  bool isSame(DartStyleExpression other) => _styleType == other._styleType;
 
+  @override
   visit(VisitorBase visitor) => visitor.visitDartStyleExpression(this);
 }
 
@@ -1367,8 +1554,9 @@ class FontExpression extends DartStyleExpression {
             lineHeight: lineHeight),
         super(DartStyleExpression.fontStyle, span);
 
+  @override
   FontExpression merged(DartStyleExpression newFontExpr) {
-    if (newFontExpr is FontExpression && this.isFont && newFontExpr.isFont) {
+    if (newFontExpr is FontExpression && isFont && newFontExpr.isFont) {
       return FontExpression.merge(this, newFontExpr);
     }
     return null;
@@ -1383,6 +1571,7 @@ class FontExpression extends DartStyleExpression {
       : font = Font.merge(x.font, y.font),
         super(DartStyleExpression.fontStyle, span);
 
+  @override
   FontExpression clone() => FontExpression(span,
       size: font.size,
       family: font.family,
@@ -1391,6 +1580,7 @@ class FontExpression extends DartStyleExpression {
       variant: font.variant,
       lineHeight: font.lineHeight);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitFontExpression(this);
 }
 
@@ -1400,16 +1590,17 @@ abstract class BoxExpression extends DartStyleExpression {
   BoxExpression(int styleType, SourceSpan span, this.box)
       : super(styleType, span);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitBoxExpression(this);
 
   String get formattedBoxEdge {
     if (box.top == box.left && box.top == box.bottom && box.top == box.right) {
       return '.uniform(${box.top})';
     } else {
-      var left = box.left == null ? 0 : box.left;
-      var top = box.top == null ? 0 : box.top;
-      var right = box.right == null ? 0 : box.right;
-      var bottom = box.bottom == null ? 0 : box.bottom;
+      var left = box.left ?? 0;
+      var top = box.top ?? 0;
+      var right = box.right ?? 0;
+      var bottom = box.bottom ?? 0;
       return '.clockwiseFromTop($top,$right,$bottom,$left)';
     }
   }
@@ -1425,9 +1616,10 @@ class MarginExpression extends BoxExpression {
   MarginExpression.boxEdge(SourceSpan span, BoxEdge box)
       : super(DartStyleExpression.marginStyle, span, box);
 
+  @override
   merged(DartStyleExpression newMarginExpr) {
     if (newMarginExpr is MarginExpression &&
-        this.isMargin &&
+        isMargin &&
         newMarginExpr.isMargin) {
       return MarginExpression.merge(this, newMarginExpr);
     }
@@ -1444,9 +1636,11 @@ class MarginExpression extends BoxExpression {
       MarginExpression x, MarginExpression y, SourceSpan span)
       : super(x._styleType, span, BoxEdge.merge(x.box, y.box));
 
+  @override
   MarginExpression clone() => MarginExpression(span,
       top: box.top, right: box.right, bottom: box.bottom, left: box.left);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitMarginExpression(this);
 }
 
@@ -1459,9 +1653,10 @@ class BorderExpression extends BoxExpression {
   BorderExpression.boxEdge(SourceSpan span, BoxEdge box)
       : super(DartStyleExpression.borderStyle, span, box);
 
+  @override
   merged(DartStyleExpression newBorderExpr) {
     if (newBorderExpr is BorderExpression &&
-        this.isBorder &&
+        isBorder &&
         newBorderExpr.isBorder) {
       return BorderExpression.merge(this, newBorderExpr);
     }
@@ -1479,9 +1674,11 @@ class BorderExpression extends BoxExpression {
       : super(
             DartStyleExpression.borderStyle, span, BoxEdge.merge(x.box, y.box));
 
+  @override
   BorderExpression clone() => BorderExpression(span,
       top: box.top, right: box.right, bottom: box.bottom, left: box.left);
 
+  @override
   visit(VisitorBase visitor) => visitor.visitBorderExpression(this);
 }
 
@@ -1491,9 +1688,10 @@ class HeightExpression extends DartStyleExpression {
   HeightExpression(SourceSpan span, this.height)
       : super(DartStyleExpression.heightStyle, span);
 
+  @override
   merged(DartStyleExpression newHeightExpr) {
     if (newHeightExpr is DartStyleExpression &&
-        this.isHeight &&
+        isHeight &&
         newHeightExpr.isHeight) {
       return newHeightExpr;
     }
@@ -1501,7 +1699,9 @@ class HeightExpression extends DartStyleExpression {
     return null;
   }
 
+  @override
   HeightExpression clone() => HeightExpression(span, height);
+  @override
   visit(VisitorBase visitor) => visitor.visitHeightExpression(this);
 }
 
@@ -1511,17 +1711,18 @@ class WidthExpression extends DartStyleExpression {
   WidthExpression(SourceSpan span, this.width)
       : super(DartStyleExpression.widthStyle, span);
 
+  @override
   merged(DartStyleExpression newWidthExpr) {
-    if (newWidthExpr is WidthExpression &&
-        this.isWidth &&
-        newWidthExpr.isWidth) {
+    if (newWidthExpr is WidthExpression && isWidth && newWidthExpr.isWidth) {
       return newWidthExpr;
     }
 
     return null;
   }
 
+  @override
   WidthExpression clone() => WidthExpression(span, width);
+  @override
   visit(VisitorBase visitor) => visitor.visitWidthExpression(this);
 }
 
@@ -1534,9 +1735,10 @@ class PaddingExpression extends BoxExpression {
   PaddingExpression.boxEdge(SourceSpan span, BoxEdge box)
       : super(DartStyleExpression.paddingStyle, span, box);
 
+  @override
   merged(DartStyleExpression newPaddingExpr) {
     if (newPaddingExpr is PaddingExpression &&
-        this.isPadding &&
+        isPadding &&
         newPaddingExpr.isPadding) {
       return PaddingExpression.merge(this, newPaddingExpr);
     }
@@ -1554,7 +1756,9 @@ class PaddingExpression extends BoxExpression {
       : super(DartStyleExpression.paddingStyle, span,
             BoxEdge.merge(x.box, y.box));
 
+  @override
   PaddingExpression clone() => PaddingExpression(span,
       top: box.top, right: box.right, bottom: box.bottom, left: box.left);
+  @override
   visit(VisitorBase visitor) => visitor.visitPaddingExpression(this);
 }

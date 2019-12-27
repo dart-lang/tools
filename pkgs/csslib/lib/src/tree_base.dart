@@ -20,7 +20,7 @@ abstract class TreeNode {
   String toDebugString() {
     var to = TreeOutput();
     var tp = _TreePrinter(to, true);
-    this.visit(tp);
+    visit(tp);
     return to.buf.toString();
   }
 }
@@ -37,7 +37,7 @@ class TreeOutput {
   VisitorBase printer;
 
   void write(String s) {
-    for (int i = 0; i < depth; i++) {
+    for (var i = 0; i < depth; i++) {
       buf.write(' ');
     }
     buf.write(s);
@@ -98,5 +98,6 @@ class TreeOutput {
     }
   }
 
+  @override
   String toString() => buf.toString();
 }

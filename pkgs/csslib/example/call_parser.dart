@@ -15,8 +15,7 @@ const _default = css.PreprocessorOptions(
 /// tests (by default) will ensure that the CSS is really valid.
 StyleSheet parseCss(String cssInput,
     {List<css.Message> errors, css.PreprocessorOptions opts}) {
-  return css.parse(cssInput,
-      errors: errors, options: opts == null ? _default : opts);
+  return css.parse(cssInput, errors: errors, options: opts ?? _default);
 }
 
 // Pretty printer for CSS.
@@ -24,7 +23,7 @@ var emitCss = CssPrinter();
 String prettyPrint(StyleSheet ss) =>
     (emitCss..visitTree(ss, pretty: true)).toString();
 
-main() {
+void main() {
   var errors = <css.Message>[];
 
   // Parse a simple stylesheet.
@@ -42,7 +41,7 @@ main() {
       errors: errors);
 
   if (errors.isNotEmpty) {
-    print("Got ${errors.length} errors.\n");
+    print('Got ${errors.length} errors.\n');
     for (var error in errors) {
       print(error);
     }
@@ -60,7 +59,7 @@ main() {
       errors: errors);
 
   if (errors.isNotEmpty) {
-    print("Got ${errors.length} errors.\n");
+    print('Got ${errors.length} errors.\n');
     for (var error in errors) {
       print(error);
     }
@@ -74,7 +73,7 @@ main() {
   stylesheetError = parseCss('# div1 { color: red; }', errors: errors);
 
   if (errors.isNotEmpty) {
-    print("Detected ${errors.length} problem in checked mode.\n");
+    print('Detected ${errors.length} problem in checked mode.\n');
     for (var error in errors) {
       print(error);
     }
@@ -87,7 +86,7 @@ main() {
   print('   ======================');
   var selectorAst = css.selector('#div .foo', errors: errors);
   if (errors.isNotEmpty) {
-    print("Got ${errors.length} errors.\n");
+    print('Got ${errors.length} errors.\n');
     for (var error in errors) {
       print(error);
     }

@@ -1162,6 +1162,6 @@ li.dropdown-menudivider {
   compilePolyfillAndValidate(input, generated);
 }
 
-main() {
+void main() {
   test('big #1', big_test);
 }

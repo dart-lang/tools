@@ -41,13 +41,12 @@ class Message {
   final SourceSpan span;
   final bool useColors;
 
-  Message(this.level, this.message, {SourceSpan span, bool useColors = false})
-      : this.span = span,
-        this.useColors = useColors;
+  Message(this.level, this.message, {this.span, this.useColors = false});
 
+  @override
   String toString() {
     var output = StringBuffer();
-    bool colors = useColors && _errorColors.containsKey(level);
+    var colors = useColors && _errorColors.containsKey(level);
     var levelColor = colors ? _errorColors[level] : null;
     if (colors) output.write(levelColor);
     output..write(_errorLabel[level])..write(' ');
@@ -75,7 +74,7 @@ class Messages {
   final List<Message> messages = <Message>[];
 
   Messages({PreprocessorOptions options, this.printHandler = print})
-      : options = options != null ? options : PreprocessorOptions();
+      : options = options ?? PreprocessorOptions();
 
   /// Report a compile-time CSS error.
   void error(String message, SourceSpan span) {

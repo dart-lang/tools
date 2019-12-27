@@ -620,13 +620,13 @@ input.second + label {
   compileAndValidate(input, generated);
 }
 
-main() {
+void main() {
   test('Selector and Nested Variations', selectorVariations);
   test('Simple nesting', simpleNest);
   test('Complex nesting', complexNest);
   test('@media nesting', mediaNesting);
   test('Simple &', simpleThis);
-  test("Variations &", variationsThis);
+  test('Variations &', variationsThis);
   test('Complex &', complexThis);
   test('& with + selector', thisCombinator);
 }

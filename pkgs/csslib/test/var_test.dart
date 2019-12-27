@@ -469,7 +469,7 @@ void undefinedVars() {
   color: var(one);
   background: var(six);
 }''';
-  int testBitMap = 0;
+  var testBitMap = 0;
 
   compileAndValidate(input, generated);
 
@@ -484,13 +484,13 @@ void undefinedVars() {
   outer:
   for (var error in errors) {
     var errorString = error.toString();
-    for (int i = 0; i < errorStrings.length; i++) {
+    for (var i = 0; i < errorStrings.length; i++) {
       if (errorString == errorStrings[i]) {
         testBitMap |= 1 << i;
         continue outer;
       }
     }
-    fail("Unexpected error string: $errorString");
+    fail('Unexpected error string: $errorString');
   }
   expect(testBitMap, equals((1 << errorStrings.length) - 1));
   expect(prettyPrint(stylesheet), generatedPolyfill);
@@ -955,7 +955,7 @@ void includes() {
   expect(prettyPrint(stylesheet2), generated2);
 }
 
-main() {
+void main() {
   test('Simple var', simpleVar);
   test('Expressions var', expressionsVar);
   test('Default value in var()', defaultVar);

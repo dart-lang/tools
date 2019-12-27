@@ -19,7 +19,7 @@ class Validate {
     if (selector.isCombinatorDescendant ||
         (selector.isCombinatorNone && matches == 0)) {
       if (matches < 0) {
-        String tooMany = selector.simpleSelector.toString();
+        var tooMany = selector.simpleSelector.toString();
         throw CssSelectorException(
             'Can not mix Id selector with class selector(s). Id '
             'selector must be singleton too many starting at $tooMany');
@@ -27,7 +27,7 @@ class Validate {
 
       return matches + 1;
     } else {
-      String error = selector.toString();
+      var error = selector.toString();
       throw CssSelectorException(
           'Selectors can not have combinators (>, +, or ~) before $error');
     }
@@ -38,11 +38,11 @@ class Validate {
       // Perfect just one element id returns matches of -1.
       return -1;
     } else if (selector.isCombinatorDescendant) {
-      String tooMany = selector.simpleSelector.toString();
+      var tooMany = selector.simpleSelector.toString();
       throw CssSelectorException(
           'Use of Id selector must be singleton starting at $tooMany');
     } else {
-      String error = selector.simpleSelector.toString();
+      var error = selector.simpleSelector.toString();
       throw CssSelectorException(
           'Selectors can not have combinators (>, +, or ~) before $error');
     }
@@ -51,8 +51,8 @@ class Validate {
   // Validate the @{css expression} only .class and #elementId are valid inside
   // of @{...}.
   static template(List<Selector> selectors) {
-    bool found = false; // signal if a selector is matched.
-    int matches = 0; // < 0 IdSelectors, > 0 ClassSelector
+    var found = false; // signal if a selector is matched.
+    var matches = 0; // < 0 IdSelectors, > 0 ClassSelector
 
     // At most one selector group (any number of simple selector sequences).
     assert(selectors.length <= 1);
@@ -102,19 +102,19 @@ class Validate {
             found = true; // #_id are always okay
           }
         } else {
-          String badSelector = simpleSelector.toString();
+          var badSelector = simpleSelector.toString();
           throw CssSelectorException('Invalid template selector $badSelector');
         }
 
         if (!found) {
-          String unknownName = simpleSelector.toString();
+          var unknownName = simpleSelector.toString();
           throw CssSelectorException('Unknown selector name $unknownName');
         }
       }
     }
 
     // Every selector must match.
-    Selector selector = selectors[0];
+    var selector = selectors[0];
     assert((matches >= 0 ? matches : -matches) ==
         selector.simpleSelectorSequences.length);
   }

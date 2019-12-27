@@ -473,11 +473,11 @@ class TokenKind {
       String ident = entry['value'];
 
       if (length == ident.length) {
-        int idx = offset;
-        bool match = true;
-        for (int i = 0; i < ident.length; i++) {
-          int identChar = ident.codeUnitAt(i);
-          int char = text.codeUnitAt(idx++);
+        var idx = offset;
+        var match = true;
+        for (var i = 0; i < ident.length; i++) {
+          var identChar = ident.codeUnitAt(i);
+          var char = text.codeUnitAt(idx++);
           // Compare lowercase to lowercase then check if char is uppercase.
           match = match &&
               (char == identChar ||
@@ -571,10 +571,10 @@ class TokenKind {
   static String decimalToHex(int number, [int minDigits = 1]) {
     final String _HEX_DIGITS = '0123456789abcdef';
 
-    List<String> result = List<String>();
+    var result = <String>[];
 
-    int dividend = number >> 4;
-    int remain = number % 16;
+    var dividend = number >> 4;
+    var remain = number % 16;
     result.add(_HEX_DIGITS[remain]);
     while (dividend != 0) {
       remain = dividend % 16;
@@ -582,12 +582,12 @@ class TokenKind {
       result.add(_HEX_DIGITS[remain]);
     }
 
-    StringBuffer invertResult = StringBuffer();
-    int paddings = minDigits - result.length;
+    var invertResult = StringBuffer();
+    var paddings = minDigits - result.length;
     while (paddings-- > 0) {
       invertResult.write('0');
     }
-    for (int i = result.length - 1; i >= 0; i--) {
+    for (var i = result.length - 1; i >= 0; i--) {
       invertResult.write(result[i]);
     }
 
@@ -597,61 +597,61 @@ class TokenKind {
   static String kindToString(int kind) {
     switch (kind) {
       case TokenKind.UNUSED:
-        return "ERROR";
+        return 'ERROR';
       case TokenKind.END_OF_FILE:
-        return "end of file";
+        return 'end of file';
       case TokenKind.LPAREN:
-        return "(";
+        return '(';
       case TokenKind.RPAREN:
-        return ")";
+        return ')';
       case TokenKind.LBRACK:
-        return "[";
+        return '[';
       case TokenKind.RBRACK:
-        return "]";
+        return ']';
       case TokenKind.LBRACE:
-        return "{";
+        return '{';
       case TokenKind.RBRACE:
-        return "}";
+        return '}';
       case TokenKind.DOT:
-        return ".";
+        return '.';
       case TokenKind.SEMICOLON:
-        return ";";
+        return ';';
       case TokenKind.AT:
-        return "@";
+        return '@';
       case TokenKind.HASH:
-        return "#";
+        return '#';
       case TokenKind.PLUS:
-        return "+";
+        return '+';
       case TokenKind.GREATER:
-        return ">";
+        return '>';
       case TokenKind.TILDE:
-        return "~";
+        return '~';
       case TokenKind.ASTERISK:
-        return "*";
+        return '*';
       case TokenKind.NAMESPACE:
-        return "|";
+        return '|';
       case TokenKind.COLON:
-        return ":";
+        return ':';
       case TokenKind.PRIVATE_NAME:
-        return "_";
+        return '_';
       case TokenKind.COMMA:
-        return ",";
+        return ',';
       case TokenKind.SPACE:
-        return " ";
+        return ' ';
       case TokenKind.TAB:
-        return "\t";
+        return '\t';
       case TokenKind.NEWLINE:
-        return "\n";
+        return '\n';
       case TokenKind.RETURN:
-        return "\r";
+        return '\r';
       case TokenKind.PERCENT:
-        return "%";
+        return '%';
       case TokenKind.SINGLE_QUOTE:
         return "'";
       case TokenKind.DOUBLE_QUOTE:
-        return "\"";
+        return '\"';
       case TokenKind.SLASH:
-        return "/";
+        return '/';
       case TokenKind.EQUALS:
         return '=';
       case TokenKind.CARET:
@@ -667,7 +667,7 @@ class TokenKind {
       case TokenKind.BACKSLASH:
         return '\\';
       default:
-        throw "Unknown TOKEN";
+        throw 'Unknown TOKEN';
     }
   }
 

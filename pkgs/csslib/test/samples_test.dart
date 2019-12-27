@@ -22,7 +22,7 @@ void testCSSFile(File cssFile) {
   expect(errors, isEmpty, reason: errors.toString());
 }
 
-main() {
+void main() {
   final libraryUri = currentMirrorSystem().findLibrary(#samples_test).uri;
   final cssDir = Directory.fromUri(libraryUri.resolve('examples'));
   for (var element in cssDir.listSync()) {

@@ -25,6 +25,8 @@ abstract class TokenizerBase {
   final SourceFile _file;
   final String _text;
 
+  // TODO: this seems like a bug – this field *is* used
+  // ignore: prefer_final_fields
   bool _inString;
 
   /// Changes tokenization when in a pseudo function expression.  If true then
@@ -139,9 +141,9 @@ abstract class TokenizerBase {
   }
 
   Token finishMultiLineComment() {
-    int nesting = 1;
+    var nesting = 1;
     do {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == 0) {
         return _errorToken();
       } else if (ch == TokenChar.ASTERISK) {
@@ -241,7 +243,7 @@ abstract class TokenizerBase {
     }
     if (_peekChar() != 0 && TokenizerHelpers.isIdentifierStart(_peekChar())) {
       _nextChar();
-      return _errorToken("illegal character in number");
+      return _errorToken('illegal character in number');
     }
 
     return _finishToken(kind);
@@ -262,7 +264,7 @@ abstract class TokenizerBase {
     var s;
     if (isMultiline) {
       // Skip initial newline in multiline strings
-      int start = _startIndex + 4;
+      var start = _startIndex + 4;
       if (_text[start] == '\n') start++;
       s = _text.substring(start, _index - 3);
     } else {
@@ -274,7 +276,7 @@ abstract class TokenizerBase {
   Token finishMultilineString(int quote) {
     var buf = <int>[];
     while (true) {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == 0) {
         return _errorToken();
       } else if (ch == quote) {
@@ -288,7 +290,7 @@ abstract class TokenizerBase {
       } else if (ch == TokenChar.BACKSLASH) {
         var escapeVal = readEscapeSequence();
         if (escapeVal == -1) {
-          return _errorToken("invalid hex escape sequence");
+          return _errorToken('invalid hex escape sequence');
         } else {
           buf.add(escapeVal);
         }
@@ -305,7 +307,7 @@ abstract class TokenizerBase {
         _maybeEatChar(TokenChar.NEWLINE);
         return finishMultilineString(quote);
       } else {
-        return _makeStringToken(List<int>(), false);
+        return _makeStringToken(<int>[], false);
       }
     }
     return finishStringBody(quote);
@@ -320,7 +322,7 @@ abstract class TokenizerBase {
       }
     }
     while (true) {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == quote) {
         return _makeRawStringToken(false);
       } else if (ch == 0) {
@@ -331,7 +333,7 @@ abstract class TokenizerBase {
 
   Token finishMultilineRawString(int quote) {
     while (true) {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == 0) {
         return _errorToken();
       } else if (ch == quote && _maybeEatChar(quote) && _maybeEatChar(quote)) {
@@ -341,9 +343,9 @@ abstract class TokenizerBase {
   }
 
   Token finishStringBody(int quote) {
-    var buf = List<int>();
+    var buf = <int>[];
     while (true) {
-      int ch = _nextChar();
+      var ch = _nextChar();
       if (ch == quote) {
         return _makeStringToken(buf, false);
       } else if (ch == 0) {
@@ -351,7 +353,7 @@ abstract class TokenizerBase {
       } else if (ch == TokenChar.BACKSLASH) {
         var escapeVal = readEscapeSequence();
         if (escapeVal == -1) {
-          return _errorToken("invalid hex escape sequence");
+          return _errorToken('invalid hex escape sequence');
         } else {
           buf.add(escapeVal);
         }
