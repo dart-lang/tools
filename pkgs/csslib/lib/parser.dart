@@ -2552,7 +2552,7 @@ class _Parser {
   ///
   /// We'll just parse everything after the 'progid:' look for the left paren
   /// then parse to the right paren ignoring everything in between.
-  processIEFilter(FileSpan startAfterProgidColon) {
+  dynamic processIEFilter(FileSpan startAfterProgidColon) {
     // Support non-functional filters (i.e. filter: FlipH)
     var kind = _peek();
     if (kind == TokenKind.SEMICOLON || kind == TokenKind.RBRACE) {

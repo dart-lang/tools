@@ -409,7 +409,7 @@ class _MediaRulesReplacer extends Visitor {
   _MediaRulesReplacer(this._ruleSet, this._newRules);
 
   @override
-  visitMediaDirective(MediaDirective node) {
+  void visitMediaDirective(MediaDirective node) {
     var index = node.rules.indexOf(_ruleSet);
     if (index != -1) {
       node.rules.insertAll(index + 1, _newRules);
@@ -521,7 +521,7 @@ class _TopLevelIncludeReplacer extends Visitor {
   _TopLevelIncludeReplacer(this._include, this._newRules);
 
   @override
-  visitStyleSheet(StyleSheet node) {
+  void visitStyleSheet(StyleSheet node) {
     var index = node.topLevels.indexOf(_include);
     if (index != -1) {
       node.topLevels.insertAll(index + 1, _newRules);

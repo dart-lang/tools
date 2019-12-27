@@ -1,10 +1,5 @@
 include: package:pedantic/analysis_options.yaml
 
-analyzer:
-  errors:
-    always_declare_return_types: ignore # 318
-    omit_local_variable_types: ignore # 48
-
 linter:
   rules:
   - prefer_equal_for_default_values

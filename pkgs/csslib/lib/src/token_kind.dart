@@ -569,7 +569,7 @@ class TokenKind {
   }
 
   static String decimalToHex(int number, [int minDigits = 1]) {
-    final String _HEX_DIGITS = '0123456789abcdef';
+    final _HEX_DIGITS = '0123456789abcdef';
 
     var result = <String>[];
 

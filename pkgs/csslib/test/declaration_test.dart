@@ -20,7 +20,7 @@ void expectCss(String css, String expected) {
 
 void testSimpleTerms() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 @ import url("test.css");
 .foo {
   background-color: #191919;
@@ -34,7 +34,7 @@ void testSimpleTerms() {
   length: 1.2in;
   -web-stuff: -10Px;
 }''';
-  final String generated = r'''
+  final generated = r'''
 @import "test.css";
 .foo {
   background-color: #191919;
@@ -55,11 +55,11 @@ void testSimpleTerms() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
-  final String input2 = r'''
+  final input2 = r'''
 * {
   border-color: green;
 }''';
-  final String generated2 = r'''
+  final generated2 = r'''
 * {
   border-color: #008000;
 }''';
@@ -86,7 +86,7 @@ void testSimpleTerms() {
 /// no quotes.  Hex values with # and letters, and functions (rgba, url, etc.)
 void testDeclarations() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 .more {
   color: white;
   color: black;
@@ -100,7 +100,7 @@ void testDeclarations() {
   color: rgba(10,20,255);  <!-- test CDO/CDC  -->
   color: #123aef;   /* hex # part integer and part identifier */
 }''';
-  final String generated = r'''
+  final generated = r'''
 .more {
   color: #fff;
   color: #000;
@@ -124,7 +124,7 @@ void testDeclarations() {
 
 void testIdentifiers() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 #da {
   height: 100px;
 }
@@ -133,7 +133,7 @@ void testIdentifiers() {
   color: #ff00cc;
 }
 ''';
-  final String generated = r'''
+  final generated = r'''
 #da {
   height: 100px;
 }
@@ -151,7 +151,7 @@ void testIdentifiers() {
 
 void testComposites() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 .xyzzy {
   border: 10px 80px 90px 100px;
   width: 99%;
@@ -161,7 +161,7 @@ void testComposites() {
     -webkit-transform: translate3d(0, 0, 0) scale(1.0);
   }
 }''';
-  final String generated = r'''
+  final generated = r'''
 .xyzzy {
   border: 10px 80px 90px 100px;
   width: 99%;
@@ -180,7 +180,7 @@ void testComposites() {
 
 void testUnits() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 #id-1 {
   transition: color 0.4s;
   animation-duration: 500ms;
@@ -218,7 +218,7 @@ void testUnits() {
 }
 ''';
 
-  final String generated = r'''
+  final generated = r'''
 #id-1 {
   transition: color 0.4s;
   animation-duration: 500ms;
@@ -264,7 +264,7 @@ void testUnits() {
 
 void testUnicode() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 .toggle:after {
   content: '✔';
   line-height: 43px;
@@ -274,7 +274,7 @@ void testUnicode() {
 }
 ''';
 
-  final String generated = r'''
+  final generated = r'''
 .toggle:after {
   content: '✔';
   line-height: 43px;
@@ -292,7 +292,7 @@ void testUnicode() {
 
 void testNewerCss() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 @media screen,print {
   .foobar_screen {
     width: 10px;
@@ -310,7 +310,7 @@ void testNewerCss() {
 @charset "ISO-8859-1";
 @charset 'ASCII';''';
 
-  final String generated = r'''
+  final generated = r'''
 @media screen, print {
 .foobar_screen {
   width: 10px;
@@ -683,13 +683,13 @@ void testViewport() {
 void testFontFace() {
   var errors = <Message>[];
 
-  final String input = '''
+  final input = '''
 @font-face {
   font-family: BBCBengali;
   src: url(fonts/BBCBengali.ttf) format("opentype");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
 }''';
-  final String generated = '''@font-face  {
+  final generated = '''@font-face  {
   font-family: BBCBengali;
   src: url("fonts/BBCBengali.ttf") format("opentype");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
@@ -700,13 +700,13 @@ void testFontFace() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
-  final String input1 = '''
+  final input1 = '''
 @font-face {
   font-family: Gentium;
   src: url(http://example.com/fonts/Gentium.ttf);
   src: url(http://example.com/fonts/Gentium.ttf);
 }''';
-  final String generated1 = '''@font-face  {
+  final generated1 = '''@font-face  {
   font-family: Gentium;
   src: url("http://example.com/fonts/Gentium.ttf");
   src: url("http://example.com/fonts/Gentium.ttf");
@@ -718,13 +718,13 @@ void testFontFace() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated1);
 
-  final String input2 = '''
+  final input2 = '''
 @font-face {
 src: url(ideal-sans-serif.woff) format("woff"),
      url(basic-sans-serif.ttf) format("opentype"),
      local(Gentium Bold);
 }''';
-  final String generated2 = '@font-face  {\n'
+  final generated2 = '@font-face  {\n'
       '  src: url("ideal-sans-serif.woff") '
       'format("woff"), url("basic-sans-serif.ttf") '
       'format("opentype"), local(Gentium Bold);\n}';
@@ -735,14 +735,14 @@ src: url(ideal-sans-serif.woff) format("woff"),
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated2);
 
-  final String input3 = '''@font-face {
+  final input3 = '''@font-face {
   font-family: MyGentium Text Ornaments;
   src: local(Gentium Bold),   /* full font name */
        local(Gentium-Bold),   /* Postscript name */
        url(GentiumBold.ttf);  /* otherwise, download it */
   font-weight: bold;
 }''';
-  final String generated3 = '''@font-face  {
+  final generated3 = '''@font-face  {
   font-family: MyGentium Text Ornaments;
   src: local(Gentium Bold), local(Gentium-Bold), url("GentiumBold.ttf");
   font-weight: bold;
@@ -754,13 +754,13 @@ src: url(ideal-sans-serif.woff) format("woff"),
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated3);
 
-  final String input4 = '''
+  final input4 = '''
 @font-face {
   font-family: STIXGeneral;
   src: local(STIXGeneral), url(/stixfonts/STIXGeneral.otf);
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
 }''';
-  final String generated4 = '''@font-face  {
+  final generated4 = '''@font-face  {
   font-family: STIXGeneral;
   src: local(STIXGeneral), url("/stixfonts/STIXGeneral.otf");
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
@@ -774,7 +774,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
 
 void testCssFile() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 @import 'simple.css'
 @import "test.css" print
 @import url(test.css) screen, print
@@ -809,7 +809,7 @@ div[href^='test'] {
 }
 ''';
 
-  final String generated = '@import "simple.css"; '
+  final generated = '@import "simple.css"; '
       '@import "test.css" print; '
       '@import "test.css" screen, print; '
       '@import "http://google.com/maps/maps.css";\n'
@@ -847,7 +847,7 @@ void testCompactEmitter() {
   var errors = <Message>[];
 
   // Check !import compactly emitted.
-  final String input = r'''
+  final input = r'''
 div {
   color: green !important;
   background: red blue green;
@@ -876,8 +876,7 @@ div {
   color: rgba(0, 0, 0, 0.2);
 }
 ''';
-  final String generated =
-      'div{color:green!important;background:red blue green}'
+  final generated = 'div{color:green!important;background:red blue green}'
       '.foo p[bar]{color:blue}'
       '@page{@top-left{color:red}}'
       '@page:first{}'
@@ -893,8 +892,8 @@ div {
   expect(compactOuptut(stylesheet), generated);
 
   // Check namespace directive compactly emitted.
-  final String input2 = '@namespace a url(http://www.example.org/a);';
-  final String generated2 = '@namespace a url(http://www.example.org/a);';
+  final input2 = '@namespace a url(http://www.example.org/a);';
+  final generated2 = '@namespace a url(http://www.example.org/a);';
 
   var stylesheet2 = parseCss(input2, errors: errors..clear());
 
@@ -906,7 +905,7 @@ div {
 void testNotSelectors() {
   var errors = <Message>[];
 
-  final String input = r'''
+  final input = r'''
 .details:not(.open-details) x-element,
 .details:not(.open-details) .summary {
   overflow: hidden;
@@ -951,7 +950,7 @@ html|*:not(:link):not(:visited) {
 
 *:not(:not([disabled])) { color: blue; }
 ''';
-  final String generated = r'''
+  final generated = r'''
 .details:not(.open-details) x-element, .details:not(.open-details) .summary {
   overflow: hidden;
 }
@@ -995,11 +994,11 @@ html|*:not(:link):not(:visited) {
 
 void testIE() {
   var errors = <Message>[];
-  final String input = '.test {\n'
+  final input = '.test {\n'
       '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
       '}';
-  final String generated = '.test {\n'
+  final generated = '.test {\n'
       '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670');\n"
       '}';
@@ -1010,13 +1009,13 @@ void testIE() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
-  final String input2 = '.test {\n'
+  final input2 = '.test {\n'
       '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
       '        progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n'
       '}';
 
-  final String generated2 = '.test {\n'
+  final generated2 = '.test {\n'
       '  filter: progid:DXImageTransform.Microsoft.gradient'
       "(GradientType=0,StartColorStr='#9d8b83', EndColorStr='#847670')\n"
       '         progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1);\n'
@@ -1028,7 +1027,7 @@ void testIE() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated2);
 
-  final String input3 = '''
+  final input3 = '''
 div {
   filter: alpha(opacity=80);          /* IE7 and under */
   -ms-filter: "Alpha(Opacity=40)";    /* IE8 and newer */
@@ -1042,7 +1041,7 @@ div {
       Phase=220, Strength=10);
 }
 ''';
-  final String generated3 = 'div {\n  filter: alpha(opacity=80);\n'
+  final generated3 = 'div {\n  filter: alpha(opacity=80);\n'
       '  -ms-filter: "Alpha(Opacity=40)";\n'
       '  Filter: Blur(Add = 0, Direction = 225, Strength = 10);\n'
       '  Filter: FlipV;\n  Filter: Gray;\n'
@@ -1354,7 +1353,7 @@ void twoCalcs() {
 
 void selectorWithCalcs() {
   var errors = <Message>[];
-  final String input = r'''
+  final input = r'''
 .foo {
   width: calc(1em + 5 * 2em);
   height: calc(1px + 2%) !important;
@@ -1362,7 +1361,7 @@ void selectorWithCalcs() {
   border: calc(5px + 1em) 0px 1px calc(10 + 20 + 1px);
   margin: 25px calc(50px + (100% / (3 - 1em) - 20%)) calc(10px + 10 * 20) calc(100% - 10px);
 }''';
-  final String generated = r'''
+  final generated = r'''
 .foo {
   width: calc(1em + 5 * 2em);
   height: calc(1px + 2%) !important;

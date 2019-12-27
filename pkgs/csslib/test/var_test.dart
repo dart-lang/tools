@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 import 'testing.dart';
 
-compileAndValidate(String input, String generated) {
+void compileAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
@@ -17,7 +17,7 @@ compileAndValidate(String input, String generated) {
   expect(prettyPrint(stylesheet), generated);
 }
 
-compilePolyfillAndValidate(String input, String generated) {
+void compilePolyfillAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = polyFillCompileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);
@@ -496,7 +496,7 @@ void undefinedVars() {
   expect(prettyPrint(stylesheet), generatedPolyfill);
 }
 
-parserVar() {
+void parserVar() {
   final input = '''
 :root {
   var-color-background: red;
@@ -656,7 +656,7 @@ parserVar() {
   compilePolyfillAndValidate(input, generatedPolyfill);
 }
 
-testVar() {
+void testVar() {
   final errors = <Message>[];
   final input = '''
 @color-background: red;
@@ -711,7 +711,7 @@ var-color-foreground: #00f;
   compileAndValidate(input2, generated2);
 }
 
-testLess() {
+void testLess() {
   final errors = <Message>[];
   final input = '''
 @color-background: red;

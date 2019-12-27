@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 import 'testing.dart';
 
-compileAndValidate(String input, String generated) {
+void compileAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: simpleOptions);
   expect(stylesheet != null, true);
@@ -17,7 +17,7 @@ compileAndValidate(String input, String generated) {
   expect(prettyPrint(stylesheet), generated);
 }
 
-selectorVariations() {
+void selectorVariations() {
   final input1 = r'''html { color: red; }''';
   final generated1 = r'''html {
   color: #f00;
@@ -479,7 +479,7 @@ void complexThis() {
   compileAndValidate(input2, generated2);
 }
 
-variationsThis() {
+void variationsThis() {
   final input1 = r'''
 .textLink {
   a {
@@ -590,7 +590,7 @@ light .leftCol .textLink a {
   compileAndValidate(input10, generated10);
 }
 
-thisCombinator() {
+void thisCombinator() {
   var input = r'''
 .btn {
   color: red;

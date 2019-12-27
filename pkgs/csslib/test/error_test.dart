@@ -248,7 +248,7 @@ error on line 1, column 18: Expected hex number
 
 void testBadUnicode() {
   var errors = <Message>[];
-  final String input = '''
+  final input = '''
 @font-face {
   src: url(fonts/BBCBengali.ttf) format("opentype");
   unicode-range: U+400-200;
@@ -266,7 +266,7 @@ void testBadUnicode() {
       '  │                    ^^^^^^^\n'
       '  ╵');
 
-  final String input2 = '''
+  final input2 = '''
 @font-face {
   src: url(fonts/BBCBengali.ttf) format("opentype");
   unicode-range: U+12FFFF;
@@ -288,7 +288,7 @@ void testBadNesting() {
   var errors = <Message>[];
 
   // Test for bad declaration in a nested rule.
-  final String input = '''
+  final input = '''
 div {
   width: 20px;
   span + ul { color: blue; }
@@ -309,7 +309,7 @@ div {
   expect(errorMessage.span.text, '#ffghghgh');
 
   // Test for bad selector syntax.
-  final String input2 = '''
+  final input2 = '''
 div {
   span + ul #aaaa > (3333)  {
     color: #ffghghgh;
@@ -347,7 +347,7 @@ div {
   expect(errorMessage.span.text, '(');
 
   // Test for missing close braces and bad declaration.
-  final String input3 = '''
+  final input3 = '''
 div {
   span {
     color: #green;

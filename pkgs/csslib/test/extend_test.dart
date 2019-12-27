@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 import 'testing.dart';
 
-compileAndValidate(String input, String generated) {
+void compileAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: options);
   expect(stylesheet != null, true);

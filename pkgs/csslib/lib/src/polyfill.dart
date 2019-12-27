@@ -66,7 +66,7 @@ class _VarDefinitionsIncludes extends Visitor {
   }
 
   @override
-  visitVarDefinition(VarDefinition node) {
+  void visitVarDefinition(VarDefinition node) {
     // Replace with latest variable definition.
     varDefs[node.definedName] = node;
     super.visitVarDefinition(node);
@@ -96,7 +96,7 @@ class _VarDefAndUsage extends Visitor {
   }
 
   @override
-  visitVarDefinition(VarDefinition node) {
+  void visitVarDefinition(VarDefinition node) {
     // Replace with latest variable definition.
     currVarDefinition = node;
 
@@ -198,7 +198,8 @@ class _VarDefAndUsage extends Visitor {
     return result;
   }
 
-  _resolveVarUsage(List<Expression> expressions, int index, VarDefinition def) {
+  void _resolveVarUsage(
+      List<Expression> expressions, int index, VarDefinition def) {
     var defExpressions = (def.expression as Expressions).expressions;
     expressions.replaceRange(index, index + 1, defExpressions);
   }
