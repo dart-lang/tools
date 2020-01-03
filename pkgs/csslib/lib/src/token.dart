@@ -41,7 +41,7 @@ class Token {
 
 /// A token containing a parsed literal value.
 class LiteralToken extends Token {
-  var value;
+  dynamic value;
   LiteralToken(int kind, FileSpan span, this.value) : super(kind, span);
 }
 

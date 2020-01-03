@@ -261,7 +261,7 @@ abstract class TokenizerBase {
   }
 
   Token _makeRawStringToken(bool isMultiline) {
-    var s;
+    String s;
     if (isMultiline) {
       // Skip initial newline in multiline strings
       var start = _startIndex + 4;

@@ -547,7 +547,7 @@ class _TopLevelIncludeReplacer extends Visitor {
 /// Utility function to match an include to a list of either Declarations or
 /// RuleSets, depending on type of mixin (ruleset or declaration).  The include
 /// can be an include in a declaration or an include directive (top-level).
-int _findInclude(List list, var node) {
+int _findInclude(List list, TreeNode node) {
   IncludeDirective matchNode =
       (node is IncludeMixinAtDeclaration) ? node.include : node;
 
@@ -844,13 +844,13 @@ class DeclarationIncludes extends Visitor {
 
 /// @include as a top-level with ruleset(s).
 class _IncludeReplacer extends Visitor {
-  final _include;
+  final TreeNode _include;
   final List<TreeNode> _newDeclarations;
 
   /// Look for the [ruleSet] inside of a @media directive; if found then replace
   /// with the [newRules].
   static void replace(
-      StyleSheet ss, var include, List<TreeNode> newDeclarations) {
+      StyleSheet ss, TreeNode include, List<TreeNode> newDeclarations) {
     var visitor = _IncludeReplacer(include, newDeclarations);
     visitor.visitStyleSheet(ss);
   }

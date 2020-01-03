@@ -549,7 +549,7 @@ class _Parser {
         _next();
 
         // Page name
-        var name;
+        Identifier name;
         if (_peekIdentifier()) {
           name = identifier();
         }
@@ -666,7 +666,7 @@ class _Parser {
         //     '}'
         _next();
 
-        var name;
+        dynamic name;
         if (_peekIdentifier()) {
           name = identifier();
         }
@@ -897,7 +897,7 @@ class _Parser {
       }
     } else if (mixinParameter && _peekToken.kind == TokenKind.VAR_DEFINITION) {
       _next();
-      var definedName;
+      Identifier definedName;
       if (_peekIdentifier()) definedName = identifier();
 
       Expressions exprs;
@@ -917,7 +917,7 @@ class _Parser {
     //     @include IDENT [(args,...)];
     _next();
 
-    var name;
+    Identifier name;
     if (_peekIdentifier()) {
       name = identifier();
     }
@@ -931,7 +931,7 @@ class _Parser {
     // the first has 3 terms and the second has 1 term.
     if (_maybeEat(TokenKind.LPAREN)) {
       var terms = <Expression>[];
-      var expr;
+      dynamic expr;
       var keepGoing = true;
       while (keepGoing && (expr = processTerm()) != null) {
         // VarUsage is returns as a list
@@ -960,7 +960,7 @@ class _Parser {
     _next(); // '@-moz-document'
     var functions = <LiteralTerm>[];
     do {
-      var function;
+      LiteralTerm function;
 
       // Consume function token: IDENT '('
       var ident = identifier();
@@ -1431,7 +1431,7 @@ class _Parser {
     //              than the error message for element.  Should consolidate the
     //              code.
     // TODO(terry): Need to handle attribute namespace too.
-    var first;
+    dynamic first;
     var start = _peekToken.span;
     switch (_peek()) {
       case TokenKind.ASTERISK:
@@ -1632,7 +1632,7 @@ class _Parser {
     var expressions = <Expression>[];
 
     Token termToken;
-    var value;
+    dynamic value;
 
     var keepParsing = true;
     while (keepParsing) {
@@ -1719,7 +1719,7 @@ class _Parser {
           op = TokenKind.NO_MATCH;
       }
 
-      var value;
+      dynamic value;
       if (op != TokenKind.NO_MATCH) {
         // Operator hit so we require a value too.
         if (_peekIdentifier()) {
@@ -2158,7 +2158,7 @@ class _Parser {
     var expressions = Expressions(_makeSpan(start));
 
     var keepGoing = true;
-    var expr;
+    dynamic expr;
     while (keepGoing && (expr = processTerm(ieFilter)) != null) {
       Expression op;
 
@@ -2242,7 +2242,7 @@ class _Parser {
       [bool ieFilter = false]) {
     var start = _peekToken.span;
     Token t; // token for term's value
-    var value; // value of term (numeric values)
+    dynamic value; // value of term (numeric values)
 
     var unary = '';
     switch (_peek()) {

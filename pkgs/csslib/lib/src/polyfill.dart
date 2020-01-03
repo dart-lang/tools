@@ -174,7 +174,7 @@ class _VarDefAndUsage extends Visitor {
     var result = <Expression>[];
 
     var varDef = _knownVarDefs[usage.name];
-    var expressions;
+    List<Expression> expressions;
     if (varDef == null) {
       // VarDefinition not found try the defaultValues.
       expressions = usage.defaultValues;

@@ -171,7 +171,7 @@ class SimpleSelectorSequence extends TreeNode {
 // All other selectors (element, #id, .class, attribute, pseudo, negation,
 // namespace, *) are derived from this selector.
 abstract class SimpleSelector extends TreeNode {
-  final _name; // Wildcard, ThisOperator, Identifier, Negation, others?
+  final dynamic _name; // Wildcard, ThisOperator, Identifier, Negation, others?
 
   SimpleSelector(this._name, SourceSpan span) : super(span);
 
@@ -200,7 +200,7 @@ class ElementSelector extends SimpleSelector {
 
 // namespace|element
 class NamespaceSelector extends SimpleSelector {
-  final _namespace; // null, Wildcard or Identifier
+  final dynamic _namespace; // null, Wildcard or Identifier
 
   NamespaceSelector(this._namespace, var name, SourceSpan span)
       : super(name, span);
@@ -1689,7 +1689,7 @@ class BorderExpression extends BoxExpression {
 }
 
 class HeightExpression extends DartStyleExpression {
-  final height;
+  final dynamic height;
 
   HeightExpression(SourceSpan span, this.height)
       : super(DartStyleExpression.heightStyle, span);
@@ -1712,7 +1712,7 @@ class HeightExpression extends DartStyleExpression {
 }
 
 class WidthExpression extends DartStyleExpression {
-  final width;
+  final dynamic width;
 
   WidthExpression(SourceSpan span, this.width)
       : super(DartStyleExpression.widthStyle, span);
