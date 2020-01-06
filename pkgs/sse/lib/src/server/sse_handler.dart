@@ -37,7 +37,7 @@ class SseConnection extends StreamChannelMixin<String> {
   Timer _keepAliveTimer;
 
   /// Whether this connection is currently in the KeepAlive timeout period.
-  bool get isInKeepAlivePeriod => _keepAliveTimer?.isActive ?? false;
+  bool get _isInKeepAlivePeriod => _keepAliveTimer?.isActive ?? false;
 
   final _closedCompleter = Completer<void>();
 
@@ -60,7 +60,7 @@ class SseConnection extends StreamChannelMixin<String> {
     while (await outgoingStreamQueue.hasNext) {
       // If we're in a KeepAlive timeout, there's nowhere to send messages so
       // wait a short period and check again.
-      if (isInKeepAlivePeriod) {
+      if (_isInKeepAlivePeriod) {
         await Future.delayed(const Duration(milliseconds: 200));
         continue;
       }
@@ -105,7 +105,7 @@ class SseConnection extends StreamChannelMixin<String> {
     if (_keepAlive == null) {
       // Close immediately if we're not keeping alive.
       _close();
-    } else if (!isInKeepAlivePeriod) {
+    } else if (!_isInKeepAlivePeriod) {
       // Otherwise if we didn't already have an active timer, set a timer to
       // close after the timeout period. If the connection comes back, this will
       // be cancelled and all messages left in the queue tried again.
@@ -155,7 +155,7 @@ class SseHandler {
       // Check if we already have a connection for this ID that is in the process
       // of timing out (in which case we can reconnect it transparently).
       if (_connections[clientId] != null &&
-          _connections[clientId].isInKeepAlivePeriod) {
+          _connections[clientId]._isInKeepAlivePeriod) {
         _connections[clientId]._acceptReconnection(sink);
       } else {
         var connection = SseConnection(sink, keepAlive: _keepAlive);

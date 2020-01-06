@@ -1,3 +1,10 @@
+## 3.1.1
+
+- Make `isInKeepAlive` on `SseConnection` private.
+
+**Note that this is a breaking change but in actuality no one should be
+  depending on this API.**
+
 ## 3.1.0
 
 - Add optional `keepAlive` parameter to the `SseHandler`. If `keepAlive` is
@@ -9,8 +16,8 @@
 
 - Add retry logic.
 
-** Possible Breaking Change ** Error messages may now be delayed up to 5 seconds
-in the client.
+**Possible Breaking Change Error messages may now be delayed up to 5 seconds
+  in the client.**
 
 ## 2.1.2
 
