@@ -1,5 +1,5 @@
 name: sse
-version: 3.0.0
+version: 3.1.0
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/sse
 description: >-
@@ -8,7 +8,7 @@ description: >-
   requests.
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
   async: ^2.0.8

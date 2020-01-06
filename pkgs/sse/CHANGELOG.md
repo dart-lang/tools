@@ -1,3 +1,10 @@
+## 3.1.0
+
+- Add optional `keepAlive` parameter to the `SseHandler`. If `keepAlive` is
+  supplied, the connection will remain active for this period after a
+  disconnect and can be reconnected transparently. If there is no reconnect
+  within that period, the connection will be closed normally.
+
 ## 3.0.0
 
 - Add retry logic.
