@@ -140,8 +140,8 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
         (message) => _inner.sink.add([0, message]),
         onDone: () => _closeChannel(0, 0));
 
-    _innerStreamSubscription = _inner.stream.listen((message) {
-      var id = message[0];
+    _innerStreamSubscription = _inner.stream.cast<List>().listen((message) {
+      var id = message[0] as int;
 
       // If the channel was closed before an incoming message was processed,
       // ignore that message.
@@ -156,7 +156,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
       });
 
       if (message.length > 1) {
-        controller.local.sink.add(message[1]);
+        controller.local.sink.add(message[1] as T);
       } else {
         // A message without data indicates that the channel has been closed. We
         // can just close the sink here without doing any more cleanup, because
