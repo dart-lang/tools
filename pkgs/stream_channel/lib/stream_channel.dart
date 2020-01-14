@@ -176,5 +176,5 @@ abstract class StreamChannelMixin<T> implements StreamChannel<T> {
 
   @override
   StreamChannel<S> cast<S>() => StreamChannel(
-      DelegatingStream.typed(stream), DelegatingStreamSink.typed(sink));
+      stream.cast(), StreamController(sync: true)..stream.cast<T>().pipe(sink));
 }
