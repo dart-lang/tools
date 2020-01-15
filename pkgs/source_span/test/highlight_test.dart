@@ -140,12 +140,28 @@ zip zap zop
   '"""));
   });
 
+  test('highlights text including a trailing newline', () {
+    expect(file.span(8, 12).highlight(), equals("""
+  ,
+1 | foo bar baz
+  |         ^^^
+  '"""));
+  });
+
   test('highlights a single empty line', () {
     expect(
         SourceFile.fromString('foo\n\nbar').span(4, 5).highlight(), equals("""
   ,
 2 | 
   | ^
+  '"""));
+  });
+
+  test('highlights a trailing newline', () {
+    expect(file.span(11, 12).highlight(), equals("""
+  ,
+1 | foo bar baz
+  |            ^
   '"""));
   });
 
@@ -383,6 +399,21 @@ whiz bang boom
   '"""));
       });
 
+      test('at the beginning of the first highlighted line', () {
+        final span = SourceFile.fromString('''
+foo bar\tbaz
+whiz bang boom
+''').span(7, 21);
+
+        expect(span.highlight(), equals("""
+  ,
+1 |   foo bar    baz
+  | ,--------^
+2 | | whiz bang boom
+  | '---------^
+  '"""));
+      });
+
       test('within a middle highlighted line', () {
         final span = SourceFile.fromString('''
 foo bar baz
@@ -412,6 +443,21 @@ whiz\tbang boom
   | ,-----^
 2 | | whiz    bang boom
   | '------------^
+  '"""));
+      });
+
+      test('at the end of the last highlighted line', () {
+        final span = SourceFile.fromString('''
+foo bar baz
+whiz\tbang boom
+''').span(4, 17);
+
+        expect(span.highlight(), equals("""
+  ,
+1 |   foo bar baz
+  | ,-----^
+2 | | whiz    bang boom
+  | '--------^
   '"""));
       });
 
@@ -498,7 +544,7 @@ whiz bang\tboom
       expect(file.span(4, 7).highlight(color: true), equals('''
 ${colors.blue}  ,${colors.none}
 ${colors.blue}1 |${colors.none} foo ${colors.red}bar${colors.none} baz
-${colors.blue}  |${colors.none}     ${colors.red}^^^${colors.none}
+${colors.blue}  |${colors.none} ${colors.red}    ^^^${colors.none}
 ${colors.blue}  '${colors.none}'''));
     });
 
@@ -506,7 +552,7 @@ ${colors.blue}  '${colors.none}'''));
       expect(file.span(4, 7).highlight(color: colors.yellow), equals('''
 ${colors.blue}  ,${colors.none}
 ${colors.blue}1 |${colors.none} foo ${colors.yellow}bar${colors.none} baz
-${colors.blue}  |${colors.none}     ${colors.yellow}^^^${colors.none}
+${colors.blue}  |${colors.none} ${colors.yellow}    ^^^${colors.none}
 ${colors.blue}  '${colors.none}'''));
     });
 
@@ -514,19 +560,19 @@ ${colors.blue}  '${colors.none}'''));
       expect(file.span(4, 34).highlight(color: true), equals('''
 ${colors.blue}  ,${colors.none}
 ${colors.blue}1 |${colors.none}   foo ${colors.red}bar baz${colors.none}
-${colors.blue}  |${colors.none} ${colors.red},-----^${colors.none}
-${colors.blue}2 |${colors.none} ${colors.red}| whiz bang boom${colors.none}
-${colors.blue}3 |${colors.none} ${colors.red}| zip zap${colors.none} zop
-${colors.blue}  |${colors.none} ${colors.red}'-------^${colors.none}
+${colors.blue}  |${colors.none} ${colors.red},${colors.none}${colors.red}-----^${colors.none}
+${colors.blue}2 |${colors.none} ${colors.red}|${colors.none} ${colors.red}whiz bang boom${colors.none}
+${colors.blue}3 |${colors.none} ${colors.red}|${colors.none} ${colors.red}zip zap${colors.none} zop
+${colors.blue}  |${colors.none} ${colors.red}'${colors.none}${colors.red}-------^${colors.none}
 ${colors.blue}  '${colors.none}'''));
     });
 
     test('colorizes a multiline span that highlights full lines', () {
       expect(file.span(0, 39).highlight(color: true), equals('''
 ${colors.blue}  ,${colors.none}
-${colors.blue}1 |${colors.none} ${colors.red}/ foo bar baz${colors.none}
-${colors.blue}2 |${colors.none} ${colors.red}| whiz bang boom${colors.none}
-${colors.blue}3 |${colors.none} ${colors.red}\\ zip zap zop${colors.none}
+${colors.blue}1 |${colors.none} ${colors.red}/${colors.none} ${colors.red}foo bar baz${colors.none}
+${colors.blue}2 |${colors.none} ${colors.red}|${colors.none} ${colors.red}whiz bang boom${colors.none}
+${colors.blue}3 |${colors.none} ${colors.red}\\${colors.none} ${colors.red}zip zap zop${colors.none}
 ${colors.blue}  '${colors.none}'''));
     });
   });

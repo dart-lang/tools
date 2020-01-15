@@ -1,3 +1,11 @@
+# 1.6.0
+
+* Add support for highlighting multiple source spans at once, providing more
+  context for span-based messages. This is exposed through the new APIs
+  `SourceSpan.highlightMultiple()` and `SourceSpan.messageMultiple()` (both
+  extension methods), `MultiSourceSpanException`, and
+  `MultiSourceSpanFormatException`.
+
 # 1.5.6
 
 * Fix padding around line numbers that are powers of 10 in

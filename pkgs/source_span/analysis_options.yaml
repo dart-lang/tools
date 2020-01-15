@@ -2,6 +2,9 @@ include: package:pedantic/analysis_options.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
+  errors:
+    # TODO(natebosch): fix and re-enable.
+    prefer_single_quotes: ignore
 linter:
   rules:
   - always_declare_return_types
@@ -26,7 +29,8 @@ linter:
   - await_only_futures
   - camel_case_types
   - cancel_subscriptions
-  - cascade_invocations
+  # TODO(natebosch): fix and re-enable.
+  #- cascade_invocations
   - comment_references
   - constant_identifier_names
   - control_flow_in_finally
@@ -59,14 +63,15 @@ linter:
   - prefer_contains
   - prefer_equal_for_default_values
   - prefer_final_fields
-  - prefer_final_locals
+  # TODO(natebosch): fix and re-enable.
+  #- prefer_final_locals
   - prefer_generic_function_type_aliases
   - prefer_initializing_formals
-  - prefer_interpolation_to_compose_strings
+  # TODO(natebosch): fix and re-enable.
+  #- prefer_interpolation_to_compose_strings
   - prefer_is_empty
   - prefer_is_not_empty
   - prefer_null_aware_operators
-  - prefer_single_quotes
   - prefer_typing_uninitialized_variables
   - recursive_getters
   - slash_for_doc_comments

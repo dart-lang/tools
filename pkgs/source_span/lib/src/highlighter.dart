@@ -5,6 +5,9 @@
 import 'dart:math' as math;
 
 import 'package:charcode/charcode.dart';
+import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'colors.dart' as colors;
@@ -15,25 +18,26 @@ import 'utils.dart';
 
 /// A class for writing a chunk of text with a particular span highlighted.
 class Highlighter {
-  /// The span to highlight.
-  final SourceSpanWithContext _span;
+  /// The lines to display, including context around the highlighted spans.
+  final List<_Line> _lines;
 
-  /// The color to highlight [_span] within its context, or `null` if the span
-  /// should not be colored.
-  final String _color;
+  /// The color to highlight the primary [_Highlight] within its context, or
+  /// `null` if it should not be colored.
+  final String _primaryColor;
 
-  /// Whether [_span] covers multiple lines.
-  final bool _multiline;
+  /// The color to highlight the secondary [_Highlight]s within their context,
+  /// or `null` if they should not be colored.
+  final String _secondaryColor;
 
   /// The number of characters before the bar in the sidebar.
   final int _paddingBeforeSidebar;
 
-  // The number of characters between the bar in the sidebar and the text
-  // being highlighted.
-  int get _paddingAfterSidebar =>
-      // This is just a space for a single-line span, but for a multi-line span
-      // needs to accommodate " | ".
-      _multiline ? 3 : 1;
+  /// The maximum number of multiline spans that cover any part of a single
+  /// line in [_lines].
+  final int _maxMultilineSpans;
+
+  /// Whether [_lines] includes lines from multiple different files.
+  final bool _multipleFiles;
 
   /// The buffer to which to write the result.
   final _buffer = StringBuffer();
@@ -44,28 +48,478 @@ class Highlighter {
   /// alignment.
   static const _spacesPerTab = 4;
 
-  /// Creates a [Highlighter] that will return a message associated with [span]
-  /// when [highlight] is called.
+  /// Creates a [Highlighter] that will return a string highlighting [span]
+  /// within the text of its file when [highlight] is called.
   ///
   /// [color] may either be a [String], a [bool], or `null`. If it's a string,
-  /// it indicates an [ANSI terminal color escape][] that should
-  /// be used to highlight the span's text (for example, `"\u001b[31m"` will
-  /// color red). If it's `true`, it indicates that the text should be
-  /// highlighted using the default color. If it's `false` or `null`, it
-  /// indicates that the text shouldn't be highlighted.
+  /// it indicates an [ANSI terminal color escape][] that should be used to
+  /// highlight [span]'s text (for example, `"\u001b[31m"` will color red). If
+  /// it's `true`, it indicates that the text should be highlighted using the
+  /// default color. If it's `false` or `null`, it indicates that no color
+  /// should be used.
   ///
   /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-  factory Highlighter(SourceSpan span, {color}) {
-    if (color == true) color = colors.red;
-    if (color == false) color = null;
+  Highlighter(SourceSpan span, {color})
+      : this._(_collateLines([_Highlight(span, primary: true)]), () {
+          if (color == true) return colors.red;
+          if (color == false) return null;
+          return color as String;
+        }(), null);
 
-    var newSpan = _normalizeContext(span);
-    newSpan = _normalizeNewlines(newSpan);
-    newSpan = _normalizeTrailingNewline(newSpan);
-    newSpan = _normalizeEndOfLine(newSpan);
+  /// Creates a [Highlighter] that will return a string highlighting
+  /// [primarySpan] as well as all the spans in [secondarySpans] within the text
+  /// of their file when [highlight] is called.
+  ///
+  /// Each span has an associated label that will be written alongside it. For
+  /// [primarySpan] this message is [primaryLabel], and for [secondarySpans] the
+  /// labels are the map values.
+  ///
+  /// If [color] is `true`, this will use [ANSI terminal color escapes][] to
+  /// highlight the text. The [primarySpan] will be highlighted with
+  /// [primaryColor] (which defaults to red), and the [secondarySpans] will be
+  /// highlighted with [secondaryColor] (which defaults to blue). These
+  /// arguments are ignored if [color] is `false`.
+  ///
+  /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+  Highlighter.multiple(SourceSpan primarySpan, String primaryLabel,
+      Map<SourceSpan, String> secondarySpans,
+      {bool color = false, String primaryColor, String secondaryColor})
+      : this._(
+            _collateLines([
+              _Highlight(primarySpan, label: primaryLabel, primary: true),
+              for (var entry in secondarySpans.entries)
+                _Highlight(entry.key, label: entry.value)
+            ]),
+            color ? (primaryColor ?? colors.red) : null,
+            color ? (secondaryColor ?? colors.blue) : null);
 
-    return Highlighter._(newSpan, color as String);
+  Highlighter._(this._lines, this._primaryColor, this._secondaryColor)
+      : _paddingBeforeSidebar = 1 +
+            math.max<int>(
+                // In a purely mathematical world, floor(log10(n)) would give the
+                // number of digits in n, but floating point errors render that
+                // unreliable in practice.
+                (_lines.last.number + 1).toString().length,
+                // If [_lines] aren't contiguous, we'll write "..." in place of a
+                // line number.
+                _contiguous(_lines) ? 0 : 3),
+        _maxMultilineSpans = _lines
+            .map((line) => line.highlights
+                .where((highlight) => isMultiline(highlight.span))
+                .length)
+            .reduce(math.max),
+        _multipleFiles = !isAllTheSame(_lines.map((line) => line.url));
+
+  /// Returns whether [lines] contains any adjacent lines from the same source
+  /// file that aren't adjacent in the original file.
+  static bool _contiguous(List<_Line> lines) {
+    for (var i = 0; i < lines.length - 1; i++) {
+      var thisLine = lines[i];
+      var nextLine = lines[i + 1];
+      if (thisLine.number + 1 != nextLine.number &&
+          thisLine.url == nextLine.url) {
+        return false;
+      }
+    }
+    return true;
   }
+
+  /// Collect all the source lines from the contexts of all spans in
+  /// [highlights], and associates them with the highlights that cover them.
+  static List<_Line> _collateLines(List<_Highlight> highlights) {
+    var highlightsByUrl =
+        groupBy(highlights, (highlight) => highlight.span.sourceUrl);
+    for (var list in highlightsByUrl.values) {
+      list.sort((highlight1, highlight2) =>
+          highlight1.span.compareTo(highlight2.span));
+    }
+
+    return highlightsByUrl.values.expand((highlightsForFile) {
+      // First, create a list of all the lines in the current file that we have
+      // context for along with their line numbers.
+      var lines = <_Line>[];
+      for (var highlight in highlightsForFile) {
+        var context = highlight.span.context;
+        // If [highlight.span.context] contains lines prior to the one
+        // [highlight.span.text] appears on, write those first.
+        var lineStart = findLineStart(
+            context, highlight.span.text, highlight.span.start.column);
+        assert(lineStart != null); // enforced by [_normalizeContext]
+
+        var linesBeforeSpan =
+            '\n'.allMatches(context.substring(0, lineStart)).length;
+
+        var url = highlight.span.sourceUrl;
+        var lineNumber = highlight.span.start.line - linesBeforeSpan;
+        for (var line in context.split('\n')) {
+          // Only add a line if it hasn't already been added for a previous span.
+          if (lines.isEmpty || lineNumber > lines.last.number) {
+            lines.add(_Line(line, lineNumber, url));
+          }
+          lineNumber++;
+        }
+      }
+
+      // Next, associate each line with each highlights that covers it.
+      var activeHighlights = <_Highlight>[];
+      var highlightIndex = 0;
+      for (var line in lines) {
+        activeHighlights.removeWhere((highlight) =>
+            highlight.span.sourceUrl != line.url ||
+            highlight.span.end.line < line.number);
+
+        var oldHighlightLength = activeHighlights.length;
+        for (var highlight in highlightsForFile.skip(highlightIndex)) {
+          if (highlight.span.start.line > line.number) break;
+          if (highlight.span.sourceUrl != line.url) break;
+          activeHighlights.add(highlight);
+        }
+        highlightIndex += activeHighlights.length - oldHighlightLength;
+
+        line.highlights.addAll(activeHighlights);
+      }
+
+      return lines;
+    }).toList();
+  }
+
+  /// Returns the highlighted span text.
+  ///
+  /// This method should only be called once.
+  String highlight() {
+    _writeFileStart(_lines.first.url);
+
+    // Each index of this list represents a column after the sidebar that could
+    // contain a line indicating an active highlight. If it's `null`, that
+    // column is empty; if it contains a highlight, it should be drawn for that column.
+    var highlightsByColumn = List<_Highlight>(_maxMultilineSpans);
+
+    for (var i = 0; i < _lines.length; i++) {
+      var line = _lines[i];
+      if (i > 0) {
+        var lastLine = _lines[i - 1];
+        if (lastLine.url != line.url) {
+          _writeSidebar(end: glyph.upEnd);
+          _buffer.writeln();
+          _writeFileStart(line.url);
+        } else if (lastLine.number + 1 != line.number) {
+          _writeSidebar(text: '...');
+          _buffer.writeln();
+        }
+      }
+
+      // If a highlight covers the entire first line other than initial
+      // whitespace, don't bother pointing out exactly where it begins. Iterate
+      // in reverse so that longer highlights (which are sorted after shorter
+      // highlights) appear further out, leading to fewer crossed lines.
+      for (var highlight in line.highlights.reversed) {
+        if (isMultiline(highlight.span) &&
+            highlight.span.start.line == line.number &&
+            _isOnlyWhitespace(
+                line.text.substring(0, highlight.span.start.column))) {
+          replaceFirstNull(highlightsByColumn, highlight);
+        }
+      }
+
+      _writeSidebar(line: line.number);
+      _buffer.write(' ');
+      _writeMultilineHighlights(line, highlightsByColumn);
+      if (highlightsByColumn.isNotEmpty) _buffer.write(' ');
+
+      var primary = line.highlights
+          .firstWhere((highlight) => highlight.isPrimary, orElse: () => null);
+      if (primary != null) {
+        _writeHighlightedText(
+            line.text,
+            primary.span.start.line == line.number
+                ? primary.span.start.column
+                : 0,
+            primary.span.end.line == line.number
+                ? primary.span.end.column
+                : line.text.length,
+            color: _primaryColor);
+      } else {
+        _writeText(line.text);
+      }
+      _buffer.writeln();
+
+      // Always write the primary span's indicator first so that it's right next
+      // to the highlighted text.
+      if (primary != null) _writeIndicator(line, primary, highlightsByColumn);
+      for (var highlight in line.highlights) {
+        if (highlight.isPrimary) continue;
+        _writeIndicator(line, highlight, highlightsByColumn);
+      }
+    }
+
+    _writeSidebar(end: glyph.upEnd);
+    return _buffer.toString();
+  }
+
+  /// Writes the beginning of the file highlight for the file with the given
+  /// [url].
+  void _writeFileStart(Uri url) {
+    if (!_multipleFiles || url == null) {
+      _writeSidebar(end: glyph.downEnd);
+    } else {
+      _writeSidebar(end: glyph.topLeftCorner);
+      _colorize(() => _buffer.write("${glyph.horizontalLine * 2}>"),
+          color: colors.blue);
+      _buffer.write(" ${p.prettyUri(url)}");
+    }
+    _buffer.writeln();
+  }
+
+  /// Writes the post-sidebar highlight bars for [line] according to
+  /// [highlightsByColumn].
+  ///
+  /// If [current] is passed, it's the highlight for which an indicator is being
+  /// written. If it appears in [highlightsByColumn], a horizontal line is
+  /// written from its column to the rightmost column.
+  void _writeMultilineHighlights(
+      _Line line, List<_Highlight> highlightsByColumn,
+      {_Highlight current}) {
+    // Whether we've written a sidebar indicator for opening a new span on this
+    // line, and which color should be used for that indicator's rightward line.
+    var openedOnThisLine = false;
+    String openedOnThisLineColor;
+
+    var currentColor = current == null
+        ? null
+        : current.isPrimary ? _primaryColor : _secondaryColor;
+    var foundCurrent = false;
+    for (var highlight in highlightsByColumn) {
+      var startLine = highlight?.span?.start?.line;
+      var endLine = highlight?.span?.end?.line;
+      if (current != null && highlight == current) {
+        foundCurrent = true;
+        assert(startLine == line.number || endLine == line.number);
+        _colorize(() {
+          _buffer.write(startLine == line.number
+              ? glyph.topLeftCorner
+              : glyph.bottomLeftCorner);
+        }, color: currentColor);
+      } else if (foundCurrent) {
+        _colorize(() {
+          _buffer.write(highlight == null ? glyph.horizontalLine : glyph.cross);
+        }, color: currentColor);
+      } else if (highlight == null) {
+        if (openedOnThisLine) {
+          _colorize(() => _buffer.write(glyph.horizontalLine),
+              color: openedOnThisLineColor);
+        } else {
+          _buffer.write(' ');
+        }
+      } else {
+        _colorize(() {
+          var vertical = openedOnThisLine ? glyph.cross : glyph.verticalLine;
+          if (current != null) {
+            _buffer.write(vertical);
+          } else if (startLine == line.number) {
+            _colorize(() {
+              _buffer
+                  .write(glyph.glyphOrAscii(openedOnThisLine ? '┬' : '┌', '/'));
+            }, color: openedOnThisLineColor);
+            openedOnThisLine = true;
+            openedOnThisLineColor ??=
+                highlight.isPrimary ? _primaryColor : _secondaryColor;
+          } else if (endLine == line.number &&
+              highlight.span.end.column == line.text.length) {
+            _buffer.write(highlight.label == null
+                ? glyph.glyphOrAscii('└', '\\')
+                : vertical);
+          } else {
+            _colorize(() {
+              _buffer.write(vertical);
+            }, color: openedOnThisLineColor);
+          }
+        }, color: highlight.isPrimary ? _primaryColor : _secondaryColor);
+      }
+    }
+  }
+
+  // Writes [text], with text between [startColumn] and [endColumn] colorized in
+  // the same way as [_colorize].
+  void _writeHighlightedText(String text, int startColumn, int endColumn,
+      {@required String color}) {
+    _writeText(text.substring(0, startColumn));
+    _colorize(() => _writeText(text.substring(startColumn, endColumn)),
+        color: color);
+    _writeText(text.substring(endColumn, text.length));
+  }
+
+  /// Writes an indicator for where [highlight] starts, ends, or both below
+  /// [line].
+  ///
+  /// This may either add or remove [highlight] from [highlightsByColumn].
+  void _writeIndicator(
+      _Line line, _Highlight highlight, List<_Highlight> highlightsByColumn) {
+    var color = highlight.isPrimary ? _primaryColor : _secondaryColor;
+    if (!isMultiline(highlight.span)) {
+      _writeSidebar();
+      _buffer.write(' ');
+      _writeMultilineHighlights(line, highlightsByColumn, current: highlight);
+      if (highlightsByColumn.isNotEmpty) _buffer.write(' ');
+
+      _colorize(() {
+        _writeUnderline(line, highlight.span,
+            highlight.isPrimary ? "^" : glyph.horizontalLineBold);
+        _writeLabel(highlight.label);
+      }, color: color);
+      _buffer.writeln();
+    } else if (highlight.span.start.line == line.number) {
+      if (highlightsByColumn.contains(highlight)) return;
+      replaceFirstNull(highlightsByColumn, highlight);
+
+      _writeSidebar();
+      _buffer.write(' ');
+      _writeMultilineHighlights(line, highlightsByColumn, current: highlight);
+      _colorize(() => _writeArrow(line, highlight.span.start.column),
+          color: color);
+      _buffer.writeln();
+    } else if (highlight.span.end.line == line.number) {
+      var coversWholeLine = highlight.span.end.column == line.text.length;
+      if (coversWholeLine && highlight.label == null) {
+        replaceWithNull(highlightsByColumn, highlight);
+        return;
+      }
+
+      _writeSidebar();
+      _buffer.write(' ');
+      _writeMultilineHighlights(line, highlightsByColumn, current: highlight);
+
+      _colorize(() {
+        if (coversWholeLine) {
+          _buffer.write(glyph.horizontalLine * 3);
+        } else {
+          _writeArrow(line, math.max(highlight.span.end.column - 1, 0),
+              beginning: false);
+        }
+        _writeLabel(highlight.label);
+      }, color: color);
+      _buffer.writeln();
+      replaceWithNull(highlightsByColumn, highlight);
+    }
+  }
+
+  /// Underlines the portion of [line] covered by [span] with repeated instances
+  /// of [character].
+  void _writeUnderline(_Line line, SourceSpan span, String character) {
+    assert(!isMultiline(span));
+    assert(line.text.contains(span.text));
+
+    var startColumn = span.start.column;
+    var endColumn = span.end.column;
+
+    // Adjust the start and end columns to account for any tabs that were
+    // converted to spaces.
+    var tabsBefore = _countTabs(line.text.substring(0, startColumn));
+    var tabsInside = _countTabs(line.text.substring(startColumn, endColumn));
+    startColumn += tabsBefore * (_spacesPerTab - 1);
+    endColumn += (tabsBefore + tabsInside) * (_spacesPerTab - 1);
+
+    _buffer.write(" " * startColumn);
+    _buffer.write(character * math.max(endColumn - startColumn, 1));
+  }
+
+  /// Write an arrow pointing to column [column] in [line].
+  ///
+  /// If the arrow points to a tab character, this will point to the beginning
+  /// of the tab if [beginning] is `true` and the end if it's `false`.
+  void _writeArrow(_Line line, int column, {bool beginning = true}) {
+    var tabs = _countTabs(line.text.substring(0, column + (beginning ? 0 : 1)));
+    _buffer
+      ..write(glyph.horizontalLine * (1 + column + tabs * (_spacesPerTab - 1)))
+      ..write("^");
+  }
+
+  /// Writes a space followed by [label] if [label] isn't `null`.
+  void _writeLabel(String label) {
+    if (label != null) _buffer.write(" $label");
+  }
+
+  /// Writes a snippet from the source text, converting hard tab characters into
+  /// plain indentation.
+  void _writeText(String text) {
+    for (var char in text.codeUnits) {
+      if (char == $tab) {
+        _buffer.write(' ' * _spacesPerTab);
+      } else {
+        _buffer.writeCharCode(char);
+      }
+    }
+  }
+
+  // Writes a sidebar to [buffer] that includes [line] as the line number if
+  // given and writes [end] at the end (defaults to [glyphs.verticalLine]).
+  //
+  // If [text] is given, it's used in place of the line number. It can't be
+  // passed at the same time as [line].
+  void _writeSidebar({int line, String text, String end}) {
+    assert(line == null || text == null);
+
+    // Add 1 to line to convert from computer-friendly 0-indexed line numbers to
+    // human-friendly 1-indexed line numbers.
+    if (line != null) text = (line + 1).toString();
+    _colorize(() {
+      _buffer.write((text ?? '').padRight(_paddingBeforeSidebar));
+      _buffer.write(end ?? glyph.verticalLine);
+    }, color: colors.blue);
+  }
+
+  /// Returns the number of hard tabs in [text].
+  int _countTabs(String text) {
+    var count = 0;
+    for (var char in text.codeUnits) {
+      if (char == $tab) count++;
+    }
+    return count;
+  }
+
+  /// Returns whether [text] contains only space or tab characters.
+  bool _isOnlyWhitespace(String text) {
+    for (var char in text.codeUnits) {
+      if (char != $space && char != $tab) return false;
+    }
+    return true;
+  }
+
+  /// Colors all text written to [_buffer] during [callback], if colorization is
+  /// enabled and [color] is not `null`.
+  void _colorize(void Function() callback, {@required String color}) {
+    if (_primaryColor != null && color != null) _buffer.write(color);
+    callback();
+    if (_primaryColor != null && color != null) _buffer.write(colors.none);
+  }
+}
+
+/// Information about how to highlight a single section of a source file.
+class _Highlight {
+  /// The section of the source file to highlight.
+  ///
+  /// This is normalized to make it easier for [Highlighter] to work with.
+  final SourceSpanWithContext span;
+
+  /// Whether this is the primary span in the highlight.
+  ///
+  /// The primary span is highlighted with a different character and colored
+  /// differently than non-primary spans.
+  final bool isPrimary;
+
+  /// The label to include inline when highlighting [span].
+  ///
+  /// This helps distinguish clarify what each highlight means when multiple are
+  /// used in the same message.
+  final String label;
+
+  _Highlight(SourceSpan span, {this.label, bool primary = false})
+      : span = (() {
+          var newSpan = _normalizeContext(span);
+          newSpan = _normalizeNewlines(newSpan);
+          newSpan = _normalizeTrailingNewline(newSpan);
+          return _normalizeEndOfLine(newSpan);
+        })(),
+        isPrimary = primary;
 
   /// Normalizes [span] to ensure that it's a [SourceSpanWithContext] whose
   /// context actually contains its text at the expected column.
@@ -128,11 +582,15 @@ class Highlighter {
     var end = span.end;
     if (span.text.endsWith('\n') && _isTextAtEndOfContext(span)) {
       text = span.text.substring(0, span.text.length - 1);
-      end = SourceLocation(span.end.offset - 1,
-          sourceUrl: span.sourceUrl,
-          line: span.end.line - 1,
-          column: _lastLineLength(text));
-      start = span.start.offset == span.end.offset ? end : span.start;
+      if (text.isEmpty) {
+        end = start;
+      } else {
+        end = SourceLocation(span.end.offset - 1,
+            sourceUrl: span.sourceUrl,
+            line: span.end.line - 1,
+            column: _lastLineLength(context));
+        start = span.start.offset == span.end.offset ? end : span.start;
+      }
     }
     return SourceSpanWithContext(start, end, text, context);
   }
@@ -150,18 +608,21 @@ class Highlighter {
         SourceLocation(span.end.offset - 1,
             sourceUrl: span.sourceUrl,
             line: span.end.line - 1,
-            column: _lastLineLength(text)),
+            column: text.length - text.lastIndexOf('\n') - 1),
         text,
-        span.context);
+        // If the context also ends with a newline, it's possible that we don't
+        // have the full context for that line, so we shouldn't print it at all.
+        span.context.endsWith("\n")
+            ? span.context.substring(0, span.context.length - 1)
+            : span.context);
   }
 
   /// Returns the length of the last line in [text], whether or not it ends in a
   /// newline.
   static int _lastLineLength(String text) {
-    if (text.isEmpty) return 0;
-
-    // The "- 1" here avoids counting the newline itself.
-    if (text.codeUnitAt(text.length - 1) == $lf) {
+    if (text.isEmpty) {
+      return 0;
+    } else if (text.codeUnitAt(text.length - 1) == $lf) {
       return text.length == 1
           ? 0
           : text.length - text.lastIndexOf('\n', text.length - 2) - 1;
@@ -177,250 +638,35 @@ class Highlighter {
           span.length ==
       span.context.length;
 
-  Highlighter._(this._span, this._color)
-      : _multiline = _span.start.line != _span.end.line,
-        // In a purely mathematical world, floor(log10(n)) would give the number of
-        // digits in n, but floating point errors render that unreliable in
-        // practice.
-        _paddingBeforeSidebar = (_span.end.line + 1).toString().length + 1;
+  @override
+  String toString() {
+    var buffer = StringBuffer();
+    if (isPrimary) buffer.write("primary ");
+    buffer.write("${span.start.line}:${span.start.column}-"
+        "${span.end.line}:${span.end.column}");
+    if (label != null) buffer.write(" ($label)");
+    return buffer.toString();
+  }
+}
 
-  /// Returns the highlighted span text.
+/// A single line of the source file being highlighted.
+class _Line {
+  /// The text of the line, not including the trailing newline.
+  final String text;
+
+  /// The 0-based line number in the source file.
+  final int number;
+
+  /// The URL of the source file in which this line appears.
+  final Uri url;
+
+  /// All highlights that cover any portion of this line, in source span order.
   ///
-  /// This method should only be called once.
-  String highlight() {
-    _writeSidebar(end: glyph.downEnd);
-    _buffer.writeln();
+  /// This is populated after the initial line is created.
+  final highlights = <_Highlight>[];
 
-    // If [_span.context] contains lines prior to the one [_span.text] appears
-    // on, write those first.
-    final lineStart =
-        findLineStart(_span.context, _span.text, _span.start.column);
-    assert(lineStart != null); // enforced by [_normalizeContext]
+  _Line(this.text, this.number, this.url);
 
-    var context = _span.context;
-    if (lineStart > 0) {
-      // Take a substring to one character *before* [lineStart] because
-      // [findLineStart] is guaranteed to return a position immediately after a
-      // newline. Including that newline would add an extra empty line to the
-      // end of [lines].
-      final lines = context.substring(0, lineStart - 1).split('\n');
-      var lineNumber = _span.start.line - lines.length;
-      for (var line in lines) {
-        _writeSidebar(line: lineNumber);
-        _buffer.write(' ' * _paddingAfterSidebar);
-        _writeText(line);
-        _buffer.writeln();
-        lineNumber++;
-      }
-      context = context.substring(lineStart);
-    }
-
-    final lines = context.split('\n');
-
-    final lastLineIndex = _span.end.line - _span.start.line;
-    if (lines.last.isEmpty && lines.length > lastLineIndex + 1) {
-      // Trim a trailing newline so we don't add an empty line to the end of the
-      // highlight.
-      lines.removeLast();
-    }
-
-    _writeFirstLine(lines.first);
-    if (_multiline) {
-      _writeIntermediateLines(lines.skip(1).take(lastLineIndex - 1));
-      _writeLastLine(lines[lastLineIndex]);
-    }
-    _writeTrailingLines(lines.skip(lastLineIndex + 1));
-
-    _writeSidebar(end: glyph.upEnd);
-
-    return _buffer.toString();
-  }
-
-  // Writes the first (and possibly only) line highlighted by the span.
-  void _writeFirstLine(String line) {
-    _writeSidebar(line: _span.start.line);
-
-    var startColumn = math.min(_span.start.column, line.length);
-    var endColumn = math.min(
-        startColumn + _span.end.offset - _span.start.offset, line.length);
-    final textBefore = line.substring(0, startColumn);
-
-    // If the span covers the entire first line other than initial whitespace,
-    // don't bother pointing out exactly where it begins.
-    if (_multiline && _isOnlyWhitespace(textBefore)) {
-      _buffer.write(' ');
-      _colorize(() {
-        _buffer..write(glyph.glyphOrAscii('┌', '/'))..write(' ');
-        _writeText(line);
-      });
-      _buffer.writeln();
-      return;
-    }
-
-    _buffer.write(' ' * _paddingAfterSidebar);
-    _writeText(textBefore);
-    final textInside = line.substring(startColumn, endColumn);
-    _colorize(() => _writeText(textInside));
-    _writeText(line.substring(endColumn));
-    _buffer.writeln();
-
-    // Adjust the start and end column to account for any tabs that were
-    // converted to spaces.
-    final tabsBefore = _countTabs(textBefore);
-    final tabsInside = _countTabs(textInside);
-    startColumn = startColumn + tabsBefore * (_spacesPerTab - 1);
-    endColumn = endColumn + (tabsBefore + tabsInside) * (_spacesPerTab - 1);
-
-    // Write the highlight for the first line. This is a series of carets for a
-    // single-line span, and a pointer to the beginning of a multi-line span.
-    _writeSidebar();
-    if (_multiline) {
-      _buffer.write(' ');
-      _colorize(() {
-        _buffer
-          ..write(glyph.topLeftCorner)
-          ..write(glyph.horizontalLine * (startColumn + 1))
-          ..write('^');
-      });
-    } else {
-      _buffer.write(' ' * (startColumn + 1));
-      _colorize(
-          () => _buffer.write('^' * math.max(endColumn - startColumn, 1)));
-    }
-    _buffer.writeln();
-  }
-
-  /// Writes the lines between the first and last lines highlighted by the span.
-  void _writeIntermediateLines(Iterable<String> lines) {
-    assert(_multiline);
-
-    // +1 because the first line was already written.
-    var lineNumber = _span.start.line + 1;
-    for (var line in lines) {
-      _writeSidebar(line: lineNumber);
-
-      _buffer.write(' ');
-      _colorize(() {
-        _buffer..write(glyph.verticalLine)..write(' ');
-        _writeText(line);
-      });
-      _buffer.writeln();
-
-      lineNumber++;
-    }
-  }
-
-  // Writes the last line highlighted by the span.
-  void _writeLastLine(String line) {
-    assert(_multiline);
-
-    _writeSidebar(line: _span.end.line);
-
-    var endColumn = math.min(_span.end.column, line.length);
-
-    // If the span covers the entire last line, don't bother pointing out
-    // exactly where it ends.
-    if (_multiline && endColumn == line.length) {
-      _buffer.write(' ');
-      _colorize(() {
-        _buffer..write(glyph.glyphOrAscii('└', '\\'))..write(' ');
-        _writeText(line);
-      });
-      _buffer.writeln();
-      return;
-    }
-
-    _buffer.write(' ');
-    final textInside = line.substring(0, endColumn);
-    _colorize(() {
-      _buffer..write(glyph.verticalLine)..write(' ');
-      _writeText(textInside);
-    });
-    _writeText(line.substring(endColumn));
-    _buffer.writeln();
-
-    // Adjust the end column to account for any tabs that were converted to
-    // spaces.
-    final tabsInside = _countTabs(textInside);
-    endColumn = endColumn + tabsInside * (_spacesPerTab - 1);
-
-    // Write the highlight for the final line, which is an arrow pointing to the
-    // end of the span.
-    _writeSidebar();
-    _buffer.write(' ');
-    _colorize(() {
-      _buffer
-        ..write(glyph.bottomLeftCorner)
-        ..write(glyph.horizontalLine * endColumn)
-        ..write('^');
-    });
-    _buffer.writeln();
-  }
-
-  /// Writes lines that appear in the context string but come after the span.
-  void _writeTrailingLines(Iterable<String> lines) {
-    // +1 because this comes after any lines covered by the span.
-    var lineNumber = _span.end.line + 1;
-    for (var line in lines) {
-      _writeSidebar(line: lineNumber);
-      _buffer.write(' ' * _paddingAfterSidebar);
-      _writeText(line);
-      _buffer.writeln();
-      lineNumber++;
-    }
-  }
-
-  /// Writes a snippet from the source text, converting hard tab characters into
-  /// plain indentation.
-  void _writeText(String text) {
-    for (var char in text.codeUnits) {
-      if (char == $tab) {
-        _buffer.write(' ' * _spacesPerTab);
-      } else {
-        _buffer.writeCharCode(char);
-      }
-    }
-  }
-
-  // Writes a sidebar to [buffer] that includes [line] as the line number if
-  // given and writes [end] at the end (defaults to [glyphs.verticalLine]).
-  void _writeSidebar({int line, String end}) {
-    _colorize(() {
-      if (line != null) {
-        // Add 1 to line to convert from computer-friendly 0-indexed line
-        // numbers to human-friendly 1-indexed line numbers.
-        _buffer.write((line + 1).toString().padRight(_paddingBeforeSidebar));
-      } else {
-        _buffer.write(' ' * _paddingBeforeSidebar);
-      }
-      _buffer.write(end ?? glyph.verticalLine);
-    }, color: colors.blue);
-  }
-
-  /// Returns the number of hard tabs in [text].
-  int _countTabs(String text) {
-    var count = 0;
-    for (var char in text.codeUnits) {
-      if (char == $tab) count++;
-    }
-    return count;
-  }
-
-  /// Returns whether [text] contains only space or tab characters.
-  bool _isOnlyWhitespace(String text) {
-    for (var char in text.codeUnits) {
-      if (char != $space && char != $tab) return false;
-    }
-    return true;
-  }
-
-  /// Colors all text written to [_buffer] during [callback], if colorization is
-  /// enabled.
-  ///
-  /// If [color] is passed, it's used as the color; otherwise, [_color] is used.
-  void _colorize(void Function() callback, {String color}) {
-    if (_color != null) _buffer.write(color ?? _color);
-    callback();
-    if (_color != null) _buffer.write(colors.none);
-  }
+  @override
+  String toString() => '$number: "$text" (${highlights.join(', ')})';
 }

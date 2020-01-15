@@ -2,8 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:path/path.dart' as p;
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
+import 'file.dart';
+import 'highlighter.dart';
 import 'location.dart';
 import 'span_mixin.dart';
 import 'span_with_context.dart';
@@ -107,4 +110,73 @@ class SourceSpanBase extends SourceSpanMixin {
           'characters long.');
     }
   }
+}
+
+// TODO(#52): Move these to instance methods in the next breaking release.
+/// Extension methods on the base [SourceSpan] API.
+extension SourceSpanExtension on SourceSpan {
+  /// Like [SourceSpan.message], but also highlights [secondarySpans] to provide
+  /// the user with additional context.
+  ///
+  /// Each span takes a label ([label] for this span, and the values of the
+  /// [secondarySpans] map for the secondary spans) that's used to indicate to
+  /// the user what that particular span represents.
+  ///
+  /// If [color] is `true`, [ANSI terminal color escapes][] are used to color
+  /// the resulting string. By default this span is colored red and the
+  /// secondary spans are colored blue, but that can be customized by passing
+  /// ANSI escape strings to [primaryColor] or [secondaryColor].
+  ///
+  /// [ANSI terminal color escapes]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+  ///
+  /// Each span in [secondarySpans] must refer to the same document as this
+  /// span. Throws an [ArgumentError] if any secondary span has a different
+  /// source URL than this span.
+  ///
+  /// Note that while this will work with plain [SourceSpan]s, it will produce
+  /// much more useful output with [SourceSpanWithContext]s (including
+  /// [FileSpan]s).
+  String messageMultiple(
+      String message, String label, Map<SourceSpan, String> secondarySpans,
+      {bool color = false, String primaryColor, String secondaryColor}) {
+    final buffer = StringBuffer()
+      ..write('line ${start.line + 1}, column ${start.column + 1}');
+    if (sourceUrl != null) buffer.write(' of ${p.prettyUri(sourceUrl)}');
+    buffer
+      ..writeln(': $message')
+      ..write(highlightMultiple(label, secondarySpans,
+          color: color,
+          primaryColor: primaryColor,
+          secondaryColor: secondaryColor));
+    return buffer.toString();
+  }
+
+  /// Like [SourceSpan.highlight], but also highlights [secondarySpans] to
+  /// provide the user with additional context.
+  ///
+  /// Each span takes a label ([label] for this span, and the values of the
+  /// [secondarySpans] map for the secondary spans) that's used to indicate to
+  /// the user what that particular span represents.
+  ///
+  /// If [color] is `true`, [ANSI terminal color escapes][] are used to color
+  /// the resulting string. By default this span is colored red and the
+  /// secondary spans are colored blue, but that can be customized by passing
+  /// ANSI escape strings to [primaryColor] or [secondaryColor].
+  ///
+  /// [ANSI terminal color escapes]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+  ///
+  /// Each span in [secondarySpans] must refer to the same document as this
+  /// span. Throws an [ArgumentError] if any secondary span has a different
+  /// source URL than this span.
+  ///
+  /// Note that while this will work with plain [SourceSpan]s, it will produce
+  /// much more useful output with [SourceSpanWithContext]s (including
+  /// [FileSpan]s).
+  String highlightMultiple(String label, Map<SourceSpan, String> secondarySpans,
+          {bool color = false, String primaryColor, String secondaryColor}) =>
+      Highlighter.multiple(this, label, secondarySpans,
+              color: color,
+              primaryColor: primaryColor,
+              secondaryColor: secondaryColor)
+          .highlight();
 }

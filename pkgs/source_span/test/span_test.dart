@@ -246,7 +246,7 @@ ${colors.blue}  '${colors.none}"""));
 line 1, column 6 of foo.dart: oh no
 ${colors.blue}  ,${colors.none}
 ${colors.blue}1 |${colors.none} -----${colors.yellow}foo bar${colors.none}-----
-${colors.blue}  |${colors.none}      ${colors.yellow}^^^^^^^${colors.none}
+${colors.blue}  |${colors.none} ${colors.yellow}     ^^^^^^^${colors.none}
 ${colors.blue}  '${colors.none}"""));
     });
   });

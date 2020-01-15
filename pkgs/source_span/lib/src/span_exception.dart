@@ -37,7 +37,6 @@ class SourceSpanException implements Exception {
 /// A [SourceSpanException] that's also a [FormatException].
 class SourceSpanFormatException extends SourceSpanException
     implements FormatException {
-  // This is a getter so that subclasses can override it.
   @override
   final dynamic source;
 
@@ -46,4 +45,72 @@ class SourceSpanFormatException extends SourceSpanException
 
   SourceSpanFormatException(String message, SourceSpan span, [this.source])
       : super(message, span);
+}
+
+/// A [SourceSpanException] that also highlights some secondary spans to provide
+/// the user with extra context.
+///
+/// Each span has a label ([primaryLabel] for the primary, and the values of the
+/// [secondarySpans] map for the secondary spans) that's used to indicate to the
+/// user what that particular span represents.
+class MultiSourceSpanException extends SourceSpanException {
+  /// A label to attach to [span] that provides additional information and helps
+  /// distinguish it from [secondarySpans].
+  final String primaryLabel;
+
+  /// A map whose keys are secondary spans that should be highlighted.
+  ///
+  /// Each span's value is a label to attach to that span that provides
+  /// additional information and helps distinguish it from [secondarySpans].
+  final Map<SourceSpan, String> secondarySpans;
+
+  MultiSourceSpanException(String message, SourceSpan span, this.primaryLabel,
+      Map<SourceSpan, String> secondarySpans)
+      : secondarySpans = Map.unmodifiable(secondarySpans),
+        super(message, span);
+
+  /// Returns a string representation of `this`.
+  ///
+  /// [color] may either be a [String], a [bool], or `null`. If it's a string,
+  /// it indicates an ANSI terminal color escape that should be used to
+  /// highlight the primary span's text. If it's `true`, it indicates that the
+  /// text should be highlighted using the default color. If it's `false` or
+  /// `null`, it indicates that the text shouldn't be highlighted.
+  ///
+  /// If [color] is `true` or a string, [secondaryColor] is used to highlight
+  /// [secondarySpans].
+  @override
+  String toString({color, String secondaryColor}) {
+    if (span == null) return message;
+
+    var useColor = false;
+    String primaryColor;
+    if (color is String) {
+      useColor = true;
+      primaryColor = color;
+    } else if (color == true) {
+      useColor = true;
+    }
+
+    return "Error on " +
+        span.messageMultiple(message, primaryLabel, secondarySpans,
+            color: useColor,
+            primaryColor: primaryColor,
+            secondaryColor: secondaryColor);
+  }
+}
+
+/// A [MultiSourceSpanException] that's also a [FormatException].
+class MultiSourceSpanFormatException extends MultiSourceSpanException
+    implements FormatException {
+  @override
+  final dynamic source;
+
+  @override
+  int get offset => span?.start?.offset;
+
+  MultiSourceSpanFormatException(String message, SourceSpan span,
+      String primaryLabel, Map<SourceSpan, String> secondarySpans,
+      [this.source])
+      : super(message, span, primaryLabel, secondarySpans);
 }

@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'span.dart';
+
 /// Returns the minimum of [obj1] and [obj2] according to
 /// [Comparable.compareTo].
 T min<T extends Comparable>(T obj1, T obj2) =>
@@ -11,6 +13,42 @@ T min<T extends Comparable>(T obj1, T obj2) =>
 /// [Comparable.compareTo].
 T max<T extends Comparable>(T obj1, T obj2) =>
     obj1.compareTo(obj2) > 0 ? obj1 : obj2;
+
+/// Returns whether all elements of [iter] are the same value, according to
+/// `==`.
+///
+/// Assumes [iter] doesn't contain any `null` values.
+bool isAllTheSame(Iterable<Object> iter) {
+  Object lastValue;
+  for (var value in iter) {
+    if (lastValue == null) {
+      lastValue = value;
+    } else if (value != lastValue) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/// Returns whether [span] covers multiple lines.
+bool isMultiline(SourceSpan span) => span.start.line != span.end.line;
+
+/// Sets the first `null` element of [list] to [element].
+void replaceFirstNull<E>(List<E> list, E element) {
+  var index = list.indexOf(null);
+  if (index < 0) throw ArgumentError("$list contains no null elements.");
+  list[index] = element;
+}
+
+/// Sets the element of [list] that currently contains [element] to `null`.
+void replaceWithNull<E>(List<E> list, E element) {
+  var index = list.indexOf(element);
+  if (index < 0) {
+    throw ArgumentError("$list contains no elements matching $element.");
+  }
+
+  list[index] = null;
+}
 
 /// Returns the number of instances of [codeUnit] in [string].
 int countCodeUnits(String string, int codeUnit) {
