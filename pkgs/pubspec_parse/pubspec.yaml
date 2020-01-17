@@ -2,12 +2,12 @@ name: pubspec_parse
 description: >-
   Simple package for parsing pubspec.yaml files with a type-safe API and rich
   error reporting.
-version: 0.1.5
+version: 0.1.6-dev
 homepage: https://github.com/dart-lang/pubspec_parse
 author: Dart Team <misc@dartlang.org>
 
 environment:
-  sdk: '>=2.2.0 <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
   checked_yaml: ^1.0.0

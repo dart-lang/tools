@@ -139,10 +139,10 @@ line 5, column 15: Unsupported value for "version". Could not parse version "not
       'not_supported': null
     }, r'''
 line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git, path, hosted]
-  ╷
-10│    "not_supported": null
-  │    ^^^^^^^^^^^^^^^
-  ╵''');
+   ╷
+10 │    "not_supported": null
+   │    ^^^^^^^^^^^^^^^
+   ╵''');
   });
 
   test('map w/ version and hosted as String', () {
