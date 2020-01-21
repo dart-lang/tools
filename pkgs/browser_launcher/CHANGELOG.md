@@ -1,3 +1,7 @@
+## 0.1.6-dev
+
+- Update lower Dart SDK requirement to 2.2.0.
+
 ## 0.1.5
 
 - Add a parameter to use a specified user-data-dir instead of a system temp.
