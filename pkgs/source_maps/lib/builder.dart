@@ -31,7 +31,7 @@ class SourceMapBuilder {
   ///
   /// If [isIdentifier] is true or if [target] is a [SourceMapSpan] with
   /// `isIdentifier` set to true, this entry is considered to represent an
-  /// identifier whose value will be stored in the source map. [isIdenfier]
+  /// identifier whose value will be stored in the source map. [isIdentifier]
   /// takes precedence over [target]'s `isIdentifier` value.
   void addSpan(SourceSpan source, SourceSpan target, {bool isIdentifier}) {
     isIdentifier ??= source is SourceMapSpan ? source.isIdentifier : false;

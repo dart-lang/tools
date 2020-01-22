@@ -264,9 +264,10 @@ class SingleMapping extends Mapping {
   /// The [SourceFile]s to which the entries in [lines] refer.
   ///
   /// This is in the same order as [urls]. If this was constructed using
-  /// [fromEntries], this contains files from any [FileLocation]s used to build
-  /// the mapping. If it was parsed from JSON, it contains files for any sources
-  /// whose contents were provided via the `"sourcesContent"` field.
+  /// [SingleMapping.fromEntries], this contains files from any [FileLocation]s
+  /// used to build the mapping. If it was parsed from JSON, it contains files
+  /// for any sources whose contents were provided via the `"sourcesContent"`
+  /// field.
   ///
   /// Files whose contents aren't available are `null`.
   final List<SourceFile> files;
@@ -425,8 +426,8 @@ class SingleMapping extends Mapping {
 
   /// Encodes the Mapping mappings as a json map.
   ///
-  /// If [sourcesContent] is `true`, this includes the source file contents from
-  /// [files] in the map if possible.
+  /// If [includeSourceContents] is `true`, this includes the source file
+  /// contents from [files] in the map if possible.
   Map toJson({bool includeSourceContents = false}) {
     var buff = StringBuffer();
     var line = 0;

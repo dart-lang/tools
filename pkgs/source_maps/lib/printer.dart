@@ -160,7 +160,7 @@ class NestedPrinter implements NestedItem {
   /// separately and will not include any the indentation set here.
   ///
   /// The [location] and [span] parameters indicate the corresponding source map
-  /// location of [object] in the original input. Only one, [location] or
+  /// location of [line] in the original input. Only one, [location] or
   /// [span], should be provided at a time.
   void addLine(String line, {SourceLocation location, SourceSpan span}) {
     if (location != null || span != null) {

@@ -38,9 +38,9 @@ class TextEditTransaction {
       file != null ? file.location(offset) : null;
 
   /// Applies all pending [edit]s and returns a [NestedPrinter] containing the
-  /// rewritten string and source map information. [filename] is given to the
-  /// underlying printer to indicate the name of the generated file that will
-  /// contains the source map information.
+  /// rewritten string and source map information. [file]`.location` is given to
+  /// the underlying printer to indicate the name of the generated file that
+  /// will contains the source map information.
   ///
   /// Throws [UnsupportedError] if the edits were overlapping. If no edits were
   /// made, the printer simply contains the original string.

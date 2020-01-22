@@ -18,24 +18,12 @@
 /// object. For example:
 ///     var mapping = parse(json);
 ///     mapping.spanFor(outputSpan1.line, outputSpan1.column)
-///
-/// ## Getting the code ##
-///
-/// This library is distributed as a [pub][] package. To install this package,
-/// add the following to your `pubspec.yaml` file:
-///
-///     dependencies:
-///       source_maps: any
-///
-/// After you run `pub install`, you should be able to access this library by
-/// importing `package:source_maps/source_maps.dart`.
-///
-/// For more information, see the
-/// [source_maps package on pub.dartlang.org][pkg].
-///
-/// [pub]: http://pub.dartlang.org
-/// [pkg]: http://pub.dartlang.org/packages/source_maps
 library source_maps;
+
+import 'package:source_span/source_span.dart';
+
+import 'parser.dart';
+import 'builder.dart';
 
 export 'builder.dart';
 export 'parser.dart';

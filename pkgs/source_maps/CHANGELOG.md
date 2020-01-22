@@ -1,3 +1,7 @@
+## 0.10.9-dev
+
+* Fix a number of document comment issues.
+
 ## 0.10.8
 
 * Preserve source-map extensions in `SingleMapping`. Extensions are keys in the

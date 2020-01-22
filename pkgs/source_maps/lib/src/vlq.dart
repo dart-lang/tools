@@ -9,8 +9,7 @@
 /// encodes a 5-bit value (0-31) and a continuation bit. Signed values can be
 /// represented by using the least significant bit of the value as the sign bit.
 ///
-/// For more details see the source map [version 3 documentation][spec].
-/// [spec]: https://docs.google.com/a/google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit
+/// For more details see the source map [version 3 documentation](https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit?usp=sharing).
 library source_maps.src.vlq;
 
 import 'dart:math';
