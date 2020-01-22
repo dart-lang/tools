@@ -26,13 +26,13 @@ zip zap zop
 fwee fwoo fwip
 argle bargle boo
 gibble bibble bop
-''', url: "file1.txt");
+''', url: 'file1.txt');
   });
 
-  test("highlights spans on separate lines", () {
+  test('highlights spans on separate lines', () {
     expect(
         file.span(17, 21).highlightMultiple(
-            "one", {file.span(31, 34): "two", file.span(4, 7): "three"}),
+            'one', {file.span(31, 34): 'two', file.span(4, 7): 'three'}),
         equals("""
   ,
 1 | foo bar baz
@@ -44,10 +44,10 @@ gibble bibble bop
   '"""));
   });
 
-  test("highlights spans on the same line", () {
+  test('highlights spans on the same line', () {
     expect(
         file.span(17, 21).highlightMultiple(
-            "one", {file.span(22, 26): "two", file.span(12, 16): "three"}),
+            'one', {file.span(22, 26): 'two', file.span(12, 16): 'three'}),
         equals("""
   ,
 2 | whiz bang boom
@@ -57,10 +57,10 @@ gibble bibble bop
   '"""));
   });
 
-  test("highlights overlapping spans on the same line", () {
+  test('highlights overlapping spans on the same line', () {
     expect(
         file.span(17, 21).highlightMultiple(
-            "one", {file.span(20, 26): "two", file.span(12, 18): "three"}),
+            'one', {file.span(20, 26): 'two', file.span(12, 18): 'three'}),
         equals("""
   ,
 2 | whiz bang boom
@@ -70,10 +70,10 @@ gibble bibble bop
   '"""));
   });
 
-  test("highlights multiple multiline spans", () {
+  test('highlights multiple multiline spans', () {
     expect(
         file.span(27, 54).highlightMultiple(
-            "one", {file.span(54, 89): "two", file.span(0, 27): "three"}),
+            'one', {file.span(54, 89): 'two', file.span(0, 27): 'three'}),
         equals("""
   ,
 1 | / foo bar baz
@@ -88,10 +88,10 @@ gibble bibble bop
   '"""));
   });
 
-  test("highlights multiple overlapping multiline spans", () {
+  test('highlights multiple overlapping multiline spans', () {
     expect(
         file.span(12, 70).highlightMultiple(
-            "one", {file.span(54, 89): "two", file.span(0, 27): "three"}),
+            'one', {file.span(54, 89): 'two', file.span(0, 27): 'three'}),
         equals("""
   ,
 1 | /- foo bar baz
@@ -106,12 +106,12 @@ gibble bibble bop
   '"""));
   });
 
-  test("highlights many layers of overlaps", () {
+  test('highlights many layers of overlaps', () {
     expect(
-        file.span(0, 54).highlightMultiple("one", {
-          file.span(12, 77): "two",
-          file.span(27, 84): "three",
-          file.span(39, 88): "four"
+        file.span(0, 54).highlightMultiple('one', {
+          file.span(12, 77): 'two',
+          file.span(27, 84): 'three',
+          file.span(39, 88): 'four'
         }),
         equals("""
   ,
@@ -129,11 +129,11 @@ gibble bibble bop
   });
 
   group("highlights a multiline span that's a subset", () {
-    test("with no first or last line overlap", () {
+    test('with no first or last line overlap', () {
       expect(
           file
               .span(27, 53)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | /- whiz bang boom
@@ -145,11 +145,11 @@ gibble bibble bop
   '"""));
     });
 
-    test("overlapping the whole first line", () {
+    test('overlapping the whole first line', () {
       expect(
           file
               .span(12, 53)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | // whiz bang boom
@@ -161,11 +161,11 @@ gibble bibble bop
   '"""));
     });
 
-    test("overlapping part of first line", () {
+    test('overlapping part of first line', () {
       expect(
           file
               .span(17, 53)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | /- whiz bang boom
@@ -178,11 +178,11 @@ gibble bibble bop
   '"""));
     });
 
-    test("overlapping the whole last line", () {
+    test('overlapping the whole last line', () {
       expect(
           file
               .span(27, 70)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | /- whiz bang boom
@@ -194,11 +194,11 @@ gibble bibble bop
   '"""));
     });
 
-    test("overlapping part of the last line", () {
+    test('overlapping part of the last line', () {
       expect(
           file
               .span(27, 66)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | /- whiz bang boom
@@ -211,12 +211,12 @@ gibble bibble bop
     });
   });
 
-  group("a single-line span in a multiline span", () {
-    test("on the first line", () {
+  group('a single-line span in a multiline span', () {
+    test('on the first line', () {
       expect(
           file
               .span(17, 21)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | / whiz bang boom
@@ -228,11 +228,11 @@ gibble bibble bop
   '"""));
     });
 
-    test("in the middle", () {
+    test('in the middle', () {
       expect(
           file
               .span(31, 34)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | / whiz bang boom
@@ -244,11 +244,11 @@ gibble bibble bop
   '"""));
     });
 
-    test("on the last line", () {
+    test('on the last line', () {
       expect(
           file
               .span(60, 66)
-              .highlightMultiple("inner", {file.span(12, 70): "outer"}),
+              .highlightMultiple('inner', {file.span(12, 70): 'outer'}),
           equals("""
   ,
 2 | / whiz bang boom
@@ -261,13 +261,13 @@ gibble bibble bop
     });
   });
 
-  test("highlights multiple files with their URLs", () {
-    var file2 = SourceFile.fromString('''
+  test('highlights multiple files with their URLs', () {
+    final file2 = SourceFile.fromString('''
 quibble bibble boop
-''', url: "file2.txt");
+''', url: 'file2.txt');
 
     expect(
-        file.span(31, 34).highlightMultiple("one", {file2.span(8, 14): "two"}),
+        file.span(31, 34).highlightMultiple('one', {file2.span(8, 14): 'two'}),
         equals("""
   ,--> file1.txt
 3 | zip zap zop

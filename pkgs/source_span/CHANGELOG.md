@@ -1,3 +1,5 @@
+# 1.6.1-dev
+
 # 1.6.0
 
 * Add support for highlighting multiple source spans at once, providing more

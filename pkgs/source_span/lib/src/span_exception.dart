@@ -92,11 +92,12 @@ class MultiSourceSpanException extends SourceSpanException {
       useColor = true;
     }
 
-    return "Error on " +
-        span.messageMultiple(message, primaryLabel, secondarySpans,
-            color: useColor,
-            primaryColor: primaryColor,
-            secondaryColor: secondaryColor);
+    final formatted = span.messageMultiple(
+        message, primaryLabel, secondarySpans,
+        color: useColor,
+        primaryColor: primaryColor,
+        secondaryColor: secondaryColor);
+    return 'Error on $formatted';
   }
 }
 

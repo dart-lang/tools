@@ -35,16 +35,16 @@ bool isMultiline(SourceSpan span) => span.start.line != span.end.line;
 
 /// Sets the first `null` element of [list] to [element].
 void replaceFirstNull<E>(List<E> list, E element) {
-  var index = list.indexOf(null);
-  if (index < 0) throw ArgumentError("$list contains no null elements.");
+  final index = list.indexOf(null);
+  if (index < 0) throw ArgumentError('$list contains no null elements.');
   list[index] = element;
 }
 
 /// Sets the element of [list] that currently contains [element] to `null`.
 void replaceWithNull<E>(List<E> list, E element) {
-  var index = list.indexOf(element);
+  final index = list.indexOf(element);
   if (index < 0) {
-    throw ArgumentError("$list contains no elements matching $element.");
+    throw ArgumentError('$list contains no elements matching $element.');
   }
 
   list[index] = null;
