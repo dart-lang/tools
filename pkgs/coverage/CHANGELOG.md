@@ -1,3 +1,8 @@
+## 0.13.4 - 2020-01-23
+
+* Add `parseChromeCoverage` for creating a Dart based coverage report from a
+  Chrome coverage report.
+
 ## 0.13.3+3 - 2019-12-03
 
 * Re-loosen the dependency on the `vm_service` package from `>=1.0.0 < 2.1.2`

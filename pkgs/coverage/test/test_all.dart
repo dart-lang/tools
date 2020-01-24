@@ -4,6 +4,7 @@
 
 import 'package:test/test.dart';
 
+import 'chrome_test.dart' as chrome;
 import 'collect_coverage_api_test.dart' as collect_coverage_api;
 import 'collect_coverage_test.dart' as collect_coverage;
 import 'lcov_test.dart' as lcov;
@@ -18,4 +19,5 @@ void main() {
   group('resolver', resolver.main);
   group('run_and_collect', run_and_collect.main);
   group('util', util.main);
+  group('chrome', chrome.main);
 }
