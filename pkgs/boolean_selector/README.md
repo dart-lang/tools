@@ -17,9 +17,8 @@ selectors.
 
 A boolean selector is parsed from a string using
 [`new BooleanSelector.parse()`][parse], and evaluated against a set of variables
-using [`BooleanSelector.evaluate()`][evaluate]. The variables may be supplied as
-a list of strings, or as a function that takes a variable name and returns its
-value. For example:
+using [`BooleanSelector.evaluate()`][evaluate]. The variables are supplied as
+a function that takes a variable name and returns its value. For example:
 
 [parse]: https://pub.dev/documentation/boolean_selector/latest/boolean_selector/BooleanSelector/BooleanSelector.parse.html
 

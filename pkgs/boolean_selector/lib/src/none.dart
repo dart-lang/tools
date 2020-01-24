@@ -14,7 +14,7 @@ class None implements BooleanSelector {
   const None();
 
   @override
-  bool evaluate(semantics) => false;
+  bool evaluate(bool Function(String variable) semantics) => false;
 
   @override
   BooleanSelector intersection(BooleanSelector other) => this;

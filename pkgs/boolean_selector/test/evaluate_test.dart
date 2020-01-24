@@ -36,19 +36,17 @@ void main() {
   });
 
   test('with a semantics function', () {
-    _expectEval('foo', false,
-        semantics: (String variable) => variable.contains('a'));
-    _expectEval('bar', true,
-        semantics: (String variable) => variable.contains('a'));
-    _expectEval('baz', true,
-        semantics: (String variable) => variable.contains('a'));
+    _expectEval('foo', false, semantics: (variable) => variable.contains('a'));
+    _expectEval('bar', true, semantics: (variable) => variable.contains('a'));
+    _expectEval('baz', true, semantics: (variable) => variable.contains('a'));
   });
 }
 
 /// Asserts that [expression] evaluates to [result] against [semantics].
 ///
 /// By default, "true" is true and all other variables are "false".
-void _expectEval(String expression, bool result, {semantics}) {
+void _expectEval(String expression, bool result,
+    {bool Function(String variable) semantics}) {
   expect(_eval(expression, semantics: semantics), equals(result),
       reason: 'Expected "$expression" to evaluate to $result.');
 }
@@ -56,7 +54,7 @@ void _expectEval(String expression, bool result, {semantics}) {
 /// Returns the result of evaluating [expression] on [semantics].
 ///
 /// By default, "true" is true and all other variables are "false".
-bool _eval(String expression, {semantics}) {
+bool _eval(String expression, {bool Function(String variable) semantics}) {
   var selector = BooleanSelector.parse(expression);
-  return selector.evaluate(semantics ?? ['true']);
+  return selector.evaluate(semantics ?? (v) => v == 'true');
 }

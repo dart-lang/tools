@@ -5,18 +5,12 @@
 import 'ast.dart';
 import 'visitor.dart';
 
-typedef _Semantics = bool Function(String variable);
-
 /// A visitor for evaluating boolean selectors against a specific set of
 /// semantics.
 class Evaluator implements Visitor<bool> {
-  /// The semantics to evaluate against.
-  final _Semantics _semantics;
+  final bool Function(String variable) _semantics;
 
-  Evaluator(semantics)
-      : _semantics = semantics is Iterable
-            ? semantics.toSet().contains
-            : semantics as _Semantics;
+  Evaluator(this._semantics);
 
   @override
   bool visitVariable(VariableNode node) => _semantics(node.name);

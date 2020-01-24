@@ -36,11 +36,9 @@ abstract class BooleanSelector {
 
   /// Returns whether the selector matches the given [semantics].
   ///
-  /// The [semantics] define which variables evaluate to `true` or `false`. The
-  /// parameter can be either an `Iterable<String>` containing variables that
-  /// should evaluate to `true`, or a function `bool semantics(String variable)`
-  /// that returns a variable's value.
-  bool evaluate(semantics);
+  /// The [semantics] define which variables evaluate to `true` or `false`. When
+  /// passed a variable name it should return the value of that variable.
+  bool evaluate(bool Function(String variable) semantics);
 
   /// Returns a new [BooleanSelector] that matches only inputs matched by both
   /// [this] and [other].

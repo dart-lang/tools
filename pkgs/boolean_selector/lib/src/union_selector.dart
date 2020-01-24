@@ -17,7 +17,7 @@ class UnionSelector implements BooleanSelector {
       _selector1.variables.toList()..addAll(_selector2.variables);
 
   @override
-  bool evaluate(semantics) =>
+  bool evaluate(bool Function(String variable) semantics) =>
       _selector1.evaluate(semantics) || _selector2.evaluate(semantics);
 
   @override

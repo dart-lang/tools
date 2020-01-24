@@ -14,7 +14,7 @@ class All implements BooleanSelector {
   const All();
 
   @override
-  bool evaluate(semantics) => true;
+  bool evaluate(bool Function(String variable) semantics) => true;
 
   @override
   BooleanSelector intersection(BooleanSelector other) => other;

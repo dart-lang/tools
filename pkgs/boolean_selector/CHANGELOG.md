@@ -1,3 +1,10 @@
+## 2.0.0
+
+* Breaking: `BooleanSelector.evaluate` always takes a `bool Function(String)`.
+  For use cases previously passing a `Set<String>`, tear off the `.contains`
+  method. For use cases passing an `Iterable<String>` it may be worthwhile to
+  first use `.toSet()` before tearing off `.contains`.
+
 ## 1.0.5
 
 * Update package metadata & add `example/` folder

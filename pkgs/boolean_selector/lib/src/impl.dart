@@ -32,7 +32,8 @@ class BooleanSelectorImpl implements BooleanSelector {
   Iterable<String> get variables => _selector.variables;
 
   @override
-  bool evaluate(semantics) => _selector.accept(Evaluator(semantics));
+  bool evaluate(bool Function(String variable) semantics) =>
+      _selector.accept(Evaluator(semantics));
 
   @override
   BooleanSelector intersection(BooleanSelector other) {
