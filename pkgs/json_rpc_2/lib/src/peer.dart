@@ -30,13 +30,15 @@ class Peer implements Client, Server {
 
   /// A stream controller that forwards incoming messages to [_server] if
   /// they're requests.
-  final _serverIncomingForwarder = new StreamController(sync: true);
+  final _serverIncomingForwarder = StreamController(sync: true);
 
   /// A stream controller that forwards incoming messages to [_client] if
   /// they're responses.
-  final _clientIncomingForwarder = new StreamController(sync: true);
+  final _clientIncomingForwarder = StreamController(sync: true);
 
+  @override
   Future get done => _manager.done;
+  @override
   bool get isClosed => _manager.isClosed;
 
   @override
@@ -65,34 +67,40 @@ class Peer implements Client, Server {
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
   Peer.withoutJson(StreamChannel channel, {ErrorCallback onUnhandledError})
-      : _manager = new ChannelManager("Peer", channel) {
-    _server = new Server.withoutJson(
-        new StreamChannel(_serverIncomingForwarder.stream, channel.sink),
+      : _manager = ChannelManager('Peer', channel) {
+    _server = Server.withoutJson(
+        StreamChannel(_serverIncomingForwarder.stream, channel.sink),
         onUnhandledError: onUnhandledError);
-    _client = new Client.withoutJson(
-        new StreamChannel(_clientIncomingForwarder.stream, channel.sink));
+    _client = Client.withoutJson(
+        StreamChannel(_clientIncomingForwarder.stream, channel.sink));
   }
 
   // Client methods.
 
+  @override
   Future sendRequest(String method, [parameters]) =>
       _client.sendRequest(method, parameters);
 
+  @override
   void sendNotification(String method, [parameters]) =>
       _client.sendNotification(method, parameters);
 
-  withBatch(callback()) => _client.withBatch(callback);
+  @override
+  void withBatch(Function() callback) => _client.withBatch(callback);
 
   // Server methods.
 
+  @override
   void registerMethod(String name, Function callback) =>
       _server.registerMethod(name, callback);
 
-  void registerFallback(callback(Parameters parameters)) =>
+  @override
+  void registerFallback(Function(Parameters parameters) callback) =>
       _server.registerFallback(callback);
 
   // Shared methods.
 
+  @override
   Future listen() {
     _client.listen();
     _server.listen();
@@ -120,6 +128,7 @@ class Peer implements Client, Server {
     });
   }
 
+  @override
   Future close() =>
       Future.wait([_client.close(), _server.close(), _manager.close()]);
 }

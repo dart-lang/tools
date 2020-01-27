@@ -12,9 +12,9 @@ import 'utils.dart';
 
 void main() {
   var controller;
-  setUp(() => controller = new ServerController());
+  setUp(() => controller = ServerController());
 
-  test("calls a registered method with the given name", () {
+  test('calls a registered method with the given name', () {
     controller.server.registerMethod('foo', (params) {
       return {'params': params.value};
     });
@@ -35,7 +35,7 @@ void main() {
         })));
   });
 
-  test("calls a method that takes no parameters", () {
+  test('calls a method that takes no parameters', () {
     controller.server.registerMethod('foo', () => 'foo');
 
     expect(
@@ -44,7 +44,7 @@ void main() {
         completion(equals({'jsonrpc': '2.0', 'result': 'foo', 'id': 1234})));
   });
 
-  test("a method that takes no parameters rejects parameters", () {
+  test('a method that takes no parameters rejects parameters', () {
     controller.server.registerMethod('foo', () => 'foo');
 
     expectErrorResponse(
@@ -54,9 +54,9 @@ void main() {
         'No parameters are allowed for method "foo".');
   });
 
-  test("an unexpected error in a method is captured", () {
+  test('an unexpected error in a method is captured', () {
     controller.server
-        .registerMethod('foo', () => throw new FormatException('bad format'));
+        .registerMethod('foo', () => throw FormatException('bad format'));
 
     expect(
         controller
@@ -70,13 +70,13 @@ void main() {
             'data': {
               'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
               'full': 'FormatException: bad format',
-              'stack': new TypeMatcher<String>()
+              'stack': TypeMatcher<String>()
             }
           }
         }));
   });
 
-  test("doesn't return a result for a notification", () {
+  test('doesn\'t return a result for a notification', () {
     controller.server.registerMethod('foo', (args) => 'result');
 
     expect(
@@ -85,9 +85,9 @@ void main() {
         doesNotComplete);
   });
 
-  test("includes the error data in the response", () {
+  test('includes the error data in the response', () {
     controller.server.registerMethod('foo', (params) {
-      throw new json_rpc.RpcException(5, 'Error message.', data: 'data value');
+      throw json_rpc.RpcException(5, 'Error message.', data: 'data value');
     });
 
     expectErrorResponse(
@@ -98,13 +98,13 @@ void main() {
         data: 'data value');
   });
 
-  test("a JSON parse error is rejected", () {
+  test('a JSON parse error is rejected', () {
     return controller.handleJsonRequest('invalid json {').then((result) {
       expect(jsonDecode(result), {
         'jsonrpc': '2.0',
         'error': {
           'code': error_code.PARSE_ERROR,
-          'message': startsWith("Invalid JSON: "),
+          'message': startsWith('Invalid JSON: '),
           // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
           'data': {
             'request': anyOf([isNull, 'invalid json {'])
@@ -115,8 +115,8 @@ void main() {
     });
   });
 
-  group("fallbacks", () {
-    test("calls a fallback if no method matches", () {
+  group('fallbacks', () {
+    test('calls a fallback if no method matches', () {
       controller.server
         ..registerMethod('foo', () => 'foo')
         ..registerMethod('bar', () => 'foo')
@@ -138,10 +138,10 @@ void main() {
           })));
     });
 
-    test("calls the first matching fallback", () {
+    test('calls the first matching fallback', () {
       controller.server
         ..registerFallback((params) =>
-            throw new json_rpc.RpcException.methodNotFound(params.method))
+            throw json_rpc.RpcException.methodNotFound(params.method))
         ..registerFallback((params) => 'fallback 2')
         ..registerFallback((params) => 'fallback 3');
 
@@ -152,9 +152,9 @@ void main() {
               equals({'jsonrpc': '2.0', 'result': 'fallback 2', 'id': 1234})));
     });
 
-    test("an unexpected error in a fallback is captured", () {
+    test('an unexpected error in a fallback is captured', () {
       controller.server
-          .registerFallback((_) => throw new FormatException('bad format'));
+          .registerFallback((_) => throw FormatException('bad format'));
 
       expect(
           controller
@@ -168,14 +168,14 @@ void main() {
               'data': {
                 'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
                 'full': 'FormatException: bad format',
-                'stack': new TypeMatcher<String>()
+                'stack': TypeMatcher<String>()
               }
             }
           }));
     });
   });
 
-  test("disallows multiple methods with the same name", () {
+  test('disallows multiple methods with the same name', () {
     controller.server.registerMethod('foo', () => null);
     expect(() => controller.server.registerMethod('foo', () => null),
         throwsArgumentError);

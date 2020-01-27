@@ -16,62 +16,62 @@ void main() {
   var outgoing;
   var peer;
   setUp(() {
-    var incomingController = new StreamController();
+    var incomingController = StreamController();
     incoming = incomingController.sink;
-    var outgoingController = new StreamController();
+    var outgoingController = StreamController();
     outgoing = outgoingController.stream;
-    peer = new json_rpc.Peer.withoutJson(
-        new StreamChannel(incomingController.stream, outgoingController));
+    peer = json_rpc.Peer.withoutJson(
+        StreamChannel(incomingController.stream, outgoingController));
   });
 
-  group("like a client,", () {
-    test("can send a message and receive a response", () {
+  group('like a client,', () {
+    test('can send a message and receive a response', () {
       expect(outgoing.first.then((request) {
         expect(
             request,
             equals({
-              "jsonrpc": "2.0",
-              "method": "foo",
-              "params": {"bar": "baz"},
-              "id": 0
+              'jsonrpc': '2.0',
+              'method': 'foo',
+              'params': {'bar': 'baz'},
+              'id': 0
             }));
-        incoming.add({"jsonrpc": "2.0", "result": "qux", "id": 0});
+        incoming.add({'jsonrpc': '2.0', 'result': 'qux', 'id': 0});
       }), completes);
 
       peer.listen();
       expect(
-          peer.sendRequest("foo", {"bar": "baz"}), completion(equals("qux")));
+          peer.sendRequest('foo', {'bar': 'baz'}), completion(equals('qux')));
     });
 
-    test("can send a batch of messages and receive a batch of responses", () {
+    test('can send a batch of messages and receive a batch of responses', () {
       expect(outgoing.first.then((request) {
         expect(
             request,
             equals([
               {
-                "jsonrpc": "2.0",
-                "method": "foo",
-                "params": {"bar": "baz"},
-                "id": 0
+                'jsonrpc': '2.0',
+                'method': 'foo',
+                'params': {'bar': 'baz'},
+                'id': 0
               },
               {
-                "jsonrpc": "2.0",
-                "method": "a",
-                "params": {"b": "c"},
-                "id": 1
+                'jsonrpc': '2.0',
+                'method': 'a',
+                'params': {'b': 'c'},
+                'id': 1
               },
               {
-                "jsonrpc": "2.0",
-                "method": "w",
-                "params": {"x": "y"},
-                "id": 2
+                'jsonrpc': '2.0',
+                'method': 'w',
+                'params': {'x': 'y'},
+                'id': 2
               }
             ]));
 
         incoming.add([
-          {"jsonrpc": "2.0", "result": "qux", "id": 0},
-          {"jsonrpc": "2.0", "result": "d", "id": 1},
-          {"jsonrpc": "2.0", "result": "z", "id": 2}
+          {'jsonrpc': '2.0', 'result': 'qux', 'id': 0},
+          {'jsonrpc': '2.0', 'result': 'd', 'id': 1},
+          {'jsonrpc': '2.0', 'result': 'z', 'id': 2}
         ]);
       }), completes);
 
@@ -79,119 +79,119 @@ void main() {
 
       peer.withBatch(() {
         expect(
-            peer.sendRequest("foo", {"bar": "baz"}), completion(equals("qux")));
-        expect(peer.sendRequest("a", {"b": "c"}), completion(equals("d")));
-        expect(peer.sendRequest("w", {"x": "y"}), completion(equals("z")));
+            peer.sendRequest('foo', {'bar': 'baz'}), completion(equals('qux')));
+        expect(peer.sendRequest('a', {'b': 'c'}), completion(equals('d')));
+        expect(peer.sendRequest('w', {'x': 'y'}), completion(equals('z')));
       });
     });
   });
 
-  group("like a server,", () {
-    test("can receive a call and return a response", () {
+  group('like a server,', () {
+    test('can receive a call and return a response', () {
       expect(outgoing.first,
-          completion(equals({"jsonrpc": "2.0", "result": "qux", "id": 0})));
+          completion(equals({'jsonrpc': '2.0', 'result': 'qux', 'id': 0})));
 
-      peer.registerMethod("foo", (_) => "qux");
+      peer.registerMethod('foo', (_) => 'qux');
       peer.listen();
 
       incoming.add({
-        "jsonrpc": "2.0",
-        "method": "foo",
-        "params": {"bar": "baz"},
-        "id": 0
+        'jsonrpc': '2.0',
+        'method': 'foo',
+        'params': {'bar': 'baz'},
+        'id': 0
       });
     });
 
-    test("can receive a batch of calls and return a batch of responses", () {
+    test('can receive a batch of calls and return a batch of responses', () {
       expect(
           outgoing.first,
           completion(equals([
-            {"jsonrpc": "2.0", "result": "qux", "id": 0},
-            {"jsonrpc": "2.0", "result": "d", "id": 1},
-            {"jsonrpc": "2.0", "result": "z", "id": 2}
+            {'jsonrpc': '2.0', 'result': 'qux', 'id': 0},
+            {'jsonrpc': '2.0', 'result': 'd', 'id': 1},
+            {'jsonrpc': '2.0', 'result': 'z', 'id': 2}
           ])));
 
-      peer.registerMethod("foo", (_) => "qux");
-      peer.registerMethod("a", (_) => "d");
-      peer.registerMethod("w", (_) => "z");
+      peer.registerMethod('foo', (_) => 'qux');
+      peer.registerMethod('a', (_) => 'd');
+      peer.registerMethod('w', (_) => 'z');
       peer.listen();
 
       incoming.add([
         {
-          "jsonrpc": "2.0",
-          "method": "foo",
-          "params": {"bar": "baz"},
-          "id": 0
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': {'bar': 'baz'},
+          'id': 0
         },
         {
-          "jsonrpc": "2.0",
-          "method": "a",
-          "params": {"b": "c"},
-          "id": 1
+          'jsonrpc': '2.0',
+          'method': 'a',
+          'params': {'b': 'c'},
+          'id': 1
         },
         {
-          "jsonrpc": "2.0",
-          "method": "w",
-          "params": {"x": "y"},
-          "id": 2
+          'jsonrpc': '2.0',
+          'method': 'w',
+          'params': {'x': 'y'},
+          'id': 2
         }
       ]);
     });
 
-    test("returns a response for malformed JSON", () {
-      var incomingController = new StreamController<String>();
-      var outgoingController = new StreamController<String>();
-      var jsonPeer = new json_rpc.Peer(
-          new StreamChannel(incomingController.stream, outgoingController));
+    test('returns a response for malformed JSON', () {
+      var incomingController = StreamController<String>();
+      var outgoingController = StreamController<String>();
+      var jsonPeer = json_rpc.Peer(
+          StreamChannel(incomingController.stream, outgoingController));
 
       expect(
           outgoingController.stream.first.then(jsonDecode),
           completion({
-            "jsonrpc": "2.0",
-            "error": {
+            'jsonrpc': '2.0',
+            'error': {
               'code': error_code.PARSE_ERROR,
-              "message": startsWith("Invalid JSON: "),
+              'message': startsWith('Invalid JSON: '),
               // TODO(nweiz): Always expect the source when sdk#25655 is fixed.
-              "data": {
+              'data': {
                 'request': anyOf([isNull, '{invalid'])
               }
             },
-            "id": null
+            'id': null
           }));
 
       jsonPeer.listen();
 
-      incomingController.add("{invalid");
+      incomingController.add('{invalid');
     });
 
-    test("returns a response for incorrectly-structured JSON", () {
+    test('returns a response for incorrectly-structured JSON', () {
       expect(
           outgoing.first,
           completion({
-            "jsonrpc": "2.0",
-            "error": {
+            'jsonrpc': '2.0',
+            'error': {
               'code': error_code.INVALID_REQUEST,
-              "message": 'Request must contain a "jsonrpc" key.',
-              "data": {
+              'message': 'Request must contain a "jsonrpc" key.',
+              'data': {
                 'request': {'completely': 'wrong'}
               }
             },
-            "id": null
+            'id': null
           }));
 
       peer.listen();
 
-      incoming.add({"completely": "wrong"});
+      incoming.add({'completely': 'wrong'});
     });
   });
 
-  test("can notify on unhandled errors for if the method throws", () async {
-    Exception exception = Exception('test exception');
-    var incomingController = new StreamController();
-    var outgoingController = new StreamController();
-    final Completer<Exception> completer = Completer<Exception>();
-    peer = new json_rpc.Peer.withoutJson(
-      new StreamChannel(incomingController.stream, outgoingController),
+  test('can notify on unhandled errors for if the method throws', () async {
+    var exception = Exception('test exception');
+    var incomingController = StreamController();
+    var outgoingController = StreamController();
+    final completer = Completer<Exception>();
+    peer = json_rpc.Peer.withoutJson(
+      StreamChannel(incomingController.stream, outgoingController),
       onUnhandledError: (error, stack) {
         completer.complete(error);
       },
@@ -201,7 +201,7 @@ void main() {
       ..listen();
 
     incomingController.add({'jsonrpc': '2.0', 'method': 'foo'});
-    Exception receivedException = await completer.future;
+    var receivedException = await completer.future;
     expect(receivedException, equals(exception));
   });
 }

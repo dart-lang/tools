@@ -14,13 +14,13 @@ void main() {
   var requestController;
   var client;
   setUp(() {
-    responseController = new StreamController();
-    requestController = new StreamController();
-    client = new json_rpc.Client.withoutJson(
-        new StreamChannel(responseController.stream, requestController.sink));
+    responseController = StreamController();
+    requestController = StreamController();
+    client = json_rpc.Client.withoutJson(
+        StreamChannel(responseController.stream, requestController.sink));
   });
 
-  test(".withoutJson supports decoded stream and sink", () {
+  test('.withoutJson supports decoded stream and sink', () {
     client.listen();
 
     expect(requestController.stream.first.then((request) {
@@ -36,7 +36,7 @@ void main() {
     client.sendRequest('foo');
   });
 
-  test(".listen returns when the controller is closed", () {
+  test('.listen returns when the controller is closed', () {
     var hasListenCompeted = false;
     expect(client.listen().then((_) => hasListenCompeted = true), completes);
 
@@ -48,17 +48,17 @@ void main() {
     });
   });
 
-  test(".listen returns a stream error", () {
+  test('.listen returns a stream error', () {
     expect(client.listen(), throwsA('oh no'));
     responseController.addError('oh no');
   });
 
-  test(".listen can't be called twice", () {
+  test('.listen can\'t be called twice', () {
     client.listen();
     expect(() => client.listen(), throwsStateError);
   });
 
-  test(".close cancels the stream subscription and closes the sink", () {
+  test('.close cancels the stream subscription and closes the sink', () {
     // Work around sdk#19095.
     requestController.stream.listen(null);
 
@@ -72,22 +72,22 @@ void main() {
     expect(requestController.isClosed, isTrue);
   });
 
-  group("a stream error", () {
-    test("is reported through .done", () {
-      expect(client.listen(), throwsA("oh no!"));
-      expect(client.done, throwsA("oh no!"));
-      responseController.addError("oh no!");
+  group('a stream error', () {
+    test('is reported through .done', () {
+      expect(client.listen(), throwsA('oh no!'));
+      expect(client.done, throwsA('oh no!'));
+      responseController.addError('oh no!');
     });
 
-    test("cause a pending request to throw a StateError", () {
-      expect(client.listen(), throwsA("oh no!"));
+    test('cause a pending request to throw a StateError', () {
+      expect(client.listen(), throwsA('oh no!'));
       expect(client.sendRequest('foo'), throwsStateError);
-      responseController.addError("oh no!");
+      responseController.addError('oh no!');
     });
 
-    test("causes future requests to throw StateErrors", () async {
-      expect(client.listen(), throwsA("oh no!"));
-      responseController.addError("oh no!");
+    test('causes future requests to throw StateErrors', () async {
+      expect(client.listen(), throwsA('oh no!'));
+      responseController.addError('oh no!');
       await pumpEventQueue();
 
       expect(() => client.sendRequest('foo'), throwsStateError);

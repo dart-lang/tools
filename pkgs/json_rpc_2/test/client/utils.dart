@@ -13,18 +13,18 @@ import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 /// A controller used to test a [json_rpc.Client].
 class ClientController {
   /// The controller for the client's response stream.
-  final _responseController = new StreamController<String>();
+  final _responseController = StreamController<String>();
 
   /// The controller for the client's request sink.
-  final _requestController = new StreamController<String>();
+  final _requestController = StreamController<String>();
 
   /// The client.
   json_rpc.Client get client => _client;
   json_rpc.Client _client;
 
   ClientController() {
-    _client = new json_rpc.Client(
-        new StreamChannel(_responseController.stream, _requestController.sink));
+    _client = json_rpc.Client(
+        StreamChannel(_responseController.stream, _requestController.sink));
     _client.listen();
   }
 
@@ -34,7 +34,7 @@ class ClientController {
   /// returns a String, that's sent as the response directly. If it returns
   /// null, no response is sent. Otherwise, the return value is encoded and sent
   /// as the response.
-  void expectRequest(callback(request)) {
+  void expectRequest(Function(dynamic) callback) {
     expect(
         _requestController.stream.first.then((request) {
           return callback(jsonDecode(request));

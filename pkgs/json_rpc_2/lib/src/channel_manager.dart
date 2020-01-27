@@ -25,7 +25,7 @@ class ChannelManager {
   ///
   /// This is the same future that's returned by [listen].
   Future get done => _doneCompleter.future;
-  final _doneCompleter = new Completer.sync();
+  final _doneCompleter = Completer.sync();
 
   /// Whether the underlying communication channel is closed.
   bool get isClosed => _doneCompleter.isCompleted;
@@ -45,9 +45,9 @@ class ChannelManager {
   ///
   /// The returned Future will complete when the input stream is closed. If the
   /// input stream emits an error, that will be piped to the returned Future.
-  Future listen(void handleInput(input)) {
+  Future listen(void Function(dynamic) handleInput) {
     if (_listenCalled) {
-      throw new StateError("Can only call $_name.listen() once.");
+      throw StateError('Can only call $_name.listen() once.');
     }
     _listenCalled = true;
 

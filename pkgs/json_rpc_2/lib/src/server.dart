@@ -32,13 +32,13 @@ class Server {
   final ChannelManager _manager;
 
   /// The methods registered for this server.
-  final _methods = new Map<String, Function>();
+  final _methods = <String, Function>{};
 
   /// The fallback methods for this server.
   ///
   /// These are tried in order until one of them doesn't throw a
   /// [RpcException.methodNotFound] exception.
-  final _fallbacks = new Queue<Function>();
+  final _fallbacks = Queue<Function>();
 
   /// Returns a [Future] that completes when the underlying connection is
   /// closed.
@@ -85,7 +85,7 @@ class Server {
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
   Server.withoutJson(StreamChannel channel, {this.onUnhandledError})
-      : _manager = new ChannelManager("Server", channel);
+      : _manager = ChannelManager('Server', channel);
 
   /// Starts listening to the underlying stream.
   ///
@@ -112,7 +112,7 @@ class Server {
   /// reported to the client as JSON-RPC 2.0 errors.
   void registerMethod(String name, Function callback) {
     if (_methods.containsKey(name)) {
-      throw new ArgumentError('There\'s already a method named "$name".');
+      throw ArgumentError('There\'s already a method named "$name".');
     }
 
     _methods[name] = callback;
@@ -129,7 +129,7 @@ class Server {
   /// completes to a JSON-serializable object. Any errors in [callback] will be
   /// reported to the client as JSON-RPC 2.0 errors. [callback] may send custom
   /// errors by throwing an [RpcException].
-  void registerFallback(callback(Parameters parameters)) {
+  void registerFallback(Function(Parameters parameters) callback) {
     _fallbacks.add(callback);
   }
 
@@ -144,7 +144,7 @@ class Server {
     var response;
     if (request is List) {
       if (request.isEmpty) {
-        response = new RpcException(error_code.INVALID_REQUEST,
+        response = RpcException(error_code.INVALID_REQUEST,
                 'A batch must contain at least one request.')
             .serialize(request);
       } else {
@@ -168,17 +168,17 @@ class Server {
 
       var name = request['method'];
       var method = _methods[name];
-      if (method == null) method = _tryFallbacks;
+      method ??= _tryFallbacks;
 
       Object result;
       if (method is ZeroArgumentFunction) {
         if (request.containsKey('params')) {
-          throw new RpcException.invalidParams('No parameters are allowed for '
+          throw RpcException.invalidParams('No parameters are allowed for '
               'method "$name".');
         }
         result = await method();
       } else {
-        result = await method(new Parameters(name, request['params']));
+        result = await method(Parameters(name, request['params']));
       }
 
       // A request without an id is a notification, which should not be sent a
@@ -199,8 +199,8 @@ class Server {
         onUnhandledError?.call(error, stackTrace);
         return null;
       }
-      final chain = new Chain.forTrace(stackTrace);
-      return new RpcException(error_code.SERVER_ERROR, getErrorMessage(error),
+      final chain = Chain.forTrace(stackTrace);
+      return RpcException(error_code.SERVER_ERROR, getErrorMessage(error),
           data: {
             'full': '$error',
             'stack': '$chain',
@@ -211,28 +211,28 @@ class Server {
   /// Validates that [request] matches the JSON-RPC spec.
   void _validateRequest(request) {
     if (request is! Map) {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Request must be '
           'an Array or an Object.');
     }
 
     if (!request.containsKey('jsonrpc')) {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Request must '
           'contain a "jsonrpc" key.');
     }
 
     if (request['jsonrpc'] != '2.0') {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Invalid JSON-RPC '
           'version ${jsonEncode(request['jsonrpc'])}, expected "2.0".');
     }
 
     if (!request.containsKey('method')) {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Request must '
           'contain a "method" key.');
@@ -240,7 +240,7 @@ class Server {
 
     var method = request['method'];
     if (request['method'] is! String) {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Request method must '
           'be a string, but was ${jsonEncode(method)}.');
@@ -248,7 +248,7 @@ class Server {
 
     var params = request['params'];
     if (request.containsKey('params') && params is! List && params is! Map) {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Request params must '
           'be an Array or an Object, but was ${jsonEncode(params)}.');
@@ -256,7 +256,7 @@ class Server {
 
     var id = request['id'];
     if (id != null && id is! String && id is! num) {
-      throw new RpcException(
+      throw RpcException(
           error_code.INVALID_REQUEST,
           'Request id must be a '
           'string, number, or null, but was ${jsonEncode(id)}.');
@@ -267,16 +267,16 @@ class Server {
   Future _tryFallbacks(Parameters params) {
     var iterator = _fallbacks.toList().iterator;
 
-    _tryNext() async {
+    Future _tryNext() async {
       if (!iterator.moveNext()) {
-        throw new RpcException.methodNotFound(params.method);
+        throw RpcException.methodNotFound(params.method);
       }
 
       try {
         return iterator.current(params);
       } on RpcException catch (error) {
-        if (error is! RpcException) throw error;
-        if (error.code != error_code.METHOD_NOT_FOUND) throw error;
+        if (error is! RpcException) rethrow;
+        if (error.code != error_code.METHOD_NOT_FOUND) rethrow;
         return _tryNext();
       }
     }

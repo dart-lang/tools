@@ -10,7 +10,7 @@ import 'utils.dart';
 void main() {
   var controller;
   setUp(() {
-    controller = new ServerController();
+    controller = ServerController();
     controller.server
       ..registerMethod('foo', () => 'foo')
       ..registerMethod('id', (params) => params.value)

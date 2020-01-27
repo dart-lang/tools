@@ -40,15 +40,15 @@ const SERVER_ERROR = -32000;
 String name(int errorCode) {
   switch (errorCode) {
     case PARSE_ERROR:
-      return "parse error";
+      return 'parse error';
     case INVALID_REQUEST:
-      return "invalid request";
+      return 'invalid request';
     case METHOD_NOT_FOUND:
-      return "method not found";
+      return 'method not found';
     case INVALID_PARAMS:
-      return "invalid parameters";
+      return 'invalid parameters';
     case INTERNAL_ERROR:
-      return "internal error";
+      return 'internal error';
     default:
       return null;
   }

@@ -43,10 +43,10 @@ class RpcException implements Exception {
 
   /// Converts this exception into a JSON-serializable object that's a valid
   /// JSON-RPC 2.0 error response.
-  serialize(request) {
+  Map<String, dynamic> serialize(request) {
     var modifiedData;
     if (data is Map && !data.containsKey('request')) {
-      modifiedData = new Map.from(data);
+      modifiedData = Map.from(data);
       modifiedData['request'] = request;
     } else if (data == null) {
       modifiedData = {'request': request};
@@ -63,10 +63,11 @@ class RpcException implements Exception {
     };
   }
 
+  @override
   String toString() {
-    var prefix = "JSON-RPC error $code";
+    var prefix = 'JSON-RPC error $code';
     var errorName = error_code.name(code);
-    if (errorName != null) prefix += " ($errorName)";
-    return "$prefix: $message";
+    if (errorName != null) prefix += ' ($errorName)';
+    return '$prefix: $message';
   }
 }

@@ -26,7 +26,7 @@ class Parameters {
   ///
   /// If this is accessed for a [Parameter] that was not passed, the request
   /// will be automatically rejected. To avoid this, use [Parameter.valueOr].
-  get value => _value;
+  dynamic get value => _value;
   final _value;
 
   Parameters(this.method, this._value);
@@ -48,19 +48,19 @@ class Parameters {
     if (key is int) {
       _assertPositional();
       if (key < value.length) {
-        return new Parameter._(method, value[key], this, key);
+        return Parameter._(method, value[key], this, key);
       } else {
-        return new _MissingParameter(method, this, key);
+        return _MissingParameter(method, this, key);
       }
     } else if (key is String) {
       _assertNamed();
       if (value.containsKey(key)) {
-        return new Parameter._(method, value[key], this, key);
+        return Parameter._(method, value[key], this, key);
       } else {
-        return new _MissingParameter(method, this, key);
+        return _MissingParameter(method, this, key);
       }
     } else {
-      throw new ArgumentError('Parameters[] only takes an int or a string, was '
+      throw ArgumentError('Parameters[] only takes an int or a string, was '
           '"$key".');
     }
   }
@@ -80,14 +80,14 @@ class Parameters {
   /// Asserts that [value] is a positional argument list.
   void _assertPositional() {
     if (value is List) return;
-    throw new RpcException.invalidParams('Parameters for method "$method" '
+    throw RpcException.invalidParams('Parameters for method "$method" '
         'must be passed by position.');
   }
 
   /// Asserts that [value] is a named argument map.
   void _assertNamed() {
     if (value is Map) return;
-    throw new RpcException.invalidParams('Parameters for method "$method" '
+    throw RpcException.invalidParams('Parameters for method "$method" '
         'must be passed by name.');
   }
 }
@@ -131,20 +131,20 @@ class Parameter extends Parameters {
       return _key is int ? (_key + 1).toString() : jsonEncode(_key);
     }
 
-    quoteKey(key) {
-      if (key.contains(new RegExp(r'[^a-zA-Z0-9_-]'))) return jsonEncode(key);
+    String quoteKey(key) {
+      if (key.contains(RegExp(r'[^a-zA-Z0-9_-]'))) return jsonEncode(key);
       return key;
     }
 
-    computePath(params) {
+    String computePath(params) {
       if (params._parent is! Parameter) {
-        return params._key is int ? "[${params._key}]" : quoteKey(params._key);
+        return params._key is int ? '[${params._key}]' : quoteKey(params._key);
       }
 
       var path = computePath(params._parent);
       return params._key is int
-          ? "$path[${params._key}]"
-          : "$path.${quoteKey(params._key)}";
+          ? '$path[${params._key}]'
+          : '$path.${quoteKey(params._key)}';
     }
 
     return computePath(this);
@@ -157,7 +157,7 @@ class Parameter extends Parameters {
       : super(method, value);
 
   /// Returns [value], or [defaultValue] if this parameter wasn't passed.
-  valueOr(defaultValue) => value;
+  dynamic valueOr(defaultValue) => value;
 
   /// Asserts that [value] exists and is a number and returns it.
   ///
@@ -215,6 +215,7 @@ class Parameter extends Parameters {
   ///
   /// [asListOr] may be used to provide a default value instead of rejecting the
   /// request if [value] doesn't exist.
+  @override
   List get asList => _getTyped('an Array', (value) => value is List);
 
   /// Asserts that [value] is a [List] and returns it.
@@ -226,6 +227,7 @@ class Parameter extends Parameters {
   ///
   /// [asMapOr] may be used to provide a default value instead of rejecting the
   /// request if [value] doesn't exist.
+  @override
   Map get asMap => _getTyped('an Object', (value) => value is Map);
 
   /// Asserts that [value] is a [Map] and returns it.
@@ -264,13 +266,13 @@ class Parameter extends Parameters {
   ///
   /// [type] is used for the error message. It should begin with an indefinite
   /// article.
-  _getTyped(String type, bool test(value)) {
+  dynamic _getTyped(String type, bool Function(dynamic) test) {
     if (test(value)) return value;
-    throw new RpcException.invalidParams('Parameter $_path for method '
+    throw RpcException.invalidParams('Parameter $_path for method '
         '"$method" must be $type, but was ${jsonEncode(value)}.');
   }
 
-  _getParsed(String description, parse(String value)) {
+  dynamic _getParsed(String description, Function(String) parse) {
     var string = asString;
     try {
       return parse(string);
@@ -285,17 +287,19 @@ class Parameter extends Parameters {
         message = '\n$message';
       }
 
-      throw new RpcException.invalidParams('Parameter $_path for method '
+      throw RpcException.invalidParams('Parameter $_path for method '
           '"$method" must be a valid $description, but was '
           '${jsonEncode(string)}.$message');
     }
   }
 
+  @override
   void _assertPositional() {
     // Throw the standard exception for a mis-typed list.
     asList;
   }
 
+  @override
   void _assertNamed() {
     // Throw the standard exception for a mis-typed map.
     asMap;
@@ -304,31 +308,42 @@ class Parameter extends Parameters {
 
 /// A subclass of [Parameter] representing a missing parameter.
 class _MissingParameter extends Parameter {
-  get value {
-    throw new RpcException.invalidParams('Request for method "$method" is '
+  @override
+  dynamic get value {
+    throw RpcException.invalidParams('Request for method "$method" is '
         'missing required parameter $_path.');
   }
 
+  @override
   bool get exists => false;
 
   _MissingParameter(String method, Parameters parent, key)
       : super._(method, null, parent, key);
 
-  valueOr(defaultValue) => defaultValue;
+  @override
+  dynamic valueOr(defaultValue) => defaultValue;
 
+  @override
   num asNumOr(num defaultValue) => defaultValue;
 
+  @override
   int asIntOr(int defaultValue) => defaultValue;
 
+  @override
   bool asBoolOr(bool defaultValue) => defaultValue;
 
+  @override
   String asStringOr(String defaultValue) => defaultValue;
 
+  @override
   List asListOr(List defaultValue) => defaultValue;
 
+  @override
   Map asMapOr(Map defaultValue) => defaultValue;
 
+  @override
   DateTime asDateTimeOr(DateTime defaultValue) => defaultValue;
 
+  @override
   Uri asUriOr(Uri defaultValue) => defaultValue;
 }

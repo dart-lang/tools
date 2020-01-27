@@ -14,13 +14,13 @@ void main() {
   var responseController;
   var server;
   setUp(() {
-    requestController = new StreamController();
-    responseController = new StreamController();
-    server = new json_rpc.Server.withoutJson(
-        new StreamChannel(requestController.stream, responseController.sink));
+    requestController = StreamController();
+    responseController = StreamController();
+    server = json_rpc.Server.withoutJson(
+        StreamChannel(requestController.stream, responseController.sink));
   });
 
-  test(".withoutJson supports decoded stream and sink", () {
+  test('.withoutJson supports decoded stream and sink', () {
     server.listen();
 
     server.registerMethod('foo', (params) {
@@ -45,7 +45,7 @@ void main() {
         })));
   });
 
-  test(".listen returns when the controller is closed", () {
+  test('.listen returns when the controller is closed', () {
     var hasListenCompeted = false;
     expect(server.listen().then((_) => hasListenCompeted = true), completes);
 
@@ -57,18 +57,18 @@ void main() {
     });
   });
 
-  test(".listen returns a stream error", () {
+  test('.listen returns a stream error', () {
     expect(server.listen(), throwsA('oh no'));
     requestController.addError('oh no');
   });
 
-  test(".listen can't be called twice", () {
+  test('.listen can\'t be called twice', () {
     server.listen();
 
     expect(() => server.listen(), throwsStateError);
   });
 
-  test(".close cancels the stream subscription and closes the sink", () {
+  test('.close cancels the stream subscription and closes the sink', () {
     // Work around sdk#19095.
     responseController.stream.listen(null);
 

@@ -14,18 +14,18 @@ import 'package:json_rpc_2/error_code.dart' as error_code;
 /// A controller used to test a [json_rpc.Server].
 class ServerController {
   /// The controller for the server's request stream.
-  final _requestController = new StreamController<String>();
+  final _requestController = StreamController<String>();
 
   /// The controller for the server's response sink.
-  final _responseController = new StreamController<String>();
+  final _responseController = StreamController<String>();
 
   /// The server.
   json_rpc.Server get server => _server;
   json_rpc.Server _server;
 
   ServerController({json_rpc.ErrorCallback onUnhandledError}) {
-    _server = new json_rpc.Server(
-        new StreamChannel(_requestController.stream, _responseController.sink),
+    _server = json_rpc.Server(
+        StreamChannel(_requestController.stream, _responseController.sink),
         onUnhandledError: onUnhandledError);
     _server.listen();
   }
@@ -50,7 +50,7 @@ void expectErrorResponse(
     {data}) {
   var id;
   if (request is Map) id = request['id'];
-  if (data == null) data = {'request': request};
+  data ??= {'request': request};
 
   expect(
       controller.handleRequest(request),
@@ -65,7 +65,7 @@ void expectErrorResponse(
 /// `invalid_params` error code.
 Matcher throwsInvalidParams(String message) {
   return throwsA(predicate((error) {
-    expect(error, new TypeMatcher<json_rpc.RpcException>());
+    expect(error, TypeMatcher<json_rpc.RpcException>());
     expect(error.code, equals(error_code.INVALID_PARAMS));
     expect(error.message, equals(message));
     return true;

@@ -9,19 +9,19 @@ import 'utils.dart';
 
 void main() {
   var controller;
-  setUp(() => controller = new ServerController());
+  setUp(() => controller = ServerController());
 
-  test("a non-Array/Object request is invalid", () {
+  test('a non-Array/Object request is invalid', () {
     expectErrorResponse(controller, 'foo', error_code.INVALID_REQUEST,
         'Request must be an Array or an Object.');
   });
 
-  test("requests must have a jsonrpc key", () {
+  test('requests must have a jsonrpc key', () {
     expectErrorResponse(controller, {'method': 'foo', 'id': 1234},
         error_code.INVALID_REQUEST, 'Request must contain a "jsonrpc" key.');
   });
 
-  test("the jsonrpc version must be 2.0", () {
+  test('the jsonrpc version must be 2.0', () {
     expectErrorResponse(
         controller,
         {'jsonrpc': '1.0', 'method': 'foo', 'id': 1234},
@@ -29,12 +29,12 @@ void main() {
         'Invalid JSON-RPC version "1.0", expected "2.0".');
   });
 
-  test("requests must have a method key", () {
+  test('requests must have a method key', () {
     expectErrorResponse(controller, {'jsonrpc': '2.0', 'id': 1234},
         error_code.INVALID_REQUEST, 'Request must contain a "method" key.');
   });
 
-  test("request method must be a string", () {
+  test('request method must be a string', () {
     expectErrorResponse(
         controller,
         {'jsonrpc': '2.0', 'method': 1234, 'id': 1234},
@@ -42,7 +42,7 @@ void main() {
         'Request method must be a string, but was 1234.');
   });
 
-  test("request params must be an Array or Object", () {
+  test('request params must be an Array or Object', () {
     expectErrorResponse(
         controller,
         {'jsonrpc': '2.0', 'method': 'foo', 'params': 1234, 'id': 1234},
@@ -50,7 +50,7 @@ void main() {
         'Request params must be an Array or an Object, but was 1234.');
   });
 
-  test("request id may not be an Array or Object", () {
+  test('request id may not be an Array or Object', () {
     expect(
         controller.handleRequest({
           'jsonrpc': '2.0',

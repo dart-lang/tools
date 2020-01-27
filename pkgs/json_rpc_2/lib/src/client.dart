@@ -28,7 +28,7 @@ class Client {
   List _batch;
 
   /// The map of request ids to pending requests.
-  final _pendingRequests = new Map<int, _Request>();
+  final _pendingRequests = <int, _Request>{};
 
   /// Returns a [Future] that completes when the underlying connection is
   /// closed.
@@ -61,11 +61,11 @@ class Client {
   /// Note that the client won't begin listening to [responses] until
   /// [Client.listen] is called.
   Client.withoutJson(StreamChannel channel)
-      : _manager = new ChannelManager("Client", channel) {
+      : _manager = ChannelManager('Client', channel) {
     _manager.done.whenComplete(() {
       for (var request in _pendingRequests.values) {
         request.completer.completeError(
-            new StateError(
+            StateError(
                 'The client closed with pending request "${request.method}".'),
             StackTrace.current);
       }
@@ -106,8 +106,8 @@ class Client {
     var id = _id++;
     _send(method, parameters, id);
 
-    var completer = new Completer.sync();
-    _pendingRequests[id] = new _Request(method, completer, new Chain.current());
+    var completer = Completer.sync();
+    _pendingRequests[id] = _Request(method, completer, Chain.current());
     return completer.future;
   }
 
@@ -133,14 +133,14 @@ class Client {
   void _send(String method, parameters, [int id]) {
     if (parameters is Iterable) parameters = parameters.toList();
     if (parameters is! Map && parameters is! List && parameters != null) {
-      throw new ArgumentError('Only maps and lists may be used as JSON-RPC '
+      throw ArgumentError('Only maps and lists may be used as JSON-RPC '
           'parameters, was "$parameters".');
     }
-    if (isClosed) throw new StateError("The client is closed.");
+    if (isClosed) throw StateError('The client is closed.');
 
-    var message = <String, dynamic>{"jsonrpc": "2.0", "method": method};
-    if (id != null) message["id"] = id;
-    if (parameters != null) message["params"] = parameters;
+    var message = <String, dynamic>{'jsonrpc': '2.0', 'method': method};
+    if (id != null) message['id'] = id;
+    if (parameters != null) message['params'] = parameters;
 
     if (_batch != null) {
       _batch.add(message);
@@ -161,7 +161,7 @@ class Client {
   /// If this is called in the context of another [withBatch] call, it just
   /// invokes [callback] without creating another batch. This means that
   /// responses are batched until the first batch ends.
-  withBatch(callback()) {
+  void withBatch(Function() callback) {
     if (_batch != null) return callback();
 
     _batch = [];
@@ -184,14 +184,13 @@ class Client {
   /// resolved.
   void _handleSingleResponse(response) {
     if (!_isResponseValid(response)) return;
-    var request = _pendingRequests.remove(response["id"]);
-    if (response.containsKey("result")) {
-      request.completer.complete(response["result"]);
+    var request = _pendingRequests.remove(response['id']);
+    if (response.containsKey('result')) {
+      request.completer.complete(response['result']);
     } else {
       request.completer.completeError(
-          new RpcException(
-              response["error"]["code"], response["error"]["message"],
-              data: response["error"]["data"]),
+          RpcException(response['error']['code'], response['error']['message'],
+              data: response['error']['data']),
           request.chain);
     }
   }
@@ -199,15 +198,15 @@ class Client {
   /// Determines whether the server's response is valid per the spec.
   bool _isResponseValid(response) {
     if (response is! Map) return false;
-    if (response["jsonrpc"] != "2.0") return false;
-    if (!_pendingRequests.containsKey(response["id"])) return false;
-    if (response.containsKey("result")) return true;
+    if (response['jsonrpc'] != '2.0') return false;
+    if (!_pendingRequests.containsKey(response['id'])) return false;
+    if (response.containsKey('result')) return true;
 
-    if (!response.containsKey("error")) return false;
-    var error = response["error"];
+    if (!response.containsKey('error')) return false;
+    var error = response['error'];
     if (error is! Map) return false;
-    if (error["code"] is! int) return false;
-    if (error["message"] is! String) return false;
+    if (error['code'] is! int) return false;
+    if (error['message'] is! String) return false;
     return true;
   }
 }

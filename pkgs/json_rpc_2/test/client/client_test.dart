@@ -12,9 +12,9 @@ import 'utils.dart';
 
 void main() {
   var controller;
-  setUp(() => controller = new ClientController());
+  setUp(() => controller = ClientController());
 
-  test("sends a message and returns the response", () {
+  test('sends a message and returns the response', () {
     controller.expectRequest((request) {
       expect(
           request,
@@ -27,11 +27,11 @@ void main() {
       return {'jsonrpc': '2.0', 'result': 'bar', 'id': request['id']};
     });
 
-    expect(controller.client.sendRequest("foo", {'param': 'value'}),
+    expect(controller.client.sendRequest('foo', {'param': 'value'}),
         completion(equals('bar')));
   });
 
-  test("sends a notification and expects no response", () {
+  test('sends a notification and expects no response', () {
     controller.expectRequest((request) {
       expect(
           request,
@@ -42,10 +42,10 @@ void main() {
           }));
     });
 
-    controller.client.sendNotification("foo", {'param': 'value'});
+    controller.client.sendNotification('foo', {'param': 'value'});
   });
 
-  test("sends a notification with positional parameters", () {
+  test('sends a notification with positional parameters', () {
     controller.expectRequest((request) {
       expect(
           request,
@@ -56,20 +56,20 @@ void main() {
           }));
     });
 
-    controller.client.sendNotification("foo", ['value1', 'value2']);
+    controller.client.sendNotification('foo', ['value1', 'value2']);
   });
 
-  test("sends a notification with no parameters", () {
+  test('sends a notification with no parameters', () {
     controller.expectRequest((request) {
       expect(request, equals({'jsonrpc': '2.0', 'method': 'foo'}));
     });
 
-    controller.client.sendNotification("foo");
+    controller.client.sendNotification('foo');
   });
 
-  test("sends a synchronous batch of requests", () {
+  test('sends a synchronous batch of requests', () {
     controller.expectRequest((request) {
-      expect(request, new TypeMatcher<List>());
+      expect(request, TypeMatcher<List>());
       expect(request, hasLength(3));
       expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
       expect(
@@ -91,17 +91,17 @@ void main() {
     });
 
     controller.client.withBatch(() {
-      controller.client.sendNotification("foo");
-      expect(controller.client.sendRequest("bar", {'param': 'value'}),
-          completion(equals("bar response")));
-      expect(controller.client.sendRequest("baz"),
-          completion(equals("baz response")));
+      controller.client.sendNotification('foo');
+      expect(controller.client.sendRequest('bar', {'param': 'value'}),
+          completion(equals('bar response')));
+      expect(controller.client.sendRequest('baz'),
+          completion(equals('baz response')));
     });
   });
 
-  test("sends an asynchronous batch of requests", () {
+  test('sends an asynchronous batch of requests', () {
     controller.expectRequest((request) {
-      expect(request, new TypeMatcher<List>());
+      expect(request, TypeMatcher<List>());
       expect(request, hasLength(3));
       expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
       expect(
@@ -123,21 +123,21 @@ void main() {
     });
 
     controller.client.withBatch(() {
-      return new Future.value().then((_) {
-        controller.client.sendNotification("foo");
-        return new Future.value();
+      return Future.value().then((_) {
+        controller.client.sendNotification('foo');
+        return Future.value();
       }).then((_) {
-        expect(controller.client.sendRequest("bar", {'param': 'value'}),
-            completion(equals("bar response")));
-        return new Future.value();
+        expect(controller.client.sendRequest('bar', {'param': 'value'}),
+            completion(equals('bar response')));
+        return Future.value();
       }).then((_) {
-        expect(controller.client.sendRequest("baz"),
-            completion(equals("baz response")));
+        expect(controller.client.sendRequest('baz'),
+            completion(equals('baz response')));
       });
     });
   });
 
-  test("reports an error from the server", () {
+  test('reports an error from the server', () {
     controller.expectRequest((request) {
       expect(
           request,
@@ -155,9 +155,9 @@ void main() {
       };
     });
 
-    expect(controller.client.sendRequest("foo", {'param': 'value'}),
+    expect(controller.client.sendRequest('foo', {'param': 'value'}),
         throwsA(predicate((exception) {
-      expect(exception, new TypeMatcher<json_rpc.RpcException>());
+      expect(exception, TypeMatcher<json_rpc.RpcException>());
       expect(exception.code, equals(error_code.SERVER_ERROR));
       expect(exception.message, equals('you are bad at requests'));
       expect(exception.data, equals('some junk'));
@@ -165,17 +165,17 @@ void main() {
     })));
   });
 
-  test("requests throw StateErrors if the client is closed", () {
+  test('requests throw StateErrors if the client is closed', () {
     controller.client.close();
-    expect(() => controller.client.sendRequest("foo"), throwsStateError);
-    expect(() => controller.client.sendNotification("foo"), throwsStateError);
+    expect(() => controller.client.sendRequest('foo'), throwsStateError);
+    expect(() => controller.client.sendNotification('foo'), throwsStateError);
   });
 
-  test("ignores bogus responses", () {
+  test('ignores bogus responses', () {
     // Make a request so we have something to respond to.
     controller.expectRequest((request) {
-      controller.sendJsonResponse("{invalid");
-      controller.sendResponse("not a map");
+      controller.sendJsonResponse('{invalid');
+      controller.sendResponse('not a map');
       controller.sendResponse(
           {'jsonrpc': 'wrong version', 'result': 'wrong', 'id': request['id']});
       controller.sendResponse({'jsonrpc': '2.0', 'result': 'wrong'});
@@ -197,6 +197,6 @@ void main() {
           (_) => {'jsonrpc': '2.0', 'result': 'right', 'id': request['id']});
     });
 
-    expect(controller.client.sendRequest("foo"), completion(equals('right')));
+    expect(controller.client.sendRequest('foo'), completion(equals('right')));
   });
 }
