@@ -6,8 +6,8 @@ import "dart:convert";
 
 import "package:test/test.dart";
 
-import "package:package_config_2/src/packages_file.dart" as packages;
-import "package:package_config_2/src/package_config_json.dart";
+import "package:package_config/src/packages_file.dart" as packages;
+import "package:package_config/src/package_config_json.dart";
 import "src/util.dart";
 
 void main() {

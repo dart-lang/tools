@@ -5,7 +5,7 @@
 library package_config.discovery_test;
 
 import "package:test/test.dart";
-import "package:package_config_2/package_config.dart";
+import "package:package_config/package_config.dart";
 
 import "src/util.dart";
 
