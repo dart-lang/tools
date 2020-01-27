@@ -1,4 +1,4 @@
-name: package_config_2
+name: package_config
 version: 2.0.0
 description: Support for working with Package Configuration files.
 author: Dart Team <misc@dartlang.org>

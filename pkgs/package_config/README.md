@@ -1,8 +1,10 @@
 # package_config
 
-Support for working with **Package Resolution Configuration** files as described 
-in this [DEP](https://github.com/lrhn/dep-pkgspec/blob/master/DEP-pkgspec.md), 
-under review [here](https://github.com/dart-lang/dart_enhancement_proposals/issues/5).
+Support for working with **Package Configuration** files as described
+in the Package Configuration v2 [design document](https://github.com/dart-lang/language/blob/master/accepted/future-releases/language-versioning/package-config-file-v2.md).
+
+This package is also available as `package_config_2`, which can be used by packages
+which transitively depend on a version of package_config with a version <2.0.0.
 
 [![Build Status](https://travis-ci.org/dart-lang/package_config.svg?branch=master)](https://travis-ci.org/dart-lang/package_config) [![pub package](https://img.shields.io/pub/v/package_config.svg)](https://pub.dartlang.org/packages/package_config) 
 
