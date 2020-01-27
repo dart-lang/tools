@@ -23,10 +23,16 @@ export "src/errors.dart" show PackageConfigError;
 /// It is considered a `package_config.json` file if its first character
 /// is a `{`.
 ///
-/// If the file is a `.packages` file, also checks if there is a
-/// `.dart_tool/package_config.json` file next to the original file,
+/// If the file is a `.packages` file and [preferNewest] is true, the default,
+/// also checks if there is a `.dart_tool/package_config.json` file next to the original file,
 /// and if so, loads that instead.
-Future<PackageConfig> loadPackageConfig(File file) => readAnyConfigFile(file);
+/// If [preferNewest] is set to false, a directly specified `.packages` file
+/// is loaded even if there is an available `package_config.json` file.
+/// The caller can determine this from the [PackageConfig.version]
+/// being 1 and look for a `package_config.json` file themselves.
+Future<PackageConfig> loadPackageConfig(File file,
+        {bool preferNewest = true}) =>
+    readAnyConfigFile(file, preferNewest);
 
 /// Reads a specific package configuration URI.
 ///
@@ -36,19 +42,24 @@ Future<PackageConfig> loadPackageConfig(File file) => readAnyConfigFile(file);
 /// It is considered a `package_config.json` file if its first
 /// non-whitespace character is a `{`.
 ///
-/// If the file is a `.packages` file, first checks if there is a
-/// `.dart_tool/package_config.json` file next to the original file,
-/// and if so, loads that instead.
+/// If [preferNewest] is true, the default, and the file is a `.packages` file,
+/// first checks if there is a `.dart_tool/package_config.json` file
+/// next to the original file, and if so, loads that instead.
 /// The [file] *must not* be a `package:` URI.
+/// If [preferNewest] is set to false, a directly specified `.packages` file
+/// is loaded even if there is an available `package_config.json` file.
+/// The caller can determine this from the [PackageConfig.version]
+/// being 1 and look for a `package_config.json` file themselves.
 ///
 /// If [loader] is provided, URIs are loaded using that function.
 /// The future returned by the loader must complete with a [Uint8List]
-/// containing the entire file content,
+/// containing the entire file content encoded as UTF-8,
 /// or with `null` if the file does not exist.
 /// The loader may throw at its own discretion, for situations where
 /// it determines that an error might be need user attention,
 /// but it is always allowed to return `null`.
 /// This function makes no attempt to catch such errors.
+/// As such, it may throw any error that [loader] throws.
 ///
 /// If no [loader] is supplied, a default loader is used which
 /// only accepts `file:`,  `http:` and `https:` URIs,
@@ -58,8 +69,9 @@ Future<PackageConfig> loadPackageConfig(File file) => readAnyConfigFile(file);
 /// As such, it does not distinguish between a file not existing,
 /// and it being temporarily locked or unreachable.
 Future<PackageConfig> loadPackageConfigUri(Uri file,
-        {Future<Uint8List /*?*/ > loader(Uri uri) /*?*/}) =>
-    readAnyConfigFileUri(file, loader);
+        {Future<Uint8List /*?*/ > loader(Uri uri) /*?*/,
+        bool preferNewest = true}) =>
+    readAnyConfigFileUri(file, loader, preferNewest);
 
 /// Finds a package configuration relative to [directory].
 ///
@@ -122,14 +134,6 @@ Future<PackageConfig> findPackageConfigUri(Uri location,
 /// Writes `.dart_tool/package_config.json` relative to [directory].
 /// If the `.dart_tool/` directory does not exist, it is created.
 /// If it cannot be created, this operation fails.
-///
-/// If [extraData] contains any entries, they are added to the JSON
-/// written to the `package_config.json` file. Entries with the names
-/// `"configVersion"` or `"packages"` are ignored, all other entries
-/// are added verbatim.
-/// This is intended for, e.g., the
-/// `"generator"`, `"generated"` and `"generatorVersion"`
-/// properties.
 ///
 /// Also writes a `.packages` file in [directory].
 /// This will stop happening eventually as the `.packages` file becomes

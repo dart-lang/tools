@@ -7,7 +7,7 @@ import "dart:io";
 import "dart:typed_data";
 
 import 'package:charcode/ascii.dart';
-import "package:path/path.dart" as path;
+import "package:path/path.dart" as p;
 
 import "discovery.dart" show packageConfigJsonPath;
 import "errors.dart";
@@ -38,36 +38,42 @@ const String _generatorVersionKey = "generatorVersion";
 /// Detects whether the [file] is a version one `.packages` file or
 /// a version two `package_config.json` file.
 ///
-/// If the [file] is a `.packages` file, first checks whether there is an
-/// adjacent `.dart_tool/package_config.json` file, and if so,
-/// reads that instead.
+/// If the [file] is a `.packages` file and [preferNewest] is true,
+/// first checks whether there is an adjacent `.dart_tool/package_config.json`
+/// file, and if so, reads that instead.
+/// If [preferNewset] is false, the specified file is loaded even if it is
+/// a `.packages` file and there is an available `package_config.json` file.
 ///
 /// The file must exist and be a normal file.
-Future<PackageConfig> readAnyConfigFile(File file) async {
+Future<PackageConfig> readAnyConfigFile(File file, bool preferNewest) async {
   var bytes = await file.readAsBytes();
   int firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
     // Definitely not a JSON object, probably a .packages.
-    var alternateFile = File(path.join(
-        path.dirname(file.path), ".dart_tool", "package_config.json"));
-    if (!alternateFile.existsSync()) {
-      return packages_file.parse(bytes, file.uri);
+    if (preferNewest) {
+      var alternateFile = File(
+          p.join(p.dirname(file.path), ".dart_tool", "package_config.json"));
+      if (alternateFile.existsSync()) {
+        return parsePackageConfigBytes(
+            await alternateFile.readAsBytes(), alternateFile.uri);
+      }
     }
-    file = alternateFile;
-    bytes = await alternateFile.readAsBytes();
+    return packages_file.parse(bytes, file.uri);
   }
   return parsePackageConfigBytes(bytes, file.uri);
 }
 
 /// Like [readAnyConfigFile] but uses a URI and an optional loader.
-Future<PackageConfig> readAnyConfigFileUri(
-    Uri file, Future<Uint8List /*?*/ > loader(Uri uri) /*?*/) async {
+Future<PackageConfig> readAnyConfigFileUri(Uri file,
+    Future<Uint8List /*?*/ > loader(Uri uri) /*?*/, bool preferNewest) async {
   if (file.isScheme("package")) {
     throw PackageConfigArgumentError(
         file, "file", "Must not be a package: URI");
   }
   if (loader == null) {
-    if (file.isScheme("file")) return readAnyConfigFile(File.fromUri(file));
+    if (file.isScheme("file")) {
+      return readAnyConfigFile(File.fromUri(file), preferNewest);
+    }
     loader = defaultLoader;
   }
   var bytes = await loader(file);
@@ -78,13 +84,15 @@ Future<PackageConfig> readAnyConfigFileUri(
   int firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
     // Definitely not a JSON object, probably a .packages.
-    var alternateFile = file.resolveUri(packageConfigJsonPath);
-    var alternateBytes = await loader(alternateFile);
-    if (alternateBytes == null) {
-      return packages_file.parse(bytes, file);
+    if (preferNewest) {
+      // Check if there is a package_config.json file.
+      var alternateFile = file.resolveUri(packageConfigJsonPath);
+      var alternateBytes = await loader(alternateFile);
+      if (alternateBytes != null) {
+        return parsePackageConfigBytes(alternateBytes, alternateFile);
+      }
     }
-    bytes = alternateBytes;
-    file = alternateFile;
+    return packages_file.parse(bytes, file);
   }
   return parsePackageConfigBytes(bytes, file);
 }
@@ -242,8 +250,8 @@ PackageConfig parsePackageConfigJson(dynamic json, Uri baseLocation) {
 Future<void> writePackageConfigJson(
     PackageConfig config, Directory targetDirectory) async {
   // Write .dart_tool/package_config.json first.
-  var file = File(
-      path.join(targetDirectory.path, ".dart_tool", "package_config.json"));
+  var file =
+      File(p.join(targetDirectory.path, ".dart_tool", "package_config.json"));
   var baseUri = file.uri;
   var extraData = config.extraData;
   var data = <String, dynamic>{
@@ -275,7 +283,7 @@ Future<void> writePackageConfigJson(
           "${generated != null ? " on $generated" : ""}.";
     }
   }
-  file = File(path.join(targetDirectory.path, ".packages"));
+  file = File(p.join(targetDirectory.path, ".packages"));
   baseUri = file.uri;
   var buffer = StringBuffer();
   packages_file.write(buffer, config, baseUri: baseUri, comment: comment);
@@ -313,7 +321,7 @@ Map<String, dynamic> /*?*/ _extractExtraData(
 
 /// Checks that the object is a valid JSON-like data structure.
 bool _validateJson(dynamic object) {
-  if (object == null || object == true || object == false) return true;
+  if (object == null || true == object || false == object) return true;
   if (object is num || object is String) return true;
   if (object is List<dynamic>) {
     for (var element in object) if (!_validateJson(element)) return false;

@@ -170,6 +170,13 @@ main() {
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       });
+      fileTest("prefer .packages", files, (Directory directory) async {
+        File file = dirFile(directory, ".packages");
+        PackageConfig config =
+            await loadPackageConfig(file, preferNewest: false);
+        expect(config.version, 1);
+        validatePackagesFile(config, directory);
+      });
     });
 
     fileTest("package_config.json non-default name", {

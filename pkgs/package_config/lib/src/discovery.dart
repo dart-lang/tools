@@ -5,7 +5,7 @@
 import "dart:io";
 import 'dart:typed_data';
 
-import "package:path/path.dart" as path;
+import "package:path/path.dart" as p;
 
 import "errors.dart";
 import "package_config_impl.dart";
@@ -110,23 +110,13 @@ Future<PackageConfig /*?*/ > findPackagConfigInDirectory(
 
 Future<File> /*?*/ checkForPackageConfigJsonFile(Directory directory) async {
   assert(directory.isAbsolute);
-  var file =
-      File(path.join(directory.path, ".dart_tool", "package_config.json"));
+  var file = File(p.join(directory.path, ".dart_tool", "package_config.json"));
   if (await file.exists()) return file;
   return null;
 }
 
 Future<File /*?*/ > checkForDotPackagesFile(Directory directory) async {
-  var file = File(path.join(directory.path, ".packages"));
+  var file = File(p.join(directory.path, ".packages"));
   if (await file.exists()) return file;
   return null;
-}
-
-Future<Uint8List /*?*/ > _loadFile(File file) async {
-  Uint8List bytes;
-  try {
-    return await file.readAsBytes();
-  } catch (_) {
-    return null;
-  }
 }

@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import "dart:io";
 import "dart:convert";
 
 import "package:test/test.dart";
@@ -199,9 +198,43 @@ void main() {
       expect(config.packages.first.name, "foo");
     });
 
+    test("nested packages", () {
+      var configBytes = utf8.encode(json.encode({
+        "configVersion": 2,
+        "packages": [
+          {"name": "foo", "rootUri": "/foo/", "packageUri": "lib/"},
+          {"name": "bar", "rootUri": "/foo/bar/", "packageUri": "lib/"},
+          {"name": "baz", "rootUri": "/foo/bar/baz/", "packageUri": "lib/"},
+          {"name": "qux", "rootUri": "/foo/qux/", "packageUri": "lib/"},
+        ]
+      }));
+      var config = parsePackageConfigBytes(
+          configBytes, Uri.parse("file:///tmp/.dart_tool/file.dart"));
+      expect(config.version, 2);
+      expect(config.packageOf(Uri.parse("file:///foo/lala/lala.dart")).name,
+          "foo");
+      expect(
+          config.packageOf(Uri.parse("file:///foo/bar/lala.dart")).name, "bar");
+      expect(config.packageOf(Uri.parse("file:///foo/bar/baz/lala.dart")).name,
+          "baz");
+      expect(
+          config.packageOf(Uri.parse("file:///foo/qux/lala.dart")).name, "qux");
+      expect(config.toPackageUri(Uri.parse("file:///foo/lib/diz")),
+          Uri.parse("package:foo/diz"));
+      expect(config.toPackageUri(Uri.parse("file:///foo/bar/lib/diz")),
+          Uri.parse("package:bar/diz"));
+      expect(config.toPackageUri(Uri.parse("file:///foo/bar/baz/lib/diz")),
+          Uri.parse("package:baz/diz"));
+      expect(config.toPackageUri(Uri.parse("file:///foo/qux/lib/diz")),
+          Uri.parse("package:qux/diz"));
+    });
+
     group("invalid", () {
       testThrows(String name, String source) {
         test(name, () {
+          if (name == "inside lib") {
+            print(name);
+          }
           expect(
               () => parsePackageConfigBytes(utf8.encode(source),
                   Uri.parse("file:///tmp/.dart_tool/file.dart")),
@@ -304,9 +337,15 @@ void main() {
       testThrows("same roots",
           '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}');
       testThrows(
-          "overlapping roots",
-          '{$cfg,"packages":[{$name,$root},'
-              '{"name":"bar","rootUri":"/foo/sub/"}]}');
+          // The roots of foo and bar are the same.
+          "same roots",
+          '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}');
+      testThrows(
+          // The root of bar is inside the package root of foo.
+          "inside lib",
+          '{$cfg,"packages":['
+              '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
+              '{"name":"bar","rootUri":"/foo/lib/qux/"}]}');
     });
   });
 }
