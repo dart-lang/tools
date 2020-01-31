@@ -8,18 +8,19 @@ import 'dart:io';
 import 'package:coverage/coverage.dart';
 import 'package:test/test.dart';
 
+// The scriptId for the main_test.js in the sample report.
+const String mainScriptId = '31';
+
 Future<String> sourceMapProvider(String scriptId) async {
-  // The scriptId for the main_test.ddc.js in the sample report is 37.
-  if (scriptId != '37') {
+  if (scriptId != mainScriptId) {
     return 'something invalid!';
   }
-  return File('test/test_files/main_test.ddc.js.map').readAsString();
+  return File('test/test_files/main_test.js.map').readAsString();
 }
 
 Future<String> sourceProvider(String scriptId) async {
-  // The scriptId for the main_test.ddc.js in the sample report is 37.
-  if (scriptId != '37') return null;
-  return File('test/test_files/main_test.ddc.js').readAsString();
+  if (scriptId != mainScriptId) return null;
+  return File('test/test_files/main_test.js').readAsString();
 }
 
 Future<Uri> sourceUriProvider(String sourceUrl, String scriptId) async =>
@@ -38,22 +39,28 @@ void main() {
       sourceUriProvider,
     );
 
-    final coverage = report['coverage'];
-    expect(coverage.length, equals(1));
-
-    final sourceReport = coverage.first;
-    expect(sourceReport['source'], equals('main_test.dart'));
+    final sourceReport = report['coverage'].firstWhere(
+        (Map<String, dynamic> report) =>
+            report['source'].toString().contains('main_test.dart'));
 
     final Map<int, int> expectedHits = {
-      5: 1,
-      6: 1,
       7: 1,
-      8: 0,
-      10: 1,
       11: 1,
       13: 1,
       14: 1,
-      15: 1,
+      17: 0,
+      19: 0,
+      20: 0,
+      22: 1,
+      23: 1,
+      24: 1,
+      25: 1,
+      28: 1,
+      30: 0,
+      32: 1,
+      34: 1,
+      35: 1,
+      36: 1,
     };
 
     final List<int> hitMap = sourceReport['hits'];
