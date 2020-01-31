@@ -32,7 +32,14 @@ Future<Map<String, dynamic>> parseChromeCoverage(
     final mapResponse = await sourceMapProvider(scriptId);
     if (mapResponse == null) continue;
 
-    final SingleMapping mapping = parse(mapResponse);
+    SingleMapping mapping;
+    try {
+      mapping = parse(mapResponse);
+    } on FormatException {
+      continue;
+    } on ArgumentError {
+      continue;
+    }
 
     final compiledSource = await sourceProvider(scriptId);
     if (compiledSource == null) continue;

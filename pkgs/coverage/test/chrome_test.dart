@@ -10,7 +10,9 @@ import 'package:test/test.dart';
 
 Future<String> sourceMapProvider(String scriptId) async {
   // The scriptId for the main_test.ddc.js in the sample report is 37.
-  if (scriptId != '37') return null;
+  if (scriptId != '37') {
+    return 'something invalid!';
+  }
   return File('test/test_files/main_test.ddc.js.map').readAsString();
 }
 
