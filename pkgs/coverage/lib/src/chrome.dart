@@ -59,8 +59,10 @@ Future<Map<String, dynamic>> parseChromeCoverage(
         final uri = await sourceUriProvider(sourceUrl, scriptId);
         final coverage = coverageReport.putIfAbsent(uri, () => <int, bool>{});
 
-        coverage[columnEntry.sourceLine + 1] = coveredPositions
-            .contains(_Position(lineEntry.line + 1, columnEntry.column + 1));
+        final current = coverage[columnEntry.sourceLine + 1] ?? false;
+        coverage[columnEntry.sourceLine + 1] = current ||
+            coveredPositions.contains(
+                _Position(lineEntry.line + 1, columnEntry.column + 1));
       }
     }
   }

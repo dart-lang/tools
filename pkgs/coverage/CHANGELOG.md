@@ -1,5 +1,6 @@
 ## 0.13.5-dev
 
+* Update `parseChromeCoverage` to merge coverage information for a given line.
 * Handle source map parse errors in `parseChromeCoverage`. Coverage will not be
   considered for Dart files that have corresponding invalid source maps.
 
