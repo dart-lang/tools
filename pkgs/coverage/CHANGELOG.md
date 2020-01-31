@@ -1,3 +1,8 @@
+## 0.13.5-dev
+
+* Handle source map parse errors in `parseChromeCoverage`. Coverage will not be
+  considered for Dart files that have corresponding invalid source maps.
+
 ## 0.13.4 - 2020-01-23
 
 * Add `parseChromeCoverage` for creating a Dart based coverage report from a
