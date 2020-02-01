@@ -47,7 +47,7 @@ class SseClient extends StreamChannelMixin<String> {
         // Allow for a retry to connect before giving up.
         _errorTimer = Timer(const Duration(seconds: 5), () {
           _incomingController.addError(error);
-          _eventSource.close();
+          close();
         });
       }
     });

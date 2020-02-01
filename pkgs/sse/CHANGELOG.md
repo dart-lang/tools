@@ -1,3 +1,8 @@
+## 3.1.2
+
+- Fix an issue where the `SseClient` would not send a `done` event when there
+  was an error with the SSE connection.
+
 ## 3.1.1
 
 - Make `isInKeepAlive` on `SseConnection` private.
