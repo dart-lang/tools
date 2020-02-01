@@ -1,4 +1,4 @@
-## 0.13.5-dev
+## 0.13.5 - 2020-01-30
 
 * Update `parseChromeCoverage` to merge coverage information for a given line.
 * Handle source map parse errors in `parseChromeCoverage`. Coverage will not be
