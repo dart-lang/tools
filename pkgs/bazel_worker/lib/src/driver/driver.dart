@@ -106,14 +106,17 @@ class BazelWorkerDriver {
         _spawningWorkers.remove(futureWorker);
         _readyWorkers.add(worker);
 
-        _workerConnections[worker] = StdDriverConnection.forWorker(worker);
+        var connection = StdDriverConnection.forWorker(worker);
+        _workerConnections[worker] = connection;
         _runWorker(worker, attempt);
 
         // When the worker exits we should retry running the work queue in case
         // there is more work to be done. This is primarily just a defensive
         // thing but is cheap to do.
-        // exitCode can be null: https://github.com/dart-lang/sdk/issues/35874
-        worker.exitCode?.then((exitCode) {
+        //
+        // We don't use `exitCode` because it is null for detached processes (
+        // which is common for workers).
+        connection.done.then((_) {
           _idleWorkers.remove(worker);
           _readyWorkers.remove(worker);
           _runWorkQueue();

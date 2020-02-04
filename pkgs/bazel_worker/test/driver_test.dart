@@ -209,9 +209,6 @@ class MockWorker implements Process {
   /// Spawns a new [MockWorker].
   static Future<MockWorker> spawn() async => MockWorker();
 
-  /// Worker loop that handles reading requests and responding.
-  AsyncWorkerLoop _workerLoop;
-
   /// Static queue of pending responses, these are shared by all workers.
   ///
   /// If this is empty and a request is received then it will throw.
@@ -223,7 +220,8 @@ class MockWorker implements Process {
   /// Static list of all the dead workers.
   static final deadWorkers = <MockWorker>[];
 
-  /// Standard constructor, creates the [_workerLoop].
+  /// Standard constructor, creates a [WorkerLoop] from [workerLoopFactory] or
+  /// a [MockWorkerLoop] if no factory is provided.
   MockWorker({WorkerLoop Function(MockWorker) workerLoopFactory}) {
     liveWorkers.add(this);
     var workerLoop = workerLoopFactory != null
@@ -232,12 +230,11 @@ class MockWorker implements Process {
             connection: StdAsyncWorkerConnection(
                 inputStream: _stdinController.stream,
                 outputStream: _stdoutController.sink));
-    _workerLoop = workerLoop..run();
+    workerLoop.run();
   }
 
   @override
-  Future<int> get exitCode => _exitCodeCompleter.future;
-  final _exitCodeCompleter = Completer<int>();
+  Future<int> get exitCode => throw UnsupportedError('Not needed.');
 
   @override
   Stream<List<int>> get stdout => _stdoutController.stream;
@@ -266,7 +263,6 @@ class MockWorker implements Process {
       await _stdoutController.close();
       await _stderrController.close();
       await _stdinController.close();
-      _exitCodeCompleter.complete(exitCode);
     }();
     deadWorkers.add(this);
     liveWorkers.remove(this);

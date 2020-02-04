@@ -1,3 +1,10 @@
+## 0.1.23+1
+
+* Don't rely on `exitCode` to know when a worker terminates, instead wait for
+  the input stream to close.
+  * The SDK may also start throwing instead of returning a `null` here, so this
+    pre-emptively guards against that.
+
 ## 0.1.23
 
 * Support protobuf `1.x`.
