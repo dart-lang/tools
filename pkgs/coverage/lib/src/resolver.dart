@@ -157,7 +157,8 @@ class Loader {
   /// Returns `null` if the resource could not be loaded.
   Future<List<String>> load(String path) async {
     try {
-      return File(path).readAsLines();
+      // Ensure `readAsLines` runs within the try block so errors are caught.
+      return await File(path).readAsLines();
     } catch (_) {
       failed.add(path);
       return null;
