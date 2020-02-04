@@ -31,6 +31,8 @@ class StdDriverConnection implements DriverConnection {
   final AsyncMessageGrouper _messageGrouper;
   final StreamSink<List<int>> _outputStream;
 
+  Future<void> get done => _messageGrouper.done;
+
   StdDriverConnection(
       {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
       : _messageGrouper = new AsyncMessageGrouper(inputStream ?? stdin),

@@ -73,12 +73,15 @@ void main() {
       var maxWorkers = 2;
       driver = new BazelWorkerDriver(MockWorker.spawn, maxWorkers: maxWorkers);
       var tracking = <Future>[];
-      await _doRequests(driver: driver, count: 10, trackWork: (Future response) {
-          // We should never be tracking more than `maxWorkers` jobs at a time.
-          expect(tracking.length, lessThan(maxWorkers));
-          tracking.add(response);
-          response.then((_) => tracking.remove(response));
-        });
+      await _doRequests(
+          driver: driver,
+          count: 10,
+          trackWork: (Future response) {
+            // We should never be tracking more than `maxWorkers` jobs at a time.
+            expect(tracking.length, lessThan(maxWorkers));
+            tracking.add(response);
+            response.then((_) => tracking.remove(response));
+          });
     });
 
     group('failing workers', () {
@@ -179,9 +182,7 @@ class MockWorkerLoop extends AsyncWorkerLoop {
 class ThrowingMockWorkerLoop extends MockWorkerLoop {
   final MockWorker _mockWorker;
 
-  ThrowingMockWorkerLoop(
-      this._mockWorker,
-      Queue<WorkResponse> responseQueue,
+  ThrowingMockWorkerLoop(this._mockWorker, Queue<WorkResponse> responseQueue,
       AsyncWorkerConnection connection)
       : super(responseQueue, connection: connection);
 
@@ -207,9 +208,6 @@ class MockWorker implements Process {
   /// Spawns a new [MockWorker].
   static Future<MockWorker> spawn() async => new MockWorker();
 
-  /// Worker loop that handles reading requests and responding.
-  AsyncWorkerLoop _workerLoop;
-
   /// Static queue of pending responses, these are shared by all workers.
   ///
   /// If this is empty and a request is received then it will throw.
@@ -221,20 +219,21 @@ class MockWorker implements Process {
   /// Static list of all the dead workers.
   static final deadWorkers = <MockWorker>[];
 
-  /// Standard constructor, creates the [_workerLoop].
-  MockWorker({WorkerLoop workerLoopFactory(MockWorker mockWorker)}) {
+  /// Standard constructor, creates a [WorkerLoop] from [workerLoopFactory] or
+  /// a [MockWorkerLoop] if no factory is provided.
+  MockWorker({WorkerLoop Function(MockWorker) workerLoopFactory}) {
     liveWorkers.add(this);
     var workerLoop = workerLoopFactory != null
         ? workerLoopFactory(this)
-        : new MockWorkerLoop(responseQueue,
-            connection: new StdAsyncWorkerConnection(
-                inputStream: this._stdinController.stream,
-                outputStream: this._stdoutController.sink));
-    _workerLoop = workerLoop..run();
+        : MockWorkerLoop(responseQueue,
+            connection: StdAsyncWorkerConnection(
+                inputStream: _stdinController.stream,
+                outputStream: _stdoutController.sink));
+    workerLoop.run();
   }
 
-  Future<int> get exitCode => _exitCodeCompleter.future;
-  final _exitCodeCompleter = new Completer<int>();
+  @override
+  Future<int> get exitCode => throw UnsupportedError('Not needed.');
 
   @override
   Stream<List<int>> get stdout => _stdoutController.stream;
@@ -262,7 +261,6 @@ class MockWorker implements Process {
       await _stdoutController.close();
       await _stderrController.close();
       await _stdinController.close();
-      _exitCodeCompleter.complete(exitCode);
     }();
     deadWorkers.add(this);
     liveWorkers.remove(this);
