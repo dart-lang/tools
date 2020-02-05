@@ -28,18 +28,17 @@ Future<Uri> sourceUriProvider(String sourceUrl, String scriptId) async =>
 
 void main() {
   test('reports correctly', () async {
-    final preciseCoverage = json.decode(
+    final List preciseCoverage = json.decode(
         await File('test/test_files/chrome_precise_report.txt').readAsString());
 
     final report = await parseChromeCoverage(
-      // ignore: avoid_as
-      (preciseCoverage as List).cast(),
+      preciseCoverage.cast(),
       sourceProvider,
       sourceMapProvider,
       sourceUriProvider,
     );
 
-    final sourceReport = report['coverage'].firstWhere(
+    final Map sourceReport = report['coverage'].firstWhere(
         (Map<String, dynamic> report) =>
             report['source'].toString().contains('main_test.dart'));
 
