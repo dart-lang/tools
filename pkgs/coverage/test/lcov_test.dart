@@ -25,13 +25,13 @@ void main() {
     expect(hitmap, contains(_isolateLibFileUri));
     expect(hitmap, contains('package:coverage/src/util.dart'));
 
-    final Map<int, int> sampleAppHitMap = hitmap[_sampleAppFileUri];
+    final sampleAppHitMap = hitmap[_sampleAppFileUri];
 
     expect(sampleAppHitMap, containsPair(44, greaterThanOrEqualTo(1)),
         reason: 'be careful if you modify the test file');
     expect(sampleAppHitMap, containsPair(48, 0),
         reason: 'be careful if you modify the test file');
-    expect(sampleAppHitMap, isNot(contains(31)),
+    expect(sampleAppHitMap, isNot(contains(30)),
         reason: 'be careful if you modify the test file');
   });
 
@@ -42,7 +42,7 @@ void main() {
       final resolver = Resolver(packagesPath: '.packages');
       final formatter = LcovFormatter(resolver);
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_isolateLibPath)));
@@ -55,7 +55,7 @@ void main() {
       final resolver = Resolver(packagesPath: '.packages');
       final formatter = LcovFormatter(resolver, reportOn: ['lib/', 'test/']);
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_isolateLibPath)));
@@ -68,7 +68,7 @@ void main() {
       final resolver = Resolver(packagesPath: '.packages');
       final formatter = LcovFormatter(resolver, reportOn: ['lib/']);
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
@@ -81,7 +81,7 @@ void main() {
       final resolver = Resolver(packagesPath: '.packages');
       final formatter = LcovFormatter(resolver, basePath: p.absolute('lib'));
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(
           res, isNot(contains(p.absolute(p.join('lib', 'src', 'util.dart')))));
@@ -96,14 +96,14 @@ void main() {
       final resolver = Resolver(packagesPath: '.packages');
       final formatter = PrettyPrintFormatter(resolver, Loader());
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_isolateLibPath)));
       expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
 
       // be very careful if you change the test file
-      expect(res, contains("      0|  return a - b;"));
+      expect(res, contains('      0|  return a - b;'));
 
       expect(res, contains('|  return _withTimeout(() async {'),
           reason: 'be careful if you change lib/src/util.dart');
@@ -122,7 +122,7 @@ void main() {
       final formatter =
           PrettyPrintFormatter(resolver, Loader(), reportOn: ['lib/', 'test/']);
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
       expect(res, contains(p.absolute(_isolateLibPath)));
@@ -136,7 +136,7 @@ void main() {
       final formatter =
           PrettyPrintFormatter(resolver, Loader(), reportOn: ['lib/']);
 
-      final String res = await formatter.format(hitmap);
+      final res = await formatter.format(hitmap);
 
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
@@ -145,7 +145,7 @@ void main() {
   });
 }
 
-Future<Map> _getHitMap() async {
+Future<Map<String, Map<int, int>>> _getHitMap() async {
   expect(FileSystemEntity.isFileSync(_sampleAppPath), isTrue);
 
   // select service port.
@@ -166,17 +166,18 @@ Future<Map> _getHitMap() async {
       .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
-      final Uri serviceUri = extractObservatoryUri(line);
+      final serviceUri = extractObservatoryUri(line);
       if (serviceUri != null) {
         serviceUriCompleter.complete(serviceUri);
       }
     }
   });
-  final Uri serviceUri = await serviceUriCompleter.future;
+  final serviceUri = await serviceUriCompleter.future;
 
   // collect hit map.
-  final List<Map> coverageJson =
-      (await collect(serviceUri, true, true, false, Set<String>()))['coverage'];
+  final coverageJson =
+      (await collect(serviceUri, true, true, false, <String>{}))['coverage']
+          as List<Map<String, dynamic>>;
   final hitMap = createHitmap(coverageJson);
 
   // wait for sample app to terminate.
@@ -185,6 +186,6 @@ Future<Map> _getHitMap() async {
     throw ProcessException(
         'dart', sampleAppArgs, 'Fatal error. Exit code: $exitCode', exitCode);
   }
-  sampleProcess.stderr.drain<List<int>>();
+  await sampleProcess.stderr.drain<List<int>>();
   return hitMap;
 }

@@ -8,10 +8,11 @@ import 'dart:io';
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
-Future<dynamic> retry(Future f(), Duration interval, {Duration timeout}) async {
+Future<dynamic> retry(Future Function() f, Duration interval,
+    {Duration timeout}) async {
   var keepGoing = true;
 
-  Future<dynamic> _withTimeout(Future f(), {Duration duration}) {
+  Future<dynamic> _withTimeout(Future Function() f, {Duration duration}) {
     if (duration == null) {
       return f();
     }

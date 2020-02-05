@@ -87,7 +87,7 @@ Options _parseArgs(List<String> arguments) {
     exit(1);
   }
 
-  if (args['help']) {
+  if (args['help'] as bool) {
     printUsage();
     exit(0);
   }
@@ -99,25 +99,31 @@ Options _parseArgs(List<String> arguments) {
     serviceUri = Uri.parse('http://${args['host']}:${args['port']}/');
   } else {
     try {
-      serviceUri = Uri.parse(args['uri']);
+      serviceUri = Uri.parse(args['uri'] as String);
     } on FormatException {
       fail('Invalid service URI specified: ${args['uri']}');
     }
   }
 
-  // ignore: avoid_as
   final scopedOutput = args['scope-output'] as List<String> ?? [];
 
   IOSink out;
   if (args['out'] == 'stdout') {
     out = stdout;
   } else {
-    final outfile = File(args['out'])..createSync(recursive: true);
+    final outfile = File(args['out'] as String)..createSync(recursive: true);
     out = outfile.openWrite();
   }
   final timeout = (args['connect-timeout'] == null)
       ? null
-      : Duration(seconds: int.parse(args['connect-timeout']));
-  return Options(serviceUri, out, timeout, args['wait-paused'],
-      args['resume-isolates'], args['include-dart'], scopedOutput.toSet());
+      : Duration(seconds: int.parse(args['connect-timeout'] as String));
+  return Options(
+    serviceUri,
+    out,
+    timeout,
+    args['wait-paused'] as bool,
+    args['resume-isolates'] as bool,
+    args['include-dart'] as bool,
+    scopedOutput.toSet(),
+  );
 }

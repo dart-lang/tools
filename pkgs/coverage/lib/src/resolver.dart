@@ -18,7 +18,7 @@ class Resolver {
   final String packageRoot;
   final String sdkRoot;
   final List<String> failed = [];
-  Map<String, Uri> _packages;
+  final Map<String, Uri> _packages;
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
@@ -40,8 +40,11 @@ class Resolver {
         }
         // Canonicalize path. For instance: _collection-dev => _collection_dev.
         path = path.replaceAll('-', '_');
-        final pathSegments = [sdkRoot, path]
-          ..addAll(uri.pathSegments.sublist(1));
+        final pathSegments = [
+          sdkRoot,
+          path,
+          ...uri.pathSegments.sublist(1),
+        ];
         filePath = p.joinAll(pathSegments);
       } else {
         // Resolve 'dart:something' to be something/something.dart in the SDK.

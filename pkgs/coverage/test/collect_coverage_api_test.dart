@@ -19,21 +19,21 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('collect throws when serviceUri is null', () {
-    expect(() => collect(null, true, false, false, Set<String>()),
+    expect(() => collect(null, true, false, false, <String>{}),
         throwsArgumentError);
   });
 
   test('collect_coverage_api', () async {
-    final Map<String, dynamic> json = await _collectCoverage();
+    final json = await _collectCoverage();
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    final List coverage = json['coverage'];
+    final coverage = json['coverage'] as List;
     expect(coverage, isNotEmpty);
 
     final sources = coverage.fold(<String, dynamic>{},
         (Map<String, dynamic> map, dynamic value) {
-      final String sourceUri = value['source'];
+      final sourceUri = value['source'] as String;
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
@@ -48,17 +48,17 @@ void main() {
   });
 
   test('collect_coverage_api with scoped output', () async {
-    final Map<String, dynamic> json =
-        await _collectCoverage(scopedOutput: Set<String>()..add('coverage'));
+    final json =
+        await _collectCoverage(scopedOutput: <String>{}..add('coverage'));
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    final List coverage = json['coverage'];
+    final coverage = json['coverage'] as List;
     expect(coverage, isNotEmpty);
 
     final sources = coverage.fold(<String, dynamic>{},
         (Map<String, dynamic> map, dynamic value) {
-      final String sourceUri = value['source'];
+      final sourceUri = value['source'] as String;
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
@@ -70,22 +70,21 @@ void main() {
   });
 
   test('collect_coverage_api with isolateIds', () async {
-    final Map<String, dynamic> json = await _collectCoverage(isolateIds: true);
+    final json = await _collectCoverage(isolateIds: true);
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    final List coverage = json['coverage'];
+    final coverage = json['coverage'] as List<Map<String, dynamic>>;
     expect(coverage, isNotEmpty);
 
-    final Map<String, dynamic> testAppCoverage =
-        _getScriptCoverage(coverage, 'test_app.dart');
-    List<int> hits = testAppCoverage['hits'];
+    final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart');
+    var hits = testAppCoverage['hits'] as List<int>;
     _expectHitCount(hits, 44, 0);
     _expectHitCount(hits, 48, 0);
 
-    final Map<String, dynamic> isolateCoverage =
+    final isolateCoverage =
         _getScriptCoverage(coverage, 'test_app_isolate.dart');
-    hits = isolateCoverage['hits'];
+    hits = isolateCoverage['hits'] as List<int>;
     _expectHitCount(hits, 11, 1);
     _expectHitCount(hits, 18, 1);
   });
@@ -93,7 +92,7 @@ void main() {
 
 Future<Map<String, dynamic>> _collectCoverage(
     {Set<String> scopedOutput, bool isolateIds = false}) async {
-  scopedOutput ??= Set<String>();
+  scopedOutput ??= <String>{};
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -107,7 +106,7 @@ Future<Map<String, dynamic>> _collectCoverage(
       .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
-      final Uri serviceUri = extractObservatoryUri(line);
+      final serviceUri = extractObservatoryUri(line);
       if (serviceUri != null) {
         serviceUriCompleter.complete(serviceUri);
       }
@@ -117,9 +116,9 @@ Future<Map<String, dynamic>> _collectCoverage(
     }
   });
 
-  final Uri serviceUri = await serviceUriCompleter.future;
-  final String isolateId = await isolateIdCompleter.future;
-  final Set<String> isolateIdSet = isolateIds ? Set.of([isolateId]) : null;
+  final serviceUri = await serviceUriCompleter.future;
+  final isolateId = await isolateIdCompleter.future;
+  final isolateIdSet = isolateIds ? {isolateId} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
       timeout: timeout, isolateIds: isolateIdSet);
@@ -129,8 +128,8 @@ Future<Map<String, dynamic>> _collectCoverage(
 // script filename, ignoring leading path.
 Map<String, dynamic> _getScriptCoverage(
     List<Map<String, dynamic>> coverage, String filename) {
-  for (Map<String, dynamic> isolateCoverage in coverage) {
-    final Uri script = Uri.parse(isolateCoverage['script']['uri']);
+  for (var isolateCoverage in coverage) {
+    final script = Uri.parse(isolateCoverage['script']['uri'] as String);
     if (script.pathSegments.last == filename) {
       return isolateCoverage;
     }
@@ -141,11 +140,11 @@ Map<String, dynamic> _getScriptCoverage(
 /// Tests that the specified hitmap has the specified hit count for the
 /// specified line.
 void _expectHitCount(List<int> hits, int line, int hitCount) {
-  final int hitIndex = hits.indexOf(line);
+  final hitIndex = hits.indexOf(line);
   if (hitIndex < 0) {
     fail('No hit count for line $line');
   }
-  final int actual = hits[hitIndex + 1];
+  final actual = hits[hitIndex + 1];
   expect(actual, equals(hitCount),
       reason: 'Expected line $line to have $hitCount hits, but found $actual.');
 }

@@ -24,17 +24,17 @@ void main() {
     final resultString = await _getCoverageResult();
 
     // analyze the output json
-    final Map<String, dynamic> jsonResult = json.decode(resultString);
+    final jsonResult = json.decode(resultString) as Map<String, dynamic>;
 
     expect(jsonResult.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(jsonResult, containsPair('type', 'CodeCoverage'));
 
-    final List coverage = jsonResult['coverage'];
+    final coverage = jsonResult['coverage'] as List;
     expect(coverage, isNotEmpty);
 
     final sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
         (Map<String, dynamic> map, dynamic value) {
-      final String sourceUri = value['source'];
+      final sourceUri = value['source'] as String;
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
@@ -50,13 +50,13 @@ void main() {
 
   test('createHitmap', () async {
     final resultString = await _getCoverageResult();
-    final Map<String, dynamic> jsonResult = json.decode(resultString);
-    final List coverage = jsonResult['coverage'];
-    final hitMap = createHitmap(coverage);
+    final jsonResult = json.decode(resultString) as Map<String, dynamic>;
+    final coverage = jsonResult['coverage'] as List;
+    final hitMap = createHitmap(coverage.cast<Map<String, dynamic>>());
     expect(hitMap, contains(_sampleAppFileUri));
 
-    final Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
-    final Map<int, int> expectedHits = {
+    final isolateFile = hitMap[_isolateLibFileUri];
+    final expectedHits = {
       12: 1,
       13: 1,
       15: 0,
@@ -107,12 +107,8 @@ void main() {
 
 String _coverageData;
 
-Future<String> _getCoverageResult() async {
-  if (_coverageData == null) {
-    _coverageData = await _collectCoverage();
-  }
-  return _coverageData;
-}
+Future<String> _getCoverageResult() async =>
+    _coverageData ??= await _collectCoverage();
 
 Future<String> _collectCoverage() async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
@@ -120,7 +116,7 @@ Future<String> _collectCoverage() async {
   final openPort = await getOpenPort();
 
   // Run the sample app with the right flags.
-  final Process sampleProcess = await runTestApp(openPort);
+  final sampleProcess = await runTestApp(openPort);
 
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
@@ -129,13 +125,13 @@ Future<String> _collectCoverage() async {
       .transform(LineSplitter())
       .listen((line) {
     if (!serviceUriCompleter.isCompleted) {
-      final Uri serviceUri = extractObservatoryUri(line);
+      final serviceUri = extractObservatoryUri(line);
       if (serviceUri != null) {
         serviceUriCompleter.complete(serviceUri);
       }
     }
   });
-  final Uri serviceUri = await serviceUriCompleter.future;
+  final serviceUri = await serviceUriCompleter.future;
 
   // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
@@ -156,7 +152,7 @@ Future<String> _collectCoverage() async {
   }
 
   await sampleProcess.exitCode;
-  sampleProcess.stderr.drain<List<int>>();
+  await sampleProcess.stderr.drain<List<int>>();
 
-  return toolResult.stdout;
+  return toolResult.stdout as String;
 }

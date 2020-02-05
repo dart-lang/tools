@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:isolate';
 
-// explicitly using a package import to validate hitmap coverage of packages
 import 'package:coverage/src/util.dart';
 
 import 'test_app_isolate.dart';
@@ -21,9 +20,9 @@ Future<Null> main() async {
     }
   }
 
-  final ReceivePort port = ReceivePort();
+  final port = ReceivePort();
 
-  final Isolate isolate =
+  final isolate =
       await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);
   await Service.controlWebServer(enable: true);
   final isolateID = Service.getIsolateID(isolate);
@@ -32,12 +31,12 @@ Future<Null> main() async {
   isolate.addOnExitListener(port.sendPort);
   isolate.resume(isolate.pauseCapability);
 
-  final int value = await port.first;
+  final value = await port.first as int;
   if (value != 3) {
     throw 'expected 3!';
   }
 
-  final int result = await retry(() async => 42, const Duration(seconds: 1));
+  final result = await retry(() async => 42, const Duration(seconds: 1)) as int;
   print(result);
 }
 
