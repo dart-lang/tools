@@ -28,8 +28,9 @@ Future<Uri> sourceUriProvider(String sourceUrl, String scriptId) async =>
 
 void main() {
   test('reports correctly', () async {
-    final List preciseCoverage = json.decode(
-        await File('test/test_files/chrome_precise_report.txt').readAsString());
+    final preciseCoverage = json.decode(
+        await File('test/test_files/chrome_precise_report.txt')
+            .readAsString()) as List;
 
     final report = await parseChromeCoverage(
       preciseCoverage.cast(),
@@ -38,11 +39,11 @@ void main() {
       sourceUriProvider,
     );
 
-    final Map sourceReport = report['coverage'].firstWhere(
+    final sourceReport = report['coverage'].firstWhere(
         (Map<String, dynamic> report) =>
             report['source'].toString().contains('main_test.dart'));
 
-    final Map<int, int> expectedHits = {
+    final expectedHits = {
       7: 1,
       11: 1,
       13: 1,
@@ -62,7 +63,7 @@ void main() {
       36: 1,
     };
 
-    final List<int> hitMap = sourceReport['hits'];
+    final hitMap = sourceReport['hits'] as List<int>;
     expect(hitMap.length, equals(expectedHits.keys.length * 2));
     for (var i = 0; i < hitMap.length; i += 2) {
       expect(expectedHits[hitMap[i]], equals(hitMap[i + 1]));

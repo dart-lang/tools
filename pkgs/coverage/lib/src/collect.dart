@@ -37,7 +37,7 @@ const _retryInterval = Duration(milliseconds: 200);
 Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String> scopedOutput,
     {Set<String> isolateIds, Duration timeout}) async {
-  scopedOutput ??= Set<String>();
+  scopedOutput ??= <String>{};
   if (serviceUri == null) throw ArgumentError('serviceUri must not be null');
 
   // Create websocket URI. Handle any trailing slashes.
@@ -51,7 +51,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
       final options = const CompressionOptions(enabled: false);
       final socket = await WebSocket.connect('$uri', compression: options);
       final controller = StreamController<String>();
-      socket.listen((dynamic data) => controller.add(data));
+      socket.listen((data) => controller.add(data as String));
       service = VmService(
           controller.stream, (String message) => socket.add(message),
           log: StdoutLog(), disposeHandler: () => socket.close());
@@ -78,7 +78,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
 
 Future<Map<String, dynamic>> _getAllCoverage(VmService service,
     bool includeDart, Set<String> scopedOutput, Set<String> isolateIds) async {
-  scopedOutput ??= Set<String>();
+  scopedOutput ??= <String>{};
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
 
@@ -100,7 +100,7 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
         allCoverage.addAll(coverage);
       }
     } else {
-      final SourceReport isolateReport = await service.getSourceReport(
+      final isolateReport = await service.getSourceReport(
         isolateRef.id,
         <String>[SourceReportKind.kCoverage],
         forceCompile: true,
@@ -116,7 +116,7 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
 Future _resumeIsolates(VmService service) async {
   final vm = await service.getVM();
   for (var isolateRef in vm.isolates) {
-    final Isolate isolate = await service.getIsolate(isolateRef.id);
+    final isolate = await service.getIsolate(isolateRef.id) as Isolate;
     if (isolate.pauseEvent.kind != EventKind.kResume) {
       await service.resume(isolateRef.id);
     }
@@ -124,20 +124,20 @@ Future _resumeIsolates(VmService service) async {
 }
 
 Future _waitIsolatesPaused(VmService service, {Duration timeout}) async {
-  final pauseEvents = Set<String>.from(<String>[
+  final pauseEvents = <String>{
     EventKind.kPauseStart,
     EventKind.kPauseException,
     EventKind.kPauseExit,
     EventKind.kPauseInterrupted,
     EventKind.kPauseBreakpoint
-  ]);
+  };
 
   Future allPaused() async {
-    final VM vm = await service.getVM();
+    final vm = await service.getVM();
     for (var isolateRef in vm.isolates) {
-      final Isolate isolate = await service.getIsolate(isolateRef.id);
+      final isolate = await service.getIsolate(isolateRef.id) as Isolate;
       if (!pauseEvents.contains(isolate.pauseEvent.kind)) {
-        throw "Unpaused isolates remaining.";
+        throw 'Unpaused isolates remaining.';
       }
     }
   }
@@ -177,7 +177,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
   final scripts = <ScriptRef, Script>{};
   for (var range in report.ranges) {
     final scriptRef = report.scripts[range.scriptIndex];
-    final Uri scriptUri = Uri.parse(report.scripts[range.scriptIndex].uri);
+    final scriptUri = Uri.parse(report.scripts[range.scriptIndex].uri);
 
     // Not returned in scripts section of source report.
     if (scriptUri.scheme == 'evaluate') continue;
@@ -186,7 +186,8 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
     if (!includeDart && scriptUri.scheme == 'dart') continue;
 
     if (!scripts.containsKey(scriptRef)) {
-      scripts[scriptRef] = await service.getObject(isolateRef.id, scriptRef.id);
+      scripts[scriptRef] =
+          await service.getObject(isolateRef.id, scriptRef.id) as Script;
     }
     final script = scripts[scriptRef];
 
@@ -225,6 +226,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
 class StdoutLog extends Log {
   @override
   void warning(String message) => print(message);
+
   @override
   void severe(String message) => print(message);
 }

@@ -10,7 +10,7 @@ import 'dart:io';
 /// are not resolvable.
 ///
 /// `jsonResult` is expected to be a List<Map<String, dynamic>>.
-Map<String, Map<int, int>> createHitmap(List jsonResult) {
+Map<String, Map<int, int>> createHitmap(List<Map<String, dynamic>> jsonResult) {
   // Map of source file to map of line to hit count for that line.
   final globalHitMap = <String, Map<int, int>>{};
 
@@ -19,33 +19,34 @@ Map<String, Map<int, int>> createHitmap(List jsonResult) {
     map[line] = count + oldCount;
   }
 
-  for (Map<String, dynamic> e in jsonResult) {
-    final String source = e['source'];
+  for (var e in jsonResult) {
+    final source = e['source'] as String;
     if (source == null) {
       // Couldn't resolve import, so skip this entry.
       continue;
     }
 
     final sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
-    final List<dynamic> hits = e['hits'];
+    final hits = e['hits'] as List;
     // hits is a flat array of the following format:
     // [ <line|linerange>, <hitcount>,...]
     // line: number.
     // linerange: '<line>-<line>'.
     for (var i = 0; i < hits.length; i += 2) {
-      final dynamic k = hits[i];
-      if (k is num) {
+      final k = hits[i];
+      if (k is int) {
         // Single line.
-        addToMap(sourceHitMap, k, hits[i + 1]);
-      } else {
-        assert(k is String);
+        addToMap(sourceHitMap, k, hits[i + 1] as int);
+      } else if (k is String) {
         // Linerange. We expand line ranges to actual lines at this point.
-        final int splitPos = k.indexOf('-');
+        final splitPos = k.indexOf('-');
         final start = int.parse(k.substring(0, splitPos));
         final end = int.parse(k.substring(splitPos + 1));
         for (var j = start; j <= end; j++) {
-          addToMap(sourceHitMap, j, hits[i + 1]);
+          addToMap(sourceHitMap, j, hits[i + 1] as int);
         }
+      } else {
+        throw StateError('Expected value of type int or String');
       }
     }
   }
@@ -71,12 +72,16 @@ void mergeHitmaps(
 }
 
 /// Generates a merged hitmap from a set of coverage JSON files.
-Future<Map> parseCoverage(Iterable<File> files, int _) async {
+Future<Map<String, Map<int, int>>> parseCoverage(
+    Iterable<File> files, int _) async {
   final globalHitmap = <String, Map<int, int>>{};
   for (var file in files) {
     final contents = file.readAsStringSync();
-    final List jsonResult = json.decode(contents)['coverage'];
-    mergeHitmaps(createHitmap(jsonResult), globalHitmap);
+    final jsonResult = json.decode(contents)['coverage'] as List;
+    mergeHitmaps(
+      createHitmap(jsonResult.cast<Map<String, dynamic>>()),
+      globalHitmap,
+    );
   }
   return globalHitmap;
 }

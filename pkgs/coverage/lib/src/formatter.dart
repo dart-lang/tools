@@ -10,7 +10,7 @@ import 'resolver.dart';
 
 abstract class Formatter {
   /// Returns the formatted coverage data.
-  Future<String> format(Map hitmap);
+  Future<String> format(Map<String, Map<int, int>> hitmap);
 }
 
 /// Converts the given hitmap to lcov format and appends the result to
@@ -31,11 +31,11 @@ class LcovFormatter implements Formatter {
   final List<String> reportOn;
 
   @override
-  Future<String> format(Map hitmap) async {
-    final _PathFilter pathFilter = _getPathFilter(reportOn);
+  Future<String> format(Map<String, Map<int, int>> hitmap) async {
+    final pathFilter = _getPathFilter(reportOn);
     final buf = StringBuffer();
     for (var key in hitmap.keys) {
-      final Map<int, int> v = hitmap[key];
+      final v = hitmap[key];
       var source = resolver.resolve(key);
       if (source == null) {
         continue;
@@ -51,7 +51,7 @@ class LcovFormatter implements Formatter {
 
       buf.write('SF:$source\n');
       final lines = v.keys.toList()..sort();
-      for (int k in lines) {
+      for (var k in lines) {
         buf.write('DA:$k,${v[k]}\n');
       }
       buf.write('LF:${lines.length}\n');
@@ -80,11 +80,11 @@ class PrettyPrintFormatter implements Formatter {
   final List<String> reportOn;
 
   @override
-  Future<String> format(Map hitmap) async {
-    final _PathFilter pathFilter = _getPathFilter(reportOn);
+  Future<String> format(Map<String, dynamic> hitmap) async {
+    final pathFilter = _getPathFilter(reportOn);
     final buf = StringBuffer();
     for (var key in hitmap.keys) {
-      final Map<int, int> v = hitmap[key];
+      final v = hitmap[key] as Map<int, int>;
       final source = resolver.resolve(key);
       if (source == null) {
         continue;

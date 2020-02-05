@@ -22,12 +22,12 @@ void main() {
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
     expect(json, containsPair('type', 'CodeCoverage'));
 
-    final List<Map> coverage = json['coverage'];
+    final coverage = json['coverage'] as List<Map<String, dynamic>>;
     expect(coverage, isNotEmpty);
 
     final sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
         (Map<String, dynamic> map, dynamic value) {
-      final String sourceUri = value['source'];
+      final sourceUri = value['source'] as String;
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
@@ -43,8 +43,8 @@ void main() {
     final hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 
-    final Map<int, int> isolateFile = hitMap[_isolateLibFileUri];
-    final Map<int, int> expectedHits = {
+    final isolateFile = hitMap[_isolateLibFileUri];
+    final expectedHits = {
       12: 1,
       13: 1,
       15: 0,

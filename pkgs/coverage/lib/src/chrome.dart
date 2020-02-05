@@ -26,15 +26,15 @@ Future<Map<String, dynamic>> parseChromeCoverage(
   Future<Uri> Function(String sourceUrl, String scriptId) sourceUriProvider,
 ) async {
   final coverageReport = <Uri, Map<int, bool>>{};
-  for (Map<String, dynamic> entry in preciseCoverage) {
-    final String scriptId = entry['scriptId'];
+  for (var entry in preciseCoverage) {
+    final scriptId = entry['scriptId'] as String;
 
     final mapResponse = await sourceMapProvider(scriptId);
     if (mapResponse == null) continue;
 
     SingleMapping mapping;
     try {
-      mapping = parse(mapResponse);
+      mapping = parse(mapResponse) as SingleMapping;
     } on FormatException {
       continue;
     } on ArgumentError {
@@ -86,7 +86,7 @@ Future<Map<String, dynamic>> parseChromeCoverage(
 /// Returns all covered positions in a provided source.
 Set<_Position> _coveredPositions(
     String compiledSource, List<bool> offsetCoverage) {
-  final positions = Set<_Position>();
+  final positions = <_Position>{};
   // Line is 1 based.
   var line = 1;
   // Column is 1 based.
@@ -109,9 +109,9 @@ List<_CoverageInfo> _coverageInfoFor(Map<String, dynamic> entry) {
   for (Map<String, dynamic> functions in entry['functions']) {
     for (Map<String, dynamic> range in functions['ranges']) {
       result.add(_CoverageInfo(
-        range['startOffset'],
-        range['endOffset'],
-        range['count'] > 0,
+        range['startOffset'] as int,
+        range['endOffset'] as int,
+        (range['count'] as int) > 0,
       ));
     }
   }

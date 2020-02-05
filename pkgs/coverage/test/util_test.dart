@@ -12,7 +12,7 @@ const _delay = Duration(milliseconds: 10);
 
 void main() {
   test('retry', () async {
-    int count = 0;
+    var count = 0;
     final stopwatch = Stopwatch()..start();
 
     Future failCountTimes() async {
@@ -25,7 +25,7 @@ void main() {
       return 42;
     }
 
-    final int value = await retry(failCountTimes, _delay);
+    final value = await retry(failCountTimes, _delay) as int;
 
     expect(value, 42);
     expect(count, _failCount);
@@ -34,7 +34,7 @@ void main() {
 
   group('retry with timeout', () {
     test('if it finishes', () async {
-      int count = 0;
+      var count = 0;
       final stopwatch = Stopwatch()..start();
 
       Future failCountTimes() async {
@@ -48,8 +48,11 @@ void main() {
       }
 
       final safeTimoutDuration = _delay * _failCount * 2;
-      final int value =
-          await retry(failCountTimes, _delay, timeout: safeTimoutDuration);
+      final value = await retry(
+        failCountTimes,
+        _delay,
+        timeout: safeTimoutDuration,
+      ) as int;
 
       expect(value, 42);
       expect(count, _failCount);
@@ -57,7 +60,7 @@ void main() {
     });
 
     test('if it does not finish', () async {
-      int count = 0;
+      var count = 0;
       final stopwatch = Stopwatch()..start();
 
       var caught = false;
@@ -78,7 +81,7 @@ void main() {
       try {
         await retry(failCountTimes, _delay, timeout: unsafeTimeoutDuration);
       } on StateError catch (e) {
-        expect(e.message, "Failed to complete within 25ms");
+        expect(e.message, 'Failed to complete within 25ms');
         caught = true;
 
         expect(countAfterError, 0,
