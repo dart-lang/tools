@@ -13,8 +13,6 @@ analyzer:
   errors:
     # treat missing required parameters as a warning (not a hint)
     missing_required_param: warning
-    # allow type narrowing
-    strong_mode_down_cast_composite: ignore
     # allow having TODOs in the code
     todo: ignore
 
