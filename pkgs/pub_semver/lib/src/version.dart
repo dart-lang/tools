@@ -152,12 +152,8 @@ class Version implements VersionConstraint, VersionRange {
   /// Identifiers that are numeric are converted to numbers.
   static List _splitParts(String text) {
     return text.split('.').map((part) {
-      try {
-        return int.parse(part);
-      } on FormatException {
-        // Not a number.
-        return part;
-      }
+      // Return an integer part if possible, otherwise return the string as-is
+      return int.tryParse(part) ?? part;
     }).toList();
   }
 
