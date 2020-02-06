@@ -43,7 +43,7 @@ void main() {
     final hitMap = createHitmap(coverage);
     expect(hitMap, contains(_sampleAppFileUri));
 
-    final isolateFile = hitMap[_isolateLibFileUri];
+    final actualHits = hitMap[_isolateLibFileUri];
     final expectedHits = {
       12: 1,
       13: 1,
@@ -71,6 +71,6 @@ void main() {
       expectedHits[28] = 1;
       expectedHits[32] = 3;
     }
-    expect(isolateFile, expectedHits);
+    expect(actualHits, expectedHits);
   });
 }
