@@ -20,17 +20,17 @@ import 'package:stack_trace/stack_trace.dart';
 /// It can be a [String] or a [Uri]. If it's passed, stack frames from the SDK
 /// will have `dart:` URLs.
 ///
-/// [packageRoot] is deprecated and shouldn't be used in new code. This throws
-/// an [ArgumentError] if [packageRoot] and [packageResolver] are both passed.
+/// `packageRoot` is deprecated and shouldn't be used in new code. This throws
+/// an [ArgumentError] if `packageRoot` and [packageResolver] are both passed.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     {bool minified = false,
     SyncPackageResolver packageResolver,
     sdkRoot,
-    @Deprecated("Use the packageResolver parameter instead.") packageRoot}) {
+    @Deprecated('Use the packageResolver parameter instead.') packageRoot}) {
   if (packageRoot != null) {
     if (packageResolver != null) {
       throw ArgumentError(
-          "packageResolver and packageRoot may not both be passed.");
+          'packageResolver and packageRoot may not both be passed.');
     }
 
     packageResolver = SyncPackageResolver.root(packageRoot);
@@ -49,7 +49,7 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     throw ArgumentError('sdkRoot must be a String or a Uri, was "$sdkRoot".');
   }
 
-  var sdkLib = sdkRoot == null ? null : "$sdkRoot/lib";
+  var sdkLib = sdkRoot == null ? null : '$sdkRoot/lib';
 
   var trace = Trace.from(stackTrace);
   return Trace(trace.frames.map((frame) {
@@ -58,7 +58,7 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     if (frame.line == null) return null;
 
     // If there's no column, try using the first column of the line.
-    var column = frame.column == null ? 0 : frame.column;
+    var column = frame.column ?? 0;
 
     // Subtract 1 because stack traces use 1-indexed lines and columns and
     // source maps uses 0-indexed.
@@ -71,11 +71,11 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 
     var sourceUrl = span.sourceUrl.toString();
     if (sdkRoot != null && p.url.isWithin(sdkLib, sourceUrl)) {
-      sourceUrl = "dart:" + p.url.relative(sourceUrl, from: sdkLib);
+      sourceUrl = 'dart:' + p.url.relative(sourceUrl, from: sdkLib);
     } else if (packageResolver != null) {
       if (packageResolver.packageRoot != null &&
           p.url.isWithin(packageResolver.packageRoot.toString(), sourceUrl)) {
-        sourceUrl = "package:" +
+        sourceUrl = 'package:' +
             p.url.relative(sourceUrl,
                 from: packageResolver.packageRoot.toString());
       } else if (packageResolver.packageConfigMap != null) {
@@ -84,7 +84,7 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
           if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
 
           sourceUrl =
-              "package:$package/" + p.url.relative(sourceUrl, from: packageUrl);
+              'package:$package/' + p.url.relative(sourceUrl, from: packageUrl);
           break;
         }
       }
@@ -107,26 +107,26 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 String _prettifyMember(String member) {
   return member
       // Get rid of the noise that Firefox sometimes adds.
-      .replaceAll(RegExp(r"/?<$"), "")
+      .replaceAll(RegExp(r'/?<$'), '')
       // Get rid of arity indicators and named arguments.
-      .replaceAll(RegExp(r"\$\d+(\$[a-zA-Z_0-9]+)*$"), "")
+      .replaceAll(RegExp(r'\$\d+(\$[a-zA-Z_0-9]+)*$'), '')
       // Convert closures to <fn>.
       .replaceAllMapped(
-          RegExp(r"(_+)closure\d*\.call$"),
+          RegExp(r'(_+)closure\d*\.call$'),
           // The number of underscores before "closure" indicates how nested it
           // is.
-          (match) => ".<fn>" * match[1].length)
+          (match) => '.<fn>' * match[1].length)
       // Get rid of explicitly-generated calls.
-      .replaceAll(RegExp(r"\.call$"), "")
+      .replaceAll(RegExp(r'\.call$'), '')
       // Get rid of the top-level method prefix.
-      .replaceAll(RegExp(r"^dart\."), "")
+      .replaceAll(RegExp(r'^dart\.'), '')
       // Get rid of library namespaces.
-      .replaceAll(RegExp(r"[a-zA-Z_0-9]+\$"), "")
+      .replaceAll(RegExp(r'[a-zA-Z_0-9]+\$'), '')
       // Get rid of the static method prefix. The class name also exists in the
       // invocation, so we're not getting rid of any information.
-      .replaceAll(RegExp(r"^[a-zA-Z_0-9]+.(static|dart)."), "")
+      .replaceAll(RegExp(r'^[a-zA-Z_0-9]+.(static|dart).'), '')
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
-      .replaceAllMapped(RegExp(r"([a-zA-Z0-9]+)_"), (match) => match[1] + ".");
+      .replaceAllMapped(RegExp(r'([a-zA-Z0-9]+)_'), (match) => match[1] + '.');
 }
