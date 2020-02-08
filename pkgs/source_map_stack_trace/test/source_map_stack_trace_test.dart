@@ -14,17 +14,17 @@ import 'package:test/test.dart';
 final _simpleMapping = parseJson((SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
-              SourceLocation(1, line: 1, column: 3, sourceUrl: "foo.dart"),
-              "qux"),
+              SourceLocation(1, line: 1, column: 3, sourceUrl: 'foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(18, line: 15, column: 0), "\n" * 10)))
-    .build("foo.dart.js.map"));
+              SourceLocation(18, line: 15, column: 0), '\n' * 10)))
+    .build('foo.dart.js.map'));
 
 void main() {
-  test("maps a JS line and column to a Dart line and span", () {
-    var trace = Trace.parse("foo.dart.js 10:11  foo");
+  test('maps a JS line and column to a Dart line and span', () {
+    var trace = Trace.parse('foo.dart.js 10:11  foo');
     var frame = _mapTrace(_simpleMapping, trace).frames.first;
-    expect(frame.uri, equals(Uri.parse("foo.dart")));
+    expect(frame.uri, equals(Uri.parse('foo.dart')));
 
     // These are +1 because stack_trace is 1-based whereas source_span is
     // 0-basd.
@@ -32,249 +32,249 @@ void main() {
     expect(frame.column, equals(4));
   });
 
-  test("ignores JS frames without line info", () {
-    var trace = Trace.parse("""
+  test('ignores JS frames without line info', () {
+    var trace = Trace.parse('''
 foo.dart.js 10:11  foo
 foo.dart.js        bar
 foo.dart.js 10:11  baz
-""");
+''');
     var frames = _mapTrace(_simpleMapping, trace).frames;
 
     expect(frames.length, equals(2));
-    expect(frames.first.member, equals("foo"));
-    expect(frames.last.member, equals("baz"));
+    expect(frames.first.member, equals('foo'));
+    expect(frames.last.member, equals('baz'));
   });
 
-  test("ignores JS frames without corresponding spans", () {
-    var trace = Trace.parse("""
+  test('ignores JS frames without corresponding spans', () {
+    var trace = Trace.parse('''
 foo.dart.js 10:11  foo
 foo.dart.js 1:1   bar
 foo.dart.js 10:11  baz
-""");
+''');
 
     var frames = _mapTrace(_simpleMapping, trace).frames;
 
     expect(frames.length, equals(2));
-    expect(frames.first.member, equals("foo"));
-    expect(frames.last.member, equals("baz"));
+    expect(frames.first.member, equals('foo'));
+    expect(frames.last.member, equals('baz'));
   });
 
-  test("include frames from JS files not covered by the source map bundle", () {
-    var trace = Trace.parse("""
+  test('include frames from JS files not covered by the source map bundle', () {
+    var trace = Trace.parse('''
 foo.dart.js 10:11  foo
 jquery.js 10:1  foo
 bar.dart.js 10:11  foo
-""");
+''');
     var builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
               SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
-              "qux"),
+                  line: 1, column: 3, sourceUrl: 'packages/foo/foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
-    var sourceMapJson1 = builder.build("foo.dart.js.map");
-    sourceMapJson1['file'] = "foo.dart.js";
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
+    var sourceMapJson1 = builder.build('foo.dart.js.map');
+    sourceMapJson1['file'] = 'foo.dart.js';
 
     builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
               SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: "packages/bar/bar.dart"),
-              "qux"),
+                  line: 1, column: 3, sourceUrl: 'packages/bar/bar.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
-    var sourceMapJson2 = builder.build("bar.dart.js.map");
-    sourceMapJson2['file'] = "bar.dart.js";
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
+    var sourceMapJson2 = builder.build('bar.dart.js.map');
+    sourceMapJson2['file'] = 'bar.dart.js';
 
     var bundle = [sourceMapJson1, sourceMapJson2];
     var mapping = parseJsonExtended(bundle);
     var frames = _mapTrace(mapping, trace,
-            packageResolver: SyncPackageResolver.root("packages/"))
+            packageResolver: SyncPackageResolver.root('packages/'))
         .frames;
 
     expect(frames.length, equals(3));
 
     var frame = frames[0];
-    expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
+    expect(frame.uri, equals(Uri.parse('package:foo/foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
 
     frame = frames[1];
-    expect(p.basename(frame.uri.toString()), equals("jquery.js"));
+    expect(p.basename(frame.uri.toString()), equals('jquery.js'));
     expect(frame.line, equals(10));
 
     frame = frames[2];
-    expect(frame.uri, equals(Uri.parse("package:bar/bar.dart")));
+    expect(frame.uri, equals(Uri.parse('package:bar/bar.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  test("falls back to column 0 for unlisted column", () {
-    var trace = Trace.parse("foo.dart.js 10  foo");
+  test('falls back to column 0 for unlisted column', () {
+    var trace = Trace.parse('foo.dart.js 10  foo');
     var builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
-              SourceLocation(1, line: 1, column: 3, sourceUrl: "foo.dart"),
-              "qux"),
+              SourceLocation(1, line: 1, column: 3, sourceUrl: 'foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
 
-    var mapping = parseJson(builder.build("foo.dart.js.map"));
+    var mapping = parseJson(builder.build('foo.dart.js.map'));
     var frame = _mapTrace(mapping, trace).frames.first;
-    expect(frame.uri, equals(Uri.parse("foo.dart")));
+    expect(frame.uri, equals(Uri.parse('foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  test("uses package: URIs for frames within packageRoot", () {
-    var trace = Trace.parse("foo.dart.js 10  foo");
+  test('uses package: URIs for frames within packageRoot', () {
+    var trace = Trace.parse('foo.dart.js 10  foo');
     var builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
               SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
-              "qux"),
+                  line: 1, column: 3, sourceUrl: 'packages/foo/foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
 
-    var mapping = parseJson(builder.build("foo.dart.js.map"));
+    var mapping = parseJson(builder.build('foo.dart.js.map'));
     var frame =
-        _mapTrace(mapping, trace, packageRoot: "packages/").frames.first;
-    expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
+        _mapTrace(mapping, trace, packageRoot: 'packages/').frames.first;
+    expect(frame.uri, equals(Uri.parse('package:foo/foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  test("uses package: URIs for frames within packageResolver.packageRoot", () {
-    var trace = Trace.parse("foo.dart.js 10  foo");
+  test('uses package: URIs for frames within packageResolver.packageRoot', () {
+    var trace = Trace.parse('foo.dart.js 10  foo');
     var builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
               SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
-              "qux"),
+                  line: 1, column: 3, sourceUrl: 'packages/foo/foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
 
-    var mapping = parseJson(builder.build("foo.dart.js.map"));
+    var mapping = parseJson(builder.build('foo.dart.js.map'));
     var mappedTrace = _mapTrace(mapping, trace,
-        packageResolver: SyncPackageResolver.root("packages/"));
+        packageResolver: SyncPackageResolver.root('packages/'));
     var frame = mappedTrace.frames.first;
-    expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
+    expect(frame.uri, equals(Uri.parse('package:foo/foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  test("uses package: URIs for frames within a packageResolver.packageMap URL",
+  test('uses package: URIs for frames within a packageResolver.packageMap URL',
       () {
-    var trace = Trace.parse("foo.dart.js 10  foo");
+    var trace = Trace.parse('foo.dart.js 10  foo');
     var builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
               SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: "packages/foo/foo.dart"),
-              "qux"),
+                  line: 1, column: 3, sourceUrl: 'packages/foo/foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
 
-    var mapping = parseJson(builder.build("foo.dart.js.map"));
+    var mapping = parseJson(builder.build('foo.dart.js.map'));
     var mappedTrace = _mapTrace(mapping, trace,
         packageResolver:
-            SyncPackageResolver.config({"foo": Uri.parse("packages/foo")}));
+            SyncPackageResolver.config({'foo': Uri.parse('packages/foo')}));
     var frame = mappedTrace.frames.first;
-    expect(frame.uri, equals(Uri.parse("package:foo/foo.dart")));
+    expect(frame.uri, equals(Uri.parse('package:foo/foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  test("uses dart: URIs for frames within sdkRoot", () {
-    var trace = Trace.parse("foo.dart.js 10  foo");
+  test('uses dart: URIs for frames within sdkRoot', () {
+    var trace = Trace.parse('foo.dart.js 10  foo');
     var builder = SourceMapBuilder()
       ..addSpan(
           SourceMapSpan.identifier(
               SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: "sdk/lib/async/foo.dart"),
-              "qux"),
+                  line: 1, column: 3, sourceUrl: 'sdk/lib/async/foo.dart'),
+              'qux'),
           SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), "\n" * 4));
+              SourceLocation(12, line: 9, column: 1), '\n' * 4));
 
-    var mapping = parseJson(builder.build("foo.dart.js.map"));
-    var frame = _mapTrace(mapping, trace, sdkRoot: "sdk/").frames.first;
-    expect(frame.uri, equals(Uri.parse("dart:async/foo.dart")));
+    var mapping = parseJson(builder.build('foo.dart.js.map'));
+    var frame = _mapTrace(mapping, trace, sdkRoot: 'sdk/').frames.first;
+    expect(frame.uri, equals(Uri.parse('dart:async/foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  test("converts a stack chain", () {
+  test('converts a stack chain', () {
     var trace = Chain([
-      Trace.parse("foo.dart.js 10:11  foo"),
-      Trace.parse("foo.dart.js 10:11  bar")
+      Trace.parse('foo.dart.js 10:11  foo'),
+      Trace.parse('foo.dart.js 10:11  bar')
     ]);
     var traces = _mapChain(_simpleMapping, trace).traces;
 
     var frame = traces.first.frames.single;
-    expect(frame.uri, equals(Uri.parse("foo.dart")));
-    expect(frame.member, equals("foo"));
+    expect(frame.uri, equals(Uri.parse('foo.dart')));
+    expect(frame.member, equals('foo'));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
 
     frame = traces.last.frames.single;
-    expect(frame.uri, equals(Uri.parse("foo.dart")));
-    expect(frame.member, equals("bar"));
+    expect(frame.uri, equals(Uri.parse('foo.dart')));
+    expect(frame.member, equals('bar'));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
   });
 
-  group("cleans up", () {
-    test("Firefox junk", () {
-      expect(_prettify("foo/<"), equals("foo"));
-      expect(_prettify("foo<"), equals("foo"));
+  group('cleans up', () {
+    test('Firefox junk', () {
+      expect(_prettify('foo/<'), equals('foo'));
+      expect(_prettify('foo<'), equals('foo'));
     });
 
-    test("arity indicators", () {
-      expect(_prettify(r"foo$1"), equals("foo"));
-      expect(_prettify(r"foo$1234"), equals("foo"));
+    test('arity indicators', () {
+      expect(_prettify(r'foo$1'), equals('foo'));
+      expect(_prettify(r'foo$1234'), equals('foo'));
     });
 
-    test("named arguments", () {
-      expect(_prettify(r"foo$1$bar"), equals("foo"));
-      expect(_prettify(r"foo$123$bar$bang$qux"), equals("foo"));
+    test('named arguments', () {
+      expect(_prettify(r'foo$1$bar'), equals('foo'));
+      expect(_prettify(r'foo$123$bar$bang$qux'), equals('foo'));
     });
 
-    test("closures", () {
-      expect(_prettify("foo_closure.call"), equals("foo.<fn>"));
+    test('closures', () {
+      expect(_prettify('foo_closure.call'), equals('foo.<fn>'));
     });
 
-    test("nested closures", () {
-      expect(_prettify("foo__closure.call"), equals("foo.<fn>.<fn>"));
+    test('nested closures', () {
+      expect(_prettify('foo__closure.call'), equals('foo.<fn>.<fn>'));
       expect(
-          _prettify("foo____closure.call"), equals("foo.<fn>.<fn>.<fn>.<fn>"));
+          _prettify('foo____closure.call'), equals('foo.<fn>.<fn>.<fn>.<fn>'));
     });
 
-    test(".call", () {
-      expect(_prettify("foo.call"), equals("foo"));
+    test('.call', () {
+      expect(_prettify('foo.call'), equals('foo'));
     });
 
-    test("top-level functions", () {
-      expect(_prettify("dart.foo"), equals("foo"));
+    test('top-level functions', () {
+      expect(_prettify('dart.foo'), equals('foo'));
     });
 
-    test("library namespaces", () {
-      expect(_prettify(r"my_library$foo"), equals("foo"));
+    test('library namespaces', () {
+      expect(_prettify(r'my_library$foo'), equals('foo'));
     });
 
-    test("static methods", () {
-      expect(_prettify(r"Foo.static.foo"), equals("foo"));
+    test('static methods', () {
+      expect(_prettify(r'Foo.static.foo'), equals('foo'));
     });
 
-    test("instance methods", () {
-      expect(_prettify(r"Foo_bar__baz"), equals("Foo.bar._baz"));
+    test('instance methods', () {
+      expect(_prettify(r'Foo_bar__baz'), equals('Foo.bar._baz'));
     });
 
-    test("lots of stuff", () {
-      expect(_prettify(r"lib$Foo.static.lib$Foo_closure.call$0/<"),
-          equals("Foo.<fn>"));
+    test('lots of stuff', () {
+      expect(_prettify(r'lib$Foo.static.lib$Foo_closure.call$0/<'),
+          equals('Foo.<fn>'));
     });
   });
 }
@@ -290,6 +290,7 @@ Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
       minified: minified,
       packageResolver: packageResolver,
       sdkRoot: sdkRoot,
+      // ignore: deprecated_member_use_from_same_package
       packageRoot: packageRoot));
 }
 
@@ -304,11 +305,12 @@ Chain _mapChain(Mapping sourceMap, StackTrace stackTrace,
       minified: minified,
       packageResolver: packageResolver,
       sdkRoot: sdkRoot,
+      // ignore: deprecated_member_use_from_same_package
       packageRoot: packageRoot));
 }
 
 /// Runs the mapper's prettification logic on [member] and returns the result.
 String _prettify(String member) {
-  var trace = Trace([Frame(Uri.parse("foo.dart.js"), 10, 11, member)]);
+  var trace = Trace([Frame(Uri.parse('foo.dart.js'), 10, 11, member)]);
   return _mapTrace(_simpleMapping, trace).frames.first.member;
 }
