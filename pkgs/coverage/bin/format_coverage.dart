@@ -221,12 +221,11 @@ Environment parseArgs(List<String> arguments) {
 /// are contained by it if it is a directory, or a [List] containing the file if
 /// it is a file.
 List<File> filesToProcess(String absPath) {
-  final filePattern = RegExp(r'^dart-cov-\d+-\d+.json$');
   if (FileSystemEntity.isDirectorySync(absPath)) {
     return Directory(absPath)
         .listSync(recursive: true)
         .whereType<File>()
-        .where((e) => filePattern.hasMatch(p.basename(e.path)))
+        .where((e) => e.path.endsWith('.json'))
         .toList();
   }
   return <File>[File(absPath)];
