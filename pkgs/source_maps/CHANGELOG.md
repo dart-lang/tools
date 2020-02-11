@@ -1,6 +1,7 @@
-## 0.10.9-dev
+## 0.10.9
 
 * Fix a number of document comment issues.
+* Allow parsing source map files with a missing `names` field.
 
 ## 0.10.8
 
