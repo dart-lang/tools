@@ -5,13 +5,11 @@
 import "dart:io";
 import 'dart:typed_data';
 
-import "package:path/path.dart" as p;
-
 import "errors.dart";
 import "package_config_impl.dart";
 import "package_config_json.dart";
 import "packages_file.dart" as packages_file;
-import "util.dart" show defaultLoader;
+import "util.dart" show defaultLoader, pathJoin;
 
 final Uri packageConfigJsonPath = Uri(path: ".dart_tool/package_config.json");
 final Uri dotPackagesPath = Uri(path: ".packages");
@@ -33,7 +31,7 @@ final Uri parentPath = Uri(path: "..");
 /// Returns `null` if no configuration was found. If a configuration
 /// is needed, then the caller can supply [PackageConfig.empty].
 Future<PackageConfig /*?*/ > findPackageConfig(
-    Directory baseDirectory, bool recursive) async {
+    Directory baseDirectory, bool recursive, void onError(Object error)) async {
   var directory = baseDirectory;
   if (!directory.isAbsolute) directory = directory.absolute;
   if (!await directory.exists()) {
@@ -41,7 +39,7 @@ Future<PackageConfig /*?*/ > findPackageConfig(
   }
   do {
     // Check for $cwd/.packages
-    var packageConfig = await findPackagConfigInDirectory(directory);
+    var packageConfig = await findPackagConfigInDirectory(directory, onError);
     if (packageConfig != null) return packageConfig;
     if (!recursive) break;
     // Check in parent directories.
@@ -53,16 +51,22 @@ Future<PackageConfig /*?*/ > findPackageConfig(
 }
 
 /// Similar to [findPackageConfig] but based on a URI.
-Future<PackageConfig /*?*/ > findPackageConfigUri(Uri location,
-    Future<Uint8List /*?*/ > loader(Uri uri) /*?*/, bool recursive) async {
+Future<PackageConfig /*?*/ > findPackageConfigUri(
+    Uri location,
+    Future<Uint8List /*?*/ > loader(Uri uri) /*?*/,
+    void onError(Object error) /*?*/,
+    bool recursive) async {
   if (location.isScheme("package")) {
-    throw PackageConfigArgumentError(
-        location, "location", "Must not be a package: URI");
+    onError(PackageConfigArgumentError(
+        location, "location", "Must not be a package: URI"));
+    return null;
   }
   if (loader == null) {
     if (location.isScheme("file")) {
       return findPackageConfig(
-          Directory.fromUri(location.resolveUri(currentPath)), recursive);
+          Directory.fromUri(location.resolveUri(currentPath)),
+          recursive,
+          onError);
     }
     loader = defaultLoader;
   }
@@ -71,12 +75,12 @@ Future<PackageConfig /*?*/ > findPackageConfigUri(Uri location,
     var file = location.resolveUri(packageConfigJsonPath);
     var bytes = await loader(file);
     if (bytes != null) {
-      return parsePackageConfigBytes(bytes, file);
+      return parsePackageConfigBytes(bytes, file, onError);
     }
     file = location.resolveUri(dotPackagesPath);
     bytes = await loader(file);
     if (bytes != null) {
-      return packages_file.parse(bytes, file);
+      return packages_file.parse(bytes, file, onError);
     }
     if (!recursive) break;
     var parent = location.resolveUri(parentPath);
@@ -90,33 +94,35 @@ Future<PackageConfig /*?*/ > findPackageConfigUri(Uri location,
 ///
 /// Loads the file, if it is there, and returns the resulting [PackageConfig].
 /// Returns `null` if the file isn't there.
-/// Throws [FormatException] if a file is there but is not valid.
+/// Reports a [FormatException] if a file is there but the content is not valid.
+/// If the file exists, but fails to be read, the file system error is reported.
 ///
-/// If [extraData] is supplied and the `package_config.json` contains extra
-/// entries in the top JSON object, those extra entries are stored into
-/// [extraData].
+/// If [onError] is supplied, parsing errors are reported using that, and
+/// a best-effort attempt is made to return a package configuration.
+/// This may be the empty package configuration.
 Future<PackageConfig /*?*/ > findPackagConfigInDirectory(
-    Directory directory) async {
+    Directory directory, void onError(Object error)) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {
-    return await readPackageConfigJsonFile(packageConfigFile);
+    return await readPackageConfigJsonFile(packageConfigFile, onError);
   }
   packageConfigFile = await checkForDotPackagesFile(directory);
   if (packageConfigFile != null) {
-    return await readDotPackagesFile(packageConfigFile);
+    return await readDotPackagesFile(packageConfigFile, onError);
   }
   return null;
 }
 
 Future<File> /*?*/ checkForPackageConfigJsonFile(Directory directory) async {
   assert(directory.isAbsolute);
-  var file = File(p.join(directory.path, ".dart_tool", "package_config.json"));
+  var file =
+      File(pathJoin(directory.path, ".dart_tool", "package_config.json"));
   if (await file.exists()) return file;
   return null;
 }
 
 Future<File /*?*/ > checkForDotPackagesFile(Directory directory) async {
-  var file = File(p.join(directory.path, ".packages"));
+  var file = File(pathJoin(directory.path, ".packages"));
   if (await file.exists()) return file;
   return null;
 }

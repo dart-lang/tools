@@ -14,11 +14,20 @@ class PackageConfigArgumentError extends ArgumentError
     implements PackageConfigError {
   PackageConfigArgumentError(Object /*?*/ value, String name, String message)
       : super.value(value, name, message);
+
+  PackageConfigArgumentError.from(ArgumentError error)
+      : super.value(error.invalidValue, error.name, error.message);
 }
 
 class PackageConfigFormatException extends FormatException
     implements PackageConfigError {
-  PackageConfigFormatException(String message, Object /*?*/ value,
-      [int /*?*/ index])
-      : super(message, value, index);
+  PackageConfigFormatException(String message, Object /*?*/ source,
+      [int /*?*/ offset])
+      : super(message, source, offset);
+
+  PackageConfigFormatException.from(FormatException exception)
+      : super(exception.message, exception.source, exception.offset);
 }
+
+/// The default `onError` handler.
+void /*Never*/ throwError(Object error) => throw error;

@@ -6,9 +6,6 @@ import "dart:convert";
 import "dart:io";
 import "dart:typed_data";
 
-import 'package:charcode/ascii.dart';
-import "package:path/path.dart" as p;
-
 import "discovery.dart" show packageConfigJsonPath;
 import "errors.dart";
 import "package_config_impl.dart";
@@ -45,41 +42,66 @@ const String _generatorVersionKey = "generatorVersion";
 /// a `.packages` file and there is an available `package_config.json` file.
 ///
 /// The file must exist and be a normal file.
-Future<PackageConfig> readAnyConfigFile(File file, bool preferNewest) async {
-  var bytes = await file.readAsBytes();
+Future<PackageConfig> readAnyConfigFile(
+    File file, bool preferNewest, void onError(Object error)) async {
+  Uint8List bytes;
+  try {
+    bytes = await file.readAsBytes();
+  } catch (e) {
+    onError(e);
+    return const SimplePackageConfig.empty();
+  }
   int firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
     // Definitely not a JSON object, probably a .packages.
     if (preferNewest) {
       var alternateFile = File(
-          p.join(p.dirname(file.path), ".dart_tool", "package_config.json"));
+          pathJoin(dirName(file.path), ".dart_tool", "package_config.json"));
       if (alternateFile.existsSync()) {
-        return parsePackageConfigBytes(
-            await alternateFile.readAsBytes(), alternateFile.uri);
+        Uint8List /*?*/ bytes;
+        try {
+          bytes = await alternateFile.readAsBytes();
+        } catch (e) {
+          onError(e);
+          return const SimplePackageConfig.empty();
+        }
+        if (bytes != null) {
+          return parsePackageConfigBytes(bytes, alternateFile.uri, onError);
+        }
       }
     }
-    return packages_file.parse(bytes, file.uri);
+    return packages_file.parse(bytes, file.uri, onError);
   }
-  return parsePackageConfigBytes(bytes, file.uri);
+  return parsePackageConfigBytes(bytes, file.uri, onError);
 }
 
 /// Like [readAnyConfigFile] but uses a URI and an optional loader.
-Future<PackageConfig> readAnyConfigFileUri(Uri file,
-    Future<Uint8List /*?*/ > loader(Uri uri) /*?*/, bool preferNewest) async {
+Future<PackageConfig> readAnyConfigFileUri(
+    Uri file,
+    Future<Uint8List /*?*/ > loader(Uri uri) /*?*/,
+    void onError(Object error),
+    bool preferNewest) async {
   if (file.isScheme("package")) {
     throw PackageConfigArgumentError(
         file, "file", "Must not be a package: URI");
   }
   if (loader == null) {
     if (file.isScheme("file")) {
-      return readAnyConfigFile(File.fromUri(file), preferNewest);
+      return readAnyConfigFile(File.fromUri(file), preferNewest, onError);
     }
     loader = defaultLoader;
   }
-  var bytes = await loader(file);
+  Uint8List bytes;
+  try {
+    bytes = await loader(file);
+  } catch (e) {
+    onError(e);
+    return const SimplePackageConfig.empty();
+  }
   if (bytes == null) {
-    throw PackageConfigArgumentError(
-        file.toString(), "file", "File cannot be read");
+    onError(PackageConfigArgumentError(
+        file.toString(), "file", "File cannot be read"));
+    return const SimplePackageConfig.empty();
   }
   int firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
@@ -87,39 +109,59 @@ Future<PackageConfig> readAnyConfigFileUri(Uri file,
     if (preferNewest) {
       // Check if there is a package_config.json file.
       var alternateFile = file.resolveUri(packageConfigJsonPath);
-      var alternateBytes = await loader(alternateFile);
+      Uint8List alternateBytes;
+      try {
+        alternateBytes = await loader(alternateFile);
+      } catch (e) {
+        onError(e);
+        return const SimplePackageConfig.empty();
+      }
       if (alternateBytes != null) {
-        return parsePackageConfigBytes(alternateBytes, alternateFile);
+        return parsePackageConfigBytes(alternateBytes, alternateFile, onError);
       }
     }
-    return packages_file.parse(bytes, file);
+    return packages_file.parse(bytes, file, onError);
   }
-  return parsePackageConfigBytes(bytes, file);
+  return parsePackageConfigBytes(bytes, file, onError);
 }
 
-Future<PackageConfig> readPackageConfigJsonFile(File file) async {
+Future<PackageConfig> readPackageConfigJsonFile(
+    File file, void onError(Object error)) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
-  } catch (_) {
-    return null;
+  } catch (error) {
+    onError(error);
+    return const SimplePackageConfig.empty();
   }
-  return parsePackageConfigBytes(bytes, file.uri);
+  return parsePackageConfigBytes(bytes, file.uri, onError);
 }
 
-Future<PackageConfig> readDotPackagesFile(File file) async {
+Future<PackageConfig> readDotPackagesFile(
+    File file, void onError(Object error)) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
-  } catch (_) {
-    return null;
+  } catch (error) {
+    onError(error);
+    return const SimplePackageConfig.empty();
   }
-  return packages_file.parse(bytes, file.uri);
+  return packages_file.parse(bytes, file.uri, onError);
 }
 
-PackageConfig parsePackageConfigBytes(Uint8List bytes, Uri file) {
+final _jsonUtf8Decoder = json.fuse(utf8).decoder;
+
+PackageConfig parsePackageConfigBytes(
+    Uint8List bytes, Uri file, void onError(Object error)) {
   // TODO(lrn): Make this simpler. Maybe parse directly from bytes.
-  return parsePackageConfigJson(json.fuse(utf8).decode(bytes), file);
+  var jsonObject;
+  try {
+    jsonObject = _jsonUtf8Decoder.convert(bytes);
+  } on FormatException catch (e) {
+    onError(PackageConfigFormatException(e.message, e.source, e.offset));
+    return const SimplePackageConfig.empty();
+  }
+  return parsePackageConfigJson(jsonObject, file, onError);
 }
 
 /// Creates a [PackageConfig] from a parsed JSON-like object structure.
@@ -144,7 +186,8 @@ PackageConfig parsePackageConfigBytes(Uint8List bytes, Uri file) {
 ///
 /// The [baseLocation] is used as base URI to resolve the "rootUri"
 /// URI referencestring.
-PackageConfig parsePackageConfigJson(dynamic json, Uri baseLocation) {
+PackageConfig parsePackageConfigJson(
+    dynamic json, Uri baseLocation, void onError(Object error)) {
   if (!baseLocation.hasScheme || baseLocation.isScheme("package")) {
     throw PackageConfigArgumentError(baseLocation.toString(), "baseLocation",
         "Must be an absolute non-package: URI");
@@ -168,27 +211,34 @@ PackageConfig parsePackageConfigJson(dynamic json, Uri baseLocation) {
     var message =
         "$name${packageName != null ? " of package $packageName" : ""}"
         " is not a JSON ${typeName<T>()}";
-    throw PackageConfigFormatException(message, value);
+    onError(PackageConfigFormatException(message, value));
+    return null;
   }
 
-  Package parsePackage(Map<String, dynamic> entry) {
+  Package /*?*/ parsePackage(Map<String, dynamic> entry) {
     String /*?*/ name;
     String /*?*/ rootUri;
     String /*?*/ packageUri;
     String /*?*/ languageVersion;
     Map<String, dynamic> /*?*/ extraData;
+    bool hasName = false;
+    bool hasRoot = false;
+    bool hasVersion = false;
     entry.forEach((key, value) {
       switch (key) {
         case _nameKey:
+          hasName = true;
           name = checkType<String>(value, _nameKey);
           break;
         case _rootUriKey:
+          hasRoot = true;
           rootUri = checkType<String>(value, _rootUriKey, name);
           break;
         case _packageUriKey:
           packageUri = checkType<String>(value, _packageUriKey, name);
           break;
         case _languageVersionKey:
+          hasVersion = true;
           languageVersion = checkType<String>(value, _languageVersionKey, name);
           break;
         default:
@@ -196,37 +246,61 @@ PackageConfig parsePackageConfigJson(dynamic json, Uri baseLocation) {
           break;
       }
     });
-    if (name == null) {
-      throw PackageConfigFormatException("Missing name entry", entry);
+    if (!hasName) {
+      onError(PackageConfigFormatException("Missing name entry", entry));
     }
-    if (rootUri == null) {
-      throw PackageConfigFormatException("Missing rootUri entry", entry);
+    if (!hasRoot) {
+      onError(PackageConfigFormatException("Missing rootUri entry", entry));
     }
+    if (name == null || rootUri == null) return null;
     Uri root = baseLocation.resolve(rootUri);
-    Uri /*?*/ packageRoot = root;
+    if (!root.path.endsWith("/")) root = root.replace(path: root.path + "/");
+    Uri packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri);
-    try {
-      return SimplePackage(name, root, packageRoot, languageVersion, extraData);
-    } on ArgumentError catch (e) {
-      throw PackageConfigFormatException(e.message, e.invalidValue);
+    if (!packageRoot.path.endsWith("/")) {
+      packageRoot = packageRoot.replace(path: packageRoot.path + "/");
     }
+
+    LanguageVersion /*?*/ version;
+    if (languageVersion != null) {
+      version = parseLanguageVersion(languageVersion, onError);
+    } else if (hasVersion) {
+      version = SimpleInvalidLanguageVersion("invalid");
+    }
+
+    return SimplePackage.validate(name, root, packageRoot, version, extraData,
+        (error) {
+      if (error is ArgumentError) {
+        onError(
+            PackageConfigFormatException(error.message, error.invalidValue));
+      } else {
+        onError(error);
+      }
+    });
   }
 
   var map = checkType<Map<String, dynamic>>(json, "value");
+  if (map == null) return const SimplePackageConfig.empty();
   Map<String, dynamic> /*?*/ extraData = null;
   List<Package> /*?*/ packageList;
   int /*?*/ configVersion;
   map.forEach((key, value) {
     switch (key) {
       case _configVersionKey:
-        configVersion = checkType<int>(value, _configVersionKey);
+        configVersion = checkType<int>(value, _configVersionKey) ?? 2;
         break;
       case _packagesKey:
-        var packageArray = checkType<List<dynamic>>(value, _packagesKey);
+        var packageArray = checkType<List<dynamic>>(value, _packagesKey) ?? [];
         var packages = <Package>[];
         for (var package in packageArray) {
-          packages.add(parsePackage(
-              checkType<Map<String, dynamic>>(package, "package entry")));
+          var packageMap =
+              checkType<Map<String, dynamic>>(package, "package entry");
+          if (packageMap != null) {
+            var entry = parsePackage(packageMap);
+            if (entry != null) {
+              packages.add(entry);
+            }
+          }
         }
         packageList = packages;
         break;
@@ -236,22 +310,27 @@ PackageConfig parsePackageConfigJson(dynamic json, Uri baseLocation) {
     }
   });
   if (configVersion == null) {
-    throw PackageConfigFormatException("Missing configVersion entry", json);
+    onError(PackageConfigFormatException("Missing configVersion entry", json));
+    configVersion = 2;
   }
-  if (packageList == null)
-    throw PackageConfigFormatException("Missing packages list", json);
-  try {
-    return SimplePackageConfig(configVersion, packageList, extraData);
-  } on ArgumentError catch (e) {
-    throw PackageConfigFormatException(e.message, e.invalidValue);
+  if (packageList == null) {
+    onError(PackageConfigFormatException("Missing packages list", json));
+    packageList = [];
   }
+  return SimplePackageConfig(configVersion, packageList, extraData, (error) {
+    if (error is ArgumentError) {
+      onError(PackageConfigFormatException(error.message, error.invalidValue));
+    } else {
+      onError(error);
+    }
+  });
 }
 
 Future<void> writePackageConfigJson(
     PackageConfig config, Directory targetDirectory) async {
   // Write .dart_tool/package_config.json first.
   var file =
-      File(p.join(targetDirectory.path, ".dart_tool", "package_config.json"));
+      File(pathJoin(targetDirectory.path, ".dart_tool", "package_config.json"));
   var baseUri = file.uri;
   var extraData = config.extraData;
   var data = <String, dynamic>{
@@ -263,8 +342,9 @@ Future<void> writePackageConfigJson(
           _rootUriKey: relativizeUri(package.root, baseUri),
           if (package.root != package.packageUriRoot)
             _packageUriKey: relativizeUri(package.packageUriRoot, package.root),
-          if (package.languageVersion != null)
-            _languageVersionKey: package.languageVersion,
+          if (package.languageVersion != null &&
+              package.languageVersion is! InvalidLanguageVersion)
+            _languageVersionKey: package.languageVersion.toString(),
           ...?_extractExtraData(package.extraData, _packageNames),
         }
     ],
@@ -283,7 +363,7 @@ Future<void> writePackageConfigJson(
           "${generated != null ? " on $generated" : ""}.";
     }
   }
-  file = File(p.join(targetDirectory.path, ".packages"));
+  file = File(pathJoin(targetDirectory.path, ".packages"));
   baseUri = file.uri;
   var buffer = StringBuffer();
   packages_file.write(buffer, config, baseUri: baseUri, comment: comment);

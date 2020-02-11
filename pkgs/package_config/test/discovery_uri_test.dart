@@ -4,6 +4,8 @@
 
 library package_config.discovery_test;
 
+import 'dart:io';
+
 import "package:test/test.dart";
 import "package:package_config/package_config.dart";
 
@@ -219,7 +221,20 @@ main() {
     loaderTest("no config found", {}, (Uri directory, loader) {
       Uri file = directory.resolve("anyname");
       expect(() => loadPackageConfigUri(file, loader: loader),
-          throwsArgumentError);
+          throwsA(isA<ArgumentError>()));
+    });
+
+    loaderTest("no config found, handle error", {},
+        (Uri directory, loader) async {
+      Uri file = directory.resolve("anyname");
+      bool hadError = false;
+      await loadPackageConfigUri(file,
+          loader: loader,
+          onError: expectAsync1((error) {
+            hadError = true;
+            expect(error, isA<ArgumentError>());
+          }, max: -1));
+      expect(hadError, true);
     });
 
     loaderTest("specified file syntax error", {
@@ -228,6 +243,20 @@ main() {
       Uri file = directory.resolve("anyname");
       expect(() => loadPackageConfigUri(file, loader: loader),
           throwsFormatException);
+    });
+
+    loaderTest("specified file syntax error", {
+      "anyname": "syntax error",
+    }, (Uri directory, loader) async {
+      Uri file = directory.resolve("anyname");
+      bool hadError = false;
+      await loadPackageConfigUri(file,
+          loader: loader,
+          onError: expectAsync1((error) {
+            hadError = true;
+            expect(error, isA<FormatException>());
+          }, max: -1));
+      expect(hadError, true);
     });
 
     // Find package_config.json in subdir even if initial file syntax error.
@@ -246,10 +275,16 @@ main() {
     // A file starting with `{` is a package_config.json file.
     loaderTest("file syntax error with {", {
       ".packages": "{syntax error",
-    }, (Uri directory, loader) {
+    }, (Uri directory, loader) async {
       Uri file = directory.resolve(".packages");
-      expect(() => loadPackageConfigUri(file, loader: loader),
-          throwsFormatException);
+      var hadError = false;
+      await loadPackageConfigUri(file,
+          loader: loader,
+          onError: expectAsync1((error) {
+            hadError = true;
+            expect(error, isA<FormatException>());
+          }, max: -1));
+      expect(hadError, true);
     });
   });
 }

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'errors.dart';
 import "package_config_impl.dart";
 
 /// A package configuration.
@@ -34,7 +35,7 @@ abstract class PackageConfig {
   ///
   /// The version of the resulting configuration is always [maxVersion].
   factory PackageConfig(Iterable<Package> packages, {dynamic extraData}) =>
-      SimplePackageConfig(maxVersion, packages);
+      SimplePackageConfig(maxVersion, packages, extraData);
 
   /// The configuration version number.
   ///
@@ -124,9 +125,10 @@ abstract class Package {
   /// [Package.extraData] of the created package.
   factory Package(String name, Uri root,
           {Uri /*?*/ packageUriRoot,
-          String /*?*/ languageVersion,
+          LanguageVersion /*?*/ languageVersion,
           dynamic extraData}) =>
-      SimplePackage(name, root, packageUriRoot, languageVersion, extraData);
+      SimplePackage.validate(
+          name, root, packageUriRoot, languageVersion, extraData, throwError);
 
   /// The package-name of the package.
   String get name;
@@ -156,16 +158,9 @@ abstract class Package {
   /// Each package may have a default language version associated,
   /// which is the language version used to parse and compile
   /// Dart files in the package.
-  /// A package version is always of the form:
-  ///
-  /// * A numeral consisting of one or more decimal digits,
-  ///   with no leading zero unless the entire numeral is a single zero digit.
-  /// * Followed by a `.` character.
-  /// * Followed by another numeral of the same form.
-  ///
-  /// There is no whitespace allowed around the numerals.
-  /// Valid version numbers include `2.5`, `3.0`, and `1234.5678`.
-  String /*?*/ get languageVersion;
+  /// A package version is defined by two non-negative numbers,
+  /// the *major* and *minor* version numbers.
+  LanguageVersion /*?*/ get languageVersion;
 
   /// Extra data associated with the specific package.
   ///
@@ -173,4 +168,105 @@ abstract class Package {
   /// The standard `packjage_config.json` file storage will only store
   /// JSON-like list/map data structures.
   dynamic get extraData;
+}
+
+/// A language version.
+///
+/// A language version is represented by two non-negative integers,
+/// the [major] and [minor] version numbers.
+///
+/// If errors during parsing are handled using an `onError` handler,
+/// then an *invalid* language version may be represented by an
+/// [InvalidLanguageVersion] object.
+abstract class LanguageVersion implements Comparable<LanguageVersion> {
+  /// The maximal value allowed by [major] and [minor] values;
+  static const int maxValue = 0x7FFFFFFF;
+  factory LanguageVersion(int major, int minor) {
+    RangeError.checkValueInInterval(major, 0, maxValue, "major");
+    RangeError.checkValueInInterval(minor, 0, maxValue, "major");
+    return SimpleLanguageVersion(major, minor, null);
+  }
+
+  /// Parses a language version string.
+  ///
+  /// A valid language version string has the form
+  ///
+  /// > *decimalNumber* `.` *decimalNumber*
+  ///
+  /// where a *decimalNumber* is a non-empty sequence of decimal digits
+  /// with no unnecessary leading zeros (the decimal number only starts
+  /// with a zero digit if that digit is the entire number).
+  /// No spaces are allowed in the string.
+  ///
+  /// If the [source] is valid then it is parsed into a valid
+  /// [LanguageVersion] object.
+  /// If not, then the [onError] is called with a [FormatException].
+  /// If [onError] is not supplied, it defaults to throwing the exception.
+  /// If the call does not throw, then an [InvalidLanguageVersion] is returned
+  /// containing the original [source].
+  static LanguageVersion parse(String source, {void onError(Object error)}) =>
+      parseLanguageVersion(source, onError ?? throwError);
+
+  /// The major language version.
+  ///
+  /// A non-negative integer less than 2<sup>31</sup>.
+  ///
+  /// The value is negative for objects representing *invalid* language
+  /// versions ([InvalidLanguageVersion]).
+  int get major;
+
+  /// The minor language version.
+  ///
+  /// A non-negative integer less than 2<sup>31</sup>.
+  ///
+  /// The value is negative for objects representing *invalid* language
+  /// versions ([InvalidLanguageVersion]).
+  int get minor;
+
+  /// Compares language versions.
+  ///
+  /// Two language versions are considered equal if they have the
+  /// same major and minor version numbers.
+  ///
+  /// A language version is greater then another if the former's major version
+  /// is greater than the latter's major version, or if they have
+  /// the same major version and the former's minor version is greater than
+  /// the latter's.
+  int compareTo(LanguageVersion other);
+
+  /// Valid language versions with the same [major] and [minor] values are
+  /// equal.
+  ///
+  /// Invalid language versions ([InvalidLanguageVersion]) are not equal to
+  /// any other object.
+  bool operator ==(Object other);
+
+  int get hashCode;
+
+  /// A string representation of the language version.
+  ///
+  /// A valid language version is represented as
+  /// `"${version.major}.${version.minor}"`.
+  String toString();
+}
+
+/// An *invalid* language version.
+///
+/// Stored in a [Package] when the orginal language version string
+/// was invalid and a `onError` handler was passed to the parser
+/// which did not throw on an error.
+abstract class InvalidLanguageVersion implements LanguageVersion {
+  /// The value -1 for an invalid language version.
+  int get major;
+
+  /// The value -1 for an invalid language version.
+  int get minor;
+
+  /// An invalid language version is only equal to itself.
+  bool operator ==(Object other);
+
+  int get hashCode;
+
+  /// The original invalid version string.
+  String toString();
 }

@@ -114,36 +114,92 @@ main() {
       expect(config, null);
     });
 
-    fileTest("invalid .packages", {
-      ".packages": "not a .packages file",
-    }, (Directory directory) {
-      expect(() => findPackageConfig(directory),
-          throwsA(TypeMatcher<FormatException>()));
+    group("throws", () {
+      fileTest("invalid .packages", {
+        ".packages": "not a .packages file",
+      }, (Directory directory) {
+        expect(findPackageConfig(directory),
+            throwsA(TypeMatcher<FormatException>()));
+      });
+
+      fileTest("invalid .packages as JSON", {
+        ".packages": packageConfigFile,
+      }, (Directory directory) {
+        expect(findPackageConfig(directory),
+            throwsA(TypeMatcher<FormatException>()));
+      });
+
+      fileTest("invalid .packages", {
+        ".dart_tool": {
+          "package_config.json": "not a JSON file",
+        }
+      }, (Directory directory) {
+        expect(findPackageConfig(directory),
+            throwsA(TypeMatcher<FormatException>()));
+      });
+
+      fileTest("invalid .packages as INI", {
+        ".dart_tool": {
+          "package_config.json": packagesFile,
+        }
+      }, (Directory directory) {
+        expect(findPackageConfig(directory),
+            throwsA(TypeMatcher<FormatException>()));
+      });
     });
 
-    fileTest("invalid .packages as JSON", {
-      ".packages": packageConfigFile,
-    }, (Directory directory) {
-      expect(() => findPackageConfig(directory),
-          throwsA(TypeMatcher<FormatException>()));
-    });
+    group("handles error", () {
+      fileTest("invalid .packages", {
+        ".packages": "not a .packages file",
+      }, (Directory directory) async {
+        bool hadError = false;
+        await findPackageConfig(directory,
+            onError: expectAsync1((error) {
+              hadError = true;
+              expect(error, isA<FormatException>());
+            }, max: -1));
+        expect(hadError, true);
+      });
 
-    fileTest("invalid .packages", {
-      ".dart_tool": {
-        "package_config.json": "not a JSON file",
-      }
-    }, (Directory directory) {
-      expect(() => findPackageConfig(directory),
-          throwsA(TypeMatcher<FormatException>()));
-    });
+      fileTest("invalid .packages as JSON", {
+        ".packages": packageConfigFile,
+      }, (Directory directory) async {
+        bool hadError = false;
+        await findPackageConfig(directory,
+            onError: expectAsync1((error) {
+              hadError = true;
+              expect(error, isA<FormatException>());
+            }, max: -1));
+        expect(hadError, true);
+      });
 
-    fileTest("invalid .packages as INI", {
-      ".dart_tool": {
-        "package_config.json": packagesFile,
-      }
-    }, (Directory directory) {
-      expect(() => findPackageConfig(directory),
-          throwsA(TypeMatcher<FormatException>()));
+      fileTest("invalid package_config not JSON", {
+        ".dart_tool": {
+          "package_config.json": "not a JSON file",
+        }
+      }, (Directory directory) async {
+        bool hadError = false;
+        await findPackageConfig(directory,
+            onError: expectAsync1((error) {
+              hadError = true;
+              expect(error, isA<FormatException>());
+            }, max: -1));
+        expect(hadError, true);
+      });
+
+      fileTest("invalid package config as INI", {
+        ".dart_tool": {
+          "package_config.json": packagesFile,
+        }
+      }, (Directory directory) async {
+        bool hadError = false;
+        await findPackageConfig(directory,
+            onError: expectAsync1((error) {
+              hadError = true;
+              expect(error, isA<FormatException>());
+            }, max: -1));
+        expect(hadError, true);
+      });
     });
   });
 
@@ -224,6 +280,17 @@ main() {
       File file = dirFile(directory, "anyname");
       expect(() => loadPackageConfig(file),
           throwsA(TypeMatcher<FileSystemException>()));
+    });
+
+    fileTest("no config found, handled", {}, (Directory directory) async {
+      File file = dirFile(directory, "anyname");
+      bool hadError = false;
+      await loadPackageConfig(file,
+          onError: expectAsync1((error) {
+            hadError = true;
+            expect(error, isA<FileSystemException>());
+          }, max: -1));
+      expect(hadError, true);
     });
 
     fileTest("specified file syntax error", {
