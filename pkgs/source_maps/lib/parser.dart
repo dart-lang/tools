@@ -341,7 +341,7 @@ class SingleMapping extends Mapping {
   SingleMapping.fromJson(Map map, {mapUrl})
       : targetUrl = map['file'],
         urls = List<String>.from(map['sources']),
-        names = List<String>.from(map['names']),
+        names = List<String>.from(map['names'] ?? []),
         files = List(map['sources'].length),
         sourceRoot = map['sourceRoot'],
         lines = <TargetLineEntry>[],

@@ -28,6 +28,14 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION = {
   'file': 'output.dart'
 };
 
+const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES = {
+  'version': 3,
+  'sourceRoot': '',
+  'sources': ['input.dart'],
+  'mappings': 'AAAA',
+  'file': 'output.dart'
+};
+
 const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME = {
   'version': 3,
   'sourceRoot': '',
@@ -110,6 +118,20 @@ void main() {
 
   test('parse with source location and no name', () {
     SingleMapping map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION));
+    expect(map.lines.length, 1);
+    expect(map.lines.first.entries.length, 1);
+    var entry = map.lines.first.entries.first;
+
+    expect(entry.column, 0);
+    expect(entry.sourceUrlId, 0);
+    expect(entry.sourceColumn, 0);
+    expect(entry.sourceLine, 0);
+    expect(entry.sourceNameId, null);
+  });
+
+  test('parse with source location and missing names entry', () {
+    SingleMapping map =
+        parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES));
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
