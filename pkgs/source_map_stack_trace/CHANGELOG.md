@@ -1,4 +1,8 @@
-## 1.1.6-dev
+## 2.0.0-dev
+
+* **Breaking** The `sdkRoot` argument must be an `Uri`. Use `Uri.parse` for use
+  cases previously passing a `String`.
+* **Breaking** The deprecated `packageRoot` argument has been removed.
 
 ## 1.1.5
 

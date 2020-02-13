@@ -127,25 +127,6 @@ bar.dart.js 10:11  foo
     expect(frame.column, equals(4));
   });
 
-  test('uses package: URIs for frames within packageRoot', () {
-    var trace = Trace.parse('foo.dart.js 10  foo');
-    var builder = SourceMapBuilder()
-      ..addSpan(
-          SourceMapSpan.identifier(
-              SourceLocation(1,
-                  line: 1, column: 3, sourceUrl: 'packages/foo/foo.dart'),
-              'qux'),
-          SourceSpan(SourceLocation(8, line: 5, column: 0),
-              SourceLocation(12, line: 9, column: 1), '\n' * 4));
-
-    var mapping = parseJson(builder.build('foo.dart.js.map'));
-    var frame =
-        _mapTrace(mapping, trace, packageRoot: 'packages/').frames.first;
-    expect(frame.uri, equals(Uri.parse('package:foo/foo.dart')));
-    expect(frame.line, equals(2));
-    expect(frame.column, equals(4));
-  });
-
   test('uses package: URIs for frames within packageResolver.packageRoot', () {
     var trace = Trace.parse('foo.dart.js 10  foo');
     var builder = SourceMapBuilder()
@@ -200,7 +181,8 @@ bar.dart.js 10:11  foo
               SourceLocation(12, line: 9, column: 1), '\n' * 4));
 
     var mapping = parseJson(builder.build('foo.dart.js.map'));
-    var frame = _mapTrace(mapping, trace, sdkRoot: 'sdk/').frames.first;
+    var frame =
+        _mapTrace(mapping, trace, sdkRoot: Uri.parse('sdk/')).frames.first;
     expect(frame.uri, equals(Uri.parse('dart:async/foo.dart')));
     expect(frame.line, equals(2));
     expect(frame.column, equals(4));
@@ -282,31 +264,17 @@ bar.dart.js 10:11  foo
 /// Like [mapStackTrace], but is guaranteed to return a [Trace] so it can be
 /// inspected.
 Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false,
-    SyncPackageResolver packageResolver,
-    sdkRoot,
-    packageRoot}) {
+    {bool minified = false, SyncPackageResolver packageResolver, Uri sdkRoot}) {
   return Trace.from(mapStackTrace(sourceMap, stackTrace,
-      minified: minified,
-      packageResolver: packageResolver,
-      sdkRoot: sdkRoot,
-      // ignore: deprecated_member_use_from_same_package
-      packageRoot: packageRoot));
+      minified: minified, packageResolver: packageResolver, sdkRoot: sdkRoot));
 }
 
 /// Like [mapStackTrace], but is guaranteed to return a [Chain] so it can be
 /// inspected.
 Chain _mapChain(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false,
-    SyncPackageResolver packageResolver,
-    sdkRoot,
-    packageRoot}) {
+    {bool minified = false, SyncPackageResolver packageResolver, Uri sdkRoot}) {
   return Chain.forTrace(mapStackTrace(sourceMap, stackTrace,
-      minified: minified,
-      packageResolver: packageResolver,
-      sdkRoot: sdkRoot,
-      // ignore: deprecated_member_use_from_same_package
-      packageRoot: packageRoot));
+      minified: minified, packageResolver: packageResolver, sdkRoot: sdkRoot));
 }
 
 /// Runs the mapper's prettification logic on [member] and returns the result.

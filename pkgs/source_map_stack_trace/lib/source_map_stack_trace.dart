@@ -16,26 +16,10 @@ import 'package:stack_trace/stack_trace.dart';
 /// If [packageResolver] is passed, it's used to reconstruct `package:` URIs for
 /// stack frames that come from packages.
 ///
-/// [sdkRoot] is the URI (usually a `file:` URI) for the SDK containing dart2js.
-/// It can be a [String] or a [Uri]. If it's passed, stack frames from the SDK
-/// will have `dart:` URLs.
-///
-/// `packageRoot` is deprecated and shouldn't be used in new code. This throws
-/// an [ArgumentError] if `packageRoot` and [packageResolver] are both passed.
+/// [sdkRoot] is the URI surfaced in the stack traces for SDK libraries.
+/// If it's passed, stack frames from the SDK will have `dart:` URLs.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false,
-    SyncPackageResolver packageResolver,
-    sdkRoot,
-    @Deprecated('Use the packageResolver parameter instead.') packageRoot}) {
-  if (packageRoot != null) {
-    if (packageResolver != null) {
-      throw ArgumentError(
-          'packageResolver and packageRoot may not both be passed.');
-    }
-
-    packageResolver = SyncPackageResolver.root(packageRoot);
-  }
-
+    {bool minified = false, SyncPackageResolver packageResolver, Uri sdkRoot}) {
   if (stackTrace is Chain) {
     return Chain(stackTrace.traces.map((trace) {
       return Trace.from(mapStackTrace(sourceMap, trace,
@@ -43,10 +27,6 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
           packageResolver: packageResolver,
           sdkRoot: sdkRoot));
     }));
-  }
-
-  if (sdkRoot != null && sdkRoot is! String && sdkRoot is! Uri) {
-    throw ArgumentError('sdkRoot must be a String or a Uri, was "$sdkRoot".');
   }
 
   var sdkLib = sdkRoot == null ? null : '$sdkRoot/lib';
