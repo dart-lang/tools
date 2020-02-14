@@ -1,3 +1,8 @@
+## 0.13.7 - 2020-02-14
+
+* Update to package_config `1.9.0` which supports package_config.json
+  files and should be forwards compatible with `2.0.0`.
+
 ## 0.13.6 - 2020-02-10
 
 * Now consider all `.json` files for the `format_coverage` command.
