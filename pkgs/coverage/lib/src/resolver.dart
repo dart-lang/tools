@@ -3,14 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:package_config/packages_file.dart' as packages_file;
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
-  Resolver({String packagesPath, this.packageRoot, this.sdkRoot})
+  Resolver({String packagesPath, @deprecated this.packageRoot, this.sdkRoot})
       : packagesPath = packagesPath,
         _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
@@ -89,8 +90,30 @@ class Resolver {
   }
 
   static Map<String, Uri> _parsePackages(String packagesPath) {
-    final source = File(packagesPath).readAsBytesSync();
-    return packages_file.parse(source, Uri.file(packagesPath));
+    final content = File(packagesPath).readAsStringSync();
+    try {
+      final parsed = PackageConfig.parseString(content, Uri.file(packagesPath));
+      return {
+        for (var package in parsed.packages)
+          package.name: package.packageUriRoot
+      };
+    } on FormatException catch (_) {
+      // It was probably an old style .packages file
+      final lines = LineSplitter.split(content);
+      final packageMap = <String, Uri>{};
+      for (var line in lines) {
+        if (line.startsWith('#')) continue;
+        final parts = line.split(':');
+        if (parts.length != 2) {
+          throw FormatException(
+              'Unexpected package config format, expected an old style '
+              '.packages file or new style package_config.json file.',
+              content);
+        }
+        packageMap[parts.first] = Uri.parse(parts.last);
+      }
+      return packageMap;
+    }
   }
 }
 
