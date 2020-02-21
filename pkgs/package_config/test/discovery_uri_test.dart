@@ -4,8 +4,6 @@
 
 library package_config.discovery_test;
 
-import 'dart:io';
-
 import "package:test/test.dart";
 import "package:package_config/package_config.dart";
 
@@ -51,7 +49,7 @@ void validatePackagesFile(PackageConfig resolver, Uri directory) {
       unorderedEquals(["foo", "bar", "baz"]));
 }
 
-main() {
+void main() {
   group("findPackages", () {
     // Finds package_config.json if there.
     loaderTest("package_config.json", {
@@ -62,8 +60,7 @@ main() {
         "package_config.json": packageConfigFile,
       }
     }, (Uri directory, loader) async {
-      PackageConfig config =
-          await findPackageConfigUri(directory, loader: loader);
+      var config = await findPackageConfigUri(directory, loader: loader);
       expect(config.version, 2); // Found package_config.json file.
       validatePackagesFile(config, directory);
     });
@@ -74,8 +71,7 @@ main() {
       "script.dart": "main(){}",
       "packages": {"shouldNotBeFound": {}}
     }, (Uri directory, loader) async {
-      PackageConfig config =
-          await findPackageConfigUri(directory, loader: loader);
+      var config = await findPackageConfigUri(directory, loader: loader);
       expect(config.version, 1); // Found .packages file.
       validatePackagesFile(config, directory);
     });
@@ -90,8 +86,7 @@ main() {
         "script.dart": "main(){}",
       }
     }, (Uri directory, loader) async {
-      PackageConfig config = await findPackageConfigUri(
-          directory.resolve("subdir/"),
+      var config = await findPackageConfigUri(directory.resolve("subdir/"),
           loader: loader);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
@@ -102,7 +97,7 @@ main() {
       ".packages": packagesFile,
       "subdir": {"script.dart": "main(){}"}
     }, (Uri directory, loader) async {
-      PackageConfig config;
+      var config;
       config = await findPackageConfigUri(directory.resolve("subdir/"),
           loader: loader);
       expect(config.version, 1);
@@ -115,8 +110,7 @@ main() {
         "foo": {},
       }
     }, (Uri directory, loader) async {
-      PackageConfig config =
-          await findPackageConfigUri(directory, loader: loader);
+      var config = await findPackageConfigUri(directory, loader: loader);
       expect(config, null);
     });
 
@@ -163,15 +157,15 @@ main() {
         },
       };
       loaderTest("directly", files, (Uri directory, loader) async {
-        Uri file = directory.resolve(".dart_tool/package_config.json");
-        PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+        var file = directory.resolve(".dart_tool/package_config.json");
+        var config = await loadPackageConfigUri(file, loader: loader);
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       });
       loaderTest("indirectly through .packages", files,
           (Uri directory, loader) async {
-        Uri file = directory.resolve(".packages");
-        PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+        var file = directory.resolve(".packages");
+        var config = await loadPackageConfigUri(file, loader: loader);
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       });
@@ -183,8 +177,8 @@ main() {
         "pheldagriff": packageConfigFile,
       },
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve("subdir/pheldagriff");
-      PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+      var file = directory.resolve("subdir/pheldagriff");
+      var config = await loadPackageConfigUri(file, loader: loader);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -194,8 +188,8 @@ main() {
         ".packages": packageConfigFile,
       },
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve("subdir/.packages");
-      PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+      var file = directory.resolve("subdir/.packages");
+      var config = await loadPackageConfigUri(file, loader: loader);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -203,8 +197,8 @@ main() {
     loaderTest(".packages", {
       ".packages": packagesFile,
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve(".packages");
-      PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+      var file = directory.resolve(".packages");
+      var config = await loadPackageConfigUri(file, loader: loader);
       expect(config.version, 1);
       validatePackagesFile(config, directory);
     });
@@ -212,22 +206,22 @@ main() {
     loaderTest(".packages non-default name", {
       "pheldagriff": packagesFile,
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve("pheldagriff");
-      PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+      var file = directory.resolve("pheldagriff");
+      var config = await loadPackageConfigUri(file, loader: loader);
       expect(config.version, 1);
       validatePackagesFile(config, directory);
     });
 
     loaderTest("no config found", {}, (Uri directory, loader) {
-      Uri file = directory.resolve("anyname");
+      var file = directory.resolve("anyname");
       expect(() => loadPackageConfigUri(file, loader: loader),
           throwsA(isA<ArgumentError>()));
     });
 
     loaderTest("no config found, handle error", {},
         (Uri directory, loader) async {
-      Uri file = directory.resolve("anyname");
-      bool hadError = false;
+      var file = directory.resolve("anyname");
+      var hadError = false;
       await loadPackageConfigUri(file,
           loader: loader,
           onError: expectAsync1((error) {
@@ -240,7 +234,7 @@ main() {
     loaderTest("specified file syntax error", {
       "anyname": "syntax error",
     }, (Uri directory, loader) {
-      Uri file = directory.resolve("anyname");
+      var file = directory.resolve("anyname");
       expect(() => loadPackageConfigUri(file, loader: loader),
           throwsFormatException);
     });
@@ -248,8 +242,8 @@ main() {
     loaderTest("specified file syntax error", {
       "anyname": "syntax error",
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve("anyname");
-      bool hadError = false;
+      var file = directory.resolve("anyname");
+      var hadError = false;
       await loadPackageConfigUri(file,
           loader: loader,
           onError: expectAsync1((error) {
@@ -266,8 +260,8 @@ main() {
         "package_config.json": packageConfigFile,
       },
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve("anyname");
-      PackageConfig config = await loadPackageConfigUri(file, loader: loader);
+      var file = directory.resolve("anyname");
+      var config = await loadPackageConfigUri(file, loader: loader);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -276,7 +270,7 @@ main() {
     loaderTest("file syntax error with {", {
       ".packages": "{syntax error",
     }, (Uri directory, loader) async {
-      Uri file = directory.resolve(".packages");
+      var file = directory.resolve(".packages");
       var hadError = false;
       await loadPackageConfigUri(file,
           loader: loader,

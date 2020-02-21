@@ -50,7 +50,7 @@ void validatePackagesFile(PackageConfig resolver, Directory directory) {
       unorderedEquals(["foo", "bar", "baz"]));
 }
 
-main() {
+void main() {
   group("findPackages", () {
     // Finds package_config.json if there.
     fileTest("package_config.json", {
@@ -61,7 +61,7 @@ main() {
         "package_config.json": packageConfigFile,
       }
     }, (Directory directory) async {
-      PackageConfig config = await findPackageConfig(directory);
+      var config = await findPackageConfig(directory);
       expect(config.version, 2); // Found package_config.json file.
       validatePackagesFile(config, directory);
     });
@@ -72,7 +72,7 @@ main() {
       "script.dart": "main(){}",
       "packages": {"shouldNotBeFound": {}}
     }, (Directory directory) async {
-      PackageConfig config = await findPackageConfig(directory);
+      var config = await findPackageConfig(directory);
       expect(config.version, 1); // Found .packages file.
       validatePackagesFile(config, directory);
     });
@@ -87,8 +87,7 @@ main() {
         "script.dart": "main(){}",
       }
     }, (Directory directory) async {
-      PackageConfig config =
-          await findPackageConfig(subdir(directory, "subdir/"));
+      var config = await findPackageConfig(subdir(directory, "subdir/"));
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -98,7 +97,7 @@ main() {
       ".packages": packagesFile,
       "subdir": {"script.dart": "main(){}"}
     }, (Directory directory) async {
-      PackageConfig config;
+      var config;
       config = await findPackageConfig(subdir(directory, "subdir/"));
       expect(config.version, 1);
       validatePackagesFile(config, directory);
@@ -110,7 +109,7 @@ main() {
         "foo": {},
       }
     }, (Directory directory) async {
-      PackageConfig config = await findPackageConfig(directory);
+      var config = await findPackageConfig(directory);
       expect(config, null);
     });
 
@@ -152,7 +151,7 @@ main() {
       fileTest("invalid .packages", {
         ".packages": "not a .packages file",
       }, (Directory directory) async {
-        bool hadError = false;
+        var hadError = false;
         await findPackageConfig(directory,
             onError: expectAsync1((error) {
               hadError = true;
@@ -164,7 +163,7 @@ main() {
       fileTest("invalid .packages as JSON", {
         ".packages": packageConfigFile,
       }, (Directory directory) async {
-        bool hadError = false;
+        var hadError = false;
         await findPackageConfig(directory,
             onError: expectAsync1((error) {
               hadError = true;
@@ -178,7 +177,7 @@ main() {
           "package_config.json": "not a JSON file",
         }
       }, (Directory directory) async {
-        bool hadError = false;
+        var hadError = false;
         await findPackageConfig(directory,
             onError: expectAsync1((error) {
               hadError = true;
@@ -192,7 +191,7 @@ main() {
           "package_config.json": packagesFile,
         }
       }, (Directory directory) async {
-        bool hadError = false;
+        var hadError = false;
         await findPackageConfig(directory,
             onError: expectAsync1((error) {
               hadError = true;
@@ -213,23 +212,22 @@ main() {
         },
       };
       fileTest("directly", files, (Directory directory) async {
-        File file =
+        var file =
             dirFile(subdir(directory, ".dart_tool"), "package_config.json");
-        PackageConfig config = await loadPackageConfig(file);
+        var config = await loadPackageConfig(file);
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       });
       fileTest("indirectly through .packages", files,
           (Directory directory) async {
-        File file = dirFile(directory, ".packages");
-        PackageConfig config = await loadPackageConfig(file);
+        var file = dirFile(directory, ".packages");
+        var config = await loadPackageConfig(file);
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       });
       fileTest("prefer .packages", files, (Directory directory) async {
-        File file = dirFile(directory, ".packages");
-        PackageConfig config =
-            await loadPackageConfig(file, preferNewest: false);
+        var file = dirFile(directory, ".packages");
+        var config = await loadPackageConfig(file, preferNewest: false);
         expect(config.version, 1);
         validatePackagesFile(config, directory);
       });
@@ -241,8 +239,8 @@ main() {
         "pheldagriff": packageConfigFile,
       },
     }, (Directory directory) async {
-      File file = dirFile(directory, "subdir/pheldagriff");
-      PackageConfig config = await loadPackageConfig(file);
+      var file = dirFile(directory, "subdir/pheldagriff");
+      var config = await loadPackageConfig(file);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -252,8 +250,8 @@ main() {
         ".packages": packageConfigFile,
       },
     }, (Directory directory) async {
-      File file = dirFile(directory, "subdir/.packages");
-      PackageConfig config = await loadPackageConfig(file);
+      var file = dirFile(directory, "subdir/.packages");
+      var config = await loadPackageConfig(file);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -261,8 +259,8 @@ main() {
     fileTest(".packages", {
       ".packages": packagesFile,
     }, (Directory directory) async {
-      File file = dirFile(directory, ".packages");
-      PackageConfig config = await loadPackageConfig(file);
+      var file = dirFile(directory, ".packages");
+      var config = await loadPackageConfig(file);
       expect(config.version, 1);
       validatePackagesFile(config, directory);
     });
@@ -270,21 +268,21 @@ main() {
     fileTest(".packages non-default name", {
       "pheldagriff": packagesFile,
     }, (Directory directory) async {
-      File file = dirFile(directory, "pheldagriff");
-      PackageConfig config = await loadPackageConfig(file);
+      var file = dirFile(directory, "pheldagriff");
+      var config = await loadPackageConfig(file);
       expect(config.version, 1);
       validatePackagesFile(config, directory);
     });
 
     fileTest("no config found", {}, (Directory directory) {
-      File file = dirFile(directory, "anyname");
+      var file = dirFile(directory, "anyname");
       expect(() => loadPackageConfig(file),
           throwsA(TypeMatcher<FileSystemException>()));
     });
 
     fileTest("no config found, handled", {}, (Directory directory) async {
-      File file = dirFile(directory, "anyname");
-      bool hadError = false;
+      var file = dirFile(directory, "anyname");
+      var hadError = false;
       await loadPackageConfig(file,
           onError: expectAsync1((error) {
             hadError = true;
@@ -296,7 +294,7 @@ main() {
     fileTest("specified file syntax error", {
       "anyname": "syntax error",
     }, (Directory directory) {
-      File file = dirFile(directory, "anyname");
+      var file = dirFile(directory, "anyname");
       expect(() => loadPackageConfig(file), throwsFormatException);
     });
 
@@ -307,8 +305,8 @@ main() {
         "package_config.json": packageConfigFile,
       },
     }, (Directory directory) async {
-      File file = dirFile(directory, "anyname");
-      PackageConfig config = await loadPackageConfig(file);
+      var file = dirFile(directory, "anyname");
+      var config = await loadPackageConfig(file);
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });
@@ -317,7 +315,7 @@ main() {
     fileTest("file syntax error with {", {
       ".packages": "{syntax error",
     }, (Directory directory) {
-      File file = dirFile(directory, ".packages");
+      var file = dirFile(directory, ".packages");
       expect(() => loadPackageConfig(file), throwsFormatException);
     });
   });

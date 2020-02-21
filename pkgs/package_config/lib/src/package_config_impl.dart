@@ -8,6 +8,8 @@ import "util.dart";
 
 export "package_config.dart";
 
+// Implementations of the main data types exposed by the API of this package.
+
 class SimplePackageConfig implements PackageConfig {
   final int version;
   final Map<String, Package> _packages;
@@ -90,7 +92,7 @@ class SimplePackageConfig implements PackageConfig {
             onError(PackageConfigArgumentError(
                 originalPackages,
                 "packages",
-                "Packages ${package.name} and ${existingPackage.name}"
+                "Packages ${package.name} and ${existingPackage.name} "
                     "have the same root directory: ${package.root}.\n"));
           } else {
             assert(error.isPackageRootConflict);
@@ -126,7 +128,7 @@ class SimplePackageConfig implements PackageConfig {
   Package /*?*/ packageOf(Uri file) => _packageTree.packageOf(file);
 
   Uri /*?*/ resolve(Uri packageUri) {
-    String packageName = checkValidPackageUri(packageUri, "packageUri");
+    var packageName = checkValidPackageUri(packageUri, "packageUri");
     return _packages[packageName]?.packageUriRoot?.resolveUri(
         Uri(path: packageUri.path.substring(packageName.length + 1)));
   }
@@ -187,7 +189,7 @@ class SimplePackage implements Package {
       LanguageVersion /*?*/ languageVersion,
       dynamic extraData,
       void onError(Object error)) {
-    bool fatalError = false;
+    var fatalError = false;
     var invalidIndex = checkPackageName(name);
     if (invalidIndex >= 0) {
       onError(PackageConfigFormatException(
@@ -305,7 +307,7 @@ LanguageVersion parseLanguageVersion(
 
 abstract class _SimpleLanguageVersionBase implements LanguageVersion {
   int compareTo(LanguageVersion other) {
-    int result = major.compareTo(other.major);
+    var result = major.compareTo(other.major);
     if (result != 0) return result;
     return minor.compareTo(other.minor);
   }
@@ -342,16 +344,32 @@ abstract class PackageTree {
 
 /// Packages of a package configuration ordered by root path.
 ///
+/// A package has a root path and a package root path, where the latter
+/// contains the files exposed by `package:` URIs.
+///
 /// A package is said to be inside another package if the root path URI of
 /// the latter is a prefix of the root path URI of the former.
+///
 /// No two packages of a package may have the same root path, so this
 /// path prefix ordering defines a tree-like partial ordering on packages
 /// of a configuration.
 ///
+/// The package root path of a package must not be inside another package's
+/// root path.
+/// Entire other packages are allowed inside a package's root or
+/// package root path.
+///
 /// The package tree contains an ordered mapping of unrelated packages
 /// (represented by their name) to their immediately nested packages' names.
 class MutablePackageTree implements PackageTree {
+  /// A list of packages that are not nested inside each other.
   final List<SimplePackage> packages = [];
+
+  /// The tree of the immediately nested packages inside each package.
+  ///
+  /// Indexed by [Package.name].
+  /// If a package has no nested packages (which is most often the case),
+  /// there is no tree object associated with it.
   Map<String, MutablePackageTree /*?*/ > /*?*/ _packageChildren;
 
   Iterable<Package> get allPackages sync* {
@@ -365,30 +383,38 @@ class MutablePackageTree implements PackageTree {
   ///
   /// Reports a [ConflictException] if the added package conflicts with an
   /// existing package.
-  /// It conflicts if it has the same root path, or if the new package
-  /// contains the existing package's package root.
+  /// It conflicts if its root or package root is the same as another
+  /// package's root or package root, or is between the two.
   ///
   /// If a conflict is detected between [package] and a previous package,
   /// then [onError] is called with a [ConflictException] object
   /// and the [package] is not added to the tree.
+  ///
+  /// The packages are added in order of their root path.
+  /// It is never necessary to insert a node between two existing levels.
   void add(int start, SimplePackage package, void onError(Object error)) {
     var path = package.root.toString();
-    for (var childPackage in packages) {
-      var childPath = childPackage.root.toString();
-      assert(childPath.length > start);
-      assert(path.startsWith(childPath.substring(0, start)));
-      if (_beginsWith(start, childPath, path)) {
-        var childPathLength = childPath.length;
-        if (path.length == childPathLength) {
-          onError(ConflictException.root(package, childPackage));
+    for (var treePackage in packages) {
+      // Check is package is inside treePackage.
+      var treePackagePath = treePackage.root.toString();
+      assert(treePackagePath.length > start);
+      assert(path.startsWith(treePackagePath.substring(0, start)));
+      if (_beginsWith(start, treePackagePath, path)) {
+        // Package *is* inside treePackage.
+        var treePackagePathLength = treePackagePath.length;
+        if (path.length == treePackagePathLength) {
+          // Has same root. Do not add package.
+          onError(ConflictException.root(package, treePackage));
           return;
         }
-        var childPackageRoot = childPackage.packageUriRoot.toString();
-        if (_beginsWith(childPathLength, childPackageRoot, path)) {
-          onError(ConflictException.packageRoot(package, childPackage));
+        var treePackageUriRoot = treePackage.packageUriRoot.toString();
+        if (_beginsWith(treePackagePathLength, path, treePackageUriRoot)) {
+          // The treePackage's package root is inside package, which is inside
+          // the treePackage. This is not allowed.
+          onError(ConflictException.packageRoot(package, treePackage));
           return;
         }
-        _treeOf(childPackage).add(childPathLength, package, onError);
+        _treeOf(treePackage).add(treePackagePathLength, package, onError);
         return;
       }
     }
@@ -454,7 +480,7 @@ class EmptyPackageTree implements PackageTree {
 /// already have been matched.
 bool _beginsWith(int start, String parentPath, String longerPath) {
   if (longerPath.length < parentPath.length) return false;
-  for (int i = start; i < parentPath.length; i++) {
+  for (var i = start; i < parentPath.length; i++) {
     if (longerPath.codeUnitAt(i) != parentPath.codeUnitAt(i)) return false;
   }
   return true;

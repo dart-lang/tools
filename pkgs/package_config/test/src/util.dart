@@ -18,7 +18,7 @@ import "package:package_config/src/util.dart";
 void fileTest(String name, Map<String, Object> description,
     void fileTest(Directory directory)) {
   group("file-test", () {
-    Directory tempDir = Directory.systemTemp.createTempSync("pkgcfgtest");
+    var tempDir = Directory.systemTemp.createTempSync("pkgcfgtest");
     setUp(() {
       _createFiles(tempDir, description);
     });
@@ -67,7 +67,7 @@ File dirFile(Directory directory, String fileName) =>
 Uri pkg(String packageName, String packagePath) {
   var path =
       "$packageName${packagePath.startsWith('/') ? "" : "/"}$packagePath";
-  return new Uri(scheme: "package", path: path);
+  return Uri(scheme: "package", path: path);
 }
 
 // Remove if not used.
@@ -91,13 +91,13 @@ ${packages.map((nu) => """
 /// as a string.
 void loaderTest(String name, Map<String, Object> description,
     void loaderTest(Uri root, Future<Uint8List> loader(Uri uri))) {
-  Uri root = Uri(scheme: "test", path: "/");
+  var root = Uri(scheme: "test", path: "/");
   Future<Uint8List> loader(Uri uri) async {
     var path = uri.path;
     if (!uri.isScheme("test") || !path.startsWith("/")) return null;
     var parts = path.split("/");
     dynamic value = description;
-    for (int i = 1; i < parts.length; i++) {
+    for (var i = 1; i < parts.length; i++) {
       if (value is! Map<String, dynamic>) return null;
       value = value[parts[i]];
     }

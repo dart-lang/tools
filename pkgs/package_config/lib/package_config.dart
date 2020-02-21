@@ -4,7 +4,7 @@
 
 /// A package configuration is a way to assign file paths to package URIs,
 /// and vice-versa,
-library package_config.package_config;
+library package_config.package_config_discovery;
 
 import "dart:io" show File, Directory;
 import "dart:typed_data" show Uint8List;
@@ -12,11 +12,9 @@ import "dart:typed_data" show Uint8List;
 import "src/discovery.dart" as discover;
 import "src/errors.dart" show throwError;
 import "src/package_config.dart";
-import "src/package_config_json.dart";
+import "src/package_config_io.dart";
 
-export "src/package_config.dart"
-    show PackageConfig, Package, LanguageVersion, InvalidLanguageVersion;
-export "src/errors.dart" show PackageConfigError;
+export "package_config_types.dart";
 
 /// Reads a specific package configuration file.
 ///
@@ -173,4 +171,4 @@ Future<PackageConfig> findPackageConfigUri(Uri location,
 /// `"generator"` entry.
 Future<void> savePackageConfig(
         PackageConfig configuration, Directory directory) =>
-    writePackageConfigJson(configuration, directory);
+    writePackageConfigJsonFile(configuration, directory);

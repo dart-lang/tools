@@ -31,15 +31,15 @@ PackageConfig parse(
         baseLocation, "baseLocation", "Must not be a package: URI"));
     return PackageConfig.empty;
   }
-  int index = 0;
-  List<Package> packages = [];
-  Set<String> packageNames = {};
+  var index = 0;
+  var packages = <Package>[];
+  var packageNames = <String>{};
   while (index < source.length) {
-    bool ignoreLine = false;
-    int start = index;
-    int separatorIndex = -1;
-    int end = source.length;
-    int char = source[index++];
+    var ignoreLine = false;
+    var start = index;
+    var separatorIndex = -1;
+    var end = source.length;
+    var char = source[index++];
     if (char == $cr || char == $lf) {
       continue;
     }
@@ -50,8 +50,8 @@ PackageConfig parse(
     } else {
       ignoreLine = char == $hash; // Ignore if comment.
     }
-    int queryStart = -1;
-    int fragmentStart = -1;
+    var queryStart = -1;
+    var fragmentStart = -1;
     while (index < source.length) {
       char = source[index++];
       if (char == $colon && separatorIndex < 0) {
@@ -72,7 +72,7 @@ PackageConfig parse(
       continue;
     }
     var packageName = String.fromCharCodes(source, start, separatorIndex);
-    int invalidIndex = checkPackageName(packageName);
+    var invalidIndex = checkPackageName(packageName);
     if (invalidIndex >= 0) {
       onError(PackageConfigFormatException(
           "Not a valid package name", source, start + invalidIndex));
