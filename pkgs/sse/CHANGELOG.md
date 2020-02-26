@@ -1,3 +1,9 @@
+## 3.2.0
+
+- Re-expose `isInKeepAlivePeriod` flag on `SseConnection`. This flag will be
+  `true` when a connection has been dropped and is in the keep-alive period
+  waiting for a client to reconnect.
+
 ## 3.1.2
 
 - Fix an issue where the `SseClient` would not send a `done` event when there
