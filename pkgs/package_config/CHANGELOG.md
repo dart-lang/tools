@@ -5,11 +5,6 @@
   version, as well as the, now deprecated, version 1 functionality.
   When we release 2.0.0, the deprectated functionality will be removed.
 
-## 1.2.0
-
-- Added support for writing default-package entries.
-- Fixed bug when writing `Uri`s containing a fragment.
-
 ## 1.1.0
 
 - Allow parsing files with default-package entries and metadata.
