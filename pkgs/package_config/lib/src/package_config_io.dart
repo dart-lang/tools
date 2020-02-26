@@ -14,6 +14,7 @@ import "package_config_impl.dart";
 import "package_config_json.dart";
 import "packages_file.dart" as packages_file;
 import "util.dart";
+import "util_io.dart";
 
 /// Reads a package configuration file.
 ///

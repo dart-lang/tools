@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn('vm')
 library package_config.discovery_test;
 
 import "dart:io";
@@ -9,6 +10,7 @@ import "package:test/test.dart";
 import "package:package_config/package_config.dart";
 
 import "src/util.dart";
+import "src/util_io.dart";
 
 const packagesFile = """
 # A comment

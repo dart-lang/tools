@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @deprecated
+@TestOn('vm')
 library package_config.discovery_test;
 
 import "dart:async";

@@ -11,7 +11,7 @@ import "errors.dart";
 import "package_config_impl.dart";
 import "package_config_json.dart";
 import "packages_file.dart" as packages_file;
-import "util.dart" show defaultLoader, pathJoin;
+import "util_io.dart" show defaultLoader, pathJoin;
 
 final Uri packageConfigJsonPath = Uri(path: ".dart_tool/package_config.json");
 final Uri dotPackagesPath = Uri(path: ".packages");

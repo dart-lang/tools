@@ -12,7 +12,7 @@ import "dart:io" show Directory;
 
 import "packages_impl.dart";
 
-import "util.dart";
+import "util_io.dart";
 
 /// A [Packages] implementation based on a local directory.
 class FilePackagesDirectoryPackages extends PackagesBase {

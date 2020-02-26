@@ -1,3 +1,8 @@
+## 1.9.1
+
+- Remove accidental transitive import of `dart:io` from entrypoints that are
+  supposed to be cross-platform compatible.
+
 ## 1.9.0
 
 - Based on new JSON file format with more content.
