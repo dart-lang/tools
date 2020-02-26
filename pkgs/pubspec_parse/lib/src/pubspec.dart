@@ -28,9 +28,7 @@ class Pubspec {
   ///
   /// Accepted values: `null`, `'none'` or an `http` or `https` URL.
   ///
-  /// If not specified, the pub client defaults to `https://pub.dartlang.org`.
-  ///
-  /// [More information](https://www.dartlang.org/tools/pub/pubspec#publish_to).
+  /// [More information](https://dart.dev/tools/pub/pubspec#publish_to).
   final String publishTo;
 
   /// Optional field to specify the source code repository of the package.

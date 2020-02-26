@@ -4,7 +4,6 @@ description: >-
   error reporting.
 version: 0.1.6-dev
 homepage: https://github.com/dart-lang/pubspec_parse
-author: Dart Team <misc@dartlang.org>
 
 environment:
   sdk: '>=2.6.0 <3.0.0'
