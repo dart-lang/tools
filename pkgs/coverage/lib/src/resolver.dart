@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
+  // ignore_for_file: deprecated_member_use_from_same_package
   Resolver({String packagesPath, @deprecated this.packageRoot, this.sdkRoot})
       : packagesPath = packagesPath,
         _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
