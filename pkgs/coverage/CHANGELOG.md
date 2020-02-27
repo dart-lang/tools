@@ -2,6 +2,7 @@
 
 * Update to package_config `1.9.0` which supports package_config.json
   files and should be forwards compatible with `2.0.0`.
+* Deprecate the `packageRoot` argument on `Resolver`.
 
 ## 0.13.6 - 2020-02-10
 
