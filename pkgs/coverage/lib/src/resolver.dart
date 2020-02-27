@@ -103,14 +103,15 @@ class Resolver {
       final packageMap = <String, Uri>{};
       for (var line in lines) {
         if (line.startsWith('#')) continue;
-        final parts = line.split(':');
-        if (parts.length != 2) {
+        final firstColon = line.indexOf(':');
+        if (firstColon == -1) {
           throw FormatException(
               'Unexpected package config format, expected an old style '
               '.packages file or new style package_config.json file.',
               content);
         }
-        packageMap[parts.first] = Uri.parse(parts.last);
+        packageMap[line.substring(0, firstColon)] =
+            Uri.parse(line.substring(firstColon + 1, line.length));
       }
       return packageMap;
     }
