@@ -89,7 +89,7 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
     if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
     if (scopedOutput.isNotEmpty) {
       final scripts = await service.getScripts(isolateRef.id);
-      for (var script in scripts.scripts) {
+      for (ScriptRef script in scripts.scripts) {
         final uri = Uri.parse(script.uri);
         if (uri.scheme != 'package') continue;
         final scope = uri.path.split('/').first;
@@ -97,7 +97,7 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
         if (!scopedOutput.contains(scope)) continue;
         final scriptReport = await service.getSourceReport(
             isolateRef.id, <String>[SourceReportKind.kCoverage],
-            forceCompile: true, scriptId: script.id);
+            forceCompile: true, scriptId: script.id) as SourceReport;
         final coverage = await _getCoverageJson(
             service, isolateRef, scriptReport, includeDart);
         allCoverage.addAll(coverage);
@@ -107,7 +107,7 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
         isolateRef.id,
         <String>[SourceReportKind.kCoverage],
         forceCompile: true,
-      );
+      ) as SourceReport;
       final coverage = await _getCoverageJson(
           service, isolateRef, isolateReport, includeDart);
       allCoverage.addAll(coverage);

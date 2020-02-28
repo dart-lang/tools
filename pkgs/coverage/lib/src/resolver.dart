@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:io';
 
+// TODO(#289): Remove
+// ignore: deprecated_member_use
 import 'package:package_config/packages_file.dart' as packages_file;
 import 'package:path/path.dart' as p;
 

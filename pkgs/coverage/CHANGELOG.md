@@ -1,3 +1,8 @@
+## 0.13.7 - 2020-02-28
+
+* Loosen the dependency on the `vm_service` package from `>=1.0.0 <3.0.0` to
+`>=1.0.0 <4.0.0`.
+
 ## 0.13.6 - 2020-02-10
 
 * Now consider all `.json` files for the `format_coverage` command.
