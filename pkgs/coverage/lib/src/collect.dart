@@ -51,7 +51,10 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
       final options = const CompressionOptions(enabled: false);
       final socket = await WebSocket.connect('$uri', compression: options);
       final controller = StreamController<String>();
-      socket.listen((data) => controller.add(data as String));
+      socket.listen((data) => controller.add(data as String), onDone: () {
+        controller.close();
+        service.dispose();
+      });
       service = VmService(
           controller.stream, (String message) => socket.add(message),
           log: StdoutLog(), disposeHandler: () => socket.close());
@@ -115,11 +118,22 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
 
 Future _resumeIsolates(VmService service) async {
   final vm = await service.getVM();
+  final futures = <Future>[];
   for (var isolateRef in vm.isolates) {
-    final isolate = await service.getIsolate(isolateRef.id) as Isolate;
-    if (isolate.pauseEvent.kind != EventKind.kResume) {
-      await service.resume(isolateRef.id);
-    }
+    // Guard against sync as well as async errors: sync - when we are writing
+    // message to the socket, the socket might be closed; async - when we are
+    // waiting for the response, the socket again closes.
+    futures.add(Future.sync(() async {
+      final isolate = await service.getIsolate(isolateRef.id) as Isolate;
+      if (isolate.pauseEvent.kind != EventKind.kResume) {
+        await service.resume(isolateRef.id);
+      }
+    }));
+  }
+  try {
+    await Future.wait(futures);
+  } catch (_) {
+    // Ignore resume isolate failures
   }
 }
 
