@@ -119,14 +119,14 @@ Future<Map<String, dynamic>> _getAllCoverage(VmService service,
 Future _resumeIsolates(VmService service) async {
   final vm = await service.getVM();
   for (var isolateRef in vm.isolates) {
-    final isolate = await service.getIsolate(isolateRef.id) as Isolate;
-    if (isolate.pauseEvent.kind != EventKind.kResume) {
-      try {
+    try {
+      final isolate = await service.getIsolate(isolateRef.id) as Isolate;
+      if (isolate.pauseEvent.kind != EventKind.kResume) {
         await service.resume(isolateRef.id);
-      } catch (_) {
-        // Ignore isolate resume error as the app might have exited
-        // and disconnected now.
       }
+    } catch (_) {
+      // Ignore isolate resume error as the app might have exited
+      // and disconnected now.
     }
   }
 }
