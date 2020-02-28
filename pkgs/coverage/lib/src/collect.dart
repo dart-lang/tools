@@ -51,10 +51,10 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
       final options = const CompressionOptions(enabled: false);
       final socket = await WebSocket.connect('$uri', compression: options);
       final controller = StreamController<String>();
-      socket.listen(
-          (data) => controller.add(data as String),
-          onDone: () { controller.close(); service.dispose(); }
-      );
+      socket.listen((data) => controller.add(data as String), onDone: () {
+        controller.close();
+        service.dispose();
+      });
       service = VmService(
           controller.stream, (String message) => socket.add(message),
           log: StdoutLog(), disposeHandler: () => socket.close());
@@ -120,7 +120,9 @@ Future _resumeIsolates(VmService service) async {
   final vm = await service.getVM();
   final futures = <Future>[];
   for (var isolateRef in vm.isolates) {
-    // Guard against sync as well as async errors
+    // Guard against sync as well as async errors: sync - when we are writing
+    // message to the socket, the socket might be closed; async - when we are
+    // waiting for the response, the socket again closes.
     futures.add(Future.sync(() async {
       final isolate = await service.getIsolate(isolateRef.id) as Isolate;
       if (isolate.pauseEvent.kind != EventKind.kResume) {
@@ -130,7 +132,7 @@ Future _resumeIsolates(VmService service) async {
   }
   try {
     await Future.wait(futures);
-  } catch(e) {
+  } catch (_) {
     // Ignore resume isolate failures
   }
 }
