@@ -51,7 +51,10 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
       final options = const CompressionOptions(enabled: false);
       final socket = await WebSocket.connect('$uri', compression: options);
       final controller = StreamController<String>();
-      socket.listen((data) => controller.add(data as String));
+      socket.listen(
+          (data) => controller.add(data as String),
+          onDone: () { controller.close(); service.dispose(); }
+      );
       service = VmService(
           controller.stream, (String message) => socket.add(message),
           log: StdoutLog(), disposeHandler: () => socket.close());
@@ -118,7 +121,12 @@ Future _resumeIsolates(VmService service) async {
   for (var isolateRef in vm.isolates) {
     final isolate = await service.getIsolate(isolateRef.id) as Isolate;
     if (isolate.pauseEvent.kind != EventKind.kResume) {
-      await service.resume(isolateRef.id);
+      try {
+        await service.resume(isolateRef.id);
+      } catch (_) {
+        // Ignore isolate resume error as the app might have exited
+        // and disconnected now.
+      }
     }
   }
 }
