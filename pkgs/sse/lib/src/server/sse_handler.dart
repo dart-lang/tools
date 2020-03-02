@@ -163,16 +163,15 @@ class SseHandler {
         unawaited(connection._closedCompleter.future.then((_) {
           _connections.remove(clientId);
         }));
-        // Remove connection when it is remotely closed or the stream is
-        // cancelled.
-        channel.stream.listen((_) {
-          // SSE is unidirectional. Responses are handled through POST requests.
-        }, onDone: () {
-          connection._handleDisconnect();
-        });
-
         _connectionController.add(connection);
       }
+      // Remove connection when it is remotely closed or the stream is
+      // cancelled.
+      channel.stream.listen((_) {
+        // SSE is unidirectional. Responses are handled through POST requests.
+      }, onDone: () {
+        _connections[clientId]?._handleDisconnect();
+      });
     });
     return shelf.Response.notFound('');
   }

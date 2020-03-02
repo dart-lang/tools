@@ -1,3 +1,7 @@
+## 3.2.1
+
+- Fix an issue where `keepAlive` would only allow a single reconnection.
+
 ## 3.2.0
 
 - Re-expose `isInKeepAlivePeriod` flag on `SseConnection`. This flag will be

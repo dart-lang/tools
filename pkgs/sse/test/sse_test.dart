@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
@@ -195,7 +196,20 @@ void main() {
       // Ensure we can still round-trip data on the original connection and that
       // the connection is no longer marked keep-alive once it's reconnected.
       connection.sink.add('bar');
-      expect(await connection.stream.first, 'bar');
+      var queue = StreamQueue(connection.stream);
+      expect(await queue.next, 'bar');
+      expect(connection.isInKeepAlivePeriod, isFalse);
+
+      // Now check that we can reconnect multiple times.
+      closeSink(connection);
+      maxPumps = 50;
+      while (!connection.isInKeepAlivePeriod && maxPumps-- > 0) {
+        await pumpEventQueue(times: 1);
+      }
+      expect(connection.isInKeepAlivePeriod, isTrue);
+      expect(handler.numberOfClients, 1);
+      connection.sink.add('bar');
+      expect(await queue.next, 'bar');
       expect(connection.isInKeepAlivePeriod, isFalse);
     });
 
