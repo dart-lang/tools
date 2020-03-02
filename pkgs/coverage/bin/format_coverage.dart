@@ -54,6 +54,7 @@ Future<Null> main(List<String> arguments) async {
       ? BazelResolver(workspacePath: env.bazelWorkspace)
       : Resolver(
           packagesPath: env.packagesPath,
+          // ignore_for_file: deprecated_member_use_from_same_package
           packageRoot: env.pkgRoot,
           sdkRoot: env.sdkRoot);
   final loader = Loader();
