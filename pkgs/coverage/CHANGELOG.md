@@ -1,8 +1,13 @@
-## 0.13.7 - 2020-02-14
+## 0.13.8 - 2020-03-02
 
 * Update to package_config `1.9.0` which supports package_config.json
   files and should be forwards compatible with `2.0.0`.
 * Deprecate the `packageRoot` argument on `Resolver`.
+
+## 0.13.7 - 2020-02-28
+
+* Loosen the dependency on the `vm_service` package from `>=1.0.0 <3.0.0` to
+`>=1.0.0 <4.0.0`.
 
 ## 0.13.6 - 2020-02-10
 
