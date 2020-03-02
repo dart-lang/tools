@@ -3,16 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
-// TODO(#289): Remove
-// ignore: deprecated_member_use
-import 'package:package_config/packages_file.dart' as packages_file;
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
-  Resolver({String packagesPath, this.packageRoot, this.sdkRoot})
+  // ignore_for_file: deprecated_member_use_from_same_package
+  Resolver({String packagesPath, @deprecated this.packageRoot, this.sdkRoot})
       : packagesPath = packagesPath,
         _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
@@ -91,8 +91,32 @@ class Resolver {
   }
 
   static Map<String, Uri> _parsePackages(String packagesPath) {
-    final source = File(packagesPath).readAsBytesSync();
-    return packages_file.parse(source, Uri.file(packagesPath));
+    final content = File(packagesPath).readAsStringSync();
+    try {
+      final parsed =
+          PackageConfig.parseString(content, Uri.base.resolve(packagesPath));
+      return {
+        for (var package in parsed.packages)
+          package.name: package.packageUriRoot
+      };
+    } on FormatException catch (_) {
+      // It was probably an old style .packages file
+      final lines = LineSplitter.split(content);
+      final packageMap = <String, Uri>{};
+      for (var line in lines) {
+        if (line.startsWith('#')) continue;
+        final firstColon = line.indexOf(':');
+        if (firstColon == -1) {
+          throw FormatException(
+              'Unexpected package config format, expected an old style '
+              '.packages file or new style package_config.json file.',
+              content);
+        }
+        packageMap[line.substring(0, firstColon)] =
+            Uri.parse(line.substring(firstColon + 1, line.length));
+      }
+      return packageMap;
+    }
   }
 }
 
