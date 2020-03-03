@@ -1,22 +1,32 @@
 name: source_map_stack_trace
-version: 2.0.0-dev
-
+version: 2.0.0
 description: A package for applying source maps to stack traces.
-author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/source_map_stack_trace
 
 environment:
-  sdk: '>=2.4.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
-  package_resolver: ^1.0.0
   path: ^1.0.0
   stack_trace: ^1.0.0
   source_maps: ^0.10.2
 
 dev_dependencies:
+  source_span: ^1.6.0
   test: ^1.12.0
   pedantic: ^1.0.0
 
 dependency_overrides:
-  test_core: ^0.3.0
+  # Required to get a valid pub solve until package:test updates
+  test_core:
+    git:
+      url: https://github.com/dart-lang/test.git
+      ref: drop-package-resolver
+      path: pkgs/test_core
+  test:
+    git:
+      url: https://github.com/dart-lang/test.git
+      ref: drop-package-resolver
+      path: pkgs/test
+  package_config: ^1.9.1
+    

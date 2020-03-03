@@ -5,7 +5,7 @@ sudo: true
 
 dart:
   - dev
-  - 2.4.0
+  - 2.7.0
 
 dart_task:
   - test: -p chrome,vm
