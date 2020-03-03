@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_maps/source_maps.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -13,19 +12,18 @@ import 'package:stack_trace/stack_trace.dart';
 /// [minified] indicates whether or not the dart2js code was minified. If it
 /// hasn't, this tries to clean up the stack frame member names.
 ///
-/// If [packageResolver] is passed, it's used to reconstruct `package:` URIs for
-/// stack frames that come from packages.
+/// The [packageMap] maps package names to the base uri used to resolve the
+/// `package:` uris for those packages. It is used to  it's used to reconstruct
+/// `package:` URIs for stack frames that come from packages.
 ///
 /// [sdkRoot] is the URI surfaced in the stack traces for SDK libraries.
 /// If it's passed, stack frames from the SDK will have `dart:` URLs.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false, SyncPackageResolver packageResolver, Uri sdkRoot}) {
+    {bool minified = false, Map<String, Uri> packageMap, Uri sdkRoot}) {
   if (stackTrace is Chain) {
     return Chain(stackTrace.traces.map((trace) {
       return Trace.from(mapStackTrace(sourceMap, trace,
-          minified: minified,
-          packageResolver: packageResolver,
-          sdkRoot: sdkRoot));
+          minified: minified, packageMap: packageMap, sdkRoot: sdkRoot));
     }));
   }
 
@@ -52,21 +50,14 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
     var sourceUrl = span.sourceUrl.toString();
     if (sdkRoot != null && p.url.isWithin(sdkLib, sourceUrl)) {
       sourceUrl = 'dart:' + p.url.relative(sourceUrl, from: sdkLib);
-    } else if (packageResolver != null) {
-      if (packageResolver.packageRoot != null &&
-          p.url.isWithin(packageResolver.packageRoot.toString(), sourceUrl)) {
-        sourceUrl = 'package:' +
-            p.url.relative(sourceUrl,
-                from: packageResolver.packageRoot.toString());
-      } else if (packageResolver.packageConfigMap != null) {
-        for (var package in packageResolver.packageConfigMap.keys) {
-          var packageUrl = packageResolver.packageConfigMap[package].toString();
-          if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
+    } else if (packageMap != null) {
+      for (var package in packageMap.keys) {
+        var packageUrl = packageMap[package].toString();
+        if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
 
-          sourceUrl =
-              'package:$package/' + p.url.relative(sourceUrl, from: packageUrl);
-          break;
-        }
+        sourceUrl =
+            'package:$package/' + p.url.relative(sourceUrl, from: packageUrl);
+        break;
       }
     }
 
