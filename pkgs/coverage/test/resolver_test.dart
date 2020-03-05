@@ -2,9 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-import 'dart:isolate';
-
 import 'package:coverage/src/resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
