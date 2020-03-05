@@ -1,3 +1,7 @@
+## 0.13.9-dev
+
+* Don't crash on empty JSON input files.
+
 ## 0.13.8 - 2020-03-02
 
 * Update to package_config `1.9.0` which supports package_config.json

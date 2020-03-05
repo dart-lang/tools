@@ -77,11 +77,14 @@ Future<Map<String, Map<int, int>>> parseCoverage(
   final globalHitmap = <String, Map<int, int>>{};
   for (var file in files) {
     final contents = file.readAsStringSync();
-    final jsonResult = json.decode(contents)['coverage'] as List;
-    mergeHitmaps(
-      createHitmap(jsonResult.cast<Map<String, dynamic>>()),
-      globalHitmap,
-    );
+    final jsonMap = json.decode(contents) as Map<String, dynamic>;
+    if (jsonMap.containsKey('coverage')) {
+      final jsonResult = jsonMap['coverage'] as List;
+      mergeHitmaps(
+        createHitmap(jsonResult.cast<Map<String, dynamic>>()),
+        globalHitmap,
+      );
+    }
   }
   return globalHitmap;
 }
