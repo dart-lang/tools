@@ -7,27 +7,6 @@
 # Fast fail the script on failures.
 set -e
 
-# Run pub get to fetch packages.
-pub get
-
-# Verify that the libraries are error and warning-free.
-echo "Running dartanalyzer..."
-dartanalyzer $DARTANALYZER_FLAGS \
-  bin/collect_coverage.dart \
-  bin/format_coverage.dart \
-  lib/coverage.dart
-
-# Verify that dartfmt has been run.
-echo "Checking dartfmt..."
-if [[ $(dartfmt -n --set-exit-if-changed lib/ test/) ]]; then
-	echo "Failed dartfmt check: run dartfmt -w lib/ test/"
-	exit 1
-fi
-
-# Run the tests.
-echo "Running tests..."
-pub run test --reporter expanded
-
 # Gather coverage and upload to Coveralls.
 if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "dev" ]; then
   OBS_PORT=9292
