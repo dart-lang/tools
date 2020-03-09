@@ -124,7 +124,7 @@ Future _resumeIsolates(VmService service) async {
     // message to the socket, the socket might be closed; async - when we are
     // waiting for the response, the socket again closes.
     futures.add(Future.sync(() async {
-      final isolate = await service.getIsolate(isolateRef.id) as Isolate;
+      final isolate = await service.getIsolate(isolateRef.id);
       if (isolate.pauseEvent.kind != EventKind.kResume) {
         await service.resume(isolateRef.id);
       }
@@ -149,7 +149,7 @@ Future _waitIsolatesPaused(VmService service, {Duration timeout}) async {
   Future allPaused() async {
     final vm = await service.getVM();
     for (var isolateRef in vm.isolates) {
-      final isolate = await service.getIsolate(isolateRef.id) as Isolate;
+      final isolate = await service.getIsolate(isolateRef.id);
       if (!pauseEvents.contains(isolate.pauseEvent.kind)) {
         throw 'Unpaused isolates remaining.';
       }
