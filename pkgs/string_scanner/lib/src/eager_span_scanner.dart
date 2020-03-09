@@ -44,11 +44,11 @@ class EagerSpanScanner extends SpanScanner {
 
   @override
   set position(int newPosition) {
-    var oldPosition = position;
+    final oldPosition = position;
     super.position = newPosition;
 
     if (newPosition > oldPosition) {
-      var newlines = _newlinesIn(string.substring(oldPosition, newPosition));
+      final newlines = _newlinesIn(string.substring(oldPosition, newPosition));
       _line += newlines.length;
       if (newlines.isEmpty) {
         _column += newPosition - oldPosition;
@@ -56,7 +56,7 @@ class EagerSpanScanner extends SpanScanner {
         _column = newPosition - newlines.last.end;
       }
     } else {
-      var newlines = _newlinesIn(string.substring(newPosition, oldPosition));
+      final newlines = _newlinesIn(string.substring(newPosition, oldPosition));
       if (_betweenCRLF) newlines.removeLast();
 
       _line -= newlines.length;
@@ -81,7 +81,7 @@ class EagerSpanScanner extends SpanScanner {
 
   @override
   int readChar() {
-    var character = super.readChar();
+    final character = super.readChar();
     _adjustLineAndColumn(character);
     return character;
   }
@@ -100,7 +100,7 @@ class EagerSpanScanner extends SpanScanner {
   bool scan(Pattern pattern) {
     if (!super.scan(pattern)) return false;
 
-    var newlines = _newlinesIn(lastMatch[0]);
+    final newlines = _newlinesIn(lastMatch[0]);
     _line += newlines.length;
     if (newlines.isEmpty) {
       _column += lastMatch[0].length;
@@ -114,7 +114,7 @@ class EagerSpanScanner extends SpanScanner {
   /// Returns a list of [Match]es describing all the newlines in [text], which
   /// is assumed to end at [position].
   List<Match> _newlinesIn(String text) {
-    var newlines = _newlineRegExp.allMatches(text).toList();
+    final newlines = _newlineRegExp.allMatches(text).toList();
     if (_betweenCRLF) newlines.removeLast();
     return newlines;
   }

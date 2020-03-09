@@ -12,11 +12,11 @@ void main(List<String> args) {
 
 num parseNumber(String source) {
   // Scan a number ("1", "1.5", "-3").
-  var scanner = StringScanner(source);
+  final scanner = StringScanner(source);
 
   // [Scanner.scan] tries to consume a [Pattern] and returns whether or not it
   // succeeded. It will move the scan pointer past the end of the pattern.
-  var negative = scanner.scan('-');
+  final negative = scanner.scan('-');
 
   // [Scanner.expect] consumes a [Pattern] and throws a [FormatError] if it
   // fails. Like [Scanner.scan], it will move the scan pointer forward.
@@ -28,7 +28,7 @@ num parseNumber(String source) {
 
   if (scanner.scan('.')) {
     scanner.expect(RegExp(r'\d+'));
-    var decimal = scanner.lastMatch[0];
+    final decimal = scanner.lastMatch[0];
     number += int.parse(decimal) / math.pow(10, decimal.length);
   }
 

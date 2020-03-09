@@ -82,14 +82,14 @@ class SpanScanner extends StringScanner implements LineScanner {
   ///
   /// This scans through [span]`.text, but emits new spans from [span]`.file` in
   /// their appropriate relative positions. The [string] field contains only
-  /// [span]`.text`, and [position], [line], and [column] are all relative to the
-  /// span.
+  /// [span]`.text`, and [position], [line], and [column] are all relative to
+  /// the span.
   factory SpanScanner.within(FileSpan span) = RelativeSpanScanner;
 
   /// Creates a [FileSpan] representing the source range between [startState]
   /// and the current position.
   FileSpan spanFrom(LineScannerState startState, [LineScannerState endState]) {
-    var endPosition = endState == null ? position : endState.position;
+    final endPosition = endState == null ? position : endState.position;
     return _sourceFile.span(startState.position, endPosition);
   }
 
@@ -112,7 +112,7 @@ class SpanScanner extends StringScanner implements LineScanner {
     position ??= match == null ? this.position : match.start;
     length ??= match == null ? 0 : match.end - match.start;
 
-    var span = _sourceFile.span(position, position + length);
+    final span = _sourceFile.span(position, position + length);
     throw StringScannerException(message, span, string);
   }
 }

@@ -150,7 +150,7 @@ void main() {
 
   test('state= restores the line, column, and position', () {
     scanner.scan('foo\nb');
-    var state = scanner.state;
+    final state = scanner.state;
 
     scanner.scan('ar\nba');
     scanner.state = state;

@@ -374,7 +374,7 @@ void main() {
     });
 
     test('setting and resetting position clears lastMatch', () {
-      var oldPosition = scanner.position;
+      final oldPosition = scanner.position;
       scanner.position = 1;
       scanner.position = oldPosition;
       expect(scanner.lastMatch, isNull);
@@ -395,7 +395,7 @@ void main() {
 
   group('a scanner constructed with a custom position', () {
     test('starts scanning from that position', () {
-      var scanner = StringScanner('foo bar', position: 1);
+      final scanner = StringScanner('foo bar', position: 1);
       expect(scanner.position, equals(1));
       expect(scanner.rest, equals('oo bar'));
 

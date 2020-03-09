@@ -9,21 +9,23 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  testForImplementation('lazy', ([String string]) {
-    return SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
-  });
+  testForImplementation(
+      'lazy',
+      ([String string]) =>
+          SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source'));
 
-  testForImplementation('eager', ([String string]) {
-    return SpanScanner.eager(string ?? 'foo\nbar\nbaz', sourceUrl: 'source');
-  });
+  testForImplementation(
+      'eager',
+      ([String string]) =>
+          SpanScanner.eager(string ?? 'foo\nbar\nbaz', sourceUrl: 'source'));
 
   group('within', () {
-    var text = 'first\nbefore: foo\nbar\nbaz :after\nlast';
-    var startOffset = text.indexOf('foo');
+    const text = 'first\nbefore: foo\nbar\nbaz :after\nlast';
+    final startOffset = text.indexOf('foo');
 
     SpanScanner scanner;
     setUp(() {
-      var file = SourceFile.fromString(text, url: 'source');
+      final file = SourceFile.fromString(text, url: 'source');
       scanner =
           SpanScanner.within(file.span(startOffset, text.indexOf(' :after')));
     });
@@ -49,7 +51,7 @@ void main() {
       scanner.scan('fo');
       scanner.scan('o\nba');
 
-      var span = scanner.lastSpan;
+      final span = scanner.lastSpan;
       expect(span.start.offset, equals(startOffset + 2));
       expect(span.start.line, equals(1));
       expect(span.start.column, equals(10));
@@ -65,18 +67,18 @@ void main() {
 
     test('.spanFrom() returns a span from a previous state', () {
       scanner.scan('fo');
-      var state = scanner.state;
+      final state = scanner.state;
       scanner.scan('o\nba');
       scanner.scan('r\nba');
 
-      var span = scanner.spanFrom(state);
+      final span = scanner.spanFrom(state);
       expect(span.text, equals('o\nbar\nba'));
     });
 
     test('.emptySpan returns an empty span at the current location', () {
       scanner.scan('foo\nba');
 
-      var span = scanner.emptySpan;
+      final span = scanner.emptySpan;
       expect(span.start.offset, equals(startOffset + 6));
       expect(span.start.line, equals(2));
       expect(span.start.column, equals(2));
@@ -113,7 +115,7 @@ void testForImplementation(
       scanner.scan('fo');
       scanner.scan('o\nba');
 
-      var span = scanner.lastSpan;
+      final span = scanner.lastSpan;
       expect(span.start.offset, equals(2));
       expect(span.start.line, equals(0));
       expect(span.start.column, equals(2));
@@ -129,27 +131,27 @@ void testForImplementation(
 
     test('.spanFrom() returns a span from a previous state', () {
       scanner.scan('fo');
-      var state = scanner.state;
+      final state = scanner.state;
       scanner.scan('o\nba');
       scanner.scan('r\nba');
 
-      var span = scanner.spanFrom(state);
+      final span = scanner.spanFrom(state);
       expect(span.text, equals('o\nbar\nba'));
     });
 
     test('.spanFrom() handles surrogate pairs correctly', () {
       scanner = create('fo\u{12345}o');
       scanner.scan('fo');
-      var state = scanner.state;
+      final state = scanner.state;
       scanner.scan('\u{12345}o');
-      var span = scanner.spanFrom(state);
+      final span = scanner.spanFrom(state);
       expect(span.text, equals('\u{12345}o'));
     });
 
     test('.emptySpan returns an empty span at the current location', () {
       scanner.scan('foo\nba');
 
-      var span = scanner.emptySpan;
+      final span = scanner.emptySpan;
       expect(span.start.offset, equals(6));
       expect(span.start.line, equals(1));
       expect(span.start.column, equals(2));

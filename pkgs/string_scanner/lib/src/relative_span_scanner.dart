@@ -34,8 +34,8 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   @override
   int get column {
-    var line = _sourceFile.getLine(_startLocation.offset + position);
-    var column =
+    final line = _sourceFile.getLine(_startLocation.offset + position);
+    final column =
         _sourceFile.getColumn(_startLocation.offset + position, line: line);
     return line == _startLocation.line
         ? column - _startLocation.column
@@ -74,7 +74,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   @override
   FileSpan spanFrom(LineScannerState startState, [LineScannerState endState]) {
-    var endPosition = endState == null ? position : endState.position;
+    final endPosition = endState == null ? position : endState.position;
     return _sourceFile.span(_startLocation.offset + startState.position,
         _startLocation.offset + endPosition);
   }
@@ -99,7 +99,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
     position ??= match == null ? this.position : match.start;
     length ??= match == null ? 1 : match.end - match.start;
 
-    var span = _sourceFile.span(_startLocation.offset + position,
+    final span = _sourceFile.span(_startLocation.offset + position,
         _startLocation.offset + position + length);
     throw StringScannerException(message, span, string);
   }

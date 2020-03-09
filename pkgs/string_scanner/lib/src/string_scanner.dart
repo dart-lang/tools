@@ -81,7 +81,7 @@ class StringScanner {
   /// affect [lastMatch].
   int peekChar([int offset]) {
     offset ??= 0;
-    var index = position + offset;
+    final index = position + offset;
     if (index < 0 || index >= string.length) return null;
     return string.codeUnitAt(index);
   }
@@ -123,7 +123,7 @@ class StringScanner {
   ///
   /// Returns whether or not [pattern] matched.
   bool scan(Pattern pattern) {
-    var success = matches(pattern);
+    final success = matches(pattern);
     if (success) {
       _position = _lastMatch.end;
       _lastMatchPosition = _position;
@@ -143,7 +143,7 @@ class StringScanner {
 
     if (name == null) {
       if (pattern is RegExp) {
-        var source = pattern.pattern;
+        final source = pattern.pattern;
         name = '/$source/';
       } else {
         name =
@@ -201,8 +201,8 @@ class StringScanner {
     position ??= match == null ? this.position : match.start;
     length ??= match == null ? 0 : match.end - match.start;
 
-    var sourceFile = SourceFile.fromString(string, url: sourceUrl);
-    var span = sourceFile.span(position, position + length);
+    final sourceFile = SourceFile.fromString(string, url: sourceUrl);
+    final span = sourceFile.span(position, position + length);
     throw StringScannerException(message, span, string);
   }
 
