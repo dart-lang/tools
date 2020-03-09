@@ -1,4 +1,4 @@
-## 0.13.9-dev
+## 0.13.9 - 2020-03-09
 
 * Don't crash on empty JSON input files.
 * Loosen the dependency on the `vm_service` package from `>=1.0.0 <4.0.0` to
