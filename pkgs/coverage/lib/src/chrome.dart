@@ -106,8 +106,10 @@ Set<_Position> _coveredPositions(
 /// Returns coverage information for a Chrome entry.
 List<_CoverageInfo> _coverageInfoFor(Map<String, dynamic> entry) {
   final result = <_CoverageInfo>[];
-  for (Map<String, dynamic> functions in entry['functions']) {
-    for (Map<String, dynamic> range in functions['ranges']) {
+  for (var functions
+      in (entry['functions'] as List).cast<Map<String, dynamic>>()) {
+    for (var range
+        in (functions['ranges'] as List).cast<Map<String, dynamic>>()) {
       result.add(_CoverageInfo(
         range['startOffset'] as int,
         range['endOffset'] as int,
