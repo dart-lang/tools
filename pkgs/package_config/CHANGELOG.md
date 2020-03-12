@@ -1,3 +1,8 @@
+## 1.9.2
+
+- Updated to support new rules for picking `package_config.json` over
+  a specified `.packages`.
+
 ## 1.9.1
 
 - Remove accidental transitive import of `dart:io` from entrypoints that are

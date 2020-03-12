@@ -13,7 +13,7 @@ Future<Uint8List> defaultLoader(Uri uri) async {
   if (uri.isScheme("file")) {
     var file = File.fromUri(uri);
     try {
-      return file.readAsBytes();
+      return await file.readAsBytes();
     } catch (_) {
       return null;
     }

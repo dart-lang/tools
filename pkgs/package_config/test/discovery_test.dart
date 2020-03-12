@@ -301,13 +301,13 @@ void main() {
     });
 
     // Find package_config.json in subdir even if initial file syntax error.
-    fileTest("specified file syntax error", {
-      "anyname": "syntax error",
+    fileTest("specified file syntax onError", {
+      ".packages": "syntax error",
       ".dart_tool": {
         "package_config.json": packageConfigFile,
       },
     }, (Directory directory) async {
-      var file = dirFile(directory, "anyname");
+      var file = dirFile(directory, ".packages");
       var config = await loadPackageConfig(file);
       expect(config.version, 2);
       validatePackagesFile(config, directory);

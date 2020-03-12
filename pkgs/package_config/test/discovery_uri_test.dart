@@ -60,7 +60,7 @@ void main() {
       ".dart_tool": {
         "package_config.json": packageConfigFile,
       }
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var config = await findPackageConfigUri(directory, loader: loader);
       expect(config.version, 2); // Found package_config.json file.
       validatePackagesFile(config, directory);
@@ -71,7 +71,7 @@ void main() {
       ".packages": packagesFile,
       "script.dart": "main(){}",
       "packages": {"shouldNotBeFound": {}}
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var config = await findPackageConfigUri(directory, loader: loader);
       expect(config.version, 1); // Found .packages file.
       validatePackagesFile(config, directory);
@@ -86,7 +86,7 @@ void main() {
       "subdir": {
         "script.dart": "main(){}",
       }
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var config = await findPackageConfigUri(directory.resolve("subdir/"),
           loader: loader);
       expect(config.version, 2);
@@ -97,7 +97,7 @@ void main() {
     loaderTest(".packages recursive", {
       ".packages": packagesFile,
       "subdir": {"script.dart": "main(){}"}
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var config;
       config = await findPackageConfigUri(directory.resolve("subdir/"),
           loader: loader);
@@ -240,9 +240,9 @@ void main() {
           throwsFormatException);
     });
 
-    loaderTest("specified file syntax error", {
+    loaderTest("specified file syntax onError", {
       "anyname": "syntax error",
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var file = directory.resolve("anyname");
       var hadError = false;
       await loadPackageConfigUri(file,
@@ -254,23 +254,22 @@ void main() {
       expect(hadError, true);
     });
 
-    // Find package_config.json in subdir even if initial file syntax error.
-    loaderTest("specified file syntax error", {
+    // Don't look for package_config.json if original file not named .packages.
+    loaderTest("specified file syntax error with alternative", {
       "anyname": "syntax error",
       ".dart_tool": {
         "package_config.json": packageConfigFile,
       },
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var file = directory.resolve("anyname");
-      var config = await loadPackageConfigUri(file, loader: loader);
-      expect(config.version, 2);
-      validatePackagesFile(config, directory);
+      expect(() => loadPackageConfigUri(file, loader: loader),
+          throwsFormatException);
     });
 
     // A file starting with `{` is a package_config.json file.
     loaderTest("file syntax error with {", {
       ".packages": "{syntax error",
-    }, (Uri directory, loader) async {
+    }, (directory, loader) async {
       var file = directory.resolve(".packages");
       var hadError = false;
       await loadPackageConfigUri(file,

@@ -24,9 +24,10 @@ export "package_config_types.dart";
 /// It is considered a `package_config.json` file if its first character
 /// is a `{`.
 ///
-/// If the file is a `.packages` file and [preferNewest] is true, the default,
-/// also checks if there is a `.dart_tool/package_config.json` file next to the original file,
-/// and if so, loads that instead.
+/// If the file is a `.packages` file (the file name is `.packages`)
+/// and [preferNewest] is true, the default, also checks if there is
+/// a `.dart_tool/package_config.json` file next
+/// to the original file, and if so, loads that instead.
 /// If [preferNewest] is set to false, a directly specified `.packages` file
 /// is loaded even if there is an available `package_config.json` file.
 /// The caller can determine this from the [PackageConfig.version]
@@ -50,6 +51,7 @@ Future<PackageConfig> loadPackageConfig(File file,
 /// non-whitespace character is a `{`.
 ///
 /// If [preferNewest] is true, the default, and the file is a `.packages` file,
+/// as determined by its file name being `.packages`,
 /// first checks if there is a `.dart_tool/package_config.json` file
 /// next to the original file, and if so, loads that instead.
 /// The [file] *must not* be a `package:` URI.

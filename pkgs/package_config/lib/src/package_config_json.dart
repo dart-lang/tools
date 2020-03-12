@@ -39,7 +39,7 @@ PackageConfig parsePackageConfigBytes(
   try {
     jsonObject = _jsonUtf8Decoder.convert(bytes);
   } on FormatException catch (e) {
-    onError(PackageConfigFormatException(e.message, e.source, e.offset));
+    onError(PackageConfigFormatException.from(e));
     return const SimplePackageConfig.empty();
   }
   return parsePackageConfigJson(jsonObject, file, onError);
@@ -51,7 +51,7 @@ PackageConfig parsePackageConfigString(
   try {
     jsonObject = jsonDecode(source);
   } on FormatException catch (e) {
-    onError(PackageConfigFormatException(e.message, e.source, e.offset));
+    onError(PackageConfigFormatException.from(e));
     return const SimplePackageConfig.empty();
   }
   return parsePackageConfigJson(jsonObject, file, onError);
@@ -271,7 +271,6 @@ void writeDotPackages(PackageConfig config, Uri baseUri, StringSink output) {
     }
   }
   packages_file.write(output, config, baseUri: baseUri, comment: comment);
-  return;
 }
 
 /// If "extraData" is a JSON map, then return it, otherwise return null.
@@ -304,12 +303,10 @@ bool _validateJson(dynamic object) {
   if (object == null || true == object || false == object) return true;
   if (object is num || object is String) return true;
   if (object is List<dynamic>) {
-    for (var element in object) if (!_validateJson(element)) return false;
-    return true;
+    return object.every(_validateJson);
   }
   if (object is Map<String, dynamic>) {
-    for (var value in object.values) if (!_validateJson(value)) return false;
-    return true;
+    return object.values.every(_validateJson);
   }
   return false;
 }

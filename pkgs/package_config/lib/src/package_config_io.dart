@@ -30,6 +30,13 @@ import "util_io.dart";
 /// The file must exist and be a normal file.
 Future<PackageConfig> readAnyConfigFile(
     File file, bool preferNewest, void onError(Object error)) async {
+  if (preferNewest && fileName(file.path) == ".packages") {
+    var alternateFile =
+        File(pathJoin(dirName(file.path), ".dart_tool", "package_config.json"));
+    if (alternateFile.existsSync()) {
+      return await readPackageConfigJsonFile(alternateFile, onError);
+    }
+  }
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
@@ -37,28 +44,7 @@ Future<PackageConfig> readAnyConfigFile(
     onError(e);
     return const SimplePackageConfig.empty();
   }
-  var firstChar = firstNonWhitespaceChar(bytes);
-  if (firstChar != $lbrace) {
-    // Definitely not a JSON object, probably a .packages.
-    if (preferNewest) {
-      var alternateFile = File(
-          pathJoin(dirName(file.path), ".dart_tool", "package_config.json"));
-      if (alternateFile.existsSync()) {
-        Uint8List /*?*/ bytes;
-        try {
-          bytes = await alternateFile.readAsBytes();
-        } catch (e) {
-          onError(e);
-          return const SimplePackageConfig.empty();
-        }
-        if (bytes != null) {
-          return parsePackageConfigBytes(bytes, alternateFile.uri, onError);
-        }
-      }
-    }
-    return packages_file.parse(bytes, file.uri, onError);
-  }
-  return parsePackageConfigBytes(bytes, file.uri, onError);
+  return parseAnyConfigFile(bytes, file.uri, onError);
 }
 
 /// Like [readAnyConfigFile] but uses a URI and an optional loader.
@@ -73,11 +59,24 @@ Future<PackageConfig> readAnyConfigFileUri(
   }
   if (loader == null) {
     if (file.isScheme("file")) {
-      return readAnyConfigFile(File.fromUri(file), preferNewest, onError);
+      return await readAnyConfigFile(File.fromUri(file), preferNewest, onError);
     }
     loader = defaultLoader;
   }
-  Uint8List bytes;
+  if (preferNewest && file.pathSegments.last == ".packages") {
+    var alternateFile = file.resolve(".dart_tool/package_config.json");
+    Uint8List /*?*/ bytes;
+    try {
+      bytes = await loader(alternateFile);
+    } catch (e) {
+      onError(e);
+      return const SimplePackageConfig.empty();
+    }
+    if (bytes != null) {
+      return parsePackageConfigBytes(bytes, alternateFile, onError);
+    }
+  }
+  Uint8List /*?*/ bytes;
   try {
     bytes = await loader(file);
   } catch (e) {
@@ -89,23 +88,18 @@ Future<PackageConfig> readAnyConfigFileUri(
         file.toString(), "file", "File cannot be read"));
     return const SimplePackageConfig.empty();
   }
+  return parseAnyConfigFile(bytes, file, onError);
+}
+
+/// Parses a `.packages` or `package_config.json` file's contents.
+///
+/// Assumes it's a JSON file if the first non-whitespace character
+/// is `{`, otherwise assumes it's a `.packages` file.
+PackageConfig parseAnyConfigFile(
+    Uint8List bytes, Uri file, void onError(Object error)) {
   var firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
     // Definitely not a JSON object, probably a .packages.
-    if (preferNewest) {
-      // Check if there is a package_config.json file.
-      var alternateFile = file.resolveUri(packageConfigJsonPath);
-      Uint8List alternateBytes;
-      try {
-        alternateBytes = await loader(alternateFile);
-      } catch (e) {
-        onError(e);
-        return const SimplePackageConfig.empty();
-      }
-      if (alternateBytes != null) {
-        return parsePackageConfigBytes(alternateBytes, alternateFile, onError);
-      }
-    }
     return packages_file.parse(bytes, file, onError);
   }
   return parsePackageConfigBytes(bytes, file, onError);
