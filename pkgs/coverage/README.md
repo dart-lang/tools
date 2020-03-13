@@ -6,7 +6,7 @@ Dart.
 
 [![Build Status](https://travis-ci.org/dart-lang/coverage.svg?branch=master)](https://travis-ci.org/dart-lang/coverage)
 [![Coverage Status](https://coveralls.io/repos/dart-lang/coverage/badge.svg?branch=master)](https://coveralls.io/r/dart-lang/coverage)
-[![Pub](https://img.shields.io/pub/v/coverage.svg)](https://pub.dartlang.org/packages/coverage)
+[![Pub](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage)
 
 
 Tools
@@ -20,7 +20,7 @@ Tools
     pub global activate coverage
 
 Consider adding the `pub global run` executables directory to your path.
-See [Running a script from your PATH](https://www.dartlang.org/tools/pub/cmd/pub-global.html#running-a-script-from-your-path)
+See [Running a script from your PATH](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path)
 for more details.
 
 #### Collecting coverage from the VM
