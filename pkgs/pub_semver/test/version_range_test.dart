@@ -562,6 +562,29 @@ void main() {
       expect(result, allows(v140));
     });
 
+    test('returns a VersionUnion for a disjoint range with infinite end', () {
+      void isVersionUnion(VersionConstraint constraint) {
+        expect(constraint, allows(v080));
+        expect(constraint, doesNotAllow(v123));
+        expect(constraint, allows(v140));
+      }
+
+      for (final includeAMin in [true, false]) {
+        for (final includeAMax in [true, false]) {
+          for (final includeBMin in [true, false]) {
+            for (final includeBMax in [true, false]) {
+              final a = VersionRange(
+                  min: v130, includeMin: includeAMin, includeMax: includeAMax);
+              final b = VersionRange(
+                  max: v114, includeMin: includeBMin, includeMax: includeBMax);
+              isVersionUnion(a.union(b));
+              isVersionUnion(b.union(a));
+            }
+          }
+        }
+      }
+    });
+
     test('considers open ranges disjoint', () {
       var result = VersionRange(min: v003, max: v114)
           .union(VersionRange(min: v114, max: v200));
