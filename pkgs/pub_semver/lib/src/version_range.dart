@@ -243,8 +243,10 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     if (other is VersionRange) {
       // If the two ranges don't overlap, we won't be able to create a single
       // VersionRange for both of them.
-      var edgesTouch = (max == other.min && (includeMax || other.includeMin)) ||
-          (min == other.max && (includeMin || other.includeMax));
+      var edgesTouch = (max != null &&
+              max == other.min &&
+              (includeMax || other.includeMin)) ||
+          (min != null && min == other.max && (includeMin || other.includeMax));
       if (!edgesTouch && !allowsAny(other)) {
         return VersionConstraint.unionOf([this, other]);
       }

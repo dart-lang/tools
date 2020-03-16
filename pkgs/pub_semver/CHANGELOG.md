@@ -1,3 +1,8 @@
+# 1.4.4
+
+- Fix a bug of `VersionRange.union` where ranges bounded at infinity would get
+  combined wrongly.
+
 # 1.4.3
 
 - Update Dart SDK constraint to `>=2.0.0 <3.0.0`.
