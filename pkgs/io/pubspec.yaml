@@ -1,8 +1,7 @@
 name: io
-description: >
+description: >-
   Utilities for the Dart VM Runtime.
 version: 0.3.4-dev
-author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/io
 
 environment:
