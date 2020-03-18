@@ -405,5 +405,126 @@ zip zap zop
         expect(span.expand(other), equals(other));
       });
     });
+
+    group('subspan()', () {
+      FileSpan span;
+      setUp(() {
+        span = file.span(5, 11); // "ar baz"
+      });
+
+      group('errors', () {
+        test('start must be greater than zero', () {
+          expect(() => span.subspan(-1), throwsRangeError);
+        });
+
+        test('start must be less than or equal to length', () {
+          expect(() => span.subspan(span.length + 1), throwsRangeError);
+        });
+
+        test('end must be greater than start', () {
+          expect(() => span.subspan(2, 1), throwsRangeError);
+        });
+
+        test('end must be less than or equal to length', () {
+          expect(() => span.subspan(0, span.length + 1), throwsRangeError);
+        });
+      });
+
+      test('preserves the source URL', () {
+        final result = span.subspan(1, 2);
+        expect(result.start.sourceUrl, equals(span.sourceUrl));
+        expect(result.end.sourceUrl, equals(span.sourceUrl));
+      });
+
+      group('returns the original span', () {
+        test('with an implicit end',
+            () => expect(span.subspan(0), equals(span)));
+
+        test('with an explicit end',
+            () => expect(span.subspan(0, span.length), equals(span)));
+      });
+
+      group('within a single line', () {
+        test('returns a strict substring of the original span', () {
+          final result = span.subspan(1, 5);
+          expect(result.text, equals('r ba'));
+          expect(result.start.offset, equals(6));
+          expect(result.start.line, equals(0));
+          expect(result.start.column, equals(6));
+          expect(result.end.offset, equals(10));
+          expect(result.end.line, equals(0));
+          expect(result.end.column, equals(10));
+        });
+
+        test('an implicit end goes to the end of the original span', () {
+          final result = span.subspan(1);
+          expect(result.text, equals('r baz'));
+          expect(result.start.offset, equals(6));
+          expect(result.start.line, equals(0));
+          expect(result.start.column, equals(6));
+          expect(result.end.offset, equals(11));
+          expect(result.end.line, equals(0));
+          expect(result.end.column, equals(11));
+        });
+
+        test('can return an empty span', () {
+          final result = span.subspan(3, 3);
+          expect(result.text, isEmpty);
+          expect(result.start.offset, equals(8));
+          expect(result.start.line, equals(0));
+          expect(result.start.column, equals(8));
+          expect(result.end, equals(result.start));
+        });
+      });
+
+      group('across multiple lines', () {
+        setUp(() {
+          span = file.span(22, 30); // "boom\nzip"
+        });
+
+        test('with start and end in the middle of a line', () {
+          final result = span.subspan(3, 6);
+          expect(result.text, equals('m\nz'));
+          expect(result.start.offset, equals(25));
+          expect(result.start.line, equals(1));
+          expect(result.start.column, equals(13));
+          expect(result.end.offset, equals(28));
+          expect(result.end.line, equals(2));
+          expect(result.end.column, equals(1));
+        });
+
+        test('with start at the end of a line', () {
+          final result = span.subspan(4, 6);
+          expect(result.text, equals('\nz'));
+          expect(result.start.offset, equals(26));
+          expect(result.start.line, equals(1));
+          expect(result.start.column, equals(14));
+        });
+
+        test('with start at the beginning of a line', () {
+          final result = span.subspan(5, 6);
+          expect(result.text, equals('z'));
+          expect(result.start.offset, equals(27));
+          expect(result.start.line, equals(2));
+          expect(result.start.column, equals(0));
+        });
+
+        test('with end at the end of a line', () {
+          final result = span.subspan(3, 4);
+          expect(result.text, equals('m'));
+          expect(result.end.offset, equals(26));
+          expect(result.end.line, equals(1));
+          expect(result.end.column, equals(14));
+        });
+
+        test('with end at the beginning of a line', () {
+          final result = span.subspan(3, 5);
+          expect(result.text, equals('m\n'));
+          expect(result.end.offset, equals(27));
+          expect(result.end.line, equals(2));
+          expect(result.end.column, equals(0));
+        });
+      });
+    });
   });
 }

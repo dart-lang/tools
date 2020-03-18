@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:charcode/charcode.dart';
 import 'package:path/path.dart' as p;
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
@@ -179,4 +180,55 @@ extension SourceSpanExtension on SourceSpan {
               primaryColor: primaryColor,
               secondaryColor: secondaryColor)
           .highlight();
+
+  /// Returns a span from [start] code units (inclusive) to [end] code units
+  /// (exclusive) after the beginning of this span.
+  SourceSpan subspan(int start, [int end]) {
+    RangeError.checkValidRange(start, end, length);
+    if (start == 0 && (end == null || end == length)) return this;
+
+    final text = this.text;
+    final startLocation = this.start;
+    var line = startLocation.line;
+    var column = startLocation.column;
+
+    // Adjust [line] and [column] as necessary if the character at [i] in [text]
+    // is a newline.
+    void consumeCodePoint(int i) {
+      final codeUnit = text.codeUnitAt(i);
+      if (codeUnit == $lf ||
+          // A carriage return counts as a newline, but only if it's not
+          // followed by a line feed.
+          (codeUnit == $cr &&
+              (i + 1 == text.length || text.codeUnitAt(i + 1) != $lf))) {
+        line += 1;
+        column = 0;
+      } else {
+        column += 1;
+      }
+    }
+
+    for (var i = 0; i < start; i++) {
+      consumeCodePoint(i);
+    }
+
+    final newStartLocation = SourceLocation(startLocation.offset + start,
+        sourceUrl: sourceUrl, line: line, column: column);
+
+    SourceLocation newEndLocation;
+    if (end == null || end == length) {
+      newEndLocation = this.end;
+    } else if (end == start) {
+      newEndLocation = newStartLocation;
+    } else if (end != null && end != length) {
+      for (var i = start; i < end; i++) {
+        consumeCodePoint(i);
+      }
+      newEndLocation = SourceLocation(startLocation.offset + end,
+          sourceUrl: sourceUrl, line: line, column: column);
+    }
+
+    return SourceSpan(
+        newStartLocation, newEndLocation, text.substring(start, end));
+  }
 }

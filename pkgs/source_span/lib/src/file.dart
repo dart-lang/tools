@@ -423,4 +423,25 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
       return _FileSpan(file, start, end);
     }
   }
+
+  /// See `SourceSpanExtension.subspan`.
+  FileSpan subspan(int start, [int end]) {
+    RangeError.checkValidRange(start, end, length);
+    if (start == 0 && (end == null || end == length)) return this;
+    return file.span(_start + start, end == null ? _end : _start + end);
+  }
+}
+
+// TODO(#52): Move these to instance methods in the next breaking release.
+/// Extension methods on the [FileSpan] API.
+extension FileSpanExtension on FileSpan {
+  /// See `SourceSpanExtension.subspan`.
+  FileSpan subspan(int start, [int end]) {
+    RangeError.checkValidRange(start, end, length);
+    if (start == 0 && (end == null || end == length)) return this;
+
+    final startOffset = this.start.offset;
+    return file.span(
+        startOffset + start, end == null ? this.end.offset : startOffset + end);
+  }
 }

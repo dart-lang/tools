@@ -1,4 +1,7 @@
-# 1.6.1-dev
+# 1.7.0
+
+* Add a `SourceSpan.subspan()` extension method which returns a slice of an
+  existing source span.
 
 # 1.6.0
 

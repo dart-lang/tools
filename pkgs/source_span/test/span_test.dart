@@ -181,6 +181,126 @@ void main() {
     });
   });
 
+  group('subspan()', () {
+    group('errors', () {
+      test('start must be greater than zero', () {
+        expect(() => span.subspan(-1), throwsRangeError);
+      });
+
+      test('start must be less than or equal to length', () {
+        expect(() => span.subspan(span.length + 1), throwsRangeError);
+      });
+
+      test('end must be greater than start', () {
+        expect(() => span.subspan(2, 1), throwsRangeError);
+      });
+
+      test('end must be less than or equal to length', () {
+        expect(() => span.subspan(0, span.length + 1), throwsRangeError);
+      });
+    });
+
+    test('preserves the source URL', () {
+      final result = span.subspan(1, 2);
+      expect(result.start.sourceUrl, equals(span.sourceUrl));
+      expect(result.end.sourceUrl, equals(span.sourceUrl));
+    });
+
+    group('returns the original span', () {
+      test('with an implicit end', () => expect(span.subspan(0), equals(span)));
+
+      test('with an explicit end',
+          () => expect(span.subspan(0, span.length), equals(span)));
+    });
+
+    group('within a single line', () {
+      test('returns a strict substring of the original span', () {
+        final result = span.subspan(1, 5);
+        expect(result.text, equals('oo b'));
+        expect(result.start.offset, equals(6));
+        expect(result.start.line, equals(0));
+        expect(result.start.column, equals(6));
+        expect(result.end.offset, equals(10));
+        expect(result.end.line, equals(0));
+        expect(result.end.column, equals(10));
+      });
+
+      test('an implicit end goes to the end of the original span', () {
+        final result = span.subspan(1);
+        expect(result.text, equals('oo bar'));
+        expect(result.start.offset, equals(6));
+        expect(result.start.line, equals(0));
+        expect(result.start.column, equals(6));
+        expect(result.end.offset, equals(12));
+        expect(result.end.line, equals(0));
+        expect(result.end.column, equals(12));
+      });
+
+      test('can return an empty span', () {
+        final result = span.subspan(3, 3);
+        expect(result.text, isEmpty);
+        expect(result.start.offset, equals(8));
+        expect(result.start.line, equals(0));
+        expect(result.start.column, equals(8));
+        expect(result.end, equals(result.start));
+      });
+    });
+
+    group('across multiple lines', () {
+      setUp(() {
+        span = SourceSpan(
+            SourceLocation(5, line: 2, column: 0),
+            SourceLocation(16, line: 4, column: 3),
+            'foo\n'
+            'bar\n'
+            'baz');
+      });
+
+      test('with start and end in the middle of a line', () {
+        final result = span.subspan(2, 5);
+        expect(result.text, equals('o\nb'));
+        expect(result.start.offset, equals(7));
+        expect(result.start.line, equals(2));
+        expect(result.start.column, equals(2));
+        expect(result.end.offset, equals(10));
+        expect(result.end.line, equals(3));
+        expect(result.end.column, equals(1));
+      });
+
+      test('with start at the end of a line', () {
+        final result = span.subspan(3, 5);
+        expect(result.text, equals('\nb'));
+        expect(result.start.offset, equals(8));
+        expect(result.start.line, equals(2));
+        expect(result.start.column, equals(3));
+      });
+
+      test('with start at the beginning of a line', () {
+        final result = span.subspan(4, 5);
+        expect(result.text, equals('b'));
+        expect(result.start.offset, equals(9));
+        expect(result.start.line, equals(3));
+        expect(result.start.column, equals(0));
+      });
+
+      test('with end at the end of a line', () {
+        final result = span.subspan(2, 3);
+        expect(result.text, equals('o'));
+        expect(result.end.offset, equals(8));
+        expect(result.end.line, equals(2));
+        expect(result.end.column, equals(3));
+      });
+
+      test('with end at the beginning of a line', () {
+        final result = span.subspan(2, 4);
+        expect(result.text, equals('o\n'));
+        expect(result.end.offset, equals(9));
+        expect(result.end.line, equals(3));
+        expect(result.end.column, equals(0));
+      });
+    });
+  });
+
   group('message()', () {
     test('prints the text being described', () {
       expect(span.message('oh no'), equals("""
