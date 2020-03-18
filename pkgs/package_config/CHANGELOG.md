@@ -2,6 +2,8 @@
 
 - Updated to support new rules for picking `package_config.json` over
   a specified `.packages`.
+- Deduce package root from `.packages` derived package configuration,
+  and default all such packages to language version 2.7.
 
 ## 1.9.1
 

@@ -7,6 +7,12 @@ import "package_config_impl.dart";
 import "util.dart";
 import "errors.dart";
 
+/// The language version prior to the release of language versioning.
+///
+/// This is the default language version used by all packages from a
+/// `.packages` file.
+final LanguageVersion _languageVersion = LanguageVersion(2, 7);
+
 /// Parses a `.packages` file into a [PackageConfig].
 ///
 /// The [source] is the byte content of a `.packages` file, assumed to be
@@ -100,17 +106,24 @@ PackageConfig parse(
           "Package URI as location for package", source, separatorIndex + 1));
       continue;
     }
-    if (!packageLocation.path.endsWith('/')) {
-      packageLocation =
-          packageLocation.replace(path: packageLocation.path + "/");
+    var path = packageLocation.path;
+    if (!path.endsWith('/')) {
+      path += "/";
+      packageLocation = packageLocation.replace(path: path);
     }
     if (packageNames.contains(packageName)) {
       onError(PackageConfigFormatException(
           "Same package name occured more than once", source, start));
       continue;
     }
+    var rootUri = packageLocation;
+    if (path.endsWith("/lib/")) {
+      // Assume default Pub package layout. Include package itself in root.
+      rootUri =
+          packageLocation.replace(path: path.substring(0, path.length - 4));
+    }
     var package = SimplePackage.validate(
-        packageName, packageLocation, packageLocation, null, null, (error) {
+        packageName, rootUri, packageLocation, _languageVersion, null, (error) {
       if (error is ArgumentError) {
         onError(PackageConfigFormatException(error.message, source));
       } else {
