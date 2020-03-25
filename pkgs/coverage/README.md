@@ -1,6 +1,3 @@
-Coverage
-========
-
 Coverage provides coverage data collection, manipulation, and formatting for
 Dart.
 
