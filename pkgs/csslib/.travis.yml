@@ -5,15 +5,16 @@ dart:
   - dev
 
 dart_task:
-  - test: --platform vm
-  - test: --platform firefox -j 1
+  - test: --platform vm,chrome
 
 matrix:
   include:
     - dart: dev
-      dartanalyzer: --fatal-infos --fatal-warnings .
+      dart_task:
+        dartanalyzer: --fatal-infos --fatal-warnings .
     - dart: 2.2.0
-      dartanalyzer: --fatal-warnings .
+      dart_task:
+        dartanalyzer: --fatal-warnings .
     - dart: dev
       dart_task: dartfmt
 
