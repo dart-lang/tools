@@ -1,5 +1,5 @@
 name: package_config
-version: 1.9.2
+version: 1.9.3
 description: Support for working with Package Configuration files.
 homepage: https://github.com/dart-lang/package_config
 

@@ -1,3 +1,7 @@
+## 1.9.3
+
+- Fix `Package` constructor not accepting relative `packageUriRoot`.
+
 ## 1.9.2
 
 - Updated to support new rules for picking `package_config.json` over

@@ -214,7 +214,10 @@ class SimplePackage implements Package {
         root = root.replace(path: root.path + "/");
       }
     }
-    if (!fatalError) {
+    if (packageUriRoot == null) {
+      packageUriRoot = root;
+    } else if (!fatalError) {
+      packageUriRoot = root.resolveUri(packageUriRoot);
       if (!isAbsoluteDirectoryUri(packageUriRoot)) {
         onError(PackageConfigArgumentError(
             packageUriRoot,
