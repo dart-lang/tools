@@ -126,8 +126,9 @@ abstract class StreamChannel<T> {
   /// Returns a copy of this with the generic type coerced to [S].
   ///
   /// If any events emitted by [stream] aren't of type [S], they're converted
-  /// into [CastError] events. Similarly, if any events are added to [sink] that
-  /// aren't of type [S], a [CastError] is thrown.
+  /// into [TypeError] events (`CastError` on some SDK versions). Similarly, if
+  /// any events are added to [sink] that aren't of type [S], a [TypeError] is
+  /// thrown.
   StreamChannel<S> cast<S>();
 }
 
