@@ -1,6 +1,7 @@
 name: io
 description: >-
-  Utilities for the Dart VM Runtime.
+  Utilities for the Dart VM Runtime including support for ANSI colors,
+  file copying, and standard exit code values.
 version: 0.3.4-dev
 homepage: https://github.com/dart-lang/io
 
