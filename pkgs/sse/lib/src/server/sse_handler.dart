@@ -68,6 +68,11 @@ class SseConnection extends StreamChannelMixin<String> {
       // Peek the data so we don't remove it from the stream if we're unable to
       // send it.
       final data = await outgoingStreamQueue.peek;
+
+      // Ignore outgoing messages since the connection may have closed while
+      // waiting for the keep alive.
+      if (_closedCompleter.isCompleted) break;
+
       try {
         // JSON encode the message to escape new lines.
         _sink.add('data: ${json.encode(data)}\n');

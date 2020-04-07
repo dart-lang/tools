@@ -1,3 +1,8 @@
+## 3.2.2
+
+- Fix an issue where `keepAlive` may cause state errors when attempting to
+  send messages on a closed stream.
+
 ## 3.2.1
 
 - Fix an issue where `keepAlive` would only allow a single reconnection.
