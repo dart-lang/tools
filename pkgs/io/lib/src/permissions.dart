@@ -8,8 +8,10 @@ import 'dart:io';
 /// What type of permission is granted to a file based on file permission roles.
 enum _FilePermission {
   execute,
-  write,
-  read,
+  // Although these two values are unused, their positions in the enum are
+  // meaningful.
+  write, // ignore: unused_field
+  read, // ignore: unused_field
   setGid,
   setUid,
   sticky,
