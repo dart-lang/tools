@@ -41,10 +41,9 @@ class SseConnection extends StreamChannelMixin<String> {
 
   final _closedCompleter = Completer<void>();
 
-  /// Completes when the [SseConnection] closes.
-  ///
-  /// This is guaranteed to fire unlike `this.sink.close`;
-  Future<void> get onClose => _closedCompleter.future;
+  /// Wraps the `_outgoingController.stream` to buffer events to enable keep
+  /// alive.
+  StreamQueue _outgoingStreamQueue;
 
   /// Creates an [SseConnection] for the supplied [_sink].
   ///
@@ -55,14 +54,15 @@ class SseConnection extends StreamChannelMixin<String> {
   /// If [keepAlive] is not supplied, the connection will be closed immediately
   /// after a disconnect.
   SseConnection(this._sink, {Duration keepAlive}) : _keepAlive = keepAlive {
+    _outgoingStreamQueue = StreamQueue(_outgoingController.stream);
     unawaited(_setUpListener());
     _outgoingController.onCancel = _close;
     _incomingController.onCancel = _close;
   }
 
   Future<void> _setUpListener() async {
-    var outgoingStreamQueue = StreamQueue(_outgoingController.stream);
-    while (await outgoingStreamQueue.hasNext) {
+    while (
+        !_outgoingController.isClosed && await _outgoingStreamQueue.hasNext) {
       // If we're in a KeepAlive timeout, there's nowhere to send messages so
       // wait a short period and check again.
       if (isInKeepAlivePeriod) {
@@ -72,7 +72,7 @@ class SseConnection extends StreamChannelMixin<String> {
 
       // Peek the data so we don't remove it from the stream if we're unable to
       // send it.
-      final data = await outgoingStreamQueue.peek;
+      final data = await _outgoingStreamQueue.peek;
 
       // Ignore outgoing messages since the connection may have closed while
       // waiting for the keep alive.
@@ -82,7 +82,7 @@ class SseConnection extends StreamChannelMixin<String> {
         // JSON encode the message to escape new lines.
         _sink.add('data: ${json.encode(data)}\n');
         _sink.add('\n');
-        await outgoingStreamQueue.next; // Consume from stream if no errors.
+        await _outgoingStreamQueue.next; // Consume from stream if no errors.
       } catch (StateError) {
         if (_keepAlive == null || _closedCompleter.isCompleted) {
           rethrow;
@@ -127,7 +127,10 @@ class SseConnection extends StreamChannelMixin<String> {
     if (!_closedCompleter.isCompleted) {
       _closedCompleter.complete();
       _sink.close();
-      if (!_outgoingController.isClosed) _outgoingController.close();
+      if (!_outgoingController.isClosed) {
+        _outgoingStreamQueue.cancel(immediate: true);
+        _outgoingController.close();
+      }
       if (!_incomingController.isClosed) _incomingController.close();
     }
   }

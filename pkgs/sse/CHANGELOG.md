@@ -1,3 +1,8 @@
+## 3.4.0
+
+- Remove `onClose` from `SseConnection` and ensure the corresponding
+  `sink.close` correctly fires.
+
 ## 3.3.0
 
 - Add an `onClose` event to the `SseConnection`. This allows consumers to
