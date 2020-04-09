@@ -41,6 +41,11 @@ class SseConnection extends StreamChannelMixin<String> {
 
   final _closedCompleter = Completer<void>();
 
+  /// Completes when the [SseConnection] closes.
+  ///
+  /// This is guaranteed to fire unlike `this.sink.close`;
+  Future<void> get onClose => _closedCompleter.future;
+
   /// Creates an [SseConnection] for the supplied [_sink].
   ///
   /// If [keepAlive] is supplied, the connection will remain active for this

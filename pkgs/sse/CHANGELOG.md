@@ -1,3 +1,9 @@
+## 3.3.0
+
+- Add an `onClose` event to the `SseConnection`. This allows consumers to
+  listen to this event in lue of `sseConnection.sink.done` as that is not
+  guaranteed to fire.
+
 ## 3.2.2
 
 - Fix an issue where `keepAlive` may cause state errors when attempting to
