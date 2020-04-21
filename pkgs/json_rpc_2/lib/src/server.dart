@@ -273,7 +273,7 @@ class Server {
       }
 
       try {
-        return iterator.current(params);
+        return await iterator.current(params);
       } on RpcException catch (error) {
         if (error is! RpcException) rethrow;
         if (error.code != error_code.METHOD_NOT_FOUND) rethrow;

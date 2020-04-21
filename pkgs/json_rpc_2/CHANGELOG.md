@@ -1,3 +1,8 @@
+## 2.1.1
+
+* Fixed issue where throwing `RpcException.methodNotFound` in an asynchronous
+  fallback handler would not result in the next fallback being executed.
+
 ## 2.1.0
 
 * `Server` and related classes can now take an `onUnhandledError` callback to
