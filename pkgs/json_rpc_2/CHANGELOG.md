@@ -2,6 +2,7 @@
 
 * Fixed issue where throwing `RpcException.methodNotFound` in an asynchronous
   fallback handler would not result in the next fallback being executed.
+* Updated minimum SDK to Dart `2.2.0`.
 
 ## 2.1.0
 

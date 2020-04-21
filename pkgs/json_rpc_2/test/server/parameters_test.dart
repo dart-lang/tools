@@ -18,7 +18,7 @@ void main() {
         'string': 'zap',
         'list': [1, 2, 3],
         'date-time': '1990-01-01 00:00:00.000',
-        'uri': 'http://dartlang.org',
+        'uri': 'https://dart.dev',
         'invalid-uri': 'http://[::1',
         'map': {'num': 4.2, 'bool': false}
       });
@@ -34,7 +34,7 @@ void main() {
             'string': 'zap',
             'list': [1, 2, 3],
             'date-time': '1990-01-01 00:00:00.000',
-            'uri': 'http://dartlang.org',
+            'uri': 'https://dart.dev',
             'invalid-uri': 'http://[::1',
             'map': {'num': 4.2, 'bool': false}
           }));
@@ -241,12 +241,12 @@ void main() {
     });
 
     test('[].asUri returns URI parameters', () {
-      expect(parameters['uri'].asUri, equals(Uri.parse('http://dartlang.org')));
+      expect(parameters['uri'].asUri, equals(Uri.parse('https://dart.dev')));
     });
 
     test('[].asUriOr returns URI parameters', () {
       expect(parameters['uri'].asUriOr(Uri.parse('http://google.com')),
-          equals(Uri.parse('http://dartlang.org')));
+          equals(Uri.parse('https://dart.dev')));
     });
 
     test('[].asUri fails for non-URI parameters', () {
