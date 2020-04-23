@@ -1,5 +1,5 @@
 name: sse
-version: 3.4.0
+version: 3.5.0
 homepage: https://github.com/dart-lang/sse
 description: >-
   Provides client and server functionality for setting up bi-directional

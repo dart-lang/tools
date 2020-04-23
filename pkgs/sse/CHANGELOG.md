@@ -1,3 +1,8 @@
+## 3.5.0
+
+- Add new `shutdown` methods on `SseHandler` and `SseConnection` to allow closing
+  connections immediately, ignoring any keep-alive periods.
+
 ## 3.4.0
 
 - Remove `onClose` from `SseConnection` and ensure the corresponding

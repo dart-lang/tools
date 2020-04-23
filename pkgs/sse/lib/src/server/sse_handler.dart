@@ -115,10 +115,11 @@ class SseConnection extends StreamChannelMixin<String> {
     if (_keepAlive == null) {
       // Close immediately if we're not keeping alive.
       _close();
-    } else if (!isInKeepAlivePeriod) {
-      // Otherwise if we didn't already have an active timer, set a timer to
-      // close after the timeout period. If the connection comes back, this will
-      // be cancelled and all messages left in the queue tried again.
+    } else if (!isInKeepAlivePeriod && !_closedCompleter.isCompleted) {
+      // Otherwise if we didn't already have an active timer and we've not already
+      // been completely closed, set a timer to close after the timeout period.
+      // If the connection comes back, this will be cancelled and all messages left
+      // in the queue tried again.
       _keepAliveTimer = Timer(_keepAlive, _close);
     }
   }
@@ -126,6 +127,9 @@ class SseConnection extends StreamChannelMixin<String> {
   void _close() {
     if (!_closedCompleter.isCompleted) {
       _closedCompleter.complete();
+      // Cancel any existing timer in case we were told to explicitly shut down
+      // to avoid keeping the process alive.
+      _keepAliveTimer?.cancel();
       _sink.close();
       if (!_outgoingController.isClosed) {
         _outgoingStreamQueue.cancel(immediate: true);
@@ -133,6 +137,11 @@ class SseConnection extends StreamChannelMixin<String> {
       }
       if (!_incomingController.isClosed) _incomingController.close();
     }
+  }
+
+  /// Immediately close the connection, ignoring any keepAlive period.
+  void shutdown() {
+    _close();
   }
 }
 
@@ -228,6 +237,13 @@ class SseHandler {
       // Firefox does not set header "origin".
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1508661
       req.headers['origin'] ?? req.headers['host'];
+
+  /// Immediately close all connections, ignoring any keepAlive periods.
+  void shutdown() {
+    for (final connection in _connections.values) {
+      connection.shutdown();
+    }
+  }
 }
 
 void closeSink(SseConnection connection) => connection._sink.close();

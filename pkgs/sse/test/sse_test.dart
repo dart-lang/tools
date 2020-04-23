@@ -231,6 +231,26 @@ void main() {
       // Ensure messages arrive in the same order
       expect(await connection.stream.take(2).toList(), equals(['one', 'two']));
     });
+
+    test('Explicit shutdown does not wait for keepAlive', () async {
+      expect(handler.numberOfClients, 0);
+      await webdriver.get('http://localhost:${server.port}');
+      await handler.connections.next;
+      expect(handler.numberOfClients, 1);
+
+      // Close the underlying connection.
+      handler.shutdown();
+
+      // Wait for a short period to allow the connection to close, but not
+      // long enough that the 30second keep-alive may have expired.
+      var maxPumps = 50;
+      while (handler.numberOfClients > 0 && maxPumps-- > 0) {
+        await pumpEventQueue(times: 1);
+      }
+
+      // Ensure there are not connected clients.
+      expect(handler.numberOfClients, 0);
+    });
   }, timeout: const Timeout(Duration(seconds: 120)));
 }
 
