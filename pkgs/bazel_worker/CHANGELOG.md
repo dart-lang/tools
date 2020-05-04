@@ -16,6 +16,12 @@
 
 * Require protobuf 0.14.0.
 
+## 0.1.21+1
+
+* Don't rely on `exitCode` to know when a worker terminates, instead wait for
+  the input stream to close. Backport of fix in `0.1.23+1` in a version that
+  does not require a newer protobuf.
+
 ## 0.1.21
 
 * Make `TestStdinAsync` behave like a `Stream<Uint8List>`
