@@ -42,6 +42,8 @@ class Ansi {
 
   String get bold => _code('\u001b[1m');
 
+  String get reversed => _code('\u001b[7m');
+
   String get backspace => '\b';
 
   String get bullet => io.stdout.supportsAnsiEscapes ? '•' : '-';

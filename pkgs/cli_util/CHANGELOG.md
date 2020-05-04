@@ -1,3 +1,6 @@
+## 0.1.4
+- Add `Ansi.reversed` getter.
+
 ## 0.1.3+2
 - Update Dart SDK constraint to < 3.0.0.
 
