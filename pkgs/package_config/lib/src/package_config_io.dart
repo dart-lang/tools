@@ -8,7 +8,6 @@ import "dart:convert";
 import "dart:io";
 import "dart:typed_data";
 
-import "discovery.dart" show packageConfigJsonPath;
 import "errors.dart";
 import "package_config_impl.dart";
 import "package_config_json.dart";
