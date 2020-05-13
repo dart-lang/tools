@@ -1,7 +1,7 @@
 name: browser_launcher
 description: Provides a standardized way to launch web browsers for testing and tools.
 
-version: 0.1.6-dev
+version: 0.1.6
 
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/browser_launcher
@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   path: ^1.6.2
-  webkit_inspection_protocol: '>=0.4.0 <0.6.0'
+  webkit_inspection_protocol: '>=0.4.0 <0.7.0'
 
 dev_dependencies:
   pedantic: ^1.5.0

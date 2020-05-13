@@ -1,6 +1,7 @@
-## 0.1.6-dev
+## 0.1.6
 
-- Update lower Dart SDK requirement to 2.2.0.
+- Update lower Dart SDK requirement to `2.2.0`.
+- Update the dependency range on `package:webkit_inspection_protocol`.
 
 ## 0.1.5
 
