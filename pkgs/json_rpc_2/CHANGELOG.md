@@ -1,3 +1,9 @@
+## 2.2.0
+
+* Added `strictProtocolChecks` named parameter to `Server` and `Peer`
+  constructors. Setting this parameter to false will result in the server not
+  rejecting requests missing the `jsonrpc` parameter.
+
 ## 2.1.1
 
 * Fixed issue where throwing `RpcException.methodNotFound` in an asynchronous

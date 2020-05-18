@@ -74,4 +74,21 @@ void main() {
           }
         })));
   });
+
+  group('strict protocol checks disabled', () {
+    setUp(() => controller = ServerController(strictProtocolChecks: false));
+
+    test('and no jsonrpc param', () {
+      expectErrorResponse(controller, {'method': 'foo', 'id': 1234},
+          error_code.METHOD_NOT_FOUND, 'Unknown method "foo".');
+    });
+
+    test('the jsonrpc version must be 2.0', () {
+      expectErrorResponse(
+          controller,
+          {'jsonrpc': '1.0', 'method': 'foo', 'id': 1234},
+          error_code.INVALID_REQUEST,
+          'Invalid JSON-RPC version "1.0", expected "2.0".');
+    });
+  });
 }

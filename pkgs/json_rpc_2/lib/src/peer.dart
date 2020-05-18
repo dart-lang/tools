@@ -44,6 +44,9 @@ class Peer implements Client, Server {
   @override
   ErrorCallback get onUnhandledError => _server?.onUnhandledError;
 
+  @override
+  bool get strictProtocolChecks => _server.strictProtocolChecks;
+
   /// Creates a [Peer] that communicates over [channel].
   ///
   /// Note that the peer won't begin listening to [channel] until [Peer.listen]
@@ -51,10 +54,17 @@ class Peer implements Client, Server {
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
-  Peer(StreamChannel<String> channel, {ErrorCallback onUnhandledError})
+  ///
+  /// If [strictProtocolChecks] is false, the underlying [Server] will accept
+  /// some requests which are not conformant with the JSON-RPC 2.0
+  /// specification. In particular, requests missing the `jsonrpc` parameter
+  /// will be accepted.
+  Peer(StreamChannel<String> channel,
+      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true})
       : this.withoutJson(
             jsonDocument.bind(channel).transform(respondToFormatExceptions),
-            onUnhandledError: onUnhandledError);
+            onUnhandledError: onUnhandledError,
+            strictProtocolChecks: strictProtocolChecks);
 
   /// Creates a [Peer] that communicates using decoded messages over [channel].
   ///
@@ -66,11 +76,18 @@ class Peer implements Client, Server {
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
-  Peer.withoutJson(StreamChannel channel, {ErrorCallback onUnhandledError})
+  ///
+  /// If [strictProtocolChecks] is false, the underlying [Server] will accept
+  /// some requests which are not conformant with the JSON-RPC 2.0
+  /// specification. In particular, requests missing the `jsonrpc` parameter
+  /// will be accepted.
+  Peer.withoutJson(StreamChannel channel,
+      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true})
       : _manager = ChannelManager('Peer', channel) {
     _server = Server.withoutJson(
         StreamChannel(_serverIncomingForwarder.stream, channel.sink),
-        onUnhandledError: onUnhandledError);
+        onUnhandledError: onUnhandledError,
+        strictProtocolChecks: strictProtocolChecks);
     _client = Client.withoutJson(
         StreamChannel(_clientIncomingForwarder.stream, channel.sink));
   }

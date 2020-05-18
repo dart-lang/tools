@@ -61,6 +61,13 @@ class Server {
   /// invoked. If it is not set, the exception will be swallowed.
   final ErrorCallback onUnhandledError;
 
+  /// Whether to strictly enforce the JSON-RPC 2.0 specification for received messages.
+  ///
+  /// If `false`, this [Server] will accept some requests which are not conformant
+  /// with the JSON-RPC 2.0 specification. In particular, requests missing the
+  /// `jsonrpc` parameter will be accepted.
+  final bool strictProtocolChecks;
+
   /// Creates a [Server] that communicates over [channel].
   ///
   /// Note that the server won't begin listening to [requests] until
@@ -68,10 +75,16 @@ class Server {
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
-  Server(StreamChannel<String> channel, {ErrorCallback onUnhandledError})
+  ///
+  /// If [strictProtocolChecks] is false, this [Server] will accept some
+  /// requests which are not conformant with the JSON-RPC 2.0 specification. In
+  /// particular, requests missing the `jsonrpc` parameter will be accepted.
+  Server(StreamChannel<String> channel,
+      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true})
       : this.withoutJson(
             jsonDocument.bind(channel).transform(respondToFormatExceptions),
-            onUnhandledError: onUnhandledError);
+            onUnhandledError: onUnhandledError,
+            strictProtocolChecks: strictProtocolChecks);
 
   /// Creates a [Server] that communicates using decoded messages over
   /// [channel].
@@ -84,7 +97,12 @@ class Server {
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
   /// If this is not provided, unhandled exceptions will be swallowed.
-  Server.withoutJson(StreamChannel channel, {this.onUnhandledError})
+  ///
+  /// If [strictProtocolChecks] is false, this [Server] will accept some
+  /// requests which are not conformant with the JSON-RPC 2.0 specification. In
+  /// particular, requests missing the `jsonrpc` parameter will be accepted.
+  Server.withoutJson(StreamChannel channel,
+      {this.onUnhandledError, this.strictProtocolChecks = true})
       : _manager = ChannelManager('Server', channel);
 
   /// Starts listening to the underlying stream.
@@ -217,14 +235,15 @@ class Server {
           'an Array or an Object.');
     }
 
-    if (!request.containsKey('jsonrpc')) {
+    if (strictProtocolChecks && !request.containsKey('jsonrpc')) {
       throw RpcException(
           error_code.INVALID_REQUEST,
           'Request must '
           'contain a "jsonrpc" key.');
     }
 
-    if (request['jsonrpc'] != '2.0') {
+    if ((strictProtocolChecks || request.containsKey('jsonrpc')) &&
+        request['jsonrpc'] != '2.0') {
       throw RpcException(
           error_code.INVALID_REQUEST,
           'Invalid JSON-RPC '
@@ -246,12 +265,14 @@ class Server {
           'be a string, but was ${jsonEncode(method)}.');
     }
 
-    var params = request['params'];
-    if (request.containsKey('params') && params is! List && params is! Map) {
-      throw RpcException(
-          error_code.INVALID_REQUEST,
-          'Request params must '
-          'be an Array or an Object, but was ${jsonEncode(params)}.');
+    if (request.containsKey('params')) {
+      var params = request['params'];
+      if (params is! List && params is! Map) {
+        throw RpcException(
+            error_code.INVALID_REQUEST,
+            'Request params must '
+            'be an Array or an Object, but was ${jsonEncode(params)}.');
+      }
     }
 
     var id = request['id'];

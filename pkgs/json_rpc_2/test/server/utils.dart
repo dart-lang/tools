@@ -23,10 +23,13 @@ class ServerController {
   json_rpc.Server get server => _server;
   json_rpc.Server _server;
 
-  ServerController({json_rpc.ErrorCallback onUnhandledError}) {
+  ServerController(
+      {json_rpc.ErrorCallback onUnhandledError,
+      bool strictProtocolChecks = true}) {
     _server = json_rpc.Server(
         StreamChannel(_requestController.stream, _responseController.sink),
-        onUnhandledError: onUnhandledError);
+        onUnhandledError: onUnhandledError,
+        strictProtocolChecks: strictProtocolChecks);
     _server.listen();
   }
 
