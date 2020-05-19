@@ -1,3 +1,7 @@
+## 0.1.7
+
+- Widen the dependency range on `package:webkit_inspection_protocol`.
+
 ## 0.1.6
 
 - Update lower Dart SDK requirement to `2.2.0`.
