@@ -22,7 +22,7 @@ characters instead. It currently defaults to `false`, although in the future it
 may default to `true` for applications running on the Dart VM on Windows. For
 example:
 
-[ascii]: https://www.dartdocs.org/documentation/term_glyph/latest/term_glyph/ascii.html
+[ascii]: https://pub.dev/documentation/term_glyph/latest/term_glyph/ascii.html
 
 ```dart
 import 'dart:io';
