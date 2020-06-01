@@ -1,3 +1,5 @@
+## 2.2.1-dev
+
 ## 2.2.0
 
 * Added `strictProtocolChecks` named parameter to `Server` and `Peer`
