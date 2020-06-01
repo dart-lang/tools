@@ -103,7 +103,9 @@ class IsolateDriverConnection implements DriverConnection {
 
   @override
   Future<WorkResponse> readResponse() async {
-    await _receivePortIterator.moveNext();
+    if (!await _receivePortIterator.moveNext()) {
+      return null;
+    }
     return WorkResponse.fromBuffer(_receivePortIterator.current as List<int>);
   }
 

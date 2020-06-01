@@ -1,3 +1,8 @@
+## 0.1.24
+
+* Check for closed port when trying to read a response in
+  `IsolateDriverConnection` and return `null` if there is nothing to be read.
+
 ## 0.1.23+1
 
 * Don't rely on `exitCode` to know when a worker terminates, instead wait for
