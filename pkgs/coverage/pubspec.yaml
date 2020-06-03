@@ -1,5 +1,5 @@
 name: coverage
-version: 0.13.9
+version: 0.13.10
 description: Coverage data manipulation and formatting
 homepage: https://github.com/dart-lang/coverage
 

@@ -1,3 +1,11 @@
+## 0.13.10 - 2020-06-03
+* Add flag `--check-ignore` that is used to ignore lines from coverage
+  depending on the comments.
+
+  Use // coverage:ignore-line to ignore one line.
+  Use // coverage:ignore-start and // coverage:ignore-end to ignore range of lines inclusive.
+  Use // coverage:ignore-file to ignore the whole file.
+
 ## 0.13.9 - 2020-03-09
 
 * Don't crash on empty JSON input files.

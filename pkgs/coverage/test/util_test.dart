@@ -129,4 +129,106 @@ void main() {
           Uri.parse('http://foo.bar:9999/cG90YXRv/'));
     });
   });
+
+  group('getIgnoredLines', () {
+    const invalidSources = [
+      '''final str = ''; // coverage:ignore-start
+        final str = '';
+        final str = ''; // coverage:ignore-start
+        ''',
+      '''final str = ''; // coverage:ignore-start
+        final str = '';
+        final str = ''; // coverage:ignore-start
+        final str = ''; // coverage:ignore-end
+        final str = '';
+        final str = ''; // coverage:ignore-end
+        ''',
+      '''final str = ''; // coverage:ignore-start
+        final str = '';
+        final str = ''; // coverage:ignore-end
+        final str = '';
+        final str = ''; // coverage:ignore-end
+        ''',
+      '''final str = ''; // coverage:ignore-end
+        final str = '';
+        final str = ''; // coverage:ignore-start
+        final str = '';
+        final str = ''; // coverage:ignore-end
+        ''',
+      '''final str = ''; // coverage:ignore-end
+        final str = '';
+        final str = ''; // coverage:ignore-end
+        ''',
+      '''final str = ''; // coverage:ignore-end
+        final str = '';
+        final str = ''; // coverage:ignore-start
+        ''',
+      '''final str = ''; // coverage:ignore-end
+        ''',
+      '''final str = ''; // coverage:ignore-start
+        ''',
+    ];
+
+    test('returns empty when the annotations are not balanced', () {
+      for (final content in invalidSources) {
+        expect(getIgnoredLines(content.split('\n')), isEmpty);
+      }
+    });
+
+    test(
+        'returns [[0,lines.length]] when the annotations are not '
+        'balanced but the whole file is ignored', () {
+      for (final content in invalidSources) {
+        final lines = content.split('\n');
+        lines.add(' // coverage:ignore-file');
+        expect(getIgnoredLines(lines), [
+          [0, lines.length]
+        ]);
+      }
+    });
+
+    test('Returns [[0,lines.length]] when the whole file is ignored', () {
+      final lines = '''final str = ''; // coverage:ignore-start
+      final str = ''; // coverage:ignore-end
+      final str = ''; // coverage:ignore-file
+      '''
+          .split('\n');
+
+      expect(getIgnoredLines(lines), [
+        [0, lines.length]
+      ]);
+    });
+
+    test('return the correct range of lines ignored', () {
+      final lines = '''
+      final str = ''; // coverage:ignore-start
+      final str = ''; // coverage:ignore-line
+      final str = ''; // coverage:ignore-end
+      final str = ''; // coverage:ignore-start
+      final str = ''; // coverage:ignore-line
+      final str = ''; // coverage:ignore-end
+      '''
+          .split('\n');
+
+      expect(getIgnoredLines(lines), [
+        [1, 3],
+        [4, 6],
+      ]);
+    });
+
+    test('return the correct list of lines ignored', () {
+      final lines = '''
+      final str = ''; // coverage:ignore-line
+      final str = ''; // coverage:ignore-line
+      final str = ''; // coverage:ignore-line
+      '''
+          .split('\n');
+
+      expect(getIgnoredLines(lines), [
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]);
+    });
+  });
 }
