@@ -86,6 +86,12 @@ abstract class Logger {
   /// Print trace output.
   void trace(String message);
 
+  /// Print text to stdout, without a trailing newline.
+  void write(String message);
+
+  /// Print a character code to stdout, without a trailing newline.
+  void writeCharCode(int charCode);
+
   /// Start an indeterminate progress display.
   Progress progress(String message);
 
@@ -122,26 +128,38 @@ class StandardLogger implements Logger {
   Progress _currentProgress;
 
   void stderr(String message) {
-    if (_currentProgress != null) {
-      Progress progress = _currentProgress;
-      _currentProgress = null;
-      progress.cancel();
-    }
+    _cancelProgress();
 
     io.stderr.writeln(message);
   }
 
   void stdout(String message) {
-    if (_currentProgress != null) {
-      Progress progress = _currentProgress;
-      _currentProgress = null;
-      progress.cancel();
-    }
+    _cancelProgress();
 
     print(message);
   }
 
   void trace(String message) {}
+
+  void write(String message) {
+    _cancelProgress();
+
+    io.stdout.write(message);
+  }
+
+  void writeCharCode(int charCode) {
+    _cancelProgress();
+
+    io.stdout.writeCharCode(charCode);
+  }
+
+  void _cancelProgress() {
+    if (_currentProgress != null) {
+      Progress progress = _currentProgress;
+      _currentProgress = null;
+      progress.cancel();
+    }
+  }
 
   Progress progress(String message) {
     if (_currentProgress != null) {
@@ -258,6 +276,14 @@ class VerboseLogger implements Logger {
 
   void trace(String message) {
     io.stdout.writeln('${_createPrefix()}${ansi.gray}$message${ansi.none}');
+  }
+
+  void write(String message) {
+    io.stdout.write(message);
+  }
+
+  void writeCharCode(int charCode) {
+    io.stdout.writeCharCode(charCode);
   }
 
   Progress progress(String message) => new SimpleProgress(this, message);

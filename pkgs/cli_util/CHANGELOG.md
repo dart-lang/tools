@@ -1,13 +1,22 @@
+## 0.2.0
+
+- Add `Logger.write` and `Logger.writeCharCode` methods which write without
+  printing a trailing newline.
+
 ## 0.1.4
+
 - Add `Ansi.reversed` getter.
 
 ## 0.1.3+2
+
 - Update Dart SDK constraint to < 3.0.0.
 
 ## 0.1.3+1
+
 - Update Dart SDK to 2.0.0-dev.
 
 ## 0.1.3
+
 - In verbose mode, instead of printing the diff from the last log message,
   print the total time since the tool started
 - Change to not buffer the last log message sent in verbose logging mode
