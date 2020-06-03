@@ -40,7 +40,10 @@ void main() {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
 
-    final hitMap = createHitmap(coverage);
+    final hitMap = await createHitmap(
+      coverage,
+      checkIgnoredLines: true,
+    );
     expect(hitMap, contains(_sampleAppFileUri));
 
     final actualHits = hitMap[_isolateLibFileUri];
@@ -57,6 +60,8 @@ void main() {
       33: 1,
       34: 3,
       35: 1,
+      46: 1,
+      47: 1,
     };
     // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
     // closing brace of async function blocks.

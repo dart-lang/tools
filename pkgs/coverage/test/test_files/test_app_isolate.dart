@@ -34,4 +34,24 @@ void isolateTask(dynamic threeThings) {
     final sum = (threeThings[1] + threeThings[2]) as int;
     port.send(sum);
   });
+
+  print('678'); // coverage:ignore-line
+
+  // coverage:ignore-start
+  print('1');
+  print('2');
+  print('3');
+  // coverage:ignore-end
+
+  print('4');
+  print('5');
+
+  print('6'); // coverage:ignore-start
+  print('7');
+  print('8');
+  // coverage:ignore-end
+  print('9'); // coverage:ignore-start
+  print('10');
+  print('11'); // coverage:ignore-line
+  // coverage:ignore-end
 }
