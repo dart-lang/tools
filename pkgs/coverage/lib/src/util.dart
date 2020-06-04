@@ -109,3 +109,69 @@ int _finish(int hash) {
   hash = hash ^ (hash >> 11);
   return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
 }
+
+const muliLineIgnoreStart = '// coverage:ignore-start';
+const muliLineIgnoreEnd = '// coverage:ignore-end';
+const singleLineIgnore = '// coverage:ignore-line';
+const ignoreFile = '// coverage:ignore-file';
+
+/// Return list containing inclusive range of lines to be ignored by coverage.
+/// If there is a error in balancing the statements it will ignore nothing,
+/// unless `coverage:ignore-file` is found.
+/// Return [0, lines.length] if the whole file is ignored.
+///
+/// ```
+/// 1.  final str = ''; // coverage:ignore-line
+/// 2.  final str = '';
+/// 3.  final str = ''; // coverage:ignore-start
+/// 4.  final str = '';
+/// 5.  final str = ''; // coverage:ignore-end
+/// ```
+///
+/// Returns
+/// ```
+/// [
+///   [1,1],
+///   [3,5],
+/// ]
+/// ```
+///
+List<List<int>> getIgnoredLines(List<String> lines) {
+  final ignoredLines = <List<int>>[];
+  if (lines == null) return ignoredLines;
+
+  final allLines = [
+    [0, lines.length]
+  ];
+
+  var isError = false;
+  var i = 0;
+  while (i < lines.length) {
+    if (lines[i].contains(ignoreFile)) return allLines;
+
+    if (lines[i].contains(muliLineIgnoreEnd)) isError = true;
+
+    if (lines[i].contains(singleLineIgnore)) ignoredLines.add([i + 1, i + 1]);
+
+    if (lines[i].contains(muliLineIgnoreStart)) {
+      final start = i;
+      ++i;
+      while (i < lines.length) {
+        if (lines[i].contains(ignoreFile)) return allLines;
+        if (lines[i].contains(muliLineIgnoreStart)) {
+          isError = true;
+          break;
+        }
+
+        if (lines[i].contains(muliLineIgnoreEnd)) {
+          ignoredLines.add([start + 1, i + 1]);
+          break;
+        }
+        ++i;
+      }
+    }
+    ++i;
+  }
+
+  return isError ? [] : ignoredLines;
+}

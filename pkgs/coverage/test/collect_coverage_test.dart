@@ -53,7 +53,10 @@ void main() {
     final resultString = await _getCoverageResult();
     final jsonResult = json.decode(resultString) as Map<String, dynamic>;
     final coverage = jsonResult['coverage'] as List;
-    final hitMap = createHitmap(coverage.cast<Map<String, dynamic>>());
+    final hitMap = await createHitmap(
+      coverage.cast<Map<String, dynamic>>(),
+      checkIgnoredLines: true,
+    );
     expect(hitMap, contains(_sampleAppFileUri));
 
     final isolateFile = hitMap[_isolateLibFileUri];
@@ -70,6 +73,8 @@ void main() {
       33: 1,
       34: 3,
       35: 1,
+      46: 1,
+      47: 1,
     };
     if (Platform.version.startsWith('1.')) {
       // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the

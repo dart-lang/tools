@@ -55,3 +55,9 @@ format_coverage --packages=app_package/.packages -i coverage.json
 
 where `app_package` is the path to the package whose coverage is being
 collected. If `--sdk-root` is set, Dart SDK coverage will also be output.
+
+#### Ignore lines from coverage
+
+- `// coverage:ignore-line` to ignore one line.
+- `// coverage:ignore-start` and `// coverage:ignore-end` to ignore range of lines inclusive.
+- `// coverage:ignore-file` to ignore the whole file.
