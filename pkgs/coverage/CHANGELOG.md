@@ -1,4 +1,13 @@
-## 0.13.11 - 2020-03-09
+## 0.14.0 - 2020-06-04
+
+* Add flag `--check-ignore` that is used to ignore lines from coverage
+  depending on the comments.
+
+  Use // coverage:ignore-line to ignore one line.
+  Use // coverage:ignore-start and // coverage:ignore-end to ignore range of lines inclusive.
+  Use // coverage:ignore-file to ignore the whole file.
+
+## 0.13.11 - 2020-06-04
 
 * Revert breaking change in 13.10
 
