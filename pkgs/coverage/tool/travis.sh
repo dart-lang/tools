@@ -31,6 +31,5 @@ if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "dev" ]; then
     --in=var/coverage.json \
     --out=var/lcov.info \
     --packages=.packages \
-    --report-on=lib \
-    --check-ignore
+    --report-on=lib
 fi
