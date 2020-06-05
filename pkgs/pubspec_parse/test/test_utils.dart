@@ -40,7 +40,7 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   if (innerError != null) {
     final items = [innerError];
     if (innerStack != null) {
-      items.add(Trace.format(innerStack, terse: true));
+      items.add(Trace.format(innerStack));
     }
 
     final content =
