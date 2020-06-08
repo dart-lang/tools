@@ -1,11 +1,11 @@
 language: dart
 
 dart:
+  - 2.0.0
   - dev
 
 dart_task:
-  - test: --platform vm
-  - test: --platform firefox
+  - test: --platform vm,chrome
   - dartfmt
   - dartanalyzer: --fatal-infos --fatal-warnings .
 
