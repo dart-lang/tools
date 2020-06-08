@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -83,6 +84,21 @@ void main() {
         expect(peer.sendRequest('a', {'b': 'c'}), completion(equals('d')));
         expect(peer.sendRequest('w', {'x': 'y'}), completion(equals('z')));
       });
+    });
+
+    test('requests terminates when the channel is closed', () async {
+      var incomingController = StreamController();
+      var channel = StreamChannel.withGuarantees(
+        incomingController.stream,
+        StreamController(),
+      );
+      var peer = json_rpc.Peer.withoutJson(channel);
+      unawaited(peer.listen());
+
+      var response = peer.sendRequest('foo');
+      await incomingController.close();
+
+      expect(response, throwsStateError);
     });
   });
 

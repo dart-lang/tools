@@ -1,5 +1,7 @@
 ## 2.2.1-dev
 
+* Fix `Peer` requests not terminating when the underlying channel is closed.
+
 ## 2.2.0
 
 * Added `strictProtocolChecks` named parameter to `Server` and `Peer`

@@ -142,7 +142,7 @@ class Peer implements Client, Server {
         // server since it knows how to send error responses.
         _serverIncomingForwarder.add(message);
       }
-    });
+    }).whenComplete(close);
   }
 
   @override
