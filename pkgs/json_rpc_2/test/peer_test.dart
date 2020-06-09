@@ -102,6 +102,17 @@ void main() {
     });
   });
 
+  test('can be closed', () async {
+    var incomingController = StreamController();
+    var channel = StreamChannel.withGuarantees(
+      incomingController.stream,
+      StreamController(),
+    );
+    var peer = json_rpc.Peer.withoutJson(channel);
+    unawaited(peer.listen());
+    await peer.close();
+  }, skip: 'https://github.com/dart-lang/json_rpc_2/issues/55');
+
   group('like a server,', () {
     test('can receive a call and return a response', () {
       expect(outgoing.first,
