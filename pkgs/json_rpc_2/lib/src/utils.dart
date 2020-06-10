@@ -52,24 +52,20 @@ final ignoreFormatExceptions = StreamTransformer<Object, Object>.fromHandlers(
 });
 
 /// A transformer that sends error responses on [FormatException]s.
-final StreamChannelTransformer respondToFormatExceptions =
+final StreamChannelTransformer<Object, Object> respondToFormatExceptions =
     _RespondToFormatExceptionsTransformer();
 
-/// The implementation of [respondToFormatExceptions].
 class _RespondToFormatExceptionsTransformer
-    implements StreamChannelTransformer {
+    implements StreamChannelTransformer<Object, Object> {
   @override
-  StreamChannel bind(StreamChannel channel) {
-    var transformed;
-    transformed = channel.changeStream((stream) {
-      return stream.handleError((error) {
-        if (error is! FormatException) throw error;
-
+  StreamChannel<Object> bind(StreamChannel<Object> channel) {
+    return channel.changeStream((stream) {
+      return stream.handleError((dynamic error) {
+        final formatException = error as FormatException;
         var exception = RpcException(
-            error_code.PARSE_ERROR, 'Invalid JSON: ${error.message}');
-        transformed.sink.add(exception.serialize(error.source));
-      });
+            error_code.PARSE_ERROR, 'Invalid JSON: ${formatException.message}');
+        channel.sink.add(exception.serialize(formatException.source));
+      }, test: (error) => error is FormatException);
     });
-    return transformed;
   }
 }
