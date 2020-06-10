@@ -24,8 +24,8 @@ class Client {
 
   /// The current batch of requests to be sent together.
   ///
-  /// Each element is a JSON-serializable object.
-  List _batch;
+  /// Each element is a JSON RPC spec compliant message.
+  List<Map<String, dynamic>> _batch;
 
   /// The map of request ids to pending requests.
   final _pendingRequests = <int, _Request>{};
