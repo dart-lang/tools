@@ -11,25 +11,6 @@ import 'exception.dart';
 
 typedef ZeroArgumentFunction = Function();
 
-/// Returns a sentence fragment listing the elements of [iter].
-///
-/// This converts each element of [iter] to a string and separates them with
-/// commas and/or "and" where appropriate.
-String toSentence(Iterable iter) {
-  if (iter.length == 1) return iter.first.toString();
-  return iter.take(iter.length - 1).join(', ') + ' and ${iter.last}';
-}
-
-/// Returns [name] if [number] is 1, or the plural of [name] otherwise.
-///
-/// By default, this just adds "s" to the end of [name] to get the plural. If
-/// [plural] is passed, that's used instead.
-String pluralize(String name, int number, {String plural}) {
-  if (number == 1) return name;
-  if (plural != null) return plural;
-  return '${name}s';
-}
-
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
 final _exceptionPrefix = RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
@@ -91,30 +72,4 @@ class _RespondToFormatExceptionsTransformer
     });
     return transformed;
   }
-}
-
-/// Returns a [StreamSink] that wraps [sink] and maps each event added using
-/// [callback].
-StreamSink mapStreamSink(StreamSink sink, Function(dynamic) callback) =>
-    _MappedStreamSink(sink, callback);
-
-/// A [StreamSink] wrapper that maps each event added to the sink.
-class _MappedStreamSink implements StreamSink {
-  final StreamSink _inner;
-  final Function _callback;
-
-  @override
-  Future get done => _inner.done;
-
-  _MappedStreamSink(this._inner, this._callback);
-
-  @override
-  void add(event) => _inner.add(_callback(event));
-  @override
-  void addError(error, [StackTrace stackTrace]) =>
-      _inner.addError(error, stackTrace);
-  @override
-  Future addStream(Stream stream) => _inner.addStream(stream.map(_callback));
-  @override
-  Future close() => _inner.close();
 }
