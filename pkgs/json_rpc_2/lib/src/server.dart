@@ -61,11 +61,12 @@ class Server {
   /// invoked. If it is not set, the exception will be swallowed.
   final ErrorCallback onUnhandledError;
 
-  /// Whether to strictly enforce the JSON-RPC 2.0 specification for received messages.
+  /// Whether to strictly enforce the JSON-RPC 2.0 specification for received
+  /// messages.
   ///
-  /// If `false`, this [Server] will accept some requests which are not conformant
-  /// with the JSON-RPC 2.0 specification. In particular, requests missing the
-  /// `jsonrpc` parameter will be accepted.
+  /// If `false`, this [Server] will accept some requests which are not
+  /// conformant with the JSON-RPC 2.0 specification. In particular, requests
+  /// missing the `jsonrpc` parameter will be accepted.
   final bool strictProtocolChecks;
 
   /// Creates a [Server] that communicates over [channel].
