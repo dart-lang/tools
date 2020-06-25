@@ -1,3 +1,4 @@
+// @dart=2.8
 import 'dart:html';
 
 /// Copyright 2013 the V8 project authors. All rights reserved.

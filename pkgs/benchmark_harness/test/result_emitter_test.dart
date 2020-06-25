@@ -1,7 +1,6 @@
 library result_emitter_test;
 
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:mockito/mockito.dart';
 
 import 'package:test/test.dart';
 
@@ -9,7 +8,14 @@ void main() {
   benchmarkHarnessTest();
 }
 
-class MockResultEmitter extends Mock implements ScoreEmitter {}
+class MockResultEmitter extends ScoreEmitter {
+  int emitCount = 0;
+
+  @override
+  void emit(String name, double value) {
+    emitCount++;
+  }
+}
 
 // Create a new benchmark which has an emitter.
 class BenchmarkWithResultEmitter extends BenchmarkBase {
@@ -38,7 +44,7 @@ void benchmarkHarnessTest() {
       var testBenchmark = BenchmarkWithResultEmitter(emitter);
       testBenchmark.report();
 
-      verify(emitter.emit(any, any)).called(1);
+      expect(emitter.emitCount, equals(1));
     });
   });
 }
