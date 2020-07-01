@@ -43,6 +43,9 @@ class TestStdinSync implements TestStdin {
   }
 
   @override
+  bool get isBroadcast => false;
+
+  @override
   void noSuchMethod(Invocation invocation) {
     throw StateError('Unexpected invocation ${invocation.memberName}.');
   }
@@ -74,6 +77,9 @@ class TestStdinAsync implements TestStdin {
     return _controller.stream.listen(onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
+
+  @override
+  bool get isBroadcast => false;
 
   @override
   void noSuchMethod(Invocation invocation) {

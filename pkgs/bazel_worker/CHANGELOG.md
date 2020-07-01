@@ -1,3 +1,7 @@
+## 0.1.25
+
+* Add `isBroadcast` implementation to `TestStdin` classes.
+
 ## 0.1.24
 
 * Check for closed port when trying to read a response in
