@@ -1,6 +1,6 @@
 ## 0.1.6-dev
 
-- Update SDK requirement to `>=2.6.0 <3.0.0`.
+- Update SDK requirement to `>=2.7.0 <3.0.0`.
 
 ## 0.1.5
 

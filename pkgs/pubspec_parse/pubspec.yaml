@@ -6,7 +6,7 @@ version: 0.1.6-dev
 homepage: https://github.com/dart-lang/pubspec_parse
 
 environment:
-  sdk: '>=2.6.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   checked_yaml: ^1.0.0
