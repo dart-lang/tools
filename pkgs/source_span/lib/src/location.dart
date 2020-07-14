@@ -16,7 +16,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   ///
   /// This may be null, indicating that the source URL is unknown or
   /// unavailable.
-  final Uri sourceUrl;
+  final Uri? sourceUrl;
 
   /// The 0-based offset of this location in the source.
   final int offset;
@@ -42,9 +42,9 @@ class SourceLocation implements Comparable<SourceLocation> {
   /// means that [line] defaults to 0 and [column] defaults to [offset].
   ///
   /// [sourceUrl] may be either a [String], a [Uri], or `null`.
-  SourceLocation(this.offset, {sourceUrl, int line, int column})
+  SourceLocation(this.offset, {sourceUrl, int? line, int? column})
       : sourceUrl =
-            sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri,
+            sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri?,
         line = line ?? 0,
         column = column ?? offset {
     if (offset < 0) {
@@ -89,7 +89,7 @@ class SourceLocation implements Comparable<SourceLocation> {
       offset == other.offset;
 
   @override
-  int get hashCode => sourceUrl.hashCode + offset;
+  int get hashCode => (sourceUrl?.hashCode ?? 0) + offset;
 
   @override
   String toString() => '<$runtimeType: $offset $toolString>';
@@ -98,6 +98,6 @@ class SourceLocation implements Comparable<SourceLocation> {
 /// A base class for source locations with [offset], [line], and [column] known
 /// at construction time.
 class SourceLocationBase extends SourceLocation {
-  SourceLocationBase(int offset, {sourceUrl, int line, int column})
+  SourceLocationBase(int offset, {sourceUrl, int? line, int? column})
       : super(offset, sourceUrl: sourceUrl, line: line, column: column);
 }

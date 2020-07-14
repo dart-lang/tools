@@ -27,7 +27,7 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   ///
   /// This may be null, indicating that the source URL is unknown or
   /// unavailable.
-  Uri get sourceUrl;
+  Uri? get sourceUrl;
 
   /// The length of this span, in characters.
   int get length;
@@ -139,7 +139,7 @@ extension SourceSpanExtension on SourceSpan {
   /// [FileSpan]s).
   String messageMultiple(
       String message, String label, Map<SourceSpan, String> secondarySpans,
-      {bool color = false, String primaryColor, String secondaryColor}) {
+      {bool color = false, String? primaryColor, String? secondaryColor}) {
     final buffer = StringBuffer()
       ..write('line ${start.line + 1}, column ${start.column + 1}');
     if (sourceUrl != null) buffer.write(' of ${p.prettyUri(sourceUrl)}');
@@ -174,7 +174,7 @@ extension SourceSpanExtension on SourceSpan {
   /// much more useful output with [SourceSpanWithContext]s (including
   /// [FileSpan]s).
   String highlightMultiple(String label, Map<SourceSpan, String> secondarySpans,
-          {bool color = false, String primaryColor, String secondaryColor}) =>
+          {bool color = false, String? primaryColor, String? secondaryColor}) =>
       Highlighter.multiple(this, label, secondarySpans,
               color: color,
               primaryColor: primaryColor,
@@ -183,7 +183,7 @@ extension SourceSpanExtension on SourceSpan {
 
   /// Returns a span from [start] code units (inclusive) to [end] code units
   /// (exclusive) after the beginning of this span.
-  SourceSpan subspan(int start, [int end]) {
+  SourceSpan subspan(int start, [int? end]) {
     RangeError.checkValidRange(start, end, length);
     if (start == 0 && (end == null || end == length)) return this;
 
@@ -220,7 +220,7 @@ extension SourceSpanExtension on SourceSpan {
       newEndLocation = this.end;
     } else if (end == start) {
       newEndLocation = newStartLocation;
-    } else if (end != null && end != length) {
+    } else {
       for (var i = start; i < end; i++) {
         consumeCodePoint(i);
       }

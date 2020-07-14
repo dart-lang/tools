@@ -48,7 +48,7 @@ abstract class SourceLocationMixin implements SourceLocation {
       offset == other.offset;
 
   @override
-  int get hashCode => sourceUrl.hashCode + offset;
+  int get hashCode => (sourceUrl?.hashCode ?? 0) + offset;
 
   @override
   String toString() => '<$runtimeType: $offset $toolString>';

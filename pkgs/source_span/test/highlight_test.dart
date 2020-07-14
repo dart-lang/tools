@@ -10,7 +10,7 @@ import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
 void main() {
-  bool oldAscii;
+  late bool oldAscii;
   setUpAll(() {
     oldAscii = glyph.ascii;
     glyph.ascii = true;
@@ -20,7 +20,7 @@ void main() {
     glyph.ascii = oldAscii;
   });
 
-  SourceFile file;
+  late SourceFile file;
   setUp(() {
     file = SourceFile.fromString('''
 foo bar baz

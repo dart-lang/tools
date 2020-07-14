@@ -23,7 +23,7 @@ class SourceFile {
   /// The URL where the source file is located.
   ///
   /// This may be null, indicating that the URL is unknown or unavailable.
-  final Uri url;
+  final Uri? url;
 
   /// An array of offsets for each line beginning in the file.
   ///
@@ -47,7 +47,7 @@ class SourceFile {
   /// increasing offsets. In that case, we can find the line for an offset
   /// quickly by first checking to see if the offset is on the same line as the
   /// previous result.
-  int _cachedLine;
+  int? _cachedLine;
 
   /// This constructor is deprecated.
   ///
@@ -71,7 +71,7 @@ class SourceFile {
   /// forwards-compatibility, callers should only pass in characters less than
   /// or equal to `0xFFFF`.
   SourceFile.decoded(Iterable<int> decodedChars, {url})
-      : url = url is String ? Uri.parse(url) : url as Uri,
+      : url = url is String ? Uri.parse(url) : url as Uri?,
         _decodedChars = Uint32List.fromList(decodedChars.toList()) {
     for (var i = 0; i < _decodedChars.length; i++) {
       var c = _decodedChars[i];
@@ -87,7 +87,7 @@ class SourceFile {
   /// Returns a span from [start] to [end] (exclusive).
   ///
   /// If [end] isn't passed, it defaults to the end of the file.
-  FileSpan span(int start, [int end]) {
+  FileSpan span(int start, [int? end]) {
     end ??= length;
     return _FileSpan(this, start, end);
   }
@@ -107,10 +107,10 @@ class SourceFile {
     if (offset < _lineStarts.first) return -1;
     if (offset >= _lineStarts.last) return _lineStarts.length - 1;
 
-    if (_isNearCachedLine(offset)) return _cachedLine;
+    if (_isNearCachedLine(offset)) return _cachedLine!;
 
     _cachedLine = _binarySearch(offset) - 1;
-    return _cachedLine;
+    return _cachedLine!;
   }
 
   /// Returns `true` if [offset] is near [_cachedLine].
@@ -119,20 +119,21 @@ class SourceFile {
   /// updates [_cachedLine] to point to that.
   bool _isNearCachedLine(int offset) {
     if (_cachedLine == null) return false;
+    final cachedLine = _cachedLine!;
 
     // See if it's before the cached line.
-    if (offset < _lineStarts[_cachedLine]) return false;
+    if (offset < _lineStarts[cachedLine]) return false;
 
     // See if it's on the cached line.
-    if (_cachedLine >= _lineStarts.length - 1 ||
-        offset < _lineStarts[_cachedLine + 1]) {
+    if (cachedLine >= _lineStarts.length - 1 ||
+        offset < _lineStarts[cachedLine + 1]) {
       return true;
     }
 
     // See if it's on the next line.
-    if (_cachedLine >= _lineStarts.length - 2 ||
-        offset < _lineStarts[_cachedLine + 2]) {
-      _cachedLine++;
+    if (cachedLine >= _lineStarts.length - 2 ||
+        offset < _lineStarts[cachedLine + 2]) {
+      _cachedLine = cachedLine + 1;
       return true;
     }
 
@@ -161,7 +162,7 @@ class SourceFile {
   ///
   /// If [line] is passed, it's assumed to be the line containing [offset] and
   /// is used to more efficiently compute the column.
-  int getColumn(int offset, {int line}) {
+  int getColumn(int offset, {int? line}) {
     if (offset < 0) {
       throw RangeError('Offset may not be negative, was $offset.');
     } else if (offset > length) {
@@ -189,7 +190,7 @@ class SourceFile {
   /// Gets the offset for a [line] and [column].
   ///
   /// [column] defaults to 0.
-  int getOffset(int line, [int column]) {
+  int getOffset(int line, [int? column]) {
     column ??= 0;
 
     if (line < 0) {
@@ -213,7 +214,7 @@ class SourceFile {
   /// Returns the text of the file from [start] to [end] (exclusive).
   ///
   /// If [end] isn't passed, it defaults to the end of the file.
-  String getText(int start, [int end]) =>
+  String getText(int start, [int? end]) =>
       String.fromCharCodes(_decodedChars.sublist(start, end));
 }
 
@@ -231,7 +232,7 @@ class FileLocation extends SourceLocationMixin implements SourceLocation {
   final int offset;
 
   @override
-  Uri get sourceUrl => file.url;
+  Uri? get sourceUrl => file.url;
 
   @override
   int get line => file.getLine(offset);
@@ -299,7 +300,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   final int _end;
 
   @override
-  Uri get sourceUrl => file.url;
+  Uri? get sourceUrl => file.url;
 
   @override
   int get length => _end - _start;
@@ -318,7 +319,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
     final endLine = file.getLine(_end);
     final endColumn = file.getColumn(_end);
 
-    int endOffset;
+    int? endOffset;
     if (endColumn == 0 && endLine != 0) {
       // If [end] is at the very beginning of the line, the span covers the
       // previous newline, so we only want to include the previous line in the
@@ -362,16 +363,15 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   int compareTo(SourceSpan other) {
     if (other is! _FileSpan) return super.compareTo(other);
 
-    final otherFile = other as _FileSpan;
-    final result = _start.compareTo(otherFile._start);
-    return result == 0 ? _end.compareTo(otherFile._end) : result;
+    final result = _start.compareTo(other._start);
+    return result == 0 ? _end.compareTo(other._end) : result;
   }
 
   @override
   SourceSpan union(SourceSpan other) {
     if (other is! FileSpan) return super.union(other);
 
-    final span = expand(other as _FileSpan);
+    final span = expand(other);
 
     if (other is _FileSpan) {
       if (_start > other._end || other._start > _end) {
@@ -425,7 +425,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   }
 
   /// See `SourceSpanExtension.subspan`.
-  FileSpan subspan(int start, [int end]) {
+  FileSpan subspan(int start, [int? end]) {
     RangeError.checkValidRange(start, end, length);
     if (start == 0 && (end == null || end == length)) return this;
     return file.span(_start + start, end == null ? _end : _start + end);
@@ -436,7 +436,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
 /// Extension methods on the [FileSpan] API.
 extension FileSpanExtension on FileSpan {
   /// See `SourceSpanExtension.subspan`.
-  FileSpan subspan(int start, [int end]) {
+  FileSpan subspan(int start, [int? end]) {
     RangeError.checkValidRange(start, end, length);
     if (start == 0 && (end == null || end == length)) return this;
 

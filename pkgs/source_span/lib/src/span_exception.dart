@@ -15,8 +15,8 @@ class SourceSpanException implements Exception {
   /// The span associated with this exception.
   ///
   /// This may be `null` if the source location can't be determined.
-  SourceSpan get span => _span;
-  final SourceSpan _span;
+  SourceSpan? get span => _span;
+  final SourceSpan? _span;
 
   SourceSpanException(this._message, this._span);
 
@@ -30,7 +30,7 @@ class SourceSpanException implements Exception {
   @override
   String toString({color}) {
     if (span == null) return message;
-    return 'Error on ${span.message(message, color: color)}';
+    return 'Error on ${span!.message(message, color: color)}';
   }
 }
 
@@ -41,9 +41,9 @@ class SourceSpanFormatException extends SourceSpanException
   final dynamic source;
 
   @override
-  int get offset => span?.start?.offset;
+  int? get offset => span?.start.offset;
 
-  SourceSpanFormatException(String message, SourceSpan span, [this.source])
+  SourceSpanFormatException(String message, SourceSpan? span, [this.source])
       : super(message, span);
 }
 
@@ -64,7 +64,7 @@ class MultiSourceSpanException extends SourceSpanException {
   /// additional information and helps distinguish it from [secondarySpans].
   final Map<SourceSpan, String> secondarySpans;
 
-  MultiSourceSpanException(String message, SourceSpan span, this.primaryLabel,
+  MultiSourceSpanException(String message, SourceSpan? span, this.primaryLabel,
       Map<SourceSpan, String> secondarySpans)
       : secondarySpans = Map.unmodifiable(secondarySpans),
         super(message, span);
@@ -80,11 +80,11 @@ class MultiSourceSpanException extends SourceSpanException {
   /// If [color] is `true` or a string, [secondaryColor] is used to highlight
   /// [secondarySpans].
   @override
-  String toString({color, String secondaryColor}) {
+  String toString({color, String? secondaryColor}) {
     if (span == null) return message;
 
     var useColor = false;
-    String primaryColor;
+    String? primaryColor;
     if (color is String) {
       useColor = true;
       primaryColor = color;
@@ -92,7 +92,7 @@ class MultiSourceSpanException extends SourceSpanException {
       useColor = true;
     }
 
-    final formatted = span.messageMultiple(
+    final formatted = span!.messageMultiple(
         message, primaryLabel, secondarySpans,
         color: useColor,
         primaryColor: primaryColor,
@@ -108,9 +108,9 @@ class MultiSourceSpanFormatException extends MultiSourceSpanException
   final dynamic source;
 
   @override
-  int get offset => span?.start?.offset;
+  int? get offset => span?.start.offset;
 
-  MultiSourceSpanFormatException(String message, SourceSpan span,
+  MultiSourceSpanFormatException(String message, SourceSpan? span,
       String primaryLabel, Map<SourceSpan, String> secondarySpans,
       [this.source])
       : super(message, span, primaryLabel, secondarySpans);

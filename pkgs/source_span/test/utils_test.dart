@@ -9,26 +9,26 @@ void main() {
   group('find line start', () {
     test('skip entries in wrong column', () {
       final context = '0_bb\n1_bbb\n2b____\n3bbb\n';
-      final index = findLineStart(context, 'b', 1);
+      final index = findLineStart(context, 'b', 1)!;
       expect(index, 11);
       expect(context.substring(index - 1, index + 3), '\n2b_');
     });
 
     test('end of line column for empty text', () {
       final context = '0123\n56789\nabcdefgh\n';
-      final index = findLineStart(context, '', 5);
+      final index = findLineStart(context, '', 5)!;
       expect(index, 5);
       expect(context[index], '5');
     });
 
     test('column at the end of the file for empty text', () {
       var context = '0\n2\n45\n';
-      var index = findLineStart(context, '', 2);
+      var index = findLineStart(context, '', 2)!;
       expect(index, 4);
       expect(context[index], '4');
 
       context = '0\n2\n45';
-      index = findLineStart(context, '', 2);
+      index = findLineStart(context, '', 2)!;
       expect(index, 4);
     });
 

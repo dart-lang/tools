@@ -6,7 +6,6 @@ import 'dart:math' as math;
 
 import 'package:charcode/charcode.dart';
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
@@ -23,11 +22,11 @@ class Highlighter {
 
   /// The color to highlight the primary [_Highlight] within its context, or
   /// `null` if it should not be colored.
-  final String _primaryColor;
+  final String? _primaryColor;
 
   /// The color to highlight the secondary [_Highlight]s within their context,
   /// or `null` if they should not be colored.
-  final String _secondaryColor;
+  final String? _secondaryColor;
 
   /// The number of characters before the bar in the sidebar.
   final int _paddingBeforeSidebar;
@@ -63,7 +62,7 @@ class Highlighter {
       : this._(_collateLines([_Highlight(span, primary: true)]), () {
           if (color == true) return colors.red;
           if (color == false) return null;
-          return color as String;
+          return color as String?;
         }(), null);
 
   /// Creates a [Highlighter] that will return a string highlighting
@@ -83,7 +82,7 @@ class Highlighter {
   /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
   Highlighter.multiple(SourceSpan primarySpan, String primaryLabel,
       Map<SourceSpan, String> secondarySpans,
-      {bool color = false, String primaryColor, String secondaryColor})
+      {bool color = false, String? primaryColor, String? secondaryColor})
       : this._(
             _collateLines([
               _Highlight(primarySpan, label: primaryLabel, primary: true),
@@ -108,7 +107,8 @@ class Highlighter {
                 .where((highlight) => isMultiline(highlight.span))
                 .length)
             .reduce(math.max),
-        _multipleFiles = !isAllTheSame(_lines.map((line) => line.url));
+        _multipleFiles =
+            !isAllTheSame(_lines.map((line) => line.url).whereType<Uri>());
 
   /// Returns whether [lines] contains any adjacent lines from the same source
   /// file that aren't adjacent in the original file.
@@ -127,8 +127,8 @@ class Highlighter {
   /// Collect all the source lines from the contexts of all spans in
   /// [highlights], and associates them with the highlights that cover them.
   static List<_Line> _collateLines(List<_Highlight> highlights) {
-    final highlightsByUrl =
-        groupBy(highlights, (highlight) => highlight.span.sourceUrl);
+    final highlightsByUrl = groupBy<_Highlight, Uri?>(
+        highlights, (highlight) => highlight.span.sourceUrl);
     for (var list in highlightsByUrl.values) {
       list.sort((highlight1, highlight2) =>
           highlight1.span.compareTo(highlight2.span));
@@ -143,8 +143,7 @@ class Highlighter {
         // If [highlight.span.context] contains lines prior to the one
         // [highlight.span.text] appears on, write those first.
         final lineStart = findLineStart(
-            context, highlight.span.text, highlight.span.start.column);
-        assert(lineStart != null); // enforced by [_normalizeContext]
+            context, highlight.span.text, highlight.span.start.column)!;
 
         final linesBeforeSpan =
             '\n'.allMatches(context.substring(0, lineStart)).length;
@@ -192,7 +191,8 @@ class Highlighter {
     // Each index of this list represents a column after the sidebar that could
     // contain a line indicating an active highlight. If it's `null`, that
     // column is empty; if it contains a highlight, it should be drawn for that column.
-    final highlightsByColumn = List<_Highlight>(_maxMultilineSpans);
+    final highlightsByColumn =
+        List<_Highlight?>.filled(_maxMultilineSpans, null);
 
     for (var i = 0; i < _lines.length; i++) {
       final line = _lines[i];
@@ -226,8 +226,10 @@ class Highlighter {
       _writeMultilineHighlights(line, highlightsByColumn);
       if (highlightsByColumn.isNotEmpty) _buffer.write(' ');
 
-      final primary = line.highlights
-          .firstWhere((highlight) => highlight.isPrimary, orElse: () => null);
+      final primaryIdx =
+          line.highlights.indexWhere((highlight) => highlight.isPrimary);
+      final primary = primaryIdx == -1 ? null : line.highlights[primaryIdx];
+
       if (primary != null) {
         _writeHighlightedText(
             line.text,
@@ -258,7 +260,7 @@ class Highlighter {
 
   /// Writes the beginning of the file highlight for the file with the given
   /// [url].
-  void _writeFileStart(Uri url) {
+  void _writeFileStart(Uri? url) {
     if (!_multipleFiles || url == null) {
       _writeSidebar(end: glyph.downEnd);
     } else {
@@ -277,20 +279,20 @@ class Highlighter {
   /// written. If it appears in [highlightsByColumn], a horizontal line is
   /// written from its column to the rightmost column.
   void _writeMultilineHighlights(
-      _Line line, List<_Highlight> highlightsByColumn,
-      {_Highlight current}) {
+      _Line line, List<_Highlight?> highlightsByColumn,
+      {_Highlight? current}) {
     // Whether we've written a sidebar indicator for opening a new span on this
     // line, and which color should be used for that indicator's rightward line.
     var openedOnThisLine = false;
-    String openedOnThisLineColor;
+    String? openedOnThisLineColor;
 
     final currentColor = current == null
         ? null
         : current.isPrimary ? _primaryColor : _secondaryColor;
     var foundCurrent = false;
     for (var highlight in highlightsByColumn) {
-      final startLine = highlight?.span?.start?.line;
-      final endLine = highlight?.span?.end?.line;
+      final startLine = highlight?.span.start.line;
+      final endLine = highlight?.span.end.line;
       if (current != null && highlight == current) {
         foundCurrent = true;
         assert(startLine == line.number || endLine == line.number);
@@ -322,9 +324,9 @@ class Highlighter {
             }, color: openedOnThisLineColor);
             openedOnThisLine = true;
             openedOnThisLineColor ??=
-                highlight.isPrimary ? _primaryColor : _secondaryColor;
+                highlight!.isPrimary ? _primaryColor : _secondaryColor;
           } else if (endLine == line.number &&
-              highlight.span.end.column == line.text.length) {
+              highlight!.span.end.column == line.text.length) {
             _buffer.write(highlight.label == null
                 ? glyph.glyphOrAscii('└', '\\')
                 : vertical);
@@ -341,7 +343,7 @@ class Highlighter {
   // Writes [text], with text between [startColumn] and [endColumn] colorized in
   // the same way as [_colorize].
   void _writeHighlightedText(String text, int startColumn, int endColumn,
-      {@required String color}) {
+      {required String? color}) {
     _writeText(text.substring(0, startColumn));
     _colorize(() => _writeText(text.substring(startColumn, endColumn)),
         color: color);
@@ -353,7 +355,7 @@ class Highlighter {
   ///
   /// This may either add or remove [highlight] from [highlightsByColumn].
   void _writeIndicator(
-      _Line line, _Highlight highlight, List<_Highlight> highlightsByColumn) {
+      _Line line, _Highlight highlight, List<_Highlight?> highlightsByColumn) {
     final color = highlight.isPrimary ? _primaryColor : _secondaryColor;
     if (!isMultiline(highlight.span)) {
       _writeSidebar();
@@ -436,7 +438,7 @@ class Highlighter {
   }
 
   /// Writes a space followed by [label] if [label] isn't `null`.
-  void _writeLabel(String label) {
+  void _writeLabel(String? label) {
     if (label != null) _buffer.write(' $label');
   }
 
@@ -457,7 +459,7 @@ class Highlighter {
   //
   // If [text] is given, it's used in place of the line number. It can't be
   // passed at the same time as [line].
-  void _writeSidebar({int line, String text, String end}) {
+  void _writeSidebar({int? line, String? text, String? end}) {
     assert(line == null || text == null);
 
     // Add 1 to line to convert from computer-friendly 0-indexed line numbers to
@@ -489,7 +491,7 @@ class Highlighter {
 
   /// Colors all text written to [_buffer] during [callback], if colorization is
   /// enabled and [color] is not `null`.
-  void _colorize(void Function() callback, {@required String color}) {
+  void _colorize(void Function() callback, {required String? color}) {
     if (_primaryColor != null && color != null) _buffer.write(color);
     callback();
     if (_primaryColor != null && color != null) _buffer.write(colors.none);
@@ -513,7 +515,7 @@ class _Highlight {
   ///
   /// This helps distinguish clarify what each highlight means when multiple are
   /// used in the same message.
-  final String label;
+  final String? label;
 
   _Highlight(SourceSpan span, {this.label, bool primary = false})
       : span = (() {
@@ -636,7 +638,7 @@ class _Highlight {
 
   /// Returns whether [span]'s text runs all the way to the end of its context.
   static bool _isTextAtEndOfContext(SourceSpanWithContext span) =>
-      findLineStart(span.context, span.text, span.start.column) +
+      findLineStart(span.context, span.text, span.start.column)! +
           span.start.column +
           span.length ==
       span.context.length;
@@ -661,7 +663,7 @@ class _Line {
   final int number;
 
   /// The URL of the source file in which this line appears.
-  final Uri url;
+  final Uri? url;
 
   /// All highlights that cover any portion of this line, in source span order.
   ///

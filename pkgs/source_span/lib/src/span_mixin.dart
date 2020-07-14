@@ -17,7 +17,7 @@ import 'utils.dart';
 /// to the distance between [start] and [end].
 abstract class SourceSpanMixin implements SourceSpan {
   @override
-  Uri get sourceUrl => start.sourceUrl;
+  Uri? get sourceUrl => start.sourceUrl;
 
   @override
   int get length => end.offset - start.offset;

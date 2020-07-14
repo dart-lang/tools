@@ -16,10 +16,8 @@ T max<T extends Comparable>(T obj1, T obj2) =>
 
 /// Returns whether all elements of [iter] are the same value, according to
 /// `==`.
-///
-/// Assumes [iter] doesn't contain any `null` values.
 bool isAllTheSame(Iterable<Object> iter) {
-  Object lastValue;
+  Object? lastValue;
   for (var value in iter) {
     if (lastValue == null) {
       lastValue = value;
@@ -34,14 +32,14 @@ bool isAllTheSame(Iterable<Object> iter) {
 bool isMultiline(SourceSpan span) => span.start.line != span.end.line;
 
 /// Sets the first `null` element of [list] to [element].
-void replaceFirstNull<E>(List<E> list, E element) {
+void replaceFirstNull<E>(List<E?> list, E element) {
   final index = list.indexOf(null);
   if (index < 0) throw ArgumentError('$list contains no null elements.');
   list[index] = element;
 }
 
 /// Sets the element of [list] that currently contains [element] to `null`.
-void replaceWithNull<E>(List<E> list, E element) {
+void replaceWithNull<E>(List<E?> list, E element) {
   final index = list.indexOf(element);
   if (index < 0) {
     throw ArgumentError('$list contains no elements matching $element.');
@@ -63,7 +61,7 @@ int countCodeUnits(String string, int codeUnit) {
 ///
 /// Returns the index in [context] where that line begins, or null if none
 /// exists.
-int findLineStart(String context, String text, int column) {
+int? findLineStart(String context, String text, int column) {
   // If the text is empty, we just want to find the first line that has at least
   // [column] characters.
   if (text.isEmpty) {
