@@ -33,8 +33,8 @@ final Map<String, int> _digits = () {
   return map;
 }();
 
-final int MAX_INT32 = pow(2, 31) - 1;
-final int MIN_INT32 = -pow(2, 31);
+final int MAX_INT32 = (pow(2, 31) as int) - 1;
+final int MIN_INT32 = -(pow(2, 31) as int);
 
 /// Creates the VLQ encoding of [value] as a sequence of characters
 Iterable<String> encodeVlq(int value) {
@@ -70,10 +70,10 @@ int decodeVlq(Iterator<String> chars) {
   while (!stop) {
     if (!chars.moveNext()) throw StateError('incomplete VLQ value');
     var char = chars.current;
-    if (!_digits.containsKey(char)) {
+    var digit = _digits[char];
+    if (digit == null) {
       throw FormatException('invalid character in VLQ encoding: $char');
     }
-    var digit = _digits[char];
     stop = (digit & VLQ_CONTINUATION_BIT) == 0;
     digit &= VLQ_BASE_MASK;
     result += (digit << shift);

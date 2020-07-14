@@ -27,8 +27,8 @@ void main() {
   });
 
   test('only 32-bit ints allowed', () {
-    var max_int = pow(2, 31) - 1;
-    var min_int = -pow(2, 31);
+    var max_int = (pow(2, 31) as int) - 1;
+    var min_int = -(pow(2, 31) as int);
     _checkEncodeDecode(max_int - 1);
     _checkEncodeDecode(min_int + 1);
     _checkEncodeDecode(max_int);

@@ -21,9 +21,7 @@ class SourceMapBuilder {
   /// Adds an entry mapping the [targetOffset] to [source].
   void addFromOffset(SourceLocation source, SourceFile targetFile,
       int targetOffset, String identifier) {
-    if (targetFile == null) {
-      throw ArgumentError('targetFile cannot be null');
-    }
+    ArgumentError.checkNotNull(targetFile, 'targetFile');
     _entries.add(Entry(source, targetFile.location(targetOffset), identifier));
   }
 
@@ -33,7 +31,7 @@ class SourceMapBuilder {
   /// `isIdentifier` set to true, this entry is considered to represent an
   /// identifier whose value will be stored in the source map. [isIdentifier]
   /// takes precedence over [target]'s `isIdentifier` value.
-  void addSpan(SourceSpan source, SourceSpan target, {bool isIdentifier}) {
+  void addSpan(SourceSpan source, SourceSpan target, {bool? isIdentifier}) {
     isIdentifier ??= source is SourceMapSpan ? source.isIdentifier : false;
 
     var name = isIdentifier ? source.text : null;
@@ -42,7 +40,7 @@ class SourceMapBuilder {
 
   /// Adds an entry mapping [target] to [source].
   void addLocation(
-      SourceLocation source, SourceLocation target, String identifier) {
+      SourceLocation source, SourceLocation target, String? identifier) {
     _entries.add(Entry(source, target, identifier));
   }
 
@@ -64,7 +62,7 @@ class Entry implements Comparable<Entry> {
   final SourceLocation target;
 
   /// An identifier name, when this location is the start of an identifier.
-  final String identifierName;
+  final String? identifierName;
 
   /// Creates a new [Entry] mapping [target] to [source].
   Entry(this.source, this.target, this.identifierName);

@@ -76,8 +76,8 @@ void check(SourceSpan outputSpan, Mapping mapping, SourceMapSpan inputSpan,
   var line = outputSpan.start.line;
   var column = outputSpan.start.column;
   var files = realOffsets ? {'input.dart': input} : null;
-  var span = mapping.spanFor(line, column, files: files);
-  var span2 = mapping.spanForLocation(outputSpan.start, files: files);
+  var span = mapping.spanFor(line, column, files: files)!;
+  var span2 = mapping.spanForLocation(outputSpan.start, files: files)!;
 
   // Both mapping APIs are equivalent.
   expect(span.start.offset, span2.start.offset);

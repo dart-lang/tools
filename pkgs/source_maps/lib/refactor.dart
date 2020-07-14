@@ -17,7 +17,7 @@ import 'printer.dart';
 /// Applies a series of edits using original location
 /// information, and composes them into the edited string.
 class TextEditTransaction {
-  final SourceFile file;
+  final SourceFile? file;
   final String original;
   final _edits = <_TextEdit>[];
 
@@ -33,9 +33,9 @@ class TextEditTransaction {
     _edits.add(_TextEdit(begin, end, replacement));
   }
 
-  /// Create a source map [SourceLocation] for [offset].
-  SourceLocation _loc(int offset) =>
-      file != null ? file.location(offset) : null;
+  /// Create a source map [SourceLocation] for [offset], if [file] is not
+  /// `null`.
+  SourceLocation? _loc(int offset) => file?.location(offset);
 
   /// Applies all pending [edit]s and returns a [NestedPrinter] containing the
   /// rewritten string and source map information. [file]`.location` is given to
@@ -58,7 +58,7 @@ class TextEditTransaction {
       if (consumed > edit.begin) {
         var sb = StringBuffer();
         sb
-          ..write(file.location(edit.begin).toolString)
+          ..write(file?.location(edit.begin).toolString)
           ..write(': overlapping edits. Insert at offset ')
           ..write(edit.begin)
           ..write(' but have consumed ')

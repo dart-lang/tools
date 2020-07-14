@@ -104,7 +104,7 @@ void main() {
   });
 
   test('parse with no source location', () {
-    SingleMapping map = parse(jsonEncode(MAP_WITH_NO_SOURCE_LOCATION));
+    var map = parse(jsonEncode(MAP_WITH_NO_SOURCE_LOCATION)) as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -117,7 +117,7 @@ void main() {
   });
 
   test('parse with source location and no name', () {
-    SingleMapping map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION));
+    var map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION)) as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -130,8 +130,8 @@ void main() {
   });
 
   test('parse with source location and missing names entry', () {
-    SingleMapping map =
-        parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES));
+    var map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES))
+        as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -144,7 +144,8 @@ void main() {
   });
 
   test('parse with source location and name', () {
-    SingleMapping map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_NAME));
+    var map =
+        parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_NAME)) as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -160,12 +161,12 @@ void main() {
     var inputMap = Map.from(MAP_WITH_SOURCE_LOCATION);
     inputMap['sourceRoot'] = '/pkg/';
     var mapping = parseJson(inputMap) as SingleMapping;
-    expect(mapping.spanFor(0, 0).sourceUrl, Uri.parse('/pkg/input.dart'));
+    expect(mapping.spanFor(0, 0)?.sourceUrl, Uri.parse('/pkg/input.dart'));
     expect(
         mapping
             .spanForLocation(
                 SourceLocation(0, sourceUrl: Uri.parse('ignored.dart')))
-            .sourceUrl,
+            ?.sourceUrl,
         Uri.parse('/pkg/input.dart'));
 
     var newSourceRoot = '/new/';
@@ -180,7 +181,7 @@ void main() {
     var inputMap = Map.from(MAP_WITH_SOURCE_LOCATION);
     inputMap['sourceRoot'] = 'pkg/';
     var mapping = parseJson(inputMap, mapUrl: 'file:///path/to/map');
-    expect(mapping.spanFor(0, 0).sourceUrl,
+    expect(mapping.spanFor(0, 0)?.sourceUrl,
         Uri.parse('file:///path/to/pkg/input.dart'));
   });
 
@@ -193,29 +194,31 @@ void main() {
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.file('/path/to/output.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
       expect(
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.file('/path/to/output2.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
       expect(
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.file('/path/to/3/output.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
 
       expect(
-          mapping.spanFor(0, 0, uri: 'file:///path/to/output.dart').sourceUrl,
+          mapping.spanFor(0, 0, uri: 'file:///path/to/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
       expect(
-          mapping.spanFor(0, 0, uri: 'file:///path/to/output2.dart').sourceUrl,
+          mapping.spanFor(0, 0, uri: 'file:///path/to/output2.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
       expect(
-          mapping.spanFor(0, 0, uri: 'file:///path/to/3/output.dart').sourceUrl,
+          mapping
+              .spanFor(0, 0, uri: 'file:///path/to/3/output.dart')
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
     });
 
@@ -224,36 +227,36 @@ void main() {
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('package:1/output.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
       expect(
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('package:2/output2.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
       expect(
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('package:3/output.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
 
-      expect(mapping.spanFor(0, 0, uri: 'package:1/output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'package:1/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
-      expect(mapping.spanFor(0, 0, uri: 'package:2/output2.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'package:2/output2.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
-      expect(mapping.spanFor(0, 0, uri: 'package:3/output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'package:3/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
     });
 
     test('unmapped path', () {
-      var span = mapping.spanFor(0, 0, uri: 'unmapped_output.dart');
+      var span = mapping.spanFor(0, 0, uri: 'unmapped_output.dart')!;
       expect(span.sourceUrl, Uri.parse('unmapped_output.dart'));
       expect(span.start.line, equals(0));
       expect(span.start.column, equals(0));
 
-      span = mapping.spanFor(10, 5, uri: 'unmapped_output.dart');
+      span = mapping.spanFor(10, 5, uri: 'unmapped_output.dart')!;
       expect(span.sourceUrl, Uri.parse('unmapped_output.dart'));
       expect(span.start.line, equals(10));
       expect(span.start.column, equals(5));
@@ -264,11 +267,11 @@ void main() {
     });
 
     test('incomplete paths', () {
-      expect(mapping.spanFor(0, 0, uri: 'output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
-      expect(mapping.spanFor(0, 0, uri: 'output2.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'output2.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
-      expect(mapping.spanFor(0, 0, uri: '3/output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: '3/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
     });
 
@@ -276,11 +279,11 @@ void main() {
       var mapping = parseExtended(jsonEncode(SOURCE_MAP_BUNDLE),
           mapUrl: 'file:///path/to/map');
 
-      expect(mapping.spanFor(0, 0, uri: 'output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
-      expect(mapping.spanFor(0, 0, uri: 'output2.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'output2.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
-      expect(mapping.spanFor(0, 0, uri: '3/output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: '3/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
     });
 
@@ -288,22 +291,22 @@ void main() {
       var mapping = MappingBundle();
 
       mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
-          mapUrl: 'file:///path/to/map'));
-      expect(mapping.spanFor(0, 0, uri: 'output.dart').sourceUrl,
+          mapUrl: 'file:///path/to/map') as SingleMapping);
+      expect(mapping.spanFor(0, 0, uri: 'output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
 
       expect(mapping.containsMapping('output2.dart'), isFalse);
       mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_2,
-          mapUrl: 'file:///path/to/map'));
+          mapUrl: 'file:///path/to/map') as SingleMapping);
       expect(mapping.containsMapping('output2.dart'), isTrue);
-      expect(mapping.spanFor(0, 0, uri: 'output2.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: 'output2.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
 
       expect(mapping.containsMapping('3/output.dart'), isFalse);
       mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_3,
-          mapUrl: 'file:///path/to/map'));
+          mapUrl: 'file:///path/to/map') as SingleMapping);
       expect(mapping.containsMapping('3/output.dart'), isTrue);
-      expect(mapping.spanFor(0, 0, uri: '3/output.dart').sourceUrl,
+      expect(mapping.spanFor(0, 0, uri: '3/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
     });
 
@@ -315,31 +318,33 @@ void main() {
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('http://localhost/output.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
       expect(
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('http://localhost/output2.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
       expect(
           mapping
               .spanForLocation(SourceLocation(0,
                   sourceUrl: Uri.parse('http://localhost/3/output.dart')))
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
 
       expect(
-          mapping.spanFor(0, 0, uri: 'http://localhost/output.dart').sourceUrl,
+          mapping.spanFor(0, 0, uri: 'http://localhost/output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
       expect(
-          mapping.spanFor(0, 0, uri: 'http://localhost/output2.dart').sourceUrl,
+          mapping
+              .spanFor(0, 0, uri: 'http://localhost/output2.dart')
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
       expect(
           mapping
               .spanFor(0, 0, uri: 'http://localhost/3/output.dart')
-              .sourceUrl,
+              ?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input3.dart'));
     });
   });
@@ -351,10 +356,10 @@ void main() {
       MAP_WITH_SOURCE_LOCATION,
       MAP_WITH_SOURCE_LOCATION_AND_NAME
     ]) {
-      SingleMapping mapping = parseJson(expected);
+      var mapping = parseJson(expected) as SingleMapping;
       expect(mapping.toJson(), equals(expected));
 
-      mapping = parseJsonExtended(expected);
+      mapping = parseJsonExtended(expected) as SingleMapping;
       expect(mapping.toJson(), equals(expected));
     }
 
@@ -366,7 +371,7 @@ void main() {
     var map = Map.from(EXPECTED_MAP);
     map['x_foo'] = 'a';
     map['x_bar'] = [3];
-    SingleMapping mapping = parseJson(map);
+    var mapping = parseJson(map) as SingleMapping;
     expect(mapping.toJson(), equals(map));
     expect(mapping.extensions['x_foo'], equals('a'));
     expect(mapping.extensions['x_bar'].first, equals(3));
@@ -415,7 +420,7 @@ void main() {
         map['sourcesContent'] = ['hello, world!'];
         var mapping = parseJson(map) as SingleMapping;
 
-        var file = mapping.files[0];
+        var file = mapping.files[0]!;
         expect(file.url, equals(Uri.parse('input.dart')));
         expect(file.getText(0), equals('hello, world!'));
       });

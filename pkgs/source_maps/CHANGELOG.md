@@ -1,3 +1,7 @@
+## 0.11.0-nullsafety
+
+* Migrate to null safety
+
 ## 0.10.9
 
 * Fix a number of document comment issues.

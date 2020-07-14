@@ -52,7 +52,7 @@ class SourceMapFileSpan implements SourceMapSpan, FileSpan {
   @override
   String get context => _inner.context;
   @override
-  Uri get sourceUrl => _inner.sourceUrl;
+  Uri? get sourceUrl => _inner.sourceUrl;
   @override
   int get length => _inner.length;
 

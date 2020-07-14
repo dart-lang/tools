@@ -23,7 +23,7 @@ class Printer {
   String get map => _maps.toJson(filename);
 
   /// Current source location mapping.
-  SourceLocation _loc;
+  SourceLocation? _loc;
 
   /// Current line in the buffer;
   int _line = 0;
@@ -47,13 +47,21 @@ class Printer {
         // Return not followed by line-feed is treated as a new line.
         _line++;
         _column = 0;
-        if (projectMarks && _loc != null) {
-          if (_loc is FileLocation) {
-            var file = (_loc as FileLocation).file;
-            mark(file.location(file.getOffset(_loc.line + 1)));
-          } else {
-            mark(SourceLocation(0,
-                sourceUrl: _loc.sourceUrl, line: _loc.line + 1, column: 0));
+        {
+          // **Warning**: Any calls to `mark` will change the value of `_loc`,
+          // so this local variable is no longer up to date after that point.
+          //
+          // This is why it has been put inside its own block to limit the
+          // scope in which it is available.
+          var loc = _loc;
+          if (projectMarks && loc != null) {
+            if (loc is FileLocation) {
+              var file = loc.file;
+              mark(file.location(file.getOffset(loc.line + 1)));
+            } else {
+              mark(SourceLocation(0,
+                  sourceUrl: loc.sourceUrl, line: loc.line + 1, column: 0));
+            }
           }
         }
       } else {
@@ -78,8 +86,8 @@ class Printer {
   /// this also records the name of the identifier in the source map
   /// information.
   void mark(mark) {
-    SourceLocation loc;
-    String identifier;
+    late final SourceLocation loc;
+    String? identifier;
     if (mark is SourceLocation) {
       loc = mark;
     } else if (mark is SourceSpan) {
@@ -106,10 +114,19 @@ class NestedPrinter implements NestedItem {
   final _items = <dynamic>[];
 
   /// Internal buffer to merge consecutive strings added to this printer.
-  StringBuffer _buff;
+  StringBuffer? _buff;
 
   /// Current indentation, which can be updated from outside this class.
   int indent;
+
+  /// [Printer] used during the last call to [build], if any.
+  Printer? printer;
+
+  /// Returns the text produced after calling [build].
+  String? get text => printer?.text;
+
+  /// Returns the source-map information produced after calling [build].
+  String? get map => printer?.map;
 
   /// Item used to indicate that the following item is copied from the original
   /// source code, and hence we should preserve source-maps on every new line.
@@ -133,7 +150,7 @@ class NestedPrinter implements NestedItem {
   /// Setting [isOriginal] will make this printer propagate source map locations
   /// on every line-break.
   void add(object,
-      {SourceLocation location, SourceSpan span, bool isOriginal = false}) {
+      {SourceLocation? location, SourceSpan? span, bool isOriginal = false}) {
     if (object is! String || location != null || span != null || isOriginal) {
       _flush();
       assert(location == null || span == null);
@@ -162,7 +179,7 @@ class NestedPrinter implements NestedItem {
   /// The [location] and [span] parameters indicate the corresponding source map
   /// location of [line] in the original input. Only one, [location] or
   /// [span], should be provided at a time.
-  void addLine(String line, {SourceLocation location, SourceSpan span}) {
+  void addLine(String? line, {SourceLocation? location, SourceSpan? span}) {
     if (location != null || span != null) {
       _flush();
       assert(location == null || span == null);
@@ -180,8 +197,8 @@ class NestedPrinter implements NestedItem {
 
   /// Appends a string merging it with any previous strings, if possible.
   void _appendString(String s) {
-    _buff ??= StringBuffer();
-    _buff.write(s);
+    var buf = _buff ??= StringBuffer();
+    buf.write(s);
   }
 
   /// Adds all of the current [_buff] contents as a string item.
@@ -205,15 +222,6 @@ class NestedPrinter implements NestedItem {
     _flush();
     return (StringBuffer()..writeAll(_items)).toString();
   }
-
-  /// [Printer] used during the last call to [build], if any.
-  Printer printer;
-
-  /// Returns the text produced after calling [build].
-  String get text => printer.text;
-
-  /// Returns the source-map information produced after calling [build].
-  String get map => printer.map;
 
   /// Builds the output of this printer and source map information. After
   /// calling this function, you can use [text] and [map] to retrieve the
