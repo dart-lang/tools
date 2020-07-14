@@ -1,23 +1,33 @@
 language: dart
 
 dart:
-  - dev
-  - stable
+- dev
 
-dart_task:
-  - test
-
-matrix:
+jobs:
   include:
-    # Only validate formatting,analyzer using the dev release
-    - dart: dev
-      dart_task: dartfmt
-    - dart: dev
-      dart_task: dartanalyzer
+    - stage: analyze_and_format
+      name: "Analyze test/"
+      dart: dev
+      os: linux
+      script: dartanalyzer --enable-experiment=non-nullable --fatal-warnings --fatal-infos .
+    - stage: analyze_and_format
+      name: "Format"
+      dart: dev
+      os: linux
+      script: dartfmt -n --set-exit-if-changed .
+    - stage: test
+      name: "Vm Tests"
+      dart: dev
+      os: linux
+      script: pub run --enable-experiment=non-nullable test -p vm 
+
+stages:
+  - analyze_and_format
+  - test
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
-  only: [master]
+  only: [master, null_safety]
 
 cache:
  directories:

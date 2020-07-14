@@ -5,7 +5,6 @@
 import 'dart:io';
 
 import 'package:csv/csv.dart';
-import 'package:meta/meta.dart';
 
 void main() {
   var csv = CsvCodec(eol: '\n');
@@ -83,7 +82,7 @@ void _writeGlyphSetInterface(List<List> data) {
 ///
 /// If [ascii] is `true`, this writes the ASCII glyph set. Otherwise it writes
 /// the Unicode glyph set.
-void _writeGlyphSet(List<List> data, {@required bool ascii}) {
+void _writeGlyphSet(List<List> data, {required bool ascii}) {
   var file =
       File('lib/src/generated/${ascii ? "ascii" : "unicode"}_glyph_set.dart')
           .openSync(mode: FileMode.write);

@@ -1,3 +1,7 @@
+## 1.2.0-nullsafety
+
+* Update to null safety. All apis require non-nullable types.
+
 ## 1.1.0
 
 * Add a `GlyphSet` class that can be used to easily choose which set of glyphs
