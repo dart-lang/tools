@@ -29,7 +29,7 @@ class Scanner {
   final SpanScanner _scanner;
 
   /// The next token to emit.
-  Token _next;
+  Token? _next;
 
   /// Whether the scanner has emitted a [TokenType.endOfFile] token.
   bool _endOfFileEmitted = false;
@@ -124,7 +124,7 @@ class Scanner {
   /// Scans and returns an identifier token.
   Token _scanIdentifier() {
     _scanner.expect(_hyphenatedIdentifier, name: 'expression');
-    return IdentifierToken(_scanner.lastMatch[0], _scanner.lastSpan);
+    return IdentifierToken(_scanner.lastMatch![0]!, _scanner.lastSpan!);
   }
 
   /// Consumes all whitespace and comments immediately following the cursor's

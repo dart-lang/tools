@@ -1,3 +1,7 @@
+## 2.1.0-nullsafety
+
+* Migrate to null safety. There are no expected semantic changes.
+
 ## 2.0.0
 
 * Breaking: `BooleanSelector.evaluate` always takes a `bool Function(String)`.

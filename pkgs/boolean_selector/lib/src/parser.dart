@@ -83,7 +83,7 @@ class Parser {
     switch (token.type) {
       case TokenType.not:
         var child = _simpleExpression();
-        return NotNode(child, token.span.expand(child.span));
+        return NotNode(child, token.span.expand(child.span!));
 
       case TokenType.leftParen:
         var child = _conditional();

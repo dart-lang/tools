@@ -254,10 +254,10 @@ dynamic _parse(String selector) => Parser(selector).parse();
 /// A matcher that asserts that a value is a [VariableNode] with the given
 /// [name].
 Matcher _isVar(String name) => predicate(
-    (value) => value is VariableNode && value.name == name,
+    (dynamic value) => value is VariableNode && value.name == name,
     'is a variable named "$name"');
 
-void _expectToString(String selector, [String result]) {
+void _expectToString(String selector, [String? result]) {
   result ??= selector;
   expect(_toString(selector), equals(result),
       reason: 'Expected toString of "$selector" to be "$result".');

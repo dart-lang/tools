@@ -15,7 +15,7 @@ abstract class Node {
   /// statically-parsed annotation or from a parameter.
   ///
   /// This may be `null` for nodes without source information.
-  FileSpan get span;
+  FileSpan? get span;
 
   /// All the variables in this node, in the order they appear.
   Iterable<String> get variables;
@@ -27,7 +27,7 @@ abstract class Node {
 /// A single variable.
 class VariableNode implements Node {
   @override
-  final FileSpan span;
+  final FileSpan? span;
 
   /// The variable name.
   final String name;
@@ -53,7 +53,7 @@ class VariableNode implements Node {
 /// A negation expression.
 class NotNode implements Node {
   @override
-  final FileSpan span;
+  final FileSpan? span;
 
   /// The expression being negated.
   final Node child;
@@ -80,7 +80,7 @@ class NotNode implements Node {
 /// An or expression.
 class OrNode implements Node {
   @override
-  FileSpan get span => _expandSafe(left.span, right.span);
+  FileSpan? get span => _expandSafe(left.span, right.span);
 
   /// The left-hand branch of the expression.
   final Node left;
@@ -119,7 +119,7 @@ class OrNode implements Node {
 /// An and expression.
 class AndNode implements Node {
   @override
-  FileSpan get span => _expandSafe(left.span, right.span);
+  FileSpan? get span => _expandSafe(left.span, right.span);
 
   /// The left-hand branch of the expression.
   final Node left;
@@ -158,7 +158,7 @@ class AndNode implements Node {
 /// A ternary conditional expression.
 class ConditionalNode implements Node {
   @override
-  FileSpan get span => _expandSafe(condition.span, whenFalse.span);
+  FileSpan? get span => _expandSafe(condition.span, whenFalse.span);
 
   /// The condition expression to check.
   final Node condition;
@@ -203,7 +203,7 @@ class ConditionalNode implements Node {
 
 /// Like [FileSpan.expand], except if [start] and [end] are `null` or from
 /// different files it returns `null` rather than throwing an error.
-FileSpan _expandSafe(FileSpan start, FileSpan end) {
+FileSpan? _expandSafe(FileSpan? start, FileSpan? end) {
   if (start == null || end == null) return null;
   if (start.file != end.file) return null;
   return start.expand(end);

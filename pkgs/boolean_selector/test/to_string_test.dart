@@ -76,7 +76,7 @@ void main() {
   });
 }
 
-void _expectToString(String selector, [String result]) {
+void _expectToString(String selector, [String? result]) {
   result ??= selector;
   expect(_toString(selector), equals(result),
       reason: 'Expected toString of "$selector" to be "$result".');

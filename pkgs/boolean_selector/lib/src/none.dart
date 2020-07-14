@@ -6,10 +6,8 @@ import '../boolean_selector.dart';
 
 /// A selector that matches no inputs.
 class None implements BooleanSelector {
-  // TODO(nweiz): Stop explicitly providing a type argument when sdk#32412 is
-  // fixed.
   @override
-  final variables = const <String>[];
+  final Iterable<String> variables = const [];
 
   const None();
 

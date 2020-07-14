@@ -46,7 +46,7 @@ void main() {
 ///
 /// By default, "true" is true and all other variables are "false".
 void _expectEval(String expression, bool result,
-    {bool Function(String variable) semantics}) {
+    {bool Function(String variable)? semantics}) {
   expect(_eval(expression, semantics: semantics), equals(result),
       reason: 'Expected "$expression" to evaluate to $result.');
 }
@@ -54,7 +54,7 @@ void _expectEval(String expression, bool result,
 /// Returns the result of evaluating [expression] on [semantics].
 ///
 /// By default, "true" is true and all other variables are "false".
-bool _eval(String expression, {bool Function(String variable) semantics}) {
+bool _eval(String expression, {bool Function(String variable)? semantics}) {
   var selector = BooleanSelector.parse(expression);
   return selector.evaluate(semantics ?? (v) => v == 'true');
 }

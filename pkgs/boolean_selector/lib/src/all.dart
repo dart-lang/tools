@@ -9,7 +9,7 @@ class All implements BooleanSelector {
   // TODO(nweiz): Stop explicitly providing a type argument when sdk#32412 is
   // fixed.
   @override
-  final variables = const <String>[];
+  final Iterable<String> variables = const <String>[];
 
   const All();
 
