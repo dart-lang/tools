@@ -19,7 +19,7 @@ import 'package:stack_trace/stack_trace.dart';
 /// [sdkRoot] is the URI surfaced in the stack traces for SDK libraries.
 /// If it's passed, stack frames from the SDK will have `dart:` URLs.
 StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false, Map<String, Uri> packageMap, Uri sdkRoot}) {
+    {bool minified = false, Map<String, Uri>? packageMap, Uri? sdkRoot}) {
   if (stackTrace is Chain) {
     return Chain(stackTrace.traces.map((trace) {
       return Trace.from(mapStackTrace(sourceMap, trace,
@@ -31,24 +31,25 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 
   var trace = Trace.from(stackTrace);
   return Trace(trace.frames.map((frame) {
+    var line = frame.line;
     // If there's no line information, there's no way to translate this frame.
     // We could return it as-is, but these lines are usually not useful anyways.
-    if (frame.line == null) return null;
+    if (line == null) return null;
 
     // If there's no column, try using the first column of the line.
     var column = frame.column ?? 0;
 
     // Subtract 1 because stack traces use 1-indexed lines and columns and
     // source maps uses 0-indexed.
-    var span = sourceMap.spanFor(frame.line - 1, column - 1,
-        uri: frame.uri?.toString());
+    var span =
+        sourceMap.spanFor(line - 1, column - 1, uri: frame.uri.toString());
 
     // If we can't find a source span, ignore the frame. It's probably something
     // internal that the user doesn't care about.
     if (span == null) return null;
 
     var sourceUrl = span.sourceUrl.toString();
-    if (sdkRoot != null && p.url.isWithin(sdkLib, sourceUrl)) {
+    if (sdkLib != null && p.url.isWithin(sdkLib, sourceUrl)) {
       sourceUrl = 'dart:' + p.url.relative(sourceUrl, from: sdkLib);
     } else if (packageMap != null) {
       for (var package in packageMap.keys) {
@@ -70,8 +71,8 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
         // use the minified member name.
         minified
             ? (span.isIdentifier ? span.text : frame.member)
-            : _prettifyMember(frame.member));
-  }).where((frame) => frame != null));
+            : _prettifyMember(frame.member!));
+  }).whereType<Frame>());
 }
 
 /// Reformats a JS member name to make it look more Dart-like.
@@ -86,7 +87,7 @@ String _prettifyMember(String member) {
           RegExp(r'(_+)closure\d*\.call$'),
           // The number of underscores before "closure" indicates how nested it
           // is.
-          (match) => '.<fn>' * match[1].length)
+          (match) => '.<fn>' * match[1]!.length)
       // Get rid of explicitly-generated calls.
       .replaceAll(RegExp(r'\.call$'), '')
       // Get rid of the top-level method prefix.
@@ -99,5 +100,5 @@ String _prettifyMember(String member) {
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
-      .replaceAllMapped(RegExp(r'([a-zA-Z0-9]+)_'), (match) => match[1] + '.');
+      .replaceAllMapped(RegExp(r'([a-zA-Z0-9]+)_'), (match) => match[1]! + '.');
 }

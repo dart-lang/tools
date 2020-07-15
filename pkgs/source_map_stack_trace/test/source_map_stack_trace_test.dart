@@ -244,7 +244,7 @@ bar.dart.js 10:11  foo
 /// Like [mapStackTrace], but is guaranteed to return a [Trace] so it can be
 /// inspected.
 Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false, Map<String, Uri> packageMap, Uri sdkRoot}) {
+    {bool minified = false, Map<String, Uri>? packageMap, Uri? sdkRoot}) {
   return Trace.from(mapStackTrace(sourceMap, stackTrace,
       minified: minified, packageMap: packageMap, sdkRoot: sdkRoot));
 }
@@ -252,13 +252,13 @@ Trace _mapTrace(Mapping sourceMap, StackTrace stackTrace,
 /// Like [mapStackTrace], but is guaranteed to return a [Chain] so it can be
 /// inspected.
 Chain _mapChain(Mapping sourceMap, StackTrace stackTrace,
-    {bool minified = false, Map<String, Uri> packageMap, Uri sdkRoot}) {
+    {bool minified = false, Map<String, Uri>? packageMap, Uri? sdkRoot}) {
   return Chain.forTrace(mapStackTrace(sourceMap, stackTrace,
       minified: minified, packageMap: packageMap, sdkRoot: sdkRoot));
 }
 
 /// Runs the mapper's prettification logic on [member] and returns the result.
-String _prettify(String member) {
+String? _prettify(String member) {
   var trace = Trace([Frame(Uri.parse('foo.dart.js'), 10, 11, member)]);
   return _mapTrace(_simpleMapping, trace).frames.first.member;
 }
