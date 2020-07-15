@@ -51,16 +51,16 @@ class Pool {
   /// for additional files to be read before they could be closed.
   ///
   /// This is `null` if this pool shouldn't time out.
-  RestartableTimer _timer;
+  RestartableTimer? _timer;
 
   /// The amount of time to wait before timing out the pending resources.
-  final Duration _timeout;
+  final Duration? _timeout;
 
   /// A [FutureGroup] that tracks all the `onRelease` callbacks for resources
   /// that have been marked releasable.
   ///
   /// This is `null` until [close] is called.
-  FutureGroup _closeGroup;
+  FutureGroup? _closeGroup;
 
   /// Whether [close] has been called.
   bool get isClosed => _closeMemo.hasRun;
@@ -78,7 +78,7 @@ class Pool {
   /// If [timeout] is passed, then if that much time passes without any activity
   /// all pending [request] futures will throw a [TimeoutException]. This is
   /// intended to avoid deadlocks.
-  Pool(this._maxAllocatedResources, {Duration timeout}) : _timeout = timeout {
+  Pool(this._maxAllocatedResources, {Duration? timeout}) : _timeout = timeout {
     if (_maxAllocatedResources <= 0) {
       throw ArgumentError.value(_maxAllocatedResources, 'maxAllocatedResources',
           'Must be greater than zero.');
@@ -152,17 +152,17 @@ class Pool {
   /// to, a [StateError] is thrown.
   Stream<T> forEach<S, T>(
       Iterable<S> elements, FutureOr<T> Function(S source) action,
-      {bool Function(S item, Object error, StackTrace stack) onError}) {
+      {bool Function(S item, Object error, StackTrace stack)? onError}) {
     onError ??= (item, e, s) => true;
 
     var cancelPending = false;
 
-    Completer resumeCompleter;
-    StreamController<T> controller;
+    Completer? resumeCompleter;
+    late StreamController<T> controller;
 
-    Iterator<S> iterator;
+    late Iterator<S> iterator;
 
-    Future<void> run(int i) async {
+    Future<void> run(int _) async {
       while (iterator.moveNext()) {
         // caching `current` is necessary because there are async breaks
         // in this code and `iterator` is shared across many workers
@@ -171,7 +171,7 @@ class Pool {
         _resetTimer();
 
         if (resumeCompleter != null) {
-          await resumeCompleter.future;
+          await resumeCompleter!.future;
         }
 
         if (cancelPending) {
@@ -182,7 +182,7 @@ class Pool {
         try {
           value = await action(current);
         } catch (e, stack) {
-          if (onError(current, e, stack)) {
+          if (onError!(current, e, stack)) {
             controller.addError(e, stack);
           }
           continue;
@@ -191,20 +191,19 @@ class Pool {
       }
     }
 
-    Future doneFuture;
+    Future<void>? doneFuture;
 
     void onListen() {
-      assert(iterator == null);
       iterator = elements.iterator;
 
       assert(doneFuture == null);
-      doneFuture = Future.wait(
-              Iterable<int>.generate(_maxAllocatedResources)
-                  .map((i) => withResource(() => run(i))),
-              eagerError: true)
+      var futures = Iterable<Future<void>>.generate(
+          _maxAllocatedResources, (i) => withResource(() => run(i)));
+      doneFuture = Future.wait(futures, eagerError: true)
+          .then<void>((_) {})
           .catchError(controller.addError);
 
-      doneFuture.whenComplete(controller.close);
+      doneFuture!.whenComplete(controller.close);
     }
 
     controller = StreamController<T>(
@@ -217,11 +216,11 @@ class Pool {
       },
       onPause: () {
         assert(resumeCompleter == null);
-        resumeCompleter = Completer();
+        resumeCompleter = Completer<void>();
       },
       onResume: () {
         assert(resumeCompleter != null);
-        resumeCompleter.complete();
+        resumeCompleter!.complete();
         resumeCompleter = null;
       },
     );
@@ -241,20 +240,20 @@ class Pool {
   ///
   /// This may be called more than once; it returns the same [Future] each time.
   Future close() => _closeMemo.runOnce(() {
-        if (_closeGroup != null) return _closeGroup.future;
+        if (_closeGroup != null) return _closeGroup!.future;
 
         _resetTimer();
 
         _closeGroup = FutureGroup();
         for (var callback in _onReleaseCallbacks) {
-          _closeGroup.add(Future.sync(callback));
+          _closeGroup!.add(Future.sync(callback));
         }
 
         _allocatedResources -= _onReleaseCallbacks.length;
         _onReleaseCallbacks.clear();
 
-        if (_allocatedResources == 0) _closeGroup.close();
-        return _closeGroup.future;
+        if (_allocatedResources == 0) _closeGroup!.close();
+        return _closeGroup!.future;
       });
   final _closeMemo = AsyncMemoizer();
 
@@ -267,7 +266,7 @@ class Pool {
       pending.complete(PoolResource._(this));
     } else {
       _allocatedResources--;
-      if (isClosed && _allocatedResources == 0) _closeGroup.close();
+      if (isClosed && _allocatedResources == 0) _closeGroup!.close();
     }
   }
 
@@ -280,9 +279,9 @@ class Pool {
       var pending = _requestedResources.removeFirst();
       pending.complete(_runOnRelease(onRelease));
     } else if (isClosed) {
-      _closeGroup.add(Future.sync(onRelease));
+      _closeGroup!.add(Future.sync(onRelease));
       _allocatedResources--;
-      if (_allocatedResources == 0) _closeGroup.close();
+      if (_allocatedResources == 0) _closeGroup!.close();
     } else {
       var zone = Zone.current;
       var registered = zone.registerCallback(onRelease);
@@ -298,7 +297,7 @@ class Pool {
   Future<PoolResource> _runOnRelease(Function() onRelease) {
     Future.sync(onRelease).then((value) {
       _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
-    }).catchError((error, StackTrace stackTrace) {
+    }).catchError((Object error, StackTrace stackTrace) {
       _onReleaseCompleters.removeFirst().completeError(error, stackTrace);
     });
 
@@ -312,9 +311,9 @@ class Pool {
     if (_timer == null) return;
 
     if (_requestedResources.isEmpty) {
-      _timer.cancel();
+      _timer!.cancel();
     } else {
-      _timer.reset();
+      _timer!.reset();
     }
   }
 

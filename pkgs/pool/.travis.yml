@@ -1,18 +1,39 @@
 language: dart
 
 dart:
-  - 2.0.0
-  - dev
+ - dev
 
-dart_task:
-  - test: --platform vm,chrome
-  - dartfmt
-  - dartanalyzer: --fatal-infos --fatal-warnings .
+jobs:
+  include:
+    - stage: analyze_and_format
+      name: "Analyze"
+      dart: dev
+      os: linux
+      script: dartanalyzer --enable-experiment=non-nullable --fatal-warnings --fatal-infos .
+    - stage: analyze_and_format
+      name: "Format"
+      dart: dev
+      os: linux
+      script: dartfmt -n --set-exit-if-changed .
+    - stage: test
+      name: "Vm Tests"
+      dart: dev
+      os: linux
+      script: pub run --enable-experiment=non-nullable test -p vm
+    - stage: test
+      name: "Web Tests"
+      dart: dev
+      os: linux
+      script: pub run --enable-experiment=non-nullable test -p chrome
+
+stages:
+  - analyze_and_format
+  - test
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
-  only: [master]
+  only: [master, null_safety]
 
 cache:
- directories:
-   - $HOME/.pub-cache
+  directories:
+    - $HOME/.pub-cache

@@ -8,22 +8,22 @@ void main(List<String> args) async {
   final watch = Stopwatch()..start();
   final start = DateTime.now();
 
-  DateTime lastLog;
-  Duration fastest;
-  int fastestIteration;
+  DateTime? lastLog;
+  Duration? fastest;
+  late int fastestIteration;
   var i = 1;
 
   void log(bool force) {
     var now = DateTime.now();
     if (force ||
         lastLog == null ||
-        now.difference(lastLog) > const Duration(seconds: 1)) {
+        now.difference(lastLog!) > const Duration(seconds: 1)) {
       lastLog = now;
       print([
         now.difference(start),
         i.toString().padLeft(10),
         fastestIteration.toString().padLeft(7),
-        fastest.inMicroseconds.toString().padLeft(9)
+        fastest!.inMicroseconds.toString().padLeft(9)
       ].join('   '));
     }
   }

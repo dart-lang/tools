@@ -1,5 +1,6 @@
-## 1.4.1
+## 1.5.0-nullsafety
 
+* Migrate to null safety.
 * `forEach`: Avoid `await null` if the `Stream` is not paused.
   Improves trivial benchmark by 40%. 
 

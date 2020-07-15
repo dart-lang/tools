@@ -438,7 +438,7 @@ void main() {
   });
 
   group('forEach', () {
-    Pool pool;
+    late Pool pool;
 
     tearDown(() async {
       await pool.close();
@@ -609,7 +609,7 @@ void main() {
           delayedToString);
 
       // ignore: cancel_subscriptions
-      StreamSubscription subscription;
+      late StreamSubscription subscription;
 
       subscription = stream.listen(
         (data) {
@@ -659,9 +659,9 @@ void main() {
     });
 
     group('errors', () {
-      Future<void> errorInIterator(
-          {bool Function(int item, Object error, StackTrace stack)
-              onError}) async {
+      Future<void> errorInIterator({
+        bool Function(int item, Object error, StackTrace stack)? onError,
+      }) async {
         pool = Pool(20);
 
         var listFuture = pool
@@ -704,7 +704,8 @@ void main() {
       test('error in action, no onError', () async {
         pool = Pool(20);
 
-        var list = await pool.forEach(Iterable<int>.generate(100), (i) async {
+        var list = await pool.forEach(Iterable<int>.generate(100),
+            (int i) async {
           await Future.delayed(const Duration(milliseconds: 10));
           if (i % 10 == 0) {
             throw UnsupportedError('Multiples of 10 not supported');
@@ -737,9 +738,7 @@ void Function() expectNoAsync() {
 /// A matcher for Futures that asserts that they don't complete.
 ///
 /// This should only be called within a [FakeAsync.run] zone.
-Matcher get doesNotComplete => predicate((future) {
-      expect(future, const TypeMatcher<Future>());
-
+Matcher get doesNotComplete => predicate((Future future) {
       var stack = Trace.current(1);
       future.then((_) => registerException(
           TestFailure('Expected future not to complete.'), stack));
