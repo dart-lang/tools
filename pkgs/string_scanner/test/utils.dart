@@ -9,4 +9,4 @@ import 'package:test/test.dart';
 /// [StringScannerException] with the given [text].
 Matcher throwsStringScannerException(String text) =>
     throwsA(const TypeMatcher<StringScannerException>()
-        .having((e) => e.span.text, 'span.text', text));
+        .having((e) => e.span!.text, 'span.text', text));

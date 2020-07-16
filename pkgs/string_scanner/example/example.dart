@@ -24,11 +24,11 @@ num parseNumber(String source) {
 
   // [Scanner.lastMatch] holds the [MatchData] for the most recent call to
   // [Scanner.scan], [Scanner.expect], or [Scanner.matches].
-  var number = num.parse(scanner.lastMatch[0]);
+  var number = num.parse((scanner.lastMatch![0])!);
 
   if (scanner.scan('.')) {
     scanner.expect(RegExp(r'\d+'));
-    final decimal = scanner.lastMatch[0];
+    final decimal = scanner.lastMatch![0]!;
     number += int.parse(decimal) / math.pow(10, decimal.length);
   }
 

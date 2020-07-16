@@ -7,7 +7,7 @@ import 'package:string_scanner/string_scanner.dart';
 import 'package:test/test.dart';
 
 void main() {
-  LineScanner scanner;
+  late LineScanner scanner;
   setUp(() {
     scanner = LineScanner('foo\nbar\r\nbaz');
   });

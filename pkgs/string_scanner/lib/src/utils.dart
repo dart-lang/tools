@@ -5,7 +5,8 @@
 import 'string_scanner.dart';
 
 /// Validates the arguments passed to [StringScanner.error].
-void validateErrorArgs(String string, Match match, int position, int length) {
+void validateErrorArgs(
+    String string, Match? match, int? position, int? length) {
   if (match != null && (position != null || length != null)) {
     throw ArgumentError("Can't pass both match and position/length.");
   }

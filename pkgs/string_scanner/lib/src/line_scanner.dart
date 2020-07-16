@@ -73,7 +73,7 @@ class LineScanner extends StringScanner {
     }
   }
 
-  LineScanner(String string, {sourceUrl, int position})
+  LineScanner(String string, {sourceUrl, int? position})
       : super(string, sourceUrl: sourceUrl, position: position);
 
   @override
@@ -104,12 +104,12 @@ class LineScanner extends StringScanner {
   bool scan(Pattern pattern) {
     if (!super.scan(pattern)) return false;
 
-    final newlines = _newlinesIn(lastMatch[0]);
+    final newlines = _newlinesIn(lastMatch![0]!);
     _line += newlines.length;
     if (newlines.isEmpty) {
-      _column += lastMatch[0].length;
+      _column += (lastMatch![0])!.length;
     } else {
-      _column = lastMatch[0].length - newlines.last.end;
+      _column = (lastMatch![0])!.length - newlines.last.end;
     }
 
     return true;

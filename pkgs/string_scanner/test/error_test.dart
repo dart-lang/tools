@@ -106,7 +106,7 @@ void main() {
   });
 
   group('argument errors', () {
-    StringScanner scanner;
+    late StringScanner scanner;
     setUp(() {
       scanner = StringScanner('foo bar baz');
       scanner.scan('foo');

@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('with an empty string', () {
-    StringScanner scanner;
+    late StringScanner scanner;
     setUp(() {
       scanner = StringScanner('');
     });
@@ -90,7 +90,7 @@ void main() {
   });
 
   group('at the beginning of a string', () {
-    StringScanner scanner;
+    late StringScanner scanner;
     setUp(() {
       scanner = StringScanner('foo bar');
     });
@@ -156,7 +156,7 @@ void main() {
 
     test('a matching scan returns true and changes the state', () {
       expect(scanner.scan(RegExp('f(..)')), isTrue);
-      expect(scanner.lastMatch[1], equals('oo'));
+      expect(scanner.lastMatch![1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
     });
@@ -173,7 +173,7 @@ void main() {
 
     test('a matching expect changes the state', () {
       scanner.expect(RegExp('f(..)'));
-      expect(scanner.lastMatch[1], equals('oo'));
+      expect(scanner.lastMatch![1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
     });
@@ -192,7 +192,7 @@ void main() {
 
     test('a matching matches returns true and only changes lastMatch', () {
       expect(scanner.matches(RegExp('f(..)')), isTrue);
-      expect(scanner.lastMatch[1], equals('oo'));
+      expect(scanner.lastMatch![1], equals('oo'));
       expect(scanner.position, equals(0));
       expect(scanner.rest, equals('foo bar'));
     });
@@ -223,7 +223,7 @@ void main() {
       expect(scanner.rest, equals('oo bar'));
 
       expect(scanner.scan(RegExp('oo.')), isTrue);
-      expect(scanner.lastMatch[0], equals('oo '));
+      expect(scanner.lastMatch![0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
     });
@@ -242,19 +242,19 @@ void main() {
 
     test('scan accepts any Pattern', () {
       expect(scanner.scan('foo'), isTrue);
-      expect(scanner.lastMatch[0], equals('foo'));
+      expect(scanner.lastMatch![0], equals('foo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
     });
 
     test('scans multiple times', () {
       expect(scanner.scan(RegExp('f(..)')), isTrue);
-      expect(scanner.lastMatch[1], equals('oo'));
+      expect(scanner.lastMatch![1], equals('oo'));
       expect(scanner.position, equals(3));
       expect(scanner.rest, equals(' bar'));
 
       expect(scanner.scan(RegExp(' b(..)')), isTrue);
-      expect(scanner.lastMatch[1], equals('ar'));
+      expect(scanner.lastMatch![1], equals('ar'));
       expect(scanner.position, equals(7));
       expect(scanner.rest, equals(''));
       expect(scanner.isDone, isTrue);
@@ -263,7 +263,7 @@ void main() {
   });
 
   group('after a scan', () {
-    StringScanner scanner;
+    late StringScanner scanner;
     setUp(() {
       scanner = StringScanner('foo bar');
       expect(scanner.scan('foo'), isTrue);
@@ -289,7 +289,7 @@ void main() {
   });
 
   group('at the end of a string', () {
-    StringScanner scanner;
+    late StringScanner scanner;
     setUp(() {
       scanner = StringScanner('foo bar');
       expect(scanner.scan('foo bar'), isTrue);
@@ -368,7 +368,7 @@ void main() {
       expect(scanner.rest, equals('oo bar'));
 
       expect(scanner.scan(RegExp('oo.')), isTrue);
-      expect(scanner.lastMatch[0], equals('oo '));
+      expect(scanner.lastMatch![0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
     });
@@ -400,7 +400,7 @@ void main() {
       expect(scanner.rest, equals('oo bar'));
 
       expect(scanner.scan(RegExp('oo.')), isTrue);
-      expect(scanner.lastMatch[0], equals('oo '));
+      expect(scanner.lastMatch![0], equals('oo '));
       expect(scanner.position, equals(4));
       expect(scanner.rest, equals('bar'));
     });

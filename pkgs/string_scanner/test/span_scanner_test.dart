@@ -11,19 +11,19 @@ import 'utils.dart';
 void main() {
   testForImplementation(
       'lazy',
-      ([String string]) =>
+      ([String? string]) =>
           SpanScanner(string ?? 'foo\nbar\nbaz', sourceUrl: 'source'));
 
   testForImplementation(
       'eager',
-      ([String string]) =>
+      ([String? string]) =>
           SpanScanner.eager(string ?? 'foo\nbar\nbaz', sourceUrl: 'source'));
 
   group('within', () {
     const text = 'first\nbefore: foo\nbar\nbaz :after\nlast';
     final startOffset = text.indexOf('foo');
 
-    SpanScanner scanner;
+    late SpanScanner scanner;
     setUp(() {
       final file = SourceFile.fromString(text, url: 'source');
       scanner =
@@ -51,7 +51,7 @@ void main() {
       scanner.scan('fo');
       scanner.scan('o\nba');
 
-      final span = scanner.lastSpan;
+      final span = scanner.lastSpan!;
       expect(span.start.offset, equals(startOffset + 2));
       expect(span.start.line, equals(1));
       expect(span.start.column, equals(10));
@@ -108,14 +108,14 @@ void main() {
 void testForImplementation(
     String name, SpanScanner Function([String string]) create) {
   group('for a $name scanner', () {
-    SpanScanner scanner;
+    late SpanScanner scanner;
     setUp(() => scanner = create());
 
     test('tracks the span for the last match', () {
       scanner.scan('fo');
       scanner.scan('o\nba');
 
-      final span = scanner.lastSpan;
+      final span = scanner.lastSpan!;
       expect(span.start.offset, equals(2));
       expect(span.start.line, equals(0));
       expect(span.start.column, equals(2));

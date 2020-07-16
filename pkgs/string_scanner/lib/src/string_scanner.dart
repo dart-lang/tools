@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:charcode/charcode.dart';
-import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 
 import 'exception.dart';
@@ -15,7 +14,7 @@ class StringScanner {
   ///
   /// This is used for error reporting. It may be `null`, indicating that the
   /// source URL is unknown or unavailable.
-  final Uri sourceUrl;
+  final Uri? sourceUrl;
 
   /// The string being scanned through.
   final String string;
@@ -36,15 +35,15 @@ class StringScanner {
   /// The data about the previous match made by the scanner.
   ///
   /// If the last match failed, this will be `null`.
-  Match get lastMatch {
+  Match? get lastMatch {
     // Lazily unset [_lastMatch] so that we avoid extra assignments in
     // character-by-character methods that are used in core loops.
     if (_position != _lastMatchPosition) _lastMatch = null;
     return _lastMatch;
   }
 
-  Match _lastMatch;
-  int _lastMatchPosition;
+  Match? _lastMatch;
+  int? _lastMatchPosition;
 
   /// The portion of the string that hasn't yet been scanned.
   String get rest => string.substring(position);
@@ -57,9 +56,10 @@ class StringScanner {
   /// [position] defaults to 0, the beginning of the string. [sourceUrl] is the
   /// URL of the source of the string being scanned, if available. It can be
   /// a [String], a [Uri], or `null`.
-  StringScanner(this.string, {sourceUrl, int position})
-      : sourceUrl =
-            sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri {
+  StringScanner(this.string, {sourceUrl, int? position})
+      : sourceUrl = sourceUrl == null
+            ? null
+            : sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri {
     if (position != null) this.position = position;
   }
 
@@ -79,7 +79,7 @@ class StringScanner {
   ///
   /// This returns `null` if [offset] points outside the string. It doesn't
   /// affect [lastMatch].
-  int peekChar([int offset]) {
+  int? peekChar([int? offset]) {
     offset ??= 0;
     final index = position + offset;
     if (index < 0 || index >= string.length) return null;
@@ -102,7 +102,7 @@ class StringScanner {
   /// describing the position of the failure. [name] is used in this error as
   /// the expected name of the character being matched; if it's `null`, the
   /// character itself is used instead.
-  void expectChar(int character, {String name}) {
+  void expectChar(int character, {String? name}) {
     if (scanChar(character)) return;
 
     if (name == null) {
@@ -125,7 +125,7 @@ class StringScanner {
   bool scan(Pattern pattern) {
     final success = matches(pattern);
     if (success) {
-      _position = _lastMatch.end;
+      _position = _lastMatch!.end;
       _lastMatchPosition = _position;
     }
     return success;
@@ -138,7 +138,7 @@ class StringScanner {
   /// position of the failure. [name] is used in this error as the expected name
   /// of the pattern being matched; if it's `null`, the pattern itself is used
   /// instead.
-  void expect(Pattern pattern, {String name}) {
+  void expect(Pattern pattern, {String? name}) {
     if (scan(pattern)) return;
 
     if (name == null) {
@@ -175,7 +175,7 @@ class StringScanner {
   ///
   /// Unlike [String.substring], [end] defaults to [position] rather than the
   /// end of the string.
-  String substring(int start, [int end]) {
+  String substring(int start, [int? end]) {
     end ??= position;
     return string.substring(start, end);
   }
@@ -193,8 +193,7 @@ class StringScanner {
   /// position; if only [position] is passed, [length] defaults to 0.
   ///
   /// It's an error to pass [match] at the same time as [position] or [length].
-  @alwaysThrows
-  void error(String message, {Match match, int position, int length}) {
+  Never error(String message, {Match? match, int? position, int? length}) {
     validateErrorArgs(string, match, position, length);
 
     if (match == null && position == null && length == null) match = lastMatch;
@@ -209,7 +208,7 @@ class StringScanner {
   // TODO(nweiz): Make this handle long lines more gracefully.
   /// Throws a [FormatException] describing that [name] is expected at the
   /// current position in the string.
-  void _fail(String name) {
+  Never _fail(String name) {
     error('expected $name.', position: position, length: 0);
   }
 }

@@ -14,7 +14,7 @@ class StringScannerException extends SourceSpanFormatException {
   /// The URL of the source file being parsed.
   ///
   /// This may be `null`, indicating that the source URL is unknown.
-  Uri get sourceUrl => span.sourceUrl;
+  Uri? get sourceUrl => span?.sourceUrl;
 
   StringScannerException(String message, SourceSpan span, String source)
       : super(message, span, source);

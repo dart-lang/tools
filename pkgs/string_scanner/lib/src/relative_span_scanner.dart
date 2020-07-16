@@ -47,8 +47,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
 
   @override
   set state(LineScannerState state) {
-    if (state is! _SpanScannerState ||
-        !identical((state as _SpanScannerState)._scanner, this)) {
+    if (state is! _SpanScannerState || !identical(state._scanner, this)) {
       throw ArgumentError('The given LineScannerState was not returned by '
           'this LineScanner.');
     }
@@ -57,8 +56,8 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   }
 
   @override
-  FileSpan get lastSpan => _lastSpan;
-  FileSpan _lastSpan;
+  FileSpan? get lastSpan => _lastSpan;
+  FileSpan? _lastSpan;
 
   @override
   FileLocation get location =>
@@ -73,7 +72,7 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
         super(span.text, sourceUrl: span.sourceUrl);
 
   @override
-  FileSpan spanFrom(LineScannerState startState, [LineScannerState endState]) {
+  FileSpan spanFrom(LineScannerState startState, [LineScannerState? endState]) {
     final endPosition = endState == null ? position : endState.position;
     return _sourceFile.span(_startLocation.offset + startState.position,
         _startLocation.offset + endPosition);
@@ -87,12 +86,12 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
     }
 
     _lastSpan = _sourceFile.span(_startLocation.offset + position,
-        _startLocation.offset + lastMatch.end);
+        _startLocation.offset + lastMatch!.end);
     return true;
   }
 
   @override
-  void error(String message, {Match match, int position, int length}) {
+  Never error(String message, {Match? match, int? position, int? length}) {
     validateErrorArgs(string, match, position, length);
 
     if (match == null && position == null && length == null) match = lastMatch;

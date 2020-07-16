@@ -29,8 +29,7 @@ class SpanScanner extends StringScanner implements LineScanner {
 
   @override
   set state(LineScannerState state) {
-    if (state is! _SpanScannerState ||
-        !identical((state as _SpanScannerState)._scanner, this)) {
+    if (state is! _SpanScannerState || !identical(state._scanner, this)) {
       throw ArgumentError('The given LineScannerState was not returned by '
           'this LineScanner.');
     }
@@ -42,12 +41,12 @@ class SpanScanner extends StringScanner implements LineScanner {
   ///
   /// This is the span for the entire match. There's no way to get spans for
   /// subgroups since [Match] exposes no information about their positions.
-  FileSpan get lastSpan {
+  FileSpan? get lastSpan {
     if (lastMatch == null) _lastSpan = null;
     return _lastSpan;
   }
 
-  FileSpan _lastSpan;
+  FileSpan? _lastSpan;
 
   /// The current location of the scanner.
   FileLocation get location => _sourceFile.location(position);
@@ -60,7 +59,7 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// [sourceUrl] is used as [SourceLocation.sourceUrl] for the returned
   /// [FileSpan]s as well as for error reporting. It can be a [String], a
   /// [Uri], or `null`.
-  SpanScanner(String string, {sourceUrl, int position})
+  SpanScanner(String string, {sourceUrl, int? position})
       : _sourceFile = SourceFile.fromString(string, url: sourceUrl),
         super(string, sourceUrl: sourceUrl, position: position);
 
@@ -75,7 +74,7 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// itself and its `LineScannerState` are eagerly computed. To limit their
   /// memory footprint, returned spans and locations will still lazily compute
   /// their line and column numbers.
-  factory SpanScanner.eager(String string, {sourceUrl, int position}) =
+  factory SpanScanner.eager(String string, {sourceUrl, int? position}) =
       EagerSpanScanner;
 
   /// Creates a new [SpanScanner] that scans within [span].
@@ -88,7 +87,7 @@ class SpanScanner extends StringScanner implements LineScanner {
 
   /// Creates a [FileSpan] representing the source range between [startState]
   /// and the current position.
-  FileSpan spanFrom(LineScannerState startState, [LineScannerState endState]) {
+  FileSpan spanFrom(LineScannerState startState, [LineScannerState? endState]) {
     final endPosition = endState == null ? position : endState.position;
     return _sourceFile.span(startState.position, endPosition);
   }
@@ -100,12 +99,12 @@ class SpanScanner extends StringScanner implements LineScanner {
       return false;
     }
 
-    _lastSpan = _sourceFile.span(position, lastMatch.end);
+    _lastSpan = _sourceFile.span(position, lastMatch!.end);
     return true;
   }
 
   @override
-  void error(String message, {Match match, int position, int length}) {
+  Never error(String message, {Match? match, int? position, int? length}) {
     validateErrorArgs(string, match, position, length);
 
     if (match == null && position == null && length == null) match = lastMatch;
