@@ -33,14 +33,14 @@ class StreamChannelController<T> {
   /// This channel should be used directly by the creator of this
   /// [StreamChannelController] to send and receive events.
   StreamChannel<T> get local => _local;
-  StreamChannel<T> _local;
+  late final StreamChannel<T> _local;
 
   /// The foreign channel.
   ///
   /// This channel should be returned to external users so they can communicate
   /// with [local].
   StreamChannel<T> get foreign => _foreign;
-  StreamChannel<T> _foreign;
+  late final StreamChannel<T> _foreign;
 
   /// Creates a [StreamChannelController].
   ///

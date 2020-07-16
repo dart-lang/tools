@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('asynchronously', () {
-    StreamChannelController controller;
+    late StreamChannelController controller;
     setUp(() {
       controller = StreamChannelController();
     });
@@ -44,7 +44,7 @@ void main() {
   });
 
   group('synchronously', () {
-    StreamChannelController controller;
+    late StreamChannelController controller;
     setUp(() {
       controller = StreamChannelController(sync: true);
     });

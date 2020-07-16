@@ -1,6 +1,6 @@
-## 2.1.0-dev
+## 2.1.0-nullsafety
 
-* Require Dart `2.2.0` or later.
+* Migrate to null safety.
 
 ## 2.0.0
 

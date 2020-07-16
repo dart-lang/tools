@@ -13,9 +13,9 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  ReceivePort receivePort;
-  SendPort sendPort;
-  StreamChannel channel;
+  late ReceivePort receivePort;
+  late SendPort sendPort;
+  late StreamChannel channel;
   setUp(() {
     receivePort = ReceivePort();
     var receivePortForSend = ReceivePort();
@@ -128,7 +128,7 @@ void main() {
   });
 
   group('connect constructors', () {
-    ReceivePort connectPort;
+    late ReceivePort connectPort;
     setUp(() {
       connectPort = ReceivePort();
     });

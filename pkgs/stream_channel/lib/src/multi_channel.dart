@@ -73,7 +73,7 @@ abstract class MultiChannel<T> implements StreamChannel<T> {
   ///
   /// Throws an [ArgumentError] if a virtual channel already exists for [id].
   /// Throws a [StateError] if the underlying channel is closed.
-  VirtualChannel<T> virtualChannel([int id]);
+  VirtualChannel<T> virtualChannel([int? id]);
 }
 
 /// The implementation of [MultiChannel].
@@ -85,10 +85,10 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   /// The inner channel over which all communication is conducted.
   ///
   /// This will be `null` if the underlying communication channel is closed.
-  StreamChannel<dynamic> _inner;
+  StreamChannel<dynamic>? _inner;
 
   /// The subscription to [_inner].stream.
-  StreamSubscription<dynamic> _innerStreamSubscription;
+  StreamSubscription<dynamic>? _innerStreamSubscription;
 
   @override
   Stream<T> get stream => _mainController.foreign.stream;
@@ -132,15 +132,15 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   /// it's coming from a channel that was originally created locally.
   var _nextId = 1;
 
-  _MultiChannel(this._inner) {
+  _MultiChannel(StreamChannel<dynamic> inner) : _inner = inner {
     // The default connection is a special case which has id 0 on both ends.
     // This allows it to begin connected without having to send over an id.
     _controllers[0] = _mainController;
     _mainController.local.stream.listen(
-        (message) => _inner.sink.add([0, message]),
+        (message) => _inner!.sink.add(<Object?>[0, message]),
         onDone: () => _closeChannel(0, 0));
 
-    _innerStreamSubscription = _inner.stream.cast<List>().listen((message) {
+    _innerStreamSubscription = _inner!.stream.cast<List>().listen((message) {
       var id = message[0] as int;
 
       // If the channel was closed before an incoming message was processed,
@@ -170,7 +170,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   }
 
   @override
-  VirtualChannel<T> virtualChannel([int id]) {
+  VirtualChannel<T> virtualChannel([int? id]) {
     int inputId;
     int outputId;
     if (id != null) {
@@ -194,11 +194,11 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
       return VirtualChannel._(this, inputId, Stream.empty(), NullStreamSink());
     }
 
-    StreamChannelController<T> controller;
+    late StreamChannelController<T> controller;
     if (_pendingIds.remove(inputId)) {
       // If we've already received messages for this channel, use the controller
       // where those messages are buffered.
-      controller = _controllers[inputId];
+      controller = _controllers[inputId]!;
     } else if (_controllers.containsKey(inputId) ||
         _closedIds.contains(inputId)) {
       throw ArgumentError('A virtual channel with id $id already exists.');
@@ -208,7 +208,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
     }
 
     controller.local.stream.listen(
-        (message) => _inner.sink.add([outputId, message]),
+        (message) => _inner!.sink.add(<Object?>[outputId, message]),
         onDone: () => _closeChannel(inputId, outputId));
     return VirtualChannel._(
         this, outputId, controller.foreign.stream, controller.foreign.sink);
@@ -218,21 +218,21 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
   /// outgoing messages have [outputId].
   void _closeChannel(int inputId, int outputId) {
     _closedIds.add(inputId);
-    var controller = _controllers.remove(inputId);
+    var controller = _controllers.remove(inputId)!;
     controller.local.sink.close();
 
     if (_inner == null) return;
 
     // A message without data indicates that the virtual channel has been
     // closed.
-    _inner.sink.add([outputId]);
+    _inner!.sink.add([outputId]);
     if (_controllers.isEmpty) _closeInnerChannel();
   }
 
   /// Closes the underlying communication channel.
   void _closeInnerChannel() {
-    _inner.sink.close();
-    _innerStreamSubscription.cancel();
+    _inner!.sink.close();
+    _innerStreamSubscription!.cancel();
     _inner = null;
 
     // Convert this to a list because the close is dispatched synchronously, and

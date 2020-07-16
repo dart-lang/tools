@@ -18,14 +18,14 @@ import 'stream_channel_transformer.dart';
 /// If the transformed channel emits invalid JSON, this emits a
 /// [FormatException]. If an unencodable object is added to the sink, it
 /// synchronously throws a [JsonUnsupportedObjectError].
-final StreamChannelTransformer<Object, String> jsonDocument =
+final StreamChannelTransformer<Object?, String> jsonDocument =
     const _JsonDocument();
 
-class _JsonDocument implements StreamChannelTransformer<Object, String> {
+class _JsonDocument implements StreamChannelTransformer<Object?, String> {
   const _JsonDocument();
 
   @override
-  StreamChannel<Object> bind(StreamChannel<String> channel) {
+  StreamChannel<Object?> bind(StreamChannel<String> channel) {
     var stream = channel.stream.map(jsonDecode);
     var sink = StreamSinkTransformer<Object, String>.fromHandlers(
         handleData: (data, sink) {

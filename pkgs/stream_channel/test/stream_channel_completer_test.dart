@@ -9,10 +9,10 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  StreamChannelCompleter completer;
-  StreamController streamController;
-  StreamController sinkController;
-  StreamChannel innerChannel;
+  late StreamChannelCompleter completer;
+  late StreamController streamController;
+  late StreamController sinkController;
+  late StreamChannel innerChannel;
   setUp(() {
     completer = StreamChannelCompleter();
     streamController = StreamController();

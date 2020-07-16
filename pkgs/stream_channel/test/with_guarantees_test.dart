@@ -9,9 +9,9 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  StreamController streamController;
-  StreamController sinkController;
-  StreamChannel channel;
+  late StreamController streamController;
+  late StreamController sinkController;
+  late StreamChannel channel;
   setUp(() {
     streamController = StreamController();
     sinkController = StreamController();
@@ -152,7 +152,7 @@ void main() {
       channel.sink.addError('oh no');
       expect(channel.sink.done, throwsA('oh no'));
       sinkController.stream
-          .listen(null, onError: expectAsync1((_) {}, count: 0));
+          .listen(null, onError: expectAsync1((dynamic _) {}, count: 0));
     });
 
     test('adding an error causes the stream to emit a done event', () {

@@ -7,9 +7,9 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  StreamChannelController controller;
-  MultiChannel channel1;
-  MultiChannel channel2;
+  late StreamChannelController controller;
+  late MultiChannel channel1;
+  late MultiChannel channel2;
   setUp(() {
     controller = StreamChannelController();
     channel1 = MultiChannel<int>(controller.local);
@@ -85,8 +85,8 @@ void main() {
   });
 
   group('a locally-created virtual channel', () {
-    VirtualChannel virtual1;
-    VirtualChannel virtual2;
+    late VirtualChannel virtual1;
+    late VirtualChannel virtual2;
     setUp(() {
       virtual1 = channel1.virtualChannel();
       virtual2 = channel2.virtualChannel(virtual1.id);
@@ -185,8 +185,8 @@ void main() {
   });
 
   group('a remotely-created virtual channel', () {
-    VirtualChannel virtual1;
-    VirtualChannel virtual2;
+    late VirtualChannel virtual1;
+    late VirtualChannel virtual2;
     setUp(() {
       virtual1 = channel1.virtualChannel();
       virtual2 = channel2.virtualChannel(virtual1.id);
@@ -297,8 +297,8 @@ void main() {
   });
 
   group('when the underlying stream', () {
-    VirtualChannel virtual1;
-    VirtualChannel virtual2;
+    late VirtualChannel virtual1;
+    late VirtualChannel virtual2;
     setUp(() {
       virtual1 = channel1.virtualChannel();
       virtual2 = channel2.virtualChannel(virtual1.id);
@@ -406,8 +406,8 @@ void main() {
     });
 
     group('for a virtual channel:', () {
-      VirtualChannel virtual1;
-      VirtualChannel virtual2;
+      late VirtualChannel virtual1;
+      late VirtualChannel virtual2;
       setUp(() {
         virtual1 = channel1.virtualChannel();
         virtual2 = channel2.virtualChannel(virtual1.id);

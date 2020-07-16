@@ -17,17 +17,17 @@ class GuaranteeChannel<T> extends StreamChannelMixin<T> {
 
   @override
   StreamSink<T> get sink => _sink;
-  _GuaranteeSink<T> _sink;
+  late final _GuaranteeSink<T> _sink;
 
   /// The controller for [stream].
   ///
   /// This intermediate controller allows us to continue listening for a done
   /// event even after the user has canceled their subscription, and to send our
   /// own done event when the sink is closed.
-  StreamController<T> _streamController;
+  late final StreamController<T> _streamController;
 
   /// The subscription to the inner stream.
-  StreamSubscription<T> _subscription;
+  StreamSubscription<T>? _subscription;
 
   /// Whether the sink has closed, causing the underlying channel to disconnect.
   bool _disconnected = false;
@@ -64,7 +64,8 @@ class GuaranteeChannel<T> extends StreamChannelMixin<T> {
   /// should stop emitting events.
   void _onSinkDisconnected() {
     _disconnected = true;
-    if (_subscription != null) _subscription.cancel();
+    var subscription = _subscription;
+    if (subscription != null) subscription.cancel();
     _streamController.close();
   }
 }
@@ -95,11 +96,11 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
   /// The subscription to the stream passed to [addStream], if a stream is
   /// currently being added.
-  StreamSubscription<T> _addStreamSubscription;
+  StreamSubscription<T>? _addStreamSubscription;
 
   /// The completer for the future returned by [addStream], if a stream is
   /// currently being added.
-  Completer _addStreamCompleter;
+  Completer? _addStreamCompleter;
 
   /// Whether we're currently adding a stream with [addStream].
   bool get _inAddStream => _addStreamSubscription != null;
@@ -125,7 +126,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   }
 
   @override
-  void addError(error, [StackTrace stackTrace]) {
+  void addError(error, [StackTrace? stackTrace]) {
     if (_closed) throw StateError('Cannot add event after closing.');
     if (_inAddStream) {
       throw StateError('Cannot add event while adding stream.');
@@ -139,7 +140,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   ///
   /// This is called from [addStream], so it shouldn't fail if a stream is being
   /// added.
-  void _addError(error, [StackTrace stackTrace]) {
+  void _addError(Object error, [StackTrace? stackTrace]) {
     if (_allowErrors) {
       _inner.addError(error, stackTrace);
       return;
@@ -166,8 +167,8 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
     _addStreamCompleter = Completer.sync();
     _addStreamSubscription = stream.listen(_inner.add,
-        onError: _addError, onDone: _addStreamCompleter.complete);
-    return _addStreamCompleter.future.then((_) {
+        onError: _addError, onDone: _addStreamCompleter!.complete);
+    return _addStreamCompleter!.future.then((_) {
       _addStreamCompleter = null;
       _addStreamSubscription = null;
     });
@@ -199,7 +200,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
     if (!_doneCompleter.isCompleted) _doneCompleter.complete();
 
     if (!_inAddStream) return;
-    _addStreamCompleter.complete(_addStreamSubscription.cancel());
+    _addStreamCompleter!.complete(_addStreamSubscription!.cancel());
     _addStreamCompleter = null;
     _addStreamSubscription = null;
   }

@@ -74,11 +74,11 @@ class _DisconnectorSink<T> implements StreamSink<T> {
 
   /// The subscription to the stream passed to [addStream], if a stream is
   /// currently being added.
-  StreamSubscription<T> _addStreamSubscription;
+  StreamSubscription<T>? _addStreamSubscription;
 
   /// The completer for the future returned by [addStream], if a stream is
   /// currently being added.
-  Completer _addStreamCompleter;
+  Completer? _addStreamCompleter;
 
   /// Whether we're currently adding a stream with [addStream].
   bool get _inAddStream => _addStreamSubscription != null;
@@ -97,7 +97,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
   }
 
   @override
-  void addError(error, [StackTrace stackTrace]) {
+  void addError(error, [StackTrace? stackTrace]) {
     if (_closed) throw StateError('Cannot add event after closing.');
     if (_inAddStream) {
       throw StateError('Cannot add event while adding stream.');
@@ -117,8 +117,8 @@ class _DisconnectorSink<T> implements StreamSink<T> {
 
     _addStreamCompleter = Completer.sync();
     _addStreamSubscription = stream.listen(_inner.add,
-        onError: _inner.addError, onDone: _addStreamCompleter.complete);
-    return _addStreamCompleter.future.then((_) {
+        onError: _inner.addError, onDone: _addStreamCompleter!.complete);
+    return _addStreamCompleter!.future.then((_) {
       _addStreamCompleter = null;
       _addStreamSubscription = null;
     });
@@ -143,7 +143,7 @@ class _DisconnectorSink<T> implements StreamSink<T> {
     var future = _inner.close();
 
     if (_inAddStream) {
-      _addStreamCompleter.complete(_addStreamSubscription.cancel());
+      _addStreamCompleter!.complete(_addStreamSubscription!.cancel());
       _addStreamCompleter = null;
       _addStreamSubscription = null;
     }

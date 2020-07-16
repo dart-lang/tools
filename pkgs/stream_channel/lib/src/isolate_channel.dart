@@ -51,7 +51,7 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
     // The first message across the ReceivePort should be a SendPort pointing to
     // the remote end. If it's not, we'll make the stream emit an error
     // complaining.
-    StreamSubscription<dynamic> subscription;
+    late StreamSubscription<dynamic> subscription;
     subscription = receivePort.listen((message) {
       if (message is SendPort) {
         var controller =

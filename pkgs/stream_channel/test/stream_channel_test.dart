@@ -11,9 +11,9 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  StreamController streamController;
-  StreamController sinkController;
-  StreamChannel channel;
+  late StreamController streamController;
+  late StreamController sinkController;
+  late StreamChannel channel;
   setUp(() {
     streamController = StreamController();
     sinkController = StreamController();

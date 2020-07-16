@@ -22,7 +22,7 @@ class StreamChannelCompleter<T> {
 
   /// The channel for this completer.
   StreamChannel<T> get channel => _channel;
-  StreamChannel<T> _channel;
+  late final StreamChannel<T> _channel;
 
   /// Whether [setChannel] has been called.
   bool _set = false;
@@ -66,7 +66,7 @@ class StreamChannelCompleter<T> {
   ///
   /// Either [setChannel] or [setError] may be called at most once. Trying to
   /// call either of them again will fail.
-  void setError(error, [StackTrace stackTrace]) {
+  void setError(Object error, [StackTrace? stackTrace]) {
     if (_set) throw StateError('The channel has already been set.');
     _set = true;
 

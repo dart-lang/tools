@@ -16,14 +16,14 @@ import '../stream_channel.dart';
 class CloseGuaranteeChannel<T> extends StreamChannelMixin<T> {
   @override
   Stream<T> get stream => _stream;
-  _CloseGuaranteeStream<T> _stream;
+  late final _CloseGuaranteeStream<T> _stream;
 
   @override
   StreamSink<T> get sink => _sink;
-  _CloseGuaranteeSink<T> _sink;
+  late final _CloseGuaranteeSink<T> _sink;
 
   /// The subscription to the inner stream.
-  StreamSubscription<T> _subscription;
+  StreamSubscription<T>? _subscription;
 
   /// Whether the sink has closed, causing the underlying channel to disconnect.
   bool _disconnected = false;
@@ -48,8 +48,8 @@ class _CloseGuaranteeStream<T> extends Stream<T> {
   _CloseGuaranteeStream(this._inner, this._channel);
 
   @override
-  StreamSubscription<T> listen(void Function(T) onData,
-      {Function onError, void Function() onDone, bool cancelOnError}) {
+  StreamSubscription<T> listen(void Function(T)? onData,
+      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
     // If the channel is already disconnected, we shouldn't dispatch anything
     // but a done event.
     if (_channel._disconnected) {
@@ -80,10 +80,11 @@ class _CloseGuaranteeSink<T> extends DelegatingStreamSink<T> {
   Future<void> close() {
     var done = super.close();
     _channel._disconnected = true;
-    if (_channel._subscription != null) {
+    var subscription = _channel._subscription;
+    if (subscription != null) {
       // Don't dispatch anything but a done event.
-      _channel._subscription.onData(null);
-      _channel._subscription.onError(null);
+      subscription.onData(null);
+      subscription.onError(null);
     }
     return done;
   }
