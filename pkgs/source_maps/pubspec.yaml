@@ -16,6 +16,9 @@ dev_dependencies:
   term_glyph: ^1.0.0
 
 dependency_overrides:
+  # Overrides required for a version solve	
+  coverage: 0.14.0
+  # Null Safety Overrides
   async:
     git: git://github.com/dart-lang/async.git
   boolean_selector:
