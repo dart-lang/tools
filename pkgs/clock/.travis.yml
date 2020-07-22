@@ -1,22 +1,13 @@
 language: dart
 
 dart:
-- dev
-- 2.1.1
+- preview/raw/2.10.0-0.2-dev
 
 dart_task:
   - test: -p vm,chrome
-
-matrix:
-  include:
-  - dart: dev
-    dart_task: dartfmt
-  - dart: dev
-    dart_task:
-      dartanalyzer: --fatal-lints --fatal-warnings .
-  - dart: 2.1.1
-    dart_task:
-      dartanalyzer: --fatal-warnings .
+  - dartfmt
+  - dartanalyzer: --fatal-lints --fatal-warnings .
+      
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

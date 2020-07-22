@@ -25,7 +25,7 @@ void main() {
   });
 
   group('before it starts', () {
-    Stopwatch stopwatch;
+    late Stopwatch stopwatch;
     setUp(() {
       stopwatch = clock.stopwatch();
     });
@@ -47,9 +47,9 @@ void main() {
   });
 
   group('when 12345μs have elapsed', () {
-    DateTime time;
-    Clock clock;
-    Stopwatch stopwatch;
+    late DateTime time;
+    late Clock clock;
+    late Stopwatch stopwatch;
     setUp(() {
       time = date(1990, 11, 8);
       clock = Clock(() => time);

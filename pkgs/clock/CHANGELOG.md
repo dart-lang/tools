@@ -1,3 +1,7 @@
+## 1.1.0-nullsafety
+
+* Update to null safety.
+
 ## 1.0.1
 
 * Update to lowercase Dart core library constants.

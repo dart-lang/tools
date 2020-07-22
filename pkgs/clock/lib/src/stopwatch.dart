@@ -34,7 +34,7 @@ class ClockStopwatch implements Stopwatch {
 
   /// The point at which [start] was called most recently, or `null` if this
   /// isn't active.
-  DateTime _start;
+  DateTime? _start;
 
   ClockStopwatch(this._clock);
 
@@ -52,7 +52,7 @@ class ClockStopwatch implements Stopwatch {
   @override
   int get elapsedMicroseconds =>
       _elapsed +
-      (_start == null ? 0 : _clock.now().difference(_start).inMicroseconds);
+      (_start == null ? 0 : _clock.now().difference(_start!).inMicroseconds);
 
   @override
   void start() {

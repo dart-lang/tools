@@ -19,7 +19,7 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  Clock clock;
+  late Clock clock;
   setUp(() {
     clock = Clock.fixed(date(2013));
   });

@@ -28,7 +28,7 @@ final _isFinalKey = Object();
 ///
 /// This defaults to the system clock. It can be set within a zone using
 /// [withClock].
-Clock get clock => Zone.current[_clockKey] as Clock ?? const Clock();
+Clock get clock => Zone.current[_clockKey] as Clock? ?? const Clock();
 
 /// Runs [callback] with the given value for the top-level [clock] field.
 ///

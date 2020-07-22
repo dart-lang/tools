@@ -16,8 +16,6 @@
 // because quiver is very large and the amount of code we use from it is very
 // small.
 
-import 'package:meta/meta.dart';
-
 /// The number of days in each month.
 ///
 /// This array uses 1-based month numbers, i.e. January is the 1-st element in
@@ -57,5 +55,5 @@ bool isLeapYear(int year) =>
 /// month back takes us to February 28 (or 29 during a leap year), as February
 /// doesn't have 31-st date.
 int clampDayOfMonth(
-        {@required int year, @required int month, @required int day}) =>
+        {required int year, required int month, required int day}) =>
     day.clamp(1, daysInMonth(year, month)) as int;
