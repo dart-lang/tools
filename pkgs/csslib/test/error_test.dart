@@ -134,37 +134,27 @@ void testBadSelectors() {
 
   // Invalid id selector.
   var input = '# foo { color: #ff00ff; }';
-  var stylesheet = parseCss(input, errors: errors);
+  parseCss(input, errors: errors);
 
-  expect(errors.isEmpty, false);
+  expect(errors, isNotEmpty);
   expect(errors[0].toString(), r'''
 error on line 1, column 1: Not a valid ID selector expected #id
   ╷
 1 │ # foo { color: #ff00ff; }
   │ ^
   ╵''');
-  expect(stylesheet != null, true);
-  expect(prettyPrint(stylesheet), r'''
-# foo {
-  color: #f0f;
-}''');
 
   // Invalid class selector.
   input = '. foo { color: #ff00ff; }';
-  stylesheet = parseCss(input, errors: errors..clear());
+  parseCss(input, errors: errors..clear());
 
-  expect(errors.isEmpty, false);
+  expect(errors, isNotEmpty);
   expect(errors[0].toString(), r'''
 error on line 1, column 1: Not a valid class selector expected .className
   ╷
 1 │ . foo { color: #ff00ff; }
   │ ^
   ╵''');
-  expect(stylesheet != null, true);
-  expect(prettyPrint(stylesheet), r'''
-. foo {
-  color: #f0f;
-}''');
 }
 
 /// Test for bad hex values.

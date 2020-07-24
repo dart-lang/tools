@@ -1307,12 +1307,14 @@ class _Parser {
     var selectors = <Selector>[];
     var start = _peekToken.span;
 
+    tokenizer.inSelector = true;
     do {
       var selector = processSelector();
       if (selector != null) {
         selectors.add(selector);
       }
     } while (_maybeEat(TokenKind.COMMA));
+    tokenizer.inSelector = false;
 
     if (selectors.isNotEmpty) {
       return SelectorGroup(selectors, _makeSpan(start));
@@ -1501,35 +1503,20 @@ class _Parser {
       case TokenKind.HASH:
         _eat(TokenKind.HASH);
 
-        var hasWhiteSpace = false;
         if (_anyWhiteSpaceBeforePeekToken(TokenKind.HASH)) {
-          _warning('Not a valid ID selector expected #id', _makeSpan(start));
-          hasWhiteSpace = true;
+          _error('Not a valid ID selector expected #id', _makeSpan(start));
+          return null;
         }
-        if (_peekIdentifier()) {
-          var id = identifier();
-          if (hasWhiteSpace) {
-            // Generate bad selector id (normalized).
-            id.name = ' ${id.name}';
-          }
-          return IdSelector(id, _makeSpan(start));
-        }
-        return null;
+        return IdSelector(identifier(), _makeSpan(start));
       case TokenKind.DOT:
         _eat(TokenKind.DOT);
 
-        var hasWhiteSpace = false;
         if (_anyWhiteSpaceBeforePeekToken(TokenKind.DOT)) {
-          _warning('Not a valid class selector expected .className',
+          _error('Not a valid class selector expected .className',
               _makeSpan(start));
-          hasWhiteSpace = true;
+          return null;
         }
-        var id = identifier();
-        if (hasWhiteSpace) {
-          // Generate bad selector class (normalized).
-          id.name = ' ${id.name}';
-        }
-        return ClassSelector(id, _makeSpan(start));
+        return ClassSelector(identifier(), _makeSpan(start));
       case TokenKind.COLON:
         // :pseudo-class ::pseudo-element
         return processPseudoSelector(start);

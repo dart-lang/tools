@@ -20,7 +20,12 @@ class Identifier extends TreeNode {
   dynamic visit(VisitorBase visitor) => visitor.visitIdentifier(this);
 
   @override
-  String toString() => name;
+  String toString() {
+    // Try to use the identifier's original lexeme to preserve any escape codes
+    // as authored. The name, which may include escaped values, may no longer be
+    // a valid identifier.
+    return span?.text ?? name;
+  }
 }
 
 class Wildcard extends TreeNode {
@@ -274,7 +279,7 @@ class AttributeSelector extends SimpleSelector {
   String valueToString() {
     if (value != null) {
       if (value is Identifier) {
-        return value.name;
+        return value.toString();
       } else {
         return '"$value"';
       }
