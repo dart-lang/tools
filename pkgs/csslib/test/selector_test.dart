@@ -14,50 +14,50 @@ void testSelectorSuccesses() {
   var errors = <Message>[];
   var selectorAst = selector('#div .foo', errors: errors);
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('#div .foo', compactOuptut(selectorAst));
+  expect('#div .foo', compactOutput(selectorAst));
 
   // Valid selectors for class names.
   selectorAst = selector('.foo', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('.foo', compactOuptut(selectorAst));
+  expect('.foo', compactOutput(selectorAst));
 
   selectorAst = selector('.foobar .xyzzy', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('.foobar .xyzzy', compactOuptut(selectorAst));
+  expect('.foobar .xyzzy', compactOutput(selectorAst));
 
   selectorAst = selector('.foobar .a-story .xyzzy', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('.foobar .a-story .xyzzy', compactOuptut(selectorAst));
+  expect('.foobar .a-story .xyzzy', compactOutput(selectorAst));
 
   selectorAst =
       selector('.foobar .xyzzy .a-story .b-story', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('.foobar .xyzzy .a-story .b-story', compactOuptut(selectorAst));
+  expect('.foobar .xyzzy .a-story .b-story', compactOutput(selectorAst));
 
   // Valid selectors for element IDs.
   selectorAst = selector('#id1', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('#id1', compactOuptut(selectorAst));
+  expect('#id1', compactOutput(selectorAst));
 
   selectorAst = selector('#id-number-3', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('#id-number-3', compactOuptut(selectorAst));
+  expect('#id-number-3', compactOutput(selectorAst));
 
   selectorAst = selector('#_privateId', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect('#_privateId', compactOuptut(selectorAst));
+  expect('#_privateId', compactOutput(selectorAst));
 
   selectorAst = selector(':host', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), ':host');
+  expect(compactOutput(selectorAst), ':host');
 
   selectorAst = selector(':host(.foo)', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), ':host(.foo)');
+  expect(compactOutput(selectorAst), ':host(.foo)');
 
   selectorAst = selector(':host-context(.foo)', errors: errors..clear());
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(selectorAst), ':host-context(.foo)');
+  expect(compactOutput(selectorAst), ':host-context(.foo)');
 }
 
 // TODO(terry): Move this failure case to a failure_test.dart when the analyzer

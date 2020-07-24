@@ -15,13 +15,13 @@ void main() {
       test('with trailing space', () {
         final selectorAst = selector(r'.\35 00px', errors: errors);
         expect(errors, isEmpty);
-        expect(compactOuptut(selectorAst), r'.\35 00px');
+        expect(compactOutput(selectorAst), r'.\35 00px');
       });
 
       test('in an attribute selector value', () {
         final selectorAst = selector(r'[elevation=\31]', errors: errors);
         expect(errors, isEmpty);
-        expect(compactOuptut(selectorAst), r'[elevation=\31]');
+        expect(compactOutput(selectorAst), r'[elevation=\31]');
       });
     });
   });

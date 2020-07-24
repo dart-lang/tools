@@ -889,7 +889,7 @@ div {
 
   expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(stylesheet), generated);
+  expect(compactOutput(stylesheet), generated);
 
   // Check namespace directive compactly emitted.
   final input2 = '@namespace a url(http://www.example.org/a);';
@@ -899,7 +899,7 @@ div {
 
   expect(stylesheet2 != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(compactOuptut(stylesheet2), generated2);
+  expect(compactOutput(stylesheet2), generated2);
 }
 
 void testNotSelectors() {

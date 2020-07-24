@@ -67,7 +67,7 @@ String prettyPrint(StyleSheet ss) {
 /// Helper function to emit compact (non-pretty printed) CSS for suite test
 /// comparsions.  Spaces, new lines, etc. are reduced for easier comparsions of
 /// expected suite test results.
-String compactOuptut(StyleSheet ss) {
+String compactOutput(StyleSheet ss) {
   walkTree(ss);
   return (_emitCss..visitTree(ss, pretty: false)).toString();
 }
