@@ -1,3 +1,7 @@
+## 0.16.2
+
+- Added support for escape codes in identifiers.
+
 ## 0.16.1
 	
 - Fixed a crash caused by parsing certain calc() expressions and variables names that contain numbers.
