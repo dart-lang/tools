@@ -1,8 +1,8 @@
-## 2.10.0-nullsafety.1
+## 2.1.0-nullsafety.1
 
 * Update source_maps constraint.
 
-## 2.10.0-nullsafety
+## 2.1.0-nullsafety
 
 * Migrate to null safety.
 
