@@ -1,5 +1,5 @@
 name: source_maps
-version: 0.10.1-nullsafety
+version: 0.10.10-nullsafety
 
 description: Library to programmatically manipulate source map files.
 homepage: https://github.com/dart-lang/source_maps
