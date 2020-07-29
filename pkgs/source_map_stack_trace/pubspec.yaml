@@ -1,5 +1,5 @@
 name: source_map_stack_trace
-version: 2.1.0-nullsafety
+version: 2.1.0-nullsafety.1
 description: A package for applying source maps to stack traces.
 homepage: https://github.com/dart-lang/source_map_stack_trace
 
@@ -10,7 +10,7 @@ environment:
 dependencies:
   path: '>=1.8.0-nullsafety <1.8.0'
   stack_trace: '>=1.10.0-nullsafety <1.10.0'
-  source_maps: '>=0.11.0-nullsafety <0.11.0'
+  source_maps: '>=0.10.10-nullsafety <0.10.10'
 
 dev_dependencies:
   source_span: ^1.6.0
