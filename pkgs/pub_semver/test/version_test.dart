@@ -2,9 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/test.dart';
-
 import 'package:pub_semver/pub_semver.dart';
+import 'package:test/test.dart';
 
 import 'utils.dart';
 
@@ -330,4 +329,55 @@ void main() {
           equals('001.02.0003-01.dev+pre.002'));
     });
   });
+
+  group('primary', () {
+    test('single', () {
+      expect(
+        _primary([
+          '1.2.3',
+        ]).toString(),
+        '1.2.3',
+      );
+    });
+
+    test('normal', () {
+      expect(
+        _primary([
+          '1.2.3',
+          '1.2.2',
+        ]).toString(),
+        '1.2.3',
+      );
+    });
+
+    test('all prerelease', () {
+      expect(
+        _primary([
+          '1.2.2-dev.1',
+          '1.2.2-dev.2',
+        ]).toString(),
+        '1.2.2-dev.2',
+      );
+    });
+
+    test('later prerelease', () {
+      expect(
+        _primary([
+          '1.2.3',
+          '1.2.3-dev',
+        ]).toString(),
+        '1.2.3',
+      );
+    });
+
+    test('empty', () {
+      expect(
+        _primary([]),
+        isNull,
+      );
+    });
+  });
 }
+
+Version _primary(List<String> input) =>
+    Version.primary(input.map((e) => Version.parse(e)).toList());

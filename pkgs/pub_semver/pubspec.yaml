@@ -1,5 +1,5 @@
 name: pub_semver
-version: 1.4.4
+version: 1.4.5-dev
 
 description: >-
  Versions and version constraints implementing pub's versioning policy. This
