@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import 'channel_manager.dart';
 import 'exception.dart';
 import 'utils.dart';
 
@@ -17,7 +16,7 @@ import 'utils.dart';
 /// those method calls. Methods can be called with [sendRequest], or with
 /// [sendNotification] if no response is expected.
 class Client {
-  final ChannelManager _manager;
+  final StreamChannel<dynamic> _channel;
 
   /// The next request id.
   var _id = 0;
@@ -30,19 +29,21 @@ class Client {
   /// The map of request ids to pending requests.
   final _pendingRequests = <int, _Request>{};
 
+  final _done = Completer<void>();
+
   /// Returns a [Future] that completes when the underlying connection is
   /// closed.
   ///
   /// This is the same future that's returned by [listen] and [close]. It may
   /// complete before [close] is called if the remote endpoint closes the
   /// connection.
-  Future get done => _manager.done;
+  Future get done => _done.future;
 
   /// Whether the underlying connection is closed.
   ///
   /// Note that this will be `true` before [close] is called if the remote
   /// endpoint closes the connection.
-  bool get isClosed => _manager.isClosed;
+  bool get isClosed => _done.isCompleted;
 
   /// Creates a [Client] that communicates over [channel].
   ///
@@ -60,9 +61,8 @@ class Client {
   ///
   /// Note that the client won't begin listening to [responses] until
   /// [Client.listen] is called.
-  Client.withoutJson(StreamChannel channel)
-      : _manager = ChannelManager('Client', channel) {
-    _manager.done.whenComplete(() {
+  Client.withoutJson(this._channel) {
+    done.whenComplete(() {
       for (var request in _pendingRequests.values) {
         request.completer.completeError(
             StateError(
@@ -81,13 +81,26 @@ class Client {
   /// when it has an error. This is the same as [done].
   ///
   /// [listen] may only be called once.
-  Future listen() => _manager.listen(_handleResponse);
+  Future listen() {
+    _channel.stream.listen(_handleResponse, onError: (error, stackTrace) {
+      _done.completeError(error, stackTrace);
+      _channel.sink.close();
+    }, onDone: () {
+      if (!_done.isCompleted) _done.complete();
+      close();
+    });
+    return done;
+  }
 
   /// Closes the underlying connection.
   ///
   /// Returns a [Future] that completes when all resources have been released.
   /// This is the same as [done].
-  Future close() => _manager.close();
+  Future close() {
+    _channel.sink.close();
+    if (!_done.isCompleted) _done.complete();
+    return done;
+  }
 
   /// Sends a JSON-RPC 2 request to invoke the given [method].
   ///
@@ -145,7 +158,7 @@ class Client {
     if (_batch != null) {
       _batch.add(message);
     } else {
-      _manager.add(message);
+      _channel.sink.add(message);
     }
   }
 
@@ -166,7 +179,7 @@ class Client {
 
     _batch = [];
     return tryFinally(callback, () {
-      _manager.add(_batch);
+      _channel.sink.add(_batch);
       _batch = null;
     });
   }

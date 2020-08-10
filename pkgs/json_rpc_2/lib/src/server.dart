@@ -10,7 +10,6 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../error_code.dart' as error_code;
-import 'channel_manager.dart';
 import 'exception.dart';
 import 'parameters.dart';
 import 'utils.dart';
@@ -29,7 +28,7 @@ typedef ErrorCallback = void Function(dynamic error, dynamic stackTrace);
 /// asynchronously, it's possible for multiple methods to be invoked at the same
 /// time, or even for a single method to be invoked multiple times at once.
 class Server {
-  final ChannelManager _manager;
+  final StreamChannel<dynamic> _channel;
 
   /// The methods registered for this server.
   final _methods = <String, Function>{};
@@ -40,19 +39,21 @@ class Server {
   /// [RpcException.methodNotFound] exception.
   final _fallbacks = Queue<Function>();
 
+  final _done = Completer<void>();
+
   /// Returns a [Future] that completes when the underlying connection is
   /// closed.
   ///
   /// This is the same future that's returned by [listen] and [close]. It may
   /// complete before [close] is called if the remote endpoint closes the
   /// connection.
-  Future get done => _manager.done;
+  Future get done => _done.future;
 
   /// Whether the underlying connection is closed.
   ///
   /// Note that this will be `true` before [close] is called if the remote
   /// endpoint closes the connection.
-  bool get isClosed => _manager.isClosed;
+  bool get isClosed => _done.isCompleted;
 
   /// A callback that is fired on unhandled exceptions.
   ///
@@ -102,9 +103,8 @@ class Server {
   /// If [strictProtocolChecks] is false, this [Server] will accept some
   /// requests which are not conformant with the JSON-RPC 2.0 specification. In
   /// particular, requests missing the `jsonrpc` parameter will be accepted.
-  Server.withoutJson(StreamChannel channel,
-      {this.onUnhandledError, this.strictProtocolChecks = true})
-      : _manager = ChannelManager('Server', channel);
+  Server.withoutJson(this._channel,
+      {this.onUnhandledError, this.strictProtocolChecks = true});
 
   /// Starts listening to the underlying stream.
   ///
@@ -112,13 +112,25 @@ class Server {
   /// when it has an error. This is the same as [done].
   ///
   /// [listen] may only be called once.
-  Future listen() => _manager.listen(_handleRequest);
+  Future listen() {
+    _channel.stream.listen(_handleRequest, onError: (error, stackTrace) {
+      _done.completeError(error, stackTrace);
+      _channel.sink.close();
+    }, onDone: () {
+      if (!_done.isCompleted) _done.complete();
+    });
+    return done;
+  }
 
   /// Closes the underlying connection.
   ///
   /// Returns a [Future] that completes when all resources have been released.
   /// This is the same as [done].
-  Future close() => _manager.close();
+  Future close() {
+    _channel.sink.close();
+    if (!_done.isCompleted) _done.complete();
+    return done;
+  }
 
   /// Registers a method named [name] on this server.
   ///
@@ -177,7 +189,7 @@ class Server {
       if (response == null) return;
     }
 
-    if (!isClosed) _manager.add(response);
+    if (!isClosed) _channel.sink.add(response);
   }
 
   /// Handles an individual parsed request.

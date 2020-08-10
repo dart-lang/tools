@@ -1,4 +1,6 @@
-## 2.2.2-dev
+## 2.2.2
+
+* Fix `Peer.close()` throwing `Bad state: Future already completed`.
 
 ## 2.2.1
 

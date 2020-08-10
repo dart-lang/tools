@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
-import 'channel_manager.dart';
 import 'client.dart';
 import 'parameters.dart';
 import 'server.dart';
@@ -18,7 +17,7 @@ import 'utils.dart';
 /// 2.0 endpoint. It sends both requests and responses across the same
 /// communication channel and expects to connect to a peer that does the same.
 class Peer implements Client, Server {
-  final ChannelManager _manager;
+  final StreamChannel<dynamic> _channel;
 
   /// The underlying client that handles request-sending and response-receiving
   /// logic.
@@ -36,10 +35,11 @@ class Peer implements Client, Server {
   /// they're responses.
   final _clientIncomingForwarder = StreamController(sync: true);
 
+  final _done = Completer<void>();
   @override
-  Future get done => _manager.done;
+  Future get done => _done.future;
   @override
-  bool get isClosed => _manager.isClosed;
+  bool get isClosed => _done.isCompleted;
 
   @override
   ErrorCallback get onUnhandledError => _server?.onUnhandledError;
@@ -81,15 +81,14 @@ class Peer implements Client, Server {
   /// some requests which are not conformant with the JSON-RPC 2.0
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
-  Peer.withoutJson(StreamChannel channel,
-      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true})
-      : _manager = ChannelManager('Peer', channel) {
+  Peer.withoutJson(this._channel,
+      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true}) {
     _server = Server.withoutJson(
-        StreamChannel(_serverIncomingForwarder.stream, channel.sink),
+        StreamChannel(_serverIncomingForwarder.stream, _channel.sink),
         onUnhandledError: onUnhandledError,
         strictProtocolChecks: strictProtocolChecks);
     _client = Client.withoutJson(
-        StreamChannel(_clientIncomingForwarder.stream, channel.sink));
+        StreamChannel(_clientIncomingForwarder.stream, _channel.sink));
   }
 
   // Client methods.
@@ -121,7 +120,7 @@ class Peer implements Client, Server {
   Future listen() {
     _client.listen();
     _server.listen();
-    return _manager.listen((message) {
+    _channel.stream.listen((message) {
       if (message is Map) {
         if (message.containsKey('result') || message.containsKey('error')) {
           _clientIncomingForwarder.add(message);
@@ -142,10 +141,16 @@ class Peer implements Client, Server {
         // server since it knows how to send error responses.
         _serverIncomingForwarder.add(message);
       }
-    }).whenComplete(close);
+    }, onError: (error, stackTrace) {
+      _done.completeError(error, stackTrace);
+      _channel.sink.close();
+    }, onDone: () {
+      if (!_done.isCompleted) _done.complete();
+      close();
+    });
+    return done;
   }
 
   @override
-  Future close() =>
-      Future.wait([_client.close(), _server.close(), _manager.close()]);
+  Future close() => Future.wait([_client.close(), _server.close()]);
 }
