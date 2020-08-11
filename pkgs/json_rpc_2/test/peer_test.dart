@@ -113,6 +113,21 @@ void main() {
     await peer.close();
   });
 
+  test('considered closed with misbehaving StreamChannel', () async {
+    // If a StreamChannel does not enforce the guarantees stated in it's
+    // contract - specifically that "Closing the sink causes the stream to close
+    // before it emits any more events." - The `Peer` should still understand
+    // when it has been closed manually.
+    var channel = StreamChannel(
+      StreamController().stream,
+      StreamController(),
+    );
+    var peer = json_rpc.Peer.withoutJson(channel);
+    unawaited(peer.listen());
+    unawaited(peer.close());
+    expect(peer.isClosed, true);
+  });
+
   group('like a server,', () {
     test('can receive a call and return a response', () {
       expect(outgoing.first,

@@ -35,11 +35,11 @@ class Peer implements Client, Server {
   /// they're responses.
   final _clientIncomingForwarder = StreamController(sync: true);
 
-  final _done = Completer<void>();
+  Future<void> _done;
   @override
-  Future get done => _done.future;
+  Future get done => _done ??= Future.wait([_client.done, _server.done]);
   @override
-  bool get isClosed => _done.isCompleted;
+  bool get isClosed => _client.isClosed || _server.isClosed;
 
   @override
   ErrorCallback get onUnhandledError => _server?.onUnhandledError;
@@ -142,15 +142,15 @@ class Peer implements Client, Server {
         _serverIncomingForwarder.add(message);
       }
     }, onError: (error, stackTrace) {
-      _done.completeError(error, stackTrace);
-      _channel.sink.close();
-    }, onDone: () {
-      if (!_done.isCompleted) _done.complete();
-      close();
-    });
+      _serverIncomingForwarder.addError(error, stackTrace);
+    }, onDone: close);
     return done;
   }
 
   @override
-  Future close() => Future.wait([_client.close(), _server.close()]);
+  Future close() {
+    _client.close();
+    _server.close();
+    return done;
+  }
 }
