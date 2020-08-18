@@ -294,8 +294,8 @@ class Visitor implements VisitorBase {
 
   @override
   dynamic visitRuleSet(RuleSet node) {
-    visitSelectorGroup(node._selectorGroup);
-    visitDeclarationGroup(node._declarationGroup);
+    visitSelectorGroup(node.selectorGroup);
+    visitDeclarationGroup(node.declarationGroup);
   }
 
   @override
@@ -309,13 +309,13 @@ class Visitor implements VisitorBase {
   @override
   dynamic visitDeclaration(Declaration node) {
     visitIdentifier(node._property);
-    if (node._expression != null) node._expression.visit(this);
+    if (node.expression != null) node.expression.visit(this);
   }
 
   @override
   dynamic visitVarDefinition(VarDefinition node) {
     visitIdentifier(node._property);
-    if (node._expression != null) node._expression.visit(this);
+    if (node.expression != null) node.expression.visit(this);
   }
 
   @override

@@ -356,18 +356,17 @@ class PseudoElementSelector extends SimpleSelector {
 
 // :pseudoClassFunction(argument)
 class PseudoClassFunctionSelector extends PseudoClassSelector {
-  final TreeNode _argument; // Selector, SelectorExpression
+  final TreeNode argument; // Selector, SelectorExpression
 
-  PseudoClassFunctionSelector(Identifier name, this._argument, SourceSpan span)
+  PseudoClassFunctionSelector(Identifier name, this.argument, SourceSpan span)
       : super(name, span);
 
   @override
   PseudoClassFunctionSelector clone() =>
-      PseudoClassFunctionSelector(_name, _argument, span);
+      PseudoClassFunctionSelector(_name, argument, span);
 
-  TreeNode get argument => _argument;
-  Selector get selector => _argument as Selector;
-  SelectorExpression get expression => _argument as SelectorExpression;
+  Selector get selector => argument as Selector;
+  SelectorExpression get expression => argument as SelectorExpression;
 
   @override
   dynamic visit(VisitorBase visitor) =>
@@ -461,19 +460,16 @@ class TopLevelProduction extends TreeNode {
 }
 
 class RuleSet extends TopLevelProduction {
-  final SelectorGroup _selectorGroup;
-  final DeclarationGroup _declarationGroup;
+  final SelectorGroup selectorGroup;
+  final DeclarationGroup declarationGroup;
 
-  RuleSet(this._selectorGroup, this._declarationGroup, SourceSpan span)
+  RuleSet(this.selectorGroup, this.declarationGroup, SourceSpan span)
       : super(span);
-
-  SelectorGroup get selectorGroup => _selectorGroup;
-  DeclarationGroup get declarationGroup => _declarationGroup;
 
   @override
   RuleSet clone() {
-    var cloneSelectorGroup = _selectorGroup.clone();
-    var cloneDeclarationGroup = _declarationGroup.clone();
+    var cloneSelectorGroup = selectorGroup.clone();
+    var cloneDeclarationGroup = declarationGroup.clone();
     return RuleSet(cloneSelectorGroup, cloneDeclarationGroup, span);
   }
 
@@ -1013,7 +1009,7 @@ class ContentDirective extends Directive {
 
 class Declaration extends TreeNode {
   final Identifier _property;
-  final Expression _expression;
+  final Expression expression;
 
   /// Style exposed to Dart.
   DartStyleExpression dartStyle;
@@ -1028,19 +1024,18 @@ class Declaration extends TreeNode {
   ///   since an ident can start with underscore (e.g., `_background: red;`)
   final bool isIE7;
 
-  Declaration(this._property, this._expression, this.dartStyle, SourceSpan span,
+  Declaration(this._property, this.expression, this.dartStyle, SourceSpan span,
       {this.important = false, bool ie7 = false})
       : isIE7 = ie7,
         super(span);
 
   String get property => isIE7 ? '*${_property.name}' : _property.name;
-  Expression get expression => _expression;
 
   bool get hasDartStyle => dartStyle != null;
 
   @override
   Declaration clone() =>
-      Declaration(_property.clone(), _expression.clone(), dartStyle, span,
+      Declaration(_property.clone(), expression.clone(), dartStyle, span,
           important: important);
 
   @override

@@ -303,9 +303,9 @@ class CssPrinter extends Visitor {
   @override
   void visitRuleSet(RuleSet node) {
     emit('$_newLine');
-    node._selectorGroup.visit(this);
+    node.selectorGroup.visit(this);
     emit('$_sp{$_newLine');
-    node._declarationGroup.visit(this);
+    node.declarationGroup.visit(this);
     emit('}');
   }
 
@@ -340,7 +340,7 @@ class CssPrinter extends Visitor {
   @override
   void visitDeclaration(Declaration node) {
     emit('${node.property}:$_sp');
-    node._expression.visit(this);
+    node.expression.visit(this);
     if (node.important) {
       emit('$_sp!important');
     }
@@ -349,7 +349,7 @@ class CssPrinter extends Visitor {
   @override
   void visitVarDefinition(VarDefinition node) {
     emit('var-${node.definedName}: ');
-    node._expression.visit(this);
+    node.expression.visit(this);
   }
 
   @override

@@ -1,5 +1,5 @@
 name: csslib
-version: 0.16.2
+version: 0.16.3-dev
 
 description: A library for parsing CSS.
 homepage: https://github.com/dart-lang/csslib
