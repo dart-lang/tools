@@ -1,13 +1,11 @@
-# cli_util
-
-A library to help in building Dart command-line apps.
+A package to help in building Dart command-line apps.
 
 In particular, `cli_util` provides a simple, standardized way to get the current
 SDK directory.  Useful, especially, when building client applications that
 interact with the Dart SDK (such as the [analyzer][analyzer]).
 
 [![Build Status](https://travis-ci.org/dart-lang/cli_util.svg)](https://travis-ci.org/dart-lang/cli_util)
-[![Pub](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dartlang.org/packages/cli_util)
+[![Pub](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dev/packages/cli_util)
 
 ## Locating the Dart SDK
 
@@ -63,5 +61,5 @@ main(List<String> args) async {
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[analyzer]: https://pub.dartlang.org/packages/analyzer
+[analyzer]: https://pub.dev/packages/analyzer
 [tracker]: https://github.com/dart-lang/cli_util/issues
