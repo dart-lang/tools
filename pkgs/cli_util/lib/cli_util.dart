@@ -23,37 +23,37 @@ import 'src/utils.dart';
 Directory getSdkDir([List<String> cliArgs]) {
   // Look for --dart-sdk on the command line.
   if (cliArgs != null) {
-    int index = cliArgs.indexOf('--dart-sdk');
+    var index = cliArgs.indexOf('--dart-sdk');
 
     if (index != -1 && (index + 1 < cliArgs.length)) {
-      return new Directory(cliArgs[index + 1]);
+      return Directory(cliArgs[index + 1]);
     }
 
-    for (String arg in cliArgs) {
+    for (var arg in cliArgs) {
       if (arg.startsWith('--dart-sdk=')) {
-        return new Directory(arg.substring('--dart-sdk='.length));
+        return Directory(arg.substring('--dart-sdk='.length));
       }
     }
   }
 
   // Look in env['DART_SDK']
   if (Platform.environment['DART_SDK'] != null) {
-    return new Directory(Platform.environment['DART_SDK']);
+    return Directory(Platform.environment['DART_SDK']);
   }
 
   // Look relative to the dart executable.
-  File platformExecutable = new File(Platform.executable);
-  Directory sdkDirectory = platformExecutable.parent.parent;
+  var platformExecutable = File(Platform.executable);
+  var sdkDirectory = platformExecutable.parent.parent;
   if (isSdkDir(sdkDirectory)) return sdkDirectory;
 
   // Handle the case where Platform.executable is a sibling of the SDK directory
   // (this happens during internal testing).
   sdkDirectory =
-      new Directory(path.join(platformExecutable.parent.path, 'dart-sdk'));
+      Directory(path.join(platformExecutable.parent.path, 'dart-sdk'));
   if (isSdkDir(sdkDirectory)) return sdkDirectory;
 
   // Use `Platform.resolvedExecutable`.
-  return new Directory(getSdkPath());
+  return Directory(getSdkPath());
 }
 
 /// Return the path to the current Dart SDK.

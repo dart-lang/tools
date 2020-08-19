@@ -13,14 +13,14 @@ void main() => defineTests();
 void defineTests() {
   group('getSdkDir', () {
     test('arg parsing', () {
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
       expect(getSdkDir(['--dart-sdk', '/dart/sdk']).path, equals('/dart/sdk'));
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
       expect(getSdkDir(['--dart-sdk=/dart/sdk']).path, equals('/dart/sdk'));
     });
 
     test('finds the SDK without cli args', () {
-      // ignore: deprecated_member_use
+      // ignore: deprecated_member_use, deprecated_member_use_from_same_package
       expect(getSdkDir(), isNotNull);
     });
   });
@@ -33,7 +33,7 @@ void defineTests() {
 
   group('utils', () {
     test('isSdkDir', () {
-      expect(isSdkDir(new Directory(getSdkPath())), true);
+      expect(isSdkDir(Directory(getSdkPath())), true);
     });
   });
 }
