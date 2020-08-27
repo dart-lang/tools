@@ -716,11 +716,8 @@ class DeclarationIncludes extends Visitor {
   bool _allIncludes(rulesets) =>
       rulesets.every((rule) => rule is IncludeDirective || rule is NoOp);
 
-  CallMixin _createCallDeclMixin(MixinDefinition mixinDef) {
-    callMap.putIfAbsent(mixinDef.name,
-        () => callMap[mixinDef.name] = CallMixin(mixinDef, varDefs));
-    return callMap[mixinDef.name];
-  }
+  CallMixin _createCallDeclMixin(MixinDefinition mixinDef) =>
+      callMap[mixinDef.name] ??= CallMixin(mixinDef, varDefs);
 
   @override
   void visitStyleSheet(StyleSheet ss) {
