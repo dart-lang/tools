@@ -56,4 +56,4 @@ bool isLeapYear(int year) =>
 /// doesn't have 31-st date.
 int clampDayOfMonth(
         {required int year, required int month, required int day}) =>
-    day.clamp(1, daysInMonth(year, month)) as int;
+    day.clamp(1, daysInMonth(year, month));
