@@ -1,11 +1,14 @@
-## 0.16.3-dev
+## 0.17.0-nullsafety-dev
+
+- `Font.merge` and `BoxEdge.merge` are now static methods instead of factory
+  constructors.
 
 ## 0.16.2
 
 - Added support for escape codes in identifiers.
 
 ## 0.16.1
-	
+
 - Fixed a crash caused by parsing certain calc() expressions and variables names that contain numbers.
 
 ## 0.16.0

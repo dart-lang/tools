@@ -51,7 +51,6 @@ void testSimpleTerms() {
 
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -66,7 +65,6 @@ void testSimpleTerms() {
 
   stylesheet = parseCss(input2, errors: errors..clear());
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated2);
 
@@ -79,7 +77,7 @@ void testSimpleTerms() {
   stylesheet = parseCss(css, errors: errors..clear(), opts: simpleOptions);
   expect(errors, isNotEmpty);
   expect(errors.first.message, 'expected }, but found %');
-  expect(errors.first.span.text, '%');
+  expect(errors.first.span!.text, '%');
 }
 
 /// Declarations with comments, references with single-quotes, double-quotes,
@@ -117,7 +115,6 @@ void testDeclarations() {
 
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -145,7 +142,6 @@ void testIdentifiers() {
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, true, reason: errors.toString());
-  expect(stylesheet != null, true);
   expect(prettyPrint(stylesheet), generated);
 }
 
@@ -173,7 +169,6 @@ void testComposites() {
 }''';
 
   var stylesheet = parseCss(input, errors: errors);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -257,7 +252,6 @@ void testUnits() {
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -285,7 +279,6 @@ void testUnicode() {
 
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -339,7 +332,6 @@ void testNewerCss() {
 
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -366,7 +358,6 @@ void testMediaQueries() {
 }''';
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -414,7 +405,6 @@ void testMediaQueries() {
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -431,7 +421,6 @@ void testMediaQueries() {
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -448,7 +437,6 @@ void testMediaQueries() {
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -459,7 +447,6 @@ void testMediaQueries() {
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -475,7 +462,7 @@ void testMediaQueries() {
   expect(errors, isNotEmpty);
   expect(
       errors.first.message, contains('expected { after media before ruleset'));
-  expect(errors.first.span.text, '(');
+  expect(errors.first.span!.text, '(');
 
   // Test nested at-rules.
   input = '''
@@ -647,7 +634,7 @@ body {
   expect(errors, isNotEmpty);
   expect(errors.first.message,
       "Operators can't be mixed without a layer of parentheses");
-  expect(errors.first.span.text, 'or');
+  expect(errors.first.span!.text, 'or');
 }
 
 void testViewport() {
@@ -696,7 +683,6 @@ void testFontFace() {
 }''';
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -714,7 +700,6 @@ void testFontFace() {
 
   stylesheet = parseCss(input1, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated1);
 
@@ -731,7 +716,6 @@ src: url(ideal-sans-serif.woff) format("woff"),
 
   stylesheet = parseCss(input2, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated2);
 
@@ -750,7 +734,6 @@ src: url(ideal-sans-serif.woff) format("woff"),
 
   stylesheet = parseCss(input3, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated3);
 
@@ -767,7 +750,6 @@ src: url(ideal-sans-serif.woff) format("woff"),
 }''';
   stylesheet = parseCss(input4, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated4);
 }
@@ -838,7 +820,6 @@ div[href^='test'] {
       '}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -887,7 +868,6 @@ div {
 
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(compactOutput(stylesheet), generated);
 
@@ -897,7 +877,6 @@ div {
 
   var stylesheet2 = parseCss(input2, errors: errors..clear());
 
-  expect(stylesheet2 != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(compactOutput(stylesheet2), generated2);
 }
@@ -987,7 +966,6 @@ html|*:not(:link):not(:visited) {
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -1005,7 +983,6 @@ void testIE() {
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 
@@ -1023,7 +1000,6 @@ void testIE() {
 
   stylesheet = parseCss(input2, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated2);
 
@@ -1053,7 +1029,6 @@ div {
 
   stylesheet = parseCss(input3, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated3);
 
@@ -1064,7 +1039,6 @@ div {
 
   stylesheet = parseCss(input4, errors: errors..clear(), opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), input4);
 }
@@ -1238,7 +1212,6 @@ input.search-query {
 }''';
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -1248,31 +1221,30 @@ void testHangs() {
 
   // Bad hexvalue had caused a hang in processTerm.
   final input = r'''#a { color: #ebebeburl(0/IE8+9+); }''';
-  var stylesheet = parseCss(input, errors: errors, opts: options);
+  parseCss(input, errors: errors, opts: options);
 
-  expect(stylesheet != null, true);
   expect(errors.length, 3, reason: errors.toString());
 
   var errorMessage = errors[0];
   expect(errorMessage.message, contains('Bad hex number'));
   expect(errorMessage.span, isNotNull);
-  expect(errorMessage.span.start.line, 0);
-  expect(errorMessage.span.start.column, 12);
-  expect(errorMessage.span.text, '#ebebeburl');
+  expect(errorMessage.span!.start.line, 0);
+  expect(errorMessage.span!.start.column, 12);
+  expect(errorMessage.span!.text, '#ebebeburl');
 
   errorMessage = errors[1];
   expect(errorMessage.message, contains('expected }, but found +'));
   expect(errorMessage.span, isNotNull);
-  expect(errorMessage.span.start.line, 0);
-  expect(errorMessage.span.start.column, 30);
-  expect(errorMessage.span.text, '+');
+  expect(errorMessage.span!.start.line, 0);
+  expect(errorMessage.span!.start.column, 30);
+  expect(errorMessage.span!.text, '+');
 
   errorMessage = errors[2];
   expect(errorMessage.message, contains('premature end of file unknown CSS'));
   expect(errorMessage.span, isNotNull);
-  expect(errorMessage.span.start.line, 0);
-  expect(errorMessage.span.start.column, 31);
-  expect(errorMessage.span.text, ')');
+  expect(errorMessage.span!.start.line, 0);
+  expect(errorMessage.span!.start.column, 31);
+  expect(errorMessage.span!.text, ')');
 
   // Missing closing parenthesis for keyframes.
   final input2 = r'''@-ms-keyframes progress-bar-stripes {
@@ -1284,18 +1256,16 @@ void testHangs() {
   }
 ''';
 
-  stylesheet = parseCss(input2, errors: errors..clear(), opts: options);
-
-  expect(stylesheet != null, true);
+  parseCss(input2, errors: errors..clear(), opts: options);
 
   expect(errors.length, 1, reason: errors.toString());
 
   errorMessage = errors[0];
   expect(errorMessage.message, contains('unexpected end of file'));
   expect(errorMessage.span, isNotNull);
-  expect(errorMessage.span.start.line, 7);
-  expect(errorMessage.span.start.column, 0);
-  expect(errorMessage.span.text.trim(), '');
+  expect(errorMessage.span!.start.line, 7);
+  expect(errorMessage.span!.start.column, 0);
+  expect(errorMessage.span!.text.trim(), '');
 }
 
 void testExpressionSpans() {
@@ -1306,9 +1276,9 @@ void testExpressionSpans() {
       .declarations
       .single;
   // This passes
-  expect(decl.span.text, 'width: 50px');
+  expect(decl.span!.text, 'width: 50px');
   // This currently fails
-  expect((decl as Declaration).expression.span.text, '50px');
+  expect((decl as Declaration).expression!.span!.text, '50px');
 }
 
 void testComments() {
@@ -1328,7 +1298,7 @@ void simpleCalc() {
       .declarationGroup
       .declarations
       .single;
-  expect(decl.span.text, 'height: calc(100% - 55px)');
+  expect(decl.span!.text, 'height: calc(100% - 55px)');
 }
 
 void complexCalc() {
@@ -1338,7 +1308,7 @@ void complexCalc() {
       .declarationGroup
       .declarations
       .single;
-  expect(decl.span.text, 'left: calc((100%/3 - 2) * 1em - 2 * 1px)');
+  expect(decl.span!.text, 'left: calc((100%/3 - 2) * 1em - 2 * 1px)');
 }
 
 void twoCalcs() {
@@ -1348,7 +1318,7 @@ void twoCalcs() {
       .declarationGroup
       .declarations
       .single;
-  expect(decl.span.text, 'margin: calc(1rem - 2px) calc(1rem - 1px)');
+  expect(decl.span!.text, 'margin: calc(1rem - 2px) calc(1rem - 1px)');
 }
 
 void selectorWithCalcs() {
@@ -1371,7 +1341,6 @@ void selectorWithCalcs() {
 }''';
 
   var stylesheet = parseCss(input, errors: errors);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }

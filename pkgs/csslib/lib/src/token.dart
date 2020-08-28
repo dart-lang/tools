@@ -47,7 +47,7 @@ class LiteralToken extends Token {
 
 /// A token containing error information.
 class ErrorToken extends Token {
-  String message;
+  String? message;
   ErrorToken(int kind, FileSpan span, this.message) : super(kind, span);
 }
 

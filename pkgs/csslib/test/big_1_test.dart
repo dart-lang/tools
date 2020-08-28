@@ -11,7 +11,6 @@ import 'testing.dart';
 void compilePolyfillAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = polyFillCompileCss(input, errors: errors, opts: options);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }

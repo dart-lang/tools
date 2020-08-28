@@ -374,7 +374,7 @@ class _TreePrinter extends Visitor {
 
     super.visitNamespaceSelector(node);
 
-    visitSimpleSelector(node.nameAsSimpleSelector);
+    visitSimpleSelector(node.nameAsSimpleSelector!);
     output.depth--;
   }
 

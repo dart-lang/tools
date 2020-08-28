@@ -40,7 +40,6 @@ void testClassVisitors() {
 
   var s = parseCss(in1, errors: errors);
 
-  expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   var clsVisits = ClassVisitor(['foobar'])..visitTree(s);
@@ -54,7 +53,6 @@ void testClassVisitors() {
 
   s = parseCss(in1, errors: errors..clear(), opts: simpleOptions);
 
-  expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   clsVisits = ClassVisitor(['foobar1', 'xyzzy', 'foo', 'hello'])..visitTree(s);
@@ -102,7 +100,6 @@ div.myComponent_xyzzy {
 }''';
 
   var s = parseCss(input, errors: errors);
-  expect(s != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   final emitted = polyfillPrint('myComponent', s);

@@ -176,8 +176,7 @@ class Tokenizer extends TokenizerBase {
         }
         return _finishToken(TokenKind.DOLLAR);
       case TokenChar.BANG:
-        var tok = finishIdentifier();
-        return (tok == null) ? _finishToken(TokenKind.BANG) : tok;
+        return finishIdentifier();
       default:
         // TODO(jmesserly): this is used for IE8 detection; I'm not sure it's
         // appropriate outside of a few specific places; certainly shouldn't
@@ -243,7 +242,7 @@ class Tokenizer extends TokenizerBase {
   }
 
   @override
-  Token _errorToken([String message]) {
+  Token _errorToken([String? message]) {
     return _finishToken(TokenKind.ERROR);
   }
 

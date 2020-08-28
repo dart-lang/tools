@@ -28,7 +28,7 @@ const options = PreprocessorOptions(
 /// CSS will allow any property/value pairs regardless of validity; all of our
 /// tests (by default) will ensure that the CSS is really valid.
 StyleSheet parseCss(String cssInput,
-        {List<Message> errors, PreprocessorOptions opts}) =>
+        {List<Message>? errors, PreprocessorOptions? opts}) =>
     parse(cssInput,
         errors: errors,
         options: opts ?? simpleOptionsWithCheckedAndWarningsAsErrors);
@@ -37,10 +37,10 @@ StyleSheet parseCss(String cssInput,
 /// CSS will allow any property/value pairs regardless of validity; all of our
 /// tests (by default) will ensure that the CSS is really valid.
 StyleSheet compileCss(String cssInput,
-        {List<Message> errors,
-        PreprocessorOptions opts,
+        {List<Message>? errors,
+        PreprocessorOptions? opts,
         bool polyfill = false,
-        List<StyleSheet> includes}) =>
+        List<StyleSheet>? includes}) =>
     compile(cssInput,
         errors: errors,
         options: opts ?? simpleOptionsWithCheckedAndWarningsAsErrors,
@@ -48,7 +48,7 @@ StyleSheet compileCss(String cssInput,
         includes: includes);
 
 StyleSheet polyFillCompileCss(input,
-        {List<Message> errors, PreprocessorOptions opts}) =>
+        {List<Message>? errors, PreprocessorOptions? opts}) =>
     compileCss(input, errors: errors, polyfill: true, opts: opts);
 
 /// CSS emitter walks the style sheet tree and emits readable CSS.

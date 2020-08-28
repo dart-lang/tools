@@ -101,7 +101,7 @@ class CssPrinter extends Visitor {
   @override
   void visitSupportsDirective(SupportsDirective node) {
     emit('$_newLine@supports ');
-    node.condition.visit(this);
+    node.condition!.visit(this);
     emit('$_sp{');
     for (var rule in node.groupRuleBody) {
       rule.visit(this);
@@ -112,7 +112,7 @@ class CssPrinter extends Visitor {
   @override
   void visitSupportsConditionInParens(SupportsConditionInParens node) {
     emit('(');
-    node.condition.visit(this);
+    node.condition!.visit(this);
     emit(')');
   }
 
@@ -150,7 +150,7 @@ class CssPrinter extends Visitor {
   @override
   void visitMediaDirective(MediaDirective node) {
     emit('$_newLine@media');
-    emitMediaQueries(node.mediaQueries);
+    emitMediaQueries(node.mediaQueries.cast<MediaQuery>());
     emit('$_sp{');
     for (var ruleset in node.rules) {
       ruleset.visit(this);
@@ -175,7 +175,7 @@ class CssPrinter extends Visitor {
     emit('$_newLine@page');
     if (node.hasIdent || node.hasPseudoPage) {
       if (node.hasIdent) emit(' ');
-      emit(node._ident);
+      emit(node._ident!);
       emit(node.hasPseudoPage ? ':${node._pseudoPage}' : '');
     }
 
@@ -215,7 +215,7 @@ class CssPrinter extends Visitor {
   @override
   void visitKeyFrameDirective(KeyFrameDirective node) {
     emit('$_newLine${node.keyFrameName} ');
-    node.name.visit(this);
+    node.name!.visit(this);
     emit('$_sp{$_newLine');
     for (final block in node._blocks) {
       block.visit(this);
@@ -249,7 +249,7 @@ class CssPrinter extends Visitor {
   void visitNamespaceDirective(NamespaceDirective node) {
     bool isStartingQuote(String ch) => ('\'"'.contains(ch));
 
-    if (isStartingQuote(node._uri)) {
+    if (isStartingQuote(node._uri!)) {
       emit(' @namespace ${node.prefix}"${node._uri}"');
     } else {
       if (_isTesting) {
@@ -303,7 +303,7 @@ class CssPrinter extends Visitor {
   @override
   void visitRuleSet(RuleSet node) {
     emit('$_newLine');
-    node.selectorGroup.visit(this);
+    node.selectorGroup!.visit(this);
     emit('$_sp{$_newLine');
     node.declarationGroup.visit(this);
     emit('}');
@@ -340,7 +340,7 @@ class CssPrinter extends Visitor {
   @override
   void visitDeclaration(Declaration node) {
     emit('${node.property}:$_sp');
-    node.expression.visit(this);
+    node.expression!.visit(this);
     if (node.important) {
       emit('$_sp!important');
     }
@@ -349,7 +349,7 @@ class CssPrinter extends Visitor {
   @override
   void visitVarDefinition(VarDefinition node) {
     emit('var-${node.definedName}: ');
-    node.expression.visit(this);
+    node.expression!.visit(this);
   }
 
   @override
@@ -439,7 +439,7 @@ class CssPrinter extends Visitor {
   @override
   void visitNegationSelector(NegationSelector node) {
     emit(':not(');
-    node.negationArg.visit(this);
+    node.negationArg!.visit(this);
     emit(')');
   }
 
@@ -470,7 +470,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitHexColorTerm(HexColorTerm node) {
-    String mappedName;
+    String? mappedName;
     if (_isTesting && (node.value is! BAD_HEX_VALUE)) {
       mappedName = TokenKind.hexToColorName(node.value);
     }

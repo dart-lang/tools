@@ -518,7 +518,7 @@ class TokenKind {
     return matchList(MEDIA_OPERATORS, 'type', text, offset, length);
   }
 
-  static String idToValue(var identList, int tokenId) {
+  static String? idToValue(var identList, int tokenId) {
     for (var entry in identList) {
       if (tokenId == entry['type']) {
         return entry['value'];
@@ -546,19 +546,20 @@ class TokenKind {
 
   /// Match color name, case insensitive match and return the associated color
   /// entry from _EXTENDED_COLOR_NAMES list, return [:null:] if not found.
-  static Map matchColorName(String text) {
+  static Map? matchColorName(String text) {
     var name = text.toLowerCase();
-    return _EXTENDED_COLOR_NAMES.firstWhere((e) => e['name'] == name,
-        orElse: () => null);
+    for (var color in _EXTENDED_COLOR_NAMES) {
+      if (color['name'] == name) return color;
+    }
+    return null;
   }
 
   /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
   static int colorValue(Map entry) {
-    assert(entry != null);
     return entry['value'];
   }
 
-  static String hexToColorName(hexValue) {
+  static String? hexToColorName(hexValue) {
     for (final entry in _EXTENDED_COLOR_NAMES) {
       if (entry['value'] == hexValue) {
         return entry['name'];

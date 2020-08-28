@@ -19,7 +19,7 @@ class PolyFill {
 
   /// Run the analyzer on every file that is a style sheet or any component that
   /// has a style tag.
-  void process(StyleSheet styleSheet, {List<StyleSheet> includes}) {
+  void process(StyleSheet styleSheet, {List<StyleSheet>? includes}) {
     if (includes != null) {
       processVarDefinitions(includes);
     }
@@ -85,8 +85,8 @@ class _VarDefAndUsage extends Visitor {
   final Map<String, VarDefinition> _knownVarDefs;
   final varDefs = <String, VarDefinition>{};
 
-  VarDefinition currVarDefinition;
-  List<Expression> currentExpressions;
+  VarDefinition? currVarDefinition;
+  List<Expression>? currentExpressions;
 
   _VarDefAndUsage(this._messages, this._knownVarDefs);
 
@@ -122,14 +122,14 @@ class _VarDefAndUsage extends Visitor {
 
   @override
   void visitVarUsage(VarUsage node) {
-    if (currVarDefinition != null && currVarDefinition.badUsage) return;
+    if (currVarDefinition != null && currVarDefinition!.badUsage) return;
 
     // Don't process other var() inside of a varUsage.  That implies that the
     // default is a var() too.  Also, don't process any var() inside of a
     // varDefinition (they're just place holders until we've resolved all real
     // usages.
     var expressions = currentExpressions;
-    var index = expressions.indexOf(node);
+    var index = expressions!.indexOf(node);
     assert(index >= 0);
     var def = _knownVarDefs[node.name];
     if (def != null) {
@@ -138,14 +138,14 @@ class _VarDefAndUsage extends Visitor {
         expressions.removeAt(index);
         return;
       }
-      _resolveVarUsage(currentExpressions, index,
+      _resolveVarUsage(currentExpressions!, index,
           _findTerminalVarDefinition(_knownVarDefs, def));
     } else if (node.defaultValues.any((e) => e is VarUsage)) {
       // Don't have a VarDefinition need to use default values resolve all
       // default values.
       var terminalDefaults = <Expression>[];
       for (var defaultValue in node.defaultValues) {
-        terminalDefaults.addAll(resolveUsageTerminal(defaultValue));
+        terminalDefaults.addAll(resolveUsageTerminal(defaultValue as VarUsage));
       }
       expressions.replaceRange(index, index + 1, terminalDefaults);
     } else if (node.defaultValues.isNotEmpty) {
@@ -153,10 +153,10 @@ class _VarDefAndUsage extends Visitor {
       expressions.replaceRange(index, index + 1, node.defaultValues);
     } else {
       if (currVarDefinition != null) {
-        currVarDefinition.badUsage = true;
+        currVarDefinition!.badUsage = true;
         var mainStyleSheetDef = varDefs[node.name];
         if (mainStyleSheetDef != null) {
-          varDefs.remove(currVarDefinition.property);
+          varDefs.remove(currVarDefinition!.property);
         }
       }
       // Remove var usage that points at an undefined definition.

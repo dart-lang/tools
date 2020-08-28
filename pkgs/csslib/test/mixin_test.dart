@@ -12,7 +12,6 @@ import 'testing.dart';
 void compileAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = compileCss(input, errors: errors, opts: options);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -20,7 +19,6 @@ void compileAndValidate(String input, String generated) {
 void compilePolyfillAndValidate(String input, String generated) {
   var errors = <Message>[];
   var stylesheet = polyFillCompileCss(input, errors: errors, opts: options);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -442,15 +440,14 @@ void badDeclarationInclude() {
 @include b;
 ''';
 
-  var stylesheet = compileCss(input, errors: errors, opts: options);
+  compileCss(input, errors: errors, opts: options);
 
-  expect(stylesheet != null, true);
   expect(errors.isNotEmpty, true);
   expect(errors.length, 1, reason: errors.toString());
   var error = errors[0];
   expect(error.message, 'Using top-level mixin a as a declaration');
-  expect(error.span.start.line, 8);
-  expect(error.span.end.offset, 105);
+  expect(error.span!.start.line, 8);
+  expect(error.span!.end.offset, 105);
 }
 
 void badTopInclude() {
@@ -470,13 +467,13 @@ void badTopInclude() {
 @include a;
   ''';
 
-  var stylesheet = compileCss(input, errors: errors, opts: options);
-  expect(stylesheet != null, true);
+  compileCss(input, errors: errors, opts: options);
+
   expect(errors.length, 1, reason: errors.toString());
   var error = errors[0];
   expect(error.message, 'Using declaration mixin b as top-level mixin');
-  expect(error.span.start.line, 8);
-  expect(error.span.end.offset, 90);
+  expect(error.span!.start.line, 8);
+  expect(error.span!.end.offset, 90);
 }
 
 void emptyMixin() {
@@ -500,7 +497,6 @@ div {
 
   var stylesheet = compileCss(input, errors: errors, opts: options);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), generated);
 }
@@ -522,15 +518,14 @@ void undefinedTopLevel() {
 
   ''';
 
-  var stylesheet = compileCss(input, errors: errors, opts: options);
+  compileCss(input, errors: errors, opts: options);
 
-  expect(stylesheet != null, true);
   expect(errors.isNotEmpty, true);
   expect(errors.length, 1, reason: errors.toString());
   var error = errors[0];
   expect(error.message, 'Undefined mixin b');
-  expect(error.span.start.line, 1);
-  expect(error.span.start.offset, 14);
+  expect(error.span!.start.line, 1);
+  expect(error.span!.start.offset, 14);
 }
 
 void undefinedDeclaration() {
@@ -548,15 +543,14 @@ div {
 }
   ''';
 
-  var stylesheet = compileCss(input, errors: errors, opts: options);
+  compileCss(input, errors: errors, opts: options);
 
-  expect(stylesheet != null, true);
   expect(errors.isNotEmpty, true);
   expect(errors.length, 1, reason: errors.toString());
   var error = errors[0];
   expect(error.message, 'Undefined mixin b');
-  expect(error.span.start.line, 1);
-  expect(error.span.start.offset, 14);
+  expect(error.span!.start.line, 1);
+  expect(error.span!.start.offset, 14);
 }
 
 void includeGrammar() {
@@ -608,36 +602,34 @@ foo {
 @include b
 ''';
 
-  var stylesheet = compileCss(input, errors: errors, opts: options);
-
-  expect(stylesheet != null, true);
+  compileCss(input, errors: errors, opts: options);
 
   expect(errors.isNotEmpty, true);
   expect(errors.length, 6, reason: errors.toString());
   var error = errors[0];
   expect(error.message, 'parsing error expected ;');
-  expect(error.span.start.line, 6);
-  expect(error.span.end.offset, 69);
+  expect(error.span!.start.line, 6);
+  expect(error.span!.end.offset, 69);
   error = errors[1];
   expect(error.message, 'expected :, but found }');
-  expect(error.span.start.line, 7);
-  expect(error.span.end.offset, 73);
+  expect(error.span!.start.line, 7);
+  expect(error.span!.end.offset, 73);
   error = errors[2];
   expect(error.message, 'parsing error expected }');
-  expect(error.span.start.line, 9);
-  expect(error.span.end.offset, 83);
+  expect(error.span!.start.line, 9);
+  expect(error.span!.end.offset, 83);
   error = errors[3];
   expect(error.message, 'expected {, but found end of file()');
-  expect(error.span.start.line, 9);
-  expect(error.span.end.offset, 86);
+  expect(error.span!.start.line, 9);
+  expect(error.span!.end.offset, 86);
   error = errors[4];
   expect(error.message, 'expected }, but found end of file()');
-  expect(error.span.start.line, 10);
-  expect(error.span.end.offset, 86);
+  expect(error.span!.start.line, 10);
+  expect(error.span!.end.offset, 86);
   error = errors[5];
   expect(error.message, 'Using top-level mixin a as a declaration');
-  expect(error.span.start.line, 5);
-  expect(error.span.end.offset, 56);
+  expect(error.span!.start.line, 5);
+  expect(error.span!.end.offset, 56);
 }
 
 void main() {

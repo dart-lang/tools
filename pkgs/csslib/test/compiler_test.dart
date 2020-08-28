@@ -16,7 +16,6 @@ void testClass() {
   var input = '.foobar {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -26,10 +25,11 @@ void testClass() {
   expect(stylesheet.topLevels[0] is RuleSet, true);
 
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var selectorSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var selectorSeqs =
+      ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
   expect(selectorSeqs.length, 1);
   final simpSelector = selectorSeqs[0].simpleSelector;
   expect(simpSelector is ClassSelector, true);
@@ -42,7 +42,6 @@ void testClass2() {
   var input = '.foobar .bar .no-story {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -51,10 +50,10 @@ void testClass2() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
   expect(simpleSeqs.length, 3);
 
   var simpSelector0 = simpleSeqs[0].simpleSelector;
@@ -78,7 +77,6 @@ void testId() {
   var input = '#elemId {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -87,10 +85,10 @@ void testId() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 1);
   var simpSelector = simpleSeqs[0].simpleSelector;
@@ -104,7 +102,6 @@ void testElement() {
   var input = 'div {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -113,10 +110,10 @@ void testElement() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 1);
 
@@ -128,7 +125,6 @@ void testElement() {
   input = 'div div span {}';
   stylesheet = parseCss(input, errors: errors..clear());
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -136,11 +132,11 @@ void testElement() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  ruleset = stylesheet.topLevels[0];
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  ruleset = stylesheet.topLevels[0] as RuleSet;
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 3);
 
@@ -165,7 +161,6 @@ void testNamespace() {
   var input = 'ns1|div {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -174,10 +169,10 @@ void testNamespace() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 1);
   expect(simpleSeqs[0].simpleSelector is NamespaceSelector, true);
@@ -187,7 +182,7 @@ void testNamespace() {
   expect(simpSelector.namespace, 'ns1');
   var elementSelector = simpSelector.nameAsSimpleSelector;
   expect(elementSelector is ElementSelector, true);
-  expect(elementSelector.isWildcard, false);
+  expect(elementSelector!.isWildcard, false);
   expect(elementSelector.name, 'div');
 }
 
@@ -196,7 +191,6 @@ void testNamespace2() {
   var input = 'ns1|div div ns2|span .foobar {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -205,10 +199,10 @@ void testNamespace2() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 4);
 
@@ -218,7 +212,7 @@ void testNamespace2() {
   expect(simpSelector0.namespace, 'ns1');
   var elementSelector0 = simpSelector0.nameAsSimpleSelector;
   expect(elementSelector0 is ElementSelector, true);
-  expect(elementSelector0.isWildcard, false);
+  expect(elementSelector0!.isWildcard, false);
   expect(elementSelector0.name, 'div');
 
   var simpSelector1 = simpleSeqs[1].simpleSelector;
@@ -232,7 +226,7 @@ void testNamespace2() {
   expect(simpSelector2.namespace, 'ns2');
   var elementSelector2 = simpSelector2.nameAsSimpleSelector;
   expect(elementSelector2 is ElementSelector, true);
-  expect(elementSelector2.isWildcard, false);
+  expect(elementSelector2!.isWildcard, false);
   expect(elementSelector2.name, 'span');
 
   var simpSelector3 = simpleSeqs[3].simpleSelector;
@@ -247,7 +241,6 @@ void testSelectorGroups() {
       'div, .foobar ,#elemId, .xyzzy .test, ns1|div div #elemId .foobar {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -256,10 +249,10 @@ void testSelectorGroups() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 5);
+  expect(ruleset.selectorGroup!.selectors.length, 5);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var groupSelector0 = ruleset.selectorGroup.selectors[0];
+  var groupSelector0 = ruleset.selectorGroup!.selectors[0];
   expect(groupSelector0.simpleSelectorSequences.length, 1);
   var selector0 = groupSelector0.simpleSelectorSequences[0];
   var simpleSelector0 = selector0.simpleSelector;
@@ -267,7 +260,7 @@ void testSelectorGroups() {
   expect(selector0.isCombinatorNone, true);
   expect(simpleSelector0.name, 'div');
 
-  var groupSelector1 = ruleset.selectorGroup.selectors[1];
+  var groupSelector1 = ruleset.selectorGroup!.selectors[1];
   expect(groupSelector1.simpleSelectorSequences.length, 1);
   var selector1 = groupSelector1.simpleSelectorSequences[0];
   var simpleSelector1 = selector1.simpleSelector;
@@ -275,7 +268,7 @@ void testSelectorGroups() {
   expect(selector1.isCombinatorNone, true);
   expect(simpleSelector1.name, 'foobar');
 
-  var groupSelector2 = ruleset.selectorGroup.selectors[2];
+  var groupSelector2 = ruleset.selectorGroup!.selectors[2];
   expect(groupSelector2.simpleSelectorSequences.length, 1);
   var selector2 = groupSelector2.simpleSelectorSequences[0];
   var simpleSelector2 = selector2.simpleSelector;
@@ -283,7 +276,7 @@ void testSelectorGroups() {
   expect(selector2.isCombinatorNone, true);
   expect(simpleSelector2.name, 'elemId');
 
-  var groupSelector3 = ruleset.selectorGroup.selectors[3];
+  var groupSelector3 = ruleset.selectorGroup!.selectors[3];
   expect(groupSelector3.simpleSelectorSequences.length, 2);
 
   var selector30 = groupSelector3.simpleSelectorSequences[0];
@@ -298,7 +291,7 @@ void testSelectorGroups() {
   expect(selector31.isCombinatorDescendant, true);
   expect(simpleSelector31.name, 'test');
 
-  var groupSelector4 = ruleset.selectorGroup.selectors[4];
+  var groupSelector4 = ruleset.selectorGroup!.selectors[4];
   expect(groupSelector4.simpleSelectorSequences.length, 4);
 
   var selector40 = groupSelector4.simpleSelectorSequences[0];
@@ -308,7 +301,7 @@ void testSelectorGroups() {
   expect(simpleSelector40.namespace, 'ns1');
   var elementSelector = simpleSelector40.nameAsSimpleSelector;
   expect(elementSelector is ElementSelector, true);
-  expect(elementSelector.isWildcard, false);
+  expect(elementSelector!.isWildcard, false);
   expect(elementSelector.name, 'div');
 
   var selector41 = groupSelector4.simpleSelectorSequences[1];
@@ -334,7 +327,6 @@ void testCombinator() {
   var input = '.foobar > .bar + .no-story ~ myNs|div #elemId {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -343,10 +335,10 @@ void testCombinator() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 5);
 
@@ -375,7 +367,7 @@ void testCombinator() {
   expect(simpleSelector3.namespace, 'myNs');
   var elementSelector = simpleSelector3.nameAsSimpleSelector;
   expect(elementSelector is ElementSelector, true);
-  expect(elementSelector.isWildcard, false);
+  expect(elementSelector!.isWildcard, false);
   expect(elementSelector.name, 'div');
 
   var selector4 = simpleSeqs[4];
@@ -390,7 +382,6 @@ void testWildcard() {
   var input = '* {}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -399,10 +390,10 @@ void testWildcard() {
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
   var ruleset = stylesheet.topLevels[0] as RuleSet;
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  var simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  var simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 1);
   var simpSelector = simpleSeqs[0].simpleSelector;
@@ -414,7 +405,6 @@ void testWildcard() {
   input = '*.foobar {}';
   stylesheet = parseCss(input, errors: errors..clear());
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -422,11 +412,11 @@ void testWildcard() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  ruleset = stylesheet.topLevels[0];
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  ruleset = stylesheet.topLevels[0] as RuleSet;
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 2);
 
@@ -448,7 +438,6 @@ void testWildcard() {
   input = 'myNs|*.foobar {}';
   stylesheet = parseCss(input, errors: errors..clear());
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -456,11 +445,11 @@ void testWildcard() {
   expect(stylesheet.topLevels.length, 1);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  ruleset = stylesheet.topLevels[0];
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  ruleset = stylesheet.topLevels[0] as RuleSet;
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 2);
 
@@ -472,7 +461,7 @@ void testWildcard() {
     expect(simpleSelector0.isNamespaceWildcard, false);
     var elementSelector = simpleSelector0.nameAsSimpleSelector;
     expect('myNs', simpleSelector0.namespace);
-    expect(elementSelector.isWildcard, true);
+    expect(elementSelector!.isWildcard, true);
     expect('*', elementSelector.name);
   }
 
@@ -485,17 +474,16 @@ void testWildcard() {
   input = '*|*.foobar {}';
   stylesheet = parseCss(input, errors: errors..clear());
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
 
   expect(stylesheet.topLevels[0] is RuleSet, true);
-  ruleset = stylesheet.topLevels[0];
-  expect(ruleset.selectorGroup.selectors.length, 1);
+  ruleset = stylesheet.topLevels[0] as RuleSet;
+  expect(ruleset.selectorGroup!.selectors.length, 1);
   expect(ruleset.declarationGroup.declarations.length, 0);
 
-  simpleSeqs = ruleset.selectorGroup.selectors[0].simpleSelectorSequences;
+  simpleSeqs = ruleset.selectorGroup!.selectors[0].simpleSelectorSequences;
 
   expect(simpleSeqs.length, 2);
 
@@ -507,7 +495,7 @@ void testWildcard() {
     expect(simpleSelector0.isNamespaceWildcard, true);
     expect('*', simpleSelector0.namespace);
     var elementSelector = simpleSelector0.nameAsSimpleSelector;
-    expect(elementSelector.isWildcard, true);
+    expect(elementSelector!.isWildcard, true);
     expect('*', elementSelector.name);
   }
 
@@ -530,7 +518,6 @@ void testArrayOfChars() {
 
   var stylesheet = parse(utf8.encode(input), errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   expect(prettyPrint(stylesheet), r'''
@@ -593,7 +580,6 @@ div:nth-child(2n) { color : red; }
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), r'''
 html:lang(fr-ca) {
@@ -663,7 +649,6 @@ void testHost() {
       '}';
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), r'''
 @host {
@@ -688,7 +673,6 @@ void testStringEscape() {
   var errors = <Message>[];
   var input = r'''a { foo: '{"text" : "a\\\""}' }''';
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   expect(prettyPrint(stylesheet), r'''
@@ -708,7 +692,6 @@ void testEmitter() {
       '}';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);
@@ -736,7 +719,6 @@ void testExpressionParsing() {
 }''';
   var stylesheet = parseCss(input, errors: errors);
 
-  expect(stylesheet != null, true);
   expect(errors.isEmpty, true, reason: errors.toString());
 
   walkTree(stylesheet);

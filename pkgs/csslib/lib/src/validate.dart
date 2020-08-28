@@ -7,7 +7,7 @@ import 'package:source_span/source_span.dart';
 
 /// Can be thrown on any Css runtime problem includes source location.
 class CssSelectorException extends SourceSpanException {
-  CssSelectorException(String message, [SourceSpan span])
+  CssSelectorException(String message, [SourceSpan? span])
       : super(message, span);
 }
 

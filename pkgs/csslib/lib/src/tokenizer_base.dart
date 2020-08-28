@@ -111,7 +111,7 @@ abstract class TokenizerBase {
     return Token(kind, _file.span(_startIndex, _index));
   }
 
-  Token _errorToken([String message]) {
+  Token _errorToken([String? message]) {
     return ErrorToken(
         TokenKind.ERROR, _file.span(_startIndex, _index), message);
   }
@@ -186,7 +186,7 @@ abstract class TokenizerBase {
     }
   }
 
-  int readHex([int hexLength]) {
+  int readHex([int? hexLength]) {
     int maxIndex;
     if (hexLength == null) {
       maxIndex = _text.length - 1;

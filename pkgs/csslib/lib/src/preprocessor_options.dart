@@ -32,7 +32,7 @@ class PreprocessorOptions {
   final bool useColors;
 
   /// File to process by the compiler.
-  final String inputFile;
+  final String? inputFile;
 
   const PreprocessorOptions(
       {this.verbose = false,
