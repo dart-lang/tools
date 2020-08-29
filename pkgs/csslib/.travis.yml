@@ -5,6 +5,7 @@ dart:
 
 dart_task:
   - test: --platform vm,chrome
+  - script: pub run --enable-experiment=non-nullable test --platform vm,chrome
 
 matrix:
   include:

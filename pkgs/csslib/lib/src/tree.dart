@@ -1583,7 +1583,7 @@ class FontExpression extends DartStyleExpression {
       String? variant,
       LineHeight? lineHeight})
       : font = Font(
-            size: size is LengthTerm ? size.value : size as num,
+            size: (size is LengthTerm ? size.value : size) as num?,
             family: family,
             weight: weight,
             style: style,
