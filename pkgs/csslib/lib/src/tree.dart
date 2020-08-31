@@ -180,7 +180,7 @@ abstract class SimpleSelector extends TreeNode {
 
   SimpleSelector(this._name, SourceSpan? span) : super(span);
 
-  String get name => _name.name;
+  String get name => _name.name as String;
 
   bool get isWildcard => _name is Wildcard;
 
@@ -210,12 +210,13 @@ class NamespaceSelector extends SimpleSelector {
   NamespaceSelector(this._namespace, var name, SourceSpan? span)
       : super(name, span);
 
-  String get namespace =>
-      _namespace is Wildcard ? '*' : _namespace == null ? '' : _namespace.name;
+  String get namespace => _namespace is Wildcard
+      ? '*'
+      : _namespace == null ? '' : _namespace.name as String;
 
   bool get isNamespaceWildcard => _namespace is Wildcard;
 
-  SimpleSelector? get nameAsSimpleSelector => _name;
+  SimpleSelector? get nameAsSimpleSelector => _name as SimpleSelector?;
 
   @override
   NamespaceSelector clone() => NamespaceSelector(_namespace, '', span);
@@ -289,7 +290,8 @@ class AttributeSelector extends SimpleSelector {
   }
 
   @override
-  AttributeSelector clone() => AttributeSelector(_name, _op, value, span);
+  AttributeSelector clone() =>
+      AttributeSelector(_name as Identifier, _op, value, span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitAttributeSelector(this);
@@ -302,7 +304,7 @@ class AttributeSelector extends SimpleSelector {
 class IdSelector extends SimpleSelector {
   IdSelector(Identifier name, SourceSpan? span) : super(name, span);
   @override
-  IdSelector clone() => IdSelector(_name, span);
+  IdSelector clone() => IdSelector(_name as Identifier, span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitIdSelector(this);
 
@@ -314,7 +316,7 @@ class IdSelector extends SimpleSelector {
 class ClassSelector extends SimpleSelector {
   ClassSelector(Identifier name, SourceSpan? span) : super(name, span);
   @override
-  ClassSelector clone() => ClassSelector(_name, span);
+  ClassSelector clone() => ClassSelector(_name as Identifier, span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitClassSelector(this);
 
@@ -329,7 +331,7 @@ class PseudoClassSelector extends SimpleSelector {
   dynamic visit(VisitorBase visitor) => visitor.visitPseudoClassSelector(this);
 
   @override
-  PseudoClassSelector clone() => PseudoClassSelector(_name, span);
+  PseudoClassSelector clone() => PseudoClassSelector(_name as Identifier, span);
 
   @override
   String toString() => ':$name';
@@ -348,7 +350,8 @@ class PseudoElementSelector extends SimpleSelector {
       visitor.visitPseudoElementSelector(this);
 
   @override
-  PseudoElementSelector clone() => PseudoElementSelector(_name, span);
+  PseudoElementSelector clone() =>
+      PseudoElementSelector(_name as Identifier, span);
 
   @override
   String toString() => "${isLegacy ? ':' : '::'}$name";
@@ -363,7 +366,7 @@ class PseudoClassFunctionSelector extends PseudoClassSelector {
 
   @override
   PseudoClassFunctionSelector clone() =>
-      PseudoClassFunctionSelector(_name, argument, span);
+      PseudoClassFunctionSelector(_name as Identifier, argument, span);
 
   Selector get selector => argument as Selector;
   SelectorExpression get expression => argument as SelectorExpression;
@@ -383,7 +386,7 @@ class PseudoElementFunctionSelector extends PseudoElementSelector {
 
   @override
   PseudoElementFunctionSelector clone() =>
-      PseudoElementFunctionSelector(_name, expression, span);
+      PseudoElementFunctionSelector(_name as Identifier, expression, span);
 
   @override
   dynamic visit(VisitorBase visitor) =>
@@ -1258,7 +1261,7 @@ class UnitTerm extends LiteralTerm {
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitUnitTerm(this);
 
-  String unitToString() => TokenKind.unitToString(unit);
+  String? unitToString() => TokenKind.unitToString(unit);
 
   @override
   String toString() => '$text${unitToString()}';
@@ -1362,7 +1365,7 @@ class UriTerm extends LiteralTerm {
   UriTerm(String value, SourceSpan? span) : super(value, value, span);
 
   @override
-  UriTerm clone() => UriTerm(value, span);
+  UriTerm clone() => UriTerm(value as String, span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitUriTerm(this);
 }

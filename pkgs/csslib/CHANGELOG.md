@@ -2,6 +2,7 @@
 
 - `Font.merge` and `BoxEdge.merge` are now static methods instead of factory
   constructors.
+- Add a type on the `identList` argument to `TokenKind.matchList`.
 
 ## 0.16.2
 

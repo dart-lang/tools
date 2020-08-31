@@ -465,7 +465,8 @@ class _Parser {
 
     var tokId = processVariableOrDirective();
     if (tokId is VarDefinitionDirective) return tokId;
-    switch (tokId) {
+    final tokenId = tokId as int;
+    switch (tokenId) {
       case TokenKind.DIRECTIVE_IMPORT:
         _next();
 
@@ -605,7 +606,7 @@ class _Parser {
       case TokenKind.DIRECTIVE_O_KEYFRAMES:
       // TODO(terry): Remove workaround when bug 8270 is fixed.
       case TokenKind.DIRECTIVE_MS_KEYFRAMES:
-        if (tokId == TokenKind.DIRECTIVE_MS_KEYFRAMES && isChecked) {
+        if (tokenId == TokenKind.DIRECTIVE_MS_KEYFRAMES && isChecked) {
           _warning('@-ms-keyframes should be @keyframes', _makeSpan(start));
         }
         // TODO(terry): End of workaround.
@@ -630,13 +631,13 @@ class _Parser {
 
         _eat(TokenKind.LBRACE);
 
-        var keyframe = KeyFrameDirective(tokId, name, _makeSpan(start));
+        var keyframe = KeyFrameDirective(tokenId, name, _makeSpan(start));
 
         do {
           var selectors = Expressions(_makeSpan(start));
 
           do {
-            var term = processTerm();
+            var term = processTerm() as Expression;
 
             // TODO(terry): Only allow from, to and PERCENTAGE ...
 
@@ -681,7 +682,7 @@ class _Parser {
 
         _eat(TokenKind.RBRACE);
 
-        return StyletDirective(name, productions, _makeSpan(start));
+        return StyletDirective(name as String, productions, _makeSpan(start));
 
       case TokenKind.DIRECTIVE_NAMESPACE:
         // Namespace grammar:
@@ -760,7 +761,7 @@ class _Parser {
       while (keepGoing) {
         var varDef = processVariableOrDirective(mixinParameter: true);
         if (varDef is VarDefinitionDirective || varDef is VarDefinition) {
-          params.add(varDef);
+          params.add(varDef as TreeNode);
         } else if (mustHaveParam) {
           _warning('Expecting parameter', _makeSpan(_peekToken.span));
           keepGoing = false;
@@ -930,7 +931,7 @@ class _Parser {
       var keepGoing = true;
       while (keepGoing && (expr = processTerm()) != null) {
         // VarUsage is returns as a list
-        terms.add(expr is List ? expr[0] : expr);
+        terms.add((expr is List ? expr[0] : expr) as Expression);
         keepGoing = !_peekKind(TokenKind.RPAREN);
         if (keepGoing) {
           if (_maybeEat(TokenKind.COMMA)) {
@@ -1635,11 +1636,11 @@ class _Parser {
           break;
         case TokenKind.SINGLE_QUOTE:
           value = processQuotedString(false);
-          value = "'${_escapeString(value, single: true)}'";
+          value = "'${_escapeString(value as String, single: true)}'";
           return LiteralTerm(value, value, _makeSpan(start));
         case TokenKind.DOUBLE_QUOTE:
           value = processQuotedString(false);
-          value = '"${_escapeString(value)}"';
+          value = '"${_escapeString(value as String)}"';
           return LiteralTerm(value, value, _makeSpan(start));
         case TokenKind.IDENTIFIER:
           value = identifier(); // Snarf up the ident we'll remap, maybe.
@@ -1649,7 +1650,8 @@ class _Parser {
       }
 
       if (keepParsing && value != null) {
-        var unitTerm = processDimension(termToken, value, _makeSpan(start));
+        var unitTerm =
+            processDimension(termToken, value as Object, _makeSpan(start));
         expressions.add(unitTerm);
 
         value = null;
@@ -1945,7 +1947,7 @@ class _Parser {
         //              https://github.com/dart-lang/csslib/issues/1
         var expr = exprs.expressions[0];
         if (expr is NumberTerm) {
-          var fontExpr = FontExpression(expr.span, weight: expr.value);
+          var fontExpr = FontExpression(expr.span, weight: expr.value as int?);
           return _mergeFontStyles(fontExpr, dartStyles);
         } else if (expr is LiteralTerm) {
           var weight = _nameToFontWeight[expr.value.toString()];
@@ -1965,14 +1967,14 @@ class _Parser {
             if (unitTerm.unit == TokenKind.UNIT_LENGTH_PX ||
                 unitTerm.unit == TokenKind.UNIT_LENGTH_PT) {
               var fontExpr = FontExpression(expr.span,
-                  lineHeight: LineHeight(expr.value, inPixels: true));
+                  lineHeight: LineHeight(expr.value as num, inPixels: true));
               return _mergeFontStyles(fontExpr, dartStyles);
             } else if (isChecked) {
               _warning('Unexpected unit for line-height', expr.span);
             }
           } else if (expr is NumberTerm) {
             var fontExpr = FontExpression(expr.span,
-                lineHeight: LineHeight(expr.value, inPixels: false));
+                lineHeight: LineHeight(expr.value as num, inPixels: false));
             return _mergeFontStyles(fontExpr, dartStyles);
           } else if (isChecked) {
             _warning('Unexpected value for line-height', expr.span);
@@ -2174,7 +2176,7 @@ class _Parser {
             expressions.add(exprItem);
           }
         } else {
-          expressions.add(expr);
+          expressions.add(expr as Expression);
         }
       } else {
         keepGoing = false;
@@ -2260,11 +2262,11 @@ class _Parser {
         break;
       case TokenKind.SINGLE_QUOTE:
         value = processQuotedString(false);
-        value = "'${_escapeString(value, single: true)}'";
+        value = "'${_escapeString(value as String, single: true)}'";
         return LiteralTerm(value, value, _makeSpan(start));
       case TokenKind.DOUBLE_QUOTE:
         value = processQuotedString(false);
-        value = '"${_escapeString(value)}"';
+        value = '"${_escapeString(value as String)}"';
         return LiteralTerm(value, value, _makeSpan(start));
       case TokenKind.LPAREN:
         _next();
@@ -2292,7 +2294,7 @@ class _Parser {
 
         _eat(TokenKind.RBRACK);
 
-        return ItemTerm(term.value, term.text, _makeSpan(start));
+        return ItemTerm(term.value, term.text as String, _makeSpan(start));
       case TokenKind.IDENTIFIER:
         var nameValue = identifier(); // Snarf up the ident we'll remap, maybe.
 
@@ -2386,7 +2388,9 @@ class _Parser {
         break;
     }
 
-    return t != null ? processDimension(t, value, _makeSpan(start)) : null;
+    return t != null
+        ? processDimension(t, value as Object, _makeSpan(start))
+        : null;
   }
 
   /// Process all dimension units.
@@ -2768,7 +2772,7 @@ class ExpressionsProcessor {
           nextIsLineHeight = true;
         } else if (nextIsLineHeight && expr is LengthTerm) {
           assert(expr.unit == TokenKind.UNIT_LENGTH_PX);
-          lineHt = LineHeight(expr.value, inPixels: true);
+          lineHt = LineHeight(expr.value as num, inPixels: true);
           nextIsLineHeight = false;
           _index++;
           break;

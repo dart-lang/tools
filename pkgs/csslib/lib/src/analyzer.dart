@@ -533,7 +533,7 @@ class _TopLevelIncludeReplacer extends Visitor {
 
   @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
-    var index = node.rulesets.indexOf(_include as dynamic);
+    var index = node.rulesets.indexOf(_include);
     if (index != -1) {
       node.rulesets.insertAll(index + 1, _newRules);
       // Only the resolve the @include once.
@@ -714,7 +714,7 @@ class DeclarationIncludes extends Visitor {
     }
   }
 
-  bool _allIncludes(rulesets) =>
+  bool _allIncludes(List<TreeNode> rulesets) =>
       rulesets.every((rule) => rule is IncludeDirective || rule is NoOp);
 
   CallMixin _createCallDeclMixin(MixinDefinition mixinDef) =>
