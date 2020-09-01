@@ -1,19 +1,31 @@
 language: dart
 
 dart:
-  - dev
+- dev
 
-dart_task:
-  - test: --platform vm,chrome
-  - script: pub run --enable-experiment=non-nullable test --platform vm,chrome
-
-matrix:
+jobs:
   include:
-    - dart: dev
-      dart_task:
-        dartanalyzer: --fatal-infos --fatal-warnings .
-    - dart: dev
-      dart_task: dartfmt
+  - stage: analyze_and_format
+    name: "Analyzer"
+    os: linux
+    script: dartanalyzer --fatal-warnings --fatal-infos .
+  - stage: analyze_and_format
+    name: "Format"
+    os: linux
+    script: dartfmt -n --set-exit-if-changed .
+  - stage: test
+    name: "Sound null safety tests"
+    os: linux
+    # https://github.com/dart-lang/sdk/issues/43243
+    script: pub run --enable-experiment=non-nullable test -p vm
+  - stage: test
+    name: "Weak null safety tests"
+    os: linux
+    script: pub run test -p vm
+
+stages:
+- analyze_and_format
+- test
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
@@ -21,4 +33,4 @@ branches:
 
 cache:
   directories:
-    - $HOME/.pub-cache
+  - $HOME/.pub-cache
