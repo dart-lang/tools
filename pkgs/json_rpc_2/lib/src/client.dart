@@ -197,7 +197,9 @@ class Client {
   /// resolved.
   void _handleSingleResponse(response) {
     if (!_isResponseValid(response)) return;
-    var request = _pendingRequests.remove(response['id']);
+    var id = response['id'];
+    id = (id is String) ? int.parse(id) : id;
+    var request = _pendingRequests.remove(id);
     if (response.containsKey('result')) {
       request.completer.complete(response['result']);
     } else {
@@ -212,7 +214,9 @@ class Client {
   bool _isResponseValid(response) {
     if (response is! Map) return false;
     if (response['jsonrpc'] != '2.0') return false;
-    if (!_pendingRequests.containsKey(response['id'])) return false;
+    var id = response['id'];
+    id = (id is String) ? int.parse(id) : id;
+    if (!_pendingRequests.containsKey(id)) return false;
     if (response.containsKey('result')) return true;
 
     if (!response.containsKey('error')) return false;

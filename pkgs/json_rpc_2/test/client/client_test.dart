@@ -31,6 +31,27 @@ void main() {
         completion(equals('bar')));
   });
 
+  test('sends a message and returns the response with String id', () {
+    controller.expectRequest((request) {
+      expect(
+          request,
+          allOf([
+            containsPair('jsonrpc', '2.0'),
+            containsPair('method', 'foo'),
+            containsPair('params', {'param': 'value'})
+          ]));
+
+      return {
+        'jsonrpc': '2.0',
+        'result': 'bar',
+        'id': request['id'].toString()
+      };
+    });
+
+    expect(controller.client.sendRequest('foo', {'param': 'value'}),
+        completion(equals('bar')));
+  });
+
   test('sends a notification and expects no response', () {
     controller.expectRequest((request) {
       expect(

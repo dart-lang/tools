@@ -1,3 +1,7 @@
+## 2.2.3-dev (unreleased)
+
+* Accept responses even if the server converts the ID to a String.
+
 ## 2.2.2
 
 * Fix `Peer.close()` throwing `Bad state: Future already completed`.
