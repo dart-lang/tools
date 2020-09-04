@@ -59,7 +59,9 @@ class StringScanner {
   StringScanner(this.string, {sourceUrl, int? position})
       : sourceUrl = sourceUrl == null
             ? null
-            : sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri {
+            : sourceUrl is String
+                ? Uri.parse(sourceUrl)
+                : sourceUrl as Uri {
     if (position != null) this.position = position;
   }
 
