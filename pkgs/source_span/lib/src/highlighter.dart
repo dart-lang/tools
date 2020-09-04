@@ -288,7 +288,9 @@ class Highlighter {
 
     final currentColor = current == null
         ? null
-        : current.isPrimary ? _primaryColor : _secondaryColor;
+        : current.isPrimary
+            ? _primaryColor
+            : _secondaryColor;
     var foundCurrent = false;
     for (var highlight in highlightsByColumn) {
       final startLine = highlight?.span.start.line;
