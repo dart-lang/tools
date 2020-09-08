@@ -212,7 +212,9 @@ class NamespaceSelector extends SimpleSelector {
 
   String get namespace => _namespace is Wildcard
       ? '*'
-      : _namespace == null ? '' : _namespace.name as String;
+      : _namespace == null
+          ? ''
+          : _namespace.name as String;
 
   bool get isNamespaceWildcard => _namespace is Wildcard;
 
