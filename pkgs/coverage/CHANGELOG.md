@@ -1,4 +1,4 @@
-## Unreleased
+## 0.14.1 - 2020-09-10
 
 * Updated dependency on `vm_service` package from `>=1.0.0 < 5.0.0` to `>=1.0.0 <6.0.0`.
 
