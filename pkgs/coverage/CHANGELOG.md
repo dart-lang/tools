@@ -1,3 +1,7 @@
+## Unreleased
+
+* Updated dependency on `vm_service` package from `>=1.0.0 < 5.0.0` to `>=1.0.0 <6.0.0`.
+
 ## 0.14.0 - 2020-06-04
 
 * Add flag `--check-ignore` that is used to ignore lines from coverage
