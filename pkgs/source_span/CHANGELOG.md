@@ -1,3 +1,7 @@
+# 1.8.0-nullsafety.1
+
+* Fixes a newly recognized unnecessary null check to remove warnings.
+
 # 1.8.0-nullsafety
 
 * Migrate to null safety.
