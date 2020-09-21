@@ -148,6 +148,7 @@ Future _waitIsolatesPaused(VmService service, {Duration timeout}) async {
 
   Future allPaused() async {
     final vm = await service.getVM();
+    if (vm.isolates.isEmpty) throw 'No isolates.';
     for (var isolateRef in vm.isolates) {
       final isolate = await service.getIsolate(isolateRef.id);
       if (!pauseEvents.contains(isolate.pauseEvent.kind)) {
