@@ -1,6 +1,7 @@
-# 1.8.0-nullsafety.2-dev
+# 1.8.0-nullsafety.2
 
 * Revert unnecessary null check fix (sdk fix wont land in 2.10 stable).
+* Allow 2.10 stable and 2.11 dev sdks. 
 
 # 1.8.0-nullsafety.1
 
