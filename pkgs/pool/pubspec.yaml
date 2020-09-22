@@ -1,5 +1,5 @@
 name: pool
-version: 1.5.0-nullsafety
+version: 1.5.0-nullsafety.1
 
 description: >-
   Manage a finite pool of resources.
@@ -8,7 +8,7 @@ homepage: https://github.com/dart-lang/pool
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-0 <2.11.0'
 
 dependencies:
   async: '>=2.5.0-nullsafety <2.5.0'
