@@ -1,12 +1,12 @@
 name: string_scanner
-version: 1.1.0-nullsafety
+version: 1.1.0-nullsafety.1
 
 description: A class for parsing strings using a sequence of patterns.
 homepage: https://github.com/dart-lang/string_scanner
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-0 <2.11.0'
 
 dependencies:
   charcode: '>=1.2.0-nullsafety <1.2.0'
