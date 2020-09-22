@@ -1,11 +1,11 @@
 name: clock
-version: 1.1.0-nullsafety
+version: 1.1.0-nullsafety.1
 description: A fakeable wrapper for dart:core clock APIs
 homepage: https://github.com/dart-lang/clock
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-0 <2.11.0'
 
 dev_dependencies:
   test: ^1.0.0
