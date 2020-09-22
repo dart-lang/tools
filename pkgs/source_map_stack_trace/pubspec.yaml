@@ -1,11 +1,11 @@
 name: source_map_stack_trace
-version: 2.1.0-nullsafety.1
+version: 2.1.0-nullsafety.2
 description: A package for applying source maps to stack traces.
 homepage: https://github.com/dart-lang/source_map_stack_trace
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-0 <2.11.0'
 
 dependencies:
   path: '>=1.8.0-nullsafety <1.8.0'
