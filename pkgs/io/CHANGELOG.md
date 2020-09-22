@@ -1,3 +1,7 @@
+## 0.3.5-dev
+
+* Require Dart >=2.1
+
 ## 0.3.4
 
 * Fix a number of issues affecting the package score on `pub.dev`.
