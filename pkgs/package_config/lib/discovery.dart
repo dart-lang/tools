@@ -5,7 +5,6 @@
 @Deprecated("Use the package_config.json based API")
 library package_config.discovery;
 
-import "dart:async";
 import "dart:io";
 import "dart:typed_data" show Uint8List;
 
