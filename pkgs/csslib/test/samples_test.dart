@@ -27,7 +27,7 @@ void main() {
   final cssDir = Directory.fromUri(libraryUri.resolve('examples'));
   for (var element in cssDir.listSync()) {
     if (element is File && element.uri.pathSegments.last.endsWith('.css')) {
-      test(element.uri.pathSegments.last, () => testCSSFile(element as File));
+      test(element.uri.pathSegments.last, () => testCSSFile(element));
     }
   }
 }

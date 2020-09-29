@@ -3,6 +3,8 @@
 - `Font.merge` and `BoxEdge.merge` are now static methods instead of factory
   constructors.
 - Add a type on the `identList` argument to `TokenKind.matchList`.
+- Remove workaround for https://github.com/dart-lang/sdk/issues/43136, which is
+  now fixed.
 
 ## 0.16.2
 
