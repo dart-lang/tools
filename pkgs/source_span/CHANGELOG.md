@@ -1,3 +1,8 @@
+# 1.8.0-nullsafety.3
+
+* Remove workaround for https://github.com/dart-lang/sdk/issues/43136, which is
+  now fixed.
+
 # 1.8.0-nullsafety.2
 
 * Revert unnecessary null check fix (sdk fix wont land in 2.10 stable).

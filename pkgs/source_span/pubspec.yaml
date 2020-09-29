@@ -1,12 +1,12 @@
 name: source_span
-version: 1.8.0-nullsafety.2
+version: 1.8.0-nullsafety.3-dev
 
 description: A library for identifying source spans and locations.
 homepage: https://github.com/dart-lang/source_span
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0.0 <2.11.0'
+  sdk: '>=2.11.0-0.0 <2.11.0'
 
 dependencies:
   charcode: '>=1.2.0-nullsafety <1.2.0'
