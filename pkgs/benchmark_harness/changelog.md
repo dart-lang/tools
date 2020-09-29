@@ -1,3 +1,7 @@
+## 1.1.0-nullsafety.1-dev
+
+- Allow the 2.10 stable and 2.11.0 dev SDKs.
+
 ## 1.1.0-nullsafety
 
 - Opt in to null safety.

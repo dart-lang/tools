@@ -1,12 +1,12 @@
 name: benchmark_harness
-version: 1.1.0-nullsafety
+version: 1.1.0-nullsafety.1-dev
 author: Dart Team <misc@dartlang.org>
 description: The official Dart project benchmark harness.
 homepage: https://github.com/dart-lang/benchmark_harness
 
 environment:
   # This must remain a tight constraint until nnbd is stable
-  sdk: '>=2.10.0-0 <2.10.0'
+  sdk: '>=2.10.0-0 <2.11.0'
 
 dev_dependencies:
   build_runner: ^1.1.0
@@ -14,7 +14,7 @@ dev_dependencies:
   path: ^1.1.0
   pedantic: ^1.4.0
   test: ^1.0.0
-  
+
 dependency_overrides:
   async:
     git: git://github.com/dart-lang/async.git
