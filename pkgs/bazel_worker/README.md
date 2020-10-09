@@ -1,4 +1,4 @@
-Tools for creating a persistent worker loop for [bazel](http://bazel.io/).
+Tools for creating a persistent worker loop for [bazel](https://bazel.build/).
 
 ## Usage
 
