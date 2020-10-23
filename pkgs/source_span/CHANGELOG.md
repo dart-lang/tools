@@ -2,6 +2,7 @@
 
 * Remove workaround for https://github.com/dart-lang/sdk/issues/43136, which is
   now fixed.
+* Allow prerelease versions of the 2.12 sdk.
 
 # 1.8.0-nullsafety.2
 
