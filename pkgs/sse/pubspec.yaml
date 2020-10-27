@@ -1,5 +1,5 @@
 name: sse
-version: 3.5.0
+version: 3.6.0
 homepage: https://github.com/dart-lang/sse
 description: >-
   Provides client and server functionality for setting up bi-directional
@@ -11,6 +11,7 @@ environment:
 
 dependencies:
   async: ^2.0.8
+  collection: ^1.0.0
   logging: ^0.11.3+2
   pedantic: ^1.4.0
   stream_channel: '>=1.6.8 <3.0.0'

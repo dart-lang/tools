@@ -21,6 +21,8 @@ class SseClient extends StreamChannelMixin<String> {
 
   final _logger = Logger('SseClient');
 
+  int _lastMessageId = -1;
+
   EventSource _eventSource;
 
   String _serverUrl;
@@ -51,8 +53,6 @@ class SseClient extends StreamChannelMixin<String> {
         });
       }
     });
-
-    _startPostingMessages();
   }
 
   Stream<Event> get onOpen => _eventSource.onOpen;
@@ -95,24 +95,21 @@ class SseClient extends StreamChannelMixin<String> {
     close();
   }
 
-  final _messages = StreamController<dynamic>();
-
-  void _onOutgoingMessage(dynamic message) async {
-    _messages.add(message);
-  }
-
-  void _startPostingMessages() async {
-    await for (var message in _messages.stream) {
-      try {
-        await HttpRequest.request(_serverUrl,
-            method: 'POST',
-            sendData: jsonEncode(message),
-            withCredentials: true);
-      } on JsonUnsupportedObjectError catch (e) {
-        _logger.warning('Unable to encode outgoing message: $e');
-      } on ArgumentError catch (e) {
-        _logger.warning('Invalid argument: $e');
-      }
+  void _onOutgoingMessage(String message) async {
+    String encodedMessage;
+    try {
+      encodedMessage = jsonEncode(message);
+    } on JsonUnsupportedObjectError catch (e) {
+      _logger.warning('Unable to encode outgoing message: $e');
+    } on ArgumentError catch (e) {
+      _logger.warning('Invalid argument: $e');
+    }
+    try {
+      await HttpRequest.request('$_serverUrl&messageId=${++_lastMessageId}',
+          method: 'POST', sendData: encodedMessage, withCredentials: true);
+    } catch (e) {
+      _logger.severe('Failed to send $message:\n $e');
+      close();
     }
   }
 }

@@ -1,3 +1,13 @@
+## 3.6.0
+
+- Improve performance by buffering out of order messages in the server instead
+  of the client.
+
+** Note ** This is not modelled as a breaking change as the server can handle
+messages from older clients. However, clients should be using the latest server
+if they require order guarantees.
+
+
 ## 3.5.0
 
 - Add new `shutdown` methods on `SseHandler` and `SseConnection` to allow closing

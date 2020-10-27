@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart' as shelf;
@@ -19,6 +20,12 @@ String _sseHeaders(String origin) => 'HTTP/1.1 200 OK\r\n'
     'Access-Control-Allow-Credentials: true\r\n'
     'Access-Control-Allow-Origin: $origin\r\n'
     '\r\n\r\n';
+
+class _SseMessage {
+  final int id;
+  final String message;
+  _SseMessage(this.id, this.message);
+}
 
 /// A bi-directional SSE connection between server and browser.
 class SseConnection extends StreamChannelMixin<String> {
@@ -38,6 +45,13 @@ class SseConnection extends StreamChannelMixin<String> {
 
   /// Whether this connection is currently in the KeepAlive timeout period.
   bool get isInKeepAlivePeriod => _keepAliveTimer?.isActive ?? false;
+
+  /// The id of the last processed incoming message.
+  int _lastProcessedId = -1;
+
+  /// Incoming messages that have yet to be processed.
+  final _pendingMessages =
+      HeapPriorityQueue<_SseMessage>((a, b) => a.id.compareTo(b.id));
 
   final _closedCompleter = Completer<void>();
 
@@ -105,6 +119,26 @@ class SseConnection extends StreamChannelMixin<String> {
   /// A message is a decoded JSON object.
   @override
   Stream<String> get stream => _incomingController.stream;
+
+  /// Adds an incoming [message] to the [stream].
+  ///
+  /// This will buffer messages to guarantee order.
+  void _addIncomingMessage(int id, String message) {
+    _pendingMessages.add(_SseMessage(id, message));
+    while (_pendingMessages.isNotEmpty) {
+      var pendingMessage = _pendingMessages.first;
+      // Only process the next incremental message.
+      if (pendingMessage.id - _lastProcessedId <= 1) {
+        _incomingController.sink.add(pendingMessage.message);
+        _lastProcessedId = pendingMessage.id;
+        _pendingMessages.removeFirst();
+      } else {
+        // A message came out of order. Wait until we receive the previous
+        // messages to process.
+        break;
+      }
+    }
+  }
 
   void _acceptReconnection(Sink sink) {
     _keepAliveTimer?.cancel();
@@ -221,9 +255,10 @@ class SseHandler {
       shelf.Request req, String path) async {
     try {
       var clientId = req.url.queryParameters['sseClientId'];
+      var messageId = int.parse(req.url.queryParameters['messageId'] ?? '0');
       var message = await req.readAsString();
       var jsonObject = json.decode(message) as String;
-      _connections[clientId]?._incomingController?.add(jsonObject);
+      _connections[clientId]?._addIncomingMessage(messageId, jsonObject);
     } catch (e, st) {
       _logger.fine('Failed to handle incoming message. $e $st');
     }

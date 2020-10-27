@@ -60,14 +60,30 @@ void main() {
       await server.close();
     });
 
-    test('Can round trip messages', () async {
+    test('can round trip messages', () async {
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
       connection.sink.add('blah');
       expect(await connection.stream.first, 'blah');
     });
 
-    test('Multiple clients can connect', () async {
+    test('messages arrive in-order', () async {
+      expect(handler.numberOfClients, 0);
+      await webdriver.get('http://localhost:${server.port}');
+      var connection = await handler.connections.next;
+      expect(handler.numberOfClients, 1);
+
+      var expected = <String>[];
+      var count = 100;
+      for (var i = 0; i < count; i++) {
+        expected.add(i.toString());
+      }
+      connection.sink.add('send $count');
+
+      expect(await connection.stream.take(count).toList(), equals(expected));
+    });
+
+    test('multiple clients can connect', () async {
       var connections = handler.connections;
       await webdriver.get('http://localhost:${server.port}');
       await connections.next;
@@ -75,7 +91,7 @@ void main() {
       await connections.next;
     });
 
-    test('Routes data correctly', () async {
+    test('routes data correctly', () async {
       var connections = handler.connections;
       await webdriver.get('http://localhost:${server.port}');
       var connectionA = await connections.next;
@@ -88,7 +104,7 @@ void main() {
       expect(await connectionB.stream.first, 'bar');
     });
 
-    test('Can close from the server', () async {
+    test('can close from the server', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
@@ -98,7 +114,7 @@ void main() {
       expect(handler.numberOfClients, 0);
     });
 
-    test('Client reconnects after being disconnected', () async {
+    test('client reconnects after being disconnected', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
@@ -111,7 +127,7 @@ void main() {
       await handler.connections.next;
     });
 
-    test('Can close from the client-side', () async {
+    test('can close from the client-side', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
@@ -125,7 +141,7 @@ void main() {
       expect(handler.numberOfClients, 0);
     });
 
-    test('Cancelling the listener closes the connection', () async {
+    test('cancelling the listener closes the connection', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
@@ -137,7 +153,7 @@ void main() {
       expect(handler.numberOfClients, 0);
     });
 
-    test('Disconnects when navigating away', () async {
+    test('disconnects when navigating away', () async {
       await webdriver.get('http://localhost:${server.port}');
       expect(handler.numberOfClients, 1);
 
@@ -172,7 +188,7 @@ void main() {
       await server.close();
     });
 
-    test('Client reconnect use the same connection', () async {
+    test('client reconnect use the same connection', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
@@ -213,7 +229,7 @@ void main() {
       expect(connection.isInKeepAlivePeriod, isFalse);
     });
 
-    test('Messages sent during disconnect arrive in-order', () async {
+    test('messages sent during disconnect arrive in-order', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       var connection = await handler.connections.next;
@@ -232,7 +248,7 @@ void main() {
       expect(await connection.stream.take(2).toList(), equals(['one', 'two']));
     });
 
-    test('Explicit shutdown does not wait for keepAlive', () async {
+    test('explicit shutdown does not wait for keepAlive', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');
       await handler.connections.next;
