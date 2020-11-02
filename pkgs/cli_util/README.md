@@ -4,7 +4,7 @@ In particular, `cli_util` provides a simple, standardized way to get the current
 SDK directory.  Useful, especially, when building client applications that
 interact with the Dart SDK (such as the [analyzer][analyzer]).
 
-[![Build Status](https://travis-ci.org/dart-lang/cli_util.svg)](https://travis-ci.org/dart-lang/cli_util)
+[![Build Status](https://github.com/dart-lang/cli_util/workflows/Dart/badge.svg)](https://github.com/dart-lang/cli_util/actions)
 [![Pub](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dev/packages/cli_util)
 
 ## Locating the Dart SDK
