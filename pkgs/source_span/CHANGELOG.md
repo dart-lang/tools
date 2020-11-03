@@ -1,3 +1,8 @@
+# 1.8.0-nullsafety.4
+
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
 # 1.8.0-nullsafety.3
 
 * Remove workaround for https://github.com/dart-lang/sdk/issues/43136, which is
