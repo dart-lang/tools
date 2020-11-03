@@ -1,3 +1,8 @@
+## 2.1.0-nullsafety.4
+
+* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
+  guidelines.
+
 ## 2.1.0-nullsafety.3
 
 * Allow prerelease versions of the 2.12 sdk.
