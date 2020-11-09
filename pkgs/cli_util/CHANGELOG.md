@@ -1,4 +1,5 @@
-## 0.3.0-nullsafety
+## 0.3.0-nullsafety.0
+
 - Updated to support 2.12.0 and null safety.
 
 ## 0.2.1

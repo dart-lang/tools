@@ -201,16 +201,13 @@ class AnsiProgress extends Progress {
   final Ansi ansi;
 
   int _index = 0;
-  late Timer _timer;
+  late final _timer = Timer.periodic(Duration(milliseconds: 80), (t) {
+    _index++;
+    _updateDisplay();
+  });
 
   AnsiProgress(this.ansi, String message) : super(message) {
     io.stdout.write('${message}...  '.padRight(40));
-
-    _timer = Timer.periodic(Duration(milliseconds: 80), (t) {
-      _index++;
-      _updateDisplay();
-    });
-
     _updateDisplay();
   }
 
@@ -258,12 +255,10 @@ class VerboseLogger implements Logger {
   @override
   Ansi ansi;
   bool logTime;
-  late Stopwatch _timer;
+  final _timer = Stopwatch()..start();
 
   VerboseLogger({Ansi? ansi, this.logTime = false})
-      : ansi = ansi ?? Ansi(Ansi.terminalSupportsAnsi) {
-    _timer = Stopwatch()..start();
-  }
+      : ansi = ansi ?? Ansi(Ansi.terminalSupportsAnsi);
 
   @override
   bool get isVerbose => true;
