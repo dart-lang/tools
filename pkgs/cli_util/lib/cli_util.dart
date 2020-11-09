@@ -20,7 +20,7 @@ import 'src/utils.dart';
 ///
 /// Callers should generally prefer using the [getSdkPath] function.
 @Deprecated('Clients should generally prefer getSdkPath()')
-Directory getSdkDir([List<String> cliArgs]) {
+Directory getSdkDir([List<String>? cliArgs]) {
   // Look for --dart-sdk on the command line.
   if (cliArgs != null) {
     var index = cliArgs.indexOf('--dart-sdk');
@@ -37,8 +37,9 @@ Directory getSdkDir([List<String> cliArgs]) {
   }
 
   // Look in env['DART_SDK']
-  if (Platform.environment['DART_SDK'] != null) {
-    return Directory(Platform.environment['DART_SDK']);
+  var sdkLocation = Platform.environment['DART_SDK'];
+  if (sdkLocation != null) {
+    return Directory(sdkLocation);
   }
 
   // Look relative to the dart executable.
