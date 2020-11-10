@@ -1,4 +1,4 @@
-## 0.14.2 - UNRELEASED 
+## 0.14.2 - 2020-11-10
 
 * Fix an issue where `--wait-paused` with `collect` would attempt to collect coverage
   if no isolates have started.
