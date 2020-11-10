@@ -6,7 +6,6 @@
 @TestOn('vm')
 library package_config.discovery_analysis_test;
 
-import "dart:async";
 import "dart:io";
 
 import "package:package_config/discovery_analysis.dart";
