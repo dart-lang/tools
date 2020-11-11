@@ -4,9 +4,6 @@ analyzer:
   strong-mode:
     implicit-casts: false
 
-  enable-experiment:
-  - non-nullable
-
 linter:
   rules:
     - avoid_function_literals_in_foreach_calls
