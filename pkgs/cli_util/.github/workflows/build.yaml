@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Print Dart version
+        run: dart --version
+
       - name: pub get
         run: pub get
 
