@@ -1,3 +1,16 @@
+## 2.0.0-nullsafety.dev
+
+* Migrate to null_safety
+
+### Breaking Change
+
+The `list*` apis on `Glob` have been renamed to `listFileSystem*` and they now
+require a `FileSystem` object from `package:file`.
+
+There is a new convenience import, `package:glob/list_local_fs.dart` which
+provides the old methods as extensions, and automatically passes a
+`LocalFileSystem`.
+
 ## 1.2.0
 
 * Support running on Node.js.

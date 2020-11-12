@@ -63,7 +63,7 @@ void main() {
 
   group('GlobMatch', () {
     var glob = Glob('foo*');
-    var match = glob.matchAsPrefix('foobar');
+    var match = glob.matchAsPrefix('foobar')!;
 
     test('returns the string as input', () {
       expect(match.input, equals('foobar'));

@@ -5,11 +5,11 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 
 import 'ast.dart';
-import 'io.dart';
 import 'utils.dart';
 
 /// The errno for a file or directory not existing on Mac and Linux.
@@ -56,19 +56,26 @@ class ListTree {
   /// A map from filesystem roots to the list tree for those roots.
   ///
   /// A relative glob will use `.` as its root.
-  final _trees = <String, _ListTreeNode>{};
+  final Map<String, _ListTreeNode> _trees;
 
   /// Whether paths listed might overlap.
   ///
   /// If they do, we need to filter out overlapping paths.
-  bool _canOverlap;
+  final bool _canOverlap;
 
-  ListTree(AstNode glob) {
+  /// The file system to operate on.
+  final FileSystem _fileSystem;
+
+  ListTree._(this._trees, this._fileSystem)
+      : _canOverlap = _computeCanOverlap(_trees);
+
+  factory ListTree(AstNode glob, FileSystem fileSystem) {
     // The first step in constructing a tree from the glob is to simplify the
     // problem by eliminating options. [glob.flattenOptions] bubbles all options
     // (and certain ranges) up to the top level of the glob so we can deal with
     // them one at a time.
     var options = glob.flattenOptions();
+    var trees = <String, _ListTreeNode>{};
 
     for (var option in options.options) {
       // Since each option doesn't include its own options, we can safely split
@@ -81,7 +88,8 @@ class ListTree {
       // root's just ".".
       if (firstNode is LiteralNode) {
         var text = firstNode.text;
-        if (Platform.isWindows) text.replaceAll('/', '\\');
+        // Platform agnostic way of checking for Windows without `dart:io`.
+        if (p.context == p.windows) text.replaceAll('/', '\\');
         if (p.isAbsolute(text)) {
           // If the path is absolute, the root should be the only thing in the
           // first component.
@@ -91,21 +99,22 @@ class ListTree {
         }
       }
 
-      _addGlob(root, components);
+      _addGlob(root, components, trees);
     }
 
-    _canOverlap = _computeCanOverlap();
+    return ListTree._(trees, fileSystem);
   }
 
   /// Add the glob represented by [components] to the tree under [root].
-  void _addGlob(String root, List<SequenceNode> components) {
+  static void _addGlob(String root, List<SequenceNode> components,
+      Map<String, _ListTreeNode> trees) {
     // The first [parent] represents the root directory itself. It may be null
     // here if this is the first option with this particular [root]. If so,
     // we'll create it below.
     //
     // As we iterate through [components], [parent] will be set to
     // progressively more nested nodes.
-    var parent = _trees[root];
+    var parent = trees[root];
     for (var i = 0; i < components.length; i++) {
       var component = components[i];
       var recursive = component.nodes.any((node) => node is DoubleStarNode);
@@ -138,42 +147,46 @@ class ListTree {
           // to [parent]'s children and not its validator. Since we process
           // each option's components separately, the same component is never
           // both a validator and a child.
-          if (!parent.children.containsKey(component)) {
-            parent.children[component] = _ListTreeNode();
+          var children = parent.children!;
+          if (!children.containsKey(component)) {
+            children[component] = _ListTreeNode();
           }
-          parent = parent.children[component];
+          parent = children[component];
         }
       } else if (recursive) {
-        _trees[root] = _ListTreeNode.recursive(_join(components.sublist(i)));
+        trees[root] = _ListTreeNode.recursive(_join(components.sublist(i)));
         return;
       } else if (complete) {
-        _trees[root] = _ListTreeNode()..addOption(component);
+        trees[root] = _ListTreeNode()..addOption(component);
       } else {
-        _trees[root] = _ListTreeNode();
-        _trees[root].children[component] = _ListTreeNode();
-        parent = _trees[root].children[component];
+        var rootNode = _ListTreeNode();
+        trees[root] = rootNode;
+        var rootChildren = rootNode.children!;
+        rootChildren[component] = _ListTreeNode();
+        parent = rootChildren[component];
       }
     }
   }
 
   /// Computes the value for [_canOverlap].
-  bool _computeCanOverlap() {
+  static bool _computeCanOverlap(Map<String, _ListTreeNode> trees) {
     // If this can list a relative path and an absolute path, the former may be
     // contained within the latter.
-    if (_trees.length > 1 && _trees.containsKey('.')) return true;
+    if (trees.length > 1 && trees.containsKey('.')) return true;
 
     // Otherwise, this can only overlap if the tree beneath any given root could
     // overlap internally.
-    return _trees.values.any((node) => node.canOverlap);
+    return trees.values.any((node) => node.canOverlap);
   }
 
   /// List all entities that match this glob beneath [root].
-  Stream<FileSystemEntity> list({String root, bool followLinks = true}) {
+  Stream<FileSystemEntity> list({String? root, bool followLinks = true}) {
     root ??= '.';
     var group = StreamGroup<FileSystemEntity>();
     for (var rootDir in _trees.keys) {
       var dir = rootDir == '.' ? root : rootDir;
-      group.add(_trees[rootDir].list(dir, followLinks: followLinks));
+      group.add(
+          _trees[rootDir]!.list(dir, _fileSystem, followLinks: followLinks));
     }
     group.close();
 
@@ -186,11 +199,12 @@ class ListTree {
   }
 
   /// Synchronosuly list all entities that match this glob beneath [root].
-  List<FileSystemEntity> listSync({String root, bool followLinks = true}) {
+  List<FileSystemEntity> listSync({String? root, bool followLinks = true}) {
     root ??= '.';
     var result = _trees.keys.expand((rootDir) {
-      var dir = rootDir == '.' ? root : rootDir;
-      return _trees[rootDir].listSync(dir, followLinks: followLinks);
+      var dir = rootDir == '.' ? root! : rootDir;
+      return _trees[rootDir]!
+          .listSync(dir, _fileSystem, followLinks: followLinks);
     });
 
     if (!_canOverlap) return result.toList();
@@ -210,13 +224,13 @@ class _ListTreeNode {
   ///
   /// This may be `null`, indicating that this node should be listed
   /// recursively.
-  Map<SequenceNode, _ListTreeNode> children;
+  Map<SequenceNode, _ListTreeNode>? children;
 
   /// This node's validator.
   ///
   /// This determines which entities will ultimately be emitted when [list] is
   /// called.
-  OptionsNode _validator;
+  OptionsNode? _validator;
 
   /// Whether this node is recursive.
   ///
@@ -224,10 +238,9 @@ class _ListTreeNode {
   bool get isRecursive => children == null;
 
   bool get _caseSensitive {
-    if (_validator != null) return _validator.caseSensitive;
-    if (children == null) return true;
-    if (children.isEmpty) return true;
-    return children.keys.first.caseSensitive;
+    if (_validator != null) return _validator!.caseSensitive;
+    if (children?.isEmpty != false) return true;
+    return children!.keys.first.caseSensitive;
   }
 
   /// Whether this node doesn't itself need to be listed.
@@ -237,7 +250,7 @@ class _ListTreeNode {
   /// its children.
   bool get _isIntermediate {
     if (_validator != null) return false;
-    return children.keys.every((sequence) =>
+    return children!.keys.every((sequence) =>
         sequence.nodes.length == 1 && sequence.nodes.first is LiteralNode);
   }
 
@@ -251,17 +264,17 @@ class _ListTreeNode {
     // If there's more than one child node and at least one of the children is
     // dynamic (that is, matches more than just a literal string), there may be
     // overlap.
-    if (children.length > 1) {
+    if (children!.length > 1) {
       // Case-insensitivity means that even literals may match multiple entries.
       if (!_caseSensitive) return true;
 
-      if (children.keys.any((sequence) =>
+      if (children!.keys.any((sequence) =>
           sequence.nodes.length > 1 || sequence.nodes.single is! LiteralNode)) {
         return true;
       }
     }
 
-    return children.values.any((node) => node.canOverlap);
+    return children!.values.any((node) => node.canOverlap);
   }
 
   /// Creates a node with no children and no validator.
@@ -279,12 +292,12 @@ class _ListTreeNode {
   /// validator.
   void makeRecursive() {
     if (isRecursive) return;
-    _validator = OptionsNode(children.keys.map((sequence) {
-      var child = children[sequence];
-      child.makeRecursive();
-      return _join([sequence, child._validator]);
+    var children = this.children!;
+    _validator = OptionsNode(children.entries.map((entry) {
+      entry.value.makeRecursive();
+      return _join([entry.key, entry.value._validator!]);
     }), caseSensitive: _caseSensitive);
-    children = null;
+    this.children = null;
   }
 
   /// Adds [validator] to this node's existing validator.
@@ -293,7 +306,7 @@ class _ListTreeNode {
       _validator =
           OptionsNode([validator], caseSensitive: validator.caseSensitive);
     } else {
-      _validator.options.add(validator);
+      _validator!.options.add(validator);
     }
   }
 
@@ -301,9 +314,11 @@ class _ListTreeNode {
   ///
   /// This may return duplicate entities. These will be filtered out in
   /// [ListTree.list].
-  Stream<FileSystemEntity> list(String dir, {bool followLinks = true}) {
+  Stream<FileSystemEntity> list(String dir, FileSystem fileSystem,
+      {bool followLinks = true}) {
     if (isRecursive) {
-      return Directory(dir)
+      return fileSystem
+          .directory(dir)
           .list(recursive: true, followLinks: followLinks)
           .where((entity) => _matches(p.relative(entity.path, from: dir)));
     }
@@ -312,9 +327,10 @@ class _ListTreeNode {
     // which subdirectories we're interested in.
     if (_isIntermediate && _caseSensitive) {
       var resultGroup = StreamGroup<FileSystemEntity>();
-      children.forEach((sequence, child) {
+      children!.forEach((sequence, child) {
         resultGroup.add(child.list(
             p.join(dir, (sequence.nodes.single as LiteralNode).text),
+            fileSystem,
             followLinks: followLinks));
       });
       resultGroup.close();
@@ -322,9 +338,11 @@ class _ListTreeNode {
     }
 
     return StreamCompleter.fromFuture(() async {
-      var entities =
-          await Directory(dir).list(followLinks: followLinks).toList();
-      await _validateIntermediateChildrenAsync(dir, entities);
+      var entities = await fileSystem
+          .directory(dir)
+          .list(followLinks: followLinks)
+          .toList();
+      await _validateIntermediateChildrenAsync(dir, entities, fileSystem);
 
       var resultGroup = StreamGroup<FileSystemEntity>();
       var resultController = StreamController<FileSystemEntity>(sync: true);
@@ -333,19 +351,19 @@ class _ListTreeNode {
         var basename = p.relative(entity.path, from: dir);
         if (_matches(basename)) resultController.add(entity);
 
-        children.forEach((sequence, child) {
+        children!.forEach((sequence, child) {
           if (entity is! Directory) return;
           if (!sequence.matches(basename)) return;
           var stream = child
-              .list(p.join(dir, basename), followLinks: followLinks)
+              .list(p.join(dir, basename), fileSystem, followLinks: followLinks)
               .handleError((_) {}, test: (error) {
             // Ignore errors from directories not existing. We do this here so
             // that we only ignore warnings below wild cards. For example, the
             // glob "foo/bar/*/baz" should fail if "foo/bar" doesn't exist but
             // succeed if "foo/bar/qux/baz" doesn't exist.
             return error is FileSystemException &&
-                (error.osError.errorCode == _enoent ||
-                    error.osError.errorCode == _enoentWin);
+                (error.osError!.errorCode == _enoent ||
+                    error.osError!.errorCode == _enoentWin);
           });
           resultGroup.add(stream);
         });
@@ -362,12 +380,13 @@ class _ListTreeNode {
   ///
   /// This ensures that listing "foo/bar/*" fails on case-sensitive systems if
   /// "foo/bar" doesn't exist.
-  Future _validateIntermediateChildrenAsync(
-      String dir, List<FileSystemEntity> entities) async {
+  Future _validateIntermediateChildrenAsync(String dir,
+      List<FileSystemEntity> entities, FileSystem fileSystem) async {
     if (_caseSensitive) return;
 
-    for (var sequence in children.keys) {
-      var child = children[sequence];
+    for (var entry in children!.entries) {
+      var child = entry.value;
+      var sequence = entry.key;
       if (!child._isIntermediate) continue;
       if (entities.any(
           (entity) => sequence.matches(p.relative(entity.path, from: dir)))) {
@@ -377,7 +396,8 @@ class _ListTreeNode {
       // We know this will fail, we're just doing it to force dart:io to emit
       // the exception it would if we were listing case-sensitively.
       await child
-          .list(p.join(dir, (sequence.nodes.single as LiteralNode).text))
+          .list(p.join(dir, (sequence.nodes.single as LiteralNode).text),
+              fileSystem)
           .toList();
     }
   }
@@ -387,9 +407,11 @@ class _ListTreeNode {
   ///
   /// This may return duplicate entities. These will be filtered out in
   /// [ListTree.listSync].
-  Iterable<FileSystemEntity> listSync(String dir, {bool followLinks = true}) {
+  Iterable<FileSystemEntity> listSync(String dir, FileSystem fileSystem,
+      {bool followLinks = true}) {
     if (isRecursive) {
-      return Directory(dir)
+      return fileSystem
+          .directory(dir)
           .listSync(recursive: true, followLinks: followLinks)
           .where((entity) => _matches(p.relative(entity.path, from: dir)));
     }
@@ -397,15 +419,18 @@ class _ListTreeNode {
     // Don't spawn extra [Directory.listSync] calls when we already know exactly
     // which subdirectories we're interested in.
     if (_isIntermediate && _caseSensitive) {
-      return children.keys.expand((sequence) {
-        return children[sequence].listSync(
+      return children!.entries.expand((entry) {
+        var sequence = entry.key;
+        var child = entry.value;
+        return child.listSync(
             p.join(dir, (sequence.nodes.single as LiteralNode).text),
+            fileSystem,
             followLinks: followLinks);
       });
     }
 
-    var entities = Directory(dir).listSync(followLinks: followLinks);
-    _validateIntermediateChildrenSync(dir, entities);
+    var entities = fileSystem.directory(dir).listSync(followLinks: followLinks);
+    _validateIntermediateChildrenSync(dir, entities, fileSystem);
 
     return entities.expand((entity) {
       var entities = <FileSystemEntity>[];
@@ -413,20 +438,21 @@ class _ListTreeNode {
       if (_matches(basename)) entities.add(entity);
       if (entity is! Directory) return entities;
 
-      entities.addAll(children.keys
+      entities.addAll(children!.keys
           .where((sequence) => sequence.matches(basename))
           .expand((sequence) {
         try {
-          return children[sequence]
-              .listSync(p.join(dir, basename), followLinks: followLinks)
+          return children![sequence]!
+              .listSync(p.join(dir, basename), fileSystem,
+                  followLinks: followLinks)
               .toList();
         } on FileSystemException catch (error) {
           // Ignore errors from directories not existing. We do this here so
           // that we only ignore warnings below wild cards. For example, the
           // glob "foo/bar/*/baz" should fail if "foo/bar" doesn't exist but
           // succeed if "foo/bar/qux/baz" doesn't exist.
-          if (error.osError.errorCode == _enoent ||
-              error.osError.errorCode == _enoentWin) {
+          if (error.osError!.errorCode == _enoent ||
+              error.osError!.errorCode == _enoentWin) {
             return const [];
           } else {
             rethrow;
@@ -445,10 +471,10 @@ class _ListTreeNode {
   /// This ensures that listing "foo/bar/*" fails on case-sensitive systems if
   /// "foo/bar" doesn't exist.
   void _validateIntermediateChildrenSync(
-      String dir, List<FileSystemEntity> entities) {
+      String dir, List<FileSystemEntity> entities, FileSystem fileSystem) {
     if (_caseSensitive) return;
 
-    children.forEach((sequence, child) {
+    children!.forEach((sequence, child) {
       if (!child._isIntermediate) return;
       if (entities.any(
           (entity) => sequence.matches(p.relative(entity.path, from: dir)))) {
@@ -459,15 +485,14 @@ class _ListTreeNode {
       // directory to force `dart:io` to throw an error. This allows us to
       // ensure that listing "foo/bar/*" fails on case-sensitive systems if
       // "foo/bar" doesn't exist.
-      child.listSync(p.join(dir, (sequence.nodes.single as LiteralNode).text));
+      child.listSync(
+          p.join(dir, (sequence.nodes.single as LiteralNode).text), fileSystem);
     });
   }
 
   /// Returns whether the native [path] matches [_validator].
-  bool _matches(String path) {
-    if (_validator == null) return false;
-    return _validator.matches(toPosixPath(p.context, path));
-  }
+  bool _matches(String path) =>
+      _validator?.matches(toPosixPath(p.context, path)) ?? false;
 
   @override
   String toString() => '($_validator) $children';

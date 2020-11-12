@@ -12,7 +12,7 @@ const _separator = 0x2F; // "/"
 /// A node in the abstract syntax tree for a glob.
 abstract class AstNode {
   /// The cached regular expression that this AST was compiled into.
-  RegExp _regExp;
+  RegExp? _regExp;
 
   /// Whether this node matches case-sensitively or not.
   final bool caseSensitive;
@@ -43,10 +43,9 @@ abstract class AstNode {
       ], caseSensitive: caseSensitive);
 
   /// Returns whether this glob matches [string].
-  bool matches(String string) {
-    _regExp ??= RegExp('^${_toRegExp()}\$', caseSensitive: caseSensitive);
-    return _regExp.hasMatch(string);
-  }
+  bool matches(String string) =>
+      (_regExp ??= RegExp('^${_toRegExp()}\$', caseSensitive: caseSensitive))
+          .hasMatch(string);
 
   /// Subclasses should override this to return a regular expression component.
   String _toRegExp();
@@ -97,9 +96,7 @@ class SequenceNode extends AstNode {
             }
 
             combined[combined.length - 1] = LiteralNode(
-                // TODO(nweiz): Avoid casting when sdk#25565 is fixed.
-                (combined.last as LiteralNode).text +
-                    (node as LiteralNode).text,
+                (combined.last as LiteralNode).text + node.text,
                 caseSensitive: caseSensitive);
             return combined;
           }),
@@ -120,17 +117,16 @@ class SequenceNode extends AstNode {
   /// glob.
   List<SequenceNode> split(p.Context context) {
     var componentsToReturn = <SequenceNode>[];
-    List<AstNode> currentComponent;
+    List<AstNode>? currentComponent;
 
     void addNode(AstNode node) {
-      currentComponent ??= [];
-      currentComponent.add(node);
+      (currentComponent ??= []).add(node);
     }
 
     void finishComponent() {
       if (currentComponent == null) return;
       componentsToReturn
-          .add(SequenceNode(currentComponent, caseSensitive: caseSensitive));
+          .add(SequenceNode(currentComponent!, caseSensitive: caseSensitive));
       currentComponent = null;
     }
 
@@ -140,14 +136,12 @@ class SequenceNode extends AstNode {
         continue;
       }
 
-      // TODO(nweiz): Avoid casting when sdk#25565 is fixed.
-      var literal = node as LiteralNode;
-      if (!literal.text.contains('/')) {
-        addNode(literal);
+      if (!node.text.contains('/')) {
+        addNode(node);
         continue;
       }
 
-      var text = literal.text;
+      var text = node.text;
       if (context.style == p.Style.windows) text = text.replaceAll('/', '\\');
       Iterable<String> components = context.split(text);
 
@@ -182,7 +176,7 @@ class SequenceNode extends AstNode {
       // For the final component, only end its sequence (by adding a new empty
       // sequence) if it ends with a separator.
       addNode(LiteralNode(components.last, caseSensitive: caseSensitive));
-      if (literal.text.endsWith('/')) finishComponent();
+      if (node.text.endsWith('/')) finishComponent();
     }
 
     finishComponent();
@@ -294,7 +288,8 @@ class RangeNode extends AstNode {
   /// Whether this range was negated.
   final bool negated;
 
-  RangeNode(Iterable<Range> ranges, {this.negated, bool caseSensitive = true})
+  RangeNode(Iterable<Range> ranges,
+      {required this.negated, bool caseSensitive = true})
       : ranges = ranges.toSet(),
         super._(caseSensitive);
 
@@ -411,19 +406,19 @@ class LiteralNode extends AstNode {
   /// The path context for the glob.
   ///
   /// This is used to determine whether this could match an absolute path.
-  final p.Context _context;
+  final p.Context? _context;
 
   @override
   bool get canMatchAbsolute {
     var nativeText =
-        _context.style == p.Style.windows ? text.replaceAll('/', '\\') : text;
-    return _context.isAbsolute(nativeText);
+        _context!.style == p.Style.windows ? text.replaceAll('/', '\\') : text;
+    return _context!.isAbsolute(nativeText);
   }
 
   @override
   bool get canMatchRelative => !canMatchAbsolute;
 
-  LiteralNode(this.text, {p.Context context, bool caseSensitive = true})
+  LiteralNode(this.text, {p.Context? context, bool caseSensitive = true})
       : _context = context,
         super._(caseSensitive);
 

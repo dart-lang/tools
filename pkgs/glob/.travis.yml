@@ -2,7 +2,6 @@ language: dart
 
 dart:
   - dev
-  - 2.2.0
 
 # See https://docs.travis-ci.com/user/languages/dart/ for details.
 dart_task:
@@ -11,9 +10,6 @@ dart_task:
 
 jobs:
   include:
-    - dart: 2.2.0
-      dart_task:
-        test: -p node
     - dart: dev
       dart_task:
         test: -p node

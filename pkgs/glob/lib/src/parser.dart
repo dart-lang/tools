@@ -69,7 +69,7 @@ class Parser {
   /// Tries to parse a [StarNode] or a [DoubleStarNode].
   ///
   /// Returns `null` if there's not one to parse.
-  AstNode _parseStar() {
+  AstNode? _parseStar() {
     if (!_scanner.scan('*')) return null;
     return _scanner.scan('*')
         ? DoubleStarNode(_context, caseSensitive: _caseSensitive)
@@ -79,7 +79,7 @@ class Parser {
   /// Tries to parse an [AnyCharNode].
   ///
   /// Returns `null` if there's not one to parse.
-  AstNode _parseAnyChar() {
+  AstNode? _parseAnyChar() {
     if (!_scanner.scan('?')) return null;
     return AnyCharNode(caseSensitive: _caseSensitive);
   }
@@ -87,7 +87,7 @@ class Parser {
   /// Tries to parse an [RangeNode].
   ///
   /// Returns `null` if there's not one to parse.
-  AstNode _parseRange() {
+  AstNode? _parseRange() {
     if (!_scanner.scan('[')) return null;
     if (_scanner.matches(']')) _scanner.error('unexpected "]".');
     var negated = _scanner.scan('!') || _scanner.scan('^');
@@ -134,7 +134,7 @@ class Parser {
   /// Tries to parse an [OptionsNode].
   ///
   /// Returns `null` if there's not one to parse.
-  AstNode _parseOptions() {
+  AstNode? _parseOptions() {
     if (!_scanner.scan('{')) return null;
     if (_scanner.matches('}')) _scanner.error('unexpected "}".');
 
@@ -157,12 +157,12 @@ class Parser {
     var regExp = RegExp(inOptions ? r'[^*{[?\\}\],()]*' : r'[^*{[?\\}\]()]*');
 
     _scanner.scan(regExp);
-    var buffer = StringBuffer()..write(_scanner.lastMatch[0]);
+    var buffer = StringBuffer()..write(_scanner.lastMatch![0]);
 
     while (_scanner.scan('\\')) {
       buffer.writeCharCode(_scanner.readChar());
       _scanner.scan(regExp);
-      buffer.write(_scanner.lastMatch[0]);
+      buffer.write(_scanner.lastMatch![0]);
     }
 
     for (var char in const [']', '(', ')']) {
