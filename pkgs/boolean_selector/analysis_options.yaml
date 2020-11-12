@@ -1,7 +1,5 @@
 include: package:pedantic/analysis_options.yaml
-analyzer:
-  enable-experiment:
-    - non-nullable
+
 linter:
   rules:
     - avoid_null_checks_in_equality_operators
