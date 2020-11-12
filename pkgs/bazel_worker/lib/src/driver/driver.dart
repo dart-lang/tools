@@ -134,7 +134,7 @@ class BazelWorkerDriver {
   void _runWorker(Process worker, _WorkAttempt attempt) {
     var rescheduled = false;
 
-    runZoned(() async {
+    runZonedGuarded(() async {
       var connection = _workerConnections[worker];
 
       connection.writeRequest(attempt.request);
@@ -160,7 +160,7 @@ class BazelWorkerDriver {
         attempt.responseCompleter.complete(response);
         _cleanUp(worker);
       }
-    }, onError: (e, s) {
+    }, (e, s) {
       // Note that we don't need to do additional cleanup here on failures. If
       // the worker dies that is already handled in a generic fashion, we just
       // need to make sure we complete with a valid response.

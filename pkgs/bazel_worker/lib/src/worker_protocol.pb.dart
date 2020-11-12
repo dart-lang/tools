@@ -3,19 +3,33 @@
 //  source: worker_protocol.proto
 //
 // @dart = 2.3
-// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
-// ignore_for_file: annotate_overrides
+// ignore_for_file: annotate_overrides,camel_case_types,unnecessary_const,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type,unnecessary_this,prefer_final_fields
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class Input extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('Input',
-      package: const $pb.PackageName('blaze.worker'),
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'Input',
+      package: const $pb.PackageName(
+          const $core.bool.fromEnvironment('protobuf.omit_message_names')
+              ? ''
+              : 'blaze.worker'),
       createEmptyInstance: create)
-    ..aOS(1, 'path')
-    ..a<$core.List<$core.int>>(2, 'digest', $pb.PbFieldType.OY)
+    ..aOS(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'path')
+    ..a<$core.List<$core.int>>(
+        2,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'digest',
+        $pb.PbFieldType.OY)
     ..hasRequiredFields = false;
 
   Input._() : super();
@@ -26,9 +40,15 @@ class Input extends $pb.GeneratedMessage {
   factory Input.fromJson($core.String i,
           [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Input clone() => Input()..mergeFromMessage(this);
-  Input copyWith(void Function(Input) updates) =>
-      super.copyWith((message) => updates(message as Input));
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Input copyWith(void Function(Input) updates) => super.copyWith(
+      (message) => updates(message as Input)); // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static Input create() => Input._();
@@ -65,12 +85,28 @@ class Input extends $pb.GeneratedMessage {
 }
 
 class WorkRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkRequest',
-      package: const $pb.PackageName('blaze.worker'),
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'WorkRequest',
+      package: const $pb.PackageName(
+          const $core.bool.fromEnvironment('protobuf.omit_message_names')
+              ? ''
+              : 'blaze.worker'),
       createEmptyInstance: create)
-    ..pPS(1, 'arguments')
-    ..pc<Input>(2, 'inputs', $pb.PbFieldType.PM, subBuilder: Input.create)
-    ..a<$core.int>(3, 'requestId', $pb.PbFieldType.O3)
+    ..pPS(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'arguments')
+    ..pc<Input>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'inputs', $pb.PbFieldType.PM,
+        subBuilder: Input.create)
+    ..a<$core.int>(
+        3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'requestId',
+        $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   WorkRequest._() : super();
@@ -81,9 +117,16 @@ class WorkRequest extends $pb.GeneratedMessage {
   factory WorkRequest.fromJson($core.String i,
           [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   WorkRequest clone() => WorkRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   WorkRequest copyWith(void Function(WorkRequest) updates) =>
-      super.copyWith((message) => updates(message as WorkRequest));
+      super.copyWith((message) =>
+          updates(message as WorkRequest)); // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static WorkRequest create() => WorkRequest._();
@@ -114,12 +157,30 @@ class WorkRequest extends $pb.GeneratedMessage {
 }
 
 class WorkResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkResponse',
-      package: const $pb.PackageName('blaze.worker'),
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'WorkResponse',
+      package: const $pb.PackageName(
+          const $core.bool.fromEnvironment('protobuf.omit_message_names')
+              ? ''
+              : 'blaze.worker'),
       createEmptyInstance: create)
-    ..a<$core.int>(1, 'exitCode', $pb.PbFieldType.O3)
-    ..aOS(2, 'output')
-    ..a<$core.int>(3, 'requestId', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'exitCode',
+        $pb.PbFieldType.O3)
+    ..aOS(
+        2,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'output')
+    ..a<$core.int>(
+        3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requestId',
+        $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   WorkResponse._() : super();
@@ -130,9 +191,16 @@ class WorkResponse extends $pb.GeneratedMessage {
   factory WorkResponse.fromJson($core.String i,
           [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   WorkResponse clone() => WorkResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
   WorkResponse copyWith(void Function(WorkResponse) updates) =>
-      super.copyWith((message) => updates(message as WorkResponse));
+      super.copyWith((message) =>
+          updates(message as WorkResponse)); // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static WorkResponse create() => WorkResponse._();

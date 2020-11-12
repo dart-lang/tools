@@ -1,3 +1,7 @@
+## 0.1.25+1-dev
+
+* Regenerate proto code and fix some new analysis hints.
+
 ## 0.1.25
 
 * Add `isBroadcast` implementation to `TestStdin` classes.
