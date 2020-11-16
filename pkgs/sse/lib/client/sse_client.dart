@@ -8,7 +8,8 @@ import 'dart:html';
 
 import 'package:logging/logging.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:uuid/uuid.dart';
+
+import '../src/util/uuid.dart';
 
 /// A client for bi-directional sse communcation.
 ///
@@ -32,7 +33,7 @@ class SseClient extends StreamChannelMixin<String> {
   /// [serverUrl] is the URL under which the server is listening for
   /// incoming bi-directional SSE connections.
   SseClient(String serverUrl) {
-    var clientId = Uuid().v1();
+    var clientId = generateUuidV4();
     _eventSource =
         EventSource('$serverUrl?sseClientId=$clientId', withCredentials: true);
     _serverUrl = '$serverUrl?sseClientId=$clientId';
