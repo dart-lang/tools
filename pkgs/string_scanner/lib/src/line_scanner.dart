@@ -2,8 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:charcode/ascii.dart';
-
+import 'charcode.dart';
 import 'string_scanner.dart';
 
 // Note that much of this code is duplicated in eager_span_scanner.dart.
