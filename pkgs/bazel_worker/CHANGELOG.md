@@ -1,3 +1,9 @@
+## 1.0.0-nullsafety.0
+
+* Migrate to null safety.
+* Use `WorkResponse` with `exitCode` set to `EXIT_CODE_BROKEN_PIPE` instead of
+  `null` responses.
+
 ## 0.1.25+1-dev
 
 * Regenerate proto code and fix some new analysis hints.

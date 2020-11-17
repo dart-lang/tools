@@ -32,9 +32,9 @@ class AsyncMessageGrouper implements MessageGrouper {
 
   /// Returns the next full message that is received, or null if none are left.
   @override
-  Future<List<int>> get next async {
+  Future<List<int>?> get next async {
     try {
-      List<int> message;
+      List<int>? message;
       while (message == null &&
           (_buffer.isNotEmpty || await _inputQueue.hasNext)) {
         if (_buffer.isEmpty) _buffer.addAll(await _inputQueue.next);
@@ -59,7 +59,7 @@ class AsyncMessageGrouper implements MessageGrouper {
   Future cancel() {
     if (!_done.isCompleted) {
       _done.complete(null);
-      return _inputQueue.cancel();
+      return _inputQueue.cancel()!;
     }
     return done;
   }

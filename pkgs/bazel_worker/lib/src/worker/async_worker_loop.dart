@@ -15,7 +15,7 @@ import 'worker_loop.dart';
 abstract class AsyncWorkerLoop implements WorkerLoop {
   final AsyncWorkerConnection connection;
 
-  AsyncWorkerLoop({AsyncWorkerConnection connection})
+  AsyncWorkerLoop({AsyncWorkerConnection? connection})
       : connection = connection ?? StdAsyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
@@ -27,7 +27,7 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
   @override
   Future run() async {
     while (true) {
-      WorkResponse response;
+      late WorkResponse response;
       try {
         var request = await connection.readRequest();
         if (request == null) break;
@@ -41,8 +41,6 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
         if (printMessages.isNotEmpty) {
           response.output = '${response.output}$printMessages';
         }
-        // In case they forget to set this.
-        response.exitCode ??= EXIT_CODE_OK;
       } catch (e, s) {
         response = WorkResponse()
           ..exitCode = EXIT_CODE_ERROR

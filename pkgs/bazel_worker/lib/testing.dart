@@ -72,8 +72,8 @@ class TestStdinAsync implements TestStdin {
   }
 
   @override
-  StreamSubscription<Uint8List> listen(void Function(Uint8List bytes) onData,
-      {Function onError, void Function() onDone, bool cancelOnError}) {
+  StreamSubscription<Uint8List> listen(void Function(Uint8List bytes)? onData,
+      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
     return _controller.stream.listen(onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
@@ -112,7 +112,7 @@ abstract class TestWorkerLoop implements WorkerLoop {
   void enqueueResponse(WorkResponse response);
 
   /// If set, this message will be printed during the call to `performRequest`.
-  String get printMessage;
+  String? get printMessage;
 }
 
 /// A [StdSyncWorkerConnection] which records its responses.
@@ -137,7 +137,7 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   final Queue<WorkResponse> _responses = Queue<WorkResponse>();
 
   @override
-  final String printMessage;
+  final String? printMessage;
 
   TestSyncWorkerLoop(SyncWorkerConnection connection, {this.printMessage})
       : super(connection: connection);
@@ -181,7 +181,7 @@ class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   final Queue<WorkResponse> _responses = Queue<WorkResponse>();
 
   @override
-  final String printMessage;
+  final String? printMessage;
 
   TestAsyncWorkerLoop(AsyncWorkerConnection connection, {this.printMessage})
       : super(connection: connection);

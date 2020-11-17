@@ -12,7 +12,11 @@ import 'package:bazel_worker/bazel_worker.dart';
 import 'package:bazel_worker/driver.dart';
 
 void main() {
-  BazelWorkerDriver driver;
+  BazelWorkerDriver? driver;
+  final disconnectedResponse = WorkResponse()
+    ..exitCode = EXIT_CODE_BROKEN_PIPE
+    ..output = 'Connection closed'
+    ..freeze();
 
   group('basic driver', () {
     test('can run a single request', () async {
@@ -109,8 +113,9 @@ void main() {
       test('should retry up to maxRetries times', () async {
         createDriver();
         var expectedResponse = WorkResponse();
-        MockWorker.responseQueue.addAll([null, null, expectedResponse]);
-        var actualResponse = await driver.doWork(WorkRequest());
+        MockWorker.responseQueue.addAll(
+            [disconnectedResponse, disconnectedResponse, expectedResponse]);
+        var actualResponse = await driver!.doWork(WorkRequest());
         // The first 2 null responses are thrown away, and we should get the
         // third one.
         expect(actualResponse, expectedResponse);
@@ -121,8 +126,9 @@ void main() {
 
       test('should fail if it exceeds maxRetries failures', () async {
         createDriver(maxRetries: 2, numBadWorkers: 3);
-        MockWorker.responseQueue.addAll([null, null, WorkResponse()]);
-        var actualResponse = await driver.doWork(WorkRequest());
+        MockWorker.responseQueue.addAll(
+            [disconnectedResponse, disconnectedResponse, WorkResponse()]);
+        var actualResponse = await driver!.doWork(WorkRequest());
         // Should actually get a bad response.
         expect(actualResponse.exitCode, 15);
         expect(
@@ -146,19 +152,17 @@ void main() {
 /// Runs [count] of fake work requests through [driver], and asserts that they
 /// all completed.
 Future _doRequests(
-    {BazelWorkerDriver driver,
-    int count,
-    Function(Future<WorkResponse>) trackWork}) async {
+    {BazelWorkerDriver? driver,
+    int count = 100,
+    Function(Future<WorkResponse?>)? trackWork}) async {
   // If we create a driver, we need to make sure and terminate it.
   var terminateDriver = driver == null;
   driver ??= BazelWorkerDriver(MockWorker.spawn);
-  count ??= 100;
-  terminateDriver ??= true;
   var requests = List.generate(count, (_) => WorkRequest());
   var responses = List.generate(count, (_) => WorkResponse());
   MockWorker.responseQueue.addAll(responses);
   var actualResponses = await Future.wait(
-      requests.map((request) => driver.doWork(request, trackWork: trackWork)));
+      requests.map((request) => driver!.doWork(request, trackWork: trackWork)));
   expect(actualResponses, unorderedEquals(responses));
   if (terminateDriver) await driver.terminateWorkers();
 }
@@ -169,7 +173,7 @@ Future _doRequests(
 class MockWorkerLoop extends AsyncWorkerLoop {
   final Queue<WorkResponse> _responseQueue;
 
-  MockWorkerLoop(this._responseQueue, {AsyncWorkerConnection connection})
+  MockWorkerLoop(this._responseQueue, {AsyncWorkerConnection? connection})
       : super(connection: connection);
 
   @override
@@ -222,7 +226,7 @@ class MockWorker implements Process {
 
   /// Standard constructor, creates a [WorkerLoop] from [workerLoopFactory] or
   /// a [MockWorkerLoop] if no factory is provided.
-  MockWorker({WorkerLoop Function(MockWorker) workerLoopFactory}) {
+  MockWorker({WorkerLoop Function(MockWorker)? workerLoopFactory}) {
     liveWorkers.add(this);
     var workerLoop = workerLoopFactory != null
         ? workerLoopFactory(this)
@@ -245,12 +249,7 @@ class MockWorker implements Process {
   final _stderrController = StreamController<List<int>>();
 
   @override
-  IOSink get stdin {
-    _stdin ??= IOSink(_stdinController.sink);
-    return _stdin;
-  }
-
-  IOSink _stdin;
+  late final IOSink stdin = IOSink(_stdinController.sink);
   final _stdinController = StreamController<List<int>>();
 
   @override

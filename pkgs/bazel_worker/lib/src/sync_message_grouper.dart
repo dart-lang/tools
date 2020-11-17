@@ -18,9 +18,9 @@ class SyncMessageGrouper implements MessageGrouper {
   ///
   /// Returns null at end of file.
   @override
-  List<int> get next {
+  List<int>? get next {
     try {
-      List<int> message;
+      List<int>? message;
       while (message == null) {
         var nextByte = _stdin.readByteSync();
         if (nextByte == -1) return null;

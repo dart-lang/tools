@@ -24,7 +24,7 @@ void main() {
 }
 
 void runE2eTestForWorker(String groupName, SpawnWorker spawnWorker) {
-  BazelWorkerDriver driver;
+  late BazelWorkerDriver driver;
   group(groupName, () {
     setUp(() {
       driver = BazelWorkerDriver(spawnWorker);
@@ -46,7 +46,7 @@ void runE2eTestForWorker(String groupName, SpawnWorker spawnWorker) {
 
 /// Runs [count] work requests through [driver], and asserts that they all
 /// completed with the correct response.
-Future _doRequests(BazelWorkerDriver driver, {int count}) async {
+Future _doRequests(BazelWorkerDriver driver, {int? count}) async {
   count ??= 100;
   var requests = List.generate(count, (requestNum) {
     var request = WorkRequest();

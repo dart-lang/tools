@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: worker_protocol.proto
 //
-// @dart = 2.3
+// @dart = 2.12
 // ignore_for_file: annotate_overrides,camel_case_types,unnecessary_const,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type,unnecessary_this,prefer_final_fields
 
 import 'dart:core' as $core;
@@ -47,8 +47,9 @@ class Input extends $pb.GeneratedMessage {
   @$core.Deprecated('Using this can add significant overhead to your binary. '
       'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
       'Will be removed in next major version')
-  Input copyWith(void Function(Input) updates) => super.copyWith(
-      (message) => updates(message as Input)); // ignore: deprecated_member_use
+  Input copyWith(void Function(Input) updates) =>
+      super.copyWith((message) => updates(message as Input))
+          as Input; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static Input create() => Input._();
@@ -57,7 +58,7 @@ class Input extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static Input getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Input>(create);
-  static Input _defaultInstance;
+  static Input? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get path => $_getSZ(0);
@@ -125,8 +126,8 @@ class WorkRequest extends $pb.GeneratedMessage {
       'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
       'Will be removed in next major version')
   WorkRequest copyWith(void Function(WorkRequest) updates) =>
-      super.copyWith((message) =>
-          updates(message as WorkRequest)); // ignore: deprecated_member_use
+      super.copyWith((message) => updates(message as WorkRequest))
+          as WorkRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static WorkRequest create() => WorkRequest._();
@@ -135,7 +136,7 @@ class WorkRequest extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static WorkRequest getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<WorkRequest>(create);
-  static WorkRequest _defaultInstance;
+  static WorkRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.List<$core.String> get arguments => $_getList(0);
@@ -199,8 +200,8 @@ class WorkResponse extends $pb.GeneratedMessage {
       'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
       'Will be removed in next major version')
   WorkResponse copyWith(void Function(WorkResponse) updates) =>
-      super.copyWith((message) =>
-          updates(message as WorkResponse)); // ignore: deprecated_member_use
+      super.copyWith((message) => updates(message as WorkResponse))
+          as WorkResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static WorkResponse create() => WorkResponse._();
@@ -210,7 +211,7 @@ class WorkResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static WorkResponse getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<WorkResponse>(create);
-  static WorkResponse _defaultInstance;
+  static WorkResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get exitCode => $_getIZ(0);

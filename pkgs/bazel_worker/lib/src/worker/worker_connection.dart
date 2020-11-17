@@ -20,7 +20,7 @@ abstract class WorkerConnection {
   ///
   /// See [AsyncWorkerConnection] and [SyncWorkerConnection] for more narrow
   /// interfaces.
-  FutureOr<WorkRequest> readRequest();
+  FutureOr<WorkRequest?> readRequest();
 
   void writeResponse(WorkResponse response);
 }
@@ -30,21 +30,21 @@ abstract class AsyncWorkerConnection implements WorkerConnection {
   /// and [outputStream], unless [sendPort] is specified, in which case
   /// creates a [SendPortAsyncWorkerConnection].
   factory AsyncWorkerConnection(
-          {Stream<List<int>> inputStream,
-          StreamSink<List<int>> outputStream,
-          SendPort sendPort}) =>
+          {Stream<List<int>>? inputStream,
+          StreamSink<List<int>>? outputStream,
+          SendPort? sendPort}) =>
       sendPort == null
           ? StdAsyncWorkerConnection(
               inputStream: inputStream, outputStream: outputStream)
           : SendPortAsyncWorkerConnection(sendPort);
 
   @override
-  Future<WorkRequest> readRequest();
+  Future<WorkRequest?> readRequest();
 }
 
 abstract class SyncWorkerConnection implements WorkerConnection {
   @override
-  WorkRequest readRequest();
+  WorkRequest? readRequest();
 }
 
 /// Default implementation of [AsyncWorkerConnection] that works with [Stdin]
@@ -54,12 +54,12 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
   final StreamSink<List<int>> _outputStream;
 
   StdAsyncWorkerConnection(
-      {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
+      {Stream<List<int>>? inputStream, StreamSink<List<int>>? outputStream})
       : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
         _outputStream = outputStream ?? stdout;
 
   @override
-  Future<WorkRequest> readRequest() async {
+  Future<WorkRequest?> readRequest() async {
     var buffer = await _messageGrouper.next;
     if (buffer == null) return null;
 
@@ -88,7 +88,7 @@ class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
       : receivePortIterator = StreamIterator(receivePort.cast());
 
   @override
-  Future<WorkRequest> readRequest() async {
+  Future<WorkRequest?> readRequest() async {
     if (!await receivePortIterator.moveNext()) return null;
     return WorkRequest.fromBuffer(receivePortIterator.current);
   }
@@ -105,12 +105,12 @@ class StdSyncWorkerConnection implements SyncWorkerConnection {
   final SyncMessageGrouper _messageGrouper;
   final Stdout _stdoutStream;
 
-  StdSyncWorkerConnection({Stdin stdinStream, Stdout stdoutStream})
+  StdSyncWorkerConnection({Stdin? stdinStream, Stdout? stdoutStream})
       : _messageGrouper = SyncMessageGrouper(stdinStream ?? stdin),
         _stdoutStream = stdoutStream ?? stdout;
 
   @override
-  WorkRequest readRequest() {
+  WorkRequest? readRequest() {
     var buffer = _messageGrouper.next;
     if (buffer == null) return null;
 

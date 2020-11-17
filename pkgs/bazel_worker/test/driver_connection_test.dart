@@ -3,9 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:isolate';
-import 'package:test/test.dart';
 
+import 'package:bazel_worker/src/constants.dart';
 import 'package:bazel_worker/src/driver/driver_connection.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('IsolateDriverConnection', () {
@@ -17,7 +18,7 @@ void main() {
 
       isolatePort.close();
 
-      expect(await connection.readResponse(), null);
+      expect((await connection.readResponse()).exitCode, EXIT_CODE_BROKEN_PIPE);
     });
   });
 }

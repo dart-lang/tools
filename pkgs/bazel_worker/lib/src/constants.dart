@@ -4,3 +4,4 @@
 
 const int EXIT_CODE_OK = 0;
 const int EXIT_CODE_ERROR = 15;
+const int EXIT_CODE_BROKEN_PIPE = 32;

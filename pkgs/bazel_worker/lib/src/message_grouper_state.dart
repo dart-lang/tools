@@ -10,20 +10,16 @@ import 'package:protobuf/protobuf.dart';
 /// arrive.
 class MessageGrouperState {
   /// Reads the initial length.
-  _LengthReader _lengthReader;
+  var _lengthReader = _LengthReader();
 
   /// Reads messages from a stream of bytes.
-  _MessageReader _messageReader;
-
-  MessageGrouperState() {
-    reset();
-  }
+  _MessageReader? _messageReader;
 
   /// Handle one byte at a time.
   ///
   /// Returns a [List<int>] of message bytes if [byte] was the last byte in a
   /// message, otherwise returns [null].
-  List<int> handleInput(int byte) {
+  List<int>? handleInput(int byte) {
     if (!_lengthReader.done) {
       _lengthReader.readByte(byte);
       if (_lengthReader.done) {
@@ -31,11 +27,11 @@ class MessageGrouperState {
       }
     } else {
       assert(_messageReader != null);
-      _messageReader.readByte(byte);
+      _messageReader!.readByte(byte);
     }
 
-    if (_lengthReader.done && _messageReader.done) {
-      var message = _messageReader.message;
+    if (_lengthReader.done && _messageReader!.done) {
+      var message = _messageReader!.message;
       reset();
       return message;
     }
@@ -62,9 +58,8 @@ class _LengthReader {
   bool _done = false;
 
   /// If [_done] is `true`, the decoded value of the length bytes received so
-  /// far (if any).  If [_done] is `false`, the decoded length that was most
-  /// recently received.
-  int _length;
+  /// far (if any), otherwise unitialized.
+  late int _length;
 
   /// The length read in.  You are only allowed to read this if [_done] is
   /// `true`.

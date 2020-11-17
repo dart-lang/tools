@@ -25,9 +25,9 @@ void main() {
 
 void runTests(TestStdin Function() stdinFactory,
     MessageGrouper Function(Stdin) messageGrouperFactory) {
-  MessageGrouper messageGrouper;
+  late MessageGrouper messageGrouper;
 
-  TestStdin stdinStream;
+  late TestStdin stdinStream;
 
   setUp(() {
     stdinStream = stdinFactory();

@@ -45,7 +45,7 @@ class BazelWorkerDriver {
   final SpawnWorker _spawnWorker;
 
   BazelWorkerDriver(this._spawnWorker,
-      {int maxIdleWorkers, int maxWorkers, int maxRetries})
+      {int? maxIdleWorkers, int? maxWorkers, int? maxRetries})
       : _maxIdleWorkers = maxIdleWorkers ?? 4,
         _maxWorkers = maxWorkers ?? 4,
         _maxRetries = maxRetries ?? 4;
@@ -57,7 +57,7 @@ class BazelWorkerDriver {
   /// to determine when actual work is being done versus just waiting for an
   /// available worker.
   Future<WorkResponse> doWork(WorkRequest request,
-      {Function(Future<WorkResponse>) trackWork}) {
+      {Function(Future<WorkResponse?>)? trackWork}) {
     var attempt = _WorkAttempt(request, trackWork: trackWork);
     _workQueue.add(attempt);
     _runWorkQueue();
@@ -105,7 +105,6 @@ class BazelWorkerDriver {
       futureWorker.then((worker) {
         _spawningWorkers.remove(futureWorker);
         _readyWorkers.add(worker);
-
         var connection = StdDriverConnection.forWorker(worker);
         _workerConnections[worker] = connection;
         _runWorker(worker, attempt);
@@ -135,19 +134,19 @@ class BazelWorkerDriver {
     var rescheduled = false;
 
     runZonedGuarded(() async {
-      var connection = _workerConnections[worker];
+      var connection = _workerConnections[worker]!;
 
       connection.writeRequest(attempt.request);
       var responseFuture = connection.readResponse();
       if (attempt.trackWork != null) {
-        attempt.trackWork(responseFuture);
+        attempt.trackWork!(responseFuture);
       }
       var response = await responseFuture;
 
       // It is possible for us to complete with an error response due to an
       // unhandled async error before we get here.
       if (!attempt.responseCompleter.isCompleted) {
-        if (response == null) {
+        if (response.exitCode == EXIT_CODE_BROKEN_PIPE) {
           rescheduled = _tryReschedule(attempt);
           if (rescheduled) return;
           stderr.writeln('Failed to run request ${attempt.request}');
@@ -210,7 +209,7 @@ class BazelWorkerDriver {
   }
 
   void _killWorker(Process worker) {
-    _workerConnections[worker].cancel();
+    _workerConnections[worker]!.cancel();
     _readyWorkers.remove(worker);
     _idleWorkers.remove(worker);
     worker.kill();
@@ -222,7 +221,7 @@ class BazelWorkerDriver {
 class _WorkAttempt {
   final WorkRequest request;
   final responseCompleter = Completer<WorkResponse>();
-  final Function(Future<WorkResponse>) trackWork;
+  final Function(Future<WorkResponse?>)? trackWork;
 
   Future<WorkResponse> get response => responseCompleter.future;
 

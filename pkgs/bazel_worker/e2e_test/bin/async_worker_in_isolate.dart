@@ -14,7 +14,7 @@ import 'package:e2e_test/forwards_to_isolate_async_worker.dart';
 /// Anyone actually using the facility to wrap a worker in an isolate will want
 /// to use this code to do additional work, for example post processing one of
 /// the output files.
-Future main(List<String> args, SendPort message) async {
+Future main(List<String> args, [SendPort? message]) async {
   var receivePort = ReceivePort();
   await Isolate.spawnUri(
       Uri.file('async_worker.dart'), [], receivePort.sendPort);

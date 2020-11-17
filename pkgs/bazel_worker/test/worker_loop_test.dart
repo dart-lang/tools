@@ -52,10 +52,10 @@ void runTests<T extends TestWorkerConnection>(
     TestStdin Function() stdinFactory,
     T Function(Stdin, Stdout) workerConnectionFactory,
     TestWorkerLoop Function(T) workerLoopFactory) {
-  TestStdin stdinStream;
-  TestStdoutStream stdoutStream;
-  T connection;
-  TestWorkerLoop workerLoop;
+  late TestStdin stdinStream;
+  late TestStdoutStream stdoutStream;
+  late T connection;
+  late TestWorkerLoop workerLoop;
 
   setUp(() {
     stdinStream = stdinFactory();
@@ -86,7 +86,7 @@ void runTests<T extends TestWorkerConnection>(
     expect(connection.responses, hasLength(1));
     expect(connection.responses[0], response);
     if (workerLoop.printMessage != null) {
-      expect(response.output, endsWith(workerLoop.printMessage),
+      expect(response.output, endsWith(workerLoop.printMessage!),
           reason: 'Print messages should get appended to the response output.');
     }
 

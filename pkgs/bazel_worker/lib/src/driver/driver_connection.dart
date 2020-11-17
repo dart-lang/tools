@@ -34,7 +34,7 @@ class StdDriverConnection implements DriverConnection {
   Future<void> get done => _messageGrouper.done;
 
   StdDriverConnection(
-      {Stream<List<int>> inputStream, StreamSink<List<int>> outputStream})
+      {Stream<List<int>>? inputStream, StreamSink<List<int>>? outputStream})
       : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
         _outputStream = outputStream ?? stdout;
 
@@ -50,7 +50,11 @@ class StdDriverConnection implements DriverConnection {
   @override
   Future<WorkResponse> readResponse() async {
     var buffer = await _messageGrouper.next;
-    if (buffer == null) return null;
+    if (buffer == null) {
+      return WorkResponse()
+        ..exitCode = EXIT_CODE_BROKEN_PIPE
+        ..output = 'Connection to worker closed';
+    }
 
     WorkResponse response;
     try {
@@ -104,7 +108,9 @@ class IsolateDriverConnection implements DriverConnection {
   @override
   Future<WorkResponse> readResponse() async {
     if (!await _receivePortIterator.moveNext()) {
-      return null;
+      return WorkResponse()
+        ..exitCode = EXIT_CODE_BROKEN_PIPE
+        ..output = 'Connection to worker closed.';
     }
     return WorkResponse.fromBuffer(_receivePortIterator.current as List<int>);
   }
