@@ -57,16 +57,16 @@ abstract class VersionConstraint {
     if (text == 'any') return any;
 
     // Try to parse and consume a version number.
-    Version matchVersion() {
+    Version? matchVersion() {
       var version = startVersion.firstMatch(text);
       if (version == null) return null;
 
       text = text.substring(version.end);
-      return Version.parse(version[0]);
+      return Version.parse(version[0]!);
     }
 
     // Try to parse and consume a comparison operator followed by a version.
-    VersionRange matchComparison() {
+    VersionRange? matchComparison() {
       var comparison = startComparison.firstMatch(text);
       if (comparison == null) return null;
 
@@ -97,7 +97,7 @@ abstract class VersionConstraint {
     }
 
     // Try to parse the "^" operator followed by a version.
-    VersionConstraint matchCompatibleWith() {
+    VersionConstraint? matchCompatibleWith() {
       if (!text.startsWith(compatibleWithChar)) return null;
 
       text = text.substring(compatibleWithChar.length);
@@ -120,9 +120,9 @@ abstract class VersionConstraint {
     var compatibleWith = matchCompatibleWith();
     if (compatibleWith != null) return compatibleWith;
 
-    Version min;
+    Version? min;
     var includeMin = false;
-    Version max;
+    Version? max;
     var includeMax = false;
 
     for (;;) {
@@ -137,7 +137,7 @@ abstract class VersionConstraint {
       }
 
       if (newRange.min != null) {
-        if (min == null || newRange.min > min) {
+        if (min == null || newRange.min! > min) {
           min = newRange.min;
           includeMin = newRange.includeMin;
         } else if (newRange.min == min && !newRange.includeMin) {
@@ -146,7 +146,7 @@ abstract class VersionConstraint {
       }
 
       if (newRange.max != null) {
-        if (max == null || newRange.max < max) {
+        if (max == null || newRange.max! < max) {
           max = newRange.max;
           includeMax = newRange.includeMax;
         } else if (newRange.max == max && !newRange.includeMax) {

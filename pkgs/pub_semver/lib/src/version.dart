@@ -92,8 +92,8 @@ class Version implements VersionConstraint, VersionRange {
   @override
   bool get includeMax => true;
 
-  Version._(this.major, this.minor, this.patch, String preRelease, String build,
-      this._text)
+  Version._(this.major, this.minor, this.patch, String? preRelease,
+      String? build, this._text)
       : preRelease = preRelease == null ? [] : _splitParts(preRelease),
         build = build == null ? [] : _splitParts(build) {
     if (major < 0) throw ArgumentError('Major version must be non-negative.');
@@ -102,7 +102,8 @@ class Version implements VersionConstraint, VersionRange {
   }
 
   /// Creates a new [Version] object.
-  factory Version(int major, int minor, int patch, {String pre, String build}) {
+  factory Version(int major, int minor, int patch,
+      {String? pre, String? build}) {
     var text = '$major.$minor.$patch';
     if (pre != null) text += '-$pre';
     if (build != null) text += '+$build';
@@ -118,9 +119,9 @@ class Version implements VersionConstraint, VersionRange {
     }
 
     try {
-      var major = int.parse(match[1]);
-      var minor = int.parse(match[2]);
-      var patch = int.parse(match[3]);
+      var major = int.parse(match[1]!);
+      var minor = int.parse(match[2]!);
+      var patch = int.parse(match[3]!);
 
       var preRelease = match[5];
       var build = match[8];
@@ -136,12 +137,11 @@ class Version implements VersionConstraint, VersionRange {
   /// This is the highest-numbered stable (non-prerelease) version. If there
   /// are no stable versions, it's just the highest-numbered version.
   ///
-  /// If [versions] is empty, returns `null`.
+  /// If [versions] is empty, throws a [StateError].
   static Version primary(List<Version> versions) {
-    Version primary;
-    for (var version in versions) {
-      if (primary == null ||
-          (!version.isPreRelease && primary.isPreRelease) ||
+    var primary = versions.first;
+    for (var version in versions.skip(1)) {
+      if ((!version.isPreRelease && primary.isPreRelease) ||
           (version.isPreRelease == primary.isPreRelease && version > primary)) {
         primary = version;
       }

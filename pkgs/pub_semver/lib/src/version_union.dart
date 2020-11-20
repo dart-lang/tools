@@ -50,19 +50,19 @@ class VersionUnion implements VersionConstraint {
 
     // Because both lists of ranges are ordered by minimum version, we can
     // safely move through them linearly here.
-    ourRanges.moveNext();
-    theirRanges.moveNext();
-    while (ourRanges.current != null && theirRanges.current != null) {
+    var ourRangesMoved = ourRanges.moveNext();
+    var theirRangesMoved = theirRanges.moveNext();
+    while (ourRangesMoved && theirRangesMoved) {
       if (ourRanges.current.allowsAll(theirRanges.current)) {
-        theirRanges.moveNext();
+        theirRangesMoved = theirRanges.moveNext();
       } else {
-        ourRanges.moveNext();
+        ourRangesMoved = ourRanges.moveNext();
       }
     }
 
     // If our ranges have allowed all of their ranges, we'll have consumed all
     // of them.
-    return theirRanges.current == null;
+    return !theirRangesMoved;
   }
 
   @override
@@ -72,9 +72,9 @@ class VersionUnion implements VersionConstraint {
 
     // Because both lists of ranges are ordered by minimum version, we can
     // safely move through them linearly here.
-    ourRanges.moveNext();
-    theirRanges.moveNext();
-    while (ourRanges.current != null && theirRanges.current != null) {
+    var ourRangesMoved = ourRanges.moveNext();
+    var theirRangesMoved = theirRanges.moveNext();
+    while (ourRangesMoved && theirRangesMoved) {
       if (ourRanges.current.allowsAny(theirRanges.current)) {
         return true;
       }
@@ -82,9 +82,9 @@ class VersionUnion implements VersionConstraint {
       // Move the constraint with the lower max value forward. This ensures that
       // we keep both lists in sync as much as possible.
       if (allowsHigher(theirRanges.current, ourRanges.current)) {
-        ourRanges.moveNext();
+        ourRangesMoved = ourRanges.moveNext();
       } else {
-        theirRanges.moveNext();
+        theirRangesMoved = theirRanges.moveNext();
       }
     }
 
@@ -99,9 +99,9 @@ class VersionUnion implements VersionConstraint {
     // Because both lists of ranges are ordered by minimum version, we can
     // safely move through them linearly here.
     var newRanges = <VersionRange>[];
-    ourRanges.moveNext();
-    theirRanges.moveNext();
-    while (ourRanges.current != null && theirRanges.current != null) {
+    var ourRangesMoved = ourRanges.moveNext();
+    var theirRangesMoved = theirRanges.moveNext();
+    while (ourRangesMoved && theirRangesMoved) {
       var intersection = ourRanges.current.intersect(theirRanges.current);
 
       if (!intersection.isEmpty) newRanges.add(intersection as VersionRange);
@@ -110,9 +110,9 @@ class VersionUnion implements VersionConstraint {
       // we keep both lists in sync as much as possible, and that large ranges
       // have a chance to match multiple small ranges that they contain.
       if (allowsHigher(theirRanges.current, ourRanges.current)) {
-        ourRanges.moveNext();
+        ourRangesMoved = ourRanges.moveNext();
       } else {
-        theirRanges.moveNext();
+        theirRangesMoved = theirRanges.moveNext();
       }
     }
 

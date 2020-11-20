@@ -371,10 +371,7 @@ void main() {
     });
 
     test('empty', () {
-      expect(
-        _primary([]),
-        isNull,
-      );
+      expect(() => Version.primary([]), throwsStateError);
     });
   });
 }

@@ -79,13 +79,13 @@ class _VersionConstraintMatcher implements Matcher {
 /// Gets a [Matcher] that validates that a [VersionConstraint] allows all
 /// given versions.
 Matcher allows(Version v1,
-    [Version v2,
-    Version v3,
-    Version v4,
-    Version v5,
-    Version v6,
-    Version v7,
-    Version v8]) {
+    [Version? v2,
+    Version? v3,
+    Version? v4,
+    Version? v5,
+    Version? v6,
+    Version? v7,
+    Version? v8]) {
   var versions = _makeVersionList(v1, v2, v3, v4, v5, v6, v7, v8);
   return _VersionConstraintMatcher(versions, true);
 }
@@ -93,25 +93,25 @@ Matcher allows(Version v1,
 /// Gets a [Matcher] that validates that a [VersionConstraint] allows none of
 /// the given versions.
 Matcher doesNotAllow(Version v1,
-    [Version v2,
-    Version v3,
-    Version v4,
-    Version v5,
-    Version v6,
-    Version v7,
-    Version v8]) {
+    [Version? v2,
+    Version? v3,
+    Version? v4,
+    Version? v5,
+    Version? v6,
+    Version? v7,
+    Version? v8]) {
   var versions = _makeVersionList(v1, v2, v3, v4, v5, v6, v7, v8);
   return _VersionConstraintMatcher(versions, false);
 }
 
 List<Version> _makeVersionList(Version v1,
-    [Version v2,
-    Version v3,
-    Version v4,
-    Version v5,
-    Version v6,
-    Version v7,
-    Version v8]) {
+    [Version? v2,
+    Version? v3,
+    Version? v4,
+    Version? v5,
+    Version? v6,
+    Version? v7,
+    Version? v8]) {
   var versions = [v1];
   if (v2 != null) versions.add(v2);
   if (v3 != null) versions.add(v3);
