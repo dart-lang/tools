@@ -13,6 +13,11 @@ import 'package:test/test.dart';
 
 import 'pub_utils.dart';
 
+const defaultPubspec = {
+  'name': 'sample',
+  'environment': {'sdk': '>=2.7.0 <3.0.0'},
+};
+
 String _encodeJson(Object input) =>
     const JsonEncoder.withIndent(' ').convert(input);
 

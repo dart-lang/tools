@@ -214,7 +214,7 @@ line 5, column 4: These keys had `null` values, which is not allowed: [sdk]
     _expectThrows(
       {'sdk': 42},
       r'''
-line 5, column 11: Unsupported value for "sdk".
+line 5, column 11: Unsupported value for "sdk". type 'int' is not a subtype of type 'String' in type cast
   ╷
 5 │      "sdk": 42
   │ ┌───────────^
@@ -332,7 +332,7 @@ line 6, column 5: These keys had `null` values, which is not allowed: [url]
         'git': {'url': 42}
       },
       r'''
-line 6, column 12: Unsupported value for "url".
+line 6, column 12: Unsupported value for "url". type 'int' is not a subtype of type 'String' in type cast
   ╷
 6 │       "url": 42
   │ ┌────────────^
@@ -404,7 +404,7 @@ void _expectThrows(Object content, String expectedError) {
 
 T _dependency<T extends Dependency>(Object content, {bool skipTryPub = false}) {
   final value = parse({
-    'name': 'sample',
+    ...defaultPubspec,
     'dependencies': {'dep': content}
   }, skipTryPub: skipTryPub);
   expect(value.name, 'sample');
