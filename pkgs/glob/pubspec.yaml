@@ -1,13 +1,9 @@
 name: glob
-version: 2.0.0-nullsafety.dev
+version: 2.0.0-nullsafety.0
 
 description: Bash-style filename globbing.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/glob
-
-# Can't be published until we confirm we can land this change internally and in
-# the sdk.
-publish_to: none
 
 environment:
   sdk: '>=2.12.0-0 <3.0.0'

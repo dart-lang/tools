@@ -1,4 +1,4 @@
-## 2.0.0-nullsafety.dev
+## 2.0.0-nullsafety.0
 
 * Migrate to null_safety
 
