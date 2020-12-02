@@ -1,3 +1,8 @@
+## 2.0.0
+
+- Migrate to null safety.
+- Remove legacy APIs.
+
 ## 1.9.3
 
 - Fix `Package` constructor not accepting relative `packageUriRoot`.

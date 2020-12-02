@@ -154,7 +154,7 @@ PackageConfig parse(
 /// All the keys of [packageMapping] must be valid package names,
 /// and the values must be URIs that do not have the `package:` scheme.
 void write(StringSink output, PackageConfig config,
-    {Uri baseUri, String comment}) {
+    {Uri? baseUri, String? comment}) {
   if (baseUri != null && !baseUri.isAbsolute) {
     throw PackageConfigArgumentError(baseUri, "baseUri", "Must be absolute");
   }
@@ -187,7 +187,7 @@ void write(StringSink output, PackageConfig config,
     output.write(':');
     // If baseUri is provided, make the URI relative to baseUri.
     if (baseUri != null) {
-      uri = relativizeUri(uri, baseUri);
+      uri = relativizeUri(uri, baseUri)!;
     }
     if (!uri.path.endsWith('/')) {
       uri = uri.replace(path: uri.path + '/');

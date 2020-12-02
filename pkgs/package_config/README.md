@@ -7,11 +7,12 @@ in the Package Configuration v2 [design document](https://github.com/dart-lang/l
 The primary libraries are
 * `package_config.dart`:
     Defines the `PackageConfig` class and other types needed to use
-    package configurations.
+    package configurations, and provides functions to find, read and
+    write package configuration files.
 
-* `package_config_discovery.dart`:
-    Provides functions for reading configurations from files,
-    and writing them back out.
+* `package_config_types.dart`:
+    Just the `PackageConfig` class and other types needed to use
+    package configurations. This library does not depend on `dart:io`.
 
 The package includes deprecated backwards compatible functionality to
 work with the `.packages` file. This functionality will not be maintained,

@@ -34,18 +34,18 @@ ${packages.map((nu) => """
 /// it's a subdirectory, otherwise it's a file and the value is the content
 /// as a string.
 void loaderTest(String name, Map<String, Object> description,
-    void loaderTest(Uri root, Future<Uint8List> loader(Uri uri))) {
+    void loaderTest(Uri root, Future<Uint8List?> loader(Uri uri))) {
   var root = Uri(scheme: "test", path: "/");
-  Future<Uint8List> loader(Uri uri) async {
+  Future<Uint8List?> loader(Uri uri) async {
     var path = uri.path;
     if (!uri.isScheme("test") || !path.startsWith("/")) return null;
     var parts = path.split("/");
-    dynamic value = description;
+    Object? value = description;
     for (var i = 1; i < parts.length; i++) {
-      if (value is! Map<String, dynamic>) return null;
+      if (value is! Map<String, Object?>) return null;
       value = value[parts[i]];
     }
-    if (value is String) return utf8.encode(value);
+    if (value is String) return utf8.encode(value) as Uint8List;
     return null;
   }
 

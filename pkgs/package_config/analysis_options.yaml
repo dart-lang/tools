@@ -6,6 +6,5 @@ include: package:pedantic/analysis_options.1.9.0.yaml
 analyzer:
   errors:
     annotate_overrides: ignore
-    curly_braces_in_flow_control_structures: ignore
     prefer_single_quotes: ignore
     use_function_type_syntax_for_parameters: ignore

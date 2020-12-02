@@ -35,20 +35,20 @@ void fileTest(String name, Map<String, Object> description,
 /// with the content as description.
 /// Otherwise the content should be a string,
 /// which is written to the file as UTF-8.
-Directory createTestFiles(Map<String, Object> description) {
-  var target = Directory.systemTemp.createTempSync("pkgcfgtest");
-  _createFiles(target, description);
-  return target;
-}
+// Directory createTestFiles(Map<String, Object> description) {
+//   var target = Directory.systemTemp.createTempSync("pkgcfgtest");
+//   _createFiles(target, description);
+//   return target;
+// }
 
 // Creates temporary files in the target directory.
-void _createFiles(Directory target, Map<Object, Object> description) {
+void _createFiles(Directory target, Map<Object?, Object?> description) {
   description.forEach((name, content) {
     var entryName = pathJoin(target.path, "$name");
-    if (content is Map<Object, Object>) {
+    if (content is Map<Object?, Object?>) {
       _createFiles(Directory(entryName)..createSync(), content);
     } else {
-      File(entryName).writeAsStringSync(content, flush: true);
+      File(entryName).writeAsStringSync(content as String, flush: true);
     }
   });
 }

@@ -63,7 +63,7 @@ void main() {
         "package_config.json": packageConfigFile,
       }
     }, (Directory directory) async {
-      var config = await findPackageConfig(directory);
+      var config = (await findPackageConfig(directory))!;
       expect(config.version, 2); // Found package_config.json file.
       validatePackagesFile(config, directory);
     });
@@ -74,7 +74,7 @@ void main() {
       "script.dart": "main(){}",
       "packages": {"shouldNotBeFound": {}}
     }, (Directory directory) async {
-      var config = await findPackageConfig(directory);
+      var config = (await findPackageConfig(directory))!;
       expect(config.version, 1); // Found .packages file.
       validatePackagesFile(config, directory);
     });
@@ -89,7 +89,7 @@ void main() {
         "script.dart": "main(){}",
       }
     }, (Directory directory) async {
-      var config = await findPackageConfig(subdir(directory, "subdir/"));
+      var config = (await findPackageConfig(subdir(directory, "subdir/")))!;
       expect(config.version, 2);
       validatePackagesFile(config, directory);
     });

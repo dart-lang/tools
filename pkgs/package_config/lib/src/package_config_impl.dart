@@ -14,10 +14,10 @@ class SimplePackageConfig implements PackageConfig {
   final int version;
   final Map<String, Package> _packages;
   final PackageTree _packageTree;
-  final dynamic extraData;
+  final Object? extraData;
 
   factory SimplePackageConfig(int version, Iterable<Package> packages,
-      [dynamic extraData, void onError(Object error)]) {
+      [Object? extraData, void onError(Object error)?]) {
     onError ??= throwError;
     var validVersion = _validateVersion(version, onError);
     var sortedPackages = [...packages]..sort(_compareRoot);
@@ -53,11 +53,7 @@ class SimplePackageConfig implements PackageConfig {
     var packageNames = <String>{};
     var tree = MutablePackageTree();
     for (var originalPackage in packages) {
-      if (originalPackage == null) {
-        onError(ArgumentError.notNull("element of packages"));
-        continue;
-      }
-      SimplePackage package;
+      SimplePackage? package;
       if (originalPackage is! SimplePackage) {
         // SimplePackage validates these properties.
         package = SimplePackage.validate(
@@ -68,7 +64,7 @@ class SimplePackageConfig implements PackageConfig {
             originalPackage.extraData, (error) {
           if (error is PackageConfigArgumentError) {
             onError(PackageConfigArgumentError(packages, "packages",
-                "Package ${package.name}: ${error.message}"));
+                "Package ${package!.name}: ${error.message}"));
           } else {
             onError(error);
           }
@@ -92,7 +88,7 @@ class SimplePackageConfig implements PackageConfig {
             onError(PackageConfigArgumentError(
                 originalPackages,
                 "packages",
-                "Packages ${package.name} and ${existingPackage.name} "
+                "Packages ${package!.name} and ${existingPackage.name} "
                     "have the same root directory: ${package.root}.\n"));
           } else {
             assert(error.isPackageRootConflict);
@@ -100,7 +96,7 @@ class SimplePackageConfig implements PackageConfig {
             onError(PackageConfigArgumentError(
                 originalPackages,
                 "packages",
-                "Package ${package.name} is inside the package URI root of "
+                "Package ${package!.name} is inside the package URI root of "
                     "package ${existingPackage.name}.\n"
                     "${existingPackage.name} URI root: "
                     "${existingPackage.packageUriRoot}\n"
@@ -117,7 +113,7 @@ class SimplePackageConfig implements PackageConfig {
 
   Iterable<Package> get packages => _packages.values;
 
-  Package /*?*/ operator [](String packageName) => _packages[packageName];
+  Package? operator [](String packageName) => _packages[packageName];
 
   /// Provides the associated package for a specific [file] (or directory).
   ///
@@ -125,15 +121,15 @@ class SimplePackageConfig implements PackageConfig {
   /// That is, the [Package.rootUri] directory is a parent directory
   /// of the [file]'s location.
   /// Returns `null` if the file does not belong to any package.
-  Package /*?*/ packageOf(Uri file) => _packageTree.packageOf(file);
+  Package? packageOf(Uri file) => _packageTree.packageOf(file);
 
-  Uri /*?*/ resolve(Uri packageUri) {
+  Uri? resolve(Uri packageUri) {
     var packageName = checkValidPackageUri(packageUri, "packageUri");
-    return _packages[packageName]?.packageUriRoot?.resolveUri(
+    return _packages[packageName]?.packageUriRoot.resolveUri(
         Uri(path: packageUri.path.substring(packageName.length + 1)));
   }
 
-  Uri /*?*/ toPackageUri(Uri nonPackageUri) {
+  Uri? toPackageUri(Uri nonPackageUri) {
     if (nonPackageUri.isScheme("package")) {
       throw PackageConfigArgumentError(
           nonPackageUri, "nonPackageUri", "Must not be a package URI");
@@ -161,8 +157,8 @@ class SimplePackage implements Package {
   final String name;
   final Uri root;
   final Uri packageUriRoot;
-  final LanguageVersion /*?*/ languageVersion;
-  final dynamic extraData;
+  final LanguageVersion? languageVersion;
+  final Object? extraData;
 
   SimplePackage._(this.name, this.root, this.packageUriRoot,
       this.languageVersion, this.extraData);
@@ -182,12 +178,12 @@ class SimplePackage implements Package {
   ///
   /// Returns `null` if the input is invalid and an approximately valid package
   /// cannot be salvaged from the input.
-  static SimplePackage /*?*/ validate(
+  static SimplePackage? validate(
       String name,
       Uri root,
-      Uri packageUriRoot,
-      LanguageVersion /*?*/ languageVersion,
-      dynamic extraData,
+      Uri? packageUriRoot,
+      LanguageVersion? languageVersion,
+      Object? extraData,
       void onError(Object error)) {
     var fatalError = false;
     var invalidIndex = checkPackageName(name);
@@ -244,7 +240,7 @@ class SimplePackage implements Package {
 /// Reports a format exception on [onError] if not, or if the numbers
 /// are too large (at most 32-bit signed integers).
 LanguageVersion parseLanguageVersion(
-    String source, void onError(Object error)) {
+    String? source, void onError(Object error)) {
   var index = 0;
   // Reads a positive decimal numeral. Returns the value of the numeral,
   // or a negative number in case of an error.
@@ -254,7 +250,7 @@ LanguageVersion parseLanguageVersion(
   // It is a recoverable error if the numeral starts with leading zeros.
   int readNumeral() {
     const maxValue = 0x7FFFFFFF;
-    if (index == source.length) {
+    if (index == source!.length) {
       onError(PackageConfigFormatException("Missing number", source, index));
       return -1;
     }
@@ -291,7 +287,7 @@ LanguageVersion parseLanguageVersion(
   if (major < 0) {
     return SimpleInvalidLanguageVersion(source);
   }
-  if (index == source.length || source.codeUnitAt(index) != $dot) {
+  if (index == source!.length || source.codeUnitAt(index) != $dot) {
     onError(PackageConfigFormatException("Missing '.'", source, index));
     return SimpleInvalidLanguageVersion(source);
   }
@@ -319,7 +315,7 @@ abstract class _SimpleLanguageVersionBase implements LanguageVersion {
 class SimpleLanguageVersion extends _SimpleLanguageVersionBase {
   final int major;
   final int minor;
-  String /*?*/ _source;
+  String? _source;
   SimpleLanguageVersion(this.major, this.minor, this._source);
 
   bool operator ==(Object other) =>
@@ -332,17 +328,17 @@ class SimpleLanguageVersion extends _SimpleLanguageVersionBase {
 
 class SimpleInvalidLanguageVersion extends _SimpleLanguageVersionBase
     implements InvalidLanguageVersion {
-  final String _source;
+  final String? _source;
   SimpleInvalidLanguageVersion(this._source);
   int get major => -1;
   int get minor => -1;
 
-  String toString() => _source;
+  String toString() => _source!;
 }
 
 abstract class PackageTree {
   Iterable<Package> get allPackages;
-  SimplePackage /*?*/ packageOf(Uri file);
+  SimplePackage? packageOf(Uri file);
 }
 
 /// Packages of a package configuration ordered by root path.
@@ -373,12 +369,17 @@ class MutablePackageTree implements PackageTree {
   /// Indexed by [Package.name].
   /// If a package has no nested packages (which is most often the case),
   /// there is no tree object associated with it.
-  Map<String, MutablePackageTree /*?*/ > /*?*/ _packageChildren;
+  Map<String, MutablePackageTree>? _packageChildren;
 
   Iterable<Package> get allPackages sync* {
-    for (var package in packages) yield package;
-    if (_packageChildren != null) {
-      for (var tree in _packageChildren.values) yield* tree.allPackages;
+    for (var package in packages) {
+      yield package;
+    }
+    var children = _packageChildren;
+    if (children != null) {
+      for (var tree in children.values) {
+        yield* tree.allPackages;
+      }
     }
   }
 
@@ -424,7 +425,7 @@ class MutablePackageTree implements PackageTree {
     packages.add(package);
   }
 
-  SimplePackage /*?*/ packageOf(Uri file) {
+  SimplePackage? packageOf(Uri file) {
     return findPackageOf(0, file.toString());
   }
 
@@ -434,7 +435,7 @@ class MutablePackageTree implements PackageTree {
   ///
   /// Assumes the first [start] characters of path agrees with all
   /// the packages at this level of the tree.
-  SimplePackage /*?*/ findPackageOf(int start, String path) {
+  SimplePackage? findPackageOf(int start, String path) {
     for (var childPackage in packages) {
       var childPath = childPackage.root.toString();
       if (_beginsWith(start, childPath, path)) {
@@ -447,14 +448,9 @@ class MutablePackageTree implements PackageTree {
             _beginsWith(childPathLength, uriRoot, path)) {
           return childPackage;
         }
-        // Otherwise add [package] as child of [childPackage].
-        // TODO(lrn): When NNBD comes, convert to:
-        // return _packageChildren?[childPackage.name]
-        //     ?.packageOf(childPathLength, path) ?? childPackage;
-        if (_packageChildren == null) return childPackage;
-        var childTree = _packageChildren[childPackage.name];
-        if (childTree == null) return childPackage;
-        return childTree.findPackageOf(childPathLength, path) ?? childPackage;
+        return _packageChildren?[childPackage.name]
+                ?.findPackageOf(childPathLength, path) ??
+            childPackage;
       }
     }
     return null;
@@ -474,7 +470,7 @@ class EmptyPackageTree implements PackageTree {
 
   Iterable<Package> get allPackages => const Iterable<Package>.empty();
 
-  SimplePackage packageOf(Uri file) => null;
+  SimplePackage? packageOf(Uri file) => null;
 }
 
 /// Checks whether [longerPath] begins with [parentPath].

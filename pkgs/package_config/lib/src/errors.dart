@@ -12,7 +12,7 @@ abstract class PackageConfigError {
 
 class PackageConfigArgumentError extends ArgumentError
     implements PackageConfigError {
-  PackageConfigArgumentError(Object /*?*/ value, String name, String message)
+  PackageConfigArgumentError(Object? value, String name, String message)
       : super.value(value, name, message);
 
   PackageConfigArgumentError.from(ArgumentError error)
@@ -21,8 +21,7 @@ class PackageConfigArgumentError extends ArgumentError
 
 class PackageConfigFormatException extends FormatException
     implements PackageConfigError {
-  PackageConfigFormatException(String message, Object /*?*/ source,
-      [int /*?*/ offset])
+  PackageConfigFormatException(String message, Object? source, [int? offset])
       : super(message, source, offset);
 
   PackageConfigFormatException.from(FormatException exception)
@@ -30,4 +29,4 @@ class PackageConfigFormatException extends FormatException
 }
 
 /// The default `onError` handler.
-void /*Never*/ throwError(Object error) => throw error;
+Never throwError(Object error) => throw error;

@@ -32,7 +32,7 @@ void main() {
       expect(result.resolve(pkg("baz", "baz.dart")),
           Uri.parse("file:///tmp/lib/baz.dart"));
 
-      var foo = result["foo"];
+      var foo = result["foo"]!;
       expect(foo, isNotNull);
       expect(foo.root, Uri.parse("file:///foo/"));
       expect(foo.packageUriRoot, Uri.parse("file:///foo/lib/"));
@@ -111,8 +111,10 @@ void main() {
           "other": [42]
         }
         """;
-      var config = parsePackageConfigBytes(utf8.encode(packageConfigFile),
-          Uri.parse("file:///tmp/.dart_tool/file.dart"), throwError);
+      var config = parsePackageConfigBytes(
+          utf8.encode(packageConfigFile) as Uint8List,
+          Uri.parse("file:///tmp/.dart_tool/file.dart"),
+          throwError);
       expect(config.version, 2);
       expect({for (var p in config.packages) p.name},
           {"foo", "bar", "baz", "noslash"});
@@ -124,28 +126,28 @@ void main() {
       expect(config.resolve(pkg("baz", "baz.dart")),
           Uri.parse("file:///tmp/lib/baz.dart"));
 
-      var foo = config["foo"];
+      var foo = config["foo"]!;
       expect(foo, isNotNull);
       expect(foo.root, Uri.parse("file:///foo/"));
       expect(foo.packageUriRoot, Uri.parse("file:///foo/lib/"));
       expect(foo.languageVersion, LanguageVersion(2, 5));
       expect(foo.extraData, {"nonstandard": true});
 
-      var bar = config["bar"];
+      var bar = config["bar"]!;
       expect(bar, isNotNull);
       expect(bar.root, Uri.parse("file:///bar/"));
       expect(bar.packageUriRoot, Uri.parse("file:///bar/lib/"));
       expect(bar.languageVersion, LanguageVersion(9999, 9999));
       expect(bar.extraData, null);
 
-      var baz = config["baz"];
+      var baz = config["baz"]!;
       expect(baz, isNotNull);
       expect(baz.root, Uri.parse("file:///tmp/"));
       expect(baz.packageUriRoot, Uri.parse("file:///tmp/lib/"));
       expect(baz.languageVersion, null);
 
       // No slash after root or package root. One is inserted.
-      var noslash = config["noslash"];
+      var noslash = config["noslash"]!;
       expect(noslash, isNotNull);
       expect(noslash.root, Uri.parse("file:///tmp/noslash/"));
       expect(noslash.packageUriRoot, Uri.parse("file:///tmp/noslash/lib/"));
@@ -185,8 +187,10 @@ void main() {
           "configVersion": 2
         }
         """;
-      var config = parsePackageConfigBytes(utf8.encode(packageConfigFile),
-          Uri.parse("file:///tmp/.dart_tool/file.dart"), throwError);
+      var config = parsePackageConfigBytes(
+          utf8.encode(packageConfigFile) as Uint8List,
+          Uri.parse("file:///tmp/.dart_tool/file.dart"),
+          throwError);
       expect(config.version, 2);
       expect({for (var p in config.packages) p.name}, {"foo", "bar", "baz"});
 
@@ -209,8 +213,10 @@ void main() {
     var name = '"name":"foo"';
     var root = '"rootUri":"/foo/"';
     test("minimal", () {
-      var config = parsePackageConfigBytes(utf8.encode("{$cfg,$pkgs}"),
-          Uri.parse("file:///tmp/.dart_tool/file.dart"), throwError);
+      var config = parsePackageConfigBytes(
+          utf8.encode("{$cfg,$pkgs}") as Uint8List,
+          Uri.parse("file:///tmp/.dart_tool/file.dart"),
+          throwError);
       expect(config.version, 2);
       expect(config.packages, isEmpty);
     });
@@ -218,7 +224,7 @@ void main() {
       // A package must have a name and a rootUri, the remaining properties
       // are optional.
       var config = parsePackageConfigBytes(
-          utf8.encode('{$cfg,"packages":[{$name,$root}]}'),
+          utf8.encode('{$cfg,"packages":[{$name,$root}]}') as Uint8List,
           Uri.parse("file:///tmp/.dart_tool/file.dart"),
           throwError);
       expect(config.version, 2);
@@ -235,17 +241,17 @@ void main() {
           {"name": "qux", "rootUri": "/foo/qux/", "packageUri": "lib/"},
         ]
       }));
-      var config = parsePackageConfigBytes(configBytes,
+      var config = parsePackageConfigBytes(configBytes as Uint8List,
           Uri.parse("file:///tmp/.dart_tool/file.dart"), throwError);
       expect(config.version, 2);
-      expect(config.packageOf(Uri.parse("file:///foo/lala/lala.dart")).name,
+      expect(config.packageOf(Uri.parse("file:///foo/lala/lala.dart"))!.name,
           "foo");
-      expect(
-          config.packageOf(Uri.parse("file:///foo/bar/lala.dart")).name, "bar");
-      expect(config.packageOf(Uri.parse("file:///foo/bar/baz/lala.dart")).name,
+      expect(config.packageOf(Uri.parse("file:///foo/bar/lala.dart"))!.name,
+          "bar");
+      expect(config.packageOf(Uri.parse("file:///foo/bar/baz/lala.dart"))!.name,
           "baz");
-      expect(
-          config.packageOf(Uri.parse("file:///foo/qux/lala.dart")).name, "qux");
+      expect(config.packageOf(Uri.parse("file:///foo/qux/lala.dart"))!.name,
+          "qux");
       expect(config.toPackageUri(Uri.parse("file:///foo/lib/diz")),
           Uri.parse("package:foo/diz"));
       expect(config.toPackageUri(Uri.parse("file:///foo/bar/lib/diz")),
@@ -260,7 +266,7 @@ void main() {
       void testThrows(String name, String source) {
         test(name, () {
           expect(
-              () => parsePackageConfigBytes(utf8.encode(source),
+              () => parsePackageConfigBytes(utf8.encode(source) as Uint8List,
                   Uri.parse("file:///tmp/.dart_tool/file.dart"), throwError),
               throwsA(TypeMatcher<FormatException>()));
         });
@@ -386,7 +392,7 @@ void main() {
         for (var package in config.packages) {
           var name = package.name;
           test("package $name", () {
-            var expectedPackage = expected[name];
+            var expectedPackage = expected[name]!;
             expect(expectedPackage, isNotNull);
             expect(package.root, expectedPackage.root, reason: "root");
             expect(package.packageUriRoot, expectedPackage.packageUriRoot,

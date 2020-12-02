@@ -9,7 +9,7 @@ library package_config.util_io;
 import 'dart:io';
 import 'dart:typed_data';
 
-Future<Uint8List> defaultLoader(Uri uri) async {
+Future<Uint8List?> defaultLoader(Uri uri) async {
   if (uri.isScheme("file")) {
     var file = File.fromUri(uri);
     try {
@@ -24,7 +24,7 @@ Future<Uint8List> defaultLoader(Uri uri) async {
   throw UnsupportedError("Default URI unsupported scheme: $uri");
 }
 
-Future<Uint8List /*?*/ > _httpGet(Uri uri) async {
+Future<Uint8List?> _httpGet(Uri uri) async {
   assert(uri.isScheme("http") || uri.isScheme("https"));
   var client = HttpClient();
   var request = await client.getUrl(uri);
@@ -45,7 +45,7 @@ Future<Uint8List /*?*/ > _httpGet(Uri uri) async {
   }
   var result = Uint8List(totalLength);
   var offset = 0;
-  for (Uint8List contentPart in splitContent) {
+  for (var contentPart in splitContent as Iterable<Uint8List>) {
     result.setRange(offset, offset + contentPart.length, contentPart);
     offset += contentPart.length;
   }
@@ -80,7 +80,7 @@ String dirName(String path) {
 ///
 /// If a part ends with a path separator, then no extra separator is
 /// inserted.
-String pathJoin(String part1, String part2, [String part3]) {
+String pathJoin(String part1, String part2, [String? part3]) {
   var separator = Platform.pathSeparator;
   var separator1 = part1.endsWith(separator) ? "" : separator;
   if (part3 == null) {

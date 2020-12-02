@@ -50,7 +50,7 @@ abstract class PackageConfig {
   /// [PackageConfig.extraData] of the created configuration.
   ///
   /// The version of the resulting configuration is always [maxVersion].
-  factory PackageConfig(Iterable<Package> packages, {dynamic extraData}) =>
+  factory PackageConfig(Iterable<Package> packages, {Object? extraData}) =>
       SimplePackageConfig(maxVersion, packages, extraData);
 
   /// Parses a package configuration file.
@@ -67,10 +67,10 @@ abstract class PackageConfig {
   /// the configuration are reported by calling [onError] instead of
   /// throwing, and parser makes a *best effort* attempt to continue
   /// despite the error. The input must still be valid JSON.
-  /// The result may be a [PackageConfig.empty] if there is no way to
+  /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
   static PackageConfig parseBytes(Uint8List bytes, Uri baseUri,
-          {void onError(Object error)}) =>
+          {void onError(Object error)?}) =>
       parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
 
   /// Parses a package configuration file.
@@ -87,10 +87,10 @@ abstract class PackageConfig {
   /// the configuration are reported by calling [onError] instead of
   /// throwing, and parser makes a *best effort* attempt to continue
   /// despite the error. The input must still be valid JSON.
-  /// The result may be a [PackageConfig.empty] if there is no way to
+  /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
   static PackageConfig parseString(String configuration, Uri baseUri,
-          {void onError(Object error)}) =>
+          {void onError(Object error)?}) =>
       parsePackageConfigString(configuration, baseUri, onError ?? throwError);
 
   /// Parses the JSON data of a package configuration file.
@@ -108,10 +108,10 @@ abstract class PackageConfig {
   /// the configuration are reported by calling [onError] instead of
   /// throwing, and parser makes a *best effort* attempt to continue
   /// despite the error. The input must still be valid JSON.
-  /// The result may be a [PackageConfig.empty] if there is no way to
+  /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseJson(dynamic jsonData, Uri baseUri,
-          {void onError(Object error)}) =>
+  static PackageConfig parseJson(Object? jsonData, Uri baseUri,
+          {void onError(Object error)?}) =>
       parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
 
   /// Writes a configuration file for this configuration on [output].
@@ -119,7 +119,7 @@ abstract class PackageConfig {
   /// If [baseUri] is provided, URI references in the generated file
   /// will be made relative to [baseUri] where possible.
   static void writeBytes(PackageConfig configuration, Sink<Uint8List> output,
-      [Uri /*?*/ baseUri]) {
+      [Uri? baseUri]) {
     writePackageConfigJsonUtf8(configuration, baseUri, output);
   }
 
@@ -128,7 +128,7 @@ abstract class PackageConfig {
   /// If [baseUri] is provided, URI references in the generated file
   /// will be made relative to [baseUri] where possible.
   static void writeString(PackageConfig configuration, StringSink output,
-      [Uri /*?*/ baseUri]) {
+      [Uri? baseUri]) {
     writePackageConfigJsonString(configuration, baseUri, output);
   }
 
@@ -136,8 +136,8 @@ abstract class PackageConfig {
   ///
   /// If [baseUri] is provided, URI references in the generated data
   /// will be made relative to [baseUri] where possible.
-  static Map<String, dynamic> toJson(PackageConfig configuration,
-          [Uri /*?*/ baseUri]) =>
+  static Map<String, Object?> toJson(PackageConfig configuration,
+          [Uri? baseUri]) =>
       packageConfigToJson(configuration, baseUri);
 
   /// The configuration version number.
@@ -162,7 +162,7 @@ abstract class PackageConfig {
   /// Returns the [Package] fron [packages] with [packageName] as
   /// [Package.name]. Returns `null` if the package is not available in the
   /// current configuration.
-  Package /*?*/ operator [](String packageName);
+  Package? operator [](String packageName);
 
   /// Provides the associated package for a specific [file] (or directory).
   ///
@@ -171,7 +171,7 @@ abstract class PackageConfig {
   /// of the [file]'s location.
   ///
   /// Returns `null` if the file does not belong to any package.
-  Package /*?*/ packageOf(Uri file);
+  Package? packageOf(Uri file);
 
   /// Resolves a `package:` URI to a non-package URI
   ///
@@ -188,7 +188,7 @@ abstract class PackageConfig {
   /// in this package configuration.
   /// Returns the remaining path of the package URI resolved relative to the
   /// [Package.packageUriRoot] of the corresponding package.
-  Uri /*?*/ resolve(Uri packageUri);
+  Uri? resolve(Uri packageUri);
 
   /// The package URI which resolves to [nonPackageUri].
   ///
@@ -199,14 +199,14 @@ abstract class PackageConfig {
   ///
   /// Returns a package URI which [resolve] will convert to [nonPackageUri],
   /// if any such URI exists. Returns `null` if no such package URI exists.
-  Uri /*?*/ toPackageUri(Uri nonPackageUri);
+  Uri? toPackageUri(Uri nonPackageUri);
 
   /// Extra data associated with the package configuration.
   ///
   /// The data may be in any format, depending on who introduced it.
   /// The standard `packjage_config.json` file storage will only store
   /// JSON-like list/map data structures.
-  dynamic get extraData;
+  Object? get extraData;
 }
 
 /// Configuration data for a single package.
@@ -227,11 +227,11 @@ abstract class Package {
   /// If [extraData] is supplied, it will be available as the
   /// [Package.extraData] of the created package.
   factory Package(String name, Uri root,
-          {Uri /*?*/ packageUriRoot,
-          LanguageVersion /*?*/ languageVersion,
-          dynamic extraData}) =>
+          {Uri? packageUriRoot,
+          LanguageVersion? languageVersion,
+          Object? extraData}) =>
       SimplePackage.validate(
-          name, root, packageUriRoot, languageVersion, extraData, throwError);
+          name, root, packageUriRoot, languageVersion, extraData, throwError)!;
 
   /// The package-name of the package.
   String get name;
@@ -263,14 +263,18 @@ abstract class Package {
   /// Dart files in the package.
   /// A package version is defined by two non-negative numbers,
   /// the *major* and *minor* version numbers.
-  LanguageVersion /*?*/ get languageVersion;
+  ///
+  /// A package may have no language version associated with it
+  /// in the package configuration, in which case tools should
+  /// use a default behavior for the package.
+  LanguageVersion? get languageVersion;
 
   /// Extra data associated with the specific package.
   ///
   /// The data may be in any format, depending on who introduced it.
-  /// The standard `packjage_config.json` file storage will only store
+  /// The standard `package_config.json` file storage will only store
   /// JSON-like list/map data structures.
-  dynamic get extraData;
+  Object? get extraData;
 }
 
 /// A language version.
@@ -307,7 +311,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// If [onError] is not supplied, it defaults to throwing the exception.
   /// If the call does not throw, then an [InvalidLanguageVersion] is returned
   /// containing the original [source].
-  static LanguageVersion parse(String source, {void onError(Object error)}) =>
+  static LanguageVersion parse(String source, {void onError(Object error)?}) =>
       parseLanguageVersion(source, onError ?? throwError);
 
   /// The major language version.

@@ -153,10 +153,10 @@ int firstNonWhitespaceChar(List<int> bytes) {
 /// `baseUri.resolveUri(result) == uri`,
 ///
 /// The `baseUri` must be absolute.
-Uri relativizeUri(Uri uri, Uri /*?*/ baseUri) {
+Uri? relativizeUri(Uri? uri, Uri? baseUri) {
   if (baseUri == null) return uri;
   assert(baseUri.isAbsolute);
-  if (uri.hasQuery || uri.hasFragment) {
+  if (uri!.hasQuery || uri.hasFragment) {
     uri = Uri(
         scheme: uri.scheme,
         userInfo: uri.hasAuthority ? uri.userInfo : null,
