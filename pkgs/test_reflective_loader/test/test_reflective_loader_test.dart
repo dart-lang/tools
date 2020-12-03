@@ -15,8 +15,6 @@ void main() {
 
 @reflectiveTest
 class TestReflectiveLoaderTest {
-  String pathname;
-
   void test_passes() {
     expect(true, true);
   }

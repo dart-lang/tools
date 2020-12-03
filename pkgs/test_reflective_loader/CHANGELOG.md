@@ -1,3 +1,7 @@
+## 0.2.0-nullsafety.0
+
+- Migrate to the null safety language feature.
+
 ## 0.1.9
 
 - Add `@SkippedTest` annotation and `skip_test` prefix.
