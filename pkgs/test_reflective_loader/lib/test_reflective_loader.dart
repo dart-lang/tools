@@ -227,7 +227,8 @@ bool _hasFailingTestAnnotation(MethodMirror method) =>
 bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
-Future<Object?> _invokeSymbolIfExists(InstanceMirror instanceMirror, Symbol symbol) {
+Future<Object?> _invokeSymbolIfExists(
+    InstanceMirror instanceMirror, Symbol symbol) {
   Object? invocationResult = null;
   InstanceMirror? closure;
   try {
@@ -346,7 +347,8 @@ class _Group {
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
       _TestFunction function) {
     String? fullName = _combineNames(this.name, name);
-    var timeout = _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
+    var timeout =
+        _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
     tests.add(new _Test(isSolo, fullName, function, timeout?._timeout));
   }
 }
