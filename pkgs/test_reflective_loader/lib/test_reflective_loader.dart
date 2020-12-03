@@ -167,7 +167,7 @@ void defineReflectiveTests(Type type) {
  */
 void _addTestsIfTopLevelSuite() {
   if (_currentSuiteLevel == 0) {
-    void runTests({/*required*/ required bool allGroups, /*required*/ required bool allTests}) {
+    void runTests({required bool allGroups, required bool allTests}) {
       for (_Group group in _currentGroups) {
         if (allGroups || group.isSolo) {
           for (_Test test in group.tests) {
