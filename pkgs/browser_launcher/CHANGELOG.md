@@ -1,3 +1,7 @@
+## 0.1.8
+
+- Log `STDERR` on Chrome launch failure.
+
 ## 0.1.7
 
 - Widen the dependency range on `package:webkit_inspection_protocol`.
