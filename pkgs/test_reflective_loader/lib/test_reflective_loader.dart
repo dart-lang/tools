@@ -38,7 +38,7 @@ const _SoloTest soloTest = const _SoloTest();
 
 final List<_Group> _currentGroups = <_Group>[];
 int _currentSuiteLevel = 0;
-String? _currentSuiteName = null;
+String _currentSuiteName = '';
 
 /**
  * Is `true` the application is running in the checked mode.
@@ -58,8 +58,8 @@ final bool _isCheckedMode = () {
  * create embedded suites.  If the current suite is the top-level one, perform
  * check for "solo" groups and tests, and run all or only "solo" items.
  */
-void defineReflectiveSuite(void define(), {String? name}) {
-  String? groupName = _currentSuiteName;
+void defineReflectiveSuite(void define(), {String name = ''}) {
+  String groupName = _currentSuiteName;
   _currentSuiteLevel++;
   try {
     _currentSuiteName = _combineNames(_currentSuiteName, name);
@@ -172,8 +172,8 @@ void _addTestsIfTopLevelSuite() {
         if (allGroups || group.isSolo) {
           for (_Test test in group.tests) {
             if (allTests || test.isSolo) {
-              test_package.test(test.name, test.function!,
-                  timeout: test.timeout!, skip: test.isSkipped);
+              test_package.test(test.name, test.function,
+                  timeout: test.timeout, skip: test.isSkipped);
             }
           }
         }
@@ -195,10 +195,10 @@ void _addTestsIfTopLevelSuite() {
  * Return the combination of the [base] and [addition] names.
  * If any other two is `null`, then the other one is returned.
  */
-String? _combineNames(String? base, String? addition) {
-  if (base == null) {
+String _combineNames(String base, String addition) {
+  if (base.isEmpty) {
     return addition;
-  } else if (addition == null) {
+  } else if (addition.isEmpty) {
     return base;
   } else {
     return '$base | $addition';
@@ -249,7 +249,7 @@ Future<Object?> _invokeSymbolIfExists(
  * - The test returns a future which completes with an error.
  * - An exception is thrown to the zone handler from a timer task.
  */
-Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) {
+Future<Object?> _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   bool passed = false;
   return runZoned(() {
     return new Future.sync(() => _runTest(classMirror, symbol)).then((_) {
@@ -271,7 +271,7 @@ Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   });
 }
 
-Future<void> _runTest(ClassMirror classMirror, Symbol symbol) {
+Future<Object?> _runTest(ClassMirror classMirror, Symbol symbol) {
   InstanceMirror instanceMirror = classMirror.newInstance(new Symbol(''), []);
   return _invokeSymbolIfExists(instanceMirror, #setUp)
       .then((_) => instanceMirror.invoke(symbol, []).reflectee)
@@ -332,7 +332,7 @@ class _AssertFailingTest {
  */
 class _Group {
   final bool isSolo;
-  final String? name;
+  final String name;
   final List<_Test> tests = <_Test>[];
 
   _Group(this.isSolo, this.name);
@@ -340,13 +340,13 @@ class _Group {
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
   void addSkippedTest(String name) {
-    String? fullName = _combineNames(this.name, name);
+    var fullName = _combineNames(this.name, name);
     tests.add(new _Test.skipped(isSolo, fullName));
   }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
       _TestFunction function) {
-    String? fullName = _combineNames(this.name, name);
+    var fullName = _combineNames(this.name, name);
     var timeout =
         _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
     tests.add(new _Test(isSolo, fullName, function, timeout?._timeout));
@@ -373,8 +373,8 @@ class _SoloTest {
  */
 class _Test {
   final bool isSolo;
-  final String? name;
-  final _TestFunction? function;
+  final String name;
+  final _TestFunction function;
   final test_package.Timeout? timeout;
 
   final bool isSkipped;
@@ -384,6 +384,6 @@ class _Test {
 
   _Test.skipped(this.isSolo, this.name)
       : isSkipped = true,
-        function = null,
+        function = (() {}),
         timeout = null;
 }
