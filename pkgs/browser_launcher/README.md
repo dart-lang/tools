@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dart-lang/browser_launcher.svg?branch=master)](https://travis-ci.org/dart-lang/browser_launcher)
+[![Dart](https://github.com/dart-lang/browser_launcher/workflows/Dart/badge.svg)](https://github.com/dart-lang/browser_launcher/actions?query=workflow%3ADart)
 
 Provides a standardized way to launch web browsers.
 
