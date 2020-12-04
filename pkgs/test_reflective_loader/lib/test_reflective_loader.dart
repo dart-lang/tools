@@ -38,7 +38,7 @@ const _SoloTest soloTest = const _SoloTest();
 
 final List<_Group> _currentGroups = <_Group>[];
 int _currentSuiteLevel = 0;
-String _currentSuiteName = null;
+String _currentSuiteName = '';
 
 /**
  * Is `true` the application is running in the checked mode.
@@ -58,7 +58,7 @@ final bool _isCheckedMode = () {
  * create embedded suites.  If the current suite is the top-level one, perform
  * check for "solo" groups and tests, and run all or only "solo" items.
  */
-void defineReflectiveSuite(void define(), {String name}) {
+void defineReflectiveSuite(void define(), {String name = ''}) {
   String groupName = _currentSuiteName;
   _currentSuiteLevel++;
   try {
@@ -167,7 +167,7 @@ void defineReflectiveTests(Type type) {
  */
 void _addTestsIfTopLevelSuite() {
   if (_currentSuiteLevel == 0) {
-    void runTests({bool allGroups, bool allTests}) {
+    void runTests({required bool allGroups, required bool allTests}) {
       for (_Group group in _currentGroups) {
         if (allGroups || group.isSolo) {
           for (_Test test in group.tests) {
@@ -196,16 +196,16 @@ void _addTestsIfTopLevelSuite() {
  * If any other two is `null`, then the other one is returned.
  */
 String _combineNames(String base, String addition) {
-  if (base == null) {
+  if (base.isEmpty) {
     return addition;
-  } else if (addition == null) {
+  } else if (addition.isEmpty) {
     return base;
   } else {
     return '$base | $addition';
   }
 }
 
-Object _getAnnotationInstance(DeclarationMirror declaration, Type type) {
+Object? _getAnnotationInstance(DeclarationMirror declaration, Type type) {
   for (InstanceMirror annotation in declaration.metadata) {
     if (annotation.reflectee.runtimeType == type) {
       return annotation.reflectee;
@@ -227,9 +227,10 @@ bool _hasFailingTestAnnotation(MethodMirror method) =>
 bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
-Future _invokeSymbolIfExists(InstanceMirror instanceMirror, Symbol symbol) {
-  var invocationResult = null;
-  InstanceMirror closure;
+Future<Object?> _invokeSymbolIfExists(
+    InstanceMirror instanceMirror, Symbol symbol) {
+  Object? invocationResult = null;
+  InstanceMirror? closure;
   try {
     closure = instanceMirror.getField(symbol);
   } on NoSuchMethodError {}
@@ -248,10 +249,10 @@ Future _invokeSymbolIfExists(InstanceMirror instanceMirror, Symbol symbol) {
  * - The test returns a future which completes with an error.
  * - An exception is thrown to the zone handler from a timer task.
  */
-Future _runFailingTest(ClassMirror classMirror, Symbol symbol) {
+Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   bool passed = false;
-  return runZoned(() {
-    return new Future.sync(() => _runTest(classMirror, symbol)).then((_) {
+  return runZonedGuarded(() {
+    return new Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
       passed = true;
       test_package.fail('Test passed - expected to fail.');
     }).catchError((e) {
@@ -261,7 +262,7 @@ Future _runFailingTest(ClassMirror classMirror, Symbol symbol) {
       }
       // otherwise, an exception is not a failure for _runFailingTest
     });
-  }, onError: (e) {
+  }, (e, st) {
     // if passed, and we call fail(), rethrow this exception
     if (passed) {
       throw e;
@@ -270,7 +271,7 @@ Future _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   });
 }
 
-Future _runTest(ClassMirror classMirror, Symbol symbol) {
+Future<Object?> _runTest(ClassMirror classMirror, Symbol symbol) {
   InstanceMirror instanceMirror = classMirror.newInstance(new Symbol(''), []);
   return _invokeSymbolIfExists(instanceMirror, #setUp)
       .then((_) => instanceMirror.invoke(symbol, []).reflectee)
@@ -289,7 +290,7 @@ class FailingTest {
    * [issue] is a full URI describing the failure and used for tracking.
    * [reason] is a free form textual description.
    */
-  const FailingTest({String issue, String reason});
+  const FailingTest({String? issue, String? reason});
 }
 
 /**
@@ -302,7 +303,7 @@ class SkippedTest {
    * [issue] is a full URI describing the failure and used for tracking.
    * [reason] is a free form textual description.
    */
-  const SkippedTest({String issue, String reason});
+  const SkippedTest({String? issue, String? reason});
 }
 
 /**
@@ -339,14 +340,15 @@ class _Group {
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
   void addSkippedTest(String name) {
-    String fullName = _combineNames(this.name, name);
+    var fullName = _combineNames(this.name, name);
     tests.add(new _Test.skipped(isSolo, fullName));
   }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
       _TestFunction function) {
-    String fullName = _combineNames(this.name, name);
-    TestTimeout timeout = _getAnnotationInstance(memberMirror, TestTimeout);
+    var fullName = _combineNames(this.name, name);
+    var timeout =
+        _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
     tests.add(new _Test(isSolo, fullName, function, timeout?._timeout));
   }
 }
@@ -373,7 +375,7 @@ class _Test {
   final bool isSolo;
   final String name;
   final _TestFunction function;
-  final test_package.Timeout timeout;
+  final test_package.Timeout? timeout;
 
   final bool isSkipped;
 
@@ -382,6 +384,6 @@ class _Test {
 
   _Test.skipped(this.isSolo, this.name)
       : isSkipped = true,
-        function = null,
+        function = (() {}),
         timeout = null;
 }
