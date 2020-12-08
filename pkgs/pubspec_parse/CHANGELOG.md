@@ -1,3 +1,7 @@
+## 0.1.7
+
+- Allow `package:yaml` `v3.x`.
+
 ## 0.1.6
 
 - Update SDK requirement to `>=2.7.0 <3.0.0`.
