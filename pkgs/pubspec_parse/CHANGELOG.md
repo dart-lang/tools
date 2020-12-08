@@ -1,6 +1,7 @@
-## 0.1.6-dev
+## 0.1.6
 
 - Update SDK requirement to `>=2.7.0 <3.0.0`.
+- Allow `package:json_annotation` `v4.x`.
 
 ## 0.1.5
 
