@@ -1,3 +1,7 @@
+## 0.1.1+3
+
+- Allow `package:json_annotation` `'>=1.0.0 <5.0.0'`.
+
 ## 0.1.1+2
 
 - Support the latest version of `package:json_annotation`.
