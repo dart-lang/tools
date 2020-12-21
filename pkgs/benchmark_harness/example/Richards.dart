@@ -116,6 +116,7 @@ class Scheduler {
   int currentId;
   TaskControlBlock list;
   List<TaskControlBlock> blocks =
+      // ignore: deprecated_member_use
       List<TaskControlBlock>(Richards.NUMBER_OF_IDS);
 
   /// Add an idle task to this scheduler.
@@ -426,6 +427,7 @@ class Packet {
   int kind; // The type of this packet.
   int a1 = 0;
 
+  // ignore: deprecated_member_use
   List<int> a2 = List(Richards.DATA_SIZE);
 
   Packet(this.link, this.id, this.kind);
