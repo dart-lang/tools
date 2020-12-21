@@ -7,6 +7,8 @@
 # Fast fail the script on failures.
 set -e
 
+pub get
+
 # Verify that the libraries are error free.
 dartanalyzer --fatal-infos --fatal-warnings \
   lib/bazel_worker.dart \
