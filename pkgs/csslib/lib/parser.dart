@@ -1550,7 +1550,10 @@ class _Parser {
 
         _eat(TokenKind.RPAREN);
         return NegationSelector(negArg, _makeSpan(start));
-      } else if (!pseudoElement && (name == 'host' || name == 'host-context')) {
+      } else if (!pseudoElement &&
+          (name == 'host' ||
+              name == 'host-context' ||
+              name == 'global-context')) {
         _eat(TokenKind.LPAREN);
         var selector = processCompoundSelector();
         if (selector == null) {
