@@ -64,10 +64,8 @@ class Client {
   Client.withoutJson(this._channel) {
     done.whenComplete(() {
       for (var request in _pendingRequests.values) {
-        request.completer.completeError(
-            StateError(
-                'The client closed with pending request "${request.method}".'),
-            StackTrace.current);
+        request.completer.completeError(StateError(
+            'The client closed with pending request "${request.method}".'));
       }
       _pendingRequests.clear();
     }).catchError((_) {
