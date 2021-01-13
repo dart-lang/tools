@@ -12,7 +12,6 @@ import 'util.dart';
 Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     {List<String> scriptArgs,
     bool checked = false,
-    String packageRoot,
     bool includeDart = false,
     Duration timeout}) async {
   final dartArgs = [
@@ -22,10 +21,6 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
 
   if (checked) {
     dartArgs.add('--checked');
-  }
-
-  if (packageRoot != null) {
-    dartArgs.add('--package-root=$packageRoot');
   }
 
   dartArgs.add(scriptPath);

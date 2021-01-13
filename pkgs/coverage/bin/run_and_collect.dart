@@ -7,6 +7,6 @@ import 'dart:async';
 import 'package:coverage/src/run_and_collect.dart';
 
 Future<Null> main(List<String> args) async {
-  final Map results = await runAndCollect(args[0], packageRoot: args[1]);
+  final Map results = await runAndCollect(args[0]);
   print(results);
 }
