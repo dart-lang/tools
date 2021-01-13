@@ -10,13 +10,11 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
-  // ignore_for_file: deprecated_member_use_from_same_package
-  Resolver({String packagesPath, @deprecated this.packageRoot, this.sdkRoot})
+  Resolver({String packagesPath, this.sdkRoot})
       : packagesPath = packagesPath,
         _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
   final String packagesPath;
-  final String packageRoot;
   final String sdkRoot;
   final List<String> failed = [];
   final Map<String, Uri> _packages;
@@ -55,23 +53,19 @@ class Resolver {
       return resolveSymbolicLinks(filePath);
     }
     if (uri.scheme == 'package') {
-      if (packagesPath == null && packageRoot == null) {
-        // No package-root given, do not resolve package: URIs.
+      if (_packages == null) {
         return null;
       }
 
       final packageName = uri.pathSegments[0];
-      if (_packages != null) {
-        final packageUri = _packages[packageName];
-        if (packageUri == null) {
-          failed.add('$uri');
-          return null;
-        }
-        final packagePath = p.fromUri(packageUri);
-        final pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
-        return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
+      final packageUri = _packages[packageName];
+      if (packageUri == null) {
+        failed.add('$uri');
+        return null;
       }
-      return resolveSymbolicLinks(p.join(packageRoot, uri.path));
+      final packagePath = p.fromUri(packageUri);
+      final pathInPackage = p.joinAll(uri.pathSegments.sublist(1));
+      return resolveSymbolicLinks(p.join(packagePath, pathInPackage));
     }
     if (uri.scheme == 'file') {
       return resolveSymbolicLinks(p.fromUri(uri));
