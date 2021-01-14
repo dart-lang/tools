@@ -1,4 +1,4 @@
-# [![Build Status](https://travis-ci.org/dart-lang/timing.svg?branch=master)](https://travis-ci.org/dart-lang/timing)
+# [![Build Status](https://github.com/dart-lang/timing/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/timing/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
 
 Timing is a simple package for tracking performance of both async and sync actions
 
