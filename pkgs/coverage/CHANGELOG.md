@@ -1,3 +1,9 @@
+## 0.15.0 - 2021-01-13
+
+* BREAKING CHANGE: Eliminate the `--package-root` option from
+  `bin/run_and_collect.dart` and `bin/format_coverage.dart` as well as
+  from `runAndCollect` and the `Resolver` constructor.
+
 ## 0.14.2 - 2020-11-10
 
 * Fix an issue where `--wait-paused` with `collect` would attempt to collect coverage
