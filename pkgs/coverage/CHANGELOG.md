@@ -1,3 +1,7 @@
+## 0.15.1 - 2021-01-14
+
+* Updated dependency on `vm_service` package from `>=1.0.0 < 5.0.0` to `>=1.0.0 <7.0.0`.
+
 ## 0.15.0 - 2021-01-13
 
 * BREAKING CHANGE: Eliminate the `--package-root` option from

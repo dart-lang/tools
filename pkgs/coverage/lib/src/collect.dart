@@ -60,7 +60,9 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
           log: StdoutLog(), disposeHandler: () => socket.close());
       await service.getVM().timeout(_retryInterval);
     } on TimeoutException {
-      service.dispose();
+      // The signature changed in vm_service version 6.0.0.
+      // ignore: await_only_futures
+      await service.dispose();
       rethrow;
     }
   }, _retryInterval, timeout: timeout);
@@ -75,7 +77,9 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     if (resume) {
       await _resumeIsolates(service);
     }
-    service.dispose();
+    // The signature changed in vm_service version 6.0.0.
+    // ignore: await_only_futures
+    await service.dispose();
   }
 }
 
