@@ -61,7 +61,8 @@ class SimplePackageConfig implements PackageConfig {
             originalPackage.root,
             originalPackage.packageUriRoot,
             originalPackage.languageVersion,
-            originalPackage.extraData, (error) {
+            originalPackage.extraData,
+            originalPackage.relativeRoot, (error) {
           if (error is PackageConfigArgumentError) {
             onError(PackageConfigArgumentError(packages, "packages",
                 "Package ${package!.name}: ${error.message}"));
@@ -159,9 +160,10 @@ class SimplePackage implements Package {
   final Uri packageUriRoot;
   final LanguageVersion? languageVersion;
   final Object? extraData;
+  final bool relativeRoot;
 
   SimplePackage._(this.name, this.root, this.packageUriRoot,
-      this.languageVersion, this.extraData);
+      this.languageVersion, this.extraData, this.relativeRoot);
 
   /// Creates a [SimplePackage] with the provided content.
   ///
@@ -184,6 +186,7 @@ class SimplePackage implements Package {
       Uri? packageUriRoot,
       LanguageVersion? languageVersion,
       Object? extraData,
+      bool relativeRoot,
       void onError(Object error)) {
     var fatalError = false;
     var invalidIndex = checkPackageName(name);
@@ -229,7 +232,7 @@ class SimplePackage implements Package {
     }
     if (fatalError) return null;
     return SimplePackage._(
-        name, root, packageUriRoot, languageVersion, extraData);
+        name, root, packageUriRoot, languageVersion, extraData, relativeRoot);
   }
 }
 

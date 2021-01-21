@@ -37,6 +37,7 @@ void main() {
       expect(foo.root, Uri.parse("file:///foo/"));
       expect(foo.packageUriRoot, Uri.parse("file:///foo/lib/"));
       expect(foo.languageVersion, LanguageVersion(2, 7));
+      expect(foo.relativeRoot, false);
     });
 
     test("valid empty", () {
@@ -132,6 +133,7 @@ void main() {
       expect(foo.packageUriRoot, Uri.parse("file:///foo/lib/"));
       expect(foo.languageVersion, LanguageVersion(2, 5));
       expect(foo.extraData, {"nonstandard": true});
+      expect(foo.relativeRoot, false);
 
       var bar = config["bar"]!;
       expect(bar, isNotNull);
@@ -139,12 +141,14 @@ void main() {
       expect(bar.packageUriRoot, Uri.parse("file:///bar/lib/"));
       expect(bar.languageVersion, LanguageVersion(9999, 9999));
       expect(bar.extraData, null);
+      expect(bar.relativeRoot, false);
 
       var baz = config["baz"]!;
       expect(baz, isNotNull);
       expect(baz.root, Uri.parse("file:///tmp/"));
       expect(baz.packageUriRoot, Uri.parse("file:///tmp/lib/"));
       expect(baz.languageVersion, null);
+      expect(baz.relativeRoot, true);
 
       // No slash after root or package root. One is inserted.
       var noslash = config["noslash"]!;
@@ -152,6 +156,7 @@ void main() {
       expect(noslash.root, Uri.parse("file:///tmp/noslash/"));
       expect(noslash.packageUriRoot, Uri.parse("file:///tmp/noslash/lib/"));
       expect(noslash.languageVersion, null);
+      expect(noslash.relativeRoot, true);
 
       expect(config.extraData, {
         "generator": "pub",

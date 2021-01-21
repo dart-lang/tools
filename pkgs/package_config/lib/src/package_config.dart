@@ -224,14 +224,20 @@ abstract class Package {
   /// version, which means two decimal integer literals separated by a `.`,
   /// where the integer literals have no leading zeros unless they are
   /// a single zero digit.
+  ///
+  /// The [relativeRoot] controls whether the [root] is written as
+  /// relative to the `package_config.json` file when the package
+  /// configuration is written to a file. It defaults to being relative.
+  ///
   /// If [extraData] is supplied, it will be available as the
   /// [Package.extraData] of the created package.
   factory Package(String name, Uri root,
           {Uri? packageUriRoot,
           LanguageVersion? languageVersion,
-          Object? extraData}) =>
-      SimplePackage.validate(
-          name, root, packageUriRoot, languageVersion, extraData, throwError)!;
+          Object? extraData,
+          bool relativeRoot = true}) =>
+      SimplePackage.validate(name, root, packageUriRoot, languageVersion,
+          extraData, relativeRoot, throwError)!;
 
   /// The package-name of the package.
   String get name;
@@ -275,6 +281,13 @@ abstract class Package {
   /// The standard `package_config.json` file storage will only store
   /// JSON-like list/map data structures.
   Object? get extraData;
+
+  /// Whether the [root] URI should be written as relative.
+  ///
+  /// When the configuration is written to a `package_config.json`
+  /// file, the [root] URI can be either relative to the file
+  /// location or absolute, controller by this value.
+  bool get relativeRoot;
 }
 
 /// A language version.

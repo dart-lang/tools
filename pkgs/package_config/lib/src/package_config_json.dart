@@ -146,7 +146,9 @@ PackageConfig parsePackageConfigJson(
       onError(PackageConfigFormatException("Missing rootUri entry", entry));
     }
     if (name == null || rootUri == null) return null;
-    var root = baseLocation.resolve(rootUri!);
+    var parsedRootUri = Uri.parse(rootUri!);
+    var relativeRoot = !hasAbsolutePath(parsedRootUri);
+    var root = baseLocation.resolveUri(parsedRootUri);
     if (!root.path.endsWith("/")) root = root.replace(path: root.path + "/");
     var packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri!);
@@ -161,8 +163,8 @@ PackageConfig parsePackageConfigJson(
       version = SimpleInvalidLanguageVersion("invalid");
     }
 
-    return SimplePackage.validate(name!, root, packageRoot, version, extraData,
-        (error) {
+    return SimplePackage.validate(
+        name!, root, packageRoot, version, extraData, relativeRoot, (error) {
       if (error is ArgumentError) {
         onError(
             PackageConfigFormatException(error.message, error.invalidValue));
@@ -232,7 +234,7 @@ void writePackageConfigJsonString(
     PackageConfig config, Uri? baseUri, StringSink output) {
   // Can be optimized.
   var data = packageConfigToJson(config, baseUri);
-  output.write(JsonEncoder.withIndent("  ").convert(data) as Uint8List);
+  output.write(JsonEncoder.withIndent("  ").convert(data));
 }
 
 Map<String, Object?> packageConfigToJson(PackageConfig config, Uri? baseUri) =>
@@ -243,11 +245,14 @@ Map<String, Object?> packageConfigToJson(PackageConfig config, Uri? baseUri) =>
         for (var package in config.packages)
           <String, Object?>{
             _nameKey: package.name,
-            _rootUriKey: relativizeUri(package.root, baseUri).toString(),
+            _rootUriKey: trailingSlash((package.relativeRoot
+                    ? relativizeUri(package.root, baseUri)
+                    : package.root)
+                .toString()),
             if (package.root != package.packageUriRoot)
-              _packageUriKey:
+              _packageUriKey: trailingSlash(
                   relativizeUri(package.packageUriRoot, package.root)
-                      .toString(),
+                      .toString()),
             if (package.languageVersion != null &&
                 package.languageVersion is! InvalidLanguageVersion)
               _languageVersionKey: package.languageVersion.toString(),

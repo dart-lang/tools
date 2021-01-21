@@ -137,6 +137,21 @@ int firstNonWhitespaceChar(List<int> bytes) {
   return -1;
 }
 
+/// Appends a trailing `/` if the path doesn't end with one.
+String trailingSlash(String path) {
+  if (path.isEmpty || path.endsWith("/")) return path;
+  return path + "/";
+}
+
+/// Whether a URI should not be considered relative to the base URI.
+///
+/// Used to determine whether a parsed root URI is relative
+/// to the configuration file or not.
+/// If it is relative, then it's rewritten as relative when
+/// output again later. If not, it's output as absolute.
+bool hasAbsolutePath(Uri uri) =>
+    uri.hasScheme || uri.hasAuthority || uri.hasAbsolutePath;
+
 /// Attempts to return a relative path-only URI for [uri].
 ///
 /// First removes any query or fragment part from [uri].

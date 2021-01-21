@@ -2,6 +2,8 @@
 
 - Migrate to null safety.
 - Remove legacy APIs.
+- Adds `relativeRoot` property to `Package` which controls whether to
+  make the root URI relative when writing a configuration file.
 
 ## 1.9.3
 

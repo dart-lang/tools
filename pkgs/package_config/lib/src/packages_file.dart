@@ -96,11 +96,13 @@ PackageConfig parse(
     var packageValue = String.fromCharCodes(source, separatorIndex + 1, end);
     Uri packageLocation;
     try {
-      packageLocation = baseLocation.resolve(packageValue);
+      packageLocation = Uri.parse(packageValue);
     } on FormatException catch (e) {
       onError(PackageConfigFormatException.from(e));
       continue;
     }
+    var relativeRoot = !hasAbsolutePath(packageLocation);
+    packageLocation = baseLocation.resolveUri(packageLocation);
     if (packageLocation.isScheme("package")) {
       onError(PackageConfigFormatException(
           "Package URI as location for package", source, separatorIndex + 1));
@@ -122,8 +124,8 @@ PackageConfig parse(
       rootUri =
           packageLocation.replace(path: path.substring(0, path.length - 4));
     }
-    var package = SimplePackage.validate(
-        packageName, rootUri, packageLocation, _languageVersion, null, (error) {
+    var package = SimplePackage.validate(packageName, rootUri, packageLocation,
+        _languageVersion, null, relativeRoot, (error) {
       if (error is ArgumentError) {
         onError(PackageConfigFormatException(error.message, source));
       } else {
