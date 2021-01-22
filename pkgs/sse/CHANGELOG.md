@@ -1,4 +1,6 @@
-## 3.6.1-dev
+## 3.6.1
+
+- Drop dependency on `package:uuid`.
 
 ## 3.6.0
 

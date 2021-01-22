@@ -199,7 +199,7 @@ void main() {
 
       // The isInKeepAlivePeriod flag may only be set for a short period because
       // the client may connect very quickly, so only pump until it changes.
-      var maxPumps = 50;
+      var maxPumps = 100;
       while (!connection.isInKeepAlivePeriod && maxPumps-- > 0) {
         await pumpEventQueue(times: 1);
       }
@@ -218,7 +218,7 @@ void main() {
 
       // Now check that we can reconnect multiple times.
       closeSink(connection);
-      maxPumps = 50;
+      maxPumps = 100;
       while (!connection.isInKeepAlivePeriod && maxPumps-- > 0) {
         await pumpEventQueue(times: 1);
       }
