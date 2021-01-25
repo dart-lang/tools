@@ -1,5 +1,5 @@
 name: csslib
-version: 0.17.0-nullsafety-dev
+version: 0.17.0-nullsafety.0
 
 description: A library for parsing CSS.
 homepage: https://github.com/dart-lang/csslib

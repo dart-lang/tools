@@ -1,4 +1,4 @@
-## 0.17.0-nullsafety-dev
+## 0.17.0-nullsafety.0
 
 - `Font.merge` and `BoxEdge.merge` are now static methods instead of factory
   constructors.
