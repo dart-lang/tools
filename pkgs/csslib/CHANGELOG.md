@@ -1,5 +1,6 @@
 ## 0.17.0-nullsafety.0
 
+- Migrate to null safety.
 - `Font.merge` and `BoxEdge.merge` are now static methods instead of factory
   constructors.
 - Add a type on the `identList` argument to `TokenKind.matchList`.
