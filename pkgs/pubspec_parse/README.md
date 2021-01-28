@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dart-lang/pubspec_parse.svg?branch=master)](https://travis-ci.org/dart-lang/pubspec_parse)
+[![Build Status](https://github.com/dart-lang/pubspec_parse/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/pubspec_parse/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
 [![pub package](https://img.shields.io/pub/v/package_config.svg)](https://pub.dev/packages/pubspec_parse)
 
 Supports parsing `pubspec.yaml` files with robust error reporting and support
