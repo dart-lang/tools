@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dart-lang/package_config.svg?branch=master)](https://travis-ci.org/dart-lang/package_config)
+[![Build Status](https://github.com/dart-lang/package_config/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/package_config/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
 [![pub package](https://img.shields.io/pub/v/package_config.svg)](https://pub.dev/packages/package_config)
 
 Support for working with **Package Configuration** files as described
