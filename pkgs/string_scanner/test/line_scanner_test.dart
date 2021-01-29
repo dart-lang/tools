@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:string_scanner/src/charcode.dart';
+import 'package:charcode/charcode.dart';
 import 'package:string_scanner/string_scanner.dart';
 import 'package:test/test.dart';
 
