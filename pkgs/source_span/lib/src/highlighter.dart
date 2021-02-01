@@ -4,11 +4,11 @@
 
 import 'dart:math' as math;
 
+import 'package:charcode/charcode.dart';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:term_glyph/term_glyph.dart' as glyph;
 
-import 'charcode.dart';
 import 'colors.dart' as colors;
 import 'location.dart';
 import 'span.dart';
