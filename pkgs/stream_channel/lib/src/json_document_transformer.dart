@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:async/async.dart';
 
 import '../stream_channel.dart';
+import 'stream_channel_transformer.dart';
 
 /// A [StreamChannelTransformer] that transforms JSON documents—strings that
 /// contain individual objects encoded as JSON—into decoded Dart objects.
