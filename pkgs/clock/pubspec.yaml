@@ -1,5 +1,5 @@
 name: clock
-version: 1.1.0-nullsafety.3
+version: 1.1.0
 description: A fakeable wrapper for dart:core clock APIs
 homepage: https://github.com/dart-lang/clock
 
