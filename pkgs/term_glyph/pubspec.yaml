@@ -1,5 +1,5 @@
 name: term_glyph
-version: 1.2.0-nullsafety.3
+version: 1.2.0
 
 description: Useful Unicode glyphs and ASCII substitutes.
 homepage: https://github.com/dart-lang/term_glyph
