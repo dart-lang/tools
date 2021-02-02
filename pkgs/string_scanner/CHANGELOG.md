@@ -1,4 +1,6 @@
-## 1.1.0-nullsafety.4-dev
+## 1.1.0
+
+* Stable release for null safety.
 
 ## 1.1.0-nullsafety.3
 
