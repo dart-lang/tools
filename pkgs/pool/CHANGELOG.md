@@ -1,3 +1,7 @@
+## 1.5.0
+
+* Stable release for null safety.
+
 ## 1.5.0-nullsafety.3
 
 * Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
@@ -15,7 +19,7 @@
 
 * Migrate to null safety.
 * `forEach`: Avoid `await null` if the `Stream` is not paused.
-  Improves trivial benchmark by 40%. 
+  Improves trivial benchmark by 40%.
 
 ## 1.4.0
 
