@@ -1,5 +1,5 @@
 name: boolean_selector
-version: 2.1.0-nullsafety.3
+version: 2.1.0
 description: >-
   A flexible syntax for boolean expressions, based on a simplified version of
   Dart's expression syntax.
@@ -9,8 +9,8 @@ environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  source_span: '>=1.8.0-nullsafety <1.8.0'
-  string_scanner: '>=1.1.0-nullsafety <1.1.0'
+  source_span: ^1.8.0
+  string_scanner: ^1.1.0
 
 dev_dependencies:
   pedantic: ^1.10.0-nullsafety
