@@ -1,3 +1,7 @@
+## 0.10.10
+
+* Stable release for null safety.
+
 ## 0.10.10-nullsafety.3
 
 * Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
