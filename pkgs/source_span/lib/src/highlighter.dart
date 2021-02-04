@@ -107,8 +107,7 @@ class Highlighter {
                 .where((highlight) => isMultiline(highlight.span))
                 .length)
             .reduce(math.max),
-        _multipleFiles =
-            !isAllTheSame(_lines.map((line) => line.url).whereType<Uri>());
+        _multipleFiles = !isAllTheSame(_lines.map((line) => line.url));
 
   /// Returns whether [lines] contains any adjacent lines from the same source
   /// file that aren't adjacent in the original file.

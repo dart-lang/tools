@@ -261,14 +261,14 @@ gibble bibble bop
     });
   });
 
-  test('highlights multiple files with their URLs', () {
-    final file2 = SourceFile.fromString('''
+  group('writes headers when highlighting multiple files', () {
+    test('writes all file URLs', () {
+      final span2 = SourceFile.fromString('''
 quibble bibble boop
-''', url: 'file2.txt');
+''', url: 'file2.txt').span(8, 14);
 
-    expect(
-        file.span(31, 34).highlightMultiple('one', {file2.span(8, 14): 'two'}),
-        equals("""
+      expect(
+          file.span(31, 34).highlightMultiple('one', {span2: 'two'}), equals("""
   ,--> file1.txt
 3 | zip zap zop
   |     ^^^ one
@@ -277,5 +277,38 @@ quibble bibble boop
 1 | quibble bibble boop
   |         ====== two
   '"""));
+    });
+
+    test('allows secondary spans to have null URL', () {
+      final span2 = SourceSpan(SourceLocation(1, sourceUrl: null),
+          SourceLocation(4, sourceUrl: null), 'foo');
+
+      expect(
+          file.span(31, 34).highlightMultiple('one', {span2: 'two'}), equals("""
+  ,--> file1.txt
+3 | zip zap zop
+  |     ^^^ one
+  '
+  ,
+1 | foo
+  | === two
+  '"""));
+    });
+
+    test('allows primary span to have null URL', () {
+      final span1 = SourceSpan(SourceLocation(1, sourceUrl: null),
+          SourceLocation(4, sourceUrl: null), 'foo');
+
+      expect(
+          span1.highlightMultiple('one', {file.span(31, 34): 'two'}), equals("""
+  ,
+1 | foo
+  | ^^^ one
+  '
+  ,--> file1.txt
+3 | zip zap zop
+  |     === two
+  '"""));
+    });
   });
 }

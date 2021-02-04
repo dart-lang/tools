@@ -1,5 +1,8 @@
 # 1.8.1
 
+* Fix a bug where the URL header for the highlights with multiple files would
+  get omitted only one span has a non-null URI.
+
 # 1.8.0
 
 * Stable release for null safety.

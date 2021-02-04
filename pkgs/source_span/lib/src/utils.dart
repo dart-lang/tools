@@ -16,12 +16,11 @@ T max<T extends Comparable>(T obj1, T obj2) =>
 
 /// Returns whether all elements of [iter] are the same value, according to
 /// `==`.
-bool isAllTheSame(Iterable<Object> iter) {
-  Object? lastValue;
-  for (var value in iter) {
-    if (lastValue == null) {
-      lastValue = value;
-    } else if (value != lastValue) {
+bool isAllTheSame(Iterable<Object?> iter) {
+  if (iter.isEmpty) return true;
+  final firstValue = iter.first;
+  for (var value in iter.skip(1)) {
+    if (value != firstValue) {
       return false;
     }
   }
