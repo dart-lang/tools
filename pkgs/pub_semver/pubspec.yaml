@@ -1,5 +1,5 @@
 name: pub_semver
-version: 2.0.0-nullsafety.0
+version: 2.0.0
 description: >-
  Versions and version constraints implementing pub's versioning policy. This
  is very similar to vanilla semver, with a few corner cases.
@@ -9,10 +9,7 @@ environment:
  sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  collection: ^1.15.0-nullsafety.2
+  collection: ^1.15.0
 
 dev_dependencies:
   test: ^1.16.0-nullsafety.1
-
-dependency_overrides:
-  analyzer: any
