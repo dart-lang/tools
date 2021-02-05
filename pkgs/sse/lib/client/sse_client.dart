@@ -37,10 +37,11 @@ class SseClient extends StreamChannelMixin<String> {
     _eventSource =
         EventSource('$serverUrl?sseClientId=$clientId', withCredentials: true);
     _serverUrl = '$serverUrl?sseClientId=$clientId';
-    _outgoingController.stream
-        .listen(_onOutgoingMessage, onDone: _onOutgoingDone);
+    _eventSource.onOpen.first.whenComplete(() => _outgoingController.stream
+        .listen(_onOutgoingMessage, onDone: _onOutgoingDone));
     _eventSource.addEventListener('message', _onIncomingMessage);
     _eventSource.addEventListener('control', _onIncomingControlMessage);
+
     _eventSource.onOpen.listen((_) {
       _errorTimer?.cancel();
     });
@@ -56,6 +57,9 @@ class SseClient extends StreamChannelMixin<String> {
     });
   }
 
+  @Deprecated(
+      'Outgoing messages are now buffered until a connection is established.'
+      'This should no longer be required and will be removed.')
   Stream<Event> get onOpen => _eventSource.onOpen;
 
   /// Add messages to this [StreamSink] to send them to the server.
