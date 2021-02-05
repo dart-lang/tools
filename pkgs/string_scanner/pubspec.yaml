@@ -1,5 +1,5 @@
 name: string_scanner
-version: 1.1.0
+version: 1.1.1-dev
 
 description: A class for parsing strings using a sequence of patterns.
 homepage: https://github.com/dart-lang/string_scanner
@@ -8,7 +8,6 @@ environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  charcode: ^1.2.0
   source_span: ^1.8.0
 
 dev_dependencies:

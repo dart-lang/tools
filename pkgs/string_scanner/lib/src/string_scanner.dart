@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:charcode/charcode.dart';
 import 'package:source_span/source_span.dart';
 
+import 'charcode.dart';
 import 'exception.dart';
 import 'utils.dart';
 
@@ -110,7 +110,7 @@ class StringScanner {
     if (name == null) {
       if (character == $backslash) {
         name = r'"\"';
-      } else if (character == $double_quote) {
+      } else if (character == $doubleQuote) {
         name = r'"\""';
       } else {
         name = '"${String.fromCharCode(character)}"';
