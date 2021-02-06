@@ -20,7 +20,7 @@ main(args) {
   String sdkPath = getSdkPath();
   
   // Do stuff... For example, print version string
-  File versionFile = new File(path.join(sdkPath, 'version'));
+  File versionFile = File(path.join(sdkPath, 'version'));
   print(versionFile.readAsStringSync());
 }
 ```
@@ -38,18 +38,18 @@ tasks, and optionally display the elapsed time when finished:
 ```dart
 import 'package:cli_util/cli_logging.dart';
 
-main(List<String> args) async {
+void main(List<String> args) async {
   bool verbose = args.contains('-v');
-  Logger logger = verbose ? new Logger.verbose() : new Logger.standard();
+  Logger logger = verbose ? Logger.verbose() : Logger.standard();
 
   logger.stdout('Hello world!');
   logger.trace('message 1');
-  await new Future.delayed(new Duration(milliseconds: 200));
+  await Future.delayed(Duration(milliseconds: 200));
   logger.trace('message 2');
   logger.trace('message 3');
 
   Progress progress = logger.progress('doing some work');
-  await new Future.delayed(new Duration(seconds: 2));
+  await Future.delayed(Duration(seconds: 2));
   progress.finish(showTiming: true);
 
   logger.stdout('All ${logger.ansi.emphasized('done')}.');
