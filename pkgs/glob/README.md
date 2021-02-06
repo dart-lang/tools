@@ -6,7 +6,7 @@ shells support globs natively.
 
 ## Usage
 
-To construct a glob, just use `new Glob()`. As with `RegExp`s, it's a good idea
+To construct a glob, just use `Glob()`. As with `RegExp`s, it's a good idea
 to keep around a glob if you'll be using it more than once so that it doesn't
 have to be compiled over and over. You can check whether a path matches the glob
 using `Glob.matches()`:
@@ -14,7 +14,7 @@ using `Glob.matches()`:
 ```dart
 import 'package:glob/glob.dart';
 
-final dartFile = new Glob("**.dart");
+final dartFile = Glob("**.dart");
 
 // Print all command-line arguments that are Dart files.
 void main(List<String> arguments) {
@@ -30,7 +30,7 @@ You can also list all files that match a glob using `Glob.list()` or
 ```dart
 import 'package:glob/glob.dart';
 
-final dartFile = new Glob("**.dart");
+final dartFile = Glob("**.dart");
 
 // Recursively list all Dart files in the current directory.
 void main(List<String> arguments) {
