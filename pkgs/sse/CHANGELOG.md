@@ -1,3 +1,9 @@
+## 3.8.0
+
+- Add `onConnected` to replace `onOpen`.
+- Fix an issue where failed requests would not add a `done` event to the
+  connection `sink`.
+
 ## 3.7.0
 
 - Deprecate the client's `onOpen` getter. Messages will now be buffered until
