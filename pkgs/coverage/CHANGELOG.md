@@ -1,3 +1,8 @@
+## 0.15.2 - 2021-02-08
+
+* Update `args`, `logging`, and `package_config` deps to allow the latest
+  stable releases.
+
 ## 0.15.1 - 2021-01-14
 
 * Updated dependency on `vm_service` package from `>=1.0.0 < 5.0.0` to `>=1.0.0 <7.0.0`.
