@@ -1,7 +1,3 @@
-## 0.2.0
-
-- Stable null safety release.
-
 ## 0.2.0-nullsafety.0
 
 - Migrate to the null safety language feature.
