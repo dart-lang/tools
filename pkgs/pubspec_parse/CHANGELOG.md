@@ -1,3 +1,7 @@
+## 0.1.8
+
+- Allow the latest `package:pub_semver`.
+
 ## 0.1.7
 
 - Allow `package:yaml` `v3.x`.
