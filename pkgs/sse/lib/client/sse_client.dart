@@ -82,10 +82,9 @@ class SseClient extends StreamChannelMixin<String> {
 
   void close() {
     _eventSource.close();
-    // If the _outgoingController doesn't have a listener that means the
-    // initial connection was never established. Add a listener so close
+    // If the initial connection was never established. Add a listener so close
     // adds a done event to [sink].
-    if (!_outgoingController.hasListener) _outgoingController.stream.drain();
+    if (!_onConnected.isCompleted) _outgoingController.stream.drain();
     _incomingController.close();
     _outgoingController.close();
   }

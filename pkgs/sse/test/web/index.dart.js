@@ -7170,13 +7170,14 @@
       W._EventStreamSubscription$(_this._eventSource, "error", t2._as(new M.SseClient_closure1(_this)), false, t4);
     },
     close$0: function(_) {
-      var t1;
-      this._eventSource.close();
-      t1 = this._outgoingController;
-      if ((t1._state & 1) === 0)
+      var t1, _this = this;
+      _this._eventSource.close();
+      if (_this._onConnected.future._state === 0) {
+        t1 = _this._outgoingController;
         new P._ControllerStream(t1, H._instanceType(t1)._eval$1("_ControllerStream<1>")).listen$2$cancelOnError(null, true).asFuture$1$1(null, type$.dynamic);
-      this._incomingController.close$0(0);
-      t1.close$0(0);
+      }
+      _this._incomingController.close$0(0);
+      _this._outgoingController.close$0(0);
     },
     _onIncomingControlMessage$1: function(message) {
       var data = new P._AcceptStructuredCloneDart2Js([], []).convertNativeToDart_AcceptStructuredClone$2$mustCopy(type$.legacy_MessageEvent._as(type$.legacy_Event._as(message)).data, true);

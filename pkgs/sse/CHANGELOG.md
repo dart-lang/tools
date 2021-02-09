@@ -1,3 +1,8 @@
+## 3.8.1
+
+- Fix an issue where closing the `SseConnection` stream would result in
+  an error.
+
 ## 3.8.0
 
 - Add `onConnected` to replace `onOpen`.
