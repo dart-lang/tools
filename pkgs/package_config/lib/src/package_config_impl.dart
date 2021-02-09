@@ -77,7 +77,7 @@ class SimplePackageConfig implements PackageConfig {
       var name = package.name;
       if (packageNames.contains(name)) {
         onError(PackageConfigArgumentError(
-            name, "packages", "Duplicate package name"));
+            name, "packages", "Duplicate package name '$name'"));
         continue;
       }
       packageNames.add(name);
