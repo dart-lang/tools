@@ -1,3 +1,8 @@
+## 3.8.2
+
+- Complete `onConnected` with an error if the `SseClient` receives an error
+  before the connection is successfully opened.
+
 ## 3.8.1
 
 - Fix an issue where closing the `SseConnection` stream would result in

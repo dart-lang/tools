@@ -57,6 +57,11 @@ class SseClient extends StreamChannelMixin<String> {
         _errorTimer = Timer(const Duration(seconds: 5), () {
           _incomingController.addError(error);
           close();
+          if (!_onConnected.isCompleted) {
+            // This call must happen after the call to close() which checks
+            // whether the completer was completed earlier.
+            _onConnected.completeError(error);
+          }
         });
       }
     });
