@@ -1,6 +1,7 @@
 ## 0.3.5-dev
 
 * Require Dart >=2.1
+* Remove dependency on `package:charcode`.
 
 ## 0.3.4
 
@@ -41,7 +42,7 @@
 main() async {
   // Prints the first line entered on stdin.
   print(await sharedStdIn.nextLine());
-  
+
   // Prints all remaining lines.
   await for (final line in sharedStdIn.lines) {
     print(line);
@@ -79,7 +80,7 @@ main() {
 
 - Added the `shellSplit()` function, which parses a list of arguments in the
   same manner as [the POSIX shell][what_is_posix_shell].
-  
+
 [what_is_posix_shell]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html
 
 ## 0.2.0

@@ -4,8 +4,9 @@
 
 // ignore_for_file: comment_references
 
-import 'package:charcode/charcode.dart';
 import 'package:string_scanner/string_scanner.dart';
+
+import 'charcodes.dart';
 
 /// Splits [command] into tokens according to [the POSIX shell
 /// specification][spec].

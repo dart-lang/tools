@@ -9,7 +9,6 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  charcode: ^1.0.0
   meta: ^1.0.2
   path: ^1.5.1
   string_scanner: ">=0.1.5 <2.0.0"
