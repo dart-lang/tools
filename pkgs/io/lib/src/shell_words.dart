@@ -49,19 +49,19 @@ List<String> shellSplit(String command) {
         token.writeCharCode(scanner.readChar());
         break;
 
-      case $single_quote:
+      case $singleQuote:
         hasToken = true;
         // Section 2.2.2: Enclosing characters in single-quotes ( '' ) shall
         // preserve the literal value of each character within the
         // single-quotes. A single-quote cannot occur within single-quotes.
         final firstQuote = scanner.position - 1;
-        while (!scanner.scanChar($single_quote)) {
+        while (!scanner.scanChar($singleQuote)) {
           _checkUnmatchedQuote(scanner, firstQuote);
           token.writeCharCode(scanner.readChar());
         }
         break;
 
-      case $double_quote:
+      case $doubleQuote:
         hasToken = true;
         // Section 2.2.3: Enclosing characters in double-quotes ( "" ) shall
         // preserve the literal value of all characters within the
@@ -72,7 +72,7 @@ List<String> shellSplit(String command) {
         // or dollar sign within double quotes, since those are dynamic
         // features.)
         final firstQuote = scanner.position - 1;
-        while (!scanner.scanChar($double_quote)) {
+        while (!scanner.scanChar($doubleQuote)) {
           _checkUnmatchedQuote(scanner, firstQuote);
 
           if (scanner.scanChar($backslash)) {
@@ -87,7 +87,7 @@ List<String> shellSplit(String command) {
             if (next == $lf) continue;
             if (next == $dollar ||
                 next == $backquote ||
-                next == $double_quote ||
+                next == $doubleQuote ||
                 next == $backslash) {
               token.writeCharCode(next);
             } else {

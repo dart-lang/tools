@@ -16,8 +16,7 @@ const int $lf = 0x0a;
 const int $space = 0x20;
 
 /// Character `"`, short name.
-// ignore: constant_identifier_names
-const int $double_quote = 0x22;
+const int $doubleQuote = 0x22;
 
 /// Character `#`.
 const int $hash = 0x23;
@@ -26,8 +25,7 @@ const int $hash = 0x23;
 const int $dollar = 0x24;
 
 /// Character "'".
-// ignore: constant_identifier_names
-const int $single_quote = 0x27;
+const int $singleQuote = 0x27;
 
 /// Character `\`.
 const int $backslash = 0x5c;
