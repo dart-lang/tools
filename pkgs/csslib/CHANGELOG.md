@@ -1,3 +1,7 @@
+## 0.17.1-dev
+
+- Fix `Color.css` constructor when there are double values in the `rgba` string.
+
 ## 0.17.0
 
 - Migrate to null safety.
