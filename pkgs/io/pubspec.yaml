@@ -2,14 +2,13 @@ name: io
 description: >-
   Utilities for the Dart VM Runtime including support for ANSI colors,
   file copying, and standard exit code values.
-version: 0.3.5-dev
+version: 0.3.5
 homepage: https://github.com/dart-lang/io
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  charcode: ^1.0.0
   meta: ^1.0.2
   path: ^1.5.1
   string_scanner: ">=0.1.5 <2.0.0"
