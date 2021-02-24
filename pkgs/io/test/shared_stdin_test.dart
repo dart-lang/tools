@@ -9,6 +9,7 @@ import 'package:io/io.dart' hide sharedStdIn;
 import 'package:test/test.dart';
 
 void main() {
+  // ignore: close_sinks
   StreamController<String> fakeStdIn;
   SharedStdIn sharedStdIn;
 
@@ -71,7 +72,7 @@ void main() {
   test('should allow listening for new lines multiple times', () async {
     expect(sharedStdIn.nextLine(), completion('Hello World'));
     fakeStdIn.add('Hello World\n');
-    await Future<Null>.value();
+    await Future<void>.value();
 
     expect(sharedStdIn.nextLine(), completion('Hello World'));
     fakeStdIn.add('Hello World\n');

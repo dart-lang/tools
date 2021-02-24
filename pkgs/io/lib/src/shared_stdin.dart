@@ -36,9 +36,8 @@ class SharedStdIn extends Stream<List<int>> {
   /// Returns a future that completes with the next line.
   ///
   /// This is similar to the standard [Stdin.readLineSync], but asynchronous.
-  Future<String> nextLine({Encoding encoding = systemEncoding}) {
-    return lines(encoding: encoding).first;
-  }
+  Future<String> nextLine({Encoding encoding = systemEncoding}) =>
+      lines(encoding: encoding).first;
 
   /// Returns the stream transformed as UTF8 strings separated by line breaks.
   ///
@@ -51,9 +50,8 @@ class SharedStdIn extends Stream<List<int>> {
   /// ```
   ///
   /// ... but asynchronous.
-  Stream<String> lines({Encoding encoding = systemEncoding}) {
-    return transform(utf8.decoder).transform(const LineSplitter());
-  }
+  Stream<String> lines({Encoding encoding = systemEncoding}) =>
+      transform(utf8.decoder).transform(const LineSplitter());
 
   void _onInput(List<int> event) => _getCurrent().add(event);
 
@@ -74,6 +72,7 @@ class SharedStdIn extends Stream<List<int>> {
     if (_sub == null) {
       throw StateError('Stdin has already been terminated.');
     }
+    // ignore: close_sinks
     final controller = _getCurrent();
     if (controller.hasListener) {
       throw StateError(''
@@ -89,7 +88,7 @@ class SharedStdIn extends Stream<List<int>> {
   }
 
   /// Terminates the connection to `stdin`, closing all subscription.
-  Future<Null> terminate() async {
+  Future<void> terminate() async {
     if (_sub == null) {
       throw StateError('Stdin has already been terminated.');
     }

@@ -31,7 +31,7 @@ void main() {
     });
 
     test('forScript variaents ignore `ansiOutputEnabled`', () {
-      final expected =
+      const expected =
           '$_ansiEscapeForScript[34m$sampleInput$_ansiEscapeForScript[0m';
 
       for (var override in [true, false]) {

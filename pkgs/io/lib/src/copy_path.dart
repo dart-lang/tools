@@ -25,7 +25,7 @@ bool _doNothing(String from, String to) {
 /// * If [from] and [to] are canonically the same, no operation occurs.
 ///
 /// Returns a future that completes when complete.
-Future<Null> copyPath(String from, String to) async {
+Future<void> copyPath(String from, String to) async {
   if (_doNothing(from, to)) {
     return;
   }

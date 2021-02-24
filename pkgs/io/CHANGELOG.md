@@ -1,6 +1,10 @@
-## 0.3.5-dev
+## 0.3.6-dev
 
 * Require Dart >=2.12
+
+## 0.3.5
+
+* Require Dart >=2.1
 * Remove dependency on `package:charcode`.
 
 ## 0.3.4

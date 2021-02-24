@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: close_sinks,cancel_subscriptions
+
 import 'dart:async';
 import 'dart:io' as io;
 
@@ -27,7 +29,7 @@ abstract class ProcessManager {
   /// Terminates the global `stdin` listener, making future listens impossible.
   ///
   /// This method should be invoked only at the _end_ of a program's execution.
-  static Future<Null> terminateStdIn() async {
+  static Future<void> terminateStdIn() async {
     await sharedStdIn.terminate();
   }
 
@@ -131,17 +133,16 @@ abstract class ProcessManager {
     bool includeParentEnvironment = true,
     bool runInShell = false,
     io.ProcessStartMode mode = io.ProcessStartMode.normal,
-  }) async {
-    return io.Process.start(
-      executable,
-      arguments.toList(),
-      workingDirectory: workingDirectory,
-      environment: environment,
-      includeParentEnvironment: includeParentEnvironment,
-      runInShell: runInShell,
-      mode: mode,
-    );
-  }
+  }) async =>
+      io.Process.start(
+        executable,
+        arguments.toList(),
+        workingDirectory: workingDirectory,
+        environment: environment,
+        includeParentEnvironment: includeParentEnvironment,
+        runInShell: runInShell,
+        mode: mode,
+      );
 }
 
 /// A process instance created and managed through [ProcessManager].
@@ -180,9 +181,9 @@ class Spawn implements io.Process {
 
 /// Forwards `stdin`/`stdout`/`stderr` to/from the host.
 class _ForwardingSpawn extends Spawn {
-  final StreamSubscription _stdInSub;
-  final StreamSubscription _stdOutSub;
-  final StreamSubscription _stdErrSub;
+  final StreamSubscription<List<int>> _stdInSub;
+  final StreamSubscription<List<int>> _stdOutSub;
+  final StreamSubscription<List<int>> _stdErrSub;
   final StreamController<List<int>> _stdOut;
   final StreamController<List<int>> _stdErr;
 

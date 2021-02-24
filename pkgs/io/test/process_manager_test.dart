@@ -2,11 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: close_sinks
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-// TODO: Change to io.dart once these features are published.
 import 'package:io/io.dart' hide sharedStdIn;
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -19,7 +20,7 @@ void main() {
   List<String> stderrLog;
 
   test('spawn functions should match the type definition of Process.start', () {
-    final isStartProcess = const TypeMatcher<StartProcess>();
+    const isStartProcess = TypeMatcher<StartProcess>();
     expect(Process.start, isStartProcess);
     final manager = ProcessManager();
     expect(manager.spawn, isStartProcess);
