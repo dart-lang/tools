@@ -127,7 +127,7 @@ void main() {
     final size = 1000;
     final graph = HashMap<int, List<int>>();
 
-    List<int> resultForGraph() =>
+    Iterable<int> resultForGraph() =>
         shortestPath<int>(0, size - 1, (e) => graph[e] ?? const []);
 
     void addRandomEdge() {
@@ -139,7 +139,7 @@ void main() {
       }
     }
 
-    List<int> result;
+    Iterable<int> result;
 
     // Add edges until there is a shortest path between `0` and `size - 1`
     do {

@@ -1,23 +1,24 @@
-// Copyright (c) 2018, the Dart project authors. Please see the AUTHORS file
+// Copyright (c) 2020, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:collection';
-import 'dart:math' show Random;
 
 import 'package:graphs/graphs.dart';
 
 void main() {
-  final _rnd = Random(1);
   final size = 1000;
   final graph = HashMap<int, List<int>>();
 
-  for (var i = 0; i < size * 5; i++) {
-    final toList = graph.putIfAbsent(_rnd.nextInt(size), () => <int>[]);
-
-    final toValue = _rnd.nextInt(size);
-    if (!toList.contains(toValue)) {
-      toList.add(toValue);
+  // We create a graph where every subsequent node has an edge to every other
+  // node before it as well as the next node. This triggers worst case behavior
+  // in many algorithms as it requires visiting all nodes and edges before
+  // finding a solution, and there are a maximum number of edges.
+  for (var i = 0; i < size; i++) {
+    final toList = graph.putIfAbsent(i, () => <int>[]);
+    for (var t = 0; t < i + 2 && i < size; t++) {
+      if (i == t) continue;
+      toList.add(t);
     }
   }
 
@@ -27,7 +28,8 @@ void main() {
   final testOutput =
       shortestPath(0, size - 1, (e) => graph[e] ?? []).toString();
   print(testOutput);
-  assert(testOutput == '(258, 252, 819, 999)', testOutput);
+  assert(testOutput == Iterable.generate(size - 1, (i) => i + 1).toString(),
+      '$testOutput');
 
   final watch = Stopwatch();
   for (var i = 1;; i++) {
@@ -38,8 +40,8 @@ void main() {
     final length = result.length;
     final first = result.first;
     watch.stop();
-    assert(length == 4, '$length');
-    assert(first == 258, '$first');
+    assert(length == 999, '$length');
+    assert(first == 1, '$first');
 
     if (minTicks == null || watch.elapsedTicks < minTicks) {
       minTicks = watch.elapsedTicks;
