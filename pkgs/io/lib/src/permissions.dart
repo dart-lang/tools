@@ -56,7 +56,7 @@ int _permissionBitIndex(_FilePermission permission, _FilePermissionRole role) {
 /// **NOTE**: On windows this always returns `true`.
 FutureOr<bool> isExecutable(
   String path, {
-  bool isWindows,
+  bool? isWindows,
   FutureOr<FileStat> Function(String path) getStat = FileStat.stat,
 }) {
   // Windows has no concept of executable.
@@ -65,7 +65,7 @@ FutureOr<bool> isExecutable(
   if (stat is FileStat) {
     return _isExecutable(stat);
   }
-  return (stat as Future<FileStat>).then(_isExecutable);
+  return stat.then(_isExecutable);
 }
 
 bool _isExecutable(FileStat stat) =>

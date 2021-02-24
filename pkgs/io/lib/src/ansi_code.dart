@@ -18,11 +18,11 @@ const _ansiEscapeForScript = '\\033';
 ///
 /// [overrideAnsiOutput] is provided to make this easy.
 bool get ansiOutputEnabled =>
-    Zone.current[AnsiCode] as bool ??
+    Zone.current[AnsiCode] as bool? ??
     (io.stdout.supportsAnsiEscapes && io.stderr.supportsAnsiEscapes);
 
 /// Returns `true` no formatting is required for [input].
-bool _isNoop(bool skip, String input, bool forScript) =>
+bool _isNoop(bool skip, String? input, bool? forScript) =>
     skip ||
     input == null ||
     input.isEmpty ||
@@ -65,7 +65,7 @@ class AnsiCode {
   /// The [AnsiCode] that resets this value, if one exists.
   ///
   /// Otherwise, `null`.
-  final AnsiCode reset;
+  final AnsiCode? reset;
 
   /// A description of this code.
   final String name;
@@ -81,10 +81,8 @@ class AnsiCode {
   /// Represents the value as an unescaped literal suitable for scripts.
   String get escapeForScript => '$_ansiEscapeForScript[${code}m';
 
-  String _escapeValue({bool forScript = false}) {
-    forScript ??= false;
-    return forScript ? escapeForScript : escape;
-  }
+  String _escapeValue({bool forScript = false}) =>
+      forScript ? escapeForScript : escape;
 
   /// Wraps [value] with the [escape] value for this code, followed by
   /// [resetAll].
@@ -96,11 +94,11 @@ class AnsiCode {
   ///   * [value] is `null` or empty
   ///   * both [ansiOutputEnabled] and [forScript] are `false`.
   ///   * [type] is [AnsiCodeType.reset]
-  String wrap(String value, {bool forScript = false}) =>
+  String? wrap(String? value, {bool forScript = false}) =>
       _isNoop(type == AnsiCodeType.reset, value, forScript)
           ? value
           : '${_escapeValue(forScript: forScript)}$value'
-              '${reset._escapeValue(forScript: forScript)}';
+              '${reset!._escapeValue(forScript: forScript)}';
 
   @override
   String toString() => '$name ${type._name} ($code)';
@@ -120,9 +118,8 @@ class AnsiCode {
 ///   * [codes] contains more than one value of type [AnsiCodeType.foreground].
 ///   * [codes] contains more than one value of type [AnsiCodeType.background].
 ///   * [codes] contains any value of type [AnsiCodeType.reset].
-String wrapWith(String value, Iterable<AnsiCode> codes,
+String? wrapWith(String? value, Iterable<AnsiCode> codes,
     {bool forScript = false}) {
-  forScript ??= false;
   // Eliminate duplicates
   final myCodes = codes.toSet();
 
@@ -150,7 +147,6 @@ String wrapWith(String value, Iterable<AnsiCode> codes,
       case AnsiCodeType.reset:
         throw ArgumentError.value(
             codes, 'codes', 'Cannot contain reset codes.');
-        break;
     }
   }
 

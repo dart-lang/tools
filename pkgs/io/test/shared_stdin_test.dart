@@ -10,10 +10,10 @@ import 'package:test/test.dart';
 
 void main() {
   // ignore: close_sinks
-  StreamController<String> fakeStdIn;
-  SharedStdIn sharedStdIn;
+  late StreamController<String> fakeStdIn;
+  late SharedStdIn sharedStdIn;
 
-  setUp(() async {
+  setUp(() {
     fakeStdIn = StreamController<String>(sync: true);
     sharedStdIn = SharedStdIn(fakeStdIn.stream.map((s) => s.codeUnits));
   });

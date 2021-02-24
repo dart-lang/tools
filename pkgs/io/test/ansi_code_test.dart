@@ -72,9 +72,9 @@ void main() {
       if (style == styleBold) {
         expect(style.reset, resetBold);
       } else {
-        expect(style.reset.code, equals(style.code + 20));
+        expect(style.reset!.code, equals(style.code + 20));
       }
-      expect(style.name, equals(style.reset.name));
+      expect(style.name, equals(style.reset!.name));
     }
   });
 
@@ -169,7 +169,7 @@ void main() {
               '');
         });
 
-        _test(null, () {
+        _test('null', () {
           expect(
               wrapWith(null, [blue, backgroundWhite, styleBold],
                   forScript: forScript),

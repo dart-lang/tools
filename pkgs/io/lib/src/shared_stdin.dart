@@ -26,10 +26,10 @@ final SharedStdIn sharedStdIn = SharedStdIn(stdin);
 /// used directly.
 @visibleForTesting
 class SharedStdIn extends Stream<List<int>> {
-  StreamController<List<int>> _current;
-  StreamSubscription<List<int>> _sub;
+  StreamController<List<int>>? _current;
+  StreamSubscription<List<int>>? _sub;
 
-  SharedStdIn([Stream<List<int>> stream]) {
+  SharedStdIn([Stream<List<int>>? stream]) {
     _sub = (stream ??= stdin).listen(_onInput);
   }
 
@@ -64,10 +64,10 @@ class SharedStdIn extends Stream<List<int>> {
 
   @override
   StreamSubscription<List<int>> listen(
-    void Function(List<int> event) onData, {
-    Function onError,
-    void Function() onDone,
-    bool cancelOnError,
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
   }) {
     if (_sub == null) {
       throw StateError('Stdin has already been terminated.');
@@ -92,7 +92,7 @@ class SharedStdIn extends Stream<List<int>> {
     if (_sub == null) {
       throw StateError('Stdin has already been terminated.');
     }
-    await _sub.cancel();
+    await _sub?.cancel();
     await _current?.close();
     _sub = null;
   }

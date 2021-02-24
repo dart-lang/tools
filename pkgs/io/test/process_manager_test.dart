@@ -14,10 +14,10 @@ import 'package:test/test.dart';
 
 void main() {
   StreamController<String> fakeStdIn;
-  ProcessManager processManager;
+  late ProcessManager processManager;
   SharedStdIn sharedStdIn;
-  List<String> stdoutLog;
-  List<String> stderrLog;
+  late List<String> stdoutLog;
+  late List<String> stderrLog;
 
   test('spawn functions should match the type definition of Process.start', () {
     const isStartProcess = TypeMatcher<StartProcess>();
@@ -49,9 +49,11 @@ void main() {
       );
     });
 
+    final dart = Platform.executable;
+
     test('should output Hello from another process [via stdout]', () async {
       final spawn = await processManager.spawn(
-        'dart',
+        dart,
         [p.join('test', '_files', 'stdout_hello.dart')],
       );
       await spawn.exitCode;
@@ -60,7 +62,7 @@ void main() {
 
     test('should output Hello from another process [via stderr]', () async {
       final spawn = await processManager.spawn(
-        'dart',
+        dart,
         [p.join('test', '_files', 'stderr_hello.dart')],
       );
       await spawn.exitCode;
@@ -69,18 +71,18 @@ void main() {
 
     test('should forward stdin to another process', () async {
       final spawn = await processManager.spawn(
-        'dart',
+        dart,
         [p.join('test', '_files', 'stdin_echo.dart')],
       );
       spawn.stdin.writeln('Ping');
       await spawn.exitCode;
-      expect(stdoutLog.join(''), contains('You said: Ping'));
+      expect(stdoutLog.join(), contains('You said: Ping'));
     });
 
     group('should return a Process where', () {
       test('.stdout is readable', () async {
         final spawn = await processManager.spawn(
-          'dart',
+          dart,
           [p.join('test', '_files', 'stdout_hello.dart')],
         );
         expect(await spawn.stdout.transform(utf8.decoder).first, 'Hello');
@@ -88,7 +90,7 @@ void main() {
 
       test('.stderr is readable', () async {
         final spawn = await processManager.spawn(
-          'dart',
+          dart,
           [p.join('test', '_files', 'stderr_hello.dart')],
         );
         expect(await spawn.stderr.transform(utf8.decoder).first, 'Hello');

@@ -38,10 +38,10 @@ abstract class ProcessManager {
   /// May manually specify whether the current platform [isWindows], otherwise
   /// this is derived from the Dart runtime (i.e. [io.Platform.isWindows]).
   factory ProcessManager({
-    Stream<List<int>> stdin,
-    io.IOSink stdout,
-    io.IOSink stderr,
-    bool isWindows,
+    Stream<List<int>>? stdin,
+    io.IOSink? stdout,
+    io.IOSink? stderr,
+    bool? isWindows,
   }) {
     stdin ??= sharedStdIn;
     stdout ??= io.stdout;
@@ -69,8 +69,8 @@ abstract class ProcessManager {
   Future<io.Process> spawn(
     String executable,
     Iterable<String> arguments, {
-    String workingDirectory,
-    Map<String, String> environment,
+    String? workingDirectory,
+    Map<String, String>? environment,
     bool includeParentEnvironment = true,
     bool runInShell = false,
     io.ProcessStartMode mode = io.ProcessStartMode.normal,
@@ -97,8 +97,8 @@ abstract class ProcessManager {
   Future<io.Process> spawnBackground(
     String executable,
     Iterable<String> arguments, {
-    String workingDirectory,
-    Map<String, String> environment,
+    String? workingDirectory,
+    Map<String, String>? environment,
     bool includeParentEnvironment = true,
     bool runInShell = false,
     io.ProcessStartMode mode = io.ProcessStartMode.normal,
@@ -128,8 +128,8 @@ abstract class ProcessManager {
   Future<io.Process> spawnDetached(
     String executable,
     Iterable<String> arguments, {
-    String workingDirectory,
-    Map<String, String> environment,
+    String? workingDirectory,
+    Map<String, String>? environment,
     bool includeParentEnvironment = true,
     bool runInShell = false,
     io.ProcessStartMode mode = io.ProcessStartMode.normal,

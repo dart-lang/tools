@@ -1,5 +1,6 @@
-## 0.3.6-dev
+## 0.4.0
 
+* Migrate this package to null-safety
 * Require Dart >=2.12
 
 ## 0.3.5
