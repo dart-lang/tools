@@ -2,10 +2,6 @@
 
 The Dart project benchmark harness is the recommended starting point when building a benchmark for Dart.
 
-## Learning more
-
-You can read more about [Benchmarking the Dart VM](https://www.dartlang.org/articles/server/benchmarking/).
-
 ## Interpreting Results
 
 By default, the reported runtime is not for a single call to `run()`, but for
