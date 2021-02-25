@@ -10,10 +10,6 @@ import 'package:test/test.dart';
 
 import 'utils/utils.dart';
 
-Matcher _throwsAssertionError(dynamic messageMatcher) =>
-    throwsA(const TypeMatcher<AssertionError>()
-        .having((ae) => ae.message, 'message', messageMatcher));
-
 void main() {
   const graph = <String, List<String>>{
     '1': ['2', '5'],
@@ -24,42 +20,12 @@ void main() {
     '6': ['7'],
   };
 
-  List<String> getValues(String key) => graph[key] ?? [];
+  List<String> readEdges(String key) => graph[key] ?? [];
 
   List<X> getXValues(X key) =>
-      graph[key.value]?.map((v) => X(v))?.toList() ?? [];
+      graph[key.value]?.map((v) => X(v)).toList() ?? [];
 
-  test('null `start` throws AssertionError', () {
-    expect(() => shortestPath(null, '1', getValues),
-        _throwsAssertionError('`start` cannot be null'));
-    expect(() => shortestPaths(null, getValues),
-        _throwsAssertionError('`start` cannot be null'));
-  });
-
-  test('null `edges` throws AssertionError', () {
-    expect(() => shortestPath(1, 1, null),
-        _throwsAssertionError('`edges` cannot be null'));
-    expect(() => shortestPaths(1, null),
-        _throwsAssertionError('`edges` cannot be null'));
-  });
-
-  test('null return value from `edges` throws', () {
-    expect(shortestPath(1, 1, (input) => null), <dynamic>[],
-        reason: 'self target short-circuits');
-    expect(shortestPath(1, 1, (input) => [null]), <dynamic>[],
-        reason: 'self target short-circuits');
-
-    expect(() => shortestPath(1, 2, (input) => null), throwsNoSuchMethodError);
-
-    expect(() => shortestPaths(1, (input) => null), throwsNoSuchMethodError);
-
-    expect(() => shortestPath(1, 2, (input) => [null]),
-        _throwsAssertionError('`edges` cannot return null values.'));
-    expect(() => shortestPaths(1, (input) => [null]),
-        _throwsAssertionError('`edges` cannot return null values.'));
-  });
-
-  void _singlePathTest(String from, String to, List<String> expected) {
+  void _singlePathTest(String from, String to, List<String>? expected) {
     test('$from -> $to should be $expected (mapped)', () {
       expect(
           shortestPath<X>(X(from), X(to), getXValues,
@@ -69,7 +35,7 @@ void main() {
     });
 
     test('$from -> $to should be $expected', () {
-      expect(shortestPath(from, to, getValues), expected);
+      expect(shortestPath(from, to, readEdges), expected);
     });
   }
 
@@ -83,7 +49,7 @@ void main() {
     });
 
     test('paths from $from', () {
-      final result = shortestPaths(from, getValues);
+      final result = shortestPaths(from, readEdges);
       expect(result, expected);
     });
 
@@ -118,8 +84,6 @@ void main() {
 
   _pathsTest('42', {'42': []}, ['1', '6']);
 
-  _singlePathTest('1', null, null);
-
   test('integration test', () {
     // Be deterministic in the generated graph. This test may have to be updated
     // if the behavior of `Random` changes for the provided seed.
@@ -127,8 +91,8 @@ void main() {
     final size = 1000;
     final graph = HashMap<int, List<int>>();
 
-    Iterable<int> resultForGraph() =>
-        shortestPath<int>(0, size - 1, (e) => graph[e] ?? const []);
+    Iterable<int>? resultForGraph() =>
+        shortestPath(0, size - 1, (e) => graph[e] ?? const []);
 
     void addRandomEdge() {
       final toList = graph.putIfAbsent(_rnd.nextInt(size), () => <int>[]);
@@ -139,7 +103,7 @@ void main() {
       }
     }
 
-    Iterable<int> result;
+    Iterable<int>? result;
 
     // Add edges until there is a shortest path between `0` and `size - 1`
     do {
@@ -156,10 +120,10 @@ void main() {
     do {
       expect(++count, lessThan(size * 5), reason: 'This loop should finish.');
       addRandomEdge();
-      final previousResultLength = result.length;
+      final previousResultLength = result!.length;
       result = resultForGraph();
       expect(result, hasLength(lessThanOrEqualTo(previousResultLength)));
-    } while (result.length > 2);
+    } while (result!.length > 2);
 
     expect(result, [275, 999]);
 
@@ -171,13 +135,13 @@ void main() {
     do {
       expect(++count, lessThan(size * 5), reason: 'This loop should finish.');
       final randomKey = graph.keys.elementAt(_rnd.nextInt(graph.length));
-      final list = graph[randomKey];
+      final list = graph[randomKey]!;
       expect(list, isNotEmpty);
       list.removeAt(_rnd.nextInt(list.length));
       if (list.isEmpty) {
         graph.remove(randomKey);
       }
-      final previousResultLength = result.length;
+      final previousResultLength = result!.length;
       result = resultForGraph();
       if (result != null) {
         expect(result, hasLength(greaterThanOrEqualTo(previousResultLength)));

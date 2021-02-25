@@ -32,7 +32,8 @@ void main() {
     while (watch.elapsed < duration) {
       count++;
       final length =
-          stronglyConnectedComponents(graph.keys, (e) => graph[e] ?? []).length;
+          stronglyConnectedComponents(graph.keys, (e) => graph[e] ?? <Never>[])
+              .length;
       assert(length == 244, '$length');
     }
 

@@ -29,35 +29,34 @@ import 'dart:math' show min;
 ///
 /// If you supply one of [equals] or [hashCode], you should generally also to
 /// supply the other.
-List<List<T>> stronglyConnectedComponents<T>(
+List<List<T>> stronglyConnectedComponents<T extends Object>(
   Iterable<T> nodes,
   Iterable<T> Function(T) edges, {
-  bool Function(T, T) equals,
-  int Function(T) hashCode,
+  bool Function(T, T)? equals,
+  int Function(T)? hashCode,
 }) {
   final result = <List<T>>[];
   final lowLinks = HashMap<T, int>(equals: equals, hashCode: hashCode);
   final indexes = HashMap<T, int>(equals: equals, hashCode: hashCode);
   final onStack = HashSet<T>(equals: equals, hashCode: hashCode);
 
-  equals ??= _defaultEquals;
+  final nonNullEquals = equals ?? _defaultEquals;
 
   var index = 0;
   var lastVisited = Queue<T>();
 
   void strongConnect(T node) {
     indexes[node] = index;
-    lowLinks[node] = index;
+    var lowLink = lowLinks[node] = index;
     index++;
     lastVisited.addLast(node);
     onStack.add(node);
-    // ignore: omit_local_variable_types
-    for (final T next in edges(node) ?? const []) {
+    for (final next in edges(node)) {
       if (!indexes.containsKey(next)) {
         strongConnect(next);
-        lowLinks[node] = min(lowLinks[node], lowLinks[next]);
+        lowLink = lowLinks[node] = min(lowLink, lowLinks[next]!);
       } else if (onStack.contains(next)) {
-        lowLinks[node] = min(lowLinks[node], indexes[next]);
+        lowLink = lowLinks[node] = min(lowLink, indexes[next]!);
       }
     }
     if (lowLinks[node] == indexes[node]) {
@@ -67,7 +66,7 @@ List<List<T>> stronglyConnectedComponents<T>(
         next = lastVisited.removeLast();
         onStack.remove(next);
         component.add(next);
-      } while (!equals(next, node));
+      } while (!nonNullEquals(next, node));
       result.add(component);
     }
   }

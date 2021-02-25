@@ -2,16 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/test.dart';
-
 import 'package:graphs/graphs.dart';
+import 'package:test/test.dart';
 
 import 'utils/graph.dart';
 
 void main() {
   group('asyncCrawl', () {
-    Future<List<String>> crawl(
-        Map<String, List<String>> g, Iterable<String> roots) {
+    Future<List<String?>> crawl(
+        Map<String, List<String>?> g, Iterable<String> roots) {
       var graph = AsyncGraph(g);
       return crawlAsync(roots, graph.readNode, graph.edges).toList();
     }
@@ -88,7 +87,7 @@ void main() {
         'a': ['b'],
       };
       var nodes = crawlAsync(['a'], (n) => n,
-          (k, n) => k == 'b' ? throw ArgumentError() : graph[k]);
+          (k, n) => k == 'b' ? throw ArgumentError() : graph[k] ?? <String>[]);
       expect(nodes, emitsThrough(emitsError(isArgumentError)));
     });
 
@@ -97,7 +96,7 @@ void main() {
         'a': ['b'],
       };
       var nodes = crawlAsync(['a'], (n) => n == 'b' ? throw ArgumentError() : n,
-          (k, n) => graph[k]);
+          (k, n) => graph[k] ?? <Never>[]);
       expect(nodes, emitsThrough(emitsError(isArgumentError)));
     });
   });

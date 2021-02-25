@@ -41,7 +41,7 @@ void main() {
   });
 
   var components = stronglyConnectedComponents<Node>(
-      graph.nodes.keys, (node) => graph.nodes[node]);
+      graph.nodes.keys, (node) => graph.nodes[node] ?? []);
 
   print(components);
 }

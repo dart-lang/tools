@@ -26,10 +26,11 @@ Future<Null> main() async {
   print(allImports.map((s) => s.uri).toList());
 }
 
-AnalysisContext _analysisContext;
+AnalysisContext? _analysisContext;
 
 Future<AnalysisContext> get analysisContext async {
-  if (_analysisContext == null) {
+  var context = _analysisContext;
+  if (context == null) {
     var libUri = Uri.parse('package:graphs/');
     var libPath = await pathForUri(libUri);
     var packagePath = p.dirname(libPath);
@@ -39,16 +40,17 @@ Future<AnalysisContext> get analysisContext async {
       throw StateError('Expected to find exactly one context root, got $roots');
     }
 
-    _analysisContext = ContextBuilder().createContext(contextRoot: roots[0]);
+    context = _analysisContext =
+        ContextBuilder().createContext(contextRoot: roots[0]);
   }
 
-  return _analysisContext;
+  return context;
 }
 
 Future<Iterable<Uri>> findImports(Uri from, Source source) async {
   return source.unit.directives
       .whereType<UriBasedDirective>()
-      .map((d) => d.uri.stringValue)
+      .map((d) => d.uri.stringValue!)
       .where((uri) => !uri.startsWith('dart:'))
       .map((import) => resolveImport(import, from));
 }

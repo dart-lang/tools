@@ -33,7 +33,9 @@ final _empty = Future<Null>.value(null);
 /// Crawling is eager, so calls to [edges] may overlap with other calls that
 /// have not completed. If the [edges] callback needs to be limited or throttled
 /// that must be done by wrapping it before calling [crawlAsync].
-Stream<V> crawlAsync<K, V>(Iterable<K> roots, FutureOr<V> Function(K) readNode,
+Stream<V> crawlAsync<K extends Object, V>(
+    Iterable<K> roots,
+    FutureOr<V> Function(K) readNode,
     FutureOr<Iterable<K>> Function(K, V) edges) {
   final crawl = _CrawlAsync(roots, readNode, edges)..run();
   return crawl.result.stream;
@@ -69,7 +71,7 @@ class _CrawlAsync<K, V> {
     if (value == null) return;
     if (result.isClosed) return;
     result.add(value);
-    var next = await edges(key, value) ?? const [];
+    var next = await edges(key, value);
     await Future.wait(next.map(_visit), eagerError: true);
   }
 

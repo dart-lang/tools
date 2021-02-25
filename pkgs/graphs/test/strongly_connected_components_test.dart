@@ -12,8 +12,8 @@ void main() {
   group('strongly connected components', () {
     /// Run [stronglyConnectedComponents] on [g].
     List<List<String>> components(
-      Map<String, List<String>> g, {
-      Iterable<String> startNodes,
+      Map<String, List<String>?> g, {
+      Iterable<String>? startNodes,
     }) {
       final graph = Graph(g);
       return stronglyConnectedComponents(
@@ -148,8 +148,8 @@ void main() {
   group('custom hashCode and equals', () {
     /// Run [stronglyConnectedComponents] on [g].
     List<List<String>> components(
-      Map<String, List<String>> g, {
-      Iterable<String> startNodes,
+      Map<String, List<String>?> g, {
+      Iterable<String>? startNodes,
     }) {
       final graph = BadGraph(g);
 

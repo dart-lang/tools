@@ -22,11 +22,11 @@ void main() {
     }
   }
 
-  int minTicks;
+  int? minTicks;
   var maxIteration = 0;
 
   final testOutput =
-      shortestPath(0, size - 1, (e) => graph[e] ?? []).toString();
+      shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[]).toString();
   print(testOutput);
   assert(testOutput == Iterable.generate(size - 1, (i) => i + 1).toString(),
       '$testOutput');
@@ -36,7 +36,7 @@ void main() {
     watch
       ..reset()
       ..start();
-    final result = shortestPath(0, size - 1, (e) => graph[e] ?? []);
+    final result = shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[])!;
     final length = result.length;
     final first = result.first;
     watch.stop();

@@ -21,11 +21,11 @@ void main() {
     }
   }
 
-  int minTicks;
+  int? minTicks;
   var maxIteration = 0;
 
   final testOutput =
-      shortestPath(0, size - 1, (e) => graph[e] ?? []).toString();
+      shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[]).toString();
   print(testOutput);
   assert(testOutput == '(258, 252, 819, 999)', testOutput);
 
@@ -34,7 +34,7 @@ void main() {
     watch
       ..reset()
       ..start();
-    final result = shortestPath(0, size - 1, (e) => graph[e] ?? []);
+    final result = shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[])!;
     final length = result.length;
     final first = result.first;
     watch.stop();
