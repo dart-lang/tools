@@ -111,7 +111,7 @@ void main() {
       final hitLineRegexp = RegExp(r'\s+(\d+)\|  return a \+ b;');
       final match = hitLineRegexp.allMatches(res).single;
 
-      final hitCount = int.parse(match[1]);
+      final hitCount = int.parse(match[1]!);
       expect(hitCount, greaterThanOrEqualTo(1));
     });
 
@@ -186,6 +186,6 @@ Future<Map<String, Map<int, int>>> _getHitMap() async {
     throw ProcessException(
         'dart', sampleAppArgs, 'Fatal error. Exit code: $exitCode', exitCode);
   }
-  await sampleProcess.stderr.drain<List<int>>();
+  await sampleProcess.stderr.drain();
   return hitMap;
 }

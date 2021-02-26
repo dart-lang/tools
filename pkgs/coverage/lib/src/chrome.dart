@@ -21,8 +21,8 @@ import 'package:source_maps/parser.dart';
 /// content is null will be ignored.
 Future<Map<String, dynamic>> parseChromeCoverage(
   List<Map<String, dynamic>> preciseCoverage,
-  Future<String> Function(String scriptId) sourceProvider,
-  Future<String> Function(String scriptId) sourceMapProvider,
+  Future<String?> Function(String scriptId) sourceProvider,
+  Future<String?> Function(String scriptId) sourceMapProvider,
   Future<Uri> Function(String sourceUrl, String scriptId) sourceUriProvider,
 ) async {
   final coverageReport = <Uri, Map<int, bool>>{};
@@ -50,8 +50,9 @@ Future<Map<String, dynamic>> parseChromeCoverage(
 
     for (var lineEntry in mapping.lines) {
       for (var columnEntry in lineEntry.entries) {
-        if (columnEntry.sourceUrlId == null) continue;
-        final sourceUrl = mapping.urls[columnEntry.sourceUrlId];
+        final sourceUrlId = columnEntry.sourceUrlId;
+        if (sourceUrlId == null) continue;
+        final sourceUrl = mapping.urls[sourceUrlId];
 
         // Ignore coverage information for the SDK.
         if (sourceUrl.startsWith('org-dartlang-sdk:')) continue;
@@ -59,8 +60,9 @@ Future<Map<String, dynamic>> parseChromeCoverage(
         final uri = await sourceUriProvider(sourceUrl, scriptId);
         final coverage = coverageReport.putIfAbsent(uri, () => <int, bool>{});
 
-        final current = coverage[columnEntry.sourceLine + 1] ?? false;
-        coverage[columnEntry.sourceLine + 1] = current ||
+        final sourceLine = columnEntry.sourceLine!;
+        final current = coverage[sourceLine + 1] ?? false;
+        coverage[sourceLine + 1] = current ||
             coveredPositions.contains(
                 _Position(lineEntry.line + 1, columnEntry.column + 1));
       }
@@ -71,7 +73,7 @@ Future<Map<String, dynamic>> parseChromeCoverage(
   coverageReport.forEach((uri, coverage) {
     final hitMap = <int, int>{};
     for (var line in coverage.keys.toList()..sort()) {
-      hitMap[line] = coverage[line] ? 1 : 0;
+      hitMap[line] = coverage[line]! ? 1 : 0;
     }
     coverageHitMaps[uri] = hitMap;
   });

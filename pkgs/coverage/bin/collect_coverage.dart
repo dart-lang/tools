@@ -39,7 +39,7 @@ class Options {
 
   final Uri serviceUri;
   final IOSink out;
-  final Duration timeout;
+  final Duration? timeout;
   final bool waitPaused;
   final bool resume;
   final bool includeDart;
@@ -81,7 +81,7 @@ Options _parseArgs(List<String> arguments) {
     print(parser.usage);
   }
 
-  void fail(String message) {
+  Never fail(String message) {
     print('Error: $message\n');
     printUsage();
     exit(1);
@@ -105,8 +105,7 @@ Options _parseArgs(List<String> arguments) {
     }
   }
 
-  final scopedOutput = args['scope-output'] as List<String> ?? [];
-
+  final scopedOutput = args['scope-output'] as List<String>;
   IOSink out;
   if (args['out'] == 'stdout') {
     out = stdout;

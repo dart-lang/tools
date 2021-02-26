@@ -8,10 +8,10 @@ import 'dart:io';
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
 Future<dynamic> retry(Future Function() f, Duration interval,
-    {Duration timeout}) async {
+    {Duration? timeout}) async {
   var keepGoing = true;
 
-  Future<dynamic> _withTimeout(Future Function() f, {Duration duration}) {
+  Future<dynamic> _withTimeout(Future Function() f, {Duration? duration}) {
     if (duration == null) {
       return f();
     }
@@ -41,7 +41,7 @@ Future<dynamic> retry(Future Function() f, Duration interval,
 /// Scrapes and returns the observatory URI from a string, or null if not found.
 ///
 /// Potentially useful as a means to extract it from log statements.
-Uri extractObservatoryUri(String str) {
+Uri? extractObservatoryUri(String str) {
   const kObservatoryListening = 'Observatory listening on ';
   final msgPos = str.indexOf(kObservatoryListening);
   if (msgPos == -1) return null;
@@ -135,7 +135,7 @@ const ignoreFile = '// coverage:ignore-file';
 /// ]
 /// ```
 ///
-List<List<int>> getIgnoredLines(List<String> lines) {
+List<List<int>> getIgnoredLines(List<String>? lines) {
   final ignoredLines = <List<int>>[];
   if (lines == null) return ignoredLines;
 

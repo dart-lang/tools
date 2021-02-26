@@ -18,11 +18,6 @@ final _sampleAppFileUri = p.toUri(p.absolute(testAppPath)).toString();
 final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
-  test('collect throws when serviceUri is null', () {
-    expect(() => collect(null, true, false, false, <String>{}),
-        throwsArgumentError);
-  });
-
   test('collect_coverage_api', () async {
     final json = await _collectCoverage();
     expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
@@ -38,11 +33,11 @@ void main() {
       return map;
     });
 
-    for (var sampleCoverageData in sources[_sampleAppFileUri]) {
+    for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
       expect(sampleCoverageData['hits'], isNotNull);
     }
 
-    for (var sampleCoverageData in sources[_isolateLibFileUri]) {
+    for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
   });
@@ -77,13 +72,13 @@ void main() {
     final coverage = json['coverage'] as List<Map<String, dynamic>>;
     expect(coverage, isNotEmpty);
 
-    final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart');
+    final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart')!;
     var hits = testAppCoverage['hits'] as List<int>;
     _expectHitCount(hits, 44, 0);
     _expectHitCount(hits, 48, 0);
 
     final isolateCoverage =
-        _getScriptCoverage(coverage, 'test_app_isolate.dart');
+        _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
     hits = isolateCoverage['hits'] as List<int>;
     _expectHitCount(hits, 11, 1);
     _expectHitCount(hits, 18, 1);
@@ -91,8 +86,7 @@ void main() {
 }
 
 Future<Map<String, dynamic>> _collectCoverage(
-    {Set<String> scopedOutput, bool isolateIds = false}) async {
-  scopedOutput ??= <String>{};
+    {Set<String> scopedOutput = const {}, bool isolateIds = false}) async {
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -126,7 +120,7 @@ Future<Map<String, dynamic>> _collectCoverage(
 
 // Returns the first coverage hitmap for the script with with the specified
 // script filename, ignoring leading path.
-Map<String, dynamic> _getScriptCoverage(
+Map<String, dynamic>? _getScriptCoverage(
     List<Map<String, dynamic>> coverage, String filename) {
   for (var isolateCoverage in coverage) {
     final script = Uri.parse(isolateCoverage['script']['uri'] as String);

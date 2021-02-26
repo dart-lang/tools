@@ -29,7 +29,7 @@ Future<Null> main() async {
   print('isolateId = $isolateID');
 
   isolate.addOnExitListener(port.sendPort);
-  isolate.resume(isolate.pauseCapability);
+  isolate.resume(isolate.pauseCapability!);
 
   final value = await port.first as int;
   if (value != 3) {

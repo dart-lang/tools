@@ -18,7 +18,7 @@ Future<String> sourceMapProvider(String scriptId) async {
   return File('test/test_files/main_test.js.map').readAsString();
 }
 
-Future<String> sourceProvider(String scriptId) async {
+Future<String?> sourceProvider(String scriptId) async {
   if (scriptId != mainScriptId) return null;
   return File('test/test_files/main_test.js').readAsString();
 }

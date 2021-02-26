@@ -111,7 +111,7 @@ void main() {
   });
 }
 
-String _coverageData;
+String? _coverageData;
 
 Future<String> _getCoverageResult() async =>
     _coverageData ??= await _collectCoverage();
@@ -158,7 +158,7 @@ Future<String> _collectCoverage() async {
   }
 
   await sampleProcess.exitCode;
-  await sampleProcess.stderr.drain<List<int>>();
+  await sampleProcess.stderr.drain();
 
   return toolResult.stdout as String;
 }

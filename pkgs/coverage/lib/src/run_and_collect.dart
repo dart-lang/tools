@@ -10,10 +10,10 @@ import 'collect.dart';
 import 'util.dart';
 
 Future<Map<String, dynamic>> runAndCollect(String scriptPath,
-    {List<String> scriptArgs,
+    {List<String>? scriptArgs,
     bool checked = false,
     bool includeDart = false,
-    Duration timeout}) async {
+    Duration? timeout}) async {
   final dartArgs = [
     '--enable-vm-service',
     '--pause_isolates_on_exit',
@@ -47,7 +47,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     coverage = await collect(serviceUri, true, true, includeDart, <String>{},
         timeout: timeout);
   } finally {
-    await process.stderr.drain<List<int>>();
+    await process.stderr.drain();
   }
   final exitStatus = await process.exitCode;
   if (exitStatus != 0) {
