@@ -5,7 +5,6 @@ addons:
 
 dart:
   - dev
-  - 2.2.0
 
 with_content_shell: false
 

@@ -1,3 +1,7 @@
+## 3.8.3-dev
+
+- Require the latest shelf and remove dead code.
+
 ## 3.8.2
 
 - Complete `onConnected` with an error if the `SseClient` receives an error

@@ -97,7 +97,7 @@ class SseConnection extends StreamChannelMixin<String> {
         _sink.add('data: ${json.encode(data)}\n');
         _sink.add('\n');
         await _outgoingStreamQueue.next; // Consume from stream if no errors.
-      } catch (StateError) {
+      } on StateError catch (_) {
         if (_keepAlive == null || _closedCompleter.isCompleted) {
           rethrow;
         }
@@ -239,7 +239,6 @@ class SseHandler {
         _connections[clientId]?._handleDisconnect();
       });
     });
-    return shelf.Response.notFound('');
   }
 
   String _getOriginalPath(shelf.Request req) => req.requestedUri.path;
