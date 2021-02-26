@@ -25,15 +25,15 @@ class LcovFormatter implements Formatter {
   LcovFormatter(this.resolver, {this.reportOn, this.basePath});
 
   final Resolver resolver;
-  final String basePath;
-  final List<String> reportOn;
+  final String? basePath;
+  final List<String>? reportOn;
 
   @override
   Future<String> format(Map<String, Map<int, int>> hitmap) async {
     final pathFilter = _getPathFilter(reportOn);
     final buf = StringBuffer();
     for (var key in hitmap.keys) {
-      final v = hitmap[key];
+      final v = hitmap[key]!;
       var source = resolver.resolve(key);
       if (source == null) {
         continue;
@@ -53,7 +53,7 @@ class LcovFormatter implements Formatter {
         buf.write('DA:$k,${v[k]}\n');
       }
       buf.write('LF:${lines.length}\n');
-      buf.write('LH:${lines.where((k) => v[k] > 0).length}\n');
+      buf.write('LH:${lines.where((k) => v[k]! > 0).length}\n');
       buf.write('end_of_record\n');
     }
 
@@ -75,7 +75,7 @@ class PrettyPrintFormatter implements Formatter {
 
   final Resolver resolver;
   final Loader loader;
-  final List<String> reportOn;
+  final List<String>? reportOn;
 
   @override
   Future<String> format(Map<String, dynamic> hitmap) async {
@@ -114,7 +114,7 @@ const _prefix = '       ';
 
 typedef _PathFilter = bool Function(String path);
 
-_PathFilter _getPathFilter(List<String> reportOn) {
+_PathFilter _getPathFilter(List<String>? reportOn) {
   if (reportOn == null) return (String path) => true;
 
   final absolutePaths = reportOn.map(p.absolute).toList();

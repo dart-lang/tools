@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import '../bin/format_coverage.dart';
 
 void main() {
-  Directory testDir;
+  late Directory testDir;
   setUp(() {
     testDir = Directory.systemTemp.createTempSync('coverage_test_temp');
   });

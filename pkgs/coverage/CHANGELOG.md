@@ -1,3 +1,7 @@
+## 1.0.0 - 2021-02-25
+
+* Migrate to null safety.
+
 ## 0.15.2 - 2021-02-08
 
 * Update `args`, `logging`, and `package_config` deps to allow the latest

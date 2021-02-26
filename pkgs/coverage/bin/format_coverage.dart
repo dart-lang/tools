@@ -10,20 +10,35 @@ import 'package:path/path.dart' as p;
 
 /// [Environment] stores gathered arguments information.
 class Environment {
-  String sdkRoot;
-  String packagesPath;
-  String baseDirectory;
-  String input;
-  IOSink output;
-  List<String> reportOn;
-  String bazelWorkspace;
+  Environment({
+    required this.baseDirectory,
+    required this.bazel,
+    required this.bazelWorkspace,
+    required this.checkIgnore,
+    required this.input,
+    required this.lcov,
+    required this.output,
+    required this.packagesPath,
+    required this.prettyPrint,
+    required this.reportOn,
+    required this.sdkRoot,
+    required this.verbose,
+    required this.workers,
+  });
+
+  String? baseDirectory;
   bool bazel;
-  int workers;
-  bool prettyPrint;
-  bool lcov;
-  bool expectMarkers;
+  String bazelWorkspace;
   bool checkIgnore;
+  String input;
+  bool lcov;
+  IOSink output;
+  String? packagesPath;
+  bool prettyPrint;
+  List<String>? reportOn;
+  String? sdkRoot;
   bool verbose;
+  int workers;
 }
 
 Future<Null> main(List<String> arguments) async {
@@ -55,9 +70,7 @@ Future<Null> main(List<String> arguments) async {
   String output;
   final resolver = env.bazel
       ? BazelResolver(workspacePath: env.bazelWorkspace)
-      : Resolver(
-          packagesPath: env.packagesPath,
-          sdkRoot: env.sdkRoot);
+      : Resolver(packagesPath: env.packagesPath, sdkRoot: env.sdkRoot);
   final loader = Loader();
   if (env.prettyPrint) {
     output =
@@ -96,7 +109,6 @@ Future<Null> main(List<String> arguments) async {
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
 Environment parseArgs(List<String> arguments) {
-  final env = Environment();
   final parser = ArgParser();
 
   parser.addOption('sdk-root', abbr: 's', help: 'path to the SDK root');
@@ -141,7 +153,7 @@ Environment parseArgs(List<String> arguments) {
     print(parser.usage);
   }
 
-  void fail(String msg) {
+  Never fail(String msg) {
     print('\n$msg\n');
     printUsage();
     exit(1);
@@ -152,66 +164,83 @@ Environment parseArgs(List<String> arguments) {
     exit(0);
   }
 
-  env.sdkRoot = args['sdk-root'] as String;
-  if (env.sdkRoot != null) {
-    env.sdkRoot = p.normalize(p.join(p.absolute(env.sdkRoot), 'lib'));
-    if (!FileSystemEntity.isDirectorySync(env.sdkRoot)) {
+  var sdkRoot = args['sdk-root'] as String?;
+  if (sdkRoot != null) {
+    sdkRoot = p.normalize(p.join(p.absolute(sdkRoot), 'lib'));
+    if (!FileSystemEntity.isDirectorySync(sdkRoot)) {
       fail('Provided SDK root "${args["sdk-root"]}" is not a valid SDK '
           'top-level directory');
     }
   }
 
-  env.packagesPath = args['packages'] as String;
-  if (env.packagesPath != null) {
-    if (!FileSystemEntity.isFileSync(env.packagesPath)) {
+  final packagesPath = args['packages'] as String?;
+  if (packagesPath != null) {
+    if (!FileSystemEntity.isFileSync(packagesPath)) {
       fail('Package spec "${args["packages"]}" not found, or not a file.');
     }
   }
 
   if (args['in'] == null) fail('No input files given.');
-  env.input = p.absolute(p.normalize(args['in'] as String));
-  if (!FileSystemEntity.isDirectorySync(env.input) &&
-      !FileSystemEntity.isFileSync(env.input)) {
+  final input = p.absolute(p.normalize(args['in'] as String));
+  if (!FileSystemEntity.isDirectorySync(input) &&
+      !FileSystemEntity.isFileSync(input)) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
   }
 
+  IOSink output;
   if (args['out'] == 'stdout') {
-    env.output = stdout;
+    output = stdout;
   } else {
     final outpath = p.absolute(p.normalize(args['out'] as String));
     final outfile = File(outpath)..createSync(recursive: true);
-    env.output = outfile.openWrite();
+    output = outfile.openWrite();
   }
 
-  final reportOn = args['report-on'] as List<String>;
-  env.reportOn = reportOn.isNotEmpty ? reportOn : null;
+  final reportOnRaw = args['report-on'] as List<String>;
+  final reportOn = reportOnRaw.isNotEmpty ? reportOnRaw : null;
 
-  env.bazel = args['bazel'] as bool;
-  env.bazelWorkspace = args['bazel-workspace'] as String;
-  if (env.bazelWorkspace.isNotEmpty && !env.bazel) {
+  final bazel = args['bazel'] as bool;
+  final bazelWorkspace = args['bazel-workspace'] as String;
+  if (bazelWorkspace.isNotEmpty && !bazel) {
     stderr.writeln('warning: ignoring --bazel-workspace: --bazel not set');
   }
 
+  String? baseDirectory;
   if (args['base-directory'] != null) {
-    env.baseDirectory = p.absolute(args['base-directory'] as String);
+    baseDirectory = p.absolute(args['base-directory'] as String);
   }
 
-  env.lcov = args['lcov'] as bool;
-  if (args['pretty-print'] as bool && env.lcov) {
+  final lcov = args['lcov'] as bool;
+  if (args['pretty-print'] as bool && lcov == true) {
     fail('Choose one of pretty-print or lcov output');
   }
-  // Use pretty-print either explicitly or by default.
-  env.prettyPrint = !env.lcov;
 
+  // Use pretty-print either explicitly or by default.
+  final prettyPrint = !lcov;
+
+  int workers;
   try {
-    env.workers = int.parse('${args["workers"]}');
+    workers = int.parse('${args["workers"]}');
   } catch (e) {
     fail('Invalid worker count: $e');
   }
 
-  env.checkIgnore = args['check-ignore'] as bool;
-  env.verbose = args['verbose'] as bool;
-  return env;
+  final checkIgnore = args['check-ignore'] as bool;
+  final verbose = args['verbose'] as bool;
+  return Environment(
+      baseDirectory: baseDirectory,
+      bazel: bazel,
+      bazelWorkspace: bazelWorkspace,
+      checkIgnore: checkIgnore,
+      input: input,
+      lcov: lcov,
+      output: output,
+      packagesPath: packagesPath,
+      prettyPrint: prettyPrint,
+      reportOn: reportOn,
+      sdkRoot: sdkRoot,
+      verbose: verbose,
+      workers: workers);
 }
 
 /// Given an absolute path absPath, this function returns a [List] of files

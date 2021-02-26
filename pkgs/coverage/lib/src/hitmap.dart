@@ -15,7 +15,7 @@ import 'package:coverage/src/util.dart';
 Future<Map<String, Map<int, int>>> createHitmap(
   List<Map<String, dynamic>> jsonResult, {
   bool checkIgnoredLines = false,
-  String packagesPath,
+  String? packagesPath,
 }) async {
   final resolver = Resolver(packagesPath: packagesPath);
   final loader = Loader();
@@ -29,7 +29,7 @@ Future<Map<String, Map<int, int>>> createHitmap(
   }
 
   for (var e in jsonResult) {
-    final source = e['source'] as String;
+    final source = e['source'] as String?;
     if (source == null) {
       // Couldn't resolve import, so skip this entry.
       continue;
@@ -38,20 +38,46 @@ Future<Map<String, Map<int, int>>> createHitmap(
     var ignoredLinesList = <List<int>>[];
 
     if (checkIgnoredLines) {
-      final lines = await loader.load(resolver.resolve(source));
-      ignoredLinesList = getIgnoredLines(lines);
+      final path = resolver.resolve(source);
+      if (path != null) {
+        final lines = await loader.load(path);
+        ignoredLinesList = getIgnoredLines(lines!);
 
-      // Ignore the whole file.
-      if (ignoredLinesList.length == 1 &&
-          ignoredLinesList[0][0] == 0 &&
-          ignoredLinesList[0][1] == lines.length) {
-        continue;
+        // Ignore the whole file.
+        if (ignoredLinesList.length == 1 &&
+            ignoredLinesList[0][0] == 0 &&
+            ignoredLinesList[0][1] == lines.length) {
+          continue;
+        }
       }
     }
 
     // Move to the first ignore range.
     final ignoredLines = ignoredLinesList.iterator;
-    ignoredLines.moveNext();
+    var hasCurrent = ignoredLines.moveNext();
+
+    bool _shouldIgnoreLine(Iterator<List<int>> ignoredRanges, int line) {
+      if (!hasCurrent || ignoredRanges.current.isEmpty) {
+        return false;
+      }
+
+      if (line < ignoredRanges.current[0]) return false;
+
+      while (hasCurrent &&
+          ignoredRanges.current.isNotEmpty &&
+          ignoredRanges.current[1] < line) {
+        hasCurrent = ignoredRanges.moveNext();
+      }
+
+      if (hasCurrent &&
+          ignoredRanges.current.isNotEmpty &&
+          ignoredRanges.current[0] <= line &&
+          line <= ignoredRanges.current[1]) {
+        return true;
+      }
+
+      return false;
+    }
 
     final sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
     final hits = e['hits'] as List;
@@ -84,39 +110,18 @@ Future<Map<String, Map<int, int>>> createHitmap(
   return globalHitMap;
 }
 
-bool _shouldIgnoreLine(Iterator<List<int>> ignoredRanges, int line) {
-  if (ignoredRanges.current == null || ignoredRanges.current.isEmpty) {
-    return false;
-  }
-
-  if (line < ignoredRanges.current[0]) return false;
-
-  while (ignoredRanges.current != null &&
-      ignoredRanges.current.isNotEmpty &&
-      ignoredRanges.current[1] < line) {
-    ignoredRanges.moveNext();
-  }
-
-  if (ignoredRanges.current != null &&
-      ignoredRanges.current.isNotEmpty &&
-      ignoredRanges.current[0] <= line &&
-      line <= ignoredRanges.current[1]) {
-    return true;
-  }
-
-  return false;
-}
-
 /// Merges [newMap] into [result].
 void mergeHitmaps(
     Map<String, Map<int, int>> newMap, Map<String, Map<int, int>> result) {
   newMap.forEach((String file, Map<int, int> v) {
-    if (result.containsKey(file)) {
+    final fileResult = result[file];
+    if (fileResult != null) {
       v.forEach((int line, int cnt) {
-        if (result[file][line] == null) {
-          result[file][line] = cnt;
+        final lineFileResult = fileResult[line];
+        if (lineFileResult == null) {
+          fileResult[line] = cnt;
         } else {
-          result[file][line] += cnt;
+          fileResult[line] = lineFileResult + cnt;
         }
       });
     } else {

@@ -10,20 +10,21 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
-  Resolver({String packagesPath, this.sdkRoot})
+  Resolver({String? packagesPath, this.sdkRoot})
       : packagesPath = packagesPath,
         _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
-  final String packagesPath;
-  final String sdkRoot;
+  final String? packagesPath;
+  final String? sdkRoot;
   final List<String> failed = [];
-  final Map<String, Uri> _packages;
+  final Map<String, Uri>? _packages;
 
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
-  String resolve(String scriptUri) {
+  String? resolve(String scriptUri) {
     final uri = Uri.parse(scriptUri);
     if (uri.scheme == 'dart') {
+      final sdkRoot = this.sdkRoot;
       if (sdkRoot == null) {
         // No sdk-root given, do not resolve dart: URIs.
         return null;
@@ -53,6 +54,7 @@ class Resolver {
       return resolveSymbolicLinks(filePath);
     }
     if (uri.scheme == 'package') {
+      final _packages = this._packages;
       if (_packages == null) {
         return null;
       }
@@ -76,7 +78,7 @@ class Resolver {
   }
 
   /// Returns a canonicalized path, or `null` if the path cannot be resolved.
-  String resolveSymbolicLinks(String path) {
+  String? resolveSymbolicLinks(String path) {
     final normalizedPath = p.normalize(path);
     final type = FileSystemEntity.typeSync(normalizedPath, followLinks: true);
     if (type == FileSystemEntityType.notFound) return null;
@@ -123,7 +125,7 @@ class BazelResolver extends Resolver {
   /// Returns the absolute path wrt. to the given environment or null, if the
   /// import could not be resolved.
   @override
-  String resolve(String scriptUri) {
+  String? resolve(String scriptUri) {
     final uri = Uri.parse(scriptUri);
     if (uri.scheme == 'dart') {
       // Ignore the SDK
@@ -177,7 +179,7 @@ class Loader {
 
   /// Loads an imported resource and returns a [Future] with a [List] of lines.
   /// Returns `null` if the resource could not be loaded.
-  Future<List<String>> load(String path) async {
+  Future<List<String>?> load(String path) async {
     try {
       // Ensure `readAsLines` runs within the try block so errors are caught.
       return await File(path).readAsLines();
