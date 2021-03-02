@@ -18,7 +18,7 @@ const defaultPubspec = {
   'environment': {'sdk': '>=2.7.0 <3.0.0'},
 };
 
-String _encodeJson(Object input) =>
+String _encodeJson(Object? input) =>
     const JsonEncoder.withIndent(' ').convert(input);
 
 Matcher _throwsParsedYamlException(String prettyValue) =>
@@ -31,10 +31,10 @@ Matcher _throwsParsedYamlException(String prettyValue) =>
 
 void _printDebugParsedYamlException(ParsedYamlException e) {
   var innerError = e.innerError;
-  StackTrace innerStack;
+  StackTrace? innerStack;
 
   if (innerError is CheckedFromJsonException) {
-    final cfje = innerError as CheckedFromJsonException;
+    final cfje = innerError;
 
     if (cfje.innerError != null) {
       innerError = cfje.innerError;
@@ -56,18 +56,14 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
 }
 
 Pubspec parse(
-  Object content, {
+  Object? content, {
   bool quietOnError = false,
   bool skipTryPub = false,
   bool lenient = false,
 }) {
-  quietOnError ??= false;
-  skipTryPub ??= false;
-  lenient ??= false;
-
   final encoded = _encodeJson(content);
 
-  ProcResult pubResult;
+  ProcResult? pubResult;
   if (!skipTryPub) {
     pubResult = waitFor(tryPub(encoded));
     expect(pubResult, isNotNull);
@@ -78,7 +74,7 @@ Pubspec parse(
 
     if (pubResult != null) {
       addTearDown(() {
-        expect(pubResult.cleanParse, isTrue,
+        expect(pubResult!.cleanParse, isTrue,
             reason:
                 'On success, parsing from the pub client should also succeed.');
       });
@@ -87,7 +83,7 @@ Pubspec parse(
   } catch (e) {
     if (pubResult != null) {
       addTearDown(() {
-        expect(pubResult.cleanParse, isFalse,
+        expect(pubResult!.cleanParse, isFalse,
             reason:
                 'On failure, parsing from the pub client should also fail.');
       });
@@ -102,7 +98,7 @@ Pubspec parse(
 }
 
 void expectParseThrows(
-  Object content,
+  Object? content,
   String expectedError, {
   bool skipTryPub = false,
   bool lenient = false,

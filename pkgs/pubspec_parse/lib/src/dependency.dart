@@ -2,16 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 part 'dependency.g.dart';
 
-Map<String, Dependency> parseDeps(Map source) =>
+Map<String, Dependency> parseDeps(Map? source) =>
     source?.map((k, v) {
       final key = k as String;
-      Dependency value;
+      Dependency? value;
       try {
         value = _fromJson(v);
       } on CheckedFromJsonException catch (e) {
@@ -19,7 +20,7 @@ Map<String, Dependency> parseDeps(Map source) =>
           // This is likely a "synthetic" map created from a String value
           // Use `source` to throw this exception with an actual YamlMap and
           // extract the associated error information.
-          throw CheckedFromJsonException(source, key, e.className, e.message);
+          throw CheckedFromJsonException(source, key, e.className!, e.message);
         }
         rethrow;
       }
@@ -35,7 +36,7 @@ Map<String, Dependency> parseDeps(Map source) =>
 const _sourceKeys = ['sdk', 'git', 'path', 'hosted'];
 
 /// Returns `null` if the data could not be parsed.
-Dependency _fromJson(dynamic data) {
+Dependency? _fromJson(Object? data) {
   if (data is String || data == null) {
     return _$HostedDependencyFromJson({'version': data});
   }
@@ -47,8 +48,8 @@ Dependency _fromJson(dynamic data) {
     if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
       return _$HostedDependencyFromJson(data);
     } else {
-      final firstUnrecognizedKey = matchedKeys
-          .firstWhere((k) => !_sourceKeys.contains(k), orElse: () => null);
+      final firstUnrecognizedKey =
+          matchedKeys.firstWhereOrNull((k) => !_sourceKeys.contains(k));
 
       return $checkedNew<Dependency>('Dependency', data, () {
         if (firstUnrecognizedKey != null) {
@@ -92,12 +93,13 @@ abstract class Dependency {
 
 @JsonSerializable()
 class SdkDependency extends Dependency {
-  @JsonKey(nullable: false, disallowNullValue: true, required: true)
   final String sdk;
   @JsonKey(fromJson: _constraintFromString)
   final VersionConstraint version;
 
-  SdkDependency(this.sdk, {this.version}) : super._();
+  SdkDependency(this.sdk, {VersionConstraint? version})
+      : version = version ?? VersionConstraint.any,
+        super._();
 
   @override
   String get _info => sdk;
@@ -105,14 +107,14 @@ class SdkDependency extends Dependency {
 
 @JsonSerializable()
 class GitDependency extends Dependency {
-  @JsonKey(fromJson: parseGitUri, required: true, disallowNullValue: true)
+  @JsonKey(fromJson: parseGitUri)
   final Uri url;
-  final String ref;
-  final String path;
+  final String? ref;
+  final String? path;
 
-  GitDependency(this.url, this.ref, this.path) : super._();
+  GitDependency(this.url, {this.ref, this.path}) : super._();
 
-  factory GitDependency.fromData(Object data) {
+  factory GitDependency.fromData(Object? data) {
     if (data is String) {
       data = {'url': data};
     }
@@ -128,12 +130,14 @@ class GitDependency extends Dependency {
   String get _info => 'url@$url';
 }
 
-Uri parseGitUri(String value) =>
-    value == null ? null : _tryParseScpUri(value) ?? Uri.parse(value);
+Uri? parseGitUriOrNull(String? value) =>
+    value == null ? null : parseGitUri(value);
+
+Uri parseGitUri(String value) => _tryParseScpUri(value) ?? Uri.parse(value);
 
 /// Supports URIs like `[user@]host.xz:path/to/repo.git/`
 /// See https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a
-Uri _tryParseScpUri(String value) {
+Uri? _tryParseScpUri(String value) {
   final colonIndex = value.indexOf(':');
 
   if (colonIndex < 0) {
@@ -167,7 +171,7 @@ class PathDependency extends Dependency {
 
   PathDependency(this.path) : super._();
 
-  factory PathDependency.fromData(Object data) {
+  factory PathDependency.fromData(Object? data) {
     if (data is String) {
       return PathDependency(data);
     }
@@ -184,9 +188,9 @@ class HostedDependency extends Dependency {
   final VersionConstraint version;
 
   @JsonKey(disallowNullValue: true)
-  final HostedDetails hosted;
+  final HostedDetails? hosted;
 
-  HostedDependency({VersionConstraint version, this.hosted})
+  HostedDependency({VersionConstraint? version, this.hosted})
       : version = version ?? VersionConstraint.any,
         super._();
 
@@ -196,15 +200,14 @@ class HostedDependency extends Dependency {
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
 class HostedDetails {
-  @JsonKey(required: true, disallowNullValue: true)
   final String name;
 
-  @JsonKey(fromJson: parseGitUri, disallowNullValue: true)
-  final Uri url;
+  @JsonKey(fromJson: parseGitUriOrNull, disallowNullValue: true)
+  final Uri? url;
 
   HostedDetails(this.name, this.url);
 
-  factory HostedDetails.fromJson(Object data) {
+  factory HostedDetails.fromJson(Object? data) {
     if (data is String) {
       data = {'name': data};
     }
@@ -217,5 +220,5 @@ class HostedDetails {
   }
 }
 
-VersionConstraint _constraintFromString(String input) =>
-    input == null ? null : VersionConstraint.parse(input);
+VersionConstraint _constraintFromString(String? input) =>
+    input == null ? VersionConstraint.any : VersionConstraint.parse(input);

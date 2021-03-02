@@ -1,3 +1,9 @@
+## 1.0.0
+
+- Migrate to null-safety.
+- Pubspec: `author` and `authors` are both now deprecated.
+  See https://dart.dev/tools/pub/pubspec#authorauthors
+
 ## 0.1.8
 
 - Allow the latest `package:pub_semver`.

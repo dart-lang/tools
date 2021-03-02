@@ -112,8 +112,8 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
       'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
     });
     expect(dep.version.toString(), '^1.0.0');
-    expect(dep.hosted.name, 'hosted_name');
-    expect(dep.hosted.url.toString(), 'hosted_url');
+    expect(dep.hosted!.name, 'hosted_name');
+    expect(dep.hosted!.url.toString(), 'hosted_url');
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
@@ -149,16 +149,16 @@ line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git
     final dep = _dependency<HostedDependency>(
         {'version': '^1.0.0', 'hosted': 'hosted_name'});
     expect(dep.version.toString(), '^1.0.0');
-    expect(dep.hosted.name, 'hosted_name');
-    expect(dep.hosted.url, isNull);
+    expect(dep.hosted!.name, 'hosted_name');
+    expect(dep.hosted!.url, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
   test('map w/ hosted as String', () {
     final dep = _dependency<HostedDependency>({'hosted': 'hosted_name'});
     expect(dep.version, VersionConstraint.any);
-    expect(dep.hosted.name, 'hosted_name');
-    expect(dep.hosted.url, isNull);
+    expect(dep.hosted!.name, 'hosted_name');
+    expect(dep.hosted!.url, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
@@ -186,7 +186,7 @@ void _sdkDependency() {
   test('without version', () {
     final dep = _dependency<SdkDependency>({'sdk': 'flutter'});
     expect(dep.sdk, 'flutter');
-    expect(dep.version, isNull);
+    expect(dep.version, VersionConstraint.any);
     expect(dep.toString(), 'SdkDependency: flutter');
   });
 
@@ -202,10 +202,12 @@ void _sdkDependency() {
     _expectThrows(
       {'sdk': null},
       r'''
-line 5, column 4: These keys had `null` values, which is not allowed: [sdk]
+line 5, column 11: Unsupported value for "sdk". type 'Null' is not a subtype of type 'String' in type cast
   ╷
-5 │    "sdk": null
-  │    ^^^^^
+5 │      "sdk": null
+  │ ┌───────────^
+6 │ │   }
+  │ └──^
   ╵''',
     );
   });
@@ -304,12 +306,15 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   });
 
   test('git - empty map', () {
-    _expectThrows({'git': {}}, r'''
-line 5, column 11: Required keys are missing: url.
+    _expectThrows(
+      {'git': {}},
+      r'''
+line 5, column 11: Missing key "url". type 'Null' is not a subtype of type 'String' in type cast
   ╷
 5 │    "git": {}
   │           ^^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('git - null url', () {
@@ -318,10 +323,12 @@ line 5, column 11: Required keys are missing: url.
         'git': {'url': null}
       },
       r'''
-line 6, column 5: These keys had `null` values, which is not allowed: [url]
+line 6, column 12: Unsupported value for "url". type 'Null' is not a subtype of type 'String' in type cast
   ╷
-6 │     "url": null
-  │     ^^^^^
+6 │       "url": null
+  │ ┌────────────^
+7 │ │    }
+  │ └───^
   ╵''',
     );
   });
@@ -402,7 +409,10 @@ void _expectThrows(Object content, String expectedError) {
   }, expectedError);
 }
 
-T _dependency<T extends Dependency>(Object content, {bool skipTryPub = false}) {
+T _dependency<T extends Dependency>(
+  Object? content, {
+  bool skipTryPub = false,
+}) {
   final value = parse({
     ...defaultPubspec,
     'dependencies': {'dep': content}
