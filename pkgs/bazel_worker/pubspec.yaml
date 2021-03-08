@@ -1,16 +1,16 @@
 name: bazel_worker
-version: 1.0.0-nullsafety.0
+version: 1.0.0
 
 description: Tools for creating a bazel persistent worker.
 homepage: https://github.com/dart-lang/bazel_worker
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  async: '>=2.5.0-nullsafety <3.0.0'
-  pedantic: ^1.10.0-nullsafety
-  protobuf: '>=2.0.0-nullsafety <3.0.0'
+  async: '>=2.5.0 <3.0.0'
+  pedantic: ^1.10.0
+  protobuf: '>=2.0.0 <3.0.0'
 
 dev_dependencies:
-  test: ^1.16.0-nullsafety
+  test: ^1.16.0
