@@ -13,12 +13,12 @@ import 'package:timing/src/timing.dart';
 void _noop() {}
 
 void main() {
-  DateTime time;
+  late DateTime time;
   final startTime = DateTime(2017);
   DateTime fakeClock() => time;
 
-  TimeTracker tracker;
-  TimeTracker nestedTracker;
+  late TimeTracker tracker;
+  late TimeTracker nestedTracker;
 
   T scopedTrack<T>(T Function() f) =>
       scopeClock(fakeClock, () => tracker.track(f));
@@ -222,8 +222,8 @@ void main() {
   });
 
   group('AsyncTimeTracker', () {
-    AsyncTimeTracker asyncTracker;
-    AsyncTimeTracker nestedAsyncTracker;
+    late AsyncTimeTracker asyncTracker;
+    late AsyncTimeTracker nestedAsyncTracker;
     setUp(() {
       tracker = asyncTracker = AsyncTimeTracker();
       nestedTracker = nestedAsyncTracker = AsyncTimeTracker();

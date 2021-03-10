@@ -20,7 +20,7 @@ Map<String, dynamic> _$TimeSliceToJson(TimeSlice instance) => <String, dynamic>{
 
 TimeSliceGroup _$TimeSliceGroupFromJson(Map<String, dynamic> json) {
   return TimeSliceGroup(
-    (json['slices'] as List)
+    (json['slices'] as List<dynamic>)
         .map((e) => TimeSlice.fromJson(e as Map<String, dynamic>))
         .toList(),
   );

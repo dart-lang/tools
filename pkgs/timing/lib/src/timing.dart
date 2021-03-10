@@ -12,7 +12,7 @@ part 'timing.g.dart';
 
 /// The timings of an operation, including its [startTime], [stopTime], and
 /// [duration].
-@JsonSerializable(nullable: false)
+@JsonSerializable()
 class TimeSlice {
   /// The total duration of this operation, equivalent to taking the difference
   /// between [stopTime] and [startTime].
@@ -35,7 +35,7 @@ class TimeSlice {
 
 /// The timings of an async operation, consist of several sync [slices] and
 /// includes total [startTime], [stopTime], and [duration].
-@JsonSerializable(nullable: false)
+@JsonSerializable()
 class TimeSliceGroup implements TimeSlice {
   final List<TimeSlice> slices;
 
@@ -96,13 +96,13 @@ abstract class TimeTracker implements TimeSlice {
 class SyncTimeTracker implements TimeTracker {
   /// When this operation started, call [_start] to set this.
   @override
-  DateTime get startTime => _startTime;
-  DateTime _startTime;
+  DateTime get startTime => _startTime!;
+  DateTime? _startTime;
 
   /// When this operation stopped, call [_stop] to set this.
   @override
-  DateTime get stopTime => _stopTime;
-  DateTime _stopTime;
+  DateTime get stopTime => _stopTime!;
+  DateTime? _stopTime;
 
   /// Start tracking this operation, must only be called once, before [_stop].
   void _start() {
@@ -128,7 +128,7 @@ class SyncTimeTracker implements TimeTracker {
       throw StateError('Can be only called while tracking');
     }
     final _now = now();
-    final prevSlice = TimeSlice(_startTime, _now);
+    final prevSlice = TimeSlice(_startTime!, _now);
     _startTime = _now;
     return prevSlice;
   }
@@ -147,16 +147,16 @@ class SyncTimeTracker implements TimeTracker {
   }
 
   @override
-  bool get isStarted => startTime != null;
+  bool get isStarted => _startTime != null;
 
   @override
-  bool get isTracking => startTime != null && stopTime == null;
+  bool get isTracking => _startTime != null && _stopTime == null;
 
   @override
-  bool get isFinished => startTime != null && stopTime != null;
+  bool get isFinished => _startTime != null && _stopTime != null;
 
   @override
-  Duration get duration => stopTime?.difference(startTime);
+  Duration get duration => _stopTime!.difference(_startTime!);
 
   /// Converts to JSON representation
   ///
@@ -324,7 +324,7 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
     }
   }
 
-  bool _tracking;
+  bool? _tracking;
 
   @override
   bool get isStarted => _tracking != null;

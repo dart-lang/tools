@@ -1,3 +1,8 @@
+## 1.0.0
+
+- Enable null safety.
+- Require Dart `2.12`.
+
 ## 0.1.1+3
 
 - Allow `package:json_annotation` `'>=1.0.0 <5.0.0'`.

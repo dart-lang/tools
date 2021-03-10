@@ -20,13 +20,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sdk: [dev]
-        version: [latest]
+        sdk: [2.12.0, dev]
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.1
+      - uses: dart-lang/setup-dart@v1.0
         with:
-          channel: ${{ matrix.sdk }}
+          sdk: ${{ matrix.sdk }}
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -48,21 +47,14 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: [dev]
-        version: [latest]
-        include:
-          - os: ubuntu-latest
-            sdk: stable
-            version: 2.2.0
+        sdk: [2.12.0, dev]
     steps:
       - uses: actions/checkout@v2
-      - uses: cedx/setup-dart@v2 # TODO(dart-lang/setup-dart#3): use the official setup-dart action
+      - uses: dart-lang/setup-dart@v1.0
         with:
-          release-channel: ${{ matrix.sdk }}
-          version: ${{ matrix.version }}
+          sdk: ${{ matrix.sdk }}
       - id: install
-        name: Install dependencies
         run: pub get
       - name: Run VM tests
-        run: pub run test --platform vm
+        run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
