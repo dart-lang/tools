@@ -9,7 +9,7 @@ part of '../visitor.dart';
 /// Helper function to dump the CSS AST.
 String treeToDebugString(StyleSheet styleSheet, [bool useSpan = false]) {
   var to = TreeOutput();
-  _TreePrinter(to, useSpan)..visitTree(styleSheet);
+  _TreePrinter(to, useSpan).visitTree(styleSheet);
   return to.toString();
 }
 
@@ -392,7 +392,7 @@ class _TreePrinter extends Visitor {
     output.depth++;
     super.visitAttributeSelector(node);
     var tokenStr = node.matchOperatorAsTokenString();
-    output.writeValue('operator', '${node.matchOperator()} (${tokenStr})');
+    output.writeValue('operator', '${node.matchOperator()} ($tokenStr)');
     output.writeValue('value', node.valueToString());
     output.depth--;
   }

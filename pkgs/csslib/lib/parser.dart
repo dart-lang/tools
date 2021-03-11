@@ -2257,11 +2257,11 @@ class _Parser {
         return _parseHex(' ${processTerm().text}', _makeSpan(start));
       case TokenKind.INTEGER:
         t = _next();
-        value = int.parse('${unary}${t.text}');
+        value = int.parse('$unary${t.text}');
         break;
       case TokenKind.DOUBLE:
         t = _next();
-        value = double.parse('${unary}${t.text}');
+        value = double.parse('$unary${t.text}');
         break;
       case TokenKind.SINGLE_QUOTE:
         value = processQuotedString(false);
@@ -2331,8 +2331,8 @@ class _Parser {
           if (isChecked) {
             var propName = nameValue.name;
             var errMsg = TokenKind.isPredefinedName(propName)
-                ? 'Improper use of property value ${propName}'
-                : 'Unknown property value ${propName}';
+                ? 'Improper use of property value $propName'
+                : 'Unknown property value $propName';
             _warning(errMsg, _makeSpan(start));
           }
           return LiteralTerm(nameValue, nameValue.name, _makeSpan(start));

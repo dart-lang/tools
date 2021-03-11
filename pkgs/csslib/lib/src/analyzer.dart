@@ -50,7 +50,7 @@ class Analyzer {
     // Expand any @extend.
     _styleSheets.forEach((styleSheet) {
       var allExtends = AllExtends()..visitStyleSheet(styleSheet);
-      InheritExtends(_messages, allExtends)..visitStyleSheet(styleSheet);
+      InheritExtends(_messages, allExtends).visitStyleSheet(styleSheet);
     });
   }
 }
@@ -872,7 +872,7 @@ class _IncludeReplacer extends Visitor {
 /// @include.
 class MixinsAndIncludes extends Visitor {
   static void remove(StyleSheet styleSheet) {
-    MixinsAndIncludes()..visitStyleSheet(styleSheet);
+    MixinsAndIncludes().visitStyleSheet(styleSheet);
   }
 
   bool _nodesToRemove(node) =>

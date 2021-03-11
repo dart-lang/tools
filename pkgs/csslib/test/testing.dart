@@ -74,7 +74,7 @@ String compactOutput(StyleSheet ss) {
 
 /// Walks the style sheet tree does nothing; insures the basic walker works.
 void walkTree(StyleSheet ss) {
-  _cssVisitor..visitTree(ss);
+  _cssVisitor.visitTree(ss);
 }
 
 String dumpTree(StyleSheet ss) => treeToDebugString(ss);

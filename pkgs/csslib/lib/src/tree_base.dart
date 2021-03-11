@@ -69,7 +69,7 @@ class TreeOutput {
   }
 
   void writeNode(String label, TreeNode? node) {
-    write('${label}: ');
+    write('$label: ');
     depth += 1;
     if (node != null) {
       node.visit(printer!);
@@ -81,11 +81,11 @@ class TreeOutput {
 
   void writeValue(String label, value) {
     var v = toValue(value);
-    writeln('${label}: ${v}');
+    writeln('$label: $v');
   }
 
   void writeNodeList(String label, List<TreeNode>? list) {
-    writeln('${label} [');
+    writeln('$label [');
     if (list != null) {
       depth += 1;
       for (var node in list) {
