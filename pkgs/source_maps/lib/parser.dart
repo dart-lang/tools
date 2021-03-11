@@ -531,7 +531,7 @@ class SingleMapping extends Mapping {
 
     var url = urls[sourceUrlId];
     if (sourceRoot != null) {
-      url = '${sourceRoot}${url}';
+      url = '$sourceRoot$url';
     }
 
     var sourceNameId = entry.sourceNameId;
