@@ -2,11 +2,11 @@ name: pubspec_parse
 description: >-
   Simple package for parsing pubspec.yaml files with a type-safe API and rich
   error reporting.
-version: 1.0.0
+version: 1.0.1-dev
 repository: https://github.com/dart-lang/pubspec_parse
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   checked_yaml: ^2.0.1
@@ -27,10 +27,3 @@ dev_dependencies:
   test: ^1.0.0
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
-
-dependency_overrides:
-  # Need to update dependencies on these packages
-  build_config: 0.4.6
-  build_runner: any
-  checked_yaml: ^2.0.1
-  json_annotation: 4.0.0
