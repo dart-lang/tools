@@ -73,13 +73,13 @@ void main() {
       expect(result, allOf(contains('a'), contains('b')));
     });
 
-    test('ignores null nodes', () async {
+    test('allows null nodes', () async {
       var result = await crawl({
         'a': ['b'],
       }, [
         'a'
       ]);
-      expect(result, ['a']);
+      expect(result, ['a', null]);
     });
 
     test('surfaces exceptions for crawling edges', () {

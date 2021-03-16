@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-final _empty = Future<Null>.value(null);
+final _empty = Future<void>.value();
 
 /// Finds and returns every node in a graph who's nodes and edges are
 /// asynchronously resolved.
@@ -21,10 +21,6 @@ final _empty = Future<Null>.value(null);
 /// There are no ordering guarantees. This is useful for ensuring some work is
 /// performed at every node in an asynchronous graph, but does not give
 /// guarantees that the work is done in topological order.
-///
-/// If [readNode] returns null for any key it will be ignored from the rest of
-/// the graph. If missing nodes are important they should be tracked within the
-/// [readNode] callback.
 ///
 /// If either [readNode] or [edges] throws the error will be forwarded
 /// through the result stream and no further nodes will be crawled, though some
@@ -54,7 +50,7 @@ class _CrawlAsync<K, V> {
 
   /// Add all nodes in the graph to [result] and return a Future which fires
   /// after all nodes have been seen.
-  Future<Null> run() async {
+  Future<void> run() async {
     try {
       await Future.wait(roots.map(_visit), eagerError: true);
       await result.close();
@@ -66,9 +62,8 @@ class _CrawlAsync<K, V> {
 
   /// Resolve the node at [key] and output it, then start crawling all of it's
   /// edges.
-  Future<Null> _crawlFrom(K key) async {
+  Future<void> _crawlFrom(K key) async {
     var value = await readNode(key);
-    if (value == null) return;
     if (result.isClosed) return;
     result.add(value);
     var next = await edges(key, value);
@@ -81,7 +76,7 @@ class _CrawlAsync<K, V> {
   /// The returned Future will complete only after the work for [key] and all
   /// transitively reachable nodes has either been finished, or will be finished
   /// by some other Future in [_seen].
-  Future<Null> _visit(K key) {
+  Future<void> _visit(K key) {
     if (_seen.contains(key)) return _empty;
     _seen.add(key);
     return _crawlFrom(key);

@@ -1,5 +1,9 @@
-# 1.0.0
+# 2.0.0-dev
 
+- **Breaking**: `crawlAsync` will no longer ignore a node from the graph if the
+  `readNode` callback returns null.
+
+# 1.0.0
 
 - Migrate to null safety.
 - **Breaking**: Paths from `shortestPath[s]` are now returned as iterables to
