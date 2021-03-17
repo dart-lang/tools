@@ -1,5 +1,5 @@
 name: sse
-version: 3.8.3-dev
+version: 3.8.3
 homepage: https://github.com/dart-lang/sse
 description: >-
   Provides client and server functionality for setting up bi-directional
@@ -20,8 +20,4 @@ dependencies:
 dev_dependencies:
   shelf_static: '>=0.2.8 <2.0.0'
   test: ^1.5.3
-  webdriver: ^2.1.0
-
-dependency_overrides:
-  shelf:
-    git: https://github.com/dart-lang/shelf.git
+  webdriver: ^3.0.0

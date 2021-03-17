@@ -1,4 +1,4 @@
-## 3.8.3-dev
+## 3.8.3
 
 - Require the latest shelf and remove dead code.
 
