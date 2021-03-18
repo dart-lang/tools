@@ -1,3 +1,7 @@
+## 0.1.9
+
+ - Add support for Chrome executables in `CHROME_PATH`.
+
 ## 0.1.8
 
 - Log `STDERR` on Chrome launch failure.
