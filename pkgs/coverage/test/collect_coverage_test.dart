@@ -55,26 +55,38 @@ void main() {
     final coverage = jsonResult['coverage'] as List;
     final hitMap = await createHitmap(
       coverage.cast<Map<String, dynamic>>(),
-      checkIgnoredLines: true,
     );
     expect(hitMap, contains(_sampleAppFileUri));
 
     final isolateFile = hitMap[_isolateLibFileUri];
     final expectedHits = {
+      11: 1,
       12: 1,
       13: 1,
       15: 0,
+      28: 1,
+      29: 1,
+      31: 1,
+      32: 3,
+      38: 1,
+      41: 1,
+      42: 1,
+      43: 1,
+      46: 1,
+      47: 1,
+      49: 1,
+      50: 1,
+      51: 1,
+      53: 1,
+      54: 1,
+      55: 1,
+      18: 1,
       19: 1,
       20: 1,
       22: 0,
-      29: 1,
-      31: 1,
-      32: 2,
       33: 1,
       34: 3,
-      35: 1,
-      46: 1,
-      47: 1,
+      35: 1
     };
     if (Platform.version.startsWith('1.')) {
       // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
@@ -104,6 +116,26 @@ void main() {
       final parsedResult = await parseCoverage([outputFile], 1);
 
       expect(parsedResult, contains(_sampleAppFileUri));
+      expect(parsedResult, contains(_isolateLibFileUri));
+    } finally {
+      await tempDir.delete(recursive: true);
+    }
+  });
+
+  test('parseCoverage with packagesPath and checkIgnoredLines', () async {
+    final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
+
+    try {
+      final outputFile = File(p.join(tempDir.path, 'coverage.json'));
+
+      final coverageResults = await _getCoverageResult();
+      await outputFile.writeAsString(coverageResults, flush: true);
+
+      final parsedResult = await parseCoverage([outputFile], 1,
+          packagesPath: '.packages', checkIgnoredLines: true);
+
+      // This file has ignore:coverage-file.
+      expect(parsedResult, isNot(contains(_sampleAppFileUri)));
       expect(parsedResult, contains(_isolateLibFileUri));
     } finally {
       await tempDir.delete(recursive: true);

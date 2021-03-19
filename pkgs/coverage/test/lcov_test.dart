@@ -27,11 +27,11 @@ void main() {
 
     final sampleAppHitMap = hitmap[_sampleAppFileUri];
 
-    expect(sampleAppHitMap, containsPair(44, greaterThanOrEqualTo(1)),
+    expect(sampleAppHitMap, containsPair(46, greaterThanOrEqualTo(1)),
         reason: 'be careful if you modify the test file');
-    expect(sampleAppHitMap, containsPair(48, 0),
+    expect(sampleAppHitMap, containsPair(50, 0),
         reason: 'be careful if you modify the test file');
-    expect(sampleAppHitMap, isNot(contains(30)),
+    expect(sampleAppHitMap, isNot(contains(32)),
         reason: 'be careful if you modify the test file');
   });
 

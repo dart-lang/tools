@@ -135,6 +135,7 @@ Future<Map<String, Map<int, int>>> parseCoverage(
   Iterable<File> files,
   int _, {
   bool checkIgnoredLines = false,
+  String? packagesPath,
 }) async {
   final globalHitmap = <String, Map<int, int>>{};
   for (var file in files) {
@@ -146,6 +147,7 @@ Future<Map<String, Map<int, int>>> parseCoverage(
         await createHitmap(
           jsonResult.cast<Map<String, dynamic>>(),
           checkIgnoredLines: checkIgnoredLines,
+          packagesPath: packagesPath,
         ),
         globalHitmap,
       );

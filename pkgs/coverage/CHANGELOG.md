@@ -1,3 +1,8 @@
+## 1.0.2 - 2021-03-15
+
+* Fix an issue where the `--packages` argument wasn't passed to `format_coverage`. 
+
+
 ## 1.0.1 - 2021-02-25
 
 * Allow the chrome `sourceUriProvider` to return `null`.
