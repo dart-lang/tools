@@ -34,10 +34,10 @@ void main() {
 }
 
 d.DirectoryDescriptor _struct() => d.dir('parent', [
-    d.dir('child', [
-      d.file('foo.txt'),
-    ]),
-  ]);
+      d.dir('child', [
+        d.file('foo.txt'),
+      ]),
+    ]);
 
 Future<void> _create() => _struct().create();
 Future<void> _validate() => _struct().validate();
