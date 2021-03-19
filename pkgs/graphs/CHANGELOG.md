@@ -1,4 +1,4 @@
-# 2.0.0-dev
+# 2.0.0
 
 - **Breaking**: `crawlAsync` will no longer ignore a node from the graph if the
   `readNode` callback returns null.
