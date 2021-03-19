@@ -4,7 +4,7 @@ description: Coverage data manipulation and formatting
 homepage: https://github.com/dart-lang/coverage
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   args: ^2.0.0
@@ -21,7 +21,3 @@ dev_dependencies:
 executables:
   collect_coverage:
   format_coverage:
-
-dependency_overrides:
-  test: ^1.16.0
-  test_core: ^0.3.14

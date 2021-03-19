@@ -2,7 +2,6 @@
 
 * Fix an issue where the `--packages` argument wasn't passed to `format_coverage`. 
 
-
 ## 1.0.1 - 2021-02-25
 
 * Allow the chrome `sourceUriProvider` to return `null`.
@@ -10,6 +9,7 @@
 ## 1.0.0 - 2021-02-25
 
 * Migrate to null safety.
+* Removed support for SDK `1.x.x`.
 
 ## 0.15.2 - 2021-02-08
 
