@@ -7,7 +7,7 @@
 /// A class that provides access to every configurable glyph.
 ///
 /// This is provided as a class so that individual chunks of code can choose
-/// between [ascii] and [unicode] glyphs. For example:
+/// between `ascii` and `unicode` glyphs. For example:
 ///
 /// ```dart
 /// import 'package:term_glyph/term_glyph.dart' as glyph;
@@ -28,7 +28,7 @@
 /// }
 /// ```
 abstract class GlyphSet {
-  /// Returns [glyph] if [this] supports Unicode glyphs and [alternative]
+  /// Returns [glyph] if `this` supports Unicode glyphs and [alternative]
   /// otherwise.
   String glyphOrAscii(String glyph, String alternative);
 

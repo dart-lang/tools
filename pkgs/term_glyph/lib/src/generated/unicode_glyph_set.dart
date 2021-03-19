@@ -10,7 +10,7 @@ import 'glyph_set.dart';
 class UnicodeGlyphSet implements GlyphSet {
   const UnicodeGlyphSet();
 
-  /// Returns [glyph] if [this] supports Unicode glyphs and [alternative]
+  /// Returns [glyph] if `this` supports Unicode glyphs and [alternative]
   /// otherwise.
   @override
   String glyphOrAscii(String glyph, String alternative) => glyph;
