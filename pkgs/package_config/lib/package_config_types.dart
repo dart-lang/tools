@@ -4,7 +4,7 @@
 
 /// A package configuration is a way to assign file paths to package URIs,
 /// and vice-versa,
-library package_config.package_config;
+library package_config.package_config_types;
 
 export "src/package_config.dart"
     show PackageConfig, Package, LanguageVersion, InvalidLanguageVersion;

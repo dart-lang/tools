@@ -1,3 +1,7 @@
+## 2.0.1
+
+- Use unique library names to correct docs issue.
+
 ## 2.0.0
 
 - Migrate to null safety.
