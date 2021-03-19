@@ -60,6 +60,7 @@ Future<Null> main(List<String> arguments) async {
     files,
     env.workers,
     checkIgnoredLines: env.checkIgnore,
+    packagesPath: env.packagesPath,
   );
 
   // All workers are done. Process the data.
