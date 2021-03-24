@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Update example in README for new import.
+
 ## 2.0.0
 
 * Stable null safety release.

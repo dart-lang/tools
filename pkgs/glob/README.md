@@ -29,6 +29,7 @@ You can also list all files that match a glob using `Glob.list()` or
 
 ```dart
 import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 
 final dartFile = Glob("**.dart");
 
