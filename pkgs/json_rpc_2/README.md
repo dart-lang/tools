@@ -1,6 +1,6 @@
 A library that implements the [JSON-RPC 2.0 spec][spec].
 
-[spec]: http://www.jsonrpc.org/specification
+[spec]: https://www.jsonrpc.org/specification
 
 ## Server
 
