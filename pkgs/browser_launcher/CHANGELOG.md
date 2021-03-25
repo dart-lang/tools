@@ -1,3 +1,7 @@
+## 0.1.10
+
+ - Support `webkit_inspection_protocol` version `^1.0.0`.
+
 ## 0.1.9
 
  - Add support for Chrome executables in `CHROME_PATH`.
