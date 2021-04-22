@@ -19,13 +19,12 @@ class ClientController {
   final _requestController = StreamController<String>();
 
   /// The client.
-  json_rpc.Client get client => _client;
-  json_rpc.Client _client;
+  late final json_rpc.Client client;
 
   ClientController() {
-    _client = json_rpc.Client(
+    client = json_rpc.Client(
         StreamChannel(_responseController.stream, _requestController.sink));
-    _client.listen();
+    client.listen();
   }
 
   /// Expects that the client will send a request.

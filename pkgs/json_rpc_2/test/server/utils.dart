@@ -20,17 +20,16 @@ class ServerController {
   final _responseController = StreamController<String>();
 
   /// The server.
-  json_rpc.Server get server => _server;
-  json_rpc.Server _server;
+  late final json_rpc.Server server;
 
   ServerController(
-      {json_rpc.ErrorCallback onUnhandledError,
+      {json_rpc.ErrorCallback? onUnhandledError,
       bool strictProtocolChecks = true}) {
-    _server = json_rpc.Server(
+    server = json_rpc.Server(
         StreamChannel(_requestController.stream, _responseController.sink),
         onUnhandledError: onUnhandledError,
         strictProtocolChecks: strictProtocolChecks);
-    _server.listen();
+    server.listen();
   }
 
   /// Passes [request], a decoded request, to [server] and returns its decoded
@@ -66,11 +65,7 @@ void expectErrorResponse(
 
 /// Returns a matcher that matches a [json_rpc.RpcException] with an
 /// `invalid_params` error code.
-Matcher throwsInvalidParams(String message) {
-  return throwsA(predicate((error) {
-    expect(error, TypeMatcher<json_rpc.RpcException>());
-    expect(error.code, equals(error_code.INVALID_PARAMS));
-    expect(error.message, equals(message));
-    return true;
-  }));
-}
+Matcher throwsInvalidParams(String message) =>
+    throwsA(TypeMatcher<json_rpc.RpcException>()
+        .having((e) => e.code, 'code', error_code.INVALID_PARAMS)
+        .having((e) => e.message, 'message', message));

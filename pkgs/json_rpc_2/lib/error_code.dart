@@ -37,7 +37,7 @@ const SERVER_ERROR = -32000;
 /// JSON-RPC 2.0 spec.
 ///
 /// If [errorCode] isn't defined in the JSON-RPC 2.0 spec, returns null.
-String name(int errorCode) {
+String? name(int errorCode) {
   switch (errorCode) {
     case PARSE_ERROR:
       return 'parse error';

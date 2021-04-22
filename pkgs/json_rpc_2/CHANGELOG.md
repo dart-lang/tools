@@ -1,5 +1,6 @@
-## 2.2.3-dev (unreleased)
+## 3.0.0-dev
 
+* Migrate to null safety.
 * Accept responses even if the server converts the ID to a String.
 
 ## 2.2.2

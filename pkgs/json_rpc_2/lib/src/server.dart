@@ -60,7 +60,7 @@ class Server {
   /// In the case where a user provided callback results in an exception that
   /// cannot be properly routed back to the client, this handler will be
   /// invoked. If it is not set, the exception will be swallowed.
-  final ErrorCallback onUnhandledError;
+  final ErrorCallback? onUnhandledError;
 
   /// Whether to strictly enforce the JSON-RPC 2.0 specification for received
   /// messages.
@@ -82,7 +82,7 @@ class Server {
   /// requests which are not conformant with the JSON-RPC 2.0 specification. In
   /// particular, requests missing the `jsonrpc` parameter will be accepted.
   Server(StreamChannel<String> channel,
-      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true})
+      {ErrorCallback? onUnhandledError, bool strictProtocolChecks = true})
       : this.withoutJson(
             jsonDocument.bind(channel).transform(respondToFormatExceptions),
             onUnhandledError: onUnhandledError,

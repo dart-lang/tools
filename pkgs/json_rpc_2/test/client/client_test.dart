@@ -174,14 +174,12 @@ void main() {
       };
     });
 
-    expect(controller.client.sendRequest('foo', {'param': 'value'}),
-        throwsA(predicate((exception) {
-      expect(exception, TypeMatcher<json_rpc.RpcException>());
-      expect(exception.code, equals(error_code.SERVER_ERROR));
-      expect(exception.message, equals('you are bad at requests'));
-      expect(exception.data, equals('some junk'));
-      return true;
-    })));
+    expect(
+        controller.client.sendRequest('foo', {'param': 'value'}),
+        throwsA(TypeMatcher<json_rpc.RpcException>()
+            .having((e) => e.code, 'code', error_code.SERVER_ERROR)
+            .having((e) => e.message, 'message', 'you are bad at requests')
+            .having((e) => e.data, 'data', 'some junk')));
   });
 
   test('requests throw StateErrors if the client is closed', () {

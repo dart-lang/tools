@@ -40,25 +40,25 @@ void tryFinally(Function() body, Function() whenComplete) {
     whenComplete();
     return result;
   } else {
-    return result.whenComplete(whenComplete);
+    result.whenComplete(whenComplete);
   }
 }
 
 /// A transformer that silently drops [FormatException]s.
-final ignoreFormatExceptions = StreamTransformer<Object, Object>.fromHandlers(
+final ignoreFormatExceptions = StreamTransformer<Object?, Object?>.fromHandlers(
     handleError: (error, stackTrace, sink) {
   if (error is FormatException) return;
   sink.addError(error, stackTrace);
 });
 
 /// A transformer that sends error responses on [FormatException]s.
-final StreamChannelTransformer<Object, Object> respondToFormatExceptions =
+final StreamChannelTransformer<Object?, Object?> respondToFormatExceptions =
     _RespondToFormatExceptionsTransformer();
 
 class _RespondToFormatExceptionsTransformer
-    implements StreamChannelTransformer<Object, Object> {
+    implements StreamChannelTransformer<Object?, Object?> {
   @override
-  StreamChannel<Object> bind(StreamChannel<Object> channel) {
+  StreamChannel<Object?> bind(StreamChannel<Object?> channel) {
     return channel.changeStream((stream) {
       return stream.handleError((dynamic error) {
         final formatException = error as FormatException;

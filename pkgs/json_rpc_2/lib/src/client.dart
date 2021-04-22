@@ -24,7 +24,7 @@ class Client {
   /// The current batch of requests to be sent together.
   ///
   /// Each element is a JSON RPC spec compliant message.
-  List<Map<String, dynamic>> _batch;
+  List<Map<String, dynamic>>? _batch;
 
   /// The map of request ids to pending requests.
   final _pendingRequests = <int, _Request>{};
@@ -141,7 +141,7 @@ class Client {
   ///
   /// Sends a request to invoke [method] with [parameters]. If [id] is given,
   /// the request uses that id.
-  void _send(String method, parameters, [int id]) {
+  void _send(String method, parameters, [int? id]) {
     if (parameters is Iterable) parameters = parameters.toList();
     if (parameters is! Map && parameters is! List && parameters != null) {
       throw ArgumentError('Only maps and lists may be used as JSON-RPC '
@@ -154,7 +154,7 @@ class Client {
     if (parameters != null) message['params'] = parameters;
 
     if (_batch != null) {
-      _batch.add(message);
+      _batch!.add(message);
     } else {
       _channel.sink.add(message);
     }
@@ -197,7 +197,7 @@ class Client {
     if (!_isResponseValid(response)) return;
     var id = response['id'];
     id = (id is String) ? int.parse(id) : id;
-    var request = _pendingRequests.remove(id);
+    var request = _pendingRequests.remove(id)!;
     if (response.containsKey('result')) {
       request.completer.complete(response['result']);
     } else {

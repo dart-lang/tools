@@ -21,11 +21,11 @@ class Peer implements Client, Server {
 
   /// The underlying client that handles request-sending and response-receiving
   /// logic.
-  Client _client;
+  late final Client _client;
 
   /// The underlying server that handles request-receiving and response-sending
   /// logic.
-  Server _server;
+  late final Server _server;
 
   /// A stream controller that forwards incoming messages to [_server] if
   /// they're requests.
@@ -35,14 +35,14 @@ class Peer implements Client, Server {
   /// they're responses.
   final _clientIncomingForwarder = StreamController(sync: true);
 
-  Future<void> _done;
   @override
-  Future get done => _done ??= Future.wait([_client.done, _server.done]);
+  late final Future done = Future.wait([_client.done, _server.done]);
+
   @override
   bool get isClosed => _client.isClosed || _server.isClosed;
 
   @override
-  ErrorCallback get onUnhandledError => _server?.onUnhandledError;
+  ErrorCallback? get onUnhandledError => _server.onUnhandledError;
 
   @override
   bool get strictProtocolChecks => _server.strictProtocolChecks;
@@ -60,7 +60,7 @@ class Peer implements Client, Server {
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
   Peer(StreamChannel<String> channel,
-      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true})
+      {ErrorCallback? onUnhandledError, bool strictProtocolChecks = true})
       : this.withoutJson(
             jsonDocument.bind(channel).transform(respondToFormatExceptions),
             onUnhandledError: onUnhandledError,
@@ -82,7 +82,7 @@ class Peer implements Client, Server {
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
   Peer.withoutJson(this._channel,
-      {ErrorCallback onUnhandledError, bool strictProtocolChecks = true}) {
+      {ErrorCallback? onUnhandledError, bool strictProtocolChecks = true}) {
     _server = Server.withoutJson(
         StreamChannel(_serverIncomingForwarder.stream, _channel.sink),
         onUnhandledError: onUnhandledError,
