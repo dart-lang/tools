@@ -2,11 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/test.dart';
-import 'package:term_glyph/term_glyph.dart' as glyph;
-
 import 'package:source_span/source_span.dart';
 import 'package:source_span/src/colors.dart' as colors;
+import 'package:term_glyph/term_glyph.dart' as glyph;
+import 'package:test/test.dart';
 
 void main() {
   late bool oldAscii;

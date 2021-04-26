@@ -1,11 +1,11 @@
 name: source_span
-version: 1.8.1
+version: 1.8.2-dev
 
 description: A library for identifying source spans and locations.
 homepage: https://github.com/dart-lang/source_span
 
 environment:
-  sdk: ">=2.12.0-0.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   collection: ^1.15.0
@@ -13,4 +13,4 @@ dependencies:
   term_glyph: ^1.2.0
 
 dev_dependencies:
-  test: ^1.16.0-nullsafety
+  test: ^1.16.0

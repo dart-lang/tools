@@ -1,3 +1,5 @@
+# 1.8.2-dev
+
 # 1.8.1
 
 * Fix a bug where the URL header for the highlights with multiple files would
