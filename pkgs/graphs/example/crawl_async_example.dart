@@ -8,6 +8,7 @@ import 'dart:isolate';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/context_builder.dart';
 import 'package:analyzer/dart/analysis/context_locator.dart';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:graphs/graphs.dart';
 import 'package:path/path.dart' as p;
@@ -58,8 +59,8 @@ Future<Iterable<Uri>> findImports(Uri from, Source source) async {
 Future<CompilationUnit> parseUri(Uri uri) async {
   var path = await pathForUri(uri);
   var analysisSession = (await analysisContext).currentSession;
-  var parseResult = analysisSession.getParsedUnit(path);
-  return parseResult.unit;
+  var parseResult = analysisSession.getParsedUnit2(path);
+  return (parseResult as ParsedUnitResult).unit;
 }
 
 Future<String> pathForUri(Uri uri) async {
