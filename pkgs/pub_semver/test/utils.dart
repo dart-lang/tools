@@ -2,9 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test/test.dart';
-
 import 'package:pub_semver/pub_semver.dart';
+import 'package:test/test.dart';
 
 /// Some stock example versions to use in tests.
 final v003 = Version.parse('0.0.3');
