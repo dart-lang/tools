@@ -59,15 +59,15 @@ jobs:
       - name: Run VM tests
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
-  
+
   coverage:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.1
+      - uses: dart-lang/setup-dart@v1.0
         with:
-          channel: dev
+          sdk: dev
       - id: install
         name: Install dependencies
         run: dart pub get
