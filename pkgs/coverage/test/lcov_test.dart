@@ -145,7 +145,7 @@ void main() {
   });
 }
 
-Future<Map<String, Map<int, int>>> _getHitMap() async {
+Future<Map<String, HitMap>> _getHitMap() async {
   expect(FileSystemEntity.isFileSync(_sampleAppPath), isTrue);
 
   // select service port.
