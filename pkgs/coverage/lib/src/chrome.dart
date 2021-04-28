@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:coverage/src/hitmap.dart';
 import 'package:coverage/src/util.dart';
 import 'package:source_maps/parser.dart';
 
@@ -70,11 +71,11 @@ Future<Map<String, dynamic>> parseChromeCoverage(
     }
   }
 
-  final coverageHitMaps = <Uri, Map<int, int>>{};
+  final coverageHitMaps = <Uri, HitMap>{};
   coverageReport.forEach((uri, coverage) {
-    final hitMap = <int, int>{};
+    final hitMap = HitMap();
     for (var line in coverage.keys.toList()..sort()) {
-      hitMap[line] = coverage[line]! ? 1 : 0;
+      hitMap.lineHits[line] = coverage[line]! ? 1 : 0;
     }
     coverageHitMaps[uri] = hitMap;
   });

@@ -73,26 +73,6 @@ Future<int> getOpenPort() async {
   }
 }
 
-/// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
-Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, Map<int, int> hitMap) {
-  final json = <String, dynamic>{};
-  final hits = <int>[];
-  hitMap.forEach((line, hitCount) {
-    hits.add(line);
-    hits.add(hitCount);
-  });
-  json['source'] = '$scriptUri';
-  json['script'] = {
-    'type': '@Script',
-    'fixedId': true,
-    'id': 'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
-    'uri': '$scriptUri',
-    '_kind': 'library',
-  };
-  json['hits'] = hits;
-  return json;
-}
-
 /// Generates a hash code for two objects.
 int hash2(dynamic a, dynamic b) =>
     _finish(_combine(_combine(0, a.hashCode), b.hashCode));
