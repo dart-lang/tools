@@ -1,5 +1,5 @@
 name: json_rpc_2
-version: 3.0.0-dev
+version: 3.0.0
 description: >-
   Utilities to write a client or server using the JSON-RPC 2.0 spec.
 homepage: https://github.com/dart-lang/json_rpc_2
@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   stack_trace: ^1.10.0
-  stream_channel: ">=1.1.0 <3.0.0"
+  stream_channel: ^2.1.0
 
 dev_dependencies:
   pedantic: ^1.11.0

@@ -1,4 +1,4 @@
-## 3.0.0-dev
+## 3.0.0
 
 * Migrate to null safety.
 * Accept responses even if the server converts the ID to a String.
