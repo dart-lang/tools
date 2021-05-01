@@ -201,7 +201,7 @@ class Server {
       var method = _methods[name];
       method ??= _tryFallbacks;
 
-      Object result;
+      Object? result;
       if (method is ZeroArgumentFunction) {
         if (request.containsKey('params')) {
           throw RpcException.invalidParams('No parameters are allowed for '

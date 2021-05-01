@@ -1,3 +1,7 @@
+## 3.0.1-dev
+
+* Fix a bug where a `null` result to a request caused an exception.
+
 ## 3.0.0
 
 * Migrate to null safety.

@@ -44,6 +44,15 @@ void main() {
         completion(equals({'jsonrpc': '2.0', 'result': 'foo', 'id': 1234})));
   });
 
+  test('Allows a `null` result', () {
+    controller.server.registerMethod('foo', () => null);
+
+    expect(
+        controller
+            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'id': 1234}),
+        completion(equals({'jsonrpc': '2.0', 'result': null, 'id': 1234})));
+  });
+
   test('a method that takes no parameters rejects parameters', () {
     controller.server.registerMethod('foo', () => 'foo');
 
