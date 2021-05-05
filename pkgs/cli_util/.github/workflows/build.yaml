@@ -1,35 +1,55 @@
-name: Dart
+name: Dart CI
 
 on:
   schedule:
     # “At 00:00 (UTC) on Sunday.”
     - cron: '0 0 * * 0'
   pull_request:
+    branches: [ master ]
   push:
-    branches:
-      - master
+    branches: [ master ]
+
+env:
+  PUB_ENVIRONMENT: bot.github
 
 jobs:
-  build:
+  analyze:
     runs-on: ubuntu-latest
-
-    container:
-      image:  google/dart:dev
-
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev]
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - uses: dart-lang/setup-dart@v1
+      with:
+        sdk: ${{ matrix.sdk }}
+    - id: install
+      name: Install dependencies
+      run: dart pub get
+    - name: Check formatting
+      run: dart format --output=none --set-exit-if-changed .
+      if: always() && steps.install.outcome == 'success'
+    - name: Analyze code
+      run: dart analyze --fatal-infos
+      if: always() && steps.install.outcome == 'success'
 
-      - name: Print Dart version
-        run: dart --version
-
-      - name: pub get
-        run: pub get
-
-      - name: dart format
-        run: dart format --output=none --set-exit-if-changed .
-
-      - name: dart analyze
-        run: dart analyze --fatal-infos
-
-      - name: dart test
-        run: dart test
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        sdk: [2.12.0, dev]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dart-lang/setup-dart@v1
+      with:
+        sdk: ${{ matrix.sdk }}
+    - id: install
+      name: Install dependencies
+      run: dart pub get
+    - name: Run tests
+      run: dart test --test-randomize-ordering-seed=random
+      if: always() && steps.install.outcome == 'success'

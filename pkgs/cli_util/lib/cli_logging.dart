@@ -200,13 +200,12 @@ class AnsiProgress extends Progress {
 
   final Ansi ansi;
 
-  int _index = 0;
-  late final _timer = Timer.periodic(Duration(milliseconds: 80), (t) {
-    _index++;
-    _updateDisplay();
-  });
+  late final Timer _timer;
 
   AnsiProgress(this.ansi, String message) : super(message) {
+    _timer = Timer.periodic(Duration(milliseconds: 80), (t) {
+      _updateDisplay();
+    });
     io.stdout.write('$message...  '.padRight(40));
     _updateDisplay();
   }
@@ -232,7 +231,7 @@ class AnsiProgress extends Progress {
       bool cancelled = false,
       String? message,
       bool showTiming = false}) {
-    var char = kAnimationItems[_index % kAnimationItems.length];
+    var char = kAnimationItems[_timer.tick % kAnimationItems.length];
     if (isFinal || cancelled) {
       char = '';
     }

@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Fix a bug in `AnsiProgress` where the spinning character doesn't every update.
+
 ## 0.3.0
 
 - Stable null safety release.
