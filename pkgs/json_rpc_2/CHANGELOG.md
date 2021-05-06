@@ -1,4 +1,4 @@
-## 3.0.1-dev
+## 3.0.1
 
 * Fix a bug where a `null` result to a request caused an exception.
 
