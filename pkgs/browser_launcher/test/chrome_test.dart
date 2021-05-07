@@ -10,9 +10,9 @@ import 'package:test/test.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 void main() {
-  Chrome chrome;
+  Chrome? chrome;
 
-  Future<void> launchChromeWithDebugPort({int port}) async {
+  Future<void> launchChromeWithDebugPort({int port = 0}) async {
     chrome = await Chrome.startWithDebugPort([_googleUrl], debugPort: port);
   }
 
@@ -37,7 +37,7 @@ void main() {
 
   test('debugger is working', () async {
     await launchChromeWithDebugPort();
-    var tabs = await chrome.chromeConnection.getTabs();
+    var tabs = await chrome!.chromeConnection.getTabs();
     expect(
         tabs,
         contains(const TypeMatcher<ChromeTab>()
@@ -46,13 +46,13 @@ void main() {
 
   test('uses open debug port if provided port is 0', () async {
     await launchChromeWithDebugPort(port: 0);
-    expect(chrome.debugPort, isNot(equals(0)));
+    expect(chrome!.debugPort, isNot(equals(0)));
   });
 
   test('can provide a specific debug port', () async {
     var port = await findUnusedPort();
     await launchChromeWithDebugPort(port: port);
-    expect(chrome.debugPort, port);
+    expect(chrome!.debugPort, port);
   });
 }
 

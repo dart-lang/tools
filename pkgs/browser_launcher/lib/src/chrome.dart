@@ -18,7 +18,7 @@ const _windowsExecutable = r'Google\Chrome\Application\chrome.exe';
 String get _executable {
   for (var chromeEnv in _chromeEnvironments) {
     if (Platform.environment.containsKey(chromeEnv)) {
-      return Platform.environment[chromeEnv];
+      return Platform.environment[chromeEnv]!;
     }
   }
   if (Platform.isLinux) return _linuxExecutable;
@@ -34,7 +34,7 @@ String get _executable {
         if (prefix == null) return false;
         final path = p.join(prefix, _windowsExecutable);
         return File(path).existsSync();
-      }, orElse: () => '.'),
+      }, orElse: () => '.')!,
       _windowsExecutable,
     );
   }
@@ -43,15 +43,19 @@ String get _executable {
 
 /// Manager for an instance of Chrome.
 class Chrome {
-  Chrome._(this.debugPort, this.chromeConnection,
-      {Process process, Directory dataDir, this.deleteDataDir = false})
-      : _process = process,
+  Chrome._(
+    this.debugPort,
+    this.chromeConnection, {
+    Process? process,
+    Directory? dataDir,
+    this.deleteDataDir = false,
+  })  : _process = process,
         _dataDir = dataDir;
 
   final int debugPort;
   final ChromeConnection chromeConnection;
-  final Process _process;
-  final Directory _dataDir;
+  final Process? _process;
+  final Directory? _dataDir;
   final bool deleteDataDir;
 
   /// Connects to an instance of Chrome with an open debug port.
@@ -61,17 +65,19 @@ class Chrome {
   /// Starts Chrome with the given arguments and a specific port.
   ///
   /// Each url in [urls] will be loaded in a separate tab.
-  static Future<Chrome> startWithDebugPort(List<String> urls,
-      {int debugPort, bool headless = false, String userDataDir}) async {
+  static Future<Chrome> startWithDebugPort(
+    List<String> urls, {
+    int debugPort = 0,
+    bool headless = false,
+    String? userDataDir,
+  }) async {
     Directory dataDir;
     if (userDataDir == null) {
       dataDir = Directory.systemTemp.createTempSync();
     } else {
       dataDir = Directory(userDataDir);
     }
-    final port = debugPort == null || debugPort == 0
-        ? await findUnusedPort()
-        : debugPort;
+    final port = debugPort == 0 ? await findUnusedPort() : debugPort;
     final args = [
       // Using a tmp directory ensures that a new instance of chrome launches
       // allowing for the remote debug port to be enabled.
@@ -117,7 +123,7 @@ class Chrome {
       ChromeConnection('localhost', port),
       process: process,
       dataDir: dataDir,
-      deleteDataDir: userDataDir = null,
+      deleteDataDir: userDataDir == null,
     ));
   }
 
