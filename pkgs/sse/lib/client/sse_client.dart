@@ -15,7 +15,7 @@ import '../src/util/uuid.dart';
 ///
 /// The client can send any JSON-encodable messages to the server by adding
 /// them to the [sink] and listen to messages from the server on the [stream].
-class SseClient extends StreamChannelMixin<String> {
+class SseClient extends StreamChannelMixin<String?> {
   final _incomingController = StreamController<String>();
 
   final _outgoingController = StreamController<String>();
@@ -26,11 +26,11 @@ class SseClient extends StreamChannelMixin<String> {
 
   int _lastMessageId = -1;
 
-  EventSource _eventSource;
+  late EventSource _eventSource;
 
-  String _serverUrl;
+  late String _serverUrl;
 
-  Timer _errorTimer;
+  Timer? _errorTimer;
 
   /// [serverUrl] is the URL under which the server is listening for
   /// incoming bi-directional SSE connections.
@@ -113,8 +113,8 @@ class SseClient extends StreamChannelMixin<String> {
     close();
   }
 
-  void _onOutgoingMessage(String message) async {
-    String encodedMessage;
+  void _onOutgoingMessage(String? message) async {
+    String? encodedMessage;
     try {
       encodedMessage = jsonEncode(message);
     } on JsonUnsupportedObjectError catch (e) {

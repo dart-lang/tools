@@ -1,3 +1,7 @@
+## 4.0.0
+
+- Support null safety.
+
 ## 3.8.3
 
 - Require the latest shelf and remove dead code.

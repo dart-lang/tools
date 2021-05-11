@@ -16,10 +16,10 @@ import 'package:test/test.dart';
 import 'package:webdriver/io.dart';
 
 void main() {
-  HttpServer server;
-  WebDriver webdriver;
-  SseHandler handler;
-  Process chromeDriver;
+  late HttpServer server;
+  late WebDriver webdriver;
+  late SseHandler handler;
+  late Process chromeDriver;
 
   setUpAll(() async {
     try {
