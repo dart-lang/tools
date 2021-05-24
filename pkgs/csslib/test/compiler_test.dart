@@ -5,10 +5,11 @@
 library compiler_test;
 
 import 'dart:convert';
-import 'package:test/test.dart';
+
 import 'package:csslib/parser.dart';
-import 'package:csslib/src/messages.dart';
 import 'package:csslib/visitor.dart';
+import 'package:test/test.dart';
+
 import 'testing.dart';
 
 void testClass() {

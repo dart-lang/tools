@@ -5,7 +5,6 @@
 library selector_test;
 
 import 'package:csslib/parser.dart';
-import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
 
 import 'testing.dart';
