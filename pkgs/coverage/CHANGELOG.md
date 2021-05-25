@@ -1,3 +1,7 @@
+## 1.0.3 - 2021-05-25
+
+* Updated dependency on `vm_service` package from `^6.1.0` to `>=6.1.0 <8.0.0`.
+
 ## 1.0.2 - 2021-03-15
 
 * Fix an issue where the `--packages` argument wasn't passed to `format_coverage`. 
