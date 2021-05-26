@@ -21,6 +21,3 @@ dev_dependencies:
 executables:
   collect_coverage:
   format_coverage:
-
-dependency_overrides:
-  vm_service: 7.0.0
