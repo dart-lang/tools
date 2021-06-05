@@ -67,6 +67,16 @@ void main() {
       expect(await connection.stream.first, 'blah');
     });
 
+    test('can send a significant number of requests', () async {
+      await webdriver.get('http://localhost:${server.port}');
+      var connection = await handler.connections.next;
+      var limit = 7000;
+      for (var i = 0; i < limit; i++) {
+        connection.sink.add('$i');
+      }
+      await connection.stream.take(limit).toList();
+    });
+
     test('messages arrive in-order', () async {
       expect(handler.numberOfClients, 0);
       await webdriver.get('http://localhost:${server.port}');

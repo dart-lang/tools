@@ -1,3 +1,8 @@
+## 4.1.0
+
+- Limit the number of concurrent requests to prevent Chrome from automatically
+  dropping them on the floor.
+
 ## 4.0.0
 
 - Support null safety.
