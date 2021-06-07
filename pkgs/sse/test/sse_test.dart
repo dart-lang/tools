@@ -74,7 +74,7 @@ void main() {
       for (var i = 0; i < limit; i++) {
         connection.sink.add('$i');
       }
-      await connection.stream.take(limit).toList();
+      await connection.stream.take(limit).drain();
     });
 
     test('messages arrive in-order', () async {
@@ -147,7 +147,7 @@ void main() {
       await closeButton.click();
 
       // Should complete since the connection is closed.
-      await connection.stream.toList();
+      await connection.stream.drain();
       expect(handler.numberOfClients, 0);
     });
 
