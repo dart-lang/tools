@@ -8,6 +8,21 @@ import 'dart:io';
 import 'package:coverage/src/resolver.dart';
 import 'package:coverage/src/util.dart';
 
+/// Class containing information about a coverage hit.
+class _HitInfo {
+  _HitInfo(this.firstLine, this.hitRange, this.hitCount);
+
+  /// The line number of the first line of this hit range.
+  final int firstLine;
+
+  /// A hit range is either a number (1 line) or a String of the form
+  /// "start-end" (multi-line range).
+  final dynamic hitRange;
+
+  /// How many times this hit range was executed.
+  final int hitCount;
+}
+
 /// Creates a single hitmap from a raw json object. Throws away all entries that
 /// are not resolvable.
 ///
@@ -80,7 +95,9 @@ Future<Map<String, Map<int, int>>> createHitmap(
     }
 
     final sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
-    final hits = e['hits'] as List;
+    var hits = e['hits'] as List;
+    // Ignore line annotations require hits to be sorted.
+    hits = _sortHits(hits);
     // hits is a flat array of the following format:
     // [ <line|linerange>, <hitcount>,...]
     // line: number.
@@ -154,4 +171,21 @@ Future<Map<String, Map<int, int>>> parseCoverage(
     }
   }
   return globalHitmap;
+}
+
+/// Sorts the hits array based on the line numbers.
+List _sortHits(List hits) {
+  final structuredHits = <_HitInfo>[];
+  for (var i = 0; i < hits.length - 1; i += 2) {
+    final lineOrLineRange = hits[i];
+    final firstLineInRange = lineOrLineRange is int
+        ? lineOrLineRange
+        : int.parse(lineOrLineRange.split('-')[0] as String);
+    structuredHits.add(_HitInfo(firstLineInRange, hits[i], hits[i + 1] as int));
+  }
+  structuredHits.sort((a, b) => a.firstLine.compareTo(b.firstLine));
+  return structuredHits
+      .map((item) => [item.hitRange, item.hitCount])
+      .expand((item) => item)
+      .toList();
 }

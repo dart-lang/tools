@@ -49,6 +49,37 @@ void main() {
     }
   });
 
+  test('createHitmap returns a sorted hitmap', () async {
+    final coverage = [
+      {
+        'source': 'foo',
+        'script': '{type: @Script, fixedId: true, '
+            'id: bar.dart, uri: bar.dart, _kind: library}',
+        'hits': [
+          45,
+          1,
+          46,
+          1,
+          49,
+          0,
+          50,
+          0,
+          15,
+          1,
+          16,
+          2,
+          17,
+          2,
+        ]
+      }
+    ];
+    final hitMap = await createHitmap(
+      coverage.cast<Map<String, dynamic>>(),
+    );
+    final expectedHits = {15: 1, 16: 2, 17: 2, 45: 1, 46: 1, 49: 0, 50: 0};
+    expect(hitMap['foo'], expectedHits);
+  });
+
   test('createHitmap', () async {
     final resultString = await _getCoverageResult();
     final jsonResult = json.decode(resultString) as Map<String, dynamic>;
