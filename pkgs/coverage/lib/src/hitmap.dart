@@ -19,6 +19,7 @@ class HitMap {
 
   /// Map from function definition line to function name.
   final funcNames = <int, String>{};
+}
 
 /// Class containing information about a coverage hit.
 class _HitInfo {
@@ -101,13 +102,14 @@ Future<Map<String, HitMap>> createHitmap(
       return false;
     }
 
-<<<<<<< HEAD
     void addToMap(Map<int, int> map, int line, int count) {
       final oldCount = map.putIfAbsent(line, () => 0);
       map[line] = count + oldCount;
     }
 
     void fillHitMap(List hits, Map<int, int> hitMap) {
+      // Ignore line annotations require hits to be sorted.
+      hits = _sortHits(hits);
       // hits is a flat array of the following format:
       // [ <line|linerange>, <hitcount>,...]
       // line: number.
@@ -131,32 +133,6 @@ Future<Map<String, HitMap>> createHitmap(
           }
         } else {
           throw StateError('Expected value of type int or String');
-=======
-    final sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
-    var hits = e['hits'] as List;
-    // Ignore line annotations require hits to be sorted.
-    hits = _sortHits(hits);
-    // hits is a flat array of the following format:
-    // [ <line|linerange>, <hitcount>,...]
-    // line: number.
-    // linerange: '<line>-<line>'.
-    for (var i = 0; i < hits.length; i += 2) {
-      final k = hits[i];
-      if (k is int) {
-        // Single line.
-        if (_shouldIgnoreLine(ignoredLines, k)) continue;
-
-        addToMap(sourceHitMap, k, hits[i + 1] as int);
-      } else if (k is String) {
-        // Linerange. We expand line ranges to actual lines at this point.
-        final splitPos = k.indexOf('-');
-        final start = int.parse(k.substring(0, splitPos));
-        final end = int.parse(k.substring(splitPos + 1));
-        for (var j = start; j <= end; j++) {
-          if (_shouldIgnoreLine(ignoredLines, j)) continue;
-
-          addToMap(sourceHitMap, j, hits[i + 1] as int);
->>>>>>> 4cf2e67b027b1e940b2019c463e7f9947f6a1b66
         }
       }
     }
@@ -230,7 +206,6 @@ Future<Map<String, HitMap>> parseCoverage(
   return globalHitmap;
 }
 
-<<<<<<< HEAD
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
 Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, HitMap hits) {
   final json = <String, dynamic>{};
@@ -256,7 +231,8 @@ Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, HitMap hits) {
   json['funcHits'] = flattenMap<int>(hits.funcHits);
   json['funcNames'] = flattenMap<dynamic>(hits.funcNames);
   return json;
-=======
+}
+
 /// Sorts the hits array based on the line numbers.
 List _sortHits(List hits) {
   final structuredHits = <_HitInfo>[];
@@ -272,5 +248,4 @@ List _sortHits(List hits) {
       .map((item) => [item.hitRange, item.hitCount])
       .expand((item) => item)
       .toList();
->>>>>>> 4cf2e67b027b1e940b2019c463e7f9947f6a1b66
 }

@@ -123,16 +123,16 @@ void main() {
       // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
       // closing brace of async function blocks.
       // See: https://github.com/dart-lang/coverage/issues/196
-      expectedLineHits[23] = 0;
+      expectedHits[23] = 0;
     } else {
       // Dart VMs version 2.0.0-dev.6.0 mark the opening brace of a function as
       // coverable.
-      expectedLineHits[11] = 1;
-      expectedLineHits[18] = 1;
-      expectedLineHits[28] = 1;
-      expectedLineHits[32] = 3;
+      expectedHits[11] = 1;
+      expectedHits[18] = 1;
+      expectedHits[28] = 1;
+      expectedHits[32] = 3;
     }
-    expect(isolateFile?.lineHits, expectedLineHits);
+    expect(isolateFile?.lineHits, expectedHits);
     expect(isolateFile?.funcHits, {11: 1, 18: 1, 28: 1, 32: 1});
   });
 
