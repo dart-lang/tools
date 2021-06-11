@@ -81,7 +81,7 @@ void main() {
         _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
     hits = isolateCoverage['hits'] as List<int>;
     _expectHitCount(hits, 11, 1);
-    _expectHitCount(hits, 18, 1);
+    _expectHitCount(hits, 28, 1);
   });
 }
 

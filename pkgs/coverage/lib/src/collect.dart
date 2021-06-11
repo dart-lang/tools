@@ -191,13 +191,36 @@ int? _getLineFromTokenPos(Script script, int tokenPos) {
   return null;
 }
 
+Future<void> _processFunction(
+    VmService service,
+    IsolateRef isolateRef,
+    Script script,
+    FuncRef funcRef,
+    Map<ScriptRef, Set<int>> libFuncs,
+    HitMap hits) async {
+  final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
+  final location = func.location;
+  if (location != null) {
+    final scriptFuncs = libFuncs.putIfAbsent(location.script!, () => <int>{});
+    final funcName = await _getFuncName(service, isolateRef, func);
+    final tokenPos = location.tokenPos!;
+    final line = _getLineFromTokenPos(script, tokenPos);
+
+    if (line == null) {
+      print('tokenPos $tokenPos has no line mapping for script ${script.uri!}');
+      return;
+    }
+    scriptFuncs.add(line);
+    hits.funcNames[line] = funcName;
+  }
+}
+
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
 Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
     IsolateRef isolateRef, SourceReport report, bool includeDart) async {
-  // script uri -> { line -> hit count }
   final hitMaps = <Uri, HitMap>{};
   final scripts = <ScriptRef, Script>{};
-  final functions = <LibraryRef, Map<ScriptRef, Set<int>>>{};
+  final libraries = <LibraryRef>{};
   for (var range in report.ranges!) {
     final scriptRef = report.scripts![range.scriptIndex!];
     final scriptUri = Uri.parse(report.scripts![range.scriptIndex!].uri!);
@@ -220,40 +243,30 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
 
     // If the script's library isn't loaded, load it then look up all its funcs.
     final libRef = script.library;
-    if (libRef != null && !functions.containsKey(libRef)) {
+    if (libRef != null && !libraries.contains(libRef)) {
+      libraries.add(libRef);
       final library =
           await service.getObject(isolateRef.id!, libRef.id!) as Library;
       final Map<ScriptRef, Set<int>> libFuncs = {};
       if (library.functions != null) {
         for (var funcRef in library.functions!) {
-          final func =
-              await service.getObject(isolateRef.id!, funcRef.id!) as Func;
-          final location = func.location;
-          if (location != null) {
-            final scriptFuncs =
-                libFuncs.putIfAbsent(location.script!, () => <int>{});
-            final funcName = await _getFuncName(service, isolateRef, func);
-            final tokenPos = location.tokenPos!;
-            scriptFuncs.add(tokenPos);
-
-            final line = _getLineFromTokenPos(script, tokenPos);
-            if (line == null) {
-              print(
-                  'tokenPos $tokenPos has no line mapping for script $scriptUri');
-              continue;
+          await _processFunction(
+              service, isolateRef, script, funcRef, libFuncs, hits);
+        }
+      }
+      if (library.classes != null) {
+        for (var classRef in library.classes!) {
+          final clazz =
+              await service.getObject(isolateRef.id!, classRef.id!) as Class;
+          if (clazz.functions != null) {
+            for (var funcRef in clazz.functions!) {
+              await _processFunction(
+                  service, isolateRef, script, funcRef, libFuncs, hits);
             }
-            if (hits.funcNames.containsKey(line)) {
-              print(
-                  'Multiple functions defined on line $line of script $scriptUri');
-              continue;
-            }
-            hits.funcNames[line] = funcName;
           }
         }
       }
-      functions[libRef] = libFuncs;
     }
-    final scriptFuncs = functions[libRef]![scriptRef]!;
 
     // Collect hits and misses.
     final coverage = range.coverage;
@@ -267,7 +280,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
         continue;
       }
       _increment(hits.lineHits, line);
-      if (scriptFuncs.contains(tokenPos)) _increment(hits.funcHits, line);
+      if (hits.funcNames.containsKey(line)) _increment(hits.funcHits, line);
     }
     for (final tokenPos in coverage.misses!) {
       final line = _getLineFromTokenPos(script, tokenPos);
@@ -277,12 +290,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
       }
       hits.lineHits.putIfAbsent(line, () => 0);
     }
-    scriptFuncs.forEach((tokenPos) {
-      final line = _getLineFromTokenPos(script, tokenPos);
-      if (line == null) {
-        print('tokenPos $tokenPos has no line mapping for script $scriptUri');
-        return;
-      }
+    hits.funcNames.forEach((line, funcName) {
       hits.funcHits.putIfAbsent(line, () => 0);
     });
   }

@@ -55,6 +55,8 @@ void main() {
         'source': 'foo',
         'script': '{type: @Script, fixedId: true, '
             'id: bar.dart, uri: bar.dart, _kind: library}',
+        'funcHits': [],
+        'funcNames': [],
         'hits': [
           45,
           1,
@@ -77,7 +79,7 @@ void main() {
       coverage.cast<Map<String, dynamic>>(),
     );
     final expectedHits = {15: 1, 16: 2, 17: 2, 45: 1, 46: 1, 49: 0, 50: 0};
-    expect(hitMap['foo'], expectedHits);
+    expect(hitMap['foo']?.lineHits, expectedHits);
   });
 
   test('createHitmap', () async {
@@ -95,29 +97,34 @@ void main() {
       12: 1,
       13: 1,
       15: 0,
+      21: 1,
+      23: 1,
+      24: 2,
       28: 1,
       29: 1,
-      31: 1,
-      32: 3,
+      30: 1,
+      32: 0,
       38: 1,
+      39: 1,
       41: 1,
-      42: 1,
+      42: 3,
       43: 1,
-      46: 1,
-      47: 1,
+      44: 3,
+      45: 1,
+      48: 1,
       49: 1,
-      50: 1,
       51: 1,
-      53: 1,
       54: 1,
       55: 1,
-      18: 1,
-      19: 1,
-      20: 1,
-      22: 0,
-      33: 1,
-      34: 3,
-      35: 1
+      56: 1,
+      59: 1,
+      60: 1,
+      62: 1,
+      63: 1,
+      64: 1,
+      66: 1,
+      67: 1,
+      68: 1
     };
     if (Platform.version.startsWith('1.')) {
       // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
@@ -128,12 +135,20 @@ void main() {
       // Dart VMs version 2.0.0-dev.6.0 mark the opening brace of a function as
       // coverable.
       expectedHits[11] = 1;
-      expectedHits[18] = 1;
       expectedHits[28] = 1;
-      expectedHits[32] = 3;
+      expectedHits[38] = 1;
+      expectedHits[42] = 3;
     }
     expect(isolateFile?.lineHits, expectedHits);
-    expect(isolateFile?.funcHits, {11: 1, 18: 1, 28: 1, 32: 1});
+    expect(isolateFile?.funcHits, {11: 1, 19: 0, 21: 1, 23: 1, 28: 1, 38: 1});
+    expect(isolateFile?.funcNames, {
+      11: 'fooSync',
+      19: 'BarClass.x=',
+      21: 'BarClass.BarClass',
+      23: 'BarClass.baz',
+      28: 'fooAsync',
+      38: 'isolateTask'
+    });
   });
 
   test('parseCoverage', () async {
