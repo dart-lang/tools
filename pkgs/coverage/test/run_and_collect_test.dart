@@ -43,6 +43,8 @@ void main() {
 
     final actualHitMap = hitMap[_isolateLibFileUri];
     final actualLineHits = actualHitMap?.lineHits;
+    final actualFuncHits = actualHitMap?.funcHits;
+    final actualFuncNames = actualHitMap?.funcNames;
     final expectedLineHits = {
       11: 1,
       12: 1,
@@ -69,5 +71,14 @@ void main() {
     };
 
     expect(actualLineHits, expectedLineHits);
+    expect(actualFuncHits, {11: 1, 19: 0, 21: 1, 23: 1, 28: 1, 38: 1});
+    expect(actualFuncNames, {
+      11: 'fooSync',
+      19: 'BarClass.x=',
+      21: 'BarClass.BarClass',
+      23: 'BarClass.baz',
+      28: 'fooAsync',
+      38: 'isolateTask'
+    });
   });
 }
