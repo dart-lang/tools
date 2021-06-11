@@ -196,12 +196,10 @@ Future<void> _processFunction(
     IsolateRef isolateRef,
     Script script,
     FuncRef funcRef,
-    Map<ScriptRef, Set<int>> libFuncs,
     HitMap hits) async {
   final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
   final location = func.location;
   if (location != null) {
-    final scriptFuncs = libFuncs.putIfAbsent(location.script!, () => <int>{});
     final funcName = await _getFuncName(service, isolateRef, func);
     final tokenPos = location.tokenPos!;
     final line = _getLineFromTokenPos(script, tokenPos);
@@ -210,7 +208,6 @@ Future<void> _processFunction(
       print('tokenPos $tokenPos has no line mapping for script ${script.uri!}');
       return;
     }
-    scriptFuncs.add(line);
     hits.funcNames[line] = funcName;
   }
 }
@@ -247,11 +244,9 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
       libraries.add(libRef);
       final library =
           await service.getObject(isolateRef.id!, libRef.id!) as Library;
-      final Map<ScriptRef, Set<int>> libFuncs = {};
       if (library.functions != null) {
         for (var funcRef in library.functions!) {
-          await _processFunction(
-              service, isolateRef, script, funcRef, libFuncs, hits);
+          await _processFunction(service, isolateRef, script, funcRef, hits);
         }
       }
       if (library.classes != null) {
@@ -261,7 +256,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
           if (clazz.functions != null) {
             for (var funcRef in clazz.functions!) {
               await _processFunction(
-                  service, isolateRef, script, funcRef, libFuncs, hits);
+                  service, isolateRef, script, funcRef, hits);
             }
           }
         }
@@ -310,12 +305,12 @@ void _increment(Map<int, int> counter, int key) {
 Future<String> _getFuncName(
     VmService service, IsolateRef isolateRef, Func func) async {
   if (func.name == null) {
-    return "${func.type}:${func.location!.tokenPos}";
+    return '${func.type}:${func.location!.tokenPos}';
   }
-  if (func.owner is ClassRef) {
-    final cls =
-        await service.getObject(isolateRef.id!, func.owner.id!) as Class;
-    if (cls.name != null) return "${cls.name}.${func.name}";
+  final owner = func.owner;
+  if (owner is ClassRef) {
+    final cls = await service.getObject(isolateRef.id!, owner.id!) as Class;
+    if (cls.name != null) return '${cls.name}.${func.name}';
   }
   return func.name!;
 }

@@ -16,9 +16,9 @@ String fooSync(int x) {
 }
 
 class BarClass {
-  int x;
-
   BarClass(this.x);
+
+  int x;
 
   void baz() {
     print(x);

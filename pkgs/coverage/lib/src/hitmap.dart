@@ -8,7 +8,6 @@ import 'dart:io';
 import 'package:coverage/src/resolver.dart';
 import 'package:coverage/src/util.dart';
 
-
 /// Contains line and function hit information for a single script.
 class HitMap {
   /// Map from line to hit count for that line.
@@ -142,7 +141,7 @@ Future<Map<String, HitMap>> createHitmap(
     fillHitMap(e['funcHits'] as List, sourceHitMap.funcHits);
     final funcNames = e['funcNames'] as List;
     for (var i = 0; i < funcNames.length; i += 2) {
-      sourceHitMap.funcNames[funcNames[i]] = funcNames[i + 1];
+      sourceHitMap.funcNames[funcNames[i] as int] = funcNames[i + 1] as String;
     }
   }
   return globalHitMap;
@@ -212,13 +211,12 @@ Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, HitMap hits) {
   List<T> flattenMap<T>(Map map) {
     final kvs = <T>[];
     map.forEach((k, v) {
-      kvs.add(k);
-      kvs.add(v);
+      kvs.add(k as T);
+      kvs.add(v as T);
     });
     return kvs;
   }
 
-  ;
   json['source'] = '$scriptUri';
   json['script'] = {
     'type': '@Script',
