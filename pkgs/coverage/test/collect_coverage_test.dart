@@ -97,7 +97,7 @@ void main() {
       12: 1,
       13: 1,
       15: 0,
-      21: 1,
+      19: 1,
       23: 1,
       24: 2,
       28: 1,
@@ -140,11 +140,11 @@ void main() {
       expectedHits[42] = 3;
     }
     expect(isolateFile?.lineHits, expectedHits);
-    expect(isolateFile?.funcHits, {11: 1, 19: 0, 21: 1, 23: 1, 28: 1, 38: 1});
+    expect(isolateFile?.funcHits, {11: 1, 19: 1, 21: 0, 23: 1, 28: 1, 38: 1});
     expect(isolateFile?.funcNames, {
       11: 'fooSync',
-      19: 'BarClass.x=',
-      21: 'BarClass.BarClass',
+      19: 'BarClass.BarClass',
+      21: 'BarClass.x=',
       23: 'BarClass.baz',
       28: 'fooAsync',
       38: 'isolateTask'
