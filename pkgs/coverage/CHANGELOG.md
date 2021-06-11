@@ -12,6 +12,19 @@
   from using `Map<int, int>` to represent line coverage to using `HitMap`
   (which contains both line and function coverage).
 
+## 1.0.4 - 2021-06-08
+
+* Ensure `createHitmap` returns a sorted hitmap. This fixes a potential issue with
+  ignore line annotations.
+
+## 1.0.3 - 2021-05-25
+
+* Updated dependency on `vm_service` package from `^6.1.0` to `>=6.1.0 <8.0.0`.
+
+## 1.0.2 - 2021-03-15
+
+* Fix an issue where the `--packages` argument wasn't passed to `format_coverage`.
+
 ## 1.0.1 - 2021-02-25
 
 * Allow the chrome `sourceUriProvider` to return `null`.
@@ -19,6 +32,7 @@
 ## 1.0.0 - 2021-02-25
 
 * Migrate to null safety.
+* Removed support for SDK `1.x.x`.
 
 ## 0.15.2 - 2021-02-08
 

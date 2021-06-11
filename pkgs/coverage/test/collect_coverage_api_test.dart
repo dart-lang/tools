@@ -74,8 +74,8 @@ void main() {
 
     final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart')!;
     var hits = testAppCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 44, 0);
-    _expectHitCount(hits, 48, 0);
+    _expectHitCount(hits, 46, 0);
+    _expectHitCount(hits, 50, 0);
 
     final isolateCoverage =
         _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
