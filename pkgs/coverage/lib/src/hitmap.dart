@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:coverage/src/resolver.dart';
 import 'package:coverage/src/util.dart';
 
+
 /// Contains line and function hit information for a single script.
 class HitMap {
   /// Map from line to hit count for that line.
@@ -18,6 +19,20 @@ class HitMap {
 
   /// Map from function definition line to function name.
   final funcNames = <int, String>{};
+
+/// Class containing information about a coverage hit.
+class _HitInfo {
+  _HitInfo(this.firstLine, this.hitRange, this.hitCount);
+
+  /// The line number of the first line of this hit range.
+  final int firstLine;
+
+  /// A hit range is either a number (1 line) or a String of the form
+  /// "start-end" (multi-line range).
+  final dynamic hitRange;
+
+  /// How many times this hit range was executed.
+  final int hitCount;
 }
 
 /// Creates a single hitmap from a raw json object. Throws away all entries that
@@ -86,6 +101,7 @@ Future<Map<String, HitMap>> createHitmap(
       return false;
     }
 
+<<<<<<< HEAD
     void addToMap(Map<int, int> map, int line, int count) {
       final oldCount = map.putIfAbsent(line, () => 0);
       map[line] = count + oldCount;
@@ -115,6 +131,32 @@ Future<Map<String, HitMap>> createHitmap(
           }
         } else {
           throw StateError('Expected value of type int or String');
+=======
+    final sourceHitMap = globalHitMap.putIfAbsent(source, () => <int, int>{});
+    var hits = e['hits'] as List;
+    // Ignore line annotations require hits to be sorted.
+    hits = _sortHits(hits);
+    // hits is a flat array of the following format:
+    // [ <line|linerange>, <hitcount>,...]
+    // line: number.
+    // linerange: '<line>-<line>'.
+    for (var i = 0; i < hits.length; i += 2) {
+      final k = hits[i];
+      if (k is int) {
+        // Single line.
+        if (_shouldIgnoreLine(ignoredLines, k)) continue;
+
+        addToMap(sourceHitMap, k, hits[i + 1] as int);
+      } else if (k is String) {
+        // Linerange. We expand line ranges to actual lines at this point.
+        final splitPos = k.indexOf('-');
+        final start = int.parse(k.substring(0, splitPos));
+        final end = int.parse(k.substring(splitPos + 1));
+        for (var j = start; j <= end; j++) {
+          if (_shouldIgnoreLine(ignoredLines, j)) continue;
+
+          addToMap(sourceHitMap, j, hits[i + 1] as int);
+>>>>>>> 4cf2e67b027b1e940b2019c463e7f9947f6a1b66
         }
       }
     }
@@ -167,6 +209,7 @@ Future<Map<String, HitMap>> parseCoverage(
   Iterable<File> files,
   int _, {
   bool checkIgnoredLines = false,
+  String? packagesPath,
 }) async {
   final globalHitmap = <String, HitMap>{};
   for (var file in files) {
@@ -178,6 +221,7 @@ Future<Map<String, HitMap>> parseCoverage(
         await createHitmap(
           jsonResult.cast<Map<String, dynamic>>(),
           checkIgnoredLines: checkIgnoredLines,
+          packagesPath: packagesPath,
         ),
         globalHitmap,
       );
@@ -186,6 +230,7 @@ Future<Map<String, HitMap>> parseCoverage(
   return globalHitmap;
 }
 
+<<<<<<< HEAD
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
 Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, HitMap hits) {
   final json = <String, dynamic>{};
@@ -211,4 +256,21 @@ Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, HitMap hits) {
   json['funcHits'] = flattenMap<int>(hits.funcHits);
   json['funcNames'] = flattenMap<dynamic>(hits.funcNames);
   return json;
+=======
+/// Sorts the hits array based on the line numbers.
+List _sortHits(List hits) {
+  final structuredHits = <_HitInfo>[];
+  for (var i = 0; i < hits.length - 1; i += 2) {
+    final lineOrLineRange = hits[i];
+    final firstLineInRange = lineOrLineRange is int
+        ? lineOrLineRange
+        : int.parse(lineOrLineRange.split('-')[0] as String);
+    structuredHits.add(_HitInfo(firstLineInRange, hits[i], hits[i + 1] as int));
+  }
+  structuredHits.sort((a, b) => a.firstLine.compareTo(b.firstLine));
+  return structuredHits
+      .map((item) => [item.hitRange, item.hitCount])
+      .expand((item) => item)
+      .toList();
+>>>>>>> 4cf2e67b027b1e940b2019c463e7f9947f6a1b66
 }
