@@ -27,12 +27,20 @@ void main() {
 
     final sampleAppHitMap = hitmap[_sampleAppFileUri];
     final sampleAppHitLines = sampleAppHitMap?.lineHits;
+    final sampleAppHitFuncs = sampleAppHitMap?.funcHits;
+    final sampleAppFuncNames = sampleAppHitMap?.funcNames;
 
     expect(sampleAppHitLines, containsPair(46, greaterThanOrEqualTo(1)),
         reason: 'be careful if you modify the test file');
     expect(sampleAppHitLines, containsPair(50, 0),
         reason: 'be careful if you modify the test file');
     expect(sampleAppHitLines, isNot(contains(32)),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppHitFuncs, containsPair(45, 1),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppHitFuncs, containsPair(49, 0),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppFuncNames, containsPair(45, 'usedMethod'),
         reason: 'be careful if you modify the test file');
   });
 
@@ -142,6 +150,26 @@ void main() {
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
       expect(res, isNot(contains(p.absolute(_isolateLibPath))));
       expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
+    });
+
+    test('format() functions', () async {
+      final hitmap = await _getHitMap();
+
+      final resolver = Resolver(packagesPath: '.packages');
+      final formatter =
+          PrettyPrintFormatter(resolver, Loader(), reportFuncs: true);
+
+      final res = await formatter.format(hitmap);
+
+      expect(res, contains(p.absolute(_sampleAppPath)));
+      expect(res, contains(p.absolute(_isolateLibPath)));
+      expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
+
+      // be very careful if you change the test file
+      expect(res, contains('      1|Future<Null> main() async {'));
+      expect(res, contains('      1|int usedMethod(int a, int b) {'));
+      expect(res, contains('      0|int unusedMethod(int a, int b) {'));
+      expect(res, contains('       |  return a + b;'));
     });
   });
 }
