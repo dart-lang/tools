@@ -22,7 +22,7 @@ class StringScanner {
   /// The current position of the scanner in the string, in characters.
   int get position => _position;
   set position(int position) {
-    if (position < 0 || position > string.length) {
+    if (position.isNegative || position > string.length) {
       throw ArgumentError('Invalid position $position');
     }
 
