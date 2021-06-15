@@ -191,12 +191,8 @@ int? _getLineFromTokenPos(Script script, int tokenPos) {
   return null;
 }
 
-Future<void> _processFunction(
-    VmService service,
-    IsolateRef isolateRef,
-    Script script,
-    FuncRef funcRef,
-    HitMap hits) async {
+Future<void> _processFunction(VmService service, IsolateRef isolateRef,
+    Script script, FuncRef funcRef, HitMap hits) async {
   final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
   final location = func.location;
   if (location != null) {
