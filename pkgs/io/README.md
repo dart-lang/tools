@@ -25,25 +25,25 @@ A higher-level service for spawning and communicating with processes.
 ##### Use `spawn` to create a process with std[in|out|err] forwarded by default
 
 ```dart
-/// Runs `dartfmt` commands and `pub publish`.
 Future<void> main() async {
   final manager = ProcessManager();
 
-  // Runs dartfmt --version and outputs the result via stdout.
-  print('Running dartfmt --version');
-  var spawn = await manager.spawn('dartfmt', ['--version']);
+  // Print `dart` tool version to stdout.
+  print('** Running `dart --version`');
+  var spawn = await manager.spawn('dart', ['--version']);
   await spawn.exitCode;
 
-  // Runs dartfmt -n . and outputs the result via stdout.
-  print('Running dartfmt -n .');
-  spawn = await manager.spawn('dartfmt', ['-n', '.']);
+  // Check formatting and print the result to stdout.
+  print('** Running `dart format --output=none .`');
+  spawn = await manager.spawn('dart', ['format', '--output=none', '.']);
   await spawn.exitCode;
 
-  // Runs pub publish. Upon hitting a blocking stdin state, you may directly
+  // Check if a package is ready for publishing.
+  // Upon hitting a blocking stdin state, you may directly
   // output to the processes's stdin via your own, similar to how a bash or
   // shell script would spawn a process.
-  print('Running pub publish');
-  spawn = await manager.spawn('pub', ['publish']);
+  print('** Running pub publish');
+  spawn = await manager.spawn('dart', ['pub', 'publish', '--dry-run']);
   await spawn.exitCode;
 
   // Closes stdin for the entire program.

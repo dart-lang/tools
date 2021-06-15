@@ -1,4 +1,6 @@
-## 1.0.1-dev
+## 1.0.1
+
+* Update code examples to call the unified `dart` developer tool.
 
 ## 1.0.0
 
