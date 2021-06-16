@@ -270,8 +270,10 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
         print('tokenPos $tokenPos has no line mapping for script $scriptUri');
         continue;
       }
-      _increment(hits.lineHits, line);
-      if (hits.funcNames.containsKey(line)) _increment(hits.funcHits, line);
+      _incrementCountForKey(hits.lineHits, line);
+      if (hits.funcNames.containsKey(line)) {
+        _incrementCountForKey(hits.funcHits, line);
+      }
     }
     for (final tokenPos in coverage.misses!) {
       final line = _getLineFromTokenPos(script, tokenPos);
@@ -294,7 +296,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
   return coverage;
 }
 
-void _increment(Map<int, int> counter, int key) {
+void _incrementCountForKey(Map<int, int> counter, int key) {
   counter[key] = counter.containsKey(key) ? counter[key]! + 1 : 1;
 }
 
