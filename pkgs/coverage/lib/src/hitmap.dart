@@ -13,10 +13,11 @@ class HitMap {
   /// Map from line to hit count for that line.
   final lineHits = <int, int>{};
 
-  /// Map from function definition line to hit count for that function.
+  /// Map from the first line of each function, to the hit count for that
+  /// function.
   final funcHits = <int, int>{};
 
-  /// Map from function definition line to function name.
+  /// Map from the first line of each function, to the function name.
   final funcNames = <int, String>{};
 }
 
