@@ -55,8 +55,6 @@ void main() {
         'source': 'foo',
         'script': '{type: @Script, fixedId: true, '
             'id: bar.dart, uri: bar.dart, _kind: library}',
-        'funcHits': [],
-        'funcNames': [],
         'hits': [
           45,
           1,
@@ -222,6 +220,7 @@ Future<String> _collectCoverage() async {
   // TODO: need to get all of this functionality in the lib
   final toolResult = await Process.run('dart', [
     _collectAppPath,
+    '--function-coverage',
     '--uri',
     '$serviceUri',
     '--resume-isolates',

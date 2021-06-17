@@ -115,7 +115,7 @@ Future<Map<String, dynamic>> _collectCoverage(
   final isolateIdSet = isolateIds ? {isolateId} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
-      timeout: timeout, isolateIds: isolateIdSet);
+      timeout: timeout, isolateIds: isolateIdSet, functionCoverage: true);
 }
 
 // Returns the first coverage hitmap for the script with with the specified

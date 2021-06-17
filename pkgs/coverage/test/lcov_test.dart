@@ -204,9 +204,8 @@ Future<Map<String, HitMap>> _getHitMap() async {
   final serviceUri = await serviceUriCompleter.future;
 
   // collect hit map.
-  final coverageJson =
-      (await collect(serviceUri, true, true, false, <String>{}))['coverage']
-          as List<Map<String, dynamic>>;
+  final coverageJson = (await collect(serviceUri, true, true, false, <String>{},
+      functionCoverage: true))['coverage'] as List<Map<String, dynamic>>;
   final hitMap = createHitmap(coverageJson);
 
   // wait for sample app to terminate.
