@@ -14,11 +14,12 @@ class HitMap {
   final lineHits = <int, int>{};
 
   /// Map from the first line of each function, to the hit count for that
-  /// function.
-  final funcHits = <int, int>{};
+  /// function. Null if function coverage info was not gathered.
+  Map<int, int>? funcHits = null;
 
-  /// Map from the first line of each function, to the function name.
-  final funcNames = <int, String>{};
+  /// Map from the first line of each function, to the function name. Null if
+  /// function coverage info was not gathered.
+  Map<int, String>? funcNames = null;
 }
 
 /// Class containing information about a coverage hit.
@@ -139,10 +140,21 @@ Future<Map<String, HitMap>> createHitmap(
 
     final sourceHitMap = globalHitMap.putIfAbsent(source, () => HitMap());
     fillHitMap(e['hits'] as List, sourceHitMap.lineHits);
-    fillHitMap(e['funcHits'] as List, sourceHitMap.funcHits);
-    final funcNames = e['funcNames'] as List;
-    for (var i = 0; i < funcNames.length; i += 2) {
-      sourceHitMap.funcNames[funcNames[i] as int] = funcNames[i + 1] as String;
+    if (e.containsKey('funcHits')) {
+      if (sourceHitMap.funcHits == null) {
+        sourceHitMap.funcHits = <int, int>{};
+      }
+      fillHitMap(e['funcHits'] as List, sourceHitMap.funcHits!);
+    }
+    if (e.containsKey('funcNames')) {
+      if (sourceHitMap.funcNames == null) {
+        sourceHitMap.funcNames = <int, String>{};
+      }
+      final funcNames = e['funcNames'] as List;
+      for (var i = 0; i < funcNames.length; i += 2) {
+        sourceHitMap.funcNames![funcNames[i] as int] =
+            funcNames[i + 1] as String;
+      }
     }
   }
   return globalHitMap;
@@ -165,15 +177,20 @@ void mergeHitmaps(Map<String, HitMap> newMap, Map<String, HitMap> result) {
       }
 
       mergeHitCounts(v.lineHits, fileResult.lineHits);
-      mergeHitCounts(v.funcHits, fileResult.funcHits);
-      final destFuncNames = fileResult.funcNames;
-      v.funcNames.forEach((int line, String name) {
-        if (destFuncNames.containsKey(line) && destFuncNames[line] != name) {
-          print('Multiple functions defined on line $line of script $file');
-        } else {
-          destFuncNames[line] = name;
+      if (v.funcHits != null) {
+        if (fileResult.funcHits == null) {
+          fileResult.funcHits = <int, int>{};
         }
-      });
+        mergeHitCounts(v.funcHits!, fileResult.funcHits!);
+      }
+      if (v.funcNames != null) {
+        if (fileResult.funcNames == null) {
+          fileResult.funcNames = <int, String>{};
+        }
+        v.funcNames?.forEach((int line, String name) {
+          fileResult.funcNames![line] = name;
+        });
+      }
     } else {
       result[file] = v;
     }
@@ -227,8 +244,12 @@ Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, HitMap hits) {
     '_kind': 'library',
   };
   json['hits'] = flattenMap<int>(hits.lineHits);
-  json['funcHits'] = flattenMap<int>(hits.funcHits);
-  json['funcNames'] = flattenMap<dynamic>(hits.funcNames);
+  if (hits.funcHits != null) {
+    json['funcHits'] = flattenMap<int>(hits.funcHits!);
+  }
+  if (hits.funcNames != null) {
+    json['funcNames'] = flattenMap<dynamic>(hits.funcNames!);
+  }
   return json;
 }
 

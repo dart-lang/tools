@@ -52,16 +52,18 @@ class LcovFormatter implements Formatter {
       }
 
       buf.write('SF:$source\n');
-      for (var k in funcNames.keys.toList()..sort()) {
-        buf.write('FN:$k,${funcNames[k]}\n');
-      }
-      for (var k in funcHits.keys.toList()..sort()) {
-        if (funcHits[k]! != 0) {
-          buf.write('FNDA:${funcHits[k]},${funcNames[k]}\n');
+      if (funcHits != null && funcNames != null) {
+        for (var k in funcNames.keys.toList()..sort()) {
+          buf.write('FN:$k,${funcNames[k]}\n');
         }
+        for (var k in funcHits.keys.toList()..sort()) {
+          if (funcHits[k]! != 0) {
+            buf.write('FNDA:${funcHits[k]},${funcNames[k]}\n');
+          }
+        }
+        buf.write('FNF:${funcNames.length}\n');
+        buf.write('FNH:${funcHits.values.where((v) => v > 0).length}\n');
       }
-      buf.write('FNF:${funcNames.length}\n');
-      buf.write('FNH:${funcHits.values.where((v) => v > 0).length}\n');
       for (var k in lineHits.keys.toList()..sort()) {
         buf.write('DA:$k,${lineHits[k]}\n');
       }
@@ -98,7 +100,12 @@ class PrettyPrintFormatter implements Formatter {
     final buf = StringBuffer();
     for (var key in hitmap.keys) {
       final v = hitmap[key]!;
-      final hits = reportFuncs ? v.funcHits : v.lineHits;
+      if (reportFuncs && v.funcHits == null) {
+        throw "Function coverage formatting was requested, but the hit map is" +
+            " missing function coverage information. Did you run" +
+            " collect_coverage with the --function-coverage flag?";
+      }
+      final hits = reportFuncs ? v.funcHits! : v.lineHits;
       final source = resolver.resolve(key);
       if (source == null) {
         continue;
