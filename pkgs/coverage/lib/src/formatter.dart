@@ -101,9 +101,9 @@ class PrettyPrintFormatter implements Formatter {
     for (var key in hitmap.keys) {
       final v = hitmap[key]!;
       if (reportFuncs && v.funcHits == null) {
-        throw "Function coverage formatting was requested, but the hit map is" +
-            " missing function coverage information. Did you run" +
-            " collect_coverage with the --function-coverage flag?";
+        throw 'Function coverage formatting was requested, but the hit map is '
+            'missing function coverage information. Did you run '
+            'collect_coverage with the --function-coverage flag?';
       }
       final hits = reportFuncs ? v.funcHits! : v.lineHits;
       final source = resolver.resolve(key);
