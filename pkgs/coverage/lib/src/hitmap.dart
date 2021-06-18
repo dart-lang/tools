@@ -15,11 +15,11 @@ class HitMap {
 
   /// Map from the first line of each function, to the hit count for that
   /// function. Null if function coverage info was not gathered.
-  Map<int, int>? funcHits = null;
+  Map<int, int>? funcHits;
 
   /// Map from the first line of each function, to the function name. Null if
   /// function coverage info was not gathered.
-  Map<int, String>? funcNames = null;
+  Map<int, String>? funcNames;
 }
 
 /// Class containing information about a coverage hit.
@@ -141,15 +141,11 @@ Future<Map<String, HitMap>> createHitmap(
     final sourceHitMap = globalHitMap.putIfAbsent(source, () => HitMap());
     fillHitMap(e['hits'] as List, sourceHitMap.lineHits);
     if (e.containsKey('funcHits')) {
-      if (sourceHitMap.funcHits == null) {
-        sourceHitMap.funcHits = <int, int>{};
-      }
+      sourceHitMap.funcHits ??= <int, int>{};
       fillHitMap(e['funcHits'] as List, sourceHitMap.funcHits!);
     }
     if (e.containsKey('funcNames')) {
-      if (sourceHitMap.funcNames == null) {
-        sourceHitMap.funcNames = <int, String>{};
-      }
+      sourceHitMap.funcNames ??= <int, String>{};
       final funcNames = e['funcNames'] as List;
       for (var i = 0; i < funcNames.length; i += 2) {
         sourceHitMap.funcNames![funcNames[i] as int] =
@@ -178,15 +174,11 @@ void mergeHitmaps(Map<String, HitMap> newMap, Map<String, HitMap> result) {
 
       mergeHitCounts(v.lineHits, fileResult.lineHits);
       if (v.funcHits != null) {
-        if (fileResult.funcHits == null) {
-          fileResult.funcHits = <int, int>{};
-        }
+        fileResult.funcHits ??= <int, int>{};
         mergeHitCounts(v.funcHits!, fileResult.funcHits!);
       }
       if (v.funcNames != null) {
-        if (fileResult.funcNames == null) {
-          fileResult.funcNames = <int, String>{};
-        }
+        fileResult.funcNames ??= <int, String>{};
         v.funcNames?.forEach((int line, String name) {
           fileResult.funcNames![line] = name;
         });

@@ -247,12 +247,8 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
     // If the script's library isn't loaded, load it then look up all its funcs.
     final libRef = script.library;
     if (functionCoverage && libRef != null && !libraries.contains(libRef)) {
-      if (hits.funcHits == null) {
-        hits.funcHits = <int, int>{};
-      }
-      if (hits.funcNames == null) {
-        hits.funcNames = <int, String>{};
-      }
+      hits.funcHits ??= <int, int>{};
+      hits.funcNames ??= <int, String>{};
       libraries.add(libRef);
       final library =
           await service.getObject(isolateRef.id!, libRef.id!) as Library;
