@@ -1,3 +1,20 @@
+## 1.1.0
+
+* Support function level coverage information, when running tests in the Dart
+   VM. This is not supported for web tests yet.
+* Add flag `--function-coverage` (abbr `-f`) to collect_coverage that collects
+  function coverage information.
+* Add flag `--pretty-print-func` (abbr `-f`) to format_coverage that works
+  similarly to pretty print, but outputs function level coverage, rather than
+  line level.
+* Update `--lcov` (abbr `-l`) in format_coverage to output function level
+  coverage, in addition to line level.
+* BREAKING CHANGE: The signatures of `createHitmap`, `mergeHitmaps`,
+  `parseCoverage`, `toScriptCoverageJson`, and `Formatter.format` have changed
+  from using `Map<int, int>` to represent line coverage to using `HitMap`
+  (which contains both line and function coverage). `collect` also has a new
+  optional bool flag controlling whether function coverage is collected.
+
 ## 1.0.4 - 2021-06-08
 
 * Ensure `createHitmap` returns a sorted hitmap. This fixes a potential issue with
@@ -9,7 +26,7 @@
 
 ## 1.0.2 - 2021-03-15
 
-* Fix an issue where the `--packages` argument wasn't passed to `format_coverage`. 
+* Fix an issue where the `--packages` argument wasn't passed to `format_coverage`.
 
 ## 1.0.1 - 2021-02-25
 

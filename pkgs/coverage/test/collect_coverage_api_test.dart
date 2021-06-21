@@ -81,7 +81,7 @@ void main() {
         _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
     hits = isolateCoverage['hits'] as List<int>;
     _expectHitCount(hits, 11, 1);
-    _expectHitCount(hits, 18, 1);
+    _expectHitCount(hits, 28, 1);
   });
 }
 
@@ -115,7 +115,7 @@ Future<Map<String, dynamic>> _collectCoverage(
   final isolateIdSet = isolateIds ? {isolateId} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
-      timeout: timeout, isolateIds: isolateIdSet);
+      timeout: timeout, isolateIds: isolateIdSet, functionCoverage: true);
 }
 
 // Returns the first coverage hitmap for the script with with the specified

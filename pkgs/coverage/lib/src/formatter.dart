@@ -5,10 +5,11 @@
 import 'package:path/path.dart' as p;
 
 import 'resolver.dart';
+import 'hitmap.dart';
 
 abstract class Formatter {
   /// Returns the formatted coverage data.
-  Future<String> format(Map<String, Map<int, int>> hitmap);
+  Future<String> format(Map<String, HitMap> hitmap);
 }
 
 /// Converts the given hitmap to lcov format and appends the result to
@@ -29,11 +30,14 @@ class LcovFormatter implements Formatter {
   final List<String>? reportOn;
 
   @override
-  Future<String> format(Map<String, Map<int, int>> hitmap) async {
+  Future<String> format(Map<String, HitMap> hitmap) async {
     final pathFilter = _getPathFilter(reportOn);
     final buf = StringBuffer();
     for (var key in hitmap.keys) {
       final v = hitmap[key]!;
+      final lineHits = v.lineHits;
+      final funcHits = v.funcHits;
+      final funcNames = v.funcNames;
       var source = resolver.resolve(key);
       if (source == null) {
         continue;
@@ -48,12 +52,23 @@ class LcovFormatter implements Formatter {
       }
 
       buf.write('SF:$source\n');
-      final lines = v.keys.toList()..sort();
-      for (var k in lines) {
-        buf.write('DA:$k,${v[k]}\n');
+      if (funcHits != null && funcNames != null) {
+        for (var k in funcNames.keys.toList()..sort()) {
+          buf.write('FN:$k,${funcNames[k]}\n');
+        }
+        for (var k in funcHits.keys.toList()..sort()) {
+          if (funcHits[k]! != 0) {
+            buf.write('FNDA:${funcHits[k]},${funcNames[k]}\n');
+          }
+        }
+        buf.write('FNF:${funcNames.length}\n');
+        buf.write('FNH:${funcHits.values.where((v) => v > 0).length}\n');
       }
-      buf.write('LF:${lines.length}\n');
-      buf.write('LH:${lines.where((k) => v[k]! > 0).length}\n');
+      for (var k in lineHits.keys.toList()..sort()) {
+        buf.write('DA:$k,${lineHits[k]}\n');
+      }
+      buf.write('LF:${lineHits.length}\n');
+      buf.write('LH:${lineHits.values.where((v) => v > 0).length}\n');
       buf.write('end_of_record\n');
     }
 
@@ -71,18 +86,26 @@ class PrettyPrintFormatter implements Formatter {
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
   /// prefixed with one of the paths included.
-  PrettyPrintFormatter(this.resolver, this.loader, {this.reportOn});
+  PrettyPrintFormatter(this.resolver, this.loader,
+      {this.reportOn, this.reportFuncs = false});
 
   final Resolver resolver;
   final Loader loader;
   final List<String>? reportOn;
+  final bool reportFuncs;
 
   @override
-  Future<String> format(Map<String, dynamic> hitmap) async {
+  Future<String> format(Map<String, HitMap> hitmap) async {
     final pathFilter = _getPathFilter(reportOn);
     final buf = StringBuffer();
     for (var key in hitmap.keys) {
-      final v = hitmap[key] as Map<int, int>;
+      final v = hitmap[key]!;
+      if (reportFuncs && v.funcHits == null) {
+        throw 'Function coverage formatting was requested, but the hit map is '
+            'missing function coverage information. Did you run '
+            'collect_coverage with the --function-coverage flag?';
+      }
+      final hits = reportFuncs ? v.funcHits! : v.lineHits;
       final source = resolver.resolve(key);
       if (source == null) {
         continue;
@@ -99,8 +122,8 @@ class PrettyPrintFormatter implements Formatter {
       buf.writeln(source);
       for (var line = 1; line <= lines.length; line++) {
         var prefix = _prefix;
-        if (v.containsKey(line)) {
-          prefix = v[line].toString().padLeft(_prefix.length);
+        if (hits.containsKey(line)) {
+          prefix = hits[line].toString().padLeft(_prefix.length);
         }
         buf.writeln('$prefix|${lines[line - 1]}');
       }

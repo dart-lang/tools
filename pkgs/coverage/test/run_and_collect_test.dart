@@ -41,27 +41,35 @@ void main() {
     final hitMap = await createHitmap(coverage, checkIgnoredLines: true);
     expect(hitMap, isNot(contains(_sampleAppFileUri)));
 
-    final actualHits = hitMap[_isolateLibFileUri];
-    final expectedHits = {
+    final actualHitMap = hitMap[_isolateLibFileUri];
+    final actualLineHits = actualHitMap?.lineHits;
+    final expectedLineHits = {
       11: 1,
       12: 1,
       13: 1,
       15: 0,
+      19: 1,
+      23: 1,
+      24: 2,
       28: 1,
       29: 1,
-      31: 1,
-      32: 3,
-      46: 1,
-      47: 1,
-      18: 1,
-      19: 1,
-      20: 1,
-      22: 0,
-      33: 1,
-      34: 3,
-      35: 1
+      30: 1,
+      32: 0,
+      38: 1,
+      39: 1,
+      41: 1,
+      42: 3,
+      43: 1,
+      44: 3,
+      45: 1,
+      48: 1,
+      49: 1,
+      59: 1,
+      60: 1
     };
 
-    expect(actualHits, expectedHits);
+    expect(actualLineHits, expectedLineHits);
+    expect(actualHitMap?.funcHits, isNull);
+    expect(actualHitMap?.funcNames, isNull);
   });
 }
