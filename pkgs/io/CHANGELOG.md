@@ -1,3 +1,7 @@
+## 1.0.2
+
+* - Update `meta` constraint to `>=1.3.0 <3.0.0`.
+
 ## 1.0.1
 
 * Update code examples to call the unified `dart` developer tool.
