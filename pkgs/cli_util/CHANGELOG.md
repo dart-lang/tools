@@ -1,3 +1,7 @@
+## 0.3.3
+
+- Reverted `meta` constraint to `^1.3.0`.
+
 ## 0.3.2
 
 - Update `meta` constraint to `>=1.3.0 <3.0.0`.
