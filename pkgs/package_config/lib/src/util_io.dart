@@ -98,7 +98,9 @@ String pathJoinAll(Iterable<String> parts) {
   var buffer = StringBuffer();
   var separator = "";
   for (var part in parts) {
-    buffer..write(separator)..write(part);
+    buffer
+      ..write(separator)
+      ..write(part);
     separator =
         part.endsWith(Platform.pathSeparator) ? "" : Platform.pathSeparator;
   }
