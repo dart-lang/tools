@@ -49,7 +49,9 @@ class Message {
     var colors = useColors && _errorColors.containsKey(level);
     var levelColor = colors ? _errorColors[level] : null;
     if (colors) output.write(levelColor);
-    output..write(_errorLabel[level])..write(' ');
+    output
+      ..write(_errorLabel[level])
+      ..write(' ');
     if (colors) output.write(_noColor);
 
     if (span == null) {
