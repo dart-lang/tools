@@ -168,8 +168,9 @@ class Engine {
         var shadowRay = Ray(info.position, v);
 
         shadowInfo = testIntersection(shadowRay, scene, info.shape);
-        if (shadowInfo.isHit && shadowInfo.shape != info.shape
-            /*&& shadowInfo.shape.type != 'PLANE'*/) {
+        if (shadowInfo.isHit &&
+            shadowInfo.shape !=
+                info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
           var vA = color.multiplyScalar(0.5);
           var dB = 0.5 * pow(shadowInfo.shape.material.transparency, 0.5);
           color = vA.addScalar(dB);
