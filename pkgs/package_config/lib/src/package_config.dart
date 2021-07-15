@@ -5,7 +5,7 @@
 import 'dart:typed_data';
 
 import 'errors.dart';
-import "package_config_impl.dart";
+import 'package_config_impl.dart';
 import 'package_config_json.dart';
 
 /// A package configuration.
@@ -70,7 +70,7 @@ abstract class PackageConfig {
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
   static PackageConfig parseBytes(Uint8List bytes, Uri baseUri,
-          {void onError(Object error)?}) =>
+          {void Function(Object error)? onError}) =>
       parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
 
   /// Parses a package configuration file.
@@ -90,7 +90,7 @@ abstract class PackageConfig {
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
   static PackageConfig parseString(String configuration, Uri baseUri,
-          {void onError(Object error)?}) =>
+          {void Function(Object error)? onError}) =>
       parsePackageConfigString(configuration, baseUri, onError ?? throwError);
 
   /// Parses the JSON data of a package configuration file.
@@ -111,7 +111,7 @@ abstract class PackageConfig {
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
   static PackageConfig parseJson(Object? jsonData, Uri baseUri,
-          {void onError(Object error)?}) =>
+          {void Function(Object error)? onError}) =>
       parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
 
   /// Writes a configuration file for this configuration on [output].
@@ -302,8 +302,8 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// The maximal value allowed by [major] and [minor] values;
   static const int maxValue = 0x7FFFFFFF;
   factory LanguageVersion(int major, int minor) {
-    RangeError.checkValueInInterval(major, 0, maxValue, "major");
-    RangeError.checkValueInInterval(minor, 0, maxValue, "major");
+    RangeError.checkValueInInterval(major, 0, maxValue, 'major');
+    RangeError.checkValueInInterval(minor, 0, maxValue, 'major');
     return SimpleLanguageVersion(major, minor, null);
   }
 
@@ -324,7 +324,8 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// If [onError] is not supplied, it defaults to throwing the exception.
   /// If the call does not throw, then an [InvalidLanguageVersion] is returned
   /// containing the original [source].
-  static LanguageVersion parse(String source, {void onError(Object error)?}) =>
+  static LanguageVersion parse(String source,
+          {void Function(Object error)? onError}) =>
       parseLanguageVersion(source, onError ?? throwError);
 
   /// The major language version.
@@ -352,6 +353,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// is greater than the latter's major version, or if they have
   /// the same major version and the former's minor version is greater than
   /// the latter's.
+  @override
   int compareTo(LanguageVersion other);
 
   /// Valid language versions with the same [major] and [minor] values are
@@ -359,14 +361,17 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   ///
   /// Invalid language versions ([InvalidLanguageVersion]) are not equal to
   /// any other object.
+  @override
   bool operator ==(Object other);
 
+  @override
   int get hashCode;
 
   /// A string representation of the language version.
   ///
   /// A valid language version is represented as
   /// `"${version.major}.${version.minor}"`.
+  @override
   String toString();
 }
 
@@ -377,16 +382,21 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
 /// which did not throw on an error.
 abstract class InvalidLanguageVersion implements LanguageVersion {
   /// The value -1 for an invalid language version.
+  @override
   int get major;
 
   /// The value -1 for an invalid language version.
+  @override
   int get minor;
 
   /// An invalid language version is only equal to itself.
+  @override
   bool operator ==(Object other);
 
+  @override
   int get hashCode;
 
   /// The original invalid version string.
+  @override
   String toString();
 }

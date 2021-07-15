@@ -6,6 +6,6 @@
 /// and vice-versa,
 library package_config.package_config_types;
 
-export "src/package_config.dart"
+export 'src/package_config.dart'
     show PackageConfig, Package, LanguageVersion, InvalidLanguageVersion;
-export "src/errors.dart" show PackageConfigError;
+export 'src/errors.dart' show PackageConfigError;

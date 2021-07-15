@@ -5,13 +5,13 @@
 /// Utility methods used by more than one library in the package.
 library package_config.util;
 
-import "errors.dart";
+import 'errors.dart';
 
 // All ASCII characters that are valid in a package name, with space
 // for all the invalid ones (including space).
 const String _validPackageNameCharacters =
     r"                                 !  $ &'()*+,-. 0123456789 ; =  "
-    r"@ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz   ~ ";
+    r'@ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz   ~ ';
 
 /// Tests whether something is a valid Dart package name.
 bool isValidPackageName(String string) {
@@ -47,17 +47,17 @@ int checkPackageName(String string) {
 /// Returns the package name extracted from the package URI,
 /// which is the path segment between `package:` and the first `/`.
 String checkValidPackageUri(Uri packageUri, String name) {
-  if (packageUri.scheme != "package") {
-    throw PackageConfigArgumentError(packageUri, name, "Not a package: URI");
+  if (packageUri.scheme != 'package') {
+    throw PackageConfigArgumentError(packageUri, name, 'Not a package: URI');
   }
   if (packageUri.hasAuthority) {
     throw PackageConfigArgumentError(
-        packageUri, name, "Package URIs must not have a host part");
+        packageUri, name, 'Package URIs must not have a host part');
   }
   if (packageUri.hasQuery) {
     // A query makes no sense if resolved to a file: URI.
     throw PackageConfigArgumentError(
-        packageUri, name, "Package URIs must not have a query part");
+        packageUri, name, 'Package URIs must not have a query part');
   }
   if (packageUri.hasFragment) {
     // We could leave the fragment after the URL when resolving,
@@ -65,7 +65,7 @@ String checkValidPackageUri(Uri packageUri, String name) {
     // "package:foo/foo.dart#2" were considered different libraries.
     // Keep the syntax open in case we ever get multiple libraries in one file.
     throw PackageConfigArgumentError(
-        packageUri, name, "Package URIs must not have a fragment part");
+        packageUri, name, 'Package URIs must not have a fragment part');
   }
   if (packageUri.path.startsWith('/')) {
     throw PackageConfigArgumentError(
@@ -81,7 +81,7 @@ String checkValidPackageUri(Uri packageUri, String name) {
   if (badIndex >= 0) {
     if (packageName.isEmpty) {
       throw PackageConfigArgumentError(
-          packageUri, name, "Package names mus be non-empty");
+          packageUri, name, 'Package names mus be non-empty');
     }
     if (badIndex == packageName.length) {
       throw PackageConfigArgumentError(packageUri, name,
@@ -89,13 +89,13 @@ String checkValidPackageUri(Uri packageUri, String name) {
     }
     assert(badIndex < packageName.length);
     var badCharCode = packageName.codeUnitAt(badIndex);
-    var badChar = "U+" + badCharCode.toRadixString(16).padLeft(4, '0');
+    var badChar = 'U+' + badCharCode.toRadixString(16).padLeft(4, '0');
     if (badCharCode >= 0x20 && badCharCode <= 0x7e) {
       // Printable character.
       badChar = "'${packageName[badIndex]}' ($badChar)";
     }
     throw PackageConfigArgumentError(
-        packageUri, name, "Package names must not contain $badChar");
+        packageUri, name, 'Package names must not contain $badChar');
   }
   return packageName;
 }
@@ -110,7 +110,7 @@ bool isAbsoluteDirectoryUri(Uri uri) {
   if (uri.hasFragment) return false;
   if (!uri.hasScheme) return false;
   var path = uri.path;
-  if (!path.endsWith("/")) return false;
+  if (!path.endsWith('/')) return false;
   return true;
 }
 
@@ -139,8 +139,8 @@ int firstNonWhitespaceChar(List<int> bytes) {
 
 /// Appends a trailing `/` if the path doesn't end with one.
 String trailingSlash(String path) {
-  if (path.isEmpty || path.endsWith("/")) return path;
-  return path + "/";
+  if (path.isEmpty || path.endsWith('/')) return path;
+  return path + '/';
 }
 
 /// Whether a URI should not be considered relative to the base URI.
@@ -212,15 +212,15 @@ Uri? relativizeUri(Uri? uri, Uri? baseUri) {
   }
   if (index == base.length) {
     if (index == target.length) {
-      return Uri(path: "./");
+      return Uri(path: './');
     }
     return Uri(path: target.skip(index).join('/'));
   } else if (index > 0) {
     var buffer = StringBuffer();
     for (var n = base.length - index; n > 0; --n) {
-      buffer.write("../");
+      buffer.write('../');
     }
-    buffer.writeAll(target.skip(index), "/");
+    buffer.writeAll(target.skip(index), '/');
     return Uri(path: buffer.toString());
   } else {
     return uri;

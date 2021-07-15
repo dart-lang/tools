@@ -4,21 +4,21 @@
 
 // Parsing and serialization of package configurations.
 
-import "dart:convert";
-import "dart:typed_data";
+import 'dart:convert';
+import 'dart:typed_data';
 
-import "errors.dart";
-import "package_config_impl.dart";
-import "packages_file.dart" as packages_file;
-import "util.dart";
+import 'errors.dart';
+import 'package_config_impl.dart';
+import 'packages_file.dart' as packages_file;
+import 'util.dart';
 
-const String _configVersionKey = "configVersion";
-const String _packagesKey = "packages";
+const String _configVersionKey = 'configVersion';
+const String _packagesKey = 'packages';
 const List<String> _topNames = [_configVersionKey, _packagesKey];
-const String _nameKey = "name";
-const String _rootUriKey = "rootUri";
-const String _packageUriKey = "packageUri";
-const String _languageVersionKey = "languageVersion";
+const String _nameKey = 'name';
+const String _rootUriKey = 'rootUri';
+const String _packageUriKey = 'packageUri';
+const String _languageVersionKey = 'languageVersion';
 const List<String> _packageNames = [
   _nameKey,
   _rootUriKey,
@@ -26,14 +26,14 @@ const List<String> _packageNames = [
   _languageVersionKey
 ];
 
-const String _generatedKey = "generated";
-const String _generatorKey = "generator";
-const String _generatorVersionKey = "generatorVersion";
+const String _generatedKey = 'generated';
+const String _generatorKey = 'generator';
+const String _generatorVersionKey = 'generatorVersion';
 
 final _jsonUtf8Decoder = json.fuse(utf8).decoder;
 
 PackageConfig parsePackageConfigBytes(
-    Uint8List bytes, Uri file, void onError(Object error)) {
+    Uint8List bytes, Uri file, void Function(Object error) onError) {
   // TODO(lrn): Make this simpler. Maybe parse directly from bytes.
   var jsonObject;
   try {
@@ -46,7 +46,7 @@ PackageConfig parsePackageConfigBytes(
 }
 
 PackageConfig parsePackageConfigString(
-    String source, Uri file, void onError(Object error)) {
+    String source, Uri file, void Function(Object error) onError) {
   var jsonObject;
   try {
     jsonObject = jsonDecode(source);
@@ -80,21 +80,21 @@ PackageConfig parsePackageConfigString(
 /// The [baseLocation] is used as base URI to resolve the "rootUri"
 /// URI referencestring.
 PackageConfig parsePackageConfigJson(
-    Object? json, Uri baseLocation, void onError(Object error)) {
-  if (!baseLocation.hasScheme || baseLocation.isScheme("package")) {
-    throw PackageConfigArgumentError(baseLocation.toString(), "baseLocation",
-        "Must be an absolute non-package: URI");
+    Object? json, Uri baseLocation, void Function(Object error) onError) {
+  if (!baseLocation.hasScheme || baseLocation.isScheme('package')) {
+    throw PackageConfigArgumentError(baseLocation.toString(), 'baseLocation',
+        'Must be an absolute non-package: URI');
   }
 
-  if (!baseLocation.path.endsWith("/")) {
-    baseLocation = baseLocation.resolveUri(Uri(path: "."));
+  if (!baseLocation.path.endsWith('/')) {
+    baseLocation = baseLocation.resolveUri(Uri(path: '.'));
   }
 
   String typeName<T>() {
-    if (0 is T) return "int";
-    if ("" is T) return "string";
-    if (const [] is T) return "array";
-    return "object";
+    if (0 is T) return 'int';
+    if ('' is T) return 'string';
+    if (const [] is T) return 'array';
+    return 'object';
   }
 
   T? checkType<T>(Object? value, String name, [String? packageName]) {
@@ -103,7 +103,7 @@ PackageConfig parsePackageConfigJson(
     // and Map<String, Object?>. Recognize which to give a better error message.
     var message =
         "$name${packageName != null ? " of package $packageName" : ""}"
-        " is not a JSON ${typeName<T>()}";
+        ' is not a JSON ${typeName<T>()}';
     onError(PackageConfigFormatException(message, value));
     return null;
   }
@@ -140,27 +140,27 @@ PackageConfig parsePackageConfigJson(
       }
     });
     if (!hasName) {
-      onError(PackageConfigFormatException("Missing name entry", entry));
+      onError(PackageConfigFormatException('Missing name entry', entry));
     }
     if (!hasRoot) {
-      onError(PackageConfigFormatException("Missing rootUri entry", entry));
+      onError(PackageConfigFormatException('Missing rootUri entry', entry));
     }
     if (name == null || rootUri == null) return null;
     var parsedRootUri = Uri.parse(rootUri!);
     var relativeRoot = !hasAbsolutePath(parsedRootUri);
     var root = baseLocation.resolveUri(parsedRootUri);
-    if (!root.path.endsWith("/")) root = root.replace(path: root.path + "/");
+    if (!root.path.endsWith('/')) root = root.replace(path: root.path + '/');
     var packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri!);
-    if (!packageRoot.path.endsWith("/")) {
-      packageRoot = packageRoot.replace(path: packageRoot.path + "/");
+    if (!packageRoot.path.endsWith('/')) {
+      packageRoot = packageRoot.replace(path: packageRoot.path + '/');
     }
 
     LanguageVersion? version;
     if (languageVersion != null) {
       version = parseLanguageVersion(languageVersion, onError);
     } else if (hasVersion) {
-      version = SimpleInvalidLanguageVersion("invalid");
+      version = SimpleInvalidLanguageVersion('invalid');
     }
 
     return SimplePackage.validate(
@@ -174,7 +174,7 @@ PackageConfig parsePackageConfigJson(
     });
   }
 
-  var map = checkType<Map<String, Object?>>(json, "value");
+  var map = checkType<Map<String, Object?>>(json, 'value');
   if (map == null) return const SimplePackageConfig.empty();
   Map<String, Object?>? extraData;
   List<Package>? packageList;
@@ -189,7 +189,7 @@ PackageConfig parsePackageConfigJson(
         var packages = <Package>[];
         for (var package in packageArray) {
           var packageMap =
-              checkType<Map<String, Object?>>(package, "package entry");
+              checkType<Map<String, Object?>>(package, 'package entry');
           if (packageMap != null) {
             var entry = parsePackage(packageMap);
             if (entry != null) {
@@ -205,11 +205,11 @@ PackageConfig parsePackageConfigJson(
     }
   });
   if (configVersion == null) {
-    onError(PackageConfigFormatException("Missing configVersion entry", json));
+    onError(PackageConfigFormatException('Missing configVersion entry', json));
     configVersion = 2;
   }
   if (packageList == null) {
-    onError(PackageConfigFormatException("Missing packages list", json));
+    onError(PackageConfigFormatException('Missing packages list', json));
     packageList = [];
   }
   return SimplePackageConfig(configVersion!, packageList!, extraData, (error) {
@@ -221,7 +221,7 @@ PackageConfig parsePackageConfigJson(
   });
 }
 
-final _jsonUtf8Encoder = JsonUtf8Encoder("  ");
+final _jsonUtf8Encoder = JsonUtf8Encoder('  ');
 
 void writePackageConfigJsonUtf8(
     PackageConfig config, Uri? baseUri, Sink<List<int>> output) {
@@ -234,7 +234,7 @@ void writePackageConfigJsonString(
     PackageConfig config, Uri? baseUri, StringSink output) {
   // Can be optimized.
   var data = packageConfigToJson(config, baseUri);
-  output.write(JsonEncoder.withIndent("  ").convert(data));
+  output.write(JsonEncoder.withIndent('  ').convert(data));
 }
 
 Map<String, Object?> packageConfigToJson(PackageConfig config, Uri? baseUri) =>
@@ -270,7 +270,7 @@ void writeDotPackages(PackageConfig config, Uri baseUri, StringSink output) {
     if (generator is String) {
       var generated = extraData[_generatedKey];
       var generatorVersion = extraData[_generatorVersionKey];
-      comment = "Generated by $generator"
+      comment = 'Generated by $generator'
           "${generatorVersion is String ? " $generatorVersion" : ""}"
           "${generated is String ? " on $generated" : ""}.";
     }

@@ -4,31 +4,31 @@
 
 // dart:io dependent functionality for reading and writing configuration files.
 
-import "dart:convert";
-import "dart:io";
-import "dart:typed_data";
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
-import "errors.dart";
-import "package_config_impl.dart";
-import "package_config_json.dart";
-import "packages_file.dart" as packages_file;
-import "util.dart";
-import "util_io.dart";
+import 'errors.dart';
+import 'package_config_impl.dart';
+import 'package_config_json.dart';
+import 'packages_file.dart' as packages_file;
+import 'util.dart';
+import 'util_io.dart';
 
 /// Name of directory where Dart tools store their configuration.
 ///
 /// Directory is created in the package root directory.
-const dartToolDirName = ".dart_tool";
+const dartToolDirName = '.dart_tool';
 
 /// Name of file containing new package configuration data.
 ///
 /// File is stored in the dart tool directory.
-const packageConfigFileName = "package_config.json";
+const packageConfigFileName = 'package_config.json';
 
 /// Name of file containing legacy package configuration data.
 ///
 /// File is stored in the package root directory.
-const packagesFileName = ".packages";
+const packagesFileName = '.packages';
 
 /// Reads a package configuration file.
 ///
@@ -43,7 +43,7 @@ const packagesFileName = ".packages";
 ///
 /// The file must exist and be a normal file.
 Future<PackageConfig> readAnyConfigFile(
-    File file, bool preferNewest, void onError(Object error)) async {
+    File file, bool preferNewest, void Function(Object error) onError) async {
   if (preferNewest && fileName(file.path) == packagesFileName) {
     var alternateFile = File(
         pathJoin(dirName(file.path), dartToolDirName, packageConfigFileName));
@@ -64,21 +64,21 @@ Future<PackageConfig> readAnyConfigFile(
 /// Like [readAnyConfigFile] but uses a URI and an optional loader.
 Future<PackageConfig> readAnyConfigFileUri(
     Uri file,
-    Future<Uint8List?> loader(Uri uri)?,
-    void onError(Object error),
+    Future<Uint8List?> Function(Uri uri)? loader,
+    void Function(Object error) onError,
     bool preferNewest) async {
-  if (file.isScheme("package")) {
+  if (file.isScheme('package')) {
     throw PackageConfigArgumentError(
-        file, "file", "Must not be a package: URI");
+        file, 'file', 'Must not be a package: URI');
   }
   if (loader == null) {
-    if (file.isScheme("file")) {
+    if (file.isScheme('file')) {
       return await readAnyConfigFile(File.fromUri(file), preferNewest, onError);
     }
     loader = defaultLoader;
   }
   if (preferNewest && file.pathSegments.last == packagesFileName) {
-    var alternateFile = file.resolve("$dartToolDirName/$packageConfigFileName");
+    var alternateFile = file.resolve('$dartToolDirName/$packageConfigFileName');
     Uint8List? bytes;
     try {
       bytes = await loader(alternateFile);
@@ -99,7 +99,7 @@ Future<PackageConfig> readAnyConfigFileUri(
   }
   if (bytes == null) {
     onError(PackageConfigArgumentError(
-        file.toString(), "file", "File cannot be read"));
+        file.toString(), 'file', 'File cannot be read'));
     return const SimplePackageConfig.empty();
   }
   return parseAnyConfigFile(bytes, file, onError);
@@ -110,7 +110,7 @@ Future<PackageConfig> readAnyConfigFileUri(
 /// Assumes it's a JSON file if the first non-whitespace character
 /// is `{`, otherwise assumes it's a `.packages` file.
 PackageConfig parseAnyConfigFile(
-    Uint8List bytes, Uri file, void onError(Object error)) {
+    Uint8List bytes, Uri file, void Function(Object error) onError) {
   var firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
     // Definitely not a JSON object, probably a .packages.
@@ -120,7 +120,7 @@ PackageConfig parseAnyConfigFile(
 }
 
 Future<PackageConfig> readPackageConfigJsonFile(
-    File file, void onError(Object error)) async {
+    File file, void Function(Object error) onError) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
@@ -132,7 +132,7 @@ Future<PackageConfig> readPackageConfigJsonFile(
 }
 
 Future<PackageConfig> readDotPackagesFile(
-    File file, void onError(Object error)) async {
+    File file, void Function(Object error) onError) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();

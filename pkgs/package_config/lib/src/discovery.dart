@@ -2,21 +2,21 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import "dart:io";
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package_config_io.dart';
 
-import "errors.dart";
-import "package_config_impl.dart";
-import "package_config_json.dart";
-import "packages_file.dart" as packages_file;
-import "util_io.dart" show defaultLoader, pathJoin;
+import 'errors.dart';
+import 'package_config_impl.dart';
+import 'package_config_json.dart';
+import 'packages_file.dart' as packages_file;
+import 'util_io.dart' show defaultLoader, pathJoin;
 
-final Uri packageConfigJsonPath = Uri(path: ".dart_tool/package_config.json");
-final Uri dotPackagesPath = Uri(path: ".packages");
-final Uri currentPath = Uri(path: ".");
-final Uri parentPath = Uri(path: "..");
+final Uri packageConfigJsonPath = Uri(path: '.dart_tool/package_config.json');
+final Uri dotPackagesPath = Uri(path: '.packages');
+final Uri currentPath = Uri(path: '.');
+final Uri parentPath = Uri(path: '..');
 
 /// Discover the package configuration for a Dart script.
 ///
@@ -32,8 +32,8 @@ final Uri parentPath = Uri(path: "..");
 /// If any of these tests succeed, a `PackageConfig` class is returned.
 /// Returns `null` if no configuration was found. If a configuration
 /// is needed, then the caller can supply [PackageConfig.empty].
-Future<PackageConfig?> findPackageConfig(
-    Directory baseDirectory, bool recursive, void onError(Object error)) async {
+Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
+    bool recursive, void Function(Object error) onError) async {
   var directory = baseDirectory;
   if (!directory.isAbsolute) directory = directory.absolute;
   if (!await directory.exists()) {
@@ -55,16 +55,16 @@ Future<PackageConfig?> findPackageConfig(
 /// Similar to [findPackageConfig] but based on a URI.
 Future<PackageConfig?> findPackageConfigUri(
     Uri location,
-    Future<Uint8List?> loader(Uri uri)?,
-    void onError(Object error),
+    Future<Uint8List?> Function(Uri uri)? loader,
+    void Function(Object error) onError,
     bool recursive) async {
-  if (location.isScheme("package")) {
+  if (location.isScheme('package')) {
     onError(PackageConfigArgumentError(
-        location, "location", "Must not be a package: URI"));
+        location, 'location', 'Must not be a package: URI'));
     return null;
   }
   if (loader == null) {
-    if (location.isScheme("file")) {
+    if (location.isScheme('file')) {
       return findPackageConfig(
           Directory.fromUri(location.resolveUri(currentPath)),
           recursive,
@@ -72,7 +72,7 @@ Future<PackageConfig?> findPackageConfigUri(
     }
     loader = defaultLoader;
   }
-  if (!location.path.endsWith("/")) location = location.resolveUri(currentPath);
+  if (!location.path.endsWith('/')) location = location.resolveUri(currentPath);
   while (true) {
     var file = location.resolveUri(packageConfigJsonPath);
     var bytes = await loader(file);
@@ -103,7 +103,7 @@ Future<PackageConfig?> findPackageConfigUri(
 /// a best-effort attempt is made to return a package configuration.
 /// This may be the empty package configuration.
 Future<PackageConfig?> findPackagConfigInDirectory(
-    Directory directory, void onError(Object error)) async {
+    Directory directory, void Function(Object error) onError) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {
     return await readPackageConfigJsonFile(packageConfigFile, onError);
@@ -118,13 +118,13 @@ Future<PackageConfig?> findPackagConfigInDirectory(
 Future<File?> checkForPackageConfigJsonFile(Directory directory) async {
   assert(directory.isAbsolute);
   var file =
-      File(pathJoin(directory.path, ".dart_tool", "package_config.json"));
+      File(pathJoin(directory.path, '.dart_tool', 'package_config.json'));
   if (await file.exists()) return file;
   return null;
 }
 
 Future<File?> checkForDotPackagesFile(Directory directory) async {
-  var file = File(pathJoin(directory.path, ".packages"));
+  var file = File(pathJoin(directory.path, '.packages'));
   if (await file.exists()) return file;
   return null;
 }

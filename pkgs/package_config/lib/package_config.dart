@@ -9,15 +9,15 @@
 /// configurations in the [specified format](https://github.com/dart-lang/language/blob/master/accepted/future-releases/language-versioning/package-config-file-v2.md).
 library package_config.package_config;
 
-import "dart:io" show File, Directory;
-import "dart:typed_data" show Uint8List;
+import 'dart:io' show File, Directory;
+import 'dart:typed_data' show Uint8List;
 
-import "src/discovery.dart" as discover;
-import "src/errors.dart" show throwError;
-import "src/package_config.dart";
-import "src/package_config_io.dart";
+import 'src/discovery.dart' as discover;
+import 'src/errors.dart' show throwError;
+import 'src/package_config.dart';
+import 'src/package_config_io.dart';
 
-export "package_config_types.dart";
+export 'package_config_types.dart';
 
 /// Reads a specific package configuration file.
 ///
@@ -42,7 +42,7 @@ export "package_config_types.dart";
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
 Future<PackageConfig> loadPackageConfig(File file,
-        {bool preferNewest = true, void onError(Object error)?}) =>
+        {bool preferNewest = true, void Function(Object error)? onError}) =>
     readAnyConfigFile(file, preferNewest, onError ?? throwError);
 
 /// Reads a specific package configuration URI.
@@ -87,9 +87,9 @@ Future<PackageConfig> loadPackageConfig(File file,
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
 Future<PackageConfig> loadPackageConfigUri(Uri file,
-        {Future<Uint8List?> loader(Uri uri)?,
+        {Future<Uint8List?> Function(Uri uri)? loader,
         bool preferNewest = true,
-        void onError(Object error)?}) =>
+        void Function(Object error)? onError}) =>
     readAnyConfigFileUri(file, loader, onError ?? throwError, preferNewest);
 
 /// Finds a package configuration relative to [directory].
@@ -113,7 +113,7 @@ Future<PackageConfig> loadPackageConfigUri(Uri file,
 ///
 /// Returns `null` if no configuration file is found.
 Future<PackageConfig?> findPackageConfig(Directory directory,
-        {bool recurse = true, void onError(Object error)?}) =>
+        {bool recurse = true, void Function(Object error)? onError}) =>
     discover.findPackageConfig(directory, recurse, onError ?? throwError);
 
 /// Finds a package configuration relative to [location].
@@ -158,8 +158,8 @@ Future<PackageConfig?> findPackageConfig(Directory directory,
 /// Returns `null` if no configuration file is found.
 Future<PackageConfig?> findPackageConfigUri(Uri location,
         {bool recurse = true,
-        Future<Uint8List?> loader(Uri uri)?,
-        void onError(Object error)?}) =>
+        Future<Uint8List?> Function(Uri uri)? loader,
+        void Function(Object error)? onError}) =>
     discover.findPackageConfigUri(
         location, loader, onError ?? throwError, recurse);
 

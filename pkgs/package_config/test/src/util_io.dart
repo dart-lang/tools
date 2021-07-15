@@ -2,10 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import "dart:io";
+import 'dart:io';
 
-import "package:test/test.dart";
-import "package:package_config/src/util_io.dart";
+import 'package:test/test.dart';
+import 'package:package_config/src/util_io.dart';
 
 /// Creates a directory structure from [description] and runs [fileTest].
 ///
@@ -14,9 +14,9 @@ import "package:package_config/src/util_io.dart";
 /// as a string.
 /// Introduces a group to hold the [setUp]/[tearDown] logic.
 void fileTest(String name, Map<String, Object> description,
-    void fileTest(Directory directory)) {
-  group("file-test", () {
-    var tempDir = Directory.systemTemp.createTempSync("pkgcfgtest");
+    void Function(Directory directory) fileTest) {
+  group('file-test', () {
+    var tempDir = Directory.systemTemp.createTempSync('pkgcfgtest');
     setUp(() {
       _createFiles(tempDir, description);
     });
@@ -44,7 +44,7 @@ void fileTest(String name, Map<String, Object> description,
 // Creates temporary files in the target directory.
 void _createFiles(Directory target, Map<Object?, Object?> description) {
   description.forEach((name, content) {
-    var entryName = pathJoin(target.path, "$name");
+    var entryName = pathJoin(target.path, '$name');
     if (content is Map<Object?, Object?>) {
       _createFiles(Directory(entryName)..createSync(), content);
     } else {
@@ -55,7 +55,7 @@ void _createFiles(Directory target, Map<Object?, Object?> description) {
 
 /// Creates a [Directory] for a subdirectory of [parent].
 Directory subdir(Directory parent, String dirName) =>
-    Directory(pathJoinAll([parent.path, ...dirName.split("/")]));
+    Directory(pathJoinAll([parent.path, ...dirName.split('/')]));
 
 /// Creates a [File] for an entry in the [directory] directory.
 File dirFile(Directory directory, String fileName) =>

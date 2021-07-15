@@ -10,7 +10,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 Future<Uint8List?> defaultLoader(Uri uri) async {
-  if (uri.isScheme("file")) {
+  if (uri.isScheme('file')) {
     var file = File.fromUri(uri);
     try {
       return await file.readAsBytes();
@@ -18,14 +18,14 @@ Future<Uint8List?> defaultLoader(Uri uri) async {
       return null;
     }
   }
-  if (uri.isScheme("http") || uri.isScheme("https")) {
+  if (uri.isScheme('http') || uri.isScheme('https')) {
     return _httpGet(uri);
   }
-  throw UnsupportedError("Default URI unsupported scheme: $uri");
+  throw UnsupportedError('Default URI unsupported scheme: $uri');
 }
 
 Future<Uint8List?> _httpGet(Uri uri) async {
-  assert(uri.isScheme("http") || uri.isScheme("https"));
+  assert(uri.isScheme('http') || uri.isScheme('https'));
   var client = HttpClient();
   var request = await client.getUrl(uri);
   var response = await request.close();
@@ -72,7 +72,7 @@ String fileName(String path) {
 String dirName(String path) {
   var separator = Platform.pathSeparator;
   var lastSeparator = path.lastIndexOf(separator);
-  if (lastSeparator < 0) return "";
+  if (lastSeparator < 0) return '';
   return path.substring(0, lastSeparator);
 }
 
@@ -82,12 +82,12 @@ String dirName(String path) {
 /// inserted.
 String pathJoin(String part1, String part2, [String? part3]) {
   var separator = Platform.pathSeparator;
-  var separator1 = part1.endsWith(separator) ? "" : separator;
+  var separator1 = part1.endsWith(separator) ? '' : separator;
   if (part3 == null) {
-    return "$part1$separator1$part2";
+    return '$part1$separator1$part2';
   }
-  var separator2 = part2.endsWith(separator) ? "" : separator;
-  return "$part1$separator1$part2$separator2$part3";
+  var separator2 = part2.endsWith(separator) ? '' : separator;
+  return '$part1$separator1$part2$separator2$part3';
 }
 
 /// Join an unknown number of path parts with [Platform.pathSeparator].
@@ -96,13 +96,13 @@ String pathJoin(String part1, String part2, [String? part3]) {
 /// inserted.
 String pathJoinAll(Iterable<String> parts) {
   var buffer = StringBuffer();
-  var separator = "";
+  var separator = '';
   for (var part in parts) {
     buffer
       ..write(separator)
       ..write(part);
     separator =
-        part.endsWith(Platform.pathSeparator) ? "" : Platform.pathSeparator;
+        part.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;
   }
   return buffer.toString();
 }
