@@ -1,4 +1,4 @@
-# [![Build Status](https://travis-ci.org/dart-lang/graphs.svg?branch=master)](https://travis-ci.org/dart-lang/graphs)
+[![CI](https://github.com/dart-lang/graphs/actions/workflows/ci.yml/badge.svg)](https://github.com/dart-lang/graphs/actions/workflows/ci.yml)
 
 Graph algorithms which do not specify a particular approach for representing a
 Graph.
