@@ -207,7 +207,7 @@ class HostedDetails {
 
   HostedDetails(this.name, this.url);
 
-  factory HostedDetails.fromJson(Object? data) {
+  factory HostedDetails.fromJson(Object data) {
     if (data is String) {
       data = {'name': data};
     }
