@@ -109,11 +109,11 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
   test('map w/ version and hosted as Map', () {
     final dep = _dependency<HostedDependency>({
       'version': '^1.0.0',
-      'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
+      'hosted': {'name': 'hosted_name', 'url': 'https://hosted_url'}
     });
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted!.name, 'hosted_name');
-    expect(dep.hosted!.url.toString(), 'hosted_url');
+    expect(dep.hosted!.url.toString(), 'https://hosted_url');
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
