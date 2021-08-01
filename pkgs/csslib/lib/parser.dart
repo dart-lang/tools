@@ -2588,7 +2588,9 @@ class _Parser {
       var token = _peek();
       if (token == TokenKind.LPAREN) {
         left++;
-      } else if (token == TokenKind.RPAREN) left--;
+      } else if (token == TokenKind.RPAREN) {
+        left--;
+      }
 
       matchingParens = left == 0;
       if (!matchingParens) stringValue.write(_next().text);
