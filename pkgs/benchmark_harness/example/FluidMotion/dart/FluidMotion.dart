@@ -363,12 +363,16 @@ class FluidField {
         var y = j - Hdt0 * v[pos];
         if (x < 0.5) {
           x = 0.5;
-        } else if (x > Wp5) x = Wp5;
+        } else if (x > Wp5) {
+          x = Wp5;
+        }
         var i0 = x.toInt();
         var i1 = i0 + 1;
         if (y < 0.5) {
           y = 0.5;
-        } else if (y > Hp5) y = Hp5;
+        } else if (y > Hp5) {
+          y = Hp5;
+        }
         var j0 = y.toInt();
         var j1 = j0 + 1;
         var s1 = x - i0;
