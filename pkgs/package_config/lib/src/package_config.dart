@@ -204,7 +204,7 @@ abstract class PackageConfig {
   /// Extra data associated with the package configuration.
   ///
   /// The data may be in any format, depending on who introduced it.
-  /// The standard `packjage_config.json` file storage will only store
+  /// The standard `package_config.json` file storage will only store
   /// JSON-like list/map data structures.
   Object? get extraData;
 }
