@@ -113,6 +113,7 @@ void main() {
         }
         ''';
       var config = parsePackageConfigBytes(
+          // ignore: unnecessary_cast
           utf8.encode(packageConfigFile) as Uint8List,
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError);
@@ -193,6 +194,7 @@ void main() {
         }
         ''';
       var config = parsePackageConfigBytes(
+          // ignore: unnecessary_cast
           utf8.encode(packageConfigFile) as Uint8List,
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError);
@@ -219,6 +221,7 @@ void main() {
     var root = '"rootUri":"/foo/"';
     test('minimal', () {
       var config = parsePackageConfigBytes(
+          // ignore: unnecessary_cast
           utf8.encode('{$cfg,$pkgs}') as Uint8List,
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError);
@@ -229,6 +232,7 @@ void main() {
       // A package must have a name and a rootUri, the remaining properties
       // are optional.
       var config = parsePackageConfigBytes(
+          // ignore: unnecessary_cast
           utf8.encode('{$cfg,"packages":[{$name,$root}]}') as Uint8List,
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError);
@@ -246,6 +250,7 @@ void main() {
           {'name': 'qux', 'rootUri': '/foo/qux/', 'packageUri': 'lib/'},
         ]
       }));
+      // ignore: unnecessary_cast
       var config = parsePackageConfigBytes(configBytes as Uint8List,
           Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError);
       expect(config.version, 2);
@@ -271,6 +276,7 @@ void main() {
       void testThrows(String name, String source) {
         test(name, () {
           expect(
+              // ignore: unnecessary_cast
               () => parsePackageConfigBytes(utf8.encode(source) as Uint8List,
                   Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError),
               throwsA(TypeMatcher<FormatException>()));

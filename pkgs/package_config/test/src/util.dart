@@ -48,6 +48,7 @@ void loaderTest(
       if (value is! Map<String, Object?>) return null;
       value = value[parts[i]];
     }
+    // ignore: unnecessary_cast
     if (value is String) return utf8.encode(value) as Uint8List;
     return null;
   }
