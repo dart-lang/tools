@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore: deprecated_member_use
 import 'dart:cli';
 import 'dart:convert';
 
@@ -65,6 +66,7 @@ Pubspec parse(
 
   ProcResult? pubResult;
   if (!skipTryPub) {
+    // ignore: deprecated_member_use
     pubResult = waitFor(tryPub(encoded));
     expect(pubResult, isNotNull);
   }
