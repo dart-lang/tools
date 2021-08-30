@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.0-dev
 
 * Support function level coverage information, when running tests in the Dart
    VM. This is not supported for web tests yet.
@@ -14,9 +14,6 @@
   from using `Map<int, int>` to represent line coverage to using `HitMap`
   (which contains both line and function coverage). `collect` also has a new
   optional bool flag controlling whether function coverage is collected.
-
-## 1.0.4 - 2021-06-08
-
 * Ensure `createHitmap` returns a sorted hitmap. This fixes a potential issue with
   ignore line annotations.
 
