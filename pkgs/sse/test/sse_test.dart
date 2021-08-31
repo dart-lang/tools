@@ -206,37 +206,17 @@ void main() {
 
       // Close the underlying connection.
       closeSink(connection);
-
-      // The isInKeepAlivePeriod flag may only be set for a short period because
-      // the client may connect very quickly, so only pump until it changes.
-      var maxPumps = 100;
-      while (!connection.isInKeepAlivePeriod && maxPumps-- > 0) {
-        await pumpEventQueue(times: 1);
-      }
-
-      // Ensure there's still a connection and it's marked as in the keep-alive
-      // state.
-      expect(connection.isInKeepAlivePeriod, isTrue);
-      expect(handler.numberOfClients, 1);
-
       // Ensure we can still round-trip data on the original connection and that
       // the connection is no longer marked keep-alive once it's reconnected.
       connection.sink.add('bar');
       var queue = StreamQueue(connection.stream);
       expect(await queue.next, 'bar');
-      expect(connection.isInKeepAlivePeriod, isFalse);
 
       // Now check that we can reconnect multiple times.
       closeSink(connection);
-      maxPumps = 100;
-      while (!connection.isInKeepAlivePeriod && maxPumps-- > 0) {
-        await pumpEventQueue(times: 1);
-      }
-      expect(connection.isInKeepAlivePeriod, isTrue);
-      expect(handler.numberOfClients, 1);
       connection.sink.add('bar');
       expect(await queue.next, 'bar');
-      expect(connection.isInKeepAlivePeriod, isFalse);
+      expect(handler.numberOfClients, 1);
     });
 
     test('messages sent during disconnect arrive in-order', () async {

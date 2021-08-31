@@ -17,8 +17,8 @@ String _sseHeaders(String? origin) => 'HTTP/1.1 200 OK\r\n'
     'Content-Type: text/event-stream\r\n'
     'Cache-Control: no-cache\r\n'
     'Connection: keep-alive\r\n'
-    'Access-Control-Allow-Credentials: true\r\n' 
-    "${origin != null ? 'Access-Control-Allow-Origin: $origin\r\n'  : ''}"
+    'Access-Control-Allow-Credentials: true\r\n'
+    "${origin != null ? 'Access-Control-Allow-Origin: $origin\r\n' : ''}"
     '\r\n\r\n';
 
 class _SseMessage {
