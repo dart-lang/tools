@@ -111,7 +111,7 @@ void defineReflectiveTests(Type type) {
   classMirror.instanceMembers
       .forEach((Symbol symbol, MethodMirror memberMirror) {
     // we need only methods
-    if (memberMirror is! MethodMirror || !memberMirror.isRegularMethod) {
+    if (!memberMirror.isRegularMethod) {
       return;
     }
     // prepare information about the method
