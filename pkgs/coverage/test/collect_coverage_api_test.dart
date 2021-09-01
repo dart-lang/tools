@@ -83,10 +83,38 @@ void main() {
     _expectHitCount(hits, 11, 1);
     _expectHitCount(hits, 28, 1);
   });
+
+  test('collect_coverage_api with function coverage', () async {
+    final json = await _collectCoverage(functionCoverage: true);
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
+    expect(json, containsPair('type', 'CodeCoverage'));
+
+    final coverage = json['coverage'] as List;
+    expect(coverage, isNotEmpty);
+
+    final sources = coverage.cast<Map>().fold(<String, List<Map>>{},
+        (Map<String, List<Map>> map, value) {
+      final sourceUri = value['source'] as String;
+      map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
+      return map;
+    });
+
+    for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
+      expect(sampleCoverageData['funcNames'], isNotNull);
+      expect(sampleCoverageData['funcHits'], isNotNull);
+    }
+
+    for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
+      expect(sampleCoverageData['funcNames'], isNotEmpty);
+      expect(sampleCoverageData['funcHits'], isNotEmpty);
+    }
+  });
 }
 
 Future<Map<String, dynamic>> _collectCoverage(
-    {Set<String> scopedOutput = const {}, bool isolateIds = false}) async {
+    {Set<String> scopedOutput = const {},
+    bool isolateIds = false,
+    bool functionCoverage = false}) async {
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -115,7 +143,9 @@ Future<Map<String, dynamic>> _collectCoverage(
   final isolateIdSet = isolateIds ? {isolateId} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
-      timeout: timeout, isolateIds: isolateIdSet, functionCoverage: true);
+      timeout: timeout,
+      isolateIds: isolateIdSet,
+      functionCoverage: functionCoverage);
 }
 
 // Returns the first coverage hitmap for the script with with the specified
