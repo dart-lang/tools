@@ -1736,9 +1736,7 @@ class HeightExpression extends DartStyleExpression {
 
   @override
   HeightExpression? merged(DartStyleExpression newHeightExpr) {
-    if (newHeightExpr is DartStyleExpression &&
-        isHeight &&
-        newHeightExpr.isHeight) {
+    if (isHeight && newHeightExpr.isHeight) {
       return newHeightExpr as HeightExpression;
     }
 

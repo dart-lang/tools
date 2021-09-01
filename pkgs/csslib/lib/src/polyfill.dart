@@ -246,9 +246,7 @@ VarDefinition _findTerminalVarDefinition(
         replaceExprs.replaceRange(0, 1, defaultValues);
         return varDef;
       }
-      if (foundDef is VarDefinition) {
-        return _findTerminalVarDefinition(varDefs, foundDef);
-      }
+      return _findTerminalVarDefinition(varDefs, foundDef);
     } else {
       // Return real CSS property.
       return varDef;
