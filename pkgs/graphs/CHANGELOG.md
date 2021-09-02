@@ -1,3 +1,7 @@
+# 2.1.0
+
+* Add a `topologicalSort()` function.
+
 # 2.0.0
 
 - **Breaking**: `crawlAsync` will no longer ignore a node from the graph if the

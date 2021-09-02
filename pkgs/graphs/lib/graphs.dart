@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 export 'src/crawl_async.dart' show crawlAsync;
+export 'src/cycle_exception.dart' show CycleException;
 export 'src/shortest_path.dart' show shortestPath, shortestPaths;
 export 'src/strongly_connected_components.dart'
     show stronglyConnectedComponents;
+export 'src/topological_sort.dart' show topologicalSort;
