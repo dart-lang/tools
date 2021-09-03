@@ -1,3 +1,8 @@
+## 1.1.1-dev
+
+* Use the `reportLines` flag in `vm_service`'s `getSourceReport` RPC. This
+  typiclly halves the number of RPCs that the coverage collector needs to run.
+
 ## 1.1.0-dev
 
 * Support function level coverage information, when running tests in the Dart
