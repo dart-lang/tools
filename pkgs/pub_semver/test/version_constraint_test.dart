@@ -36,7 +36,6 @@ void main() {
     test('parses "any"', () {
       var constraint = VersionConstraint.parse('any');
 
-      expect(constraint is VersionConstraint, isTrue);
       expect(
           constraint,
           allows(Version.parse('0.0.0'), Version.parse('1.2.3'),
