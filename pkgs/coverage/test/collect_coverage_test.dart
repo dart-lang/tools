@@ -81,7 +81,7 @@ void main() {
   });
 
   test('createHitmap', () async {
-    final resultString = await _getCoverageResult();
+    final resultString = await _collectCoverage(true);
     final jsonResult = json.decode(resultString) as Map<String, dynamic>;
     final coverage = jsonResult['coverage'] as List;
     final hitMap = await createHitmap(
@@ -191,9 +191,9 @@ void main() {
 String? _coverageData;
 
 Future<String> _getCoverageResult() async =>
-    _coverageData ??= await _collectCoverage();
+    _coverageData ??= await _collectCoverage(false);
 
-Future<String> _collectCoverage() async {
+Future<String> _collectCoverage(bool functionCoverage) async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
   final openPort = await getOpenPort();
@@ -220,7 +220,7 @@ Future<String> _collectCoverage() async {
   // TODO: need to get all of this functionality in the lib
   final toolResult = await Process.run('dart', [
     _collectAppPath,
-    '--function-coverage',
+    if (functionCoverage) '--function-coverage',
     '--uri',
     '$serviceUri',
     '--resume-isolates',

@@ -16,6 +16,8 @@
   optional bool flag controlling whether function coverage is collected.
 * Ensure `createHitmap` returns a sorted hitmap. This fixes a potential issue with
   ignore line annotations.
+* Use the `reportLines` flag in `vm_service`'s `getSourceReport` RPC. This
+  typically halves the number of RPCs that the coverage collector needs to run.
 
 ## 1.0.3 - 2021-05-25
 
