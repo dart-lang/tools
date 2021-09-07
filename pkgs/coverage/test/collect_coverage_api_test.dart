@@ -34,7 +34,7 @@ void main() {
     });
 
     for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
-      expect(sampleCoverageData['hits'], isNotNull);
+      expect(sampleCoverageData['hits'], isNotEmpty);
     }
 
     for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
@@ -100,8 +100,8 @@ void main() {
     });
 
     for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
-      expect(sampleCoverageData['funcNames'], isNotNull);
-      expect(sampleCoverageData['funcHits'], isNotNull);
+      expect(sampleCoverageData['funcNames'], isNotEmpty);
+      expect(sampleCoverageData['funcHits'], isNotEmpty);
     }
 
     for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
