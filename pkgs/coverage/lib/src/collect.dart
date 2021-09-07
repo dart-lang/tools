@@ -97,8 +97,10 @@ Future<Map<String, dynamic>> _getAllCoverage(
   scopedOutput ??= <String>{};
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
-  final ver = await service.getVersion();
-  final reportLines = ver.major == 3 && ver.minor != null && ver.minor! >= 51;
+  final version = await service.getVersion();
+  final reportLines =
+      (version.major == 3 && version.minor != null && version.minor! >= 51) ||
+          (version.major != null && version.major! > 3);
 
   for (var isolateRef in vm.isolates!) {
     if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
