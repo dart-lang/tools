@@ -102,8 +102,25 @@ Future<Map<String, dynamic>> _getAllCoverage(
       (version.major == 3 && version.minor != null && version.minor! >= 51) ||
           (version.major != null && version.major! > 3);
 
+  // Program counters are shared between isolates in the same group. So we need
+  // to make sure we're only gathering coverage data for one isolate in each
+  // group, otherwise we'll double count the hits.
+  final isolateOwnerGroup = <String, String>{};
+  final coveredIsolateGroups = <String>{};
+  for (var isolateGroupRef in vm.isolateGroups!) {
+    final isolateGroup = await service.getIsolateGroup(isolateGroupRef.id!);
+    for (var isolateRef in isolateGroup.isolates!) {
+      isolateOwnerGroup[isolateRef.id!] = isolateGroupRef.id!;
+    }
+  }
+
   for (var isolateRef in vm.isolates!) {
     if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
+    final isolateGroupId = isolateOwnerGroup[isolateRef.id];
+    if (isolateGroupId != null) {
+      if (coveredIsolateGroups.contains(isolateGroupId)) continue;
+      coveredIsolateGroups.add(isolateGroupId);
+    }
     if (scopedOutput.isNotEmpty) {
       final scripts = await service.getScripts(isolateRef.id!);
       for (var script in scripts.scripts!) {
