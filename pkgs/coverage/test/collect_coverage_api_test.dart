@@ -70,18 +70,7 @@ void main() {
     expect(json, containsPair('type', 'CodeCoverage'));
 
     final coverage = json['coverage'] as List<Map<String, dynamic>>;
-    expect(coverage, isNotEmpty);
-
-    final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart')!;
-    var hits = testAppCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 46, 0);
-    _expectHitCount(hits, 50, 0);
-
-    final isolateCoverage =
-        _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
-    hits = isolateCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 11, 1);
-    _expectHitCount(hits, 28, 1);
+    expect(coverage, isEmpty);
   });
 
   test('collect_coverage_api with function coverage', () async {
@@ -122,7 +111,6 @@ Future<Map<String, dynamic>> _collectCoverage(
 
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
-  final isolateIdCompleter = Completer<String>();
   sampleProcess.stdout
       .transform(utf8.decoder)
       .transform(LineSplitter())
@@ -133,42 +121,13 @@ Future<Map<String, dynamic>> _collectCoverage(
         serviceUriCompleter.complete(serviceUri);
       }
     }
-    if (line.contains('isolateId = ')) {
-      isolateIdCompleter.complete(line.split(' = ')[1]);
-    }
   });
 
   final serviceUri = await serviceUriCompleter.future;
-  final isolateId = await isolateIdCompleter.future;
-  final isolateIdSet = isolateIds ? {isolateId} : null;
+  final isolateIdSet = isolateIds ? <String>{} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
       timeout: timeout,
       isolateIds: isolateIdSet,
       functionCoverage: functionCoverage);
-}
-
-// Returns the first coverage hitmap for the script with with the specified
-// script filename, ignoring leading path.
-Map<String, dynamic>? _getScriptCoverage(
-    List<Map<String, dynamic>> coverage, String filename) {
-  for (var isolateCoverage in coverage) {
-    final script = Uri.parse(isolateCoverage['script']['uri'] as String);
-    if (script.pathSegments.last == filename) {
-      return isolateCoverage;
-    }
-  }
-  return null;
-}
-
-/// Tests that the specified hitmap has the specified hit count for the
-/// specified line.
-void _expectHitCount(List<int> hits, int line, int hitCount) {
-  final hitIndex = hits.indexOf(line);
-  if (hitIndex < 0) {
-    fail('No hit count for line $line');
-  }
-  final actual = hits[hitIndex + 1];
-  expect(actual, equals(hitCount),
-      reason: 'Expected line $line to have $hitCount hits, but found $actual.');
 }
