@@ -70,18 +70,7 @@ void main() {
     expect(json, containsPair('type', 'CodeCoverage'));
 
     final coverage = json['coverage'] as List<Map<String, dynamic>>;
-    expect(coverage, isNotEmpty);
-
-    final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart')!;
-    var hits = testAppCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 46, 0);
-    _expectHitCount(hits, 50, 0);
-
-    final isolateCoverage =
-        _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
-    hits = isolateCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 11, 1);
-    _expectHitCount(hits, 28, 1);
+    expect(coverage, isEmpty);
   });
 
   test('collect_coverage_api with function coverage', () async {
@@ -122,7 +111,6 @@ Future<Map<String, dynamic>> _collectCoverage(
 
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
-  final isolateIdCompleter = Completer<String>();
   sampleProcess.stdout
       .transform(utf8.decoder)
       .transform(LineSplitter())
@@ -133,14 +121,10 @@ Future<Map<String, dynamic>> _collectCoverage(
         serviceUriCompleter.complete(serviceUri);
       }
     }
-    if (line.contains('isolateId = ')) {
-      isolateIdCompleter.complete(line.split(' = ')[1]);
-    }
   });
 
   final serviceUri = await serviceUriCompleter.future;
-  final isolateId = await isolateIdCompleter.future;
-  final isolateIdSet = isolateIds ? {isolateId} : null;
+  final isolateIdSet = isolateIds ? <String>{} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
       timeout: timeout,
