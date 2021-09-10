@@ -131,28 +131,3 @@ Future<Map<String, dynamic>> _collectCoverage(
       isolateIds: isolateIdSet,
       functionCoverage: functionCoverage);
 }
-
-// Returns the first coverage hitmap for the script with with the specified
-// script filename, ignoring leading path.
-Map<String, dynamic>? _getScriptCoverage(
-    List<Map<String, dynamic>> coverage, String filename) {
-  for (var isolateCoverage in coverage) {
-    final script = Uri.parse(isolateCoverage['script']['uri'] as String);
-    if (script.pathSegments.last == filename) {
-      return isolateCoverage;
-    }
-  }
-  return null;
-}
-
-/// Tests that the specified hitmap has the specified hit count for the
-/// specified line.
-void _expectHitCount(List<int> hits, int line, int hitCount) {
-  final hitIndex = hits.indexOf(line);
-  if (hitIndex < 0) {
-    fail('No hit count for line $line');
-  }
-  final actual = hits[hitIndex + 1];
-  expect(actual, equals(hitCount),
-      reason: 'Expected line $line to have $hitCount hits, but found $actual.');
-}
