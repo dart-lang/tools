@@ -330,6 +330,36 @@ void main() {
     });
   });
 
+  group('canonicalizedVersion', () {
+    test('returns version string', () {
+      expect(Version(0, 0, 0).canonicalizedVersion, equals('0.0.0'));
+      expect(Version(12, 34, 56).canonicalizedVersion, equals('12.34.56'));
+
+      expect(Version(1, 2, 3, pre: 'alpha.1').canonicalizedVersion,
+          equals('1.2.3-alpha.1'));
+      expect(Version(1, 2, 3, pre: 'x.7.z-92').canonicalizedVersion,
+          equals('1.2.3-x.7.z-92'));
+
+      expect(Version(1, 2, 3, build: 'build.1').canonicalizedVersion,
+          equals('1.2.3+build.1'));
+      expect(Version(1, 2, 3, pre: 'pre', build: 'bui').canonicalizedVersion,
+          equals('1.2.3-pre+bui'));
+    });
+
+    test('discards leading zeroes', () {
+      expect(Version.parse('001.02.0003-01.dev+pre.002').canonicalizedVersion,
+          equals('1.2.3-1.dev+pre.2'));
+    });
+
+    test('example from documentation', () {
+      final v = Version.parse('01.02.03-01.dev+pre.02');
+
+      assert(v.toString() == '01.02.03-01.dev+pre.02');
+      assert(v.canonicalizedVersion == '1.2.3-1.dev+pre.2');
+      assert(Version.parse(v.canonicalizedVersion) == v);
+    });
+  });
+
   group('primary', () {
     test('single', () {
       expect(

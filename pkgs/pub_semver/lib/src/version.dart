@@ -321,8 +321,34 @@ class Version implements VersionConstraint, VersionRange {
     }
   }
 
+  /// Get non-canonical string representation of this [Version].
+  ///
+  /// If created with [Version.parse], the string from which the version was
+  /// parsed is returned. Unlike the [canonicalizedVersion] this preserves
+  /// artifacts such as leading zeros.
   @override
   String toString() => _text;
+
+  /// Get a canonicalized string representation of this [Version].
+  ///
+  /// Unlike [Version.toString()] this always returns a canonical string
+  /// representation of this [Version].
+  ///
+  /// **Example**
+  /// ```dart
+  /// final v = Version.parse('01.02.03-01.dev+pre.02');
+  ///
+  /// assert(v.toString() == '01.02.03-01.dev+pre.02');
+  /// assert(v.canonicalizedVersion == '1.2.3-1.dev+pre.2');
+  /// assert(Version.parse(v.canonicalizedVersion) == v);
+  /// ```
+  String get canonicalizedVersion => Version(
+        major,
+        minor,
+        patch,
+        pre: preRelease.isNotEmpty ? preRelease.join('.') : null,
+        build: build.isNotEmpty ? build.join('.') : null,
+      ).toString();
 
   /// Compares a dot-separated component of two versions.
   ///
