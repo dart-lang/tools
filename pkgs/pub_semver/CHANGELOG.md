@@ -1,3 +1,7 @@
+# 2.0.1-dev
+- Annotated `Version` with `@sealed` to discourage users from implementing the
+  interface.
+
 # 2.0.0
 
 - Stable null safety release.
