@@ -99,8 +99,7 @@ void main() {
       '.packages': packagesFile,
       'subdir': {'script.dart': 'main(){}'}
     }, (Directory directory) async {
-      var config;
-      config = await findPackageConfig(subdir(directory, 'subdir/'));
+      var config = (await findPackageConfig(subdir(directory, 'subdir/')))!;
       expect(config.version, 1);
       validatePackagesFile(config, directory);
     });

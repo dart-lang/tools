@@ -35,7 +35,7 @@ final _jsonUtf8Decoder = json.fuse(utf8).decoder;
 PackageConfig parsePackageConfigBytes(
     Uint8List bytes, Uri file, void Function(Object error) onError) {
   // TODO(lrn): Make this simpler. Maybe parse directly from bytes.
-  var jsonObject;
+  Object? jsonObject;
   try {
     jsonObject = _jsonUtf8Decoder.convert(bytes);
   } on FormatException catch (e) {
@@ -47,7 +47,7 @@ PackageConfig parsePackageConfigBytes(
 
 PackageConfig parsePackageConfigString(
     String source, Uri file, void Function(Object error) onError) {
-  var jsonObject;
+  Object? jsonObject;
   try {
     jsonObject = jsonDecode(source);
   } on FormatException catch (e) {
