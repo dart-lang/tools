@@ -1,6 +1,6 @@
 name: package_config
-version: 2.0.2-dev
-description: Support for working with Package Configuration files.
+version: 2.0.2
+description: Support for reading and writing Dart Package Configuration files.
 homepage: https://github.com/dart-lang/package_config
 
 environment:
