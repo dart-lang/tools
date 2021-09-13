@@ -4,7 +4,7 @@
 
 /// A package configuration is a way to assign file paths to package URIs,
 /// and vice-versa.
-
+///
 /// {@canonicalFor package_config.InvalidLanguageVersion}
 /// {@canonicalFor package_config.LanguageVersion}
 /// {@canonicalFor package_config.Package}
