@@ -1,4 +1,8 @@
-## 2.0.2-dev
+## 2.0.2
+
+- Update package description and README.
+- Change to package:lints for style checking.
+- Add an example.
 
 ## 2.0.1
 
