@@ -4,7 +4,13 @@
 Support for working with **Package Configuration** files as described
 in the Package Configuration v2 [design document](https://github.com/dart-lang/language/blob/master/accepted/future-releases/language-versioning/package-config-file-v2.md).
 
-The primary libraries are
+A Dart package configuration file is used to resolve Dart package names (e.g.
+`foobar`) to Dart files containing the source code for that package (e.g.
+`file:///Users/myuser/.pub-cache/hosted/pub.dartlang.org/foobar-1.1.0`). The
+standard package configuration file is `.dart_tool/package_config.json`, and is
+written by the Dart tool when the command `dart pub get` is run.
+
+The primary libraries of this package are
 * `package_config.dart`:
     Defines the `PackageConfig` class and other types needed to use
     package configurations, and provides functions to find, read and
