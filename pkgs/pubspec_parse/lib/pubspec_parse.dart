@@ -6,6 +6,7 @@ export 'src/dependency.dart'
     show
         Dependency,
         HostedDependency,
+        HostedDetails,
         GitDependency,
         SdkDependency,
         PathDependency;

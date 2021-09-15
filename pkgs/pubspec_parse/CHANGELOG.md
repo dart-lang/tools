@@ -1,4 +1,6 @@
-## 1.0.1-dev
+## 1.1.0
+
+- Export `HostedDetails` publicly.
 
 ## 1.0.0
 
@@ -26,7 +28,7 @@
 
 ## 0.1.4
 
-- Added `lenient` named argument to `Pubspec.fromJson` to ignore format and type errors. 
+- Added `lenient` named argument to `Pubspec.fromJson` to ignore format and type errors.
 
 ## 0.1.3
 
