@@ -1,5 +1,7 @@
 ## 4.1.1-dev
 
+- Apply `keepAlive` logic to `SocketException`s.
+
 ## 4.1.0
 
 - Limit the number of concurrent requests to prevent Chrome from automatically

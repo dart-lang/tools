@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
@@ -97,14 +98,16 @@ class SseConnection extends StreamChannelMixin<String?> {
         _sink.add('data: ${json.encode(data)}\n');
         _sink.add('\n');
         await _outgoingStreamQueue.next; // Consume from stream if no errors.
-      } on StateError catch (_) {
-        if (_keepAlive == null || _closedCompleter.isCompleted) {
+      } catch (e) {
+        if ((e is StateError || e is SocketException) &&
+            (_keepAlive != null && !_closedCompleter.isCompleted)) {
+          // If we got here then the sink may have closed but the stream.onDone
+          // hasn't fired yet, so pause the subscription and skip calling
+          // `next` so the message remains in the queue to try again.
+          _handleDisconnect();
+        } else {
           rethrow;
         }
-        // If we got here then the sink may have closed but the stream.onDone
-        // hasn't fired yet, so pause the subscription and skip calling
-        // `next` so the message remains in the queue to try again.
-        _handleDisconnect();
       }
     }
   }
