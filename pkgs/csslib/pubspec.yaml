@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   source_span: ^1.8.0
+  path: ^1.8.0
 
 dev_dependencies:
   pedantic: ^1.10.0

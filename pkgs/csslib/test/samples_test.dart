@@ -2,16 +2,17 @@
 library samples_test;
 
 import 'dart:io';
-import 'dart:mirrors';
 
 import 'package:test/test.dart';
 import 'package:csslib/parser.dart';
+import 'package:path/path.dart' as path;
 
 const testOptions = PreprocessorOptions(
-    useColors: false,
-    checked: false,
-    warningsAsErrors: true,
-    inputFile: 'memory');
+  useColors: false,
+  checked: false,
+  warningsAsErrors: true,
+  inputFile: 'memory',
+);
 
 void testCSSFile(File cssFile) {
   final errors = <Message>[];
@@ -22,12 +23,17 @@ void testCSSFile(File cssFile) {
   expect(errors, isEmpty, reason: errors.toString());
 }
 
-void main() {
-  final libraryUri = currentMirrorSystem().findLibrary(#samples_test).uri;
-  final cssDir = Directory.fromUri(libraryUri.resolve('examples'));
-  for (var element in cssDir.listSync()) {
-    if (element is File && element.uri.pathSegments.last.endsWith('.css')) {
-      test(element.uri.pathSegments.last, () => testCSSFile(element));
+void main() async {
+  // Iterate over all sub-folders of third_party,
+  // and then all css files in those.
+  final third_party = path.join(Directory.current.path, 'third_party');
+  for (var entity in Directory(third_party).listSync()) {
+    if (await FileSystemEntity.isDirectory(entity.path)) {
+      for (var element in Directory(entity.path).listSync()) {
+        if (element is File && element.uri.pathSegments.last.endsWith('.css')) {
+          test(element.uri.pathSegments.last, () => testCSSFile(element));
+        }
+      }
     }
   }
 }
