@@ -1,3 +1,8 @@
+## 0.3.4
+
+- Introduce `applicationConfigHome` for making it easy to consistently find the
+  user-specific application configuration folder.
+
 ## 0.3.3
 
 - Reverted `meta` constraint to `^1.3.0`.

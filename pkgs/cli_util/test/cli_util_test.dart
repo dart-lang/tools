@@ -36,4 +36,10 @@ void defineTests() {
       expect(isSdkDir(Directory(getSdkPath())), true);
     });
   });
+
+  group('applicationConfigHome', () {
+    test('returns a string', () {
+      expect(applicationConfigHome('dart'), isA<String>());
+    });
+  });
 }

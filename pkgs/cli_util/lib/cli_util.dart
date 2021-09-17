@@ -59,3 +59,66 @@ Directory getSdkDir([List<String>? cliArgs]) {
 
 /// Return the path to the current Dart SDK.
 String getSdkPath() => path.dirname(path.dirname(Platform.resolvedExecutable));
+
+/// Get the user-specific application configuration folder for the current
+/// platform.
+///
+/// This is a location appropriate for storing application specific
+/// configuration for the current user. The [productName] should be unique to
+/// avoid clashes with other applications on the same machine. This method won't
+/// actually create the folder, merely return the recommended location for
+/// storing user-specific application configuration.
+///
+/// The folder location depends on the platform:
+///  * `%APPDATA%\<productName>` on **Windows**,
+///  * `$HOME/Library/Application Support/<productName>` on **Mac OS**,
+///  * `$XDG_CONFIG_HOME/<productName>` on **Linux**
+///     (if `$XDG_CONFIG_HOME` is defined), and,
+///  * `$HOME/.config/<productName>` otherwise.
+///
+/// This aims follows best practices for each platform, honoring the
+/// [XDG Base Directory Specification][1] on Linux and [File System Basics][2]
+/// on Mac OS.
+///
+/// Throws if `%APPDATA%` or `$HOME` is undefined.
+///
+/// [1]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+/// [2]: https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW1
+String applicationConfigHome(String productName) =>
+    path.join(_configHome, productName);
+
+String get _configHome {
+  if (Platform.isWindows) {
+    final appdata = Platform.environment['APPDATA'];
+    if (appdata == null) {
+      throw StateError('Environment variable %APPDATA% is not defined!');
+    }
+    return appdata;
+  }
+
+  if (Platform.isMacOS) {
+    return path.join(_home, 'Library', 'Application Support');
+  }
+
+  if (Platform.isLinux) {
+    final xdgConfigHome = Platform.environment['XDG_CONFIG_HOME'];
+    if (xdgConfigHome != null) {
+      return xdgConfigHome;
+    }
+    // XDG Base Directory Specification says to use $HOME/.config/ when
+    // $XDG_CONFIG_HOME isn't defined.
+    return path.join(_home, '.config');
+  }
+
+  // We have no guidelines, perhaps we should just do: $HOME/.config/
+  // same as XDG specification would specify as fallback.
+  return path.join(_home, '.config');
+}
+
+String get _home {
+  final home = Platform.environment['HOME'];
+  if (home == null) {
+    throw StateError('Environment variable \$HOME is not defined!');
+  }
+  return home;
+}

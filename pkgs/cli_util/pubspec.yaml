@@ -1,5 +1,5 @@
 name: cli_util
-version: 0.3.3
+version: 0.3.4
 description: A library to help in building Dart command-line apps.
 repository: https://github.com/dart-lang/cli_util
 
