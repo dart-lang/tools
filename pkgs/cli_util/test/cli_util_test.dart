@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:cli_util/cli_util.dart';
 import 'package:cli_util/src/utils.dart';
 import 'package:test/test.dart';
+import 'package:path/path.dart' as p;
 
 void main() => defineTests();
 
@@ -38,8 +39,15 @@ void defineTests() {
   });
 
   group('applicationConfigHome', () {
-    test('returns a string', () {
-      expect(applicationConfigHome('dart'), isA<String>());
+    test('returns a non-empty string', () {
+      expect(applicationConfigHome('dart'), isNotEmpty);
+    });
+
+    test('has an ancestor folder that exists', () {
+      final path = p.split(applicationConfigHome('dart'));
+      // We expect that first two segments of the path exists.. This is really
+      // just a dummy check that some part of the path exists.
+      expect(Directory(p.joinAll(path.take(2))).existsSync(), isTrue);
     });
   });
 }
