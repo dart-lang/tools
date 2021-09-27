@@ -31,20 +31,20 @@ In other words, don't compare apples with oranges.
 
 1\. Add the following to your project's **pubspec.yaml**
 
-```
+```yaml
 dependencies:
     benchmark_harness: any
 ```
 
 2\. Install pub packages
 
-```
+```sh
 dart pub install
 ```
 
 3\. Add the following import:
 
-```
+```dart
 import 'package:benchmark_harness/benchmark_harness.dart';
 ```
 
@@ -87,9 +87,11 @@ void main() {
 ```
 
 ### Output
-```
+
+```console
 Template(RunTime): 0.1568472448997197 us.
 ```
+
 This is the average amount of time it takes to run `run()` 10 times.
 > µs is an abbreviation for microseconds.
 
