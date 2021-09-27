@@ -1,3 +1,7 @@
+## v2.0.1
+- License changed to BSD, as this package is now maintained by the Dart team.
+- Fixed minor lints.
+
 ## v2.0.0
 - Migrated to null-safety.
 - API will no-longer return `null` in-place of a `YamlNode`, instead a
