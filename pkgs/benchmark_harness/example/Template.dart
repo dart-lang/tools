@@ -1,5 +1,7 @@
 // @dart=2.8
-// Copyright 2012 Google Inc. All Rights Reserved.
+// Copyright (c) 2021, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
 
 // Import BenchmarkBase class.
 import 'package:benchmark_harness/benchmark_harness.dart';

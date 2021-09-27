@@ -2,10 +2,6 @@
 
 The Dart project benchmark harness is the recommended starting point when building a benchmark for Dart.
 
-## Learning more
-
-You can read more about [Benchmarking the Dart VM](https://www.dartlang.org/articles/server/benchmarking/).
-
 ## Interpreting Results
 
 By default, the reported runtime is not for a single call to `run()`, but for
@@ -43,7 +39,7 @@ dependencies:
 2\. Install pub packages
 
 ```sh
-pub install
+dart pub install
 ```
 
 3\. Add the following import:
@@ -56,7 +52,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 
 ## Example
 
-Create a dart file in the [`benchmark/`](https://www.dartlang.org/tools/pub/package-layout#tests-and-benchmarks)
+Create a dart file in the [`benchmark/`](https://dart.dev/tools/pub/package-layout#tests-and-benchmarks)
 folder of your package.
 
 ```dart
@@ -68,24 +64,23 @@ class TemplateBenchmark extends BenchmarkBase {
   const TemplateBenchmark() : super('Template');
 
   static void main() {
-    TemplateBenchmark().report();
+    const TemplateBenchmark().report();
   }
 
   // The benchmark code.
   @override
-  void run() {
-  }
+  void run() {}
 
   // Not measured setup code executed prior to the benchmark runs.
   @override
-  void setup() { }
+  void setup() {}
 
   // Not measured teardown code executed after the benchmark runs.
   @override
-  void teardown() { }
+  void teardown() {}
 }
 
-main() {
+void main() {
   // Run TemplateBenchmark
   TemplateBenchmark.main();
 }
