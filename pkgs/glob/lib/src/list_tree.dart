@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 
 import 'ast.dart';
 import 'utils.dart';
@@ -346,7 +345,8 @@ class _ListTreeNode {
 
       var resultGroup = StreamGroup<FileSystemEntity>();
       var resultController = StreamController<FileSystemEntity>(sync: true);
-      unawaited(resultGroup.add(resultController.stream));
+      // TODO: Remove `??` workaround once 2.15 ships (which allows null).
+      unawaited(resultGroup.add(resultController.stream) ?? Future.value());
       for (var entity in entities) {
         var basename = p.relative(entity.path, from: dir);
         if (_matches(basename)) resultController.add(entity);

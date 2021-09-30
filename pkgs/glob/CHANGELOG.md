@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Drop package:pedantic dependency, use package:lints instead.
+
 ## 2.0.1
 
 * Update example in README for new import.

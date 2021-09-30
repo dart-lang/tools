@@ -1,4 +1,4 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
 analyzer:
   strong-mode:
     implicit-casts: false
@@ -13,6 +13,7 @@ linter:
     - cancel_subscriptions
     - constant_identifier_names
     - control_flow_in_finally
+    - depend_on_referenced_packages
     - directives_ordering
     - empty_catches
     - empty_constructor_bodies
