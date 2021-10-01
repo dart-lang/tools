@@ -15,7 +15,7 @@ rm -rf "$BAZEL_REPO"
 git clone https://github.com/bazelbuild/bazel.git "$BAZEL_REPO"
 
 protoc --proto_path="${BAZEL_REPO}/src/main/protobuf" --dart_out=lib/src worker_protocol.proto
-dartfmt -w lib/src/worker_protocol.pb.dart
+dart format lib/src/worker_protocol.pb.dart
 
 # We only care about the *.pb.dart file, not the extra files
 rm lib/src/worker_protocol.pbenum.dart
