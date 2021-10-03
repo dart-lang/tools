@@ -432,7 +432,9 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
 
     final min = this.min;
     if (min != null) {
-      buffer..write(includeMin ? '>=' : '>')..write(min);
+      buffer
+        ..write(includeMin ? '>=' : '>')
+        ..write(min);
     }
 
     final max = this.max;
@@ -440,7 +442,9 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
     if (max != null) {
       if (min != null) buffer.write(' ');
       if (includeMax) {
-        buffer..write('<=')..write(max);
+        buffer
+          ..write('<=')
+          ..write(max);
       } else {
         buffer.write('<');
         if (max.isFirstPreRelease) {
