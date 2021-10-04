@@ -1,5 +1,7 @@
 # 1.8.2-dev
 
+- Require Dart >= 2.14.
+
 # 1.8.1
 
 * Fix a bug where the URL header for the highlights with multiple files would
@@ -8,32 +10,6 @@
 # 1.8.0
 
 * Stable release for null safety.
-
-# 1.8.0-nullsafety.4
-
-* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
-  guidelines.
-
-# 1.8.0-nullsafety.3
-
-* Remove workaround for https://github.com/dart-lang/sdk/issues/43136, which is
-  now fixed.
-* Allow prerelease versions of the 2.12 sdk.
-
-# 1.8.0-nullsafety.2
-
-* Revert unnecessary null check fix (sdk fix wont land in 2.10 stable).
-* Allow 2.10 stable and 2.11 dev sdks.
-
-# 1.8.0-nullsafety.1
-
-* Fixes a newly recognized unnecessary null check to remove warnings.
-
-# 1.8.0-nullsafety
-
-* Migrate to null safety.
-  * Apis have been migrated to reflect the existing assumptions in the code
-    and are not expected to be breaking.
 
 # 1.7.0
 

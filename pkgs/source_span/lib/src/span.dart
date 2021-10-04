@@ -102,7 +102,7 @@ class SourceSpanBase extends SourceSpanMixin {
 
   SourceSpanBase(this.start, this.end, this.text) {
     if (end.sourceUrl != start.sourceUrl) {
-      throw ArgumentError('Source URLs \"${start.sourceUrl}\" and '
+      throw ArgumentError('Source URLs "${start.sourceUrl}" and '
           " \"${end.sourceUrl}\" don't match.");
     } else if (end.offset < start.offset) {
       throw ArgumentError('End $end must come after start $start.');

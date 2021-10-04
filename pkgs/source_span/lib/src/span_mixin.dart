@@ -31,7 +31,7 @@ abstract class SourceSpanMixin implements SourceSpan {
   @override
   SourceSpan union(SourceSpan other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError('Source URLs \"$sourceUrl\" and '
+      throw ArgumentError('Source URLs "$sourceUrl" and '
           " \"${other.sourceUrl}\" don't match.");
     }
 
@@ -77,7 +77,7 @@ abstract class SourceSpanMixin implements SourceSpan {
       other is SourceSpan && start == other.start && end == other.end;
 
   @override
-  int get hashCode => start.hashCode + (31 * end.hashCode);
+  int get hashCode => Object.hash(start, end);
 
   @override
   String toString() => '<$runtimeType: from $start to $end "$text">';

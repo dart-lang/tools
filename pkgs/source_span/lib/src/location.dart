@@ -61,7 +61,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   /// This always returns a non-negative value.
   int distance(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError('Source URLs \"$sourceUrl\" and '
+      throw ArgumentError('Source URLs "$sourceUrl" and '
           "\"${other.sourceUrl}\" don't match.");
     }
     return (offset - other.offset).abs();
@@ -76,7 +76,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   @override
   int compareTo(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError('Source URLs \"$sourceUrl\" and '
+      throw ArgumentError('Source URLs "$sourceUrl" and '
           "\"${other.sourceUrl}\" don't match.");
     }
     return offset - other.offset;

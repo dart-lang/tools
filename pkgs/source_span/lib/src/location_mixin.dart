@@ -23,7 +23,7 @@ abstract class SourceLocationMixin implements SourceLocation {
   @override
   int distance(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError('Source URLs \"$sourceUrl\" and '
+      throw ArgumentError('Source URLs "$sourceUrl" and '
           "\"${other.sourceUrl}\" don't match.");
     }
     return (offset - other.offset).abs();
@@ -35,7 +35,7 @@ abstract class SourceLocationMixin implements SourceLocation {
   @override
   int compareTo(SourceLocation other) {
     if (sourceUrl != other.sourceUrl) {
-      throw ArgumentError('Source URLs \"$sourceUrl\" and '
+      throw ArgumentError('Source URLs "$sourceUrl" and '
           "\"${other.sourceUrl}\" don't match.");
     }
     return offset - other.offset;
