@@ -5,9 +5,11 @@
 library test.printer_test;
 
 import 'dart:convert';
-import 'package:test/test.dart';
+
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
+import 'package:test/test.dart';
+
 import 'common.dart';
 
 void main() {
@@ -23,15 +25,15 @@ void main() {
       ..add('y) => ')
       ..mark(inputExpr)
       ..add('x + y;\n');
-    expect(printer.text, OUTPUT);
-    expect(printer.map, jsonEncode(EXPECTED_MAP));
+    expect(printer.text, outputContent);
+    expect(printer.map, jsonEncode(expectedMap));
   });
 
   test('printer projecting marks', () {
-    var out = INPUT.replaceAll('long', '_s');
+    var out = inputContent.replaceAll('long', '_s');
     var printer = Printer('output2.dart');
 
-    var segments = INPUT.split('long');
+    var segments = inputContent.split('long');
     expect(segments.length, 6);
     printer
       ..mark(ispan(0, 0))
@@ -92,8 +94,8 @@ void main() {
         ..add('y) => ', span: inputVar2)
         ..add('x + y;\n', span: inputExpr)
         ..build('output.dart');
-      expect(printer.text, OUTPUT);
-      expect(printer.map, jsonEncode(EXPECTED_MAP));
+      expect(printer.text, outputContent);
+      expect(printer.map, jsonEncode(expectedMap));
     });
 
     test('nested use', () {
@@ -105,13 +107,13 @@ void main() {
         ..add(NestedPrinter()..add('y) => ', span: inputVar2))
         ..add('x + y;\n', span: inputExpr)
         ..build('output.dart');
-      expect(printer.text, OUTPUT);
-      expect(printer.map, jsonEncode(EXPECTED_MAP));
+      expect(printer.text, outputContent);
+      expect(printer.map, jsonEncode(expectedMap));
     });
 
     test('add indentation', () {
-      var out = INPUT.replaceAll('long', '_s');
-      var lines = INPUT.trim().split('\n');
+      var out = inputContent.replaceAll('long', '_s');
+      var lines = inputContent.trim().split('\n');
       expect(lines.length, 7);
       var printer = NestedPrinter();
       for (var i = 0; i < lines.length; i++) {

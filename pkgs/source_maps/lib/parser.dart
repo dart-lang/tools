@@ -313,7 +313,7 @@ class SingleMapping extends Mapping {
     /// The file for each URL, indexed by [urls]' values.
     var files = <int, SourceFile>{};
 
-    var lineNum;
+    int? lineNum;
     late List<TargetEntry> targetEntries;
     for (var sourceEntry in sourceEntries) {
       if (lineNum == null || sourceEntry.target.line > lineNum) {
@@ -601,7 +601,10 @@ class SingleMapping extends Mapping {
         }
         var sourceNameId = entry.sourceNameId;
         if (sourceNameId != null) {
-          buff..write(' (')..write(names[sourceNameId])..write(')');
+          buff
+            ..write(' (')
+            ..write(names[sourceNameId])
+            ..write(')');
         }
         buff.write('\n');
       }
@@ -660,11 +663,11 @@ class _MappingTokenizer implements Iterator<String> {
   bool get hasTokens => index < _length - 1 && _length > 0;
 
   _TokenKind get nextKind {
-    if (!hasTokens) return _TokenKind.EOF;
+    if (!hasTokens) return _TokenKind.eof;
     var next = _internal[index + 1];
-    if (next == ';') return _TokenKind.LINE;
-    if (next == ',') return _TokenKind.SEGMENT;
-    return _TokenKind.VALUE;
+    if (next == ';') return _TokenKind.line;
+    if (next == ',') return _TokenKind.segment;
+    return _TokenKind.value;
   }
 
   int _consumeValue() => decodeVlq(this);
@@ -698,10 +701,10 @@ class _MappingTokenizer implements Iterator<String> {
 }
 
 class _TokenKind {
-  static const _TokenKind LINE = _TokenKind(isNewLine: true);
-  static const _TokenKind SEGMENT = _TokenKind(isNewSegment: true);
-  static const _TokenKind EOF = _TokenKind(isEof: true);
-  static const _TokenKind VALUE = _TokenKind();
+  static const _TokenKind line = _TokenKind(isNewLine: true);
+  static const _TokenKind segment = _TokenKind(isNewSegment: true);
+  static const _TokenKind eof = _TokenKind(isEof: true);
+  static const _TokenKind value = _TokenKind();
   final bool isNewLine;
   final bool isNewSegment;
   final bool isEof;

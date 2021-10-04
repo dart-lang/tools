@@ -27,20 +27,20 @@ void main() {
   });
 
   test('only 32-bit ints allowed', () {
-    var max_int = (pow(2, 31) as int) - 1;
-    var min_int = -(pow(2, 31) as int);
-    _checkEncodeDecode(max_int - 1);
-    _checkEncodeDecode(min_int + 1);
-    _checkEncodeDecode(max_int);
-    _checkEncodeDecode(min_int);
+    var maxInt = (pow(2, 31) as int) - 1;
+    var minInt = -(pow(2, 31) as int);
+    _checkEncodeDecode(maxInt - 1);
+    _checkEncodeDecode(minInt + 1);
+    _checkEncodeDecode(maxInt);
+    _checkEncodeDecode(minInt);
 
-    expect(encodeVlq(min_int).join(''), 'hgggggE');
-    expect(decodeVlq('hgggggE'.split('').iterator), min_int);
+    expect(encodeVlq(minInt).join(''), 'hgggggE');
+    expect(decodeVlq('hgggggE'.split('').iterator), minInt);
 
-    expect(() => encodeVlq(max_int + 1), throwsA(anything));
-    expect(() => encodeVlq(max_int + 2), throwsA(anything));
-    expect(() => encodeVlq(min_int - 1), throwsA(anything));
-    expect(() => encodeVlq(min_int - 2), throwsA(anything));
+    expect(() => encodeVlq(maxInt + 1), throwsA(anything));
+    expect(() => encodeVlq(maxInt + 2), throwsA(anything));
+    expect(() => encodeVlq(minInt - 1), throwsA(anything));
+    expect(() => encodeVlq(minInt - 2), throwsA(anything));
 
     // if we allowed more than 32 bits, these would be the expected encodings
     // for the large numbers above.

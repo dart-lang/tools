@@ -27,3 +27,6 @@ int binarySearch(List list, bool Function(dynamic) matches) {
   }
   return max;
 }
+
+const int lineFeed = 10;
+const int carriageReturn = 13;

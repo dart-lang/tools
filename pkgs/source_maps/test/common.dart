@@ -10,7 +10,7 @@ import 'package:source_span/source_span.dart';
 import 'package:test/test.dart';
 
 /// Content of the source file
-const String INPUT = '''
+const String inputContent = '''
 /** this is a comment. */
 int longVar1 = 3;
 
@@ -19,7 +19,7 @@ int longName(int longVar2) {
   return longVar1 + longVar2;
 }
 ''';
-var input = SourceFile.fromString(INPUT, url: 'input.dart');
+final input = SourceFile.fromString(inputContent, url: 'input.dart');
 
 /// A span in the input file
 SourceMapSpan ispan(int start, int end, [bool isIdentifier = false]) =>
@@ -36,11 +36,11 @@ SourceMapSpan inputVar2NoSymbol = ispan(87, 95);
 SourceMapSpan inputExpr = ispan(108, 127);
 
 /// Content of the target file
-const String OUTPUT = '''
+const String outputContent = '''
 var x = 3;
 f(y) => x + y;
 ''';
-var output = SourceFile.fromString(OUTPUT, url: 'output.dart');
+final output = SourceFile.fromString(outputContent, url: 'output.dart');
 
 /// A span in the output file
 SourceMapSpan ospan(int start, int end, [bool isIdentifier = false]) =>
@@ -62,7 +62,7 @@ SourceMapSpan outputExpr = ospan(19, 24);
 ///
 /// This mapping is stored in the tests so we can independently test the builder
 /// and parser algorithms without relying entirely on end2end tests.
-const Map<String, dynamic> EXPECTED_MAP = {
+const Map<String, dynamic> expectedMap = {
   'version': 3,
   'sourceRoot': '',
   'sources': ['input.dart'],

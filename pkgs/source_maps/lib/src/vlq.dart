@@ -14,31 +14,31 @@ library source_maps.src.vlq;
 
 import 'dart:math';
 
-const int VLQ_BASE_SHIFT = 5;
+const int vlqBaseShift = 5;
 
-const int VLQ_BASE_MASK = (1 << 5) - 1;
+const int vlqBaseMask = (1 << 5) - 1;
 
-const int VLQ_CONTINUATION_BIT = 1 << 5;
+const int vlqContinuationBit = 1 << 5;
 
-const int VLQ_CONTINUATION_MASK = 1 << 5;
+const int vlqContinuationMask = 1 << 5;
 
-const String BASE64_DIGITS =
+const String base64Digits =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 final Map<String, int> _digits = () {
   var map = <String, int>{};
   for (var i = 0; i < 64; i++) {
-    map[BASE64_DIGITS[i]] = i;
+    map[base64Digits[i]] = i;
   }
   return map;
 }();
 
-final int MAX_INT32 = (pow(2, 31) as int) - 1;
-final int MIN_INT32 = -(pow(2, 31) as int);
+final int maxInt32 = (pow(2, 31) as int) - 1;
+final int minInt32 = -(pow(2, 31) as int);
 
 /// Creates the VLQ encoding of [value] as a sequence of characters
 Iterable<String> encodeVlq(int value) {
-  if (value < MIN_INT32 || value > MAX_INT32) {
+  if (value < minInt32 || value > maxInt32) {
     throw ArgumentError('expected 32 bit int, got: $value');
   }
   var res = <String>[];
@@ -49,12 +49,12 @@ Iterable<String> encodeVlq(int value) {
   }
   value = (value << 1) | signBit;
   do {
-    var digit = value & VLQ_BASE_MASK;
-    value >>= VLQ_BASE_SHIFT;
+    var digit = value & vlqBaseMask;
+    value >>= vlqBaseShift;
     if (value > 0) {
-      digit |= VLQ_CONTINUATION_BIT;
+      digit |= vlqContinuationBit;
     }
-    res.add(BASE64_DIGITS[digit]);
+    res.add(base64Digits[digit]);
   } while (value > 0);
   return res;
 }
@@ -62,7 +62,7 @@ Iterable<String> encodeVlq(int value) {
 /// Decodes a value written as a sequence of VLQ characters. The first input
 /// character will be `chars.current` after calling `chars.moveNext` once. The
 /// iterator is advanced until a stop character is found (a character without
-/// the [VLQ_CONTINUATION_BIT]).
+/// the [vlqContinuationBit]).
 int decodeVlq(Iterator<String> chars) {
   var result = 0;
   var stop = false;
@@ -74,10 +74,10 @@ int decodeVlq(Iterator<String> chars) {
     if (digit == null) {
       throw FormatException('invalid character in VLQ encoding: $char');
     }
-    stop = (digit & VLQ_CONTINUATION_BIT) == 0;
-    digit &= VLQ_BASE_MASK;
+    stop = (digit & vlqContinuationBit) == 0;
+    digit &= vlqBaseMask;
     result += (digit << shift);
-    shift += VLQ_BASE_SHIFT;
+    shift += vlqBaseShift;
   }
 
   // Result uses the least significant bit as a sign bit. We convert it into a
@@ -93,7 +93,7 @@ int decodeVlq(Iterator<String> chars) {
   result = negate ? -result : result;
 
   // TODO(sigmund): can we detect this earlier?
-  if (result < MIN_INT32 || result > MAX_INT32) {
+  if (result < minInt32 || result > maxInt32) {
     throw FormatException(
         'expected an encoded 32 bit int, but we got: $result');
   }

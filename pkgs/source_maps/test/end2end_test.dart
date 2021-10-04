@@ -4,9 +4,10 @@
 
 library test.end2end_test;
 
-import 'package:test/test.dart';
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
+import 'package:test/test.dart';
+
 import 'common.dart';
 
 void main() {
@@ -106,12 +107,12 @@ void main() {
   });
 
   test('printer projecting marks + parse', () {
-    var out = INPUT.replaceAll('long', '_s');
+    var out = inputContent.replaceAll('long', '_s');
     var file = SourceFile.fromString(out, url: 'output2.dart');
     var printer = Printer('output2.dart');
     printer.mark(ispan(0, 0));
 
-    var segments = INPUT.split('long');
+    var segments = inputContent.split('long');
     expect(segments.length, 6);
     printer.add(segments[0], projectMarks: true);
     printer.mark(inputVar1);
@@ -153,7 +154,7 @@ void main() {
 
     // Start of the last line
     var oOffset = out.length - 2;
-    var iOffset = INPUT.length - 2;
+    var iOffset = inputContent.length - 2;
     check(file.span(oOffset, oOffset), mapping, ispan(iOffset, iOffset), true);
     check(file.span(oOffset + 1, oOffset + 1), mapping, ispan(iOffset, iOffset),
         true);

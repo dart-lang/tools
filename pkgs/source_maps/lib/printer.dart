@@ -9,9 +9,7 @@ import 'package:source_span/source_span.dart';
 
 import 'builder.dart';
 import 'src/source_map_span.dart';
-
-const int _LF = 10;
-const int _CR = 13;
+import 'src/utils.dart';
 
 /// A simple printer that keeps track of offset locations and records source
 /// maps locations.
@@ -43,7 +41,9 @@ class Printer {
     var length = chars.length;
     for (var i = 0; i < length; i++) {
       var c = chars[i];
-      if (c == _LF || (c == _CR && (i + 1 == length || chars[i + 1] != _LF))) {
+      if (c == lineFeed ||
+          (c == carriageReturn &&
+              (i + 1 == length || chars[i + 1] != lineFeed))) {
         // Return not followed by line-feed is treated as a new line.
         _line++;
         _column = 0;
@@ -130,7 +130,7 @@ class NestedPrinter implements NestedItem {
 
   /// Item used to indicate that the following item is copied from the original
   /// source code, and hence we should preserve source-maps on every new line.
-  static final _ORIGINAL = Object();
+  static final _original = Object();
 
   NestedPrinter([this.indent = 0]);
 
@@ -156,7 +156,7 @@ class NestedPrinter implements NestedItem {
       assert(location == null || span == null);
       if (location != null) _items.add(location);
       if (span != null) _items.add(span);
-      if (isOriginal) _items.add(_ORIGINAL);
+      if (isOriginal) _items.add(_original);
     }
 
     if (object is String) {
@@ -243,7 +243,7 @@ class NestedPrinter implements NestedItem {
         propagate = false;
       } else if (item is SourceLocation || item is SourceSpan) {
         printer.mark(item);
-      } else if (item == _ORIGINAL) {
+      } else if (item == _original) {
         // we insert booleans when we are about to quote text that was copied
         // from the original source. In such case, we will propagate marks on
         // every new-line.

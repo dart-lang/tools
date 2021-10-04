@@ -2,15 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.parser_test;
-
 import 'dart:convert';
-import 'package:test/test.dart';
+
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
+import 'package:test/test.dart';
+
 import 'common.dart';
 
-const Map<String, dynamic> MAP_WITH_NO_SOURCE_LOCATION = {
+const Map<String, dynamic> _mapWithNoSourceLocation = {
   'version': 3,
   'sourceRoot': '',
   'sources': ['input.dart'],
@@ -19,7 +19,7 @@ const Map<String, dynamic> MAP_WITH_NO_SOURCE_LOCATION = {
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION = {
+const Map<String, dynamic> _mapWithSourceLocation = {
   'version': 3,
   'sourceRoot': '',
   'sources': ['input.dart'],
@@ -28,7 +28,7 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION = {
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES = {
+const Map<String, dynamic> _mapWithSourceLocationAndMissingNames = {
   'version': 3,
   'sourceRoot': '',
   'sources': ['input.dart'],
@@ -36,7 +36,7 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES = {
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME = {
+const Map<String, dynamic> _mapWithSourceLocationAndName = {
   'version': 3,
   'sourceRoot': '',
   'sources': ['input.dart'],
@@ -45,7 +45,7 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME = {
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_1 = {
+const Map<String, dynamic> _mapWithSourceLocationAndName1 = {
   'version': 3,
   'sourceRoot': 'pkg/',
   'sources': ['input1.dart'],
@@ -54,7 +54,7 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_1 = {
   'file': 'output.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_2 = {
+const Map<String, dynamic> _mapWithSourceLocationAndName2 = {
   'version': 3,
   'sourceRoot': 'pkg/',
   'sources': ['input2.dart'],
@@ -63,7 +63,7 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_2 = {
   'file': 'output2.dart'
 };
 
-const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_3 = {
+const Map<String, dynamic> _mapWithSourceLocationAndName3 = {
   'version': 3,
   'sourceRoot': 'pkg/',
   'sources': ['input3.dart'],
@@ -72,15 +72,15 @@ const Map<String, dynamic> MAP_WITH_SOURCE_LOCATION_AND_NAME_3 = {
   'file': '3/output.dart'
 };
 
-const List SOURCE_MAP_BUNDLE = [
-  MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
-  MAP_WITH_SOURCE_LOCATION_AND_NAME_2,
-  MAP_WITH_SOURCE_LOCATION_AND_NAME_3,
+const _sourceMapBundle = [
+  _mapWithSourceLocationAndName1,
+  _mapWithSourceLocationAndName2,
+  _mapWithSourceLocationAndName3,
 ];
 
 void main() {
   test('parse', () {
-    var mapping = parseJson(EXPECTED_MAP);
+    var mapping = parseJson(expectedMap);
     check(outputVar1, mapping, inputVar1, false);
     check(outputVar2, mapping, inputVar2, false);
     check(outputFunction, mapping, inputFunction, false);
@@ -88,7 +88,7 @@ void main() {
   });
 
   test('parse + json', () {
-    var mapping = parse(jsonEncode(EXPECTED_MAP));
+    var mapping = parse(jsonEncode(expectedMap));
     check(outputVar1, mapping, inputVar1, false);
     check(outputVar2, mapping, inputVar2, false);
     check(outputFunction, mapping, inputFunction, false);
@@ -96,7 +96,7 @@ void main() {
   });
 
   test('parse with file', () {
-    var mapping = parseJson(EXPECTED_MAP);
+    var mapping = parseJson(expectedMap);
     check(outputVar1, mapping, inputVar1, true);
     check(outputVar2, mapping, inputVar2, true);
     check(outputFunction, mapping, inputFunction, true);
@@ -104,7 +104,7 @@ void main() {
   });
 
   test('parse with no source location', () {
-    var map = parse(jsonEncode(MAP_WITH_NO_SOURCE_LOCATION)) as SingleMapping;
+    var map = parse(jsonEncode(_mapWithNoSourceLocation)) as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -117,7 +117,7 @@ void main() {
   });
 
   test('parse with source location and no name', () {
-    var map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION)) as SingleMapping;
+    var map = parse(jsonEncode(_mapWithSourceLocation)) as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -130,7 +130,7 @@ void main() {
   });
 
   test('parse with source location and missing names entry', () {
-    var map = parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_MISSING_NAMES))
+    var map = parse(jsonEncode(_mapWithSourceLocationAndMissingNames))
         as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
@@ -144,8 +144,7 @@ void main() {
   });
 
   test('parse with source location and name', () {
-    var map =
-        parse(jsonEncode(MAP_WITH_SOURCE_LOCATION_AND_NAME)) as SingleMapping;
+    var map = parse(jsonEncode(_mapWithSourceLocationAndName)) as SingleMapping;
     expect(map.lines.length, 1);
     expect(map.lines.first.entries.length, 1);
     var entry = map.lines.first.entries.first;
@@ -158,7 +157,7 @@ void main() {
   });
 
   test('parse with source root', () {
-    var inputMap = Map.from(MAP_WITH_SOURCE_LOCATION);
+    var inputMap = Map.from(_mapWithSourceLocation);
     inputMap['sourceRoot'] = '/pkg/';
     var mapping = parseJson(inputMap) as SingleMapping;
     expect(mapping.spanFor(0, 0)?.sourceUrl, Uri.parse('/pkg/input.dart'));
@@ -178,7 +177,7 @@ void main() {
   });
 
   test('parse with map URL', () {
-    var inputMap = Map.from(MAP_WITH_SOURCE_LOCATION);
+    var inputMap = Map.from(_mapWithSourceLocation);
     inputMap['sourceRoot'] = 'pkg/';
     var mapping = parseJson(inputMap, mapUrl: 'file:///path/to/map');
     expect(mapping.spanFor(0, 0)?.sourceUrl,
@@ -187,7 +186,7 @@ void main() {
 
   group('parse with bundle', () {
     var mapping =
-        parseJsonExtended(SOURCE_MAP_BUNDLE, mapUrl: 'file:///path/to/map');
+        parseJsonExtended(_sourceMapBundle, mapUrl: 'file:///path/to/map');
 
     test('simple', () {
       expect(
@@ -276,7 +275,7 @@ void main() {
     });
 
     test('parseExtended', () {
-      var mapping = parseExtended(jsonEncode(SOURCE_MAP_BUNDLE),
+      var mapping = parseExtended(jsonEncode(_sourceMapBundle),
           mapUrl: 'file:///path/to/map');
 
       expect(mapping.spanFor(0, 0, uri: 'output.dart')?.sourceUrl,
@@ -290,20 +289,20 @@ void main() {
     test('build bundle incrementally', () {
       var mapping = MappingBundle();
 
-      mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_1,
+      mapping.addMapping(parseJson(_mapWithSourceLocationAndName1,
           mapUrl: 'file:///path/to/map') as SingleMapping);
       expect(mapping.spanFor(0, 0, uri: 'output.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input1.dart'));
 
       expect(mapping.containsMapping('output2.dart'), isFalse);
-      mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_2,
+      mapping.addMapping(parseJson(_mapWithSourceLocationAndName2,
           mapUrl: 'file:///path/to/map') as SingleMapping);
       expect(mapping.containsMapping('output2.dart'), isTrue);
       expect(mapping.spanFor(0, 0, uri: 'output2.dart')?.sourceUrl,
           Uri.parse('file:///path/to/pkg/input2.dart'));
 
       expect(mapping.containsMapping('3/output.dart'), isFalse);
-      mapping.addMapping(parseJson(MAP_WITH_SOURCE_LOCATION_AND_NAME_3,
+      mapping.addMapping(parseJson(_mapWithSourceLocationAndName3,
           mapUrl: 'file:///path/to/map') as SingleMapping);
       expect(mapping.containsMapping('3/output.dart'), isTrue);
       expect(mapping.spanFor(0, 0, uri: '3/output.dart')?.sourceUrl,
@@ -351,10 +350,10 @@ void main() {
 
   test('parse and re-emit', () {
     for (var expected in [
-      EXPECTED_MAP,
-      MAP_WITH_NO_SOURCE_LOCATION,
-      MAP_WITH_SOURCE_LOCATION,
-      MAP_WITH_SOURCE_LOCATION_AND_NAME
+      expectedMap,
+      _mapWithNoSourceLocation,
+      _mapWithSourceLocation,
+      _mapWithSourceLocationAndName
     ]) {
       var mapping = parseJson(expected) as SingleMapping;
       expect(mapping.toJson(), equals(expected));
@@ -363,12 +362,12 @@ void main() {
       expect(mapping.toJson(), equals(expected));
     }
 
-    var mapping = parseJsonExtended(SOURCE_MAP_BUNDLE) as MappingBundle;
-    expect(mapping.toJson(), equals(SOURCE_MAP_BUNDLE));
+    var mapping = parseJsonExtended(_sourceMapBundle) as MappingBundle;
+    expect(mapping.toJson(), equals(_sourceMapBundle));
   });
 
   test('parse extensions', () {
-    var map = Map.from(EXPECTED_MAP);
+    var map = Map.from(expectedMap);
     map['x_foo'] = 'a';
     map['x_bar'] = [3];
     var mapping = parseJson(map) as SingleMapping;
@@ -396,19 +395,19 @@ void main() {
     group('from parse()', () {
       group('are null', () {
         test('with no sourcesContent field', () {
-          var mapping = parseJson(EXPECTED_MAP) as SingleMapping;
+          var mapping = parseJson(expectedMap) as SingleMapping;
           expect(mapping.files, equals([null]));
         });
 
         test('with null sourcesContent values', () {
-          var map = Map.from(EXPECTED_MAP);
+          var map = Map.from(expectedMap);
           map['sourcesContent'] = [null];
           var mapping = parseJson(map) as SingleMapping;
           expect(mapping.files, equals([null]));
         });
 
         test('with a too-short sourcesContent', () {
-          var map = Map.from(EXPECTED_MAP);
+          var map = Map.from(expectedMap);
           map['sourcesContent'] = [];
           var mapping = parseJson(map) as SingleMapping;
           expect(mapping.files, equals([null]));
@@ -416,7 +415,7 @@ void main() {
       });
 
       test('are parsed from sourcesContent', () {
-        var map = Map.from(EXPECTED_MAP);
+        var map = Map.from(expectedMap);
         map['sourcesContent'] = ['hello, world!'];
         var mapping = parseJson(map) as SingleMapping;
 

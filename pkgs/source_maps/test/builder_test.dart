@@ -5,8 +5,10 @@
 library test.source_maps_test;
 
 import 'dart:convert';
-import 'package:test/test.dart';
+
 import 'package:source_maps/source_maps.dart';
+import 'package:test/test.dart';
+
 import 'common.dart';
 
 void main() {
@@ -17,7 +19,7 @@ void main() {
           ..addSpan(inputVar2, outputVar2)
           ..addSpan(inputExpr, outputExpr))
         .build(output.url.toString());
-    expect(map, equals(EXPECTED_MAP));
+    expect(map, equals(expectedMap));
   });
 
   test('builder - with location', () {
@@ -27,6 +29,6 @@ void main() {
           ..addLocation(inputVar2.start, outputVar2.start, 'longVar2')
           ..addLocation(inputExpr.start, outputExpr.start, null))
         .toJson(output.url.toString());
-    expect(str, jsonEncode(EXPECTED_MAP));
+    expect(str, jsonEncode(expectedMap));
   });
 }
