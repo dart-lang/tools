@@ -100,7 +100,12 @@ class WorkRequest extends $pb.GeneratedMessage {
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
             : 'arguments')
-    ..pc<Input>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'inputs', $pb.PbFieldType.PM,
+    ..pc<Input>(
+        2,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'inputs',
+        $pb.PbFieldType.PM,
         subBuilder: Input.create)
     ..a<$core.int>(
         3,
@@ -180,7 +185,9 @@ class WorkResponse extends $pb.GeneratedMessage {
             : 'output')
     ..a<$core.int>(
         3,
-        const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requestId',
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'requestId',
         $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 

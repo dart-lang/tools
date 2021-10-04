@@ -1,3 +1,7 @@
+## 1.0.1-dev
+
+* Require Dart SDK >=1.14.0
+
 ## 1.0.0
 
 * Improve `AsyncMessageGrouper` performance.

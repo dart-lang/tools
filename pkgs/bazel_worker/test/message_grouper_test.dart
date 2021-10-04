@@ -4,12 +4,9 @@
 
 import 'dart:io';
 
-import 'package:test/test.dart';
-
-import 'package:bazel_worker/src/async_message_grouper.dart';
-import 'package:bazel_worker/src/sync_message_grouper.dart';
 import 'package:bazel_worker/bazel_worker.dart';
 import 'package:bazel_worker/testing.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('AsyncMessageGrouper', () {

@@ -7,7 +7,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:async/async.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:protobuf/protobuf.dart';
 
 import 'message_grouper.dart';
