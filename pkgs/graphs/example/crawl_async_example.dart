@@ -16,7 +16,7 @@ import 'package:pool/pool.dart';
 
 /// Print a transitive set of imported URIs where libraries are read
 /// asynchronously.
-Future<Null> main() async {
+Future<void> main() async {
   // Limits calls to [findImports].
   var _pool = Pool(10);
   var allImports = await crawlAsync<Uri, Source>(
@@ -59,7 +59,7 @@ Future<Iterable<Uri>> findImports(Uri from, Source source) async {
 Future<CompilationUnit> parseUri(Uri uri) async {
   var path = await pathForUri(uri);
   var analysisSession = (await analysisContext).currentSession;
-  var parseResult = analysisSession.getParsedUnit2(path);
+  var parseResult = analysisSession.getParsedUnit(path);
   return (parseResult as ParsedUnitResult).unit;
 }
 

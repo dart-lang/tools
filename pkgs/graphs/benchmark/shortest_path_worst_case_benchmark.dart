@@ -29,7 +29,7 @@ void main() {
       shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[]).toString();
   print(testOutput);
   assert(testOutput == Iterable.generate(size - 1, (i) => i + 1).toString(),
-      '$testOutput');
+      testOutput);
 
   final watch = Stopwatch();
   for (var i = 1;; i++) {
