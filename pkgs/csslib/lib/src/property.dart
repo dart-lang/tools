@@ -36,7 +36,7 @@ abstract class ColorBase {
   int get argbValue;
 }
 
-/// General purpse Color class.  Represent a color as an ARGB value that can be
+/// General purpose Color class.  Represent a color as an ARGB value that can be
 /// converted to and from num, hex string, hsl, hsla, rgb, rgba and SVG pre-
 /// defined color constant.
 class Color implements _StyleProperty, ColorBase {
