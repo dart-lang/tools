@@ -1,6 +1,7 @@
-## 1.0.1-dev
+## 1.0.1
 
 * Require Dart SDK >=1.14.0
+* Drop dependency on `package:pedantic`.
 
 ## 1.0.0
 
