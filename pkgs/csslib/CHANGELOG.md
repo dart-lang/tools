@@ -1,4 +1,4 @@
-## 0.17.1-dev
+## 0.17.1
 
 - Fix `Color.css` constructor when there are double values in the `rgba` string.
 
