@@ -49,5 +49,21 @@ void defineTests() {
       // just a dummy check that some part of the path exists.
       expect(Directory(p.joinAll(path.take(2))).existsSync(), isTrue);
     });
+
+    test('Throws IOException when run with empty environment', () {
+      final scriptPath = p.join('test', 'print_config_home.dart');
+      final result = Process.runSync(
+        Platform.resolvedExecutable,
+        [scriptPath],
+        environment: {},
+        includeParentEnvironment: false,
+      );
+      final varName = Platform.isWindows ? '%APPDATA%' : r'$HOME';
+      expect(
+        (result.stdout as String).trim(),
+        'Caught: Environment variable $varName is not defined!',
+      );
+      expect(result.exitCode, 0);
+    });
   });
 }
