@@ -1,3 +1,7 @@
+## 0.3.5
+- Make `applicationConfigHome` throw an `Exception` when it fails to find a
+  configuration folder.
+
 ## 0.3.4
 
 - Introduce `applicationConfigHome` for making it easy to consistently find the
