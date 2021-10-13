@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:coverage/src/hitmap.dart';
-import 'package:coverage/src/util.dart';
 import 'package:source_maps/parser.dart';
 
 /// Returns a Dart based hit-map containing coverage report for the provided
@@ -162,7 +161,7 @@ class _Position {
   final int column;
 
   @override
-  int get hashCode => hash2(line, column);
+  int get hashCode => Object.hash(line, column);
 
   @override
   bool operator ==(dynamic o) =>
