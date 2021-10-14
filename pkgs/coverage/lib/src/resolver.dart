@@ -10,9 +10,8 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
-  Resolver({String? packagesPath, this.sdkRoot})
-      : packagesPath = packagesPath,
-        _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
+  Resolver({this.packagesPath, this.sdkRoot})
+      : _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
 
   final String? packagesPath;
   final String? sdkRoot;
