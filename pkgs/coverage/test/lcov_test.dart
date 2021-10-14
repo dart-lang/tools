@@ -166,7 +166,7 @@ void main() {
       expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
 
       // be very careful if you change the test file
-      expect(res, contains('      1|Future<Null> main() async {'));
+      expect(res, contains('      1|Future<void> main() async {'));
       expect(res, contains('      1|int usedMethod(int a, int b) {'));
       expect(res, contains('      0|int unusedMethod(int a, int b) {'));
       expect(res, contains('       |  return a + b;'));

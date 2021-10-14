@@ -43,7 +43,7 @@ class Environment {
   int workers;
 }
 
-Future<Null> main(List<String> arguments) async {
+Future<void> main(List<String> arguments) async {
   final env = parseArgs(arguments);
 
   final files = filesToProcess(env.input);

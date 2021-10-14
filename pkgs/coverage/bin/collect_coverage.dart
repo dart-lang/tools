@@ -11,7 +11,7 @@ import 'package:coverage/src/collect.dart';
 import 'package:logging/logging.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-Future<Null> main(List<String> arguments) async {
+Future<void> main(List<String> arguments) async {
   Logger.root.level = Level.WARNING;
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
