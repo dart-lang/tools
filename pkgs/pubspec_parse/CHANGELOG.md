@@ -1,5 +1,7 @@
 ## 1.1.1-dev
 
+- Require Dart SDK >= 2.14.0
+
 ## 1.1.0
 
 - Export `HostedDetails` publicly.
