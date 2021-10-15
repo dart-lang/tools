@@ -23,21 +23,25 @@ Future<ProcResult> tryPub(String content) async {
 
   final result = await ProcResult.fromTestProcess(proc);
 
-  printOnFailure([
-    '-----BEGIN pub output-----',
-    result.toString().trim(),
-    '-----END pub output-----',
-  ].join('\n'));
+  printOnFailure(
+    [
+      '-----BEGIN pub output-----',
+      result.toString().trim(),
+      '-----END pub output-----',
+    ].join('\n'),
+  );
 
   if (result.exitCode == 0) {
     final lockContent =
         File(p.join(d.sandbox, 'pubspec.lock')).readAsStringSync();
 
-    printOnFailure([
-      '-----BEGIN pubspec.lock-----',
-      lockContent.trim(),
-      '-----END pubspec.lock-----',
-    ].join('\n'));
+    printOnFailure(
+      [
+        '-----BEGIN pubspec.lock-----',
+        lockContent.trim(),
+        '-----END pubspec.lock-----',
+      ].join('\n'),
+    );
   }
 
   return result;

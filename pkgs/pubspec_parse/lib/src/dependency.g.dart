@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: deprecated_member_use_from_same_package, unnecessary_cast
+// ignore_for_file: deprecated_member_use_from_same_package, lines_longer_than_80_chars, require_trailing_commas, unnecessary_cast
 
 part of 'dependency.dart';
 

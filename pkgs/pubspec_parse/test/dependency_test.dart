@@ -56,12 +56,15 @@ line 6, column 11: Unsupported value for "git". A dependency may only have one s
     });
 
     test('map with unsupported keys', () {
-      _expectThrows({'bob': 'a', 'jones': 'b'}, r'''
+      _expectThrows(
+        {'bob': 'a', 'jones': 'b'},
+        r'''
 line 5, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hosted]
   ╷
 5 │    "bob": "a",
   │    ^^^^^
-  ╵''');
+  ╵''',
+      );
     });
   });
 }
@@ -133,21 +136,25 @@ line 5, column 15: Unsupported value for "version". Could not parse version "not
   });
 
   test('map w/ extra keys should fail', () {
-    _expectThrows({
-      'version': '^1.0.0',
-      'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
-      'not_supported': null
-    }, r'''
+    _expectThrows(
+      {
+        'version': '^1.0.0',
+        'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
+        'not_supported': null
+      },
+      r'''
 line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git, path, hosted]
    ╷
 10 │    "not_supported": null
    │    ^^^^^^^^^^^^^^^
-   ╵''');
+   ╵''',
+    );
   });
 
   test('map w/ version and hosted as String', () {
     final dep = _dependency<HostedDependency>(
-        {'version': '^1.0.0', 'hosted': 'hosted_name'});
+      {'version': '^1.0.0', 'hosted': 'hosted_name'},
+    );
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted!.name, 'hosted_name');
     expect(dep.hosted!.url, isNull);
@@ -192,7 +199,8 @@ void _sdkDependency() {
 
   test('with version', () {
     final dep = _dependency<SdkDependency>(
-        {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'});
+      {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'},
+    );
     expect(dep.sdk, 'flutter');
     expect(dep.version.toString(), '>=1.2.3 <2.0.0');
     expect(dep.toString(), 'SdkDependency: flutter');
@@ -250,8 +258,10 @@ void _gitDependency() {
     if (skipTryParse) {
       print('FYI: not validating git@ URI on travis due to failure');
     }
-    final dep = _dependency<GitDependency>({'git': 'git@localhost:dep.git'},
-        skipTryPub: skipTryParse);
+    final dep = _dependency<GitDependency>(
+      {'git': 'git@localhost:dep.git'},
+      skipTryPub: skipTryParse,
+    );
     expect(dep.url.toString(), 'ssh://git@localhost/dep.git');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
@@ -259,12 +269,15 @@ void _gitDependency() {
   });
 
   test('string with random extra key fails', () {
-    _expectThrows({'git': 'url', 'bob': '^1.2.3'}, r'''
+    _expectThrows(
+      {'git': 'url', 'bob': '^1.2.3'},
+      r'''
 line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hosted]
   ╷
 6 │    "bob": "^1.2.3"
   │    ^^^^^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('map', () {
@@ -365,12 +378,15 @@ void _pathDependency() {
   });
 
   test('valid with random extra key fails', () {
-    _expectThrows({'path': '../path', 'bob': '^1.2.3'}, r'''
+    _expectThrows(
+      {'path': '../path', 'bob': '^1.2.3'},
+      r'''
 line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hosted]
   ╷
 6 │    "bob": "^1.2.3"
   │    ^^^^^
-  ╵''');
+  ╵''',
+    );
   });
 
   test('null content', () {
@@ -403,20 +419,26 @@ line 5, column 12: Unsupported value for "path". Must be a String.
 }
 
 void _expectThrows(Object content, String expectedError) {
-  expectParseThrows({
-    'name': 'sample',
-    'dependencies': {'dep': content}
-  }, expectedError);
+  expectParseThrows(
+    {
+      'name': 'sample',
+      'dependencies': {'dep': content}
+    },
+    expectedError,
+  );
 }
 
 T _dependency<T extends Dependency>(
   Object? content, {
   bool skipTryPub = false,
 }) {
-  final value = parse({
-    ...defaultPubspec,
-    'dependencies': {'dep': content}
-  }, skipTryPub: skipTryPub);
+  final value = parse(
+    {
+      ...defaultPubspec,
+      'dependencies': {'dep': content}
+    },
+    skipTryPub: skipTryPub,
+  );
   expect(value.name, 'sample');
   expect(value.dependencies, hasLength(1));
 

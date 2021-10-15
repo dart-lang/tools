@@ -16,7 +16,8 @@ void main() {
       final uri = parseGitUri(item.key);
 
       printOnFailure(
-          [uri.scheme, uri.userInfo, uri.host, uri.port, uri.path].join('\n'));
+        [uri.scheme, uri.userInfo, uri.host, uri.port, uri.path].join('\n'),
+      );
 
       expect(uri, Uri.parse(item.value));
     });

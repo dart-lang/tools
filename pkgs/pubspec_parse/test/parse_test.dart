@@ -62,8 +62,10 @@ void main() {
     expect(value.devDependencies, isEmpty);
     expect(value.dependencyOverrides, isEmpty);
     expect(value.repository, Uri.parse('https://github.com/example/repo'));
-    expect(value.issueTracker,
-        Uri.parse('https://github.com/example/repo/issues'));
+    expect(
+      value.issueTracker,
+      Uri.parse('https://github.com/example/repo/issues'),
+    );
   });
 
   test('environment values can be null', () {
@@ -212,12 +214,15 @@ line 1, column 1: Not a map
       );
     });
     test('array', () {
-      expectParseThrows([], r'''
+      expectParseThrows(
+        [],
+        r'''
 line 1, column 1: Not a map
   ╷
 1 │ []
   │ ^^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('missing name', () {
@@ -257,15 +262,18 @@ line 2, column 10: Unsupported value for "name". "name" cannot be empty.
     });
 
     test('"dart" is an invalid environment key', () {
-      expectParseThrows({
-        'name': 'sample',
-        'environment': {'dart': 'cool'}
-      }, r'''
+      expectParseThrows(
+        {
+          'name': 'sample',
+          'environment': {'dart': 'cool'}
+        },
+        r'''
 line 4, column 3: Use "sdk" to for Dart SDK constraints.
   ╷
 4 │   "dart": "cool"
   │   ^^^^^^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('environment values cannot be int', () {
@@ -298,15 +306,18 @@ line 3, column 13: Unsupported value for "version". Could not parse "invalid".
     });
 
     test('invalid environment value', () {
-      expectParseThrows({
-        'name': 'sample',
-        'environment': {'sdk': 'silly'}
-      }, r'''
+      expectParseThrows(
+        {
+          'name': 'sample',
+          'environment': {'sdk': 'silly'}
+        },
+        r'''
 line 4, column 10: Unsupported value for "sdk". Could not parse version "silly". Unknown text at "silly".
   ╷
 4 │   "sdk": "silly"
   │          ^^^^^^^
-  ╵''');
+  ╵''',
+      );
     });
 
     test('bad repository url', () {
@@ -426,16 +437,21 @@ line 1, column 1: Missing key "name". type 'Null' is not a subtype of type 'Stri
 
     test('deep error throws with lenient', () {
       expect(
-          () => parse({
-                'name': 'sample',
-                'dependencies': {
-                  'foo': {
-                    'git': {'url': 1}
-                  },
-                },
-                'issue_tracker': {'x': 'y'},
-              }, skipTryPub: true, lenient: true),
-          throwsException);
+        () => parse(
+          {
+            'name': 'sample',
+            'dependencies': {
+              'foo': {
+                'git': {'url': 1}
+              },
+            },
+            'issue_tracker': {'x': 'y'},
+          },
+          skipTryPub: true,
+          lenient: true,
+        ),
+        throwsException,
+      );
     });
   });
 }

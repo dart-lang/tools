@@ -195,7 +195,11 @@ Map<String, VersionConstraint?>? _environmentMap(Map? source) =>
         return MapEntry(key, constraint);
       } else {
         throw CheckedFromJsonException(
-            source, key, 'VersionConstraint', '`$value` is not a String.');
+          source,
+          key,
+          'VersionConstraint',
+          '`$value` is not a String.',
+        );
       }
 
       return MapEntry(key, constraint);

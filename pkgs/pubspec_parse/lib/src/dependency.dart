@@ -27,7 +27,11 @@ Map<String, Dependency> parseDeps(Map? source) =>
 
       if (value == null) {
         throw CheckedFromJsonException(
-            source, key, 'Pubspec', 'Not a valid dependency value.');
+          source,
+          key,
+          'Pubspec',
+          'Not a valid dependency value.',
+        );
       }
       return MapEntry(key, value);
     }) ??
@@ -54,11 +58,18 @@ Dependency? _fromJson(Object? data) {
       return $checkedNew<Dependency>('Dependency', data, () {
         if (firstUnrecognizedKey != null) {
           throw UnrecognizedKeysException(
-              [firstUnrecognizedKey], data, _sourceKeys);
+            [firstUnrecognizedKey],
+            data,
+            _sourceKeys,
+          );
         }
         if (matchedKeys.length > 1) {
-          throw CheckedFromJsonException(data, matchedKeys[1], 'Dependency',
-              'A dependency may only have one source.');
+          throw CheckedFromJsonException(
+            data,
+            matchedKeys[1],
+            'Dependency',
+            'A dependency may only have one source.',
+          );
         }
 
         final key = matchedKeys.single;

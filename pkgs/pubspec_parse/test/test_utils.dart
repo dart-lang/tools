@@ -22,13 +22,18 @@ const defaultPubspec = {
 String _encodeJson(Object? input) =>
     const JsonEncoder.withIndent(' ').convert(input);
 
-Matcher _throwsParsedYamlException(String prettyValue) =>
-    throwsA(const TypeMatcher<ParsedYamlException>().having((e) {
-      final message = e.formattedMessage;
-      printOnFailure("Actual error format:\nr'''\n$message'''");
-      _printDebugParsedYamlException(e);
-      return message;
-    }, 'formattedMessage', prettyValue));
+Matcher _throwsParsedYamlException(String prettyValue) => throwsA(
+      const TypeMatcher<ParsedYamlException>().having(
+        (e) {
+          final message = e.formattedMessage;
+          printOnFailure("Actual error format:\nr'''\n$message'''");
+          _printDebugParsedYamlException(e);
+          return message;
+        },
+        'formattedMessage',
+        prettyValue,
+      ),
+    );
 
 void _printDebugParsedYamlException(ParsedYamlException e) {
   var innerError = e.innerError;
@@ -76,18 +81,23 @@ Pubspec parse(
 
     if (pubResult != null) {
       addTearDown(() {
-        expect(pubResult!.cleanParse, isTrue,
-            reason:
-                'On success, parsing from the pub client should also succeed.');
+        expect(
+          pubResult!.cleanParse,
+          isTrue,
+          reason:
+              'On success, parsing from the pub client should also succeed.',
+        );
       });
     }
     return value;
   } catch (e) {
     if (pubResult != null) {
       addTearDown(() {
-        expect(pubResult!.cleanParse, isFalse,
-            reason:
-                'On failure, parsing from the pub client should also fail.');
+        expect(
+          pubResult!.cleanParse,
+          isFalse,
+          reason: 'On failure, parsing from the pub client should also fail.',
+        );
       });
     }
     if (e is ParsedYamlException) {
