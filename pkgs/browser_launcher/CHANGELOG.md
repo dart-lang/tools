@@ -1,14 +1,16 @@
+## 1.0.1-dev
+
 ## 1.0.0
 
- - Migrate to null-safety.
+- Migrate to null-safety.
 
 ## 0.1.10
 
- - Support `webkit_inspection_protocol` version `^1.0.0`.
+- Support `webkit_inspection_protocol` version `^1.0.0`.
 
 ## 0.1.9
 
- - Add support for Chrome executables in `CHROME_PATH`.
+- Add support for Chrome executables in `CHROME_PATH`.
 
 ## 0.1.8
 
