@@ -1553,7 +1553,8 @@ class _Parser {
       } else if (!pseudoElement &&
           (name == 'host' ||
               name == 'host-context' ||
-              name == 'global-context')) {
+              name == 'global-context' ||
+              name == '-acx-global-context')) {
         _eat(TokenKind.LPAREN);
         var selector = processCompoundSelector();
         if (selector == null) {
