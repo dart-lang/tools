@@ -63,9 +63,10 @@ HostedDetails _$HostedDetailsFromJson(Map json) => $checkedCreate(
           disallowNullValues: const ['url'],
         );
         final val = HostedDetails(
-          $checkedConvert('name', (v) => v as String),
+          $checkedConvert('name', (v) => v as String?),
           $checkedConvert('url', (v) => parseGitUriOrNull(v as String?)),
         );
         return val;
       },
+      fieldKeyMap: const {'declaredName': 'name'},
     );

@@ -1,3 +1,12 @@
+## 1.2.0-dev
+
+- Update `HostedDetails` to reflect how `hosted` dependencies are parsed in
+  Dart 2.15:
+   - Add `HostedDetails.declaredName` as the (optional) `name` property in a 
+     `hosted` block.
+   - `HostedDetails.name` now falls back to the name of the dependency if no
+      name is declared in the block.
+
 ## 1.1.1-dev
 
 - Require Dart SDK >= 2.14.0

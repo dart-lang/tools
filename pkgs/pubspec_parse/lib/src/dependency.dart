@@ -14,7 +14,7 @@ Map<String, Dependency> parseDeps(Map? source) =>
       final key = k as String;
       Dependency? value;
       try {
-        value = _fromJson(v);
+        value = _fromJson(v, k);
       } on CheckedFromJsonException catch (e) {
         if (e.map is! YamlMap) {
           // This is likely a "synthetic" map created from a String value
@@ -40,7 +40,7 @@ Map<String, Dependency> parseDeps(Map? source) =>
 const _sourceKeys = ['sdk', 'git', 'path', 'hosted'];
 
 /// Returns `null` if the data could not be parsed.
-Dependency? _fromJson(Object? data) {
+Dependency? _fromJson(Object? data, String name) {
   if (data is String || data == null) {
     return _$HostedDependencyFromJson({'version': data});
   }
@@ -82,7 +82,9 @@ Dependency? _fromJson(Object? data) {
           case 'sdk':
             return _$SdkDependencyFromJson(data);
           case 'hosted':
-            return _$HostedDependencyFromJson(data);
+            final hosted = _$HostedDependencyFromJson(data);
+            hosted.hosted?._nameOfPackage = name;
+            return hosted;
         }
         throw StateError('There is a bug in pubspec_parse.');
       });
@@ -211,16 +213,30 @@ class HostedDependency extends Dependency {
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
 class HostedDetails {
-  final String name;
+  /// The name of the target dependency as declared in a `hosted` block.
+  ///
+  /// This may be null if no explicit name is present, for instance because the
+  /// hosted dependency was declared as a string (`hosted: pub.example.org`).
+  @JsonKey(name: 'name')
+  final String? declaredName;
 
   @JsonKey(fromJson: parseGitUriOrNull, disallowNullValue: true)
   final Uri? url;
 
-  HostedDetails(this.name, this.url);
+  @JsonKey(ignore: true)
+  String? _nameOfPackage;
+
+  /// The name of this package on the package repository.
+  ///
+  /// If this hosted block has a [declaredName], that one will be used.
+  /// Otherwise, the name will be inferred from the surrounding package name.
+  String get name => declaredName ?? _nameOfPackage!;
+
+  HostedDetails(this.declaredName, this.url);
 
   factory HostedDetails.fromJson(Object data) {
     if (data is String) {
-      data = {'name': data};
+      data = {'url': data};
     }
 
     if (data is Map) {
