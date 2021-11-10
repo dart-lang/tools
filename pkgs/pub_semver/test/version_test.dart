@@ -300,6 +300,7 @@ void main() {
         equals(Version(1, 0, 0, pre: 'rc-1', build: 'build-1')));
 
     expect(() => Version.parse('1.0'), throwsFormatException);
+    expect(() => Version.parse('1a2b3'), throwsFormatException);
     expect(() => Version.parse('1.2.3.4'), throwsFormatException);
     expect(() => Version.parse('1234'), throwsFormatException);
     expect(() => Version.parse('-2.3.4'), throwsFormatException);

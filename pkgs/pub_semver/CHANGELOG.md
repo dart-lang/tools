@@ -1,4 +1,7 @@
-# 2.1.1-dev
+# 2.1.1
+
+- Fixed the version parsing pattern to only accept dots between version
+  components.
 
 # 2.1.0
 - Added `Version.canonicalizedVersion` to help scrub leading zeros and highlight
