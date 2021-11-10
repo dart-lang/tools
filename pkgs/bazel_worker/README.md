@@ -14,15 +14,15 @@ import 'package:bazel_worker/bazel_worker.dart';
 
 void main() {
   // Blocks until it gets an EOF from stdin.
-  new SyncSimpleWorker().run();
+  SyncSimpleWorker().run();
 }
 
 class SyncSimpleWorker extends SyncWorkerLoop {
   /// Must synchronously return a [WorkResponse], since this is a
   /// [SyncWorkerLoop].
   WorkResponse performRequest(WorkRequest request) {
-    new File('hello.txt').writeAsStringSync('hello world!');
-    return new WorkResponse()..exitCode = EXIT_CODE_OK;
+    File('hello.txt').writeAsStringSync('hello world!');
+    return WorkResponse()..exitCode = EXIT_CODE_OK;
   }
 }
 ```
@@ -35,15 +35,15 @@ import 'package:bazel_worker/bazel_worker.dart';
 
 void main() {
   // Doesn't block, runs tasks async as they are received on stdin.
-  new AsyncSimpleWorker().run();
+  AsyncSimpleWorker().run();
 }
 
 class AsyncSimpleWorker extends AsyncWorkerLoop {
   /// Must return a [Future<WorkResponse>], since this is an
   /// [AsyncWorkerLoop].
   Future<WorkResponse> performRequest(WorkRequest request) async {
-    await new File('hello.txt').writeAsString('hello world!');
-    return new WorkResponse()..exitCode = EXIT_CODE_OK;
+    await File('hello.txt').writeAsString('hello world!');
+    return WorkResponse()..exitCode = EXIT_CODE_OK;
   }
 }
 ```
