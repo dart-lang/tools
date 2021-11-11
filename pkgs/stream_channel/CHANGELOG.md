@@ -1,23 +1,10 @@
+## 2.1.1-dev
+
+* Require Dart 2.14
+
 ## 2.1.0
 
 * Stable release for null safety.
-
-## 2.1.0-nullsafety.3
-
-* Update SDK constraints to `>=2.12.0-0 <3.0.0` based on beta release
-  guidelines.
-
-## 2.1.0-nullsafety.2
-
-* Allow prerelease versions of the 2.12 sdk.
-
-## 2.1.0-nullsafety.1
-
-* Allow 2.10 stable and 2.11.0 dev SDK versions.
-
-## 2.1.0-nullsafety
-
-* Migrate to null safety.
 
 ## 2.0.0
 
