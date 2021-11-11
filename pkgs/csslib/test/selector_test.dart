@@ -5,6 +5,7 @@
 library selector_test;
 
 import 'package:csslib/parser.dart';
+import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
 import 'testing.dart';
@@ -71,22 +72,23 @@ void testSelectorFailures() {
       errors[0].toString(),
       'error on line 1, column 9: name must start with a alpha character, but '
       'found a number\n'
-      '  ╷\n'
-      '1 │ .foobar .1a-story .xyzzy\n'
-      '  │         ^^\n'
-      '  ╵');
+      '  ,\n'
+      '1 | .foobar .1a-story .xyzzy\n'
+      '  |         ^^\n'
+      '  \'');
 
   selector(':host()', errors: errors..clear());
   expect(
       errors.first.toString(),
       'error on line 1, column 7: expected a selector argument, but found )\n'
-      '  ╷\n'
-      '1 │ :host()\n'
-      '  │       ^\n'
-      '  ╵');
+      '  ,\n'
+      '1 | :host()\n'
+      '  |       ^\n'
+      '  \'');
 }
 
 void main() {
+  glyph.ascii = true;
   test('Valid Selectors', testSelectorSuccesses);
   test('Invalid Selectors', testSelectorFailures);
 }

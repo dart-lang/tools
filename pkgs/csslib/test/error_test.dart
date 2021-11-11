@@ -6,6 +6,7 @@ library error_test;
 
 import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
+import 'package:term_glyph/term_glyph.dart' as glyph;
 
 import 'testing.dart';
 
@@ -19,12 +20,12 @@ void testUnsupportedFontWeights() {
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 24: Unknown property value bolder
-  ╷
-1 │ .foobar { font-weight: bolder; }
-  │                        ^^^^^^
-  ╵''');
+  ,
+1 | .foobar { font-weight: bolder; }
+  |                        ^^^^^^
+  \'''');
 
   expect(prettyPrint(stylesheet), r'''
 .foobar {
@@ -37,12 +38,12 @@ error on line 1, column 24: Unknown property value bolder
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 24: Unknown property value lighter
-  ╷
-1 │ .foobar { font-weight: lighter; }
-  │                        ^^^^^^^
-  ╵''');
+  ,
+1 | .foobar { font-weight: lighter; }
+  |                        ^^^^^^^
+  \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
   font-weight: lighter;
@@ -54,12 +55,12 @@ error on line 1, column 24: Unknown property value lighter
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 24: Unknown property value inherit
-  ╷
-1 │ .foobar { font-weight: inherit; }
-  │                        ^^^^^^^
-  ╵''');
+  ,
+1 | .foobar { font-weight: inherit; }
+  |                        ^^^^^^^
+  \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
   font-weight: inherit;
@@ -76,12 +77,12 @@ void testUnsupportedLineHeights() {
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 24: Unexpected value for line-height
-  ╷
-1 │ .foobar { line-height: 120%; }
-  │                        ^^^
-  ╵''');
+  ,
+1 | .foobar { line-height: 120%; }
+  |                        ^^^
+  \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
   line-height: 120%;
@@ -93,12 +94,12 @@ error on line 1, column 24: Unexpected value for line-height
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 24: Unexpected unit for line-height
-  ╷
-1 │ .foobar { line-height: 20cm; }
-  │                        ^^
-  ╵''');
+  ,
+1 | .foobar { line-height: 20cm; }
+  |                        ^^
+  \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
   line-height: 20cm;
@@ -110,12 +111,12 @@ error on line 1, column 24: Unexpected unit for line-height
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 24: Unknown property value inherit
-  ╷
-1 │ .foobar { line-height: inherit; }
-  │                        ^^^^^^^
-  ╵''');
+  ,
+1 | .foobar { line-height: inherit; }
+  |                        ^^^^^^^
+  \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
   line-height: inherit;
@@ -131,24 +132,24 @@ void testBadSelectors() {
   parseCss(input, errors: errors);
 
   expect(errors, isNotEmpty);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 1: Not a valid ID selector expected #id
-  ╷
-1 │ # foo { color: #ff00ff; }
-  │ ^
-  ╵''');
+  ,
+1 | # foo { color: #ff00ff; }
+  | ^
+  \'''');
 
   // Invalid class selector.
   input = '. foo { color: #ff00ff; }';
   parseCss(input, errors: errors..clear());
 
   expect(errors, isNotEmpty);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 1: Not a valid class selector expected .className
-  ╷
-1 │ . foo { color: #ff00ff; }
-  │ ^
-  ╵''');
+  ,
+1 | . foo { color: #ff00ff; }
+  | ^
+  \'''');
 }
 
 /// Test for bad hex values.
@@ -160,12 +161,12 @@ void testBadHexValues() {
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 18: Bad hex number
-  ╷
-1 │ .foobar { color: #AH787; }
-  │                  ^^^^^^
-  ╵''');
+  ,
+1 | .foobar { color: #AH787; }
+  |                  ^^^^^^
+  \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
   color: #AH787;
@@ -176,12 +177,12 @@ error on line 1, column 18: Bad hex number
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 18: Unknown property value redder
-  ╷
-1 │ .foobar { color: redder; }
-  │                  ^^^^^^
-  ╵''');
+  ,
+1 | .foobar { color: redder; }
+  |                  ^^^^^^
+  \'''');
 
   expect(prettyPrint(stylesheet), r'''
 .foobar {
@@ -193,12 +194,12 @@ error on line 1, column 18: Unknown property value redder
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 18: Expected hex number
-  ╷
-1 │ .foobar { color: # ffffff; }
-  │                  ^
-  ╵''');
+  ,
+1 | .foobar { color: # ffffff; }
+  |                  ^
+  \'''');
 
   expect(prettyPrint(stylesheet), r'''
 .foobar {
@@ -210,12 +211,12 @@ error on line 1, column 18: Expected hex number
   stylesheet = parseCss(input, errors: errors..clear());
 
   expect(errors.isEmpty, false);
-  expect(errors[0].toString(), r'''
+  expect(errors[0].toString(), '''
 error on line 1, column 18: Expected hex number
-  ╷
-1 │ .foobar { color: # 123fff; }
-  │                  ^
-  ╵''');
+  ,
+1 | .foobar { color: # 123fff; }
+  |                  ^
+  \'''');
 
   // Formating is off with an extra space.  However, the entire value is bad
   // and isn't processed anyway.
@@ -240,10 +241,10 @@ void testBadUnicode() {
       errors[0].toString(),
       'error on line 3, column 20: unicode first range can not be greater than '
       'last\n'
-      '  ╷\n'
-      '3 │   unicode-range: U+400-200;\n'
-      '  │                    ^^^^^^^\n'
-      '  ╵');
+      '  ,\n'
+      '3 |   unicode-range: U+400-200;\n'
+      '  |                    ^^^^^^^\n'
+      '  \'');
 
   final input2 = '''
 @font-face {
@@ -257,10 +258,10 @@ void testBadUnicode() {
   expect(
       errors[0].toString(),
       'error on line 3, column 20: unicode range must be less than 10FFFF\n'
-      '  ╷\n'
-      '3 │   unicode-range: U+12FFFF;\n'
-      '  │                    ^^^^^^\n'
-      '  ╵');
+      '  ,\n'
+      '3 |   unicode-range: U+12FFFF;\n'
+      '  |                    ^^^^^^\n'
+      '  \'');
 }
 
 void testBadNesting() {
@@ -350,6 +351,7 @@ div {
 }
 
 void main() {
+  glyph.ascii = true;
   test('font-weight value errors', testUnsupportedFontWeights);
   test('line-height value errors', testUnsupportedLineHeights);
   test('bad selectors', testBadSelectors);
