@@ -89,14 +89,14 @@ class SimplePackageConfig implements PackageConfig {
           // There is a conflict with an existing package.
           var existingPackage = error.existingPackage;
           switch (error.conflictType) {
-            case ConflictType.SameRoots:
+            case ConflictType.sameRoots:
               onError(PackageConfigArgumentError(
                   originalPackages,
                   'packages',
                   'Packages ${newPackage!.name} and ${existingPackage.name} '
                       'have the same root directory: ${newPackage.root}.\n'));
               break;
-            case ConflictType.Interleaving:
+            case ConflictType.interleaving:
               // The new package is inside the package URI root of the existing
               // package.
               onError(PackageConfigArgumentError(
@@ -110,7 +110,7 @@ class SimplePackageConfig implements PackageConfig {
                       '${existingPackage.packageUriRoot}\n'
                       '${newPackage.name} root: ${newPackage.root}\n'));
               break;
-            case ConflictType.InsidePackageRoot:
+            case ConflictType.insidePackageRoot:
               onError(PackageConfigArgumentError(
                   originalPackages,
                   'packages',
@@ -421,7 +421,7 @@ class TrielikePackageTree implements PackageTree {
       //    the same).
       if (newPackage.root.path.length == existingPackage.root.path.length) {
         onError(ConflictException(
-            newPackage, existingPackage, ConflictType.SameRoots));
+            newPackage, existingPackage, ConflictType.sameRoots));
         return true;
       }
       // 2) The existing package has a packageUriRoot thats inside the
@@ -429,14 +429,14 @@ class TrielikePackageTree implements PackageTree {
       if (_beginsWith(0, newPackage.root.toString(),
           existingPackage.packageUriRoot.toString())) {
         onError(ConflictException(
-            newPackage, existingPackage, ConflictType.Interleaving));
+            newPackage, existingPackage, ConflictType.interleaving));
         return true;
       }
       // 3) The new package is inside the packageUriRoot of existing package.
       if (_beginsWith(0, existingPackage.packageUriRoot.toString(),
           newPackage.root.toString())) {
         onError(ConflictException(
-            newPackage, existingPackage, ConflictType.InsidePackageRoot));
+            newPackage, existingPackage, ConflictType.insidePackageRoot));
         return true;
       }
     }
@@ -534,7 +534,7 @@ bool _beginsWith(int start, String parentPath, String longerPath) {
   return true;
 }
 
-enum ConflictType { SameRoots, Interleaving, InsidePackageRoot }
+enum ConflictType { sameRoots, interleaving, insidePackageRoot }
 
 /// Conflict between packages added to the same configuration.
 ///
