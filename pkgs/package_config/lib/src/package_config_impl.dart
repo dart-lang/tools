@@ -8,6 +8,8 @@ import 'util.dart';
 
 export 'package_config.dart';
 
+const bool _disallowPackagesInsidePackageUriRoot = false;
+
 // Implementations of the main data types exposed by the API of this package.
 
 class SimplePackageConfig implements PackageConfig {
@@ -432,17 +434,18 @@ class TrielikePackageTree implements PackageTree {
             newPackage, existingPackage, ConflictType.interleaving));
         return true;
       }
-      /*
-      For internal reasons we allow this (for now). One should still never do it
-      though.
+
+      // For internal reasons we allow this (for now). One should still never do
+      // it thouh.
       // 3) The new package is inside the packageUriRoot of existing package.
-      if (_beginsWith(0, existingPackage.packageUriRoot.toString(),
-          newPackage.root.toString())) {
-        onError(ConflictException(
-            newPackage, existingPackage, ConflictType.insidePackageRoot));
-        return true;
+      if (_disallowPackagesInsidePackageUriRoot) {
+        if (_beginsWith(0, existingPackage.packageUriRoot.toString(),
+            newPackage.root.toString())) {
+          onError(ConflictException(
+              newPackage, existingPackage, ConflictType.insidePackageRoot));
+          return true;
+        }
       }
-      */
     }
     return false;
   }
