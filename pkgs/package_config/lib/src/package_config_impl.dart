@@ -470,8 +470,7 @@ class TrielikePackageTree implements PackageTree {
     var segments = root.pathSegments;
     for (var i = 0; i < segments.length - 1; i++) {
       var path = segments[i];
-      currentTrieNode =
-          currentTrieNode.map[path] ??= _PackageTrieNode();
+      currentTrieNode = currentTrieNode.map[path] ??= _PackageTrieNode();
       if (_checkConflict(currentTrieNode, newPackage, onError)) return;
     }
     currentTrieNode.package = newPackage;
