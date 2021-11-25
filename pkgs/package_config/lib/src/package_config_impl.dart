@@ -8,6 +8,8 @@ import 'util.dart';
 
 export 'package_config.dart';
 
+const bool _disallowPackagesInsidePackageUriRoot = false;
+
 // Implementations of the main data types exposed by the API of this package.
 
 class SimplePackageConfig implements PackageConfig {
@@ -54,12 +56,12 @@ class SimplePackageConfig implements PackageConfig {
   static PackageTree _validatePackages(Iterable<Package> originalPackages,
       List<Package> packages, void Function(Object error) onError) {
     var packageNames = <String>{};
-    var tree = MutablePackageTree();
+    var tree = TriePackageTree();
     for (var originalPackage in packages) {
-      SimplePackage? package;
+      SimplePackage? newPackage;
       if (originalPackage is! SimplePackage) {
         // SimplePackage validates these properties.
-        package = SimplePackage.validate(
+        newPackage = SimplePackage.validate(
             originalPackage.name,
             originalPackage.root,
             originalPackage.packageUriRoot,
@@ -68,43 +70,58 @@ class SimplePackageConfig implements PackageConfig {
             originalPackage.relativeRoot, (error) {
           if (error is PackageConfigArgumentError) {
             onError(PackageConfigArgumentError(packages, 'packages',
-                'Package ${package!.name}: ${error.message}'));
+                'Package ${newPackage!.name}: ${error.message}'));
           } else {
             onError(error);
           }
         });
-        if (package == null) continue;
+        if (newPackage == null) continue;
       } else {
-        package = originalPackage;
+        newPackage = originalPackage;
       }
-      var name = package.name;
+      var name = newPackage.name;
       if (packageNames.contains(name)) {
         onError(PackageConfigArgumentError(
             name, 'packages', "Duplicate package name '$name'"));
         continue;
       }
       packageNames.add(name);
-      tree.add(0, package, (error) {
+      tree.add(newPackage, (error) {
         if (error is ConflictException) {
           // There is a conflict with an existing package.
           var existingPackage = error.existingPackage;
-          if (error.isRootConflict) {
-            onError(PackageConfigArgumentError(
-                originalPackages,
-                'packages',
-                'Packages ${package!.name} and ${existingPackage.name} '
-                    'have the same root directory: ${package.root}.\n'));
-          } else {
-            assert(error.isPackageRootConflict);
-            // Package is inside the package URI root of the existing package.
-            onError(PackageConfigArgumentError(
-                originalPackages,
-                'packages',
-                'Package ${package!.name} is inside the package URI root of '
-                    'package ${existingPackage.name}.\n'
-                    '${existingPackage.name} URI root: '
-                    '${existingPackage.packageUriRoot}\n'
-                    '${package.name} root: ${package.root}\n'));
+          switch (error.conflictType) {
+            case ConflictType.sameRoots:
+              onError(PackageConfigArgumentError(
+                  originalPackages,
+                  'packages',
+                  'Packages ${newPackage!.name} and ${existingPackage.name} '
+                      'have the same root directory: ${newPackage.root}.\n'));
+              break;
+            case ConflictType.interleaving:
+              // The new package is inside the package URI root of the existing
+              // package.
+              onError(PackageConfigArgumentError(
+                  originalPackages,
+                  'packages',
+                  'Package ${newPackage!.name} is inside the root of '
+                      'package ${existingPackage.name}, and the package root '
+                      'of ${existingPackage.name} is inside the root of '
+                      '${newPackage.name}.\n'
+                      '${existingPackage.name} package root: '
+                      '${existingPackage.packageUriRoot}\n'
+                      '${newPackage.name} root: ${newPackage.root}\n'));
+              break;
+            case ConflictType.insidePackageRoot:
+              onError(PackageConfigArgumentError(
+                  originalPackages,
+                  'packages',
+                  'Package ${newPackage!.name} is inside the package root of '
+                      'package ${existingPackage.name}.\n'
+                      '${existingPackage.name} package root: '
+                      '${existingPackage.packageUriRoot}\n'
+                      '${newPackage.name} root: ${newPackage.root}\n'));
+              break;
           }
         } else {
           // Any other error.
@@ -367,6 +384,13 @@ abstract class PackageTree {
   SimplePackage? packageOf(Uri file);
 }
 
+class _PackageTrieNode {
+  SimplePackage? package;
+
+  /// Indexed by path segment.
+  Map<String, _PackageTrieNode> map = {};
+}
+
 /// Packages of a package configuration ordered by root path.
 ///
 /// A package has a root path and a package root path, where the latter
@@ -375,122 +399,127 @@ abstract class PackageTree {
 /// A package is said to be inside another package if the root path URI of
 /// the latter is a prefix of the root path URI of the former.
 ///
-/// No two packages of a package may have the same root path, so this
-/// path prefix ordering defines a tree-like partial ordering on packages
-/// of a configuration.
-///
+/// No two packages of a package may have the same root path.
 /// The package root path of a package must not be inside another package's
 /// root path.
-/// Entire other packages are allowed inside a package's root or
-/// package root path.
-///
-/// The package tree contains an ordered mapping of unrelated packages
-/// (represented by their name) to their immediately nested packages' names.
-class MutablePackageTree implements PackageTree {
-  /// A list of packages that are not nested inside each other.
-  final List<SimplePackage> packages = [];
+/// Entire other packages are allowed inside a package's root.
+class TriePackageTree implements PackageTree {
+  /// Indexed by URI scheme.
+  final Map<String, _PackageTrieNode> _map = {};
 
-  /// The tree of the immediately nested packages inside each package.
-  ///
-  /// Indexed by [Package.name].
-  /// If a package has no nested packages (which is most often the case),
-  /// there is no tree object associated with it.
-  Map<String, MutablePackageTree>? _packageChildren;
+  /// A list of all packages.
+  final List<SimplePackage> _packages = [];
 
   @override
   Iterable<Package> get allPackages sync* {
-    for (var package in packages) {
+    for (var package in _packages) {
       yield package;
-    }
-    var children = _packageChildren;
-    if (children != null) {
-      for (var tree in children.values) {
-        yield* tree.allPackages;
-      }
     }
   }
 
-  /// Tries to (add) `package` to the tree.
+  bool _checkConflict(_PackageTrieNode node, SimplePackage newPackage,
+      void Function(Object error) onError) {
+    var existingPackage = node.package;
+    if (existingPackage != null) {
+      // Trying to add package that is inside the existing package.
+      // 1) If it's an exact match it's not allowed (i.e. the roots can't be
+      //    the same).
+      if (newPackage.root.path.length == existingPackage.root.path.length) {
+        onError(ConflictException(
+            newPackage, existingPackage, ConflictType.sameRoots));
+        return true;
+      }
+      // 2) The existing package has a packageUriRoot thats inside the
+      //    root of the new package.
+      if (_beginsWith(0, newPackage.root.toString(),
+          existingPackage.packageUriRoot.toString())) {
+        onError(ConflictException(
+            newPackage, existingPackage, ConflictType.interleaving));
+        return true;
+      }
+
+      // For internal reasons we allow this (for now). One should still never do
+      // it thouh.
+      // 3) The new package is inside the packageUriRoot of existing package.
+      if (_disallowPackagesInsidePackageUriRoot) {
+        if (_beginsWith(0, existingPackage.packageUriRoot.toString(),
+            newPackage.root.toString())) {
+          onError(ConflictException(
+              newPackage, existingPackage, ConflictType.insidePackageRoot));
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /// Tries to add `newPackage` to the tree.
   ///
   /// Reports a [ConflictException] if the added package conflicts with an
   /// existing package.
-  /// It conflicts if its root or package root is the same as another
-  /// package's root or package root, or is between the two.
+  /// It conflicts if its root or package root is the same as an existing
+  /// package's root or package root, is between the two, or if it's inside the
+  /// package root of an existing package.
   ///
-  /// If a conflict is detected between [package] and a previous package,
+  /// If a conflict is detected between [newPackage] and a previous package,
   /// then [onError] is called with a [ConflictException] object
-  /// and the [package] is not added to the tree.
+  /// and the [newPackage] is not added to the tree.
   ///
   /// The packages are added in order of their root path.
-  /// It is never necessary to insert a node between two existing levels.
-  void add(
-      int start, SimplePackage package, void Function(Object error) onError) {
-    var path = package.root.toString();
-    for (var treePackage in packages) {
-      // Check is package is inside treePackage.
-      var treePackagePath = treePackage.root.toString();
-      assert(treePackagePath.length > start);
-      assert(path.startsWith(treePackagePath.substring(0, start)));
-      if (_beginsWith(start, treePackagePath, path)) {
-        // Package *is* inside treePackage.
-        var treePackagePathLength = treePackagePath.length;
-        if (path.length == treePackagePathLength) {
-          // Has same root. Do not add package.
-          onError(ConflictException.root(package, treePackage));
-          return;
-        }
-        var treePackageUriRoot = treePackage.packageUriRoot.toString();
-        if (_beginsWith(treePackagePathLength, path, treePackageUriRoot)) {
-          // The treePackage's package root is inside package, which is inside
-          // the treePackage. This is not allowed.
-          onError(ConflictException.packageRoot(package, treePackage));
-          return;
-        }
-        _treeOf(treePackage).add(treePackagePathLength, package, onError);
-        return;
-      }
+  void add(SimplePackage newPackage, void Function(Object error) onError) {
+    var root = newPackage.root;
+    var node = _map[root.scheme] ??= _PackageTrieNode();
+    if (_checkConflict(node, newPackage, onError)) return;
+    var segments = root.pathSegments;
+    // Notice that we're skipping the last segment as it's always the empty
+    // string because roots are directories.
+    for (var i = 0; i < segments.length - 1; i++) {
+      var path = segments[i];
+      node = node.map[path] ??= _PackageTrieNode();
+      if (_checkConflict(node, newPackage, onError)) return;
     }
-    packages.add(package);
+    node.package = newPackage;
+    _packages.add(newPackage);
+  }
+
+  bool _isMatch(
+      String path, _PackageTrieNode node, List<SimplePackage> potential) {
+    var currentPackage = node.package;
+    if (currentPackage != null) {
+      var currentPackageRootLength = currentPackage.root.toString().length;
+      if (path.length == currentPackageRootLength) return true;
+      var currentPackageUriRoot = currentPackage.packageUriRoot.toString();
+      // Is [file] inside the package root of [currentPackage]?
+      if (currentPackageUriRoot.length == currentPackageRootLength ||
+          _beginsWith(currentPackageRootLength, currentPackageUriRoot, path)) {
+        return true;
+      }
+      potential.add(currentPackage);
+    }
+    return false;
   }
 
   @override
   SimplePackage? packageOf(Uri file) {
-    return findPackageOf(0, file.toString());
-  }
+    var currentTrieNode = _map[file.scheme];
+    if (currentTrieNode == null) return null;
+    var path = file.toString();
+    var potential = <SimplePackage>[];
+    if (_isMatch(path, currentTrieNode, potential)) {
+      return currentTrieNode.package;
+    }
+    var segments = file.pathSegments;
 
-  /// Finds package containing [path] in this tree.
-  ///
-  /// Returns `null` if no such package is found.
-  ///
-  /// Assumes the first [start] characters of path agrees with all
-  /// the packages at this level of the tree.
-  SimplePackage? findPackageOf(int start, String path) {
-    for (var childPackage in packages) {
-      var childPath = childPackage.root.toString();
-      if (_beginsWith(start, childPath, path)) {
-        // The [package] is inside [childPackage].
-        var childPathLength = childPath.length;
-        if (path.length == childPathLength) return childPackage;
-        var uriRoot = childPackage.packageUriRoot.toString();
-        // Is [package] is inside the URI root of [childPackage].
-        if (uriRoot.length == childPathLength ||
-            _beginsWith(childPathLength, uriRoot, path)) {
-          return childPackage;
-        }
-        return _packageChildren?[childPackage.name]
-                ?.findPackageOf(childPathLength, path) ??
-            childPackage;
+    for (var i = 0; i < segments.length - 1; i++) {
+      var segment = segments[i];
+      currentTrieNode = currentTrieNode!.map[segment];
+      if (currentTrieNode == null) break;
+      if (_isMatch(path, currentTrieNode, potential)) {
+        return currentTrieNode.package;
       }
     }
-    return null;
-  }
-
-  /// Returns the [PackageTree] of the children of [package].
-  ///
-  /// Ensures that the object is allocated if necessary.
-  MutablePackageTree _treeOf(SimplePackage package) {
-    var children = _packageChildren ??= {};
-    return children[package.name] ??= MutablePackageTree();
+    if (potential.isEmpty) return null;
+    return potential.last;
   }
 }
 
@@ -516,6 +545,8 @@ bool _beginsWith(int start, String parentPath, String longerPath) {
   return true;
 }
 
+enum ConflictType { sameRoots, interleaving, insidePackageRoot }
+
 /// Conflict between packages added to the same configuration.
 ///
 /// The [package] conflicts with [existingPackage] if it has
@@ -530,18 +561,10 @@ class ConflictException {
   final SimplePackage package;
 
   /// Whether the conflict is with the package URI root of [existingPackage].
-  final bool isPackageRootConflict;
+  final ConflictType conflictType;
 
   /// Creates a root conflict between [package] and [existingPackage].
-  ConflictException.root(this.package, this.existingPackage)
-      : isPackageRootConflict = false;
-
-  /// Creates a package root conflict between [package] and [existingPackage].
-  ConflictException.packageRoot(this.package, this.existingPackage)
-      : isPackageRootConflict = true;
-
-  /// WHether the conflict is with the root URI of [existingPackage].
-  bool get isRootConflict => !isPackageRootConflict;
+  ConflictException(this.package, this.existingPackage, this.conflictType);
 }
 
 /// Used for sorting packages by root path.
