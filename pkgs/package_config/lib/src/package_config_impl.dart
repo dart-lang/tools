@@ -384,9 +384,9 @@ abstract class PackageTree {
   SimplePackage? packageOf(Uri file);
 }
 
-class _TrielikePackageTreeHelper {
+class _PackageTrieNode {
   SimplePackage? package;
-  Map<String, _TrielikePackageTreeHelper> map = {};
+  Map<String, _PackageTrieNode> map = {};
 }
 
 /// Packages of a package configuration ordered by root path.
@@ -402,7 +402,7 @@ class _TrielikePackageTreeHelper {
 /// root path.
 /// Entire other packages are allowed inside a package's root.
 class TrielikePackageTree implements PackageTree {
-  final Map<String, _TrielikePackageTreeHelper> _map = {};
+  final Map<String, _PackageTrieNode> _map = {};
 
   /// A list of all packages.
   final List<SimplePackage> _packages = [];
@@ -414,10 +414,10 @@ class TrielikePackageTree implements PackageTree {
     }
   }
 
-  bool _checkConflict(_TrielikePackageTreeHelper currentMapHelper,
+  bool _checkConflict(_PackageTrieNode currentTrieNode,
       SimplePackage newPackage, void Function(Object error) onError) {
-    if (currentMapHelper.package != null) {
-      var existingPackage = currentMapHelper.package!;
+    if (currentTrieNode.package != null) {
+      var existingPackage = currentTrieNode.package!;
       // Trying to add package that is inside the existing package.
       // 1) If it's an exact match it's not allowed (i.e. the roots can't be
       //    the same).
@@ -465,23 +465,23 @@ class TrielikePackageTree implements PackageTree {
   /// The packages are added in order of their root path.
   void add(SimplePackage newPackage, void Function(Object error) onError) {
     var root = newPackage.root;
-    var currentMapHelper = _map[root.scheme] ??= _TrielikePackageTreeHelper();
-    if (_checkConflict(currentMapHelper, newPackage, onError)) return;
+    var currentTrieNode = _map[root.scheme] ??= _PackageTrieNode();
+    if (_checkConflict(currentTrieNode, newPackage, onError)) return;
     var segments = root.pathSegments;
     for (var i = 0; i < segments.length - 1; i++) {
       var path = segments[i];
-      currentMapHelper =
-          currentMapHelper.map[path] ??= _TrielikePackageTreeHelper();
-      if (_checkConflict(currentMapHelper, newPackage, onError)) return;
+      currentTrieNode =
+          currentTrieNode.map[path] ??= _PackageTrieNode();
+      if (_checkConflict(currentTrieNode, newPackage, onError)) return;
     }
-    currentMapHelper.package = newPackage;
+    currentTrieNode.package = newPackage;
     _packages.add(newPackage);
   }
 
-  bool _isMatch(String path, _TrielikePackageTreeHelper currentMapHelper,
+  bool _isMatch(String path, _PackageTrieNode currentTrieNode,
       List<SimplePackage> potential) {
-    if (currentMapHelper.package != null) {
-      var currentPackage = currentMapHelper.package!;
+    if (currentTrieNode.package != null) {
+      var currentPackage = currentTrieNode.package!;
       var currentPackageRootLength = currentPackage.root.toString().length;
       if (path.length == currentPackageRootLength) return true;
       var currentPackageUriRoot = currentPackage.packageUriRoot.toString();
@@ -497,21 +497,21 @@ class TrielikePackageTree implements PackageTree {
 
   @override
   SimplePackage? packageOf(Uri file) {
-    var currentMapHelper = _map[file.scheme];
-    if (currentMapHelper == null) return null;
+    var currentTrieNode = _map[file.scheme];
+    if (currentTrieNode == null) return null;
     var path = file.toString();
     var potential = <SimplePackage>[];
-    if (_isMatch(path, currentMapHelper, potential)) {
-      return currentMapHelper.package;
+    if (_isMatch(path, currentTrieNode, potential)) {
+      return currentTrieNode.package;
     }
     var segments = file.pathSegments;
 
     for (var i = 0; i < segments.length - 1; i++) {
       var segment = segments[i];
-      currentMapHelper = currentMapHelper!.map[segment];
-      if (currentMapHelper == null) break;
-      if (_isMatch(path, currentMapHelper, potential)) {
-        return currentMapHelper.package;
+      currentTrieNode = currentTrieNode!.map[segment];
+      if (currentTrieNode == null) break;
+      if (_isMatch(path, currentTrieNode, potential)) {
+        return currentTrieNode.package;
       }
     }
     if (potential.isEmpty) return null;
