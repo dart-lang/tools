@@ -438,12 +438,25 @@ void main() {
               '{"name":"foo","rootUri":"/foo/","packageUri":"bar/lib/"},'
               '{"name":"bar","rootUri":"/foo/bar/","packageUri":"baz/lib"}]}',
           'package root of foo is inside the root of bar');
-      testThrowsContains(
-          'root in lib',
-          '{$cfg,"packages":['
+
+      // This shouldn't be allowed, but for internal reasons it is.
+      test("package inside package root", () {
+        var config = parsePackageConfigBytes(
+            utf8.encode(
+              '{$cfg,"packages":['
               '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
               '{"name":"bar","rootUri":"/foo/lib/bar/","packageUri":"lib"}]}',
-          'Package bar is inside the package root of package foo');
+            ) as Uint8List,
+            Uri.parse('file:///tmp/.dart_tool/file.dart'),
+            throwError);
+        expect(
+            config
+                .packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart'))!
+                .name,
+            'foo'); // why not bar?
+        expect(config.toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz')),
+            Uri.parse('package:foo/bar/lib/diz')); // why not package:bar/diz?
+      });
     });
   });
 

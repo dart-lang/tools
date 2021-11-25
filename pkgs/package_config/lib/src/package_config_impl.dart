@@ -432,6 +432,9 @@ class TrielikePackageTree implements PackageTree {
             newPackage, existingPackage, ConflictType.interleaving));
         return true;
       }
+      /*
+      For internal reasons we allow this (for now). One should still never do it
+      though.
       // 3) The new package is inside the packageUriRoot of existing package.
       if (_beginsWith(0, existingPackage.packageUriRoot.toString(),
           newPackage.root.toString())) {
@@ -439,6 +442,7 @@ class TrielikePackageTree implements PackageTree {
             newPackage, existingPackage, ConflictType.insidePackageRoot));
         return true;
       }
+      */
     }
     return false;
   }
