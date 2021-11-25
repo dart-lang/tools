@@ -272,6 +272,36 @@ void main() {
           Uri.parse('package:qux/diz'));
     });
 
+    test('nested packages 2', () {
+      var configBytes = utf8.encode(json.encode({
+        'configVersion': 2,
+        'packages': [
+          {'name': 'foo', 'rootUri': '/', 'packageUri': 'lib/'},
+          {'name': 'bar', 'rootUri': '/bar/', 'packageUri': 'lib/'},
+          {'name': 'baz', 'rootUri': '/bar/baz/', 'packageUri': 'lib/'},
+          {'name': 'qux', 'rootUri': '/qux/', 'packageUri': 'lib/'},
+        ]
+      }));
+      // ignore: unnecessary_cast
+      var config = parsePackageConfigBytes(configBytes as Uint8List,
+          Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError);
+      expect(config.version, 2);
+      expect(
+          config.packageOf(Uri.parse('file:///lala/lala.dart'))!.name, 'foo');
+      expect(config.packageOf(Uri.parse('file:///bar/lala.dart'))!.name, 'bar');
+      expect(config.packageOf(Uri.parse('file:///bar/baz/lala.dart'))!.name,
+          'baz');
+      expect(config.packageOf(Uri.parse('file:///qux/lala.dart'))!.name, 'qux');
+      expect(config.toPackageUri(Uri.parse('file:///lib/diz')),
+          Uri.parse('package:foo/diz'));
+      expect(config.toPackageUri(Uri.parse('file:///bar/lib/diz')),
+          Uri.parse('package:bar/diz'));
+      expect(config.toPackageUri(Uri.parse('file:///bar/baz/lib/diz')),
+          Uri.parse('package:baz/diz'));
+      expect(config.toPackageUri(Uri.parse('file:///qux/lib/diz')),
+          Uri.parse('package:qux/diz'));
+    });
+
     group('invalid', () {
       void testThrows(String name, String source) {
         test(name, () {
@@ -280,6 +310,21 @@ void main() {
               () => parsePackageConfigBytes(utf8.encode(source) as Uint8List,
                   Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError),
               throwsA(TypeMatcher<FormatException>()));
+        });
+      }
+
+      void testThrowsContains(
+          String name, String source, String containsString) {
+        test(name, () {
+          dynamic exception;
+          try {
+            parsePackageConfigBytes(utf8.encode(source) as Uint8List,
+                Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError);
+          } catch (e) {
+            exception = e;
+          }
+          if (exception == null) fail("Didn't get exception");
+          expect('$exception', contains(containsString));
         });
       }
 
@@ -375,19 +420,30 @@ void main() {
       });
       testThrows('duplicate package name',
           '{$cfg,"packages":[{$name,$root},{$name,"rootUri":"/other/"}]}');
-      testThrows('same roots',
-          '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}');
-      testThrows(
+      testThrowsContains(
           // The roots of foo and bar are the same.
           'same roots',
-          '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}');
-      testThrows(
+          '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}',
+          'the same root directory');
+      testThrowsContains(
+          // The roots of foo and bar are the same.
+          'same roots 2',
+          '{$cfg,"packages":[{$name,"rootUri":"/"},{"name":"bar","rootUri":"/"}]}',
+          'the same root directory');
+      testThrowsContains(
           // The root of bar is inside the root of foo,
           // but the package root of foo is inside the root of bar.
           'between root and lib',
           '{$cfg,"packages":['
               '{"name":"foo","rootUri":"/foo/","packageUri":"bar/lib/"},'
-              '{"name":"bar","rootUri":"/foo/bar/"},"packageUri":"baz/lib"]}');
+              '{"name":"bar","rootUri":"/foo/bar/","packageUri":"baz/lib"}]}',
+          'package root of foo is inside the root of bar');
+      testThrowsContains(
+          'root in lib',
+          '{$cfg,"packages":['
+              '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
+              '{"name":"bar","rootUri":"/foo/lib/bar/","packageUri":"lib"}]}',
+          'Package bar is inside the package root of package foo');
     });
   });
 
