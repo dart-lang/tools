@@ -56,7 +56,7 @@ class SimplePackageConfig implements PackageConfig {
   static PackageTree _validatePackages(Iterable<Package> originalPackages,
       List<Package> packages, void Function(Object error) onError) {
     var packageNames = <String>{};
-    var tree = TrielikePackageTree();
+    var tree = TriePackageTree();
     for (var originalPackage in packages) {
       SimplePackage? newPackage;
       if (originalPackage is! SimplePackage) {
@@ -386,6 +386,8 @@ abstract class PackageTree {
 
 class _PackageTrieNode {
   SimplePackage? package;
+
+  /// Indexed by path segment.
   Map<String, _PackageTrieNode> map = {};
 }
 
@@ -401,7 +403,8 @@ class _PackageTrieNode {
 /// The package root path of a package must not be inside another package's
 /// root path.
 /// Entire other packages are allowed inside a package's root.
-class TrielikePackageTree implements PackageTree {
+class TriePackageTree implements PackageTree {
+  /// Indexed by URI scheme.
   final Map<String, _PackageTrieNode> _map = {};
 
   /// A list of all packages.
@@ -414,10 +417,10 @@ class TrielikePackageTree implements PackageTree {
     }
   }
 
-  bool _checkConflict(_PackageTrieNode currentTrieNode,
-      SimplePackage newPackage, void Function(Object error) onError) {
-    if (currentTrieNode.package != null) {
-      var existingPackage = currentTrieNode.package!;
+  bool _checkConflict(_PackageTrieNode node, SimplePackage newPackage,
+      void Function(Object error) onError) {
+    var existingPackage = node.package;
+    if (existingPackage != null) {
       // Trying to add package that is inside the existing package.
       // 1) If it's an exact match it's not allowed (i.e. the roots can't be
       //    the same).
@@ -465,26 +468,28 @@ class TrielikePackageTree implements PackageTree {
   /// The packages are added in order of their root path.
   void add(SimplePackage newPackage, void Function(Object error) onError) {
     var root = newPackage.root;
-    var currentTrieNode = _map[root.scheme] ??= _PackageTrieNode();
-    if (_checkConflict(currentTrieNode, newPackage, onError)) return;
+    var node = _map[root.scheme] ??= _PackageTrieNode();
+    if (_checkConflict(node, newPackage, onError)) return;
     var segments = root.pathSegments;
+    // Notice that we're skipping the last segment as it's always the empty
+    // string because roots are directories.
     for (var i = 0; i < segments.length - 1; i++) {
       var path = segments[i];
-      currentTrieNode = currentTrieNode.map[path] ??= _PackageTrieNode();
-      if (_checkConflict(currentTrieNode, newPackage, onError)) return;
+      node = node.map[path] ??= _PackageTrieNode();
+      if (_checkConflict(node, newPackage, onError)) return;
     }
-    currentTrieNode.package = newPackage;
+    node.package = newPackage;
     _packages.add(newPackage);
   }
 
-  bool _isMatch(String path, _PackageTrieNode currentTrieNode,
-      List<SimplePackage> potential) {
-    if (currentTrieNode.package != null) {
-      var currentPackage = currentTrieNode.package!;
+  bool _isMatch(
+      String path, _PackageTrieNode node, List<SimplePackage> potential) {
+    var currentPackage = node.package;
+    if (currentPackage != null) {
       var currentPackageRootLength = currentPackage.root.toString().length;
       if (path.length == currentPackageRootLength) return true;
       var currentPackageUriRoot = currentPackage.packageUriRoot.toString();
-      // Is [file] is inside the package root of [currentPackage]?
+      // Is [file] inside the package root of [currentPackage]?
       if (currentPackageUriRoot.length == currentPackageRootLength ||
           _beginsWith(currentPackageRootLength, currentPackageUriRoot, path)) {
         return true;
