@@ -2610,7 +2610,8 @@ class _Parser {
     var start = _peekToken.span;
 
     var name = func.name;
-    if (name == 'calc' || name == '-webkit-calc' || name == '-moz-calc') {
+    if ({'calc', '-webkit-calc', '-moz-calc', 'min', 'max', 'clamp'}
+        .contains(name)) {
       // TODO(terry): Implement expression parsing properly.
       var expression = processCalcExpression();
       var calcExpr = LiteralTerm(expression, expression, _makeSpan(start));

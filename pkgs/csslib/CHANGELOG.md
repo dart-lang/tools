@@ -1,3 +1,8 @@
+## 0.17.2
+
+- Fixed a crash caused by `min()`, `max()` and `clamp()` functions that contain
+  mathematical expressions.
+
 ## 0.17.1
 
 - Fix `Color.css` constructor when there are double values in the `rgba` string.
