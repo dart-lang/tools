@@ -131,7 +131,6 @@ void testBadSelectors() {
   var input = '# foo { color: #ff00ff; }';
   parseCss(input, errors: errors);
 
-  expect(errors, isNotEmpty);
   expect(errors[0].toString(), '''
 error on line 1, column 1: Not a valid ID selector expected #id
   ,

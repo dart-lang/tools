@@ -716,8 +716,7 @@ class MediaQuery extends TreeNode {
 
   bool get hasUnary => _mediaUnary != -1;
   String get unary =>
-      TokenKind.idToValue(TokenKind.MEDIA_OPERATORS, _mediaUnary)!
-          .toUpperCase();
+      TokenKind.idToValue(TokenKind.MEDIA_OPERATORS, _mediaUnary)!;
 
   @override
   SourceSpan get span => super.span!;
