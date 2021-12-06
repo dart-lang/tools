@@ -2610,7 +2610,7 @@ class _Parser {
     var start = _peekToken.span;
 
     var name = func.name;
-    if ({'calc', '-webkit-calc', '-moz-calc', 'min', 'max', 'clamp'}
+    if (const {'calc', '-webkit-calc', '-moz-calc', 'min', 'max', 'clamp'}
         .contains(name)) {
       // TODO(terry): Implement expression parsing properly.
       var expression = processCalcExpression();
