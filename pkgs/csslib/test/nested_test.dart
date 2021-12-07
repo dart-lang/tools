@@ -353,7 +353,7 @@ void mediaNesting() {
   }
 }
 ''';
-  final generated = r'''@media screen and (-webkit-min-device-pixel-ratio:0) {
+  final generated = r'''@media screen AND (-webkit-min-device-pixel-ratio:0) {
 #toggle-all {
   image: url("test.jpb");
   color: #f00;

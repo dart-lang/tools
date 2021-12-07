@@ -348,7 +348,7 @@ void testMediaQueries() {
   }
 }''';
   var generated = '''
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen AND (-webkit-min-device-pixel-ratio:0) {
 .todo-item .toggle {
   background: none;
 }
@@ -381,7 +381,7 @@ void testMediaQueries() {
     }
   }''';
   generated =
-      '''@media handheld and (min-width:20em), screen and (min-width:20em) {
+      '''@media handheld AND (min-width:20em), screen AND (min-width:20em) {
 #id {
   color: #f00;
 }
@@ -389,12 +389,12 @@ void testMediaQueries() {
   height: 20px;
 }
 }
-@media print and (min-resolution:300dpi) {
+@media print AND (min-resolution:300dpi) {
 #anotherId {
   color: #fff;
 }
 }
-@media print and (min-resolution:280dpcm) {
+@media print AND (min-resolution:280dpcm) {
 #finalId {
   color: #aaa;
 }
@@ -415,8 +415,8 @@ void testMediaQueries() {
         font-size: 10em;
       }
     }''';
-  generated = '@media only screen and (min-device-width:4000px) '
-      'and (min-device-height:2000px), screen and (another:100px) {\n'
+  generated = '@media ONLY screen AND (min-device-width:4000px) '
+      'AND (min-device-height:2000px), screen AND (another:100px) {\n'
       'html {\n  font-size: 10em;\n}\n}';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
@@ -431,8 +431,8 @@ void testMediaQueries() {
         font-size: 10em;
       }
     }''';
-  generated = '@media screen, print and (min-device-width:4000px) and '
-      '(min-device-height:2000px), screen and (another:100px) {\n'
+  generated = '@media screen, print AND (min-device-width:4000px) AND '
+      '(min-device-height:2000px), screen AND (another:100px) {\n'
       'html {\n  font-size: 10em;\n}\n}';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
@@ -442,8 +442,8 @@ void testMediaQueries() {
 
   input = '''
 @import "test.css" ONLY screen, NOT print AND (min-device-width: 4000px);''';
-  generated = '@import "test.css" only screen, '
-      'not print and (min-device-width:4000px);';
+  generated = '@import "test.css" ONLY screen, '
+      'NOT print AND (min-device-width:4000px);';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
@@ -453,10 +453,10 @@ void testMediaQueries() {
   var css = '@media (min-device-width:400px) {\n}';
   expectCss(css, css);
 
-  css = '@media all and (transform-3d), (-webkit-transform-3d) {\n}';
+  css = '@media all AND (tranform-3d), (-webkit-transform-3d) {\n}';
   expectCss(css, css);
 
-  // Test that 'and' operator is required between media type and expressions.
+  // Test that AND operator is required between media type and expressions.
   css = '@media screen (min-device-width:400px';
   stylesheet = parseCss(css, errors: errors..clear(), opts: simpleOptions);
   expect(errors, isNotEmpty);
@@ -862,7 +862,7 @@ div {
       '@page{@top-left{color:red}}'
       '@page:first{}'
       '@page foo:first{}'
-      '@media screen and (max-width:800px){div{font-size:24px}}'
+      '@media screen AND (max-width:800px){div{font-size:24px}}'
       '@keyframes foo{0%{transform:scaleX(0)}}'
       'div{color:rgba(0,0,0,0.2)}';
 

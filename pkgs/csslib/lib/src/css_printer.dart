@@ -55,7 +55,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitMediaExpression(MediaExpression node) {
-    emit(node.andOperator ? ' and ' : ' ');
+    emit(node.andOperator ? ' AND ' : ' ');
     emit('(${node.mediaFeature}');
     if (node.exprs.expressions.isNotEmpty) {
       emit(':');
@@ -612,7 +612,7 @@ class CssPrinter extends Visitor {
     var expressions = node.expressions;
     var expressionsLength = expressions.length;
     for (var i = 0; i < expressionsLength; i++) {
-      // Add space separator between terms without an operator.
+      // Add space seperator between terms without an operator.
       // TODO(terry): Should have a BinaryExpression to solve this problem.
       var expression = expressions[i];
       if (i > 0 &&
@@ -623,9 +623,6 @@ class CssPrinter extends Visitor {
         // expressions and can't be collapsed.
         var previous = expressions[i - 1];
         if (previous is OperatorComma || previous is OperatorSlash) {
-          emit(_sp);
-        } else if (previous is PercentageTerm && expression is PercentageTerm) {
-          emit(',');
           emit(_sp);
         } else {
           emit(' ');

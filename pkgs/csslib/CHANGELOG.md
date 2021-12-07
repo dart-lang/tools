@@ -1,7 +1,5 @@
 ## 0.17.2
 
-- Comma separate keyframe percentage lists.
-- Use lowercase `and` in media queries.
 - Fixed a crash caused by `min()`, `max()` and `clamp()` functions that contain
   mathematical expressions.
 
