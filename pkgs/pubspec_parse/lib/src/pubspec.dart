@@ -7,6 +7,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import 'dependency.dart';
+import 'screenshot.dart';
 
 part 'pubspec.g.dart';
 
@@ -38,6 +39,10 @@ class Pubspec {
   /// Optional field to a web page where developers can report new issues or
   /// view existing ones.
   final Uri? issueTracker;
+
+  /// Optional field for specifying included screenshot files.
+  @JsonKey(fromJson: parseScreenshots)
+  final List<Screenshot>? screenshots;
 
   /// If there is exactly 1 value in [authors], returns it.
   ///
@@ -96,6 +101,7 @@ class Pubspec {
     this.homepage,
     this.repository,
     this.issueTracker,
+    this.screenshots,
     this.documentation,
     this.description,
     Map<String, Dependency>? dependencies,

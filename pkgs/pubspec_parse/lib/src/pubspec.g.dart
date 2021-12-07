@@ -27,6 +27,8 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
               'repository', (v) => v == null ? null : Uri.parse(v as String)),
           issueTracker: $checkedConvert('issue_tracker',
               (v) => v == null ? null : Uri.parse(v as String)),
+          screenshots: $checkedConvert(
+              'screenshots', (v) => parseScreenshots(v as List?)),
           documentation: $checkedConvert('documentation', (v) => v as String?),
           description: $checkedConvert('description', (v) => v as String?),
           dependencies:

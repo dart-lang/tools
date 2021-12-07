@@ -31,6 +31,7 @@ void main() {
     expect(value.flutter, isNull);
     expect(value.repository, isNull);
     expect(value.issueTracker, isNull);
+    expect(value.screenshots, isEmpty);
   });
 
   test('all fields set', () {
@@ -47,6 +48,9 @@ void main() {
       'documentation': 'documentation',
       'repository': 'https://github.com/example/repo',
       'issue_tracker': 'https://github.com/example/repo/issues',
+      'screenshots': [
+        {'description': 'my screenshot', 'path': 'path/to/screenshot'}
+      ],
     });
     expect(value.name, 'sample');
     expect(value.version, version);
@@ -66,6 +70,9 @@ void main() {
       value.issueTracker,
       Uri.parse('https://github.com/example/repo/issues'),
     );
+    expect(value.screenshots, hasLength(1));
+    expect(value.screenshots!.first.description, 'my screenshot');
+    expect(value.screenshots!.first.path, 'path/to/screenshot');
   });
 
   test('environment values can be null', () {
@@ -354,6 +361,160 @@ line 3, column 19: Unsupported value for "issue_tracker". type 'YamlMap' is not 
   ╵''',
         skipTryPub: true,
       );
+    });
+  });
+
+  group('screenshots', () {
+    test('one screenshot', () {
+      final value = parse({
+        ...defaultPubspec,
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'}
+        ],
+      });
+      expect(value.screenshots, hasLength(1));
+      expect(value.screenshots!.first.description, 'my screenshot');
+      expect(value.screenshots!.first.path, 'path/to/screenshot');
+    });
+
+    test('many screenshots', () {
+      final value = parse({
+        ...defaultPubspec,
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+          {
+            'description': 'my second screenshot',
+            'path': 'path/to/screenshot2'
+          },
+        ],
+      });
+      expect(value.screenshots, hasLength(2));
+      expect(value.screenshots!.first.description, 'my screenshot');
+      expect(value.screenshots!.first.path, 'path/to/screenshot');
+      expect(value.screenshots!.last.description, 'my second screenshot');
+      expect(value.screenshots!.last.path, 'path/to/screenshot2');
+    });
+
+    test('one screenshot plus invalid entries', () {
+      final value = parse({
+        ...defaultPubspec,
+        'screenshots': [
+          42,
+          {
+            'description': 'my screenshot',
+            'path': 'path/to/screenshot',
+            'extraKey': 'not important'
+          },
+          'not a screenshot',
+        ],
+      });
+      expect(value.screenshots, hasLength(1));
+      expect(value.screenshots!.first.description, 'my screenshot');
+      expect(value.screenshots!.first.path, 'path/to/screenshot');
+    });
+
+    test('invalid entries', () {
+      final value = parse({
+        ...defaultPubspec,
+        'screenshots': [
+          42,
+          'not a screenshot',
+        ],
+      });
+      expect(value.screenshots, isEmpty);
+    });
+
+    test('missing key `dessription', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'screenshots': [
+            {'path': 'my/path'},
+          ],
+        },
+        r'''
+line 7, column 3: Missing key "description". Missing required key `description`
+  ╷
+7 │ ┌   {
+8 │ │    "path": "my/path"
+9 │ └   }
+  ╵''',
+        skipTryPub: true,
+      );
+    });
+
+    test('missing key `path`', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'screenshots': [
+            {'description': 'my screenshot'},
+          ],
+        },
+        r'''
+line 7, column 3: Missing key "path". Missing required key `path`
+  ╷
+7 │ ┌   {
+8 │ │    "description": "my screenshot"
+9 │ └   }
+  ╵''',
+        skipTryPub: true,
+      );
+    });
+
+    test('Value of description not a String`', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'screenshots': [
+            {'description': 42},
+          ],
+        },
+        r'''
+line 8, column 19: Unsupported value for "description". `42` is not a String
+  ╷
+8 │      "description": 42
+  │ ┌───────────────────^
+9 │ │   }
+  │ └──^
+  ╵''',
+        skipTryPub: true,
+      );
+    });
+
+    test('Value of path not a String`', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'screenshots': [
+            {
+              'description': '',
+              'path': 42,
+            },
+          ],
+        },
+        r'''
+line 9, column 12: Unsupported value for "path". `42` is not a String
+   ╷
+9  │      "path": 42
+   │ ┌────────────^
+10 │ │   }
+   │ └──^
+   ╵''',
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid screenshot - lenient', () {
+      final value = parse(
+        {
+          ...defaultPubspec,
+          'screenshots': 'Invalid value',
+        },
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.screenshots, isEmpty);
     });
   });
 

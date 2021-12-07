@@ -11,3 +11,4 @@ export 'src/dependency.dart'
         SdkDependency,
         PathDependency;
 export 'src/pubspec.dart' show Pubspec;
+export 'src/screenshot.dart' show Screenshot;
