@@ -73,42 +73,6 @@ Future<int> getOpenPort() async {
   }
 }
 
-/// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
-Map<String, dynamic> toScriptCoverageJson(Uri scriptUri, Map<int, int> hitMap) {
-  final json = <String, dynamic>{};
-  final hits = <int>[];
-  hitMap.forEach((line, hitCount) {
-    hits.add(line);
-    hits.add(hitCount);
-  });
-  json['source'] = '$scriptUri';
-  json['script'] = {
-    'type': '@Script',
-    'fixedId': true,
-    'id': 'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
-    'uri': '$scriptUri',
-    '_kind': 'library',
-  };
-  json['hits'] = hits;
-  return json;
-}
-
-/// Generates a hash code for two objects.
-int hash2(dynamic a, dynamic b) =>
-    _finish(_combine(_combine(0, a.hashCode), b.hashCode));
-
-int _combine(int hash, int value) {
-  hash = 0x1fffffff & (hash + value);
-  hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-  return hash ^ (hash >> 6);
-}
-
-int _finish(int hash) {
-  hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-  hash = hash ^ (hash >> 11);
-  return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-}
-
 const muliLineIgnoreStart = '// coverage:ignore-start';
 const muliLineIgnoreEnd = '// coverage:ignore-end';
 const singleLineIgnore = '// coverage:ignore-line';

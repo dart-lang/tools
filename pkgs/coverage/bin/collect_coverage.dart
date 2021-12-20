@@ -11,7 +11,7 @@ import 'package:coverage/src/collect.dart';
 import 'package:logging/logging.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-Future<Null> main(List<String> arguments) async {
+Future<void> main(List<String> arguments) async {
   Logger.root.level = Level.WARNING;
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
@@ -21,7 +21,7 @@ Future<Null> main(List<String> arguments) async {
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
         options.waitPaused, options.includeDart, options.scopedOutput,
-        timeout: options.timeout);
+        timeout: options.timeout, functionCoverage: options.functionCoverage);
     options.out.write(json.encode(coverage));
     await options.out.close();
   }, onError: (dynamic error, Chain chain) {
@@ -35,7 +35,7 @@ Future<Null> main(List<String> arguments) async {
 
 class Options {
   Options(this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume,
-      this.includeDart, this.scopedOutput);
+      this.includeDart, this.functionCoverage, this.scopedOutput);
 
   final Uri serviceUri;
   final IOSink out;
@@ -43,6 +43,7 @@ class Options {
   final bool waitPaused;
   final bool resume;
   final bool includeDart;
+  final bool functionCoverage;
   final Set<String> scopedOutput;
 }
 
@@ -72,6 +73,8 @@ Options _parseArgs(List<String> arguments) {
         abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
     ..addFlag('include-dart',
         abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
+    ..addFlag('function-coverage',
+        abbr: 'f', defaultsTo: false, help: 'Collect function coverage info')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   final args = parser.parse(arguments);
@@ -123,6 +126,7 @@ Options _parseArgs(List<String> arguments) {
     args['wait-paused'] as bool,
     args['resume-isolates'] as bool,
     args['include-dart'] as bool,
+    args['function-coverage'] as bool,
     scopedOutput.toSet(),
   );
 }

@@ -15,6 +15,16 @@ String fooSync(int x) {
   return List.generate(x, (_) => 'xyzzy').join(' ');
 }
 
+class BarClass {
+  BarClass(this.x);
+
+  int x;
+
+  void baz() {
+    print(x);
+  }
+}
+
 Future<String> fooAsync(int x) async {
   if (x == answer) {
     return '*' * x;
@@ -34,6 +44,9 @@ void isolateTask(dynamic threeThings) {
     final sum = (threeThings[1] + threeThings[2]) as int;
     port.send(sum);
   });
+
+  final bar = BarClass(123);
+  bar.baz();
 
   print('678'); // coverage:ignore-line
 

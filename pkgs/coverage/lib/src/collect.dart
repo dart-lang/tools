@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:vm_service/vm_service.dart';
 
 import 'util.dart';
+import 'hitmap.dart';
 
 const _retryInterval = Duration(milliseconds: 200);
 
@@ -29,6 +30,9 @@ const _retryInterval = Duration(milliseconds: 200);
 /// If [includeDart] is true, code coverage for core `dart:*` libraries will be
 /// collected.
 ///
+/// If [functionCoverage] is true, function coverage information will be
+/// collected.
+///
 /// If [scopedOutput] is non-empty, coverage will be restricted so that only
 /// scripts that start with any of the provided paths are considered.
 ///
@@ -36,7 +40,9 @@ const _retryInterval = Duration(milliseconds: 200);
 /// those VM isolates.
 Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String>? scopedOutput,
-    {Set<String>? isolateIds, Duration? timeout}) async {
+    {Set<String>? isolateIds,
+    Duration? timeout,
+    bool functionCoverage = false}) async {
   scopedOutput ??= <String>{};
 
   // Create websocket URI. Handle any trailing slashes.
@@ -71,7 +77,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     }
 
     return await _getAllCoverage(
-        service, includeDart, scopedOutput, isolateIds);
+        service, includeDart, functionCoverage, scopedOutput, isolateIds);
   } finally {
     if (resume) {
       await _resumeIsolates(service);
@@ -85,14 +91,36 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
 Future<Map<String, dynamic>> _getAllCoverage(
     VmService service,
     bool includeDart,
+    bool functionCoverage,
     Set<String>? scopedOutput,
     Set<String>? isolateIds) async {
   scopedOutput ??= <String>{};
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
+  final version = await service.getVersion();
+  final reportLines =
+      (version.major == 3 && version.minor != null && version.minor! >= 51) ||
+          (version.major != null && version.major! > 3);
+
+  // Program counters are shared between isolates in the same group. So we need
+  // to make sure we're only gathering coverage data for one isolate in each
+  // group, otherwise we'll double count the hits.
+  final isolateOwnerGroup = <String, String>{};
+  final coveredIsolateGroups = <String>{};
+  for (var isolateGroupRef in vm.isolateGroups!) {
+    final isolateGroup = await service.getIsolateGroup(isolateGroupRef.id!);
+    for (var isolateRef in isolateGroup.isolates!) {
+      isolateOwnerGroup[isolateRef.id!] = isolateGroupRef.id!;
+    }
+  }
 
   for (var isolateRef in vm.isolates!) {
     if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
+    final isolateGroupId = isolateOwnerGroup[isolateRef.id];
+    if (isolateGroupId != null) {
+      if (coveredIsolateGroups.contains(isolateGroupId)) continue;
+      coveredIsolateGroups.add(isolateGroupId);
+    }
     if (scopedOutput.isNotEmpty) {
       final scripts = await service.getScripts(isolateRef.id!);
       for (var script in scripts.scripts!) {
@@ -103,9 +131,11 @@ Future<Map<String, dynamic>> _getAllCoverage(
         if (!scopedOutput.contains(scope)) continue;
         final scriptReport = await service.getSourceReport(
             isolateRef.id!, <String>[SourceReportKind.kCoverage],
-            forceCompile: true, scriptId: script.id);
-        final coverage = await _getCoverageJson(
-            service, isolateRef, scriptReport, includeDart);
+            forceCompile: true,
+            scriptId: script.id,
+            reportLines: reportLines ? true : null);
+        final coverage = await _getCoverageJson(service, isolateRef,
+            scriptReport, includeDart, functionCoverage, reportLines);
         allCoverage.addAll(coverage);
       }
     } else {
@@ -113,9 +143,10 @@ Future<Map<String, dynamic>> _getAllCoverage(
         isolateRef.id!,
         <String>[SourceReportKind.kCoverage],
         forceCompile: true,
+        reportLines: reportLines ? true : null,
       );
-      final coverage = await _getCoverageJson(
-          service, isolateRef, isolateReport, includeDart);
+      final coverage = await _getCoverageJson(service, isolateRef,
+          isolateReport, includeDart, functionCoverage, reportLines);
       allCoverage.addAll(coverage);
     }
   }
@@ -190,12 +221,35 @@ int? _getLineFromTokenPos(Script script, int tokenPos) {
   return null;
 }
 
+Future<void> _processFunction(VmService service, IsolateRef isolateRef,
+    Script script, FuncRef funcRef, HitMap hits) async {
+  final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
+  final location = func.location;
+  if (location != null) {
+    final funcName = await _getFuncName(service, isolateRef, func);
+    final tokenPos = location.tokenPos!;
+    final line = _getLineFromTokenPos(script, tokenPos);
+
+    if (line == null) {
+      print('tokenPos $tokenPos has no line mapping for script ${script.uri!}');
+      return;
+    }
+    hits.funcNames![line] = funcName;
+  }
+}
+
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
-Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
-    IsolateRef isolateRef, SourceReport report, bool includeDart) async {
-  // script uri -> { line -> hit count }
-  final hitMaps = <Uri, Map<int, int>>{};
+Future<List<Map<String, dynamic>>> _getCoverageJson(
+    VmService service,
+    IsolateRef isolateRef,
+    SourceReport report,
+    bool includeDart,
+    bool functionCoverage,
+    bool reportLines) async {
+  final hitMaps = <Uri, HitMap>{};
   final scripts = <ScriptRef, Script>{};
+  final libraries = <LibraryRef>{};
+  final needScripts = functionCoverage || !reportLines;
   for (var range in report.ranges!) {
     final scriptRef = report.scripts![range.scriptIndex!];
     final scriptUri = Uri.parse(report.scripts![range.scriptIndex!].uri!);
@@ -206,45 +260,99 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(VmService service,
     // Skip scripts from dart:.
     if (!includeDart && scriptUri.scheme == 'dart') continue;
 
-    if (!scripts.containsKey(scriptRef)) {
-      scripts[scriptRef] =
-          await service.getObject(isolateRef.id!, scriptRef.id!) as Script;
-    }
-    final script = scripts[scriptRef];
-    if (script == null) continue;
+    // Look up the hit maps for this script (shared across isolates).
+    final hits = hitMaps.putIfAbsent(scriptUri, () => HitMap());
 
-    // Look up the hit map for this script (shared across isolates).
-    final hitMap = hitMaps.putIfAbsent(scriptUri, () => <int, int>{});
+    Script? script;
+    if (needScripts) {
+      if (!scripts.containsKey(scriptRef)) {
+        scripts[scriptRef] =
+            await service.getObject(isolateRef.id!, scriptRef.id!) as Script;
+      }
+      script = scripts[scriptRef];
+
+      if (script == null) continue;
+    }
+
+    // If the script's library isn't loaded, load it then look up all its funcs.
+    final libRef = script?.library;
+    if (functionCoverage && libRef != null && !libraries.contains(libRef)) {
+      hits.funcHits ??= <int, int>{};
+      hits.funcNames ??= <int, String>{};
+      libraries.add(libRef);
+      final library =
+          await service.getObject(isolateRef.id!, libRef.id!) as Library;
+      if (library.functions != null) {
+        for (var funcRef in library.functions!) {
+          await _processFunction(service, isolateRef, script!, funcRef, hits);
+        }
+      }
+      if (library.classes != null) {
+        for (var classRef in library.classes!) {
+          final clazz =
+              await service.getObject(isolateRef.id!, classRef.id!) as Class;
+          if (clazz.functions != null) {
+            for (var funcRef in clazz.functions!) {
+              await _processFunction(
+                  service, isolateRef, script!, funcRef, hits);
+            }
+          }
+        }
+      }
+    }
 
     // Collect hits and misses.
     final coverage = range.coverage;
 
     if (coverage == null) continue;
 
-    for (final tokenPos in coverage.hits!) {
-      final line = _getLineFromTokenPos(script, tokenPos);
+    for (final pos in coverage.hits!) {
+      final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
       if (line == null) {
-        print('tokenPos $tokenPos has no line mapping for script $scriptUri');
+        print('tokenPos $pos has no line mapping for script $scriptUri');
         continue;
       }
-      hitMap[line] = hitMap.containsKey(line) ? hitMap[line]! + 1 : 1;
+      _incrementCountForKey(hits.lineHits, line);
+      if (hits.funcNames != null && hits.funcNames!.containsKey(line)) {
+        _incrementCountForKey(hits.funcHits!, line);
+      }
     }
-    for (final tokenPos in coverage.misses!) {
-      final line = _getLineFromTokenPos(script, tokenPos);
+    for (final pos in coverage.misses!) {
+      final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
       if (line == null) {
-        print('tokenPos $tokenPos has no line mapping for script $scriptUri');
+        print('tokenPos $pos has no line mapping for script $scriptUri');
         continue;
       }
-      hitMap.putIfAbsent(line, () => 0);
+      hits.lineHits.putIfAbsent(line, () => 0);
     }
+    hits.funcNames?.forEach((line, funcName) {
+      hits.funcHits?.putIfAbsent(line, () => 0);
+    });
   }
 
   // Output JSON
   final coverage = <Map<String, dynamic>>[];
-  hitMaps.forEach((uri, hitMap) {
-    coverage.add(toScriptCoverageJson(uri, hitMap));
+  hitMaps.forEach((uri, hits) {
+    coverage.add(toScriptCoverageJson(uri, hits));
   });
   return coverage;
+}
+
+void _incrementCountForKey(Map<int, int> counter, int key) {
+  counter[key] = counter.containsKey(key) ? counter[key]! + 1 : 1;
+}
+
+Future<String> _getFuncName(
+    VmService service, IsolateRef isolateRef, Func func) async {
+  if (func.name == null) {
+    return '${func.type}:${func.location!.tokenPos}';
+  }
+  final owner = func.owner;
+  if (owner is ClassRef) {
+    final cls = await service.getObject(isolateRef.id!, owner.id!) as Class;
+    if (cls.name != null) return '${cls.name}.${func.name}';
+  }
+  return func.name!;
 }
 
 class StdoutLog extends Log {

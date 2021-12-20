@@ -1,3 +1,25 @@
+## 1.1.0-dev
+
+* Support function level coverage information, when running tests in the Dart
+   VM. This is not supported for web tests yet.
+* Add flag `--function-coverage` (abbr `-f`) to collect_coverage that collects
+  function coverage information.
+* Add flag `--pretty-print-func` (abbr `-f`) to format_coverage that works
+  similarly to pretty print, but outputs function level coverage, rather than
+  line level.
+* Update `--lcov` (abbr `-l`) in format_coverage to output function level
+  coverage, in addition to line level.
+* BREAKING CHANGE: The signatures of `createHitmap`, `mergeHitmaps`,
+  `parseCoverage`, `toScriptCoverageJson`, and `Formatter.format` have changed
+  from using `Map<int, int>` to represent line coverage to using `HitMap`
+  (which contains both line and function coverage). `collect` also has a new
+  optional bool flag controlling whether function coverage is collected.
+* Ensure `createHitmap` returns a sorted hitmap. This fixes a potential issue with
+  ignore line annotations.
+* Use the `reportLines` flag in `vm_service`'s `getSourceReport` RPC. This
+  typically halves the number of RPCs that the coverage collector needs to run.
+* Require Dart `>=2.14.0`
+
 ## 1.0.4 - 2021-12-20
 
 * Updated dependency on `vm_service` package from `>=6.1.0 <8.0.0`to `>=8.1.0
