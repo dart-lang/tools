@@ -34,7 +34,7 @@ void main() {
     });
 
     for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
-      expect(sampleCoverageData['hits'], isNotNull);
+      expect(sampleCoverageData['hits'], isNotEmpty);
     }
 
     for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
@@ -70,23 +70,40 @@ void main() {
     expect(json, containsPair('type', 'CodeCoverage'));
 
     final coverage = json['coverage'] as List<Map<String, dynamic>>;
+    expect(coverage, isEmpty);
+  });
+
+  test('collect_coverage_api with function coverage', () async {
+    final json = await _collectCoverage(functionCoverage: true);
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
+    expect(json, containsPair('type', 'CodeCoverage'));
+
+    final coverage = json['coverage'] as List;
     expect(coverage, isNotEmpty);
 
-    final testAppCoverage = _getScriptCoverage(coverage, 'test_app.dart')!;
-    var hits = testAppCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 46, 0);
-    _expectHitCount(hits, 50, 0);
+    final sources = coverage.cast<Map>().fold(<String, List<Map>>{},
+        (Map<String, List<Map>> map, value) {
+      final sourceUri = value['source'] as String;
+      map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
+      return map;
+    });
 
-    final isolateCoverage =
-        _getScriptCoverage(coverage, 'test_app_isolate.dart')!;
-    hits = isolateCoverage['hits'] as List<int>;
-    _expectHitCount(hits, 11, 1);
-    _expectHitCount(hits, 18, 1);
+    for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
+      expect(sampleCoverageData['funcNames'], isNotEmpty);
+      expect(sampleCoverageData['funcHits'], isNotEmpty);
+    }
+
+    for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
+      expect(sampleCoverageData['funcNames'], isNotEmpty);
+      expect(sampleCoverageData['funcHits'], isNotEmpty);
+    }
   });
 }
 
 Future<Map<String, dynamic>> _collectCoverage(
-    {Set<String> scopedOutput = const {}, bool isolateIds = false}) async {
+    {Set<String> scopedOutput = const {},
+    bool isolateIds = false,
+    bool functionCoverage = false}) async {
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -94,7 +111,6 @@ Future<Map<String, dynamic>> _collectCoverage(
 
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
-  final isolateIdCompleter = Completer<String>();
   sampleProcess.stdout
       .transform(utf8.decoder)
       .transform(LineSplitter())
@@ -105,40 +121,13 @@ Future<Map<String, dynamic>> _collectCoverage(
         serviceUriCompleter.complete(serviceUri);
       }
     }
-    if (line.contains('isolateId = ')) {
-      isolateIdCompleter.complete(line.split(' = ')[1]);
-    }
   });
 
   final serviceUri = await serviceUriCompleter.future;
-  final isolateId = await isolateIdCompleter.future;
-  final isolateIdSet = isolateIds ? {isolateId} : null;
+  final isolateIdSet = isolateIds ? <String>{} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
-      timeout: timeout, isolateIds: isolateIdSet);
-}
-
-// Returns the first coverage hitmap for the script with with the specified
-// script filename, ignoring leading path.
-Map<String, dynamic>? _getScriptCoverage(
-    List<Map<String, dynamic>> coverage, String filename) {
-  for (var isolateCoverage in coverage) {
-    final script = Uri.parse(isolateCoverage['script']['uri'] as String);
-    if (script.pathSegments.last == filename) {
-      return isolateCoverage;
-    }
-  }
-  return null;
-}
-
-/// Tests that the specified hitmap has the specified hit count for the
-/// specified line.
-void _expectHitCount(List<int> hits, int line, int hitCount) {
-  final hitIndex = hits.indexOf(line);
-  if (hitIndex < 0) {
-    fail('No hit count for line $line');
-  }
-  final actual = hits[hitIndex + 1];
-  expect(actual, equals(hitCount),
-      reason: 'Expected line $line to have $hitCount hits, but found $actual.');
+      timeout: timeout,
+      isolateIds: isolateIdSet,
+      functionCoverage: functionCoverage);
 }
