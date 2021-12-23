@@ -58,9 +58,8 @@ Future<void> main(List<String> arguments) async {
   }
 
   final clock = Stopwatch()..start();
-  final hitmap = await parseCoverage(
+  final hitmap = await HitMap.parseFiles(
     files,
-    env.workers,
     checkIgnoredLines: env.checkIgnore,
     packagesPath: env.packagesPath,
   );
@@ -76,14 +75,12 @@ Future<void> main(List<String> arguments) async {
       : Resolver(packagesPath: env.packagesPath, sdkRoot: env.sdkRoot);
   final loader = Loader();
   if (env.prettyPrint || env.prettyPrintFunc) {
-    output = await PrettyPrintFormatter(resolver, loader,
-            reportOn: env.reportOn, reportFuncs: env.prettyPrintFunc)
-        .format(hitmap);
+    output = await hitmap.prettyPrint(resolver, loader,
+        reportOn: env.reportOn, reportFuncs: env.prettyPrintFunc);
   } else {
     assert(env.lcov);
-    output = await LcovFormatter(resolver,
-            reportOn: env.reportOn, basePath: env.baseDirectory)
-        .format(hitmap);
+    output = hitmap.formatLcov(resolver,
+        reportOn: env.reportOn, basePath: env.baseDirectory);
   }
 
   env.output.write(output);

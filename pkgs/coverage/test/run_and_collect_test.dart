@@ -38,7 +38,7 @@ void main() {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
 
-    final hitMap = await createHitmap(coverage, checkIgnoredLines: true);
+    final hitMap = await HitMap.parseJson(coverage, checkIgnoredLines: true);
     expect(hitMap, isNot(contains(_sampleAppFileUri)));
 
     final actualHitMap = hitMap[_isolateLibFileUri];
