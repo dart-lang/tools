@@ -126,14 +126,20 @@ class Highlighter {
   /// Collect all the source lines from the contexts of all spans in
   /// [highlights], and associates them with the highlights that cover them.
   static List<_Line> _collateLines(List<_Highlight> highlights) {
-    final highlightsByUrl = groupBy<_Highlight, Uri?>(
-        highlights, (highlight) => highlight.span.sourceUrl);
+    // Assign spans without URLs opaque Objects as keys. Each such Object will
+    // be different, but they can then be used later on to determine which lines
+    // came from the same span even if they'd all otherwise have `null` URLs.
+    final highlightsByUrl = groupBy<_Highlight, Object>(
+        highlights, (highlight) => highlight.span.sourceUrl ?? Object());
     for (var list in highlightsByUrl.values) {
       list.sort((highlight1, highlight2) =>
           highlight1.span.compareTo(highlight2.span));
     }
 
-    return highlightsByUrl.values.expand((highlightsForFile) {
+    return highlightsByUrl.entries.expand((entry) {
+      final url = entry.key;
+      final highlightsForFile = entry.value;
+
       // First, create a list of all the lines in the current file that we have
       // context for along with their line numbers.
       final lines = <_Line>[];
@@ -147,7 +153,6 @@ class Highlighter {
         final linesBeforeSpan =
             '\n'.allMatches(context.substring(0, lineStart)).length;
 
-        final url = highlight.span.sourceUrl;
         var lineNumber = highlight.span.start.line - linesBeforeSpan;
         for (var line in context.split('\n')) {
           // Only add a line if it hasn't already been added for a previous span.
@@ -162,14 +167,12 @@ class Highlighter {
       final activeHighlights = <_Highlight>[];
       var highlightIndex = 0;
       for (var line in lines) {
-        activeHighlights.removeWhere((highlight) =>
-            highlight.span.sourceUrl != line.url ||
-            highlight.span.end.line < line.number);
+        activeHighlights
+            .removeWhere((highlight) => highlight.span.end.line < line.number);
 
         final oldHighlightLength = activeHighlights.length;
         for (var highlight in highlightsForFile.skip(highlightIndex)) {
           if (highlight.span.start.line > line.number) break;
-          if (highlight.span.sourceUrl != line.url) break;
           activeHighlights.add(highlight);
         }
         highlightIndex += activeHighlights.length - oldHighlightLength;
@@ -258,9 +261,9 @@ class Highlighter {
   }
 
   /// Writes the beginning of the file highlight for the file with the given
-  /// [url].
-  void _writeFileStart(Uri? url) {
-    if (!_multipleFiles || url == null) {
+  /// [url] (or opaque object if it comes from a span with a null URL).
+  void _writeFileStart(Object url) {
+    if (!_multipleFiles || url is! Uri) {
       _writeSidebar(end: glyph.downEnd);
     } else {
       _writeSidebar(end: glyph.topLeftCorner);
@@ -409,7 +412,8 @@ class Highlighter {
   /// of [character].
   void _writeUnderline(_Line line, SourceSpan span, String character) {
     assert(!isMultiline(span));
-    assert(line.text.contains(span.text));
+    assert(line.text.contains(span.text),
+        '"${line.text}" should contain "${span.text}"');
 
     var startColumn = span.start.column;
     var endColumn = span.end.column;
@@ -664,7 +668,10 @@ class _Line {
   final int number;
 
   /// The URL of the source file in which this line appears.
-  final Uri? url;
+  ///
+  /// For lines created from spans without an explicit URL, this is an opaque
+  /// object that differs between lines that come from different spans.
+  final Object url;
 
   /// All highlights that cover any portion of this line, in source span order.
   ///

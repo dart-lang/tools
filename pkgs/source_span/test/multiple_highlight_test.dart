@@ -311,4 +311,21 @@ quibble bibble boop
   '"""));
     });
   });
+
+  test('highlights multiple null URLs as separate files', () {
+    final span1 = SourceSpan(SourceLocation(1, sourceUrl: null),
+        SourceLocation(4, sourceUrl: null), 'foo');
+    final span2 = SourceSpan(SourceLocation(1, sourceUrl: null),
+        SourceLocation(4, sourceUrl: null), 'bar');
+
+    expect(span1.highlightMultiple('one', {span2: 'two'}), equals("""
+  ,
+1 | foo
+  | ^^^ one
+  '
+  ,
+1 | bar
+  | === two
+  '"""));
+  });
 }
