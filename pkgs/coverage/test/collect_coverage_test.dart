@@ -73,18 +73,50 @@ void main() {
         ]
       }
     ];
+    // ignore: deprecated_member_use_from_same_package
     final hitMap = await createHitmap(
+      coverage.cast<Map<String, dynamic>>(),
+    );
+    final expectedHits = {15: 1, 16: 2, 17: 2, 45: 1, 46: 1, 49: 0, 50: 0};
+    expect(hitMap['foo'], expectedHits);
+  });
+
+  test('HitMap.parseJson returns a sorted hitmap', () async {
+    final coverage = [
+      {
+        'source': 'foo',
+        'script': '{type: @Script, fixedId: true, '
+            'id: bar.dart, uri: bar.dart, _kind: library}',
+        'hits': [
+          45,
+          1,
+          46,
+          1,
+          49,
+          0,
+          50,
+          0,
+          15,
+          1,
+          16,
+          2,
+          17,
+          2,
+        ]
+      }
+    ];
+    final hitMap = await HitMap.parseJson(
       coverage.cast<Map<String, dynamic>>(),
     );
     final expectedHits = {15: 1, 16: 2, 17: 2, 45: 1, 46: 1, 49: 0, 50: 0};
     expect(hitMap['foo']?.lineHits, expectedHits);
   });
 
-  test('createHitmap', () async {
+  test('HitMap.parseJson', () async {
     final resultString = await _collectCoverage(true);
     final jsonResult = json.decode(resultString) as Map<String, dynamic>;
     final coverage = jsonResult['coverage'] as List;
-    final hitMap = await createHitmap(
+    final hitMap = await HitMap.parseJson(
       coverage.cast<Map<String, dynamic>>(),
     );
     expect(hitMap, contains(_sampleAppFileUri));
@@ -158,6 +190,7 @@ void main() {
       final coverageResults = await _getCoverageResult();
       await outputFile.writeAsString(coverageResults, flush: true);
 
+      // ignore: deprecated_member_use_from_same_package
       final parsedResult = await parseCoverage([outputFile], 1);
 
       expect(parsedResult, contains(_sampleAppFileUri));
@@ -167,7 +200,7 @@ void main() {
     }
   });
 
-  test('parseCoverage with packagesPath and checkIgnoredLines', () async {
+  test('HitMap.parseFiles', () async {
     final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
 
     try {
@@ -176,7 +209,25 @@ void main() {
       final coverageResults = await _getCoverageResult();
       await outputFile.writeAsString(coverageResults, flush: true);
 
-      final parsedResult = await parseCoverage([outputFile], 1,
+      final parsedResult = await HitMap.parseFiles([outputFile]);
+
+      expect(parsedResult, contains(_sampleAppFileUri));
+      expect(parsedResult, contains(_isolateLibFileUri));
+    } finally {
+      await tempDir.delete(recursive: true);
+    }
+  });
+
+  test('HitMap.parseFiles with packagesPath and checkIgnoredLines', () async {
+    final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
+
+    try {
+      final outputFile = File(p.join(tempDir.path, 'coverage.json'));
+
+      final coverageResults = await _getCoverageResult();
+      await outputFile.writeAsString(coverageResults, flush: true);
+
+      final parsedResult = await HitMap.parseFiles([outputFile],
           packagesPath: '.packages', checkIgnoredLines: true);
 
       // This file has ignore:coverage-file.
@@ -185,6 +236,53 @@ void main() {
     } finally {
       await tempDir.delete(recursive: true);
     }
+  });
+
+  test('mergeHitmaps', () {
+    final resultMap = <String, Map<int, int>>{
+      "foo.dart": {10: 2, 20: 0},
+      "bar.dart": {10: 3, 20: 1, 30: 0},
+    };
+    final newMap = <String, Map<int, int>>{
+      "bar.dart": {10: 2, 20: 0, 40: 3},
+      "baz.dart": {10: 1, 20: 0, 30: 1},
+    };
+    // ignore: deprecated_member_use_from_same_package
+    mergeHitmaps(newMap, resultMap);
+    expect(resultMap, <String, Map<int, int>>{
+      "foo.dart": {10: 2, 20: 0},
+      "bar.dart": {10: 5, 20: 1, 30: 0, 40: 3},
+      "baz.dart": {10: 1, 20: 0, 30: 1},
+    });
+  });
+
+  test('FileHitMaps.merge', () {
+    final resultMap = <String, HitMap>{
+      "foo.dart":
+          HitMap({10: 2, 20: 0}, {15: 0, 25: 1}, {15: "bobble", 25: "cobble"}),
+      "bar.dart": HitMap(
+          {10: 3, 20: 1, 30: 0}, {15: 5, 25: 0}, {15: "gobble", 25: "wobble"}),
+    };
+    final newMap = <String, HitMap>{
+      "bar.dart": HitMap(
+          {10: 2, 20: 0, 40: 3}, {15: 1, 35: 4}, {15: "gobble", 35: "dobble"}),
+      "baz.dart": HitMap(
+          {10: 1, 20: 0, 30: 1}, {15: 0, 25: 2}, {15: "lobble", 25: "zobble"}),
+    };
+    resultMap.merge(newMap);
+    expect(resultMap["foo.dart"]?.lineHits, <int, int>{10: 2, 20: 0});
+    expect(resultMap["foo.dart"]?.funcHits, <int, int>{15: 0, 25: 1});
+    expect(resultMap["foo.dart"]?.funcNames,
+        <int, String>{15: "bobble", 25: "cobble"});
+    expect(resultMap["bar.dart"]?.lineHits,
+        <int, int>{10: 5, 20: 1, 30: 0, 40: 3});
+    expect(resultMap["bar.dart"]?.funcHits, <int, int>{15: 6, 25: 0, 35: 4});
+    expect(resultMap["bar.dart"]?.funcNames,
+        <int, String>{15: "gobble", 25: "wobble", 35: "dobble"});
+    expect(resultMap["baz.dart"]?.lineHits, <int, int>{10: 1, 20: 0, 30: 1});
+    expect(resultMap["baz.dart"]?.funcHits, <int, int>{15: 0, 25: 2});
+    expect(resultMap["baz.dart"]?.funcNames,
+        <int, String>{15: "lobble", 25: "zobble"});
   });
 }
 

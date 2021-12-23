@@ -9,11 +9,15 @@
   line level.
 * Update `--lcov` (abbr `-l`) in format_coverage to output function level
   coverage, in addition to line level.
-* BREAKING CHANGE: The signatures of `createHitmap`, `mergeHitmaps`,
-  `parseCoverage`, `toScriptCoverageJson`, and `Formatter.format` have changed
-  from using `Map<int, int>` to represent line coverage to using `HitMap`
-  (which contains both line and function coverage). `collect` also has a new
-  optional bool flag controlling whether function coverage is collected.
+* Add an optional bool flag to `collect` that controls whether function coverage
+  is collected.
+* Added `HitMap.parseJson`, `FileHitMaps.merge`, `HitMap.parseFiles`,
+  `HitMap.toJson`, `FileHitMapsFormatter.formatLcov`, and
+  `FileHitMapsFormatter.prettyPrint` that switch from using `Map<int, int>` to
+  represent line coverage to using `HitMap` (which contains both line and
+  function coverage). Document the old versions of these functions as
+  deprecated. We will delete the old functions when we update to coverage
+  version 2.0.0.
 * Ensure `createHitmap` returns a sorted hitmap. This fixes a potential issue with
   ignore line annotations.
 * Use the `reportLines` flag in `vm_service`'s `getSourceReport` RPC. This
