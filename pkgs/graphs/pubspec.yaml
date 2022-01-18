@@ -16,4 +16,4 @@ dev_dependencies:
   # For examples
   path: ^1.8.0
   pool: ^1.5.0
-  analyzer: ^2.0.0
+  analyzer: '>=2.0.0 <4.0.0'
