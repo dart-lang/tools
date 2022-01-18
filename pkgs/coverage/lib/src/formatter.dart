@@ -124,7 +124,8 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
   /// Converts the given hitmap to a pretty-print format.
   ///
   /// If [reportOn] is provided, coverage report output is limited to files
-  /// prefixed with one of the paths included.
+  /// prefixed with one of the paths included. If [reportFuncs] is provided,
+  /// only function coverage information will be shown.
   Future<String> prettyPrint(
     Resolver resolver,
     Loader loader, {
