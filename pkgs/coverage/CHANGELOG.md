@@ -1,4 +1,4 @@
-## 1.1.0-dev
+## 1.1.0 - 2022-1-18
 
 * Support function level coverage information, when running tests in the Dart
    VM. This is not supported for web tests yet.
