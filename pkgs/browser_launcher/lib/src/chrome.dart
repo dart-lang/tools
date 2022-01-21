@@ -65,14 +65,25 @@ class Chrome {
   /// Starts Chrome with the given arguments and a specific port.
   ///
   /// Each url in [urls] will be loaded in a separate tab.
+  ///
+  /// If [userDataDir] is `null`, a new temp directory will be
+  /// passed to chrome as a user data directory. Chrome will
+  /// start without sign in and with extensions disabled.
+  ///
+  /// If [userDataDir] is not `null`, it will be passed to chrome
+  /// as a user data directory. Chrome will start signed into
+  /// the default profile with extensions enabled if [signIn]
+  /// is also true.
   static Future<Chrome> startWithDebugPort(
     List<String> urls, {
     int debugPort = 0,
     bool headless = false,
     String? userDataDir,
+    bool signIn = false,
   }) async {
     Directory dataDir;
     if (userDataDir == null) {
+      signIn = false;
       dataDir = Directory.systemTemp.createTempSync();
     } else {
       dataDir = Directory(userDataDir);
@@ -87,9 +98,9 @@ class Chrome {
       '--disable-background-timer-throttling',
       // Since we are using a temp profile, disable features that slow the
       // Chrome launch.
-      '--disable-extensions',
+      if (!signIn) '--disable-extensions',
       '--disable-popup-blocking',
-      '--bwsi',
+      if (!signIn) '--bwsi',
       '--no-first-run',
       '--no-default-browser-check',
       '--disable-default-apps',
