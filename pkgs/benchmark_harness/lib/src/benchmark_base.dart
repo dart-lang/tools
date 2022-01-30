@@ -35,7 +35,7 @@ class BenchmarkBase {
 
   // Measures the score for this benchmark by executing it repeatedly until
   // time minimum has been reached.
-  static double measureFor(Function f, int minimumMillis) {
+  static double measureFor(void Function() f, int minimumMillis) {
     var minimumMicros = minimumMillis * 1000;
     var iter = 0;
     var watch = Stopwatch();

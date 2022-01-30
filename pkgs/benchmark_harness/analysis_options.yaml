@@ -1,14 +1,14 @@
 include: package:lints/recommended.yaml
 
 analyzer:
-  strong-mode:
-    implicit-casts: false
-  enable-experiment:
-    - non-nullable
+  language:
+    strict-inference: true
+    strict-casts: true
 
 linter:
   rules:
     - always_declare_return_types
+    - avoid_dynamic_calls
     - avoid_returning_null
     - avoid_returning_null_for_future
     - avoid_unused_constructor_parameters
