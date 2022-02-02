@@ -14,7 +14,7 @@ Tools
 
 #### Install coverage
 
-    pub global activate coverage
+    dart pub global activate coverage
 
 Consider adding the `pub global run` executables directory to your path.
 See [Running a script from your PATH](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path)
