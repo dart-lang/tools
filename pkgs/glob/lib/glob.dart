@@ -18,7 +18,7 @@ final _quoteRegExp = RegExp(r'[*{[?\\}\],\-()]');
 ///
 /// A glob matches an entire string as a path. Although the glob pattern uses
 /// POSIX syntax, it can match against POSIX, Windows, or URL paths. The format
-/// it expects paths to use is based on the `context` parameter to [new Glob];
+/// it expects paths to use is based on the `context` parameter to [Glob.new];
 /// it defaults to the current system's syntax.
 ///
 /// Paths are normalized before being matched against a glob, so for example the

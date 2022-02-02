@@ -1,6 +1,7 @@
 ## 2.0.2
 
 * Drop package:pedantic dependency, use package:lints instead.
+* Update SDK lower bound to `2.15.0`
 
 ## 2.0.1
 
