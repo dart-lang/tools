@@ -38,20 +38,19 @@ Future<dynamic> retry(Future Function() f, Duration interval,
   }, duration: timeout);
 }
 
-/// Scrapes and returns the observatory URI from a string, or null if not found.
+/// Scrapes and returns the Dart VM service URI from a string, or null if not
+/// found.
 ///
 /// Potentially useful as a means to extract it from log statements.
-Uri? extractObservatoryUri(String str) {
-  const kObservatoryListening = 'Observatory listening on ';
-  final msgPos = str.indexOf(kObservatoryListening);
-  if (msgPos == -1) return null;
-  final startPos = msgPos + kObservatoryListening.length;
-  final endPos = str.indexOf(RegExp(r'(\s|$)'), startPos);
-  try {
-    return Uri.parse(str.substring(startPos, endPos));
-  } on FormatException {
-    return null;
+Uri? extractVMServiceUri(String str) {
+  final listeningMessageRegExp = RegExp(
+    r'(?:Observatory|Dart VM Service) listening on ((http|//)[a-zA-Z0-9:/=_\-\.\[\]]+)',
+  );
+  final match = listeningMessageRegExp.firstMatch(str);
+  if (match != null) {
+    return Uri.parse(match[1]!);
   }
+  return null;
 }
 
 /// Returns an open port by creating a temporary Socket

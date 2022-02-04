@@ -1,3 +1,7 @@
+## 1.1.1-dev
+
+* Add support for scraping the service URI from the new Dart VM service message.
+
 ## 1.1.0 - 2022-1-18
 
 * Support function level coverage information, when running tests in the Dart
