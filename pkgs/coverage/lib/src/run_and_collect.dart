@@ -35,7 +35,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
       .transform(utf8.decoder)
       .transform(const LineSplitter())
       .listen((line) {
-    final uri = extractObservatoryUri(line);
+    final uri = extractVMServiceUri(line);
     if (uri != null) {
       serviceUriCompleter.complete(uri);
     }
