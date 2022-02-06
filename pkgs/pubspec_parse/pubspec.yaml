@@ -11,7 +11,7 @@ environment:
 dependencies:
   checked_yaml: ^2.0.1
   collection: ^1.15.0
-  json_annotation: ^4.3.0
+  json_annotation: ^4.4.0
   pub_semver: ^2.0.0
   yaml: ^3.0.0
 
