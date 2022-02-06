@@ -76,13 +76,16 @@ void main() {
   });
 
   test('environment values can be null', () {
-    final value = parse({
-      'name': 'sample',
-      'environment': {
-        'sdk': '>=2.7.0 <3.0.0',
-        'bob': null,
-      }
-    });
+    final value = parse(
+      {
+        'name': 'sample',
+        'environment': {
+          'sdk': '>=2.7.0 <3.0.0',
+          'bob': null,
+        }
+      },
+      skipTryPub: true,
+    );
     expect(value.name, 'sample');
     expect(value.environment, hasLength(2));
     expect(value.environment, containsPair('bob', isNull));
