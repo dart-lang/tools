@@ -2,7 +2,7 @@
 [![pub package](https://img.shields.io/pub/v/package_config.svg)](https://pub.dev/packages/package_config)
 
 Support for working with **Package Configuration** files as described
-in the Package Configuration v2 [design document](https://github.com/dart-lang/language/blob/master/accepted/future-releases/language-versioning/package-config-file-v2.md).
+in the Package Configuration v2 [design document](https://github.com/dart-lang/language/blob/master/accepted/2.8/language-versioning/package-config-file-v2.md).
 
 A Dart package configuration file is used to resolve Dart package names (e.g.
 `foobar`) to Dart files containing the source code for that package (e.g.
