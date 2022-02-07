@@ -130,7 +130,8 @@ void main() {
     });
 
     test('handles new Dart VM service message format', () {
-      const msg = 'Dart VM Service listening on http://foo.bar:9999/cG90YXRv/';
+      const msg =
+          'The Dart VM Service is listening on http://foo.bar:9999/cG90YXRv/';
       expect(
           extractVMServiceUri(msg), Uri.parse('http://foo.bar:9999/cG90YXRv/'));
     });
