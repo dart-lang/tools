@@ -18,11 +18,11 @@ import 'package:pool/pool.dart';
 /// asynchronously.
 Future<void> main() async {
   // Limits calls to [findImports].
-  var _pool = Pool(10);
+  var pool = Pool(10);
   var allImports = await crawlAsync<Uri, Source>(
           [Uri.parse('package:graphs/graphs.dart')],
           read,
-          (from, source) => _pool.withResource(() => findImports(from, source)))
+          (from, source) => pool.withResource(() => findImports(from, source)))
       .toList();
   print(allImports.map((s) => s.uri).toList());
 }
