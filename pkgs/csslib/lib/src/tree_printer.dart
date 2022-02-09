@@ -24,7 +24,7 @@ class _TreePrinter extends Visitor {
   @override
   void visitTree(StyleSheet tree) => visitStylesheet(tree);
 
-  void heading(String heading, node) {
+  void heading(String heading, TreeNode node) {
     if (useSpan) {
       output.heading(heading, node.span);
     } else {
