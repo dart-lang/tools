@@ -1,4 +1,8 @@
-# 2.1.1-dev
+# 2.2.0
+
+* Add a `secondarySort` parameter to the `topologicalSort()` function which
+  applies an additional lexical sort where that doesn't break the topological
+  sort.
 
 # 2.1.0
 

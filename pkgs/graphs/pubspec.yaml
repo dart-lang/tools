@@ -1,5 +1,5 @@
 name: graphs
-version: 2.1.1-dev
+version: 2.2.0
 description: Graph algorithms that operate on graphs in any representation
 repository: https://github.com/dart-lang/graphs
 
