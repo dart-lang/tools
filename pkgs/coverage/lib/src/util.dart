@@ -44,7 +44,7 @@ Future<dynamic> retry(Future Function() f, Duration interval,
 /// Potentially useful as a means to extract it from log statements.
 Uri? extractVMServiceUri(String str) {
   final listeningMessageRegExp = RegExp(
-    r'(?:Observatory|The Dart VM Service is) listening on ((http|//)[a-zA-Z0-9:/=_\-\.\[\]]+)',
+    r'(?:Observatory|The Dart VM service is) listening on ((http|//)[a-zA-Z0-9:/=_\-\.\[\]]+)',
   );
   final match = listeningMessageRegExp.firstMatch(str);
   if (match != null) {
