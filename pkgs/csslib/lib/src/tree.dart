@@ -180,6 +180,8 @@ abstract class SimpleSelector extends TreeNode {
 
   SimpleSelector(this._name, SourceSpan? span) : super(span);
 
+  // TOOD(srawlins): Figure this one out.
+  // ignore: avoid_dynamic_calls
   String get name => _name.name as String;
 
   bool get isWildcard => _name is Wildcard;
@@ -214,7 +216,7 @@ class NamespaceSelector extends SimpleSelector {
       ? '*'
       : _namespace == null
           ? ''
-          : _namespace.name as String;
+          : (_namespace as Identifier).name;
 
   bool get isNamespaceWildcard => _namespace is Wildcard;
 

@@ -518,8 +518,9 @@ class TokenKind {
     return matchList(MEDIA_OPERATORS, 'type', text, offset, length);
   }
 
-  static String? idToValue(var identList, int tokenId) {
+  static String? idToValue(Iterable<Object?> identList, int tokenId) {
     for (var entry in identList) {
+      entry as Map<String, Object?>;
       if (tokenId == entry['type']) {
         return entry['value'] as String?;
       }

@@ -50,7 +50,7 @@ class TreeOutput {
     buf.write('\n');
   }
 
-  void heading(String name, [span]) {
+  void heading(String name, [SourceSpan? span]) {
     write(name);
     if (span != null) {
       buf.write('  (${span.message('')})');

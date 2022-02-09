@@ -2255,7 +2255,8 @@ class _Parser {
           _warning('Expected hex number', _makeSpan(start));
         }
         // Construct the bad hex value with a #<space>number.
-        return _parseHex(' ${processTerm().text}', _makeSpan(start));
+        return _parseHex(
+            ' ${(processTerm() as LiteralTerm).text}', _makeSpan(start));
       case TokenKind.INTEGER:
         t = _next();
         value = int.parse('$unary${t.text}');
@@ -2292,13 +2293,14 @@ class _Parser {
         _next();
 
         var term = processTerm();
-        if (!(term is NumberTerm)) {
+        if (term is! NumberTerm) {
           _error('Expecting a positive number', _makeSpan(start));
+          throw StateError('Expecting a positive number');
         }
 
         _eat(TokenKind.RBRACK);
 
-        return ItemTerm(term.value, term.text as String, _makeSpan(start));
+        return ItemTerm(term.value, term.text, _makeSpan(start));
       case TokenKind.IDENTIFIER:
         var nameValue = identifier(); // Snarf up the ident we'll remap, maybe.
 
