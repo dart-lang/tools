@@ -2292,10 +2292,9 @@ class _Parser {
       case TokenKind.LBRACK:
         _next();
 
-        var term = processTerm();
+        var term = processTerm() as LiteralTerm;
         if (term is! NumberTerm) {
           _error('Expecting a positive number', _makeSpan(start));
-          throw StateError('Expecting a positive number');
         }
 
         _eat(TokenKind.RBRACK);
