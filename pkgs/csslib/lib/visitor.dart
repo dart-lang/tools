@@ -344,11 +344,12 @@ class Visitor implements VisitorBase {
   }
 
   @override
-  dynamic visitSimpleSelector(SimpleSelector node) => node._name.visit(this);
+  dynamic visitSimpleSelector(SimpleSelector node) =>
+      (node._name as TreeNode).visit(this);
 
   @override
   dynamic visitNamespaceSelector(NamespaceSelector node) {
-    if (node._namespace != null) node._namespace.visit(this);
+    if (node._namespace != null) (node._namespace as TreeNode).visit(this);
     if (node.nameAsSimpleSelector != null) {
       node.nameAsSimpleSelector!.visit(this);
     }

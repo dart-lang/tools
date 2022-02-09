@@ -622,13 +622,16 @@ class CallMixin extends Visitor {
   /// Rip apart var def with multiple parameters.
   List<List<Expression>> _varDefsAsCallArgs(var callArg) {
     var defArgs = <List<Expression>>[];
-    if (callArg is List && callArg[0] is VarUsage) {
-      var varDef = varDefs![callArg[0].name];
-      var expressions = (varDef!.expression as Expressions).expressions;
-      assert(expressions.length > 1);
-      for (var expr in expressions) {
-        if (expr is! OperatorComma) {
-          defArgs.add([expr]);
+    if (callArg is List) {
+      var firstCallArg = callArg[0];
+      if (firstCallArg is VarUsage) {
+        var varDef = varDefs![firstCallArg.name];
+        var expressions = (varDef!.expression as Expressions).expressions;
+        assert(expressions.length > 1);
+        for (var expr in expressions) {
+          if (expr is! OperatorComma) {
+            defArgs.add([expr]);
+          }
         }
       }
     }
