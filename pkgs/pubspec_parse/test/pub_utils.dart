@@ -14,8 +14,8 @@ Future<ProcResult> tryPub(String content) async {
   await d.file('pubspec.yaml', content).create();
 
   final proc = await TestProcess.start(
-    _pubPath,
-    ['get', '--offline'],
+    Platform.resolvedExecutable,
+    ['pub', 'get', '--offline'],
     workingDirectory: d.sandbox,
     // Don't pass current process VM options to child
     environment: Map.from(Platform.environment)..remove('DART_VM_OPTIONS'),
@@ -86,15 +86,3 @@ class ProcLine {
   @override
   String toString() => '${isError ? 'err' : 'out'}  $line';
 }
-
-/// The path to the root directory of the SDK.
-final String _sdkDir = () {
-  // The Dart executable is in "/path/to/sdk/bin/dart", so two levels up is
-  // "/path/to/sdk".
-  final aboveExecutable = p.dirname(p.dirname(Platform.resolvedExecutable));
-  assert(FileSystemEntity.isFileSync(p.join(aboveExecutable, 'version')));
-  return aboveExecutable;
-}();
-
-final String _pubPath =
-    p.join(_sdkDir, 'bin', Platform.isWindows ? 'pub.bat' : 'pub');
