@@ -7,6 +7,7 @@ analyzer:
 linter:
   rules:
     - always_declare_return_types
+    - avoid_dynamic_calls
     - avoid_unused_constructor_parameters
     - cancel_subscriptions
     - directives_ordering

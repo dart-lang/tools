@@ -3,6 +3,7 @@
 - Add optional `signIn` argument to `startWithDebugPort`.
   To be used together with `user-data-dir` to start a chrome
   window signed into the default profile with extensions enabled.
+- Enable the `avoid_dynamic_calls` lint.
 
 ## 1.0.0
 

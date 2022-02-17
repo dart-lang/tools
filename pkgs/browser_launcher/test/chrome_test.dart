@@ -138,7 +138,8 @@ Future<String> _evaluateExpression(WipPage page, String expression) async {
       'Runtime.evaluate',
       params: {'expression': expression},
     );
-    var value = wipResponse.json['result']['result']['value'];
+    var response = wipResponse.json['result'] as Map<String, dynamic>;
+    var value = (response['result'] as Map<String, dynamic>)['value'];
     result = (value != null && value is String) ? value : '';
   }
   return result;
