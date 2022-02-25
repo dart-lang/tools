@@ -61,3 +61,30 @@ collected. If `--sdk-root` is set, Dart SDK coverage will also be output.
 - `// coverage:ignore-line` to ignore one line.
 - `// coverage:ignore-start` and `// coverage:ignore-end` to ignore range of lines inclusive.
 - `// coverage:ignore-file` to ignore the whole file.
+
+#### Function and branch coverage
+
+To gather function level coverage information, pass `--function-coverage` to
+collect_coverage:
+
+```
+dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN script.dart
+pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage
+```
+
+To gather branch level coverage information, pass `--branch-coverage` to *both*
+collect_coverage and the Dart command you're gathering coverage from:
+
+```
+dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN --branch-coverage script.dart
+pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --branch-coverage
+```
+
+Branch coverage requires Dart VM 2.17.0, with service API v3.56. Function,
+branch, and line coverage can all be gathered at the same time, by combining
+those flags:
+
+```
+dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN --branch-coverage script.dart
+pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage --branch-coverage
+```

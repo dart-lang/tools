@@ -71,5 +71,6 @@ void main() {
     expect(actualLineHits, expectedLineHits);
     expect(actualHitMap?.funcHits, isNull);
     expect(actualHitMap?.funcNames, isNull);
+    expect(actualHitMap?.branchHits, isNull);
   });
 }

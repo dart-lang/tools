@@ -11,8 +11,12 @@ import 'package:coverage/src/util.dart';
 /// Contains line and function hit information for a single script.
 class HitMap {
   /// Constructs a HitMap.
-  HitMap([Map<int, int>? lineHits, this.funcHits, this.funcNames])
-      : lineHits = lineHits ?? {};
+  HitMap([
+    Map<int, int>? lineHits,
+    this.funcHits,
+    this.funcNames,
+    this.branchHits,
+  ]) : lineHits = lineHits ?? {};
 
   /// Map from line to hit count for that line.
   final Map<int, int> lineHits;
@@ -24,6 +28,10 @@ class HitMap {
   /// Map from the first line of each function, to the function name. Null if
   /// function coverage info was not gathered.
   Map<int, String>? funcNames;
+
+  /// Map from branch line, to the hit count for that branch. Null if branch
+  /// coverage info was not gathered.
+  Map<int, int>? branchHits;
 
   /// Creates a single hitmap from a raw json object.
   ///
@@ -139,6 +147,10 @@ class HitMap {
               funcNames[i + 1] as String;
         }
       }
+      if (e.containsKey('branchHits')) {
+        sourceHitMap.branchHits ??= <int, int>{};
+        fillHitMap(e['branchHits'] as List, sourceHitMap.branchHits!);
+      }
     }
     return globalHitMap;
   }
@@ -182,6 +194,10 @@ extension FileHitMaps on Map<String, HitMap> {
           v.funcNames?.forEach((line, name) {
             fileResult.funcNames![line] = name;
           });
+        }
+        if (v.branchHits != null) {
+          fileResult.branchHits ??= <int, int>{};
+          _mergeHitCounts(v.branchHits!, fileResult.branchHits!);
         }
       } else {
         this[file] = v;
@@ -299,6 +315,9 @@ Map<String, dynamic> hitmapToJson(HitMap hitmap, Uri scriptUri) {
   }
   if (hitmap.funcNames != null) {
     json['funcNames'] = _flattenMap<dynamic>(hitmap.funcNames!);
+  }
+  if (hitmap.branchHits != null) {
+    json['branchHits'] = _flattenMap<int>(hitmap.branchHits!);
   }
   return json;
 }

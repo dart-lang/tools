@@ -84,6 +84,7 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       final lineHits = v.lineHits;
       final funcHits = v.funcHits;
       final funcNames = v.funcNames;
+      final branchHits = v.branchHits;
       var source = resolver.resolve(entry.key);
       if (source == null) {
         continue;
@@ -115,6 +116,11 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       }
       buf.write('LF:${lineHits.length}\n');
       buf.write('LH:${lineHits.values.where((v) => v > 0).length}\n');
+      if (branchHits != null) {
+        for (final k in branchHits.keys.toList()..sort()) {
+          buf.write('BRDA:$k,0,0,${branchHits[k]}\n');
+        }
+      }
       buf.write('end_of_record\n');
     }
 
@@ -131,6 +137,7 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     Loader loader, {
     List<String>? reportOn,
     bool reportFuncs = false,
+    bool reportBranches = false,
   }) async {
     final pathFilter = _getPathFilter(reportOn);
     final buf = StringBuffer();
@@ -141,7 +148,16 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
             'missing function coverage information. Did you run '
             'collect_coverage with the --function-coverage flag?';
       }
-      final hits = reportFuncs ? v.funcHits! : v.lineHits;
+      if (reportBranches && v.branchHits == null) {
+        throw 'Branch coverage formatting was requested, but the hit map is '
+            'missing branch coverage information. Did you run '
+            'collect_coverage with the --branch-coverage flag?';
+      }
+      final hits = reportFuncs
+          ? v.funcHits!
+          : reportBranches
+              ? v.branchHits!
+              : v.lineHits;
       final source = resolver.resolve(entry.key);
       if (source == null) {
         continue;
