@@ -8,6 +8,7 @@ part of '../visitor.dart';
 class CssPrinter extends Visitor {
   StringBuffer _buff = StringBuffer();
   bool prettyPrint = true;
+  bool _isInKeyframes = false;
 
   /// Walk the [tree] Stylesheet. [pretty] if true emits line breaks, extra
   /// spaces, friendly property values, etc., if false emits compacted output.
@@ -217,9 +218,11 @@ class CssPrinter extends Visitor {
     emit('$_newLine${node.keyFrameName} ');
     node.name!.visit(this);
     emit('$_sp{$_newLine');
+    _isInKeyframes = true;
     for (final block in node._blocks) {
       block.visit(this);
     }
+    _isInKeyframes = false;
     emit('}');
   }
 
@@ -623,6 +626,11 @@ class CssPrinter extends Visitor {
         // expressions and can't be collapsed.
         var previous = expressions[i - 1];
         if (previous is OperatorComma || previous is OperatorSlash) {
+          emit(_sp);
+        } else if (previous is PercentageTerm &&
+            expression is PercentageTerm &&
+            _isInKeyframes) {
+          emit(',');
           emit(_sp);
         } else {
           emit(' ');

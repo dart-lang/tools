@@ -1,5 +1,5 @@
 name: csslib
-version: 0.17.2
+version: 0.17.3-dev
 
 description: A library for parsing and analyzing CSS (Cascading Style Sheets)
 repository: https://github.com/dart-lang/csslib
