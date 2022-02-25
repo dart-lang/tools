@@ -98,12 +98,35 @@ void main() {
       expect(sampleCoverageData['funcHits'], isNotEmpty);
     }
   });
+
+  test('collect_coverage_api with branch coverage', () async {
+    final json = await _collectCoverage(branchCoverage: true);
+    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
+    expect(json, containsPair('type', 'CodeCoverage'));
+
+    final coverage = json['coverage'] as List;
+    expect(coverage, isNotEmpty);
+
+    final sources = coverage.cast<Map>().fold(<String, List<Map>>{},
+        (Map<String, List<Map>> map, value) {
+      final sourceUri = value['source'] as String;
+      map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
+      return map;
+    });
+
+    // Dart VM versions before 2.17 don't support branch coverage.
+    expect(sources[_sampleAppFileUri],
+        everyElement(containsPair('branchHits', isNotEmpty)));
+    expect(sources[_isolateLibFileUri],
+        everyElement(containsPair('branchHits', isNotEmpty)));
+  }, skip: !platformVersionCheck(2, 17));
 }
 
 Future<Map<String, dynamic>> _collectCoverage(
     {Set<String> scopedOutput = const {},
     bool isolateIds = false,
-    bool functionCoverage = false}) async {
+    bool functionCoverage = false,
+    bool branchCoverage = false}) async {
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -129,5 +152,6 @@ Future<Map<String, dynamic>> _collectCoverage(
   return collect(serviceUri, true, true, false, scopedOutput,
       timeout: timeout,
       isolateIds: isolateIdSet,
-      functionCoverage: functionCoverage);
+      functionCoverage: functionCoverage,
+      branchCoverage: branchCoverage);
 }

@@ -21,7 +21,9 @@ Future<void> main(List<String> arguments) async {
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
         options.waitPaused, options.includeDart, options.scopedOutput,
-        timeout: options.timeout, functionCoverage: options.functionCoverage);
+        timeout: options.timeout,
+        functionCoverage: options.functionCoverage,
+        branchCoverage: options.branchCoverage);
     options.out.write(json.encode(coverage));
     await options.out.close();
   }, onError: (dynamic error, Chain chain) {
@@ -34,8 +36,16 @@ Future<void> main(List<String> arguments) async {
 }
 
 class Options {
-  Options(this.serviceUri, this.out, this.timeout, this.waitPaused, this.resume,
-      this.includeDart, this.functionCoverage, this.scopedOutput);
+  Options(
+      this.serviceUri,
+      this.out,
+      this.timeout,
+      this.waitPaused,
+      this.resume,
+      this.includeDart,
+      this.functionCoverage,
+      this.branchCoverage,
+      this.scopedOutput);
 
   final Uri serviceUri;
   final IOSink out;
@@ -44,6 +54,7 @@ class Options {
   final bool resume;
   final bool includeDart;
   final bool functionCoverage;
+  final bool branchCoverage;
   final Set<String> scopedOutput;
 }
 
@@ -75,6 +86,11 @@ Options _parseArgs(List<String> arguments) {
         abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
     ..addFlag('function-coverage',
         abbr: 'f', defaultsTo: false, help: 'Collect function coverage info')
+    ..addFlag('branch-coverage',
+        abbr: 'b',
+        defaultsTo: false,
+        help: 'Collect branch coverage info (Dart VM must also be run with '
+            '--branch-coverage for this to work)')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
   final args = parser.parse(arguments);
@@ -127,6 +143,7 @@ Options _parseArgs(List<String> arguments) {
     args['resume-isolates'] as bool,
     args['include-dart'] as bool,
     args['function-coverage'] as bool,
+    args['branch-coverage'] as bool,
     scopedOutput.toSet(),
   );
 }

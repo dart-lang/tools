@@ -33,6 +33,10 @@ const _retryInterval = Duration(milliseconds: 200);
 /// If [functionCoverage] is true, function coverage information will be
 /// collected.
 ///
+/// If [branchCoverage] is true, branch coverage information will be collected.
+/// This will only work correctly if the target VM was run with the
+/// --branch-coverage flag.
+///
 /// If [scopedOutput] is non-empty, coverage will be restricted so that only
 /// scripts that start with any of the provided paths are considered.
 ///
@@ -42,7 +46,8 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String>? scopedOutput,
     {Set<String>? isolateIds,
     Duration? timeout,
-    bool functionCoverage = false}) async {
+    bool functionCoverage = false,
+    bool branchCoverage = false}) async {
   scopedOutput ??= <String>{};
 
   // Create websocket URI. Handle any trailing slashes.
@@ -76,8 +81,8 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
       await _waitIsolatesPaused(service, timeout: timeout);
     }
 
-    return await _getAllCoverage(
-        service, includeDart, functionCoverage, scopedOutput, isolateIds);
+    return await _getAllCoverage(service, includeDart, functionCoverage,
+        branchCoverage, scopedOutput, isolateIds);
   } finally {
     if (resume) {
       await _resumeIsolates(service);
@@ -88,19 +93,34 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
   }
 }
 
+bool _versionCheck(Version version, int minMajor, int minMinor) {
+  final major = version.major ?? 0;
+  final minor = version.minor ?? 0;
+  return major > minMajor || (major == minMajor && minor >= minMinor);
+}
+
 Future<Map<String, dynamic>> _getAllCoverage(
     VmService service,
     bool includeDart,
     bool functionCoverage,
+    bool branchCoverage,
     Set<String>? scopedOutput,
     Set<String>? isolateIds) async {
   scopedOutput ??= <String>{};
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
   final version = await service.getVersion();
-  final reportLines =
-      (version.major == 3 && version.minor != null && version.minor! >= 51) ||
-          (version.major != null && version.major! > 3);
+  final reportLines = _versionCheck(version, 3, 51);
+  final branchCoverageSupported = _versionCheck(version, 3, 56);
+  if (branchCoverage && !branchCoverageSupported) {
+    branchCoverage = false;
+    stderr.write('Branch coverage was requested, but is not supported'
+        ' by the VM version. Try updating to a newer version of Dart');
+  }
+  final sourceReportKinds = [
+    SourceReportKind.kCoverage,
+    if (branchCoverage) SourceReportKind.kBranchCoverage,
+  ];
 
   // Program counters are shared between isolates in the same group. So we need
   // to make sure we're only gathering coverage data for one isolate in each
@@ -130,7 +150,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
         // Skip scripts which should not be included in the report.
         if (!scopedOutput.contains(scope)) continue;
         final scriptReport = await service.getSourceReport(
-            isolateRef.id!, <String>[SourceReportKind.kCoverage],
+            isolateRef.id!, sourceReportKinds,
             forceCompile: true,
             scriptId: script.id,
             reportLines: reportLines ? true : null);
@@ -141,7 +161,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
     } else {
       final isolateReport = await service.getSourceReport(
         isolateRef.id!,
-        <String>[SourceReportKind.kCoverage],
+        sourceReportKinds,
         forceCompile: true,
         reportLines: reportLines ? true : null,
       );
@@ -231,7 +251,8 @@ Future<void> _processFunction(VmService service, IsolateRef isolateRef,
     final line = _getLineFromTokenPos(script, tokenPos);
 
     if (line == null) {
-      print('tokenPos $tokenPos has no line mapping for script ${script.uri!}');
+      stderr.write(
+          'tokenPos $tokenPos has no line mapping for script ${script.uri!}');
       return;
     }
     hits.funcNames![line] = funcName;
@@ -306,28 +327,41 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 
     if (coverage == null) continue;
 
-    for (final pos in coverage.hits!) {
-      final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
-      if (line == null) {
-        print('tokenPos $pos has no line mapping for script $scriptUri');
-        continue;
+    void forEachLine(List<int> tokenPositions, void Function(int line) body) {
+      for (final pos in tokenPositions) {
+        final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
+        if (line == null) {
+          stderr
+              .write('tokenPos $pos has no line mapping for script $scriptUri');
+          continue;
+        }
+        body(line);
       }
+    }
+
+    forEachLine(coverage.hits!, (line) {
       _incrementCountForKey(hits.lineHits, line);
       if (hits.funcNames != null && hits.funcNames!.containsKey(line)) {
         _incrementCountForKey(hits.funcHits!, line);
       }
-    }
-    for (final pos in coverage.misses!) {
-      final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
-      if (line == null) {
-        print('tokenPos $pos has no line mapping for script $scriptUri');
-        continue;
-      }
+    });
+    forEachLine(coverage.misses!, (line) {
       hits.lineHits.putIfAbsent(line, () => 0);
-    }
+    });
     hits.funcNames?.forEach((line, funcName) {
       hits.funcHits?.putIfAbsent(line, () => 0);
     });
+
+    final branchCoverage = range.branchCoverage;
+    if (branchCoverage != null) {
+      hits.branchHits ??= <int, int>{};
+      forEachLine(branchCoverage.hits!, (line) {
+        _incrementCountForKey(hits.branchHits!, line);
+      });
+      forEachLine(branchCoverage.misses!, (line) {
+        hits.branchHits!.putIfAbsent(line, () => 0);
+      });
+    }
   }
 
   // Output JSON

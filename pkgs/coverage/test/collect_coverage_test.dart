@@ -113,7 +113,7 @@ void main() {
   });
 
   test('HitMap.parseJson', () async {
-    final resultString = await _collectCoverage(true);
+    final resultString = await _collectCoverage(true, true);
     final jsonResult = json.decode(resultString) as Map<String, dynamic>;
     final coverage = jsonResult['coverage'] as List;
     final hitMap = await HitMap.parseJson(
@@ -179,7 +179,78 @@ void main() {
       28: 'fooAsync',
       38: 'isolateTask'
     });
-  });
+    expect(isolateFile?.branchHits,
+        {11: 1, 12: 1, 15: 0, 19: 1, 23: 1, 28: 1, 32: 0, 38: 1, 42: 1});
+  }, skip: !platformVersionCheck(2, 17));
+
+  test('HitMap.parseJson, old VM without branch coverage', () async {
+    final resultString = await _collectCoverage(true, true);
+    final jsonResult = json.decode(resultString) as Map<String, dynamic>;
+    final coverage = jsonResult['coverage'] as List;
+    final hitMap = await HitMap.parseJson(
+      coverage.cast<Map<String, dynamic>>(),
+    );
+    expect(hitMap, contains(_sampleAppFileUri));
+
+    final isolateFile = hitMap[_isolateLibFileUri];
+    final expectedHits = {
+      11: 1,
+      12: 1,
+      13: 1,
+      15: 0,
+      19: 1,
+      23: 1,
+      24: 2,
+      28: 1,
+      29: 1,
+      30: 1,
+      32: 0,
+      38: 1,
+      39: 1,
+      41: 1,
+      42: 3,
+      43: 1,
+      44: 3,
+      45: 1,
+      48: 1,
+      49: 1,
+      51: 1,
+      54: 1,
+      55: 1,
+      56: 1,
+      59: 1,
+      60: 1,
+      62: 1,
+      63: 1,
+      64: 1,
+      66: 1,
+      67: 1,
+      68: 1
+    };
+    if (Platform.version.startsWith('1.')) {
+      // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
+      // closing brace of async function blocks.
+      // See: https://github.com/dart-lang/coverage/issues/196
+      expectedHits[23] = 0;
+    } else {
+      // Dart VMs version 2.0.0-dev.6.0 mark the opening brace of a function as
+      // coverable.
+      expectedHits[11] = 1;
+      expectedHits[28] = 1;
+      expectedHits[38] = 1;
+      expectedHits[42] = 3;
+    }
+    expect(isolateFile?.lineHits, expectedHits);
+    expect(isolateFile?.funcHits, {11: 1, 19: 1, 21: 0, 23: 1, 28: 1, 38: 1});
+    expect(isolateFile?.funcNames, {
+      11: 'fooSync',
+      19: 'BarClass.BarClass',
+      21: 'BarClass.x=',
+      23: 'BarClass.baz',
+      28: 'fooAsync',
+      38: 'isolateTask'
+    });
+  }, skip: platformVersionCheck(2, 17));
 
   test('parseCoverage', () async {
     final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
@@ -289,9 +360,10 @@ void main() {
 String? _coverageData;
 
 Future<String> _getCoverageResult() async =>
-    _coverageData ??= await _collectCoverage(false);
+    _coverageData ??= await _collectCoverage(false, false);
 
-Future<String> _collectCoverage(bool functionCoverage) async {
+Future<String> _collectCoverage(
+    bool functionCoverage, bool branchCoverage) async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
   final openPort = await getOpenPort();
@@ -316,9 +388,10 @@ Future<String> _collectCoverage(bool functionCoverage) async {
 
   // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
-  final toolResult = await Process.run('dart', [
+  final toolResult = await Process.run(Platform.resolvedExecutable, [
     _collectAppPath,
     if (functionCoverage) '--function-coverage',
+    if (branchCoverage) '--branch-coverage',
     '--uri',
     '$serviceUri',
     '--resume-isolates',

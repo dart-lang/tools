@@ -1,5 +1,18 @@
-## 1.1.1-dev
+## 1.2.0-dev
 
+* Support branch level coverage information, when running tests in the Dart VM.
+  This is not supported for web tests yet.
+* Add flag `--branch-coverage` (abbr `-b`) to collect_coverage that collects
+  branch coverage information. The VM must also be run with the
+  `--branch-coverage` flag.
+* Add flag `--pretty-print-branch` to format_coverage that works
+  similarly to pretty print, but outputs branch level coverage, rather than
+  line level.
+* Update `--lcov` (abbr `-l`) in format_coverage to output branch level
+  coverage, in addition to line level.
+* Add an optional bool flag to `collect` that controls whether branch coverage
+  is collected.
+* Add a `branchHits` field to `HitMap`.
 * Add support for scraping the service URI from the new Dart VM service message.
 
 ## 1.1.0 - 2022-1-18

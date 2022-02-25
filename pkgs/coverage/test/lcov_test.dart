@@ -11,6 +11,8 @@ import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'test_util.dart';
+
 final _sampleAppPath = p.join('test', 'test_files', 'test_app.dart');
 final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
 
@@ -19,6 +21,35 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('validate hitMap', () async {
+    final hitmap = await _getHitMap();
+
+    expect(hitmap, contains(_sampleAppFileUri));
+    expect(hitmap, contains(_isolateLibFileUri));
+    expect(hitmap, contains('package:coverage/src/util.dart'));
+
+    final sampleAppHitMap = hitmap[_sampleAppFileUri];
+    final sampleAppHitLines = sampleAppHitMap?.lineHits;
+    final sampleAppHitFuncs = sampleAppHitMap?.funcHits;
+    final sampleAppFuncNames = sampleAppHitMap?.funcNames;
+    final sampleAppBranchHits = sampleAppHitMap?.branchHits;
+
+    expect(sampleAppHitLines, containsPair(46, greaterThanOrEqualTo(1)),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppHitLines, containsPair(50, 0),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppHitLines, isNot(contains(32)),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppHitFuncs, containsPair(45, 1),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppHitFuncs, containsPair(49, 0),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppFuncNames, containsPair(45, 'usedMethod'),
+        reason: 'be careful if you modify the test file');
+    expect(sampleAppBranchHits, containsPair(41, 1),
+        reason: 'be careful if you modify the test file');
+  }, skip: !platformVersionCheck(2, 17));
+
+  test('validate hitMap, old VM without branch coverage', () async {
     final hitmap = await _getHitMap();
 
     expect(hitmap, contains(_sampleAppFileUri));
@@ -42,7 +73,7 @@ void main() {
         reason: 'be careful if you modify the test file');
     expect(sampleAppFuncNames, containsPair(45, 'usedMethod'),
         reason: 'be careful if you modify the test file');
-  });
+  }, skip: platformVersionCheck(2, 17));
 
   group('LcovFormatter', () {
     test('format()', () async {
@@ -197,6 +228,23 @@ void main() {
       expect(res, contains('      0|int unusedMethod(int a, int b) {'));
       expect(res, contains('       |  return a + b;'));
     });
+
+    test('prettyPrint() branches', () async {
+      final hitmap = await _getHitMap();
+
+      final resolver = Resolver(packagesPath: '.packages');
+      final res =
+          await hitmap.prettyPrint(resolver, Loader(), reportBranches: true);
+
+      expect(res, contains(p.absolute(_sampleAppPath)));
+      expect(res, contains(p.absolute(_isolateLibPath)));
+      expect(res, contains(p.absolute(p.join('lib', 'src', 'util.dart'))));
+
+      // be very careful if you change the test file
+      expect(res, contains('      1|  if (x == answer) {'));
+      expect(res, contains('      0|  while (i < lines.length) {'));
+      expect(res, contains('       |  bar.baz();'));
+    }, skip: !platformVersionCheck(2, 17));
   });
 }
 
@@ -210,9 +258,12 @@ Future<Map<String, HitMap>> _getHitMap() async {
   final sampleAppArgs = [
     '--pause-isolates-on-exit',
     '--enable-vm-service=$port',
+    // Dart VM versions before 2.17 don't support branch coverage.
+    if (platformVersionCheck(2, 17)) '--branch-coverage',
     _sampleAppPath
   ];
-  final sampleProcess = await Process.start('dart', sampleAppArgs);
+  final sampleProcess =
+      await Process.start(Platform.resolvedExecutable, sampleAppArgs);
 
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
@@ -231,14 +282,15 @@ Future<Map<String, HitMap>> _getHitMap() async {
 
   // collect hit map.
   final coverageJson = (await collect(serviceUri, true, true, false, <String>{},
-      functionCoverage: true))['coverage'] as List<Map<String, dynamic>>;
+      functionCoverage: true,
+      branchCoverage: true))['coverage'] as List<Map<String, dynamic>>;
   final hitMap = HitMap.parseJson(coverageJson);
 
   // wait for sample app to terminate.
   final exitCode = await sampleProcess.exitCode;
   if (exitCode != 0) {
-    throw ProcessException(
-        'dart', sampleAppArgs, 'Fatal error. Exit code: $exitCode', exitCode);
+    throw ProcessException(Platform.resolvedExecutable, sampleAppArgs,
+        'Fatal error. Exit code: $exitCode', exitCode);
   }
   await sampleProcess.stderr.drain();
   return hitMap;

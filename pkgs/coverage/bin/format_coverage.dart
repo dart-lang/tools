@@ -21,6 +21,7 @@ class Environment {
     required this.packagesPath,
     required this.prettyPrint,
     required this.prettyPrintFunc,
+    required this.prettyPrintBranch,
     required this.reportOn,
     required this.sdkRoot,
     required this.verbose,
@@ -37,6 +38,7 @@ class Environment {
   String? packagesPath;
   bool prettyPrint;
   bool prettyPrintFunc;
+  bool prettyPrintBranch;
   List<String>? reportOn;
   String? sdkRoot;
   bool verbose;
@@ -74,9 +76,11 @@ Future<void> main(List<String> arguments) async {
       ? BazelResolver(workspacePath: env.bazelWorkspace)
       : Resolver(packagesPath: env.packagesPath, sdkRoot: env.sdkRoot);
   final loader = Loader();
-  if (env.prettyPrint || env.prettyPrintFunc) {
+  if (env.prettyPrint) {
     output = await hitmap.prettyPrint(resolver, loader,
-        reportOn: env.reportOn, reportFuncs: env.prettyPrintFunc);
+        reportOn: env.reportOn,
+        reportFuncs: env.prettyPrintFunc,
+        reportBranches: env.prettyPrintBranch);
   } else {
     assert(env.lcov);
     output = hitmap.formatLcov(resolver,
@@ -135,6 +139,9 @@ Environment parseArgs(List<String> arguments) {
       abbr: 'f',
       negatable: false,
       help: 'convert function coverage data to pretty print format');
+  parser.addFlag('pretty-print-branch',
+      negatable: false,
+      help: 'convert branch coverage data to pretty print format');
   parser.addFlag('lcov',
       abbr: 'l',
       negatable: false,
@@ -217,12 +224,17 @@ Environment parseArgs(List<String> arguments) {
   final lcov = args['lcov'] as bool;
   var prettyPrint = args['pretty-print'] as bool;
   final prettyPrintFunc = args['pretty-print-func'] as bool;
-  if ((prettyPrint ? 1 : 0) + (prettyPrintFunc ? 1 : 0) + (lcov ? 1 : 0) > 1) {
+  final prettyPrintBranch = args['pretty-print-branch'] as bool;
+  final numModesChosen = (prettyPrint ? 1 : 0) +
+      (prettyPrintFunc ? 1 : 0) +
+      (prettyPrintBranch ? 1 : 0) +
+      (lcov ? 1 : 0);
+  if (numModesChosen > 1) {
     fail('Choose one of the pretty-print modes or lcov output');
   }
 
-  // Use pretty-print either explicitly or by default.
-  if (!lcov && !prettyPrintFunc) prettyPrint = true;
+  // The pretty printer is used by all modes other than lcov.
+  if (!lcov) prettyPrint = true;
 
   int workers;
   try {
@@ -244,6 +256,7 @@ Environment parseArgs(List<String> arguments) {
       packagesPath: packagesPath,
       prettyPrint: prettyPrint,
       prettyPrintFunc: prettyPrintFunc,
+      prettyPrintBranch: prettyPrintBranch,
       reportOn: reportOn,
       sdkRoot: sdkRoot,
       verbose: verbose,
