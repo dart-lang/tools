@@ -6,7 +6,7 @@ description: >-
 repository: https://github.com/dart-lang/pub_semver
 
 environment:
- sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   collection: ^1.15.0
