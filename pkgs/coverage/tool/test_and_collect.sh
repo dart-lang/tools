@@ -30,7 +30,7 @@ if [[ $(dart --version 2>&1 ) =~ '(dev)' ]]; then
     --lcov \
     --in=var/coverage.json \
     --out=var/lcov.info \
-    --packages=.packages \
+    --packages=.dart_tool/package_config.json \
     --report-on=lib \
     --check-ignore
 fi
