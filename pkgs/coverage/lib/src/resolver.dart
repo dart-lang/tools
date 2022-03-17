@@ -87,8 +87,9 @@ class Resolver {
   static Map<String, Uri> _parsePackages(String packagesPath) {
     final content = File(packagesPath).readAsStringSync();
     try {
+      final packagesUri = p.toUri(packagesPath);
       final parsed =
-          PackageConfig.parseString(content, Uri.base.resolve(packagesPath));
+          PackageConfig.parseString(content, Uri.base.resolveUri(packagesUri));
       return {
         for (var package in parsed.packages)
           package.name: package.packageUriRoot

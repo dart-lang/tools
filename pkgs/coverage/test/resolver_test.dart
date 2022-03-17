@@ -10,10 +10,17 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 void main() {
   group('Default Resolver', () {
     setUp(() async {
+      final String sandboxUriPath = p.toUri(d.sandbox).toString();
+      await d.dir('bar', [
+        d.dir('lib', [
+          d.file('bar.dart', 'final fizz = "bar";'),
+        ])
+      ]).create();
+
       await d.dir('foo', [
         d.file('.packages', '''
 # Fake for testing!
-foo:file:///${d.sandbox}/foo/lib
+foo:$sandboxUriPath/foo/lib
 '''),
         d.file('.bad.packages', 'thisIsntAPackagesFile!'),
         d.dir('.dart_tool', [
@@ -23,7 +30,12 @@ foo:file:///${d.sandbox}/foo/lib
   "packages": [
     {
       "name": "foo",
-      "rootUri": "file:///${d.sandbox}/foo",
+      "rootUri": "../",
+      "packageUri": "lib/"
+    },
+    {
+      "name": "bar",
+      "rootUri": "$sandboxUriPath/bar",
       "packageUri": "lib/"
     }
   ]
@@ -41,14 +53,16 @@ foo:file:///${d.sandbox}/foo/lib
           packagesPath:
               p.join(d.sandbox, 'foo', '.dart_tool', 'package_config.json'));
       expect(resolver.resolve('package:foo/foo.dart'),
-          '${d.sandbox}/foo/lib/foo.dart');
+          p.join(d.sandbox, 'foo', 'lib', 'foo.dart'));
+      expect(resolver.resolve('package:bar/bar.dart'),
+          p.join(d.sandbox, 'bar', 'lib', 'bar.dart'));
     });
 
     test('can be created from a .packages file', () async {
       final resolver =
           Resolver(packagesPath: p.join(d.sandbox, 'foo', '.packages'));
       expect(resolver.resolve('package:foo/foo.dart'),
-          '${d.sandbox}/foo/lib/foo.dart');
+          p.join(d.sandbox, 'foo', 'lib', 'foo.dart'));
     });
 
     test('errors if the packagesFile is an unknown format', () async {
