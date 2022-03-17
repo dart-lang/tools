@@ -14,6 +14,7 @@
   is collected.
 * Add a `branchHits` field to `HitMap`.
 * Add support for scraping the service URI from the new Dart VM service message.
+* Correctly parse package_config files on Windows when the root URI is relative.
 
 ## 1.1.0 - 2022-1-18
 
