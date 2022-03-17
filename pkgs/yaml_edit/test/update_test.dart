@@ -767,7 +767,7 @@ a:
         expect(doc.toString(), equals('''
 a:
   aa: 1
-  bb: 
+  bb:
     aaa:
       dddd: c
     bbb:
@@ -806,7 +806,7 @@ a:
         expect(doc.toString(), equals('''
 a:
   aa: 1
-  bb: 
+  bb:
     - 0
     - - 1
       - 2

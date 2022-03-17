@@ -57,14 +57,7 @@ SourceEdit _addToBlockMap(
   final keyString = yamlEncodeFlowString(wrapAsYamlNode(key));
   final lineEnding = getLineEnding(yaml);
 
-  var valueString = yamlEncodeBlockString(newValue, newIndentation, lineEnding);
-  if (isCollection(newValue) &&
-      !isFlowYamlCollectionNode(newValue) &&
-      !isEmpty(newValue)) {
-    valueString = '$lineEnding$valueString';
-  }
-
-  var formattedValue = ' ' * getMapIndentation(yaml, map) + '$keyString: ';
+  var formattedValue = ' ' * getMapIndentation(yaml, map);
   var offset = map.span.end.offset;
 
   final insertionIndex = getMapInsertionIndex(map, keyString);
@@ -90,7 +83,14 @@ SourceEdit _addToBlockMap(
     }
   }
 
-  formattedValue += valueString + lineEnding;
+  var valueString = yamlEncodeBlockString(newValue, newIndentation, lineEnding);
+  if (isCollection(newValue) &&
+      !isFlowYamlCollectionNode(newValue) &&
+      !isEmpty(newValue)) {
+    formattedValue += '$keyString:' + lineEnding + valueString + lineEnding;
+  } else {
+    formattedValue += '$keyString: ' + valueString + lineEnding;
+  }
 
   return SourceEdit(offset, 0, formattedValue);
 }
