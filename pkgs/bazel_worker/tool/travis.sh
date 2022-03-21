@@ -7,7 +7,7 @@
 # Fast fail the script on failures.
 set -e
 
-pub get
+dart pub get
 
 # Verify that the libraries are error free.
 dart analyze --fatal-infos \
@@ -17,10 +17,10 @@ dart analyze --fatal-infos \
   test/test_all.dart
 
 # Run the tests.
-pub run test
+dart test
 
 pushd e2e_test
-pub get
+dart pub get
 dart analyze --fatal-infos test/e2e_test.dart
-pub run test
+dart test
 popd
