@@ -1,4 +1,4 @@
-## 1.1.0-dev
+## 1.1.0
 
 - Add optional `signIn` argument to `startWithDebugPort`.
   To be used together with `user-data-dir` to start a chrome
