@@ -1,4 +1,4 @@
-## 1.2.0-dev
+## 1.2.0
 
 * Support branch level coverage information, when running tests in the Dart VM.
   This is not supported for web tests yet.
