@@ -299,8 +299,7 @@ void main() {
       await outputFile.writeAsString(coverageResults, flush: true);
 
       final parsedResult = await HitMap.parseFiles([outputFile],
-          packagesPath: '.dart_tool/package_config.json',
-          checkIgnoredLines: true);
+          packagePath: '.', checkIgnoredLines: true);
 
       // This file has ignore:coverage-file.
       expect(parsedResult, isNot(contains(_sampleAppFileUri)));

@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:package_config/package_config.dart';
@@ -10,10 +9,35 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
+  @Deprecated('Use Resolver.create')
   Resolver({this.packagesPath, this.sdkRoot})
-      : _packages = packagesPath != null ? _parsePackages(packagesPath) : null;
+      : _packages = packagesPath != null ? _parsePackages(packagesPath) : null,
+        packagePath = null;
+
+  Resolver._(
+      {this.packagesPath,
+      this.packagePath,
+      this.sdkRoot,
+      Map<String, Uri>? packages})
+      : _packages = packages;
+
+  static Future<Resolver> create({
+    String? packagesPath,
+    String? packagePath,
+    String? sdkRoot,
+  }) async {
+    return Resolver._(
+      packagesPath: packagesPath,
+      packagePath: packagePath,
+      sdkRoot: sdkRoot,
+      packages: packagesPath != null
+          ? _parsePackages(packagesPath)
+          : (packagePath != null ? await _parsePackage(packagePath) : null),
+    );
+  }
 
   final String? packagesPath;
+  final String? packagePath;
   final String? sdkRoot;
   final List<String> failed = [];
   final Map<String, Uri>? _packages;
@@ -86,32 +110,20 @@ class Resolver {
 
   static Map<String, Uri> _parsePackages(String packagesPath) {
     final content = File(packagesPath).readAsStringSync();
-    try {
-      final packagesUri = p.toUri(packagesPath);
-      final parsed =
-          PackageConfig.parseString(content, Uri.base.resolveUri(packagesUri));
-      return {
-        for (var package in parsed.packages)
-          package.name: package.packageUriRoot
-      };
-    } on FormatException catch (_) {
-      // It was probably an old style .packages file
-      final lines = LineSplitter.split(content);
-      final packageMap = <String, Uri>{};
-      for (var line in lines) {
-        if (line.startsWith('#')) continue;
-        final firstColon = line.indexOf(':');
-        if (firstColon == -1) {
-          throw FormatException(
-              'Unexpected package config format, expected an old style '
-              '.packages file or new style package_config.json file.',
-              content);
-        }
-        packageMap[line.substring(0, firstColon)] =
-            Uri.parse(line.substring(firstColon + 1, line.length));
-      }
-      return packageMap;
-    }
+    final packagesUri = p.toUri(packagesPath);
+    final parsed =
+        PackageConfig.parseString(content, Uri.base.resolveUri(packagesUri));
+    return {
+      for (var package in parsed.packages) package.name: package.packageUriRoot
+    };
+  }
+
+  static Future<Map<String, Uri>?> _parsePackage(String packagePath) async {
+    final parsed = await findPackageConfig(Directory(packagePath));
+    if (parsed == null) return null;
+    return {
+      for (var package in parsed.packages) package.name: package.packageUriRoot
+    };
   }
 }
 

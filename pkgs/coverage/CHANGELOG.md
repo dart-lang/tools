@@ -1,3 +1,9 @@
+## 1.3.0-dev
+* Add a `--package` flag, which takes the package's root directory, instead of
+  the .package file. Deprecate the `--packages` flag.
+* Deprecate the packagesPath parameter and add packagePath instead, in
+  `HitMap.parseJson`, `HitMap.parseFiles`, `createHitmap`, and `parseCoverage`.
+
 ## 1.2.0
 
 * Support branch level coverage information, when running tests in the Dart VM.
