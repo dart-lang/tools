@@ -79,7 +79,7 @@ void main() {
     test('format()', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       // ignore: deprecated_member_use_from_same_package
       final formatter = LcovFormatter(resolver);
 
@@ -94,7 +94,7 @@ void main() {
     test('formatLcov()', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res = hitmap.formatLcov(resolver);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
@@ -105,7 +105,7 @@ void main() {
     test('formatLcov() includes files in reportOn list', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res = hitmap.formatLcov(resolver, reportOn: ['lib/', 'test/']);
 
       expect(res, contains(p.absolute(_sampleAppPath)));
@@ -116,7 +116,7 @@ void main() {
     test('formatLcov() excludes files not in reportOn list', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res = hitmap.formatLcov(resolver, reportOn: ['lib/']);
 
       expect(res, isNot(contains(p.absolute(_sampleAppPath))));
@@ -127,7 +127,7 @@ void main() {
     test('formatLcov() uses paths relative to basePath', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res = hitmap.formatLcov(resolver, basePath: p.absolute('lib'));
 
       expect(
@@ -140,7 +140,7 @@ void main() {
     test('format()', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       // ignore: deprecated_member_use_from_same_package
       final formatter = PrettyPrintFormatter(resolver, Loader());
 
@@ -167,7 +167,7 @@ void main() {
     test('prettyPrint()', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res = await hitmap.prettyPrint(resolver, Loader());
 
       expect(res, contains(p.absolute(_sampleAppPath)));
@@ -190,7 +190,7 @@ void main() {
     test('prettyPrint() includes files in reportOn list', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res = await hitmap
           .prettyPrint(resolver, Loader(), reportOn: ['lib/', 'test/']);
 
@@ -202,7 +202,7 @@ void main() {
     test('prettyPrint() excludes files not in reportOn list', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res =
           await hitmap.prettyPrint(resolver, Loader(), reportOn: ['lib/']);
 
@@ -214,7 +214,7 @@ void main() {
     test('prettyPrint() functions', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res =
           await hitmap.prettyPrint(resolver, Loader(), reportFuncs: true);
 
@@ -232,7 +232,7 @@ void main() {
     test('prettyPrint() branches', () async {
       final hitmap = await _getHitMap();
 
-      final resolver = Resolver(packagesPath: '.dart_tool/package_config.json');
+      final resolver = await Resolver.create(packagePath: '.');
       final res =
           await hitmap.prettyPrint(resolver, Loader(), reportBranches: true);
 

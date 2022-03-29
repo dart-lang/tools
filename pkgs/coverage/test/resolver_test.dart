@@ -18,12 +18,8 @@ void main() {
       ]).create();
 
       await d.dir('foo', [
-        d.file('.packages', '''
-# Fake for testing!
-foo:$sandboxUriPath/foo/lib
-'''),
-        d.file('.bad.packages', 'thisIsntAPackagesFile!'),
         d.dir('.dart_tool', [
+          d.file('bad_package_config.json', 'thisIsntAPackageConfigFile!'),
           d.file('package_config.json', '''
 {
   "configVersion": 2,
@@ -46,10 +42,22 @@ foo:$sandboxUriPath/foo/lib
           d.file('foo.dart', 'final foo = "bar";'),
         ]),
       ]).create();
+
+      await d.dir('sdk', [
+        d.dir('io', [
+          d.file('io.dart', 'final io = "hello";'),
+        ]),
+        d.dir('io_patch', [
+          d.file('io.dart', 'final patch = true;'),
+        ]),
+        d.dir('io_dev', [
+          d.file('io.dart', 'final dev = true;'),
+        ]),
+      ]).create();
     });
 
     test('can be created from a package_config.json', () async {
-      final resolver = Resolver(
+      final resolver = await Resolver.create(
           packagesPath:
               p.join(d.sandbox, 'foo', '.dart_tool', 'package_config.json'));
       expect(resolver.resolve('package:foo/foo.dart'),
@@ -58,18 +66,54 @@ foo:$sandboxUriPath/foo/lib
           p.join(d.sandbox, 'bar', 'lib', 'bar.dart'));
     });
 
-    test('can be created from a .packages file', () async {
+    test('can be created from a package directory', () async {
       final resolver =
-          Resolver(packagesPath: p.join(d.sandbox, 'foo', '.packages'));
+          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
       expect(resolver.resolve('package:foo/foo.dart'),
           p.join(d.sandbox, 'foo', 'lib', 'foo.dart'));
     });
 
     test('errors if the packagesFile is an unknown format', () async {
       expect(
-          () =>
-              Resolver(packagesPath: p.join(d.sandbox, 'foo', '.bad.packages')),
+          () async => await Resolver.create(
+              packagesPath: p.join(
+                  d.sandbox, 'foo', '.dart_tool', 'bad_package_config.json')),
           throwsA(isA<FormatException>()));
+    });
+
+    test('resolves dart: URIs', () async {
+      final resolver = await Resolver.create(
+          packagePath: p.join(d.sandbox, 'foo'),
+          sdkRoot: p.join(d.sandbox, 'sdk'));
+      expect(resolver.resolve('dart:io'),
+          p.join(d.sandbox, 'sdk', 'io', 'io.dart'));
+      expect(resolver.resolve('dart:io-patch/io.dart'), null);
+      expect(resolver.resolve('dart:io-dev/io.dart'),
+          p.join(d.sandbox, 'sdk', 'io_dev', 'io.dart'));
+    });
+
+    test('cannot resolve SDK URIs if sdkRoot is null', () async {
+      final resolver =
+          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
+      expect(resolver.resolve('dart:convert'), null);
+    });
+
+    test('cannot resolve package URIs if packagePath is null', () async {
+      // ignore: deprecated_member_use_from_same_package
+      final resolver = Resolver();
+      expect(resolver.resolve('package:foo/foo.dart'), null);
+    });
+
+    test('cannot resolve package URIs if packagePath is not found', () async {
+      final resolver =
+          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
+      expect(resolver.resolve('package:baz/baz.dart'), null);
+    });
+
+    test('cannot resolve unexpected URI schemes', () async {
+      final resolver =
+          await Resolver.create(packagePath: p.join(d.sandbox, 'foo'));
+      expect(resolver.resolve('thing:foo/foo.dart'), null);
     });
   });
 

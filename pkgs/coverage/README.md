@@ -16,7 +16,7 @@ Tools
 
     dart pub global activate coverage
 
-Consider adding the `pub global run` executables directory to your path.
+Consider adding the `dart pub global run` executables directory to your path.
 See [Running a script from your PATH](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path)
 for more details.
 
@@ -24,10 +24,10 @@ for more details.
 
 ```
 dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN script.dart
-pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates
+dart pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates
 ```
 
-or if the `pub global run` executables are on your PATH,
+or if the `dart pub global run` executables are on your PATH,
 
 ```
 collect_coverage --uri=http://... -o coverage.json --resume-isolates
@@ -44,17 +44,18 @@ all isolates are paused before collecting coverage.
 #### Formatting coverage data
 
 ```
-pub global run coverage:format_coverage --packages=app_package/.packages -i coverage.json
+dart pub global run coverage:format_coverage --package=app_package -i coverage.json
 ```
 
-or if the `pub global run` exectuables are on your PATH,
+or if the `dart pub global run` exectuables are on your PATH,
 
 ```
-format_coverage --packages=app_package/.packages -i coverage.json
+format_coverage --package=app_package -i coverage.json
 ```
 
 where `app_package` is the path to the package whose coverage is being
-collected. If `--sdk-root` is set, Dart SDK coverage will also be output.
+collected (defaults to the current working directory). If `--sdk-root` is set,
+Dart SDK coverage will also be output.
 
 #### Ignore lines from coverage
 
@@ -69,7 +70,7 @@ collect_coverage:
 
 ```
 dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN script.dart
-pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage
+dart pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage
 ```
 
 To gather branch level coverage information, pass `--branch-coverage` to *both*
@@ -77,7 +78,7 @@ collect_coverage and the Dart command you're gathering coverage from:
 
 ```
 dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN --branch-coverage script.dart
-pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --branch-coverage
+dart pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --branch-coverage
 ```
 
 Branch coverage requires Dart VM 2.17.0, with service API v3.56. Function,
@@ -86,5 +87,5 @@ those flags:
 
 ```
 dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN --branch-coverage script.dart
-pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage --branch-coverage
+dart pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage --branch-coverage
 ```
