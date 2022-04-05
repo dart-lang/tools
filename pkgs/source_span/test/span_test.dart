@@ -206,6 +206,13 @@ void main() {
       expect(result.end.sourceUrl, equals(span.sourceUrl));
     });
 
+    test('preserves the context', () {
+      final start = SourceLocation(2);
+      final end = SourceLocation(5);
+      final span = SourceSpanWithContext(start, end, 'abc', '--abc--');
+      expect(span.subspan(1, 2).context, equals('--abc--'));
+    });
+
     group('returns the original span', () {
       test('with an implicit end', () => expect(span.subspan(0), equals(span)));
 

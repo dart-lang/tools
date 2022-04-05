@@ -34,3 +34,18 @@ class SourceSpanWithContext extends SourceSpanBase {
     }
   }
 }
+
+// TODO(#52): Move these to instance methods in the next breaking release.
+/// Extension methods on the base [SourceSpan] API.
+extension SourceSpanWithContextExtension on SourceSpanWithContext {
+  /// Returns a span from [start] code units (inclusive) to [end] code units
+  /// (exclusive) after the beginning of this span.
+  SourceSpanWithContext subspan(int start, [int? end]) {
+    RangeError.checkValidRange(start, end, length);
+    if (start == 0 && (end == null || end == length)) return this;
+
+    final locations = subspanLocations(this, start, end);
+    return SourceSpanWithContext(
+        locations[0], locations[1], text.substring(start, end), context);
+  }
+}

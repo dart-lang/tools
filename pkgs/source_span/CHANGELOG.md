@@ -1,3 +1,8 @@
+# 1.9.0
+
+* Add `SourceSpanWithContextExtension.subspan` that returns a
+  `SourceSpanWithContext` rather than a plain `SourceSpan`.
+
 # 1.8.2
 
 * Fix a bug where highlighting multiple spans with `null` URLs could cause an

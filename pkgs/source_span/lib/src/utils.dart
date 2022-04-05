@@ -2,7 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'charcode.dart';
+import 'location.dart';
 import 'span.dart';
+import 'span_with_context.dart';
 
 /// Returns the minimum of [obj1] and [obj2] according to
 /// [Comparable.compareTo].
@@ -88,4 +91,55 @@ int? findLineStart(String context, String text, int column) {
   }
   // ignore: avoid_returning_null
   return null;
+}
+
+/// Returns a two-element list containing the start and end locations of the
+/// span from [start] code units (inclusive) to [end] code units (exclusive)
+/// after the beginning of [span].
+///
+/// This is factored out so it can be shared between
+/// [SourceSpanExtension.subspan] and [SourceSpanWithContextExtension.subspan].
+List<SourceLocation> subspanLocations(SourceSpan span, int start, [int? end]) {
+  final text = span.text;
+  final startLocation = span.start;
+  var line = startLocation.line;
+  var column = startLocation.column;
+
+  // Adjust [line] and [column] as necessary if the character at [i] in [text]
+  // is a newline.
+  void consumeCodePoint(int i) {
+    final codeUnit = text.codeUnitAt(i);
+    if (codeUnit == $lf ||
+        // A carriage return counts as a newline, but only if it's not
+        // followed by a line feed.
+        (codeUnit == $cr &&
+            (i + 1 == text.length || text.codeUnitAt(i + 1) != $lf))) {
+      line += 1;
+      column = 0;
+    } else {
+      column += 1;
+    }
+  }
+
+  for (var i = 0; i < start; i++) {
+    consumeCodePoint(i);
+  }
+
+  final newStartLocation = SourceLocation(startLocation.offset + start,
+      sourceUrl: span.sourceUrl, line: line, column: column);
+
+  SourceLocation newEndLocation;
+  if (end == null || end == span.length) {
+    newEndLocation = span.end;
+  } else if (end == start) {
+    newEndLocation = newStartLocation;
+  } else {
+    for (var i = start; i < end; i++) {
+      consumeCodePoint(i);
+    }
+    newEndLocation = SourceLocation(startLocation.offset + end,
+        sourceUrl: span.sourceUrl, line: line, column: column);
+  }
+
+  return [newStartLocation, newEndLocation];
 }
