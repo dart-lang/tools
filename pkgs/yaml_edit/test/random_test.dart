@@ -68,6 +68,7 @@ class _Generator {
   /// Maximum depth of random YAML collection generated.
   final int maxDepth;
 
+  // ignore: unused_element
   _Generator({int? seed, this.maxDepth = 5}) : r = Random(seed ?? 42);
 
   int nextInt([int max = maxInt]) => r.nextInt(max);
