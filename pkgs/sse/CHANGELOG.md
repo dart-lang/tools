@@ -1,6 +1,8 @@
 ## 4.1.1-dev
 
 - Apply `keepAlive` logic to `SocketException`s.
+- Switch from using `package:pedantic` to `package:lints`
+- Rev the minimum required SDK to 2.15.
 
 ## 4.1.0
 

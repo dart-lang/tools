@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stream_channel/stream_channel.dart';
 
