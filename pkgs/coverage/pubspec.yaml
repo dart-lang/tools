@@ -23,3 +23,4 @@ dev_dependencies:
 executables:
   collect_coverage:
   format_coverage:
+  test_with_coverage:

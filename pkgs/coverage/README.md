@@ -20,6 +20,30 @@ Consider adding the `dart pub global run` executables directory to your path.
 See [Running a script from your PATH](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path)
 for more details.
 
+
+#### Running tests with coverage
+
+For the common use case where you just want to run all your tests, and generate
+an lcov.info file, you can use the test_with_coverage script:
+
+```
+dart pub global run coverage:test_with_coverage
+```
+
+By default, this script assumes it's being run from the root directory of a
+package, and outputs a coverage.json and lcov.info file to ./coverage/
+
+This script is essentially the same as running:
+
+```
+dart run --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=8181 test &
+dart pub global run coverage:collect_coverage --wait-paused --uri=http://127.0.0.1:8181/ -o coverage/coverage.json --resume-isolates --scope-output=foo
+dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --lcov -i coverage/coverage.json -o coverage/lcov.info
+```
+
+For more complicated use cases, where you want to control each of these stages,
+see the sections below.
+
 #### Collecting coverage from the VM
 
 ```
@@ -88,4 +112,10 @@ those flags:
 ```
 dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=NNNN --branch-coverage script.dart
 dart pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage --branch-coverage
+```
+
+These flags can also be passed to test_with_coverage:
+
+```
+pub global run coverage:test_with_coverage --branch-coverage --function-coverage
 ```

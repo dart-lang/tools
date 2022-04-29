@@ -114,7 +114,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
   final branchCoverageSupported = _versionCheck(version, 3, 56);
   if (branchCoverage && !branchCoverageSupported) {
     branchCoverage = false;
-    stderr.write('Branch coverage was requested, but is not supported'
+    stderr.writeln('Branch coverage was requested, but is not supported'
         ' by the VM version. Try updating to a newer version of Dart');
   }
   final sourceReportKinds = [
@@ -251,8 +251,9 @@ Future<void> _processFunction(VmService service, IsolateRef isolateRef,
     final line = _getLineFromTokenPos(script, tokenPos);
 
     if (line == null) {
-      stderr.write(
-          'tokenPos $tokenPos has no line mapping for script ${script.uri!}');
+      stderr.writeln(
+          'tokenPos $tokenPos in function ${funcRef.name} has no line mapping '
+          'for script ${script.uri!}');
       return;
     }
     hits.funcNames![line] = funcName;

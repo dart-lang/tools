@@ -72,9 +72,9 @@ jobs:
         name: Install dependencies
         run: dart pub get
       - name: Collect and report coverage
-        run: ./tool/test_and_collect.sh
+        run: dart run bin/test_with_coverage.dart --port=9292
       - name: Upload coverage
         uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: var/lcov.info
+          path-to-lcov: coverage/lcov.info
