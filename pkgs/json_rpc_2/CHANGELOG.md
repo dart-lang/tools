@@ -1,3 +1,8 @@
+## 3.0.2-dev
+
+* Address a few analysis hint violations.
+* Populate the pubspec `repository` field.
+
 ## 3.0.1
 
 * Fix a bug where a `null` result to a request caused an exception.
