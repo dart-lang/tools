@@ -1,5 +1,5 @@
 name: pool
-version: 1.5.0
+version: 1.5.1-dev
 description: >-
   Manage a finite pool of resources.
   Useful for controlling concurrent file system or network requests.
