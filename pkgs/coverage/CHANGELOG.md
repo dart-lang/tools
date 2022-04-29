@@ -3,6 +3,9 @@
   the .package file. Deprecate the `--packages` flag.
 * Deprecate the packagesPath parameter and add packagePath instead, in
   `HitMap.parseJson`, `HitMap.parseFiles`, `createHitmap`, and `parseCoverage`.
+* Add a new executable to the package, `test_with_coverage`. This simplifies the
+  most common use case of coverage, running all the tests for a package, and
+  generating an lcov.info file.
 
 ## 1.2.0
 

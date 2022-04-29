@@ -29,7 +29,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
     dartArgs.addAll(scriptArgs);
   }
 
-  final process = await Process.start('dart', dartArgs);
+  final process = await Process.start(Platform.executable, dartArgs);
   final serviceUriCompleter = Completer<Uri>();
   process.stdout
       .transform(utf8.decoder)
