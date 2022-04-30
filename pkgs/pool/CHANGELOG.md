@@ -1,5 +1,8 @@
 ## 1.5.1-dev
 
+* Switch to using `package:lints` for analysis.
+* Populate the pubspec `repository` field.
+
 ## 1.5.0
 
 * Stable release for null safety.
