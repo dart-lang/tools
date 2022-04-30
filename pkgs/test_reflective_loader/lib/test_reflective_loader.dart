@@ -278,7 +278,7 @@ Future<Object?> _runTest(ClassMirror classMirror, Symbol symbol) {
       .whenComplete(() => _invokeSymbolIfExists(instanceMirror, #tearDown));
 }
 
-typedef dynamic _TestFunction();
+typedef _TestFunction = dynamic Function();
 
 /**
  * A marker annotation used to annotate test methods which are expected to fail.

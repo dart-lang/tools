@@ -1,3 +1,8 @@
+## 0.2.1-dev
+
+- Use package:lints for analysis.
+- Populate the pubspec `repository` field.
+
 ## 0.2.0
 
 - Stable null safety release.
