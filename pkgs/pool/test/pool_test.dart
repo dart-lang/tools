@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:pool/pool.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
