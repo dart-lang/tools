@@ -1,3 +1,7 @@
+# 1.9.1-dev
+
+* Populate the pubspec `repository` field.
+
 # 1.9.0
 
 * Add `SourceSpanWithContextExtension.subspan` that returns a
