@@ -5,19 +5,25 @@
 /// Library to create and parse source maps.
 ///
 /// Create a source map using [SourceMapBuilder]. For example:
-///     var json = (new SourceMapBuilder()
-///         ..add(inputSpan1, outputSpan1)
-///         ..add(inputSpan2, outputSpan2)
-///         ..add(inputSpan3, outputSpan3)
-///         .toJson(outputFile);
+///
+/// ```dart
+/// var json = (new SourceMapBuilder()
+///     ..add(inputSpan1, outputSpan1)
+///     ..add(inputSpan2, outputSpan2)
+///     ..add(inputSpan3, outputSpan3)
+///     .toJson(outputFile);
+/// ```
 ///
 /// Use the source_span package's [SourceSpan] and [SourceFile] classes to
 /// specify span locations.
 ///
 /// Parse a source map using [parse], and call `spanFor` on the returned mapping
 /// object. For example:
-///     var mapping = parse(json);
-///     mapping.spanFor(outputSpan1.line, outputSpan1.column)
+///
+/// ```dart
+/// var mapping = parse(json);
+/// mapping.spanFor(outputSpan1.line, outputSpan1.column)
+/// ```
 library source_maps;
 
 import 'package:source_span/source_span.dart';
