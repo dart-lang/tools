@@ -3,6 +3,7 @@
 - Apply `keepAlive` logic to `SocketException`s.
 - Switch from using `package:pedantic` to `package:lints`
 - Rev the minimum required SDK to 2.15.
+- Populate the pubspec `repository` field.
 
 ## 4.1.0
 

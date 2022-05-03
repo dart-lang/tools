@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/sse/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/sse/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/sse.svg)](https://pub.dev/packages/sse)
+[![package publisher](https://img.shields.io/pub/publisher/sse.svg)](https://pub.dev/packages/sse/publisher)
+
 This package provides support for bi-directional communication through
 Server Sent Events and corresponding POST requests.
 

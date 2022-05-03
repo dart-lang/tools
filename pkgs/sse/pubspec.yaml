@@ -1,10 +1,10 @@
 name: sse
 version: 4.1.1-dev
-homepage: https://github.com/dart-lang/sse
 description: >-
   Provides client and server functionality for setting up bi-directional
   communication through Server Sent Events (SSE) and corresponding POST
   requests.
+repository: https://github.com/dart-lang/sse
 
 environment:
   sdk: '>=2.15.0 <3.0.0'
