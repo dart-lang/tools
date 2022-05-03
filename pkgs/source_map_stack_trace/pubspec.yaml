@@ -8,10 +8,10 @@ environment:
 
 dependencies:
   path: ^1.8.0
-  stack_trace: ^1.10.0
   source_maps: ^0.10.10
+  stack_trace: ^1.10.0
 
 dev_dependencies:
+  lints: ^1.0.0
   source_span: ^1.8.0
   test: ^1.16.0
-  pedantic: ^1.10.0
