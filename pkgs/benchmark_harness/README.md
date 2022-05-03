@@ -1,14 +1,25 @@
 # Dart Benchmark Harness
 
-The Dart project benchmark harness is the recommended starting point when building a benchmark for Dart.
+The Dart project benchmark harness is the recommended starting point when
+building a benchmark for Dart.
 
 ## Interpreting Results
 
-By default, the reported runtime is not for a single call to `run()`, but for
-the average time it takes to call `run()` __10 times__. The
-benchmark harness executes a 10-call timing loop repeatedly until 2 seconds
-have elapsed; the reported result is the average of the runtimes for each
-loop.
+By default, the reported runtime in `BenchmarkBase` is not for a single call to
+`run()`, but for the average time it takes to call `run()` __10 times__ for
+legacy reasons. The benchmark harness executes a 10-call timing loop repeatedly
+until 2 seconds have elapsed; the reported result is the average of the runtimes
+for each loop. This behavior will change in a future major version.
+
+Benchmarks extending `BenchmarkBase` can opt into the reporting the average time
+to call `run()` once by overriding the `exercise` method:
+
+```dart
+  @override
+  void exercise() => run();
+```
+
+`AsyncBenchmarkBase` already reports the average time to call `run()` __once__.
 
 ## Comparing Results
 
@@ -23,9 +34,9 @@ In other words, don't compare apples with oranges.
 
 ## Features
 
-* `BenchmarkBase` class that all new benchmarks should `extend`
-* Two sample benchmarks (DeltaBlue & Richards)
-* Template benchmark that you can copy and paste when building new benchmarks
+* `BenchmarkBase` class that all new benchmarks should `extend`.
+* `AsyncBenchmarkBase` for asynchronous benchmarks.
+* Template benchmark that you can copy and paste when building new benchmarks.
 
 ## Getting Started
 
@@ -48,11 +59,13 @@ dart pub install
 import 'package:benchmark_harness/benchmark_harness.dart';
 ```
 
-4\. Create a benchmark class which inherits from `BenchmarkBase`
+4\. Create a benchmark class which inherits from `BenchmarkBase` or
+    `AsyncBenchmarkBase`.
 
 ## Example
 
-Create a dart file in the [`benchmark/`](https://dart.dev/tools/pub/package-layout#tests-and-benchmarks)
+Create a dart file in the
+[`benchmark/`](https://dart.dev/tools/pub/package-layout#tests-and-benchmarks)
 folder of your package.
 
 ```dart
@@ -78,6 +91,10 @@ class TemplateBenchmark extends BenchmarkBase {
   // Not measured teardown code executed after the benchmark runs.
   @override
   void teardown() {}
+
+  // To opt into the reporting the time per run() instead of per 10 run() calls.
+  //@override
+  //void exercise() => run();
 }
 
 void main() {
@@ -92,9 +109,12 @@ void main() {
 Template(RunTime): 0.1568472448997197 us.
 ```
 
-This is the average amount of time it takes to run `run()` 10 times.
+This is the average amount of time it takes to run `run()` 10 times for
+`BenchmarkBase` and once for `AsyncBenchmarkBase`.
 > µs is an abbreviation for microseconds.
 
 ### Contributions
 
-This package is carefully curated by the Dart team to exact specifications. Please open an issue with any proposed changes, before submitting a Pull Request.
+This package is carefully curated by the Dart team to exact specifications.
+Please open an issue with any proposed changes, before submitting a Pull
+Request.

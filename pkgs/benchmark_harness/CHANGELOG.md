@@ -1,4 +1,6 @@
-## 2.0.1-dev
+## 2.1.0
+
+- Add AsyncBenchmarkBase.
 
 ## 2.0.0
 
