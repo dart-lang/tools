@@ -1,5 +1,6 @@
-Source Maps
-===========
+[![Dart CI](https://github.com/dart-lang/source_maps/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/source_maps/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/source_maps.svg)](https://pub.dev/packages/source_maps)
+[![package publisher](https://img.shields.io/pub/publisher/source_maps.svg)](https://pub.dev/packages/source_maps/publisher)
 
 This project implements a Dart pub package to work with source maps. The
 implementation is based on the [source map version 3 spec][spec] which was

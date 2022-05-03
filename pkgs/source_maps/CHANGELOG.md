@@ -1,5 +1,8 @@
 # 0.10.11-dev
 
+- Switch to `package:lints`.
+- Populate the pubspec `repository` field.
+
 ## 0.10.10
 
 * Stable release for null safety.
