@@ -1,6 +1,8 @@
 ## 2.1.1-dev
 
 * Require Dart 2.14
+* Migrate to `package:lints`.
+* Populate the pubspec `repository` field.
 
 ## 2.1.0
 

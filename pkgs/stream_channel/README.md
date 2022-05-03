@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/stream_channel/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/stream_channel/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/stream_channel.svg)](https://pub.dev/packages/stream_channel)
+[![package publisher](https://img.shields.io/pub/publisher/stream_channel.svg)](https://pub.dev/packages/stream_channel/publisher)
+
 This package exposes the `StreamChannel` interface, which represents a two-way
 communication channel. Each `StreamChannel` exposes a `Stream` for receiving
 data and a `StreamSink` for sending it. 
