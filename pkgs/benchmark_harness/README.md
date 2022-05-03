@@ -1,4 +1,6 @@
-# Dart Benchmark Harness
+[![Dart CI](https://github.com/dart-lang/benchmark_harness/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/benchmark_harness/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/benchmark_harness.svg)](https://pub.dev/packages/benchmark_harness)
+[![package publisher](https://img.shields.io/pub/publisher/benchmark_harness.svg)](https://pub.dev/packages/benchmark_harness/publisher)
 
 The Dart project benchmark harness is the recommended starting point when
 building a benchmark for Dart.
