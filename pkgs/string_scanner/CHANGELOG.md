@@ -1,5 +1,7 @@
 ## 1.1.1-dev
 
+* Populate the pubspec `repository` field.
+
 ## 1.1.0
 
 * Stable release for null safety.
