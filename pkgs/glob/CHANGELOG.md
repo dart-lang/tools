@@ -1,3 +1,8 @@
+## 2.1.0-dev
+
+* Return empty results instead of throwing when trying to list a path that does
+  not exist.
+
 ## 2.0.2
 
 * Drop package:pedantic dependency, use package:lints instead.

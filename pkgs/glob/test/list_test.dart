@@ -26,15 +26,17 @@ void main() {
       expect(Glob('*', context: p.url).list, throwsStateError);
     });
 
-    test('reports exceptions for non-existent case-sensitive directories', () {
-      expect(Glob('non/existent/**', caseSensitive: true).list().toList(),
-          throwsA(isA<FileSystemException>()));
+    test('returns empty list for non-existent case-sensitive directories',
+        () async {
+      expect(await Glob('non/existent/**', caseSensitive: true).list().toList(),
+          []);
     });
 
-    test('reports exceptions for non-existent case-insensitive directories',
-        () {
-      expect(Glob('non/existent/**', caseSensitive: false).list().toList(),
-          throwsA(isA<FileSystemException>()));
+    test('returns empty list for non-existent case-insensitive directories',
+        () async {
+      expect(
+          await Glob('non/existent/**', caseSensitive: false).list().toList(),
+          []);
     });
   });
 
@@ -43,32 +45,27 @@ void main() {
       expect(Glob('*', context: p.url).listSync, throwsStateError);
     });
 
-    test('reports exceptions for non-existent case-sensitive directories', () {
-      expect(Glob('non/existent/**', caseSensitive: true).listSync,
-          throwsA(isA<FileSystemException>()));
+    test('returns empty list for non-existent case-sensitive directories', () {
+      expect(Glob('non/existent/**', caseSensitive: true).listSync(), []);
     });
 
-    test('reports exceptions for non-existent case-insensitive directories',
+    test('returns empty list for non-existent case-insensitive directories',
         () {
-      expect(Glob('non/existent/**', caseSensitive: false).listSync,
-          throwsA(isA<FileSystemException>()));
+      expect(Glob('non/existent/**', caseSensitive: false).listSync(), []);
     });
   });
 
   group('when case-sensitive', () {
     test('lists literals case-sensitively', () {
-      expect(Glob('foo/BAZ/qux', caseSensitive: true).listSync,
-          throwsA(isA<FileSystemException>()));
+      expect(Glob('foo/BAZ/qux', caseSensitive: true).listSync(), []);
     });
 
     test('lists ranges case-sensitively', () {
-      expect(Glob('foo/[BX][A-Z]z/qux', caseSensitive: true).listSync,
-          throwsA(isA<FileSystemException>()));
+      expect(Glob('foo/[BX][A-Z]z/qux', caseSensitive: true).listSync(), []);
     });
 
     test('options preserve case-sensitivity', () {
-      expect(Glob('foo/{BAZ,ZAP}/qux', caseSensitive: true).listSync,
-          throwsA(isA<FileSystemException>()));
+      expect(Glob('foo/{BAZ,ZAP}/qux', caseSensitive: true).listSync(), []);
     });
   });
 

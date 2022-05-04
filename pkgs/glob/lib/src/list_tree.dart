@@ -319,6 +319,7 @@ class _ListTreeNode {
       return fileSystem
           .directory(dir)
           .list(recursive: true, followLinks: followLinks)
+          .ignoreMissing()
           .where((entity) => _matches(p.relative(entity.path, from: dir)));
     }
 
@@ -340,6 +341,7 @@ class _ListTreeNode {
       var entities = await fileSystem
           .directory(dir)
           .list(followLinks: followLinks)
+          .ignoreMissing()
           .toList();
       await _validateIntermediateChildrenAsync(dir, entities, fileSystem);
 
@@ -353,17 +355,8 @@ class _ListTreeNode {
         children!.forEach((sequence, child) {
           if (entity is! Directory) return;
           if (!sequence.matches(basename)) return;
-          var stream = child
-              .list(p.join(dir, basename), fileSystem, followLinks: followLinks)
-              .handleError((_) {}, test: (error) {
-            // Ignore errors from directories not existing. We do this here so
-            // that we only ignore warnings below wild cards. For example, the
-            // glob "foo/bar/*/baz" should fail if "foo/bar" doesn't exist but
-            // succeed if "foo/bar/qux/baz" doesn't exist.
-            return error is FileSystemException &&
-                (error.osError!.errorCode == _enoent ||
-                    error.osError!.errorCode == _enoentWin);
-          });
+          var stream = child.list(p.join(dir, basename), fileSystem,
+              followLinks: followLinks);
           resultGroup.add(stream);
         });
       }
@@ -409,10 +402,15 @@ class _ListTreeNode {
   Iterable<FileSystemEntity> listSync(String dir, FileSystem fileSystem,
       {bool followLinks = true}) {
     if (isRecursive) {
-      return fileSystem
-          .directory(dir)
-          .listSync(recursive: true, followLinks: followLinks)
-          .where((entity) => _matches(p.relative(entity.path, from: dir)));
+      try {
+        return fileSystem
+            .directory(dir)
+            .listSync(recursive: true, followLinks: followLinks)
+            .where((entity) => _matches(p.relative(entity.path, from: dir)));
+      } on FileSystemException catch (error) {
+        if (error.isMissing) return const [];
+        rethrow;
+      }
     }
 
     // Don't spawn extra [Directory.listSync] calls when we already know exactly
@@ -428,7 +426,13 @@ class _ListTreeNode {
       });
     }
 
-    var entities = fileSystem.directory(dir).listSync(followLinks: followLinks);
+    List<FileSystemEntity> entities;
+    try {
+      entities = fileSystem.directory(dir).listSync(followLinks: followLinks);
+    } on FileSystemException catch (error) {
+      if (error.isMissing) return const [];
+      rethrow;
+    }
     _validateIntermediateChildrenSync(dir, entities, fileSystem);
 
     return entities.expand((entity) {
@@ -440,23 +444,10 @@ class _ListTreeNode {
       entities.addAll(children!.keys
           .where((sequence) => sequence.matches(basename))
           .expand((sequence) {
-        try {
-          return children![sequence]!
-              .listSync(p.join(dir, basename), fileSystem,
-                  followLinks: followLinks)
-              .toList();
-        } on FileSystemException catch (error) {
-          // Ignore errors from directories not existing. We do this here so
-          // that we only ignore warnings below wild cards. For example, the
-          // glob "foo/bar/*/baz" should fail if "foo/bar" doesn't exist but
-          // succeed if "foo/bar/qux/baz" doesn't exist.
-          if (error.osError!.errorCode == _enoent ||
-              error.osError!.errorCode == _enoentWin) {
-            return const [];
-          } else {
-            rethrow;
-          }
-        }
+        return children![sequence]!
+            .listSync(p.join(dir, basename), fileSystem,
+                followLinks: followLinks)
+            .toList();
       }));
 
       return entities;
@@ -508,4 +499,16 @@ SequenceNode _join(Iterable<AstNode> components) {
     nodes.add(component);
   }
   return SequenceNode(nodes, caseSensitive: first.caseSensitive);
+}
+
+extension on Stream<FileSystemEntity> {
+  Stream<FileSystemEntity> ignoreMissing() => handleError((_) {},
+      test: (error) => error is FileSystemException && error.isMissing);
+}
+
+extension on FileSystemException {
+  bool get isMissing {
+    final errorCode = osError?.errorCode;
+    return errorCode == _enoent || errorCode == _enoentWin;
+  }
 }
