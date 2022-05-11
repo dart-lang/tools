@@ -1,4 +1,5 @@
 ## 1.3.0-dev
+* Bump the minimum Dart SDK version to 2.15.0
 * Add a `--package` flag, which takes the package's root directory, instead of
   the .package file. Deprecate the `--packages` flag.
 * Deprecate the packagesPath parameter and add packagePath instead, in
@@ -6,6 +7,8 @@
 * Add a new executable to the package, `test_with_coverage`. This simplifies the
   most common use case of coverage, running all the tests for a package, and
   generating an lcov.info file.
+* Use the `libraryFilters` option in `getSourceReport` to speed up coverage runs
+  that use `scopedOutput`.
 
 ## 1.2.0
 

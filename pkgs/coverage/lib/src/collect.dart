@@ -42,40 +42,49 @@ const _retryInterval = Duration(milliseconds: 200);
 ///
 /// if [isolateIds] is set, the coverage gathering will be restricted to only
 /// those VM isolates.
+///
+/// [serviceOverrideForTesting] is for internal testing only, and should not be
+/// set by users.
 Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String>? scopedOutput,
     {Set<String>? isolateIds,
     Duration? timeout,
     bool functionCoverage = false,
-    bool branchCoverage = false}) async {
+    bool branchCoverage = false,
+    VmService? serviceOverrideForTesting}) async {
   scopedOutput ??= <String>{};
 
-  // Create websocket URI. Handle any trailing slashes.
-  final pathSegments =
-      serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()..add('ws');
-  final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
-
   late VmService service;
-  await retry(() async {
-    try {
-      final options = const CompressionOptions(enabled: false);
-      final socket = await WebSocket.connect('$uri', compression: options);
-      final controller = StreamController<String>();
-      socket.listen((data) => controller.add(data as String), onDone: () {
-        controller.close();
-        service.dispose();
-      });
-      service = VmService(
-          controller.stream, (String message) => socket.add(message),
-          log: StdoutLog(), disposeHandler: () => socket.close());
-      await service.getVM().timeout(_retryInterval);
-    } on TimeoutException {
-      // The signature changed in vm_service version 6.0.0.
-      // ignore: await_only_futures
-      await service.dispose();
-      rethrow;
-    }
-  }, _retryInterval, timeout: timeout);
+  if (serviceOverrideForTesting != null) {
+    service = serviceOverrideForTesting;
+  } else {
+    // Create websocket URI. Handle any trailing slashes.
+    final pathSegments =
+        serviceUri.pathSegments.where((c) => c.isNotEmpty).toList()..add('ws');
+    final uri = serviceUri.replace(scheme: 'ws', pathSegments: pathSegments);
+
+    await retry(() async {
+      try {
+        final options = const CompressionOptions(enabled: false);
+        final socket = await WebSocket.connect('$uri', compression: options);
+        final controller = StreamController<String>();
+        socket.listen((data) => controller.add(data as String), onDone: () {
+          controller.close();
+          service.dispose();
+        });
+        service = VmService(
+            controller.stream, (String message) => socket.add(message),
+            log: StdoutLog(), disposeHandler: () => socket.close());
+        await service.getVM().timeout(_retryInterval);
+      } on TimeoutException {
+        // The signature changed in vm_service version 6.0.0.
+        // ignore: await_only_futures
+        await service.dispose();
+        rethrow;
+      }
+    }, _retryInterval, timeout: timeout);
+  }
+
   try {
     if (waitPaused) {
       await _waitIsolatesPaused(service, timeout: timeout);
@@ -112,6 +121,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
   final version = await service.getVersion();
   final reportLines = _versionCheck(version, 3, 51);
   final branchCoverageSupported = _versionCheck(version, 3, 56);
+  final libraryFilters = _versionCheck(version, 3, 57);
   if (branchCoverage && !branchCoverageSupported) {
     branchCoverage = false;
     stderr.writeln('Branch coverage was requested, but is not supported'
@@ -141,7 +151,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
       if (coveredIsolateGroups.contains(isolateGroupId)) continue;
       coveredIsolateGroups.add(isolateGroupId);
     }
-    if (scopedOutput.isNotEmpty) {
+    if (scopedOutput.isNotEmpty && !libraryFilters) {
       final scripts = await service.getScripts(isolateRef.id!);
       for (var script in scripts.scripts!) {
         final uri = Uri.parse(script.uri!);
@@ -164,6 +174,9 @@ Future<Map<String, dynamic>> _getAllCoverage(
         sourceReportKinds,
         forceCompile: true,
         reportLines: reportLines ? true : null,
+        libraryFilters: scopedOutput.isNotEmpty && libraryFilters
+            ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
+            : null,
       );
       final coverage = await _getCoverageJson(service, isolateRef,
           isolateReport, includeDart, functionCoverage, reportLines);
@@ -274,7 +287,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
   final needScripts = functionCoverage || !reportLines;
   for (var range in report.ranges!) {
     final scriptRef = report.scripts![range.scriptIndex!];
-    final scriptUri = Uri.parse(report.scripts![range.scriptIndex!].uri!);
+    final scriptUri = Uri.parse(scriptRef.uri!);
 
     // Not returned in scripts section of source report.
     if (scriptUri.scheme == 'evaluate') continue;
