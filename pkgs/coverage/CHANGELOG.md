@@ -1,4 +1,5 @@
-## 1.3.0-dev
+## 1.3.0 - 2022-5-11
+
 * Bump the minimum Dart SDK version to 2.15.0
 * Add a `--package` flag, which takes the package's root directory, instead of
   the .package file. Deprecate the `--packages` flag.
@@ -10,7 +11,7 @@
 * Use the `libraryFilters` option in `getSourceReport` to speed up coverage runs
   that use `scopedOutput`.
 
-## 1.2.0
+## 1.2.0 - 2022-3-24
 
 * Support branch level coverage information, when running tests in the Dart VM.
   This is not supported for web tests yet.
