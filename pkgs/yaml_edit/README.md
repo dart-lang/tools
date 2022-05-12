@@ -1,4 +1,6 @@
-# Yaml Editor
+[![Dart CI](https://github.com/dart-lang/yaml_edit/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/yaml_edit/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/yaml_edit.svg)](https://pub.dev/packages/yaml_edit)
+[![package publisher](https://img.shields.io/pub/publisher/yaml_edit.svg)](https://pub.dev/packages/yaml_edit/publisher)
 
 A library for [YAML](https://yaml.org) manipulation while preserving comments.
 

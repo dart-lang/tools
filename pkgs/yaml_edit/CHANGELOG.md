@@ -1,4 +1,4 @@
-## v2.0.3-dev
+## v2.0.3
 - Updated the value of the pubspec `repository` field.
 
 ## v2.0.2
