@@ -4,6 +4,9 @@ analyzer:
   strong-mode:
     implicit-casts: false
 
+  exclude:
+    - var/**
+
 linter:
   rules:
     # these rules are documented on and in the same order as

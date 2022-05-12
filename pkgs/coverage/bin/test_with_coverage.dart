@@ -11,6 +11,9 @@ import 'package:coverage/src/util.dart' show extractVMServiceUri;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 
+import 'collect_coverage.dart' as collect_coverage;
+import 'format_coverage.dart' as format_coverage;
+
 final allProcesses = <Process>[];
 
 Future<void> dartRun(List<String> args,
@@ -145,7 +148,6 @@ Future<Flags> parseArgs(List<String> arguments) async {
 
 Future<void> main(List<String> arguments) async {
   final flags = await parseArgs(arguments);
-  final thisDir = path.dirname(Platform.script.path);
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
 
@@ -175,9 +177,7 @@ Future<void> main(List<String> arguments) async {
   });
   final serviceUri = await serviceUriCompleter.future;
 
-  await dartRun([
-    'run',
-    'collect_coverage.dart',
+  await collect_coverage.main([
     '--wait-paused',
     '--resume-isolates',
     '--uri=$serviceUri',
@@ -186,12 +186,10 @@ Future<void> main(List<String> arguments) async {
     if (flags.functionCoverage) '--function-coverage',
     '-o',
     outJson,
-  ], workingDir: thisDir);
+  ]);
   await testProcess;
 
-  await dartRun([
-    'run',
-    'format_coverage.dart',
+  await format_coverage.main([
     '--lcov',
     '--check-ignore',
     '--package=${flags.packageDir}',
@@ -199,6 +197,6 @@ Future<void> main(List<String> arguments) async {
     outJson,
     '-o',
     outLcov,
-  ], workingDir: thisDir);
+  ]);
   exit(0);
 }
