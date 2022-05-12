@@ -1,6 +1,8 @@
-## 1.1.1-dev
+## 1.1.1
 
 * Populate the pubspec `repository` field.
+* Switch to `package:lints`.
+* Remove a dependency on `package:charcode`.
 
 ## 1.1.0
 
