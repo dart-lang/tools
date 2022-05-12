@@ -1,3 +1,7 @@
+## 1.3.1
+* Fix running `dart pub global run coverage:test_with_coverage` or 
+  `dart run coverage:test_with_coverage`
+
 ## 1.3.0 - 2022-5-11
 
 * Bump the minimum Dart SDK version to 2.15.0
