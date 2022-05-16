@@ -47,7 +47,7 @@ void main() {
         return 42;
       }
 
-      final safeTimoutDuration = _delay * _failCount * 2;
+      final safeTimoutDuration = _delay * _failCount * 10;
       final value = await retry(
         failCountTimes,
         _delay,

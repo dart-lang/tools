@@ -1,4 +1,10 @@
+## 1.3.2
+
+* Fix test_with_coverage listening to an unsupported signal on windows.
+* Fix `--reportOn` on windows using incorrect path separators.
+
 ## 1.3.1
+
 * Fix running `dart pub global run coverage:test_with_coverage` or 
   `dart run coverage:test_with_coverage`
 

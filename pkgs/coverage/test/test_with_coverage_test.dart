@@ -31,13 +31,12 @@ void main() {
     assert(_wasSuccessful(localPub));
 
     final globalPub =
-        _runSync(['pub', 'global', 'activate', '-s', 'git', _pkgDir]);
+        _runSync(['pub', 'global', 'activate', '-s', 'path', _pkgDir]);
     assert(_wasSuccessful(globalPub));
   });
 
   tearDownAll(() {
     for (final entry in [
-      Directory(_pubCachePathInTestPkgSubDir),
       Directory(p.join(_testPkgDirPath, '.dart_tool')),
       Directory(p.join(_testPkgDirPath, 'coverage')),
       File(p.join(_testPkgDirPath, '.packages')),
@@ -75,7 +74,8 @@ bool _wasSuccessful(ProcessResult result) => result.exitCode == 0;
 void _expectSuccessful(ProcessResult result) {
   if (!_wasSuccessful(result)) {
     fail(
-      "Process excited with exit code: ${result.exitCode}. Stderr: ${result.stderr}",
+      'Process excited with exit code: '
+      '${result.exitCode}. Stderr: ${result.stderr}',
     );
   }
 }

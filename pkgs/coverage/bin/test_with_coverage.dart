@@ -157,7 +157,9 @@ Future<void> main(List<String> arguments) async {
 
   watchExitSignal(ProcessSignal.sighup);
   watchExitSignal(ProcessSignal.sigint);
-  watchExitSignal(ProcessSignal.sigterm);
+  if (!Platform.isWindows) {
+    watchExitSignal(ProcessSignal.sigterm);
+  }
 
   final serviceUriCompleter = Completer<Uri>();
   final testProcess = dartRun([
