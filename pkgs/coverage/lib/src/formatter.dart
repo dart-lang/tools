@@ -192,6 +192,7 @@ typedef _PathFilter = bool Function(String path);
 _PathFilter _getPathFilter(List<String>? reportOn) {
   if (reportOn == null) return (String path) => true;
 
-  final absolutePaths = reportOn.map(p.absolute).toList();
-  return (String path) => absolutePaths.any((item) => path.startsWith(item));
+  final absolutePaths = reportOn.map(p.canonicalize).toList();
+  return (String path) =>
+      absolutePaths.any((item) => p.canonicalize(path).startsWith(item));
 }
