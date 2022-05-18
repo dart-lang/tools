@@ -38,8 +38,12 @@ Clock get clock => Zone.current[_clockKey] as Clock? ?? const Clock();
 // ignore: deprecated_member_use_from_same_package
 /// If [isFinal] is `true`, calls to [withClock] within [callback] will throw a
 /// [StateError]. However, this parameter is deprecated and should be avoided.
-T withClock<T>(Clock clock, T Function() callback,
-    {@deprecated bool isFinal = false}) {
+T withClock<T>(
+  Clock clock,
+  T Function() callback, {
+  @Deprecated('This parameter is deprecated and should be avoided')
+      bool isFinal = false,
+}) {
   if ((Zone.current[_isFinalKey] ?? false) == true) {
     throw StateError(
         'Cannot call withClock() within a call to withClock(isFinal = true).');
