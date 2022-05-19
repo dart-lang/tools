@@ -1,4 +1,4 @@
-## 0.2.1-dev
+## 0.2.1
 
 - Use package:lints for analysis.
 - Populate the pubspec `repository` field.

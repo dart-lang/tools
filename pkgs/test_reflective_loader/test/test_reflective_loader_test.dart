@@ -33,7 +33,7 @@ class TestReflectiveLoaderTest {
 
   @failingTest
   Future test_fails_throws_async() {
-    return new Future.error('foo');
+    return Future.error('foo');
   }
 
   @skippedTest

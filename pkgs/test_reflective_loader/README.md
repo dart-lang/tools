@@ -1,6 +1,5 @@
-# test_reflective_loader
-
 [![Build Status](https://github.com/dart-lang/test_reflective_loader/workflows/Dart/badge.svg)](https://github.com/dart-lang/test_reflective_loader/actions)
+[![pub package](https://img.shields.io/pub/v/test_reflective_loader.svg)](https://pub.dev/packages/test_reflective_loader)
 
 Support for discovering tests and test suites using reflection.
 

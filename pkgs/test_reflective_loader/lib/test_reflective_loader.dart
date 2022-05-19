@@ -13,28 +13,28 @@ import 'package:test/test.dart' as test_package;
  * A marker annotation used to annotate test methods which are expected to fail
  * when asserts are enabled.
  */
-const _AssertFailingTest assertFailingTest = const _AssertFailingTest();
+const _AssertFailingTest assertFailingTest = _AssertFailingTest();
 
 /**
  * A marker annotation used to annotate test methods which are expected to fail.
  */
-const FailingTest failingTest = const FailingTest();
+const FailingTest failingTest = FailingTest();
 
 /**
  * A marker annotation used to instruct dart2js to keep reflection information
  * for the annotated classes.
  */
-const _ReflectiveTest reflectiveTest = const _ReflectiveTest();
+const _ReflectiveTest reflectiveTest = _ReflectiveTest();
 
 /**
  * A marker annotation used to annotate test methods that should be skipped.
  */
-const SkippedTest skippedTest = const SkippedTest();
+const SkippedTest skippedTest = SkippedTest();
 
 /**
  * A marker annotation used to annotate "solo" groups and tests.
  */
-const _SoloTest soloTest = const _SoloTest();
+const _SoloTest soloTest = _SoloTest();
 
 final List<_Group> _currentGroups = <_Group>[];
 int _currentSuiteLevel = 0;
@@ -58,7 +58,7 @@ final bool _isCheckedMode = () {
  * create embedded suites.  If the current suite is the top-level one, perform
  * check for "solo" groups and tests, and run all or only "solo" items.
  */
-void defineReflectiveSuite(void define(), {String name = ''}) {
+void defineReflectiveSuite(void Function() define, {String name = ''}) {
   String groupName = _currentSuiteName;
   _currentSuiteLevel++;
   try {
@@ -96,7 +96,7 @@ void defineReflectiveTests(Type type) {
   if (!classMirror.metadata.any((InstanceMirror annotation) =>
       annotation.type.reflectedType == _ReflectiveTest)) {
     String name = MirrorSystem.getName(classMirror.qualifiedName);
-    throw new Exception('Class $name must have annotation "@reflectiveTest" '
+    throw Exception('Class $name must have annotation "@reflectiveTest" '
         'in order to be run by runReflectiveTests.');
   }
 
@@ -104,7 +104,7 @@ void defineReflectiveTests(Type type) {
   {
     bool isSolo = _hasAnnotationInstance(classMirror, soloTest);
     String className = MirrorSystem.getName(classMirror.simpleName);
-    group = new _Group(isSolo, _combineNames(_currentSuiteName, className));
+    group = _Group(isSolo, _combineNames(_currentSuiteName, className));
     _currentGroups.add(group);
   }
 
@@ -229,16 +229,18 @@ bool _hasSkippedTestAnnotation(MethodMirror method) =>
 
 Future<Object?> _invokeSymbolIfExists(
     InstanceMirror instanceMirror, Symbol symbol) {
-  Object? invocationResult = null;
+  Object? invocationResult;
   InstanceMirror? closure;
   try {
     closure = instanceMirror.getField(symbol);
-  } on NoSuchMethodError {}
+  } on NoSuchMethodError {
+    // ignore
+  }
 
   if (closure is ClosureMirror) {
     invocationResult = closure.apply([]).reflectee;
   }
-  return new Future.value(invocationResult);
+  return Future.value(invocationResult);
 }
 
 /**
@@ -252,7 +254,8 @@ Future<Object?> _invokeSymbolIfExists(
 Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   bool passed = false;
   return runZonedGuarded(() {
-    return new Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
+    // ignore: void_checks
+    return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
       passed = true;
       test_package.fail('Test passed - expected to fail.');
     }).catchError((e) {
@@ -272,7 +275,7 @@ Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
 }
 
 Future<Object?> _runTest(ClassMirror classMirror, Symbol symbol) {
-  InstanceMirror instanceMirror = classMirror.newInstance(new Symbol(''), []);
+  InstanceMirror instanceMirror = classMirror.newInstance(Symbol(''), []);
   return _invokeSymbolIfExists(instanceMirror, #setUp)
       .then((_) => instanceMirror.invoke(symbol, []).reflectee)
       .whenComplete(() => _invokeSymbolIfExists(instanceMirror, #tearDown));
@@ -341,7 +344,7 @@ class _Group {
 
   void addSkippedTest(String name) {
     var fullName = _combineNames(this.name, name);
-    tests.add(new _Test.skipped(isSolo, fullName));
+    tests.add(_Test.skipped(isSolo, fullName));
   }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
@@ -349,7 +352,7 @@ class _Group {
     var fullName = _combineNames(this.name, name);
     var timeout =
         _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
-    tests.add(new _Test(isSolo, fullName, function, timeout?._timeout));
+    tests.add(_Test(isSolo, fullName, function, timeout?._timeout));
   }
 }
 
