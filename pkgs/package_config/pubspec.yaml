@@ -1,5 +1,5 @@
 name: package_config
-version: 2.0.3-dev
+version: 2.0.3
 description: Support for reading and writing Dart Package Configuration files.
 repository: https://github.com/dart-lang/package_config
 

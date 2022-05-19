@@ -1,4 +1,8 @@
-## 2.0.3-dev
+## 2.0.3
+
+- Improve file read performance; improve lookup performance.
+- Emit an error when a package is inside the package root of another package.
+- Fix a link in the readme.
 
 ## 2.0.2
 
