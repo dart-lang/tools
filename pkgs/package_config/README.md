@@ -1,5 +1,6 @@
 [![Build Status](https://github.com/dart-lang/package_config/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/package_config/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
 [![pub package](https://img.shields.io/pub/v/package_config.svg)](https://pub.dev/packages/package_config)
+[![package publisher](https://img.shields.io/pub/publisher/package_config.svg)](https://pub.dev/packages/package_config/publisher)
 
 Support for working with **Package Configuration** files as described
 in the Package Configuration v2 [design document](https://github.com/dart-lang/language/blob/master/accepted/2.8/language-versioning/package-config-file-v2.md).
