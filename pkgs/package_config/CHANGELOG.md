@@ -1,4 +1,4 @@
-## 2.0.3
+## 2.0.3-dev
 
 - Improve file read performance; improve lookup performance.
 - Emit an error when a package is inside the package root of another package.
