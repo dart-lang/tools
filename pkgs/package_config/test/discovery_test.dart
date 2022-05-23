@@ -201,6 +201,32 @@ void main() {
         expect(hadError, true);
       });
     });
+
+    // Does not find .packages if no package_config.json and minVersion > 1.
+    fileTest('.packages ignored', {
+      '.packages': packagesFile,
+      'script.dart': 'main(){}'
+    }, (Directory directory) async {
+      var config = (await findPackageConfig(directory, minVersion: 2));
+      expect(config, null);
+    });
+
+    // Finds package_config.json in super-directory, with .packages in
+    // subdir and minVersion > 1.
+    fileTest('package_config.json recursive .packages ignored', {
+      '.dart_tool': {
+        'package_config.json': packageConfigFile,
+      },
+      'subdir': {
+        '.packages': packagesFile,
+        'script.dart': 'main(){}',
+      }
+    }, (Directory directory) async {
+      var config = (await findPackageConfig(subdir(directory, 'subdir/'),
+          minVersion: 2))!;
+      expect(config.version, 2);
+      validatePackagesFile(config, directory);
+    });
   });
 
   group('loadPackageConfig', () {

@@ -39,7 +39,7 @@ abstract class PackageConfig {
   /// including the two paths being the same.
   ///
   /// * No package's root must be the same as another package's root.
-  /// * The package-root of a package must be inside the pacakge's root.
+  /// * The package-root of a package must be inside the package's root.
   /// * If one package's package-root is inside another package's root,
   ///   then the latter package's package root must not be inside the former
   ///   package's root. (No getting between a package and its package root!)

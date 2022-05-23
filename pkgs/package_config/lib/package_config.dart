@@ -111,10 +111,21 @@ Future<PackageConfig> loadPackageConfigUri(Uri file,
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
 ///
+/// If [minVersion] is set to something greater than its default,
+/// any lower-version configuration files are ignored in the search.
+///
 /// Returns `null` if no configuration file is found.
 Future<PackageConfig?> findPackageConfig(Directory directory,
-        {bool recurse = true, void Function(Object error)? onError}) =>
-    discover.findPackageConfig(directory, recurse, onError ?? throwError);
+    {bool recurse = true,
+    void Function(Object error)? onError,
+    int minVersion = 1}) {
+  if (minVersion > PackageConfig.maxVersion) {
+    throw ArgumentError.value(minVersion, 'minVersion',
+        'Maximum known version is ${PackageConfig.maxVersion}');
+  }
+  return discover.findPackageConfig(
+      directory, minVersion, recurse, onError ?? throwError);
+}
 
 /// Finds a package configuration relative to [location].
 ///
@@ -155,13 +166,22 @@ Future<PackageConfig?> findPackageConfig(Directory directory,
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
 ///
+/// If [minVersion] is set to something greater than its default,
+/// any lower-version configuration files are ignored in the search.
+///
 /// Returns `null` if no configuration file is found.
 Future<PackageConfig?> findPackageConfigUri(Uri location,
-        {bool recurse = true,
-        Future<Uint8List?> Function(Uri uri)? loader,
-        void Function(Object error)? onError}) =>
-    discover.findPackageConfigUri(
-        location, loader, onError ?? throwError, recurse);
+    {bool recurse = true,
+    int minVersion = 1,
+    Future<Uint8List?> Function(Uri uri)? loader,
+    void Function(Object error)? onError}) {
+  if (minVersion > PackageConfig.maxVersion) {
+    throw ArgumentError.value(minVersion, 'minVersion',
+        'Maximum known version is ${PackageConfig.maxVersion}');
+  }
+  return discover.findPackageConfigUri(
+      location, minVersion, loader, onError ?? throwError, recurse);
+}
 
 /// Writes a package configuration to the provided directory.
 ///

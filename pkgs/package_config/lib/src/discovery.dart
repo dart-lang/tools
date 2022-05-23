@@ -25,15 +25,20 @@ final Uri parentPath = Uri(path: '..');
 /// and stopping when something is found.
 ///
 /// * Check if a `.dart_tool/package_config.json` file exists in the directory.
-/// * Check if a `.packages` file exists in the directory.
+/// * Check if a `.packages` file exists in the directory
+///   (if `minVersion <= 1`).
 /// * Repeat these checks for the parent directories until reaching the
 ///   root directory if [recursive] is true.
 ///
 /// If any of these tests succeed, a `PackageConfig` class is returned.
 /// Returns `null` if no configuration was found. If a configuration
 /// is needed, then the caller can supply [PackageConfig.empty].
+///
+/// If [minVersion] is greated than 1, `.packages` files are ignored.
+/// If [minVersion] is greater than the version read from the
+/// `package_config.json` file, it too is ignored.
 Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
-    bool recursive, void Function(Object error) onError) async {
+    int minVersion, bool recursive, void Function(Object error) onError) async {
   var directory = baseDirectory;
   if (!directory.isAbsolute) directory = directory.absolute;
   if (!await directory.exists()) {
@@ -41,7 +46,8 @@ Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
   }
   do {
     // Check for $cwd/.packages
-    var packageConfig = await findPackagConfigInDirectory(directory, onError);
+    var packageConfig =
+        await findPackagConfigInDirectory(directory, minVersion, onError);
     if (packageConfig != null) return packageConfig;
     if (!recursive) break;
     // Check in parent directories.
@@ -55,6 +61,7 @@ Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
 /// Similar to [findPackageConfig] but based on a URI.
 Future<PackageConfig?> findPackageConfigUri(
     Uri location,
+    int minVersion,
     Future<Uint8List?> Function(Uri uri)? loader,
     void Function(Object error) onError,
     bool recursive) async {
@@ -67,6 +74,7 @@ Future<PackageConfig?> findPackageConfigUri(
     if (location.isScheme('file')) {
       return findPackageConfig(
           Directory.fromUri(location.resolveUri(currentPath)),
+          minVersion,
           recursive,
           onError);
     }
@@ -77,12 +85,15 @@ Future<PackageConfig?> findPackageConfigUri(
     var file = location.resolveUri(packageConfigJsonPath);
     var bytes = await loader(file);
     if (bytes != null) {
-      return parsePackageConfigBytes(bytes, file, onError);
+      var config = parsePackageConfigBytes(bytes, file, onError);
+      if (config.version >= minVersion) return config;
     }
-    file = location.resolveUri(dotPackagesPath);
-    bytes = await loader(file);
-    if (bytes != null) {
-      return packages_file.parse(bytes, file, onError);
+    if (minVersion <= 1) {
+      file = location.resolveUri(dotPackagesPath);
+      bytes = await loader(file);
+      if (bytes != null) {
+        return packages_file.parse(bytes, file, onError);
+      }
     }
     if (!recursive) break;
     var parent = location.resolveUri(parentPath);
@@ -102,15 +113,23 @@ Future<PackageConfig?> findPackageConfigUri(
 /// If [onError] is supplied, parsing errors are reported using that, and
 /// a best-effort attempt is made to return a package configuration.
 /// This may be the empty package configuration.
-Future<PackageConfig?> findPackagConfigInDirectory(
-    Directory directory, void Function(Object error) onError) async {
+///
+/// If [minVersion] is greated than 1, `.packages` files are ignored.
+/// If [minVersion] is greater than the version read from the
+/// `package_config.json` file, it too is ignored.
+Future<PackageConfig?> findPackagConfigInDirectory(Directory directory,
+    int minVersion, void Function(Object error) onError) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {
-    return await readPackageConfigJsonFile(packageConfigFile, onError);
+    var config = await readPackageConfigJsonFile(packageConfigFile, onError);
+    if (config.version < minVersion) return null;
+    return config;
   }
-  packageConfigFile = await checkForDotPackagesFile(directory);
-  if (packageConfigFile != null) {
-    return await readDotPackagesFile(packageConfigFile, onError);
+  if (minVersion <= 1) {
+    packageConfigFile = await checkForDotPackagesFile(directory);
+    if (packageConfigFile != null) {
+      return await readDotPackagesFile(packageConfigFile, onError);
+    }
   }
   return null;
 }

@@ -1,4 +1,11 @@
-## 2.0.3-dev
+## 2.1.0
+
+- Adds `minVersion` to `findPackageConfig` and `findPackageConfigVersion`
+  which allows ignoring earlier versions (which currently only means
+  ignoring version 1, aka. `.packages` files.)
+
+- Changes the version number of `SimplePackageConfig.empty` to the
+  current maximum version.
 
 - Improve file read performance; improve lookup performance.
 - Emit an error when a package is inside the package root of another package.

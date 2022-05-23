@@ -145,6 +145,33 @@ void main() {
       expect(() => findPackageConfigUri(directory, loader: loader),
           throwsA(TypeMatcher<FormatException>()));
     });
+
+    // Does not find .packages if no package_config.json and minVersion > 1.
+    loaderTest('.packages ignored', {
+      '.packages': packagesFile,
+      'script.dart': 'main(){}'
+    }, (directory, loader) async {
+      var config = (await findPackageConfigUri(directory,
+          minVersion: 2, loader: loader));
+      expect(config, null);
+    });
+
+    // Finds package_config.json in super-directory, with .packages in
+    // subdir and minVersion > 1.
+    loaderTest('package_config.json recursive ignores .packages', {
+      '.dart_tool': {
+        'package_config.json': packageConfigFile,
+      },
+      'subdir': {
+        '.packages': packagesFile,
+        'script.dart': 'main(){}',
+      }
+    }, (directory, loader) async {
+      var config = (await findPackageConfigUri(directory.resolve('subdir/'),
+          minVersion: 2, loader: loader))!;
+      expect(config.version, 2);
+      validatePackagesFile(config, directory);
+    });
   });
 
   group('loadPackageConfig', () {

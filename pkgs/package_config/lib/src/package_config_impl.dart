@@ -37,8 +37,11 @@ class SimplePackageConfig implements PackageConfig {
   ///
   /// The empty configuration can be used in cases where no configuration is
   /// found, but code expects a non-null configuration.
+  ///
+  /// The version number is [PackageConfig.maxVersion] to avoid
+  /// minimum-version filters discarding the configuration.
   const SimplePackageConfig.empty()
-      : version = 1,
+      : version = PackageConfig.maxVersion,
         _packageTree = const EmptyPackageTree(),
         _packages = const <String, Package>{},
         extraData = null;
