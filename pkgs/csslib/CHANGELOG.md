@@ -1,11 +1,8 @@
-## 0.17.3-dev
-
-- Add commas between PercentageTerms in keyframe rules.
-
 ## 0.17.2
 
 - Fixed a crash caused by `min()`, `max()` and `clamp()` functions that contain
   mathematical expressions.
+- Add commas between PercentageTerms in keyframe rules.
 
 ## 0.17.1
 
