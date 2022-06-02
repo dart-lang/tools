@@ -139,15 +139,6 @@ void testForImplementation(
       expect(span.text, equals('o\nbar\nba'));
     });
 
-    test('.spanFrom() handles surrogate pairs correctly', () {
-      scanner = create('fo\u{12345}o');
-      scanner.scan('fo');
-      final state = scanner.state;
-      scanner.scan('\u{12345}o');
-      final span = scanner.spanFrom(state);
-      expect(span.text, equals('\u{12345}o'));
-    });
-
     test('.emptySpan returns an empty span at the current location', () {
       scanner.scan('foo\nba');
 
@@ -163,6 +154,65 @@ void testForImplementation(
       expect(span.start.sourceUrl, equals(Uri.parse('source')));
 
       expect(span.text, equals(''));
+    });
+
+    group('before a surrogate pair', () {
+      final codePoint = '\uD83D\uDC6D'.runes.first;
+      const highSurrogate = 0xD83D;
+
+      late SpanScanner scanner;
+      setUp(() {
+        scanner = create('foo: \uD83D\uDC6D bar');
+        expect(scanner.scan('foo: '), isTrue);
+      });
+
+      test('readChar returns the high surrogate and moves into the pair', () {
+        expect(scanner.readChar(), equals(highSurrogate));
+        expect(scanner.line, equals(0));
+        expect(scanner.column, equals(6));
+        expect(scanner.position, equals(6));
+      });
+
+      test('readCodePoint returns the code unit and moves past the pair', () {
+        expect(scanner.readCodePoint(), equals(codePoint));
+        expect(scanner.line, equals(0));
+        expect(scanner.column, equals(7));
+        expect(scanner.position, equals(7));
+      });
+
+      test('scanChar with the high surrogate moves into the pair', () {
+        expect(scanner.scanChar(highSurrogate), isTrue);
+        expect(scanner.line, equals(0));
+        expect(scanner.column, equals(6));
+        expect(scanner.position, equals(6));
+      });
+
+      test('scanChar with the code point moves past the pair', () {
+        expect(scanner.scanChar(codePoint), isTrue);
+        expect(scanner.line, equals(0));
+        expect(scanner.column, equals(7));
+        expect(scanner.position, equals(7));
+      });
+
+      test('expectChar with the high surrogate moves into the pair', () {
+        scanner.expectChar(highSurrogate);
+        expect(scanner.line, equals(0));
+        expect(scanner.column, equals(6));
+        expect(scanner.position, equals(6));
+      });
+
+      test('expectChar with the code point moves past the pair', () {
+        scanner.expectChar(codePoint);
+        expect(scanner.line, equals(0));
+        expect(scanner.column, equals(7));
+        expect(scanner.position, equals(7));
+      });
+
+      test('spanFrom covers the surrogate pair', () {
+        final state = scanner.state;
+        scanner.scan('\uD83D\uDC6D b');
+        expect(scanner.spanFrom(state).text, equals('\uD83D\uDC6D b'));
+      });
     });
   });
 }

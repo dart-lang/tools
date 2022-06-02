@@ -5,6 +5,7 @@
 import 'charcode.dart';
 import 'line_scanner.dart';
 import 'span_scanner.dart';
+import 'utils.dart';
 
 // TODO(nweiz): Currently this duplicates code in line_scanner.dart. Once
 // sdk#23770 is fully complete, we should move the shared code into a mixin.
@@ -90,7 +91,7 @@ class EagerSpanScanner extends SpanScanner {
       _line += 1;
       _column = 0;
     } else {
-      _column += 1;
+      _column += inSupplementaryPlane(character) ? 2 : 1;
     }
   }
 

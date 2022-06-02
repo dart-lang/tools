@@ -1,3 +1,17 @@
+## 1.2.0
+
+* Add better support for reading code points in the Unicode supplementary plane:
+
+  * Added `StringScanner.readCodePoint()`, which consumes an entire Unicode code
+    point even if it's represented by two UTF-16 code units.
+
+  * Added `StringScanner.peekCodePoint()`, which returns an entire Unicode code
+    point even if it's represented by two UTF-16 code units.
+
+  * `StringScanner.scanChar()` and `StringScanner.expectChar()` will now
+    properly consume two UTF-16 code units if they're passed Unicode code points
+    in the supplementary plane.
+
 ## 1.1.1
 
 * Populate the pubspec `repository` field.

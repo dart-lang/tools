@@ -81,6 +81,39 @@ void main() {
     });
   });
 
+  group('readCodePoint()', () {
+    test('on a non-newline character increases the column but not the line',
+        () {
+      scanner.readCodePoint();
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(1));
+    });
+
+    test('consuming a newline resets the column and increases the line', () {
+      scanner.expect('foo');
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(3));
+
+      scanner.readCodePoint();
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(0));
+    });
+
+    test("consuming halfway through a CR LF doesn't count as a line", () {
+      scanner.expect('foo\nbar');
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(3));
+
+      scanner.readCodePoint();
+      expect(scanner.line, equals(1));
+      expect(scanner.column, equals(4));
+
+      scanner.readCodePoint();
+      expect(scanner.line, equals(2));
+      expect(scanner.column, equals(0));
+    });
+  });
+
   group('scanChar()', () {
     test('on a non-newline character increases the column but not the line',
         () {
@@ -111,6 +144,59 @@ void main() {
       scanner.scanChar($lf);
       expect(scanner.line, equals(2));
       expect(scanner.column, equals(0));
+    });
+  });
+
+  group('before a surrogate pair', () {
+    final codePoint = '\uD83D\uDC6D'.runes.first;
+    const highSurrogate = 0xD83D;
+
+    late LineScanner scanner;
+    setUp(() {
+      scanner = LineScanner('foo: \uD83D\uDC6D');
+      expect(scanner.scan('foo: '), isTrue);
+    });
+
+    test('readChar returns the high surrogate and moves into the pair', () {
+      expect(scanner.readChar(), equals(highSurrogate));
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(6));
+      expect(scanner.position, equals(6));
+    });
+
+    test('readCodePoint returns the code unit and moves past the pair', () {
+      expect(scanner.readCodePoint(), equals(codePoint));
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(7));
+      expect(scanner.position, equals(7));
+    });
+
+    test('scanChar with the high surrogate moves into the pair', () {
+      expect(scanner.scanChar(highSurrogate), isTrue);
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(6));
+      expect(scanner.position, equals(6));
+    });
+
+    test('scanChar with the code point moves past the pair', () {
+      expect(scanner.scanChar(codePoint), isTrue);
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(7));
+      expect(scanner.position, equals(7));
+    });
+
+    test('expectChar with the high surrogate moves into the pair', () {
+      scanner.expectChar(highSurrogate);
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(6));
+      expect(scanner.position, equals(6));
+    });
+
+    test('expectChar with the code point moves past the pair', () {
+      scanner.expectChar(codePoint);
+      expect(scanner.line, equals(0));
+      expect(scanner.column, equals(7));
+      expect(scanner.position, equals(7));
     });
   });
 
