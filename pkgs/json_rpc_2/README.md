@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/json_rpc_2/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/json_rpc_2/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/json_rpc_2.svg)](https://pub.dev/packages/json_rpc_2)
+[![package publisher](https://img.shields.io/pub/publisher/json_rpc_2.svg)](https://pub.dev/packages/json_rpc_2/publisher)
+
 A library that implements the [JSON-RPC 2.0 spec][spec].
 
 [spec]: https://www.jsonrpc.org/specification

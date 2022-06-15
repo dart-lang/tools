@@ -1,5 +1,6 @@
-## 3.0.2-dev
+## 3.0.2
 
+* Switch to using `package:lints`.
 * Address a few analysis hint violations.
 * Populate the pubspec `repository` field.
 
