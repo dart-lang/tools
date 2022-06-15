@@ -156,19 +156,6 @@ void main() {
       67: 1,
       68: 1
     };
-    if (Platform.version.startsWith('1.')) {
-      // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
-      // closing brace of async function blocks.
-      // See: https://github.com/dart-lang/coverage/issues/196
-      expectedHits[23] = 0;
-    } else {
-      // Dart VMs version 2.0.0-dev.6.0 mark the opening brace of a function as
-      // coverable.
-      expectedHits[11] = 1;
-      expectedHits[28] = 1;
-      expectedHits[38] = 1;
-      expectedHits[42] = 3;
-    }
     expect(isolateFile?.lineHits, expectedHits);
     expect(isolateFile?.funcHits, {11: 1, 19: 1, 21: 0, 23: 1, 28: 1, 38: 1});
     expect(isolateFile?.funcNames, {
@@ -227,19 +214,6 @@ void main() {
       67: 1,
       68: 1
     };
-    if (Platform.version.startsWith('1.')) {
-      // Dart VMs prior to 2.0.0-dev.5.0 contain a bug that emits coverage on the
-      // closing brace of async function blocks.
-      // See: https://github.com/dart-lang/coverage/issues/196
-      expectedHits[23] = 0;
-    } else {
-      // Dart VMs version 2.0.0-dev.6.0 mark the opening brace of a function as
-      // coverable.
-      expectedHits[11] = 1;
-      expectedHits[28] = 1;
-      expectedHits[38] = 1;
-      expectedHits[42] = 3;
-    }
     expect(isolateFile?.lineHits, expectedHits);
     expect(isolateFile?.funcHits, {11: 1, 19: 1, 21: 0, 23: 1, 28: 1, 38: 1});
     expect(isolateFile?.funcNames, {
