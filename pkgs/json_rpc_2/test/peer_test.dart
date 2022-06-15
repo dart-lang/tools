@@ -5,11 +5,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:stream_channel/stream_channel.dart';
-import 'package:test/test.dart';
-
 import 'package:json_rpc_2/error_code.dart' as error_code;
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
+import 'package:stream_channel/stream_channel.dart';
+import 'package:test/test.dart';
 
 void main() {
   late StreamSink incoming;
@@ -240,6 +239,7 @@ void main() {
     );
     peer
       ..registerMethod('foo', () => throw exception)
+      // ignore: unawaited_futures
       ..listen();
 
     incomingController.add({'jsonrpc': '2.0', 'method': 'foo'});
