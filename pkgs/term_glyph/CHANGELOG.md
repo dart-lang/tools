@@ -1,4 +1,4 @@
-## 1.2.1-dev
+## 1.2.1
 
 * Migrate to `package:lints`.
 * Populate the pubspec `repository` field.
