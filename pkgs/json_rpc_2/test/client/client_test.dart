@@ -9,7 +9,8 @@ import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'utils.dart';
 
 void main() {
-  var controller;
+  late ClientController controller;
+
   setUp(() => controller = ClientController());
 
   test('sends a message and returns the response', () {

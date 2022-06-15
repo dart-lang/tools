@@ -11,7 +11,8 @@ import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'utils.dart';
 
 void main() {
-  var controller;
+  late ServerController controller;
+
   setUp(() => controller = ServerController());
 
   test('calls a registered method with the given name', () {

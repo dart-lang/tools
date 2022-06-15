@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -13,9 +12,10 @@ import 'package:json_rpc_2/error_code.dart' as error_code;
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
 void main() {
-  var incoming;
-  var outgoing;
-  var peer;
+  late StreamSink incoming;
+  late Stream outgoing;
+  late json_rpc.Peer peer;
+
   setUp(() {
     var incomingController = StreamController();
     incoming = incomingController.sink;

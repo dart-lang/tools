@@ -27,7 +27,7 @@ class Parameters {
   /// If this is accessed for a [Parameter] that was not passed, the request
   /// will be automatically rejected. To avoid this, use [Parameter.valueOr].
   dynamic get value => _value;
-  final _value;
+  final dynamic _value;
 
   Parameters(this.method, this._value);
 
@@ -111,7 +111,7 @@ class Parameter extends Parameters {
   final Parameters _parent;
 
   /// The key used to access [this], used to construct [_path].
-  final _key;
+  final dynamic _key;
 
   /// A human-readable representation of the path of getters used to get this.
   ///

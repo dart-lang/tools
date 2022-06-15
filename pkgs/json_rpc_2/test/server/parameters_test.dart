@@ -9,7 +9,7 @@ import 'utils.dart';
 
 void main() {
   group('with named parameters', () {
-    var parameters;
+    late json_rpc.Parameters parameters;
     setUp(() {
       parameters = json_rpc.Parameters('foo', {
         'num': 1.5,
@@ -277,7 +277,7 @@ void main() {
     });
 
     group('with a nested parameter map', () {
-      var nested;
+      late json_rpc.Parameter nested;
       setUp(() => nested = parameters['map']);
 
       test('[int] fails with a type error', () {
@@ -312,7 +312,8 @@ void main() {
     });
 
     group('with a nested parameter list', () {
-      var nested;
+      late json_rpc.Parameter nested;
+
       setUp(() => nested = parameters['list']);
 
       test('[string] fails with a type error', () {
@@ -348,7 +349,7 @@ void main() {
   });
 
   group('with positional parameters', () {
-    var parameters;
+    late json_rpc.Parameters parameters;
     setUp(() => parameters = json_rpc.Parameters('foo', [1, 2, 3, 4, 5]));
 
     test('value returns the wrapped value', () {

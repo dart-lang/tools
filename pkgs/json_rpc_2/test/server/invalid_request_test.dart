@@ -8,7 +8,7 @@ import 'package:json_rpc_2/error_code.dart' as error_code;
 import 'utils.dart';
 
 void main() {
-  var controller;
+  late ServerController controller;
   setUp(() => controller = ServerController());
 
   test('a non-Array/Object request is invalid', () {

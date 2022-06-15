@@ -172,7 +172,7 @@ class Server {
   /// if no response should be sent. [callback] may send custom
   /// errors by throwing an [RpcException].
   Future _handleRequest(request) async {
-    var response;
+    dynamic response;
     if (request is List) {
       if (request.isEmpty) {
         response = RpcException(error_code.INVALID_REQUEST,

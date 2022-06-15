@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: constant_identifier_names
+
 /// Error codes defined in the [JSON-RPC 2.0 specificiation][spec].
 ///
 /// These codes are generally used for protocol-level communication. Most of

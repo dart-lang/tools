@@ -10,9 +10,10 @@ import 'package:test/test.dart';
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
 void main() {
-  var responseController;
-  var requestController;
-  var client;
+  late StreamController responseController;
+  late StreamController requestController;
+  late json_rpc.Client client;
+
   setUp(() {
     responseController = StreamController();
     requestController = StreamController();

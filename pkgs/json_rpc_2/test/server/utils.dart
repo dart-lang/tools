@@ -50,7 +50,7 @@ class ServerController {
 void expectErrorResponse(
     ServerController controller, request, int errorCode, String message,
     {data}) {
-  var id;
+  dynamic id;
   if (request is Map) id = request['id'];
   data ??= {'request': request};
 
