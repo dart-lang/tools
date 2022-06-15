@@ -172,7 +172,7 @@ class Server {
   /// if no response should be sent. [callback] may send custom
   /// errors by throwing an [RpcException].
   Future _handleRequest(request) async {
-    var response;
+    dynamic response;
     if (request is List) {
       if (request.isEmpty) {
         response = RpcException(error_code.INVALID_REQUEST,
@@ -301,7 +301,7 @@ class Server {
   Future _tryFallbacks(Parameters params) {
     var iterator = _fallbacks.toList().iterator;
 
-    Future _tryNext() async {
+    Future tryNext() async {
       if (!iterator.moveNext()) {
         throw RpcException.methodNotFound(params.method);
       }
@@ -310,10 +310,10 @@ class Server {
         return await iterator.current(params);
       } on RpcException catch (error) {
         if (error.code != error_code.METHOD_NOT_FOUND) rethrow;
-        return _tryNext();
+        return tryNext();
       }
     }
 
-    return _tryNext();
+    return tryNext();
   }
 }

@@ -173,7 +173,10 @@ class Client {
   /// invokes [callback] without creating another batch. This means that
   /// responses are batched until the first batch ends.
   void withBatch(Function() callback) {
-    if (_batch != null) return callback();
+    if (_batch != null) {
+      callback();
+      return;
+    }
 
     _batch = [];
     return tryFinally(callback, () {

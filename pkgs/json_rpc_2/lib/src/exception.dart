@@ -24,7 +24,7 @@ class RpcException implements Exception {
   /// This must be a JSON-serializable object. If it's a [Map] without a
   /// `"request"` key, a copy of the request that caused the error will
   /// automatically be injected.
-  final data;
+  final Object? data;
 
   RpcException(this.code, this.message, {this.data});
 
@@ -44,9 +44,9 @@ class RpcException implements Exception {
   /// Converts this exception into a JSON-serializable object that's a valid
   /// JSON-RPC 2.0 error response.
   Map<String, dynamic> serialize(request) {
-    var modifiedData;
-    if (data is Map && !data.containsKey('request')) {
-      modifiedData = Map.from(data);
+    dynamic modifiedData;
+    if (data is Map && !(data as Map).containsKey('request')) {
+      modifiedData = Map.from(data as Map);
       modifiedData['request'] = request;
     } else if (data == null) {
       modifiedData = {'request': request};

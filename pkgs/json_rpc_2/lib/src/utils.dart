@@ -28,7 +28,7 @@ String getErrorMessage(error) =>
 /// This is synchronicity-agnostic relative to [body]. If [body] returns a
 /// [Future], this wil run asynchronously; otherwise it will run synchronously.
 void tryFinally(Function() body, Function() whenComplete) {
-  var result;
+  dynamic result;
   try {
     result = body();
   } catch (_) {
@@ -38,7 +38,6 @@ void tryFinally(Function() body, Function() whenComplete) {
 
   if (result is! Future) {
     whenComplete();
-    return result;
   } else {
     result.whenComplete(whenComplete);
   }
