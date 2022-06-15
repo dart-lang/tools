@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/pool/actions/workflows/ci.yml/badge.svg)](https://github.com/dart-lang/pool/actions/workflows/ci.yml)
+[![pub package](https://img.shields.io/pub/v/pool.svg)](https://pub.dev/packages/pool)
+[![package publisher](https://img.shields.io/pub/publisher/pool.svg)](https://pub.dev/packages/pool/publisher)
+
 The pool package exposes a `Pool` class which makes it easy to manage a limited
 pool of resources.
 
