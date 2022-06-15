@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Populate the pubspec `repository` field.
+
 ## 1.1.0
 
 - Add optional `signIn` argument to `startWithDebugPort`.
