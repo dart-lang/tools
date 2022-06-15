@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/clock/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/clock/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/clock.svg)](https://pub.dev/packages/clock)
+[![package publisher](https://img.shields.io/pub/publisher/clock.svg)](https://pub.dev/packages/clock/publisher)
+
 This package provides a [`Clock`][] class which encapsulates the notion of the
 "current time" and provides easy access to points relative to the current time.
 Different `Clock`s can have a different notion of the current time, and the
