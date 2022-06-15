@@ -1,4 +1,4 @@
-## 1.5.1-dev
+## 1.5.1
 
 * Switch to using `package:lints` for analysis.
 * Populate the pubspec `repository` field.
