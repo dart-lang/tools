@@ -1,4 +1,4 @@
-## 2.1.0-dev
+## 2.1.0
 
 * Return empty results instead of throwing when trying to list a path that does
   not exist.
