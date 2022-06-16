@@ -26,10 +26,9 @@ class Parameters {
   ///
   /// If this is accessed for a [Parameter] that was not passed, the request
   /// will be automatically rejected. To avoid this, use [Parameter.valueOr].
-  dynamic get value => _value;
-  final dynamic _value;
+  final dynamic value;
 
-  Parameters(this.method, this._value);
+  Parameters(this.method, this.value);
 
   /// Returns a single parameter.
   ///
