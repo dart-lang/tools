@@ -200,4 +200,16 @@ class Loader {
       return null;
     }
   }
+
+  /// Loads an imported resource and returns a [List] of lines.
+  /// Returns `null` if the resource could not be loaded.
+  List<String>? loadSync(String path) {
+    try {
+      // Ensure `readAsLinesSync` runs within the try block so errors are caught.
+      return File(path).readAsLinesSync();
+    } catch (_) {
+      failed.add(path);
+      return null;
+    }
+  }
 }
