@@ -397,9 +397,10 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           as _i3.Future<_i2.Success>);
   @override
   _i3.Future<_i2.UriList> lookupResolvedPackageUris(
-          String? isolateId, List<String>? uris) =>
+          String? isolateId, List<String>? uris, {bool? local}) =>
       (super.noSuchMethod(
-              Invocation.method(#lookupResolvedPackageUris, [isolateId, uris]),
+              Invocation.method(#lookupResolvedPackageUris, [isolateId, uris],
+                  {#local: local}),
               returnValue: Future<_i2.UriList>.value(_FakeUriList_25()))
           as _i3.Future<_i2.UriList>);
   @override
