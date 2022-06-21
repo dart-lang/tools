@@ -11,6 +11,7 @@ import 'util.dart';
 import 'hitmap.dart';
 
 const _retryInterval = Duration(milliseconds: 200);
+const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 
 /// Collects coverage for all isolates in the running VM.
 ///
@@ -264,9 +265,11 @@ Future<void> _processFunction(VmService service, IsolateRef isolateRef,
     final line = _getLineFromTokenPos(script, tokenPos);
 
     if (line == null) {
-      stderr.writeln(
-          'tokenPos $tokenPos in function ${funcRef.name} has no line mapping '
-          'for script ${script.uri!}');
+      if (_debugTokenPositions) {
+        stderr.writeln(
+            'tokenPos $tokenPos in function ${funcRef.name} has no line '
+            'mapping for script ${script.uri!}');
+      }
       return;
     }
     hits.funcNames![line] = funcName;
@@ -345,8 +348,10 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
       for (final pos in tokenPositions) {
         final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
         if (line == null) {
-          stderr
-              .write('tokenPos $pos has no line mapping for script $scriptUri');
+          if (_debugTokenPositions) {
+            stderr.write(
+                'tokenPos $pos has no line mapping for script $scriptUri');
+          }
           continue;
         }
         body(line);
