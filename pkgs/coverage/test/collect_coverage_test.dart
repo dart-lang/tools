@@ -166,8 +166,18 @@ void main() {
       28: 'fooAsync',
       38: 'isolateTask'
     });
-    expect(isolateFile?.branchHits,
-        {11: 1, 12: 1, 15: 0, 19: 1, 23: 1, 28: 1, 32: 0, 38: 1, 42: 1});
+    expect(isolateFile?.branchHits, {
+      11: 1,
+      12: 1,
+      15: 0,
+      19: 1,
+      23: 1,
+      28: 1,
+      if (platformVersionCheck(2, 18)) 29: 1,
+      32: 0,
+      38: 1,
+      42: 1
+    });
   }, skip: !platformVersionCheck(2, 17));
 
   test('HitMap.parseJson, old VM without branch coverage', () async {
