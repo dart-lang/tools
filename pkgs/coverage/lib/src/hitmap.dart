@@ -35,15 +35,21 @@ class HitMap {
 
   /// Creates a single hitmap from a raw json object.
   ///
+  /// Note that when [checkIgnoredLines] is `true` all files will be
+  /// read to get ignore comments. This will add some overhead.
+  /// To combat this when calling this function multiple times from the
+  /// same source (e.g. test runs of different files) a cache is taken
+  /// via [ignoredLinesInFilesCache]. If this cache contains the parsed
+  /// data for the specific file already, the file will not be read and
+  /// parsed again.
+  ///
   /// Throws away all entries that are not resolvable.
-  static Future<Map<String, HitMap>> parseJson(
+  static Map<String, HitMap> parseJsonSync(
     List<Map<String, dynamic>> jsonResult, {
-    bool checkIgnoredLines = false,
-    @Deprecated('Use packagePath') String? packagesPath,
-    String? packagePath,
-  }) async {
-    final resolver = await Resolver.create(
-        packagesPath: packagesPath, packagePath: packagePath);
+    required bool checkIgnoredLines,
+    required Map<String, List<List<int>>?> ignoredLinesInFilesCache,
+    required Resolver resolver,
+  }) {
     final loader = Loader();
 
     // Map of source file to map of line to hit count for that line.
@@ -59,16 +65,32 @@ class HitMap {
       var ignoredLinesList = <List<int>>[];
 
       if (checkIgnoredLines) {
-        final path = resolver.resolve(source);
-        if (path != null) {
-          final lines = await loader.load(path);
-          ignoredLinesList = getIgnoredLines(lines!);
-
-          // Ignore the whole file.
-          if (ignoredLinesList.length == 1 &&
-              ignoredLinesList[0][0] == 0 &&
-              ignoredLinesList[0][1] == lines.length) {
+        if (ignoredLinesInFilesCache.containsKey(source)) {
+          final List<List<int>>? cacheHit = ignoredLinesInFilesCache[source];
+          if (cacheHit == null) {
+            // Null-entry indicates that the whole file was ignored.
             continue;
+          }
+          ignoredLinesList = cacheHit;
+        } else {
+          final path = resolver.resolve(source);
+          if (path != null) {
+            final lines = loader.loadSync(path) ?? [];
+            ignoredLinesList = getIgnoredLines(lines);
+
+            // Ignore the whole file.
+            if (ignoredLinesList.length == 1 &&
+                ignoredLinesList[0][0] == 0 &&
+                ignoredLinesList[0][1] == lines.length) {
+              // Null-entry indicates that the whole file was ignored.
+              ignoredLinesInFilesCache[source] = null;
+              continue;
+            }
+            ignoredLinesInFilesCache[source] = ignoredLinesList;
+          } else {
+            // Couldn't resolve source. Allow cache to answer next time
+            // anyway.
+            ignoredLinesInFilesCache[source] = ignoredLinesList;
           }
         }
       }
@@ -155,6 +177,23 @@ class HitMap {
       }
     }
     return globalHitMap;
+  }
+
+  /// Creates a single hitmap from a raw json object.
+  ///
+  /// Throws away all entries that are not resolvable.
+  static Future<Map<String, HitMap>> parseJson(
+    List<Map<String, dynamic>> jsonResult, {
+    bool checkIgnoredLines = false,
+    @Deprecated('Use packagePath') String? packagesPath,
+    String? packagePath,
+  }) async {
+    final Resolver resolver = await Resolver.create(
+        packagesPath: packagesPath, packagePath: packagePath);
+    return parseJsonSync(jsonResult,
+        checkIgnoredLines: checkIgnoredLines,
+        ignoredLinesInFilesCache: {},
+        resolver: resolver);
   }
 
   /// Generates a merged hitmap from a set of coverage JSON files.

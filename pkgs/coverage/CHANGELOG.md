@@ -1,3 +1,9 @@
+## 1.4.0 - 2022-6-16
+
+* Added `HitMap.parseJsonSync` which takes a cache of ignored lines which can
+  speedup calls when `checkIgnoredLines` is true and the function is called
+  several times with overlapping files in the input json.
+
 ## 1.3.2
 
 * Fix test_with_coverage listening to an unsupported signal on windows.
