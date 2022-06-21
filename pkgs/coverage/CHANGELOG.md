@@ -3,6 +3,7 @@
 * Added `HitMap.parseJsonSync` which takes a cache of ignored lines which can
   speedup calls when `checkIgnoredLines` is true and the function is called
   several times with overlapping files in the input json.
+* Bump the version of vm_service to 9.0.0.
 
 ## 1.3.2
 
