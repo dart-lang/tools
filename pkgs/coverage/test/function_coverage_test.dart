@@ -66,10 +66,9 @@ void main() {
         p.absolute(p.join('test', 'test_files', 'test_library_part.dart'));
     final testLibraryPartUri = p.toUri(testLibraryPartPath).toString();
     expect(hitMap, contains(testLibraryPartUri));
-    // TODO(#399): Fix handling of part files then re-enable this check.
-    // final libraryPartFile = hitMap[testLibraryPartUri]!;
-    // expect(libraryPartFile.funcHits, {7: 1});
-    // expect(libraryPartFile.funcNames, {7: 'otherLibraryFunction'});
+    final libraryPartFile = hitMap[testLibraryPartUri]!;
+    expect(libraryPartFile.funcHits, {7: 1});
+    expect(libraryPartFile.funcNames, {7: 'otherLibraryFunction'});
   });
 }
 
