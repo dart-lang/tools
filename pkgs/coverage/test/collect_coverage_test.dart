@@ -4,7 +4,7 @@
 
 @Retry(3)
 import 'dart:async';
-import 'dart:convert' show json, LineSplitter, utf8;
+import 'dart:convert' show json;
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
@@ -350,19 +350,7 @@ Future<String> _collectCoverage(
   final sampleProcess = await runTestApp(openPort);
 
   // Capture the VM service URI.
-  final serviceUriCompleter = Completer<Uri>();
-  sampleProcess.stdout
-      .transform(utf8.decoder)
-      .transform(LineSplitter())
-      .listen((line) {
-    if (!serviceUriCompleter.isCompleted) {
-      final serviceUri = extractVMServiceUri(line);
-      if (serviceUri != null) {
-        serviceUriCompleter.complete(serviceUri);
-      }
-    }
-  });
-  final serviceUri = await serviceUriCompleter.future;
+  final serviceUri = await serviceUriFromProcess(sampleProcess);
 
   // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
