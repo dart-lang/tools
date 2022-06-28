@@ -90,8 +90,9 @@ class Flags {
     this.port,
     this.testScript,
     this.functionCoverage,
-    this.branchCoverage,
-  );
+    this.branchCoverage, {
+    required this.rest,
+  });
 
   final String packageDir;
   final String packageName;
@@ -100,6 +101,7 @@ class Flags {
   final String testScript;
   final bool functionCoverage;
   final bool branchCoverage;
+  final List<String> rest;
 }
 
 Future<Flags> _parseArgs(List<String> arguments) async {
@@ -107,11 +109,16 @@ Future<Flags> _parseArgs(List<String> arguments) async {
   final args = parser.parse(arguments);
 
   void printUsage() {
-    print('Runs tests and collects coverage for a package. By default this '
-        "script assumes it's being run from the root directory of a package, and "
-        'outputs a coverage.json and lcov.info to ./coverage/');
-    print('Usage: dart test_with_coverage.dart [OPTIONS...]\n');
-    print(parser.usage);
+    print('''
+Runs tests and collects coverage for a package.
+
+By default this  script assumes it's being run from the root directory of a
+package, and outputs a coverage.json and lcov.info to ./coverage/
+
+Usage: test_with_coverage [OPTIONS...] [-- <test script OPTIONS>]
+
+${parser.usage}
+''');
   }
 
   Never fail(String msg) {
@@ -147,6 +154,7 @@ Future<Flags> _parseArgs(List<String> arguments) async {
     args['test'] as String,
     args['function-coverage'] as bool,
     args['branch-coverage'] as bool,
+    rest: args.rest,
   );
 }
 
@@ -166,21 +174,25 @@ Future<void> main(List<String> arguments) async {
   }
 
   final serviceUriCompleter = Completer<Uri>();
-  final testProcess = _dartRun([
-    if (flags.branchCoverage) '--branch-coverage',
-    'run',
-    '--pause-isolates-on-exit',
-    '--disable-service-auth-codes',
-    '--enable-vm-service=${flags.port}',
-    flags.testScript,
-  ], onStdout: (line) {
-    if (!serviceUriCompleter.isCompleted) {
-      final uri = extractVMServiceUri(line);
-      if (uri != null) {
-        serviceUriCompleter.complete(uri);
+  final testProcess = _dartRun(
+    [
+      if (flags.branchCoverage) '--branch-coverage',
+      'run',
+      '--pause-isolates-on-exit',
+      '--disable-service-auth-codes',
+      '--enable-vm-service=${flags.port}',
+      flags.testScript,
+      ...flags.rest,
+    ],
+    onStdout: (line) {
+      if (!serviceUriCompleter.isCompleted) {
+        final uri = extractVMServiceUri(line);
+        if (uri != null) {
+          serviceUriCompleter.complete(uri);
+        }
       }
-    }
-  });
+    },
+  );
   final serviceUri = await serviceUriCompleter.future;
 
   await collect_coverage.main([
