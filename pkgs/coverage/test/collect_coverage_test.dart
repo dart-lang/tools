@@ -11,6 +11,7 @@ import 'package:coverage/coverage.dart';
 import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_process/test_process.dart';
 
 import 'test_util.dart';
 
@@ -365,7 +366,7 @@ Future<String> _collectCoverage(
 
   // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
-  final toolResult = await Process.run(Platform.resolvedExecutable, [
+  final toolResult = await TestProcess.start(Platform.resolvedExecutable, [
     _collectAppPath,
     if (functionCoverage) '--function-coverage',
     if (branchCoverage) '--branch-coverage',
@@ -373,18 +374,14 @@ Future<String> _collectCoverage(
     '$serviceUri',
     '--resume-isolates',
     '--wait-paused'
-  ]).timeout(timeout, onTimeout: () {
+  ]);
+
+  await toolResult.shouldExit(0).timeout(timeout, onTimeout: () {
     throw 'We timed out waiting for the tool to finish.';
   });
-
-  if (toolResult.exitCode != 0) {
-    print(toolResult.stdout);
-    print(toolResult.stderr);
-    fail('Tool failed with exit code ${toolResult.exitCode}.');
-  }
 
   await sampleProcess.exitCode;
   await sampleProcess.stderr.drain();
 
-  return toolResult.stdout as String;
+  return toolResult.stdoutStream().join('\n');
 }
