@@ -4,6 +4,9 @@ publish_to: none
 environment:
   sdk: '>=2.15.0 <3.0.0'
 
-dependencies:
+dev_dependencies:
+  test: ^1.16.0
+
+dependency_overrides:
   coverage:
     path: ../../

@@ -1,3 +1,11 @@
+## 1.5.0
+
+* Support passing extra arguments to `test_with_coverage` which are then passed
+  to `package:test`.
+
+  Example: `dart run coverage:test_with_coverage -- --preset CI`
+
+
 ## 1.4.0 - 2022-6-16
 
 * Added `HitMap.parseJsonSync` which takes a cache of ignored lines which can
