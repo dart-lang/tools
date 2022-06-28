@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert' show json, LineSplitter, utf8;
+import 'dart:convert' show json;
 import 'dart:io';
 
 import 'package:coverage/coverage.dart';
@@ -85,20 +85,7 @@ Future<String> _collectCoverage() async {
     _funcCovApp
   ]);
 
-  // Capture the VM service URI.
-  final serviceUriCompleter = Completer<Uri>();
-  sampleProcess.stdout
-      .transform(utf8.decoder)
-      .transform(LineSplitter())
-      .listen((line) {
-    if (!serviceUriCompleter.isCompleted) {
-      final serviceUri = extractVMServiceUri(line);
-      if (serviceUri != null) {
-        serviceUriCompleter.complete(serviceUri);
-      }
-    }
-  });
-  final serviceUri = await serviceUriCompleter.future;
+  final serviceUri = await serviceUriFromProcess(sampleProcess);
 
   // Run the collection tool.
   final toolResult = await TestProcess.start(Platform.resolvedExecutable, [

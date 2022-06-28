@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert' show utf8, LineSplitter;
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:coverage/src/util.dart' show extractVMServiceUri;
+import 'package:coverage/src/util.dart'
+    show StandardOutExtension, extractVMServiceUri;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 
@@ -27,10 +27,7 @@ Future<void> dartRun(List<String> args,
   final broadStdout = process.stdout.asBroadcastStream();
   broadStdout.listen(stdout.add);
   if (onStdout != null) {
-    broadStdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen(onStdout);
+    broadStdout.lines().listen(onStdout);
   }
   process.stderr.listen(stderr.add);
   final result = await process.exitCode;

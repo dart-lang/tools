@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 // TODO(cbracken) make generic
@@ -136,4 +138,23 @@ List<List<int>> getIgnoredLines(List<String>? lines) {
   }
 
   return isError ? [] : ignoredLines;
+}
+
+extension StandardOutExtension on Stream<List<int>> {
+  Stream<String> lines() =>
+      transform(SystemEncoding().decoder).transform(const LineSplitter());
+}
+
+Future<Uri> serviceUriFromProcess(Process sampleProcess) {
+  // Capture the VM service URI.
+  final serviceUriCompleter = Completer<Uri>();
+  sampleProcess.stdout.lines().listen((line) {
+    if (!serviceUriCompleter.isCompleted) {
+      final serviceUri = extractVMServiceUri(line);
+      if (serviceUri != null) {
+        serviceUriCompleter.complete(serviceUri);
+      }
+    }
+  });
+  return serviceUriCompleter.future;
 }
