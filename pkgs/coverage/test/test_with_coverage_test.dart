@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_process/test_process.dart';
 
 // this package
 final _pkgDir = p.absolute('');
@@ -26,13 +27,13 @@ final _env = {'PUB_CACHE': _pubCachePathInTestPkgSubDir};
 int _port = 9300;
 
 void main() {
-  setUpAll(() {
-    final localPub = _runSync(['pub', 'get']);
-    assert(_wasSuccessful(localPub));
+  setUpAll(() async {
+    final localPub = await _run(['pub', 'get']);
+    await localPub.shouldExit(0);
 
     final globalPub =
-        _runSync(['pub', 'global', 'activate', '-s', 'path', _pkgDir]);
-    assert(_wasSuccessful(globalPub));
+        await _run(['pub', 'global', 'activate', '-s', 'path', _pkgDir]);
+    await globalPub.shouldExit(0);
   });
 
   tearDownAll(() {
@@ -48,37 +49,34 @@ void main() {
     }
   });
 
-  test('dart run bin/test_with_coverage.dart', () {
-    return _runTest(['run', _testWithCoveragePath]).then(_expectSuccessful);
+  test('dart run bin/test_with_coverage.dart', () async {
+    final result = await _runTest(['run', _testWithCoveragePath]);
+    await result.shouldExit(0);
   });
-  test('dart run coverage:test_with_coverage', () {
-    return _runTest(['run', 'coverage:test_with_coverage'])
-        .then(_expectSuccessful);
+
+  test('dart run coverage:test_with_coverage', () async {
+    final result = await _runTest(['run', 'coverage:test_with_coverage']);
+    await result.shouldExit(0);
   });
-  test('dart pub global run coverage:test_with_coverage', () {
-    return _runTest(['pub', 'global', 'run', 'coverage:test_with_coverage'])
-        .then(_expectSuccessful);
+
+  test('dart pub global run coverage:test_with_coverage', () async {
+    final result =
+        await _runTest(['pub', 'global', 'run', 'coverage:test_with_coverage']);
+    await result.shouldExit(0);
   });
 }
 
-ProcessResult _runSync(List<String> args) =>
-    Process.runSync(Platform.executable, args,
-        workingDirectory: _testPkgDirPath, environment: _env);
-
-Future<ProcessResult> _run(List<String> args) =>
-    Process.run(Platform.executable, args,
-        workingDirectory: _testPkgDirPath, environment: _env);
-
-bool _wasSuccessful(ProcessResult result) => result.exitCode == 0;
-
-void _expectSuccessful(ProcessResult result) {
-  if (!_wasSuccessful(result)) {
-    fail(
-      'Process excited with exit code: '
-      '${result.exitCode}. Stderr: ${result.stderr}',
+Future<TestProcess> _run(List<String> args) => TestProcess.start(
+      Platform.executable,
+      args,
+      workingDirectory: _testPkgDirPath,
+      environment: _env,
     );
-  }
-}
 
-Future<ProcessResult> _runTest(List<String> invokeArgs) =>
-    _run([...invokeArgs, '--port', '${_port++}', '--test', _testPkgExePath]);
+Future<TestProcess> _runTest(List<String> invokeArgs) => _run([
+      ...invokeArgs,
+      '--port',
+      '${_port++}',
+      '--test',
+      _testPkgExePath,
+    ]);

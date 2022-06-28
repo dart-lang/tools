@@ -10,6 +10,7 @@ import 'package:coverage/coverage.dart';
 import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_process/test_process.dart';
 
 import 'test_util.dart';
 
@@ -100,25 +101,21 @@ Future<String> _collectCoverage() async {
   final serviceUri = await serviceUriCompleter.future;
 
   // Run the collection tool.
-  final toolResult = await Process.run(Platform.resolvedExecutable, [
+  final toolResult = await TestProcess.start(Platform.resolvedExecutable, [
     _collectAppPath,
     '--function-coverage',
     '--uri',
     '$serviceUri',
     '--resume-isolates',
     '--wait-paused'
-  ]).timeout(timeout, onTimeout: () {
+  ]);
+
+  await toolResult.shouldExit(0).timeout(timeout, onTimeout: () {
     throw 'We timed out waiting for the tool to finish.';
   });
-
-  print(toolResult.stderr);
-  if (toolResult.exitCode != 0) {
-    print(toolResult.stdout);
-    fail('Tool failed with exit code ${toolResult.exitCode}.');
-  }
 
   await sampleProcess.exitCode;
   await sampleProcess.stderr.drain();
 
-  return toolResult.stdout as String;
+  return toolResult.stdoutStream().join('\n');
 }
