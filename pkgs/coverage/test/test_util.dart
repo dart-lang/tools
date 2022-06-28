@@ -30,3 +30,14 @@ bool platformVersionCheck(int minMajor, int minMinor) {
   final minor = int.parse(match.group(2)!);
   return major > minMajor || (major == minMajor && minor >= minMinor);
 }
+
+extension ListTestExtension on List {
+  Map<String, List<Map<dynamic, dynamic>>> sources() => cast<Map>().fold(
+        <String, List<Map>>{},
+        (Map<String, List<Map>> map, value) {
+          final sourceUri = value['source'] as String;
+          map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
+          return map;
+        },
+      );
+}

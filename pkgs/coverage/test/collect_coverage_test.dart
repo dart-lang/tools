@@ -33,12 +33,7 @@ void main() {
     final coverage = jsonResult['coverage'] as List;
     expect(coverage, isNotEmpty);
 
-    final sources = coverage.cast<Map>().fold(<String, List<Map>>{},
-        (Map<String, List<Map>> map, value) {
-      final sourceUri = value['source'] as String;
-      map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
-      return map;
-    });
+    final sources = coverage.sources();
 
     for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
       expect(sampleCoverageData['hits'], isNotNull);
