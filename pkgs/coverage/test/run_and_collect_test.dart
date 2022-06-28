@@ -23,18 +23,18 @@ void main() {
     final coverage = json['coverage'] as List<Map<String, dynamic>>;
     expect(coverage, isNotEmpty);
 
-    final sources = coverage.fold<Map<String, dynamic>>(<String, dynamic>{},
-        (Map<String, dynamic> map, dynamic value) {
+    final sources = coverage.cast<Map>().fold(<String, List<Map>>{},
+        (Map<String, List<Map>> map, value) {
       final sourceUri = value['source'] as String;
       map.putIfAbsent(sourceUri, () => <Map>[]).add(value);
       return map;
     });
 
-    for (var sampleCoverageData in sources[_sampleAppFileUri]) {
+    for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
       expect(sampleCoverageData['hits'], isNotNull);
     }
 
-    for (var sampleCoverageData in sources[_isolateLibFileUri]) {
+    for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
       expect(sampleCoverageData['hits'], isNotEmpty);
     }
 
@@ -91,7 +91,7 @@ void checkIgnoredLinesInFilesCache(
   final String packageUtilKey = keys
       .where((element) => element.endsWith('package:coverage/src/util.dart'))
       .single;
-  expect(ignoredLinesInFilesCache[packageUtilKey], []);
+  expect(ignoredLinesInFilesCache[packageUtilKey], isEmpty);
   expect(ignoredLinesInFilesCache[testAppKey], null /* means whole file */);
   expect(ignoredLinesInFilesCache[testAppIsolateKey], [
     [51, 51],
