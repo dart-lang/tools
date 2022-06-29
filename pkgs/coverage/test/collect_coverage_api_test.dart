@@ -59,15 +59,27 @@ void main() {
 
     final sources = coverage.sources();
 
-    for (var sampleCoverageData in sources[_sampleAppFileUri]!) {
-      expect(sampleCoverageData['funcNames'], isNotEmpty);
-      expect(sampleCoverageData['funcHits'], isNotEmpty);
-    }
+    final functionInfo = functionInfoFromSources(sources);
 
-    for (var sampleCoverageData in sources[_isolateLibFileUri]!) {
-      expect(sampleCoverageData['funcNames'], isNotEmpty);
-      expect(sampleCoverageData['funcHits'], isNotEmpty);
-    }
+    expect(
+      functionInfo[_sampleAppFileUri]!,
+      {
+        'main': 1,
+        'usedMethod': 1,
+        'unusedMethod': 0,
+      },
+    );
+
+    expect(
+      functionInfo[_isolateLibFileUri]!,
+      {
+        'BarClass.BarClass': 1,
+        'fooAsync': 1,
+        'fooSync': 1,
+        'isolateTask': 1,
+        'BarClass.baz': 1
+      },
+    );
   });
 
   test('collect_coverage_api with branch coverage', () async {
