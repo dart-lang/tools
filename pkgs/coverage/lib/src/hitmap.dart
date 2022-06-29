@@ -99,7 +99,7 @@ class HitMap {
       final ignoredLines = ignoredLinesList.iterator;
       var hasCurrent = ignoredLines.moveNext();
 
-      bool _shouldIgnoreLine(Iterator<List<int>> ignoredRanges, int line) {
+      bool shouldIgnoreLine(Iterator<List<int>> ignoredRanges, int line) {
         if (!hasCurrent || ignoredRanges.current.isEmpty) {
           return false;
         }
@@ -138,7 +138,7 @@ class HitMap {
           final k = hits[i];
           if (k is int) {
             // Single line.
-            if (_shouldIgnoreLine(ignoredLines, k)) continue;
+            if (shouldIgnoreLine(ignoredLines, k)) continue;
 
             addToMap(hitMap, k, hits[i + 1] as int);
           } else if (k is String) {
@@ -147,7 +147,7 @@ class HitMap {
             final start = int.parse(k.substring(0, splitPos));
             final end = int.parse(k.substring(splitPos + 1));
             for (var j = start; j <= end; j++) {
-              if (_shouldIgnoreLine(ignoredLines, j)) continue;
+              if (shouldIgnoreLine(ignoredLines, j)) continue;
 
               addToMap(hitMap, j, hits[i + 1] as int);
             }
