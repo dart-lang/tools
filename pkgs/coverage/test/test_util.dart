@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 final String testAppPath = p.join('test', 'test_files', 'test_app.dart');
@@ -22,6 +23,13 @@ Future<TestProcess> runTestApp(int openPort) => TestProcess.start(
         testAppPath
       ],
     );
+
+List<Map<String, dynamic>> coverageDataFromJson(Map<String, dynamic> json) {
+  expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
+  expect(json, containsPair('type', 'CodeCoverage'));
+
+  return (json['coverage'] as List).cast<Map<String, dynamic>>();
+}
 
 final _versionPattern = RegExp('([0-9]+)\\.([0-9]+)\\.([0-9]+)');
 bool platformVersionCheck(int minMajor, int minMinor) {

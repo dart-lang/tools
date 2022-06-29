@@ -16,11 +16,7 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 void main() {
   test('runAndCollect', () async {
     // use runAndCollect and verify that the results match w/ running manually
-    final json = await runAndCollect(testAppPath);
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
-
-    final coverage = json['coverage'] as List<Map<String, dynamic>>;
+    final coverage = coverageDataFromJson(await runAndCollect(testAppPath));
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();

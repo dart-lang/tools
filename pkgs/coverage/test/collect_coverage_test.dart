@@ -26,12 +26,9 @@ void main() {
     final resultString = await _getCoverageResult();
 
     // analyze the output json
-    final jsonResult = json.decode(resultString) as Map<String, dynamic>;
+    final coverage =
+        coverageDataFromJson(json.decode(resultString) as Map<String, dynamic>);
 
-    expect(jsonResult.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(jsonResult, containsPair('type', 'CodeCoverage'));
-
-    final coverage = jsonResult['coverage'] as List;
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
