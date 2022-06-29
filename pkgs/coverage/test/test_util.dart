@@ -41,6 +41,44 @@ bool platformVersionCheck(int minMajor, int minMinor) {
   return major > minMajor || (major == minMajor && minor >= minMinor);
 }
 
+/// Returns a mapping of <URL: <function_name: hit_count>> from [sources].
+Map<String, Map<String, int>> functionInfoFromSources(
+  Map<String, List<Map<dynamic, dynamic>>> sources,
+) {
+  Map<int, String> getFuncNames(List list) {
+    return {
+      for (var i = 0; i < list.length; i += 2)
+        list[i] as int: list[i + 1] as String,
+    };
+  }
+
+  Map<int, int> getFuncHits(List list) {
+    return {
+      for (var i = 0; i < list.length; i += 2)
+        list[i] as int: list[i + 1] as int,
+    };
+  }
+
+  return {
+    for (var entry in sources.entries)
+      entry.key: entry.value.fold(
+        {},
+        (previousValue, element) {
+          expect(element['source'], entry.key);
+          final names = getFuncNames(element['funcNames'] as List);
+          final hits = getFuncHits(element['funcHits'] as List);
+
+          for (var pair in hits.entries) {
+            previousValue[names[pair.key]!] =
+                (previousValue[names[pair.key]!] ?? 0) + pair.value;
+          }
+
+          return previousValue;
+        },
+      ),
+  };
+}
+
 extension ListTestExtension on List {
   Map<String, List<Map<dynamic, dynamic>>> sources() => cast<Map>().fold(
         <String, List<Map>>{},
