@@ -350,7 +350,7 @@ Future<String> _collectCoverage(
   final sampleProcess = await runTestApp(openPort);
 
   // Capture the VM service URI.
-  final serviceUri = await serviceUriFromProcess(sampleProcess);
+  final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
 
   // Run the collection tool.
   // TODO: need to get all of this functionality in the lib
@@ -368,8 +368,7 @@ Future<String> _collectCoverage(
     throw 'We timed out waiting for the tool to finish.';
   });
 
-  await sampleProcess.exitCode;
-  await sampleProcess.stderr.drain();
+  await sampleProcess.shouldExit();
 
   return toolResult.stdoutStream().join('\n');
 }

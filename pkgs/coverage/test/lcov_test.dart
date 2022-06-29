@@ -9,6 +9,7 @@ import 'package:coverage/coverage.dart';
 import 'package:coverage/src/util.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:test_process/test_process.dart';
 
 import 'test_util.dart';
 
@@ -262,9 +263,9 @@ Future<Map<String, HitMap>> _getHitMap() async {
     _sampleAppPath
   ];
   final sampleProcess =
-      await Process.start(Platform.resolvedExecutable, sampleAppArgs);
+      await TestProcess.start(Platform.resolvedExecutable, sampleAppArgs);
 
-  final serviceUri = await serviceUriFromProcess(sampleProcess);
+  final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
 
   // collect hit map.
   final coverageJson = (await collect(serviceUri, true, true, false, <String>{},
@@ -272,12 +273,7 @@ Future<Map<String, HitMap>> _getHitMap() async {
       branchCoverage: true))['coverage'] as List<Map<String, dynamic>>;
   final hitMap = HitMap.parseJson(coverageJson);
 
-  // wait for sample app to terminate.
-  final exitCode = await sampleProcess.exitCode;
-  if (exitCode != 0) {
-    throw ProcessException(Platform.resolvedExecutable, sampleAppArgs,
-        'Fatal error. Exit code: $exitCode', exitCode);
-  }
-  await sampleProcess.stderr.drain();
+  await sampleProcess.shouldExit(0);
+
   return hitMap;
 }

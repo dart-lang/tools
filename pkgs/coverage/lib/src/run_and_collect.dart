@@ -30,7 +30,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
 
   final process = await Process.start(Platform.executable, dartArgs);
 
-  final serviceUri = await serviceUriFromProcess(process);
+  final serviceUri = await serviceUriFromProcess(process.stdout.lines());
   Map<String, dynamic> coverage;
   try {
     coverage = await collect(serviceUri, true, true, includeDart, <String>{},

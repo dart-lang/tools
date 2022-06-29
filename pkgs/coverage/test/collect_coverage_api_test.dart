@@ -111,7 +111,7 @@ Future<Map<String, dynamic>> _collectCoverage(
   // run the sample app, with the right flags
   final sampleProcess = await runTestApp(openPort);
 
-  final serviceUri = await serviceUriFromProcess(sampleProcess);
+  final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
   final isolateIdSet = isolateIds ? <String>{} : null;
 
   return collect(serviceUri, true, true, false, scopedOutput,
