@@ -145,10 +145,10 @@ extension StandardOutExtension on Stream<List<int>> {
       transform(SystemEncoding().decoder).transform(const LineSplitter());
 }
 
-Future<Uri> serviceUriFromProcess(Process sampleProcess) {
+Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
   // Capture the VM service URI.
   final serviceUriCompleter = Completer<Uri>();
-  sampleProcess.stdout.lines().listen((line) {
+  procStdout.listen((line) {
     if (!serviceUriCompleter.isCompleted) {
       final serviceUri = extractVMServiceUri(line);
       if (serviceUri != null) {

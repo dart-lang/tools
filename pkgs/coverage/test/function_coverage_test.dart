@@ -79,13 +79,13 @@ Future<String> _collectCoverage() async {
   final openPort = await getOpenPort();
 
   // Run the sample app with the right flags.
-  final sampleProcess = await Process.start(Platform.resolvedExecutable, [
+  final sampleProcess = await TestProcess.start(Platform.resolvedExecutable, [
     '--enable-vm-service=$openPort',
     '--pause_isolates_on_exit',
     _funcCovApp
   ]);
 
-  final serviceUri = await serviceUriFromProcess(sampleProcess);
+  final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
 
   // Run the collection tool.
   final toolResult = await TestProcess.start(Platform.resolvedExecutable, [
@@ -101,8 +101,7 @@ Future<String> _collectCoverage() async {
     throw 'We timed out waiting for the tool to finish.';
   });
 
-  await sampleProcess.exitCode;
-  await sampleProcess.stderr.drain();
+  await sampleProcess.shouldExit();
 
   return toolResult.stdoutStream().join('\n');
 }
