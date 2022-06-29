@@ -18,11 +18,7 @@ final _isolateLibFileUri = p.toUri(p.absolute(_isolateLibPath)).toString();
 
 void main() {
   test('collect_coverage_api', () async {
-    final json = await _collectCoverage();
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
-
-    final coverage = json['coverage'] as List;
+    final coverage = coverageDataFromJson(await _collectCoverage());
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
@@ -37,12 +33,9 @@ void main() {
   });
 
   test('collect_coverage_api with scoped output', () async {
-    final json =
-        await _collectCoverage(scopedOutput: <String>{}..add('coverage'));
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
-
-    final coverage = json['coverage'] as List;
+    final coverage = coverageDataFromJson(
+      await _collectCoverage(scopedOutput: <String>{}..add('coverage')),
+    );
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
@@ -54,20 +47,14 @@ void main() {
   });
 
   test('collect_coverage_api with isolateIds', () async {
-    final json = await _collectCoverage(isolateIds: true);
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
-
-    final coverage = json['coverage'] as List<Map<String, dynamic>>;
+    final coverage =
+        coverageDataFromJson(await _collectCoverage(isolateIds: true));
     expect(coverage, isEmpty);
   });
 
   test('collect_coverage_api with function coverage', () async {
-    final json = await _collectCoverage(functionCoverage: true);
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
-
-    final coverage = json['coverage'] as List;
+    final coverage =
+        coverageDataFromJson(await _collectCoverage(functionCoverage: true));
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
@@ -84,11 +71,8 @@ void main() {
   });
 
   test('collect_coverage_api with branch coverage', () async {
-    final json = await _collectCoverage(branchCoverage: true);
-    expect(json.keys, unorderedEquals(<String>['type', 'coverage']));
-    expect(json, containsPair('type', 'CodeCoverage'));
-
-    final coverage = json['coverage'] as List;
+    final coverage =
+        coverageDataFromJson(await _collectCoverage(branchCoverage: true));
     expect(coverage, isNotEmpty);
 
     final sources = coverage.sources();
