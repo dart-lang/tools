@@ -13,7 +13,7 @@ Future<dynamic> retry(Future Function() f, Duration interval,
     {Duration? timeout}) async {
   var keepGoing = true;
 
-  Future<dynamic> _withTimeout(Future Function() f, {Duration? duration}) {
+  Future<dynamic> withTimeout(Future Function() f, {Duration? duration}) {
     if (duration == null) {
       return f();
     }
@@ -27,7 +27,7 @@ Future<dynamic> retry(Future Function() f, Duration interval,
     });
   }
 
-  return _withTimeout(() async {
+  return withTimeout(() async {
     while (keepGoing) {
       try {
         return await f();

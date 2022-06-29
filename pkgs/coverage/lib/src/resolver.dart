@@ -77,13 +77,13 @@ class Resolver {
       return resolveSymbolicLinks(filePath);
     }
     if (uri.scheme == 'package') {
-      final _packages = this._packages;
-      if (_packages == null) {
+      final packages = _packages;
+      if (packages == null) {
         return null;
       }
 
       final packageName = uri.pathSegments[0];
-      final packageUri = _packages[packageName];
+      final packageUri = packages[packageName];
       if (packageUri == null) {
         failed.add('$uri');
         return null;

@@ -44,6 +44,7 @@ linter:
     - implementation_imports
     - library_names
     - library_prefixes
+    - no_leading_underscores_for_local_identifiers
     - non_constant_identifier_names
     # - one_member_abstracts
     # - only_throw_errors
