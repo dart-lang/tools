@@ -348,28 +348,25 @@ List<T> _flattenMap<T>(Map map) {
 }
 
 /// Returns a JSON hit map backward-compatible with pre-1.16.0 SDKs.
-Map<String, dynamic> hitmapToJson(HitMap hitmap, Uri scriptUri) {
-  final json = <String, dynamic>{};
-  json['source'] = '$scriptUri';
-  json['script'] = {
-    'type': '@Script',
-    'fixedId': true,
-    'id': 'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
-    'uri': '$scriptUri',
-    '_kind': 'library',
-  };
-  json['hits'] = _flattenMap<int>(hitmap.lineHits);
-  if (hitmap.funcHits != null) {
-    json['funcHits'] = _flattenMap<int>(hitmap.funcHits!);
-  }
-  if (hitmap.funcNames != null) {
-    json['funcNames'] = _flattenMap<dynamic>(hitmap.funcNames!);
-  }
-  if (hitmap.branchHits != null) {
-    json['branchHits'] = _flattenMap<int>(hitmap.branchHits!);
-  }
-  return json;
-}
+Map<String, dynamic> hitmapToJson(HitMap hitmap, Uri scriptUri) =>
+    <String, dynamic>{
+      'source': '$scriptUri',
+      'script': {
+        'type': '@Script',
+        'fixedId': true,
+        'id':
+            'libraries/1/scripts/${Uri.encodeComponent(scriptUri.toString())}',
+        'uri': '$scriptUri',
+        '_kind': 'library',
+      },
+      'hits': _flattenMap<int>(hitmap.lineHits),
+      if (hitmap.funcHits != null)
+        'funcHits': _flattenMap<int>(hitmap.funcHits!),
+      if (hitmap.funcNames != null)
+        'funcNames': _flattenMap<dynamic>(hitmap.funcNames!),
+      if (hitmap.branchHits != null)
+        'branchHits': _flattenMap<int>(hitmap.branchHits!),
+    };
 
 /// Sorts the hits array based on the line numbers.
 List _sortHits(List hits) {
