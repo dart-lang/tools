@@ -7,8 +7,8 @@ import 'dart:io';
 
 import 'package:vm_service/vm_service.dart';
 
-import 'util.dart';
 import 'hitmap.dart';
+import 'util.dart';
 
 const _retryInterval = Duration(milliseconds: 200);
 const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
@@ -374,9 +374,9 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
     }
 
     forEachLine(coverage.hits!, (line) {
-      _incrementCountForKey(hits.lineHits, line);
+      hits.lineHits.increment(line);
       if (hits.funcNames != null && hits.funcNames!.containsKey(line)) {
-        _incrementCountForKey(hits.funcHits!, line);
+        hits.funcHits!.increment(line);
       }
     });
     forEachLine(coverage.misses!, (line) {
@@ -390,7 +390,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
     if (branchCoverage != null) {
       hits.branchHits ??= <int, int>{};
       forEachLine(branchCoverage.hits!, (line) {
-        _incrementCountForKey(hits.branchHits!, line);
+        hits.branchHits!.increment(line);
       });
       forEachLine(branchCoverage.misses!, (line) {
         hits.branchHits!.putIfAbsent(line, () => 0);
@@ -406,8 +406,8 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
   return coverage;
 }
 
-void _incrementCountForKey(Map<int, int> counter, int key) {
-  counter[key] = counter.containsKey(key) ? counter[key]! + 1 : 1;
+extension _MapExtension<T> on Map<T, int> {
+  void increment(T key) => this[key] = (this[key] ?? 0) + 1;
 }
 
 Future<String> _getFuncName(
