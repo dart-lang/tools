@@ -5,9 +5,8 @@ Dart.
 [![Coverage Status](https://coveralls.io/repos/dart-lang/coverage/badge.svg?branch=master)](https://coveralls.io/r/dart-lang/coverage)
 [![Pub](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage)
 
+## Tools
 
-Tools
------
 `collect_coverage` collects coverage JSON from the Dart VM Service.
 `format_coverage` formats JSON coverage data into either
 [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) or pretty-printed format.
@@ -17,9 +16,9 @@ Tools
     dart pub global activate coverage
 
 Consider adding the `dart pub global run` executables directory to your path.
-See [Running a script from your PATH](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path)
+See
+[Running a script from your PATH](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path)
 for more details.
-
 
 #### Running tests with coverage
 
@@ -61,7 +60,7 @@ where `--uri` specifies the Dart VM Service URI emitted by the VM.
 
 If `collect_coverage` is invoked before the script from which coverage is to be
 collected, it will wait until it detects a VM observatory to which it can
-connect. An optional `--connect-timeout` may be specified (in seconds).  The
+connect. An optional `--connect-timeout` may be specified (in seconds). The
 `--wait-paused` flag may be enabled, causing `collect_coverage` to wait until
 all isolates are paused before collecting coverage.
 
@@ -77,14 +76,15 @@ or if the `dart pub global run` exectuables are on your PATH,
 format_coverage --package=app_package -i coverage.json
 ```
 
-where `app_package` is the path to the package whose coverage is being
-collected (defaults to the current working directory). If `--sdk-root` is set,
-Dart SDK coverage will also be output.
+where `app_package` is the path to the package whose coverage is being collected
+(defaults to the current working directory). If `--sdk-root` is set, Dart SDK
+coverage will also be output.
 
 #### Ignore lines from coverage
 
 - `// coverage:ignore-line` to ignore one line.
-- `// coverage:ignore-start` and `// coverage:ignore-end` to ignore range of lines inclusive.
+- `// coverage:ignore-start` and `// coverage:ignore-end` to ignore range of
+  lines inclusive.
 - `// coverage:ignore-file` to ignore the whole file.
 
 #### Function and branch coverage
@@ -97,7 +97,7 @@ dart --pause-isolates-on-exit --disable-service-auth-codes --enable-vm-service=N
 dart pub global run coverage:collect_coverage --uri=http://... -o coverage.json --resume-isolates --function-coverage
 ```
 
-To gather branch level coverage information, pass `--branch-coverage` to *both*
+To gather branch level coverage information, pass `--branch-coverage` to _both_
 collect_coverage and the Dart command you're gathering coverage from:
 
 ```
