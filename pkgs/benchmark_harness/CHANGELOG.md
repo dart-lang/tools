@@ -1,3 +1,9 @@
+## 2.2.0
+
+- Change measuring algorithm in `BenchmarkBase` to avoid calling stopwatch
+methods repeatedly in the measuring loop. This makes measurement work better
+for `run` methods which are small themselves.
+
 ## 2.1.0
 
 - Add AsyncBenchmarkBase.
