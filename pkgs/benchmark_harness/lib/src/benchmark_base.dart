@@ -39,6 +39,10 @@ class BenchmarkBase {
   /// to reach [minimumMillis].
   static _Measurement _measureForImpl(void Function() f, int minimumMillis) {
     final minimumMicros = minimumMillis * 1000;
+    // If running a long measurement permit some amount of measurment jitter
+    // to avoid discarding results that are almost good, but not quite there.
+    final allowedJitter =
+        minimumMillis < 1000 ? 0 : (minimumMicros * 0.1).floor();
     var iter = 2;
     final watch = Stopwatch()..start();
     while (true) {
@@ -48,7 +52,7 @@ class BenchmarkBase {
       }
       final elapsed = watch.elapsedMicroseconds;
       final measurement = _Measurement(elapsed, iter);
-      if (measurement.elapsedMicros >= minimumMicros) {
+      if (measurement.elapsedMicros >= (minimumMicros - allowedJitter)) {
         return measurement;
       }
 

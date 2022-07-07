@@ -1,3 +1,8 @@
+## 2.2.1
+
+- Improve convergence speed of `BenchmarkBase` measuring algorithm by allowing
+some degree of measuring jitter.
+
 ## 2.2.0
 
 - Change measuring algorithm in `BenchmarkBase` to avoid calling stopwatch
