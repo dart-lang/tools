@@ -328,4 +328,100 @@ quibble bibble boop
   | === two
   '"""));
   });
+
+  group('indents mutli-line labels', () {
+    test('for the primary label', () {
+      expect(file.span(17, 21).highlightMultiple('line 1\nline 2\nline 3', {}),
+          equals("""
+  ,
+2 | whiz bang boom
+  |      ^^^^ line 1
+  |           line 2
+  |           line 3
+  '"""));
+    });
+
+    group('for a secondary label', () {
+      test('on the same line', () {
+        expect(
+            file.span(17, 21).highlightMultiple(
+                'primary', {file.span(22, 26): 'line 1\nline 2\nline 3'}),
+            equals("""
+  ,
+2 | whiz bang boom
+  |      ^^^^ primary
+  |           ==== line 1
+  |                line 2
+  |                line 3
+  '"""));
+      });
+
+      test('on a different line', () {
+        expect(
+            file.span(17, 21).highlightMultiple(
+                'primary', {file.span(31, 34): 'line 1\nline 2\nline 3'}),
+            equals("""
+  ,
+2 | whiz bang boom
+  |      ^^^^ primary
+3 | zip zap zop
+  |     === line 1
+  |         line 2
+  |         line 3
+  '"""));
+      });
+    });
+
+    group('for a multiline span', () {
+      test('that covers the whole last line', () {
+        expect(
+            file.span(12, 70).highlightMultiple('line 1\nline 2\nline 3', {}),
+            equals("""
+  ,
+2 | / whiz bang boom
+3 | | zip zap zop
+4 | | fwee fwoo fwip
+5 | | argle bargle boo
+  | '--- line 1
+  |      line 2
+  |      line 3
+  '"""));
+      });
+
+      test('that covers part of the last line', () {
+        expect(
+            file.span(12, 66).highlightMultiple('line 1\nline 2\nline 3', {}),
+            equals("""
+  ,
+2 | / whiz bang boom
+3 | | zip zap zop
+4 | | fwee fwoo fwip
+5 | | argle bargle boo
+  | '------------^ line 1
+  |                line 2
+  |                line 3
+  '"""));
+      });
+    });
+
+    test('with an overlapping span', () {
+      expect(
+          file.span(12, 70).highlightMultiple('line 1\nline 2\nline 3',
+              {file.span(54, 89): 'two', file.span(0, 27): 'three'}),
+          equals("""
+  ,
+1 | /- foo bar baz
+2 | |/ whiz bang boom
+  | '+--- three
+3 |  | zip zap zop
+4 |  | fwee fwoo fwip
+5 | /+ argle bargle boo
+  | |'--- line 1
+  | |     line 2
+  | |     line 3
+6 | |  gibble bibble bop
+  | '---- two
+  '"""));
+    });
+  });
 }

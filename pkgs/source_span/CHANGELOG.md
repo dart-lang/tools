@@ -1,4 +1,6 @@
-# 1.9.1-dev
+# 1.9.1
+
+* Properly handle multi-line labels for multi-span highlights.
 
 * Populate the pubspec `repository` field.
 
