@@ -284,7 +284,7 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 
   Future<void> processFunction(FuncRef funcRef) async {
     final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
-    if (func.implicit ?? false) {
+    if ((func.implicit ?? false) || (func.isAbstract ?? false)) {
       return;
     }
     final location = func.location;

@@ -32,7 +32,7 @@ void main() {
     final isolateFile = hitMap[_sampleAppFileUri]!;
     expect(isolateFile.funcHits, {
       7: 1,
-      12: 0, // TODO(#398): This abstract method should be ignored.
+      if (!platformVersionCheck(2, 19)) 12: 0,
       16: 1,
       21: 1,
       25: 1,
@@ -43,7 +43,7 @@ void main() {
     });
     expect(isolateFile.funcNames, {
       7: 'normalFunction',
-      12: 'BaseClass.abstractMethod',
+      if (!platformVersionCheck(2, 19)) 12: 'BaseClass.abstractMethod',
       16: 'SomeClass.SomeClass',
       21: 'SomeClass.normalMethod',
       25: 'SomeClass.staticMethod',
