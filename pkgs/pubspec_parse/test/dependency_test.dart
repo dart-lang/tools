@@ -338,7 +338,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
 
   test('git - empty map', () {
     _expectThrows(
-      {'git': {}},
+      {'git': <String, dynamic>{}},
       r'''
 line 5, column 11: Missing key "url". type 'Null' is not a subtype of type 'String' in type cast
   ╷
