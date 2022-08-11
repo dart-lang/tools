@@ -237,5 +237,39 @@ void main() {
         [3, 3],
       ]);
     });
+
+    test('Ingore comments have no effect inside string literals', () {
+      final lines = '''
+      final str = '// coverage:ignore-file';
+      final str = '// coverage:ignore-line';
+      final str = ''; // coverage:ignore-line
+      final str = '// coverage:ignore-start';
+      final str = '// coverage:ignore-end';
+      '''
+          .split('\n');
+
+      expect(getIgnoredLines(lines), [
+        [3, 3],
+      ]);
+    });
+
+    test('Allow white-space after ignore comments', () {
+      // Using multiple strings, rather than splitting a multi-line string,
+      // because many code editors remove trailing white-space.
+      final lines = [
+        "final str = ''; // coverage:ignore-start      ",
+        "final str = ''; // coverage:ignore-line\t",
+        "final str = ''; // coverage:ignore-end \t   \t   ",
+        "final str = ''; // coverage:ignore-line     \t ",
+        "final str = ''; // coverage:ignore-start    \t   ",
+        "final str = ''; // coverage:ignore-end  \t    \t ",
+      ];
+
+      expect(getIgnoredLines(lines), [
+        [1, 3],
+        [4, 4],
+        [5, 6],
+      ]);
+    });
   });
 }
