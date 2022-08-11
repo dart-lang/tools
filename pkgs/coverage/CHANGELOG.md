@@ -1,3 +1,8 @@
+## 1.5.1
+
+- Fix bug where 'ingore-line' comments etc are applied even if they're inside
+  string literals.
+
 ## 1.5.0
 
 - Support passing extra arguments to `test_with_coverage` which are then passed
