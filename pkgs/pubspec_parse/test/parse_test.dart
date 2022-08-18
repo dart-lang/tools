@@ -48,6 +48,9 @@ void main() {
       'documentation': 'documentation',
       'repository': 'https://github.com/example/repo',
       'issue_tracker': 'https://github.com/example/repo/issues',
+      'funding': [
+        'https://patreon.com/example',
+      ],
       'screenshots': [
         {'description': 'my screenshot', 'path': 'path/to/screenshot'}
       ],
@@ -70,6 +73,8 @@ void main() {
       value.issueTracker,
       Uri.parse('https://github.com/example/repo/issues'),
     );
+    expect(value.funding, hasLength(1));
+    expect(value.funding!.single.toString(), 'https://patreon.com/example');
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
@@ -361,6 +366,60 @@ line 3, column 19: Unsupported value for "issue_tracker". type 'YamlMap' is not 
   │ ┌───────────────────^
 4 │ │   "x": "y"
 5 │ └  }
+  ╵''',
+        skipTryPub: true,
+      );
+    });
+  });
+
+  group('funding', () {
+    test('not a list', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'funding': 1,
+        },
+        r'''
+line 6, column 13: Unsupported value for "funding". type 'int' is not a subtype of type 'List<dynamic>?' in type cast
+  ╷
+6 │  "funding": 1
+  │             ^
+  ╵''',
+        skipTryPub: true,
+      );
+    });
+
+    test('not an uri', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'funding': [1],
+        },
+        r'''
+line 6, column 13: Unsupported value for "funding". type 'int' is not a subtype of type 'String' in type cast
+  ╷
+6 │    "funding": [
+  │ ┌─────────────^
+7 │ │   1
+8 │ └  ]
+  ╵''',
+        skipTryPub: true,
+      );
+    });
+
+    test('not an uri', () {
+      expectParseThrows(
+        {
+          ...defaultPubspec,
+          'funding': ['ht tps://example.com/'],
+        },
+        r'''
+line 6, column 13: Unsupported value for "funding". Illegal scheme character at offset 2.
+  ╷
+6 │    "funding": [
+  │ ┌─────────────^
+7 │ │   "ht tps://example.com/"
+8 │ └  ]
   ╵''',
         skipTryPub: true,
       );

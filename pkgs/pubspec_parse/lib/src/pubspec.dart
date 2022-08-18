@@ -40,6 +40,10 @@ class Pubspec {
   /// view existing ones.
   final Uri? issueTracker;
 
+  /// Optional field to list the URLs where the package authors accept
+  /// support or funding.
+  final List<Uri>? funding;
+
   /// Optional field for specifying included screenshot files.
   @JsonKey(fromJson: parseScreenshots)
   final List<Screenshot>? screenshots;
@@ -101,6 +105,7 @@ class Pubspec {
     this.homepage,
     this.repository,
     this.issueTracker,
+    this.funding,
     this.screenshots,
     this.documentation,
     this.description,
