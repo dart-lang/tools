@@ -77,3 +77,31 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage/lcov.info
+
+  benchmark:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: dev
+      - name: Install dependencies
+        run: dart pub get
+      - name: Run benchmark
+        run: dart run benchmark/run_benchmarks.dart
+      - name: Download previous benchmark data
+        uses: actions/cache@v1
+        with:
+          path: benchmark/data/cache
+          key: ${{ runner.os }}-benchmark
+      - name: Check benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file-path: benchmark/data/benchmark_result.json
+          external-data-json-path: benchmark/data/cache/benchmark_result.json
+          fail-on-alert: true
+          comment-always: true
+          alert-threshold: 150%
