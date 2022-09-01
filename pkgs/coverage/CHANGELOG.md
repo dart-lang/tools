@@ -1,7 +1,8 @@
-## 1.5.1
+## 1.5.1-dev
 
 - Fix bug where 'ingore-line' comments etc are applied even if they're inside
   string literals.
+- Change the LICENSE file to the standard Dart BSD license.
 
 ## 1.5.0
 
