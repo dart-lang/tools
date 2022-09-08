@@ -1,5 +1,8 @@
-## 1.5.1-dev
+## 1.6.0
 
+- Update to vm_service 9.4.0.
+- Use IsolateRef.isolateGroupId to speed up coverage collection.
+- Ignore uncoverable abstract methods.
 - Fix bug where 'ingore-line' comments etc are applied even if they're inside
   string literals.
 - Change the LICENSE file to the standard Dart BSD license.
