@@ -10,70 +10,51 @@ import 'package:vm_service/vm_service.dart';
 
 import 'collect_coverage_mock_test.mocks.dart';
 
+@GenerateMocks([VmService])
 SourceReportRange _range(int scriptIndex, SourceReportCoverage coverage) =>
-    SourceReportRange(
-      scriptIndex: scriptIndex,
-      startPos: null,
-      endPos: null,
-      compiled: null,
-      error: null,
-      coverage: coverage,
-      possibleBreakpoints: null,
-      branchCoverage: null,
-    );
+    SourceReportRange(scriptIndex: scriptIndex, coverage: coverage);
 
-Script _script(List<List<int>> tokenPosTable) => Script(
-      uri: null,
-      library: null,
-      id: '',
-      lineOffset: null,
-      columnOffset: null,
-      source: null,
-      tokenPosTable: tokenPosTable,
-    );
+Script _script(List<List<int>> tokenPosTable) =>
+    Script(id: 'script', tokenPosTable: tokenPosTable);
 
-MockVmService _mockService(int majorVersion, int minorVersion) {
+IsolateRef _isoRef(String id, String isoGroupId) =>
+    IsolateRef(id: id, isolateGroupId: isoGroupId);
+
+IsolateGroupRef _isoGroupRef(String id) => IsolateGroupRef(id: id);
+
+IsolateGroup _isoGroup(String id, List<IsolateRef> isolates) =>
+    IsolateGroup(id: id, isolates: isolates);
+
+MockVmService _mockService(
+  int majorVersion,
+  int minorVersion, {
+  Map<String, List<String>> isolateGroups = const {
+    'isolateGroup': ['isolate'],
+  },
+}) {
   final service = MockVmService();
-  final isoRef = IsolateRef(
-    id: 'isolate',
-    number: null,
-    name: null,
-    isSystemIsolate: null,
-  );
-  final isoGroupRef = IsolateGroupRef(
-    id: 'isolateGroup',
-    number: null,
-    name: null,
-    isSystemIsolateGroup: null,
-  );
-  when(service.getVM()).thenAnswer((_) async => VM(
-        name: null,
-        architectureBits: null,
-        hostCPU: null,
-        operatingSystem: null,
-        targetCPU: null,
-        version: null,
-        pid: null,
-        startTime: null,
-        isolates: [isoRef],
-        isolateGroups: [isoGroupRef],
-        systemIsolates: null,
-        systemIsolateGroups: null,
-      ));
-  when(service.getIsolateGroup('isolateGroup'))
-      .thenAnswer((_) async => IsolateGroup(
-            id: 'isolateGroup',
-            number: null,
-            name: null,
-            isSystemIsolateGroup: null,
-            isolates: [isoRef],
-          ));
+  final isoRefs = <IsolateRef>[];
+  final isoGroupRefs = <IsolateGroupRef>[];
+  final isoGroups = <IsolateGroup>[];
+  for (final group in isolateGroups.entries) {
+    isoGroupRefs.add(_isoGroupRef(group.key));
+    final isosOfGroup = <IsolateRef>[];
+    for (final isoId in group.value) {
+      isosOfGroup.add(_isoRef(isoId, group.key));
+    }
+    isoGroups.add(_isoGroup(group.key, isosOfGroup));
+    isoRefs.addAll(isosOfGroup);
+  }
+  when(service.getVM()).thenAnswer(
+      (_) async => VM(isolates: isoRefs, isolateGroups: isoGroupRefs));
+  for (final group in isoGroups) {
+    when(service.getIsolateGroup(group.id)).thenAnswer((_) async => group);
+  }
   when(service.getVersion()).thenAnswer(
       (_) async => Version(major: majorVersion, minor: minorVersion));
   return service;
 }
 
-@GenerateMocks([VmService])
 void main() {
   group('Mock VM Service', () {
     test('Collect coverage', () async {
@@ -250,6 +231,146 @@ void main() {
 
       expect(result.length, 1);
       expect(result['package:foo/foo.dart']?.lineHits, {12: 1, 47: 0});
+    });
+
+    test('Collect coverage, old isolate group deduping', () async {
+      final service = _mockService(3, 60, isolateGroups: {
+        'isolateGroupA': ['isolate1', 'isolate2'],
+        'isolateGroupB': ['isolate3'],
+      });
+      when(service.getSourceReport('isolate1', ['Coverage'],
+              forceCompile: true, reportLines: true))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [12],
+                      misses: [47],
+                    ),
+                  ),
+                  _range(
+                    1,
+                    SourceReportCoverage(
+                      hits: [95],
+                      misses: [52],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:foo/foo.dart',
+                    id: 'foo',
+                  ),
+                  ScriptRef(
+                    uri: 'package:bar/bar.dart',
+                    id: 'bar',
+                  ),
+                ],
+              ));
+      when(service.getSourceReport('isolate3', ['Coverage'],
+              forceCompile: true, reportLines: true))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [34],
+                      misses: [61],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:baz/baz.dart',
+                    id: 'baz',
+                  ),
+                ],
+              ));
+
+      final jsonResult = await collect(Uri(), false, false, false, null,
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 3);
+      expect(result['package:foo/foo.dart']?.lineHits, {12: 1, 47: 0});
+      expect(result['package:bar/bar.dart']?.lineHits, {95: 1, 52: 0});
+      expect(result['package:baz/baz.dart']?.lineHits, {34: 1, 61: 0});
+      verifyNever(service.getSourceReport('isolate2', ['Coverage'],
+          forceCompile: true, reportLines: true));
+      verify(service.getIsolateGroup('isolateGroupA'));
+      verify(service.getIsolateGroup('isolateGroupB'));
+    });
+
+    test('Collect coverage, fast isolate group deduping', () async {
+      final service = _mockService(3, 61, isolateGroups: {
+        'isolateGroupA': ['isolate1', 'isolate2'],
+        'isolateGroupB': ['isolate3'],
+      });
+      when(service.getSourceReport('isolate1', ['Coverage'],
+              forceCompile: true, reportLines: true))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [12],
+                      misses: [47],
+                    ),
+                  ),
+                  _range(
+                    1,
+                    SourceReportCoverage(
+                      hits: [95],
+                      misses: [52],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:foo/foo.dart',
+                    id: 'foo',
+                  ),
+                  ScriptRef(
+                    uri: 'package:bar/bar.dart',
+                    id: 'bar',
+                  ),
+                ],
+              ));
+      when(service.getSourceReport('isolate3', ['Coverage'],
+              forceCompile: true, reportLines: true))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [34],
+                      misses: [61],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:baz/baz.dart',
+                    id: 'baz',
+                  ),
+                ],
+              ));
+
+      final jsonResult = await collect(Uri(), false, false, false, null,
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 3);
+      expect(result['package:foo/foo.dart']?.lineHits, {12: 1, 47: 0});
+      expect(result['package:bar/bar.dart']?.lineHits, {95: 1, 52: 0});
+      expect(result['package:baz/baz.dart']?.lineHits, {34: 1, 61: 0});
+      verifyNever(service.getSourceReport('isolate2', ['Coverage'],
+          forceCompile: true, reportLines: true));
+      verifyNever(service.getIsolateGroup('isolateGroupA'));
+      verifyNever(service.getIsolateGroup('isolateGroupB'));
     });
   });
 }

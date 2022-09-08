@@ -123,6 +123,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
   final reportLines = _versionCheck(version, 3, 51);
   final branchCoverageSupported = _versionCheck(version, 3, 56);
   final libraryFilters = _versionCheck(version, 3, 57);
+  final fastIsoGroups = _versionCheck(version, 3, 61);
   if (branchCoverage && !branchCoverageSupported) {
     branchCoverage = false;
     stderr.writeln('Branch coverage was requested, but is not supported'
@@ -138,16 +139,20 @@ Future<Map<String, dynamic>> _getAllCoverage(
   // group, otherwise we'll double count the hits.
   final isolateOwnerGroup = <String, String>{};
   final coveredIsolateGroups = <String>{};
-  for (var isolateGroupRef in vm.isolateGroups!) {
-    final isolateGroup = await service.getIsolateGroup(isolateGroupRef.id!);
-    for (var isolateRef in isolateGroup.isolates!) {
-      isolateOwnerGroup[isolateRef.id!] = isolateGroupRef.id!;
+  if (!fastIsoGroups) {
+    for (var isolateGroupRef in vm.isolateGroups!) {
+      final isolateGroup = await service.getIsolateGroup(isolateGroupRef.id!);
+      for (var isolateRef in isolateGroup.isolates!) {
+        isolateOwnerGroup[isolateRef.id!] = isolateGroupRef.id!;
+      }
     }
   }
 
   for (var isolateRef in vm.isolates!) {
     if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
-    final isolateGroupId = isolateOwnerGroup[isolateRef.id];
+    final isolateGroupId = fastIsoGroups
+        ? isolateRef.isolateGroupId
+        : isolateOwnerGroup[isolateRef.id];
     if (isolateGroupId != null) {
       if (coveredIsolateGroups.contains(isolateGroupId)) continue;
       coveredIsolateGroups.add(isolateGroupId);
