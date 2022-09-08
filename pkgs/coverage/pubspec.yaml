@@ -13,7 +13,7 @@ dependencies:
   path: ^1.8.0
   source_maps: ^0.10.10
   stack_trace: ^1.10.0
-  vm_service: ^9.2.0
+  vm_service: ^9.4.0
 
 dev_dependencies:
   benchmark_harness: ^2.2.0
