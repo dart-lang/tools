@@ -15,13 +15,17 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev, stable]
 
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1
         with:
-          sdk: dev
-
+          sdk: ${{ matrix.sdk }}
+          
       - name: pub get
         run: dart pub get
 
