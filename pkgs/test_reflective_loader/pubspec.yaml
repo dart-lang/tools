@@ -1,5 +1,5 @@
 name: test_reflective_loader
-version: 0.2.1
+version: 0.2.2
 description: Support for discovering tests and test suites using reflection.
 repository: https://github.com/dart-lang/test_reflective_loader
 
