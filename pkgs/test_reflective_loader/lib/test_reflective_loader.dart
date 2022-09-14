@@ -13,28 +13,28 @@ import 'package:test/test.dart' as test_package;
  * A marker annotation used to annotate test methods which are expected to fail
  * when asserts are enabled.
  */
-const _AssertFailingTest assertFailingTest = _AssertFailingTest();
+const Object assertFailingTest = _AssertFailingTest();
 
 /**
  * A marker annotation used to annotate test methods which are expected to fail.
  */
-const FailingTest failingTest = FailingTest();
+const Object failingTest = FailingTest();
 
 /**
  * A marker annotation used to instruct dart2js to keep reflection information
  * for the annotated classes.
  */
-const _ReflectiveTest reflectiveTest = _ReflectiveTest();
+const Object reflectiveTest = _ReflectiveTest();
 
 /**
  * A marker annotation used to annotate test methods that should be skipped.
  */
-const SkippedTest skippedTest = SkippedTest();
+const Object skippedTest = SkippedTest();
 
 /**
  * A marker annotation used to annotate "solo" groups and tests.
  */
-const _SoloTest soloTest = _SoloTest();
+const Object soloTest = _SoloTest();
 
 final List<_Group> _currentGroups = <_Group>[];
 int _currentSuiteLevel = 0;
