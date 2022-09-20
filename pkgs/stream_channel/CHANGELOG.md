@@ -3,6 +3,9 @@
 * Require Dart 2.14
 * Migrate to `package:lints`.
 * Populate the pubspec `repository` field.
+* Handle multichannel messages where the ID element is a `double` at runtime
+  instead of an `int`. When reading an array with `dart2wasm` numbers within the
+  array are parsed as `double`.
 
 ## 2.1.0
 

@@ -141,7 +141,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
         onDone: () => _closeChannel(0, 0));
 
     _innerStreamSubscription = _inner!.stream.cast<List>().listen((message) {
-      var id = message[0] as int;
+      var id = (message[0] as num).toInt();
 
       // If the channel was closed before an incoming message was processed,
       // ignore that message.
