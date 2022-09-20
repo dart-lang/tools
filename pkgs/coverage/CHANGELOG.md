@@ -1,3 +1,7 @@
+## 1.6.1
+
+- Handle SentinelExceptions thrown by vm_service.
+
 ## 1.6.0
 
 - Update to vm_service 9.4.0.

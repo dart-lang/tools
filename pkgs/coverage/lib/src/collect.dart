@@ -158,32 +158,47 @@ Future<Map<String, dynamic>> _getAllCoverage(
       coveredIsolateGroups.add(isolateGroupId);
     }
     if (scopedOutput.isNotEmpty && !libraryFilters) {
-      final scripts = await service.getScripts(isolateRef.id!);
-      for (var script in scripts.scripts!) {
+      late final ScriptList scripts;
+      try {
+        scripts = await service.getScripts(isolateRef.id!);
+      } on SentinelException {
+        continue;
+      }
+      for (final script in scripts.scripts!) {
         final uri = Uri.parse(script.uri!);
         if (uri.scheme != 'package') continue;
         final scope = uri.path.split('/').first;
         // Skip scripts which should not be included in the report.
         if (!scopedOutput.contains(scope)) continue;
-        final scriptReport = await service.getSourceReport(
-            isolateRef.id!, sourceReportKinds,
-            forceCompile: true,
-            scriptId: script.id,
-            reportLines: reportLines ? true : null);
+        late final SourceReport scriptReport;
+        try {
+          scriptReport = await service.getSourceReport(
+              isolateRef.id!, sourceReportKinds,
+              forceCompile: true,
+              scriptId: script.id,
+              reportLines: reportLines ? true : null);
+        } on SentinelException {
+          continue;
+        }
         final coverage = await _getCoverageJson(service, isolateRef,
             scriptReport, includeDart, functionCoverage, reportLines);
         allCoverage.addAll(coverage);
       }
     } else {
-      final isolateReport = await service.getSourceReport(
-        isolateRef.id!,
-        sourceReportKinds,
-        forceCompile: true,
-        reportLines: reportLines ? true : null,
-        libraryFilters: scopedOutput.isNotEmpty && libraryFilters
-            ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
-            : null,
-      );
+      late final SourceReport isolateReport;
+      try {
+        isolateReport = await service.getSourceReport(
+          isolateRef.id!,
+          sourceReportKinds,
+          forceCompile: true,
+          reportLines: reportLines ? true : null,
+          libraryFilters: scopedOutput.isNotEmpty && libraryFilters
+              ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
+              : null,
+        );
+      } on SentinelException {
+        continue;
+      }
       final coverage = await _getCoverageJson(service, isolateRef,
           isolateReport, includeDart, functionCoverage, reportLines);
       allCoverage.addAll(coverage);
