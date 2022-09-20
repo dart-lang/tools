@@ -25,6 +25,11 @@ IsolateGroupRef _isoGroupRef(String id) => IsolateGroupRef(id: id);
 IsolateGroup _isoGroup(String id, List<IsolateRef> isolates) =>
     IsolateGroup(id: id, isolates: isolates);
 
+class FakeSentinelException implements SentinelException {
+  @override
+  dynamic noSuchMethod(Invocation invocation) {}
+}
+
 MockVmService _mockService(
   int majorVersion,
   int minorVersion, {
@@ -371,6 +376,84 @@ void main() {
           forceCompile: true, reportLines: true));
       verifyNever(service.getIsolateGroup('isolateGroupA'));
       verifyNever(service.getIsolateGroup('isolateGroupB'));
+    });
+
+    test(
+        'Collect coverage, scoped output, no library filters, '
+        'handles SentinelException from getScripts', () async {
+      final service = _mockService(3, 0);
+      when(service.getScripts('isolate')).thenThrow(FakeSentinelException());
+
+      final jsonResult = await collect(
+          Uri(), false, false, false, {'foo', 'bar'},
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 0);
+    });
+
+    test(
+        'Collect coverage, scoped output, no library filters, '
+        'handles SentinelException from getSourceReport', () async {
+      final service = _mockService(3, 51);
+      when(service.getScripts('isolate')).thenAnswer((_) async => ScriptList(
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
+      when(service.getSourceReport('isolate', ['Coverage'],
+              scriptId: 'foo', forceCompile: true, reportLines: true))
+          .thenThrow(FakeSentinelException());
+      when(service.getSourceReport('isolate', ['Coverage'],
+              scriptId: 'bar', forceCompile: true, reportLines: true))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [95],
+                      misses: [52],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:bar/bar.dart',
+                    id: 'bar',
+                  ),
+                ],
+              ));
+
+      final jsonResult = await collect(
+          Uri(), false, false, false, {'foo', 'bar'},
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+      expect(result.length, 1);
+      expect(result['package:bar/bar.dart']?.lineHits, {95: 1, 52: 0});
+    });
+
+    test(
+        'Collect coverage, no scoped output, '
+        'handles SentinelException from getSourceReport', () async {
+      final service = _mockService(3, 0);
+      when(service.getSourceReport('isolate', ['Coverage'], forceCompile: true))
+          .thenThrow(FakeSentinelException());
+
+      final jsonResult = await collect(Uri(), false, false, false, null,
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 0);
     });
   });
 }
