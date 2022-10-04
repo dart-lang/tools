@@ -1,3 +1,7 @@
+# 2.1.1-dev
+
+- Add markdown badges to the readme.
+
 # 2.1.1
 
 - Fixed the version parsing pattern to only accept dots between version

@@ -214,10 +214,10 @@ class VersionUnion implements VersionConstraint {
   @override
   bool operator ==(Object other) =>
       other is VersionUnion &&
-      const ListEquality().equals(ranges, other.ranges);
+      const ListEquality<VersionRange>().equals(ranges, other.ranges);
 
   @override
-  int get hashCode => const ListEquality().hash(ranges);
+  int get hashCode => const ListEquality<VersionRange>().hash(ranges);
 
   @override
   String toString() => ranges.join(' or ');

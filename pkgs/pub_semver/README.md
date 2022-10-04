@@ -1,8 +1,13 @@
 [![Dart CI](https://github.com/dart-lang/pub_semver/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/pub_semver/actions/workflows/test-package.yml)
 [![Pub](https://img.shields.io/pub/v/pub_semver.svg)](https://pub.dev/packages/pub_semver)
+[![package publisher](https://img.shields.io/pub/publisher/pub_semver.svg)](https://pub.dev/packages/pub_semver/publisher)
 
 Handles version numbers and version constraints in the same way that [pub][]
-does. The semantics here very closely follow the
+does.
+
+## Semantics
+
+The semantics here very closely follow the
 [Semantic Versioning spec version 2.0.0-rc.1][semver]. It differs from semver
 in a few corner cases:
 
