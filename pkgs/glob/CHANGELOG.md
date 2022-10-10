@@ -1,3 +1,7 @@
+## 2.1.1-dev
+
+* Bump dependencies
+
 ## 2.1.0
 
 * Return empty results instead of throwing when trying to list a path that does
