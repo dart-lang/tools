@@ -97,9 +97,10 @@ Future<String> _collectCoverage() async {
     '--wait-paused'
   ]);
 
-  await toolResult.shouldExit(0).timeout(timeout, onTimeout: () {
-    throw 'We timed out waiting for the tool to finish.';
-  });
+  await toolResult.shouldExit(0).timeout(
+        timeout,
+        onTimeout: () => throw 'We timed out waiting for the tool to finish.',
+      );
 
   await sampleProcess.shouldExit();
 
