@@ -1,4 +1,4 @@
-## 4.1.1-dev
+## 4.1.1
 
 - Apply `keepAlive` logic to `SocketException`s.
 - Switch from using `package:pedantic` to `package:lints`
