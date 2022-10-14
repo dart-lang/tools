@@ -1,4 +1,4 @@
-# 2.1.1-dev
+# 2.1.2
 
 - Add markdown badges to the readme.
 
