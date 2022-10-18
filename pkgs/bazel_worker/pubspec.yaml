@@ -1,5 +1,5 @@
 name: bazel_worker
-version: 1.0.2-dev
+version: 1.0.2
 description: >-
   Protocol and utilities to implement or invoke persistent bazel workers.
 repository: https://github.com/dart-lang/bazel_worker

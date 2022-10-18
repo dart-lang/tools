@@ -1,4 +1,4 @@
-## 1.0.2-dev
+## 1.0.2
 
 * Expand pub documentation to improve pub score.
 
