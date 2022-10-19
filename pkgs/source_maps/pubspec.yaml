@@ -1,6 +1,6 @@
 name: source_maps
 version: 0.10.11
-description: Library to programmatically manipulate source map files.
+description: A library to programmatically manipulate source map files.
 repository: https://github.com/dart-lang/source_maps
 
 environment:

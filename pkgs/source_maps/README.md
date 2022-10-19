@@ -26,5 +26,5 @@ Some upcoming features we are planning to add to this package are:
     instance, if you have 2 tools that produce source maps and you call one with
     the result of the other.
 
-[closure]: http://code.google.com/p/closure-compiler/wiki/SourceMaps
+[closure]: https://github.com/google/closure-compiler/wiki/Source-Maps
 [spec]: https://docs.google.com/a/google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit

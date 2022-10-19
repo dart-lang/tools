@@ -1,6 +1,7 @@
 # 0.10.11
 
 * Populate the pubspec `repository` field.
+* Update the source map documentation link in the readme.
 
 ## 0.10.10
 
