@@ -1,6 +1,6 @@
 [![CI](https://github.com/dart-lang/graphs/actions/workflows/ci.yml/badge.svg)](https://github.com/dart-lang/graphs/actions/workflows/ci.yml)
 
-Graph algorithms which do not specify a particular approach for representing a
+Graph algorithms that do not specify a particular approach for representing a
 Graph.
 
 Functions in this package will take arguments that provide the mechanism for
@@ -31,11 +31,10 @@ Any representation can be adapted to the needs of the algorithm:
 - Some algorithms need to associate data with each node in the graph. If the
   node type `T` does not correctly or efficiently implement `hashCode` or `==`,
   you may provide optional `equals` and/or `hashCode` functions are parameters.
-- Algorithms which need to traverse the graph take a `edges` function which
-  provides the reachable nodes.
+- Algorithms which need to traverse the graph take a `edges` function which provides the reachable nodes.
   - `(node) => graph[node]`
   - `(node) => node.edges`
 
 
-Graphs which are resolved asynchronously will have similar functions which
+Graphs that are resolved asynchronously will have similar functions which
 return `FutureOr`.
