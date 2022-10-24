@@ -1,3 +1,7 @@
+## 1.2.1
+
+* Add an empty list_local_fs.dart to ease upgrade from 1x to 2x
+
 ## 1.2.0
 
 * Support running on Node.js.
