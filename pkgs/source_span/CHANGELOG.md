@@ -1,3 +1,7 @@
+# 1.9.2-dev
+
+* Require Dart 2.18
+
 # 1.9.1
 
 * Properly handle multi-line labels for multi-span highlights.

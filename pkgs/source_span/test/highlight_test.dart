@@ -232,28 +232,28 @@ foo
 bar
 ''');
 
-      expect(file.span(4, 9).highlight(), equals("""
+      expect(file.span(4, 9).highlight(), equals(r"""
   ,
 2 | / 
-3 | \\ bar
+3 | \ bar
   '"""));
     });
 
     test('highlights the full last line', () {
-      expect(file.span(4, 27).highlight(), equals("""
+      expect(file.span(4, 27).highlight(), equals(r"""
   ,
 1 |   foo bar baz
   | ,-----^
-2 | \\ whiz bang boom
+2 | \ whiz bang boom
   '"""));
     });
 
     test('highlights the full last line with no trailing newline', () {
-      expect(file.span(4, 26).highlight(), equals("""
+      expect(file.span(4, 26).highlight(), equals(r"""
   ,
 1 |   foo bar baz
   | ,-----^
-2 | \\ whiz bang boom
+2 | \ whiz bang boom
   '"""));
     });
 
@@ -264,21 +264,21 @@ whiz bang boom\r
 zip zap zop\r
 ''');
 
-      expect(file.span(4, 29).highlight(), equals("""
+      expect(file.span(4, 29).highlight(), equals(r"""
   ,
 1 |   foo bar baz
   | ,-----^
-2 | \\ whiz bang boom
+2 | \ whiz bang boom
   '"""));
     });
 
     test('highlights the full last line at the end of the file', () {
-      expect(file.span(4, 39).highlight(), equals("""
+      expect(file.span(4, 39).highlight(), equals(r"""
   ,
 1 |   foo bar baz
   | ,-----^
 2 | | whiz bang boom
-3 | \\ zip zap zop
+3 | \ zip zap zop
   '"""));
     });
 
@@ -290,12 +290,12 @@ foo bar baz
 whiz bang boom
 zip zap zop''');
 
-      expect(file.span(4, 38).highlight(), equals("""
+      expect(file.span(4, 38).highlight(), equals(r"""
   ,
 1 |   foo bar baz
   | ,-----^
 2 | | whiz bang boom
-3 | \\ zip zap zop
+3 | \ zip zap zop
   '"""));
     });
 
@@ -306,31 +306,31 @@ foo
 bar
 ''');
 
-      expect(file.span(0, 5).highlight(), equals("""
+      expect(file.span(0, 5).highlight(), equals(r"""
   ,
 1 | / foo
-2 | \\ 
+2 | \ 
   '"""));
     });
 
     test('highlights multiple empty lines', () {
       final file = SourceFile.fromString('foo\n\n\n\nbar');
-      expect(file.span(4, 7).highlight(), equals("""
+      expect(file.span(4, 7).highlight(), equals(r"""
   ,
 2 | / 
 3 | | 
-4 | \\ 
+4 | \ 
   '"""));
     });
 
     // Regression test for #32
     test('highlights the end of a line and an empty line', () {
       final file = SourceFile.fromString('foo\n\n');
-      expect(file.span(3, 5).highlight(), equals("""
+      expect(file.span(3, 5).highlight(), equals(r"""
   ,
 1 |   foo
   | ,----^
-2 | \\ 
+2 | \ 
   '"""));
     });
   });
@@ -520,12 +520,12 @@ whiz bang\tboom
           'foo\nbar\n',
           'previous\nlines\nfoo\nbar\nfollowing line\n');
 
-      expect(span.highlight(), equals("""
+      expect(span.highlight(), equals(r"""
   ,
 1 |   previous
 2 |   lines
 3 | / foo
-4 | \\ bar
+4 | \ bar
 5 |   following line
   '"""));
     });

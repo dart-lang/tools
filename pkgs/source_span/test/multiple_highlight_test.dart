@@ -280,8 +280,7 @@ quibble bibble boop
     });
 
     test('allows secondary spans to have null URL', () {
-      final span2 = SourceSpan(SourceLocation(1, sourceUrl: null),
-          SourceLocation(4, sourceUrl: null), 'foo');
+      final span2 = SourceSpan(SourceLocation(1), SourceLocation(4), 'foo');
 
       expect(
           file.span(31, 34).highlightMultiple('one', {span2: 'two'}), equals("""
@@ -296,8 +295,7 @@ quibble bibble boop
     });
 
     test('allows primary span to have null URL', () {
-      final span1 = SourceSpan(SourceLocation(1, sourceUrl: null),
-          SourceLocation(4, sourceUrl: null), 'foo');
+      final span1 = SourceSpan(SourceLocation(1), SourceLocation(4), 'foo');
 
       expect(
           span1.highlightMultiple('one', {file.span(31, 34): 'two'}), equals("""
@@ -313,10 +311,8 @@ quibble bibble boop
   });
 
   test('highlights multiple null URLs as separate files', () {
-    final span1 = SourceSpan(SourceLocation(1, sourceUrl: null),
-        SourceLocation(4, sourceUrl: null), 'foo');
-    final span2 = SourceSpan(SourceLocation(1, sourceUrl: null),
-        SourceLocation(4, sourceUrl: null), 'bar');
+    final span1 = SourceSpan(SourceLocation(1), SourceLocation(4), 'foo');
+    final span2 = SourceSpan(SourceLocation(1), SourceLocation(4), 'bar');
 
     expect(span1.highlightMultiple('one', {span2: 'two'}), equals("""
   ,

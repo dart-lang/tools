@@ -28,7 +28,7 @@ class SourceSpanException implements Exception {
   /// should be highlighted using the default color. If it's `false` or `null`,
   /// it indicates that the text shouldn't be highlighted.
   @override
-  String toString({color}) {
+  String toString({Object? color}) {
     if (span == null) return message;
     return 'Error on ${span!.message(message, color: color)}';
   }
@@ -43,8 +43,7 @@ class SourceSpanFormatException extends SourceSpanException
   @override
   int? get offset => span?.start.offset;
 
-  SourceSpanFormatException(String message, SourceSpan? span, [this.source])
-      : super(message, span);
+  SourceSpanFormatException(super.message, super.span, [this.source]);
 }
 
 /// A [SourceSpanException] that also highlights some secondary spans to provide
@@ -64,10 +63,9 @@ class MultiSourceSpanException extends SourceSpanException {
   /// additional information and helps distinguish it from [secondarySpans].
   final Map<SourceSpan, String> secondarySpans;
 
-  MultiSourceSpanException(String message, SourceSpan? span, this.primaryLabel,
+  MultiSourceSpanException(super.message, super.span, this.primaryLabel,
       Map<SourceSpan, String> secondarySpans)
-      : secondarySpans = Map.unmodifiable(secondarySpans),
-        super(message, span);
+      : secondarySpans = Map.unmodifiable(secondarySpans);
 
   /// Returns a string representation of `this`.
   ///
@@ -80,7 +78,7 @@ class MultiSourceSpanException extends SourceSpanException {
   /// If [color] is `true` or a string, [secondaryColor] is used to highlight
   /// [secondarySpans].
   @override
-  String toString({color, String? secondaryColor}) {
+  String toString({Object? color, String? secondaryColor}) {
     if (span == null) return message;
 
     var useColor = false;
@@ -110,8 +108,7 @@ class MultiSourceSpanFormatException extends MultiSourceSpanException
   @override
   int? get offset => span?.start.offset;
 
-  MultiSourceSpanFormatException(String message, SourceSpan? span,
-      String primaryLabel, Map<SourceSpan, String> secondarySpans,
-      [this.source])
-      : super(message, span, primaryLabel, secondarySpans);
+  MultiSourceSpanFormatException(
+      super.message, super.span, super.primaryLabel, super.secondarySpans,
+      [this.source]);
 }

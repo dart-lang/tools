@@ -58,7 +58,7 @@ class Highlighter {
   /// should be used.
   ///
   /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-  Highlighter(SourceSpan span, {color})
+  Highlighter(SourceSpan span, {Object? color})
       : this._(_collateLines([_Highlight(span, primary: true)]), () {
           if (color == true) return colors.red;
           if (color == false) return null;
@@ -95,13 +95,14 @@ class Highlighter {
   Highlighter._(this._lines, this._primaryColor, this._secondaryColor)
       : _paddingBeforeSidebar = 1 +
             math.max<int>(
-                // In a purely mathematical world, floor(log10(n)) would give the
-                // number of digits in n, but floating point errors render that
-                // unreliable in practice.
-                (_lines.last.number + 1).toString().length,
-                // If [_lines] aren't contiguous, we'll write "..." in place of a
-                // line number.
-                _contiguous(_lines) ? 0 : 3),
+              // In a purely mathematical world, floor(log10(n)) would give the
+              // number of digits in n, but floating point errors render that
+              // unreliable in practice.
+              (_lines.last.number + 1).toString().length,
+              // If [_lines] aren't contiguous, we'll write "..." in place of a
+              // line number.
+              _contiguous(_lines) ? 0 : 3,
+            ),
         _maxMultilineSpans = _lines
             .map((line) => line.highlights
                 .where((highlight) => isMultiline(highlight.span))
@@ -155,7 +156,7 @@ class Highlighter {
 
         var lineNumber = highlight.span.start.line - linesBeforeSpan;
         for (var line in context.split('\n')) {
-          // Only add a line if it hasn't already been added for a previous span.
+          // Only add a line if it hasn't already been added for a previous span
           if (lines.isEmpty || lineNumber > lines.last.number) {
             lines.add(_Line(line, lineNumber, url));
           }
@@ -192,7 +193,8 @@ class Highlighter {
 
     // Each index of this list represents a column after the sidebar that could
     // contain a line indicating an active highlight. If it's `null`, that
-    // column is empty; if it contains a highlight, it should be drawn for that column.
+    // column is empty; if it contains a highlight, it should be drawn for that
+    // column.
     final highlightsByColumn =
         List<_Highlight?>.filled(_maxMultilineSpans, null);
 
@@ -332,7 +334,7 @@ class Highlighter {
           } else if (endLine == line.number &&
               highlight.span.end.column == line.text.length) {
             _buffer.write(highlight.label == null
-                ? glyph.glyphOrAscii('└', '\\')
+                ? glyph.glyphOrAscii('└', r'\')
                 : vertical);
           } else {
             _colorize(() {

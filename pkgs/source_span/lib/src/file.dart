@@ -51,14 +51,14 @@ class SourceFile {
 
   /// This constructor is deprecated.
   ///
-  /// Use [new SourceFile.fromString] instead.
+  /// Use [SourceFile.fromString] instead.
   @Deprecated('Will be removed in 2.0.0')
-  SourceFile(String text, {url}) : this.decoded(text.runes, url: url);
+  SourceFile(String text, {Object? url}) : this.decoded(text.runes, url: url);
 
   /// Creates a new source file from [text].
   ///
   /// [url] may be either a [String], a [Uri], or `null`.
-  SourceFile.fromString(String text, {url})
+  SourceFile.fromString(String text, {Object? url})
       : this.decoded(text.codeUnits, url: url);
 
   /// Creates a new source file from a list of decoded code units.
@@ -70,7 +70,7 @@ class SourceFile {
   /// surrogate pairs. **This behavior is deprecated**. For
   /// forwards-compatibility, callers should only pass in characters less than
   /// or equal to `0xFFFF`.
-  SourceFile.decoded(Iterable<int> decodedChars, {url})
+  SourceFile.decoded(Iterable<int> decodedChars, {Object? url})
       : url = url is String ? Uri.parse(url) : url as Uri?,
         _decodedChars = Uint32List.fromList(decodedChars.toList()) {
     for (var i = 0; i < _decodedChars.length; i++) {
@@ -387,7 +387,7 @@ class _FileSpan extends SourceSpanMixin implements FileSpan {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(Object other) {
     if (other is! FileSpan) return super == other;
     if (other is! _FileSpan) {
       return super == other && sourceUrl == other.sourceUrl;

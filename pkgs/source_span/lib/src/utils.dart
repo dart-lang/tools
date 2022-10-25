@@ -9,12 +9,12 @@ import 'span_with_context.dart';
 
 /// Returns the minimum of [obj1] and [obj2] according to
 /// [Comparable.compareTo].
-T min<T extends Comparable>(T obj1, T obj2) =>
+T min<T extends Comparable<T>>(T obj1, T obj2) =>
     obj1.compareTo(obj2) > 0 ? obj2 : obj1;
 
 /// Returns the maximum of [obj1] and [obj2] according to
 /// [Comparable.compareTo].
-T max<T extends Comparable>(T obj1, T obj2) =>
+T max<T extends Comparable<T>>(T obj1, T obj2) =>
     obj1.compareTo(obj2) > 0 ? obj1 : obj2;
 
 /// Returns whether all elements of [iter] are the same value, according to

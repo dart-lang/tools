@@ -67,7 +67,7 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// characters if it's `true`.
   ///
   /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-  String message(String message, {color});
+  String message(String message, {Object? color});
 
   /// Prints the text associated with this span in a user-friendly way.
   ///
@@ -87,7 +87,7 @@ abstract class SourceSpan implements Comparable<SourceSpan> {
   /// characters if it's `true`.
   ///
   /// [ANSI terminal color escape]: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-  String highlight({color});
+  String highlight({Object? color});
 }
 
 /// A base class for source spans with [start], [end], and [text] known at

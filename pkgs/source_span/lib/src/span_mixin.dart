@@ -50,7 +50,7 @@ abstract class SourceSpanMixin implements SourceSpan {
   }
 
   @override
-  String message(String message, {color}) {
+  String message(String message, {Object? color}) {
     final buffer = StringBuffer()
       ..write('line ${start.line + 1}, column ${start.column + 1}');
     if (sourceUrl != null) buffer.write(' of ${p.prettyUri(sourceUrl)}');
@@ -67,13 +67,13 @@ abstract class SourceSpanMixin implements SourceSpan {
   }
 
   @override
-  String highlight({color}) {
+  String highlight({Object? color}) {
     if (this is! SourceSpanWithContext && length == 0) return '';
     return Highlighter(this, color: color).highlight();
   }
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is SourceSpan && start == other.start && end == other.end;
 
   @override

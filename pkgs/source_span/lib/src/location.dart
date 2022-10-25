@@ -42,7 +42,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   /// means that [line] defaults to 0 and [column] defaults to [offset].
   ///
   /// [sourceUrl] may be either a [String], a [Uri], or `null`.
-  SourceLocation(this.offset, {sourceUrl, int? line, int? column})
+  SourceLocation(this.offset, {Object? sourceUrl, int? line, int? column})
       : sourceUrl =
             sourceUrl is String ? Uri.parse(sourceUrl) : sourceUrl as Uri?,
         line = line ?? 0,
@@ -83,7 +83,7 @@ class SourceLocation implements Comparable<SourceLocation> {
   }
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is SourceLocation &&
       sourceUrl == other.sourceUrl &&
       offset == other.offset;
@@ -98,6 +98,5 @@ class SourceLocation implements Comparable<SourceLocation> {
 /// A base class for source locations with [offset], [line], and [column] known
 /// at construction time.
 class SourceLocationBase extends SourceLocation {
-  SourceLocationBase(int offset, {sourceUrl, int? line, int? column})
-      : super(offset, sourceUrl: sourceUrl, line: line, column: column);
+  SourceLocationBase(super.offset, {super.sourceUrl, super.line, super.column});
 }
