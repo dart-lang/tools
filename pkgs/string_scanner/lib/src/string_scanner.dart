@@ -56,7 +56,7 @@ class StringScanner {
   /// [position] defaults to 0, the beginning of the string. [sourceUrl] is the
   /// URL of the source of the string being scanned, if available. It can be
   /// a [String], a [Uri], or `null`.
-  StringScanner(this.string, {sourceUrl, int? position})
+  StringScanner(this.string, {Object? sourceUrl, int? position})
       : sourceUrl = sourceUrl == null
             ? null
             : sourceUrl is String
@@ -205,7 +205,7 @@ class StringScanner {
         name = '/$source/';
       } else {
         name =
-            pattern.toString().replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+            pattern.toString().replaceAll(r'\', r'\\').replaceAll('"', r'\"');
         name = '"$name"';
       }
     }

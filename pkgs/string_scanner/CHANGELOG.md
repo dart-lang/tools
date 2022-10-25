@@ -1,5 +1,7 @@
 ## 1.2.0
 
+* Require Dart 2.18.0
+
 * Add better support for reading code points in the Unicode supplementary plane:
 
   * Added `StringScanner.readCodePoint()`, which consumes an entire Unicode code

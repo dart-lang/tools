@@ -68,8 +68,7 @@ class EagerSpanScanner extends SpanScanner {
     }
   }
 
-  EagerSpanScanner(String string, {sourceUrl, int? position})
-      : super(string, sourceUrl: sourceUrl, position: position);
+  EagerSpanScanner(super.string, {super.sourceUrl, super.position});
 
   @override
   bool scanChar(int character) {

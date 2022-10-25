@@ -59,13 +59,12 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// [sourceUrl] is used as [SourceLocation.sourceUrl] for the returned
   /// [FileSpan]s as well as for error reporting. It can be a [String], a
   /// [Uri], or `null`.
-  SpanScanner(String string, {sourceUrl, int? position})
-      : _sourceFile = SourceFile.fromString(string, url: sourceUrl),
-        super(string, sourceUrl: sourceUrl, position: position);
+  SpanScanner(super.string, {super.sourceUrl, super.position})
+      : _sourceFile = SourceFile.fromString(string, url: sourceUrl);
 
   /// Creates a new [SpanScanner] that eagerly computes line and column numbers.
   ///
-  /// In general [new SpanScanner] will be more efficient, since it avoids extra
+  /// In general [SpanScanner.new] will be more efficient, since it avoids extra
   /// computation on every scan. However, eager scanning can be useful for
   /// situations where the normal course of parsing frequently involves
   /// accessing the current line and column numbers.

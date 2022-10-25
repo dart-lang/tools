@@ -73,8 +73,7 @@ class LineScanner extends StringScanner {
     }
   }
 
-  LineScanner(String string, {sourceUrl, int? position})
-      : super(string, sourceUrl: sourceUrl, position: position);
+  LineScanner(super.string, {super.sourceUrl, super.position});
 
   @override
   bool scanChar(int character) {
