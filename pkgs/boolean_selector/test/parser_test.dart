@@ -24,9 +24,10 @@ void main() {
       var node = _parse('  a ? b : c   ');
       expect(node.toString(), equals('a ? b : c'));
 
-      expect(node.span.text, equals('a ? b : c'));
-      expect(node.span.start.offset, equals(2));
-      expect(node.span.end.offset, equals(11));
+      expect(node.span, isNotNull);
+      expect(node.span!.text, equals('a ? b : c'));
+      expect(node.span!.start.offset, equals(2));
+      expect(node.span!.end.offset, equals(11));
     });
 
     test('with nested ors', () {
@@ -41,13 +42,16 @@ void main() {
       // Should parse as "a ? (b ? c : d) : e".
       var node = _parse('a ? b ? c : d : e');
       expect(node, _isConditionalNode);
+      node as ConditionalNode; // promote node
+
       expect(node.condition, _isVar('a'));
       expect(node.whenFalse, _isVar('e'));
 
       expect(node.whenTrue, _isConditionalNode);
-      expect(node.whenTrue.condition, _isVar('b'));
-      expect(node.whenTrue.whenTrue, _isVar('c'));
-      expect(node.whenTrue.whenFalse, _isVar('d'));
+      var whenTrue = node.whenTrue as ConditionalNode;
+      expect(whenTrue.condition, _isVar('b'));
+      expect(whenTrue.whenTrue, _isVar('c'));
+      expect(whenTrue.whenFalse, _isVar('d'));
     });
 
     test('with a conditional expression as branch 2', () {
@@ -55,13 +59,16 @@ void main() {
       // Should not parse as "(a ? b : c) ? d : e".
       var node = _parse('a ? b : c ? d : e');
       expect(node, _isConditionalNode);
+      node as ConditionalNode; //promote node
+
       expect(node.condition, _isVar('a'));
       expect(node.whenTrue, _isVar('b'));
 
       expect(node.whenFalse, _isConditionalNode);
-      expect(node.whenFalse.condition, _isVar('c'));
-      expect(node.whenFalse.whenTrue, _isVar('d'));
-      expect(node.whenFalse.whenFalse, _isVar('e'));
+      var whenFalse = node.whenFalse as ConditionalNode;
+      expect(whenFalse.condition, _isVar('c'));
+      expect(whenFalse.whenTrue, _isVar('d'));
+      expect(whenFalse.whenFalse, _isVar('e'));
     });
 
     group('which must have', () {
@@ -86,12 +93,15 @@ void main() {
     test('with identifiers', () {
       var node = _parse('  a || b   ');
       expect(node, _isOrNode);
+      node as OrNode; //promote node
+
       expect(node.left, _isVar('a'));
       expect(node.right, _isVar('b'));
 
-      expect(node.span.text, equals('a || b'));
-      expect(node.span.start.offset, equals(2));
-      expect(node.span.end.offset, equals(8));
+      expect(node.span, isNotNull);
+      expect(node.span!.text, equals('a || b'));
+      expect(node.span!.start.offset, equals(2));
+      expect(node.span!.end.offset, equals(8));
     });
 
     test('with nested ands', () {
@@ -99,14 +109,17 @@ void main() {
       // Should not parse as "a && (b || c) && d".
       var node = _parse('a && b || c && d');
       expect(node, _isOrNode);
+      node as OrNode; //promote node
 
       expect(node.left, _isAndNode);
-      expect(node.left.left, _isVar('a'));
-      expect(node.left.right, _isVar('b'));
+      var left = node.left as AndNode;
+      expect(left.left, _isVar('a'));
+      expect(left.right, _isVar('b'));
 
       expect(node.right, _isAndNode);
-      expect(node.right.left, _isVar('c'));
-      expect(node.right.right, _isVar('d'));
+      var right = node.right as AndNode;
+      expect(right.left, _isVar('c'));
+      expect(right.right, _isVar('d'));
     });
 
     test('with trailing ors', () {
@@ -116,6 +129,8 @@ void main() {
 
       for (var variable in ['a', 'b', 'c']) {
         expect(node, _isOrNode);
+        node as OrNode; //promote node
+
         expect(node.left, _isVar(variable));
         node = node.right;
       }
@@ -132,12 +147,15 @@ void main() {
     test('with identifiers', () {
       var node = _parse('  a && b   ');
       expect(node, _isAndNode);
+      node as AndNode; //promote node
+
       expect(node.left, _isVar('a'));
       expect(node.right, _isVar('b'));
 
-      expect(node.span.text, equals('a && b'));
-      expect(node.span.start.offset, equals(2));
-      expect(node.span.end.offset, equals(8));
+      expect(node.span, isNotNull);
+      expect(node.span!.text, equals('a && b'));
+      expect(node.span!.start.offset, equals(2));
+      expect(node.span!.end.offset, equals(8));
     });
 
     test('with nested nots', () {
@@ -145,12 +163,15 @@ void main() {
       // Should not parse as "!(a && (!b))".
       var node = _parse('!a && !b');
       expect(node, _isAndNode);
+      node as AndNode; //promote node
 
       expect(node.left, _isNotNode);
-      expect(node.left.child, _isVar('a'));
+      var left = node.left as NotNode;
+      expect(left.child, _isVar('a'));
 
       expect(node.right, _isNotNode);
-      expect(node.right.child, _isVar('b'));
+      var right = node.right as NotNode;
+      expect(right.child, _isVar('b'));
     });
 
     test('with trailing ands', () {
@@ -160,6 +181,8 @@ void main() {
 
       for (var variable in ['a', 'b', 'c']) {
         expect(node, _isAndNode);
+        node as AndNode; //promote node
+
         expect(node.left, _isVar(variable));
         node = node.right;
       }
@@ -176,27 +199,34 @@ void main() {
     test('with an identifier', () {
       var node = _parse('  ! a    ');
       expect(node, _isNotNode);
+      node as NotNode; //promote node
       expect(node.child, _isVar('a'));
 
-      expect(node.span.text, equals('! a'));
-      expect(node.span.start.offset, equals(2));
-      expect(node.span.end.offset, equals(5));
+      expect(node.span, isNotNull);
+      expect(node.span!.text, equals('! a'));
+      expect(node.span!.start.offset, equals(2));
+      expect(node.span!.end.offset, equals(5));
     });
 
     test('with a parenthesized expression', () {
       var node = _parse('!(a || b)');
       expect(node, _isNotNode);
+      node as NotNode; //promote node
 
       expect(node.child, _isOrNode);
-      expect(node.child.left, _isVar('a'));
-      expect(node.child.right, _isVar('b'));
+      var child = node.child as OrNode;
+      expect(child.left, _isVar('a'));
+      expect(child.right, _isVar('b'));
     });
 
     test('with a nested not', () {
       var node = _parse('!!a');
       expect(node, _isNotNode);
+      node as NotNode; //promote node
+
       expect(node.child, _isNotNode);
-      expect(node.child.child, _isVar('a'));
+      var child = node.child as NotNode;
+      expect(child.child, _isVar('a'));
     });
 
     test('which must have an expression after the !', () {
@@ -216,12 +246,15 @@ void main() {
       var node = _parse('a || (b ? c : d)');
 
       expect(node, _isOrNode);
+      node as OrNode; //promote node
+
       expect(node.left, _isVar('a'));
 
       expect(node.right, _isConditionalNode);
-      expect(node.right.condition, _isVar('b'));
-      expect(node.right.whenTrue, _isVar('c'));
-      expect(node.right.whenFalse, _isVar('d'));
+      var right = node.right as ConditionalNode;
+      expect(right.condition, _isVar('b'));
+      expect(right.whenTrue, _isVar('c'));
+      expect(right.whenFalse, _isVar('d'));
     });
 
     group('which must have', () {
@@ -248,7 +281,7 @@ void main() {
 }
 
 /// Parses [selector] and returns its root node.
-dynamic _parse(String selector) => Parser(selector).parse();
+Node _parse(String selector) => Parser(selector).parse();
 
 /// A matcher that asserts that a value is a [VariableNode] with the given
 /// [name].

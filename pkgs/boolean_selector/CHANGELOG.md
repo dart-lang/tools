@@ -1,4 +1,7 @@
-## 2.1.1-dev
+## 2.1.1
+
+* Increase the SDK minimum to `2.17.0`.
+* Populate the pubspec `repository` field.
 
 ## 2.1.0
 

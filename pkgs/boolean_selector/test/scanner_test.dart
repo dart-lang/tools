@@ -6,6 +6,9 @@ import 'package:boolean_selector/src/scanner.dart';
 import 'package:boolean_selector/src/token.dart';
 import 'package:test/test.dart';
 
+/// A matcher that asserts that a value is a [IdentifierToken].
+final _isIdentifierToken = TypeMatcher<IdentifierToken>();
+
 void main() {
   group('peek()', () {
     test('returns the next token without consuming it', () {
@@ -98,6 +101,9 @@ void main() {
   group('scans an identifier that', () {
     test('is simple', () {
       var token = _scan('   foo  ');
+      expect(token, _isIdentifierToken);
+      token as IdentifierToken; // promote token
+
       expect(token.name, equals('foo'));
       expect(token.span.text, equals('foo'));
       expect(token.span.start.offset, equals(3));
@@ -106,37 +112,44 @@ void main() {
 
     test('is a single character', () {
       var token = _scan('f');
-      expect(token.name, equals('f'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('f'));
     });
 
     test('has a leading underscore', () {
       var token = _scan('_foo');
-      expect(token.name, equals('_foo'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('_foo'));
     });
 
     test('has a leading dash', () {
       var token = _scan('-foo');
-      expect(token.name, equals('-foo'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('-foo'));
     });
 
     test('contains an underscore', () {
       var token = _scan('foo_bar');
-      expect(token.name, equals('foo_bar'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('foo_bar'));
     });
 
     test('contains a dash', () {
       var token = _scan('foo-bar');
-      expect(token.name, equals('foo-bar'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('foo-bar'));
     });
 
     test('is capitalized', () {
       var token = _scan('FOO');
-      expect(token.name, equals('FOO'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('FOO'));
     });
 
     test('contains numbers', () {
       var token = _scan('foo123');
-      expect(token.name, equals('foo123'));
+      expect(token, _isIdentifierToken);
+      expect((token as IdentifierToken).name, equals('foo123'));
     });
   });
 
@@ -263,4 +276,4 @@ void _expectSimpleScan(String selector, TokenType type) {
 }
 
 /// Scans a single token from [selector].
-dynamic _scan(String selector) => Scanner(selector).next();
+Token _scan(String selector) => Scanner(selector).next();
