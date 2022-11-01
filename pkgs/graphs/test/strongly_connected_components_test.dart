@@ -17,23 +17,25 @@ void main() {
     }) {
       final graph = Graph(g);
       return stronglyConnectedComponents(
-          startNodes ?? graph.allNodes, graph.edges);
+        startNodes ?? graph.allNodes,
+        graph.edges,
+      );
     }
 
     test('empty result for empty graph', () {
-      var result = components({});
+      final result = components({});
       expect(result, isEmpty);
     });
 
     test('single item for single node', () {
-      var result = components({'a': []});
+      final result = components({'a': []});
       expect(result, [
         ['a']
       ]);
     });
 
     test('handles non-cycles', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': ['c'],
         'c': []
@@ -46,7 +48,7 @@ void main() {
     });
 
     test('handles entire graph as cycle', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': ['c'],
         'c': ['a']
@@ -57,18 +59,18 @@ void main() {
     test('includes the first passed root last in a cycle', () {
       // In cases where this is used to find a topological ordering the first
       // value in nodes should always come last.
-      var graph = {
+      final graph = {
         'a': ['b'],
         'b': ['a']
       };
-      var resultFromA = components(graph, startNodes: ['a']);
-      var resultFromB = components(graph, startNodes: ['b']);
+      final resultFromA = components(graph, startNodes: ['a']);
+      final resultFromB = components(graph, startNodes: ['b']);
       expect(resultFromA.single.last, 'a');
       expect(resultFromB.single.last, 'b');
     });
 
     test('handles cycles in the middle', () {
-      var result = components({
+      final result = components({
         'a': ['b', 'c'],
         'b': ['c', 'd'],
         'c': ['b', 'd'],
@@ -82,7 +84,7 @@ void main() {
     });
 
     test('handles self cycles', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': ['b'],
       });
@@ -93,7 +95,7 @@ void main() {
     });
 
     test('valid topological ordering for disjoint subgraphs', () {
-      var result = components({
+      final result = components({
         'a': ['b', 'c'],
         'b': ['b1', 'b2'],
         'c': ['c1', 'c2'],
@@ -104,37 +106,41 @@ void main() {
       });
 
       expect(
-          result,
-          containsAllInOrder([
-            ['c1'],
-            ['c'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['c1'],
+          ['c'],
+          ['a']
+        ]),
+      );
       expect(
-          result,
-          containsAllInOrder([
-            ['c2'],
-            ['c'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['c2'],
+          ['c'],
+          ['a']
+        ]),
+      );
       expect(
-          result,
-          containsAllInOrder([
-            ['b1'],
-            ['b'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['b1'],
+          ['b'],
+          ['a']
+        ]),
+      );
       expect(
-          result,
-          containsAllInOrder([
-            ['b2'],
-            ['b'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['b2'],
+          ['b'],
+          ['a']
+        ]),
+      );
     });
 
     test('handles getting null for edges', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': null,
       });
@@ -156,26 +162,27 @@ void main() {
       startNodes ??= graph.allNodes.map((n) => n.value);
 
       return stronglyConnectedComponents<X>(
-              startNodes.map((n) => X(n)), graph.edges,
-              equals: xEquals, hashCode: xHashCode)
-          .map((list) => list.map((x) => x.value).toList())
-          .toList();
+        startNodes.map(X.new),
+        graph.edges,
+        equals: xEquals,
+        hashCode: xHashCode,
+      ).map((list) => list.map((x) => x.value).toList()).toList();
     }
 
     test('empty result for empty graph', () {
-      var result = components({});
+      final result = components({});
       expect(result, isEmpty);
     });
 
     test('single item for single node', () {
-      var result = components({'a': []});
+      final result = components({'a': []});
       expect(result, [
         ['a']
       ]);
     });
 
     test('handles non-cycles', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': ['c'],
         'c': []
@@ -188,7 +195,7 @@ void main() {
     });
 
     test('handles entire graph as cycle', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': ['c'],
         'c': ['a']
@@ -199,18 +206,18 @@ void main() {
     test('includes the first passed root last in a cycle', () {
       // In cases where this is used to find a topological ordering the first
       // value in nodes should always come last.
-      var graph = {
+      final graph = {
         'a': ['b'],
         'b': ['a']
       };
-      var resultFromA = components(graph, startNodes: ['a']);
-      var resultFromB = components(graph, startNodes: ['b']);
+      final resultFromA = components(graph, startNodes: ['a']);
+      final resultFromB = components(graph, startNodes: ['b']);
       expect(resultFromA.single.last, 'a');
       expect(resultFromB.single.last, 'b');
     });
 
     test('handles cycles in the middle', () {
-      var result = components({
+      final result = components({
         'a': ['b', 'c'],
         'b': ['c', 'd'],
         'c': ['b', 'd'],
@@ -224,7 +231,7 @@ void main() {
     });
 
     test('handles self cycles', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': ['b'],
       });
@@ -235,7 +242,7 @@ void main() {
     });
 
     test('valid topological ordering for disjoint subgraphs', () {
-      var result = components({
+      final result = components({
         'a': ['b', 'c'],
         'b': ['b1', 'b2'],
         'c': ['c1', 'c2'],
@@ -246,37 +253,41 @@ void main() {
       });
 
       expect(
-          result,
-          containsAllInOrder([
-            ['c1'],
-            ['c'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['c1'],
+          ['c'],
+          ['a']
+        ]),
+      );
       expect(
-          result,
-          containsAllInOrder([
-            ['c2'],
-            ['c'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['c2'],
+          ['c'],
+          ['a']
+        ]),
+      );
       expect(
-          result,
-          containsAllInOrder([
-            ['b1'],
-            ['b'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['b1'],
+          ['b'],
+          ['a']
+        ]),
+      );
       expect(
-          result,
-          containsAllInOrder([
-            ['b2'],
-            ['b'],
-            ['a']
-          ]));
+        result,
+        containsAllInOrder([
+          ['b2'],
+          ['b'],
+          ['a']
+        ]),
+      );
     });
 
     test('handles getting null for edges', () {
-      var result = components({
+      final result = components({
         'a': ['b'],
         'b': null,
       });

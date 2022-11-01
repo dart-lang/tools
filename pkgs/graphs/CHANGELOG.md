@@ -1,3 +1,7 @@
+# 2.2.1-dev
+
+- Require Dart 2.18
+
 # 2.2.0
 
 * Add a `secondarySort` parameter to the `topologicalSort()` function which

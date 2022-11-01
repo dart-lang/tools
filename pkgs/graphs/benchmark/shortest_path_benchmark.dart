@@ -8,14 +8,14 @@ import 'dart:math' show Random;
 import 'package:graphs/graphs.dart';
 
 void main() {
-  final _rnd = Random(1);
-  final size = 1000;
+  final rnd = Random(1);
+  const size = 1000;
   final graph = HashMap<int, List<int>>();
 
   for (var i = 0; i < size * 5; i++) {
-    final toList = graph.putIfAbsent(_rnd.nextInt(size), () => <int>[]);
+    final toList = graph.putIfAbsent(rnd.nextInt(size), () => <int>[]);
 
-    final toValue = _rnd.nextInt(size);
+    final toValue = rnd.nextInt(size);
     if (!toList.contains(toValue)) {
       toList.add(toValue);
     }

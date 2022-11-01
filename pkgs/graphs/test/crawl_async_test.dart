@@ -10,23 +10,25 @@ import 'utils/graph.dart';
 void main() {
   group('asyncCrawl', () {
     Future<List<String?>> crawl(
-        Map<String, List<String>?> g, Iterable<String> roots) {
-      var graph = AsyncGraph(g);
+      Map<String, List<String>?> g,
+      Iterable<String> roots,
+    ) {
+      final graph = AsyncGraph(g);
       return crawlAsync(roots, graph.readNode, graph.edges).toList();
     }
 
     test('empty result for empty graph', () async {
-      var result = await crawl({}, []);
+      final result = await crawl({}, []);
       expect(result, isEmpty);
     });
 
     test('single item for a single node', () async {
-      var result = await crawl({'a': []}, ['a']);
+      final result = await crawl({'a': []}, ['a']);
       expect(result, ['a']);
     });
 
     test('hits every node in a graph', () async {
-      var result = await crawl({
+      final result = await crawl({
         'a': ['b', 'c'],
         'b': ['c'],
         'c': ['d'],
@@ -35,12 +37,14 @@ void main() {
         'a'
       ]);
       expect(result, hasLength(4));
-      expect(result,
-          allOf(contains('a'), contains('b'), contains('c'), contains('d')));
+      expect(
+        result,
+        allOf(contains('a'), contains('b'), contains('c'), contains('d')),
+      );
     });
 
     test('handles cycles', () async {
-      var result = await crawl({
+      final result = await crawl({
         'a': ['b'],
         'b': ['c'],
         'c': ['b'],
@@ -52,7 +56,7 @@ void main() {
     });
 
     test('handles self cycles', () async {
-      var result = await crawl({
+      final result = await crawl({
         'a': ['b'],
         'b': ['b'],
       }, [
@@ -63,7 +67,7 @@ void main() {
     });
 
     test('allows null edges', () async {
-      var result = await crawl({
+      final result = await crawl({
         'a': ['b'],
         'b': null,
       }, [
@@ -74,7 +78,7 @@ void main() {
     });
 
     test('allows null nodes', () async {
-      var result = await crawl({
+      final result = await crawl({
         'a': ['b'],
       }, [
         'a'
@@ -83,20 +87,26 @@ void main() {
     });
 
     test('surfaces exceptions for crawling edges', () {
-      var graph = {
+      final graph = {
         'a': ['b'],
       };
-      var nodes = crawlAsync(['a'], (n) => n,
-          (k, n) => k == 'b' ? throw ArgumentError() : graph[k] ?? <String>[]);
+      final nodes = crawlAsync(
+        ['a'],
+        (n) => n,
+        (k, n) => k == 'b' ? throw ArgumentError() : graph[k] ?? <String>[],
+      );
       expect(nodes, emitsThrough(emitsError(isArgumentError)));
     });
 
     test('surfaces exceptions for resolving keys', () {
-      var graph = {
+      final graph = {
         'a': ['b'],
       };
-      var nodes = crawlAsync(['a'], (n) => n == 'b' ? throw ArgumentError() : n,
-          (k, n) => graph[k] ?? <Never>[]);
+      final nodes = crawlAsync(
+        ['a'],
+        (n) => n == 'b' ? throw ArgumentError() : n,
+        (k, n) => graph[k] ?? <Never>[],
+      );
       expect(nodes, emitsThrough(emitsError(isArgumentError)));
     });
   });

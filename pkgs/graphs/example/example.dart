@@ -30,18 +30,20 @@ class Node {
 }
 
 void main() {
-  var nodeA = Node('A', 1);
-  var nodeB = Node('B', 2);
-  var nodeC = Node('C', 3);
-  var nodeD = Node('D', 4);
-  var graph = Graph({
+  final nodeA = Node('A', 1);
+  final nodeB = Node('B', 2);
+  final nodeC = Node('C', 3);
+  final nodeD = Node('D', 4);
+  final graph = Graph({
     nodeA: [nodeB, nodeC],
     nodeB: [nodeC, nodeD],
     nodeC: [nodeB, nodeD]
   });
 
-  var components = stronglyConnectedComponents<Node>(
-      graph.nodes.keys, (node) => graph.nodes[node] ?? []);
+  final components = stronglyConnectedComponents<Node>(
+    graph.nodes.keys,
+    (node) => graph.nodes[node] ?? [],
+  );
 
   print(components);
 }

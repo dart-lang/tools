@@ -43,7 +43,7 @@ List<List<T>> stronglyConnectedComponents<T extends Object>(
   final nonNullEquals = equals ?? _defaultEquals;
 
   var index = 0;
-  var lastVisited = Queue<T>();
+  final lastVisited = Queue<T>();
 
   void strongConnect(T node) {
     indexes[node] = index;

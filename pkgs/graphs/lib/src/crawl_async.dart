@@ -30,9 +30,10 @@ final _empty = Future<void>.value();
 /// have not completed. If the [edges] callback needs to be limited or throttled
 /// that must be done by wrapping it before calling [crawlAsync].
 Stream<V> crawlAsync<K extends Object, V>(
-    Iterable<K> roots,
-    FutureOr<V> Function(K) readNode,
-    FutureOr<Iterable<K>> Function(K, V) edges) {
+  Iterable<K> roots,
+  FutureOr<V> Function(K) readNode,
+  FutureOr<Iterable<K>> Function(K, V) edges,
+) {
   final crawl = _CrawlAsync(roots, readNode, edges)..run();
   return crawl.result.stream;
 }
@@ -63,10 +64,10 @@ class _CrawlAsync<K, V> {
   /// Resolve the node at [key] and output it, then start crawling all of it's
   /// edges.
   Future<void> _crawlFrom(K key) async {
-    var value = await readNode(key);
+    final value = await readNode(key);
     if (result.isClosed) return;
     result.add(value);
-    var next = await edges(key, value);
+    final next = await edges(key, value);
     await Future.wait(next.map(_visit), eagerError: true);
   }
 

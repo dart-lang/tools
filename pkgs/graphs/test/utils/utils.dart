@@ -11,13 +11,15 @@ int xHashCode(X a) => a.value.hashCode;
 
 /// Returns a matcher that verifies that a function throws a [CycleException<T>]
 /// with the given [cycle].
-Matcher throwsCycleException<T>(List<T> cycle) => throwsA(allOf([
-      isA<CycleException<T>>(),
-      predicate((exception) {
-        expect((exception as CycleException<T>).cycle, equals(cycle));
-        return true;
-      })
-    ]));
+Matcher throwsCycleException<T>(List<T> cycle) => throwsA(
+      allOf([
+        isA<CycleException<T>>(),
+        predicate((exception) {
+          expect((exception as CycleException<T>).cycle, equals(cycle));
+          return true;
+        })
+      ]),
+    );
 
 class X {
   final String value;

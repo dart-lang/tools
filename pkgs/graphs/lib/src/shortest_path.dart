@@ -134,8 +134,8 @@ class _Tail<T extends Object> extends Iterable<T> {
 
   late final _asIterable = () {
     _Tail<T>? next = this;
-    var reversed = List.generate(length, (_) {
-      var val = next!.tail;
+    final reversed = List.generate(length, (_) {
+      final val = next!.tail;
       next = next!.head;
       return val as T;
     });

@@ -22,16 +22,20 @@ void main() {
 
   List<String> readEdges(String key) => graph[key] ?? [];
 
-  List<X> getXValues(X key) =>
-      graph[key.value]?.map((v) => X(v)).toList() ?? [];
+  List<X> getXValues(X key) => graph[key.value]?.map(X.new).toList() ?? [];
 
-  void _singlePathTest(String from, String to, List<String>? expected) {
+  void singlePathTest(String from, String to, List<String>? expected) {
     test('$from -> $to should be $expected (mapped)', () {
       expect(
-          shortestPath<X>(X(from), X(to), getXValues,
-                  equals: xEquals, hashCode: xHashCode)
-              ?.map((x) => x.value),
-          expected);
+        shortestPath<X>(
+          X(from),
+          X(to),
+          getXValues,
+          equals: xEquals,
+          hashCode: xHashCode,
+        )?.map((x) => x.value),
+        expected,
+      );
     });
 
     test('$from -> $to should be $expected', () {
@@ -39,12 +43,18 @@ void main() {
     });
   }
 
-  void _pathsTest(
-      String from, Map<String, List<String>> expected, List<String> nullPaths) {
+  void pathsTest(
+    String from,
+    Map<String, List<String>> expected,
+    List<String> nullPaths,
+  ) {
     test('paths from $from (mapped)', () {
-      final result = shortestPaths<X>(X(from), getXValues,
-              equals: xEquals, hashCode: xHashCode)
-          .map((k, v) => MapEntry(k.value, v.map((x) => x.value).toList()));
+      final result = shortestPaths<X>(
+        X(from),
+        getXValues,
+        equals: xEquals,
+        hashCode: xHashCode,
+      ).map((k, v) => MapEntry(k.value, v.map((x) => x.value).toList()));
       expect(result, expected);
     });
 
@@ -54,15 +64,15 @@ void main() {
     });
 
     for (var entry in expected.entries) {
-      _singlePathTest(from, entry.key, entry.value);
+      singlePathTest(from, entry.key, entry.value);
     }
 
     for (var entry in nullPaths) {
-      _singlePathTest(from, entry, null);
+      singlePathTest(from, entry, null);
     }
   }
 
-  _pathsTest('1', {
+  pathsTest('1', {
     '5': ['5'],
     '3': ['2', '3'],
     '8': ['5', '8'],
@@ -74,30 +84,30 @@ void main() {
     '7',
   ]);
 
-  _pathsTest('6', {
+  pathsTest('6', {
     '7': ['7'],
     '6': [],
   }, [
     '1',
   ]);
-  _pathsTest('7', {'7': []}, ['1', '6']);
+  pathsTest('7', {'7': []}, ['1', '6']);
 
-  _pathsTest('42', {'42': []}, ['1', '6']);
+  pathsTest('42', {'42': []}, ['1', '6']);
 
   test('integration test', () {
     // Be deterministic in the generated graph. This test may have to be updated
     // if the behavior of `Random` changes for the provided seed.
-    final _rnd = Random(1);
-    final size = 1000;
+    final rnd = Random(1);
+    const size = 1000;
     final graph = HashMap<int, List<int>>();
 
     Iterable<int>? resultForGraph() =>
         shortestPath(0, size - 1, (e) => graph[e] ?? const []);
 
     void addRandomEdge() {
-      final toList = graph.putIfAbsent(_rnd.nextInt(size), () => <int>[]);
+      final toList = graph.putIfAbsent(rnd.nextInt(size), () => <int>[]);
 
-      final toValue = _rnd.nextInt(size);
+      final toValue = rnd.nextInt(size);
       if (!toList.contains(toValue)) {
         toList.add(toValue);
       }
@@ -134,10 +144,10 @@ void main() {
     // eventually eliminate any path.
     do {
       expect(++count, lessThan(size * 5), reason: 'This loop should finish.');
-      final randomKey = graph.keys.elementAt(_rnd.nextInt(graph.length));
+      final randomKey = graph.keys.elementAt(rnd.nextInt(graph.length));
       final list = graph[randomKey]!;
       expect(list, isNotEmpty);
-      list.removeAt(_rnd.nextInt(list.length));
+      list.removeAt(rnd.nextInt(list.length));
       if (list.isEmpty) {
         graph.remove(randomKey);
       }

@@ -7,7 +7,7 @@ import 'dart:collection';
 import 'package:graphs/graphs.dart';
 
 void main() {
-  final size = 1000;
+  const size = 1000;
   final graph = HashMap<int, List<int>>();
 
   // We create a graph where every subsequent node has an edge to every other
@@ -28,8 +28,10 @@ void main() {
   final testOutput =
       shortestPath(0, size - 1, (e) => graph[e] ?? <Never>[]).toString();
   print(testOutput);
-  assert(testOutput == Iterable.generate(size - 1, (i) => i + 1).toString(),
-      testOutput);
+  assert(
+    testOutput == Iterable.generate(size - 1, (i) => i + 1).toString(),
+    testOutput,
+  );
 
   final watch = Stopwatch();
   for (var i = 1;; i++) {

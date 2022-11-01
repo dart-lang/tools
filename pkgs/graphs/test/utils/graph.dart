@@ -22,8 +22,10 @@ class BadGraph {
 
   BadGraph(Map<String, List<String>?> values)
       : _graph = LinkedHashMap(equals: xEquals, hashCode: xHashCode)
-          ..addEntries(values.entries.map(
-              (e) => MapEntry(X(e.key), e.value?.map((v) => X(v)).toList())));
+          ..addEntries(
+            values.entries
+                .map((e) => MapEntry(X(e.key), e.value?.map(X.new).toList())),
+          );
 
   List<X> edges(X node) => _graph[node] ?? <Never>[];
 

@@ -18,12 +18,12 @@ import 'package:pool/pool.dart';
 /// asynchronously.
 Future<void> main() async {
   // Limits calls to [findImports].
-  var pool = Pool(10);
-  var allImports = await crawlAsync<Uri, Source>(
-          [Uri.parse('package:graphs/graphs.dart')],
-          read,
-          (from, source) => pool.withResource(() => findImports(from, source)))
-      .toList();
+  final pool = Pool(10);
+  final allImports = await crawlAsync<Uri, Source>(
+    [Uri.parse('package:graphs/graphs.dart')],
+    read,
+    (from, source) => pool.withResource(() => findImports(from, source)),
+  ).toList();
   print(allImports.map((s) => s.uri).toList());
 }
 
@@ -32,11 +32,11 @@ AnalysisContext? _analysisContext;
 Future<AnalysisContext> get analysisContext async {
   var context = _analysisContext;
   if (context == null) {
-    var libUri = Uri.parse('package:graphs/');
-    var libPath = await pathForUri(libUri);
-    var packagePath = p.dirname(libPath);
+    final libUri = Uri.parse('package:graphs/');
+    final libPath = await pathForUri(libUri);
+    final packagePath = p.dirname(libPath);
 
-    var roots = ContextLocator().locateRoots(includedPaths: [packagePath]);
+    final roots = ContextLocator().locateRoots(includedPaths: [packagePath]);
     if (roots.length != 1) {
       throw StateError('Expected to find exactly one context root, got $roots');
     }
@@ -48,23 +48,22 @@ Future<AnalysisContext> get analysisContext async {
   return context;
 }
 
-Future<Iterable<Uri>> findImports(Uri from, Source source) async {
-  return source.unit.directives
-      .whereType<UriBasedDirective>()
-      .map((d) => d.uri.stringValue!)
-      .where((uri) => !uri.startsWith('dart:'))
-      .map((import) => resolveImport(import, from));
-}
+Future<Iterable<Uri>> findImports(Uri from, Source source) async =>
+    source.unit.directives
+        .whereType<UriBasedDirective>()
+        .map((d) => d.uri.stringValue!)
+        .where((uri) => !uri.startsWith('dart:'))
+        .map((import) => resolveImport(import, from));
 
 Future<CompilationUnit> parseUri(Uri uri) async {
-  var path = await pathForUri(uri);
-  var analysisSession = (await analysisContext).currentSession;
-  var parseResult = analysisSession.getParsedUnit(path);
+  final path = await pathForUri(uri);
+  final analysisSession = (await analysisContext).currentSession;
+  final parseResult = analysisSession.getParsedUnit(path);
   return (parseResult as ParsedUnitResult).unit;
 }
 
 Future<String> pathForUri(Uri uri) async {
-  var fileUri = await Isolate.resolvePackageUri(uri);
+  final fileUri = await Isolate.resolvePackageUri(uri);
   if (fileUri == null || !fileUri.isScheme('file')) {
     throw StateError('Expected to resolve $uri to a file URI, got $fileUri');
   }
