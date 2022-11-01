@@ -10,7 +10,7 @@ Future<void> main() async {
   print('launched Chrome');
 
   // Pause briefly before opening Chrome with a debug port.
-  await Future.delayed(Duration(seconds: 3));
+  await Future<void>.delayed(const Duration(seconds: 3));
 
   // Launches a chrome browser open to [_googleUrl]. Since we are launching with
   // a debug port, we will use a variety of different launch configurations,
@@ -20,7 +20,7 @@ Future<void> main() async {
 
   // When running this dart code, observe that the browser stays open for 3
   // seconds before we close it.
-  await Future.delayed(Duration(seconds: 3));
+  await Future<void>.delayed(const Duration(seconds: 3));
 
   await chrome.close();
   print('closed Chrome');

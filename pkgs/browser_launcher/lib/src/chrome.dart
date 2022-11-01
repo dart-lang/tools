@@ -30,11 +30,14 @@ String get _executable {
       Platform.environment['PROGRAMFILES(X86)']
     ];
     return p.join(
-      windowsPrefixes.firstWhere((prefix) {
-        if (prefix == null) return false;
-        final path = p.join(prefix, _windowsExecutable);
-        return File(path).existsSync();
-      }, orElse: () => '.')!,
+      windowsPrefixes.firstWhere(
+        (prefix) {
+          if (prefix == null) return false;
+          final path = p.join(prefix, _windowsExecutable);
+          return File(path).existsSync();
+        },
+        orElse: () => '.',
+      )!,
       _windowsExecutable,
     );
   }
@@ -114,28 +117,31 @@ class Chrome {
     final process = await _startProcess(urls, args: args);
 
     // Wait until the DevTools are listening before trying to connect.
-    var _errorLines = <String>[];
+    final errorLines = <String>[];
     try {
       await process.stderr
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .firstWhere((line) {
-        _errorLines.add(line);
+        errorLines.add(line);
         return line.startsWith('DevTools listening');
-      }).timeout(Duration(seconds: 60));
+      }).timeout(const Duration(seconds: 60));
     } catch (_) {
-      throw Exception('Unable to connect to Chrome DevTools.\n\n'
-              'Chrome STDERR:\n' +
-          _errorLines.join('\n'));
+      throw Exception(
+        'Unable to connect to Chrome DevTools.\n\n'
+        'Chrome STDERR:\n${errorLines.join('\n')}',
+      );
     }
 
-    return _connect(Chrome._(
-      port,
-      ChromeConnection('localhost', port),
-      process: process,
-      dataDir: dataDir,
-      deleteDataDir: userDataDir == null,
-    ));
+    return _connect(
+      Chrome._(
+        port,
+        ChromeConnection('localhost', port),
+        process: process,
+        dataDir: dataDir,
+        deleteDataDir: userDataDir == null,
+      ),
+    );
   }
 
   /// Starts Chrome with the given arguments.
@@ -144,9 +150,8 @@ class Chrome {
   static Future<Process> start(
     List<String> urls, {
     List<String> args = const [],
-  }) async {
-    return await _startProcess(urls, args: args);
-  }
+  }) async =>
+      await _startProcess(urls, args: args);
 
   static Future<Process> _startProcess(
     List<String> urls, {
@@ -164,7 +169,8 @@ class Chrome {
     } catch (e) {
       await chrome.close();
       throw ChromeError(
-          'Unable to connect to Chrome debug port: ${chrome.debugPort}\n $e');
+        'Unable to connect to Chrome debug port: ${chrome.debugPort}\n $e',
+      );
     }
     return chrome;
   }
@@ -178,7 +184,7 @@ class Chrome {
       // profile information. Give it some time before attempting to delete
       // the directory.
       if (deleteDataDir) {
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
         await _dataDir?.delete(recursive: true);
       }
     } catch (_) {

@@ -14,7 +14,8 @@ void main() {
   Chrome? chrome;
 
   Future<WipConnection> connectToTab(String url) async {
-    var tab = await chrome!.chromeConnection.getTab((t) => t.url.contains(url));
+    final tab =
+        await chrome!.chromeConnection.getTab((t) => t.url.contains(url));
     expect(tab, isNotNull);
     return tab!.connect();
   }
@@ -23,10 +24,17 @@ void main() {
     await chrome!.chromeConnection.getUrl(_openTabUrl(url));
   }
 
-  Future<void> launchChromeWithDebugPort(
-      {int port = 0, String? userDataDir, bool signIn = false}) async {
-    chrome = await Chrome.startWithDebugPort([_googleUrl],
-        debugPort: port, userDataDir: userDataDir, signIn: signIn);
+  Future<void> launchChromeWithDebugPort({
+    int port = 0,
+    String? userDataDir,
+    bool signIn = false,
+  }) async {
+    chrome = await Chrome.startWithDebugPort(
+      [_googleUrl],
+      debugPort: port,
+      userDataDir: userDataDir,
+      signIn: signIn,
+    );
   }
 
   Future<void> launchChrome() async {
@@ -51,20 +59,23 @@ void main() {
 
     test('has a working debugger', () async {
       await launchChromeWithDebugPort();
-      var tabs = await chrome!.chromeConnection.getTabs();
+      final tabs = await chrome!.chromeConnection.getTabs();
       expect(
-          tabs,
-          contains(const TypeMatcher<ChromeTab>()
-              .having((t) => t.url, 'url', _googleUrl)));
+        tabs,
+        contains(
+          const TypeMatcher<ChromeTab>()
+              .having((t) => t.url, 'url', _googleUrl),
+        ),
+      );
     });
 
     test('uses open debug port if provided port is 0', () async {
-      await launchChromeWithDebugPort(port: 0);
+      await launchChromeWithDebugPort();
       expect(chrome!.debugPort, isNot(equals(0)));
     });
 
     test('can provide a specific debug port', () async {
-      var port = await findUnusedPort();
+      final port = await findUnusedPort();
       await launchChromeWithDebugPort(port: port);
       expect(chrome!.debugPort, port);
     });
@@ -87,7 +98,7 @@ void main() {
           while (true) {
             try {
               attempts++;
-              await Future.delayed(const Duration(milliseconds: 100));
+              await Future<void>.delayed(const Duration(milliseconds: 100));
               dataDir.deleteSync(recursive: true);
               break;
             } catch (_) {
@@ -98,28 +109,39 @@ void main() {
 
         test('can launch with debug port', () async {
           await launchChromeWithDebugPort(
-              userDataDir: dataDir.path, signIn: signIn);
+            userDataDir: dataDir.path,
+            signIn: signIn,
+          );
           expect(chrome, isNotNull);
         });
 
         test('has a working debugger', () async {
           await launchChromeWithDebugPort(
-              userDataDir: dataDir.path, signIn: signIn);
-          var tabs = await chrome!.chromeConnection.getTabs();
+            userDataDir: dataDir.path,
+            signIn: signIn,
+          );
+          final tabs = await chrome!.chromeConnection.getTabs();
           expect(
-              tabs,
-              contains(const TypeMatcher<ChromeTab>()
-                  .having((t) => t.url, 'url', _googleUrl)));
+            tabs,
+            contains(
+              const TypeMatcher<ChromeTab>()
+                  .having((t) => t.url, 'url', _googleUrl),
+            ),
+          );
         });
 
         test('has correct profile path', () async {
           await launchChromeWithDebugPort(
-              userDataDir: dataDir.path, signIn: signIn);
+            userDataDir: dataDir.path,
+            signIn: signIn,
+          );
           await openTab(_chromeVersionUrl);
 
-          var wipConnection = await connectToTab(_chromeVersionUrl);
-          var result = await _evaluateExpression(wipConnection.page,
-              "document.getElementById('profile_path').textContent");
+          final wipConnection = await connectToTab(_chromeVersionUrl);
+          final result = await _evaluateExpression(
+            wipConnection.page,
+            "document.getElementById('profile_path').textContent",
+          );
 
           expect(result, contains(_userDataDirName));
         });
@@ -133,13 +155,13 @@ String _openTabUrl(String url) => '/json/new?$url';
 Future<String> _evaluateExpression(WipPage page, String expression) async {
   var result = '';
   while (result.isEmpty) {
-    await Future.delayed(Duration(milliseconds: 100));
-    var wipResponse = await page.sendCommand(
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final wipResponse = await page.sendCommand(
       'Runtime.evaluate',
       params: {'expression': expression},
     );
-    var response = wipResponse.json['result'] as Map<String, dynamic>;
-    var value = (response['result'] as Map<String, dynamic>)['value'];
+    final response = wipResponse.json['result'] as Map<String, dynamic>;
+    final value = (response['result'] as Map<String, dynamic>)['value'];
     result = (value != null && value is String) ? value : '';
   }
   return result;
