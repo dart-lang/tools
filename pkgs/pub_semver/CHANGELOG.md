@@ -1,3 +1,7 @@
+# 2.1.3-dev
+
+- Require Dart 2.17.
+
 # 2.1.2
 
 - Add markdown badges to the readme.
@@ -16,10 +20,6 @@
 # 2.0.0
 
 - Stable null safety release.
-
-# 2.0.0-nullsafety.0
-
-- Migrate to null safety.
 - `Version.primary` now throws `StateError` if the `versions` argument is empty.
 
 # 1.4.4

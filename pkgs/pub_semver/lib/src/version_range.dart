@@ -85,7 +85,7 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
   VersionRange._(this.min, this.max, this.includeMin, this.includeMax);
 
   @override
-  bool operator ==(other) {
+  bool operator ==(Object other) {
     if (other is! VersionRange) return false;
 
     return min == other.min &&
@@ -294,7 +294,6 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
         return VersionRange(
             min: min,
             max: max,
-            includeMin: false,
             includeMax: includeMax,
             alwaysIncludeMaxPreRelease: true);
       }
@@ -305,7 +304,6 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
             min: min,
             max: max,
             includeMin: includeMin,
-            includeMax: false,
             alwaysIncludeMaxPreRelease: true);
       }
 
@@ -314,12 +312,10 @@ class VersionRange implements Comparable<VersionRange>, VersionConstraint {
             min: min,
             max: other,
             includeMin: includeMin,
-            includeMax: false,
             alwaysIncludeMaxPreRelease: true),
         VersionRange(
             min: other,
             max: max,
-            includeMin: false,
             includeMax: includeMax,
             alwaysIncludeMaxPreRelease: true)
       ]);

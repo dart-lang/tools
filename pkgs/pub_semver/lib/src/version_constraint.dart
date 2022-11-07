@@ -84,14 +84,11 @@ abstract class VersionConstraint {
         case '<=':
           return VersionRange(max: version, includeMax: true);
         case '<':
-          return VersionRange(
-              max: version,
-              includeMax: false,
-              alwaysIncludeMaxPreRelease: true);
+          return VersionRange(max: version, alwaysIncludeMaxPreRelease: true);
         case '>=':
           return VersionRange(min: version, includeMin: true);
         case '>':
-          return VersionRange(min: version, includeMin: false);
+          return VersionRange(min: version);
       }
       throw UnsupportedError(op!);
     }

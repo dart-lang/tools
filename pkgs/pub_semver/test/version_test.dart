@@ -408,4 +408,4 @@ void main() {
 }
 
 Version _primary(List<String> input) =>
-    Version.primary(input.map((e) => Version.parse(e)).toList());
+    Version.primary(input.map(Version.parse).toList());

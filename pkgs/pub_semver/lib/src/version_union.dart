@@ -35,8 +35,8 @@ class VersionUnion implements VersionConstraint {
   ///
   /// It's up to the caller to ensure that the invariants described in [ranges]
   /// are maintained. They are not verified by this constructor. To
-  /// automatically ensure that they're maintained, use [new
-  /// VersionConstraint.unionOf] instead.
+  /// automatically ensure that they're maintained, use
+  /// [VersionConstraint.unionOf] instead.
   VersionUnion.fromRanges(this.ranges);
 
   @override

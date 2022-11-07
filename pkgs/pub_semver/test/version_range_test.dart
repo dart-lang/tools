@@ -961,12 +961,11 @@ void main() {
     test('includeMin comes before !includeMin', () {
       _expectComparesSmaller(
           VersionRange(min: v003, max: v080, includeMin: true),
-          VersionRange(min: v003, max: v080, includeMin: false));
+          VersionRange(min: v003, max: v080));
     });
 
     test('includeMax comes after !includeMax', () {
-      _expectComparesSmaller(
-          VersionRange(min: v003, max: v080, includeMax: false),
+      _expectComparesSmaller(VersionRange(min: v003, max: v080),
           VersionRange(min: v003, max: v080, includeMax: true));
     });
 

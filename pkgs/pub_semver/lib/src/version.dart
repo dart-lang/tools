@@ -12,7 +12,7 @@ import 'version_constraint.dart';
 import 'version_range.dart';
 
 /// The equality operator to use for comparing version components.
-final _equality = const IterableEquality();
+const _equality = IterableEquality();
 
 /// A parsed semantic version number.
 @sealed
@@ -70,14 +70,14 @@ class Version implements VersionConstraint, VersionRange {
   /// This is split into a list of components, each of which may be either a
   /// string or a non-negative integer. It may also be empty, indicating that
   /// this version has no pre-release identifier.
-  final List preRelease;
+  final List<Object> preRelease;
 
   /// The build identifier: "foo" in "1.2.3+foo".
   ///
   /// This is split into a list of components, each of which may be either a
   /// string or a non-negative integer. It may also be empty, indicating that
   /// this version has no build identifier.
-  final List build;
+  final List<Object> build;
 
   /// The original string representation of the version number.
   ///
@@ -96,7 +96,7 @@ class Version implements VersionConstraint, VersionRange {
 
   Version._(this.major, this.minor, this.patch, String? preRelease,
       String? build, this._text)
-      : preRelease = preRelease == null ? [] : _splitParts(preRelease),
+      : preRelease = preRelease == null ? <Object>[] : _splitParts(preRelease),
         build = build == null ? [] : _splitParts(build) {
     if (major < 0) throw ArgumentError('Major version must be non-negative.');
     if (minor < 0) throw ArgumentError('Minor version must be non-negative.');
@@ -154,12 +154,13 @@ class Version implements VersionConstraint, VersionRange {
   /// Splits a string of dot-delimited identifiers into their component parts.
   ///
   /// Identifiers that are numeric are converted to numbers.
-  static List _splitParts(String text) {
-    return text.split('.').map((part) {
-      // Return an integer part if possible, otherwise return the string as-is
-      return int.tryParse(part) ?? part;
-    }).toList();
-  }
+  static List<Object> _splitParts(String text) => text
+      .split('.')
+      .map((part) =>
+          // Return an integer part if possible, otherwise return the string
+          // as-is
+          int.tryParse(part) ?? part)
+      .toList();
 
   @override
   bool operator ==(Object other) =>
@@ -354,7 +355,7 @@ class Version implements VersionConstraint, VersionRange {
   ///
   /// This is used for the pre-release and build version parts. This follows
   /// Rule 12 of the Semantic Versioning spec (v2.0.0-rc.1).
-  int _compareLists(List a, List b) {
+  int _compareLists(List<Object> a, List<Object> b) {
     for (var i = 0; i < math.max(a.length, b.length); i++) {
       var aPart = (i < a.length) ? a[i] : null;
       var bPart = (i < b.length) ? b[i] : null;

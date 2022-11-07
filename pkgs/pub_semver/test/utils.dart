@@ -34,7 +34,7 @@ class _VersionConstraintMatcher implements Matcher {
   _VersionConstraintMatcher(this._expected, this._allow);
 
   @override
-  bool matches(item, Map matchState) =>
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
       (item is VersionConstraint) &&
       _expected.every((version) => item.allows(version) == _allow);
 
@@ -46,8 +46,8 @@ class _VersionConstraintMatcher implements Matcher {
   }
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(dynamic item, Description mismatchDescription,
+      Map<dynamic, dynamic> matchState, bool verbose) {
     if (item is! VersionConstraint) {
       mismatchDescription.add('was not a VersionConstraint');
       return mismatchDescription;
