@@ -1,7 +1,6 @@
 name: glob
-version: 2.1.0
-
-description: Bash-style filename globbing.
+version: 2.1.1
+description: A library to perform Bash-style file and directory globbing.
 repository: https://github.com/dart-lang/glob
 
 environment:

@@ -1,6 +1,6 @@
-## 2.1.1-dev
+## 2.1.1
 
-* Bump dependencies
+* Updated the dependency on `package:file` to require at least `6.1.3`.
 
 ## 2.1.0
 

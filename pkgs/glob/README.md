@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/glob/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/glob/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/glob.svg)](https://pub.dev/packages/glob)
+[![package publisher](https://img.shields.io/pub/publisher/glob.svg)](https://pub.dev/packages/glob/publisher)
+
 `glob` is a file and directory globbing library that supports both checking
 whether a path matches a glob and listing all entities that match a glob.
 
