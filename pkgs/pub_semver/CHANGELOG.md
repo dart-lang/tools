@@ -1,5 +1,8 @@
-# 2.1.3-dev
+# 2.1.3
 
+- Add type parameters to the signatures of the `Version.preRelease` and
+  `Version.build` fields (`List` ==> `List<Object>`).
+  [#74](https://github.com/dart-lang/pub_semver/pull/74).
 - Require Dart 2.17.
 
 # 2.1.2
