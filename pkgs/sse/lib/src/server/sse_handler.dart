@@ -264,14 +264,15 @@ class SseHandler {
 
   Future<shelf.Response> _handleIncomingMessage(
       shelf.Request req, String path) async {
+    String? clientId;
     try {
-      var clientId = req.url.queryParameters['sseClientId'];
+      clientId = req.url.queryParameters['sseClientId'];
       var messageId = int.parse(req.url.queryParameters['messageId'] ?? '0');
       var message = await req.readAsString();
       var jsonObject = json.decode(message) as String;
       _connections[clientId]?._addIncomingMessage(messageId, jsonObject);
     } catch (e, st) {
-      _logger.fine('Failed to handle incoming message. $e $st');
+      _logger.fine('[$clientId] Failed to handle incoming message. $e $st');
     }
     return shelf.Response.ok('', headers: {
       'access-control-allow-credentials': 'true',

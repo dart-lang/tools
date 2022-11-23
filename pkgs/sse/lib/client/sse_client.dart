@@ -26,6 +26,8 @@ final _requestPool = Pool(1000);
 /// The client can send any JSON-encodable messages to the server by adding
 /// them to the [sink] and listen to messages from the server on the [stream].
 class SseClient extends StreamChannelMixin<String?> {
+  final String _clientId;
+
   final _incomingController = StreamController<String>();
 
   final _outgoingController = StreamController<String>();
@@ -43,12 +45,14 @@ class SseClient extends StreamChannelMixin<String?> {
   Timer? _errorTimer;
 
   /// [serverUrl] is the URL under which the server is listening for
-  /// incoming bi-directional SSE connections.
-  SseClient(String serverUrl) {
-    var clientId = generateUuidV4();
-    _eventSource =
-        EventSource('$serverUrl?sseClientId=$clientId', withCredentials: true);
-    _serverUrl = '$serverUrl?sseClientId=$clientId';
+  /// incoming bi-directional SSE connections. [debugKey] is an optional key
+  /// that can be used to identify the SSE connection.
+  SseClient(String serverUrl, {String? debugKey})
+      : _clientId = debugKey == null
+            ? generateUuidV4()
+            : '$debugKey-${generateUuidV4()}' {
+    _serverUrl = '$serverUrl?sseClientId=$_clientId';
+    _eventSource = EventSource(_serverUrl, withCredentials: true);
     _eventSource.onOpen.first.whenComplete(() {
       _onConnected.complete();
       _outgoingController.stream
@@ -113,7 +117,7 @@ class SseClient extends StreamChannelMixin<String?> {
     if (data == 'close') {
       close();
     } else {
-      throw UnsupportedError('Illegal Control Message "$data"');
+      throw UnsupportedError('[$_clientId] Illegal Control Message "$data"');
     }
   }
 
@@ -133,9 +137,9 @@ class SseClient extends StreamChannelMixin<String?> {
       try {
         encodedMessage = jsonEncode(message);
       } on JsonUnsupportedObjectError catch (e) {
-        _logger.warning('Unable to encode outgoing message: $e');
+        _logger.warning('[$_clientId] Unable to encode outgoing message: $e');
       } on ArgumentError catch (e) {
-        _logger.warning('Invalid argument: $e');
+        _logger.warning('[$_clientId] Invalid argument: $e');
       }
       try {
         final url = '$_serverUrl&messageId=${++_lastMessageId}';
@@ -147,7 +151,8 @@ class SseClient extends StreamChannelMixin<String?> {
                 credentialsOptions:
                     _CredentialsOptions(credentials: 'include')));
       } catch (error) {
-        final augmentedError = 'SSE client failed to send $message:\n $error';
+        final augmentedError =
+            '[$_clientId] SSE client failed to send $message:\n $error';
         _logger.severe(augmentedError);
         _closeWithError(augmentedError);
       }
