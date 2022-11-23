@@ -1,3 +1,7 @@
+## 4.1.2-dev
+
+- Send `fetch` requests instead of `XHR` requests.
+
 ## 4.1.1
 
 - Apply `keepAlive` logic to `SocketException`s.
