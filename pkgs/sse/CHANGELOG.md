@@ -30,8 +30,8 @@
 
 ## 3.8.1
 
-- Fix an issue where closing the `SseConnection` stream would result in
-  an error.
+- Fix an issue where closing the `SseConnection` stream would result in an
+  error.
 
 ## 3.8.0
 
@@ -41,8 +41,8 @@
 
 ## 3.7.0
 
-- Deprecate the client's `onOpen` getter. Messages will now be buffered until
-  a connection is established.
+- Deprecate the client's `onOpen` getter. Messages will now be buffered until a
+  connection is established.
 
 ## 3.6.1
 
@@ -53,15 +53,14 @@
 - Improve performance by buffering out of order messages in the server instead
   of the client.
 
-** Note ** This is not modelled as a breaking change as the server can handle
-messages from older clients. However, clients should be using the latest server
-if they require order guarantees.
-
+\*\* Note \*\* This is not modelled as a breaking change as the server can
+handle messages from older clients. However, clients should be using the latest
+server if they require order guarantees.
 
 ## 3.5.0
 
-- Add new `shutdown` methods on `SseHandler` and `SseConnection` to allow closing
-  connections immediately, ignoring any keep-alive periods.
+- Add new `shutdown` methods on `SseHandler` and `SseConnection` to allow
+  closing connections immediately, ignoring any keep-alive periods.
 
 ## 3.4.0
 
@@ -70,14 +69,14 @@ if they require order guarantees.
 
 ## 3.3.0
 
-- Add an `onClose` event to the `SseConnection`. This allows consumers to
-  listen to this event in lue of `sseConnection.sink.done` as that is not
-  guaranteed to fire.
+- Add an `onClose` event to the `SseConnection`. This allows consumers to listen
+  to this event in lue of `sseConnection.sink.done` as that is not guaranteed to
+  fire.
 
 ## 3.2.2
 
-- Fix an issue where `keepAlive` may cause state errors when attempting to
-  send messages on a closed stream.
+- Fix an issue where `keepAlive` may cause state errors when attempting to send
+  messages on a closed stream.
 
 ## 3.2.1
 
@@ -99,21 +98,21 @@ if they require order guarantees.
 - Make `isInKeepAlive` on `SseConnection` private.
 
 **Note that this is a breaking change but in actuality no one should be
-  depending on this API.**
+depending on this API.**
 
 ## 3.1.0
 
 - Add optional `keepAlive` parameter to the `SseHandler`. If `keepAlive` is
-  supplied, the connection will remain active for this period after a
-  disconnect and can be reconnected transparently. If there is no reconnect
-  within that period, the connection will be closed normally.
+  supplied, the connection will remain active for this period after a disconnect
+  and can be reconnected transparently. If there is no reconnect within that
+  period, the connection will be closed normally.
 
 ## 3.0.0
 
 - Add retry logic.
 
-**Possible Breaking Change Error messages may now be delayed up to 5 seconds
-  in the client.**
+**Possible Breaking Change Error messages may now be delayed up to 5 seconds in
+the client.**
 
 ## 2.1.2
 
@@ -149,7 +148,6 @@ if they require order guarantees.
 ## 1.0.0
 
 - Internal cleanup.
-
 
 ## 0.0.1
 
