@@ -146,10 +146,7 @@ class SseClient extends StreamChannelMixin<String?> {
         await _fetch(
             url,
             _FetchOptions(
-                method: 'POST',
-                body: encodedMessage,
-                credentialsOptions:
-                    _CredentialsOptions(credentials: 'include')));
+                method: 'POST', body: encodedMessage, credentials: 'include'));
       } catch (error) {
         final augmentedError =
             '[$_clientId] SSE client failed to send $message:\n $error';
@@ -173,15 +170,7 @@ Future<dynamic> _fetch(String resourceUrl, _FetchOptions options) =>
 class _FetchOptions {
   external factory _FetchOptions({
     required String method, // e.g., 'GET', 'POST'
-    required _CredentialsOptions credentialsOptions,
-    required String? body,
-  });
-}
-
-@JS()
-@anonymous
-class _CredentialsOptions {
-  external factory _CredentialsOptions({
     required String credentials, // e.g., 'omit', 'same-origin', 'include'
+    required String? body,
   });
 }
