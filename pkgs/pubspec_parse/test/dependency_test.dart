@@ -225,30 +225,16 @@ void _sdkDependency() {
   });
 
   test('null content', () {
-    _expectThrows(
+    _expectThrowsContaining(
       {'sdk': null},
-      r'''
-line 5, column 11: Unsupported value for "sdk". type 'Null' is not a subtype of type 'String' in type cast
-  ╷
-5 │      "sdk": null
-  │ ┌───────────^
-6 │ │   }
-  │ └──^
-  ╵''',
+      r"type 'Null' is not a subtype of type 'String'",
     );
   });
 
   test('number content', () {
-    _expectThrows(
+    _expectThrowsContaining(
       {'sdk': 42},
-      r'''
-line 5, column 11: Unsupported value for "sdk". type 'int' is not a subtype of type 'String' in type cast
-  ╷
-5 │      "sdk": 42
-  │ ┌───────────^
-6 │ │   }
-  │ └──^
-  ╵''',
+      r"type 'int' is not a subtype of type 'String'",
     );
   });
 }
@@ -337,46 +323,27 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   });
 
   test('git - empty map', () {
-    _expectThrows(
+    _expectThrowsContaining(
       {'git': <String, dynamic>{}},
-      r'''
-line 5, column 11: Missing key "url". type 'Null' is not a subtype of type 'String' in type cast
-  ╷
-5 │    "git": {}
-  │           ^^
-  ╵''',
+      r"type 'Null' is not a subtype of type 'String'",
     );
   });
 
   test('git - null url', () {
-    _expectThrows(
+    _expectThrowsContaining(
       {
         'git': {'url': null}
       },
-      r'''
-line 6, column 12: Unsupported value for "url". type 'Null' is not a subtype of type 'String' in type cast
-  ╷
-6 │       "url": null
-  │ ┌────────────^
-7 │ │    }
-  │ └───^
-  ╵''',
+      r"type 'Null' is not a subtype of type 'String'",
     );
   });
 
   test('git - int url', () {
-    _expectThrows(
+    _expectThrowsContaining(
       {
         'git': {'url': 42}
       },
-      r'''
-line 6, column 12: Unsupported value for "url". type 'int' is not a subtype of type 'String' in type cast
-  ╷
-6 │       "url": 42
-  │ ┌────────────^
-7 │ │    }
-  │ └───^
-  ╵''',
+      r"type 'int' is not a subtype of type 'String'",
     );
   });
 }
@@ -443,6 +410,16 @@ void _expectThrows(Object content, String expectedError) {
       'dependencies': {'dep': content}
     },
     expectedError,
+  );
+}
+
+void _expectThrowsContaining(Object content, String errorText) {
+  expectParseThrowsContaining(
+    {
+      'name': 'sample',
+      'dependencies': {'dep': content}
+    },
+    errorText,
   );
 }
 

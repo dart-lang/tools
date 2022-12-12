@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 // ignore_for_file: deprecated_member_use_from_same_package
+// ignore_for_file: lines_longer_than_80_chars
+
 library parse_test;
 
 import 'package:pub_semver/pub_semver.dart';
@@ -22,7 +24,7 @@ void main() {
     expect(value.authors, isEmpty);
     expect(
       value.environment,
-      {'sdk': VersionConstraint.parse('>=2.7.0 <3.0.0')},
+      {'sdk': VersionConstraint.parse('>=2.12.0 <3.0.0')},
     );
     expect(value.documentation, isNull);
     expect(value.dependencies, isEmpty);
@@ -36,7 +38,7 @@ void main() {
 
   test('all fields set', () {
     final version = Version.parse('1.2.3');
-    final sdkConstraint = VersionConstraint.parse('>=2.0.0-dev.54 <3.0.0');
+    final sdkConstraint = VersionConstraint.parse('>=2.12.0 <3.0.0');
     final value = parse({
       'name': 'sample',
       'version': version.toString(),
@@ -85,7 +87,7 @@ void main() {
       {
         'name': 'sample',
         'environment': {
-          'sdk': '>=2.7.0 <3.0.0',
+          'sdk': '>=2.12.0 <3.0.0',
           'bob': null,
         }
       },
@@ -98,12 +100,7 @@ void main() {
 
   group('publish_to', () {
     for (var entry in {
-      42: r'''
-line 3, column 16: Unsupported value for "publish_to". type 'int' is not a subtype of type 'String?' in type cast
-  ╷
-3 │  "publish_to": 42
-  │                ^^
-  ╵''',
+      42: "Unsupported value for \"publish_to\". type 'int' is not a subtype of type 'String?'",
       '##not a uri!': r'''
 line 3, column 16: Unsupported value for "publish_to". Must be an http or https URL.
   ╷
@@ -124,7 +121,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
   ╵''',
     }.entries) {
       test('cannot be `${entry.key}`', () {
-        expectParseThrows(
+        expectParseThrowsContaining(
           {'name': 'sample', 'publish_to': entry.key},
           entry.value,
           skipTryPub: true,
@@ -241,26 +238,16 @@ line 1, column 1: Not a map
     });
 
     test('missing name', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {},
-        r'''
-line 1, column 1: Missing key "name". type 'Null' is not a subtype of type 'String' in type cast
-  ╷
-1 │ {}
-  │ ^^
-  ╵''',
+        "Missing key \"name\". type 'Null' is not a subtype of type 'String'",
       );
     });
 
     test('null name value', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {'name': null},
-        r'''
-line 2, column 10: Unsupported value for "name". type 'Null' is not a subtype of type 'String' in type cast
-  ╷
-2 │  "name": null
-  │          ^^^^
-  ╵''',
+        "Unsupported value for \"name\". type 'Null' is not a subtype of type 'String'",
       );
     });
 
@@ -336,37 +323,23 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
     });
 
     test('bad repository url', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {
           ...defaultPubspec,
           'repository': {'x': 'y'},
         },
-        r'''
-line 6, column 16: Unsupported value for "repository". type 'YamlMap' is not a subtype of type 'String' in type cast
-  ╷
-6 │    "repository": {
-  │ ┌────────────────^
-7 │ │   "x": "y"
-8 │ └  }
-  ╵''',
+        "Unsupported value for \"repository\". type 'YamlMap' is not a subtype of type 'String'",
         skipTryPub: true,
       );
     });
 
     test('bad issue_tracker url', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {
           'name': 'sample',
           'issue_tracker': {'x': 'y'},
         },
-        r'''
-line 3, column 19: Unsupported value for "issue_tracker". type 'YamlMap' is not a subtype of type 'String' in type cast
-  ╷
-3 │    "issue_tracker": {
-  │ ┌───────────────────^
-4 │ │   "x": "y"
-5 │ └  }
-  ╵''',
+        "Unsupported value for \"issue_tracker\". type 'YamlMap' is not a subtype of type 'String'",
         skipTryPub: true,
       );
     });
@@ -374,35 +347,23 @@ line 3, column 19: Unsupported value for "issue_tracker". type 'YamlMap' is not 
 
   group('funding', () {
     test('not a list', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {
           ...defaultPubspec,
           'funding': 1,
         },
-        r'''
-line 6, column 13: Unsupported value for "funding". type 'int' is not a subtype of type 'List<dynamic>?' in type cast
-  ╷
-6 │  "funding": 1
-  │             ^
-  ╵''',
+        "Unsupported value for \"funding\". type 'int' is not a subtype of type 'List<dynamic>?'",
         skipTryPub: true,
       );
     });
 
     test('not an uri', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {
           ...defaultPubspec,
           'funding': [1],
         },
-        r'''
-line 6, column 13: Unsupported value for "funding". type 'int' is not a subtype of type 'String' in type cast
-  ╷
-6 │    "funding": [
-  │ ┌─────────────^
-7 │ │   1
-8 │ └  ]
-  ╵''',
+        "Unsupported value for \"funding\". type 'int' is not a subtype of type 'String'",
         skipTryPub: true,
       );
     });
@@ -608,14 +569,9 @@ line 1, column 1: Not a map
     });
 
     test('name cannot be empty', () {
-      expectParseThrows(
+      expectParseThrowsContaining(
         {},
-        r'''
-line 1, column 1: Missing key "name". type 'Null' is not a subtype of type 'String' in type cast
-  ╷
-1 │ {}
-  │ ^^
-  ╵''',
+        "Missing key \"name\". type 'Null' is not a subtype of type 'String'",
         lenient: true,
       );
     });

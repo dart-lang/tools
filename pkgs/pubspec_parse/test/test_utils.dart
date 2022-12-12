@@ -16,7 +16,7 @@ import 'pub_utils.dart';
 
 const defaultPubspec = {
   'name': 'sample',
-  'environment': {'sdk': '>=2.7.0 <3.0.0'},
+  'environment': {'sdk': '>=2.12.0 <3.0.0'},
 };
 
 String _encodeJson(Object? input) =>
@@ -124,3 +124,36 @@ void expectParseThrows(
       ),
       _throwsParsedYamlException(expectedError),
     );
+
+void expectParseThrowsContaining(
+  Object? content,
+  String errorFragment, {
+  bool skipTryPub = false,
+  bool lenient = false,
+}) {
+  expect(
+    () => parse(
+      content,
+      lenient: lenient,
+      quietOnError: true,
+      skipTryPub: skipTryPub,
+    ),
+    _throwsParsedYamlExceptionContaining(errorFragment),
+  );
+}
+
+// ignore: prefer_expression_function_bodies
+Matcher _throwsParsedYamlExceptionContaining(String errorFragment) {
+  return throwsA(
+    const TypeMatcher<ParsedYamlException>().having(
+      (e) {
+        final message = e.formattedMessage;
+        printOnFailure("Actual error format:\nr'''\n$message'''");
+        _printDebugParsedYamlException(e);
+        return message;
+      },
+      'formattedMessage',
+      contains(errorFragment),
+    ),
+  );
+}
