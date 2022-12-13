@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
@@ -46,6 +47,8 @@ String get _executable {
 
 /// Manager for an instance of Chrome.
 class Chrome {
+  static final _logger = Logger('BROWSER_LAUNCHER.CHROME');
+
   Chrome._(
     this.debugPort,
     this.chromeConnection, {
@@ -119,16 +122,23 @@ class Chrome {
     // Wait until the DevTools are listening before trying to connect.
     final errorLines = <String>[];
     try {
-      await process.stderr
+      final stderr = process.stderr.asBroadcastStream();
+      stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen(_logger.fine);
+
+      await stderr
           .transform(utf8.decoder)
           .transform(const LineSplitter())
           .firstWhere((line) {
         errorLines.add(line);
         return line.startsWith('DevTools listening');
       }).timeout(const Duration(seconds: 60));
-    } catch (_) {
+    } on TimeoutException catch (e, s) {
+      _logger.severe('Unable to connect to Chrome DevTools', e, s);
       throw Exception(
-        'Unable to connect to Chrome DevTools.\n\n'
+        'Unable to connect to Chrome DevTools: $e.\n\n'
         'Chrome STDERR:\n${errorLines.join('\n')}',
       );
     }
