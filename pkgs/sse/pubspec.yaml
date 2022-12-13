@@ -1,5 +1,5 @@
 name: sse
-version: 4.1.2-dev
+version: 4.1.2
 description: >-
   Provides client and server functionality for setting up bi-directional
   communication through Server Sent Events (SSE) and corresponding POST

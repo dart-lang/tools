@@ -1,4 +1,4 @@
-## 4.1.2-dev
+## 4.1.2
 
 - Send `fetch` requests instead of `XHR` requests.
 - Add an optional `debugKey` parameter to `SseClient` to include in logging.
