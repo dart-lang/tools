@@ -7,11 +7,12 @@ description: >-
 repository: https://github.com/dart-lang/sse
 
 environment:
-  sdk: '>=2.15.0 <3.0.0'
+  sdk: '>=2.16.0 <3.0.0'
 
 dependencies:
   async: ^2.0.8
   collection: ^1.0.0
+  js: ^0.6.4
   logging: '>=0.11.3+2 <2.0.0'
   pool: ^1.5.0
   shelf: ^1.1.0
