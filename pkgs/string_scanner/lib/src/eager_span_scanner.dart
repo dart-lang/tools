@@ -97,7 +97,7 @@ class EagerSpanScanner extends SpanScanner {
   @override
   bool scan(Pattern pattern) {
     if (!super.scan(pattern)) return false;
-    final firstMatch = (lastMatch![0])!;
+    final firstMatch = lastMatch![0]!;
 
     final newlines = _newlinesIn(firstMatch);
     _line += newlines.length;
