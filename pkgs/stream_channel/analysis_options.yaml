@@ -1,8 +1,8 @@
 include: package:lints/recommended.yaml
 
 analyzer:
-  strong-mode:
-    implicit-casts: false
+  language:
+    strict-casts: true
   # These are errors when building in Google
   errors:
     unused_import: error
