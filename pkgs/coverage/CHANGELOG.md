@@ -1,3 +1,7 @@
+## 1.6.2
+
+- Update `package:vm_service` constraints to '>=9.4.0 <11.0.0'.
+
 ## 1.6.1
 
 - Handle SentinelExceptions thrown by vm_service.
