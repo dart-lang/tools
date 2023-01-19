@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Updates to the readme.
+
 ## 1.0.3
 
 * Revert `meta` constraint to `^1.3.0`.
@@ -12,12 +16,12 @@
 
 ## 1.0.0
 
-* Migrate this package to null-safety
-* Require Dart >=2.12
+* Migrate this package to null-safety.
+* Require Dart >=2.12.
 
 ## 0.3.5
 
-* Require Dart >=2.1
+* Require Dart >=2.1.
 * Remove dependency on `package:charcode`.
 
 ## 0.3.4

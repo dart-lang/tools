@@ -1,7 +1,8 @@
-Contains utilities for the Dart VM's `dart:io`.
-
-[![pub package](https://img.shields.io/pub/v/io.svg)](https://pub.dev/packages/io)
 [![ci](https://github.com/dart-lang/io/workflows/ci/badge.svg?branch=master)](https://github.com/dart-lang/io/actions?query=branch%3Amaster)
+[![pub package](https://img.shields.io/pub/v/io.svg)](https://pub.dev/packages/io)
+[![package publisher](https://img.shields.io/pub/publisher/io.svg)](https://pub.dev/packages/io/publisher)
+
+Contains utilities for the Dart VM's `dart:io`.
 
 ## Usage - `io.dart`
 
@@ -96,3 +97,8 @@ void main() {
   });
 }
 ```
+
+## Publishing automation
+
+For information about our publishing automation and process, see
+https://github.com/dart-lang/ecosystem/wiki/Publishing-automation.
