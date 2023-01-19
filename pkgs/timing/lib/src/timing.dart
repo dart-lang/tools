@@ -116,10 +116,10 @@ class SyncTimeTracker implements TimeTracker {
     _stopTime = now();
   }
 
-  /// Splits tracker into two slices
+  /// Splits tracker into two slices.
   ///
-  /// Returns new [TimeSlice] started on [startTime] and ended now.
-  /// Modifies [startTime] of tracker to current time point
+  /// Returns new [TimeSlice] started on [startTime] and ended now. Modifies
+  /// [startTime] of tracker to current time point
   ///
   /// Don't change state of tracker. Can be called only while [isTracking], and
   /// tracker will sill be tracking after call.
@@ -127,9 +127,9 @@ class SyncTimeTracker implements TimeTracker {
     if (!isTracking) {
       throw StateError('Can be only called while tracking');
     }
-    final _now = now();
-    final prevSlice = TimeSlice(_startTime!, _now);
-    _startTime = _now;
+    final splitPoint = now();
+    final prevSlice = TimeSlice(_startTime!, splitPoint);
+    _startTime = splitPoint;
     return prevSlice;
   }
 
@@ -261,7 +261,7 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
       try {
         return action();
       } finally {
-        // Split tracker again and discard slice that was spend in nested tracker
+        // Split tracker again and discard slice from nested tracker
         parent.run(zone, timer._split);
         // Add tracker back to list of slices and continue tracking
         slices.add(timer);
@@ -315,7 +315,8 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
         zoneValues: {_zoneKey: this});
     if (result is Future) {
       return result
-          // Break possible sync processing of future completion, so slice trackers can be finished
+          // Break possible sync processing of future completion, so slice
+          // trackers can be finished
           .whenComplete(() => Future.value())
           .whenComplete(() => _tracking = false) as T;
     } else {
