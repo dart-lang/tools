@@ -35,7 +35,6 @@ linter:
     - prefer_const_declarations
     - prefer_expression_function_bodies
     - prefer_final_locals
-    - prefer_interpolation_to_compose_strings
     - prefer_relative_imports
     - require_trailing_commas
     - sort_pub_dependencies
@@ -43,7 +42,6 @@ linter:
     - throw_in_finally
     - unnecessary_await_in_return
     - unnecessary_lambdas
-    - unnecessary_null_aware_assignments
     - unnecessary_parenthesis
     - unnecessary_statements
     - use_string_buffers

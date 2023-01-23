@@ -223,7 +223,7 @@ class HostedDetails {
   @JsonKey(fromJson: parseGitUriOrNull, disallowNullValue: true)
   final Uri? url;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   String? _nameOfPackage;
 
   /// The name of this package on the package repository.
