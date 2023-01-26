@@ -13,7 +13,7 @@ import 'package:shelf_static/shelf_static.dart';
 import 'package:sse/server/sse_handler.dart';
 import 'package:sse/src/server/sse_handler.dart' show closeSink;
 import 'package:test/test.dart';
-import 'package:webdriver/io.dart';
+import 'package:webdriver/async_io.dart';
 
 void main() {
   late HttpServer server;

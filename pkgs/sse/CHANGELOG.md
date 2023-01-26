@@ -1,3 +1,7 @@
+## 4.1.3-dev
+
+- Update the minimum Dart SDK version to `2.18.0`.
+
 ## 4.1.2
 
 - Send `fetch` requests instead of `XHR` requests.
