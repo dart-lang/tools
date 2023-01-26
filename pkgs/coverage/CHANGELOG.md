@@ -1,3 +1,7 @@
+## 1.6.3-dev
+
+- Require Dart 2.18
+
 ## 1.6.2
 
 - Update `package:vm_service` constraints to '>=9.4.0 <11.0.0'.
