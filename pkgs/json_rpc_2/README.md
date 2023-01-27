@@ -133,3 +133,8 @@ both a client and a server. This package supports this directly using the `Peer`
 class, which implements both `Client` and `Server`. It supports the same methods
 as those classes, and automatically makes sure that every message from the other
 endpoint is routed and handled correctly.
+
+## Publishing automation
+
+For information about our publishing automation and release process, see
+https://github.com/dart-lang/ecosystem/wiki/Publishing-automation.
