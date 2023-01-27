@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'testing.dart';
 
 class ClassVisitor extends Visitor {
-  final List expectedClasses;
+  final List<String> expectedClasses;
   final foundClasses = <String>{};
 
   ClassVisitor(this.expectedClasses);
@@ -23,12 +23,12 @@ class ClassVisitor extends Visitor {
 
   bool get matches {
     var match = true;
-    foundClasses.forEach((value) {
+    for (var value in foundClasses) {
       match = match && expectedClasses.contains(value);
-    });
-    expectedClasses.forEach((value) {
+    }
+    for (var value in expectedClasses) {
       match = match && foundClasses.contains(value);
-    });
+    }
 
     return match;
   }

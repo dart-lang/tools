@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: constant_identifier_names
+
 part of '../parser.dart';
 
 // TODO(terry): Need to be consistent with tokens either they're ASCII tokens
@@ -196,7 +198,7 @@ class TokenKind {
   static const int PSEUDO_CLASS_NAME = 705; // :pseudoClass
   static const int NEGATION = 706; // NOT
 
-  static const List<Map<String, dynamic>> _DIRECTIVES = [
+  static const List<Map<String, Object>> _DIRECTIVES = [
     {'type': TokenKind.DIRECTIVE_IMPORT, 'value': 'import'},
     {'type': TokenKind.DIRECTIVE_MEDIA, 'value': 'media'},
     {'type': TokenKind.DIRECTIVE_PAGE, 'value': 'page'},
@@ -223,13 +225,13 @@ class TokenKind {
     {'type': TokenKind.DIRECTIVE_MS_VIEWPORT, 'value': '-ms-viewport'},
   ];
 
-  static const List<Map<String, dynamic>> MEDIA_OPERATORS = [
+  static const List<Map<String, Object>> MEDIA_OPERATORS = [
     {'type': TokenKind.MEDIA_OP_ONLY, 'value': 'only'},
     {'type': TokenKind.MEDIA_OP_NOT, 'value': 'not'},
     {'type': TokenKind.MEDIA_OP_AND, 'value': 'and'},
   ];
 
-  static const List<Map<String, dynamic>> MARGIN_DIRECTIVES = [
+  static const List<Map<String, Object>> MARGIN_DIRECTIVES = [
     {
       'type': TokenKind.MARGIN_DIRECTIVE_TOPLEFTCORNER,
       'value': 'top-left-corner'
@@ -260,7 +262,7 @@ class TokenKind {
     {'type': TokenKind.MARGIN_DIRECTIVE_RIGHTBOTTOM, 'value': 'right-bottom'},
   ];
 
-  static const List<Map<String, dynamic>> _UNITS = [
+  static const List<Map<String, Object>> _UNITS = [
     {'unit': TokenKind.UNIT_EM, 'value': 'em'},
     {'unit': TokenKind.UNIT_EX, 'value': 'ex'},
     {'unit': TokenKind.UNIT_LENGTH_PX, 'value': 'px'},
@@ -294,7 +296,7 @@ class TokenKind {
   static const int ASCII_UPPER_Z = 90; // ASCII value for uppercase Z
 
   // Extended color keywords:
-  static const List<Map> _EXTENDED_COLOR_NAMES = [
+  static const List<Map<String, Object>> _EXTENDED_COLOR_NAMES = [
     {'name': 'aliceblue', 'value': 0xF08FF},
     {'name': 'antiquewhite', 'value': 0xFAEBD7},
     {'name': 'aqua', 'value': 0x00FFFF},
@@ -547,7 +549,7 @@ class TokenKind {
 
   /// Match color name, case insensitive match and return the associated color
   /// entry from _EXTENDED_COLOR_NAMES list, return [:null:] if not found.
-  static Map? matchColorName(String text) {
+  static Map<String, Object>? matchColorName(String text) {
     var name = text.toLowerCase();
     for (var color in _EXTENDED_COLOR_NAMES) {
       if (color['name'] == name) return color;
@@ -556,11 +558,11 @@ class TokenKind {
   }
 
   /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
-  static int colorValue(Map entry) {
+  static int colorValue(Map<String, Object> entry) {
     return entry['value'] as int;
   }
 
-  static String? hexToColorName(hexValue) {
+  static String? hexToColorName(Object hexValue) {
     for (final entry in _EXTENDED_COLOR_NAMES) {
       if (entry['value'] == hexValue) {
         return entry['name'] as String?;
@@ -571,17 +573,17 @@ class TokenKind {
   }
 
   static String decimalToHex(int number, [int minDigits = 1]) {
-    final _HEX_DIGITS = '0123456789abcdef';
+    final hexDigits = '0123456789abcdef';
 
     var result = <String>[];
 
     var dividend = number >> 4;
     var remain = number % 16;
-    result.add(_HEX_DIGITS[remain]);
+    result.add(hexDigits[remain]);
     while (dividend != 0) {
       remain = dividend % 16;
       dividend >>= 4;
-      result.add(_HEX_DIGITS[remain]);
+      result.add(hexDigits[remain]);
     }
 
     var invertResult = StringBuffer();
@@ -651,7 +653,7 @@ class TokenKind {
       case TokenKind.SINGLE_QUOTE:
         return "'";
       case TokenKind.DOUBLE_QUOTE:
-        return '\"';
+        return '"';
       case TokenKind.SLASH:
         return '/';
       case TokenKind.EQUALS:

@@ -66,11 +66,11 @@ class CssPrinter extends Visitor {
   }
 
   @override
-  void visitMediaQuery(MediaQuery query) {
-    var unary = query.hasUnary ? ' ${query.unary}' : '';
-    var mediaType = query.hasMediaType ? ' ${query.mediaType}' : '';
+  void visitMediaQuery(MediaQuery node) {
+    var unary = node.hasUnary ? ' ${node.unary}' : '';
+    var mediaType = node.hasMediaType ? ' ${node.mediaType}' : '';
     emit('$unary$mediaType');
-    for (var expression in query.expressions) {
+    for (var expression in node.expressions) {
       visitMediaExpression(expression);
     }
   }
@@ -305,7 +305,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitRuleSet(RuleSet node) {
-    emit('$_newLine');
+    emit(_newLine);
     node.selectorGroup!.visit(this);
     emit('$_sp{$_newLine');
     node.declarationGroup.visit(this);
@@ -330,10 +330,10 @@ class CssPrinter extends Visitor {
 
   @override
   void visitMarginGroup(MarginGroup node) {
-    var margin_sym_name =
+    var marginSymName =
         TokenKind.idToValue(TokenKind.MARGIN_DIRECTIVES, node.margin_sym);
 
-    emit('@$margin_sym_name$_sp{$_newLine');
+    emit('@$marginSymName$_sp{$_newLine');
 
     visitDeclarationGroup(node);
 
@@ -381,7 +381,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitSimpleSelectorSequence(SimpleSelectorSequence node) {
-    emit('${node._combinatorToString}');
+    emit(node._combinatorToString);
     node.simpleSelector.visit(this);
   }
 
@@ -561,7 +561,7 @@ class CssPrinter extends Visitor {
     var terms = node._terms;
     var termsLength = terms.length;
     for (var i = 0; i < termsLength; i++) {
-      if (i > 0) emit('$_sp');
+      if (i > 0) emit(_sp);
       terms[i].visit(this);
     }
     emit(')');

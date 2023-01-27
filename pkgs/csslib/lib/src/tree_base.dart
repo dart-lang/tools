@@ -27,7 +27,7 @@ abstract class TreeNode {
 
 /// The base type for expressions.
 abstract class Expression extends TreeNode {
-  Expression(SourceSpan? span) : super(span);
+  Expression(super.span);
   @override
   Expression clone();
 }
@@ -58,7 +58,7 @@ class TreeOutput {
     buf.write('\n');
   }
 
-  String toValue(value) {
+  String toValue(dynamic value) {
     if (value == null) {
       return 'null';
     } else if (value is Identifier) {
@@ -79,7 +79,7 @@ class TreeOutput {
     depth -= 1;
   }
 
-  void writeValue(String label, value) {
+  void writeValue(String label, dynamic value) {
     var v = toValue(value);
     writeln('$label: $v');
   }

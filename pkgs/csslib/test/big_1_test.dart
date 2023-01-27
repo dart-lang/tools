@@ -6,6 +6,7 @@ library big_1_test;
 
 import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
+
 import 'testing.dart';
 
 void compilePolyfillAndValidate(String input, String generated) {
@@ -15,7 +16,7 @@ void compilePolyfillAndValidate(String input, String generated) {
   expect(prettyPrint(stylesheet), generated);
 }
 
-void big_test() {
+void bigTest() {
   var input = r'''
 /********************************************************************
  * Kennedy colors
@@ -1162,5 +1163,5 @@ li.dropdown-menudivider {
 }
 
 void main() {
-  test('big #1', big_test);
+  test('big #1', bigTest);
 }

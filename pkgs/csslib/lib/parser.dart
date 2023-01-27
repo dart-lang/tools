@@ -50,7 +50,7 @@ bool get isChecked => messages.options.checked;
 
 // TODO(terry): Remove nested name parameter.
 /// Parse and analyze the CSS file.
-StyleSheet compile(input,
+StyleSheet compile(Object input,
     {List<Message>? errors,
     PreprocessorOptions? options,
     bool nested = true,
@@ -86,7 +86,8 @@ void analyze(List<StyleSheet> styleSheets,
 /// Parse the [input] CSS stylesheet into a tree. The [input] can be a [String],
 /// or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
 /// [errors] list will contain each error/warning as a [Message].
-StyleSheet parse(input, {List<Message>? errors, PreprocessorOptions? options}) {
+StyleSheet parse(Object input,
+    {List<Message>? errors, PreprocessorOptions? options}) {
   var source = _inputAsString(input);
 
   _createMessages(errors: errors, options: options);
@@ -99,7 +100,7 @@ StyleSheet parse(input, {List<Message>? errors, PreprocessorOptions? options}) {
 /// or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
 /// [errors] list will contain each error/warning as a [Message].
 // TODO(jmesserly): should rename "parseSelector" and return Selector
-StyleSheet selector(input, {List<Message>? errors}) {
+StyleSheet selector(Object input, {List<Message>? errors}) {
   var source = _inputAsString(input);
 
   _createMessages(errors: errors);
@@ -108,7 +109,7 @@ StyleSheet selector(input, {List<Message>? errors}) {
   return (_Parser(file, source)..tokenizer.inSelector = true).parseSelector();
 }
 
-SelectorGroup? parseSelectorGroup(input, {List<Message>? errors}) {
+SelectorGroup? parseSelectorGroup(Object input, {List<Message>? errors}) {
   var source = _inputAsString(input);
 
   _createMessages(errors: errors);
@@ -122,7 +123,7 @@ SelectorGroup? parseSelectorGroup(input, {List<Message>? errors}) {
       .processSelectorGroup();
 }
 
-String _inputAsString(input) {
+String _inputAsString(Object input) {
   String source;
 
   if (input is String) {
@@ -792,7 +793,7 @@ class _Parser {
         return decl is Declaration && decl is! IncludeMixinAtDeclaration;
       })) {
         var newDecls = <Declaration>[];
-        productions.forEach((include) {
+        for (var include in productions) {
           // If declGroup has items that are declarations then we assume
           // this mixin is a declaration mixin not a top-level mixin.
           if (include is IncludeDirective) {
@@ -801,7 +802,7 @@ class _Parser {
             _warning('Error mixing of top-level vs declarations mixins',
                 _makeSpan(include.span as FileSpan));
           }
-        });
+        }
         declGroup.declarations.insertAll(0, newDecls);
         productions = [];
       } else {
@@ -812,7 +813,6 @@ class _Parser {
           productions
               .add(decl is IncludeMixinAtDeclaration ? decl.include : decl);
         }
-        ;
         declGroup.declarations.clear();
       }
 
@@ -2199,6 +2199,7 @@ class _Parser {
     return expressions;
   }
 
+  // ignore: constant_identifier_names
   static const int MAX_UNICODE = 0x10FFFF;
 
   // Term grammar:
@@ -2738,7 +2739,7 @@ class _Parser {
         hexText[2] == hexText[3]) {
       hexText = '${hexText[0]}${hexText[2]}';
     } else if (hexText.length == 2 && hexText[0] == hexText[1]) {
-      hexText = '${hexText[0]}';
+      hexText = hexText[0];
     }
     return HexColorTerm(hexValue, hexText, span);
   }

@@ -45,9 +45,9 @@ StyleSheet compileCss(String cssInput,
         polyfill: polyfill,
         includes: includes);
 
-StyleSheet polyFillCompileCss(input,
+StyleSheet polyFillCompileCss(String input,
         {List<Message>? errors, PreprocessorOptions? opts}) =>
-    compileCss(input as String, errors: errors, polyfill: true, opts: opts);
+    compileCss(input, errors: errors, polyfill: true, opts: opts);
 
 /// CSS emitter walks the style sheet tree and emits readable CSS.
 final _emitCss = CssPrinter();

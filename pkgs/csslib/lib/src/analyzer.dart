@@ -31,27 +31,29 @@ class Analyzer {
   //               possibly combine in one walk.
   void run() {
     // Expand top-level @include.
-    _styleSheets.forEach(
-        (styleSheet) => TopLevelIncludes.expand(_messages, _styleSheets));
+    TopLevelIncludes.expand(_messages, _styleSheets);
 
     // Expand @include in declarations.
-    _styleSheets.forEach(
-        (styleSheet) => DeclarationIncludes.expand(_messages, _styleSheets));
+    DeclarationIncludes.expand(_messages, _styleSheets);
 
     // Remove all @mixin and @include
-    _styleSheets.forEach((styleSheet) => MixinsAndIncludes.remove(styleSheet));
+    for (var styleSheet in _styleSheets) {
+      MixinsAndIncludes.remove(styleSheet);
+    }
 
     // Expand any nested selectors using selector desendant combinator to
     // signal CSS inheritance notation.
-    _styleSheets.forEach((styleSheet) => ExpandNestedSelectors()
-      ..visitStyleSheet(styleSheet)
-      ..flatten(styleSheet));
+    for (var styleSheet in _styleSheets) {
+      ExpandNestedSelectors()
+        ..visitStyleSheet(styleSheet)
+        ..flatten(styleSheet);
+    }
 
     // Expand any @extend.
-    _styleSheets.forEach((styleSheet) {
+    for (var styleSheet in _styleSheets) {
       var allExtends = AllExtends()..visitStyleSheet(styleSheet);
       InheritExtends(_messages, allExtends).visitStyleSheet(styleSheet);
-    });
+    }
   }
 }
 
@@ -547,7 +549,7 @@ class _TopLevelIncludeReplacer extends Visitor {
 /// Utility function to match an include to a list of either Declarations or
 /// RuleSets, depending on type of mixin (ruleset or declaration).  The include
 /// can be an include in a declaration or an include directive (top-level).
-int _findInclude(List list, TreeNode node) {
+int _findInclude(List<Object> list, TreeNode node) {
   final matchNode = (node is IncludeMixinAtDeclaration)
       ? node.include
       : node as IncludeDirective;
@@ -565,7 +567,7 @@ int _findInclude(List list, TreeNode node) {
 /// parameters.
 class CallMixin extends Visitor {
   final MixinDefinition mixinDef;
-  List? _definedArgs;
+  List<TreeNode>? _definedArgs;
   Expressions? _currExpressions;
   int _currIndex = -1;
 
@@ -620,18 +622,16 @@ class CallMixin extends Visitor {
   }
 
   /// Rip apart var def with multiple parameters.
-  List<List<Expression>> _varDefsAsCallArgs(var callArg) {
+  List<List<Expression>> _varDefsAsCallArgs(List<Expression> callArg) {
     var defArgs = <List<Expression>>[];
-    if (callArg is List) {
-      var firstCallArg = callArg[0];
-      if (firstCallArg is VarUsage) {
-        var varDef = varDefs![firstCallArg.name];
-        var expressions = (varDef!.expression as Expressions).expressions;
-        assert(expressions.length > 1);
-        for (var expr in expressions) {
-          if (expr is! OperatorComma) {
-            defArgs.add([expr]);
-          }
+    var firstCallArg = callArg[0];
+    if (firstCallArg is VarUsage) {
+      var varDef = varDefs![firstCallArg.name];
+      var expressions = (varDef!.expression as Expressions).expressions;
+      assert(expressions.length > 1);
+      for (var expr in expressions) {
+        if (expr is! OperatorComma) {
+          defArgs.add([expr]);
         }
       }
     }
@@ -759,10 +759,10 @@ class DeclarationIncludes extends Visitor {
           var origRulesets = mixinDef.rulesets;
           var rulesets = <Declaration>[];
           if (origRulesets.every((ruleset) => ruleset is IncludeDirective)) {
-            origRulesets.forEach((ruleset) {
+            for (var ruleset in origRulesets) {
               rulesets.add(IncludeMixinAtDeclaration(
                   ruleset as IncludeDirective, ruleset.span));
-            });
+            }
             _IncludeReplacer.replace(_styleSheet!, node, rulesets);
           }
         }
@@ -878,7 +878,7 @@ class MixinsAndIncludes extends Visitor {
     MixinsAndIncludes().visitStyleSheet(styleSheet);
   }
 
-  bool _nodesToRemove(node) =>
+  bool _nodesToRemove(Object node) =>
       node is IncludeDirective || node is MixinDefinition || node is NoOp;
 
   @override

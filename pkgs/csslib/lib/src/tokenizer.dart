@@ -6,17 +6,21 @@ part of '../parser.dart';
 
 class Tokenizer extends TokenizerBase {
   /// U+ prefix for unicode characters.
+  // ignore: non_constant_identifier_names
   final UNICODE_U = 'U'.codeUnitAt(0);
+  // ignore: non_constant_identifier_names
   final UNICODE_LOWER_U = 'u'.codeUnitAt(0);
+  // ignore: non_constant_identifier_names
   final UNICODE_PLUS = '+'.codeUnitAt(0);
 
+  // ignore: non_constant_identifier_names
   final QUESTION_MARK = '?'.codeUnitAt(0);
 
   /// CDATA keyword.
+  // ignore: non_constant_identifier_names
   final List<int> CDATA_NAME = 'CDATA'.codeUnits;
 
-  Tokenizer(SourceFile file, String text, bool skipWhitespace, [int index = 0])
-      : super(file, text, skipWhitespace, index);
+  Tokenizer(super.file, super.text, super.skipWhitespace, [super.index]);
 
   @override
   Token next({bool unicodeRange = false}) {
@@ -285,7 +289,7 @@ class Tokenizer extends TokenizerBase {
         eatHexDigits(startHex + 6);
         if (_index != startHex) {
           // Parse the hex digits and add that character.
-          chars.add(int.parse('0x' + _text.substring(startHex, _index)));
+          chars.add(int.parse('0x${_text.substring(startHex, _index)}'));
 
           if (_index == _text.length) break;
 

@@ -29,7 +29,7 @@ class Identifier extends TreeNode {
 }
 
 class Wildcard extends TreeNode {
-  Wildcard(SourceSpan? span) : super(span);
+  Wildcard(super.span);
   @override
   Wildcard clone() => Wildcard(span);
   @override
@@ -39,7 +39,7 @@ class Wildcard extends TreeNode {
 }
 
 class ThisOperator extends TreeNode {
-  ThisOperator(SourceSpan? span) : super(span);
+  ThisOperator(super.span);
   @override
   ThisOperator clone() => ThisOperator(span);
   @override
@@ -49,7 +49,7 @@ class ThisOperator extends TreeNode {
 }
 
 class Negation extends TreeNode {
-  Negation(SourceSpan? span) : super(span);
+  Negation(super.span);
   @override
   Negation clone() => Negation(span);
   @override
@@ -64,7 +64,7 @@ class Negation extends TreeNode {
 class CalcTerm extends LiteralTerm {
   final LiteralTerm expr;
 
-  CalcTerm(var value, String t, this.expr, SourceSpan? span)
+  CalcTerm(Object value, String t, this.expr, SourceSpan? span)
       : super(value, t, span);
 
   @override
@@ -89,7 +89,7 @@ class CssComment extends TreeNode {
 
 // CDO/CDC (Comment Definition Open <!-- and Comment Definition Close -->).
 class CommentDefinition extends CssComment {
-  CommentDefinition(String comment, SourceSpan? span) : super(comment, span);
+  CommentDefinition(super.comment, super.span);
   @override
   CommentDefinition clone() => CommentDefinition(comment, span);
   @override
@@ -135,9 +135,8 @@ class SimpleSelectorSequence extends TreeNode {
   final SimpleSelector simpleSelector;
 
   SimpleSelectorSequence(this.simpleSelector, SourceSpan? span,
-      [int combinator = TokenKind.COMBINATOR_NONE])
-      : combinator = combinator,
-        super(span);
+      [this.combinator = TokenKind.COMBINATOR_NONE])
+      : super(span);
 
   bool get isCombinatorNone => combinator == TokenKind.COMBINATOR_NONE;
   bool get isCombinatorPlus => combinator == TokenKind.COMBINATOR_PLUS;
@@ -194,7 +193,7 @@ abstract class SimpleSelector extends TreeNode {
 
 // element name
 class ElementSelector extends SimpleSelector {
-  ElementSelector(name, SourceSpan? span) : super(name, span);
+  ElementSelector(super.name, super.span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitElementSelector(this);
 
@@ -209,7 +208,7 @@ class ElementSelector extends SimpleSelector {
 class NamespaceSelector extends SimpleSelector {
   final dynamic _namespace; // null, Wildcard or Identifier
 
-  NamespaceSelector(this._namespace, var name, SourceSpan? span)
+  NamespaceSelector(this._namespace, Object name, SourceSpan? span)
       : super(name, span);
 
   String get namespace => _namespace is Wildcard
@@ -306,7 +305,7 @@ class AttributeSelector extends SimpleSelector {
 
 // #id
 class IdSelector extends SimpleSelector {
-  IdSelector(Identifier name, SourceSpan? span) : super(name, span);
+  IdSelector(Identifier super.name, super.span);
   @override
   IdSelector clone() => IdSelector(_name as Identifier, span);
   @override
@@ -318,7 +317,7 @@ class IdSelector extends SimpleSelector {
 
 // .class
 class ClassSelector extends SimpleSelector {
-  ClassSelector(Identifier name, SourceSpan? span) : super(name, span);
+  ClassSelector(Identifier super.name, super.span);
   @override
   ClassSelector clone() => ClassSelector(_name as Identifier, span);
   @override
@@ -330,7 +329,7 @@ class ClassSelector extends SimpleSelector {
 
 // :pseudoClass
 class PseudoClassSelector extends SimpleSelector {
-  PseudoClassSelector(Identifier name, SourceSpan? span) : super(name, span);
+  PseudoClassSelector(Identifier super.name, super.span);
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitPseudoClassSelector(this);
 
@@ -346,9 +345,8 @@ class PseudoElementSelector extends SimpleSelector {
   // If true, this is a CSS2.1 pseudo-element with only a single ':'.
   final bool isLegacy;
 
-  PseudoElementSelector(Identifier name, SourceSpan? span,
-      {this.isLegacy = false})
-      : super(name, span);
+  PseudoElementSelector(Identifier super.name, super.span,
+      {this.isLegacy = false});
   @override
   dynamic visit(VisitorBase visitor) =>
       visitor.visitPseudoElementSelector(this);
@@ -465,7 +463,7 @@ class StyleSheet extends TreeNode {
 }
 
 class TopLevelProduction extends TreeNode {
-  TopLevelProduction(SourceSpan? span) : super(span);
+  TopLevelProduction(super.span);
   @override
   SourceSpan get span => super.span!;
   @override
@@ -493,7 +491,7 @@ class RuleSet extends TopLevelProduction {
 }
 
 class Directive extends TreeNode {
-  Directive(SourceSpan? span) : super(span);
+  Directive(super.span);
 
   bool get isBuiltIn => true; // Known CSS directive?
   bool get isExtension => false; // SCSS extension?
@@ -553,7 +551,7 @@ class SupportsDirective extends Directive {
 }
 
 abstract class SupportsCondition extends TreeNode {
-  SupportsCondition(SourceSpan? span) : super(span);
+  SupportsCondition(super.span);
   @override
   SourceSpan get span => super.span!;
 }
@@ -562,14 +560,11 @@ class SupportsConditionInParens extends SupportsCondition {
   /// A [Declaration] or nested [SupportsCondition].
   final TreeNode? condition;
 
-  SupportsConditionInParens(Declaration? declaration, SourceSpan? span)
-      : condition = declaration,
-        super(span);
+  SupportsConditionInParens(Declaration? declaration, super.span)
+      : condition = declaration;
 
-  SupportsConditionInParens.nested(
-      SupportsCondition condition, SourceSpan? span)
-      : condition = condition,
-        super(span);
+  SupportsConditionInParens.nested(this.condition, SourceSpan? span)
+      : super(span);
 
   @override
   SupportsConditionInParens clone() =>
@@ -1029,7 +1024,7 @@ class IncludeDirective extends Directive {
 
 /// To support Sass @content.
 class ContentDirective extends Directive {
-  ContentDirective(SourceSpan? span) : super(span);
+  ContentDirective(super.span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitContentDirective(this);
@@ -1152,6 +1147,7 @@ class DeclarationGroup extends TreeNode {
 }
 
 class MarginGroup extends DeclarationGroup {
+  // ignore: non_constant_identifier_names
   final int margin_sym; // TokenType for for @margin sym.
 
   MarginGroup(this.margin_sym, List<TreeNode> decls, SourceSpan? span)
@@ -1183,7 +1179,7 @@ class VarUsage extends Expression {
 }
 
 class OperatorSlash extends Expression {
-  OperatorSlash(SourceSpan? span) : super(span);
+  OperatorSlash(super.span);
   @override
   OperatorSlash clone() => OperatorSlash(span);
   @override
@@ -1191,7 +1187,7 @@ class OperatorSlash extends Expression {
 }
 
 class OperatorComma extends Expression {
-  OperatorComma(SourceSpan? span) : super(span);
+  OperatorComma(super.span);
   @override
   OperatorComma clone() => OperatorComma(span);
   @override
@@ -1199,7 +1195,7 @@ class OperatorComma extends Expression {
 }
 
 class OperatorPlus extends Expression {
-  OperatorPlus(SourceSpan? span) : super(span);
+  OperatorPlus(super.span);
   @override
   OperatorPlus clone() => OperatorPlus(span);
   @override
@@ -1207,7 +1203,7 @@ class OperatorPlus extends Expression {
 }
 
 class OperatorMinus extends Expression {
-  OperatorMinus(SourceSpan? span) : super(span);
+  OperatorMinus(super.span);
   @override
   OperatorMinus clone() => OperatorMinus(span);
   @override
@@ -1233,7 +1229,7 @@ class LiteralTerm extends Expression {
   // TODO(terry): value and text fields can be made final once all CSS resources
   //              are copied/symlink'd in the build tool and UriVisitor in
   //              web_ui is removed.
-  dynamic value;
+  Object value;
   String text;
 
   LiteralTerm(this.value, this.text, SourceSpan? span) : super(span);
@@ -1246,7 +1242,7 @@ class LiteralTerm extends Expression {
 }
 
 class NumberTerm extends LiteralTerm {
-  NumberTerm(value, String t, SourceSpan? span) : super(value, t, span);
+  NumberTerm(super.value, super.t, super.span);
   @override
   NumberTerm clone() => NumberTerm(value, text, span);
   @override
@@ -1256,8 +1252,7 @@ class NumberTerm extends LiteralTerm {
 class UnitTerm extends LiteralTerm {
   final int unit;
 
-  UnitTerm(value, String t, SourceSpan? span, this.unit)
-      : super(value, t, span);
+  UnitTerm(super.value, super.t, super.span, this.unit);
 
   @override
   UnitTerm clone() => UnitTerm(value, text, span, unit);
@@ -1272,15 +1267,14 @@ class UnitTerm extends LiteralTerm {
 }
 
 class LengthTerm extends UnitTerm {
-  LengthTerm(value, String t, SourceSpan? span,
-      [int unit = TokenKind.UNIT_LENGTH_PX])
-      : super(value, t, span, unit) {
-    assert(this.unit == TokenKind.UNIT_LENGTH_PX ||
-        this.unit == TokenKind.UNIT_LENGTH_CM ||
-        this.unit == TokenKind.UNIT_LENGTH_MM ||
-        this.unit == TokenKind.UNIT_LENGTH_IN ||
-        this.unit == TokenKind.UNIT_LENGTH_PT ||
-        this.unit == TokenKind.UNIT_LENGTH_PC);
+  LengthTerm(super.value, super.t, super.span,
+      [super.unit = TokenKind.UNIT_LENGTH_PX]) {
+    assert(unit == TokenKind.UNIT_LENGTH_PX ||
+        unit == TokenKind.UNIT_LENGTH_CM ||
+        unit == TokenKind.UNIT_LENGTH_MM ||
+        unit == TokenKind.UNIT_LENGTH_IN ||
+        unit == TokenKind.UNIT_LENGTH_PT ||
+        unit == TokenKind.UNIT_LENGTH_PC);
   }
   @override
   LengthTerm clone() => LengthTerm(value, text, span, unit);
@@ -1289,7 +1283,7 @@ class LengthTerm extends UnitTerm {
 }
 
 class PercentageTerm extends LiteralTerm {
-  PercentageTerm(value, String t, SourceSpan? span) : super(value, t, span);
+  PercentageTerm(super.value, super.t, super.span);
   @override
   PercentageTerm clone() => PercentageTerm(value, text, span);
   @override
@@ -1297,7 +1291,7 @@ class PercentageTerm extends LiteralTerm {
 }
 
 class EmTerm extends LiteralTerm {
-  EmTerm(value, String t, SourceSpan? span) : super(value, t, span);
+  EmTerm(super.value, super.t, super.span);
   @override
   EmTerm clone() => EmTerm(value, text, span);
   @override
@@ -1305,7 +1299,7 @@ class EmTerm extends LiteralTerm {
 }
 
 class ExTerm extends LiteralTerm {
-  ExTerm(value, String t, SourceSpan? span) : super(value, t, span);
+  ExTerm(super.value, super.t, super.span);
   @override
   ExTerm clone() => ExTerm(value, text, span);
   @override
@@ -1313,13 +1307,12 @@ class ExTerm extends LiteralTerm {
 }
 
 class AngleTerm extends UnitTerm {
-  AngleTerm(var value, String t, SourceSpan? span,
-      [int unit = TokenKind.UNIT_LENGTH_PX])
-      : super(value, t, span, unit) {
-    assert(this.unit == TokenKind.UNIT_ANGLE_DEG ||
-        this.unit == TokenKind.UNIT_ANGLE_RAD ||
-        this.unit == TokenKind.UNIT_ANGLE_GRAD ||
-        this.unit == TokenKind.UNIT_ANGLE_TURN);
+  AngleTerm(super.value, super.t, super.span,
+      [super.unit = TokenKind.UNIT_LENGTH_PX]) {
+    assert(unit == TokenKind.UNIT_ANGLE_DEG ||
+        unit == TokenKind.UNIT_ANGLE_RAD ||
+        unit == TokenKind.UNIT_ANGLE_GRAD ||
+        unit == TokenKind.UNIT_ANGLE_TURN);
   }
 
   @override
@@ -1329,12 +1322,11 @@ class AngleTerm extends UnitTerm {
 }
 
 class TimeTerm extends UnitTerm {
-  TimeTerm(var value, String t, SourceSpan? span,
-      [int unit = TokenKind.UNIT_LENGTH_PX])
-      : super(value, t, span, unit) {
-    assert(this.unit == TokenKind.UNIT_ANGLE_DEG ||
-        this.unit == TokenKind.UNIT_TIME_MS ||
-        this.unit == TokenKind.UNIT_TIME_S);
+  TimeTerm(super.value, super.t, super.span,
+      [super.unit = TokenKind.UNIT_LENGTH_PX]) {
+    assert(unit == TokenKind.UNIT_ANGLE_DEG ||
+        unit == TokenKind.UNIT_TIME_MS ||
+        unit == TokenKind.UNIT_TIME_S);
   }
 
   @override
@@ -1344,7 +1336,7 @@ class TimeTerm extends UnitTerm {
 }
 
 class FreqTerm extends UnitTerm {
-  FreqTerm(var value, String t, SourceSpan? span,
+  FreqTerm(Object value, String t, SourceSpan? span,
       [int unit = TokenKind.UNIT_LENGTH_PX])
       : super(value, t, span, unit) {
     assert(unit == TokenKind.UNIT_FREQ_HZ || unit == TokenKind.UNIT_FREQ_KHZ);
@@ -1357,7 +1349,7 @@ class FreqTerm extends UnitTerm {
 }
 
 class FractionTerm extends LiteralTerm {
-  FractionTerm(var value, String t, SourceSpan? span) : super(value, t, span);
+  FractionTerm(super.value, super.t, super.span);
 
   @override
   FractionTerm clone() => FractionTerm(value, text, span);
@@ -1375,7 +1367,7 @@ class UriTerm extends LiteralTerm {
 }
 
 class ResolutionTerm extends UnitTerm {
-  ResolutionTerm(var value, String t, SourceSpan? span,
+  ResolutionTerm(Object value, String t, SourceSpan? span,
       [int unit = TokenKind.UNIT_LENGTH_PX])
       : super(value, t, span, unit) {
     assert(unit == TokenKind.UNIT_RESOLUTION_DPI ||
@@ -1390,7 +1382,7 @@ class ResolutionTerm extends UnitTerm {
 }
 
 class ChTerm extends UnitTerm {
-  ChTerm(var value, String t, SourceSpan? span,
+  ChTerm(Object value, String t, SourceSpan? span,
       [int unit = TokenKind.UNIT_LENGTH_PX])
       : super(value, t, span, unit) {
     assert(unit == TokenKind.UNIT_CH);
@@ -1403,7 +1395,7 @@ class ChTerm extends UnitTerm {
 }
 
 class RemTerm extends UnitTerm {
-  RemTerm(var value, String t, SourceSpan? span,
+  RemTerm(Object value, String t, SourceSpan? span,
       [int unit = TokenKind.UNIT_LENGTH_PX])
       : super(value, t, span, unit) {
     assert(unit == TokenKind.UNIT_REM);
@@ -1416,7 +1408,7 @@ class RemTerm extends UnitTerm {
 }
 
 class ViewportTerm extends UnitTerm {
-  ViewportTerm(var value, String t, SourceSpan? span,
+  ViewportTerm(Object value, String t, SourceSpan? span,
       [int unit = TokenKind.UNIT_LENGTH_PX])
       : super(value, t, span, unit) {
     assert(unit == TokenKind.UNIT_VIEWPORT_VW ||
@@ -1432,10 +1424,11 @@ class ViewportTerm extends UnitTerm {
 }
 
 /// Type to signal a bad hex value for HexColorTerm.value.
+// ignore: camel_case_types
 class BAD_HEX_VALUE {}
 
 class HexColorTerm extends LiteralTerm {
-  HexColorTerm(var value, String t, SourceSpan? span) : super(value, t, span);
+  HexColorTerm(super.value, super.t, super.span);
 
   @override
   HexColorTerm clone() => HexColorTerm(value, text, span);
@@ -1446,7 +1439,7 @@ class HexColorTerm extends LiteralTerm {
 class FunctionTerm extends LiteralTerm {
   final Expressions _params;
 
-  FunctionTerm(var value, String t, this._params, SourceSpan? span)
+  FunctionTerm(Object value, String t, this._params, SourceSpan? span)
       : super(value, t, span);
 
   @override
@@ -1469,9 +1462,7 @@ class IE8Term extends LiteralTerm {
 class GroupTerm extends Expression {
   final List<LiteralTerm> _terms;
 
-  GroupTerm(SourceSpan? span)
-      : _terms = [],
-        super(span);
+  GroupTerm(super.span) : _terms = [];
 
   void add(LiteralTerm term) {
     _terms.add(term);
@@ -1484,7 +1475,7 @@ class GroupTerm extends Expression {
 }
 
 class ItemTerm extends NumberTerm {
-  ItemTerm(dynamic value, String t, SourceSpan? span) : super(value, t, span);
+  ItemTerm(super.value, super.t, super.span);
 
   @override
   ItemTerm clone() => ItemTerm(value, text, span);
@@ -1495,7 +1486,7 @@ class ItemTerm extends NumberTerm {
 class Expressions extends Expression {
   final List<Expression> expressions = [];
 
-  Expressions(SourceSpan? span) : super(span);
+  Expressions(super.span);
 
   void add(Expression expression) {
     expressions.add(expression);
@@ -1599,9 +1590,9 @@ class FontExpression extends DartStyleExpression {
         super(DartStyleExpression.fontStyle, span);
 
   @override
-  FontExpression? merged(DartStyleExpression newFontExpr) {
-    if (newFontExpr is FontExpression && isFont && newFontExpr.isFont) {
-      return FontExpression.merge(this, newFontExpr);
+  FontExpression? merged(DartStyleExpression newDartExpr) {
+    if (newDartExpr is FontExpression && isFont && newDartExpr.isFont) {
+      return FontExpression.merge(this, newDartExpr);
     }
     return null;
   }
@@ -1631,8 +1622,7 @@ class FontExpression extends DartStyleExpression {
 abstract class BoxExpression extends DartStyleExpression {
   final BoxEdge? box;
 
-  BoxExpression(int? styleType, SourceSpan? span, this.box)
-      : super(styleType, span);
+  BoxExpression(super.styleType, super.span, this.box);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitBoxExpression(this);
@@ -1664,11 +1654,9 @@ class MarginExpression extends BoxExpression {
       : super(DartStyleExpression.marginStyle, span, box);
 
   @override
-  MarginExpression? merged(DartStyleExpression newMarginExpr) {
-    if (newMarginExpr is MarginExpression &&
-        isMargin &&
-        newMarginExpr.isMargin) {
-      return MarginExpression.merge(this, newMarginExpr);
+  MarginExpression? merged(DartStyleExpression newDartExpr) {
+    if (newDartExpr is MarginExpression && isMargin && newDartExpr.isMargin) {
+      return MarginExpression.merge(this, newDartExpr);
     }
 
     return null;
@@ -1702,11 +1690,9 @@ class BorderExpression extends BoxExpression {
       : super(DartStyleExpression.borderStyle, span, box);
 
   @override
-  BorderExpression? merged(DartStyleExpression newBorderExpr) {
-    if (newBorderExpr is BorderExpression &&
-        isBorder &&
-        newBorderExpr.isBorder) {
-      return BorderExpression.merge(this, newBorderExpr);
+  BorderExpression? merged(DartStyleExpression newDartExpr) {
+    if (newDartExpr is BorderExpression && isBorder && newDartExpr.isBorder) {
+      return BorderExpression.merge(this, newDartExpr);
     }
 
     return null;
@@ -1737,9 +1723,9 @@ class HeightExpression extends DartStyleExpression {
       : super(DartStyleExpression.heightStyle, span);
 
   @override
-  HeightExpression? merged(DartStyleExpression newHeightExpr) {
-    if (isHeight && newHeightExpr.isHeight) {
-      return newHeightExpr as HeightExpression;
+  HeightExpression? merged(DartStyleExpression newDartExpr) {
+    if (isHeight && newDartExpr.isHeight) {
+      return newDartExpr as HeightExpression;
     }
 
     return null;
@@ -1758,9 +1744,9 @@ class WidthExpression extends DartStyleExpression {
       : super(DartStyleExpression.widthStyle, span);
 
   @override
-  WidthExpression? merged(DartStyleExpression newWidthExpr) {
-    if (newWidthExpr is WidthExpression && isWidth && newWidthExpr.isWidth) {
-      return newWidthExpr;
+  WidthExpression? merged(DartStyleExpression newDartExpr) {
+    if (newDartExpr is WidthExpression && isWidth && newDartExpr.isWidth) {
+      return newDartExpr;
     }
 
     return null;
@@ -1783,11 +1769,11 @@ class PaddingExpression extends BoxExpression {
       : super(DartStyleExpression.paddingStyle, span, box);
 
   @override
-  PaddingExpression? merged(DartStyleExpression newPaddingExpr) {
-    if (newPaddingExpr is PaddingExpression &&
+  PaddingExpression? merged(DartStyleExpression newDartExpr) {
+    if (newDartExpr is PaddingExpression &&
         isPadding &&
-        newPaddingExpr.isPadding) {
-      return PaddingExpression.merge(this, newPaddingExpr);
+        newDartExpr.isPadding) {
+      return PaddingExpression.merge(this, newDartExpr);
     }
 
     return null;

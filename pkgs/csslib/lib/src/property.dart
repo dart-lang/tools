@@ -172,15 +172,15 @@ class Color implements _StyleProperty, ColorBase {
 
   Color darker(num amount) {
     var newRgba = Color._createNewTintShadeFromRgba(rgba, -amount);
-    return Color.hex('${newRgba.toHexArgbString()}');
+    return Color.hex(newRgba.toHexArgbString());
   }
 
   Color lighter(num amount) {
     var newRgba = Color._createNewTintShadeFromRgba(rgba, amount);
-    return Color.hex('${newRgba.toHexArgbString()}');
+    return Color.hex(newRgba.toHexArgbString());
   }
 
-  static bool equal(ColorBase curr, other) {
+  static bool equal(ColorBase curr, Object other) {
     if (other is Color) {
       var o = other;
       return o.toHexArgbString() == curr.toHexArgbString();
