@@ -1,5 +1,8 @@
 ## 0.17.3-dev
 
+- Add markdown badges to the readme.
+- Update to the latest `package:lints`.
+
 ## 0.17.2
 
 - Fixed a crash caused by `min()`, `max()` and `clamp()` functions that contain

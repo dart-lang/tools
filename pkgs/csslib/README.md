@@ -1,3 +1,7 @@
+[![Dart CI](https://github.com/dart-lang/csslib/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/csslib/actions/workflows/test-package.yml)
+[![pub package](https://img.shields.io/pub/v/csslib.svg)](https://pub.dev/packages/csslib)
+[![package publisher](https://img.shields.io/pub/publisher/csslib.svg)](https://pub.dev/packages/csslib/publisher)
+
 A Dart [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) parser.
 
 ## Usage
