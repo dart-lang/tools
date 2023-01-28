@@ -985,7 +985,7 @@ class InheritExtends extends Visitor {
           index++) {
         var simpleSeq = selectors.simpleSelectorSequences[index];
         var namePart = simpleSeq.simpleSelector.toString();
-        selectorName = (isLastNone) ? (selectorName + namePart) : namePart;
+        selectorName = isLastNone ? (selectorName + namePart) : namePart;
         var matches = _allExtends.inherits[selectorName];
         if (matches != null) {
           for (var match in matches) {

@@ -36,10 +36,8 @@ class ParserState extends TokenizerState {
       : super(tokenizer);
 }
 
-// TODO(jmesserly): this should not be global
 void _createMessages({List<Message>? errors, PreprocessorOptions? options}) {
   errors ??= [];
-
   options ??= PreprocessorOptions(useColors: false, inputFile: 'memory');
 
   messages = Messages(options: options, printHandler: errors.add);
@@ -83,11 +81,16 @@ void analyze(List<StyleSheet> styleSheets,
   Analyzer(styleSheets, messages).run();
 }
 
-/// Parse the [input] CSS stylesheet into a tree. The [input] can be a [String],
-/// or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
-/// [errors] list will contain each error/warning as a [Message].
-StyleSheet parse(Object input,
-    {List<Message>? errors, PreprocessorOptions? options}) {
+/// Parse the [input] CSS stylesheet into a tree.
+///
+/// The [input] can be a [String], or [List<int>] of bytes and returns a
+/// [StyleSheet] AST. The optional [errors] list will collect any error
+/// encountered.
+StyleSheet parse(
+  Object input, {
+  List<Message>? errors,
+  PreprocessorOptions? options,
+}) {
   var source = _inputAsString(input);
 
   _createMessages(errors: errors, options: options);
@@ -1583,7 +1586,7 @@ class _Parser {
         // bad.
         if (expr is SelectorExpression) {
           _eat(TokenKind.RPAREN);
-          return (pseudoElement)
+          return pseudoElement
               ? PseudoElementFunctionSelector(pseudoName, expr, span)
               : PseudoClassFunctionSelector(pseudoName, expr, span);
         } else {
@@ -1667,21 +1670,21 @@ class _Parser {
 
   // Attribute grammar:
   //
-  //     attributes :
-  //       '[' S* IDENT S* [ ATTRIB_MATCHES S* [ IDENT | STRING ] S* ]? ']'
+  // attributes :
+  //   '[' S* IDENT S* [ ATTRIB_MATCHES S* [ IDENT | STRING ] S* ]? ']'
   //
-  //     ATTRIB_MATCHES :
-  //       [ '=' | INCLUDES | DASHMATCH | PREFIXMATCH | SUFFIXMATCH | SUBSTRMATCH ]
+  // ATTRIB_MATCHES :
+  //   [ '=' | INCLUDES | DASHMATCH | PREFIXMATCH | SUFFIXMATCH | SUBSTRMATCH ]
   //
-  //     INCLUDES:         '~='
+  // INCLUDES:         '~='
   //
-  //     DASHMATCH:        '|='
+  // DASHMATCH:        '|='
   //
-  //     PREFIXMATCH:      '^='
+  // PREFIXMATCH:      '^='
   //
-  //     SUFFIXMATCH:      '$='
+  // SUFFIXMATCH:      '$='
   //
-  //     SUBSTRMATCH:      '*='
+  // SUBSTRMATCH:      '*='
   AttributeSelector? processAttribute() {
     var start = _peekToken.span;
 

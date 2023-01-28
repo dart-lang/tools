@@ -1,7 +1,7 @@
 ## 0.17.3-dev
 
 - Add markdown badges to the readme.
-- Update to the latest `package:lints`.
+- Adopted `package:dart_flutter_team_lints` linting rules.
 
 ## 0.17.2
 

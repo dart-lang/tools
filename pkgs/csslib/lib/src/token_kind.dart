@@ -671,7 +671,7 @@ class TokenKind {
       case TokenKind.BACKSLASH:
         return '\\';
       default:
-        throw 'Unknown TOKEN';
+        throw StateError('Unknown TOKEN');
     }
   }
 

@@ -18,10 +18,9 @@ StyleSheet parseCss(String cssInput,
   return css.parse(cssInput, errors: errors, options: opts ?? _default);
 }
 
-// Pretty printer for CSS.
-var emitCss = CssPrinter();
+/// Pretty printer for CSS.
 String prettyPrint(StyleSheet ss) =>
-    (emitCss..visitTree(ss, pretty: true)).toString();
+    (CssPrinter()..visitTree(ss, pretty: true)).toString();
 
 void main() {
   var errors = <css.Message>[];

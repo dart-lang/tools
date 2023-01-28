@@ -5,8 +5,8 @@
 library error_test;
 
 import 'package:csslib/src/messages.dart';
-import 'package:test/test.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
+import 'package:test/test.dart';
 
 import 'testing.dart';
 

@@ -162,7 +162,7 @@ class _TreePrinter extends Visitor {
     output.depth++;
     output.writeValue('pseudo page', node._pseudoPage);
     super.visitPageDirective(node);
-    output.depth;
+    output.depth--;
   }
 
   @override

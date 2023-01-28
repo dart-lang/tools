@@ -165,7 +165,7 @@ class Color implements _StyleProperty, ColorBase {
   int get argbValue => Color.hexToInt(_argb);
 
   @override
-  bool operator ==(other) => Color.equal(this, other);
+  bool operator ==(Object other) => Color.equal(this, other);
 
   @override
   String toHexArgbString() => _argb;
@@ -506,10 +506,11 @@ class Rgba implements _StyleProperty, ColorBase {
 
   factory Rgba.fromArgbValue(num value) {
     return Rgba(
-        ((value.toInt() & 0xff000000) >> 0x18), // a
-        ((value.toInt() & 0xff0000) >> 0x10), // r
-        ((value.toInt() & 0xff00) >> 8), // g
-        ((value.toInt() & 0xff))); // b
+      (value.toInt() & 0xff000000) >> 0x18, // a
+      (value.toInt() & 0xff0000) >> 0x10, // r
+      (value.toInt() & 0xff00) >> 8, // g
+      value.toInt() & 0xff,
+    ); // b
   }
 
   factory Rgba.fromHsla(Hsla hsla) {
@@ -558,7 +559,7 @@ class Rgba implements _StyleProperty, ColorBase {
     }
 
     if ((6 * vH) < 1) {
-      return (v1 + (v2 - v1) * 6 * vH);
+      return v1 + (v2 - v1) * 6 * vH;
     }
 
     if ((2 * vH) < 1) {
@@ -566,14 +567,14 @@ class Rgba implements _StyleProperty, ColorBase {
     }
 
     if ((3 * vH) < 2) {
-      return (v1 + (v2 - v1) * ((2 / 3 - vH) * 6));
+      return v1 + (v2 - v1) * ((2 / 3 - vH) * 6);
     }
 
     return v1;
   }
 
   @override
-  bool operator ==(other) => Color.equal(this, other);
+  bool operator ==(Object other) => Color.equal(this, other);
 
   @override
   String get cssExpression {
@@ -591,10 +592,10 @@ class Rgba implements _StyleProperty, ColorBase {
   int get argbValue {
     var value = 0;
     if (a != null) {
-      value = (a!.toInt() << 0x18);
+      value = a!.toInt() << 0x18;
     }
-    value += (r << 0x10);
-    value += (g << 0x08);
+    value += r << 0x10;
+    value += g << 0x08;
     value += b;
     return value;
   }
@@ -720,7 +721,7 @@ class Hsla implements _StyleProperty, ColorBase {
   num? get alpha => _a;
 
   @override
-  bool operator ==(other) => Color.equal(this, other);
+  bool operator ==(Object other) => Color.equal(this, other);
 
   @override
   String get cssExpression => (_a == null)
@@ -1074,7 +1075,7 @@ class Font implements _StyleProperty {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(Object other) {
     if (other is! Font) return false;
     return other.size == size &&
         other.family == family &&

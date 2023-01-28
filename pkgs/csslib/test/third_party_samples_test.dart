@@ -1,11 +1,15 @@
+// Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 @TestOn('vm')
 library samples_test;
 
 import 'dart:io';
 
-import 'package:test/test.dart';
 import 'package:csslib/parser.dart';
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 const testOptions = PreprocessorOptions(
   useColors: false,

@@ -197,7 +197,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitImportDirective(ImportDirective node) {
-    bool isStartingQuote(String ch) => ('\'"'.contains(ch[0]));
+    bool isStartingQuote(String ch) => '\'"'.contains(ch[0]);
 
     if (_isTesting) {
       // Emit assuming url() was parsed; most suite tests use url function.
@@ -250,7 +250,7 @@ class CssPrinter extends Visitor {
 
   @override
   void visitNamespaceDirective(NamespaceDirective node) {
-    bool isStartingQuote(String ch) => ('\'"'.contains(ch));
+    bool isStartingQuote(String ch) => '\'"'.contains(ch);
 
     if (isStartingQuote(node._uri!)) {
       emit(' @namespace ${node.prefix}"${node._uri}"');
@@ -643,13 +643,13 @@ class CssPrinter extends Visitor {
   @override
   void visitBinaryExpression(BinaryExpression node) {
     // TODO(terry): TBD
-    throw UnimplementedError;
+    throw UnimplementedError('visitBinaryExpression');
   }
 
   @override
   void visitUnaryExpression(UnaryExpression node) {
     // TODO(terry): TBD
-    throw UnimplementedError;
+    throw UnimplementedError('visitUnaryExpression');
   }
 
   @override
@@ -665,6 +665,6 @@ class CssPrinter extends Visitor {
   @override
   void visitDartStyleExpression(DartStyleExpression node) {
     // TODO(terry): TBD
-    throw UnimplementedError;
+    throw UnimplementedError('visitDartStyleExpression');
   }
 }

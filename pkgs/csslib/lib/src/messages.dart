@@ -8,8 +8,8 @@ import 'preprocessor_options.dart';
 
 enum MessageLevel { info, warning, severe }
 
-// TODO(terry): Remove the global messages, use some object that tracks
-//              compilation state.
+// TODO(#159): Remove the global messages, use some object that tracks
+// compilation state.
 
 /// The global [Messages] for tracking info/warnings/messages.
 late Messages messages;
