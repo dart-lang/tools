@@ -192,7 +192,7 @@ void write(StringSink output, PackageConfig config,
       uri = relativizeUri(uri, baseUri)!;
     }
     if (!uri.path.endsWith('/')) {
-      uri = uri.replace(path: uri.path + '/');
+      uri = uri.replace(path: '${uri.path}/');
     }
     output.write(uri);
     output.writeln();

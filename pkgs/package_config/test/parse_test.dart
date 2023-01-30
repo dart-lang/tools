@@ -56,7 +56,7 @@ void main() {
               () => packages.parse(utf8.encode(content), baseFile, throwError),
               throwsA(TypeMatcher<FormatException>()));
         });
-        test(name + ', handle error', () {
+        test('$name, handle error', () {
           var hadError = false;
           packages.parse(utf8.encode(content), baseFile, (error) {
             hadError = true;

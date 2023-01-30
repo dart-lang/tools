@@ -244,7 +244,7 @@ class SimplePackage implements Package {
       if (!root.hasScheme) {
         fatalError = true;
       } else if (!root.path.endsWith('/')) {
-        root = root.replace(path: root.path + '/');
+        root = root.replace(path: '${root.path}/');
       }
     }
     if (packageUriRoot == null) {

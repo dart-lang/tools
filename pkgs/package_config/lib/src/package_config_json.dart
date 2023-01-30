@@ -149,11 +149,11 @@ PackageConfig parsePackageConfigJson(
     var parsedRootUri = Uri.parse(rootUri!);
     var relativeRoot = !hasAbsolutePath(parsedRootUri);
     var root = baseLocation.resolveUri(parsedRootUri);
-    if (!root.path.endsWith('/')) root = root.replace(path: root.path + '/');
+    if (!root.path.endsWith('/')) root = root.replace(path: '${root.path}/');
     var packageRoot = root;
     if (packageUri != null) packageRoot = root.resolve(packageUri!);
     if (!packageRoot.path.endsWith('/')) {
-      packageRoot = packageRoot.replace(path: packageRoot.path + '/');
+      packageRoot = packageRoot.replace(path: '${packageRoot.path}/');
     }
 
     LanguageVersion? version;

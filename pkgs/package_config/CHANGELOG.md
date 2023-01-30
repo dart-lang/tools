@@ -1,3 +1,7 @@
+## 2.1.1-dev
+
+- Require Dart 2.18
+
 ## 2.1.0
 
 - Adds `minVersion` to `findPackageConfig` and `findPackageConfigVersion`

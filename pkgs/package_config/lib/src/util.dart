@@ -89,7 +89,7 @@ String checkValidPackageUri(Uri packageUri, String name) {
     }
     assert(badIndex < packageName.length);
     var badCharCode = packageName.codeUnitAt(badIndex);
-    var badChar = 'U+' + badCharCode.toRadixString(16).padLeft(4, '0');
+    var badChar = 'U+${badCharCode.toRadixString(16).padLeft(4, '0')}';
     if (badCharCode >= 0x20 && badCharCode <= 0x7e) {
       // Printable character.
       badChar = "'${packageName[badIndex]}' ($badChar)";
@@ -140,7 +140,7 @@ int firstNonWhitespaceChar(List<int> bytes) {
 /// Appends a trailing `/` if the path doesn't end with one.
 String trailingSlash(String path) {
   if (path.isEmpty || path.endsWith('/')) return path;
-  return path + '/';
+  return '$path/';
 }
 
 /// Whether a URI should not be considered relative to the base URI.
