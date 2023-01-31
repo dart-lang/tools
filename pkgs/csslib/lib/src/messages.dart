@@ -68,7 +68,7 @@ class Message {
 /// This class tracks and prints information, warnings, and errors emitted by
 /// the compiler.
 class Messages {
-  /// Called on every error. Set to blank function to supress printing.
+  /// Called on every error. Set to blank function to suppress printing.
   final void Function(Message obj) printHandler;
 
   final PreprocessorOptions options;
@@ -110,7 +110,7 @@ class Messages {
     if (options.verbose) printHandler(msg);
   }
 
-  /// Merge [newMessages] to this message lsit.
+  /// Merge [newMessages] to this message list.
   void mergeMessages(Messages newMessages) {
     messages.addAll(newMessages.messages);
     newMessages.messages

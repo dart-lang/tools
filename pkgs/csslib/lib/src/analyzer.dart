@@ -41,7 +41,7 @@ class Analyzer {
       MixinsAndIncludes.remove(styleSheet);
     }
 
-    // Expand any nested selectors using selector desendant combinator to
+    // Expand any nested selectors using selector descendant combinator to
     // signal CSS inheritance notation.
     for (var styleSheet in _styleSheets) {
       ExpandNestedSelectors()
@@ -165,14 +165,14 @@ class Analyzer {
 ///                       Declaration (property = color, expression = red)
 ///
 /// Nested rules is a terse mechanism to describe CSS inheritance.  The analyzer
-/// will flatten and expand the nested rules to it's flatten strucure.  Using
+/// will flatten and expand the nested rules to it's flatten structure.  Using
 /// the all parent [RuleSets] (selector expressions) and applying each nested
 /// [RuleSet] to the list of [Selectors] in a [SelectorGroup].
 ///
 /// Then result is a style sheet where all nested rules have been flatten and
 /// expanded.
 class ExpandNestedSelectors extends Visitor {
-  /// Parent [RuleSet] if a nested rule otherwise [:null:].
+  /// Parent [RuleSet] if a nested rule otherwise `null`.
   RuleSet? _parentRuleSet;
 
   /// Top-most rule if nested rules.
@@ -253,7 +253,7 @@ class ExpandNestedSelectors extends Visitor {
   }
 
   /// Merge the nested selector sequences [current] to the [parent] sequences or
-  /// substitue any & with the parent selector.
+  /// substitute any & with the parent selector.
   List<SimpleSelectorSequence> _mergeNestedSelector(
       List<SimpleSelectorSequence> parent,
       List<SimpleSelectorSequence> current) {
@@ -270,7 +270,7 @@ class ExpandNestedSelectors extends Visitor {
     } else {
       for (var sequence in current) {
         if (sequence.simpleSelector.isThis) {
-          // Substitue the & with the parent selector and only use a combinator
+          // Substitute the & with the parent selector and only use a combinator
           // descendant if & is prefix by a sequence with an empty name e.g.,
           // "... + &", "&", "... ~ &", etc.
           var hasPrefix = newSequence.isNotEmpty &&

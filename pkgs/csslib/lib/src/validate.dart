@@ -85,7 +85,7 @@ class Validate {
           }
         } else if (simpleSelector is IdSelector) {
           // Any element id starting with an underscore is a private element id
-          // that doesn't have to match the world of known elemtn ids.
+          // that doesn't have to match the world of known element ids.
           if (!simpleSelector.name.startsWith('_')) {
             for (final id in ids) {
               if (simpleSelector.name == id) {

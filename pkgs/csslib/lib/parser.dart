@@ -138,7 +138,7 @@ String _inputAsString(Object input) {
     // Here's some info about CSS encodings:
     // http://www.w3.org/International/questions/qa-css-charset.en.php
     //
-    // As JMesserly suggests it will probably need a "preparser" html5lib
+    // As JMesserly suggests it will probably need a "pre-parser" html5lib
     // (encoding_parser.dart) that interprets the bytes as ASCII and scans for
     // @charset. But for now an "encoding" argument would work.  Often the
     // HTTP header will indicate the correct encoding.
@@ -243,7 +243,7 @@ class _Parser {
   }
 
   /// Guard to break out of parser when an unexpected end of file is found.
-  // TODO(jimhug): Failure to call this method can lead to inifinite parser
+  // TODO(jimhug): Failure to call this method can lead to infinite parser
   //   loops.  Consider embracing exceptions for more errors to reduce
   //   the danger here.
   bool isPrematureEndOfFile() {
@@ -1130,8 +1130,7 @@ class _Parser {
   ///       color: red;
   ///     }
   ///
-  /// Return [:null:] if no selector or [SelectorGroup] if a selector was
-  /// parsed.
+  /// Return `null` if no selector or [SelectorGroup] if a selector was parsed.
   SelectorGroup? _nestedSelector() {
     var oldMessages = messages;
     _createMessages();
@@ -1949,7 +1948,7 @@ class _Parser {
         //   100 - 900
         //   inherit
 
-        // TODO(terry): Only 'normal', 'bold', or values of 100-900 supoorted
+        // TODO(terry): Only 'normal', 'bold', or values of 100-900 supported
         //              need to handle bolder, lighter, and inherit.  See
         //              https://github.com/dart-lang/csslib/issues/1
         var expr = exprs.expressions[0];
@@ -2835,10 +2834,10 @@ class ExpressionsProcessor {
       // Order is font-size font-family
       fontSize ??= processFontSize();
       fontFamily ??= processFontFamily();
-      //TODO(terry): Handle font-weight, font-style, and font-variant. See
-      //               https://github.com/dart-lang/csslib/issues/3
-      //               https://github.com/dart-lang/csslib/issues/4
-      //               https://github.com/dart-lang/csslib/issues/5
+      // TODO(terry): Handle font-weight, font-style, and font-variant. See
+      //              https://github.com/dart-lang/csslib/issues/3
+      //              https://github.com/dart-lang/csslib/issues/4
+      //              https://github.com/dart-lang/csslib/issues/5
     }
 
     return FontExpression(_exprs.span,

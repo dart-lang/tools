@@ -453,24 +453,25 @@ class TokenKind {
   //              see http://www.w3schools.com/cssref/pr_list-style-type.asp
   //              for list of possible values.
 
-  /// Check if name is a pre-defined CSS name.  Used by error handler to report
-  /// if name is unknown or used improperly.
+  /// Check if a name is a pre-defined CSS name.
+  ///
+  /// This is used by the error handler to report if a name is unknown or used
+  /// improperly.
   static bool isPredefinedName(String name) {
-    var nameLen = name.length;
-    // TODO(terry): Add more pre-defined names (hidden, bolder, inherit, etc.).
-    if (matchUnits(name, 0, nameLen) == -1 ||
-        matchDirectives(name, 0, nameLen) == -1 ||
-        matchMarginDirectives(name, 0, nameLen) == -1 ||
-        matchColorName(name) == null) {
-      return false;
-    }
+    final len = name.length;
 
-    return true;
+    // TODO(terry): Add more pre-defined names (hidden, bolder, inherit, etc.).
+    if (matchColorName(name) != null) return true;
+    if (matchDirectives(name, 0, len) != -1) return true;
+    if (matchMarginDirectives(name, 0, len) != -1) return true;
+    if (matchUnits(name, 0, len) != -1) return true;
+
+    return false;
   }
 
   /// Return the token that matches the unit ident found.
-  static int matchList(Iterable<Map<String, dynamic>> identList,
-      String tokenField, String text, int offset, int length) {
+  static int matchList(List<Map<String, dynamic>> identList, String tokenField,
+      String text, int offset, int length) {
     for (final entry in identList) {
       final ident = entry['value'] as String;
 
@@ -548,7 +549,7 @@ class TokenKind {
   }
 
   /// Match color name, case insensitive match and return the associated color
-  /// entry from _EXTENDED_COLOR_NAMES list, return [:null:] if not found.
+  /// entry from _EXTENDED_COLOR_NAMES list, return `null` if not found.
   static Map<String, Object>? matchColorName(String text) {
     var name = text.toLowerCase();
     for (var color in _EXTENDED_COLOR_NAMES) {
