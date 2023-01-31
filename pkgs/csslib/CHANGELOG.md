@@ -2,6 +2,7 @@
 
 - Add markdown badges to the readme.
 - Adopted `package:dart_flutter_team_lints` linting rules.
+- Fixed the reported span for `Expression` nodes.
 
 ## 0.17.2
 

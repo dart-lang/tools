@@ -81,7 +81,7 @@ void testUnsupportedLineHeights() {
 error on line 1, column 24: Unexpected value for line-height
   ,
 1 | .foobar { line-height: 120%; }
-  |                        ^^^
+  |                        ^^^^
   \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
@@ -98,7 +98,7 @@ error on line 1, column 24: Unexpected value for line-height
 error on line 1, column 24: Unexpected unit for line-height
   ,
 1 | .foobar { line-height: 20cm; }
-  |                        ^^
+  |                        ^^^^
   \'''');
   expect(prettyPrint(stylesheet), r'''
 .foobar {
