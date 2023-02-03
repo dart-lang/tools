@@ -2,6 +2,8 @@
 [![pub package](https://img.shields.io/pub/v/source_span.svg)](https://pub.dev/packages/source_span)
 [![package publisher](https://img.shields.io/pub/publisher/source_span.svg)](https://pub.dev/packages/source_span/publisher)
 
+## About this package
+
 `source_span` is a library for tracking locations in source code. It's designed
 to provide a standard representation for source code locations and spans so that
 disparate packages can easily pass them among one another, and to make it easy

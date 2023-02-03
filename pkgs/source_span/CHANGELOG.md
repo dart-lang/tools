@@ -1,6 +1,7 @@
 # 1.9.2-dev
 
 * Require Dart 2.18
+* Add an API usage example in `example/`.
 
 # 1.9.1
 
@@ -201,7 +202,7 @@
 # 1.0.0
 
 This package was extracted from the
-[`source_maps`](http://pub.dartlang.org/packages/source_maps) package, but the
+[`source_maps`](https://pub.dev/packages/source_maps) package, but the
 API has many differences. Among them:
 
 * `Span` has been renamed to `SourceSpan` and `Location` has been renamed to
