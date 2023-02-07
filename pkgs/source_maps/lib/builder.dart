@@ -45,7 +45,7 @@ class SourceMapBuilder {
   }
 
   /// Encodes all mappings added to this builder as a json map.
-  Map build(String fileUrl) {
+  Map<String, dynamic> build(String fileUrl) {
     return SingleMapping.fromEntries(_entries, fileUrl).toJson();
   }
 

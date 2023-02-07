@@ -5,8 +5,8 @@
 /// Tests for the binary search utility algorithm.
 library test.utils_test;
 
-import 'package:test/test.dart';
 import 'package:source_maps/src/utils.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('binary search', () {
@@ -31,7 +31,7 @@ void main() {
 
     test('compare with linear search', () {
       for (var size = 0; size < 100; size++) {
-        var list = [];
+        var list = <int>[];
         for (var i = 0; i < size; i++) {
           list.add(i);
         }
@@ -44,8 +44,8 @@ void main() {
   });
 }
 
-int _linearSearch(list, predicate) {
-  if (list.length == 0) return -1;
+int _linearSearch<T>(List<T> list, bool Function(T) predicate) {
+  if (list.isEmpty) return -1;
   for (var i = 0; i < list.length; i++) {
     if (predicate(list[i])) return i;
   }

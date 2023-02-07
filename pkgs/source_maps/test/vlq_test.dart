@@ -5,8 +5,9 @@
 library test.vlq_test;
 
 import 'dart:math';
-import 'package:test/test.dart';
+
 import 'package:source_maps/src/vlq.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('encode and decode - simple values', () {

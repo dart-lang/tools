@@ -25,7 +25,7 @@ import 'src/vlq.dart';
 // `)]}'` begins the string representation of the map.
 Mapping parse(String jsonMap,
         {Map<String, Map>? otherMaps, /*String|Uri*/ Object? mapUrl}) =>
-    parseJson(jsonDecode(jsonMap), otherMaps: otherMaps, mapUrl: mapUrl);
+    parseJson(jsonDecode(jsonMap) as Map, otherMaps: otherMaps, mapUrl: mapUrl);
 
 /// Parses a source map or source map bundle directly from a json string.
 ///
@@ -50,7 +50,7 @@ Mapping parseJsonExtended(/*List|Map*/ Object? json,
   return parseJson(json as Map);
 }
 
-/// Parses a source map
+/// Parses a source map.
 ///
 /// [mapUrl], which may be either a [String] or a [Uri], indicates the URL of
 /// the source map file itself. If it's passed, any URLs in the source
@@ -69,10 +69,10 @@ Mapping parseJson(Map map,
       throw FormatException('map containing "sections" '
           'cannot contain "mappings", "sources", or "names".');
     }
-    return MultiSectionMapping.fromJson(map['sections'], otherMaps,
+    return MultiSectionMapping.fromJson(map['sections'] as List, otherMaps,
         mapUrl: mapUrl);
   }
-  return SingleMapping.fromJson(map, mapUrl: mapUrl);
+  return SingleMapping.fromJson(map.cast<String, dynamic>(), mapUrl: mapUrl);
 }
 
 /// A mapping parsed out of a source map.
@@ -108,21 +108,21 @@ class MultiSectionMapping extends Mapping {
   /// Creates a section mapping from json.
   MultiSectionMapping.fromJson(List sections, Map<String, Map>? otherMaps,
       {/*String|Uri*/ Object? mapUrl}) {
-    for (var section in sections) {
-      var offset = section['offset'];
+    for (var section in sections.cast<Map>()) {
+      var offset = section['offset'] as Map?;
       if (offset == null) throw FormatException('section missing offset');
 
-      var line = section['offset']['line'];
+      var line = offset['line'] as int?;
       if (line == null) throw FormatException('offset missing line');
 
-      var column = section['offset']['column'];
+      var column = offset['column'] as int?;
       if (column == null) throw FormatException('offset missing column');
 
       _lineStart.add(line);
       _columnStart.add(column);
 
-      var url = section['url'];
-      var map = section['map'];
+      var url = section['url'] as String?;
+      var map = section['map'] as Map?;
 
       if (url != null && map != null) {
         throw FormatException("section can't use both url and map entries");
@@ -189,7 +189,7 @@ class MappingBundle extends Mapping {
 
   MappingBundle.fromJson(List json, {/*String|Uri*/ Object? mapUrl}) {
     for (var map in json) {
-      addMapping(parseJson(map, mapUrl: mapUrl) as SingleMapping);
+      addMapping(parseJson(map as Map, mapUrl: mapUrl) as SingleMapping);
     }
   }
 
@@ -342,18 +342,18 @@ class SingleMapping extends Mapping {
         urls.keys.toList(), names.keys.toList(), lines);
   }
 
-  SingleMapping.fromJson(Map map, {mapUrl})
-      : targetUrl = map['file'],
-        urls = List<String>.from(map['sources']),
-        names = List<String>.from(map['names'] ?? []),
-        files = List.filled(map['sources'].length, null),
-        sourceRoot = map['sourceRoot'],
+  SingleMapping.fromJson(Map<String, dynamic> map, {mapUrl})
+      : targetUrl = map['file'] as String?,
+        urls = List<String>.from(map['sources'] as List),
+        names = List<String>.from((map['names'] as List?) ?? []),
+        files = List.filled((map['sources'] as List).length, null),
+        sourceRoot = map['sourceRoot'] as String?,
         lines = <TargetLineEntry>[],
-        _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : mapUrl,
+        _mapUrl = mapUrl is String ? Uri.parse(mapUrl) : (mapUrl as Uri?),
         extensions = {} {
     var sourcesContent = map['sourcesContent'] == null
         ? const <String?>[]
-        : List<String?>.from(map['sourcesContent']);
+        : List<String?>.from(map['sourcesContent'] as List);
     for (var i = 0; i < urls.length && i < sourcesContent.length; i++) {
       var source = sourcesContent[i];
       if (source == null) continue;
@@ -366,7 +366,7 @@ class SingleMapping extends Mapping {
     var srcLine = 0;
     var srcColumn = 0;
     var srcNameId = 0;
-    var tokenizer = _MappingTokenizer(map['mappings']);
+    var tokenizer = _MappingTokenizer(map['mappings'] as String);
     var entries = <TargetEntry>[];
 
     while (tokenizer.hasTokens) {
@@ -432,7 +432,7 @@ class SingleMapping extends Mapping {
   ///
   /// If [includeSourceContents] is `true`, this includes the source file
   /// contents from [files] in the map if possible.
-  Map toJson({bool includeSourceContents = false}) {
+  Map<String, dynamic> toJson({bool includeSourceContents = false}) {
     var buff = StringBuffer();
     var line = 0;
     var column = 0;
@@ -471,12 +471,12 @@ class SingleMapping extends Mapping {
       }
     }
 
-    var result = {
+    var result = <String, dynamic>{
       'version': 3,
       'sourceRoot': sourceRoot ?? '',
       'sources': urls,
       'names': names,
-      'mappings': buff.toString()
+      'mappings': buff.toString(),
     };
     if (targetUrl != null) result['file'] = targetUrl!;
 
@@ -690,6 +690,8 @@ class _MappingTokenizer implements Iterator<String> {
     buff.write('[31m');
     try {
       buff.write(current);
+      // TODO: Determine whether this try / catch can be removed.
+      // ignore: avoid_catching_errors
     } on RangeError catch (_) {}
     buff.write('[0m');
     for (var i = index + 1; i < _internal.length; i++) {

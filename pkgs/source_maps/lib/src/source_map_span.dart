@@ -61,13 +61,13 @@ class SourceMapFileSpan implements SourceMapSpan, FileSpan {
   @override
   int compareTo(SourceSpan other) => _inner.compareTo(other);
   @override
-  String highlight({color}) => _inner.highlight(color: color);
+  String highlight({Object? color}) => _inner.highlight(color: color);
   @override
   SourceSpan union(SourceSpan other) => _inner.union(other);
   @override
   FileSpan expand(FileSpan other) => _inner.expand(other);
   @override
-  String message(String message, {color}) =>
+  String message(String message, {Object? color}) =>
       _inner.message(message, color: color);
   @override
   String toString() =>

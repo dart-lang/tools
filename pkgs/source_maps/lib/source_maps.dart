@@ -28,8 +28,8 @@ library source_maps;
 
 import 'package:source_span/source_span.dart';
 
-import 'parser.dart';
 import 'builder.dart';
+import 'parser.dart';
 
 export 'builder.dart';
 export 'parser.dart';

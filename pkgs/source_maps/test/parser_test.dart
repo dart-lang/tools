@@ -373,7 +373,7 @@ void main() {
     var mapping = parseJson(map) as SingleMapping;
     expect(mapping.toJson(), equals(map));
     expect(mapping.extensions['x_foo'], equals('a'));
-    expect(mapping.extensions['x_bar'].first, equals(3));
+    expect((mapping.extensions['x_bar'] as List).first, equals(3));
   });
 
   group('source files', () {

@@ -30,7 +30,7 @@ class TextEditTransaction {
   /// Edit the original text, replacing text on the range [begin] and [end]
   /// with the [replacement]. [replacement] can be either a string or a
   /// [NestedPrinter].
-  void edit(int begin, int end, replacement) {
+  void edit(int begin, int end, Object replacement) {
     _edits.add(_TextEdit(begin, end, replacement));
   }
 

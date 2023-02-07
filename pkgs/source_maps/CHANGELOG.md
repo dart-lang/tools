@@ -1,3 +1,7 @@
+# 0.10.12
+
+* Add additional types at API boundaries.
+
 # 0.10.11
 
 * Populate the pubspec `repository` field.

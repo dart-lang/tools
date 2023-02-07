@@ -76,7 +76,7 @@ int decodeVlq(Iterator<String> chars) {
     }
     stop = (digit & vlqContinuationBit) == 0;
     digit &= vlqBaseMask;
-    result += (digit << shift);
+    result += digit << shift;
     shift += vlqBaseShift;
   }
 

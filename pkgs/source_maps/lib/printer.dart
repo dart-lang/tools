@@ -36,7 +36,7 @@ class Printer {
   /// adds a source map location on each new line, projecting that every new
   /// line in the target file (printed here) corresponds to a new line in the
   /// source file.
-  void add(String str, {projectMarks = false}) {
+  void add(String str, {bool projectMarks = false}) {
     var chars = str.runes.toList();
     var length = chars.length;
     for (var i = 0; i < length; i++) {
@@ -85,7 +85,7 @@ class Printer {
   /// [SourceSpan]. When the mark is a [SourceMapSpan] with `isIdentifier` set,
   /// this also records the name of the identifier in the source map
   /// information.
-  void mark(mark) {
+  void mark(Object mark) {
     late final SourceLocation loc;
     String? identifier;
     if (mark is SourceLocation) {
@@ -105,13 +105,13 @@ class Printer {
 /// including [NestedPrinter]s, and it let's you automatically indent text.
 ///
 /// This class is especially useful when doing code generation, where different
-/// peices of the code are generated independently on separate printers, and are
+/// pieces of the code are generated independently on separate printers, and are
 /// finally put together in the end.
 class NestedPrinter implements NestedItem {
   /// Items recoded by this printer, which can be [String] literals,
   /// [NestedItem]s, and source map information like [SourceLocation] and
   /// [SourceSpan].
-  final _items = <dynamic>[];
+  final List<Object> _items = [];
 
   /// Internal buffer to merge consecutive strings added to this printer.
   StringBuffer? _buff;
@@ -149,7 +149,7 @@ class NestedPrinter implements NestedItem {
   /// Indicate [isOriginal] when [object] is copied directly from the user code.
   /// Setting [isOriginal] will make this printer propagate source map locations
   /// on every line-break.
-  void add(object,
+  void add(Object object,
       {SourceLocation? location, SourceSpan? span, bool isOriginal = false}) {
     if (object is! String || location != null || span != null || isOriginal) {
       _flush();
