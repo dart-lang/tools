@@ -2402,17 +2402,17 @@ class _Parser {
   }
 
   /// Process all dimension units.
-  LiteralTerm processDimension(Token? t, Object value, SourceSpan span) {
+  LiteralTerm processDimension(Token? t, Object value, FileSpan span) {
     LiteralTerm term;
     var unitType = _peek();
 
     switch (unitType) {
       case TokenKind.UNIT_EM:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = EmTerm(value, t!.text, span);
         break;
       case TokenKind.UNIT_EX:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = ExTerm(value, t!.text, span);
         break;
       case TokenKind.UNIT_LENGTH_PX:
@@ -2421,53 +2421,53 @@ class _Parser {
       case TokenKind.UNIT_LENGTH_IN:
       case TokenKind.UNIT_LENGTH_PT:
       case TokenKind.UNIT_LENGTH_PC:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = LengthTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.UNIT_ANGLE_DEG:
       case TokenKind.UNIT_ANGLE_RAD:
       case TokenKind.UNIT_ANGLE_GRAD:
       case TokenKind.UNIT_ANGLE_TURN:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = AngleTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.UNIT_TIME_MS:
       case TokenKind.UNIT_TIME_S:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = TimeTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.UNIT_FREQ_HZ:
       case TokenKind.UNIT_FREQ_KHZ:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = FreqTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.PERCENT:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = PercentageTerm(value, t!.text, span);
         break;
       case TokenKind.UNIT_FRACTION:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = FractionTerm(value, t!.text, span);
         break;
       case TokenKind.UNIT_RESOLUTION_DPI:
       case TokenKind.UNIT_RESOLUTION_DPCM:
       case TokenKind.UNIT_RESOLUTION_DPPX:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = ResolutionTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.UNIT_CH:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = ChTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.UNIT_REM:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = RemTerm(value, t!.text, span, unitType);
         break;
       case TokenKind.UNIT_VIEWPORT_VW:
       case TokenKind.UNIT_VIEWPORT_VH:
       case TokenKind.UNIT_VIEWPORT_VMIN:
       case TokenKind.UNIT_VIEWPORT_VMAX:
-        span = span.union(_next().span);
+        span = span.expand(_next().span);
         term = ViewportTerm(value, t!.text, span, unitType);
         break;
       default:
