@@ -1,3 +1,7 @@
+## 2.2.2-dev
+
+- Require Dart 2.19
+
 ## 2.2.1
 
 - Improve convergence speed of `BenchmarkBase` measuring algorithm by allowing

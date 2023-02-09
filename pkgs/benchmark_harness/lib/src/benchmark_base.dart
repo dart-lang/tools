@@ -14,7 +14,8 @@ class BenchmarkBase {
 
   /// The benchmark code.
   ///
-  /// This function is not used, if both [warmup] and [exercise] are overwritten.
+  /// This function is not used, if both [warmup] and [exercise] are
+  /// overwritten.
   void run() {}
 
   /// Runs a short version of the benchmark. By default invokes [run] once.
