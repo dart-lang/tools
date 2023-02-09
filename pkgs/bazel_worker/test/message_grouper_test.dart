@@ -10,13 +10,11 @@ import 'package:test/test.dart';
 
 void main() {
   group('AsyncMessageGrouper', () {
-    runTests(() => TestStdinAsync(),
-        (Stdin stdinStream) => AsyncMessageGrouper(stdinStream));
+    runTests(TestStdinAsync.new, AsyncMessageGrouper.new);
   });
 
   group('SyncMessageGrouper', () {
-    runTests(() => TestStdinSync(),
-        (Stdin stdinStream) => SyncMessageGrouper(stdinStream));
+    runTests(TestStdinSync.new, SyncMessageGrouper.new);
   });
 }
 

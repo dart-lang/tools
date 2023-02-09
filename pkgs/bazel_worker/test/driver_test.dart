@@ -6,10 +6,9 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
-import 'package:test/test.dart';
-
 import 'package:bazel_worker/bazel_worker.dart';
 import 'package:bazel_worker/driver.dart';
+import 'package:test/test.dart';
 
 void main() {
   BazelWorkerDriver? driver;
@@ -256,7 +255,8 @@ class MockWorker implements Process {
   int get pid => throw UnsupportedError('Not needed.');
 
   @override
-  bool kill([processSignal = ProcessSignal.sigterm, int exitCode = 0]) {
+  bool kill(
+      [ProcessSignal processSignal = ProcessSignal.sigterm, int exitCode = 0]) {
     if (_killed) return false;
     () async {
       await _stdoutController.close();

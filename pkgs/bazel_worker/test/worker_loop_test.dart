@@ -5,44 +5,33 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:test/test.dart';
-
 import 'package:bazel_worker/bazel_worker.dart';
 import 'package:bazel_worker/testing.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('SyncWorkerLoop', () {
-    runTests(
-        () => TestStdinSync(),
-        (Stdin stdinStream, Stdout stdoutStream) =>
-            TestSyncWorkerConnection(stdinStream, stdoutStream),
-        (TestSyncWorkerConnection connection) =>
-            TestSyncWorkerLoop(connection));
+    runTests(TestStdinSync.new, TestSyncWorkerConnection.new,
+        TestSyncWorkerLoop.new);
   });
 
   group('AsyncWorkerLoop', () {
-    runTests(
-        () => TestStdinAsync(),
-        (Stdin stdinStream, Stdout stdoutStream) =>
-            TestAsyncWorkerConnection(stdinStream, stdoutStream),
-        (TestAsyncWorkerConnection connection) =>
-            TestAsyncWorkerLoop(connection));
+    runTests(TestStdinAsync.new, TestAsyncWorkerConnection.new,
+        TestAsyncWorkerLoop.new);
   });
 
   group('SyncWorkerLoopWithPrint', () {
     runTests(
-        () => TestStdinSync(),
-        (Stdin stdinStream, Stdout stdoutStream) =>
-            TestSyncWorkerConnection(stdinStream, stdoutStream),
+        TestStdinSync.new,
+        TestSyncWorkerConnection.new,
         (TestSyncWorkerConnection connection) =>
             TestSyncWorkerLoop(connection, printMessage: 'Goodbye!'));
   });
 
   group('AsyncWorkerLoopWithPrint', () {
     runTests(
-        () => TestStdinAsync(),
-        (Stdin stdinStream, Stdout stdoutStream) =>
-            TestAsyncWorkerConnection(stdinStream, stdoutStream),
+        TestStdinAsync.new,
+        TestAsyncWorkerConnection.new,
         (TestAsyncWorkerConnection connection) =>
             TestAsyncWorkerLoop(connection, printMessage: 'Goodbye!'));
   });
@@ -126,6 +115,7 @@ void runTests<T extends TestWorkerConnection>(
       await workerLoop.run();
     } else if (stdinStream is TestStdinAsync) {
       var done = Completer();
+      // ignore: avoid_dynamic_calls
       workerLoop.run().then((_) => done.complete(null));
       (stdinStream as TestStdinAsync).controller.addError('Error!!');
       await done.future;

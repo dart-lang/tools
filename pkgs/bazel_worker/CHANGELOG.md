@@ -1,3 +1,7 @@
+## 1.0.3-dev
+
+* Require Dart SDK >= 2.19.0
+
 ## 1.0.2
 
 * Expand pub documentation to improve pub score.

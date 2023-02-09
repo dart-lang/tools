@@ -2,10 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'driver_connection_test.dart' as driver_connection;
 import 'driver_test.dart' as driver;
 import 'message_grouper_test.dart' as message_grouper;
 import 'worker_loop_test.dart' as worker_loop;
-import 'driver_connection_test.dart' as driver_connection;
 
 void main() {
   driver.main();

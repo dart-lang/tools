@@ -8,9 +8,9 @@ import 'dart:io';
 import 'dart:isolate';
 
 import '../async_message_grouper.dart';
-import '../worker_protocol.pb.dart';
 import '../constants.dart';
 import '../utils.dart';
+import '../worker_protocol.pb.dart';
 
 /// A connection from a `BazelWorkerDriver` to a worker.
 ///
