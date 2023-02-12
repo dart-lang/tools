@@ -14,8 +14,8 @@ String get bullet => glyph.glyphs.bullet;
 
 /// A left-pointing arrow.
 ///
-/// Note that the Unicode arrow glyphs may overlap with adjacent characters in some
-/// terminal fonts, and should generally be surrounding by spaces.
+/// Note that the Unicode arrow glyphs may overlap with adjacent characters in
+/// some terminal fonts, and should generally be surrounding by spaces.
 ///
 /// If [glyph.ascii] is `false`, this is "←". If it's `true`, this is
 /// "<" instead.
@@ -23,8 +23,8 @@ String get leftArrow => glyph.glyphs.leftArrow;
 
 /// A right-pointing arrow.
 ///
-/// Note that the Unicode arrow glyphs may overlap with adjacent characters in some
-/// terminal fonts, and should generally be surrounding by spaces.
+/// Note that the Unicode arrow glyphs may overlap with adjacent characters in
+/// some terminal fonts, and should generally be surrounding by spaces.
 ///
 /// If [glyph.ascii] is `false`, this is "→". If it's `true`, this is
 /// ">" instead.
@@ -282,19 +282,22 @@ String get crossDouble => glyph.glyphs.crossDouble;
 /// "+" instead.
 String get teeUpDouble => glyph.glyphs.teeUpDouble;
 
-/// A double horizontal box line with a vertical line going down from the middle.
+/// A double horizontal box line with a vertical line going down from the
+/// middle.
 ///
 /// If [glyph.ascii] is `false`, this is "╦". If it's `true`, this is
 /// "+" instead.
 String get teeDownDouble => glyph.glyphs.teeDownDouble;
 
-/// A double vertical box line with a horizontal line going left from the middle.
+/// A double vertical box line with a horizontal line going left from the
+/// middle.
 ///
 /// If [glyph.ascii] is `false`, this is "╣". If it's `true`, this is
 /// "+" instead.
 String get teeLeftDouble => glyph.glyphs.teeLeftDouble;
 
-/// A double vertical box line with a horizontal line going right from the middle.
+/// A double vertical box line with a horizontal line going right from the
+/// middle.
 ///
 /// If [glyph.ascii] is `false`, this is "╠". If it's `true`, this is
 /// "+" instead.

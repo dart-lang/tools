@@ -37,14 +37,14 @@ abstract class GlyphSet {
 
   /// A left-pointing arrow.
   ///
-  /// Note that the Unicode arrow glyphs may overlap with adjacent characters in some
-  /// terminal fonts, and should generally be surrounding by spaces.
+  /// Note that the Unicode arrow glyphs may overlap with adjacent characters in
+  /// some terminal fonts, and should generally be surrounding by spaces.
   String get leftArrow;
 
   /// A right-pointing arrow.
   ///
-  /// Note that the Unicode arrow glyphs may overlap with adjacent characters in some
-  /// terminal fonts, and should generally be surrounding by spaces.
+  /// Note that the Unicode arrow glyphs may overlap with adjacent characters in
+  /// some terminal fonts, and should generally be surrounding by spaces.
   String get rightArrow;
 
   /// An upwards-pointing arrow.
@@ -128,13 +128,16 @@ abstract class GlyphSet {
   /// A bold horizontal box line with a vertical line going up from the middle.
   String get teeUpBold;
 
-  /// A bold horizontal box line with a vertical line going down from the middle.
+  /// A bold horizontal box line with a vertical line going down from the
+  /// middle.
   String get teeDownBold;
 
-  /// A bold vertical box line with a horizontal line going left from the middle.
+  /// A bold vertical box line with a horizontal line going left from the
+  /// middle.
   String get teeLeftBold;
 
-  /// A bold vertical box line with a horizontal line going right from the middle.
+  /// A bold vertical box line with a horizontal line going right from the
+  /// middle.
   String get teeRightBold;
 
   /// The top half of a bold vertical box line.
@@ -170,16 +173,20 @@ abstract class GlyphSet {
   /// An intersection of double vertical and horizontal box lines.
   String get crossDouble;
 
-  /// A double horizontal box line with a vertical line going up from the middle.
+  /// A double horizontal box line with a vertical line going up from the
+  /// middle.
   String get teeUpDouble;
 
-  /// A double horizontal box line with a vertical line going down from the middle.
+  /// A double horizontal box line with a vertical line going down from the
+  /// middle.
   String get teeDownDouble;
 
-  /// A double vertical box line with a horizontal line going left from the middle.
+  /// A double vertical box line with a horizontal line going left from the
+  /// middle.
   String get teeLeftDouble;
 
-  /// A double vertical box line with a horizontal line going right from the middle.
+  /// A double vertical box line with a horizontal line going right from the
+  /// middle.
   String get teeRightDouble;
 
   /// A dashed horizontal line that can be used to draw a box.
