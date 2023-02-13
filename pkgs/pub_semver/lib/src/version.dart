@@ -12,7 +12,7 @@ import 'version_constraint.dart';
 import 'version_range.dart';
 
 /// The equality operator to use for comparing version components.
-const _equality = IterableEquality();
+const _equality = IterableEquality<Object>();
 
 /// A parsed semantic version number.
 @sealed
