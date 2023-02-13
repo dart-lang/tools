@@ -4,7 +4,7 @@ version: 0.0.1
 # repository: https://github.com/my_org/my_repo
 
 environment:
-  sdk: '>=2.19.0-406.0.dev <3.0.0'
+  sdk: '>=2.19.0 <3.0.0'
 
 dependencies:
   clock: ^1.1.1
