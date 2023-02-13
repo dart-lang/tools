@@ -5,15 +5,15 @@
 /// URL endpoint for sending Google Analytics Events
 const String kAnalyticsUrl = 'https://www.google-analytics.com/mp/collect';
 
-/// Name for the text file that will contain the
-/// user's randomly generated client id
+/// Name for the text file that will contain the user's randomly generated
+/// client id
 const String kClientIdFileName = 'CLIENT_ID';
 
 /// Name for the file where telemetry status and tools data will be stored
 const String kConfigFileName = 'dash-analytics.config';
 
-/// The string that will provide the boilerplate for the
-/// configuration file stored on the user's machine
+/// The string that will provide the boilerplate for the configuration file
+/// stored on the user's machine
 const String kConfigString = '''
 # INTRODUCTION
 #
@@ -51,8 +51,8 @@ reporting=1
 # a number representing the version of the message that was
 # displayed.''';
 
-/// Name of the directory where all of the files necessary
-/// for this package will be located
+/// Name of the directory where all of the files necessary for this package
+/// will be located
 const String kDartToolDirectoryName = '.dart';
 
 /// How many data records to store in the log file
@@ -88,7 +88,6 @@ Google Privacy Policy (https://policies.google.com/privacy).
 
 /// The version number for the message below
 ///
-/// If the message below is altered, the version should
-/// be incremented so that users can be prompted with
-/// the updated messaging
+/// If the message below is altered, the version should be incremented so that
+/// users can be prompted with the updated messaging
 const int kToolsMessageVersion = 1;
