@@ -10,9 +10,9 @@ shells support globs natively.
 
 ## Usage
 
-To construct a glob, just use `Glob()`. As with `RegExp`s, it's a good idea
-to keep around a glob if you'll be using it more than once so that it doesn't
-have to be compiled over and over. You can check whether a path matches the glob
+To construct a glob, just use `Glob()`. As with `RegExp`s, it's a good idea to
+keep around a glob if you'll be using it more than once so that it doesn't have
+to be compiled over and over. You can check whether a path matches the glob
 using `Glob.matches()`:
 
 ```dart
@@ -98,7 +98,7 @@ both. It will only ever match a single character. For example,
 but not `test-.dart`.
 
 If it starts with `^` or `!`, the construction will instead match all characters
-*not* mentioned. For example, `test[^a-z].dart` will match `test1.dart` but not
+_not_ mentioned. For example, `test[^a-z].dart` will match `test1.dart` but not
 `testa.dart`.
 
 This construction never matches `/`.

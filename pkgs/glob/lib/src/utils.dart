@@ -58,7 +58,7 @@ class GlobMatch implements Match {
 
   @override
   List<String> groups(List<int> groupIndices) =>
-      groupIndices.map((index) => group(index)).toList();
+      groupIndices.map(group).toList();
 }
 
 final _quote = RegExp(r'[+*?{}|[\]\\().^$-]');
