@@ -1,3 +1,5 @@
+[![package:dash_analytics](https://github.com/dart-lang/tools/actions/workflows/dash_analytics.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/dash_analytics.yml)
+
 ## What's This?
 
 This package is intended to be used on Dash (Flutter, Dart, etc.) related tooling only.
