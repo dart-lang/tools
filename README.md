@@ -7,7 +7,8 @@ This repository is home to tooling related Dart packages.
 ## Packages
 
 | Package | Description | Version |
-|---|---|---|
+| --- | --- | --- |
+| [dash_analytics](pkgs/dash_analytics/) | A package for logging analytics for all dash related tooling to Google Analytics | <!-- [![pub package](https://img.shields.io/pub/v/dash_analytics.svg)](https://pub.dev/packages/dash_analytics) --> |
 
 ## Publishing automation
 
