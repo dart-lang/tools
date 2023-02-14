@@ -7,17 +7,16 @@ import 'dart:io' as io;
 import 'dart:math';
 
 import 'package:clock/clock.dart';
-import 'package:file/file.dart';
-import 'package:file/memory.dart';
-import 'package:test/test.dart';
-import 'package:yaml/yaml.dart';
-
 import 'package:dash_analytics/dash_analytics.dart';
 import 'package:dash_analytics/src/config_handler.dart';
 import 'package:dash_analytics/src/constants.dart';
 import 'package:dash_analytics/src/session.dart';
 import 'package:dash_analytics/src/user_property.dart';
 import 'package:dash_analytics/src/utils.dart';
+import 'package:file/file.dart';
+import 'package:file/memory.dart';
+import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 
 void main() {
   late FileSystem fs;
