@@ -7,4 +7,4 @@ This is not intended to be general purpose or consumed by the community. It is r
 
 ## Using This Package As A Dash Tool
 
-Refer to the [guide](https://github.com/dart-lang/tools/blob/main/pkgs/dash_analytics/USAGE_GUIDE.md)
+Refer to the [guide](USAGE_GUIDE.md)
