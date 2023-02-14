@@ -2,7 +2,7 @@ name: dash_analytics
 description: >-
   A package for logging analytics for all dash related tooling to Google
   Analytics.
-version: 0.1.0
+version: 0.1.0-dev
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/dash_analytics
 
 environment:
