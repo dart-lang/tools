@@ -141,6 +141,8 @@ class TokenKind {
   static const int UNIT_VIEWPORT_VH = 624;
   static const int UNIT_VIEWPORT_VMIN = 625;
   static const int UNIT_VIEWPORT_VMAX = 626;
+  static const int UNIT_LH = 627; // Computed height of the element.
+  static const int UNIT_RLH = 628; // Line height of the root element.
 
   // Directives (@nnnn)
   static const int DIRECTIVE_NONE = 640;
@@ -289,6 +291,8 @@ class TokenKind {
     {'unit': TokenKind.UNIT_VIEWPORT_VH, 'value': 'vh'},
     {'unit': TokenKind.UNIT_VIEWPORT_VMIN, 'value': 'vmin'},
     {'unit': TokenKind.UNIT_VIEWPORT_VMAX, 'value': 'vmax'},
+    {'unit': TokenKind.UNIT_LH, 'value': 'lh'},
+    {'unit': TokenKind.UNIT_RLH, 'value': 'rlh'},
   ];
 
   // Some more constants:
@@ -711,6 +715,8 @@ class TokenKind {
       case TokenKind.UNIT_FREQ_HZ:
       case TokenKind.UNIT_FREQ_KHZ:
       case TokenKind.UNIT_FRACTION:
+      case TokenKind.UNIT_LH:
+      case TokenKind.UNIT_RLH:
         return true;
       default:
         return false;

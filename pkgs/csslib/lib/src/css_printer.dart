@@ -548,6 +548,11 @@ class CssPrinter extends Visitor {
   }
 
   @override
+  void visitLineHeightTerm(LineHeightTerm node) {
+    emit(node.toString());
+  }
+
+  @override
   void visitFunctionTerm(FunctionTerm node) {
     // TODO(terry): Optimize rgb to a hexcolor.
     emit('${node.text}(');

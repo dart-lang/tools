@@ -86,6 +86,7 @@ abstract class VisitorBase {
   dynamic visitChTerm(ChTerm node);
   dynamic visitRemTerm(RemTerm node);
   dynamic visitViewportTerm(ViewportTerm node);
+  dynamic visitLineHeightTerm(LineHeightTerm node);
   dynamic visitFunctionTerm(FunctionTerm node);
   dynamic visitGroupTerm(GroupTerm node);
   dynamic visitItemTerm(ItemTerm node);
@@ -473,6 +474,11 @@ class Visitor implements VisitorBase {
 
   @override
   dynamic visitViewportTerm(ViewportTerm node) {
+    visitUnitTerm(node);
+  }
+
+  @override
+  dynamic visitLineHeightTerm(LineHeightTerm node) {
     visitUnitTerm(node);
   }
 

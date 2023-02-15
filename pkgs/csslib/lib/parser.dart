@@ -2470,6 +2470,11 @@ class _Parser {
         span = span.expand(_next().span);
         term = ViewportTerm(value, t!.text, span, unitType);
         break;
+      case TokenKind.UNIT_LH:
+      case TokenKind.UNIT_RLH:
+        span = span.expand(_next().span);
+        term = LineHeightTerm(value, t!.text, span, unitType);
+        break;
       default:
         if (value is Identifier) {
           term = LiteralTerm(value, value.name, span);

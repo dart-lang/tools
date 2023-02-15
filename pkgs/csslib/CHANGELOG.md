@@ -4,6 +4,7 @@
 - Adopted `package:dart_flutter_team_lints` linting rules.
 - Fixed the reported span for `Expression` nodes.
 - Fixed a regression parsing declaration values containing spaces.
+- Add support for `lh` and `rlh` units.
 
 ## 0.17.2
 

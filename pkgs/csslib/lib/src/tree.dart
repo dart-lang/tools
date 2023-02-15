@@ -1409,6 +1409,17 @@ class RemTerm extends UnitTerm {
   dynamic visit(VisitorBase visitor) => visitor.visitRemTerm(this);
 }
 
+class LineHeightTerm extends UnitTerm {
+  LineHeightTerm(Object value, String text, SourceSpan? span, int unit)
+      : super(value, text, span, unit) {
+    assert(unit == TokenKind.UNIT_LH || unit == TokenKind.UNIT_RLH);
+  }
+  @override
+  LineHeightTerm clone() => LineHeightTerm(value, text, span, unit);
+  @override
+  dynamic visit(VisitorBase visitor) => visitor.visitLineHeightTerm(this);
+}
+
 class ViewportTerm extends UnitTerm {
   ViewportTerm(Object value, String text, SourceSpan? span,
       [int unit = TokenKind.UNIT_LENGTH_PX])

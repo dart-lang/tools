@@ -197,6 +197,8 @@ void testUnits() {
   padding-bottom: 3vmin;
   transform: rotate(20deg);
   voice-pitch: 10hz;
+  height: 4lh;
+  width: 40rlh;
 }
 #id-2 {
   left: 2fr;
@@ -235,6 +237,8 @@ void testUnits() {
   padding-bottom: 3vmin;
   transform: rotate(20deg);
   voice-pitch: 10hz;
+  height: 4lh;
+  width: 40rlh;
 }
 #id-2 {
   left: 2fr;
