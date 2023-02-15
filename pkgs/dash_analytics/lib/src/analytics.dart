@@ -127,7 +127,7 @@ abstract class Analytics {
   /// API to send events to Google Analytics to track usage
   Future<Response>? sendEvent({
     required DashEvent eventName,
-    required Map<String, Object?> eventData,
+    Map<String, Object?> eventData = const {},
   });
 
   /// Pass a boolean to either enable or disable telemetry and make
@@ -243,7 +243,7 @@ class AnalyticsImpl implements Analytics {
   @override
   Future<Response>? sendEvent({
     required DashEvent eventName,
-    required Map<String, Object?> eventData,
+    Map<String, Object?> eventData = const {},
   }) {
     if (!telemetryEnabled) return null;
 
@@ -290,7 +290,7 @@ class TestAnalytics extends AnalyticsImpl {
   @override
   Future<Response>? sendEvent({
     required DashEvent eventName,
-    required Map<String, Object?> eventData,
+    Map<String, Object?> eventData = const {},
   }) {
     if (!telemetryEnabled) return null;
 

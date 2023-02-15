@@ -7,6 +7,11 @@
 /// The [label] for each enum value is what will be logged, the [description]
 /// is here for documentation purposes
 enum DashEvent {
+  analyzerServerStarted(
+    label: 'analyzer_server_started',
+    description: 'Dart Analyzer Server Started',
+    toolOwner: DashTool.dartAnalyzer,
+  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
@@ -26,14 +31,14 @@ enum DashEvent {
 
 /// Officially-supported clients of this package.
 ///
-/// All [label] values should use a hyphen as a delimiter
+/// All [label] values should use an underscore as a delimiter
 enum DashTool {
   flutterTools(
-    label: 'flutter-tools',
+    label: 'flutter_tools',
     description: 'Runs flutter applications from CLI',
   ),
   dartAnalyzer(
-    label: 'dart-analyzer',
+    label: 'dart_analyzer',
     description: 'Analyzes dart code in workspace',
   );
 

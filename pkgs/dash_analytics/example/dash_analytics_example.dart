@@ -23,6 +23,8 @@ void main() {
   print('###### START ###### $start');
 
   print(analytics.telemetryEnabled);
+  // [eventData] is an optional map to add relevant data
+  // for the [eventName] being sent
   analytics.sendEvent(
     eventName: DashEvent.hotReloadTime,
     eventData: <String, int>{'time_ns': 345},
