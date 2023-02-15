@@ -857,6 +857,14 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   test('Payload sent to GA follows limitations', () {
     // Link to limitations documentation
     // https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#limitations
+    //
+    // Only the limitations specified below have been added, the other
+    // are not able to be validated because it will vary by each tool
+    // 
+    // - Events can have a maximum of 25 user properties
+    // - User property names must be 24 characters or fewer
+    // - User property values must be 36 characters or fewer (only for `tool` name)
+    // - Event names must be 40 characters or fewer, may only contain alpha-numeric characters and underscores, and must start with an alphabetic character
 
     final Map<String, Object> userPropPayload = userProperty.preparePayload();
 
