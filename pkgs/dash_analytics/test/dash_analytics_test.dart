@@ -860,7 +860,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     //
     // Only the limitations specified below have been added, the other
     // are not able to be validated because it will vary by each tool
-    // 
+    //
     // - Events can have a maximum of 25 user properties
     // - User property names must be 24 characters or fewer
     // - User property values must be 36 characters or fewer (only for `tool` name)
@@ -884,11 +884,8 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         reason:
             'The max length for each user prop is $maxUserPropLength chars\n'
             'The below keys are too long:\n$invalidUserProps');
-    expect(
-      userPropPayload.keys.length < maxUserPropKeys,
-      true,
-      reason: 'There are too many keys in the UserProperty payload',
-    );
+    expect(userPropPayload.keys.length < maxUserPropKeys, true,
+        reason: 'There are too many keys in the UserProperty payload');
 
     // Check that each event name is less than 40 chars and starts with
     // an alphabetic character; the entire string has to be alphanumeric
