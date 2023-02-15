@@ -657,15 +657,36 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     // Regex pattern to match only letters or hyphens
     final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z\-]+$');
     bool valid = true;
+    final List<DashTool> invalidTools = <DashTool>[];
     for (DashTool tool in DashTool.values) {
       if (!toolLabelPattern.hasMatch(tool.label)) {
         valid = false;
+        invalidTools.add(tool);
       }
     }
 
     expect(valid, true,
         reason: 'All tool labels should have letters and hyphens '
-            'as a delimiter if needed');
+            'as a delimiter if needed; invalid tools below\n$invalidTools');
+  });
+
+  test(
+      'All DashEvents labels are made of characters that are letters or hyphens',
+      () {
+    // Regex pattern to match only letters or hyphens
+    final RegExp eventLabelPattern = RegExp(r'^[a-zA-Z\-]+$');
+    bool valid = true;
+    final List<DashEvent> invalidEvents = <DashEvent>[];
+    for (DashEvent event in DashEvent.values) {
+      if (!eventLabelPattern.hasMatch(event.label)) {
+        valid = false;
+        invalidEvents.add(event);
+      }
+    }
+
+    expect(valid, true,
+        reason: 'All event labels should have letters and hyphens '
+            'as a delimiter if needed; invalid events below\n$invalidEvents');
   });
 
   test('Check that log file is correctly persisting events sent', () {
