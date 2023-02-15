@@ -652,10 +652,10 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   });
 
   test(
-      'All DashTools labels are made of characters that are letters or hyphens',
+      'All DashTools labels are made of characters that are letters or underscores',
       () {
-    // Regex pattern to match only letters or hyphens
-    final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z\-]+$');
+    // Regex pattern to match only letters or underscores
+    final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z\_]+$');
     bool valid = true;
     final List<DashTool> invalidTools = <DashTool>[];
     for (DashTool tool in DashTool.values) {
@@ -666,15 +666,15 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     }
 
     expect(valid, true,
-        reason: 'All tool labels should have letters and hyphens '
+        reason: 'All tool labels should have letters and underscores '
             'as a delimiter if needed; invalid tools below\n$invalidTools');
   });
 
   test(
-      'All DashEvents labels are made of characters that are letters or hyphens',
+      'All DashEvents labels are made of characters that are letters or underscores',
       () {
-    // Regex pattern to match only letters or hyphens
-    final RegExp eventLabelPattern = RegExp(r'^[a-zA-Z\-]+$');
+    // Regex pattern to match only letters or underscores
+    final RegExp eventLabelPattern = RegExp(r'^[a-zA-Z\_]+$');
     bool valid = true;
     final List<DashEvent> invalidEvents = <DashEvent>[];
     for (DashEvent event in DashEvent.values) {
@@ -685,7 +685,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     }
 
     expect(valid, true,
-        reason: 'All event labels should have letters and hyphens '
+        reason: 'All event labels should have letters and underscores '
             'as a delimiter if needed; invalid events below\n$invalidEvents');
   });
 
