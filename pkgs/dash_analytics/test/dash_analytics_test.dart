@@ -654,8 +654,9 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   test(
       'All DashTools labels are made of characters that are letters or underscores',
       () {
-    // Regex pattern to match only letters or underscores
-    final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z\_]+$');
+    // Regex pattern to match only letters or underscores and must start
+    // with an alphabet char
+    final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z]{1}[a-zA-Z\_]*$');
     bool valid = true;
     final List<DashTool> invalidTools = <DashTool>[];
     for (DashTool tool in DashTool.values) {
@@ -668,25 +669,6 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     expect(valid, true,
         reason: 'All tool labels should have letters and underscores '
             'as a delimiter if needed; invalid tools below\n$invalidTools');
-  });
-
-  test(
-      'All DashEvents labels are made of characters that are letters or underscores',
-      () {
-    // Regex pattern to match only letters or underscores
-    final RegExp eventLabelPattern = RegExp(r'^[a-zA-Z\_]+$');
-    bool valid = true;
-    final List<DashEvent> invalidEvents = <DashEvent>[];
-    for (DashEvent event in DashEvent.values) {
-      if (!eventLabelPattern.hasMatch(event.label)) {
-        valid = false;
-        invalidEvents.add(event);
-      }
-    }
-
-    expect(valid, true,
-        reason: 'All event labels should have letters and underscores '
-            'as a delimiter if needed; invalid events below\n$invalidEvents');
   });
 
   test('Check that log file is correctly persisting events sent', () {
@@ -870,5 +852,67 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         reason: 'The session should have remained the same');
     expect(query2.flutterChannelCount, 1,
         reason: 'The first instance has flutter information initialized');
+  });
+
+  test('Payload sent to GA follows limitations', () {
+    // Link to limitations documentation
+    // https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#limitations
+
+    final Map<String, Object> userPropPayload = userProperty.preparePayload();
+
+    // Check that each key in the user property object is less than 24 chars and
+    // that we have less than 25 keys
+    const int maxUserPropLength = 24;
+    const int maxUserPropKeys = 25;
+    bool userPropLengthValid = true;
+    final List<String> invalidUserProps = <String>[];
+    for (String key in userPropPayload.keys.toList()) {
+      if (key.length > maxUserPropLength) {
+        userPropLengthValid = false;
+        invalidUserProps.add(key);
+      }
+    }
+    expect(userPropLengthValid, true,
+        reason:
+            'The max length for each user prop is $maxUserPropLength chars\n'
+            'The below keys are too long:\n$invalidUserProps');
+    expect(
+      userPropPayload.keys.length < maxUserPropKeys,
+      true,
+      reason: 'There are too many keys in the UserProperty payload',
+    );
+
+    // Check that each event name is less than 40 chars and starts with
+    // an alphabetic character; the entire string has to be alphanumeric
+    // and underscores
+    final RegExp eventLabelPattern =
+        RegExp(r'^[a-zA-Z]{1}[a-zA-Z0-9\_]{0,39}$');
+    bool eventValid = true;
+    final List<DashEvent> invalidEvents = <DashEvent>[];
+    for (DashEvent event in DashEvent.values) {
+      if (!eventLabelPattern.hasMatch(event.label)) {
+        eventValid = false;
+        invalidEvents.add(event);
+      }
+    }
+
+    expect(eventValid, true,
+        reason: 'All event labels should have letters and underscores '
+            'as a delimiter if needed; invalid events below\n$invalidEvents');
+
+    // All dash tools must be under 36 characters
+    const int maxDashToolLength = 36;
+    bool dashToolLengthValid = true;
+    final List<DashTool> invalidTools = <DashTool>[];
+    for (DashTool tool in DashTool.values) {
+      if (tool.label.length > maxDashToolLength) {
+        dashToolLengthValid = false;
+        invalidTools.add(tool);
+      }
+    }
+
+    expect(dashToolLengthValid, true,
+        reason: 'All dash tool labels have to be less than $maxDashToolLength\n'
+            'The following are too long below\n$invalidTools');
   });
 }
