@@ -861,13 +861,15 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     // Only the limitations specified below have been added, the other
     // are not able to be validated because it will vary by each tool
     //
-    // - Events can have a maximum of 25 user properties
-    // - User property names must be 24 characters or fewer
-    // - User property values must be 36 characters or fewer (only for `tool` name)
-    // - Event names must be 40 characters or fewer, may only contain alpha-numeric characters and underscores, and must start with an alphabetic character
+    // 1. Events can have a maximum of 25 user properties
+    // 2. User property names must be 24 characters or fewer
+    // 3. (Only for `tool` name) User property values must be 36 characters or fewer
+    // 4. Event names must be 40 characters or fewer, may only contain alpha-numeric
+    //    characters and underscores, and must start with an alphabetic character
 
     final Map<String, Object> userPropPayload = userProperty.preparePayload();
 
+    // Checks items 1 and 2
     // Check that each key in the user property object is less than 24 chars and
     // that we have less than 25 keys
     const int maxUserPropLength = 24;
@@ -887,24 +889,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     expect(userPropPayload.keys.length < maxUserPropKeys, true,
         reason: 'There are too many keys in the UserProperty payload');
 
-    // Check that each event name is less than 40 chars and starts with
-    // an alphabetic character; the entire string has to be alphanumeric
-    // and underscores
-    final RegExp eventLabelPattern =
-        RegExp(r'^[a-zA-Z]{1}[a-zA-Z0-9\_]{0,39}$');
-    bool eventValid = true;
-    final List<DashEvent> invalidEvents = <DashEvent>[];
-    for (DashEvent event in DashEvent.values) {
-      if (!eventLabelPattern.hasMatch(event.label)) {
-        eventValid = false;
-        invalidEvents.add(event);
-      }
-    }
-
-    expect(eventValid, true,
-        reason: 'All event labels should have letters and underscores '
-            'as a delimiter if needed; invalid events below\n$invalidEvents');
-
+    // Checks item 3
     // All dash tools must be under 36 characters
     const int maxDashToolLength = 36;
     bool dashToolLengthValid = true;
@@ -920,4 +905,22 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         reason: 'All dash tool labels have to be less than $maxDashToolLength\n'
             'The following are too long below\n$invalidTools');
   });
+
+  // Checks item 4
+  // Check that each event name is less than 40 chars and starts with
+  // an alphabetic character; the entire string has to be alphanumeric
+  // and underscores
+  final RegExp eventLabelPattern = RegExp(r'^[a-zA-Z]{1}[a-zA-Z0-9\_]{0,39}$');
+  bool eventValid = true;
+  final List<DashEvent> invalidEvents = <DashEvent>[];
+  for (DashEvent event in DashEvent.values) {
+    if (!eventLabelPattern.hasMatch(event.label)) {
+      eventValid = false;
+      invalidEvents.add(event);
+    }
+  }
+
+  expect(eventValid, true,
+      reason: 'All event labels should have letters and underscores '
+          'as a delimiter if needed; invalid events below\n$invalidEvents');
 }
