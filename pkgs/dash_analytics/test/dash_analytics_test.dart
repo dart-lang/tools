@@ -651,26 +651,6 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         reason: 'Each event in the events array needs a params key');
   });
 
-  test(
-      'All DashTools labels are made of characters that are letters or underscores',
-      () {
-    // Regex pattern to match only letters or underscores and must start
-    // with an alphabet char
-    final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z]{1}[a-zA-Z\_]*$');
-    bool valid = true;
-    final List<DashTool> invalidTools = <DashTool>[];
-    for (DashTool tool in DashTool.values) {
-      if (!toolLabelPattern.hasMatch(tool.label)) {
-        valid = false;
-        invalidTools.add(tool);
-      }
-    }
-
-    expect(valid, true,
-        reason: 'All tool labels should have letters and underscores '
-            'as a delimiter if needed; invalid tools below\n$invalidTools');
-  });
-
   test('Check that log file is correctly persisting events sent', () {
     final int numberOfEvents = max((kLogFileLength * 0.1).floor(), 5);
 
@@ -876,7 +856,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     const int maxUserPropKeys = 25;
     bool userPropLengthValid = true;
     final List<String> invalidUserProps = <String>[];
-    for (String key in userPropPayload.keys.toList()) {
+    for (String key in userPropPayload.keys) {
       if (key.length > maxUserPropLength) {
         userPropLengthValid = false;
         invalidUserProps.add(key);
@@ -890,20 +870,22 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         reason: 'There are too many keys in the UserProperty payload');
 
     // Checks item 3
-    // All dash tools must be under 36 characters
-    const int maxDashToolLength = 36;
+    // All dash tools must be under 36 characters (and enforce each tool
+    // begins with a letter)
+    final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_]{0,35}$');
     bool dashToolLengthValid = true;
     final List<DashTool> invalidTools = <DashTool>[];
     for (DashTool tool in DashTool.values) {
-      if (tool.label.length > maxDashToolLength) {
+      if (!toolLabelPattern.hasMatch(tool.label)) {
         dashToolLengthValid = false;
         invalidTools.add(tool);
       }
     }
 
     expect(dashToolLengthValid, true,
-        reason: 'All dash tool labels have to be less than $maxDashToolLength\n'
-            'The following are too long below\n$invalidTools');
+        reason:
+            'All dash tool labels must be under 36 characters and begin with a letter\n'
+            'The following are invalid\n$invalidTools');
 
     // Checks item 4
     // Check that each event name is less than 40 chars and starts with
