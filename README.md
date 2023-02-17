@@ -2,7 +2,13 @@
 
 ## Overview
 
-This repository is home to tooling related Dart packages.
+This repository is home to tooling related Dart packages. Generally, this means
+packages published through the
+[tools.dart.dev](https://pub.dev/publishers/tools.dart.dev) publisher that
+don't naturally belong to other topic monorepos (like
+[dart-lang/build](https://github.com/dart-lang/build),
+[dart-lang/test](https://github.com/dart-lang/test), or
+[dart-lang/shelf](https://github.com/dart-lang/shelf)).
 
 ## Packages
 
