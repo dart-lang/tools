@@ -1,12 +1,15 @@
 [![package:dash_analytics](https://github.com/dart-lang/tools/actions/workflows/dash_analytics.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/dash_analytics.yml)
 
-## What's This?
+## What's this?
 
-This package is intended to be used on Dash (Flutter, Dart, etc.) related tooling only.
-It provides APIs to send events to Google Analytics using the Measurement Protocol.
+This package is intended to be used on Dash (Flutter, Dart, etc.) related
+tooling only. It provides APIs to send events to Google Analytics using the
+Measurement Protocol.
 
-This is not intended to be general purpose or consumed by the community. It is responsible for toggling analytics collection for Dash related tooling on each developer's machine.
+This is not intended to be general purpose or consumed by the community. It is
+responsible for toggling analytics collection for Dash related tooling on each
+developer's machine.
 
-## Using This Package As A Dash Tool
+## Using this package
 
-Refer to the [guide](USAGE_GUIDE.md).
+Refer to the [usage guide](USAGE_GUIDE.md).
