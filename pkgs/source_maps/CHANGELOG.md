@@ -1,8 +1,8 @@
-# 0.10.12
+## 0.10.12
 
 * Add additional types at API boundaries.
 
-# 0.10.11
+## 0.10.11
 
 * Populate the pubspec `repository` field.
 * Update the source map documentation link in the readme.
