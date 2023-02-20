@@ -1,3 +1,7 @@
+## 1.5.2-dev
+
+* Require Dart 2.19
+
 ## 1.5.1
 
 * Switch to using `package:lints` for analysis.
