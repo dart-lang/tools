@@ -30,7 +30,7 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  const String initialToolName = 'initialTool';
+  const String initialToolName = 'initial_tool';
   const String secondTool = 'newTool';
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
@@ -104,6 +104,10 @@ void main() {
             'There should only be 4 files in the $kDartToolDirectoryName directory');
     expect(analytics.shouldShowMessage, true,
         reason: 'For the first run, analytics should default to being enabled');
+    expect(configFile.readAsLinesSync().length,
+        kConfigString.split('\n').length + 1,
+        reason: 'The number of lines should equal lines in constant value + 1 '
+            'for the initialized tool');
   });
 
   test('New tool is successfully added to config file', () {
