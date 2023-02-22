@@ -11,8 +11,6 @@ final String apiSecret = '4yT8__oER3Cd84dtx6r-_A';
 // point of the tool
 final Analytics analytics = Analytics(
   tool: DashTool.flutterTools,
-  measurementId: measurementId,
-  apiSecret: apiSecret,
   flutterChannel: 'ey-test-channel',
   flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
   dartVersion: 'Dart 2.19.0',

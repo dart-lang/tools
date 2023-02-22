@@ -21,7 +21,7 @@ const String telemetryFlagPattern = r'^reporting=([0|1]) *$';
 /// Example:
 /// flutter-tools=2022-10-26,1
 const String toolPattern =
-    r'^([A-Za-z0-9]+-*[A-Za-z0-9]*)=([0-9]{4}-[0-9]{2}-[0-9]{2}),([0-9]+)$';
+    r'^([A-Za-z0-9]+_*[A-Za-z0-9]*)=([0-9]{4}-[0-9]{2}-[0-9]{2}),([0-9]+)$';
 
 class ConfigHandler {
   /// Regex pattern implementation for matching a line in the config file

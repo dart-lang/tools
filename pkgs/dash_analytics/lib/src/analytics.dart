@@ -25,8 +25,6 @@ abstract class Analytics {
   /// of the [Analytics] abstract class using the [LocalFileSystem]
   factory Analytics({
     required DashTool tool,
-    required String measurementId,
-    required String apiSecret,
     String? flutterChannel,
     String? flutterVersion,
     required String dartVersion,
@@ -48,8 +46,8 @@ abstract class Analytics {
     return AnalyticsImpl(
       tool: tool.label,
       homeDirectory: getHomeDirectory(fs),
-      measurementId: measurementId,
-      apiSecret: apiSecret,
+      measurementId: kGoogleAnalyticsMeasurementId,
+      apiSecret: kGoogleAnalyticsApiSecret,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
