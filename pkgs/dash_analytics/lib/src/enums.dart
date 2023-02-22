@@ -7,15 +7,40 @@
 /// The [label] for each enum value is what will be logged, the [description]
 /// is here for documentation purposes
 enum DashEvent {
-  analyzerServerStarted(
-    label: 'analyzer_server_started',
-    description: 'Dart Analyzer Server Started',
-    toolOwner: DashTool.dartAnalyzer,
-  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
     toolOwner: DashTool.flutterTools,
+  ),
+  lintUsageCounts(
+    label: 'lint_usage_counts',
+    description: 'Number of times each lint is enabled',
+    toolOwner: DashTool.languageServer,
+  ),
+  notification(
+    label: 'notification',
+    description: 'Notifications sent from the client',
+    toolOwner: DashTool.languageServer,
+  ),
+  pluginRequest(
+    label: 'plugin_request',
+    description: 'Request responses from plugins',
+    toolOwner: DashTool.languageServer,
+  ),
+  request(
+    label: 'request',
+    description: 'Requests sent from the client',
+    toolOwner: DashTool.languageServer,
+  ),
+  session(
+    label: 'session',
+    description: 'Dart Analyzer Server session data',
+    toolOwner: DashTool.languageServer,
+  ),
+  severityAdjustments(
+    label: 'severity_adjustments',
+    description: 'Number of times diagnostic severity is changed',
+    toolOwner: DashTool.languageServer,
   ),
   ;
 
@@ -37,9 +62,9 @@ enum DashTool {
     label: 'flutter_tools',
     description: 'Runs flutter applications from CLI',
   ),
-  dartAnalyzer(
-    label: 'dart_analyzer',
-    description: 'Analyzes dart code in workspace',
+  languageServer(
+    label: 'language_server',
+    description: 'The Dart language server for IDE and CLI support.',
   );
 
   final String label;
