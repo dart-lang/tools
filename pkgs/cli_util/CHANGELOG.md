@@ -1,3 +1,7 @@
+## 0.3.6-dev
+
+- Require Dart 2.19
+
 ## 0.3.5
 - Make `applicationConfigHome` throw an `Exception` when it fails to find a
   configuration folder.

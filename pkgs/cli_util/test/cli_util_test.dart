@@ -6,8 +6,8 @@ import 'dart:io';
 
 import 'package:cli_util/cli_util.dart';
 import 'package:cli_util/src/utils.dart';
-import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
 
 void main() => defineTests();
 

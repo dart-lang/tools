@@ -68,9 +68,8 @@ abstract class Logger {
   /// Create a [Logger] that will display trace level output.
   ///
   /// If [logTime] is `true`, this logger will display the time of the message.
-  factory Logger.verbose({Ansi? ansi, bool logTime = true}) {
-    return VerboseLogger(ansi: ansi, logTime: logTime);
-  }
+  factory Logger.verbose({Ansi? ansi, bool logTime = true}) =>
+      VerboseLogger(ansi: ansi, logTime: logTime);
 
   Ansi get ansi;
 
@@ -158,7 +157,7 @@ class StandardLogger implements Logger {
   }
 
   void _cancelProgress() {
-    var progress = _currentProgress;
+    final progress = _currentProgress;
     if (progress != null) {
       _currentProgress = null;
       progress.cancel();
@@ -169,7 +168,7 @@ class StandardLogger implements Logger {
   Progress progress(String message) {
     _cancelProgress();
 
-    var progress = ansi.useAnsi
+    final progress = ansi.useAnsi
         ? AnsiProgress(ansi, message)
         : SimpleProgress(this, message);
     _currentProgress = progress;
@@ -196,14 +195,14 @@ class SimpleProgress extends Progress {
 }
 
 class AnsiProgress extends Progress {
-  static const List<String> kAnimationItems = ['/', '-', '\\', '|'];
+  static const List<String> kAnimationItems = ['/', '-', r'\', '|'];
 
   final Ansi ansi;
 
   late final Timer _timer;
 
   AnsiProgress(this.ansi, String message) : super(message) {
-    _timer = Timer.periodic(Duration(milliseconds: 80), (t) {
+    _timer = Timer.periodic(const Duration(milliseconds: 80), (t) {
       _updateDisplay();
     });
     io.stdout.write('$message...  '.padRight(40));
@@ -240,7 +239,7 @@ class AnsiProgress extends Progress {
       if (message != null) {
         io.stdout.write(message.isEmpty ? ' ' : message);
       } else if (showTiming) {
-        var time = (elapsed.inMilliseconds / 1000.0).toStringAsFixed(1);
+        final time = (elapsed.inMilliseconds / 1000.0).toStringAsFixed(1);
         io.stdout.write('${time}s');
       } else {
         io.stdout.write(' ');
@@ -300,12 +299,12 @@ class VerboseLogger implements Logger {
     }
 
     var seconds = _timer.elapsedMilliseconds / 1000.0;
-    var minutes = seconds ~/ 60;
+    final minutes = seconds ~/ 60;
     seconds -= minutes * 60.0;
 
-    var buf = StringBuffer();
+    final buf = StringBuffer();
     if (minutes > 0) {
-      buf.write((minutes % 60));
+      buf.write(minutes % 60);
       buf.write('m ');
     }
 

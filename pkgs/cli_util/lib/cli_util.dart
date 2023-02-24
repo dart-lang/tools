@@ -23,7 +23,7 @@ import 'src/utils.dart';
 Directory getSdkDir([List<String>? cliArgs]) {
   // Look for --dart-sdk on the command line.
   if (cliArgs != null) {
-    var index = cliArgs.indexOf('--dart-sdk');
+    final index = cliArgs.indexOf('--dart-sdk');
 
     if (index != -1 && (index + 1 < cliArgs.length)) {
       return Directory(cliArgs[index + 1]);
@@ -37,13 +37,13 @@ Directory getSdkDir([List<String>? cliArgs]) {
   }
 
   // Look in env['DART_SDK']
-  var sdkLocation = Platform.environment['DART_SDK'];
+  final sdkLocation = Platform.environment['DART_SDK'];
   if (sdkLocation != null) {
     return Directory(sdkLocation);
   }
 
   // Look relative to the dart executable.
-  var platformExecutable = File(Platform.executable);
+  final platformExecutable = File(Platform.executable);
   var sdkDirectory = platformExecutable.parent.parent;
   if (isSdkDir(sdkDirectory)) return sdkDirectory;
 
@@ -121,7 +121,7 @@ String get _home {
   final home = Platform.environment['HOME'];
   if (home == null) {
     throw EnvironmentNotFoundException(
-        'Environment variable \$HOME is not defined!');
+        r'Environment variable $HOME is not defined!');
   }
   return home;
 }
@@ -130,7 +130,5 @@ class EnvironmentNotFoundException implements Exception {
   final String message;
   EnvironmentNotFoundException(this.message);
   @override
-  String toString() {
-    return message;
-  }
+  String toString() => message;
 }
