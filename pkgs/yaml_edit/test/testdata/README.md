@@ -4,7 +4,7 @@ This folder contains the files used for Golden testing performed by [golden_test
 
 With golden testing, we are able to quickly ensure that our output conforms to our expectations given input parameters, which are extremely valuable especially on complex test cases not easily captured by unit tests.
 
-When the tests are run (see [Running Tests](#Running-Tests)), the series of specified modifications will be performed on the input, and the various output states will be compared against the `.golden` files if they exist. Othweise, if the `.golden` files do not exist (such as in the case of a new test case), they will be created.
+When the tests are run (see [Running Tests](#Running-Tests)), the series of specified modifications will be performed on the input, and the various output states will be compared against the `.golden` files if they exist. Otherwise, if the `.golden` files do not exist (such as in the case of a new test case), they will be created.
 
 ## Table of Contents
 
