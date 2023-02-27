@@ -25,9 +25,9 @@ abstract class Analytics {
   /// of the [Analytics] abstract class using the [LocalFileSystem]
   factory Analytics({
     required DashTool tool,
+    required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
-    required String dartVersion,
   }) {
     // Create the instance of the file system so clients don't need
     // resolve on their own
