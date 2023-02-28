@@ -117,7 +117,7 @@ SourceEdit _appendToBlockList(
   // Adjusts offset to after the trailing newline of the last entry, if it exists
   if (list.isNotEmpty) {
     final lastValueSpanEnd = list.nodes.last.span.end.offset;
-    final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd);
+    final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd - 1);
     if (nextNewLineIndex == -1) {
       formattedValue = getLineEnding(yaml) + formattedValue;
     } else {
