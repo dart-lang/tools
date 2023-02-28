@@ -59,7 +59,7 @@ enum DashEvent {
 
 /// Officially-supported clients of this package.
 ///
-/// All [label] values should use an underscore as a delimiter
+/// All [label] values should use an underscore as a delimiter.
 enum DashTool {
   flutterTools(
     label: 'flutter_tools',
