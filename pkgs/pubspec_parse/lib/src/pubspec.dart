@@ -44,6 +44,9 @@ class Pubspec {
   /// support or funding.
   final List<Uri>? funding;
 
+  /// Optional field to list the topics that this packages belongs to.
+  final List<String>? topics;
+
   /// Optional field for specifying included screenshot files.
   @JsonKey(fromJson: parseScreenshots)
   final List<Screenshot>? screenshots;
@@ -106,6 +109,7 @@ class Pubspec {
     this.repository,
     this.issueTracker,
     this.funding,
+    this.topics,
     this.screenshots,
     this.documentation,
     this.description,

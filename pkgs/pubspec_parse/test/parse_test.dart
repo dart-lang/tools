@@ -53,6 +53,7 @@ void main() {
       'funding': [
         'https://patreon.com/example',
       ],
+      'topics': ['widget', 'button'],
       'screenshots': [
         {'description': 'my screenshot', 'path': 'path/to/screenshot'}
       ],
@@ -77,6 +78,9 @@ void main() {
     );
     expect(value.funding, hasLength(1));
     expect(value.funding!.single.toString(), 'https://patreon.com/example');
+    expect(value.topics, hasLength(2));
+    expect(value.topics!.first, 'widget');
+    expect(value.topics!.last, 'button');
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
@@ -384,6 +388,42 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
   ╵''',
         skipTryPub: true,
       );
+    });
+  });
+  group('topics', () {
+    test('not a list', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'topics': 1,
+        },
+        "Unsupported value for \"topics\". type 'int' is not a subtype of type 'List<dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('not a string', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'topics': [1],
+        },
+        "Unsupported value for \"topics\". type 'int' is not a subtype of type 'String'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () {
+      final value = parse(
+        {
+          ...defaultPubspec,
+          'topics': [1],
+        },
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.topics, isNull);
     });
   });
 

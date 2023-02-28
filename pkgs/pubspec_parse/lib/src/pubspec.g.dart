@@ -32,6 +32,8 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
               (v) => (v as List<dynamic>?)
                   ?.map((e) => Uri.parse(e as String))
                   .toList()),
+          topics: $checkedConvert('topics',
+              (v) => (v as List<dynamic>?)?.map((e) => e as String).toList()),
           screenshots: $checkedConvert(
               'screenshots', (v) => parseScreenshots(v as List?)),
           documentation: $checkedConvert('documentation', (v) => v as String?),

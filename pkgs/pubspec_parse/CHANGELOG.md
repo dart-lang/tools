@@ -1,7 +1,8 @@
-## 1.2.2-dev
+## 1.2.2
 
 - Require Dart SDK >= 2.18.0
 - Required `json_annotation: ^4.8.0`
+- Added support for `topics` field.
 
 ## 1.2.1
 
