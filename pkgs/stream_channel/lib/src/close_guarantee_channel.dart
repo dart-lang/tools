@@ -12,7 +12,7 @@ import '../stream_channel.dart';
 /// that closing the sink causes the stream to close before it emits any more
 /// events
 ///
-/// This is exposed via [new StreamChannel.withCloseGuarantee].
+/// This is exposed via [StreamChannel.withCloseGuarantee].
 class CloseGuaranteeChannel<T> extends StreamChannelMixin<T> {
   @override
   Stream<T> get stream => _stream;
@@ -74,7 +74,7 @@ class _CloseGuaranteeSink<T> extends DelegatingStreamSink<T> {
   /// The [CloseGuaranteeChannel] this belongs to.
   final CloseGuaranteeChannel<T> _channel;
 
-  _CloseGuaranteeSink(StreamSink<T> inner, this._channel) : super(inner);
+  _CloseGuaranteeSink(super.inner, this._channel);
 
   @override
   Future<void> close() {

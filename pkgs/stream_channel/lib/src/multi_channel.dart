@@ -237,7 +237,7 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
 
     // Convert this to a list because the close is dispatched synchronously, and
     // that could conceivably remove a controller from [_controllers].
-    for (var controller in List.from(_controllers.values)) {
+    for (var controller in _controllers.values.toList(growable: false)) {
       controller.local.sink.close();
     }
     _controllers.clear();
@@ -269,5 +269,5 @@ class VirtualChannel<T> extends StreamChannelMixin<T>
   VirtualChannel._(this._parent, this.id, this.stream, this.sink);
 
   @override
-  VirtualChannel<T> virtualChannel([id]) => _parent.virtualChannel(id);
+  VirtualChannel<T> virtualChannel([int? id]) => _parent.virtualChannel(id);
 }

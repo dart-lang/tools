@@ -1,3 +1,7 @@
+## 2.1.2-dev
+
+* Require Dart 2.19
+
 ## 2.1.1
 
 * Require Dart 2.14

@@ -142,7 +142,7 @@ class _CloseCompleterSink extends DelegatingStreamSink {
   /// The completer for the future returned by [close].
   final completer = Completer();
 
-  _CloseCompleterSink(StreamSink inner) : super(inner);
+  _CloseCompleterSink(super.inner);
 
   @override
   Future<void> close() {

@@ -10,7 +10,7 @@ import '../stream_channel.dart';
 
 /// A [StreamChannel] that enforces the stream channel guarantees.
 ///
-/// This is exposed via [new StreamChannel.withGuarantees].
+/// This is exposed via [StreamChannel.withGuarantees].
 class GuaranteeChannel<T> extends StreamChannelMixin<T> {
   @override
   Stream<T> get stream => _streamController.stream;
@@ -126,7 +126,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
   }
 
   @override
-  void addError(error, [StackTrace? stackTrace]) {
+  void addError(Object error, [StackTrace? stackTrace]) {
     if (_closed) throw StateError('Cannot add event after closing.');
     if (_inAddStream) {
       throw StateError('Cannot add event while adding stream.');

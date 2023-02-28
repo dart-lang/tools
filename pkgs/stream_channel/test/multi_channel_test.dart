@@ -348,8 +348,8 @@ void main() {
   group('stream channel rules', () {
     group('for the main stream:', () {
       test(
-          'closing the sink causes the stream to close before it emits any more '
-          'events', () {
+          'closing the sink causes the stream to close before it emits any '
+          'more events', () {
         channel1.sink.add(1);
         channel1.sink.add(2);
         channel1.sink.add(3);
@@ -370,7 +370,8 @@ void main() {
         channel2.sink.add(3);
         unawaited(channel2.sink.close());
 
-        // None of our channel.sink additions should make it to the other endpoint.
+        // None of our channel.sink additions should make it to the other
+        // endpoint.
         channel1.stream.listen(expectAsync1((_) {}, count: 0));
         await pumpEventQueue();
       });
@@ -415,8 +416,8 @@ void main() {
       });
 
       test(
-          'closing the sink causes the stream to close before it emits any more '
-          'events', () {
+          'closing the sink causes the stream to close before it emits any '
+          'more events', () {
         virtual1.sink.add(1);
         virtual1.sink.add(2);
         virtual1.sink.add(3);
@@ -437,7 +438,8 @@ void main() {
         virtual2.sink.add(3);
         unawaited(virtual2.sink.close());
 
-        // None of our virtual.sink additions should make it to the other endpoint.
+        // None of our virtual.sink additions should make it to the other
+        // endpoint.
         virtual1.stream.listen(expectAsync1((_) {}, count: 0));
         await pumpEventQueue();
       });
