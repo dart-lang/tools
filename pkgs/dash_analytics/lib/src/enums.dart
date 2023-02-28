@@ -7,11 +7,14 @@
 /// The [label] for each enum value is what will be logged, the [description]
 /// is here for documentation purposes
 enum DashEvent {
+  // Events for flutter_tools
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
     toolOwner: DashTool.flutterTools,
   ),
+
+  // Events for language_server
   lintUsageCounts(
     label: 'lint_usage_counts',
     description: 'Number of times each lint is enabled',
