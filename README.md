@@ -14,7 +14,7 @@ don't naturally belong to other topic monorepos (like
 
 | Package | Description | Version |
 | --- | --- | --- |
-| [dash_analytics](pkgs/dash_analytics/) | A package for logging analytics for all dash related tooling to Google Analytics. | <!-- [![pub package](https://img.shields.io/pub/v/dash_analytics.svg)](https://pub.dev/packages/dash_analytics) --> |
+| [unified_analytics](pkgs/unified_analytics/) | A package for logging analytics for all Dart and Flutter related tooling to Google Analytics. | <!-- [![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics) --> |
 
 ## Publishing automation
 

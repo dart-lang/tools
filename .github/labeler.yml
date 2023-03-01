@@ -1,7 +1,7 @@
 # Configuration for .github/workflows/pull_request_label.yml. 
 
-'infra':
+'type-infra':
   - '.github/**'
 
-'package:dash_analytics':
-  - 'pkgs/dash_analytics/**'
+'package:unified_analytics':
+  - 'pkgs/unified_analytics/**'

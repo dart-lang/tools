@@ -7,15 +7,43 @@
 /// The [label] for each enum value is what will be logged, the [description]
 /// is here for documentation purposes
 enum DashEvent {
-  analyzerServerStarted(
-    label: 'analyzer_server_started',
-    description: 'Dart Analyzer Server Started',
-    toolOwner: DashTool.dartAnalyzer,
-  ),
+  // Events for flutter_tools
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
     toolOwner: DashTool.flutterTools,
+  ),
+
+  // Events for language_server
+  lintUsageCounts(
+    label: 'lint_usage_counts',
+    description: 'Number of times each lint is enabled',
+    toolOwner: DashTool.languageServer,
+  ),
+  clientNotification(
+    label: 'client_notification',
+    description: 'Notifications sent from the client',
+    toolOwner: DashTool.languageServer,
+  ),
+  pluginRequest(
+    label: 'plugin_request',
+    description: 'Request responses from plugins',
+    toolOwner: DashTool.languageServer,
+  ),
+  clientRequest(
+    label: 'client_request',
+    description: 'Requests sent from the client',
+    toolOwner: DashTool.languageServer,
+  ),
+  serverSession(
+    label: 'server_session',
+    description: 'Dart Analyzer Server session data',
+    toolOwner: DashTool.languageServer,
+  ),
+  severityAdjustments(
+    label: 'severity_adjustments',
+    description: 'Number of times diagnostic severity is changed',
+    toolOwner: DashTool.languageServer,
   ),
   ;
 
@@ -31,15 +59,15 @@ enum DashEvent {
 
 /// Officially-supported clients of this package.
 ///
-/// All [label] values should use an underscore as a delimiter
+/// All [label] values should use an underscore as a delimiter.
 enum DashTool {
   flutterTools(
     label: 'flutter_tools',
     description: 'Runs flutter applications from CLI',
   ),
-  dartAnalyzer(
-    label: 'dart_analyzer',
-    description: 'Analyzes dart code in workspace',
+  languageServer(
+    label: 'language_server',
+    description: 'The Dart language server for IDE and CLI support.',
   );
 
   final String label;

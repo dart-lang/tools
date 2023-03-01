@@ -55,6 +55,14 @@ reporting=1
 /// will be located
 const String kDartToolDirectoryName = '.dart';
 
+/// The API secret associated with the GA4 instance's Measurement Protocol
+const kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';
+
+/// The measurement ID related to the GA4 instance
+///
+/// Serves as an identifier for a web data stream
+const kGoogleAnalyticsMeasurementId = 'G-04BXPVBCWJ';
+
 /// How many data records to store in the log file
 const int kLogFileLength = 2500;
 

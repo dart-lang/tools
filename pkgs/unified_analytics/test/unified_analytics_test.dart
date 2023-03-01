@@ -7,12 +7,12 @@ import 'dart:io' as io;
 import 'dart:math';
 
 import 'package:clock/clock.dart';
-import 'package:dash_analytics/dash_analytics.dart';
-import 'package:dash_analytics/src/config_handler.dart';
-import 'package:dash_analytics/src/constants.dart';
-import 'package:dash_analytics/src/session.dart';
-import 'package:dash_analytics/src/user_property.dart';
-import 'package:dash_analytics/src/utils.dart';
+import 'package:unified_analytics/unified_analytics.dart';
+import 'package:unified_analytics/src/config_handler.dart';
+import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/session.dart';
+import 'package:unified_analytics/src/user_property.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
@@ -30,7 +30,7 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  const String initialToolName = 'initialTool';
+  const String initialToolName = 'initial_tool';
   const String secondTool = 'newTool';
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
@@ -104,6 +104,10 @@ void main() {
             'There should only be 4 files in the $kDartToolDirectoryName directory');
     expect(analytics.shouldShowMessage, true,
         reason: 'For the first run, analytics should default to being enabled');
+    expect(configFile.readAsLinesSync().length,
+        kConfigString.split('\n').length + 1,
+        reason: 'The number of lines should equal lines in constant value + 1 '
+            'for the initialized tool');
   });
 
   test('New tool is successfully added to config file', () {
@@ -423,7 +427,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
       'host',
       'flutter_version',
       'dart_version',
-      'dash_analytics_version',
+      'analytics_pkg_version',
       'tool',
       'local_time',
     ];
@@ -874,21 +878,21 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
 
     test('max 36 characters for user prop values (only `tool` key)', () {
       // Checks item 3
-      // All dash tools must be under 36 characters (and enforce each tool
+      // All tools must be under 36 characters (and enforce each tool
       // begins with a letter)
       final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_]{0,35}$');
-      bool dashToolLengthValid = true;
+      bool toolLengthValid = true;
       final List<DashTool> invalidTools = <DashTool>[];
       for (DashTool tool in DashTool.values) {
         if (!toolLabelPattern.hasMatch(tool.label)) {
-          dashToolLengthValid = false;
+          toolLengthValid = false;
           invalidTools.add(tool);
         }
       }
 
-      expect(dashToolLengthValid, true,
+      expect(toolLengthValid, true,
           reason:
-              'All dash tool labels must be under 36 characters and begin with a letter\n'
+              'All tool labels must be under 36 characters and begin with a letter\n'
               'The following are invalid\n$invalidTools');
     });
 
