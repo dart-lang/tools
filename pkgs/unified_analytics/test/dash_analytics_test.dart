@@ -427,7 +427,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
       'host',
       'flutter_version',
       'dart_version',
-      'unified_analytics_version',
+      'analytics_pkg_version',
       'tool',
       'local_time',
     ];
