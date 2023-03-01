@@ -243,8 +243,6 @@ class AnalyticsImpl implements Analytics {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-    if (!telemetryEnabled) return null;
-
     // Construct the body of the request
     final Map<String, Object?> body = generateRequestBody(
       clientId: _clientId,
@@ -254,6 +252,8 @@ class AnalyticsImpl implements Analytics {
     );
 
     _logHandler.save(data: body);
+
+    if (!telemetryEnabled) return null;
 
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
