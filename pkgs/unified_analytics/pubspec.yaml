@@ -1,7 +1,7 @@
 name: unified_analytics
 description: >-
-  A package for logging analytics for all dash related tooling to Google
-  Analytics.
+  A package for logging analytics for all Dart and Flutter related tooling
+  to Google Analytics.
 # When updating this, keep the version consistent with the changelog and the
 # value in lib/src/constants.dart.
 version: 0.1.0-dev
