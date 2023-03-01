@@ -1,17 +1,17 @@
-name: package:dash_analytics
+name: package:unified_analytics
 permissions: read-all
 
 on:
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/dash_analytics.yml'
-      - 'pkgs/dash_analytics/**'
+      - '.github/workflows/unified_analytics.yml'
+      - 'pkgs/unified_analytics/**'
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/dash_analytics.yml'
-      - 'pkgs/dash_analytics/**'
+      - '.github/workflows/unified_analytics.yml'
+      - 'pkgs/unified_analytics/**'
   schedule:
     - cron: '0 0 * * 0' # weekly
 
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: pkgs/dash_analytics
+        working-directory: pkgs/unified_analytics
     strategy:
       matrix:
         sdk: [stable, dev] # {pkgs.versions}

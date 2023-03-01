@@ -20,8 +20,8 @@ enum DashEvent {
     description: 'Number of times each lint is enabled',
     toolOwner: DashTool.languageServer,
   ),
-  notification(
-    label: 'notification',
+  clientNotification(
+    label: 'client_notification',
     description: 'Notifications sent from the client',
     toolOwner: DashTool.languageServer,
   ),
@@ -30,13 +30,13 @@ enum DashEvent {
     description: 'Request responses from plugins',
     toolOwner: DashTool.languageServer,
   ),
-  request(
-    label: 'request',
+  clientRequest(
+    label: 'client_request',
     description: 'Requests sent from the client',
     toolOwner: DashTool.languageServer,
   ),
-  session(
-    label: 'session',
+  serverSession(
+    label: 'server_session',
     description: 'Dart Analyzer Server session data',
     toolOwner: DashTool.languageServer,
   ),
