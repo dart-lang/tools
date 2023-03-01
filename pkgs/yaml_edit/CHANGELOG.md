@@ -1,3 +1,8 @@
+## v2.0.4
+- Fix YamlEditor `appendToList` and `insertIntoList` functions inserts new item into next yaml item
+  rather than at end of list.
+  ([#23](https://github.com/dart-lang/yaml_edit/issues/23))
+
 ## v2.0.3
 - Updated the value of the pubspec `repository` field.
 
