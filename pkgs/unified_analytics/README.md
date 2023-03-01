@@ -2,12 +2,12 @@
 
 ## What's this?
 
-This package is intended to be used on Dash (Flutter, Dart, etc.) related
+This package is intended to be used on Dart and Flutter related
 tooling only. It provides APIs to send events to Google Analytics using the
 Measurement Protocol.
 
 This is not intended to be general purpose or consumed by the community. It is
-responsible for toggling analytics collection for Dash related tooling on each
+responsible for toggling analytics collection for related tooling on each
 developer's machine.
 
 ## Using this package

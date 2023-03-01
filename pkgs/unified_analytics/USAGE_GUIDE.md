@@ -1,4 +1,4 @@
-This package is intended to be used on Dash (Flutter, Dart, etc.) related tooling only.
+This package is intended to be used on Dart and Flutter related tooling only.
 It provides APIs to send events to Google Analytics using the Measurement Protocol.
 
 ## Usage
@@ -67,9 +67,9 @@ void main() {
 
 ## Opting In and Out of Analytics Collection
 
-It will be important for each Dash tool to expose a trivial method to
+It will be important for each tool to expose a trivial method to
 disabling or enabling analytics collection. Based on how the user interacts
-with the tool, this can be done through the CLI, IDE, etc. The Dash tool will
+with the tool, this can be done through the CLI, IDE, etc. The tool will
 then pass a boolean to an API exposed by the package as shown below
 
 ```dart
@@ -86,9 +86,9 @@ analytics.setTelemetry(status);
 
 ## Informing Users About Analytics Opt-In Status
 
-When a user first uses any Dash tool with this package enabled, they
+When a user first uses any tool with this package enabled, they
 will be enrolled into Analytics collection. It will be the responsiblity
-of the Dash tool using this package to display the proper Analytics messaging
+of the tool using this package to display the proper Analytics messaging
 and inform them on how to Opt-Out of Analytics collection if they wish. The
 package will expose APIs that will make it easy to configure Opt-In status.
 
@@ -96,10 +96,10 @@ package will expose APIs that will make it easy to configure Opt-In status.
 // Begin by initializing the class
 final Analytics analytics = Analytics(...);
 
-// This should be performed every time the Dash tool starts up
+// This should be performed every time the tool starts up
 if (analytics.shouldShowMessage) {
 
-  // How each Dash tool displays the message will be unique,
+  // How each tool displays the message will be unique,
   // print statement used for trivial usage example
   print(analytics.toolsMessage);
 }
@@ -107,7 +107,7 @@ if (analytics.shouldShowMessage) {
 
 ## Checking User Opt-In Status
 
-Some Dash tools may need to know if the user has opted in for Analytics
+Some tools may need to know if the user has opted in for Analytics
 collection in order to enable additional functionality. The example below
 shows how to check the status
 
@@ -122,11 +122,11 @@ print('This user's status: ${analytics.telemetryEnabled}');  // true if opted-in
 
 ## Advanced Usage: Querying Locally Persisted Logs
 
-This package enables dash tools to persist the events that have been
-sent to Google Analytics for logging by default. This can be very helpful if
-dash tools would like to understand the user's activity level across all
-dash related tooling. For example, if querying the locally persisted logs
-shows that the user has not been active for N number of days, a dash tool that
+This package enables  tools to persist the events that have been sent
+to Google Analytics for logging by default. This can be very helpful if
+tools would like to understand the user's activity level across all
+related tooling. For example, if querying the locally persisted logs
+shows that the user has not been active for N number of days, a tool that
 works within an IDE can prompt the user with a survey to understand why their
 level of activity has dropped.
 
@@ -157,4 +157,4 @@ Explanation of the each key above
 - endDateTime: the latest, most recent event that was sent
 - sessionCount: count of sessions; sessions have a minimum time of 30 minutes
 - flutterChannelCount: count of flutter channels (can be 0 if developer is a Dart dev only)
-- toolCount: count of the dash tools sending analytics
+- toolCount: count of the Dart and Flutter tools sending analytics
