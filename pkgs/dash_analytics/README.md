@@ -1,4 +1,4 @@
-[![package:dash_analytics](https://github.com/dart-lang/tools/actions/workflows/dash_analytics.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/dash_analytics.yml)
+[![package:unified_analytics](https://github.com/dart-lang/tools/actions/workflows/unified_analytics.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/unified_analytics.yml)
 
 ## What's this?
 

@@ -7,7 +7,7 @@ To get started using this package, import at the entrypoint dart file and
 initialize with the required parameters
 
 ```dart
-import 'dash_analytics';
+import 'unified_analytics';
 
 // Constants that should be resolved by the client using package
 final DashTool tool = DashTool.flutterTools; // Restricted to enum provided by package

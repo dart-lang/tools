@@ -56,7 +56,7 @@ class UserProperty {
         'host': host,
         'flutter_version': flutterVersion,
         'dart_version': dartVersion,
-        'dash_analytics_version': kPackageVersion,
+        'unified_analytics_version': kPackageVersion,
         'tool': tool,
         'local_time': '${clock.now()}',
       };

@@ -7,12 +7,12 @@ import 'dart:io' as io;
 import 'dart:math';
 
 import 'package:clock/clock.dart';
-import 'package:dash_analytics/dash_analytics.dart';
-import 'package:dash_analytics/src/config_handler.dart';
-import 'package:dash_analytics/src/constants.dart';
-import 'package:dash_analytics/src/session.dart';
-import 'package:dash_analytics/src/user_property.dart';
-import 'package:dash_analytics/src/utils.dart';
+import 'package:unified_analytics/unified_analytics.dart';
+import 'package:unified_analytics/src/config_handler.dart';
+import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/session.dart';
+import 'package:unified_analytics/src/user_property.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
@@ -427,7 +427,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
       'host',
       'flutter_version',
       'dart_version',
-      'dash_analytics_version',
+      'unified_analytics_version',
       'tool',
       'local_time',
     ];

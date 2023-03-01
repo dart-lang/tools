@@ -1,5 +1,5 @@
 ---
-name: "package:dash_analytics"
-about: "Create a bug or file a feature request against package:dash_analytics."
-labels: "package:dash_analytics"
+name: "package:unified_analytics"
+about: "Create a bug or file a feature request against package:unified_analytics."
+labels: "package:unified_analytics"
 ---

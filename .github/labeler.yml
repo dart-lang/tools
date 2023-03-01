@@ -3,5 +3,5 @@
 'type-infra':
   - '.github/**'
 
-'package:dash_analytics':
-  - 'pkgs/dash_analytics/**'
+'package:unified_analytics':
+  - 'pkgs/unified_analytics/**'
