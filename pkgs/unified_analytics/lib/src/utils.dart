@@ -18,7 +18,7 @@ import 'user_property.dart';
 /// ```
 /// {
 ///   "client_id": "46cc0ba6-f604-4fd9-aa2f-8a20beb24cd4",
-///   "events": [{ "name": "testing_from_dash", "params": { "time_ns": 345 } }],
+///   "events": [{ "name": "testing", "params": { "time_ns": 345 } }],
 ///   "user_properties": {
 ///     "session_id": { "value": 1673466750423 },
 ///     "flutter_channel": { "value": "ey-test-channel" },

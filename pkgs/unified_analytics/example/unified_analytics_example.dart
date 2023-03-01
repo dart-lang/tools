@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:dash_analytics/dash_analytics.dart';
+import 'package:unified_analytics/unified_analytics.dart';
 
 final String measurementId = 'G-N1NXG28J5B';
 final String apiSecret = '4yT8__oER3Cd84dtx6r-_A';
