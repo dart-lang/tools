@@ -1,6 +1,7 @@
 [![Dart CI](https://github.com/dart-lang/yaml_edit/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/yaml_edit/actions/workflows/test-package.yml)
 [![pub package](https://img.shields.io/pub/v/yaml_edit.svg)](https://pub.dev/packages/yaml_edit)
 [![package publisher](https://img.shields.io/pub/publisher/yaml_edit.svg)](https://pub.dev/packages/yaml_edit/publisher)
+[![Coverage Status](https://coveralls.io/repos/github/dart-lang/yaml_edit/badge.svg)](https://coveralls.io/github/dart-lang/yaml_edit)
 
 A library for [YAML](https://yaml.org) manipulation while preserving comments.
 

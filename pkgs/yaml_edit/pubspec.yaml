@@ -17,3 +17,4 @@ dev_dependencies:
   lints: ^1.0.1
   path: ^1.8.0
   test: ^1.17.12
+  coverage: # we only need format_coverage, don't care what version
