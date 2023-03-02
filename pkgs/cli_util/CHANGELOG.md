@@ -1,5 +1,6 @@
-## 0.3.6-dev
+## 0.4.0
 
+- Remove the deprecated method `getSdkDir()` (instead, use `getSdkPath()`).
 - Require Dart 2.19
 
 ## 0.3.5
