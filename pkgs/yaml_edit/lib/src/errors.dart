@@ -94,7 +94,6 @@ Error createAssertionError(String message, String oldYaml, String newYaml) {
 > ${newYaml.replaceAll('\n', '\n> ')}
 
 Please file an issue at:
-'''
-      'https://github.com/google/dart-neats/issues/new?labels=pkg%3Ayaml_edit'
-      '%2C+pending-triage&template=yaml_edit.md\n');
+https://github.com/dart-lang/yaml_edit/issues/new?labels=bug
+''');
 }

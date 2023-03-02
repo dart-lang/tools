@@ -106,8 +106,8 @@ void main() {
       ], collectionStyle: CollectionStyle.BLOCK);
 
       expect((list as YamlList).style, equals(CollectionStyle.BLOCK));
-      expect(list[0].style, equals(CollectionStyle.ANY));
-      expect(list[1].style, equals(CollectionStyle.ANY));
+      expect(list[0].style, equals(CollectionStyle.BLOCK));
+      expect(list[1].style, equals(CollectionStyle.BLOCK));
     });
 
     test('wraps nested lists while preserving style', () {
@@ -192,6 +192,45 @@ void main() {
       expect(map['list'].style, equals(CollectionStyle.FLOW));
       expect(map['map'].style, equals(CollectionStyle.ANY));
     });
+  });
+
+  test('applies collectionStyle recursively', () {
+    final list = wrapAsYamlNode([
+      [1, 2, 3],
+      {
+        'foo': 'bar',
+        'nested': [4, 5, 6]
+      },
+    ], collectionStyle: CollectionStyle.BLOCK);
+
+    expect((list as YamlList).style, equals(CollectionStyle.BLOCK));
+    expect(list[0].style, equals(CollectionStyle.BLOCK));
+    expect(list[1].style, equals(CollectionStyle.BLOCK));
+    expect(list[1]['nested'].style, equals(CollectionStyle.BLOCK));
+  });
+
+  test('applies scalarStyle recursively', () {
+    final list = wrapAsYamlNode([
+      ['a', 'b', 'c'],
+      {
+        'foo': 'bar',
+      },
+      'hello',
+    ], scalarStyle: ScalarStyle.SINGLE_QUOTED);
+
+    expect((list as YamlList).style, equals(CollectionStyle.ANY));
+    final item1 = list.nodes[0] as YamlList;
+    final item2 = list.nodes[1] as YamlMap;
+    final item3 = list.nodes[2] as YamlScalar;
+    expect(item1.style, equals(CollectionStyle.ANY));
+    expect(item2.style, equals(CollectionStyle.ANY));
+    expect(item3.style, equals(ScalarStyle.SINGLE_QUOTED));
+
+    final item1entry1 = item1.nodes[0] as YamlScalar;
+    expect(item1entry1.style, equals(ScalarStyle.SINGLE_QUOTED));
+
+    final item2foo = item2.nodes['foo'] as YamlScalar;
+    expect(item2foo.style, equals(ScalarStyle.SINGLE_QUOTED));
   });
 
   group('deepHashCode', () {

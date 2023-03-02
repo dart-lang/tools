@@ -70,8 +70,20 @@ String _yamlEncodeDoubleQuoted(String string) {
 /// single-quotes.
 ///
 /// It is important that we ensure that [string] is free of unprintable
-/// characters by calling [assertValidScalar] before invoking this function.
+/// characters by calling [_hasUnprintableCharacters] before invoking this
+/// function.
 String _tryYamlEncodeSingleQuoted(String string) {
+  // If [string] contains a newline we'll use double quoted strings instead.
+  // Single quoted strings can represent newlines, but then we have to use an
+  // empty line (replace \n with \n\n). But since leading spaces following
+  // line breaks are ignored, we can't represent "\n ".
+  // Thus, if the string contains `\n` and we're asked to do single quoted,
+  // we'll fallback to a double quoted string.
+  // TODO: Consider if we should make '\n' an unprintedable, this might make
+  //       folded strings into double quoted -- some work is needed here.
+  if (string.contains('\n')) {
+    return _yamlEncodeDoubleQuoted(string);
+  }
   final result = string.replaceAll('\'', '\'\'');
   return '\'$result\'';
 }
@@ -79,7 +91,8 @@ String _tryYamlEncodeSingleQuoted(String string) {
 /// Generates a YAML-safe folded string.
 ///
 /// It is important that we ensure that [string] is free of unprintable
-/// characters by calling [assertValidScalar] before invoking this function.
+/// characters by calling [_hasUnprintableCharacters] before invoking this
+/// function.
 String _tryYamlEncodeFolded(String string, int indentation, String lineEnding) {
   String result;
 
@@ -103,7 +116,8 @@ String _tryYamlEncodeFolded(String string, int indentation, String lineEnding) {
 /// Generates a YAML-safe literal string.
 ///
 /// It is important that we ensure that [string] is free of unprintable
-/// characters by calling [assertValidScalar] before invoking this function.
+/// characters by calling [_hasUnprintableCharacters] before invoking this
+/// function.
 String _tryYamlEncodeLiteral(
     String string, int indentation, String lineEnding) {
   final result = '|-\n$string';
@@ -150,7 +164,10 @@ String _yamlEncodeFlowScalar(YamlNode value) {
 /// 'null'), in which case we will produce [value] with default styling
 /// options.
 String yamlEncodeBlockScalar(
-    YamlNode value, int indentation, String lineEnding) {
+  YamlNode value,
+  int indentation,
+  String lineEnding,
+) {
   if (value is YamlScalar) {
     assertValidScalar(value.value);
 
@@ -215,7 +232,10 @@ String yamlEncodeFlowString(YamlNode value) {
 ///
 /// If [value] is a [YamlNode], we respect its [style] parameter.
 String yamlEncodeBlockString(
-    YamlNode value, int indentation, String lineEnding) {
+  YamlNode value,
+  int indentation,
+  String lineEnding,
+) {
   const additionalIndentation = 2;
 
   if (!isBlockNode(value)) return yamlEncodeFlowString(value);
@@ -279,8 +299,7 @@ final Map<int, String> unprintableCharCodes = {
   8233: '\\P', //  Escaped Unicode paragraph separator (#x2029) character.
 };
 
-/// List of escape characters. In particular, \x32 is not included because it
-/// can be processed normally.
+/// List of escape characters.
 ///
 /// See 5.7 Escape Characters https://yaml.org/spec/1.2/spec.html#id2776092
 final Map<int, String> doubleQuoteEscapeChars = {

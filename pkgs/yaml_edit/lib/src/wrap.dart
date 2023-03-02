@@ -29,11 +29,17 @@ YamlMap updatedYamlMap(YamlMap map, Function(Map) update) {
 /// defined, and [value] is a collection or scalar, the wrapped [YamlNode] will
 /// have the respective style, otherwise it defaults to the ANY style.
 ///
+/// If [value] is a [Map] or [List], then [wrapAsYamlNode] will be called
+/// recursively on all children, and [collectionStyle]/[scalarStyle] will be
+/// applied to any children that are not instances of [YamlNode].
+///
 /// If a [YamlNode] is passed in, no further wrapping will be done, and the
 /// [collectionStyle]/[scalarStyle] will not be applied.
-YamlNode wrapAsYamlNode(Object? value,
-    {CollectionStyle collectionStyle = CollectionStyle.ANY,
-    ScalarStyle scalarStyle = ScalarStyle.ANY}) {
+YamlNode wrapAsYamlNode(
+  Object? value, {
+  CollectionStyle collectionStyle = CollectionStyle.ANY,
+  ScalarStyle scalarStyle = ScalarStyle.ANY,
+}) {
   if (value is YamlScalar) {
     assertValidScalar(value.value);
     return value;
@@ -53,9 +59,17 @@ YamlNode wrapAsYamlNode(Object? value,
 
     return value;
   } else if (value is Map) {
-    return YamlMapWrap(value, collectionStyle: collectionStyle);
+    return YamlMapWrap(
+      value,
+      collectionStyle: collectionStyle,
+      scalarStyle: scalarStyle,
+    );
   } else if (value is List) {
-    return YamlListWrap(value, collectionStyle: collectionStyle);
+    return YamlListWrap(
+      value,
+      collectionStyle: collectionStyle,
+      scalarStyle: scalarStyle,
+    );
   } else {
     assertValidScalar(value);
 
@@ -98,24 +112,40 @@ class YamlMapWrap
   @override
   final SourceSpan span;
 
-  factory YamlMapWrap(Map dartMap,
-      {CollectionStyle collectionStyle = CollectionStyle.ANY,
-      Object? sourceUrl}) {
+  factory YamlMapWrap(
+    Map dartMap, {
+    CollectionStyle collectionStyle = CollectionStyle.ANY,
+    ScalarStyle scalarStyle = ScalarStyle.ANY,
+    Object? sourceUrl,
+  }) {
     final wrappedMap = deepEqualsMap<dynamic, YamlNode>();
 
     for (final entry in dartMap.entries) {
-      final wrappedKey = wrapAsYamlNode(entry.key);
-      final wrappedValue = wrapAsYamlNode(entry.value);
+      final wrappedKey = wrapAsYamlNode(
+        entry.key,
+        collectionStyle: collectionStyle,
+        scalarStyle: scalarStyle,
+      );
+      final wrappedValue = wrapAsYamlNode(
+        entry.value,
+        collectionStyle: collectionStyle,
+        scalarStyle: scalarStyle,
+      );
       wrappedMap[wrappedKey] = wrappedValue;
     }
 
-    return YamlMapWrap._(wrappedMap,
-        style: collectionStyle, sourceUrl: sourceUrl);
+    return YamlMapWrap._(
+      wrappedMap,
+      style: collectionStyle,
+      sourceUrl: sourceUrl,
+    );
   }
 
-  YamlMapWrap._(this.nodes,
-      {CollectionStyle style = CollectionStyle.ANY, Object? sourceUrl})
-      : span = shellSpan(sourceUrl),
+  YamlMapWrap._(
+    this.nodes, {
+    CollectionStyle style = CollectionStyle.ANY,
+    Object? sourceUrl,
+  })  : span = shellSpan(sourceUrl),
         style = nodes.isEmpty ? CollectionStyle.FLOW : style;
 
   @override
@@ -149,12 +179,23 @@ class YamlListWrap with collection.ListMixin implements YamlList {
     throw UnsupportedError('Cannot modify an unmodifiable List');
   }
 
-  factory YamlListWrap(List dartList,
-      {CollectionStyle collectionStyle = CollectionStyle.ANY,
-      Object? sourceUrl}) {
-    final wrappedList = dartList.map(wrapAsYamlNode).toList();
-    return YamlListWrap._(wrappedList,
-        style: collectionStyle, sourceUrl: sourceUrl);
+  factory YamlListWrap(
+    List dartList, {
+    CollectionStyle collectionStyle = CollectionStyle.ANY,
+    ScalarStyle scalarStyle = ScalarStyle.ANY,
+    Object? sourceUrl,
+  }) {
+    return YamlListWrap._(
+      dartList
+          .map((v) => wrapAsYamlNode(
+                v,
+                collectionStyle: collectionStyle,
+                scalarStyle: scalarStyle,
+              ))
+          .toList(),
+      style: collectionStyle,
+      sourceUrl: sourceUrl,
+    );
   }
 
   YamlListWrap._(this.nodes,

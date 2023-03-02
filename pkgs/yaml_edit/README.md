@@ -20,6 +20,32 @@ void main() {
 }
 ```
 
+### Example: Converting JSON to YAML (block formatted)
+
+```dart
+void main() {
+  final jsonString = r'''
+{
+  "key": "value",
+  "list": [
+    "first",
+    "second",
+    "last entry in the list"
+  ],
+  "map": {
+    "multiline": "this is a fairly long string with\nline breaks..."
+  }
+}
+''';
+  final jsonValue = json.decode(jsonString);
+
+  // Convert jsonValue to YAML
+  final yamlEditor = YamlEditor('');
+  yamlEditor.update([], jsonValue);
+  print(yamlEditor.toString());
+}
+```
+
 ## Testing
 
 Testing is done in two strategies: Unit testing (`/test/editor_test.dart`) and
