@@ -130,6 +130,9 @@ abstract class Analytics {
 
   /// Pass a boolean to either enable or disable telemetry and make
   /// the necessary changes in the persisted configuration file
+  ///
+  /// Setting the telemetry status will also send an event to GA
+  /// indicating the latest status of the telemetry from [reportingBool]
   Future<void> setTelemetry(bool reportingBool);
 }
 
@@ -260,8 +263,24 @@ class AnalyticsImpl implements Analytics {
   }
 
   @override
-  Future<void> setTelemetry(bool reportingBool) =>
-      _configHandler.setTelemetry(reportingBool);
+  Future<void> setTelemetry(bool reportingBool) {
+    _configHandler.setTelemetry(reportingBool);
+
+    // Construct the body of the request to signal
+    // telemetry status toggling
+    //
+    // We use don't use the sendEvent method because it may
+    // be blocked by the [telemetryEnabled] getter
+    final Map<String, Object?> body = generateRequestBody(
+      clientId: _clientId,
+      eventName: DashEvent.analyticsCollectionEnabled,
+      eventData: {'status': reportingBool},
+      userProperty: userProperty,
+    );
+
+    // Pass to the google analytics client to send
+    return _gaClient.sendData(body);
+  }
 }
 
 /// This class extends [AnalyticsImpl] and subs out any methods that
