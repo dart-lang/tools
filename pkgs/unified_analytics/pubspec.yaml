@@ -8,7 +8,7 @@ version: 0.1.0-dev
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/unified_analytics
 
 environment:
-  sdk: '>=2.19.0 <3.0.0'
+  sdk: '>=2.19.0 <4.0.0'
 
 dependencies:
   clock: ^1.1.1
