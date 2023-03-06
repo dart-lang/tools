@@ -7,6 +7,14 @@
 /// The [label] for each enum value is what will be logged, the [description]
 /// is here for documentation purposes
 enum DashEvent {
+  // Events that can be sent by all tools; these
+  // events should not be tool specific; toolOwner
+  // not necessary for these events
+  analyticsCollectionEnabled(
+    label: 'analytics_collection_enabled',
+    description: 'The opt-in status for analytics collection',
+  ),
+
   // Events for flutter_tools
   hotReloadTime(
     label: 'hot_reload_time',
@@ -49,11 +57,11 @@ enum DashEvent {
 
   final String label;
   final String description;
-  final DashTool toolOwner;
+  final DashTool? toolOwner;
   const DashEvent({
     required this.label,
     required this.description,
-    required this.toolOwner,
+    this.toolOwner,
   });
 }
 
