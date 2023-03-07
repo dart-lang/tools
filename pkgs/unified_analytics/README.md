@@ -1,4 +1,6 @@
 [![package:unified_analytics](https://github.com/dart-lang/tools/actions/workflows/unified_analytics.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/unified_analytics.yml)
+[![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics)
+[![package publisher](https://img.shields.io/pub/publisher/unified_analytics.svg)](https://pub.dev/packages/unified_analytics/publisher)
 
 ## What's this?
 
