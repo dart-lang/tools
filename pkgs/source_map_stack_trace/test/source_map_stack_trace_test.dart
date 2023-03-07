@@ -3,10 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:path/path.dart' as p;
+import 'package:source_map_stack_trace/source_map_stack_trace.dart';
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
-import 'package:source_map_stack_trace/source_map_stack_trace.dart';
 import 'package:test/test.dart';
 
 /// A simple [Mapping] for tests that don't need anything special.

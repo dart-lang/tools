@@ -50,14 +50,14 @@ StackTrace mapStackTrace(Mapping sourceMap, StackTrace stackTrace,
 
     var sourceUrl = span.sourceUrl.toString();
     if (sdkLib != null && p.url.isWithin(sdkLib, sourceUrl)) {
-      sourceUrl = 'dart:' + p.url.relative(sourceUrl, from: sdkLib);
+      sourceUrl = 'dart:${p.url.relative(sourceUrl, from: sdkLib)}';
     } else if (packageMap != null) {
       for (var package in packageMap.keys) {
         var packageUrl = packageMap[package].toString();
         if (!p.url.isWithin(packageUrl, sourceUrl)) continue;
 
         sourceUrl =
-            'package:$package/' + p.url.relative(sourceUrl, from: packageUrl);
+            'package:$package/${p.url.relative(sourceUrl, from: packageUrl)}';
         break;
       }
     }
@@ -100,5 +100,5 @@ String _prettifyMember(String member) {
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
-      .replaceAllMapped(RegExp(r'([a-zA-Z0-9]+)_'), (match) => match[1]! + '.');
+      .replaceAllMapped(RegExp(r'([a-zA-Z0-9]+)_'), (match) => '${match[1]!}.');
 }
