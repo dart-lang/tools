@@ -16,8 +16,14 @@ class LogFileStats {
   /// The oldest timestamp in the log file
   final DateTime startDateTime;
 
+  /// Number of minutes from [startDateTime] to [DateTime.now()]
+  final int minsFromStartDateTime;
+
   /// The latest timestamp in the log file
   final DateTime endDateTime;
+
+  /// Number of minutes from [endDateTime] to [DateTime.now()]
+  final int minsFromEndDateTime;
 
   /// The number of unique session ids found in the log file
   final int sessionCount;
@@ -28,22 +34,31 @@ class LogFileStats {
   /// The number of unique tools found in the log file
   final int toolCount;
 
+  /// Total number of records in the log file
+  final int recordCount;
+
   /// Contains the data from the [LogHandler.logFileStats] method
   const LogFileStats({
     required this.startDateTime,
+    required this.minsFromStartDateTime,
     required this.endDateTime,
+    required this.minsFromEndDateTime,
     required this.sessionCount,
     required this.flutterChannelCount,
     required this.toolCount,
+    required this.recordCount,
   });
 
   @override
   String toString() => jsonEncode(<String, Object?>{
         'startDateTime': startDateTime.toString(),
+        'minsFromStartDateTime': minsFromStartDateTime,
         'endDateTime': endDateTime.toString(),
+        'minsFromEndDateTime': minsFromEndDateTime,
         'sessionCount': sessionCount,
         'flutterChannelCount': flutterChannelCount,
         'toolCount': toolCount,
+        'recordCount': recordCount,
       });
 }
 
@@ -105,10 +120,13 @@ class LogHandler {
 
     return LogFileStats(
       startDateTime: startDateTime,
+      minsFromStartDateTime: DateTime.now().difference(startDateTime).inMinutes,
       endDateTime: endDateTime,
+      minsFromEndDateTime: DateTime.now().difference(endDateTime).inMinutes,
       sessionCount: counter['sessions']!.length,
       flutterChannelCount: counter['flutter_channel']!.length,
       toolCount: counter['tool']!.length,
+      recordCount: records.length,
     );
   }
 
