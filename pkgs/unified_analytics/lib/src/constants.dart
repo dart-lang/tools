@@ -69,8 +69,8 @@ const int kLogFileLength = 2500;
 /// Filename for the log file to persist sent events on user's machine
 const String kLogFileName = 'dash-analytics.log';
 
-/// The current version of the package, should be in line with pubspec version
-const String kPackageVersion = '0.1.0-dev';
+/// The current version of the package, should be in line with pubspec version.
+const String kPackageVersion = '0.1.0';
 
 /// The minimum length for a session
 const int kSessionDurationMinutes = 30;
