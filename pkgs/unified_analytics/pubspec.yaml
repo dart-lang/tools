@@ -14,7 +14,7 @@ dependencies:
   clock: ^1.1.1
   file: ^6.1.4
   http: ^0.13.5
-  intl: ^0.17.0
+  intl: ^0.18.0
   path: ^1.8.0
 
 dev_dependencies:
