@@ -64,7 +64,7 @@ jobs:
       - name: Convert coverage to lcov
         run: dart run coverage:format_coverage -i ./coverage -o ./coverage/lcov.info --lcov --report-on lib/
         if: always() && steps.install.outcome == 'success' && matrix.sdk != '2.12.0'
-      - uses: coverallsapp/github-action@v1
+      - uses: coverallsapp/github-action@30402dfd78555606e51eff084546182de0647a4a
         if: always() && steps.install.outcome == 'success' && matrix.sdk != '2.12.0'
         with:
           flag-name: os:${{ matrix.os }}/dart:${{ matrix.sdk }}/platform:${{ matrix.platform }}
@@ -75,6 +75,6 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-    - uses: coverallsapp/github-action@v1
+    - uses: coverallsapp/github-action@30402dfd78555606e51eff084546182de0647a4a
       with:
         parallel-finished: true
