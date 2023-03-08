@@ -139,13 +139,14 @@ String _yamlEncodeFlowScalar(YamlNode value) {
     assertValidScalar(value.value);
 
     if (value.value is String) {
-      if (_hasUnprintableCharacters(value.value) ||
+      final val = value.value as String;
+      if (_hasUnprintableCharacters(val) ||
           value.style == ScalarStyle.DOUBLE_QUOTED) {
-        return _yamlEncodeDoubleQuoted(value.value);
+        return _yamlEncodeDoubleQuoted(val);
       }
 
       if (value.style == ScalarStyle.SINGLE_QUOTED) {
-        return _tryYamlEncodeSingleQuoted(value.value);
+        return _tryYamlEncodeSingleQuoted(val);
       }
     }
 
@@ -172,23 +173,23 @@ String yamlEncodeBlockScalar(
     assertValidScalar(value.value);
 
     if (value.value is String) {
-      if (_hasUnprintableCharacters(value.value)) {
-        return _yamlEncodeDoubleQuoted(value.value);
+      final val = value.value as String;
+      if (_hasUnprintableCharacters(val)) {
+        return _yamlEncodeDoubleQuoted(val);
       }
 
       if (value.style == ScalarStyle.SINGLE_QUOTED) {
-        return _tryYamlEncodeSingleQuoted(value.value);
+        return _tryYamlEncodeSingleQuoted(val);
       }
 
       // Strings with only white spaces will cause a misparsing
-      if (value.value.trim().length == value.value.length &&
-          value.value.length != 0) {
+      if (val.trim().length == val.length && val.isNotEmpty) {
         if (value.style == ScalarStyle.FOLDED) {
-          return _tryYamlEncodeFolded(value.value, indentation, lineEnding);
+          return _tryYamlEncodeFolded(val, indentation, lineEnding);
         }
 
         if (value.style == ScalarStyle.LITERAL) {
-          return _tryYamlEncodeLiteral(value.value, indentation, lineEnding);
+          return _tryYamlEncodeLiteral(val, indentation, lineEnding);
         }
       }
     }

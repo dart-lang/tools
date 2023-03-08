@@ -1,3 +1,7 @@
+## 2.1.1
+
+- Update to work with an unreleased version of `package:yaml`.
+
 ## 2.1.0
 - **Breaking** `wrapAsYamlNode(value, collectionStyle, scalarStyle)` will apply
   `collectionStyle` and `scalarStyle` recursively when wrapping a children of
