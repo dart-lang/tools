@@ -34,6 +34,10 @@ class LogFileStats {
   /// The number of unique tools found in the log file
   final int toolCount;
 
+  /// The map containing all of the events in the file along with
+  /// how many times they have occured
+  final Map<String, int> eventCount;
+
   /// Total number of records in the log file
   final int recordCount;
 
@@ -47,6 +51,7 @@ class LogFileStats {
     required this.flutterChannelCount,
     required this.toolCount,
     required this.recordCount,
+    required this.eventCount,
   });
 
   @override
@@ -59,6 +64,7 @@ class LogFileStats {
         'flutterChannelCount': flutterChannelCount,
         'toolCount': toolCount,
         'recordCount': recordCount,
+        'eventCount': eventCount,
       });
 }
 
@@ -104,18 +110,28 @@ class LogHandler {
     final DateTime startDateTime = records.first.localTime;
     final DateTime endDateTime = records.last.localTime;
 
-    // Collection of unique sessions
+    // Map with counters for user properties
     final Map<String, Set<Object>> counter = <String, Set<Object>>{
       'sessions': <int>{},
       'flutter_channel': <String>{},
       'tool': <String>{},
     };
+
+    // Map of counters for each event
+    final Map<String, int> eventCount = <String, int>{};
     for (LogItem record in records) {
       counter['sessions']!.add(record.sessionId);
       counter['tool']!.add(record.tool);
       if (record.flutterChannel != null) {
         counter['flutter_channel']!.add(record.flutterChannel!);
       }
+
+      // Count each event, if it doesn't exist in the [eventCount]
+      // it will be added first
+      if (!eventCount.containsKey(record.eventName)) {
+        eventCount[record.eventName] = 0;
+      }
+      eventCount[record.eventName] = eventCount[record.eventName]! + 1;
     }
 
     return LogFileStats(
@@ -126,6 +142,7 @@ class LogHandler {
       sessionCount: counter['sessions']!.length,
       flutterChannelCount: counter['flutter_channel']!.length,
       toolCount: counter['tool']!.length,
+      eventCount: eventCount,
       recordCount: records.length,
     );
   }
@@ -153,6 +170,7 @@ class LogHandler {
 
 /// Data class for each record persisted on the client's machine
 class LogItem {
+  final String eventName;
   final int sessionId;
   final String? flutterChannel;
   final String host;
@@ -162,6 +180,7 @@ class LogItem {
   final DateTime localTime;
 
   LogItem({
+    required this.eventName,
     required this.sessionId,
     this.flutterChannel,
     required this.host,
@@ -218,12 +237,21 @@ class LogItem {
   /// }
   /// ```
   static LogItem? fromRecord(Map<String, Object?> record) {
-    if (!record.containsKey('user_properties')) return null;
+    if (!record.containsKey('user_properties') ||
+        !record.containsKey('events')) {
+      return null;
+    }
 
     // Using a try/except here to parse out the fields if possible,
     // if not, it will quietly return null and won't get processed
     // downstream
     try {
+      // Parse out values from the top level key = 'events' and return
+      // a map for the one event in the value
+      final Map<String, Object?> eventProp =
+          ((record['events']! as List<Object?>).first as Map<String, Object?>);
+      final String eventName = eventProp['name'] as String;
+
       // Parse the data out of the `user_properties` value
       final Map<String, Object?> userProps =
           record['user_properties'] as Map<String, Object?>;
@@ -248,6 +276,10 @@ class LogItem {
       // indicates the record is malformed; note that `flutter_version`
       // and `flutter_channel` are nullable fields in the log file
       final List<Object?> values = <Object?>[
+        // Values associated with the top level key = 'events'
+        eventName,
+
+        // Values associated with the top level key = 'events'
         sessionId,
         host,
         dartVersion,
@@ -262,6 +294,7 @@ class LogItem {
       final DateTime localTime = DateTime.parse(localTimeString!);
 
       return LogItem(
+        eventName: eventName,
         sessionId: sessionId!,
         flutterChannel: flutterChannel,
         host: host!,
