@@ -135,11 +135,13 @@ class LogHandler {
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
     }
 
+    final DateTime now = clock.now();
+
     return LogFileStats(
       startDateTime: startDateTime,
-      minsFromStartDateTime: clock.now().difference(startDateTime).inMinutes,
+      minsFromStartDateTime: now.difference(startDateTime).inMinutes,
       endDateTime: endDateTime,
-      minsFromEndDateTime: clock.now().difference(endDateTime).inMinutes,
+      minsFromEndDateTime: now.difference(endDateTime).inMinutes,
       sessionCount: counter['sessions']!.length,
       flutterChannelCount: counter['flutter_channel']!.length,
       toolCount: counter['tool']!.length,
