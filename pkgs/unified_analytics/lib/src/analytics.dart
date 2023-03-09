@@ -246,10 +246,9 @@ class AnalyticsImpl implements Analytics {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-
     // Checking the [telemetryEnabled] boolean reflects what the
     // config file reflects
-    // 
+    //
     // Checking the [_showMessage] boolean indicates if this the first
     // time the tool is using analytics or if there has been an update
     // the messaging found in constants.dart - in both cases, analytics
