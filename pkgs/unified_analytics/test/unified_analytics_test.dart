@@ -838,7 +838,8 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
             'The query should be null because the `local_time` value is malformed');
   });
 
-  test('Check that the constant kPackageVersion matches pubspec version', () {
+  test('Version is the same in the change log, pubspec, and constants.dart',
+      () {
     // Parse the contents of the pubspec.yaml
     final String pubspecYamlString = io.File('pubspec.yaml').readAsStringSync();
 
@@ -851,6 +852,13 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
             'constants.dart need to match\n'
             'Pubspec: $version && constants.dart: $kPackageVersion\n\n'
             'Make sure both are the same');
+
+    // Parse the contents of the change log file
+    final String changeLogFirstLineString =
+        io.File('CHANGELOG.md').readAsLinesSync().first;
+    expect(changeLogFirstLineString.substring(3), kPackageVersion,
+        reason: 'The CHANGELOG.md file needs the first line to '
+            'be the same version as the pubspec and constants.dart');
   });
 
   test('Null values for flutter parameters is reflected properly in log file',
