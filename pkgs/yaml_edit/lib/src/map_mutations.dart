@@ -139,6 +139,11 @@ SourceEdit _replaceInBlockMap(
     valueAsString = lineEnding + valueAsString;
   }
 
+  if (!valueAsString.startsWith(lineEnding)) {
+    // prepend whitespace to ensure there is space after colon.
+    valueAsString = ' ' + valueAsString;
+  }
+
   /// +1 accounts for the colon
   final start = keyNode.span.end.offset + 1;
   var end = getContentSensitiveEnd(map.nodes[key]!);
@@ -148,7 +153,7 @@ SourceEdit _replaceInBlockMap(
   /// this.
   if (end < start) end = start;
 
-  return SourceEdit(start, end - start, ' ' + valueAsString);
+  return SourceEdit(start, end - start, valueAsString);
 }
 
 /// Performs the string operation on [yaml] to achieve the effect of replacing

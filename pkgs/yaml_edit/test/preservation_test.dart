@@ -38,16 +38,16 @@ void main() {
     test('tilde', expectLoadPreservesYAML('~'));
     test('false', expectLoadPreservesYAML('false'));
 
-    test('block map', expectLoadPreservesYAML('''a: 
+    test('block map', expectLoadPreservesYAML('''a:
     b: 1
     '''));
-    test('block list', expectLoadPreservesYAML('''a: 
+    test('block list', expectLoadPreservesYAML('''a:
     - 1
     '''));
     test('complicated example', () {
       expectLoadPreservesYAML('''verb: RecommendCafes
 map:
-  a: 
+  a:
     b: 1
 recipe:
   - verb: Score

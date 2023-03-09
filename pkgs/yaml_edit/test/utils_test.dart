@@ -213,7 +213,7 @@ c:
             }));
 
         expect(doc.toString(), equals('''
-strings: 
+strings:
   plain: string
   folded: >-
       string
@@ -366,7 +366,7 @@ a:
         });
 
         expect(doc.toString(), equals('''
-a: 
+a:
   f: ""
   g: 1
 '''));
@@ -385,7 +385,7 @@ a:
         });
 
         expect(doc.toString(), equals('''
-a: 
+a:
   f: " a"
   g: 1
 '''));

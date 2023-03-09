@@ -126,7 +126,7 @@ void main() {
       test('nested', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4
   e: 5
 c: 3
@@ -135,7 +135,7 @@ c: 3
 
         expect(doc.toString(), equals('''
 a: 1
-b: 
+b:
   d: 4
   e: 6
 c: 3
@@ -201,14 +201,14 @@ a: 1
 
       test('nested (5)', () {
         final doc = YamlEditor('''
-a: 
+a:
   - a: 1
     b: 2
   - null
 ''');
         doc.update(['a', 0], false);
         expect(doc.toString(), equals('''
-a: 
+a:
   - false
 
   - null
@@ -220,14 +220,14 @@ a:
 
       test('nested (6)', () {
         final doc = YamlEditor('''
-a: 
+a:
   - - 1
     - 2
   - null
 ''');
         doc.update(['a', 0], false);
         expect(doc.toString(), equals('''
-a: 
+a:
   - false
 
   - null
@@ -261,7 +261,7 @@ b: false
         doc.update(['a'], {'retry': '3.0.1'});
 
         expect(doc.toString(), equals('''
-a: 
+a:
   retry: 3.0.1
 b: false
 '''));
@@ -277,7 +277,7 @@ a: # comment
 
         expect(doc.toString(), equals('''
 # comment
-a: 
+a:
   retry: 3.0.1 # comment
 # comment
 '''));
@@ -286,7 +286,7 @@ a:
       test('nested scalar -> flow list', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4
   e: 5
 c: 3
@@ -295,9 +295,9 @@ c: 3
 
         expect(doc.toString(), equals('''
 a: 1
-b: 
+b:
   d: 4
-  e: 
+  e:
     - 1
     - 2
     - 3
@@ -316,7 +316,7 @@ c: 3
       test('nested block map -> scalar', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4
   e: 5
 c: 3
@@ -334,7 +334,7 @@ c: 3
       test('nested block map -> scalar with comments', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4
   e: 5
 
@@ -359,7 +359,7 @@ b: 2
       test('nested scalar -> block map', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4
   e: 5
 c: 3
@@ -368,9 +368,9 @@ c: 3
 
         expect(doc.toString(), equals('''
 a: 1
-b: 
+b:
   d: 4
-  e: 
+  e:
     x: 3
     y: 4
 c: 3
@@ -388,7 +388,7 @@ c: 3
       test('nested block map with comments', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4
   e: 5 # comment
 c: 3
@@ -397,7 +397,7 @@ c: 3
 
         expect(doc.toString(), equals('''
 a: 1
-b: 
+b:
   d: 4
   e: 6 # comment
 c: 3
@@ -412,7 +412,7 @@ c: 3
       test('nested block map with comments (2)', () {
         final doc = YamlEditor('''
 a: 1
-b: 
+b:
   d: 4 # comment
 # comment
   e: 5 # comment
@@ -423,7 +423,7 @@ c: 3
 
         expect(doc.toString(), equals('''
 a: 1
-b: 
+b:
   d: 4 # comment
 # comment
   e: 6 # comment

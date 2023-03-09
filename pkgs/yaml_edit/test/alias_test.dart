@@ -118,7 +118,7 @@ b: *SS
 
     test('removing nested map alias anchor results in AliasError', () {
       final doc = YamlEditor('''
-a: 
+a:
   c: &SS Sammy Sosa
 b: *SS
 ''');
@@ -129,7 +129,7 @@ b: *SS
     test('removing nested map alias reference results in AliasError', () {
       final doc = YamlEditor('''
 a: &SS Sammy Sosa
-b: 
+b:
   c: *SS
 ''');
 

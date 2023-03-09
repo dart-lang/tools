@@ -62,7 +62,7 @@ c: 3\r
     test('update nested scalar -> flow list', () {
       final doc = YamlEditor('''
 a: 1\r
-b: \r
+b:\r
   d: 4\r
   e: 5\r
 c: 3\r
@@ -71,9 +71,9 @@ c: 3\r
 
       expect(doc.toString(), equals('''
 a: 1\r
-b: \r
+b:\r
   d: 4\r
-  e: \r
+  e:\r
     - 1\r
     - 2\r
     - 3\r

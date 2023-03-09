@@ -1,7 +1,7 @@
 NESTED BLOCK MAP
 ---
 a: 1
-b: 
+b:
   d: 4
   e: 5
 c: 3
