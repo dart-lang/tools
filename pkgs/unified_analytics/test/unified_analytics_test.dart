@@ -138,6 +138,38 @@ void main() {
             'The config file should have the same message from the constants file');
   });
 
+  test('First time analytics run will not send events, second time will', () {
+    // Send an event with the first analytics class; this should result
+    // in no logs in the log file which keeps track of all the events
+    // that have been sent
+    analytics.sendEvent(
+        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    analytics.sendEvent(
+        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+    // Create a new instance of the analytics class with the SAME tool
+    // to simulate that the same tool is running for the second time
+    final Analytics secondAnalytics = Analytics.test(
+      tool: initialToolName,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    secondAnalytics.sendEvent(
+        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+    expect(logFile.readAsLinesSync().length, 1,
+        reason: 'The second analytics instance should have logged an event');
+  });
+
   test('Toggling telemetry boolean through Analytics class api', () async {
     expect(analytics.telemetryEnabled, true,
         reason: 'Telemetry should be enabled by default '
