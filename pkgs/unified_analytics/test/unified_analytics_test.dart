@@ -699,34 +699,71 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   });
 
   test('Check the query on the log file works as expected', () {
-    expect(analytics.logFileStats(), isNull,
-        reason: 'The result for the log file stats should be null when '
-            'there are no logs');
-    analytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    // Define a new clock so that we can check the output of the
+    // log file stats method explicitly
+    final DateTime start = DateTime(1995, 3, 3, 12, 0);
+    final Clock firstClock = Clock.fixed(start);
 
-    final LogFileStats firstQuery = analytics.logFileStats()!;
-    expect(firstQuery.sessionCount, 1,
-        reason:
-            'There should only be one session after the initial send event');
-    expect(firstQuery.flutterChannelCount, 1,
-        reason: 'There should only be one flutter channel logged');
-    expect(firstQuery.toolCount, 1,
-        reason: 'There should only be one tool logged');
-
-    // Define a new clock that is outside of the session duration
-    final DateTime firstClock =
-        clock.now().add(Duration(minutes: kSessionDurationMinutes + 1));
-
-    // Use the new clock to send an event that will change the session identifier
-    withClock(Clock.fixed(firstClock), () {
+    // Run with the simulated clock for the initial events
+    withClock(firstClock, () {
+      expect(analytics.logFileStats(), isNull,
+          reason: 'The result for the log file stats should be null when '
+              'there are no logs');
       analytics.sendEvent(
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+      final LogFileStats firstQuery = analytics.logFileStats()!;
+      expect(firstQuery.sessionCount, 1,
+          reason:
+              'There should only be one session after the initial send event');
+      expect(firstQuery.flutterChannelCount, 1,
+          reason: 'There should only be one flutter channel logged');
+      expect(firstQuery.toolCount, 1,
+          reason: 'There should only be one tool logged');
     });
 
-    final LogFileStats secondQuery = analytics.logFileStats()!;
-    expect(secondQuery.sessionCount, 2,
-        reason: 'There should be 2 sessions after the second event');
+    // Define a new clock that is outside of the session duration
+    final DateTime secondClock =
+        start.add(Duration(minutes: kSessionDurationMinutes + 1));
+
+    // Use the new clock to send an event that will change the session identifier
+    withClock(Clock.fixed(secondClock), () {
+      analytics.sendEvent(
+          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+      final LogFileStats secondQuery = analytics.logFileStats()!;
+      expect(secondQuery.sessionCount, 2,
+          reason: 'There should be 2 sessions after the second event');
+
+      // Construct the expected response for the second query
+      //
+      // This will need to be updated as the output for [LogFileStats]
+      // changes in the future
+      //
+      // Expecting the below returned
+      // {
+      //     "startDateTime": "1995-03-03 12:00:00.000",
+      //     "minsFromStartDateTime": 31,
+      //     "endDateTime": "1995-03-03 12:31:00.000",
+      //     "minsFromEndDateTime": 0,
+      //     "sessionCount": 2,
+      //     "flutterChannelCount": 1,
+      //     "toolCount": 1,
+      //     "recordCount": 2,
+      //     "eventCount": {
+      //         "hot_reload_time": 2
+      //     }
+      // }
+      expect(secondQuery.startDateTime, DateTime(1995, 3, 3, 12, 0));
+      expect(secondQuery.minsFromStartDateTime, 31);
+      expect(secondQuery.endDateTime, DateTime(1995, 3, 3, 12, 31));
+      expect(secondQuery.minsFromEndDateTime, 0);
+      expect(secondQuery.sessionCount, 2);
+      expect(secondQuery.flutterChannelCount, 1);
+      expect(secondQuery.toolCount, 1);
+      expect(secondQuery.recordCount, 2);
+      expect(secondQuery.eventCount, <String, int>{'hot_reload_time': 2});
+    });
   });
 
   test('Check that the log file shows two different tools being used', () {
