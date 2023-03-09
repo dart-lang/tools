@@ -85,7 +85,9 @@ diagnostic data along with package dependencies, and crash reporting to
 send basic crash reports. This data is used to help improve the Dart
 platform, Flutter framework, and related tools.
 
-Telemetry is not sent on the very first run.
+Telemetry is not sent on the very first run, but will be sent
+on subsequent runs if not disabled explicitly.
+
 To disable reporting of telemetry, run this terminal command:
 
 flutter config --no-analytics
@@ -97,6 +99,10 @@ To enable reporting of telemetry, run this terminal command:
 flutter config --analytics
   OR
 dart --enable-analytics
+
+You can use either the flutter or dart command if both are installed,
+they will set the telemetry status for both tools and any other
+related tooling.
 
 If you opt out of telemetry, an opt-out event will be sent, and then no further
 information will be sent. This data is collected in accordance with the
