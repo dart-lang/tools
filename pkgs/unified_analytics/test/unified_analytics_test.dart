@@ -22,6 +22,7 @@ void main() {
   late FileSystem fs;
   late Directory home;
   late Directory dartToolDirectory;
+  late Analytics initializationAnalytics;
   late Analytics analytics;
   late File clientIdFile;
   late File sessionFile;
@@ -49,8 +50,27 @@ void main() {
     home = fs.directory(homeDirName);
     dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
 
+    // This is the first analytics instance that will be used to demonstrate
+    // that events will not be sent with the first run of analytics
+    initializationAnalytics = Analytics.test(
+      tool: initialToolName,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
+    //
+    // This instance should have the same parameters as the one above for
+    // [initializationAnalytics]
     analytics = Analytics.test(
       tool: initialToolName,
       homeDirectory: home,
@@ -102,7 +122,7 @@ void main() {
     expect(dartToolDirectory.listSync().length, equals(4),
         reason:
             'There should only be 4 files in the $kDartToolDirectoryName directory');
-    expect(analytics.shouldShowMessage, true,
+    expect(initializationAnalytics.shouldShowMessage, true,
         reason: 'For the first run, analytics should default to being enabled');
     expect(configFile.readAsLinesSync().length,
         kConfigString.split('\n').length + 1,
@@ -142,28 +162,14 @@ void main() {
     // Send an event with the first analytics class; this should result
     // in no logs in the log file which keeps track of all the events
     // that have been sent
-    analytics.sendEvent(
+    initializationAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    analytics.sendEvent(
+    initializationAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
-    // Create a new instance of the analytics class with the SAME tool
-    // to simulate that the same tool is running for the second time
-    final Analytics secondAnalytics = Analytics.test(
-      tool: initialToolName,
-      homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
-      flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion,
-      toolsMessage: toolsMessage,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      fs: fs,
-      platform: platform,
-    );
-
-    secondAnalytics.sendEvent(
+    // Use the second instance of analytics defined in setUp() to send the actual
+    // events to simulate the second time the tool ran
+    analytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     expect(logFile.readAsLinesSync().length, 1,
@@ -797,24 +803,30 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   });
 
   test('Check that the log file shows two different tools being used', () {
-    final Analytics secondAnalytics = Analytics.test(
-      tool: secondTool,
-      homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
-      flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion,
-      toolsMessage: toolsMessage,
-      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
-      dartVersion: 'Dart 2.19.0',
-      fs: fs,
-      platform: platform,
-    );
+    // Use a for loop two initialize the second analytics instance
+    // twice to account for no events being sent on the first instance
+    // run for a given tool
+    Analytics? secondAnalytics;
+    for (int i = 0; i < 2; i++) {
+      secondAnalytics = Analytics.test(
+        tool: secondTool,
+        homeDirectory: home,
+        measurementId: 'measurementId',
+        apiSecret: 'apiSecret',
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+        dartVersion: 'Dart 2.19.0',
+        fs: fs,
+        platform: platform,
+      );
+    }
 
     // Send events with both instances of the classes
     analytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    secondAnalytics.sendEvent(
+    secondAnalytics!.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     // Query the log file stats to verify that there are two tools
@@ -893,22 +905,28 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
 
   test('Null values for flutter parameters is reflected properly in log file',
       () {
-    final Analytics secondAnalytics = Analytics.test(
-      tool: secondTool,
-      homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
-      // flutterChannel: flutterChannel,           THIS NEEDS TO REMAIN REMOVED
-      // toolsMessageVersion: toolsMessageVersion, THIS NEEDS TO REMAIN REMOVED
-      toolsMessage: toolsMessage,
-      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
-      dartVersion: 'Dart 2.19.0',
-      fs: fs,
-      platform: platform,
-    );
+        // Use a for loop two initialize the second analytics instance
+        // twice to account for no events being sent on the first instance
+        // run for a given tool
+    Analytics? secondAnalytics;
+    for (int i = 0; i < 2; i++) {
+      secondAnalytics = Analytics.test(
+        tool: secondTool,
+        homeDirectory: home,
+        measurementId: 'measurementId',
+        apiSecret: 'apiSecret',
+        // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+        dartVersion: 'Dart 2.19.0',
+        fs: fs,
+        platform: platform,
+      );
+    }
 
     // Send an event and check that the query stats reflects what is expected
-    secondAnalytics.sendEvent(
+    secondAnalytics!.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     // Query the log file stats to verify that there are two tools
