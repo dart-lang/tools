@@ -14,7 +14,7 @@ import 'test_utils.dart';
 
 /// Interface for creating golden Test cases
 class TestCases {
-  final List<_TestCase> testCases;
+  final List<_TestCase> _testCases;
 
   /// Creates a [TestCases] object based on test directory and golden directory
   /// path.
@@ -43,7 +43,7 @@ class TestCases {
     var tested = 0;
     var created = 0;
 
-    for (final testCase in testCases) {
+    for (final testCase in _testCases) {
       testCase.testOrCreate();
       if (testCase.state == _TestCaseStates.testedGoldenFile) {
         tested++;
@@ -52,13 +52,13 @@ class TestCases {
       }
     }
 
-    print(
-        'Successfully tested $tested inputs against golden files, created $created golden files');
+    print('Successfully tested $tested inputs against golden files, created '
+        '$created golden files');
   }
 
-  TestCases(this.testCases);
+  TestCases(this._testCases);
 
-  int get length => testCases.length;
+  int get length => _testCases.length;
 }
 
 /// Enum representing the different states of [_TestCase]s.
@@ -105,7 +105,8 @@ class _TestCase {
 
     info = inputElements[0];
     yamlBuilder = YamlEditor(inputElements[1]);
-    final rawModifications = _getValueFromYamlNode(loadYaml(inputElements[2]));
+    final rawModifications =
+        _getValueFromYamlNode(loadYaml(inputElements[2]) as YamlNode) as List;
     modifications = _parseModifications(rawModifications);
 
     /// Adds the initial state as well, so we can check that the simplest
@@ -140,7 +141,8 @@ class _TestCase {
         yamlBuilder.insertIntoList(mod.path, mod.index, mod.value);
         return;
       case YamlModificationMethod.splice:
-        yamlBuilder.spliceList(mod.path, mod.index, mod.deleteCount, mod.value);
+        yamlBuilder.spliceList(
+            mod.path, mod.index, mod.deleteCount, mod.value as List);
         return;
     }
   }
@@ -226,12 +228,13 @@ dynamic _getValueFromYamlNode(YamlNode node) {
 /// objects.
 List<_YamlModification> _parseModifications(List<dynamic> modifications) {
   return modifications.map((mod) {
+    if (mod is! List) throw UnimplementedError();
     Object? value;
     var index = 0;
     var deleteCount = 0;
     final method = _getModificationMethod(mod[0] as String);
 
-    final path = mod[1];
+    final path = mod[1] as List;
 
     if (method == YamlModificationMethod.appendTo ||
         method == YamlModificationMethod.update ||
@@ -291,5 +294,6 @@ class _YamlModification {
 
   @override
   String toString() =>
-      'method: $method, path: $path, index: $index, value: $value, deleteCount: $deleteCount';
+      'method: $method, path: $path, index: $index, value: $value, '
+      'deleteCount: $deleteCount';
 }

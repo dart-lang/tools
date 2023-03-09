@@ -8,13 +8,13 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 final _testStrings = [
   "this is a fairly' long string with\nline breaks",
-  "whitespace\n after line breaks",
-  "word",
-  "foo bar",
-  "foo\nbar",
-  "\"",
+  'whitespace\n after line breaks',
+  'word',
+  'foo bar',
+  'foo\nbar',
+  '"',
   '\'',
-  "word\"word",
+  'word"word',
   'word\'word'
 ];
 

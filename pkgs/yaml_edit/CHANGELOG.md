@@ -1,6 +1,6 @@
-## 2.1.1
+## 2.1.1-dev
 
-- Update to work with an unreleased version of `package:yaml`.
+- Require Dart 2.19
 
 ## 2.1.0
 - **Breaking** `wrapAsYamlNode(value, collectionStyle, scalarStyle)` will apply
@@ -9,7 +9,7 @@
   While this may change the style of the YAML documents written by applications
   that rely on the old behavior, such YAML documents should still be valid.
   Hence, we hope it is reasonable to make this change in a minor release.
-- Fix for cases that can't be encodded correctedly with
+- Fix for cases that can't be encoded correctly with
   `scalarStyle: ScalarStyle.SINGLE_QUOTED`.
 - Fix YamlEditor `appendToList` and `insertIntoList` functions inserts new item into next yaml item
   rather than at end of list.

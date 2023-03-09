@@ -80,7 +80,7 @@ int deepHashCode(Object? value) {
   } else if (value is Iterable) {
     return const IterableEquality().hash(value.map(deepHashCode));
   } else if (value is YamlScalar) {
-    return value.value.hashCode;
+    return (value.value as Object?).hashCode;
   }
 
   return value.hashCode;
@@ -97,7 +97,7 @@ YamlNode? getNextKeyNode(YamlMap map, Object? key) {
   final keyIterator = map.nodes.keys.iterator;
   while (keyIterator.moveNext()) {
     if (deepEquals(keyIterator.current, key) && keyIterator.moveNext()) {
-      return keyIterator.current;
+      return keyIterator.current as YamlNode?;
     }
   }
 

@@ -248,9 +248,12 @@ strings:
             ]));
 
         expect(
-            doc.toString(),
-            equals(
-                '[[plain string, folded string, \'single-quoted string\', literal string, "double-quoted string"]]'));
+          doc.toString(),
+          equals(
+            '[[plain string, folded string, \'single-quoted string\', '
+            'literal string, "double-quoted string"]]',
+          ),
+        );
         expectYamlBuilderValue(doc, [
           [
             'plain string',
@@ -349,7 +352,7 @@ strings:
         expect(doc.toString(), equals('''
 {1: ["d9]zH`FoYC\\/>]"]}
 '''));
-        expect((doc.parseAt([1, 0]) as dynamic).style,
+        expect((doc.parseAt([1, 0]) as YamlScalar).style,
             equals(ScalarStyle.DOUBLE_QUOTED));
       });
 
@@ -392,8 +395,8 @@ a:
       });
 
       test(
-          'flow collection structure does not get substringed when added to block structure',
-          () {
+          'flow collection structure does not get substringed when added to '
+          'block structure', () {
         final doc = YamlEditor('''
 a:
   - false

@@ -127,7 +127,7 @@ key1:
       final doc = YamlEditor("YAML: ['Y', 'A', 'M', 'L']");
       final expectedYamlMap = doc.parseAt([]);
 
-      expect(() => (expectedYamlMap as YamlMap)['YAML'][0] = 'X',
+      expect(() => ((expectedYamlMap as YamlMap)['YAML'] as List)[0] = 'X',
           throwsUnsupportedError);
     });
   });

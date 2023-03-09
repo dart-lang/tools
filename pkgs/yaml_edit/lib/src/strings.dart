@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:yaml/yaml.dart';
+
 import 'utils.dart';
 
 /// Given [value], tries to format it into a plain string recognizable by YAML.
@@ -100,9 +101,9 @@ String _tryYamlEncodeFolded(String string, int indentation, String lineEnding) {
   final removedPortion = string.substring(trimmedString.length);
 
   if (removedPortion.contains('\n')) {
-    result = '>+\n' + ' ' * indentation;
+    result = '>+\n${' ' * indentation}';
   } else {
-    result = '>-\n' + ' ' * indentation;
+    result = '>-\n${' ' * indentation}';
   }
 
   /// Duplicating the newline for folded strings preserves it in YAML.
@@ -131,15 +132,15 @@ String _tryYamlEncodeLiteral(
 /// if possible.
 ///
 /// If [value] is a [YamlScalar], we try to respect its [style] parameter where
-/// possible. Certain cases make this impossible (e.g. a plain string scalar that
-/// starts with '>'), in which case we will produce [value] with default styling
-/// options.
+/// possible. Certain cases make this impossible (e.g. a plain string scalar
+/// that starts with '>'), in which case we will produce [value] with default
+/// styling options.
 String _yamlEncodeFlowScalar(YamlNode value) {
   if (value is YamlScalar) {
     assertValidScalar(value.value);
 
-    if (value.value is String) {
-      final val = value.value as String;
+    final val = value.value;
+    if (val is String) {
       if (_hasUnprintableCharacters(val) ||
           value.style == ScalarStyle.DOUBLE_QUOTED) {
         return _yamlEncodeDoubleQuoted(val);
@@ -172,8 +173,8 @@ String yamlEncodeBlockScalar(
   if (value is YamlScalar) {
     assertValidScalar(value.value);
 
-    if (value.value is String) {
-      final val = value.value as String;
+    final val = value.value;
+    if (val is String) {
       if (_hasUnprintableCharacters(val)) {
         return _yamlEncodeDoubleQuoted(val);
       }
@@ -215,15 +216,15 @@ String yamlEncodeFlowString(YamlNode value) {
     final list = value.nodes;
 
     final safeValues = list.map(yamlEncodeFlowString);
-    return '[' + safeValues.join(', ') + ']';
+    return '[${safeValues.join(', ')}]';
   } else if (value is YamlMap) {
     final safeEntries = value.nodes.entries.map((entry) {
-      final safeKey = yamlEncodeFlowString(entry.key);
+      final safeKey = yamlEncodeFlowString(entry.key as YamlNode);
       final safeValue = yamlEncodeFlowString(entry.value);
       return '$safeKey: $safeValue';
     });
 
-    return '{' + safeEntries.join(', ') + '}';
+    return '{${safeEntries.join(', ')}}';
   }
 
   return _yamlEncodeFlowScalar(value);
@@ -244,7 +245,7 @@ String yamlEncodeBlockString(
   final newIndentation = indentation + additionalIndentation;
 
   if (value is YamlList) {
-    if (value.isEmpty) return ' ' * indentation + '[]';
+    if (value.isEmpty) return '${' ' * indentation}[]';
 
     Iterable<String> safeValues;
 
@@ -257,15 +258,15 @@ String yamlEncodeBlockString(
         valueString = valueString.substring(newIndentation);
       }
 
-      return ' ' * indentation + '- $valueString';
+      return '${' ' * indentation}- $valueString';
     });
 
     return safeValues.join(lineEnding);
   } else if (value is YamlMap) {
-    if (value.isEmpty) return ' ' * indentation + '{}';
+    if (value.isEmpty) return '${' ' * indentation}{}';
 
     return value.nodes.entries.map((entry) {
-      final safeKey = yamlEncodeFlowString(entry.key);
+      final safeKey = yamlEncodeFlowString(entry.key as YamlNode);
       final formattedKey = ' ' * indentation + safeKey;
       final formattedValue =
           yamlEncodeBlockString(entry.value, newIndentation, lineEnding);
@@ -273,10 +274,10 @@ String yamlEncodeBlockString(
       /// Empty collections are always encoded in flow-style, so new-line must
       /// be avoided
       if (isCollection(entry.value) && !isEmpty(entry.value)) {
-        return formattedKey + ':\n' + formattedValue;
+        return '$formattedKey:\n$formattedValue';
       }
 
-      return formattedKey + ': ' + formattedValue;
+      return '$formattedKey: $formattedValue';
     }).join(lineEnding);
   }
 

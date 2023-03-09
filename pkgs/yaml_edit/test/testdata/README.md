@@ -58,7 +58,7 @@ To add test cases, simple create `<your-test-name>.test` files in `/test/testdat
 
 ## Output Format
 
-The output `.golden` files contain a series of YAML strings representing the state of the YAML after each specified modification, with the first string being the inital state as specified in the ouput. These states are separated by `\n---\n` as a delimiter. For example, the output file for the sample input file above is:
+The output `.golden` files contain a series of YAML strings representing the state of the YAML after each specified modification, with the first string being the initial state as specified in the output. These states are separated by `\n---\n` as a delimiter. For example, the output file for the sample input file above is:
 
 ```
 - 0

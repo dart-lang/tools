@@ -15,7 +15,8 @@ import 'package:meta/meta.dart';
 /// ```
 /// foo: barbar
 /// ```
-/// will be represented by `SourceEdit(offset: 4, length: 3, replacement: 'bar')`
+/// will be represented by
+/// `SourceEdit(offset: 4, length: 3, replacement: 'bar')`
 @sealed
 class SourceEdit {
   /// The offset from the start of the string where the modification begins.

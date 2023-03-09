@@ -87,9 +87,9 @@ SourceEdit _addToBlockMap(
   if (isCollection(newValue) &&
       !isFlowYamlCollectionNode(newValue) &&
       !isEmpty(newValue)) {
-    formattedValue += '$keyString:' + lineEnding + valueString + lineEnding;
+    formattedValue += '$keyString:$lineEnding$valueString$lineEnding';
   } else {
-    formattedValue += '$keyString: ' + valueString + lineEnding;
+    formattedValue += '$keyString: $valueString$lineEnding';
   }
 
   return SourceEdit(offset, 0, formattedValue);
@@ -141,7 +141,7 @@ SourceEdit _replaceInBlockMap(
 
   if (!valueAsString.startsWith(lineEnding)) {
     // prepend whitespace to ensure there is space after colon.
-    valueAsString = ' ' + valueAsString;
+    valueAsString = ' $valueAsString';
   }
 
   /// +1 accounts for the colon

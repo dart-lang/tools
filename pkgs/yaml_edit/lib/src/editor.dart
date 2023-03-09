@@ -14,7 +14,7 @@ import 'strings.dart';
 import 'utils.dart';
 import 'wrap.dart';
 
-/// An interface for modififying [YAML][1] documents while preserving comments
+/// An interface for modifying [YAML][1] documents while preserving comments
 /// and whitespaces.
 ///
 /// YAML parsing is supported by `package:yaml`, and modifications are performed
@@ -124,7 +124,7 @@ class YamlEditor {
       if (visited.add(node)) {
         if (node is YamlMap) {
           node.nodes.forEach((key, value) {
-            collectAliases(key);
+            collectAliases(key as YamlNode);
             collectAliases(value);
           });
         } else if (node is YamlList) {
@@ -194,7 +194,8 @@ class YamlEditor {
   /// Sets [value] in the [path].
   ///
   /// There is a subtle difference between [update] and [remove] followed by
-  /// an [insertIntoList], because [update] preserves comments at the same level.
+  /// an [insertIntoList], because [update] preserves comments at the same
+  /// level.
   ///
   /// Throws a [ArgumentError] if [path] is invalid.
   ///
@@ -291,8 +292,8 @@ class YamlEditor {
 
   /// Prepends [value] to the list at [path].
   ///
-  /// Throws a [ArgumentError] if the element at the given path is not a [YamlList]
-  /// or if the path is invalid.
+  /// Throws a [ArgumentError] if the element at the given path is not a
+  /// [YamlList] or if the path is invalid.
   ///
   /// **Example:**
   /// ```dart
@@ -354,11 +355,11 @@ class YamlEditor {
 
     final nodesToRemove = list.nodes.getRange(index, index + deleteCount);
 
-    /// Perform addition of elements before removal to avoid scenarioes where
-    /// a block list gets emptied out to {} to avoid changing collection styles
-    /// where possible.
+    // Perform addition of elements before removal to avoid scenarios where
+    // a block list gets emptied out to {} to avoid changing collection styles
+    // where possible.
 
-    /// Reverse [values] and insert them.
+    // Reverse [values] and insert them.
     final reversedValues = values.toList().reversed;
     for (final value in reversedValues) {
       insertIntoList(path, index, value);
@@ -512,7 +513,9 @@ class YamlEditor {
       final keyList = node.keys.toList();
       for (var i = 0; i < node.length; i++) {
         final updatedPath = [...path, keyList[i]];
-        if (_aliases.contains(keyList[i])) throw AliasError(path, keyList[i]);
+        if (_aliases.contains(keyList[i])) {
+          throw AliasError(path, keyList[i] as YamlNode);
+        }
         _assertNoChildAlias(updatedPath, node.nodes[keyList[i]]);
       }
     }
@@ -604,8 +607,11 @@ class YamlEditor {
     if (tree is YamlMap) {
       return updatedYamlMap(
           tree,
-          (nodes) => nodes[keyOrIndex] = _deepModify(nodes[keyOrIndex], path,
-              path.take(subPath.length + 1), expectedNode));
+          (nodes) => nodes[keyOrIndex] = _deepModify(
+              nodes[keyOrIndex] as YamlNode,
+              path,
+              path.take(subPath.length + 1),
+              expectedNode));
     }
 
     /// Should not ever reach here.

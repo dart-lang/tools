@@ -38,8 +38,7 @@ SourceEdit updateInList(
     if ((newValue is List && (newValue as List).isNotEmpty) ||
         (newValue is Map && (newValue as Map).isNotEmpty)) {
       valueString = valueString.substring(indentation);
-    } else if (isCollection(currValue) &&
-        getStyle(currValue) == CollectionStyle.BLOCK) {
+    } else if (currValue.collectionStyle == CollectionStyle.BLOCK) {
       valueString += lineEnding;
     }
 
@@ -47,7 +46,7 @@ SourceEdit updateInList(
     if (end <= offset) {
       offset++;
       end = offset;
-      valueString = ' ' + valueString;
+      valueString = ' $valueString';
     }
 
     return SourceEdit(offset, end - offset, valueString);
@@ -107,14 +106,16 @@ SourceEdit _appendToFlowList(
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of addition [item] into [nodes], noting that this is a block list.
+/// the effect of addition [item] into [nodes], noting that this is a block
+/// list.
 SourceEdit _appendToBlockList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
   var formattedValue = _formatNewBlock(yamlEdit, list, item);
   final yaml = yamlEdit.toString();
   var offset = list.span.end.offset;
 
-  // Adjusts offset to after the trailing newline of the last entry, if it exists
+  // Adjusts offset to after the trailing newline of the last entry, if it
+  // exists
   if (list.isNotEmpty) {
     final lastValueSpanEnd = list.nodes.last.span.end.offset;
     final nextNewLineIndex = yaml.indexOf('\n', lastValueSpanEnd - 1);
@@ -139,7 +140,7 @@ String _formatNewBlock(YamlEditor yamlEdit, YamlList list, YamlNode item) {
   if (isCollection(item) && !isFlowYamlCollectionNode(item) && !isEmpty(item)) {
     valueString = valueString.substring(newIndentation);
   }
-  final indentedHyphen = ' ' * listIndentation + '- ';
+  final indentedHyphen = '${' ' * listIndentation}- ';
 
   return '$indentedHyphen$valueString$lineEnding';
 }

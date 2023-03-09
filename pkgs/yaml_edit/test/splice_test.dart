@@ -9,8 +9,8 @@ import 'test_utils.dart';
 
 void main() {
   test(
-      'throws RangeError if invalid index + deleteCount combination is passed in',
-      () {
+      'throws RangeError if invalid index + deleteCount combination is '
+      'passed in', () {
     final doc = YamlEditor('[0, 0]');
     expect(() => doc.spliceList([], 1, 5, [1, 2]), throwsRangeError);
   });

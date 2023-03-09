@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -257,8 +259,8 @@ void main() {
     });
 
     test(
-        'returns the same result for two YamlScalars with same value but different styles',
-        () {
+        'returns the same result for two YamlScalars with same value but '
+        'different styles', () {
       final hashCode1 =
           deepHashCode(wrapAsYamlNode('foo', scalarStyle: ScalarStyle.PLAIN));
       final hashCode2 =
@@ -308,8 +310,8 @@ void main() {
     });
 
     test(
-        'returns the same result for two YamlLists with same value but different styles',
-        () {
+        'returns the same result for two YamlLists with same value but '
+        'different styles', () {
       final hashCode1 = deepHashCode(
           wrapAsYamlNode([1, 2, 3], collectionStyle: CollectionStyle.BLOCK));
       final hashCode2 = deepHashCode(wrapAsYamlNode([1, 2, 3]));

@@ -59,11 +59,11 @@ class AliasError extends UnsupportedError {
 
   AliasError(this.path, this.anchor)
       : super('Encountered an alias node along $path! '
-            'Alias nodes are nodes that refer to a previously serialized nodes, '
-            'and are denoted by either the "*" or the "&" indicators in the '
-            'original YAML. As the resulting behavior of mutations on these '
-            'nodes is not well-defined, the operation will not be supported '
-            'by this library.\n\n'
+            'Alias nodes are nodes that refer to a previously serialized '
+            'nodes, and are denoted by either the "*" or the "&" indicators in '
+            'the original YAML. As the resulting behavior of mutations on '
+            'these nodes is not well-defined, the operation will not be '
+            'supported by this library.\n\n'
             '${anchor.span.message('The alias was first defined here.')}');
 }
 

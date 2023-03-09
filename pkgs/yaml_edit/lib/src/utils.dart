@@ -7,18 +7,19 @@ import 'package:yaml/yaml.dart';
 
 import 'editor.dart';
 
-/// Determines if [string] is dangerous by checking if parsing the plain string can
-/// return a result different from [string].
+/// Determines if [string] is dangerous by checking if parsing the plain string
+/// can return a result different from [string].
 ///
-/// This function is also capable of detecting if non-printable characters are in
-/// [string].
+/// This function is also capable of detecting if non-printable characters are
+/// in [string].
 bool isDangerousString(String string) {
   try {
     if (loadYamlNode(string).value != string) {
       return true;
     }
 
-    /// [string] should also not contain the `[`, `]`, `,`, `{` and `}` indicator characters.
+    // [string] should also not contain the `[`, `]`, `,`, `{` and `}` indicator
+    // characters.
     return string.contains(RegExp(r'\{|\[|\]|\}|,'));
   } catch (e) {
     /// This catch statement catches [ArgumentError] in `loadYamlNode` when
@@ -41,8 +42,8 @@ void assertValidScalar(Object? value) {
 
 /// Checks if [node] is a [YamlNode] with block styling.
 ///
-/// [ScalarStyle.ANY] and [CollectionStyle.ANY] are considered to be block styling
-/// by default for maximum flexibility.
+/// [ScalarStyle.ANY] and [CollectionStyle.ANY] are considered to be block
+/// styling by default for maximum flexibility.
 bool isBlockNode(YamlNode node) {
   if (node is YamlScalar) {
     if (node.style == ScalarStyle.LITERAL ||
@@ -62,8 +63,8 @@ bool isBlockNode(YamlNode node) {
   return false;
 }
 
-/// Returns the content sensitive ending offset of [yamlNode] (i.e. where the last
-/// meaningful content happens)
+/// Returns the content sensitive ending offset of [yamlNode] (i.e. where the
+/// last meaningful content happens)
 int getContentSensitiveEnd(YamlNode yamlNode) {
   if (yamlNode is YamlList) {
     if (yamlNode.style == CollectionStyle.FLOW) {
@@ -111,18 +112,14 @@ SourceSpan shellSpan(Object? sourceUrl) {
 }
 
 /// Returns if [value] is a [YamlList] or [YamlMap] with [CollectionStyle.FLOW].
-bool isFlowYamlCollectionNode(Object value) {
-  if (value is YamlList || value is YamlMap) {
-    return (value as dynamic).style == CollectionStyle.FLOW;
-  }
+bool isFlowYamlCollectionNode(Object value) =>
+    value is YamlNode && value.collectionStyle == CollectionStyle.FLOW;
 
-  return false;
-}
-
-/// Determines the index where [newKey] will be inserted if the keys in [map] are in
-/// alphabetical order when converted to strings.
+/// Determines the index where [newKey] will be inserted if the keys in [map]
+/// are in alphabetical order when converted to strings.
 ///
-/// Returns the length of [map] if the keys in [map] are not in alphabetical order.
+/// Returns the length of [map] if the keys in [map] are not in alphabetical
+/// order.
 int getMapInsertionIndex(YamlMap map, Object newKey) {
   final keys = map.nodes.keys.map((k) => k.toString()).toList();
 
@@ -138,15 +135,6 @@ int getMapInsertionIndex(YamlMap map, Object newKey) {
   if (insertionIndex != -1) return insertionIndex;
 
   return map.length;
-}
-
-/// Returns the [style] property of [target], if it is a [YamlNode]. Otherwise return null.
-Object? getStyle(Object target) {
-  if (target is YamlNode) {
-    return (target as dynamic).style;
-  }
-
-  return null;
 }
 
 /// Returns the detected indentation step used in [yaml], or
@@ -239,7 +227,7 @@ int getMapIndentation(String yaml, YamlMap map) {
 /// Returns the detected line ending used in [yaml], more specifically, whether
 /// [yaml] appears to use Windows `\r\n` or Unix `\n` line endings.
 ///
-/// The heuristic used is to count all `\n` in the text and if stricly more
+/// The heuristic used is to count all `\n` in the text and if strictly more
 /// than half of them are preceded by `\r` we report that windows line endings
 /// are used.
 String getLineEnding(String yaml) {
@@ -255,4 +243,17 @@ String getLineEnding(String yaml) {
   }
 
   return windowsNewlines > unixNewlines ? '\r\n' : '\n';
+}
+
+extension YamlNodeExtension on YamlNode {
+  /// Returns the [CollectionStyle] of `this` if `this` is [YamlMap] or
+  /// [YamlList].
+  ///
+  /// Otherwise, returns `null`.
+  CollectionStyle? get collectionStyle {
+    final me = this;
+    if (me is YamlMap) return me.style;
+    if (me is YamlList) return me.style;
+    return null;
+  }
 }

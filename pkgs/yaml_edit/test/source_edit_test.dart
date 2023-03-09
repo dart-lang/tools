@@ -128,8 +128,11 @@ void main() {
 
         final result = SourceEdit.applyAll(original, sourceEdits);
 
-        expect(result,
-            "YAML Ain't Markup Language: YAML Ain't Markup Language Ain't Markup Language");
+        expect(
+          result,
+          "YAML Ain't Markup Language: YAML Ain't Markup Language Ain't Markup "
+          'Language',
+        );
       });
     });
   });

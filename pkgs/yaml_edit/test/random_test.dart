@@ -206,13 +206,14 @@ class _Generator {
           case YamlModificationMethod.insert:
             args.add(nextInt(node.length + 1));
             args.add(nextYamlNode());
-            editor.insertIntoList(path, args[0], args[1]);
+            editor.insertIntoList(path, args[0] as int, args[1]);
             break;
           case YamlModificationMethod.splice:
             args.add(nextInt(node.length + 1));
-            args.add(nextInt(node.length + 1 - args[0] as int));
+            args.add(nextInt(node.length + 1 - (args[0] as int)));
             args.add(nextYamlList(0));
-            editor.spliceList(path, args[0], args[1], args[2]);
+            editor.spliceList(
+                path, args[0] as int, args[1] as int, args[2] as List);
             break;
         }
         return;

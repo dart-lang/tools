@@ -152,7 +152,7 @@ class YamlMapWrap
   dynamic operator [](Object? key) => nodes[key]?.value;
 
   @override
-  Iterable get keys => nodes.keys.map((node) => node.value);
+  Iterable get keys => nodes.keys.map((node) => (node as YamlNode).value);
 
   @override
   Map get value => this;
@@ -207,7 +207,7 @@ class YamlListWrap with collection.ListMixin implements YamlList {
   dynamic operator [](int index) => nodes[index].value;
 
   @override
-  operator []=(int index, value) {
+  void operator []=(int index, Object? value) {
     throw UnsupportedError('Cannot modify an unmodifiable List');
   }
 

@@ -472,14 +472,16 @@ c: 3
       });
 
       test('with spacing', () {
-        final doc = YamlEditor(
-            "{ YAML:  YAML Ain't Markup Language , XML: Extensible Markup Language , HTML: Hypertext Markup Language }");
+        final doc = YamlEditor("{ YAML:  YAML Ain't Markup Language , "
+            'XML: Extensible Markup Language , '
+            'HTML: Hypertext Markup Language }');
         doc.update(['XML'], 'XML Markup Language');
 
         expect(
             doc.toString(),
-            equals(
-                "{ YAML:  YAML Ain't Markup Language , XML: XML Markup Language, HTML: Hypertext Markup Language }"));
+            equals("{ YAML:  YAML Ain't Markup Language , "
+                'XML: XML Markup Language, '
+                'HTML: Hypertext Markup Language }'));
         expectYamlBuilderValue(doc, {
           'YAML': "YAML Ain't Markup Language",
           'XML': 'XML Markup Language',
@@ -714,8 +716,8 @@ c: 3
 
         expect(
             doc.toString(),
-            equals(
-                "{XML: Extensible Markup Language, YAML: YAML Ain't Markup Language}"));
+            equals('{XML: Extensible Markup Language, '
+                "YAML: YAML Ain't Markup Language}"));
         expectYamlBuilderValue(doc, {
           'XML': 'Extensible Markup Language',
           'YAML': "YAML Ain't Markup Language",
@@ -740,7 +742,7 @@ d: 4
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3, 'd': 4});
       });
 
-      /// Regression testing to ensure it works without leading wtesttespace
+      // Regression testing to ensure it works without leading whitespace
       test('(2)', () {
         final doc = YamlEditor('a: 1');
         doc.update(['b'], 2);
