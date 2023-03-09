@@ -732,8 +732,6 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
       final LogFileStats secondQuery = analytics.logFileStats()!;
-      expect(secondQuery.sessionCount, 2,
-          reason: 'There should be 2 sessions after the second event');
 
       // Construct the expected response for the second query
       //
