@@ -905,9 +905,9 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
 
   test('Null values for flutter parameters is reflected properly in log file',
       () {
-        // Use a for loop two initialize the second analytics instance
-        // twice to account for no events being sent on the first instance
-        // run for a given tool
+    // Use a for loop two initialize the second analytics instance
+    // twice to account for no events being sent on the first instance
+    // run for a given tool
     Analytics? secondAnalytics;
     for (int i = 0; i < 2; i++) {
       secondAnalytics = Analytics.test(
