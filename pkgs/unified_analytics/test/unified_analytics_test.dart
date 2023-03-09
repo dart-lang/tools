@@ -938,4 +938,9 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
               'as a delimiter if needed; invalid events below\n$invalidEvents');
     });
   });
+
+  test('Confirm credentials for GA', () {
+    expect(kGoogleAnalyticsApiSecret, 'Ka1jc8tZSzWc_GXMWHfPHA');
+    expect(kGoogleAnalyticsMeasurementId, 'G-04BXPVBCWJ');
+  });
 }
