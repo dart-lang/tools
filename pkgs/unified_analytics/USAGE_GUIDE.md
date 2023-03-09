@@ -122,7 +122,7 @@ print('This user's status: ${analytics.telemetryEnabled}');  // true if opted-in
 
 ## Developing Within `package:unified_analytics`
 
-When contributing to this package and the developer needs to verify that
+When contributing to this package, if the developer needs to verify that
 events have been sent, the following credentials should be used in
 `lib/src/constants.dart` to point to a separate Google Analytics endpoint
 
@@ -131,7 +131,7 @@ const String kGoogleAnalyticsApiSecret = '4yT8__oER3Cd84dtx6r-_A';
 const String kGoogleAnalyticsMeasurementId = 'G-N1NXG28J5B';
 ```
 
-Reach out to maintainers to get access to the test Google Analytics endpoint
+Reach out to maintainers to get access to the test Google Analytics endpoint.
 
 ## Advanced Usage: Querying Locally Persisted Logs
 
