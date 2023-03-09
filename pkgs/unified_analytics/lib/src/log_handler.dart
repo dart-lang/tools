@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
@@ -16,13 +17,13 @@ class LogFileStats {
   /// The oldest timestamp in the log file
   final DateTime startDateTime;
 
-  /// Number of minutes from [startDateTime] to [DateTime.now()]
+  /// Number of minutes from [startDateTime] to [clock.now()]
   final int minsFromStartDateTime;
 
   /// The latest timestamp in the log file
   final DateTime endDateTime;
 
-  /// Number of minutes from [endDateTime] to [DateTime.now()]
+  /// Number of minutes from [endDateTime] to [clock.now()]
   final int minsFromEndDateTime;
 
   /// The number of unique session ids found in the log file
@@ -136,9 +137,9 @@ class LogHandler {
 
     return LogFileStats(
       startDateTime: startDateTime,
-      minsFromStartDateTime: DateTime.now().difference(startDateTime).inMinutes,
+      minsFromStartDateTime: clock.now().difference(startDateTime).inMinutes,
       endDateTime: endDateTime,
-      minsFromEndDateTime: DateTime.now().difference(endDateTime).inMinutes,
+      minsFromEndDateTime: clock.now().difference(endDateTime).inMinutes,
       sessionCount: counter['sessions']!.length,
       flutterChannelCount: counter['flutter_channel']!.length,
       toolCount: counter['tool']!.length,
