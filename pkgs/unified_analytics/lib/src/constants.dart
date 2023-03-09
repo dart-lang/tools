@@ -88,7 +88,16 @@ platform, Flutter framework, and related tools.
 Telemetry is not sent on the very first run.
 To disable reporting of telemetry, run this terminal command:
 
-[dart|flutter] --disable-telemetry.
+flutter config --no-analytics
+  OR
+dart --disable-analytics
+
+To enable reporting of telemetry, run this terminal command:
+
+flutter config --analytics
+  OR
+dart --enable-analytics
+
 If you opt out of telemetry, an opt-out event will be sent, and then no further
 information will be sent. This data is collected in accordance with the
 Google Privacy Policy (https://policies.google.com/privacy).
