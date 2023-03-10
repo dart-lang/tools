@@ -870,7 +870,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         '"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},'
         '"dart_version":{"value":"Dart 2.19.0"},'
         '"tool":{"value":"flutter-tools"},'
-        '"local_time":{"value":"2023-xx-31 14:32:14.592898"}}}'; // PURPOSEFULLY MALFORMED
+        '"local_time":{"value":"2023-xx-31 14:32:14.592898 -0500"}}}'; // PURPOSEFULLY MALFORMED
 
     logFile.writeAsStringSync(malformedLog);
     final LogFileStats? query = analytics.logFileStats();

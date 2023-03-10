@@ -41,7 +41,7 @@ String formatDateTime(DateTime t) {
 ///     "flutter_version": { "value": "Flutter 3.6.0-7.0.pre.47" },
 ///     "dart_version": { "value": "Dart 2.19.0" },
 ///     "tool": { "value": "flutter-tools" },
-///     "local_time": { "value": "2023-01-11 14:53:31.471816" }
+///     "local_time": { "value": "2023-01-11 14:53:31.471816 -0500" }
 ///   }
 /// }
 /// ```
