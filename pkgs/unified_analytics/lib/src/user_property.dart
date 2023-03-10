@@ -8,6 +8,7 @@ import 'package:clock/clock.dart';
 
 import 'constants.dart';
 import 'session.dart';
+import 'utils.dart';
 
 class UserProperty {
   final Session session;
@@ -58,6 +59,6 @@ class UserProperty {
         'dart_version': dartVersion,
         'analytics_pkg_version': kPackageVersion,
         'tool': tool,
-        'local_time': '${clock.now()}',
+        'local_time': formatDateTime(clock.now()),
       };
 }

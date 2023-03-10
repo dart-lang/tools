@@ -246,7 +246,14 @@ class AnalyticsImpl implements Analytics {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-    if (!telemetryEnabled) return null;
+    // Checking the [telemetryEnabled] boolean reflects what the
+    // config file reflects
+    //
+    // Checking the [_showMessage] boolean indicates if this the first
+    // time the tool is using analytics or if there has been an update
+    // the messaging found in constants.dart - in both cases, analytics
+    // will not be sent until the second time the tool is used
+    if (!telemetryEnabled || _showMessage) return null;
 
     // Construct the body of the request
     final Map<String, Object?> body = generateRequestBody(
@@ -311,7 +318,7 @@ class TestAnalytics extends AnalyticsImpl {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-    if (!telemetryEnabled) return null;
+    if (!telemetryEnabled || _showMessage) return null;
 
     // Calling the [generateRequestBody] method will ensure that the
     // session file is getting updated without actually making any

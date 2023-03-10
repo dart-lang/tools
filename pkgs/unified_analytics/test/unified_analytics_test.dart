@@ -22,6 +22,7 @@ void main() {
   late FileSystem fs;
   late Directory home;
   late Directory dartToolDirectory;
+  late Analytics initializationAnalytics;
   late Analytics analytics;
   late File clientIdFile;
   late File sessionFile;
@@ -49,8 +50,27 @@ void main() {
     home = fs.directory(homeDirName);
     dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
 
+    // This is the first analytics instance that will be used to demonstrate
+    // that events will not be sent with the first run of analytics
+    initializationAnalytics = Analytics.test(
+      tool: initialToolName,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
+    //
+    // This instance should have the same parameters as the one above for
+    // [initializationAnalytics]
     analytics = Analytics.test(
       tool: initialToolName,
       homeDirectory: home,
@@ -102,7 +122,7 @@ void main() {
     expect(dartToolDirectory.listSync().length, equals(4),
         reason:
             'There should only be 4 files in the $kDartToolDirectoryName directory');
-    expect(analytics.shouldShowMessage, true,
+    expect(initializationAnalytics.shouldShowMessage, true,
         reason: 'For the first run, analytics should default to being enabled');
     expect(configFile.readAsLinesSync().length,
         kConfigString.split('\n').length + 1,
@@ -136,6 +156,24 @@ void main() {
     expect(configFile.readAsStringSync().startsWith(kConfigString), true,
         reason:
             'The config file should have the same message from the constants file');
+  });
+
+  test('First time analytics run will not send events, second time will', () {
+    // Send an event with the first analytics class; this should result
+    // in no logs in the log file which keeps track of all the events
+    // that have been sent
+    initializationAnalytics.sendEvent(
+        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    initializationAnalytics.sendEvent(
+        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+    // Use the second instance of analytics defined in setUp() to send the actual
+    // events to simulate the second time the tool ran
+    analytics.sendEvent(
+        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+    expect(logFile.readAsLinesSync().length, 1,
+        reason: 'The second analytics instance should have logged an event');
   });
 
   test('Toggling telemetry boolean through Analytics class api', () async {
@@ -699,55 +737,96 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   });
 
   test('Check the query on the log file works as expected', () {
-    expect(analytics.logFileStats(), isNull,
-        reason: 'The result for the log file stats should be null when '
-            'there are no logs');
-    analytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    // Define a new clock so that we can check the output of the
+    // log file stats method explicitly
+    final DateTime start = DateTime(1995, 3, 3, 12, 0);
+    final Clock firstClock = Clock.fixed(start);
 
-    final LogFileStats firstQuery = analytics.logFileStats()!;
-    expect(firstQuery.sessionCount, 1,
-        reason:
-            'There should only be one session after the initial send event');
-    expect(firstQuery.flutterChannelCount, 1,
-        reason: 'There should only be one flutter channel logged');
-    expect(firstQuery.toolCount, 1,
-        reason: 'There should only be one tool logged');
-
-    // Define a new clock that is outside of the session duration
-    final DateTime firstClock =
-        clock.now().add(Duration(minutes: kSessionDurationMinutes + 1));
-
-    // Use the new clock to send an event that will change the session identifier
-    withClock(Clock.fixed(firstClock), () {
+    // Run with the simulated clock for the initial events
+    withClock(firstClock, () {
+      expect(analytics.logFileStats(), isNull,
+          reason: 'The result for the log file stats should be null when '
+              'there are no logs');
       analytics.sendEvent(
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+      final LogFileStats firstQuery = analytics.logFileStats()!;
+      expect(firstQuery.sessionCount, 1,
+          reason:
+              'There should only be one session after the initial send event');
+      expect(firstQuery.flutterChannelCount, 1,
+          reason: 'There should only be one flutter channel logged');
+      expect(firstQuery.toolCount, 1,
+          reason: 'There should only be one tool logged');
     });
 
-    final LogFileStats secondQuery = analytics.logFileStats()!;
-    expect(secondQuery.sessionCount, 2,
-        reason: 'There should be 2 sessions after the second event');
+    // Define a new clock that is outside of the session duration
+    final DateTime secondClock =
+        start.add(Duration(minutes: kSessionDurationMinutes + 1));
+
+    // Use the new clock to send an event that will change the session identifier
+    withClock(Clock.fixed(secondClock), () {
+      analytics.sendEvent(
+          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+
+      final LogFileStats secondQuery = analytics.logFileStats()!;
+
+      // Construct the expected response for the second query
+      //
+      // This will need to be updated as the output for [LogFileStats]
+      // changes in the future
+      //
+      // Expecting the below returned
+      // {
+      //     "startDateTime": "1995-03-03 12:00:00.000",
+      //     "minsFromStartDateTime": 31,
+      //     "endDateTime": "1995-03-03 12:31:00.000",
+      //     "minsFromEndDateTime": 0,
+      //     "sessionCount": 2,
+      //     "flutterChannelCount": 1,
+      //     "toolCount": 1,
+      //     "recordCount": 2,
+      //     "eventCount": {
+      //         "hot_reload_time": 2
+      //     }
+      // }
+      expect(secondQuery.startDateTime, DateTime(1995, 3, 3, 12, 0));
+      expect(secondQuery.minsFromStartDateTime, 31);
+      expect(secondQuery.endDateTime, DateTime(1995, 3, 3, 12, 31));
+      expect(secondQuery.minsFromEndDateTime, 0);
+      expect(secondQuery.sessionCount, 2);
+      expect(secondQuery.flutterChannelCount, 1);
+      expect(secondQuery.toolCount, 1);
+      expect(secondQuery.recordCount, 2);
+      expect(secondQuery.eventCount, <String, int>{'hot_reload_time': 2});
+    });
   });
 
   test('Check that the log file shows two different tools being used', () {
-    final Analytics secondAnalytics = Analytics.test(
-      tool: secondTool,
-      homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
-      flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion,
-      toolsMessage: toolsMessage,
-      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
-      dartVersion: 'Dart 2.19.0',
-      fs: fs,
-      platform: platform,
-    );
+    // Use a for loop two initialize the second analytics instance
+    // twice to account for no events being sent on the first instance
+    // run for a given tool
+    Analytics? secondAnalytics;
+    for (int i = 0; i < 2; i++) {
+      secondAnalytics = Analytics.test(
+        tool: secondTool,
+        homeDirectory: home,
+        measurementId: 'measurementId',
+        apiSecret: 'apiSecret',
+        flutterChannel: flutterChannel,
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+        dartVersion: 'Dart 2.19.0',
+        fs: fs,
+        platform: platform,
+      );
+    }
 
     // Send events with both instances of the classes
     analytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    secondAnalytics.sendEvent(
+    secondAnalytics!.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     // Query the log file stats to verify that there are two tools
@@ -769,7 +848,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         '"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},'
         '"dart_version":{"value":"Dart 2.19.0"},'
         // '"tool":{"value":"flutter-tools"},'  NEEDS REMAIN REMOVED
-        '"local_time":{"value":"2023-01-31 14:32:14.592898"}}}';
+        '"local_time":{"value":"2023-01-31 14:32:14.592898 -0500"}}}';
 
     logFile.writeAsStringSync(malformedLog);
     final LogFileStats? query = analytics.logFileStats();
@@ -791,7 +870,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         '"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},'
         '"dart_version":{"value":"Dart 2.19.0"},'
         '"tool":{"value":"flutter-tools"},'
-        '"local_time":{"value":"2023-xx-31 14:32:14.592898"}}}'; // PURPOSEFULLY MALFORMED
+        '"local_time":{"value":"2023-xx-31 14:32:14.592898 -0500"}}}'; // PURPOSEFULLY MALFORMED
 
     logFile.writeAsStringSync(malformedLog);
     final LogFileStats? query = analytics.logFileStats();
@@ -801,7 +880,8 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
             'The query should be null because the `local_time` value is malformed');
   });
 
-  test('Check that the constant kPackageVersion matches pubspec version', () {
+  test('Version is the same in the change log, pubspec, and constants.dart',
+      () {
     // Parse the contents of the pubspec.yaml
     final String pubspecYamlString = io.File('pubspec.yaml').readAsStringSync();
 
@@ -814,26 +894,39 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
             'constants.dart need to match\n'
             'Pubspec: $version && constants.dart: $kPackageVersion\n\n'
             'Make sure both are the same');
+
+    // Parse the contents of the change log file
+    final String changeLogFirstLineString =
+        io.File('CHANGELOG.md').readAsLinesSync().first;
+    expect(changeLogFirstLineString.substring(3), kPackageVersion,
+        reason: 'The CHANGELOG.md file needs the first line to '
+            'be the same version as the pubspec and constants.dart');
   });
 
   test('Null values for flutter parameters is reflected properly in log file',
       () {
-    final Analytics secondAnalytics = Analytics.test(
-      tool: secondTool,
-      homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
-      // flutterChannel: flutterChannel,           THIS NEEDS TO REMAIN REMOVED
-      // toolsMessageVersion: toolsMessageVersion, THIS NEEDS TO REMAIN REMOVED
-      toolsMessage: toolsMessage,
-      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
-      dartVersion: 'Dart 2.19.0',
-      fs: fs,
-      platform: platform,
-    );
+    // Use a for loop two initialize the second analytics instance
+    // twice to account for no events being sent on the first instance
+    // run for a given tool
+    Analytics? secondAnalytics;
+    for (int i = 0; i < 2; i++) {
+      secondAnalytics = Analytics.test(
+        tool: secondTool,
+        homeDirectory: home,
+        measurementId: 'measurementId',
+        apiSecret: 'apiSecret',
+        // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
+        toolsMessageVersion: toolsMessageVersion,
+        toolsMessage: toolsMessage,
+        flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+        dartVersion: 'Dart 2.19.0',
+        fs: fs,
+        platform: platform,
+      );
+    }
 
     // Send an event and check that the query stats reflects what is expected
-    secondAnalytics.sendEvent(
+    secondAnalytics!.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     // Query the log file stats to verify that there are two tools

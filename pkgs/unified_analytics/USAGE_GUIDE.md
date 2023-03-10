@@ -156,18 +156,30 @@ print(analytics.logFileStats());
 
 // Prints out the below
 // {
-//     "startDateTime": "2023-02-08 15:07:10.293728",
-//     "endDateTime": "2023-02-08 15:07:10.299678",
-//     "sessionCount": 1,
-//     "flutterChannelCount": 1,
-//     "toolCount": 1
+//     "startDateTime": "2023-02-22 15:23:24.410921",
+//     "minsFromStartDateTime": 20319,
+//     "endDateTime": "2023-03-08 15:46:36.318211",
+//     "minsFromEndDateTime": 136,
+//     "sessionCount": 7,
+//     "flutterChannelCount": 2,
+//     "toolCount": 1,
+//     "recordCount": 23,
+//     "eventCount": {
+//         "hot_reload_time": 16,
+//         "analytics_collection_enabled": 7,
+//         ... scales up with number of events
+//     }
 // }
 ```
 
 Explanation of the each key above
 
 - startDateTime: the earliest event that was sent
+- minsFromStartDateTime: the number of minutes elapsed since the earliest message
 - endDateTime: the latest, most recent event that was sent
+- minsFromEndDateTime: the number of minutes elapsed since the latest message
 - sessionCount: count of sessions; sessions have a minimum time of 30 minutes
 - flutterChannelCount: count of flutter channels (can be 0 if developer is a Dart dev only)
 - toolCount: count of the Dart and Flutter tools sending analytics
+- recordCount: count of the total number of events in the log file
+- eventCount: counts each unique event and how many times they occurred in the log file
