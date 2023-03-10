@@ -234,7 +234,7 @@ class LogItem {
   ///             "value": "flutter-tools"
   ///         },
   ///         "local_time": {
-  ///             "value": "2023-01-31 14:32:14.592898"
+  ///             "value": "2023-01-31 14:32:14.592898 -0500"
   ///         }
   ///     }
   /// }
@@ -294,7 +294,7 @@ class LogItem {
       }
 
       // Parse the local time from the string extracted
-      final DateTime localTime = DateTime.parse(localTimeString!);
+      final DateTime localTime = DateTime.parse(localTimeString!).toLocal();
 
       return LogItem(
         eventName: eventName,

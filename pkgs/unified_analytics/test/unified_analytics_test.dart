@@ -848,7 +848,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         '"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},'
         '"dart_version":{"value":"Dart 2.19.0"},'
         // '"tool":{"value":"flutter-tools"},'  NEEDS REMAIN REMOVED
-        '"local_time":{"value":"2023-01-31 14:32:14.592898"}}}';
+        '"local_time":{"value":"2023-01-31 14:32:14.592898 -0500"}}}';
 
     logFile.writeAsStringSync(malformedLog);
     final LogFileStats? query = analytics.logFileStats();
