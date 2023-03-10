@@ -69,6 +69,10 @@ enum DashEvent {
 ///
 /// All [label] values should use an underscore as a delimiter.
 enum DashTool {
+  dartTools(
+    label: 'dart_tools',
+    description: 'A CLI for Dart development',
+  ),
   flutterTools(
     label: 'flutter_tools',
     description: 'Runs flutter applications from CLI',
