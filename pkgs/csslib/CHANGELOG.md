@@ -5,6 +5,7 @@
 - Fixed the reported span for `Expression` nodes.
 - Fixed a regression parsing declaration values containing spaces.
 - Add support for `lh` and `rlh` units.
+- Refactor the package example.
 
 ## 0.17.2
 
