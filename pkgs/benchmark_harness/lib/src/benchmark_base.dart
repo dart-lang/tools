@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of benchmark_harness;
+import 'dart:math' as math;
+
+import 'score_emitter.dart';
 
 const int _minimumMeasureDurationMillis = 2000;
 
@@ -40,7 +42,7 @@ class BenchmarkBase {
   /// to reach [minimumMillis].
   static _Measurement _measureForImpl(void Function() f, int minimumMillis) {
     final minimumMicros = minimumMillis * 1000;
-    // If running a long measurement permit some amount of measurment jitter
+    // If running a long measurement permit some amount of measurement jitter
     // to avoid discarding results that are almost good, but not quite there.
     final allowedJitter =
         minimumMillis < 1000 ? 0 : (minimumMicros * 0.1).floor();

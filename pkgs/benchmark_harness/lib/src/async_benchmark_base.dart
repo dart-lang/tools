@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of benchmark_harness;
+import 'score_emitter.dart';
 
 class AsyncBenchmarkBase {
   final String name;
@@ -30,10 +30,10 @@ class AsyncBenchmarkBase {
   /// Not measured setup code executed prior to the benchmark runs.
   Future<void> setup() async {}
 
-  /// Not measures teardown code executed after the benchark runs.
+  /// Not measures teardown code executed after the benchmark runs.
   Future<void> teardown() async {}
 
-  /// Measures the score for this benchmark by executing it repeately until
+  /// Measures the score for this benchmark by executing it repeatedly until
   /// time minimum has been reached.
   static Future<double> measureFor(
       Future<void> Function() f, int minimumMillis) async {
