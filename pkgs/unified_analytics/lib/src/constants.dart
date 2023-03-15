@@ -70,7 +70,7 @@ const int kLogFileLength = 2500;
 const String kLogFileName = 'dash-analytics.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '0.1.1';
+const String kPackageVersion = '0.1.2';
 
 /// The minimum length for a session
 const int kSessionDurationMinutes = 30;

@@ -6,6 +6,12 @@ It provides APIs to send events to Google Analytics using the Measurement Protoc
 To get started using this package, import at the entrypoint dart file and
 initialize with the required parameters
 
+**IMPORTANT**: It is best practice to close the http client connection when finished
+sending events, otherwise, you may notice that the dart process hangs on exit. The example below
+shows how to handle closing the connection via `analytics.close()` method
+
+[Link to documentation for http client's close method](https://pub.dev/documentation/http/latest/http/Client-class.html)
+
 ```dart
 import 'unified_analytics/unified_analytics.dart';
 

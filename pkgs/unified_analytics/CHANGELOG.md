@@ -1,3 +1,7 @@
+## 0.1.2
+
+- Implemented fake Google Analytics Client for `Analytics.test(...)` constructor; marked with visible for testing annotation
+
 ## 0.1.1
 
 - Bumping intl package to 0.18.0 to fix version solving issue with flutter_tools

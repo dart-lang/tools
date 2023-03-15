@@ -8,6 +8,7 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:http/http.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'config_handler.dart';
@@ -43,6 +44,13 @@ abstract class Analytics {
       platform = DevicePlatform.windows;
     }
 
+    // Create the instance of the GA Client which will create
+    // an [http.Client] to send requests
+    final GAClient gaClient = GAClient(
+      measurementId: kGoogleAnalyticsMeasurementId,
+      apiSecret: kGoogleAnalyticsApiSecret,
+    );
+
     return AnalyticsImpl(
       tool: tool.label,
       homeDirectory: getHomeDirectory(fs),
@@ -55,11 +63,13 @@ abstract class Analytics {
       toolsMessage: kToolsMessage,
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
+      gaClient: gaClient,
     );
   }
 
   /// Factory constructor to return the [AnalyticsImpl] class with a
   /// [MemoryFileSystem] to use for testing
+  @visibleForTesting
   factory Analytics.test({
     required String tool,
     required Directory homeDirectory,
@@ -90,6 +100,7 @@ abstract class Analytics {
                   ? FileSystemStyle.windows
                   : FileSystemStyle.posix,
             ),
+        gaClient: FakeGAClient(),
       );
 
   /// Returns a map object with all of the tools that have been parsed
@@ -140,7 +151,7 @@ class AnalyticsImpl implements Analytics {
   final FileSystem fs;
   late final ConfigHandler _configHandler;
   late bool _showMessage;
-  late final GAClient _gaClient;
+  final GAClient _gaClient;
   late final String _clientId;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
@@ -160,7 +171,8 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessage,
     required int toolsMessageVersion,
     required this.fs,
-  }) {
+    required gaClient,
+  }) : _gaClient = gaClient {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
@@ -197,13 +209,6 @@ class AnalyticsImpl implements Analytics {
         .file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
         .readAsStringSync();
-
-    // Create the instance of the GA Client which will create
-    // an [http.Client] to send requests
-    _gaClient = GAClient(
-      measurementId: measurementId,
-      apiSecret: apiSecret,
-    );
 
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
@@ -311,6 +316,7 @@ class TestAnalytics extends AnalyticsImpl {
     required super.toolsMessage,
     required super.toolsMessageVersion,
     required super.fs,
+    required super.gaClient,
   });
 
   @override
