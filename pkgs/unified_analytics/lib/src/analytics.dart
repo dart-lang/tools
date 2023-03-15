@@ -8,6 +8,7 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:http/http.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'config_handler.dart';
@@ -68,6 +69,7 @@ abstract class Analytics {
 
   /// Factory constructor to return the [AnalyticsImpl] class with a
   /// [MemoryFileSystem] to use for testing
+  @visibleForTesting
   factory Analytics.test({
     required String tool,
     required Directory homeDirectory,
