@@ -8,6 +8,27 @@ import 'package:http/http.dart' as http;
 
 import 'constants.dart';
 
+class FakeGAClient implements GAClient {
+  @override
+  String get apiSecret => throw UnimplementedError();
+
+  @override
+  String get measurementId => throw UnimplementedError();
+
+  @override
+  String get postUrl => throw UnimplementedError();
+
+  @override
+  http.Client get _client => throw UnimplementedError();
+
+  @override
+  void close() {}
+
+  @override
+  Future<http.Response> sendData(Map<String, Object?> body) =>
+      Future<http.Response>.value(http.Response('', 200));
+}
+
 class GAClient {
   final String measurementId;
   final String apiSecret;
