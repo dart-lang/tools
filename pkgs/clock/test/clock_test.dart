@@ -93,7 +93,7 @@ void main() {
   });
 
   test('should return time millis ago', () {
-    expect(clock.millisAgo(1000), DateTime(2012, 12, 31, 23, 59, 59, 000));
+    expect(clock.millisAgo(1000), DateTime(2012, 12, 31, 23, 59, 59));
   });
 
   test('should return time millis from now', () {
@@ -101,27 +101,27 @@ void main() {
   });
 
   test('should return time seconds ago', () {
-    expect(clock.secondsAgo(10), DateTime(2012, 12, 31, 23, 59, 50, 000));
+    expect(clock.secondsAgo(10), DateTime(2012, 12, 31, 23, 59, 50));
   });
 
   test('should return time seconds from now', () {
-    expect(clock.secondsFromNow(3), DateTime(2013, 1, 1, 0, 0, 3, 0));
+    expect(clock.secondsFromNow(3), DateTime(2013, 1, 1, 0, 0, 3));
   });
 
   test('should return time minutes ago', () {
-    expect(clock.minutesAgo(10), DateTime(2012, 12, 31, 23, 50, 0, 000));
+    expect(clock.minutesAgo(10), DateTime(2012, 12, 31, 23, 50));
   });
 
   test('should return time minutes from now', () {
-    expect(clock.minutesFromNow(3), DateTime(2013, 1, 1, 0, 3, 0, 0));
+    expect(clock.minutesFromNow(3), DateTime(2013, 1, 1, 0, 3));
   });
 
   test('should return time hours ago', () {
-    expect(clock.hoursAgo(10), DateTime(2012, 12, 31, 14, 0, 0, 000));
+    expect(clock.hoursAgo(10), DateTime(2012, 12, 31, 14));
   });
 
   test('should return time hours from now', () {
-    expect(clock.hoursFromNow(3), DateTime(2013, 1, 1, 3, 0, 0, 0));
+    expect(clock.hoursFromNow(3), DateTime(2013, 1, 1, 3));
   });
 
   test('should return time days ago', () {

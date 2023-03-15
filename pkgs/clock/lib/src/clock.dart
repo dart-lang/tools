@@ -20,7 +20,7 @@ import 'utils.dart';
 ///
 /// This class is designed with testability in mind. The current point in time
 /// (or [now()]) is defined by a function that returns a [DateTime]. By
-/// supplying your own time function or using [new Clock.fixed], you can control
+/// supplying your own time function or using [Clock.fixed], you can control
 /// exactly what time a [Clock] returns and base your test expectations on that.
 ///
 /// Most users should use the top-level [clock] field, which provides access to
