@@ -1,6 +1,6 @@
 ## 0.1.2
 
-- Implemented fake Google Analytics Client for `Analytics.test(...)` constructor
+- Implemented fake Google Analytics Client for `Analytics.test(...)` constructor; marked with visible for testing annotation
 
 ## 0.1.1
 
