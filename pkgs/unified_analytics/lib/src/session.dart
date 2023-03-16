@@ -96,7 +96,6 @@ class Session {
   /// to date incase another tool is also calling this package and
   /// making updates to the session file
   void _refreshSessionData() {
-
     try {
       final String sessionFileContents = _sessionFile.readAsStringSync();
       final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
