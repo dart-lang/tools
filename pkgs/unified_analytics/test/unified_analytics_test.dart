@@ -140,10 +140,11 @@ void main() {
 
     // Set the clock to the start value defined above
     withClock(Clock.fixed(start), () {
+      final String timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.readAsStringSync(), 'contents');
       userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
-          '{"session_id":794250000000,"last_ping":794250000000}');
+          '{"session_id":$timestamp,"last_ping":$timestamp}');
     });
   });
 
