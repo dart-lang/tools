@@ -1,3 +1,7 @@
+## 0.1.3-dev
+
+- Error handling functionality added to prevent malformed session json data from causing a crash
+
 ## 0.1.2
 
 - Implemented fake Google Analytics Client for `Analytics.test(...)` constructor; marked with visible for testing annotation

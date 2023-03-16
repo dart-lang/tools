@@ -15,8 +15,11 @@ class Session {
   final Directory homeDirectory;
   final FileSystem fs;
   final File _sessionFile;
-  int _sessionId;
-  int _lastPing;
+
+  // Initialize as 0 but will get parsed to real values
+  // within the private constructor's body
+  int _sessionId = 0;
+  int _lastPing = 0;
 
   /// This constructor will go to the session json file in
   /// the user's home directory and extract the necessary fields from
@@ -28,19 +31,10 @@ class Session {
     final File sessionFile = fs.file(
         p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
 
-    // Fetch the data from the json file
-    final int sessionId;
-    final int lastPing;
-    final List<int> results = parseSessionFile(sessionFile);
-    sessionId = results.first;
-    lastPing = results.last;
-
     return Session._(
       homeDirectory: homeDirectory,
       fs: fs,
       sessionFile: sessionFile,
-      sessionId: sessionId,
-      lastPing: lastPing,
     );
   }
 
@@ -49,11 +43,9 @@ class Session {
     required this.homeDirectory,
     required this.fs,
     required File sessionFile,
-    required int sessionId,
-    required int lastPing,
-  })  : _sessionFile = sessionFile,
-        _sessionId = sessionId,
-        _lastPing = lastPing;
+  }) : _sessionFile = sessionFile {
+    _refreshSessionData();
+  }
 
   /// This will use the data parsed from the
   /// session json file in the dart-tool directory
@@ -97,39 +89,26 @@ class Session {
 
   /// This will go to the session file within the dart-tool
   /// directory and fetch the latest data from the json to update
-  /// the class's variables
+  /// the class's variables. If the json file is malformed, a new
+  /// session file will be recreated
   ///
   /// This allows the session data in this class to always be up
   /// to date incase another tool is also calling this package and
   /// making updates to the session file
   void _refreshSessionData() {
-    final String sessionFileContents = _sessionFile.readAsStringSync();
-    final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-    _sessionId = sessionObj['session_id'] as int;
-    _lastPing = sessionObj['last_ping'] as int;
-  }
-
-  /// This will go to the file passed and extract the json contents
-  /// of the session file. If the json file is malformed, it will
-  /// recreate the session file
-  static List<int> parseSessionFile(File sessionFile) {
-    int sessionId;
-    int lastPing;
 
     try {
-      final String sessionFileContents = sessionFile.readAsStringSync();
+      final String sessionFileContents = _sessionFile.readAsStringSync();
       final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-      sessionId = sessionObj['session_id'] as int;
-      lastPing = sessionObj['last_ping'] as int;
+      _sessionId = sessionObj['session_id'] as int;
+      _lastPing = sessionObj['last_ping'] as int;
     } catch (e) {
-      Initializer.createSessionFile(sessionFile: sessionFile);
+      Initializer.createSessionFile(sessionFile: _sessionFile);
 
-      final String sessionFileContents = sessionFile.readAsStringSync();
+      final String sessionFileContents = _sessionFile.readAsStringSync();
       final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-      sessionId = sessionObj['session_id'] as int;
-      lastPing = sessionObj['last_ping'] as int;
+      _sessionId = sessionObj['session_id'] as int;
+      _lastPing = sessionObj['last_ping'] as int;
     }
-
-    return [sessionId, lastPing];
   }
 }

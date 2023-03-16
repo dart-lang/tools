@@ -135,7 +135,16 @@ void main() {
     // can't be decoded as json
     sessionFile.writeAsStringSync('contents');
 
+    // Define the initial time to start
+    final DateTime start = DateTime(1995, 3, 3, 12, 0);
 
+    // Set the clock to the start value defined above
+    withClock(Clock.fixed(start), () {
+      expect(sessionFile.readAsStringSync(), 'contents');
+      userProperty.preparePayload();
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id":794250000000,"last_ping":794250000000}');
+    });
   });
 
   test('New tool is successfully added to config file', () {
