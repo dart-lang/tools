@@ -9,6 +9,7 @@ import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
+import 'initializer.dart';
 
 class Session {
   final Directory homeDirectory;
@@ -27,10 +28,12 @@ class Session {
     final File sessionFile = fs.file(
         p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
 
-    final String sessionFileContents = sessionFile.readAsStringSync();
-    final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-    final int sessionId = sessionObj['session_id'] as int;
-    final int lastPing = sessionObj['last_ping'] as int;
+    // Fetch the data from the json file
+    final int sessionId;
+    final int lastPing;
+    final List<int> results = parseSessionFile(sessionFile);
+    sessionId = results.first;
+    lastPing = results.last;
 
     return Session._(
       homeDirectory: homeDirectory,
@@ -104,5 +107,29 @@ class Session {
     final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
     _sessionId = sessionObj['session_id'] as int;
     _lastPing = sessionObj['last_ping'] as int;
+  }
+
+  /// This will go to the file passed and extract the json contents
+  /// of the session file. If the json file is malformed, it will
+  /// recreate the session file
+  static List<int> parseSessionFile(File sessionFile) {
+    int sessionId;
+    int lastPing;
+
+    try {
+      final String sessionFileContents = sessionFile.readAsStringSync();
+      final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
+      sessionId = sessionObj['session_id'] as int;
+      lastPing = sessionObj['last_ping'] as int;
+    } catch (e) {
+      Initializer.createSessionFile(sessionFile: sessionFile);
+
+      final String sessionFileContents = sessionFile.readAsStringSync();
+      final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
+      sessionId = sessionObj['session_id'] as int;
+      lastPing = sessionObj['last_ping'] as int;
+    }
+
+    return [sessionId, lastPing];
   }
 }

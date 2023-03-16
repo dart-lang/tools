@@ -77,7 +77,7 @@ $tool=$dateStamp,$toolsMessageVersion
   /// the current session id along with the timestamp for
   /// the last ping which will be used to increment the session
   /// if current timestamp is greater than the session window
-  void createSessionFile({required File sessionFile}) {
+  static void createSessionFile({required File sessionFile}) {
     final DateTime now = clock.now();
     sessionFile.createSync(recursive: true);
     sessionFile.writeAsStringSync(jsonEncode(<String, int>{
@@ -91,7 +91,8 @@ $tool=$dateStamp,$toolsMessageVersion
   /// If it doesn't exist, one will be created there
   ///
   /// Passing [forceReset] as true will only reset the configuration
-  /// file, it won't recreate the client id and session files
+  /// file, it won't recreate the client id, session, and log files
+  /// if they currently exist on disk
   void run({bool forceReset = false}) {
     // Begin by checking for the config file
     final File configFile = fs.file(

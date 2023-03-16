@@ -130,6 +130,14 @@ void main() {
             'for the initialized tool');
   });
 
+  test('Resetting session file when data is malformed', () {
+    // Purposefully write content to the session file that
+    // can't be decoded as json
+    sessionFile.writeAsStringSync('contents');
+
+
+  });
+
   test('New tool is successfully added to config file', () {
     // Create a new instance of the analytics class with the new tool
     final Analytics secondAnalytics = Analytics.test(
