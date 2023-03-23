@@ -53,7 +53,5 @@ jobs:
         uses: coverallsapp/github-action@50c33ad324a9902697adbf2f92c22cf5023eacf1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: cli_config_tests
-          parallel: true
           path-to-lcov: ./pkgs/cli_config/coverage/lcov.info
         if: ${{ matrix.sdk == 'stable' }}
