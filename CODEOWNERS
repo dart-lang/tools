@@ -2,4 +2,5 @@
 # for code within the repository
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
+/pkgs/cli_config/ @dcharkes @HosseinYousefi
 /pkgs/unified_analytics/ @eliasyishak
