@@ -56,29 +56,10 @@ class CliProvider extends Provider {
   }
 
   @override
-  Uri? getOptionalPath(
-    String key, {
-    bool resolveUri = false,
-  }) {
-    assert(resolveUri == false);
-    final stringValue = getOptionalString(key);
-    if (stringValue != null) {
-      return Provider.fileSystemPathToUri(stringValue);
-    }
-    return null;
-  }
-
-  @override
-  List<Uri>? getOptionalPathList(
-    String key, {
-    String? splitPattern,
-    bool resolveUri = false,
-  }) {
-    assert(resolveUri == false);
-    final strings = getOptionalStringList(key, splitPattern: splitPattern);
-    return strings?.map((e) => Uri(path: e)).toList();
-  }
-
-  @override
   String toString() => 'CliProvider($_cli)';
+
+  @override
+
+  /// CLI paths are not resolved.
+  Uri? get baseUri => null;
 }

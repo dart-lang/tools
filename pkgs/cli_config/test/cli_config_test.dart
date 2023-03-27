@@ -16,7 +16,7 @@ void main() {
     const path4 = 'path/in/environment_2/';
     const path5 = 'path/in/config_file/';
     const path6 = 'path/in/config_file_2/';
-    final config = Config(
+    final config = Config.fromConfigFileContents(
       cliDefines: [
         'build.out_dir=$path1',
         'build.out_dir=$path2',
@@ -59,7 +59,7 @@ void main() {
     const path1 = 'path/in/cli_arguments/';
     const path2 = 'path/in/environment/';
     const path3 = 'path/in/config_file/';
-    final config = Config(
+    final config = Config.fromConfigFileContents(
       cliDefines: [
         'build.out_dir=$path1',
       ],
@@ -84,7 +84,7 @@ void main() {
   test('getOptionalString environment precedence', () {
     const path2 = 'path/in/environment/';
     const path3 = 'path/in/config_file/';
-    final config = Config(
+    final config = Config.fromConfigFileContents(
       cliDefines: [],
       environment: {
         'BUILD__OUT_DIR': path2,
@@ -106,7 +106,7 @@ void main() {
 
   test('getOptionalString config file', () {
     const path3 = 'path/in/config_file/';
-    final config = Config(
+    final config = Config.fromConfigFileContents(
       cliDefines: [],
       environment: {},
       fileContents: jsonEncode(
@@ -143,7 +143,7 @@ void main() {
   });
 
   test('getOptionalBool  file', () {
-    final config = Config(
+    final config = Config.fromConfigFileContents(
       fileContents: jsonEncode(
         {'my_bool': true},
       ),
@@ -292,17 +292,8 @@ void main() {
     config.toString();
   });
 
-  test('Config ArgumentError', () {
-    expect(
-      () => Config(
-        fileParsed: {'key': 'baz'},
-        fileContents: "{'key': 'baz'}",
-      ),
-      throwsArgumentError,
-    );
-  });
   test('Missing nonullable throws FormatException', () {
-    final config = Config();
+    final config = Config.fromConfigFileContents();
     expect(() => config.getBool('key'), throwsFormatException);
     expect(() => config.getString('key'), throwsFormatException);
     expect(() => config.getPath('key'), throwsFormatException);
@@ -354,10 +345,12 @@ void main() {
   });
 
   test('Unexpected config file contents', () {
-    expect(() => Config(fileContents: 'asdf'), throwsFormatException);
-    expect(() => Config(fileContents: "['asdf']"), throwsFormatException);
+    expect(() => Config.fromConfigFileContents(fileContents: 'asdf'),
+        throwsFormatException);
+    expect(() => Config.fromConfigFileContents(fileContents: "['asdf']"),
+        throwsFormatException);
     expect(
-      () => Config(fileContents: '''foo:
+      () => Config.fromConfigFileContents(fileContents: '''foo:
   bar:
     WRONGKEY:
       1
@@ -367,7 +360,7 @@ void main() {
   });
 
   test('file config try to access object as wrong type', () {
-    final config = Config(fileContents: '''foo:
+    final config = Config.fromConfigFileContents(fileContents: '''foo:
   bar:
     true
 ''');

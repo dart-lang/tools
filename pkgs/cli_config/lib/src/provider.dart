@@ -5,6 +5,9 @@
 import 'dart:io';
 
 abstract class Provider {
+  /// If provided, the uri used for resolving paths.
+  Uri? get baseUri;
+
   /// Lookup a nullable string value.
   String? getOptionalString(String key);
 
@@ -18,27 +21,6 @@ abstract class Provider {
 
   /// Lookup an optional boolean value.
   bool? getOptionalBool(String key);
-
-  /// Lookup an optional path in this config.
-  ///
-  /// If [resolveUri], resolves the paths in config file relative to the
-  /// config file.
-  Uri? getOptionalPath(
-    String key, {
-    bool resolveUri = true,
-  });
-
-  /// Lookup a list of paths in this config.
-  ///
-  /// If provided, [splitPattern] splits value.
-  ///
-  /// If [resolveUri], resolves the paths in config file relative to the
-  /// config file.
-  List<Uri>? getOptionalPathList(
-    String key, {
-    String? splitPattern,
-    bool resolveUri = true,
-  });
 
   static void throwIfUnexpectedValue<T>(
       String key, T value, Iterable<T> validValues) {

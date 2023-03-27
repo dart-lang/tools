@@ -31,12 +31,13 @@ class FileParser {
     return value;
   }
 
+  static final _keyRegex = RegExp('([a-z-_]+)');
+
   String parseKey(String key) {
-    final regex = RegExp('([a-z-_]+)');
-    final match = regex.matchAsPrefix(key);
+    final match = _keyRegex.matchAsPrefix(key);
     if (match == null || match.group(0) != key) {
-      throw FormatException(
-          "Define '$key' does not match expected pattern '${regex.pattern}'.");
+      throw FormatException("Define '$key' does not match expected pattern "
+          "'${_keyRegex.pattern}'.");
     }
     return key.replaceAll('-', '_');
   }

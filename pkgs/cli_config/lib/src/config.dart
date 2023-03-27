@@ -27,6 +27,18 @@ import 'provider.dart';
 /// precedence over environment variables, which take precedence over the
 /// configuration file.
 ///
+/// If a single value is requested from this configuration, the first source
+/// that can provide the value will provide it. For example
+/// `config.getString('some_key')` with `{'some_key': 'file_value'}` in the
+/// config file and `-Dsome_key=cli_value` as commandline argument returns
+/// `'cli_value'`. The implication is that you can not remove keys from the
+/// configuration file, only overwrite or append them.
+///
+/// If a list value is requested from this configuration, the values provided
+/// by the various sources can be combined or not. For example
+/// `config.getStringList('some_key', combineAllConfigs: true)` returns
+/// `['cli_value', 'file_value']`.
+///
 /// The config is hierarchical in nature, using `.` as the hierarchy separator
 /// for lookup and commandline defines. The hierarchy should be materialized in
 /// the JSON or YAML configuration file. For environment variables `__` is used
@@ -71,29 +83,54 @@ class Config {
   ///
   /// If provided, [environment] must be a map containing environment varibales.
   ///
-  /// At most one of [fileContents] or [fileParsed] must be provided.
-  /// If provided, [fileContents] must be valid JSON or YAML.
   /// If provided, [fileParsed] must be valid parsed YSON or YAML (maps, lists,
   /// strings, integers, and booleans).
   ///
-  /// If provided [fileSourceUri], is used to provide better error messages on
-  /// parsing the configuration file.
+  /// If provided [fileSourceUri], is used to resolve paths inside
+  /// [fileContents] and to provide better error messages on parsing the
+  /// configuration file.
   factory Config({
     List<String> cliDefines = const [],
     Map<String, String> environment = const {},
-    Map<String, dynamic>? fileParsed,
+    Map<String, dynamic> fileParsed = const {},
+    Uri? fileSourceUri,
+  }) {
+    // Parse config file.
+    final fileConfig = FileParser().parseMap(fileParsed);
+
+    // Parse CLI argument defines.
+    final cliConfig = DefinesParser().parse(cliDefines);
+
+    // Parse environment.
+    final environmentConfig = EnvironmentParser().parse(environment);
+
+    return Config._(
+      CliProvider(cliConfig),
+      EnvironmentProvider(environmentConfig),
+      FileProvider(fileConfig, fileSourceUri),
+    );
+  }
+
+  /// Constructs a config by parsing the three sources.
+  ///
+  /// If provided, [cliDefines] must be a list of '<key>=<value>'.
+  ///
+  /// If provided, [environment] must be a map containing environment varibales.
+  ///
+  /// If provided, [fileContents] must be valid JSON or YAML.
+  ///
+  /// If provided [fileSourceUri], is used to resolve paths inside
+  /// [fileContents] and to provide better error messages on parsing the
+  /// configuration file.
+  factory Config.fromConfigFileContents({
+    List<String> cliDefines = const [],
+    Map<String, String> environment = const {},
     String? fileContents,
     Uri? fileSourceUri,
   }) {
     // Parse config file.
-    if (_countNonNulls([fileContents, fileParsed]) > 1) {
-      throw ArgumentError(
-          'Provide at most one of `fileParsed` and `fileContents`.');
-    }
     final Map<String, dynamic> fileConfig;
-    if (fileParsed != null) {
-      fileConfig = FileParser().parseMap(fileParsed);
-    } else if (fileContents != null) {
+    if (fileContents != null) {
       fileConfig = FileParser().parse(
         fileContents,
         sourceUrl: fileSourceUri,
@@ -119,7 +156,7 @@ class Config {
   ///
   /// The [args] must be commandline arguments.
   ///
-  /// If provided, [environment] must be a map containing environment varibales.
+  /// If provided, [environment] must be a map containing environment variables.
   /// If not provided, [environment] defaults to [Platform.environment].
   ///
   /// This async constructor is intended to be used directly in CLI files.
@@ -138,7 +175,7 @@ class Config {
       fileSourceUri = Uri.file(configFile);
     }
 
-    return Config(
+    return Config.fromConfigFileContents(
       cliDefines: results['define'] as List<String>,
       environment: environment ?? Platform.environment,
       fileContents: fileContents,
@@ -301,14 +338,32 @@ class Config {
     bool resolveFileUri = true,
     bool mustExist = false,
   }) {
-    Uri? value;
-    value ??= _cliProvider.getOptionalPath(key);
-    value ??= _environmentProvider.getOptionalPath(key);
-    value ??= _fileProvider.getOptionalPath(key, resolveUri: resolveFileUri);
-    if (mustExist && value != null) {
-      _throwIfNotExists(key, value);
+    for (final provider in _providers) {
+      final path = provider.getOptionalString(key);
+      if (path != null) {
+        final value = _pathToUri(
+          path,
+          resolveUri: resolveFileUri && provider == _fileProvider,
+          baseUri: provider.baseUri,
+        );
+        if (mustExist) {
+          _throwIfNotExists(key, value);
+        }
+        return value;
+      }
     }
-    return value;
+    return null;
+  }
+
+  Uri _pathToUri(
+    String path, {
+    required bool resolveUri,
+    required Uri? baseUri,
+  }) {
+    if (resolveUri && baseUri != null) {
+      return baseUri.resolve(path);
+    }
+    return Provider.fileSystemPathToUri(path);
   }
 
   /// Lookup a list of paths in this config.
@@ -337,12 +392,19 @@ class Config {
     }.entries) {
       final provider = entry.key;
       final splitPattern = entry.value;
-      final value = provider.getOptionalPathList(
+      final paths = provider.getOptionalStringList(
         key,
         splitPattern: splitPattern,
-        resolveUri: resolveFileUri && provider == _fileProvider,
       );
-      if (value != null) {
+      if (paths != null) {
+        final value = [
+          for (final path in paths)
+            _pathToUri(
+              path,
+              resolveUri: resolveFileUri && provider == _fileProvider,
+              baseUri: provider.baseUri,
+            )
+        ];
         if (combineAllConfigs) {
           (result ??= []).addAll(value);
         } else {
@@ -383,5 +445,3 @@ extension on Uri {
     return File.fromUri(this);
   }
 }
-
-int _countNonNulls(List<Object?> objects) => objects.whereType<Object>().length;

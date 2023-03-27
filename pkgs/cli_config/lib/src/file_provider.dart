@@ -12,9 +12,10 @@ class FileProvider extends Provider {
   final Map<String, dynamic> _file;
 
   /// If provided, used to resolve paths within [_file].
-  final Uri? _fileUri;
+  @override
+  final Uri? baseUri;
 
-  FileProvider(this._file, this._fileUri);
+  FileProvider(this._file, this.baseUri);
 
   @override
   String? getOptionalString(String key) => getValue<String>(key);
@@ -30,45 +31,6 @@ class FileProvider extends Provider {
 
   @override
   bool? getOptionalBool(String key) => getValue<bool>(key);
-
-  @override
-  Uri? getOptionalPath(
-    String key, {
-    bool resolveUri = true,
-  }) {
-    final path = getOptionalString(key);
-    if (path == null) {
-      return null;
-    }
-    if (resolveUri) {
-      if (_fileUri != null) {
-        return _fileUri!.resolve(path);
-      }
-    }
-    return Provider.fileSystemPathToUri(path);
-  }
-
-  @override
-  List<Uri>? getOptionalPathList(
-    String key, {
-    String? splitPattern,
-    bool resolveUri = false,
-  }) {
-    assert(splitPattern == null);
-    final fileValue = getOptionalStringList(key);
-    if (fileValue != null) {
-      final fileUri = _fileUri;
-      final fileValueUris = fileValue.map((e) {
-        final unresolvedUri = Uri(path: e);
-        if (!resolveUri || fileUri == null) {
-          return unresolvedUri;
-        }
-        return fileUri.resolveUri(unresolvedUri);
-      });
-      return fileValueUris.toList();
-    }
-    return null;
-  }
 
   T? getValue<T>(String key) {
     Object? cursor = _file;
@@ -95,5 +57,5 @@ class FileProvider extends Provider {
   }
 
   @override
-  String toString() => 'FileProvider(file: $_file, fileUri: $_fileUri)';
+  String toString() => 'FileProvider(file: $_file, fileUri: $baseUri)';
 }

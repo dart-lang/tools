@@ -34,14 +34,15 @@ Hierarchies should be maps.''',
 }
 
 class DefinesParser {
+  static final _defineRegex = RegExp('([a-z_.]+)=(.+)');
+
   Map<String, List<String>> parse(List<String> args) {
-    final regex = RegExp('([a-z_.]+)=(.+)');
     final defines = <String, List<String>>{};
     for (final arg in args) {
-      final match = regex.matchAsPrefix(arg);
+      final match = _defineRegex.matchAsPrefix(arg);
       if (match == null || match.group(0) != arg) {
         throw FormatException("Define '$arg' does not match expected pattern "
-            "'${regex.pattern}'.");
+            "'${_defineRegex.pattern}'.");
       }
       final key = match.group(1)!;
       final value = match.group(2)!;
