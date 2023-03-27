@@ -1,7 +1,9 @@
-# Configuration for .github/workflows/pull_request_label.yml. 
+# Configuration for .github/workflows/pull_request_label.yml.
 
 'type-infra':
   - '.github/**'
 
+'package:cli_config':
+  - 'pkgs/cli_config/**'
 'package:unified_analytics':
   - 'pkgs/unified_analytics/**'

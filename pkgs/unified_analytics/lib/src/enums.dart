@@ -23,24 +23,29 @@ enum DashEvent {
   ),
 
   // Events for language_server
-  lintUsageCounts(
-    label: 'lint_usage_counts',
-    description: 'Number of times each lint is enabled',
-    toolOwner: DashTool.languageServer,
-  ),
   clientNotification(
     label: 'client_notification',
     description: 'Notifications sent from the client',
     toolOwner: DashTool.languageServer,
   ),
-  pluginRequest(
-    label: 'plugin_request',
-    description: 'Request responses from plugins',
-    toolOwner: DashTool.languageServer,
-  ),
   clientRequest(
     label: 'client_request',
     description: 'Requests sent from the client',
+    toolOwner: DashTool.languageServer,
+  ),
+  contextStructure(
+    label: 'context_structure',
+    description: 'Structure of the analysis contexts being analyzed',
+    toolOwner: DashTool.languageServer,
+  ),
+  lintUsageCounts(
+    label: 'lint_usage_counts',
+    description: 'Number of times each lint is enabled',
+    toolOwner: DashTool.languageServer,
+  ),
+  pluginRequest(
+    label: 'plugin_request',
+    description: 'Request responses from plugins',
     toolOwner: DashTool.languageServer,
   ),
   serverSession(

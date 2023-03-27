@@ -14,6 +14,7 @@ don't naturally belong to other topic monorepos (like
 
 | Package | Description | Version |
 | --- | --- | --- |
+| [cli_config](pkgs/cli_config/) | A package to take config values from configuration files, CLI arguments, and environment variables. | |
 | [unified_analytics](pkgs/unified_analytics/) | A package for logging analytics for all Dart and Flutter related tooling to Google Analytics. | [![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics) |
 
 ## Publishing automation
