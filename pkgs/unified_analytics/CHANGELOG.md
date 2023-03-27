@@ -1,3 +1,7 @@
+## 0.1.3-dev
+
+- Creating a new analytics constructor to point to a test instance of Google Analytics for developers
+
 ## 0.1.2
 
 - Implemented fake Google Analytics Client for `Analytics.test(...)` constructor; marked with visible for testing annotation

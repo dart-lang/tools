@@ -17,12 +17,10 @@ import 'unified_analytics/unified_analytics.dart';
 
 // Constants that should be resolved by the client using package
 final DashTool tool = DashTool.flutterTools; // Restricted to enum provided by package
-final String measurementId = 'xxxxxxxxxxxx'; // To be provided to client
-final String apiSecret = 'xxxxxxxxxxxx'; // To be provided to client
 
 // Values that need to be provided by the client that may
 // need to be calculated
-final String branch = ...;
+final String channel = ...;
 final String flutterVersion = ...;
 final String dartVersion = ...;
 
@@ -30,10 +28,8 @@ final String dartVersion = ...;
 // preferably outside of the [main] method
 final Analytics analytics = Analytics(
   tool: tool,
-  measurementId: measurementId,
-  apiSecret: apiSecret,
-  branch: branch,
-  flutterVersion: flutterVersion,
+  flutterChannel: channel,  // Optional; only if easy to determine
+  flutterVersion: flutterVersion,  // Optional; only if easy to determine
   dartVersion: dartVersion,
 );
 
@@ -129,12 +125,11 @@ print('This user's status: ${analytics.telemetryEnabled}');  // true if opted-in
 ## Developing Within `package:unified_analytics`
 
 When contributing to this package, if the developer needs to verify that
-events have been sent, the following credentials should be used in
-`lib/src/constants.dart` to point to a separate Google Analytics endpoint
+events have been sent, the developer should the use development constructor
+so that the events being sent are not going into the production instance
 
 ```dart
-const String kGoogleAnalyticsApiSecret = '4yT8__oER3Cd84dtx6r-_A';
-const String kGoogleAnalyticsMeasurementId = 'G-N1NXG28J5B';
+final Analytics analytics = Analytics.development(...);
 ```
 
 Reach out to maintainers to get access to the test Google Analytics endpoint.

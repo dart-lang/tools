@@ -54,8 +54,54 @@ abstract class Analytics {
     return AnalyticsImpl(
       tool: tool.label,
       homeDirectory: getHomeDirectory(fs),
-      measurementId: kGoogleAnalyticsMeasurementId,
-      apiSecret: kGoogleAnalyticsApiSecret,
+      flutterChannel: flutterChannel,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      platform: platform,
+      toolsMessage: kToolsMessage,
+      toolsMessageVersion: kToolsMessageVersion,
+      fs: fs,
+      gaClient: gaClient,
+    );
+  }
+
+  /// Factory constructor to return the [AnalyticsImpl] class with
+  /// Google Analytics credentials that point to a test instance and
+  /// not the production instance where live data will be sent
+  factory Analytics.development({
+    required DashTool tool,
+    required String dartVersion,
+    String? flutterChannel,
+    String? flutterVersion,
+  }) {
+    // Create the instance of the file system so clients don't need
+    // resolve on their own
+    const FileSystem fs = LocalFileSystem();
+
+    // Resolve the OS using dart:io
+    final DevicePlatform platform;
+    if (io.Platform.operatingSystem == 'linux') {
+      platform = DevicePlatform.linux;
+    } else if (io.Platform.operatingSystem == 'macos') {
+      platform = DevicePlatform.macos;
+    } else {
+      platform = DevicePlatform.windows;
+    }
+
+    // Credentials defined below for the test Google Analytics instance
+    const String kTestMeasurementId = 'G-N1NXG28J5B';
+    const String kTestApiSecret = '4yT8__oER3Cd84dtx6r-_A';
+
+    // Create the instance of the GA Client which will create
+    // an [http.Client] to send requests
+    final GAClient gaClient = GAClient(
+      measurementId: kTestMeasurementId,
+      apiSecret: kTestApiSecret,
+    );
+
+    return AnalyticsImpl(
+      tool: tool.label,
+      homeDirectory: getHomeDirectory(fs),
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -86,8 +132,6 @@ abstract class Analytics {
       TestAnalytics(
         tool: tool,
         homeDirectory: homeDirectory,
-        measurementId: measurementId,
-        apiSecret: apiSecret,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -162,8 +206,6 @@ class AnalyticsImpl implements Analytics {
   AnalyticsImpl({
     required String tool,
     required Directory homeDirectory,
-    required String measurementId,
-    required String apiSecret,
     String? flutterChannel,
     String? flutterVersion,
     required String dartVersion,
@@ -307,8 +349,6 @@ class TestAnalytics extends AnalyticsImpl {
   TestAnalytics({
     required super.tool,
     required super.homeDirectory,
-    required super.measurementId,
-    required super.apiSecret,
     super.flutterChannel,
     super.flutterVersion,
     required super.dartVersion,
