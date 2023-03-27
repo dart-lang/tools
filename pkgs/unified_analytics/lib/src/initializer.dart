@@ -92,7 +92,7 @@ $tool=$dateStamp,$toolsMessageVersion
   ///
   /// Passing [forceReset] as true will only reset the configuration
   /// file, it won't recreate the client id, session, and log files
-  /// if they currently exist on disk
+  /// if they currently exist on disk.
   void run({bool forceReset = false}) {
     // Begin by checking for the config file
     final File configFile = fs.file(

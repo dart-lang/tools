@@ -17,33 +17,15 @@ class Session {
   final File _sessionFile;
 
   // Initialize as 0 but will get parsed to real values
-  // within the private constructor's body
+  // within the default constructor's body
   int _sessionId = 0;
   int _lastPing = 0;
 
-  /// This constructor will go to the session json file in
-  /// the user's home directory and extract the necessary fields from
-  /// the json file
-  factory Session({
-    required Directory homeDirectory,
-    required FileSystem fs,
-  }) {
-    final File sessionFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
-
-    return Session._(
-      homeDirectory: homeDirectory,
-      fs: fs,
-      sessionFile: sessionFile,
-    );
-  }
-
-  /// Private constructor that will have the variables necessary already parsed
-  Session._({
+  Session({
     required this.homeDirectory,
     required this.fs,
-    required File sessionFile,
-  }) : _sessionFile = sessionFile {
+  }) : _sessionFile = fs.file(p.join(
+            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)) {
     _refreshSessionData();
   }
 
@@ -101,7 +83,7 @@ class Session {
       final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
       _sessionId = sessionObj['session_id'] as int;
       _lastPing = sessionObj['last_ping'] as int;
-    } catch (e) {
+    } on FormatException {
       Initializer.createSessionFile(sessionFile: _sessionFile);
 
       final String sessionFileContents = _sessionFile.readAsStringSync();
