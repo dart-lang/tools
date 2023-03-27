@@ -16,10 +16,8 @@ class Session {
   final FileSystem fs;
   final File _sessionFile;
 
-  // Initialize as 0 but will get parsed to real values
-  // within the default constructor's body
-  int _sessionId = 0;
-  int _lastPing = 0;
+  late int _sessionId;
+  late int _lastPing;
 
   Session({
     required this.homeDirectory,
