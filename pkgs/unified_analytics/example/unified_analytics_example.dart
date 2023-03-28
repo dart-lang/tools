@@ -8,8 +8,9 @@ final String measurementId = 'G-N1NXG28J5B';
 final String apiSecret = '4yT8__oER3Cd84dtx6r-_A';
 
 // Globally instantiate the analytics class at the entry
-// point of the tool
-final Analytics analytics = Analytics(
+// point of the tool; the development constructor used here
+// so events sent from here won't go to production
+final Analytics analytics = Analytics.development(
   tool: DashTool.flutterTools,
   flutterChannel: 'ey-test-channel',
   flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
