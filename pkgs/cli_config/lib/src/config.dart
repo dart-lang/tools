@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:core' as core show bool;
+import 'dart:core' hide bool;
 import 'dart:io';
 
 import 'cli_parser.dart';
@@ -28,14 +30,14 @@ import 'source.dart';
 ///
 /// If a single value is requested from this configuration, the first source
 /// that can provide the value will provide it. For example
-/// `config.getString('some_key')` with `{'some_key': 'file_value'}` in the
+/// `config.string('some_key')` with `{'some_key': 'file_value'}` in the
 /// config file and `-Dsome_key=cli_value` as commandline argument returns
 /// `'cli_value'`. The implication is that you can not remove keys from the
 /// configuration file, only overwrite or append them.
 ///
 /// If a list value is requested from this configuration, the values provided
 /// by the various sources can be combined or not. For example
-/// `config.getStringList('some_key', combineAllConfigs: true)` returns
+/// `config.stringList('some_key', combineAllConfigs: true)` returns
 /// `['cli_value', 'file_value']`.
 ///
 /// The config is hierarchical in nature, using `.` as the hierarchy separator
@@ -191,8 +193,8 @@ class Config {
   /// Throws if one of the configs does not contain the expected value type.
   ///
   /// If [validValues] is provided, throws if an unxpected value is provided.
-  String getString(String key, {Iterable<String>? validValues}) {
-    final value = getOptionalString(key, validValues: validValues);
+  String string(String key, {Iterable<String>? validValues}) {
+    final value = optionalString(key, validValues: validValues);
     _throwIfNull(key, value);
     return value!;
   }
@@ -203,10 +205,10 @@ class Config {
   /// finally the config file.
   ///
   /// If [validValues] is provided, throws if an unxpected value is provided.
-  String? getOptionalString(String key, {Iterable<String>? validValues}) {
+  String? optionalString(String key, {Iterable<String>? validValues}) {
     String? value;
     for (final source in _sources) {
-      value ??= source.getOptionalString(key);
+      value ??= source.optionalString(key);
     }
     if (validValues != null) {
       Source.throwIfUnexpectedValue(key, value, validValues);
@@ -228,9 +230,9 @@ class Config {
   /// For example: `-Dfoo=bar -Dfoo=baz`.
   ///
   /// If provided, [splitEnvironmentPattern] splits environment values.
-  List<String>? getOptionalStringList(
+  List<String>? stringList(
     String key, {
-    bool combineAllConfigs = true,
+    core.bool combineAllConfigs = true,
     String? splitCliPattern,
     String? splitEnvironmentPattern,
   }) {
@@ -242,8 +244,7 @@ class Config {
     }.entries) {
       final source = entry.key;
       final splitPattern = entry.value;
-      final value =
-          source.getOptionalStringList(key, splitPattern: splitPattern);
+      final value = source.stringList(key, splitPattern: splitPattern);
       if (value != null) {
         if (combineAllConfigs) {
           (result ??= []).addAll(value);
@@ -278,8 +279,8 @@ class Config {
   /// For the config file, it must be a boolean.
   ///
   /// Throws if one of the configs does not contain the expected value type.
-  bool getBool(String key) {
-    final value = getOptionalBool(key);
+  core.bool bool(String key) {
+    final value = optionalBool(key);
     _throwIfNull(key, value);
     return value!;
   }
@@ -292,10 +293,10 @@ class Config {
   /// For cli defines and environment variables, the value must be one of
   /// [boolStrings].
   /// For the config file, it must be a boolean.
-  bool? getOptionalBool(String key) {
-    bool? value;
+  core.bool? optionalBool(String key) {
+    core.bool? value;
     for (final source in _sources) {
-      value ??= source.getOptionalBool(key);
+      value ??= source.optionalBool(key);
     }
     return value;
   }
@@ -314,13 +315,13 @@ class Config {
   /// on the file system.
   ///
   /// Throws if one of the configs does not contain the expected value type.
-  Uri getPath(
+  Uri path(
     String key, {
-    bool resolveFileUri = true,
-    bool mustExist = false,
+    core.bool resolveFileUri = true,
+    core.bool mustExist = false,
   }) {
-    final value = getOptionalPath(key,
-        resolveFileUri: resolveFileUri, mustExist: mustExist);
+    final value =
+        optionalPath(key, resolveFileUri: resolveFileUri, mustExist: mustExist);
     _throwIfNull(key, value);
     return value!;
   }
@@ -337,13 +338,13 @@ class Config {
   ///
   /// If [mustExist], throws if the path doesn't resolve to a file or directory
   /// on the file system.
-  Uri? getOptionalPath(
+  Uri? optionalPath(
     String key, {
-    bool resolveFileUri = true,
-    bool mustExist = false,
+    core.bool resolveFileUri = true,
+    core.bool mustExist = false,
   }) {
     for (final source in _sources) {
-      final path = source.getOptionalString(key);
+      final path = source.optionalString(key);
       if (path != null) {
         final value = _pathToUri(
           path,
@@ -361,7 +362,7 @@ class Config {
 
   Uri _pathToUri(
     String path, {
-    required bool resolveUri,
+    required core.bool resolveUri,
     required Uri? baseUri,
   }) {
     if (resolveUri && baseUri != null) {
@@ -381,12 +382,12 @@ class Config {
   ///
   /// If [resolveFileUri], resolves the paths in config file relative to the
   /// config file.
-  List<Uri>? getOptionalPathList(
+  List<Uri>? optionalPathList(
     String key, {
-    bool combineAllConfigs = true,
+    core.bool combineAllConfigs = true,
     String? splitCliPattern,
     String? splitEnvironmentPattern,
-    bool resolveFileUri = true,
+    core.bool resolveFileUri = true,
   }) {
     List<Uri>? result;
     for (final entry in {
@@ -396,7 +397,7 @@ class Config {
     }.entries) {
       final source = entry.key;
       final splitPattern = entry.value;
-      final paths = source.getOptionalStringList(
+      final paths = source.stringList(
         key,
         splitPattern: splitPattern,
       );
@@ -422,13 +423,13 @@ class Config {
   /// Lookup a value of type [T] in this configuration.
   ///
   /// Does not support specialized options such as `splitPattern`. One must
-  /// use the specialized methods such as [getOptionalStringList] for that.
+  /// use the specialized methods such as [stringList] for that.
   ///
   /// If sources cannot lookup type [T], they return null.
-  T getValueOf<T>(String key) {
+  T valueOf<T>(String key) {
     T? value;
     for (final source in _sources) {
-      value ??= source.getOptionalValueOf<T>(key);
+      value ??= source.optionalValueOf<T>(key);
     }
     if (null is! T) {
       _throwIfNull(key, value);

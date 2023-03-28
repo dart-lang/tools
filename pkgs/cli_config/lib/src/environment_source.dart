@@ -20,10 +20,10 @@ class EnvironmentSource extends Source {
   EnvironmentSource(this._environment);
 
   @override
-  String? getOptionalString(String key) => _environment[key];
+  String? optionalString(String key) => _environment[key];
 
   @override
-  List<String>? getOptionalStringList(
+  List<String>? stringList(
     String key, {
     String? splitPattern,
   }) {
@@ -38,8 +38,8 @@ class EnvironmentSource extends Source {
   }
 
   @override
-  bool? getOptionalBool(String key) {
-    final stringValue = getOptionalString(key);
+  bool? optionalBool(String key) {
+    final stringValue = optionalString(key);
     if (stringValue != null) {
       Source.throwIfUnexpectedValue(key, stringValue, Config.boolStrings.keys);
       return Config.boolStrings[stringValue]!;

@@ -16,7 +16,7 @@ class CliSource extends Source {
   CliSource(this._cli);
 
   @override
-  String? getOptionalString(String key) {
+  String? optionalString(String key) {
     final value = _cli[key];
     if (value == null) {
       return null;
@@ -30,7 +30,7 @@ class CliSource extends Source {
   }
 
   @override
-  List<String>? getOptionalStringList(
+  List<String>? stringList(
     String key, {
     String? splitPattern,
   }) {
@@ -45,8 +45,8 @@ class CliSource extends Source {
   }
 
   @override
-  bool? getOptionalBool(String key) {
-    final stringValue = getOptionalString(key);
+  bool? optionalBool(String key) {
+    final stringValue = optionalString(key);
     if (stringValue != null) {
       Source.throwIfUnexpectedValue(key, stringValue, Config.boolStrings.keys);
       return Config.boolStrings[stringValue]!;

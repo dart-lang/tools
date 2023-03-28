@@ -9,7 +9,7 @@ import 'package:cli_config/cli_config.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('getOptionalStringList', () {
+  test('stringList', () {
     const path1 = 'path/in/cli_arguments/';
     const path2 = 'path/in/cli_arguments_2/';
     const path3 = 'path/in/environment/';
@@ -37,7 +37,7 @@ void main() {
     );
 
     {
-      final result = config.getOptionalStringList(
+      final result = config.stringList(
         'build.out_dir',
         combineAllConfigs: true,
         splitEnvironmentPattern: ':',
@@ -46,7 +46,7 @@ void main() {
     }
 
     {
-      final result = config.getOptionalStringList(
+      final result = config.stringList(
         'build.out_dir',
         combineAllConfigs: false,
         splitEnvironmentPattern: ':',
@@ -55,7 +55,7 @@ void main() {
     }
   });
 
-  test('getOptionalString cli precedence', () {
+  test('optionalString cli precedence', () {
     const path1 = 'path/in/cli_arguments/';
     const path2 = 'path/in/environment/';
     const path3 = 'path/in/config_file/';
@@ -75,13 +75,13 @@ void main() {
       ),
     );
 
-    final result = config.getOptionalString(
+    final result = config.optionalString(
       'build.out_dir',
     );
     expect(result, path1);
   });
 
-  test('getOptionalString environment precedence', () {
+  test('optionalString environment precedence', () {
     const path2 = 'path/in/environment/';
     const path3 = 'path/in/config_file/';
     final config = Config.fromConfigFileContents(
@@ -98,13 +98,13 @@ void main() {
       ),
     );
 
-    final result = config.getOptionalString(
+    final result = config.optionalString(
       'build.out_dir',
     );
     expect(result, path2);
   });
 
-  test('getOptionalString config file', () {
+  test('optionalString config file', () {
     const path3 = 'path/in/config_file/';
     final config = Config.fromConfigFileContents(
       commandLineDefines: [],
@@ -118,38 +118,38 @@ void main() {
       ),
     );
 
-    final result = config.getOptionalString(
+    final result = config.optionalString(
       'build.out_dir',
     );
     expect(result, path3);
   });
 
-  test('getOptionalBool define', () {
+  test('optionalBool define', () {
     final config = Config(
       commandLineDefines: ['my_bool=true'],
     );
 
-    expect(config.getOptionalBool('my_bool'), true);
+    expect(config.optionalBool('my_bool'), true);
   });
 
-  test('getOptionalBool environment', () {
+  test('optionalBool environment', () {
     final config = Config(
       environment: {
         'MY_BOOL': 'true',
       },
     );
 
-    expect(config.getOptionalBool('my_bool'), true);
+    expect(config.optionalBool('my_bool'), true);
   });
 
-  test('getOptionalBool  file', () {
+  test('optionalBool  file', () {
     final config = Config.fromConfigFileContents(
       fileContents: jsonEncode(
         {'my_bool': true},
       ),
     );
 
-    expect(config.getOptionalBool('my_bool'), true);
+    expect(config.optionalBool('my_bool'), true);
   });
 
   test('Read file and parse CLI args', () async {
@@ -173,7 +173,7 @@ void main() {
       },
     );
 
-    final result = config.getOptionalString('build.out_dir');
+    final result = config.optionalString('build.out_dir');
     expect(result, 'path/in/cli_arguments/');
   });
 
@@ -199,7 +199,7 @@ void main() {
       ],
     );
 
-    final result = config.getOptionalPath('build.out_dir');
+    final result = config.optionalPath('build.out_dir');
     expect(result!.path, resolvedPath.path);
   });
 
@@ -215,7 +215,7 @@ void main() {
       },
     );
 
-    final result = config.getOptionalString('build.out_dir');
+    final result = config.optionalString('build.out_dir');
     expect(result, path3);
   });
 
@@ -236,12 +236,12 @@ void main() {
         },
       );
 
-      final result = config.getOptionalPath('build.out_dir', mustExist: true);
+      final result = config.optionalPath('build.out_dir', mustExist: true);
       expect(result, tempUri);
-      final result2 = config.getOptionalPath('build.file', mustExist: true);
+      final result2 = config.optionalPath('build.file', mustExist: true);
       expect(result2, tempFileUri);
       expect(
-        () => config.getOptionalPath('build.non_exist', mustExist: true),
+        () => config.optionalPath('build.non_exist', mustExist: true),
         throwsFormatException,
       );
     });
@@ -257,21 +257,21 @@ void main() {
   test('CLI two values when expecting one', () {
     final config = Config(commandLineDefines: ['key=value', 'key=value2']);
     expect(
-      () => config.getString('key'),
+      () => config.string('key'),
       throwsFormatException,
     );
   });
 
   test('CLI split stringlist', () {
     final config = Config(commandLineDefines: ['key=value;value2']);
-    final value = config.getOptionalStringList('key', splitCliPattern: ';');
+    final value = config.stringList('key', splitCliPattern: ';');
     expect(value, ['value', 'value2']);
   });
 
   test('CLI path', () {
     final uri = Uri.file('some/path.ext');
     final config = Config(commandLineDefines: ['key=${uri.path}']);
-    final value = config.getOptionalPath('key');
+    final value = config.optionalPath('key');
     expect(value, uri);
   });
 
@@ -279,7 +279,7 @@ void main() {
     final uri = Uri.file('some/path.ext');
     final uri2 = Uri.file('some/directory/');
     final config = Config(commandLineDefines: ['key=${uri.path}:${uri2.path}']);
-    final value = config.getOptionalPathList('key', splitCliPattern: ':');
+    final value = config.optionalPathList('key', splitCliPattern: ':');
     expect(value, [uri, uri2]);
   });
 
@@ -294,59 +294,58 @@ void main() {
 
   test('Missing nonullable throws FormatException', () {
     final config = Config.fromConfigFileContents();
-    expect(() => config.getBool('key'), throwsFormatException);
-    expect(() => config.getString('key'), throwsFormatException);
-    expect(() => config.getPath('key'), throwsFormatException);
+    expect(() => config.bool('key'), throwsFormatException);
+    expect(() => config.string('key'), throwsFormatException);
+    expect(() => config.path('key'), throwsFormatException);
   });
 
-  test('getString not validValue throws FormatException', () {
+  test('string not validValue throws FormatException', () {
     final config = Config(environment: {'foo': 'bar'});
     expect(
-      () => config.getString('foo', validValues: ['not_bar']),
+      () => config.string('foo', validValues: ['not_bar']),
       throwsFormatException,
     );
   });
 
-  test('getValueOf file source', () {
+  test('valueOf file source', () {
     final config = Config(fileParsed: {
       'key': {'some': 'map'}
     });
-    final value = config.getValueOf<Map<dynamic, dynamic>>('key');
+    final value = config.valueOf<Map<dynamic, dynamic>>('key');
     expect(value, {'some': 'map'});
   });
 
-  test('getValueOf command line source', () {
+  test('valueOf command line source', () {
     final config = Config(commandLineDefines: [
       'string_key=value',
       'bool_key=true',
       'string_list_key=value1',
       'string_list_key=value2',
     ]);
-    expect(config.getValueOf<String>('string_key'), 'value');
-    expect(config.getValueOf<bool>('bool_key'), true);
+    expect(config.valueOf<String>('string_key'), 'value');
+    expect(config.valueOf<bool>('bool_key'), true);
     expect(
-      config.getValueOf<List<String>>('string_list_key'),
+      config.valueOf<List<String>>('string_list_key'),
       ['value1', 'value2'],
     );
   });
 
   test('environment split stringlist', () {
     final config = Config(environment: {'key': 'value;value2'});
-    final value =
-        config.getOptionalStringList('key', splitEnvironmentPattern: ';');
+    final value = config.stringList('key', splitEnvironmentPattern: ';');
     expect(value, ['value', 'value2']);
   });
 
   test('environment non split stringlist', () {
     final config = Config(environment: {'key': 'value'});
-    final value = config.getOptionalStringList('key');
+    final value = config.stringList('key');
     expect(value, ['value']);
   });
 
   test('environment path', () {
     final uri = Uri.file('some/path.ext');
     final config = Config(environment: {'key': uri.path});
-    final value = config.getOptionalPath('key');
+    final value = config.optionalPath('key');
     expect(value, uri);
   });
 
@@ -354,8 +353,7 @@ void main() {
     final uri = Uri.file('some/path.ext');
     final uri2 = Uri.file('some/directory/');
     final config = Config(environment: {'key': '${uri.path}:${uri2.path}'});
-    final value =
-        config.getOptionalPathList('key', splitEnvironmentPattern: ':');
+    final value = config.optionalPathList('key', splitEnvironmentPattern: ':');
     expect(value, [uri, uri2]);
   });
 
@@ -379,9 +377,9 @@ void main() {
   bar:
     true
 ''');
-    expect(config.getBool('foo.bar'), true);
-    expect(() => config.getBool('foo.bar.baz'), throwsFormatException);
-    expect(() => config.getString('foo.bar'), throwsFormatException);
+    expect(config.bool('foo.bar'), true);
+    expect(() => config.bool('foo.bar.baz'), throwsFormatException);
+    expect(() => config.string('foo.bar'), throwsFormatException);
   });
 
   test('file config path list unresolved', () {
@@ -390,7 +388,7 @@ void main() {
     final config = Config(fileParsed: {
       'key': [uri.path, uri2.path]
     });
-    final value = config.getOptionalPathList('key', resolveFileUri: false);
+    final value = config.optionalPathList('key', resolveFileUri: false);
     expect(value, [uri, uri2]);
   });
 
@@ -404,7 +402,7 @@ void main() {
         'key': [uri.path, uri2.path]
       },
     );
-    final value = config.getOptionalPathList('key', resolveFileUri: true);
+    final value = config.optionalPathList('key', resolveFileUri: true);
     expect(value, [configUri.resolveUri(uri), configUri.resolveUri(uri2)]);
   });
 }

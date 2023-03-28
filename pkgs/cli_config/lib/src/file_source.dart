@@ -18,22 +18,22 @@ class FileSource extends Source {
   FileSource(this._file, this.baseUri);
 
   @override
-  String? getOptionalString(String key) => getOptionalValueOf<String>(key);
+  String? optionalString(String key) => optionalValueOf<String>(key);
 
   @override
-  List<String>? getOptionalStringList(
+  List<String>? stringList(
     String key, {
     String? splitPattern,
   }) {
     assert(splitPattern == null);
-    return getOptionalValueOf<List<dynamic>>(key)?.cast<String>();
+    return optionalValueOf<List<dynamic>>(key)?.cast<String>();
   }
 
   @override
-  bool? getOptionalBool(String key) => getOptionalValueOf<bool>(key);
+  bool? optionalBool(String key) => optionalValueOf<bool>(key);
 
   @override
-  T? getOptionalValueOf<T>(String key) {
+  T? optionalValueOf<T>(String key) {
     Object? cursor = _file;
     var current = '';
     for (final keyPart in key.split('.')) {

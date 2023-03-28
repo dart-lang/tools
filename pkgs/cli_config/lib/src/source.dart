@@ -9,34 +9,34 @@ abstract class Source {
   Uri? get baseUri;
 
   /// Lookup a nullable string value.
-  String? getOptionalString(String key);
+  String? optionalString(String key);
 
   /// Lookup a nullable string list.
   ///
   /// If provided, [splitPattern] splits config.
-  List<String>? getOptionalStringList(
+  List<String>? stringList(
     String key, {
     String? splitPattern,
   });
 
   /// Lookup an optional boolean value.
-  bool? getOptionalBool(String key);
+  bool? optionalBool(String key);
 
   /// Lookup an optional value of type [T].
   ///
   /// Does not support specialized options such as `splitPattern`. One must
-  /// use the specialized methods such as [getOptionalStringList] for that.
+  /// use the specialized methods such as [stringList] for that.
   ///
   /// Returns `null` if the source cannot provide a value of type [T].
-  T? getOptionalValueOf<T>(String key) {
+  T? optionalValueOf<T>(String key) {
     if (T == bool) {
-      return getOptionalBool(key) as T?;
+      return optionalBool(key) as T?;
     }
     if (T == String) {
-      return getOptionalString(key) as T?;
+      return optionalString(key) as T?;
     }
     if (T == List<String>) {
-      return getOptionalStringList(key) as T?;
+      return stringList(key) as T?;
     }
     return null;
   }
