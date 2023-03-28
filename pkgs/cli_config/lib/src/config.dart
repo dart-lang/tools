@@ -84,16 +84,20 @@ class Config {
   ///
   /// If provided, [commandLineDefines] must be a list of '<key>=<value>'.
   ///
+  /// If provided, [workingDirectory] is used to resolves paths inside
+  /// [commandLineDefines].
+  ///
   /// If provided, [environment] must be a map containing environment variables.
   ///
   /// If provided, [fileParsed] must be valid parsed YSON or YAML (maps, lists,
   /// strings, integers, and booleans).
   ///
-  /// If provided [fileSourceUri], is used to resolve paths inside
-  /// [fileContents] and to provide better error messages on parsing the
+  /// If provided [fileSourceUri] is used to resolve paths inside
+  /// [fileParsed] and to provide better error messages on parsing the
   /// configuration file.
   factory Config({
     List<String> commandLineDefines = const [],
+    Uri? workingDirectory,
     Map<String, String> environment = const {},
     Map<String, dynamic> fileParsed = const {},
     Uri? fileSourceUri,
@@ -108,7 +112,7 @@ class Config {
     final environmentConfig = EnvironmentParser().parse(environment);
 
     return Config._(
-      CliSource(cliConfig),
+      CliSource(cliConfig, workingDirectory),
       EnvironmentSource(environmentConfig),
       FileSource(fileConfig, fileSourceUri),
     );
@@ -118,15 +122,19 @@ class Config {
   ///
   /// If provided, [commandLineDefines] must be a list of '<key>=<value>'.
   ///
+  /// If provided, [workingDirectory] is used to resolves paths inside
+  /// [commandLineDefines].
+  ///
   /// If provided, [environment] must be a map containing environment variables.
   ///
   /// If provided, [fileContents] must be valid JSON or YAML.
   ///
-  /// If provided [fileSourceUri], is used to resolve paths inside
+  /// If provided [fileSourceUri] is used to resolve paths inside
   /// [fileContents] and to provide better error messages on parsing the
   /// configuration file.
   factory Config.fromConfigFileContents({
     List<String> commandLineDefines = const [],
+    Uri? workingDirectory,
     Map<String, String> environment = const {},
     String? fileContents,
     Uri? fileSourceUri,
@@ -149,7 +157,7 @@ class Config {
     final environmentConfig = EnvironmentParser().parse(environment);
 
     return Config._(
-      CliSource(cliConfig),
+      CliSource(cliConfig, workingDirectory),
       EnvironmentSource(environmentConfig),
       FileSource(fileConfig, fileSourceUri),
     );
@@ -162,10 +170,15 @@ class Config {
   /// If provided, [environment] must be a map containing environment variables.
   /// If not provided, [environment] defaults to [Platform.environment].
   ///
+  /// If provided, [workingDirectory] is used to resolves paths inside
+  /// [environment].
+  /// If not provided, [workingDirectory] defaults to [Directory.current].
+  ///
   /// This async constructor is intended to be used directly in CLI files.
   static Future<Config> fromArgs({
     required List<String> args,
     Map<String, String>? environment,
+    Uri? workingDirectory,
   }) async {
     final results = CliParser().parse(args);
 
@@ -180,6 +193,7 @@ class Config {
 
     return Config.fromConfigFileContents(
       commandLineDefines: results['define'] as List<String>,
+      workingDirectory: workingDirectory ?? Directory.current.uri,
       environment: environment ?? Platform.environment,
       fileContents: fileContents,
       fileSourceUri: fileSourceUri,
@@ -309,8 +323,10 @@ class Config {
   ///
   /// Throws if one of the configs does not contain the expected value type.
   ///
-  /// If [resolveFileUri], resolves the paths in config file relative to the
-  /// config file.
+  /// If [resolveUri], resolves the paths in a source relative to the base
+  /// uri of that source. The base uri for the config file is the path of the
+  /// file. The base uri for environment values is the current working
+  /// directory.
   ///
   /// If [mustExist], throws if the path doesn't resolve to a file or directory
   /// on the file system.
@@ -318,11 +334,11 @@ class Config {
   /// Throws if one of the configs does not contain the expected value type.
   Uri path(
     String key, {
-    core.bool resolveFileUri = true,
+    core.bool resolveUri = true,
     core.bool mustExist = false,
   }) {
     final value =
-        optionalPath(key, resolveFileUri: resolveFileUri, mustExist: mustExist);
+        optionalPath(key, resolveUri: resolveUri, mustExist: mustExist);
     _throwIfNull(key, value);
     return value!;
   }
@@ -334,14 +350,16 @@ class Config {
   ///
   /// Throws if one of the configs does not contain the expected value type.
   ///
-  /// If [resolveFileUri], resolves the paths in config file relative to the
-  /// config file.
+  /// If [resolveUri], resolves the paths in a source relative to the base
+  /// uri of that source. The base uri for the config file is the path of the
+  /// file. The base uri for environment values is the current working
+  /// directory.
   ///
   /// If [mustExist], throws if the path doesn't resolve to a file or directory
   /// on the file system.
   Uri? optionalPath(
     String key, {
-    core.bool resolveFileUri = true,
+    core.bool resolveUri = true,
     core.bool mustExist = false,
   }) {
     for (final source in _sources) {
@@ -349,7 +367,7 @@ class Config {
       if (path != null) {
         final value = _pathToUri(
           path,
-          resolveUri: resolveFileUri && source == _fileSource,
+          resolveUri: resolveUri,
           baseUri: source.baseUri,
         );
         if (mustExist) {
@@ -381,14 +399,16 @@ class Config {
   ///
   /// If provided, [splitEnvironmentPattern] splits environment values.
   ///
-  /// If [resolveFileUri], resolves the paths in config file relative to the
-  /// config file.
+  /// If [resolveUri], resolves the paths in a source relative to the base
+  /// uri of that source. The base uri for the config file is the path of the
+  /// file. The base uri for environment values is the current working
+  /// directory.
   List<Uri>? optionalPathList(
     String key, {
     core.bool combineAllConfigs = true,
     String? splitCliPattern,
     String? splitEnvironmentPattern,
-    core.bool resolveFileUri = true,
+    core.bool resolveUri = true,
   }) {
     List<Uri>? result;
     for (final entry in {
@@ -407,7 +427,7 @@ class Config {
           for (final path in paths)
             _pathToUri(
               path,
-              resolveUri: resolveFileUri && source == _fileSource,
+              resolveUri: resolveUri,
               baseUri: source.baseUri,
             )
         ];

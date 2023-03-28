@@ -8,6 +8,8 @@ import 'dart:io';
 import 'package:cli_config/cli_config.dart';
 import 'package:test/test.dart';
 
+import 'helpers.dart';
+
 void main() {
   test('stringList', () {
     const path1 = 'path/in/cli_arguments/';
@@ -220,7 +222,7 @@ void main() {
   });
 
   test('path exists', () async {
-    await _inTempDir((tempUri) async {
+    await inTempDir((tempUri) async {
       final tempFileUri = tempUri.resolve('file.ext');
       await File.fromUri(tempFileUri).create();
       final nonExistUri = tempUri.resolve('foo.ext');
@@ -388,7 +390,7 @@ void main() {
     final config = Config(fileParsed: {
       'key': [uri.path, uri2.path]
     });
-    final value = config.optionalPathList('key', resolveFileUri: false);
+    final value = config.optionalPathList('key', resolveUri: false);
     expect(value, [uri, uri2]);
   });
 
@@ -402,24 +404,22 @@ void main() {
         'key': [uri.path, uri2.path]
       },
     );
-    final value = config.optionalPathList('key', resolveFileUri: true);
+    final value = config.optionalPathList('key', resolveUri: true);
     expect(value, [configUri.resolveUri(uri), configUri.resolveUri(uri2)]);
   });
-}
 
-const keepTempKey = 'KEEP_TEMPORARY_DIRECTORIES';
+  test('resolveUri in working directory', () {
+    final systemTemp = Directory.systemTemp.uri;
+    final tempUri = systemTemp.resolve('x/y/z/');
 
-Future<void> _inTempDir(
-  Future<void> Function(Uri tempUri) fun, {
-  String? prefix,
-}) async {
-  final tempDir = await Directory.systemTemp.createTemp(prefix);
-  try {
-    await fun(tempDir.uri);
-  } finally {
-    if (!Platform.environment.containsKey(keepTempKey) ||
-        Platform.environment[keepTempKey]!.isEmpty) {
-      await tempDir.delete(recursive: true);
-    }
-  }
+    final relativePath = Uri.file('a/b/c/d.ext');
+    final absolutePath = tempUri.resolveUri(relativePath);
+    final config = Config(
+      commandLineDefines: ['path=${relativePath.path}'],
+      workingDirectory: tempUri,
+    );
+
+    expect(config.optionalPath('path', mustExist: false, resolveUri: true),
+        absolutePath);
+  });
 }

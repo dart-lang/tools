@@ -13,7 +13,13 @@ class CliSource extends Source {
   /// Stored as a flat non-hierarchical structure, keys contain `.`.
   final Map<String, List<String>> _cli;
 
-  CliSource(this._cli);
+  /// If provided, used to resolve paths within [_cli].
+  ///
+  /// Typically the current working directory at application start.
+  @override
+  final Uri? baseUri;
+
+  CliSource(this._cli, this.baseUri);
 
   @override
   String? optionalString(String key) {
@@ -56,9 +62,4 @@ class CliSource extends Source {
 
   @override
   String toString() => 'CliSource($_cli)';
-
-  @override
-
-  /// CLI paths are not resolved.
-  Uri? get baseUri => null;
 }
