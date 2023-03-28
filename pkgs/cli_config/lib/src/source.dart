@@ -22,6 +22,9 @@ abstract class Source {
   /// Lookup an optional boolean value.
   bool? optionalBool(String key);
 
+  /// Lookup an optional int value.
+  int? optionalInt(String key);
+
   /// Lookup an optional value of type [T].
   ///
   /// Does not support specialized options such as `splitPattern`. One must

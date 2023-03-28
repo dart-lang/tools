@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:core' as core show bool;
-import 'dart:core' hide bool;
+import 'dart:core' as core show bool, int;
+import 'dart:core' hide bool, int;
 import 'dart:io';
 
 import 'cli_parser.dart';
@@ -307,11 +307,41 @@ class Config {
   ///
   /// For cli defines and environment variables, the value must be one of
   /// [boolStrings].
-  /// For the config file, it must be a boolean.
+  /// For the config file, it must be a boolean or null.
   core.bool? optionalBool(String key) {
     core.bool? value;
     for (final source in _sources) {
       value ??= source.optionalBool(key);
+    }
+    return value;
+  }
+
+  /// Lookup an integer value in this config.
+  ///
+  /// First tries CLI argument defines, then environment variables, and
+  /// finally the config file.
+  ///
+  /// For cli defines and environment variables, the value must be parseble
+  /// by [int.parse].
+  /// For the config file, it must be an integer.
+  core.int int(String key) {
+    final value = optionalInt(key);
+    _throwIfNull(key, value);
+    return value!;
+  }
+
+  /// Lookup an optional integer value in this config.
+  ///
+  /// First tries CLI argument defines, then environment variables, and
+  /// finally the config file.
+  ///
+  /// For cli defines and environment variables, the value must be parseble
+  /// by [int.parse].
+  /// For the config file, it must be an integer or null.
+  core.int? optionalInt(String key) {
+    core.int? value;
+    for (final source in _sources) {
+      value ??= source.optionalInt(key);
     }
     return value;
   }

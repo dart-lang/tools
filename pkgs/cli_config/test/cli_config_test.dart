@@ -422,4 +422,22 @@ void main() {
     expect(config.optionalPath('path', mustExist: false, resolveUri: true),
         absolutePath);
   });
+
+  test('ints', () {
+    final config = Config(
+      commandLineDefines: ['cl=1', 'not_parsable=asdf'],
+      environment: {
+        'env': '2',
+        'not_parsable2': 'asfd',
+      },
+      fileParsed: {'file': 3},
+    );
+
+    expect(config.int('cl'), 1);
+    expect(config.optionalInt('env'), 2);
+    expect(config.optionalInt('file'), 3);
+    expect(config.optionalInt('nothing'), null);
+    expect(() => config.optionalInt('not_parsable'), throwsFormatException);
+    expect(() => config.optionalInt('not_parsable2'), throwsFormatException);
+  });
 }

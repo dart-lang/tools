@@ -48,6 +48,21 @@ class EnvironmentSource extends Source {
   }
 
   @override
+  int? optionalInt(String key) {
+    final stringValue = optionalString(key);
+    if (stringValue != null) {
+      try {
+        return int.parse(stringValue);
+      } on FormatException catch (e) {
+        throw FormatException(
+            "Unexpected value '$stringValue' for key '$key'. Expected an int."
+            ' ${e.message}');
+      }
+    }
+    return null;
+  }
+
+  @override
   String toString() => 'EnvironmentSource($_environment)';
 
   /// Environment path are not resolved.
