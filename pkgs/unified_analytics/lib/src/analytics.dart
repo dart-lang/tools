@@ -103,6 +103,43 @@ abstract class Analytics {
         gaClient: FakeGAClient(),
       );
 
+  /// Returns all [DashTool]s that have been added to the config file
+  static List<DashTool> onboardedTools({
+    FileSystem fs = const LocalFileSystem(),
+  }) {
+    final Directory homeDirectory = getHomeDirectory(fs);
+    final File configFile = fs.file(p.join(
+      homeDirectory.path,
+      kDartToolDirectoryName,
+      kConfigFileName,
+    ));
+
+    // Iterate through the parsed data from the static method
+    // in [ConfigHandler] and match the key to the label for
+    // the corresponding [DashTool] enum value
+    final Map<String, ToolInfo> parsedTools = ConfigHandler.readParsedTools(
+      configString: configFile.readAsStringSync(),
+    );
+
+    // Create a map of each DashTool where the key is
+    // DashTool.label and the value is the enum value
+    final Map<String, DashTool> labelToDashToolMap = {};
+    for (DashTool tool in DashTool.values) {
+      labelToDashToolMap[tool.label] = tool;
+    }
+
+    // Use the two maps above to return a list of DashTools
+    // that have been added to the config file
+    final List<DashTool> results = [];
+    for (String toolLabel in parsedTools.keys) {
+      if (labelToDashToolMap.containsKey(toolLabel)) {
+        results.add(labelToDashToolMap[toolLabel]!);
+      }
+    }
+
+    return results;
+  }
+
   /// Returns a map object with all of the tools that have been parsed
   /// out of the configuration file
   Map<String, ToolInfo> get parsedTools;

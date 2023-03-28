@@ -145,6 +145,33 @@ class ConfigHandler {
     toolInfo.versionNumber = newVersionNumber;
   }
 
+  /// Returns a [Map] object that will have each key be a tool
+  /// that has been added to the config file previously, the value
+  /// will be an instance of [ToolInfo] for that tool
+  static Map<String, ToolInfo> readParsedTools({required String configString}) {
+    // Define a temporary map object that will store the contents
+    // of the config file's stored tools to be used within this
+    // static method
+    final Map<String, ToolInfo> temp = {};
+
+    // Collect the tools logged in the configuration file
+    toolRegex.allMatches(configString).forEach((RegExpMatch element) {
+      // Extract the information relevant for the [ToolInfo] class
+      final String tool = element.group(1) as String;
+      final DateTime lastRun = DateTime.parse(element.group(2) as String);
+      final int versionNumber = int.parse(element.group(3) as String);
+
+      // Initialize an instance of the [ToolInfo] class to store
+      // in the [parsedTools] map object
+      temp[tool] = ToolInfo(
+        lastRun: lastRun,
+        versionNumber: versionNumber,
+      );
+    });
+
+    return temp;
+  }
+
   /// Method responsible for reading in the config file stored on
   /// user's machine and parsing out the following: all the tools that
   /// have been logged in the file, the dates they were last run, and
@@ -159,18 +186,8 @@ class ConfigHandler {
     final String configString = configFile.readAsStringSync();
 
     // Collect the tools logged in the configuration file
-    toolRegex.allMatches(configString).forEach((RegExpMatch element) {
-      // Extract the information relevant for the [ToolInfo] class
-      final String tool = element.group(1) as String;
-      final DateTime lastRun = DateTime.parse(element.group(2) as String);
-      final int versionNumber = int.parse(element.group(3) as String);
-
-      // Initialize an instance of the [ToolInfo] class to store
-      // in the [parsedTools] map object
-      parsedTools[tool] = ToolInfo(
-        lastRun: lastRun,
-        versionNumber: versionNumber,
-      );
+    readParsedTools(configString: configString).forEach((key, value) {
+      parsedTools[key] = value;
     });
 
     // Check for lines signaling that the user has disabled analytics,
