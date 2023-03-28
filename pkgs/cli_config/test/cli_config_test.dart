@@ -440,4 +440,22 @@ void main() {
     expect(() => config.optionalInt('not_parsable'), throwsFormatException);
     expect(() => config.optionalInt('not_parsable2'), throwsFormatException);
   });
+
+  test('doubles', () {
+    final config = Config(
+      commandLineDefines: ['cl=1.1', 'not_parsable=asdf'],
+      environment: {
+        'env': '2.2',
+        'not_parsable2': 'asfd',
+      },
+      fileParsed: {'file': 3.3},
+    );
+
+    expect(config.double('cl'), 1.1);
+    expect(config.optionalDouble('env'), 2.2);
+    expect(config.optionalDouble('file'), 3.3);
+    expect(config.optionalDouble('nothing'), null);
+    expect(() => config.optionalDouble('not_parsable'), throwsFormatException);
+    expect(() => config.optionalDouble('not_parsable2'), throwsFormatException);
+  });
 }

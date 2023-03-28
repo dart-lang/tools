@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:core' as core show bool, int;
-import 'dart:core' hide bool, int;
+import 'dart:core' as core show bool, double, int;
+import 'dart:core' hide bool, double, int;
 import 'dart:io';
 
 import 'cli_parser.dart';
@@ -342,6 +342,36 @@ class Config {
     core.int? value;
     for (final source in _sources) {
       value ??= source.optionalInt(key);
+    }
+    return value;
+  }
+
+  /// Lookup an double value in this config.
+  ///
+  /// First tries CLI argument defines, then environment variables, and
+  /// finally the config file.
+  ///
+  /// For cli defines and environment variables, the value must be parseble
+  /// by [double.parse].
+  /// For the config file, it must be an double.
+  core.double double(String key) {
+    final value = optionalDouble(key);
+    _throwIfNull(key, value);
+    return value!;
+  }
+
+  /// Lookup an optional double value in this config.
+  ///
+  /// First tries CLI argument defines, then environment variables, and
+  /// finally the config file.
+  ///
+  /// For cli defines and environment variables, the value must be parseble
+  /// by [double.parse].
+  /// For the config file, it must be an double or null.
+  core.double? optionalDouble(String key) {
+    core.double? value;
+    for (final source in _sources) {
+      value ??= source.optionalDouble(key);
     }
     return value;
   }

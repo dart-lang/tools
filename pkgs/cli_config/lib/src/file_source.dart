@@ -36,6 +36,9 @@ class FileSource extends Source {
   int? optionalInt(String key) => optionalValueOf<int>(key);
 
   @override
+  double? optionalDouble(String key) => optionalValueOf<double>(key);
+
+  @override
   T? optionalValueOf<T>(String key) {
     Object? cursor = _file;
     var current = '';

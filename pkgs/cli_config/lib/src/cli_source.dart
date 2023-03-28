@@ -76,5 +76,20 @@ class CliSource extends Source {
   }
 
   @override
+  double? optionalDouble(String key) {
+    final stringValue = optionalString(key);
+    if (stringValue != null) {
+      try {
+        return double.parse(stringValue);
+      } on FormatException catch (e) {
+        throw FormatException(
+            "Unexpected value '$stringValue' for key '$key'. Expected a double."
+            ' ${e.message}');
+      }
+    }
+    return null;
+  }
+
+  @override
   String toString() => 'CliSource($_cli)';
 }
