@@ -184,3 +184,28 @@ Explanation of the each key above
 - toolCount: count of the Dart and Flutter tools sending analytics
 - recordCount: count of the total number of events in the log file
 - eventCount: counts each unique event and how many times they occurred in the log file
+
+## Advanced Usage: Identifying Tools in Package Config File
+
+It may be beneficial for some tools using this package to know about other
+tools that have already been onboarded to the package without creating an
+instance of the `Analytics` class (Remember, when creating an instance
+for the first time on a given tool, it will automatically add that tool
+into the package's config file on the developer's machine). In those instances,
+a static method has been exposed on the `Analytics` class that will allow
+each tool to identify which tools have already been added.
+
+This can be particularly useful if a tool using this package is unable to
+display the message informing the user about how to opt-out of telemetry
+collection, but it can share the same permissions as another tool that has
+already shown the message.
+
+```dart
+final List<DashTool> onboardedTools = Analytics.onboardedTools();
+
+// Returns a list of DashTool enums
+// ie. --> [DashTool.flutterTools, DashTool.languageServer]
+```
+
+The returned list can be used to check for the _other_ tool that already
+has shown the message
