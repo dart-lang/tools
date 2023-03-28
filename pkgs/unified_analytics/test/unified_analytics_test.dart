@@ -138,6 +138,24 @@ void main() {
             'detect the first tool in the config file');
   });
 
+  test('Resetting session file when data is malformed', () {
+    // Purposefully write content to the session file that
+    // can't be decoded as json
+    sessionFile.writeAsStringSync('contents');
+
+    // Define the initial time to start
+    final DateTime start = DateTime(1995, 3, 3, 12, 0);
+
+    // Set the clock to the start value defined above
+    withClock(Clock.fixed(start), () {
+      final String timestamp = clock.now().millisecondsSinceEpoch.toString();
+      expect(sessionFile.readAsStringSync(), 'contents');
+      userProperty.preparePayload();
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id":$timestamp,"last_ping":$timestamp}');
+    });
+  });
+
   test('New tool is successfully added to config file', () {
     // Create a new instance of the analytics class with the new tool
     final Analytics secondAnalytics = Analytics.test(
