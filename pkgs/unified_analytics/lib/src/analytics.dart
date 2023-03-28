@@ -104,10 +104,16 @@ abstract class Analytics {
       );
 
   /// Returns all [DashTool]s that have been added to the config file
+  /// 
+  /// By default, it will use the [LocalFileSystem] if [fs] is not provided
+  /// and if a specific home directory needs to be passed as an override, it
+  /// can be passed in as [homeDirectoryOverride]
   static List<DashTool> onboardedTools({
     FileSystem fs = const LocalFileSystem(),
+    Directory? homeDirectoryOverride,
   }) {
-    final Directory homeDirectory = getHomeDirectory(fs);
+    final Directory homeDirectory =
+        homeDirectoryOverride ?? getHomeDirectory(fs);
     final File configFile = fs.file(p.join(
       homeDirectory.path,
       kDartToolDirectoryName,
