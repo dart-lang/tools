@@ -68,7 +68,7 @@ class Peer implements Client, Server {
 
   /// Creates a [Peer] that communicates using decoded messages over [channel].
   ///
-  /// Unlike [new Peer], this doesn't read or write JSON strings. Instead, it
+  /// Unlike [Peer.new], this doesn't read or write JSON strings. Instead, it
   /// reads and writes decoded maps or lists.
   ///
   /// Note that the peer won't begin listening to [channel] until
@@ -94,11 +94,11 @@ class Peer implements Client, Server {
   // Client methods.
 
   @override
-  Future sendRequest(String method, [parameters]) =>
+  Future sendRequest(String method, [Object? parameters]) =>
       _client.sendRequest(method, parameters);
 
   @override
-  void sendNotification(String method, [parameters]) =>
+  void sendNotification(String method, [Object? parameters]) =>
       _client.sendNotification(method, parameters);
 
   @override

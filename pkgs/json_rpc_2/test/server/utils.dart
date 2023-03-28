@@ -33,7 +33,7 @@ class ServerController {
 
   /// Passes [request], a decoded request, to [server] and returns its decoded
   /// response.
-  Future handleRequest(request) =>
+  Future handleRequest(Object? request) =>
       handleJsonRequest(jsonEncode(request)).then(jsonDecode);
 
   /// Passes [request], a JSON-encoded request, to [server] and returns its
@@ -47,8 +47,8 @@ class ServerController {
 /// Expects that [controller]'s server will return an error response to
 /// [request] with the given [errorCode], [message], and [data].
 void expectErrorResponse(
-    ServerController controller, request, int errorCode, String message,
-    {data}) {
+    ServerController controller, Object? request, int errorCode, String message,
+    {Object? data}) {
   dynamic id;
   if (request is Map) id = request['id'];
   data ??= {'request': request};

@@ -91,7 +91,7 @@ class Server {
   /// Creates a [Server] that communicates using decoded messages over
   /// [channel].
   ///
-  /// Unlike [new Server], this doesn't read or write JSON strings. Instead, it
+  /// Unlike [Server.new], this doesn't read or write JSON strings. Instead, it
   /// reads and writes decoded maps or lists.
   ///
   /// Note that the server won't begin listening to [requests] until
@@ -193,9 +193,10 @@ class Server {
   }
 
   /// Handles an individual parsed request.
-  Future _handleSingleRequest(request) async {
+  Future _handleSingleRequest(Object? request) async {
     try {
       _validateRequest(request);
+      request = request as Map;
 
       var name = request['method'];
       var method = _methods[name];
@@ -220,13 +221,13 @@ class Server {
     } catch (error, stackTrace) {
       if (error is RpcException) {
         if (error.code == error_code.INVALID_REQUEST ||
-            request.containsKey('id')) {
+            (request is Map && request.containsKey('id'))) {
           return error.serialize(request);
         } else {
           onUnhandledError?.call(error, stackTrace);
           return null;
         }
-      } else if (!request.containsKey('id')) {
+      } else if (request is Map && !request.containsKey('id')) {
         onUnhandledError?.call(error, stackTrace);
         return null;
       }

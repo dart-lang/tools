@@ -56,7 +56,7 @@ class Client {
   /// Creates a [Client] that communicates using decoded messages over
   /// [channel].
   ///
-  /// Unlike [new Client], this doesn't read or write JSON strings. Instead, it
+  /// Unlike [Client.new], this doesn't read or write JSON strings. Instead, it
   /// reads and writes decoded maps or lists.
   ///
   /// Note that the client won't begin listening to [responses] until
@@ -113,7 +113,7 @@ class Client {
   ///
   /// Throws a [StateError] if the client is closed while the request is in
   /// flight, or if the client is closed when this method is called.
-  Future sendRequest(String method, [parameters]) {
+  Future sendRequest(String method, [Object? parameters]) {
     var id = _id++;
     _send(method, parameters, id);
 
@@ -134,7 +134,7 @@ class Client {
   /// send a response, it has no return value.
   ///
   /// Throws a [StateError] if the client is closed when this method is called.
-  void sendNotification(String method, [parameters]) =>
+  void sendNotification(String method, [Object? parameters]) =>
       _send(method, parameters);
 
   /// A helper method for [sendRequest] and [sendNotification].

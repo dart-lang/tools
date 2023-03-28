@@ -43,7 +43,7 @@ class RpcException implements Exception {
 
   /// Converts this exception into a JSON-serializable object that's a valid
   /// JSON-RPC 2.0 error response.
-  Map<String, dynamic> serialize(request) {
+  Map<String, dynamic> serialize(Object? request) {
     dynamic modifiedData;
     if (data is Map && !(data as Map).containsKey('request')) {
       modifiedData = Map.from(data as Map);

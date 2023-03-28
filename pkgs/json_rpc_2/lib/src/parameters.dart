@@ -43,7 +43,7 @@ class Parameters {
   /// doesn't exist. On the other hand, if it's accessed through a method with a
   /// default value like [Parameter.valueOr] or [Parameter.asNumOr], the default
   /// value will be returned.
-  Parameter operator [](key) {
+  Parameter operator [](Object? key) {
     if (key is int) {
       _assertPositional();
       if (key < value.length) {
@@ -156,7 +156,7 @@ class Parameter extends Parameters {
       : super(method, value);
 
   /// Returns [value], or [defaultValue] if this parameter wasn't passed.
-  dynamic valueOr(defaultValue) => value;
+  dynamic valueOr(Object? defaultValue) => value;
 
   /// Asserts that [value] exists and is a number and returns it.
   ///
@@ -320,7 +320,7 @@ class _MissingParameter extends Parameter {
       : super._(method, null, parent, key);
 
   @override
-  dynamic valueOr(defaultValue) => defaultValue;
+  dynamic valueOr(Object? defaultValue) => defaultValue;
 
   @override
   num asNumOr(num defaultValue) => defaultValue;

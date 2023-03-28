@@ -45,7 +45,7 @@ class ClientController {
   }
 
   /// Sends [response], a decoded response, to [client].
-  void sendResponse(response) {
+  void sendResponse(Object? response) {
     sendJsonResponse(jsonEncode(response));
   }
 

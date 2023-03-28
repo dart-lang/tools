@@ -19,7 +19,7 @@ final _exceptionPrefix = RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
 ///
 /// Many exceptions include the exception class name at the beginning of their
 /// [toString], so we remove that if it exists.
-String getErrorMessage(error) =>
+String getErrorMessage(Object error) =>
     error.toString().replaceFirst(_exceptionPrefix, '');
 
 /// Like `try`/`finally`, run [body] and ensure that [whenComplete] runs
