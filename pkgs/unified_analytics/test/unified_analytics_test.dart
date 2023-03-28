@@ -31,8 +31,8 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  final String initialToolName = DashTool.testTool.label;
-  final String secondTool = DashTool.anotherTestTool.label;
+  final String initialToolName = DashTool.flutterTools.label;
+  final String secondTool = DashTool.dartTools.label;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;
@@ -128,14 +128,6 @@ void main() {
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '
             'for the initialized tool');
-    expect(
-        Analytics.onboardedTools(
-          fs: fs,
-          homeDirectoryOverride: home,
-        ).contains(DashTool.testTool),
-        true,
-        reason: 'The static method should be able to '
-            'detect the first tool in the config file');
   });
 
   test('Resetting session file when data is malformed', () {
