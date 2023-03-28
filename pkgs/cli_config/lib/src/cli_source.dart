@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'config.dart';
-import 'provider.dart';
+import 'source.dart';
 
-class CliProvider extends Provider {
+class CliSource extends Source {
   /// Configuration options passed in via CLI arguments.
   ///
   /// Options can be passed multiple times, so the values here are a list.
@@ -13,7 +13,7 @@ class CliProvider extends Provider {
   /// Stored as a flat non-hierarchical structure, keys contain `.`.
   final Map<String, List<String>> _cli;
 
-  CliProvider(this._cli);
+  CliSource(this._cli);
 
   @override
   String? getOptionalString(String key) {
@@ -48,15 +48,14 @@ class CliProvider extends Provider {
   bool? getOptionalBool(String key) {
     final stringValue = getOptionalString(key);
     if (stringValue != null) {
-      Provider.throwIfUnexpectedValue(
-          key, stringValue, Config.boolStrings.keys);
+      Source.throwIfUnexpectedValue(key, stringValue, Config.boolStrings.keys);
       return Config.boolStrings[stringValue]!;
     }
     return null;
   }
 
   @override
-  String toString() => 'CliProvider($_cli)';
+  String toString() => 'CliSource($_cli)';
 
   @override
 

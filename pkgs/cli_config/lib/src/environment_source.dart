@@ -5,9 +5,9 @@
 import 'dart:io';
 
 import 'config.dart';
-import 'provider.dart';
+import 'source.dart';
 
-class EnvironmentProvider extends Provider {
+class EnvironmentSource extends Source {
   /// Configuration options passed in via the [Platform.environment].
   ///
   /// The keys have been transformed by [EnvironmentParser.parseKey].
@@ -17,7 +17,7 @@ class EnvironmentProvider extends Provider {
   /// Stored as a flat non-hierarchical structure, keys contain `.`.
   final Map<String, String> _environment;
 
-  EnvironmentProvider(this._environment);
+  EnvironmentSource(this._environment);
 
   @override
   String? getOptionalString(String key) => _environment[key];
@@ -41,15 +41,14 @@ class EnvironmentProvider extends Provider {
   bool? getOptionalBool(String key) {
     final stringValue = getOptionalString(key);
     if (stringValue != null) {
-      Provider.throwIfUnexpectedValue(
-          key, stringValue, Config.boolStrings.keys);
+      Source.throwIfUnexpectedValue(key, stringValue, Config.boolStrings.keys);
       return Config.boolStrings[stringValue]!;
     }
     return null;
   }
 
   @override
-  String toString() => 'EnvironmentProvider($_environment)';
+  String toString() => 'EnvironmentSource($_environment)';
 
   /// Environment path are not resolved.
   @override

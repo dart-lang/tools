@@ -5,20 +5,19 @@
 import 'dart:io';
 
 import 'cli_parser.dart';
-import 'cli_provider.dart';
+import 'cli_source.dart';
 import 'environment_parser.dart';
-import 'environment_provider.dart';
+import 'environment_source.dart';
 import 'file_parser.dart';
-import 'file_provider.dart';
-import 'provider.dart';
+import 'file_source.dart';
+import 'source.dart';
 
 /// A hierarchical configuration.
+/// Configuration can be provided from three sources: commandline arguments,
+/// environment variables and configuration files. This configuration makes
+/// these accessible via a uniform API.
 ///
-/// Configuration can be provided as commandline arguments, environment
-/// variables and configuration files. This configuration object makes
-/// these accessible with a uniform API.
-///
-/// Configuration can be provided in three ways:
+/// Configuration can be provided via the three sources as follows:
 /// 1. commandline argument defines as `-Dsome_key=some_value`,
 /// 2. environment variables as `SOME_KEY=some_value`, and
 /// 3. config files as JSON or YAML as `{'some_key': 'some_value'}`.
@@ -44,7 +43,7 @@ import 'provider.dart';
 /// the JSON or YAML configuration file. For environment variables `__` is used
 /// as hierarchy separator.
 ///
-/// Hierarchical configuration can be provided in three ways:
+/// Hierarchical configuration can be provided via the three sources as follows:
 /// 1. commandline argument defines as `-Dsome_key.some_nested_key=some_value`,
 /// 2. environment variables as `SOME_KEY__SOME_NESTED_KEY=some_value`, and
 /// 3. config files as JSON or YAML as
@@ -54,7 +53,7 @@ import 'provider.dart';
 ///        some_value
 ///    ```
 ///
-/// The config is opinionated on the format of the keys.
+/// The config is opinionated on the format of the keys in the sources.
 /// * Command-line argument keys should be lower-cased alphanumeric
 ///   characters or underscores, with `.` for hierarchy.
 /// * Environment variables keys should be upper-cased alphanumeric
@@ -62,19 +61,20 @@ import 'provider.dart';
 /// * Config files keys should be lower-cased alphanumeric
 ///   characters or underscores.
 ///
-/// In the API they are made available lower-cased and with underscores.
+/// In the API they are made available lower-cased and with underscores, and
+/// `.` as hierarchy separator.
 class Config {
-  final CliProvider _cliProvider;
-  final EnvironmentProvider _environmentProvider;
-  final FileProvider _fileProvider;
+  final CliSource _cliSource;
+  final EnvironmentSource _environmentSource;
+  final FileSource _fileSource;
 
-  /// Config providers, ordered by precedence.
-  late final _providers = [_cliProvider, _environmentProvider, _fileProvider];
+  /// Config sources, ordered by precedence.
+  late final _sources = [_cliSource, _environmentSource, _fileSource];
 
   Config._(
-    this._cliProvider,
-    this._environmentProvider,
-    this._fileProvider,
+    this._cliSource,
+    this._environmentSource,
+    this._fileSource,
   );
 
   /// Constructs a config by parsing the three sources.
@@ -105,9 +105,9 @@ class Config {
     final environmentConfig = EnvironmentParser().parse(environment);
 
     return Config._(
-      CliProvider(cliConfig),
-      EnvironmentProvider(environmentConfig),
-      FileProvider(fileConfig, fileSourceUri),
+      CliSource(cliConfig),
+      EnvironmentSource(environmentConfig),
+      FileSource(fileConfig, fileSourceUri),
     );
   }
 
@@ -146,9 +146,9 @@ class Config {
     final environmentConfig = EnvironmentParser().parse(environment);
 
     return Config._(
-      CliProvider(cliConfig),
-      EnvironmentProvider(environmentConfig),
-      FileProvider(fileConfig, fileSourceUri),
+      CliSource(cliConfig),
+      EnvironmentSource(environmentConfig),
+      FileSource(fileConfig, fileSourceUri),
     );
   }
 
@@ -205,11 +205,11 @@ class Config {
   /// If [validValues] is provided, throws if an unxpected value is provided.
   String? getOptionalString(String key, {Iterable<String>? validValues}) {
     String? value;
-    for (final provider in _providers) {
-      value ??= provider.getOptionalString(key);
+    for (final source in _sources) {
+      value ??= source.getOptionalString(key);
     }
     if (validValues != null) {
-      Provider.throwIfUnexpectedValue(key, value, validValues);
+      Source.throwIfUnexpectedValue(key, value, validValues);
     }
     return value;
   }
@@ -236,14 +236,14 @@ class Config {
   }) {
     List<String>? result;
     for (final entry in {
-      _cliProvider: splitCliPattern,
-      _environmentProvider: splitEnvironmentPattern,
-      _fileProvider: null
+      _cliSource: splitCliPattern,
+      _environmentSource: splitEnvironmentPattern,
+      _fileSource: null
     }.entries) {
-      final provider = entry.key;
+      final source = entry.key;
       final splitPattern = entry.value;
       final value =
-          provider.getOptionalStringList(key, splitPattern: splitPattern);
+          source.getOptionalStringList(key, splitPattern: splitPattern);
       if (value != null) {
         if (combineAllConfigs) {
           (result ??= []).addAll(value);
@@ -294,8 +294,8 @@ class Config {
   /// For the config file, it must be a boolean.
   bool? getOptionalBool(String key) {
     bool? value;
-    for (final provider in _providers) {
-      value ??= provider.getOptionalBool(key);
+    for (final source in _sources) {
+      value ??= source.getOptionalBool(key);
     }
     return value;
   }
@@ -342,13 +342,13 @@ class Config {
     bool resolveFileUri = true,
     bool mustExist = false,
   }) {
-    for (final provider in _providers) {
-      final path = provider.getOptionalString(key);
+    for (final source in _sources) {
+      final path = source.getOptionalString(key);
       if (path != null) {
         final value = _pathToUri(
           path,
-          resolveUri: resolveFileUri && provider == _fileProvider,
-          baseUri: provider.baseUri,
+          resolveUri: resolveFileUri && source == _fileSource,
+          baseUri: source.baseUri,
         );
         if (mustExist) {
           _throwIfNotExists(key, value);
@@ -367,7 +367,7 @@ class Config {
     if (resolveUri && baseUri != null) {
       return baseUri.resolve(path);
     }
-    return Provider.fileSystemPathToUri(path);
+    return Source.fileSystemPathToUri(path);
   }
 
   /// Lookup a list of paths in this config.
@@ -390,13 +390,13 @@ class Config {
   }) {
     List<Uri>? result;
     for (final entry in {
-      _cliProvider: splitCliPattern,
-      _environmentProvider: splitEnvironmentPattern,
-      _fileProvider: null
+      _cliSource: splitCliPattern,
+      _environmentSource: splitEnvironmentPattern,
+      _fileSource: null
     }.entries) {
-      final provider = entry.key;
+      final source = entry.key;
       final splitPattern = entry.value;
-      final paths = provider.getOptionalStringList(
+      final paths = source.getOptionalStringList(
         key,
         splitPattern: splitPattern,
       );
@@ -405,8 +405,8 @@ class Config {
           for (final path in paths)
             _pathToUri(
               path,
-              resolveUri: resolveFileUri && provider == _fileProvider,
-              baseUri: provider.baseUri,
+              resolveUri: resolveFileUri && source == _fileSource,
+              baseUri: source.baseUri,
             )
         ];
         if (combineAllConfigs) {
@@ -423,7 +423,7 @@ class Config {
   ///
   /// Only available for the configuration file, cannot be overwritten with
   /// commandline defines or environment variables.
-  T? getFileValue<T>(String key) => _fileProvider.getValue(key);
+  T? getFileValue<T>(String key) => _fileSource.getValue(key);
 
   void _throwIfNull(String key, Object? value) {
     if (value == null) {
@@ -438,7 +438,7 @@ class Config {
   }
 
   @override
-  String toString() => 'Config($_providers)';
+  String toString() => 'Config($_sources)';
 }
 
 extension on Uri {

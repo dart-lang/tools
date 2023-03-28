@@ -4,7 +4,7 @@
 
 import 'dart:io';
 
-abstract class Provider {
+abstract class Source {
   /// If provided, the uri used for resolving paths.
   Uri? get baseUri;
 

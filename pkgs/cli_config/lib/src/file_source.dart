@@ -2,9 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'provider.dart';
+import 'source.dart';
 
-class FileProvider extends Provider {
+class FileSource extends Source {
   /// Configuration options passed in via a JSON or YAML configuration file.
   ///
   /// Stored as a partial hierarchical data structure. The values can be maps
@@ -15,7 +15,7 @@ class FileProvider extends Provider {
   @override
   final Uri? baseUri;
 
-  FileProvider(this._file, this.baseUri);
+  FileSource(this._file, this.baseUri);
 
   @override
   String? getOptionalString(String key) => getValue<String>(key);
@@ -57,5 +57,5 @@ class FileProvider extends Provider {
   }
 
   @override
-  String toString() => 'FileProvider(file: $_file, fileUri: $baseUri)';
+  String toString() => 'FileSource(file: $_file, fileUri: $baseUri)';
 }
