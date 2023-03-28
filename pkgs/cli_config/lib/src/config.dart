@@ -12,7 +12,7 @@ import 'file_parser.dart';
 import 'file_provider.dart';
 import 'provider.dart';
 
-/// A hierarchical configuration object.
+/// A hierarchical configuration.
 ///
 /// Configuration can be provided as commandline arguments, environment
 /// variables and configuration files. This configuration object makes
@@ -79,9 +79,9 @@ class Config {
 
   /// Constructs a config by parsing the three sources.
   ///
-  /// If provided, [cliDefines] must be a list of '<key>=<value>'.
+  /// If provided, [commandLineDefines] must be a list of '<key>=<value>'.
   ///
-  /// If provided, [environment] must be a map containing environment varibales.
+  /// If provided, [environment] must be a map containing environment variables.
   ///
   /// If provided, [fileParsed] must be valid parsed YSON or YAML (maps, lists,
   /// strings, integers, and booleans).
@@ -90,7 +90,7 @@ class Config {
   /// [fileContents] and to provide better error messages on parsing the
   /// configuration file.
   factory Config({
-    List<String> cliDefines = const [],
+    List<String> commandLineDefines = const [],
     Map<String, String> environment = const {},
     Map<String, dynamic> fileParsed = const {},
     Uri? fileSourceUri,
@@ -99,7 +99,7 @@ class Config {
     final fileConfig = FileParser().parseMap(fileParsed);
 
     // Parse CLI argument defines.
-    final cliConfig = DefinesParser().parse(cliDefines);
+    final cliConfig = DefinesParser().parse(commandLineDefines);
 
     // Parse environment.
     final environmentConfig = EnvironmentParser().parse(environment);
@@ -113,9 +113,9 @@ class Config {
 
   /// Constructs a config by parsing the three sources.
   ///
-  /// If provided, [cliDefines] must be a list of '<key>=<value>'.
+  /// If provided, [commandLineDefines] must be a list of '<key>=<value>'.
   ///
-  /// If provided, [environment] must be a map containing environment varibales.
+  /// If provided, [environment] must be a map containing environment variables.
   ///
   /// If provided, [fileContents] must be valid JSON or YAML.
   ///
@@ -123,7 +123,7 @@ class Config {
   /// [fileContents] and to provide better error messages on parsing the
   /// configuration file.
   factory Config.fromConfigFileContents({
-    List<String> cliDefines = const [],
+    List<String> commandLineDefines = const [],
     Map<String, String> environment = const {},
     String? fileContents,
     Uri? fileSourceUri,
@@ -140,7 +140,7 @@ class Config {
     }
 
     // Parse CLI argument defines.
-    final cliConfig = DefinesParser().parse(cliDefines);
+    final cliConfig = DefinesParser().parse(commandLineDefines);
 
     // Parse environment.
     final environmentConfig = EnvironmentParser().parse(environment);
@@ -176,7 +176,7 @@ class Config {
     }
 
     return Config.fromConfigFileContents(
-      cliDefines: results['define'] as List<String>,
+      commandLineDefines: results['define'] as List<String>,
       environment: environment ?? Platform.environment,
       fileContents: fileContents,
       fileSourceUri: fileSourceUri,
@@ -260,8 +260,12 @@ class Config {
     '1': true,
     'false': false,
     'FALSE': false,
+    'no': false,
+    'NO': false,
     'true': true,
     'TRUE': true,
+    'yes': true,
+    'YES': true,
   };
 
   /// Lookup a boolean value in this config.

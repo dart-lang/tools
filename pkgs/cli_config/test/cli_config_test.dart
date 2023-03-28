@@ -17,7 +17,7 @@ void main() {
     const path5 = 'path/in/config_file/';
     const path6 = 'path/in/config_file_2/';
     final config = Config.fromConfigFileContents(
-      cliDefines: [
+      commandLineDefines: [
         'build.out_dir=$path1',
         'build.out_dir=$path2',
       ],
@@ -60,7 +60,7 @@ void main() {
     const path2 = 'path/in/environment/';
     const path3 = 'path/in/config_file/';
     final config = Config.fromConfigFileContents(
-      cliDefines: [
+      commandLineDefines: [
         'build.out_dir=$path1',
       ],
       environment: {
@@ -85,7 +85,7 @@ void main() {
     const path2 = 'path/in/environment/';
     const path3 = 'path/in/config_file/';
     final config = Config.fromConfigFileContents(
-      cliDefines: [],
+      commandLineDefines: [],
       environment: {
         'BUILD__OUT_DIR': path2,
       },
@@ -107,7 +107,7 @@ void main() {
   test('getOptionalString config file', () {
     const path3 = 'path/in/config_file/';
     final config = Config.fromConfigFileContents(
-      cliDefines: [],
+      commandLineDefines: [],
       environment: {},
       fileContents: jsonEncode(
         {
@@ -126,7 +126,7 @@ void main() {
 
   test('getOptionalBool define', () {
     final config = Config(
-      cliDefines: ['my_bool=true'],
+      commandLineDefines: ['my_bool=true'],
     );
 
     expect(config.getOptionalBool('my_bool'), true);
@@ -206,7 +206,7 @@ void main() {
   test('provide pre-parsed config', () {
     const path3 = 'path/in/config_file/';
     final config = Config(
-      cliDefines: [],
+      commandLineDefines: [],
       environment: {},
       fileParsed: {
         'build': {
@@ -225,7 +225,7 @@ void main() {
       await File.fromUri(tempFileUri).create();
       final nonExistUri = tempUri.resolve('foo.ext');
       final config = Config(
-        cliDefines: [],
+        commandLineDefines: [],
         environment: {},
         fileParsed: {
           'build': {
@@ -249,13 +249,13 @@ void main() {
 
   test('wrong CLI key format', () {
     expect(
-      () => Config(cliDefines: ['CAPITALIZED=value']),
+      () => Config(commandLineDefines: ['CAPITALIZED=value']),
       throwsFormatException,
     );
   });
 
   test('CLI two values when expecting one', () {
-    final config = Config(cliDefines: ['key=value', 'key=value2']);
+    final config = Config(commandLineDefines: ['key=value', 'key=value2']);
     expect(
       () => config.getString('key'),
       throwsFormatException,
@@ -263,14 +263,14 @@ void main() {
   });
 
   test('CLI split stringlist', () {
-    final config = Config(cliDefines: ['key=value;value2']);
+    final config = Config(commandLineDefines: ['key=value;value2']);
     final value = config.getOptionalStringList('key', splitCliPattern: ';');
     expect(value, ['value', 'value2']);
   });
 
   test('CLI path', () {
     final uri = Uri.file('some/path.ext');
-    final config = Config(cliDefines: ['key=${uri.path}']);
+    final config = Config(commandLineDefines: ['key=${uri.path}']);
     final value = config.getOptionalPath('key');
     expect(value, uri);
   });
@@ -278,14 +278,14 @@ void main() {
   test('CLI path list', () {
     final uri = Uri.file('some/path.ext');
     final uri2 = Uri.file('some/directory/');
-    final config = Config(cliDefines: ['key=${uri.path}:${uri2.path}']);
+    final config = Config(commandLineDefines: ['key=${uri.path}:${uri2.path}']);
     final value = config.getOptionalPathList('key', splitCliPattern: ':');
     expect(value, [uri, uri2]);
   });
 
   test('toString', () {
     final config = Config(
-      cliDefines: ['key=foo'],
+      commandLineDefines: ['key=foo'],
       environment: {'key': 'bar'},
       fileParsed: {'key': 'baz'},
     );
