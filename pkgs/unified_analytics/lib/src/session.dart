@@ -9,48 +9,23 @@ import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
+import 'initializer.dart';
 
 class Session {
   final Directory homeDirectory;
   final FileSystem fs;
   final File _sessionFile;
-  int _sessionId;
-  int _lastPing;
 
-  /// This constructor will go to the session json file in
-  /// the user's home directory and extract the necessary fields from
-  /// the json file
-  factory Session({
-    required Directory homeDirectory,
-    required FileSystem fs,
-  }) {
-    final File sessionFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
+  late int _sessionId;
+  late int _lastPing;
 
-    final String sessionFileContents = sessionFile.readAsStringSync();
-    final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-    final int sessionId = sessionObj['session_id'] as int;
-    final int lastPing = sessionObj['last_ping'] as int;
-
-    return Session._(
-      homeDirectory: homeDirectory,
-      fs: fs,
-      sessionFile: sessionFile,
-      sessionId: sessionId,
-      lastPing: lastPing,
-    );
-  }
-
-  /// Private constructor that will have the variables necessary already parsed
-  Session._({
+  Session({
     required this.homeDirectory,
     required this.fs,
-    required File sessionFile,
-    required int sessionId,
-    required int lastPing,
-  })  : _sessionFile = sessionFile,
-        _sessionId = sessionId,
-        _lastPing = lastPing;
+  }) : _sessionFile = fs.file(p.join(
+            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)) {
+    _refreshSessionData();
+  }
 
   /// This will use the data parsed from the
   /// session json file in the dart-tool directory
@@ -94,15 +69,25 @@ class Session {
 
   /// This will go to the session file within the dart-tool
   /// directory and fetch the latest data from the json to update
-  /// the class's variables
+  /// the class's variables. If the json file is malformed, a new
+  /// session file will be recreated
   ///
   /// This allows the session data in this class to always be up
   /// to date incase another tool is also calling this package and
   /// making updates to the session file
   void _refreshSessionData() {
-    final String sessionFileContents = _sessionFile.readAsStringSync();
-    final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-    _sessionId = sessionObj['session_id'] as int;
-    _lastPing = sessionObj['last_ping'] as int;
+    try {
+      final String sessionFileContents = _sessionFile.readAsStringSync();
+      final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
+      _sessionId = sessionObj['session_id'] as int;
+      _lastPing = sessionObj['last_ping'] as int;
+    } on FormatException {
+      Initializer.createSessionFile(sessionFile: _sessionFile);
+
+      final String sessionFileContents = _sessionFile.readAsStringSync();
+      final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
+      _sessionId = sessionObj['session_id'] as int;
+      _lastPing = sessionObj['last_ping'] as int;
+    }
   }
 }
