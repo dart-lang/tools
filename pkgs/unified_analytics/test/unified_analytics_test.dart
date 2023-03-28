@@ -1076,8 +1076,8 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
 
     expect(onboardedTools.length, 2,
         reason: 'There should only be two tools in the config');
-    expect(onboardedTools.contains(DashTool.testTool), true);
-    expect(onboardedTools.contains(DashTool.anotherTestTool), true);
+    expect(onboardedTools.contains(DashTool.flutterTools), true);
+    expect(onboardedTools.contains(DashTool.dartTools), true);
   });
 
   test('Onboarded tools returns empty list when config does not exist', () {
