@@ -15,6 +15,7 @@ import 'file_source.dart';
 import 'source.dart';
 
 /// A hierarchical configuration.
+///
 /// Configuration can be provided from three sources: commandline arguments,
 /// environment variables and configuration files. This configuration makes
 /// these accessible via a uniform API.
