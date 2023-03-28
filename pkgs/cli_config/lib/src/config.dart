@@ -419,11 +419,22 @@ class Config {
     return result;
   }
 
-  /// Lookup a [T] in the config file.
+  /// Lookup a value of type [T] in this configuration.
   ///
-  /// Only available for the configuration file, cannot be overwritten with
-  /// commandline defines or environment variables.
-  T? getFileValue<T>(String key) => _fileSource.getValue(key);
+  /// Does not support specialized options such as `splitPattern`. One must
+  /// use the specialized methods such as [getOptionalStringList] for that.
+  ///
+  /// If sources cannot lookup type [T], they return null.
+  T getValueOf<T>(String key) {
+    T? value;
+    for (final source in _sources) {
+      value ??= source.getOptionalValueOf<T>(key);
+    }
+    if (null is! T) {
+      _throwIfNull(key, value);
+    }
+    return value as T;
+  }
 
   void _throwIfNull(String key, Object? value) {
     if (value == null) {

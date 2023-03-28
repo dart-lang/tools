@@ -307,12 +307,27 @@ void main() {
     );
   });
 
-  test('getFileValue structured data', () {
+  test('getValueOf file source', () {
     final config = Config(fileParsed: {
       'key': {'some': 'map'}
     });
-    final value = config.getFileValue<Map<dynamic, dynamic>>('key');
+    final value = config.getValueOf<Map<dynamic, dynamic>>('key');
     expect(value, {'some': 'map'});
+  });
+
+  test('getValueOf command line source', () {
+    final config = Config(commandLineDefines: [
+      'string_key=value',
+      'bool_key=true',
+      'string_list_key=value1',
+      'string_list_key=value2',
+    ]);
+    expect(config.getValueOf<String>('string_key'), 'value');
+    expect(config.getValueOf<bool>('bool_key'), true);
+    expect(
+      config.getValueOf<List<String>>('string_list_key'),
+      ['value1', 'value2'],
+    );
   });
 
   test('environment split stringlist', () {

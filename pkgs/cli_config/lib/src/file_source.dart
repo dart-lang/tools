@@ -18,7 +18,7 @@ class FileSource extends Source {
   FileSource(this._file, this.baseUri);
 
   @override
-  String? getOptionalString(String key) => getValue<String>(key);
+  String? getOptionalString(String key) => getOptionalValueOf<String>(key);
 
   @override
   List<String>? getOptionalStringList(
@@ -26,13 +26,14 @@ class FileSource extends Source {
     String? splitPattern,
   }) {
     assert(splitPattern == null);
-    return getValue<List<dynamic>>(key)?.cast<String>();
+    return getOptionalValueOf<List<dynamic>>(key)?.cast<String>();
   }
 
   @override
-  bool? getOptionalBool(String key) => getValue<bool>(key);
+  bool? getOptionalBool(String key) => getOptionalValueOf<bool>(key);
 
-  T? getValue<T>(String key) {
+  @override
+  T? getOptionalValueOf<T>(String key) {
     Object? cursor = _file;
     var current = '';
     for (final keyPart in key.split('.')) {

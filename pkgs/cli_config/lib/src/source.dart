@@ -22,6 +22,25 @@ abstract class Source {
   /// Lookup an optional boolean value.
   bool? getOptionalBool(String key);
 
+  /// Lookup an optional value of type [T].
+  ///
+  /// Does not support specialized options such as `splitPattern`. One must
+  /// use the specialized methods such as [getOptionalStringList] for that.
+  ///
+  /// Returns `null` if the source cannot provide a value of type [T].
+  T? getOptionalValueOf<T>(String key) {
+    if (T == bool) {
+      return getOptionalBool(key) as T?;
+    }
+    if (T == String) {
+      return getOptionalString(key) as T?;
+    }
+    if (T == List<String>) {
+      return getOptionalStringList(key) as T?;
+    }
+    return null;
+  }
+
   static void throwIfUnexpectedValue<T>(
       String key, T value, Iterable<T> validValues) {
     if (!validValues.contains(value)) {
