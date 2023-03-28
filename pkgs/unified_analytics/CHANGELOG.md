@@ -2,6 +2,7 @@
 
 - Error handling functionality added to prevent malformed session json data from causing a crash
 - Creating a new analytics constructor to point to a test instance of Google Analytics for developers
+- Adding a static method `Analytics.onboardedTools()` to retrieve a list of tools that have already been onboarded into the config file on the developer's machine
 
 ## 0.1.2
 
