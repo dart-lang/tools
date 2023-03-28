@@ -148,7 +148,7 @@ abstract class Analytics {
       );
 
   /// Returns all [DashTool]s that have been added to the config file
-  /// 
+  ///
   /// By default, it will use the [LocalFileSystem] if [fs] is not provided
   /// and if a specific home directory needs to be passed as an override, it
   /// can be passed in as [homeDirectoryOverride]
@@ -163,6 +163,8 @@ abstract class Analytics {
       kDartToolDirectoryName,
       kConfigFileName,
     ));
+
+    if (!configFile.existsSync()) return [];
 
     // Iterate through the parsed data from the static method
     // in [ConfigHandler] and match the key to the label for

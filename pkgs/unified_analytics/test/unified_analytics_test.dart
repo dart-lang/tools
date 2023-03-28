@@ -1087,4 +1087,12 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     expect(onboardedTools.contains(DashTool.testTool), true);
     expect(onboardedTools.contains(DashTool.anotherTestTool), true);
   });
+
+  test('Onboarded tools returns empty list when config does not exist', () {
+    configFile.deleteSync();
+    final List<DashTool> onboardedTools =
+        Analytics.onboardedTools(fs: fs, homeDirectoryOverride: home);
+
+    expect(onboardedTools.length, 0);
+  });
 }
