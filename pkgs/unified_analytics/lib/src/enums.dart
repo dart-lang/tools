@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:meta/meta.dart';
+
 /// Values for the event name to be sent to Google Analytics
 ///
 /// The [label] for each enum value is what will be logged, the [description]
@@ -85,6 +87,18 @@ enum DashTool {
   languageServer(
     label: 'language_server',
     description: 'The Dart language server for IDE and CLI support.',
+  ),
+
+  // Enum values below to be used within testing only
+  @visibleForTesting
+  testTool(
+    label: 'test_tool',
+    description: 'Tool to be used in tests',
+  ),
+  @visibleForTesting
+  anotherTestTool(
+    label: 'another_test_tool',
+    description: 'Second tool to simulate two tools using package',
   );
 
   final String label;

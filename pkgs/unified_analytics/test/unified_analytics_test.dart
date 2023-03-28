@@ -31,8 +31,8 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  const String initialToolName = 'initial_tool';
-  const String secondTool = 'newTool';
+  final String initialToolName = DashTool.testTool.label;
+  final String secondTool = DashTool.anotherTestTool.label;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;
@@ -128,6 +128,14 @@ void main() {
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '
             'for the initialized tool');
+    expect(
+        Analytics.onboardedTools(
+          fs: fs,
+          homeDirectoryOverride: home,
+        ).contains(DashTool.testTool),
+        true,
+        reason: 'The static method should be able to '
+            'detect the first tool in the config file');
   });
 
   test('New tool is successfully added to config file', () {
@@ -1035,5 +1043,30 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   test('Confirm credentials for GA', () {
     expect(kGoogleAnalyticsApiSecret, 'Ka1jc8tZSzWc_GXMWHfPHA');
     expect(kGoogleAnalyticsMeasurementId, 'G-04BXPVBCWJ');
+  });
+
+  test('Confirm static method for identifying onboarded tools in config', () {
+    final Analytics secondAnalytics = Analytics.test(
+      tool: secondTool,
+      homeDirectory: home,
+      measurementId: 'measurementId',
+      apiSecret: 'apiSecret',
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+      dartVersion: 'Dart 2.19.0',
+      fs: fs,
+      platform: platform,
+    );
+    secondAnalytics.shouldShowMessage;
+
+    final List<DashTool> onboardedTools =
+        Analytics.onboardedTools(fs: fs, homeDirectoryOverride: home);
+
+    expect(onboardedTools.length, 2,
+        reason: 'There should only be two tools in the config');
+    expect(onboardedTools.contains(DashTool.testTool), true);
+    expect(onboardedTools.contains(DashTool.anotherTestTool), true);
   });
 }
