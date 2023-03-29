@@ -8,7 +8,7 @@ initialize with the required parameters
 
 **IMPORTANT**: It is best practice to close the http client connection when finished
 sending events, otherwise, you may notice that the dart process hangs on exit. The example below
-shows how to handle closing the connection via `analytics.close()` method
+shows how to handle closing the connection via `analytics.close()` method.
 
 [Link to documentation for http client's close method](https://pub.dev/documentation/http/latest/http/Client-class.html)
 
@@ -72,7 +72,7 @@ void main() {
 It will be important for each tool to expose a trivial method to
 disabling or enabling analytics collection. Based on how the user interacts
 with the tool, this can be done through the CLI, IDE, etc. The tool will
-then pass a boolean to an API exposed by the package as shown below
+then pass a boolean to an API exposed by the package as shown below.
 
 ```dart
 // Begin by initializing the class
@@ -86,7 +86,7 @@ final bool status = false;
 analytics.setTelemetry(status);
 ```
 
-## Informing Users About Analytics Opt-In Status
+## Displaying Consent Message to Users
 
 When a user first uses any tool with this package enabled, they
 will be enrolled into Analytics collection. It will be the responsiblity
@@ -95,13 +95,15 @@ and inform them on how to Opt-Out of Analytics collection if they wish. The
 package will expose APIs that will make it easy to configure Opt-In status.
 
 For this use case, it is best to use the `Analytics` static method `getConsentMessage`
-which requires passing in the `DashTool` currently using this package
+which requires passing in the `DashTool` currently using this package.
 
 Passing in the `DashTool` is necessary so that the message can include which
-tool is seeking consent
+tool is seeking consent.
 
 ```dart
-final String consentMessage = Analytics.getConsentMessage(tool: DashTool.flutterTools);
+final String consentMessage = Analytics.getConsentMessage(
+  tool: DashTool.flutterTools
+);
 
 /// Printing out the consent message above returns the below
 ///
@@ -123,7 +125,7 @@ final String consentMessage = Analytics.getConsentMessage(tool: DashTool.flutter
 
 Some tools may need to know if the user has opted in for Analytics
 collection in order to enable additional functionality. The example below
-shows how to check the status
+shows how to check the status.
 
 ```dart
 // Begin by initializing the class
@@ -134,11 +136,43 @@ final Analytics analytics = Analytics(...);
 print('This user's status: ${analytics.telemetryEnabled}');  // true if opted-in
 ```
 
+## Checking for New Versions of Consent Message
+
+In the event that the package consent messaging needs has been updated, an
+API has been exposed on an instance of `Analytics` that will notify the tool
+using this package whether to display the message again.
+
+```dart
+// Begin by initializing the class
+//
+// This is assuming that the tool has already been onboarded
+// and that the user has already seen the previous version of
+// the consent message
+final Analytics analytics = Analytics(...);
+
+
+// Check the instance's method on if it should show
+// a message
+if (analytics.shouldShowMessage) {
+
+  // Use the static method to return the latest consent message
+  final String newConsentMessage = Analytics.getConsentMessage(
+    tool: DashTool.flutterTools
+  );
+
+  // Using print statement to simulate a client showing the message
+  print(newConsentMessage);
+}
+```
+
+It is important to note events will not be sent if there is a new version of
+the consent message.
+
 ## Developing Within `package:unified_analytics`
 
 When contributing to this package, if the developer needs to verify that
 events have been sent, the developer should the use development constructor
-so that the events being sent are not going into the production instance
+so that the events being sent are not going into the production instance.
 
 ```dart
 final Analytics analytics = Analytics.development(...);
@@ -156,7 +190,7 @@ shows that the user has not been active for N number of days, a tool that
 works within an IDE can prompt the user with a survey to understand why their
 level of activity has dropped.
 
-The snippet below shows how to invoke the query and a sample response
+The snippet below shows how to invoke the query and a sample response.
 
 ```dart
 // Begin by initializing the class
