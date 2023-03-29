@@ -109,8 +109,6 @@ void main() {
   });
 
   test('Initializer properly sets up on first run', () {
-    print(Analytics.getConsentMessage(tool: DashTool.dartTools));
-
     expect(dartToolDirectory.existsSync(), true,
         reason: 'The directory should have been created');
     expect(clientIdFile.existsSync(), true,
