@@ -249,7 +249,8 @@ class AnalyticsImpl implements Analytics {
       _configHandler.addTool(tool: tool.label);
       _showMessage = true;
     }
-    if (_configHandler.parsedTools[tool.label]!.versionNumber < toolsMessageVersion) {
+    if (_configHandler.parsedTools[tool.label]!.versionNumber <
+        toolsMessageVersion) {
       _configHandler.incrementToolVersion(tool: tool.label);
       _showMessage = true;
     }
