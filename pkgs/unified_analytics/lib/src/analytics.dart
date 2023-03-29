@@ -58,7 +58,6 @@ abstract class Analytics {
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       platform: platform,
-      toolsMessage: kToolsMessage,
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
@@ -106,7 +105,6 @@ abstract class Analytics {
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       platform: platform,
-      toolsMessage: kToolsMessage,
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
@@ -134,7 +132,6 @@ abstract class Analytics {
         homeDirectory: homeDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
-        toolsMessage: toolsMessage,
         flutterVersion: flutterVersion,
         dartVersion: dartVersion,
         platform: platform,
@@ -156,10 +153,6 @@ abstract class Analytics {
 
   /// Boolean indicating whether or not telemetry is enabled
   bool get telemetryEnabled;
-
-  /// Returns the message that should be displayed to the users if
-  /// [shouldShowMessage] returns true
-  String get toolsMessage;
 
   /// Static method to use before initializing the [Analytics] class
   /// to display the consent message to the user
@@ -206,9 +199,6 @@ class AnalyticsImpl implements Analytics {
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
 
-  @override
-  final String toolsMessage;
-
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -216,7 +206,6 @@ class AnalyticsImpl implements Analytics {
     String? flutterVersion,
     required String dartVersion,
     required DevicePlatform platform,
-    required this.toolsMessage,
     required int toolsMessageVersion,
     required this.fs,
     required gaClient,
@@ -229,7 +218,6 @@ class AnalyticsImpl implements Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
-      toolsMessage: toolsMessage,
     );
     initializer.run();
     _showMessage = initializer.firstRun;
@@ -360,7 +348,6 @@ class TestAnalytics extends AnalyticsImpl {
     super.flutterVersion,
     required super.dartVersion,
     required super.platform,
-    required super.toolsMessage,
     required super.toolsMessageVersion,
     required super.fs,
     required super.gaClient,
