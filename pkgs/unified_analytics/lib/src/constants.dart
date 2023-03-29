@@ -10,7 +10,7 @@ const String kAnalyticsUrl = 'https://www.google-analytics.com/mp/collect';
 const String kClientIdFileName = 'CLIENT_ID';
 
 /// Name for the file where telemetry status and tools data will be stored
-const String kConfigFileName = 'dash-analytics.config';
+const String kConfigFileName = 'dart-flutter-telemetry.config';
 
 /// The string that will provide the boilerplate for the configuration file
 /// stored on the user's machine
@@ -53,7 +53,7 @@ reporting=1
 
 /// Name of the directory where all of the files necessary for this package
 /// will be located
-const String kDartToolDirectoryName = '.dart';
+const String kDartToolDirectoryName = '.dart-tool';
 
 /// The API secret associated with the GA4 instance's Measurement Protocol
 const String kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';
@@ -67,7 +67,7 @@ const String kGoogleAnalyticsMeasurementId = 'G-04BXPVBCWJ';
 const int kLogFileLength = 2500;
 
 /// Filename for the log file to persist sent events on user's machine
-const String kLogFileName = 'dash-analytics.log';
+const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
 const String kPackageVersion = '0.1.3-dev';
@@ -76,36 +76,21 @@ const String kPackageVersion = '0.1.3-dev';
 const int kSessionDurationMinutes = 30;
 
 /// Name for the json file where the session details will be stored
-const String kSessionFileName = 'dash-analytics-session.json';
+const String kSessionFileName = 'dart-flutter-telemetry-session.json';
 
 /// The message that should be shown to the user
 const String kToolsMessage = '''
-Flutter and Dart related tooling uses Google Analytics to report usage and
-diagnostic data along with package dependencies, and crash reporting to
-send basic crash reports. This data is used to help improve the Dart
-platform, Flutter framework, and related tools.
+The [tool name] uses Google Analytics to report usage and diagnostic data
+along with package dependencies, and crash reporting to send basic crash reports.
+This data is used to help improve the Dart platform, Flutter framework, and related tools.
 
-Telemetry is not sent on the very first run, but will be sent
-on subsequent runs if not disabled explicitly.
-
+Telemetry is not sent on the very first run.
 To disable reporting of telemetry, run this terminal command:
 
-flutter config --no-analytics
-  OR
-dart --disable-analytics
-
-To enable reporting of telemetry, run this terminal command:
-
-flutter config --analytics
-  OR
-dart --enable-analytics
-
-You can use either the flutter or dart command if both are installed,
-they will set the telemetry status for both tools and any other
-related tooling.
-
-If you opt out of telemetry, an opt-out event will be sent, and then no further
-information will be sent. This data is collected in accordance with the
+[dart|flutter] --disable-telemetry.
+If you opt out of telemetry, an opt-out event will be sent,
+and then no further information will be sent.
+This data is collected in accordance with the
 Google Privacy Policy (https://policies.google.com/privacy).
 ''';
 
