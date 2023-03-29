@@ -2,6 +2,7 @@
 
 - Error handling functionality added to prevent malformed session json data from causing a crash
 - Creating a new analytics constructor to point to a test instance of Google Analytics for developers
+- Exposing static method to retrieve the consent message without having to initialize the `Analytics`
 
 ## 0.1.2
 

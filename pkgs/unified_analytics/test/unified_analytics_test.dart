@@ -1054,4 +1054,13 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
     expect(kGoogleAnalyticsApiSecret, 'Ka1jc8tZSzWc_GXMWHfPHA');
     expect(kGoogleAnalyticsMeasurementId, 'G-04BXPVBCWJ');
   });
+
+  test('Consent message is formatted correctly', () {
+    // Retrieve the consent message for flutter tools
+    final String consentMessage =
+        Analytics.getConsentMessage(tool: DashTool.flutterTools);
+
+    expect(consentMessage,
+        kToolsMessage.replaceAll('[tool name]', DashTool.flutterTools.label));
+  });
 }

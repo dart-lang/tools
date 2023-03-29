@@ -94,17 +94,29 @@ of the tool using this package to display the proper Analytics messaging
 and inform them on how to Opt-Out of Analytics collection if they wish. The
 package will expose APIs that will make it easy to configure Opt-In status.
 
+For this use case, it is best to use the `Analytics` static method `getConsentMessage`
+which requires passing in the `DashTool` currently using this package
+
+Passing in the `DashTool` is necessary so that the message can include which
+tool is seeking consent
+
 ```dart
-// Begin by initializing the class
-final Analytics analytics = Analytics(...);
+final String consentMessage = Analytics.getConsentMessage(tool: DashTool.flutterTools);
 
-// This should be performed every time the tool starts up
-if (analytics.shouldShowMessage) {
-
-  // How each tool displays the message will be unique,
-  // print statement used for trivial usage example
-  print(analytics.toolsMessage);
-}
+/// Printing out the consent message above returns the below
+///
+/// The flutter_tools uses Google Analytics to report usage and diagnostic data
+/// along with package dependencies, and crash reporting to send basic crash reports.
+/// This data is used to help improve the Dart platform, Flutter framework, and related tools.
+/// 
+/// Telemetry is not sent on the very first run.
+/// To disable reporting of telemetry, run this terminal command:
+/// 
+/// [dart|flutter] --disable-telemetry.
+/// If you opt out of telemetry, an opt-out event will be sent,
+/// and then no further information will be sent.
+/// This data is collected in accordance with the
+/// Google Privacy Policy (https://policies.google.com/privacy).
 ```
 
 ## Checking User Opt-In Status
