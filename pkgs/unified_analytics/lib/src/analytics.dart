@@ -52,7 +52,7 @@ abstract class Analytics {
     );
 
     return AnalyticsImpl(
-      tool: tool.label,
+      tool: tool,
       homeDirectory: getHomeDirectory(fs),
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
@@ -100,7 +100,7 @@ abstract class Analytics {
     );
 
     return AnalyticsImpl(
-      tool: tool.label,
+      tool: tool,
       homeDirectory: getHomeDirectory(fs),
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
@@ -117,7 +117,7 @@ abstract class Analytics {
   /// [MemoryFileSystem] to use for testing
   @visibleForTesting
   factory Analytics.test({
-    required String tool,
+    required DashTool tool,
     required Directory homeDirectory,
     required String measurementId,
     required String apiSecret,
@@ -161,6 +161,11 @@ abstract class Analytics {
   /// [shouldShowMessage] returns true
   String get toolsMessage;
 
+  /// Static method to use before initializing the [Analytics] class
+  /// to display the consent message to the user
+  static String getConsentMessage({required DashTool tool}) =>
+      kToolsMessage.replaceAll('[tool name]', tool.label);
+
   /// Returns a map representation of the [UserProperty] for the [Analytics] instance
   ///
   /// This is what will get sent to Google Analytics with every request
@@ -192,6 +197,7 @@ abstract class Analytics {
 }
 
 class AnalyticsImpl implements Analytics {
+  final DashTool tool;
   final FileSystem fs;
   late final ConfigHandler _configHandler;
   late bool _showMessage;
@@ -204,7 +210,7 @@ class AnalyticsImpl implements Analytics {
   final String toolsMessage;
 
   AnalyticsImpl({
-    required String tool,
+    required this.tool,
     required Directory homeDirectory,
     String? flutterChannel,
     String? flutterVersion,
@@ -220,7 +226,7 @@ class AnalyticsImpl implements Analytics {
     // on the first run
     final Initializer initializer = Initializer(
       fs: fs,
-      tool: tool,
+      tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -239,12 +245,12 @@ class AnalyticsImpl implements Analytics {
     // tool message and version have been updated from what
     // is in the current file; if there is a new message version
     // make the necessary updates
-    if (!_configHandler.parsedTools.containsKey(tool)) {
-      _configHandler.addTool(tool: tool);
+    if (!_configHandler.parsedTools.containsKey(tool.label)) {
+      _configHandler.addTool(tool: tool.label);
       _showMessage = true;
     }
-    if (_configHandler.parsedTools[tool]!.versionNumber < toolsMessageVersion) {
-      _configHandler.incrementToolVersion(tool: tool);
+    if (_configHandler.parsedTools[tool.label]!.versionNumber < toolsMessageVersion) {
+      _configHandler.incrementToolVersion(tool: tool.label);
       _showMessage = true;
     }
     _clientId = fs
@@ -262,7 +268,7 @@ class AnalyticsImpl implements Analytics {
       host: platform.label,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
-      tool: tool,
+      tool: tool.label,
     );
 
     // Initialize the log handler to persist events that are being sent

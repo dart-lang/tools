@@ -31,8 +31,8 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  const String initialToolName = 'initial_tool';
-  const String secondTool = 'newTool';
+  const DashTool initialTool = DashTool.flutterTools;
+  const DashTool secondTool = DashTool.dartTools;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;
@@ -53,7 +53,7 @@ void main() {
     // This is the first analytics instance that will be used to demonstrate
     // that events will not be sent with the first run of analytics
     initializationAnalytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -72,7 +72,7 @@ void main() {
     // This instance should have the same parameters as the one above for
     // [initializationAnalytics]
     analytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -104,11 +104,13 @@ void main() {
       host: platform.label,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
-      tool: initialToolName,
+      tool: initialTool.label,
     );
   });
 
   test('Initializer properly sets up on first run', () {
+    print(Analytics.getConsentMessage(tool: DashTool.dartTools));
+
     expect(dartToolDirectory.existsSync(), true,
         reason: 'The directory should have been created');
     expect(clientIdFile.existsSync(), true,
@@ -167,9 +169,9 @@ void main() {
     expect(secondAnalytics.parsedTools.length, equals(2),
         reason: 'There should be only 2 tools that have '
             'been parsed into the config file');
-    expect(secondAnalytics.parsedTools.containsKey(initialToolName), true,
-        reason: 'The first tool: $initialToolName should be in the map');
-    expect(secondAnalytics.parsedTools.containsKey(secondTool), true,
+    expect(secondAnalytics.parsedTools.containsKey(initialTool.label), true,
+        reason: 'The first tool: ${initialTool.label} should be in the map');
+    expect(secondAnalytics.parsedTools.containsKey(secondTool.label), true,
         reason: 'The second tool: $secondAnalytics should be in the map');
     expect(configFile.readAsStringSync().startsWith(kConfigString), true,
         reason:
@@ -341,7 +343,7 @@ void main() {
   });
 
   test('Incrementing the version for a tool is successful', () {
-    expect(analytics.parsedTools[initialToolName]?.versionNumber,
+    expect(analytics.parsedTools[initialTool.label]?.versionNumber,
         toolsMessageVersion,
         reason: 'On initialization, the first version number should '
             'be what is set in the setup method');
@@ -350,7 +352,7 @@ void main() {
     // the first analytics instance except with a newer version for
     // the tools message and version
     final Analytics secondAnalytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -363,7 +365,7 @@ void main() {
       platform: platform,
     );
 
-    expect(secondAnalytics.parsedTools[initialToolName]?.versionNumber,
+    expect(secondAnalytics.parsedTools[initialTool.label]?.versionNumber,
         toolsMessageVersion + 1,
         reason:
             'The second analytics instance should have incremented the version');
@@ -460,8 +462,8 @@ reporting=1
 # and the value is a date in the form YYYY-MM-DD, a comma, and
 # a number representing the version of the message that was
 # displayed.
-$initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
-$initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
+${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
+${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 ''');
 
     // Initialize a second analytics class for the same tool as
@@ -471,7 +473,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     // This second instance should reset the config file when it goes
     // to increment the version in the file
     final Analytics secondAnalytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -486,13 +488,13 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
 
     expect(
       configFile.readAsStringSync().endsWith(
-          '# displayed.\n$initialToolName=${ConfigHandler.dateStamp},${toolsMessageVersion + 1}\n'),
+          '# displayed.\n${initialTool.label}=${ConfigHandler.dateStamp},${toolsMessageVersion + 1}\n'),
       true,
       reason: 'The config file ends with the correctly formatted ending '
           'after removing the duplicate lines for a given tool',
     );
     expect(
-      secondAnalytics.parsedTools[initialToolName]?.versionNumber,
+      secondAnalytics.parsedTools[initialTool.label]?.versionNumber,
       toolsMessageVersion + 1,
       reason: 'The new version should have been incremented',
     );
