@@ -149,7 +149,7 @@ void main() {
       measurementId: measurementId,
       apiSecret: apiSecret,
       flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion + 1,  // Incrementing version
+      toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -183,7 +183,7 @@ void main() {
       measurementId: measurementId,
       apiSecret: apiSecret,
       flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion + 1,  // Incrementing version
+      toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
