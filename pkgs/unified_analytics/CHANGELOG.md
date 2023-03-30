@@ -2,7 +2,7 @@
 
 - Error handling functionality added to prevent malformed session json data from causing a crash
 - Creating a new analytics constructor to point to a test instance of Google Analytics for developers
-- Exposing static method to retrieve the consent message without having to initialize the `Analytics`
+- Exposing a new instance method that will need to be invoked when a client has successfully shown the consent message to the user `clientShowedMessage()`
 
 ## 0.1.2
 

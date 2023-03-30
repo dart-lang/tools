@@ -38,6 +38,26 @@ void main() {
     DateTime start = DateTime.now();
     int count = 0;
 
+    // Each client using this package will have it's own
+    // method to show the message but the below is a trivial
+    // example of how to properly initialize the analytics instance
+    if (analytics.shouldShowMessage) {
+      
+      // Simulates displaying the message, this will vary from
+      // client to client; ie. stdout, popup in IDE, etc.
+      print(analytics.getConsentMessage);
+
+      // After receiving confirmation that the message has been
+      // displayed, invoking the below method will successfully
+      // onboard the tool into the config file and allow for
+      // events to be sent on the next creation of the analytics
+      // instance
+      //
+      // The rest of the example below assumes that the tool has
+      // already been onboarded in a previous run
+      analytics.clientShowedMessage();
+    }
+
     // Example of long running process
     for (int i = 0; i < 2000; i++) {
         count += i;
@@ -107,7 +127,7 @@ final String consentMessage = Analytics.getConsentMessage(
 
 /// Printing out the consent message above returns the below
 ///
-/// The flutter_tools uses Google Analytics to report usage and diagnostic data
+/// The flutter tools uses Google Analytics to report usage and diagnostic data
 /// along with package dependencies, and crash reporting to send basic crash reports.
 /// This data is used to help improve the Dart platform, Flutter framework, and related tools.
 /// 
@@ -151,17 +171,24 @@ using this package whether to display the message again.
 final Analytics analytics = Analytics(...);
 
 
-// Check the instance's method on if it should show
-// a message
+// Much like the first example, if there is a new version of
+// the tools message that needs to be shown, use the same work
+// workflow
 if (analytics.shouldShowMessage) {
+  
+  // Simulates displaying the message, this will vary from
+  // client to client; ie. stdout, popup in IDE, etc.
+  print(analytics.getConsentMessage);
 
-  // Use the static method to return the latest consent message
-  final String newConsentMessage = Analytics.getConsentMessage(
-    tool: DashTool.flutterTools
-  );
-
-  // Using print statement to simulate a client showing the message
-  print(newConsentMessage);
+  // After receiving confirmation that the message has been
+  // displayed, invoking the below method will successfully
+  // onboard the tool into the config file and allow for
+  // events to be sent on the next creation of the analytics
+  // instance
+  //
+  // The rest of the example below assumes that the tool has
+  // already been onboarded in a previous run
+  analytics.clientShowedMessage();
 }
 ```
 
