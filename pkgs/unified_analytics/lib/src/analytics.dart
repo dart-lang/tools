@@ -235,6 +235,15 @@ class AnalyticsImpl implements Analytics {
       initializer: initializer,
     );
 
+    // Check if the tool has already been onboarded, and if it
+    // has, check if the latest message version is greater to
+    // prompt the client to show a message
+    if (_configHandler.parsedTools.containsKey(tool.label) &&
+        _configHandler.parsedTools[tool.label]!.versionNumber <
+            toolsMessageVersion) {
+      _showMessage = true;
+    }
+
     _clientId = fs
         .file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
