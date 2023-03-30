@@ -238,8 +238,14 @@ class AnalyticsImpl implements Analytics {
     // If the tool has already been added to the config file
     // we can assume that the client has successfully shown
     // the consent message
+    //
+    // Additionally, if the tool does not exist in the config
+    // file but the config file already exists, prompt with
+    // message again
     if (_configHandler.parsedTools.containsKey(tool.label)) {
       _clientShowedMessage = true;
+    } else {
+      _showMessage = true;
     }
 
     // Check if the tool has already been onboarded, and if it

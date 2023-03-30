@@ -204,4 +204,56 @@ void main() {
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
     expect(logFile.readAsLinesSync().length, 3);
   });
+
+  test('Disable second instance if first one did not show message', () {
+    final Analytics firstAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(firstAnalytics.shouldShowMessage, true);
+
+    final Analytics secondAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(secondAnalytics.shouldShowMessage, true);
+
+    secondAnalytics.clientShowedMessage();
+
+    final Analytics thirdAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(thirdAnalytics.shouldShowMessage, false);
+  });
 }
