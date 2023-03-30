@@ -4,6 +4,7 @@
 - Creating a new analytics constructor to point to a test instance of Google Analytics for developers
 - Align supported tool list with PDD
 - Exposing a new instance method that will need to be invoked when a client has successfully shown the consent message to the user `clientShowedMessage()`
+- Adding and incrementing a tool's version will automatically use the current consent message version instead of incrementing by 1
 
 ## 0.1.2
 

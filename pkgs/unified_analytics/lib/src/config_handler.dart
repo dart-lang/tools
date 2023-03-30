@@ -85,14 +85,20 @@ class ConfigHandler {
   /// Responsibe for the creation of the configuration line
   /// for the tool being passed in by the user and adding a
   /// [ToolInfo] object
-  void addTool({required String tool}) {
+  void addTool({
+    required String tool,
+    required int versionNumber,
+  }) {
     // Create the new instance of [ToolInfo] to be added
     // to the [parsedTools] map
-    parsedTools[tool] = ToolInfo(lastRun: clock.now(), versionNumber: 1);
+    parsedTools[tool] = ToolInfo(
+      lastRun: clock.now(),
+      versionNumber: versionNumber,
+    );
 
     // New string to be appended to the bottom of the configuration file
     // with a newline character for new tools to be added
-    String newTool = '$tool=$dateStamp,1\n';
+    String newTool = '$tool=$dateStamp,$versionNumber\n';
     if (!configFile.readAsStringSync().endsWith('\n')) {
       newTool = '\n$newTool';
     }
@@ -103,7 +109,10 @@ class ConfigHandler {
   /// Will increment the version number and update the date
   /// in the config file for the provided tool name while
   /// also incrementing the version number in [ToolInfo]
-  void incrementToolVersion({required String tool}) {
+  void incrementToolVersion({
+    required String tool,
+    required int newVersionNumber,
+  }) {
     if (!parsedTools.containsKey(tool)) {
       return;
     }
@@ -122,11 +131,6 @@ class ConfigHandler {
       resetConfig();
       return;
     }
-
-    final RegExpMatch match = matches.first;
-
-    // Extract the groups from the regex match to prep for parsing
-    final int newVersionNumber = int.parse(match.group(3) as String) + 1;
 
     // Construct the new tool line for the config line and replace it
     // in the original config string to prep for writing back out

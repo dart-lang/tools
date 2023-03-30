@@ -197,12 +197,29 @@ class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
   late final ConfigHandler _configHandler;
-  late bool _showMessage;
   final GAClient _gaClient;
   late final String _clientId;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
   final int toolsMessageVersion;
+
+  /// Tells the client if they need to show a message to the
+  /// user; this will return true if it is the first time the
+  /// package is being used for a developer or if the consent
+  /// message has been updated by the package
+  late bool _showMessage;
+
+  /// This will be switch to true once it has been confirmed by the
+  /// client using this package that they have shown this message
+  /// to the developer
+  ///
+  /// If the tool using this package as already shown the consent message
+  /// and it has been added to the config file, it will be set as true
+  ///
+  /// It will also be set to true once the tool using this package has
+  /// invoked [clientShowedMessage]
+  ///
+  /// If this is false, all events will be blocked from being sent
   bool _clientShowedMessage = false;
 
   AnalyticsImpl({
@@ -296,12 +313,18 @@ class AnalyticsImpl implements Analytics {
   @override
   void clientShowedMessage() {
     if (!_configHandler.parsedTools.containsKey(tool.label)) {
-      _configHandler.addTool(tool: tool.label);
+      _configHandler.addTool(
+        tool: tool.label,
+        versionNumber: toolsMessageVersion,
+      );
       _showMessage = true;
     }
     if (_configHandler.parsedTools[tool.label]!.versionNumber <
         toolsMessageVersion) {
-      _configHandler.incrementToolVersion(tool: tool.label);
+      _configHandler.incrementToolVersion(
+        tool: tool.label,
+        newVersionNumber: toolsMessageVersion,
+      );
       _showMessage = true;
     }
     _clientShowedMessage = true;

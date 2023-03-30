@@ -20,7 +20,10 @@ void main() {
   DateTime start = DateTime.now();
   print('###### START ###### $start');
 
-  // Automatically assume that the client has shown the message
+  // Confirm to analytics instance that the message was shown;
+  // simplified for this example, tools using this package will
+  // invoke this method after confirming they have showed the
+  // message
   analytics.clientShowedMessage();
 
   print(analytics.telemetryEnabled);
