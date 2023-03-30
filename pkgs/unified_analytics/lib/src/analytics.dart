@@ -245,7 +245,7 @@ class AnalyticsImpl implements Analytics {
     // Check if the tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
     // prompt the client to show a message
-    // 
+    //
     // If the tool has not been added to the config file, then
     // we will show the message as well
     final int currentVersion =
