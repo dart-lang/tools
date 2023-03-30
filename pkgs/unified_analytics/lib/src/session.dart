@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
@@ -76,18 +77,24 @@ class Session {
   /// to date incase another tool is also calling this package and
   /// making updates to the session file
   void _refreshSessionData() {
-    try {
+    /// Using a nested function here to reduce verbosity
+    void parseContents() {
       final String sessionFileContents = _sessionFile.readAsStringSync();
       final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
       _sessionId = sessionObj['session_id'] as int;
       _lastPing = sessionObj['last_ping'] as int;
+    }
+
+    try {
+      parseContents();
     } on FormatException {
       Initializer.createSessionFile(sessionFile: _sessionFile);
 
-      final String sessionFileContents = _sessionFile.readAsStringSync();
-      final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
-      _sessionId = sessionObj['session_id'] as int;
-      _lastPing = sessionObj['last_ping'] as int;
+      parseContents();
+    } on PathNotFoundException {
+      Initializer.createSessionFile(sessionFile: _sessionFile);
+
+      parseContents();
     }
   }
 }
