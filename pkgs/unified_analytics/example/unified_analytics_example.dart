@@ -20,6 +20,9 @@ void main() {
   DateTime start = DateTime.now();
   print('###### START ###### $start');
 
+  // Automatically assume that the client has shown the message
+  analytics.clientShowedMessage();
+
   print(analytics.telemetryEnabled);
   // [eventData] is an optional map to add relevant data
   // for the [eventName] being sent

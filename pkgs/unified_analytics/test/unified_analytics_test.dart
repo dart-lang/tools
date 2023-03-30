@@ -31,8 +31,8 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  const String initialToolName = 'initial_tool';
-  const String secondTool = 'newTool';
+  const DashTool initialTool = DashTool.flutterTools;
+  const DashTool secondTool = DashTool.dartTools;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;
@@ -53,7 +53,7 @@ void main() {
     // This is the first analytics instance that will be used to demonstrate
     // that events will not be sent with the first run of analytics
     initializationAnalytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -65,6 +65,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    initializationAnalytics.clientShowedMessage();
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
@@ -72,7 +73,7 @@ void main() {
     // This instance should have the same parameters as the one above for
     // [initializationAnalytics]
     analytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -84,6 +85,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    analytics.clientShowedMessage();
 
     // The 3 files that should have been generated
     clientIdFile = home
@@ -104,7 +106,7 @@ void main() {
       host: platform.label,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
-      tool: initialToolName,
+      tool: initialTool.label,
     );
   });
 
@@ -163,13 +165,14 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(secondAnalytics.parsedTools.length, equals(2),
         reason: 'There should be only 2 tools that have '
             'been parsed into the config file');
-    expect(secondAnalytics.parsedTools.containsKey(initialToolName), true,
-        reason: 'The first tool: $initialToolName should be in the map');
-    expect(secondAnalytics.parsedTools.containsKey(secondTool), true,
+    expect(secondAnalytics.parsedTools.containsKey(initialTool.label), true,
+        reason: 'The first tool: ${initialTool.label} should be in the map');
+    expect(secondAnalytics.parsedTools.containsKey(secondTool.label), true,
         reason: 'The second tool: $secondAnalytics should be in the map');
     expect(configFile.readAsStringSync().startsWith(kConfigString), true,
         reason:
@@ -257,6 +260,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(secondAnalytics.telemetryEnabled, false,
         reason: 'Analytics telemetry should be disabled by the first class '
@@ -280,6 +284,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(analytics.telemetryEnabled, true,
         reason: 'Telemetry should be enabled on initialization for '
@@ -333,6 +338,8 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
+
     expect(secondAnalytics.telemetryEnabled, true);
 
     expect(configFile.readAsStringSync().endsWith('\n'), true,
@@ -341,7 +348,7 @@ void main() {
   });
 
   test('Incrementing the version for a tool is successful', () {
-    expect(analytics.parsedTools[initialToolName]?.versionNumber,
+    expect(analytics.parsedTools[initialTool.label]?.versionNumber,
         toolsMessageVersion,
         reason: 'On initialization, the first version number should '
             'be what is set in the setup method');
@@ -350,7 +357,7 @@ void main() {
     // the first analytics instance except with a newer version for
     // the tools message and version
     final Analytics secondAnalytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -362,8 +369,9 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
-    expect(secondAnalytics.parsedTools[initialToolName]?.versionNumber,
+    expect(secondAnalytics.parsedTools[initialTool.label]?.versionNumber,
         toolsMessageVersion + 1,
         reason:
             'The second analytics instance should have incremented the version');
@@ -460,8 +468,8 @@ reporting=1
 # and the value is a date in the form YYYY-MM-DD, a comma, and
 # a number representing the version of the message that was
 # displayed.
-$initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
-$initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
+${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
+${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 ''');
 
     // Initialize a second analytics class for the same tool as
@@ -471,7 +479,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
     // This second instance should reset the config file when it goes
     // to increment the version in the file
     final Analytics secondAnalytics = Analytics.test(
-      tool: initialToolName,
+      tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
       apiSecret: apiSecret,
@@ -483,16 +491,42 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
+
+    expect(
+      configFile.readAsStringSync(),
+      kConfigString,
+      reason: 'The config file should have been reset completely '
+          'due to a malformed file that contained two lines for the same tool',
+    );
+
+    // Creating a third instance after the second instance
+    // has reset the config file should include the newly added
+    // tool again with its incremented version number
+    final Analytics thirdAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion + 1,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+    thirdAnalytics.clientShowedMessage();
 
     expect(
       configFile.readAsStringSync().endsWith(
-          '# displayed.\n$initialToolName=${ConfigHandler.dateStamp},${toolsMessageVersion + 1}\n'),
+          '# displayed.\n${initialTool.label}=${ConfigHandler.dateStamp},${toolsMessageVersion + 1}\n'),
       true,
       reason: 'The config file ends with the correctly formatted ending '
           'after removing the duplicate lines for a given tool',
     );
     expect(
-      secondAnalytics.parsedTools[initialToolName]?.versionNumber,
+      thirdAnalytics.parsedTools[initialTool.label]?.versionNumber,
       toolsMessageVersion + 1,
       reason: 'The new version should have been incremented',
     );
@@ -551,6 +585,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
 
       // Read the contents of the session file
       final String sessionFileContents = sessionFile.readAsStringSync();
@@ -583,6 +618,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      thirdAnalytics.clientShowedMessage();
 
       // Calling the send event method will result in the session file
       // getting updated but because we use the `Analytics.test()` constructor
@@ -630,6 +666,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
 
       // Read the contents of the session file
       final String sessionFileContents = sessionFile.readAsStringSync();
@@ -665,6 +702,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      thirdAnalytics.clientShowedMessage();
 
       // Calling the send event method will result in the session file
       // getting updated but because we use the `Analytics.test()` constructor
@@ -839,6 +877,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
     }
 
     // Send events with both instances of the classes
@@ -941,6 +980,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
     }
 
     // Send an event and check that the query stats reflects what is expected
@@ -1053,5 +1093,15 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
   test('Confirm credentials for GA', () {
     expect(kGoogleAnalyticsApiSecret, 'Ka1jc8tZSzWc_GXMWHfPHA');
     expect(kGoogleAnalyticsMeasurementId, 'G-04BXPVBCWJ');
+  });
+
+  test('Consent message is formatted correctly', () {
+    // Retrieve the consent message for flutter tools
+    final String consentMessage = analytics.getConsentMessage;
+
+    expect(
+        consentMessage,
+        kToolsMessage.replaceAll(
+            '[tool name]', DashTool.flutterTools.label.replaceAll('_', ' ')));
   });
 }
