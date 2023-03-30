@@ -70,7 +70,7 @@ const int kLogFileLength = 2500;
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '0.1.3-dev';
+const String kPackageVersion = '1.0.0-dev';
 
 /// The minimum length for a session
 const int kSessionDurationMinutes = 30;
