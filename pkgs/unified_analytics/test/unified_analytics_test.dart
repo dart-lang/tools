@@ -471,7 +471,6 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 ''');
 
-    print('AFTER EDITTING FILE');
     // Initialize a second analytics class for the same tool as
     // the first analytics instance except with a newer version for
     // the tools message and version
