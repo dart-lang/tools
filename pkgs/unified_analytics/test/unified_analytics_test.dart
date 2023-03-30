@@ -85,6 +85,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    analytics.clientShowedMessage();
 
     // The 3 files that should have been generated
     clientIdFile = home
@@ -617,6 +618,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      thirdAnalytics.clientShowedMessage();
 
       // Calling the send event method will result in the session file
       // getting updated but because we use the `Analytics.test()` constructor
@@ -700,6 +702,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      thirdAnalytics.clientShowedMessage();
 
       // Calling the send event method will result in the session file
       // getting updated but because we use the `Analytics.test()` constructor
