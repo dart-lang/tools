@@ -212,13 +212,13 @@ class AnalyticsImpl implements Analytics {
   /// This will be switch to true once it has been confirmed by the
   /// client using this package that they have shown this message
   /// to the developer
-  /// 
+  ///
   /// If the tool using this package as already shown the consent message
   /// and it has been added to the config file, it will be set as true
-  /// 
+  ///
   /// It will also be set to true once the tool using this package has
   /// invoked [clientShowedMessage]
-  /// 
+  ///
   /// If this is false, all events will be blocked from being sent
   bool _clientShowedMessage = false;
 
