@@ -1099,9 +1099,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
     // Retrieve the consent message for flutter tools
     final String consentMessage = analytics.getConsentMessage;
 
-    expect(
-        consentMessage, equalsIgnoringWhitespace(
-r'''
+    expect(consentMessage, equalsIgnoringWhitespace(r'''
 The Flutter CLI developer tool uses Google Analytics to report usage and
 diagnostic data along with package dependencies, and crash reporting to
 send basic crash reports. This data is used to help improve the Dart platform,
