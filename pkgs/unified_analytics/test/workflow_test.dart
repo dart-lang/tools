@@ -8,6 +8,7 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 
+import 'package:unified_analytics/src/config_handler.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -22,6 +23,7 @@ void main() {
 
   const String homeDirName = 'home';
   const DashTool initialTool = DashTool.flutterTools;
+  const DashTool secondTool = DashTool.dartTools;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;
@@ -255,5 +257,59 @@ void main() {
     );
 
     expect(thirdAnalytics.shouldShowMessage, false);
+  });
+
+  test('Passing large version number gets logged in config', () {
+    final int firstVersion = toolsMessageVersion + 3;
+    final Analytics secondAnalytics = Analytics.test(
+      tool: secondTool,
+      homeDirectory: home,
+      measurementId: 'measurementId',
+      apiSecret: 'apiSecret',
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: firstVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+      dartVersion: 'Dart 2.19.0',
+      fs: fs,
+      platform: platform,
+    );
+    secondAnalytics.clientShowedMessage();
+
+    expect(
+        configFile.readAsStringSync().endsWith(
+            '${secondTool.label}=${ConfigHandler.dateStamp},$firstVersion\n'),
+        true);
+
+    // Create a new instane of the secondTool with an even
+    // bigger version
+    final int secondVersion = firstVersion + 3;
+    final Analytics thirdAnalytics = Analytics.test(
+      tool: secondTool,
+      homeDirectory: home,
+      measurementId: 'measurementId',
+      apiSecret: 'apiSecret',
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: secondVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+      dartVersion: 'Dart 2.19.0',
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(
+        configFile.readAsStringSync().endsWith(
+            '${secondTool.label}=${ConfigHandler.dateStamp},$firstVersion\n'),
+        true);
+
+    // After invoking this method, it will get updated
+    // in the config with the next version
+    thirdAnalytics.clientShowedMessage();
+
+    expect(
+        configFile.readAsStringSync().endsWith(
+            '${secondTool.label}=${ConfigHandler.dateStamp},$secondVersion\n'),
+        true);
   });
 }
