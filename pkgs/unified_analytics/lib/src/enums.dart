@@ -86,7 +86,7 @@ enum DashTool {
   ),
   flutterTool(
     label: 'flutter-tool',
-    description: 'Runs flutter applications from CLI',
+    description: 'Flutter CLI developer tool',
   ),
   @Deprecated('From a prerelease version of analytics; do not use.')
   flutterTools(
@@ -102,10 +102,12 @@ enum DashTool {
     description: 'VS Code IDE plugins for Dart and Flutter',
   );
 
-  /// String used as the control flag and the value of the tool key in analytics.
+  /// String used as the control flag and the value of the tool key in
+  /// analytics.
   final String label;
 
-  /// Human readable description of the logical tool.
+  /// The "notice string", a human-readable description of the logical tool
+  /// grouping.
   final String description;
 
   const DashTool({

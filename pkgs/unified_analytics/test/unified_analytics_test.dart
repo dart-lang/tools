@@ -31,8 +31,8 @@ void main() {
   late UserProperty userProperty;
 
   const String homeDirName = 'home';
-  const DashTool initialTool = DashTool.flutterTools;
-  const DashTool secondTool = DashTool.dartTools;
+  const DashTool initialTool = DashTool.flutterTool;
+  const DashTool secondTool = DashTool.dartTool;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;
@@ -1100,8 +1100,19 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
     final String consentMessage = analytics.getConsentMessage;
 
     expect(
-        consentMessage,
-        kToolsMessage.replaceAll(
-            '[tool name]', DashTool.flutterTools.label.replaceAll('_', ' ')));
+        consentMessage, equalsIgnoringWhitespace(
+r'''
+The Flutter CLI developer tool uses Google Analytics to report usage and
+diagnostic data along with package dependencies, and crash reporting to
+send basic crash reports. This data is used to help improve the Dart platform,
+Flutter framework, and related tools. Telemetry is not sent on the very first
+run. To disable reporting of telemetry, run this terminal command:
+
+[dart|flutter] --disable-telemetry.
+
+If you opt out of telemetry, an opt-out event will be sent, and then no
+further information will be sent. This data is collected in accordance with
+the Google Privacy Policy (https://policies.google.com/privacy).
+'''));
   });
 }

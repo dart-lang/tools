@@ -21,7 +21,7 @@ void main() {
   late File logFile;
 
   const String homeDirName = 'home';
-  const DashTool initialTool = DashTool.flutterTools;
+  const DashTool initialTool = DashTool.flutterTool;
   const String measurementId = 'measurementId';
   const String apiSecret = 'apiSecret';
   const int toolsMessageVersion = 1;

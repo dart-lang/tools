@@ -278,7 +278,7 @@ class AnalyticsImpl implements Analytics {
 
   @override
   String get getConsentMessage =>
-      kToolsMessage.replaceAll('[tool name]', tool.label.replaceAll('_', ' '));
+      kToolsMessage.replaceAll('[tool name]', tool.description);
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
