@@ -58,10 +58,7 @@ class Initializer {
     required int toolsMessageVersion,
   }) {
     configFile.createSync(recursive: true);
-    configFile.writeAsStringSync('''
-$kConfigString
-$tool=$dateStamp,$toolsMessageVersion
-''');
+    configFile.writeAsStringSync(kConfigString);
   }
 
   /// Creates that log file that will store the record formatted

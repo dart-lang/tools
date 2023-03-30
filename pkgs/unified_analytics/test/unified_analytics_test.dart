@@ -65,6 +65,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    initializationAnalytics.clientShowedMessage();
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
@@ -163,6 +164,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(secondAnalytics.parsedTools.length, equals(2),
         reason: 'There should be only 2 tools that have '
@@ -257,6 +259,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(secondAnalytics.telemetryEnabled, false,
         reason: 'Analytics telemetry should be disabled by the first class '
@@ -280,6 +283,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(analytics.telemetryEnabled, true,
         reason: 'Telemetry should be enabled on initialization for '
@@ -333,6 +337,8 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
+
     expect(secondAnalytics.telemetryEnabled, true);
 
     expect(configFile.readAsStringSync().endsWith('\n'), true,
@@ -362,6 +368,7 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
 
     expect(secondAnalytics.parsedTools[initialTool.label]?.versionNumber,
         toolsMessageVersion + 1,
@@ -464,6 +471,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 ''');
 
+    print('AFTER EDITTING FILE');
     // Initialize a second analytics class for the same tool as
     // the first analytics instance except with a newer version for
     // the tools message and version
@@ -483,6 +491,32 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
       fs: fs,
       platform: platform,
     );
+    secondAnalytics.clientShowedMessage();
+
+    expect(
+      configFile.readAsStringSync(),
+      kConfigString,
+      reason: 'The config file should have been reset completely '
+          'due to a malformed file that contained two lines for the same tool',
+    );
+
+    // Creating a third instance after the second instance
+    // has reset the config file should include the newly added
+    // tool again with its incremented version number
+    final Analytics thirdAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion + 1,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+    thirdAnalytics.clientShowedMessage();
 
     expect(
       configFile.readAsStringSync().endsWith(
@@ -492,7 +526,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
           'after removing the duplicate lines for a given tool',
     );
     expect(
-      secondAnalytics.parsedTools[initialTool.label]?.versionNumber,
+      thirdAnalytics.parsedTools[initialTool.label]?.versionNumber,
       toolsMessageVersion + 1,
       reason: 'The new version should have been incremented',
     );
@@ -551,6 +585,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
 
       // Read the contents of the session file
       final String sessionFileContents = sessionFile.readAsStringSync();
@@ -630,6 +665,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
 
       // Read the contents of the session file
       final String sessionFileContents = sessionFile.readAsStringSync();
@@ -839,6 +875,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
     }
 
     // Send events with both instances of the classes
@@ -941,6 +978,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
         fs: fs,
         platform: platform,
       );
+      secondAnalytics.clientShowedMessage();
     }
 
     // Send an event and check that the query stats reflects what is expected

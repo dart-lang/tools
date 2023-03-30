@@ -163,6 +163,11 @@ abstract class Analytics {
   /// This is what will get sent to Google Analytics with every request
   Map<String, Map<String, Object?>> get userPropertyMap;
 
+  /// Method to be invoked by the client using this package to confirm
+  /// that the client has shown the message and that it can be added to
+  /// the config file and start sending events the next time it starts up
+  void clientShowedMessage();
+
   /// Call this method when the tool using this package is closed
   ///
   /// Prevents the tool from hanging when if there are still requests
@@ -197,6 +202,7 @@ class AnalyticsImpl implements Analytics {
   late final String _clientId;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
+  final int toolsMessageVersion;
 
   AnalyticsImpl({
     required this.tool,
@@ -205,7 +211,7 @@ class AnalyticsImpl implements Analytics {
     String? flutterVersion,
     required String dartVersion,
     required DevicePlatform platform,
-    required int toolsMessageVersion,
+    required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
   }) : _gaClient = gaClient {
@@ -228,19 +234,6 @@ class AnalyticsImpl implements Analytics {
       initializer: initializer,
     );
 
-    // Initialize the config handler class and check if the
-    // tool message and version have been updated from what
-    // is in the current file; if there is a new message version
-    // make the necessary updates
-    if (!_configHandler.parsedTools.containsKey(tool.label)) {
-      _configHandler.addTool(tool: tool.label);
-      _showMessage = true;
-    }
-    if (_configHandler.parsedTools[tool.label]!.versionNumber <
-        toolsMessageVersion) {
-      _configHandler.incrementToolVersion(tool: tool.label);
-      _showMessage = true;
-    }
     _clientId = fs
         .file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
@@ -279,6 +272,19 @@ class AnalyticsImpl implements Analytics {
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
       userProperty.preparePayload();
+
+  @override
+  void clientShowedMessage() {
+    if (!_configHandler.parsedTools.containsKey(tool.label)) {
+      _configHandler.addTool(tool: tool.label);
+      _showMessage = true;
+    }
+    if (_configHandler.parsedTools[tool.label]!.versionNumber <
+        toolsMessageVersion) {
+      _configHandler.incrementToolVersion(tool: tool.label);
+      _showMessage = true;
+    }
+  }
 
   @override
   void close() => _gaClient.close();
