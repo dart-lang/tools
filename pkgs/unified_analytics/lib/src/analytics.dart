@@ -235,6 +235,13 @@ class AnalyticsImpl implements Analytics {
       initializer: initializer,
     );
 
+    // If the tool has already been added to the config file
+    // we can assume that the client has successfully shown
+    // the consent message
+    if (_configHandler.parsedTools.containsKey(tool.label)) {
+      _clientShowedMessage = true;
+    }
+
     // Check if the tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
     // prompt the client to show a message

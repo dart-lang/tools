@@ -106,7 +106,7 @@ void main() {
     expect(logFile.readAsLinesSync().length, 0);
 
     // Creating a second analytics instance from the same tool now should
-    // allow for events to be sent only after invoking `clientShowedMessage`
+    // allow for events to be sent
     final Analytics secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
@@ -124,15 +124,15 @@ void main() {
     expect(secondAnalytics.shouldShowMessage, false);
     secondAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    expect(logFile.readAsLinesSync().length, 0,
+    expect(logFile.readAsLinesSync().length, 1,
         reason: 'Events will be blocked until invoking method '
             'ensuring client has seen message');
-    secondAnalytics.clientShowedMessage();
+
     secondAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
     secondAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    expect(logFile.readAsLinesSync().length, 2);
+    expect(logFile.readAsLinesSync().length, 3);
 
     // Next, we will want to confirm that the message should be showing when
     // a new analytics instance has been created with a newer version for
@@ -149,7 +149,7 @@ void main() {
       measurementId: measurementId,
       apiSecret: apiSecret,
       flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion + 1,
+      toolsMessageVersion: toolsMessageVersion + 1,  // Incrementing version
       toolsMessage: toolsMessage,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -183,7 +183,7 @@ void main() {
       measurementId: measurementId,
       apiSecret: apiSecret,
       flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion + 1,
+      toolsMessageVersion: toolsMessageVersion + 1,  // Incrementing version
       toolsMessage: toolsMessage,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -194,14 +194,14 @@ void main() {
     expect(fourthAnalytics.shouldShowMessage, false);
     fourthAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    expect(logFile.readAsLinesSync().length, 0,
+    expect(logFile.readAsLinesSync().length, 1,
         reason: 'Events will be blocked until invoking method '
             'ensuring client has seen message');
-    fourthAnalytics.clientShowedMessage();
+
     fourthAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
     fourthAnalytics.sendEvent(
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    expect(logFile.readAsLinesSync().length, 2);
+    expect(logFile.readAsLinesSync().length, 3);
   });
 }
