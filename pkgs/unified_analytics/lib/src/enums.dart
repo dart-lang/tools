@@ -64,37 +64,50 @@ enum DashEvent {
 }
 
 /// Officially-supported clients of this package as logical
-/// tools, grouped by user point of view.
-///
-/// All [label] values should use an underscore as a delimiter.
+/// tools, grouped by user point of view.  Derived directly
+/// from the PDD.
 enum DashTool {
+  androidStudioPlugins(
+    label: 'android-studio-plugins',
+    description: 'Android Studio IDE plugins for Dart and Flutter',
+  ),
   dartTool(
     label: 'dart-tool',
     description: 'Dart CLI developer tool',
+  ),
+  @Deprecated('From a prerelease version of analytics; do not use.')
+  dartTools(
+    label: 'dart_tools',
+    description: 'A CLI for Dart development',
+  ),
+  devtools(
+    label: 'devtools',
+    description: 'DevTools debugging and performance tools',
   ),
   flutterTool(
     label: 'flutter-tool',
     description: 'Runs flutter applications from CLI',
   ),
-  vscodePlugins(
-    label: 'vscode-plugins',
-    description: 'VS Code IDE plugins for Dart and Flutter',
+  @Deprecated('From a prerelease version of analytics; do not use.')
+  flutterTools(
+    label: 'flutter_tools',
+    description: 'Runs flutter applications from CLI',
   ),
   intellijPlugins(
     label: 'intellij-plugins',
     description: 'IntelliJ IDE plugins for Dart and Flutter',
   ),
-  androidStudioPlugins(
-    label: 'android-studio-plugins',
-    description: 'Android Studio IDE plugins for Dart and Flutter',
-  ),
-  devtools(
-    label: 'devtools',
-    description: 'DevTools debugging and performance tools',
+  vscodePlugins(
+    label: 'vscode-plugins',
+    description: 'VS Code IDE plugins for Dart and Flutter',
   );
 
+  /// String used as the control flag and the value of the tool key in analytics.
   final String label;
+
+  /// Human readable description of the logical tool.
   final String description;
+
   const DashTool({
     required this.label,
     required this.description,
