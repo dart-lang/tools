@@ -1057,10 +1057,11 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 
   test('Consent message is formatted correctly', () {
     // Retrieve the consent message for flutter tools
-    final String consentMessage =
-        Analytics.getConsentMessage(tool: DashTool.flutterTools);
+    final String consentMessage = analytics.getConsentMessage;
 
-    expect(consentMessage,
-        kToolsMessage.replaceAll('[tool name]', DashTool.flutterTools.label));
+    expect(
+        consentMessage,
+        kToolsMessage.replaceAll(
+            '[tool name]', DashTool.flutterTools.label.replaceAll('_', ' ')));
   });
 }

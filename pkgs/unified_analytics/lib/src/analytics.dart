@@ -144,6 +144,10 @@ abstract class Analytics {
         gaClient: FakeGAClient(),
       );
 
+  /// Retrieves the consent message to prompt users with on first
+  /// run or when the message has been updated
+  String get getConsentMessage;
+
   /// Returns a map object with all of the tools that have been parsed
   /// out of the configuration file
   Map<String, ToolInfo> get parsedTools;
@@ -153,11 +157,6 @@ abstract class Analytics {
 
   /// Boolean indicating whether or not telemetry is enabled
   bool get telemetryEnabled;
-
-  /// Static method to use before initializing the [Analytics] class
-  /// to display the consent message to the user
-  static String getConsentMessage({required DashTool tool}) =>
-      kToolsMessage.replaceAll('[tool name]', tool.label);
 
   /// Returns a map representation of the [UserProperty] for the [Analytics] instance
   ///
@@ -263,6 +262,10 @@ class AnalyticsImpl implements Analytics {
     // Initialize the log handler to persist events that are being sent
     _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
   }
+
+  @override
+  String get getConsentMessage =>
+      kToolsMessage.replaceAll('[tool name]', tool.label.replaceAll('_', ' '));
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
