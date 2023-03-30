@@ -19,44 +19,37 @@ enum DashEvent {
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
-    toolOwner: DashTool.flutterTools,
+    toolOwner: DashTool.flutterTool,
   ),
 
   // Events for language_server
   clientNotification(
     label: 'client_notification',
     description: 'Notifications sent from the client',
-    toolOwner: DashTool.languageServer,
   ),
   clientRequest(
     label: 'client_request',
     description: 'Requests sent from the client',
-    toolOwner: DashTool.languageServer,
   ),
   contextStructure(
     label: 'context_structure',
     description: 'Structure of the analysis contexts being analyzed',
-    toolOwner: DashTool.languageServer,
   ),
   lintUsageCounts(
     label: 'lint_usage_counts',
     description: 'Number of times each lint is enabled',
-    toolOwner: DashTool.languageServer,
   ),
   pluginRequest(
     label: 'plugin_request',
     description: 'Request responses from plugins',
-    toolOwner: DashTool.languageServer,
   ),
   serverSession(
     label: 'server_session',
     description: 'Dart Analyzer Server session data',
-    toolOwner: DashTool.languageServer,
   ),
   severityAdjustments(
     label: 'severity_adjustments',
     description: 'Number of times diagnostic severity is changed',
-    toolOwner: DashTool.languageServer,
   ),
   ;
 
@@ -70,21 +63,34 @@ enum DashEvent {
   });
 }
 
-/// Officially-supported clients of this package.
+/// Officially-supported clients of this package as logical
+/// tools, grouped by user point of view.
 ///
 /// All [label] values should use an underscore as a delimiter.
 enum DashTool {
-  dartTools(
-    label: 'dart_tools',
-    description: 'A CLI for Dart development',
+  dartTool(
+    label: 'dart-tool',
+    description: 'Dart CLI developer tool',
   ),
-  flutterTools(
-    label: 'flutter_tools',
+  flutterTool(
+    label: 'flutter-tool',
     description: 'Runs flutter applications from CLI',
   ),
-  languageServer(
-    label: 'language_server',
-    description: 'The Dart language server for IDE and CLI support.',
+  vscodePlugins(
+    label: 'vscode-plugins',
+    description: 'VS Code IDE plugins for Dart and Flutter',
+  ),
+  intellijPlugins(
+    label: 'intellij-plugins',
+    description: 'IntelliJ IDE plugins for Dart and Flutter',
+  ),
+  androidStudioPlugins(
+    label: 'android-studio-plugins',
+    description: 'Android Studio IDE plugins for Dart and Flutter',
+  ),
+  devtools(
+    label: 'devtools',
+    description: 'DevTools debugging and performance tools',
   );
 
   final String label;

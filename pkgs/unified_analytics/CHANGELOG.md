@@ -1,7 +1,8 @@
-## 0.1.3-dev
+## 1.0.0-dev
 
 - Error handling functionality added to prevent malformed session json data from causing a crash
 - Creating a new analytics constructor to point to a test instance of Google Analytics for developers
+- Align supported tool list with PDD
 
 ## 0.1.2
 

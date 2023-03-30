@@ -1013,7 +1013,7 @@ $initialToolName=${ConfigHandler.dateStamp},$toolsMessageVersion
       // Checks item 3
       // All tools must be under 36 characters (and enforce each tool
       // begins with a letter)
-      final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_]{0,35}$');
+      final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_-]{0,35}$');
       bool toolLengthValid = true;
       final List<DashTool> invalidTools = <DashTool>[];
       for (DashTool tool in DashTool.values) {
