@@ -296,12 +296,18 @@ class AnalyticsImpl implements Analytics {
   @override
   void clientShowedMessage() {
     if (!_configHandler.parsedTools.containsKey(tool.label)) {
-      _configHandler.addTool(tool: tool.label);
+      _configHandler.addTool(
+        tool: tool.label,
+        versionNumber: toolsMessageVersion,
+      );
       _showMessage = true;
     }
     if (_configHandler.parsedTools[tool.label]!.versionNumber <
         toolsMessageVersion) {
-      _configHandler.incrementToolVersion(tool: tool.label);
+      _configHandler.incrementToolVersion(
+        tool: tool.label,
+        newVersionNumber: toolsMessageVersion,
+      );
       _showMessage = true;
     }
     _clientShowedMessage = true;
