@@ -11,7 +11,6 @@ import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
-
 void main() {
   late FileSystem fs;
   late Directory home;
