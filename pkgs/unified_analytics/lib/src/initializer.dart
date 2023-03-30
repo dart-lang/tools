@@ -17,7 +17,6 @@ class Initializer {
   final String tool;
   final Directory homeDirectory;
   final int toolsMessageVersion;
-  final String toolsMessage;
   bool firstRun = false;
 
   /// Responsibe for the initialization of the files
@@ -34,7 +33,6 @@ class Initializer {
     required this.tool,
     required this.homeDirectory,
     required this.toolsMessageVersion,
-    required this.toolsMessage,
   });
 
   /// Get a string representation of the current date in the following format
@@ -57,14 +55,10 @@ class Initializer {
     required File configFile,
     required String dateStamp,
     required String tool,
-    required String toolsMessage,
     required int toolsMessageVersion,
   }) {
     configFile.createSync(recursive: true);
-    configFile.writeAsStringSync('''
-$kConfigString
-$tool=$dateStamp,$toolsMessageVersion
-''');
+    configFile.writeAsStringSync(kConfigString);
   }
 
   /// Creates that log file that will store the record formatted
@@ -106,7 +100,6 @@ $tool=$dateStamp,$toolsMessageVersion
         configFile: configFile,
         dateStamp: dateStamp,
         tool: tool,
-        toolsMessage: toolsMessage,
         toolsMessageVersion: toolsMessageVersion,
       );
     }

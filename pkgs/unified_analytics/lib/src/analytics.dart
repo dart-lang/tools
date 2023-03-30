@@ -52,13 +52,12 @@ abstract class Analytics {
     );
 
     return AnalyticsImpl(
-      tool: tool.label,
+      tool: tool,
       homeDirectory: getHomeDirectory(fs),
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       platform: platform,
-      toolsMessage: kToolsMessage,
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
@@ -100,13 +99,12 @@ abstract class Analytics {
     );
 
     return AnalyticsImpl(
-      tool: tool.label,
+      tool: tool,
       homeDirectory: getHomeDirectory(fs),
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       platform: platform,
-      toolsMessage: kToolsMessage,
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
@@ -117,7 +115,7 @@ abstract class Analytics {
   /// [MemoryFileSystem] to use for testing
   @visibleForTesting
   factory Analytics.test({
-    required String tool,
+    required DashTool tool,
     required Directory homeDirectory,
     required String measurementId,
     required String apiSecret,
@@ -134,7 +132,6 @@ abstract class Analytics {
         homeDirectory: homeDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
-        toolsMessage: toolsMessage,
         flutterVersion: flutterVersion,
         dartVersion: dartVersion,
         platform: platform,
@@ -147,6 +144,10 @@ abstract class Analytics {
         gaClient: FakeGAClient(),
       );
 
+  /// Retrieves the consent message to prompt users with on first
+  /// run or when the message has been updated
+  String get getConsentMessage;
+
   /// Returns a map object with all of the tools that have been parsed
   /// out of the configuration file
   Map<String, ToolInfo> get parsedTools;
@@ -157,14 +158,15 @@ abstract class Analytics {
   /// Boolean indicating whether or not telemetry is enabled
   bool get telemetryEnabled;
 
-  /// Returns the message that should be displayed to the users if
-  /// [shouldShowMessage] returns true
-  String get toolsMessage;
-
   /// Returns a map representation of the [UserProperty] for the [Analytics] instance
   ///
   /// This is what will get sent to Google Analytics with every request
   Map<String, Map<String, Object?>> get userPropertyMap;
+
+  /// Method to be invoked by the client using this package to confirm
+  /// that the client has shown the message and that it can be added to
+  /// the config file and start sending events the next time it starts up
+  void clientShowedMessage();
 
   /// Call this method when the tool using this package is closed
   ///
@@ -192,6 +194,7 @@ abstract class Analytics {
 }
 
 class AnalyticsImpl implements Analytics {
+  final DashTool tool;
   final FileSystem fs;
   late final ConfigHandler _configHandler;
   late bool _showMessage;
@@ -199,19 +202,17 @@ class AnalyticsImpl implements Analytics {
   late final String _clientId;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
-
-  @override
-  final String toolsMessage;
+  final int toolsMessageVersion;
+  bool _clientShowedMessage = false;
 
   AnalyticsImpl({
-    required String tool,
+    required this.tool,
     required Directory homeDirectory,
     String? flutterChannel,
     String? flutterVersion,
     required String dartVersion,
     required DevicePlatform platform,
-    required this.toolsMessage,
-    required int toolsMessageVersion,
+    required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
   }) : _gaClient = gaClient {
@@ -220,10 +221,9 @@ class AnalyticsImpl implements Analytics {
     // on the first run
     final Initializer initializer = Initializer(
       fs: fs,
-      tool: tool,
+      tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
-      toolsMessage: toolsMessage,
     );
     initializer.run();
     _showMessage = initializer.firstRun;
@@ -235,18 +235,25 @@ class AnalyticsImpl implements Analytics {
       initializer: initializer,
     );
 
-    // Initialize the config handler class and check if the
-    // tool message and version have been updated from what
-    // is in the current file; if there is a new message version
-    // make the necessary updates
-    if (!_configHandler.parsedTools.containsKey(tool)) {
-      _configHandler.addTool(tool: tool);
+    // If the tool has already been added to the config file
+    // we can assume that the client has successfully shown
+    // the consent message
+    if (_configHandler.parsedTools.containsKey(tool.label)) {
+      _clientShowedMessage = true;
+    }
+
+    // Check if the tool has already been onboarded, and if it
+    // has, check if the latest message version is greater to
+    // prompt the client to show a message
+    //
+    // If the tool has not been added to the config file, then
+    // we will show the message as well
+    final int currentVersion =
+        _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
+    if (currentVersion < toolsMessageVersion) {
       _showMessage = true;
     }
-    if (_configHandler.parsedTools[tool]!.versionNumber < toolsMessageVersion) {
-      _configHandler.incrementToolVersion(tool: tool);
-      _showMessage = true;
-    }
+
     _clientId = fs
         .file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
@@ -262,12 +269,16 @@ class AnalyticsImpl implements Analytics {
       host: platform.label,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
-      tool: tool,
+      tool: tool.label,
     );
 
     // Initialize the log handler to persist events that are being sent
     _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
   }
+
+  @override
+  String get getConsentMessage =>
+      kToolsMessage.replaceAll('[tool name]', tool.label.replaceAll('_', ' '));
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -281,6 +292,20 @@ class AnalyticsImpl implements Analytics {
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
       userProperty.preparePayload();
+
+  @override
+  void clientShowedMessage() {
+    if (!_configHandler.parsedTools.containsKey(tool.label)) {
+      _configHandler.addTool(tool: tool.label);
+      _showMessage = true;
+    }
+    if (_configHandler.parsedTools[tool.label]!.versionNumber <
+        toolsMessageVersion) {
+      _configHandler.incrementToolVersion(tool: tool.label);
+      _showMessage = true;
+    }
+    _clientShowedMessage = true;
+  }
 
   @override
   void close() => _gaClient.close();
@@ -300,7 +325,10 @@ class AnalyticsImpl implements Analytics {
     // time the tool is using analytics or if there has been an update
     // the messaging found in constants.dart - in both cases, analytics
     // will not be sent until the second time the tool is used
-    if (!telemetryEnabled || _showMessage) return null;
+    //
+    // Additionally, if the client has not invoked `clientShowedMessage`,
+    // then no events shall be sent
+    if (!telemetryEnabled || _showMessage || !_clientShowedMessage) return null;
 
     // Construct the body of the request
     final Map<String, Object?> body = generateRequestBody(
@@ -353,7 +381,6 @@ class TestAnalytics extends AnalyticsImpl {
     super.flutterVersion,
     required super.dartVersion,
     required super.platform,
-    required super.toolsMessage,
     required super.toolsMessageVersion,
     required super.fs,
     required super.gaClient,
@@ -364,7 +391,7 @@ class TestAnalytics extends AnalyticsImpl {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-    if (!telemetryEnabled || _showMessage) return null;
+    if (!telemetryEnabled || _showMessage || !_clientShowedMessage) return null;
 
     // Calling the [generateRequestBody] method will ensure that the
     // session file is getting updated without actually making any
