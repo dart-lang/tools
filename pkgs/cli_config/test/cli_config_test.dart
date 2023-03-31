@@ -237,7 +237,7 @@ void main() {
           }
         },
       );
-      
+
       final result = config.optionalPath('build.out_dir', mustExist: true);
       expect(result, tempUri);
       final result2 = config.optionalPath('build.file', mustExist: true);

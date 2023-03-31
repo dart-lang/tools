@@ -13,7 +13,7 @@ Future<void> inTempDir(
   final tempDir = await Directory.systemTemp.createTemp(prefix);
   // Deal with Windows temp folder aliases.
   final tempUri =
-    Directory(await tempDir.resolveSymbolicLinks()).uri.normalizePath();
+      Directory(await tempDir.resolveSymbolicLinks()).uri.normalizePath();
   try {
     await fun(tempUri);
   } finally {
