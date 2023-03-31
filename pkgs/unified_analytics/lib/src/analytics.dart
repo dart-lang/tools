@@ -22,52 +22,57 @@ import 'user_property.dart';
 import 'utils.dart';
 
 abstract class Analytics {
-  /// The default factory constructor that will return an implementation
-  /// of the [Analytics] abstract class using the [LocalFileSystem]
-  factory Analytics({
-    required DashTool tool,
-    required String dartVersion,
-    String? flutterChannel,
-    String? flutterVersion,
-  }) {
-    // Create the instance of the file system so clients don't need
-    // resolve on their own
-    const FileSystem fs = LocalFileSystem();
+  // TODO: (eliasyishak) enable again once revision has landed;
+  //  also remove all instances of [pddFlag]
 
-    // Resolve the OS using dart:io
-    final DevicePlatform platform;
-    if (io.Platform.operatingSystem == 'linux') {
-      platform = DevicePlatform.linux;
-    } else if (io.Platform.operatingSystem == 'macos') {
-      platform = DevicePlatform.macos;
-    } else {
-      platform = DevicePlatform.windows;
-    }
+  // /// The default factory constructor that will return an implementation
+  // /// of the [Analytics] abstract class using the [LocalFileSystem]
+  // factory Analytics({
+  //   required DashTool tool,
+  //   required String dartVersion,
+  //   String? flutterChannel,
+  //   String? flutterVersion,
+  // }) {
+  //   // Create the instance of the file system so clients don't need
+  //   // resolve on their own
+  //   const FileSystem fs = LocalFileSystem();
 
-    // Create the instance of the GA Client which will create
-    // an [http.Client] to send requests
-    final GAClient gaClient = GAClient(
-      measurementId: kGoogleAnalyticsMeasurementId,
-      apiSecret: kGoogleAnalyticsApiSecret,
-    );
+  //   // Resolve the OS using dart:io
+  //   final DevicePlatform platform;
+  //   if (io.Platform.operatingSystem == 'linux') {
+  //     platform = DevicePlatform.linux;
+  //   } else if (io.Platform.operatingSystem == 'macos') {
+  //     platform = DevicePlatform.macos;
+  //   } else {
+  //     platform = DevicePlatform.windows;
+  //   }
 
-    return AnalyticsImpl(
-      tool: tool,
-      homeDirectory: getHomeDirectory(fs),
-      flutterChannel: flutterChannel,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      platform: platform,
-      toolsMessageVersion: kToolsMessageVersion,
-      fs: fs,
-      gaClient: gaClient,
-    );
-  }
+  //   // Create the instance of the GA Client which will create
+  //   // an [http.Client] to send requests
+  //   final GAClient gaClient = GAClient(
+  //     measurementId: kGoogleAnalyticsMeasurementId,
+  //     apiSecret: kGoogleAnalyticsApiSecret,
+  //   );
+
+  //   return AnalyticsImpl(
+  //     tool: tool,
+  //     homeDirectory: getHomeDirectory(fs),
+  //     flutterChannel: flutterChannel,
+  //     flutterVersion: flutterVersion,
+  //     dartVersion: dartVersion,
+  //     platform: platform,
+  //     toolsMessageVersion: kToolsMessageVersion,
+  //     fs: fs,
+  //     gaClient: gaClient,
+  //   );
+  // }
+
+  // TODO: (eliasyishak) remove this contructor once revision has landed
 
   /// Prevents the unapproved files for logging and session handling
   /// from being saved on to the developer's disk until privacy revision
   /// has landed
-  factory Analytics.pddApproved({
+  factory Analytics({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
