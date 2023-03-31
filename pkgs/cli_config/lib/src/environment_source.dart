@@ -23,7 +23,7 @@ class EnvironmentSource extends Source {
   String? optionalString(String key) => _environment[key];
 
   @override
-  List<String>? stringList(
+  List<String>? optionalStringList(
     String key, {
     String? splitPattern,
   }) {

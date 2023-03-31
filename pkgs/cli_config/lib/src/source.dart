@@ -14,7 +14,7 @@ abstract class Source {
   /// Lookup a nullable string list.
   ///
   /// If provided, [splitPattern] splits config.
-  List<String>? stringList(
+  List<String>? optionalStringList(
     String key, {
     String? splitPattern,
   });
@@ -31,7 +31,7 @@ abstract class Source {
   /// Lookup an optional value of type [T].
   ///
   /// Does not support specialized options such as `splitPattern`. One must
-  /// use the specialized methods such as [stringList] for that.
+  /// use the specialized methods such as [optionalStringList] for that.
   ///
   /// Returns `null` if the source cannot provide a value of type [T].
   T? optionalValueOf<T>(String key) {
@@ -42,7 +42,7 @@ abstract class Source {
       return optionalString(key) as T?;
     }
     if (T == List<String>) {
-      return stringList(key) as T?;
+      return optionalStringList(key) as T?;
     }
     return null;
   }

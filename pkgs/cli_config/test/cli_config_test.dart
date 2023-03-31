@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'helpers.dart';
 
 void main() {
-  test('stringList', () {
+  test('optionalStringList', () {
     const path1 = 'path/in/cli_arguments/';
     const path2 = 'path/in/cli_arguments_2/';
     const path3 = 'path/in/environment/';
@@ -39,7 +39,7 @@ void main() {
     );
 
     {
-      final result = config.stringList(
+      final result = config.optionalStringList(
         'build.out_dir',
         combineAllConfigs: true,
         splitEnvironmentPattern: ':',
@@ -48,7 +48,7 @@ void main() {
     }
 
     {
-      final result = config.stringList(
+      final result = config.optionalStringList(
         'build.out_dir',
         combineAllConfigs: false,
         splitEnvironmentPattern: ':',
@@ -264,9 +264,9 @@ void main() {
     );
   });
 
-  test('CLI split stringlist', () {
+  test('CLI split optionalStringList', () {
     final config = Config(commandLineDefines: ['key=value;value2']);
-    final value = config.stringList('key', splitCliPattern: ';');
+    final value = config.optionalStringList('key', splitCliPattern: ';');
     expect(value, ['value', 'value2']);
   });
 
@@ -332,15 +332,16 @@ void main() {
     );
   });
 
-  test('environment split stringlist', () {
+  test('environment split optionalStringList', () {
     final config = Config(environment: {'key': 'value;value2'});
-    final value = config.stringList('key', splitEnvironmentPattern: ';');
+    final value =
+        config.optionalStringList('key', splitEnvironmentPattern: ';');
     expect(value, ['value', 'value2']);
   });
 
-  test('environment non split stringlist', () {
+  test('environment non split optionalStringList', () {
     final config = Config(environment: {'key': 'value'});
-    final value = config.stringList('key');
+    final value = config.optionalStringList('key');
     expect(value, ['value']);
   });
 
@@ -457,5 +458,45 @@ void main() {
     expect(config.optionalDouble('nothing'), null);
     expect(() => config.optionalDouble('not_parsable'), throwsFormatException);
     expect(() => config.optionalDouble('not_parsable2'), throwsFormatException);
+  });
+
+  test('stringList and optionalStringList', () {
+    {
+      final config = Config(
+        fileParsed: {},
+      );
+
+      expect(config.optionalStringList('my_list'), null);
+      expect(() => config.stringList('my_list'), throwsFormatException);
+    }
+
+    {
+      final config = Config(
+        fileParsed: {'my_list': <String>[]},
+      );
+
+      expect(config.optionalStringList('my_list'), <String>[]);
+      expect(config.stringList('my_list'), <String>[]);
+    }
+  });
+
+  test('pathList and optionalPathList', () {
+    {
+      final config = Config(
+        fileParsed: {},
+      );
+
+      expect(config.optionalPathList('my_list'), null);
+      expect(() => config.pathList('my_list'), throwsFormatException);
+    }
+
+    {
+      final config = Config(
+        fileParsed: {'my_list': <String>[]},
+      );
+
+      expect(config.optionalPathList('my_list'), <String>[]);
+      expect(config.pathList('my_list'), <String>[]);
+    }
   });
 }

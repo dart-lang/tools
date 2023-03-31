@@ -21,7 +21,7 @@ class FileSource extends Source {
   String? optionalString(String key) => optionalValueOf<String>(key);
 
   @override
-  List<String>? stringList(
+  List<String>? optionalStringList(
     String key, {
     String? splitPattern,
   }) {

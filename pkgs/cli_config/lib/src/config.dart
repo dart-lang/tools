@@ -38,7 +38,7 @@ import 'source.dart';
 ///
 /// If a list value is requested from this configuration, the values provided
 /// by the various sources can be combined or not. For example
-/// `config.stringList('some_key', combineAllConfigs: true)` returns
+/// `config.optionalStringList('some_key', combineAllConfigs: true)` returns
 /// `['cli_value', 'file_value']`.
 ///
 /// The config is hierarchical in nature, using `.` as the hierarchy separator
@@ -214,7 +214,7 @@ class Config {
     return value!;
   }
 
-  /// Lookup a nullable string value in this config.
+  /// Lookup an optional string value in this config.
   ///
   /// First tries CLI argument defines, then environment variables, and
   /// finally the config file.
@@ -231,7 +231,10 @@ class Config {
     return value;
   }
 
-  /// Lookup a nullable string list in this config.
+  /// Lookup an optional string list in this config.
+  ///
+  /// If none of the sources provide a list, lookup will fail.
+  /// If an empty list is provided by one of the sources, lookup wil succeed.
   ///
   /// First tries CLI argument defines, then environment variables, and
   /// finally the config file.
@@ -245,7 +248,37 @@ class Config {
   /// For example: `-Dfoo=bar -Dfoo=baz`.
   ///
   /// If provided, [splitEnvironmentPattern] splits environment values.
-  List<String>? stringList(
+  List<String> stringList(
+    String key, {
+    core.bool combineAllConfigs = true,
+    String? splitCliPattern,
+    String? splitEnvironmentPattern,
+  }) {
+    final value = optionalStringList(
+      key,
+      combineAllConfigs: combineAllConfigs,
+      splitCliPattern: splitCliPattern,
+      splitEnvironmentPattern: splitEnvironmentPattern,
+    );
+    _throwIfNull(key, value);
+    return value!;
+  }
+
+  /// Lookup an optional string list in this config.
+  ///
+  /// First tries CLI argument defines, then environment variables, and
+  /// finally the config file.
+  ///
+  /// If [combineAllConfigs] combines results from cli, environment, and
+  /// config file. Otherwise, precedence rules apply.
+  ///
+  /// If provided, [splitCliPattern] splits cli defines.
+  /// For example: `-Dfoo=bar;baz` can be split on `;`.
+  /// If not provided, a list can still be provided with multiple cli defines.
+  /// For example: `-Dfoo=bar -Dfoo=baz`.
+  ///
+  /// If provided, [splitEnvironmentPattern] splits environment values.
+  List<String>? optionalStringList(
     String key, {
     core.bool combineAllConfigs = true,
     String? splitCliPattern,
@@ -259,7 +292,7 @@ class Config {
     }.entries) {
       final source = entry.key;
       final splitPattern = entry.value;
-      final value = source.stringList(key, splitPattern: splitPattern);
+      final value = source.optionalStringList(key, splitPattern: splitPattern);
       if (value != null) {
         if (combineAllConfigs) {
           (result ??= []).addAll(value);
@@ -452,6 +485,40 @@ class Config {
 
   /// Lookup a list of paths in this config.
   ///
+  /// If none of the sources provide a path, lookup will fail.
+  /// If an empty list is provided by one of the sources, lookup wil succeed.
+  ///
+  /// If [combineAllConfigs] combines results from cli, environment, and
+  /// config file. Otherwise, precedence rules apply.
+  ///
+  /// If provided, [splitCliPattern] splits cli defines.
+  ///
+  /// If provided, [splitEnvironmentPattern] splits environment values.
+  ///
+  /// If [resolveUri], resolves the paths in a source relative to the base
+  /// uri of that source. The base uri for the config file is the path of the
+  /// file. The base uri for environment values is the current working
+  /// directory.
+  List<Uri> pathList(
+    String key, {
+    core.bool combineAllConfigs = true,
+    String? splitCliPattern,
+    String? splitEnvironmentPattern,
+    core.bool resolveUri = true,
+  }) {
+    final value = optionalPathList(
+      key,
+      combineAllConfigs: combineAllConfigs,
+      splitCliPattern: splitCliPattern,
+      splitEnvironmentPattern: splitEnvironmentPattern,
+      resolveUri: resolveUri,
+    );
+    _throwIfNull(key, value);
+    return value!;
+  }
+
+  /// Lookup an optional list of paths in this config.
+  ///
   /// If [combineAllConfigs] combines results from cli, environment, and
   /// config file. Otherwise, precedence rules apply.
   ///
@@ -478,7 +545,7 @@ class Config {
     }.entries) {
       final source = entry.key;
       final splitPattern = entry.value;
-      final paths = source.stringList(
+      final paths = source.optionalStringList(
         key,
         splitPattern: splitPattern,
       );
@@ -504,7 +571,7 @@ class Config {
   /// Lookup a value of type [T] in this configuration.
   ///
   /// Does not support specialized options such as `splitPattern`. One must
-  /// use the specialized methods such as [stringList] for that.
+  /// use the specialized methods such as [optionalStringList] for that.
   ///
   /// If sources cannot lookup type [T], they return null.
   T valueOf<T>(String key) {
