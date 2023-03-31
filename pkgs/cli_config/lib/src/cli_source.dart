@@ -36,7 +36,7 @@ class CliSource extends Source {
   }
 
   @override
-  List<String>? stringList(
+  List<String>? optionalStringList(
     String key, {
     String? splitPattern,
   }) {
