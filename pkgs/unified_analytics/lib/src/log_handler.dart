@@ -313,3 +313,20 @@ class LogItem {
     }
   }
 }
+
+class NoopLogHandler implements LogHandler {
+  @override
+  FileSystem get fs => throw UnimplementedError();
+
+  @override
+  Directory get homeDirectory => throw UnimplementedError();
+
+  @override
+  File get logFile => throw UnimplementedError();
+
+  @override
+  LogFileStats? logFileStats() => null;
+
+  @override
+  void save({required Map<String, Object?> data}) {}
+}
