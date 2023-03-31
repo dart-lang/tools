@@ -35,7 +35,7 @@ void main() {
     dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
 
     // Create the initial analytics instance that will onboard the tool
-    initializationAnalytics = Analytics(
+    initializationAnalytics = Analytics.pddApproved(
       tool: initialTool,
       dartVersion: dartVersion,
       fsOverride: fs,
@@ -45,7 +45,7 @@ void main() {
 
     // The main analytics instance that will be used for the
     // tests after having the tool onboarded
-    analytics = Analytics(
+    analytics = Analytics.pddApproved(
       tool: initialTool,
       dartVersion: dartVersion,
       fsOverride: fs,

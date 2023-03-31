@@ -22,56 +22,52 @@ import 'user_property.dart';
 import 'utils.dart';
 
 abstract class Analytics {
-  // TODO: (eliasyishak) enable this once revisions have landed
+  /// The default factory constructor that will return an implementation
+  /// of the [Analytics] abstract class using the [LocalFileSystem]
+  factory Analytics({
+    required DashTool tool,
+    required String dartVersion,
+    String? flutterChannel,
+    String? flutterVersion,
+  }) {
+    // Create the instance of the file system so clients don't need
+    // resolve on their own
+    const FileSystem fs = LocalFileSystem();
 
-  // /// The default factory constructor that will return an implementation
-  // /// of the [Analytics] abstract class using the [LocalFileSystem]
-  // factory Analytics({
-  //   required DashTool tool,
-  //   required String dartVersion,
-  //   String? flutterChannel,
-  //   String? flutterVersion,
-  // }) {
-  //   // Create the instance of the file system so clients don't need
-  //   // resolve on their own
-  //   const FileSystem fs = LocalFileSystem();
+    // Resolve the OS using dart:io
+    final DevicePlatform platform;
+    if (io.Platform.operatingSystem == 'linux') {
+      platform = DevicePlatform.linux;
+    } else if (io.Platform.operatingSystem == 'macos') {
+      platform = DevicePlatform.macos;
+    } else {
+      platform = DevicePlatform.windows;
+    }
 
-  //   // Resolve the OS using dart:io
-  //   final DevicePlatform platform;
-  //   if (io.Platform.operatingSystem == 'linux') {
-  //     platform = DevicePlatform.linux;
-  //   } else if (io.Platform.operatingSystem == 'macos') {
-  //     platform = DevicePlatform.macos;
-  //   } else {
-  //     platform = DevicePlatform.windows;
-  //   }
+    // Create the instance of the GA Client which will create
+    // an [http.Client] to send requests
+    final GAClient gaClient = GAClient(
+      measurementId: kGoogleAnalyticsMeasurementId,
+      apiSecret: kGoogleAnalyticsApiSecret,
+    );
 
-  //   // Create the instance of the GA Client which will create
-  //   // an [http.Client] to send requests
-  //   final GAClient gaClient = GAClient(
-  //     measurementId: kGoogleAnalyticsMeasurementId,
-  //     apiSecret: kGoogleAnalyticsApiSecret,
-  //   );
-
-  //   return AnalyticsImpl(
-  //     tool: tool,
-  //     homeDirectory: getHomeDirectory(fs),
-  //     flutterChannel: flutterChannel,
-  //     flutterVersion: flutterVersion,
-  //     dartVersion: dartVersion,
-  //     platform: platform,
-  //     toolsMessageVersion: kToolsMessageVersion,
-  //     fs: fs,
-  //     gaClient: gaClient,
-  //   );
-  // }
-
-  // TODO: (eliasyishak) remove this constructor when revision lands
+    return AnalyticsImpl(
+      tool: tool,
+      homeDirectory: getHomeDirectory(fs),
+      flutterChannel: flutterChannel,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      platform: platform,
+      toolsMessageVersion: kToolsMessageVersion,
+      fs: fs,
+      gaClient: gaClient,
+    );
+  }
 
   /// Prevents the unapproved files for logging and session handling
   /// from being saved on to the developer's disk until privacy revision
   /// has landed
-  factory Analytics({
+  factory Analytics.pddApproved({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
@@ -116,6 +112,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      pddFlag: true,
     );
   }
 
@@ -287,6 +284,7 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
+    bool pddFlag = false,
   }) : _gaClient = gaClient {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
@@ -296,6 +294,7 @@ class AnalyticsImpl implements Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
+      pddFlag: pddFlag,
     );
     initializer.run();
     _showMessage = initializer.firstRun;
@@ -333,9 +332,12 @@ class AnalyticsImpl implements Analytics {
 
     // Create the session instance that will be responsible for managing
     // all the sessions across every client tool using this pakage
-    // TODO: (eliasyishak) use real session class once revision lands
-    final Session session = NoopSession();
-    // final Session session = Session(homeDirectory: homeDirectory, fs: fs);
+    final Session session;
+    if (pddFlag) {
+      session = NoopSession();
+    } else {
+      session = Session(homeDirectory: homeDirectory, fs: fs);
+    }
 
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
@@ -351,9 +353,11 @@ class AnalyticsImpl implements Analytics {
     );
 
     // Initialize the log handler to persist events that are being sent
-    // TODO: (eliasyishak) use real session class once revision lands
-    final LogHandler _logHandler = NoopLogHandler();
-    // final LogHandler _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
+    if (pddFlag) {
+      _logHandler = NoopLogHandler();
+    } else {
+      _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
+    }
   }
 
   @override

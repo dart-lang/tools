@@ -5,7 +5,6 @@
 - Align supported tool list with PDD
 - Exposing a new instance method that will need to be invoked when a client has successfully shown the consent message to the user `clientShowedMessage()`
 - Adding and incrementing a tool's version will automatically use the current consent message version instead of incrementing by 1
-- Default constructor has disabled the usage of local log file and session json file until revisions have landed to the privacy document
 
 ## 0.1.2
 
