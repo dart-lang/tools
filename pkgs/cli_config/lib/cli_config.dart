@@ -6,4 +6,4 @@
 /// and environment variables.
 library cli_config;
 
-export 'src/cli_config.dart';
+export 'src/config.dart';

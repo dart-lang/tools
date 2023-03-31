@@ -1,0 +1,13 @@
+name: cli_config_example
+description: An example for cli_config.
+
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/cli_config/example
+
+publish_to: none
+
+environment:
+  sdk: ">=2.19.3 <4.0.0"
+
+dependencies:
+  cli_config:
+    path: ../
