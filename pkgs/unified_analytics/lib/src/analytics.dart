@@ -64,6 +64,9 @@ abstract class Analytics {
     );
   }
 
+  /// Prevents the unapproved files for logging and session handling
+  /// from being saved on to the developer's disk until privacy revision
+  /// has landed
   factory Analytics.pddApproved({
     required DashTool tool,
     required String dartVersion,
