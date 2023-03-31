@@ -8,5 +8,5 @@ Future<void> main(List<String> args) async {
   final config = await Config.fromArgs(args: args);
   final myPath =
       config.optionalPath('my_path', resolveUri: true, mustExist: false);
-  print(myPath?.path);
+  print(myPath?.toFilePath());
 }

@@ -11,20 +11,21 @@ import 'helpers.dart';
 void main() {
   test('resolve command line paths relative to working directory', () async {
     await inTempDir((tempUri) async {
-      final rootUri = Directory.current.uri;
-      final examplePackageUri = rootUri.resolve('example/');
-      const entryPoint = 'bin/cli_config_example.dart';
+      final rootUri = Directory.current.uri.normalizePath();
+      final examplePackageUri =
+          rootUri.resolve('example${Platform.pathSeparator}');
+      final entryPoint = 'bin${Platform.pathSeparator}cli_config_example.dart';
       const pubSpec = 'pubspec.yaml';
       for (final filename in [entryPoint, pubSpec]) {
         final targetUri = tempUri.resolve(filename);
         await File.fromUri(targetUri).create(recursive: true);
         await File.fromUri(examplePackageUri.resolve(filename))
-            .copy(targetUri.path);
+            .copy(targetUri.toFilePath());
       }
       final pubspecFile = File.fromUri(tempUri.resolve(pubSpec));
       await pubspecFile.writeAsString(
         (await pubspecFile.readAsString())
-            .replaceAll('path: ../', 'path: ${rootUri.path}'),
+            .replaceAll('path: ../', 'path: ${rootUri.toFilePath()}'),
       );
 
       final pubGetResult = await runProcess(
@@ -35,12 +36,13 @@ void main() {
       expect(pubGetResult.exitCode, 0);
 
       {
-        final commandLinePath = Uri.file('a/b/c/d.ext');
+        final commandLinePath = Uri.file(
+            'a${Platform.pathSeparator}b${Platform.pathSeparator}d.ext');
         final result = await runProcess(
           executable: Uri.file(Platform.resolvedExecutable),
           arguments: [
-            tempUri.resolve(entryPoint).path,
-            '-Dmy_path=${commandLinePath.path}'
+            tempUri.resolve(entryPoint).toFilePath(),
+            '-Dmy_path=${commandLinePath.toFilePath()}'
           ],
           workingDirectory: rootUri,
         );
@@ -50,12 +52,13 @@ void main() {
       }
 
       {
-        final commandLinePath = Uri.file('a/b/c/d.ext');
+        final commandLinePath = Uri.file(
+            'a${Platform.pathSeparator}b${Platform.pathSeparator}d.ext');
         final result = await runProcess(
           executable: Uri.file(Platform.resolvedExecutable),
           arguments: [
-            tempUri.resolve(entryPoint).path,
-            '-Dmy_path=${commandLinePath.path}'
+            tempUri.resolve(entryPoint).toFilePath(),
+            '-Dmy_path=${commandLinePath.toFilePath()}'
           ],
           workingDirectory: tempUri,
         );
@@ -64,18 +67,19 @@ void main() {
         expect(resolvedPath, tempUri.resolveUri(commandLinePath));
       }
 
-      final pathInFile = Uri.file('a/b/c/d.ext');
+      final pathInFile =
+          Uri.file('a${Platform.pathSeparator}b${Platform.pathSeparator}d.ext');
       final configUri = tempUri.resolve('config.yaml');
       await File.fromUri(configUri).writeAsString('''
-my_path: ${pathInFile.path}
+my_path: ${pathInFile.toFilePath()}
 ''');
 
       {
         final result = await runProcess(
           executable: Uri.file(Platform.resolvedExecutable),
           arguments: [
-            tempUri.resolve(entryPoint).path,
-            '--config=${configUri.path}'
+            tempUri.resolve(entryPoint).toFilePath(),
+            '--config=${configUri.toFilePath()}'
           ],
           workingDirectory: tempUri,
         );
@@ -88,8 +92,8 @@ my_path: ${pathInFile.path}
         final result = await runProcess(
           executable: Uri.file(Platform.resolvedExecutable),
           arguments: [
-            tempUri.resolve(entryPoint).path,
-            '--config=${configUri.path}'
+            tempUri.resolve(entryPoint).toFilePath(),
+            '--config=${configUri.toFilePath()}'
           ],
           workingDirectory: rootUri,
         );

@@ -112,9 +112,9 @@ class Config {
     final environmentConfig = EnvironmentParser().parse(environment);
 
     return Config._(
-      CliSource(cliConfig, workingDirectory),
+      CliSource(cliConfig, workingDirectory?.normalizePath()),
       EnvironmentSource(environmentConfig),
-      FileSource(fileConfig, fileSourceUri),
+      FileSource(fileConfig, fileSourceUri?.normalizePath()),
     );
   }
 
@@ -525,7 +525,8 @@ class Config {
   }
 
   void _throwIfNotExists(String key, Uri value) {
-    if (!value.fileSystemEntity.existsSync()) {
+    final fileSystemEntity = value.fileSystemEntity;
+    if (!fileSystemEntity.existsSync()) {
       throw FormatException("Path '$value' for key '$key' doesn't exist.");
     }
   }
@@ -536,7 +537,7 @@ class Config {
 
 extension on Uri {
   FileSystemEntity get fileSystemEntity {
-    if (path.endsWith(Platform.pathSeparator)) {
+    if (path.endsWith(Platform.pathSeparator) || path.endsWith('/')) {
       return Directory.fromUri(this);
     }
     return File.fromUri(this);

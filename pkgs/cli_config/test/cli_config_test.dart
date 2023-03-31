@@ -231,13 +231,13 @@ void main() {
         environment: {},
         fileParsed: {
           'build': {
-            'out_dir': tempUri.path,
-            'file': tempFileUri.path,
-            'non_exist': nonExistUri.path
+            'out_dir': tempUri.toFilePath(),
+            'file': tempFileUri.toFilePath(),
+            'non_exist': nonExistUri.toFilePath(),
           }
         },
       );
-
+      
       final result = config.optionalPath('build.out_dir', mustExist: true);
       expect(result, tempUri);
       final result2 = config.optionalPath('build.file', mustExist: true);
