@@ -64,6 +64,55 @@ abstract class Analytics {
     );
   }
 
+  factory Analytics.pddApproved({
+    required DashTool tool,
+    required String dartVersion,
+    String? flutterChannel,
+    String? flutterVersion,
+    FileSystem? fsOverride,
+    Directory? homeOverride,
+    DevicePlatform? platformOverride,
+  }) {
+    // Create the instance of the file system so clients don't need
+    // resolve on their own
+    final FileSystem fs = fsOverride ?? LocalFileSystem();
+
+    // Resolve the OS using dart:io
+    final DevicePlatform platform;
+    if (io.Platform.operatingSystem == 'linux') {
+      platform = DevicePlatform.linux;
+    } else if (io.Platform.operatingSystem == 'macos') {
+      platform = DevicePlatform.macos;
+    } else {
+      platform = DevicePlatform.windows;
+    }
+
+    // Create the instance of the GA Client which will create
+    // an [http.Client] to send requests
+    //
+    // When a [fsOverride] is passed in, we can assume to
+    // use the fake Google Analytics client
+    final GAClient gaClient = fsOverride != null
+        ? FakeGAClient()
+        : GAClient(
+            measurementId: kGoogleAnalyticsMeasurementId,
+            apiSecret: kGoogleAnalyticsApiSecret,
+          );
+
+    return AnalyticsImpl(
+      tool: tool,
+      homeDirectory: homeOverride ?? getHomeDirectory(fs),
+      flutterChannel: flutterChannel,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      platform: platformOverride ?? platform,
+      toolsMessageVersion: kToolsMessageVersion,
+      fs: fs,
+      gaClient: gaClient,
+      pddFlag: true,
+    );
+  }
+
   /// Factory constructor to return the [AnalyticsImpl] class with
   /// Google Analytics credentials that point to a test instance and
   /// not the production instance where live data will be sent
@@ -232,6 +281,7 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
+    bool pddFlag = false,
   }) : _gaClient = gaClient {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
@@ -241,6 +291,7 @@ class AnalyticsImpl implements Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
+      pddFlag: pddFlag,
     );
     initializer.run();
     _showMessage = initializer.firstRun;
@@ -276,12 +327,21 @@ class AnalyticsImpl implements Analytics {
             homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
         .readAsStringSync();
 
+    // Create the session instance that will be responsible for managing
+    // all the sessions across every client tool using this pakage
+    final Session session;
+    if (pddFlag) {
+      session = NoopSession();
+    } else {
+      session = Session(homeDirectory: homeDirectory, fs: fs);
+    }
+
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
     // exceeds [kSessionDurationMinutes]
     userProperty = UserProperty(
-      session: Session(homeDirectory: homeDirectory, fs: fs),
+      session: session,
       flutterChannel: flutterChannel,
       host: platform.label,
       flutterVersion: flutterVersion,
