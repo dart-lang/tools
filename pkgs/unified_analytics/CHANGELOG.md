@@ -1,4 +1,4 @@
-## 1.0.0-dev
+## 1.0.0
 
 - Error handling functionality added to prevent malformed session json data from causing a crash
 - Creating a new analytics constructor to point to a test instance of Google Analytics for developers
