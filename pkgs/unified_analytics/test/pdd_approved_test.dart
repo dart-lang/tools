@@ -42,15 +42,15 @@ void main() {
       homeOverride: home,
     );
     initializationAnalytics.clientShowedMessage();
+
+    // The main analytics instance that will be used for the
+    // tests after having the tool onboarded
     analytics = Analytics.pddApproved(
       tool: initialTool,
       dartVersion: dartVersion,
       fsOverride: fs,
       homeOverride: home,
     );
-
-    // The main analytics instance that will be used for the
-    // tests after having the tool onboarded
 
     // The 3 files that should have been generated
     clientIdFile = home
