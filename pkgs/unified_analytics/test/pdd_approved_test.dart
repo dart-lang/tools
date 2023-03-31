@@ -9,7 +9,6 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
-import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -22,7 +21,6 @@ void main() {
   late File sessionFile;
   late File configFile;
   late File logFile;
-  late UserProperty userProperty;
 
   const String homeDirName = 'home';
   const DashTool initialTool = DashTool.flutterTool;

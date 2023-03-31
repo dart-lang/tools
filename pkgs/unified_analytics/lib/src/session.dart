@@ -127,8 +127,8 @@ class NoopSession implements Session {
   }
 
   @override
-  set _lastPing(int __lastPing) {}
+  set _lastPing(int lastPing) {}
 
   @override
-  set _sessionId(int __sessionId) {}
+  set _sessionId(int sessionId) {}
 }
