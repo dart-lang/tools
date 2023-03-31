@@ -11,8 +11,11 @@ Future<void> inTempDir(
   String? prefix,
 }) async {
   final tempDir = await Directory.systemTemp.createTemp(prefix);
+  // Deal with Windows temp folder aliases.
+  final tempUri =
+      Directory(await tempDir.resolveSymbolicLinks()).uri.normalizePath();
   try {
-    await fun(tempDir.uri);
+    await fun(tempUri);
   } finally {
     if (!Platform.environment.containsKey(keepTempKey) ||
         Platform.environment[keepTempKey]!.isEmpty) {
@@ -27,9 +30,9 @@ Future<ProcessResult> runProcess({
   required Uri workingDirectory,
 }) async {
   final result = await Process.run(
-    executable.path,
+    executable.toFilePath(),
     arguments,
-    workingDirectory: workingDirectory.path,
+    workingDirectory: workingDirectory.toFilePath(),
   );
   if (result.exitCode != 0) {
     print(result.stdout);

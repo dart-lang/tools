@@ -231,9 +231,9 @@ void main() {
         environment: {},
         fileParsed: {
           'build': {
-            'out_dir': tempUri.path,
-            'file': tempFileUri.path,
-            'non_exist': nonExistUri.path
+            'out_dir': tempUri.toFilePath(),
+            'file': tempFileUri.toFilePath(),
+            'non_exist': nonExistUri.toFilePath(),
           }
         },
       );
