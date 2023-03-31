@@ -104,7 +104,7 @@ class NoopSession implements Session {
   final int _lastPing = 0;
 
   @override
-  final int _sessionId = 0;
+  final int _sessionId = DateTime.now().millisecondsSinceEpoch;
 
   @override
   void _refreshSessionData() {}
