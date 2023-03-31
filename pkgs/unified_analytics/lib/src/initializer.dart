@@ -18,7 +18,6 @@ class Initializer {
   final Directory homeDirectory;
   final int toolsMessageVersion;
   bool firstRun = false;
-  final bool pddFlag;
 
   /// Responsibe for the initialization of the files
   /// necessary for analytics reporting
@@ -34,7 +33,6 @@ class Initializer {
     required this.tool,
     required this.homeDirectory,
     required this.toolsMessageVersion,
-    required this.pddFlag,
   });
 
   /// Get a string representation of the current date in the following format
@@ -114,17 +112,19 @@ class Initializer {
     }
 
     // Begin initialization checks for the session file
-    final File sessionFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
-    if (!sessionFile.existsSync() && !pddFlag) {
-      createSessionFile(sessionFile: sessionFile);
-    }
+    // TODO: (eliasyishak) enable again once revision lands
+    // final File sessionFile = fs.file(
+    //     p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
+    // if (!sessionFile.existsSync()) {
+    //   createSessionFile(sessionFile: sessionFile);
+    // }
 
     // Begin initialization checks for the log file to persist events locally
-    final File logFile = fs
-        .file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
-    if (!logFile.existsSync() && !pddFlag) {
-      createLogFile(logFile: logFile);
-    }
+    // TODO: (eliasyishak) enable again once revision lands
+    // final File logFile = fs
+    //     .file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
+    // if (!logFile.existsSync()) {
+    //   createLogFile(logFile: logFile);
+    // }
   }
 }
