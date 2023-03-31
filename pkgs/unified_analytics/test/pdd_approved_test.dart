@@ -77,9 +77,9 @@ void main() {
         reason: 'The log file has been disabled');
     expect(dartToolDirectory.listSync().length, equals(2),
         reason:
-            'There should only be 4 files in the $kDartToolDirectoryName directory');
+            'There should only be 2 files in the $kDartToolDirectoryName directory');
     expect(initializationAnalytics.shouldShowMessage, true,
-        reason: 'For the first run, analytics should default to being enabled');
+        reason: 'For the first run, the message should be shown');
     expect(configFile.readAsLinesSync().length,
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '

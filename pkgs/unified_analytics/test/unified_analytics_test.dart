@@ -125,7 +125,7 @@ void main() {
         reason:
             'There should only be 4 files in the $kDartToolDirectoryName directory');
     expect(initializationAnalytics.shouldShowMessage, true,
-        reason: 'For the first run, analytics should default to being enabled');
+        reason: 'For the first run, the message should be shown');
     expect(configFile.readAsLinesSync().length,
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '
