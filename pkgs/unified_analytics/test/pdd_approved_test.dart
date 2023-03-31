@@ -75,9 +75,9 @@ void main() {
         reason: 'The session handling has been disabled');
     expect(configFile.existsSync(), true,
         reason: 'The $kConfigFileName was not found');
-    expect(logFile.existsSync(), true,
-        reason: 'The $kLogFileName file was not found');
-    expect(dartToolDirectory.listSync().length, equals(4),
+    expect(logFile.existsSync(), false,
+        reason: 'The log file has been disabled');
+    expect(dartToolDirectory.listSync().length, equals(2),
         reason:
             'There should only be 4 files in the $kDartToolDirectoryName directory');
     expect(initializationAnalytics.shouldShowMessage, true,
@@ -86,5 +86,11 @@ void main() {
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '
             'for the initialized tool');
+  });
+
+  test('Sending events does not cause any errors', () async {
+    await expectLater(
+        () => analytics.sendEvent(eventName: DashEvent.hotReloadTime),
+        returnsNormally);
   });
 }

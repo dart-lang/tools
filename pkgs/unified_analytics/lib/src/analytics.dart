@@ -350,7 +350,11 @@ class AnalyticsImpl implements Analytics {
     );
 
     // Initialize the log handler to persist events that are being sent
-    _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
+    if (pddFlag) {
+      _logHandler = NoopLogHandler();
+    } else {
+      _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
+    }
   }
 
   @override
