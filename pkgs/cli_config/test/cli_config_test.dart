@@ -309,6 +309,11 @@ void main() {
     );
   });
 
+  test('optionalString validValues', () {
+    final config = Config();
+    expect(config.optionalString('foo', validValues: ['bar']), isNull);
+  });
+
   test('valueOf file source', () {
     final config = Config(fileParsed: {
       'key': {'some': 'map'}

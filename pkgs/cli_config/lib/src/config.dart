@@ -225,7 +225,7 @@ class Config {
     for (final source in _sources) {
       value ??= source.optionalString(key);
     }
-    if (validValues != null) {
+    if (value != null && validValues != null) {
       Source.throwIfUnexpectedValue(key, value, validValues);
     }
     return value;
