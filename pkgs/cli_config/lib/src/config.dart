@@ -477,10 +477,11 @@ class Config {
     required core.bool resolveUri,
     required Uri? baseUri,
   }) {
+    final uri = Source.fileSystemPathToUri(path);
     if (resolveUri && baseUri != null) {
-      return baseUri.resolve(path);
+      return baseUri.resolveUri(uri);
     }
-    return Source.fileSystemPathToUri(path);
+    return uri;
   }
 
   /// Lookup a list of paths in this config.
