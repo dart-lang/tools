@@ -48,12 +48,16 @@ class GAClient {
   /// Receive the payload in Map form and parse
   /// into JSON to send to GA
   Future<http.Response> sendData(Map<String, Object?> body) {
-    return _client.post(
+    return _client
+        .post(
       Uri.parse(postUrl),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(body),
-    );
+    )
+        .catchError((error) {
+      return Future<http.Response>.value(http.Response(error.toString(), 500));
+    });
   }
 }
