@@ -103,7 +103,7 @@ class Config {
     Uri? fileSourceUri,
   }) {
     // Parse config file.
-    final fileConfig = FileParser().parseMap(fileParsed);
+    final fileConfig = FileParser().parseMap<String>(fileParsed);
 
     // Parse CLI argument defines.
     final cliConfig = DefinesParser().parse(commandLineDefines);

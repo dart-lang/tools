@@ -5,7 +5,7 @@
 import 'package:yaml/yaml.dart';
 
 class FileParser {
-  Map<String, dynamic> parse(
+  Map<String, Object> parse(
     String fileContents, {
     Uri? sourceUrl,
   }) {
@@ -19,10 +19,20 @@ class FileParser {
     return parseMap(parsedYaml);
   }
 
-  Map<String, Object> parseMap(Map<dynamic, dynamic> input) => {
-        for (final entry in input.entries)
-          parseKey(entry.key as String): parseValue(entry.value as Object),
-      };
+  Map<K, Object> parseMap<K extends Object>(Map<dynamic, dynamic> input) {
+    final result = <K, Object>{};
+    for (final entry in input.entries) {
+      final keyUnparsed = entry.key;
+      final value = parseValue(entry.value as Object);
+      if (keyUnparsed is String) {
+        final key = parseKey(entry.key as String);
+        result[key as K] = value;
+      } else {
+        result[keyUnparsed as K] = value;
+      }
+    }
+    return result;
+  }
 
   Object parseValue(Object value) {
     if (value is Map) {
