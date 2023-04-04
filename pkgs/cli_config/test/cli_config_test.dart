@@ -520,10 +520,29 @@ void main() {
     );
 
     expect(
-      config.valueOf<Map<Object, Object>>('my_non_string_key_map'),
+      config.valueOf<Map<Object, Object?>>('my_non_string_key_map'),
       {
         1: 'asdf',
         2: 'foo',
+      },
+    );
+  });
+
+  test('null values in maps', () {
+    final config = Config(
+      fileParsed: {
+        'my_non_string_key_map': {
+          'x': null,
+          'y': 42,
+        },
+      },
+    );
+
+    expect(
+      config.valueOf<Map<Object, Object?>>('my_non_string_key_map'),
+      {
+        'x': null,
+        'y': 42,
       },
     );
   });
