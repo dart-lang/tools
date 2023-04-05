@@ -1,5 +1,6 @@
-## 1.9.2-dev
+## 1.10.0
 
+* Add a `SourceFile.codeUnits` property.
 * Require Dart 2.18
 * Add an API usage example in `example/`.
 

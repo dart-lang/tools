@@ -32,7 +32,15 @@ class SourceFile {
   /// the file.
   final _lineStarts = <int>[0];
 
-  /// The code points of the characters in the file.
+  /// The code units of the characters in the file.
+  ///
+  /// If this was constructed with the deprecated `SourceFile()` constructor,
+  /// this will instead contain the code _points_ of the characters in the file
+  /// (so characters above 2^16 are represented as individual integers rather
+  /// than surrogate pairs).
+  List<int> get codeUnits => _decodedChars;
+
+  /// The code units of the characters in this file.
   final Uint32List _decodedChars;
 
   /// The length of the file in characters.
