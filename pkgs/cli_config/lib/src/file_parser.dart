@@ -5,7 +5,7 @@
 import 'package:yaml/yaml.dart';
 
 class FileParser {
-  Map<String, dynamic> parse(
+  Map<String, Object?> parse(
     String fileContents, {
     Uri? sourceUrl,
   }) {
@@ -16,24 +16,25 @@ class FileParser {
     if (parsedYaml is! Map) {
       throw FormatException('YAML config must be set of key value pairs.');
     }
-    return parseMap(parsedYaml);
+    return parseToplevelMap(parsedYaml);
   }
 
-  Map<String, Object> parseMap(Map<dynamic, dynamic> input) => {
-        for (final entry in input.entries)
-          parseKey(entry.key as String): parseValue(entry.value as Object),
-      };
-
-  Object parseValue(Object value) {
-    if (value is Map) {
-      return parseMap(value);
+  Map<String, Object?> parseToplevelMap(Map<dynamic, dynamic> input) {
+    final result = <String, Object?>{};
+    for (final entry in input.entries) {
+      final key = parseToplevelKey(entry.key);
+      final value = entry.value as Object?;
+      result[key] = value;
     }
-    return value;
+    return result;
   }
 
   static final _keyRegex = RegExp('([a-z-_]+)');
 
-  String parseKey(String key) {
+  String parseToplevelKey(Object? key) {
+    if (key is! String) {
+      throw FormatException("Key '$key' is not a String.");
+    }
     final match = _keyRegex.matchAsPrefix(key);
     if (match == null || match.group(0) != key) {
       throw FormatException("Define '$key' does not match expected pattern "
