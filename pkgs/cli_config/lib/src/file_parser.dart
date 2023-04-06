@@ -16,34 +16,25 @@ class FileParser {
     if (parsedYaml is! Map) {
       throw FormatException('YAML config must be set of key value pairs.');
     }
-    return parseMap(parsedYaml);
+    return parseToplevelMap(parsedYaml);
   }
 
-  Map<K, Object?> parseMap<K extends Object>(Map<dynamic, dynamic> input) {
-    final result = <K, Object?>{};
+  Map<String, Object?> parseToplevelMap(Map<dynamic, dynamic> input) {
+    final result = <String, Object?>{};
     for (final entry in input.entries) {
-      final keyUnparsed = entry.key;
-      final value = parseValue(entry.value);
-      if (keyUnparsed is String) {
-        final key = parseKey(entry.key as String);
-        result[key as K] = value;
-      } else {
-        result[keyUnparsed as K] = value;
-      }
+      final key = parseToplevelKey(entry.key);
+      final value = entry.value as Object?;
+      result[key] = value;
     }
     return result;
   }
 
-  Object? parseValue(Object? value) {
-    if (value is Map) {
-      return parseMap(value);
-    }
-    return value;
-  }
-
   static final _keyRegex = RegExp('([a-z-_]+)');
 
-  String parseKey(String key) {
+  String parseToplevelKey(Object? key) {
+    if (key is! String) {
+      throw FormatException("Key '$key' is not a String.");
+    }
     final match = _keyRegex.matchAsPrefix(key);
     if (match == null || match.group(0) != key) {
       throw FormatException("Define '$key' does not match expected pattern "

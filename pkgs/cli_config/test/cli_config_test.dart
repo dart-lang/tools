@@ -371,11 +371,20 @@ void main() {
     expect(() => Config.fromConfigFileContents(fileContents: "['asdf']"),
         throwsFormatException);
     expect(
-      () => Config.fromConfigFileContents(fileContents: '''foo:
-  bar:
-    WRONGKEY:
-      1
-'''),
+      () => Config.fromConfigFileContents(
+          fileContents: '''
+WRONGKEY:
+  1
+'''
+              .trim()),
+      throwsFormatException,
+    );
+    expect(
+      () => Config.fromConfigFileContents(
+          fileContents: '''
+1: 'asdf'
+'''
+              .trim()),
       throwsFormatException,
     );
   });
