@@ -250,45 +250,6 @@ abstract class Analytics {
   Future<void> setTelemetry(bool reportingBool);
 }
 
-class NoOpAnalytics implements Analytics {
-  const NoOpAnalytics._();
-
-  factory NoOpAnalytics() => const NoOpAnalytics._();
-
-  @override
-  final String getConsentMessage = '';
-
-  @override
-  final Map<String, ToolInfo> parsedTools = const <String, ToolInfo>{};
-
-  @override
-  final bool shouldShowMessage = false;
-
-  @override
-  final bool telemetryEnabled = false;
-
-  @override
-  final Map<String, Map<String, Object?>> userPropertyMap = const <String, Map<String, Object?>>{};
-
-  @override
-  void clientShowedMessage() {}
-
-  @override
-  void close() {}
-
-  @override
-  LogFileStats? logFileStats() => null;
-
-  @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) => null;
-
-  @override
-  Future<void> setTelemetry(bool reportingBool) async {}
-}
-
 class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
@@ -499,6 +460,49 @@ class AnalyticsImpl implements Analytics {
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
   }
+}
+
+/// An implementation that will never send events.
+///
+/// This is for clients that opt to either not send analytics, or will migrate
+/// to use [AnalyticsImpl] at a later time.
+class NoOpAnalytics implements Analytics {
+  const NoOpAnalytics._();
+
+  factory NoOpAnalytics() => const NoOpAnalytics._();
+
+  @override
+  final String getConsentMessage = '';
+
+  @override
+  final Map<String, ToolInfo> parsedTools = const <String, ToolInfo>{};
+
+  @override
+  final bool shouldShowMessage = false;
+
+  @override
+  final bool telemetryEnabled = false;
+
+  @override
+  final Map<String, Map<String, Object?>> userPropertyMap = const <String, Map<String, Object?>>{};
+
+  @override
+  void clientShowedMessage() {}
+
+  @override
+  void close() {}
+
+  @override
+  LogFileStats? logFileStats() => null;
+
+  @override
+  Future<Response>? sendEvent({
+    required DashEvent eventName,
+    Map<String, Object?> eventData = const {},
+  }) => null;
+
+  @override
+  Future<void> setTelemetry(bool reportingBool) async {}
 }
 
 /// This class extends [AnalyticsImpl] and subs out any methods that
