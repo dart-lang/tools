@@ -250,6 +250,45 @@ abstract class Analytics {
   Future<void> setTelemetry(bool reportingBool);
 }
 
+class NoOpAnalytics implements Analytics {
+  const NoOpAnalytics._();
+
+  factory NoOpAnalytics() => const NoOpAnalytics._();
+
+  @override
+  final String getConsentMessage = '';
+
+  @override
+  final Map<String, ToolInfo> parsedTools = const <String, ToolInfo>{};
+
+  @override
+  final bool shouldShowMessage = false;
+
+  @override
+  final bool telemetryEnabled = false;
+
+  @override
+  final Map<String, Map<String, Object?>> userPropertyMap = const <String, Map<String, Object?>>{};
+
+  @override
+  void clientShowedMessage() {}
+
+  @override
+  void close() {}
+
+  @override
+  LogFileStats? logFileStats() => null;
+
+  @override
+  Future<Response>? sendEvent({
+    required DashEvent eventName,
+    Map<String, Object?> eventData = const {},
+  }) => null;
+
+  @override
+  Future<void> setTelemetry(bool reportingBool) async {}
+}
+
 class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
