@@ -484,7 +484,8 @@ class NoOpAnalytics implements Analytics {
   final bool telemetryEnabled = false;
 
   @override
-  final Map<String, Map<String, Object?>> userPropertyMap = const <String, Map<String, Object?>>{};
+  final Map<String, Map<String, Object?>> userPropertyMap =
+      const <String, Map<String, Object?>>{};
 
   @override
   void clientShowedMessage() {}
@@ -499,7 +500,8 @@ class NoOpAnalytics implements Analytics {
   Future<Response>? sendEvent({
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
-  }) => null;
+  }) =>
+      null;
 
   @override
   Future<void> setTelemetry(bool reportingBool) async {}
