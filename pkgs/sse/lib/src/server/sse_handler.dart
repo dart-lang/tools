@@ -63,7 +63,8 @@ class SseConnection extends StreamChannelMixin<String?> {
   ///
   /// If [keepAlive] is supplied, the connection will remain active for this
   /// period after a disconnect and can be reconnected transparently. If there
-  /// is no reconnect within that period, the connection will be closed normally.
+  /// is no reconnect within that period, the connection will be closed
+  /// normally.
   ///
   /// If [keepAlive] is not supplied, the connection will be closed immediately
   /// after a disconnect.
@@ -152,10 +153,11 @@ class SseConnection extends StreamChannelMixin<String?> {
       // Close immediately if we're not keeping alive.
       _close();
     } else if (!isInKeepAlivePeriod && !_closedCompleter.isCompleted) {
-      // Otherwise if we didn't already have an active timer and we've not already
-      // been completely closed, set a timer to close after the timeout period.
-      // If the connection comes back, this will be cancelled and all messages left
-      // in the queue tried again.
+      // Otherwise if we didn't already have an active timer and we've not
+      // already been completely closed, set a timer to close after the timeout
+      // period.
+      // If the connection comes back, this will be cancelled and all messages
+      // left in the queue tried again.
       _keepAliveTimer = Timer(_keepAlive!, _close);
     }
   }
@@ -220,8 +222,9 @@ class SseHandler {
       sink.add(_sseHeaders(req.headers['origin']));
       var clientId = req.url.queryParameters['sseClientId'];
 
-      // Check if we already have a connection for this ID that is in the process
-      // of timing out (in which case we can reconnect it transparently).
+      // Check if we already have a connection for this ID that is in the
+      // process of timing out
+      // (in which case we can reconnect it transparently).
       if (_connections[clientId] != null &&
           _connections[clientId]!.isInKeepAlivePeriod) {
         _connections[clientId]!._acceptReconnection(sink);

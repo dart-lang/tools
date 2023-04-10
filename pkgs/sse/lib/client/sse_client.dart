@@ -136,8 +136,10 @@ class SseClient extends StreamChannelMixin<String?> {
     await _requestPool.withResource(() async {
       try {
         encodedMessage = jsonEncode(message);
+        // ignore: avoid_catching_errors
       } on JsonUnsupportedObjectError catch (e) {
         _logger.warning('[$_clientId] Unable to encode outgoing message: $e');
+        // ignore: avoid_catching_errors
       } on ArgumentError catch (e) {
         _logger.warning('[$_clientId] Invalid argument: $e');
       }
