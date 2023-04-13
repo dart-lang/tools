@@ -368,6 +368,12 @@ class AnalyticsImpl implements Analytics {
     } else {
       _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
     }
+
+    // Honor legacy opt-out status if the developer has previously opted
+    // out of analytics
+    if (initializer.firstRun && legacyOptOut(fs: fs, home: homeDirectory)) {
+      setTelemetry(false);
+    }
   }
 
   @override
