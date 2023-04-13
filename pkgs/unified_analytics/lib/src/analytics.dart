@@ -379,7 +379,6 @@ class AnalyticsImpl implements Analytics {
   String get getConsentMessage =>
       kToolsMessage.replaceAll('[tool name]', tool.description);
 
-  @override
   /// Checking the [telemetryEnabled] boolean reflects what the
   /// config file reflects
   ///
@@ -390,7 +389,9 @@ class AnalyticsImpl implements Analytics {
   ///
   /// Additionally, if the client has not invoked `clientShowedMessage`,
   /// then no events shall be sent.
-  bool get okToSend => telemetryEnabled && !_showMessage && _clientShowedMessage;
+  @override
+  bool get okToSend =>
+      telemetryEnabled && !_showMessage && _clientShowedMessage;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
