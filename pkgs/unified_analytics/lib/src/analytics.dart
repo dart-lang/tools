@@ -206,6 +206,11 @@ abstract class Analytics {
   /// run or when the message has been updated
   String get getConsentMessage;
 
+  /// Returns true if it is OK to send an analytics message.   Do not cache,
+  /// as this depends on factors that can change, such as the configuration
+  /// file contents.
+  bool get okToSend;
+
   /// Returns a map object with all of the tools that have been parsed
   /// out of the configuration file
   Map<String, ToolInfo> get parsedTools;
@@ -375,6 +380,19 @@ class AnalyticsImpl implements Analytics {
       kToolsMessage.replaceAll('[tool name]', tool.description);
 
   @override
+  /// Checking the [telemetryEnabled] boolean reflects what the
+  /// config file reflects
+  ///
+  /// Checking the [_showMessage] boolean indicates if this the first
+  /// time the tool is using analytics or if there has been an update
+  /// the messaging found in constants.dart - in both cases, analytics
+  /// will not be sent until the second time the tool is used
+  ///
+  /// Additionally, if the client has not invoked `clientShowedMessage`,
+  /// then no events shall be sent.
+  bool get okToSend => telemetryEnabled && !_showMessage && _clientShowedMessage;
+
+  @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
 
   @override
@@ -418,17 +436,7 @@ class AnalyticsImpl implements Analytics {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-    // Checking the [telemetryEnabled] boolean reflects what the
-    // config file reflects
-    //
-    // Checking the [_showMessage] boolean indicates if this the first
-    // time the tool is using analytics or if there has been an update
-    // the messaging found in constants.dart - in both cases, analytics
-    // will not be sent until the second time the tool is used
-    //
-    // Additionally, if the client has not invoked `clientShowedMessage`,
-    // then no events shall be sent
-    if (!telemetryEnabled || _showMessage || !_clientShowedMessage) return null;
+    if (!okToSend) return null;
 
     // Construct the body of the request
     final Map<String, Object?> body = generateRequestBody(
@@ -478,6 +486,9 @@ class NoOpAnalytics implements Analytics {
 
   @override
   final String getConsentMessage = '';
+
+  @override
+  final bool okToSend = false;
 
   @override
   final Map<String, ToolInfo> parsedTools = const <String, ToolInfo>{};
@@ -536,7 +547,7 @@ class TestAnalytics extends AnalyticsImpl {
     required DashEvent eventName,
     Map<String, Object?> eventData = const {},
   }) {
-    if (!telemetryEnabled || _showMessage || !_clientShowedMessage) return null;
+    if (!okToSend) return null;
 
     // Calling the [generateRequestBody] method will ensure that the
     // session file is getting updated without actually making any
