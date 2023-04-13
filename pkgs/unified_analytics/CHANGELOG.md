@@ -1,3 +1,7 @@
+## 1.1.0
+
+- Added a `okToSend` getter so that clients can easily and accurately check the state of the consent mechanism.
+
 ## 1.0.1
 
 - Error handling on the `analytics.sendEvent(...)` method to silently error out and return a `500` http status code to let tools using this package know Google Analytics did not receive the event (all successful requests will have a status code of `2xx` provided by Google Analytics)
