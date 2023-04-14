@@ -119,7 +119,7 @@ bool legacyOptOut({
       }
     }
   } catch (e) {
-    // Continue if the file was not something we couldn't parse
+    // Continue if the file was something we couldn't parse
   }
 
   // Example of what the file looks like for flutter
@@ -139,7 +139,7 @@ bool legacyOptOut({
       }
     }
   } catch (e) {
-    // Continue if the file was not something we couldn't parse
+    // Continue if the file was something we couldn't parse
   }
 
   return false;
