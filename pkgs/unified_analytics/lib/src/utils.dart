@@ -124,6 +124,8 @@ bool legacyOptOut({
       // A corrupted file could mean they opted out previously but for some
       // reason, the file was written incorrectly
       return true;
+    } on FileSystemException {
+      return true;
     }
   }
 
@@ -148,6 +150,8 @@ bool legacyOptOut({
       //
       // A corrupted file could mean they opted out previously but for some
       // reason, the file was written incorrectly
+      return true;
+    } on FileSystemException {
       return true;
     }
   }

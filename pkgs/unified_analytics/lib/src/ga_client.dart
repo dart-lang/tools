@@ -56,6 +56,7 @@ class GAClient {
         },
         body: jsonEncode(body),
       );
+      // ignore: avoid_catches_without_on_clauses
     } catch (error) {
       return Future<http.Response>.value(http.Response(error.toString(), 500));
     }
