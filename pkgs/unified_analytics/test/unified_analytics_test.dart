@@ -1095,7 +1095,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
     expect(kGoogleAnalyticsMeasurementId, 'G-04BXPVBCWJ');
   });
 
-  test('Consent message is formatted correctly', () {
+  test('Consent message is formatted correctly for the flutter tool', () {
     // Retrieve the consent message for flutter tools
     final String consentMessage = analytics.getConsentMessage;
 
@@ -1106,7 +1106,41 @@ send basic crash reports. This data is used to help improve the Dart platform,
 Flutter framework, and related tools. Telemetry is not sent on the very first
 run. To disable reporting of telemetry, run this terminal command:
 
-[dart|flutter] --disable-telemetry.
+flutter --disable-telemetry.
+
+If you opt out of telemetry, an opt-out event will be sent, and then no
+further information will be sent. This data is collected in accordance with
+the Google Privacy Policy (https://policies.google.com/privacy).
+'''));
+  });
+
+  test('Consent message is formatted correctly for any tool other than flutter',
+      () {
+    // Create a new instance of the analytics class with the new tool
+    final Analytics secondAnalytics = Analytics.test(
+      tool: secondTool,
+      homeDirectory: home,
+      measurementId: 'measurementId',
+      apiSecret: 'apiSecret',
+      flutterChannel: 'ey-test-channel',
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+      dartVersion: 'Dart 2.19.0',
+      fs: fs,
+      platform: platform,
+    );
+
+    // Retrieve the consent message for flutter tools
+    final String consentMessage = secondAnalytics.getConsentMessage;
+    expect(consentMessage, equalsIgnoringWhitespace(r'''
+The Dart CLI developer tool uses Google Analytics to report usage and
+diagnostic data along with package dependencies, and crash reporting to
+send basic crash reports. This data is used to help improve the Dart platform,
+Flutter framework, and related tools. Telemetry is not sent on the very first
+run. To disable reporting of telemetry, run this terminal command:
+
+dart --disable-telemetry.
 
 If you opt out of telemetry, an opt-out event will be sent, and then no
 further information will be sent. This data is collected in accordance with

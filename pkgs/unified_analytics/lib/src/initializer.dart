@@ -60,7 +60,16 @@ class Initializer {
     required int toolsMessageVersion,
   }) {
     configFile.createSync(recursive: true);
-    configFile.writeAsStringSync(kConfigString);
+
+    // If the user was previously opted out, then we will
+    // replace the line that assumes automatic opt in with
+    // an opt out from the start
+    if (legacyOptOut(fs: fs, home: homeDirectory)) {
+      configFile.writeAsStringSync(
+          kConfigString.replaceAll('reporting=1', 'reporting=0'));
+    } else {
+      configFile.writeAsStringSync(kConfigString);
+    }
   }
 
   /// Creates that log file that will store the record formatted

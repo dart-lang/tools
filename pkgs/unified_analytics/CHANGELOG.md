@@ -1,6 +1,7 @@
 ## 1.1.0
 
 - Added a `okToSend` getter so that clients can easily and accurately check the state of the consent mechanism.
+- Initialize the config file with user opted out if user was opted out in legacy Flutter and Dart analytics
 
 ## 1.0.1
 

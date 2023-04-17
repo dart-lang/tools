@@ -2,10 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:math' show Random;
 
 import 'package:file/file.dart';
+import 'package:path/path.dart' as p;
 
 import 'enums.dart';
 import 'user_property.dart';
@@ -75,10 +77,86 @@ Directory getHomeDirectory(FileSystem fs) {
   } else if (io.Platform.isLinux) {
     home = envVars['HOME'];
   } else if (io.Platform.isWindows) {
-    home = envVars['UserProfile'];
+    home = envVars['AppData'];
   }
 
   return fs.directory(home!);
+}
+
+/// Returns `true` if user has opted out of legacy analytics in Dart or Flutter
+///
+/// Checks legacy opt-out status for the Flutter
+/// and Dart in the following locations
+///
+/// Dart: `$HOME/.dart/dartdev.json`
+///
+/// Flutter: `$HOME/.flutter`
+bool legacyOptOut({
+  required FileSystem fs,
+  required Directory home,
+}) {
+  final File dartLegacyConfigFile =
+      fs.file(p.join(home.path, '.dart', 'dartdev.json'));
+  final File flutterLegacyConfigFile = fs.file(p.join(home.path, '.flutter'));
+
+  // Example of what the file looks like for dart
+  //
+  // {
+  //   "firstRun": false,
+  //   "enabled": false,  <-- THIS USER HAS OPTED OUT
+  //   "disclosureShown": true,
+  //   "clientId": "52710e60-7c70-4335-b3a4-9d922630f12a"
+  // }
+  if (dartLegacyConfigFile.existsSync()) {
+    try {
+      // Read in the json object into a Map and check for
+      // the enabled key being set to false; this means the user
+      // has opted out of analytics for dart
+      final Map<String, Object?> dartObj =
+          jsonDecode(dartLegacyConfigFile.readAsStringSync());
+      if (dartObj.containsKey('enabled') && dartObj['enabled'] == false) {
+        return true;
+      }
+    } on FormatException {
+      // In the case of an error when parsing the json file, return true
+      // which will result in the user being opted out of unified_analytics
+      //
+      // A corrupted file could mean they opted out previously but for some
+      // reason, the file was written incorrectly
+      return true;
+    } on FileSystemException {
+      return true;
+    }
+  }
+
+  // Example of what the file looks like for flutter
+  //
+  // {
+  //   "firstRun": false,
+  //   "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
+  //   "enabled": false  <-- THIS USER HAS OPTED OUT
+  // }
+  if (flutterLegacyConfigFile.existsSync()) {
+    try {
+      // Same process as above for dart
+      final Map<String, Object?> flutterObj =
+          jsonDecode(dartLegacyConfigFile.readAsStringSync());
+      if (flutterObj.containsKey('enabled') && flutterObj['enabled'] == false) {
+        return true;
+      }
+    } on FormatException {
+      // In the case of an error when parsing the json file, return true
+      // which will result in the user being opted out of unified_analytics
+      //
+      // A corrupted file could mean they opted out previously but for some
+      // reason, the file was written incorrectly
+      return true;
+    } on FileSystemException {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /// A UUID generator.

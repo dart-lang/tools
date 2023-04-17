@@ -376,8 +376,15 @@ class AnalyticsImpl implements Analytics {
   }
 
   @override
-  String get getConsentMessage =>
-      kToolsMessage.replaceAll('[tool name]', tool.description);
+  String get getConsentMessage {
+    // The command to swap in the consent message
+    final String commandString =
+        tool == DashTool.flutterTool ? 'flutter' : 'dart';
+
+    return kToolsMessage
+        .replaceAll('[tool name]', tool.description)
+        .replaceAll('[dart|flutter]', commandString);
+  }
 
   /// Checking the [telemetryEnabled] boolean reflects what the
   /// config file reflects
