@@ -119,7 +119,12 @@ bool legacyOptOut({
       }
     }
   } catch (e) {
-    // Continue if the file was something we couldn't parse
+    // In the case of an error when parsing the json file, return true
+    // which will result in the user being opted out of unified_analytics
+    //
+    // A corrupted file could mean they opted out previously but for some
+    // reason, the file was written incorrectly
+    return true;
   }
 
   // Example of what the file looks like for flutter
@@ -139,7 +144,12 @@ bool legacyOptOut({
       }
     }
   } catch (e) {
-    // Continue if the file was something we couldn't parse
+    // In the case of an error when parsing the json file, return true
+    // which will result in the user being opted out of unified_analytics
+    //
+    // A corrupted file could mean they opted out previously but for some
+    // reason, the file was written incorrectly
+    return true;
   }
 
   return false;

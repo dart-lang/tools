@@ -50,9 +50,6 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    //
-    // This instance should have the same parameters as the one above for
-    // [initializationAnalytics]
     analytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
@@ -86,9 +83,6 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    //
-    // This instance should have the same parameters as the one above for
-    // [initializationAnalytics]
     analytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
@@ -121,9 +115,6 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    //
-    // This instance should have the same parameters as the one above for
-    // [initializationAnalytics]
     analytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
@@ -156,9 +147,6 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    //
-    // This instance should have the same parameters as the one above for
-    // [initializationAnalytics]
     analytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
@@ -174,5 +162,73 @@ void main() {
     );
 
     expect(analytics.telemetryEnabled, true);
+  });
+
+  test('Telemetry disabled if dart config file corrupted', () {
+    // Create the file for the dart legacy opt out with text that
+    // is not valid JSON
+    final File dartLegacyConfigFile =
+        home.childDirectory('.dart').childFile('dartdev.json');
+    dartLegacyConfigFile.createSync(recursive: true);
+    dartLegacyConfigFile.writeAsStringSync('''
+NOT VALID JSON
+{
+  "firstRun": false,
+  "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
+  "enabled": true
+}
+''');
+
+    // The main analytics instance, other instances can be spawned within tests
+    // to test how to instances running together work
+    analytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(analytics.telemetryEnabled, false);
+  });
+
+  test('Telemetry disabled if flutter config file corrupted', () {
+    // Create the file for the dart legacy opt out with text that
+    // is not valid JSON
+    final File fluttterLegacyConfigFile =
+        home.childDirectory('.dart').childFile('dartdev.json');
+    fluttterLegacyConfigFile.createSync(recursive: true);
+    fluttterLegacyConfigFile.writeAsStringSync('''
+NOT VALID JSON
+{
+  "firstRun": false,
+  "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
+  "enabled": true
+}
+''');
+
+    // The main analytics instance, other instances can be spawned within tests
+    // to test how to instances running together work
+    analytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(analytics.telemetryEnabled, false);
   });
 }
