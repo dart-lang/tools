@@ -47,10 +47,22 @@ class GAClient {
 
   /// Receive the payload in Map form and parse
   /// into JSON to send to GA
+  ///
+  /// The [Response] returned from this method can be
+  /// checked to ensure that events have been sent. A response
+  /// status code of `2xx` indicates a successful send event.
+  /// A response status code of `500` indicates an error occured on the send
+  /// can the error message can be found in the [Response.body]
   Future<http.Response> sendData(Map<String, Object?> body) async {
+    final Uri uri = Uri.parse(postUrl);
+
+    /// Using a try catch all since post method can result in several
+    /// errors; clients using this method can check the awaited status
+    /// code to get a specific error message if the status code returned
+    /// is a 500 error status code
     try {
       return await _client.post(
-        Uri.parse(postUrl),
+        uri,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
