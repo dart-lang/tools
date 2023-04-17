@@ -77,7 +77,7 @@ Directory getHomeDirectory(FileSystem fs) {
   } else if (io.Platform.isLinux) {
     home = envVars['HOME'];
   } else if (io.Platform.isWindows) {
-    home = envVars['UserProfile'];
+    home = envVars['AppData'];
   }
 
   return fs.directory(home!);
