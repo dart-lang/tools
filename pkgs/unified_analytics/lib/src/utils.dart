@@ -107,8 +107,8 @@ bool legacyOptOut({
   //   "disclosureShown": true,
   //   "clientId": "52710e60-7c70-4335-b3a4-9d922630f12a"
   // }
-  try {
-    if (dartLegacyConfigFile.existsSync()) {
+  if (dartLegacyConfigFile.existsSync()) {
+    try {
       // Read in the json object into a Map and check for
       // the enabled key being set to false; this means the user
       // has opted out of analytics for dart
@@ -117,14 +117,14 @@ bool legacyOptOut({
       if (dartObj.containsKey('enabled') && dartObj['enabled'] == false) {
         return true;
       }
+    } on FormatException {
+      // In the case of an error when parsing the json file, return true
+      // which will result in the user being opted out of unified_analytics
+      //
+      // A corrupted file could mean they opted out previously but for some
+      // reason, the file was written incorrectly
+      return true;
     }
-  } catch (e) {
-    // In the case of an error when parsing the json file, return true
-    // which will result in the user being opted out of unified_analytics
-    //
-    // A corrupted file could mean they opted out previously but for some
-    // reason, the file was written incorrectly
-    return true;
   }
 
   // Example of what the file looks like for flutter
@@ -134,22 +134,22 @@ bool legacyOptOut({
   //   "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
   //   "enabled": false  <-- THIS USER HAS OPTED OUT
   // }
-  try {
-    if (flutterLegacyConfigFile.existsSync()) {
+  if (flutterLegacyConfigFile.existsSync()) {
+    try {
       // Same process as above for dart
       final Map<String, Object?> flutterObj =
           jsonDecode(dartLegacyConfigFile.readAsStringSync());
       if (flutterObj.containsKey('enabled') && flutterObj['enabled'] == false) {
         return true;
       }
+    } on FormatException {
+      // In the case of an error when parsing the json file, return true
+      // which will result in the user being opted out of unified_analytics
+      //
+      // A corrupted file could mean they opted out previously but for some
+      // reason, the file was written incorrectly
+      return true;
     }
-  } catch (e) {
-    // In the case of an error when parsing the json file, return true
-    // which will result in the user being opted out of unified_analytics
-    //
-    // A corrupted file could mean they opted out previously but for some
-    // reason, the file was written incorrectly
-    return true;
   }
 
   return false;
