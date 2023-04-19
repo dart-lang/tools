@@ -6,11 +6,19 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:math' show Random;
 
+import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import 'enums.dart';
 import 'user_property.dart';
+
+/// Get a string representation of the current date in the following format
+/// yyyy-MM-dd (2023-01-09)
+String get dateStamp {
+  return DateFormat('yyyy-MM-dd').format(clock.now());
+}
 
 /// Format time as 'yyyy-MM-dd HH:mm:ss Z' where Z is the difference between the
 /// timezone of t and UTC formatted according to RFC 822.

@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'initializer.dart';
+import 'utils.dart';
 
 /// The regex pattern used to parse the disable analytics line
 const String telemetryFlagPattern = r'^reporting=([0|1]) *$';
@@ -31,12 +32,6 @@ class ConfigHandler {
   static RegExp telemetryFlagRegex =
       RegExp(telemetryFlagPattern, multiLine: true);
   static RegExp toolRegex = RegExp(toolPattern, multiLine: true);
-
-  /// Get a string representation of the current date in the following format
-  /// yyyy-MM-dd (2023-01-09)
-  static String get dateStamp {
-    return DateFormat('yyyy-MM-dd').format(clock.now());
-  }
 
   final FileSystem fs;
   final Directory homeDirectory;

@@ -7,16 +7,16 @@ import 'dart:io' as io;
 import 'dart:math';
 
 import 'package:clock/clock.dart';
-import 'package:unified_analytics/unified_analytics.dart';
-import 'package:unified_analytics/src/config_handler.dart';
-import 'package:unified_analytics/src/constants.dart';
-import 'package:unified_analytics/src/session.dart';
-import 'package:unified_analytics/src/user_property.dart';
-import 'package:unified_analytics/src/utils.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
+
+import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/session.dart';
+import 'package:unified_analytics/src/user_property.dart';
+import 'package:unified_analytics/src/utils.dart';
+import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   late FileSystem fs;
@@ -468,8 +468,8 @@ reporting=1
 # and the value is a date in the form YYYY-MM-DD, a comma, and
 # a number representing the version of the message that was
 # displayed.
-${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
-${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
+${initialTool.label}=$dateStamp,$toolsMessageVersion
+${initialTool.label}=$dateStamp,$toolsMessageVersion
 ''');
 
     // Initialize a second analytics class for the same tool as
@@ -520,7 +520,7 @@ ${initialTool.label}=${ConfigHandler.dateStamp},$toolsMessageVersion
 
     expect(
       configFile.readAsStringSync().endsWith(
-          '# displayed.\n${initialTool.label}=${ConfigHandler.dateStamp},${toolsMessageVersion + 1}\n'),
+          '# displayed.\n${initialTool.label}=$dateStamp,${toolsMessageVersion + 1}\n'),
       true,
       reason: 'The config file ends with the correctly formatted ending '
           'after removing the duplicate lines for a given tool',
