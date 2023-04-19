@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
+
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
