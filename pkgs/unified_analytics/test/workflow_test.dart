@@ -8,8 +8,8 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 
-import 'package:unified_analytics/src/config_handler.dart';
 import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -277,8 +277,9 @@ void main() {
     secondAnalytics.clientShowedMessage();
 
     expect(
-        configFile.readAsStringSync().endsWith(
-            '${secondTool.label}=${ConfigHandler.dateStamp},$firstVersion\n'),
+        configFile
+            .readAsStringSync()
+            .endsWith('${secondTool.label}=$dateStamp,$firstVersion\n'),
         true);
 
     // Create a new instane of the secondTool with an even
@@ -299,8 +300,9 @@ void main() {
     );
 
     expect(
-        configFile.readAsStringSync().endsWith(
-            '${secondTool.label}=${ConfigHandler.dateStamp},$firstVersion\n'),
+        configFile
+            .readAsStringSync()
+            .endsWith('${secondTool.label}=$dateStamp,$firstVersion\n'),
         true);
 
     // After invoking this method, it will get updated
@@ -308,8 +310,9 @@ void main() {
     thirdAnalytics.clientShowedMessage();
 
     expect(
-        configFile.readAsStringSync().endsWith(
-            '${secondTool.label}=${ConfigHandler.dateStamp},$secondVersion\n'),
+        configFile
+            .readAsStringSync()
+            .endsWith('${secondTool.label}=$dateStamp,$secondVersion\n'),
         true);
   });
 }

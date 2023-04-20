@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
@@ -36,12 +35,6 @@ class Initializer {
     required this.toolsMessageVersion,
     required this.pddFlag,
   });
-
-  /// Get a string representation of the current date in the following format
-  /// yyyy-MM-dd (2023-01-09)
-  String get dateStamp {
-    return DateFormat('yyyy-MM-dd').format(clock.now());
-  }
 
   /// Creates the text file that will contain the client ID
   /// which will be used across all related tools for analytics
