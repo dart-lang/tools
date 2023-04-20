@@ -1,3 +1,7 @@
+## 1.1.1-dev
+
+- Refactoring `dateStamp` utility function to be defined in `utils.dart` instead of having static methods in `Initializer` and `ConfigHandler`
+
 ## 1.1.0
 
 - Added a `okToSend` getter so that clients can easily and accurately check the state of the consent mechanism.
