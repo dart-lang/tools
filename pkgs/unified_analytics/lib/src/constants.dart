@@ -51,6 +51,9 @@ reporting=1
 # a number representing the version of the message that was
 # displayed.''';
 
+/// Link to contextual survey metadata file
+const String kContextualSurveyUrl = 'https://docs.flutter.dev/f/contextual-survey-metadata.json';
+
 /// Name of the directory where all of the files necessary for this package
 /// will be located
 const String kDartToolDirectoryName = '.dart-tool';
