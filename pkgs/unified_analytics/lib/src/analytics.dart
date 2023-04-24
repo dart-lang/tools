@@ -262,6 +262,7 @@ class AnalyticsImpl implements Analytics {
   late final ConfigHandler _configHandler;
   final GAClient _gaClient;
   late final String _clientId;
+  late final File _clientIdFile;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
   final int toolsMessageVersion;
@@ -340,10 +341,9 @@ class AnalyticsImpl implements Analytics {
       _showMessage = true;
     }
 
-    _clientId = fs
-        .file(p.join(
-            homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
-        .readAsStringSync();
+    _clientIdFile = fs.file(
+        p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
+    _clientId = _clientIdFile.readAsStringSync();
 
     // Create the session instance that will be responsible for managing
     // all the sessions across every client tool using this pakage
@@ -463,6 +463,12 @@ class AnalyticsImpl implements Analytics {
   @override
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
+
+    // If telemetry is being set to false, then delete the
+    // CLIENT_ID file as suggested in internal reviews
+    if (!reportingBool && _clientIdFile.existsSync()) {
+      _clientIdFile.deleteSync();
+    }
 
     // Construct the body of the request to signal
     // telemetry status toggling
