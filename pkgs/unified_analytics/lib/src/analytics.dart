@@ -464,10 +464,11 @@ class AnalyticsImpl implements Analytics {
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
 
-    // If telemetry is being set to false, then delete the
-    // CLIENT_ID file as suggested in internal reviews
+    // If telemetry is being set to false, then overwrite the
+    // CLIENT_ID file with a new id so that if the user chooses
+    // to opt back in at a later time, they will be a fresh new user
     if (!reportingBool && _clientIdFile.existsSync()) {
-      _clientIdFile.deleteSync();
+      Initializer.createClientIdFile(clientFile: _clientIdFile);
     }
 
     // Construct the body of the request to signal

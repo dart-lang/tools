@@ -39,7 +39,7 @@ class Initializer {
   /// Creates the text file that will contain the client ID
   /// which will be used across all related tools for analytics
   /// reporting in GA
-  void createClientIdFile({required File clientFile}) {
+  static void createClientIdFile({required File clientFile}) {
     clientFile.createSync(recursive: true);
     clientFile.writeAsStringSync(Uuid().generateV4());
   }

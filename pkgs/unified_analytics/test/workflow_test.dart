@@ -315,4 +315,31 @@ void main() {
             .endsWith('${secondTool.label}=$dateStamp,$secondVersion\n'),
         true);
   });
+
+  test('Opting out will reset the CLIENT_ID file', () async {
+    final Analytics firstAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    // Grab the first client ID
+    final String firstClientId = clientIdFile.readAsStringSync();
+    expect(firstClientId.isNotEmpty, true);
+
+    // Opting out here will reset the CLIENT ID file
+    await firstAnalytics.setTelemetry(false);
+    final String secondClientId = clientIdFile.readAsStringSync();
+
+    expect(firstClientId != secondClientId, true);
+    expect(firstAnalytics.telemetryEnabled, false);
+  });
 }
