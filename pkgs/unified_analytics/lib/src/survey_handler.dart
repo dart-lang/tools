@@ -21,7 +21,6 @@ class SurveyHandler {
     final http.Response response = await http.get(uri);
 
     // Parse the returned body and add to the list
-    print(utf8.decode(response.bodyBytes));
-    print(jsonDecode(utf8.decode(response.bodyBytes)));
+    print(jsonDecode(response.body));
   }
 }
