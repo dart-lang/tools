@@ -394,14 +394,6 @@ class AnalyticsImpl implements Analytics {
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
 
-    // Conditional logic for clearing contents of persisted
-    // files (except for config file) on opt out
-    if (!reportingBool) {
-      _sessionHandler.sessionFile;
-      _logHandler.logFile;
-      _clientIdFile;
-    } else {}
-
     // Construct the body of the request to signal
     // telemetry status toggling
     //
@@ -415,6 +407,20 @@ class AnalyticsImpl implements Analytics {
     );
 
     _logHandler.save(data: body);
+
+    // Conditional logic for clearing contents of persisted
+    // files (except for config file) on opt out
+    if (!reportingBool) {
+      _sessionHandler.sessionFile.writeAsStringSync('');
+      _logHandler.logFile.writeAsStringSync('');
+      _clientIdFile.writeAsStringSync('');
+    } else {
+      // Recreate the session and client id file; no need to
+      // recreate the log file since it will only receives events
+      // to persist from `sendEvent()`
+      Initializer.createClientIdFile(clientFile: _clientIdFile);
+      Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
+    }
 
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
