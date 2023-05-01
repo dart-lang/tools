@@ -205,8 +205,10 @@ class AnalyticsImpl implements Analytics {
   late final ConfigHandler _configHandler;
   final GAClient _gaClient;
   late final String _clientId;
+  late final File _clientIdFile;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
+  late final Session _sessionHandler;
   final int toolsMessageVersion;
 
   /// Tells the client if they need to show a message to the
@@ -281,17 +283,17 @@ class AnalyticsImpl implements Analytics {
       _showMessage = true;
     }
 
-    _clientId = fs
-        .file(p.join(
-            homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
-        .readAsStringSync();
+    _clientIdFile = fs.file(
+        p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
+    _clientId = _clientIdFile.readAsStringSync();
 
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
     // exceeds [kSessionDurationMinutes]
+    _sessionHandler = Session(homeDirectory: homeDirectory, fs: fs);
     userProperty = UserProperty(
-      session: Session(homeDirectory: homeDirectory, fs: fs),
+      session: _sessionHandler,
       flutterChannel: flutterChannel,
       host: platform.label,
       flutterVersion: flutterVersion,
@@ -391,6 +393,14 @@ class AnalyticsImpl implements Analytics {
   @override
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
+
+    // Conditional logic for clearing contents of persisted
+    // files (except for config file) on opt out
+    if (!reportingBool) {
+      _sessionHandler.sessionFile;
+      _logHandler.logFile;
+      _clientIdFile;
+    } else {}
 
     // Construct the body of the request to signal
     // telemetry status toggling

@@ -15,7 +15,7 @@ import 'initializer.dart';
 class Session {
   final Directory homeDirectory;
   final FileSystem fs;
-  final File _sessionFile;
+  final File sessionFile;
 
   late int _sessionId;
   late int _lastPing;
@@ -23,7 +23,7 @@ class Session {
   Session({
     required this.homeDirectory,
     required this.fs,
-  }) : _sessionFile = fs.file(p.join(
+  }) : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)) {
     _refreshSessionData();
   }
@@ -57,7 +57,7 @@ class Session {
 
     // Rewrite the session object back to the file to persist
     // for future events
-    _sessionFile.writeAsStringSync(toJson());
+    sessionFile.writeAsStringSync(toJson());
 
     return _sessionId;
   }
@@ -79,7 +79,7 @@ class Session {
   void _refreshSessionData() {
     /// Using a nested function here to reduce verbosity
     void parseContents() {
-      final String sessionFileContents = _sessionFile.readAsStringSync();
+      final String sessionFileContents = sessionFile.readAsStringSync();
       final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
       _sessionId = sessionObj['session_id'] as int;
       _lastPing = sessionObj['last_ping'] as int;
@@ -88,11 +88,11 @@ class Session {
     try {
       parseContents();
     } on FormatException {
-      Initializer.createSessionFile(sessionFile: _sessionFile);
+      Initializer.createSessionFile(sessionFile: sessionFile);
 
       parseContents();
     } on PathNotFoundException {
-      Initializer.createSessionFile(sessionFile: _sessionFile);
+      Initializer.createSessionFile(sessionFile: sessionFile);
 
       parseContents();
     }
@@ -110,7 +110,7 @@ class NoopSession implements Session {
   void _refreshSessionData() {}
 
   @override
-  File get _sessionFile => throw UnimplementedError();
+  File get sessionFile => throw UnimplementedError();
 
   @override
   FileSystem get fs => throw UnimplementedError();
