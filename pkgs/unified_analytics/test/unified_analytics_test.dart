@@ -206,28 +206,19 @@ void main() {
     await analytics.setTelemetry(false);
     expect(analytics.telemetryEnabled, false,
         reason: 'Analytics telemetry should be disabled');
-    expect(logFile.readAsLinesSync().length, 1,
-        reason: 'One event should have been logged for disabling analytics');
-
-    // Extract the last log item to check for the keys
-    Map<String, Object?> lastLogItem =
-        jsonDecode(logFile.readAsLinesSync().last);
-    expect((lastLogItem['events'] as List).last['name'],
-        'analytics_collection_enabled',
-        reason: 'Check on event name');
-    expect((lastLogItem['events'] as List).last['params']['status'], false,
-        reason: 'Status should be false');
+    expect(logFile.readAsLinesSync().length, 0,
+        reason: 'Log file should have been cleared after opting out');
 
     // Toggle it back to being enabled
     await analytics.setTelemetry(true);
     expect(analytics.telemetryEnabled, true,
         reason: 'Analytics telemetry should be enabled');
-    expect(logFile.readAsLinesSync().length, 2,
-        reason: 'Second event should have been logged toggling '
-            'analytics back on');
+    expect(logFile.readAsLinesSync().length, 1,
+        reason: 'There should only one event since it was cleared on opt out');
 
     // Extract the last log item to check for the keys
-    lastLogItem = jsonDecode(logFile.readAsLinesSync().last);
+    final Map<String, Object?> lastLogItem =
+        jsonDecode(logFile.readAsLinesSync().last);
     expect((lastLogItem['events'] as List).last['name'],
         'analytics_collection_enabled',
         reason: 'Check on event name');
