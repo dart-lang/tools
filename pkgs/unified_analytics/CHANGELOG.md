@@ -1,6 +1,7 @@
 ## 1.1.1-dev
 
 - Refactoring `dateStamp` utility function to be defined in `utils.dart` instead of having static methods in `Initializer` and `ConfigHandler`
+- Remove the `pddFlag` now that the revisions have been finalized to persist data in the log file and session json file
 
 ## 1.1.0
 

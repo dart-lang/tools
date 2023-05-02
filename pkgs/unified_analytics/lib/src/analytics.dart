@@ -23,68 +23,17 @@ import 'user_property.dart';
 import 'utils.dart';
 
 abstract class Analytics {
-  // TODO: (eliasyishak) enable again once revision has landed;
-  //  also remove all instances of [pddFlag]
-
-  // /// The default factory constructor that will return an implementation
-  // /// of the [Analytics] abstract class using the [LocalFileSystem]
-  // factory Analytics({
-  //   required DashTool tool,
-  //   required String dartVersion,
-  //   String? flutterChannel,
-  //   String? flutterVersion,
-  // }) {
-  //   // Create the instance of the file system so clients don't need
-  //   // resolve on their own
-  //   const FileSystem fs = LocalFileSystem();
-
-  //   // Resolve the OS using dart:io
-  //   final DevicePlatform platform;
-  //   if (io.Platform.operatingSystem == 'linux') {
-  //     platform = DevicePlatform.linux;
-  //   } else if (io.Platform.operatingSystem == 'macos') {
-  //     platform = DevicePlatform.macos;
-  //   } else {
-  //     platform = DevicePlatform.windows;
-  //   }
-
-  //   // Create the instance of the GA Client which will create
-  //   // an [http.Client] to send requests
-  //   final GAClient gaClient = GAClient(
-  //     measurementId: kGoogleAnalyticsMeasurementId,
-  //     apiSecret: kGoogleAnalyticsApiSecret,
-  //   );
-
-  //   return AnalyticsImpl(
-  //     tool: tool,
-  //     homeDirectory: getHomeDirectory(fs),
-  //     flutterChannel: flutterChannel,
-  //     flutterVersion: flutterVersion,
-  //     dartVersion: dartVersion,
-  //     platform: platform,
-  //     toolsMessageVersion: kToolsMessageVersion,
-  //     fs: fs,
-  //     gaClient: gaClient,
-  //   );
-  // }
-
-  // TODO: (eliasyishak) remove this contructor once revision has landed
-
-  /// Prevents the unapproved files for logging and session handling
-  /// from being saved on to the developer's disk until privacy revision
-  /// has landed
+  /// The default factory constructor that will return an implementation
+  /// of the [Analytics] abstract class using the [LocalFileSystem]
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
-    FileSystem? fsOverride,
-    Directory? homeOverride,
-    DevicePlatform? platformOverride,
   }) {
     // Create the instance of the file system so clients don't need
     // resolve on their own
-    final FileSystem fs = fsOverride ?? LocalFileSystem();
+    const FileSystem fs = LocalFileSystem();
 
     // Resolve the OS using dart:io
     final DevicePlatform platform;
@@ -98,27 +47,21 @@ abstract class Analytics {
 
     // Create the instance of the GA Client which will create
     // an [http.Client] to send requests
-    //
-    // When a [fsOverride] is passed in, we can assume to
-    // use the fake Google Analytics client
-    final GAClient gaClient = fsOverride != null
-        ? FakeGAClient()
-        : GAClient(
-            measurementId: kGoogleAnalyticsMeasurementId,
-            apiSecret: kGoogleAnalyticsApiSecret,
-          );
+    final GAClient gaClient = GAClient(
+      measurementId: kGoogleAnalyticsMeasurementId,
+      apiSecret: kGoogleAnalyticsApiSecret,
+    );
 
     return AnalyticsImpl(
       tool: tool,
-      homeDirectory: homeOverride ?? getHomeDirectory(fs),
+      homeDirectory: getHomeDirectory(fs),
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
-      platform: platformOverride ?? platform,
+      platform: platform,
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      pddFlag: true,
     );
   }
 
@@ -295,7 +238,6 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
-    bool pddFlag = false,
   }) : _gaClient = gaClient {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
@@ -309,7 +251,6 @@ class AnalyticsImpl implements Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
-      pddFlag: pddFlag,
     );
     initializer.run();
     _showMessage = initializer.firstRun;
@@ -345,21 +286,12 @@ class AnalyticsImpl implements Analytics {
             homeDirectory.path, kDartToolDirectoryName, kClientIdFileName))
         .readAsStringSync();
 
-    // Create the session instance that will be responsible for managing
-    // all the sessions across every client tool using this pakage
-    final Session session;
-    if (pddFlag) {
-      session = NoopSession();
-    } else {
-      session = Session(homeDirectory: homeDirectory, fs: fs);
-    }
-
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
     // exceeds [kSessionDurationMinutes]
     userProperty = UserProperty(
-      session: session,
+      session: Session(homeDirectory: homeDirectory, fs: fs),
       flutterChannel: flutterChannel,
       host: platform.label,
       flutterVersion: flutterVersion,
@@ -368,11 +300,7 @@ class AnalyticsImpl implements Analytics {
     );
 
     // Initialize the log handler to persist events that are being sent
-    if (pddFlag) {
-      _logHandler = NoopLogHandler();
-    } else {
-      _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
-    }
+    _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
   }
 
   @override
