@@ -99,7 +99,7 @@ enum DashTool {
   ),
   vscodePlugins(
     label: 'vscode-plugins',
-    description: 'VS Code IDE plugins for Dart and Flutter',
+    description: 'VS Code IDE extensions for Dart and Flutter',
   );
 
   /// String used as the control flag and the value of the tool key in
