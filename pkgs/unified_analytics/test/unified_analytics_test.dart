@@ -208,6 +208,10 @@ void main() {
         reason: 'Analytics telemetry should be disabled');
     expect(logFile.readAsLinesSync().length, 0,
         reason: 'Log file should have been cleared after opting out');
+    expect(clientIdFile.readAsStringSync().length, 0,
+        reason: 'CLIENT ID file gets cleared on opt out');
+    expect(sessionFile.readAsStringSync().length, 0,
+        reason: 'Session file gets cleared on opt out');
 
     // Toggle it back to being enabled
     await analytics.setTelemetry(true);
@@ -215,6 +219,10 @@ void main() {
         reason: 'Analytics telemetry should be enabled');
     expect(logFile.readAsLinesSync().length, 1,
         reason: 'There should only one event since it was cleared on opt out');
+    expect(clientIdFile.readAsStringSync().length, greaterThan(0),
+        reason: 'CLIENT ID file gets regenerated on opt in');
+    expect(sessionFile.readAsStringSync().length, greaterThan(0),
+        reason: 'Session file gets regenerated on opt in');
 
     // Extract the last log item to check for the keys
     final Map<String, Object?> lastLogItem =
