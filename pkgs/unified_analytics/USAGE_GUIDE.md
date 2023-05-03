@@ -108,37 +108,29 @@ analytics.setTelemetry(status);
 
 ## Displaying Consent Message to Users
 
-When a user first uses any tool with this package enabled, they
-will be enrolled into Analytics collection. It will be the responsiblity
-of the tool using this package to display the proper Analytics messaging
-and inform them on how to Opt-Out of Analytics collection if they wish. The
-package will expose APIs that will make it easy to configure Opt-In status.
+When a user first uses any tool with this package enabled, the tool using this package will need to ensure that the user has seen the consent message. The tool using this package should check with the `Analytics` instance by invoking the `shouldShowMessage` getter. When this getter returns `true`, this means that the user has not been enrolled into analytics collection yet. It is at this point that the tool using this package will invoke the `getConsentMessage` getter to return a string to share with the user (each tool will have their own method of displaying the message through cli stdout, popup modal, etc.). Once the message has been shown, the tool using this package will need to confirm to the `Analytics` instance that it has shown the message; it is at this point that the user has officially been onboarded to analytics collection.
 
-For this use case, it is best to use the `Analytics` static method `getConsentMessage`
-which requires passing in the `DashTool` currently using this package.
 
-Passing in the `DashTool` is necessary so that the message can include which
-tool is seeking consent.
 
 ```dart
-final String consentMessage = Analytics.getConsentMessage(
-  tool: DashTool.flutterTools
-);
+// Begin by initializing the class near the entrypoint
+final Analytics analytics = Analytics(...);
 
-/// Printing out the consent message above returns the below
-///
-/// The flutter tools uses Google Analytics to report usage and diagnostic data
-/// along with package dependencies, and crash reporting to send basic crash reports.
-/// This data is used to help improve the Dart platform, Flutter framework, and related tools.
-/// 
-/// Telemetry is not sent on the very first run.
-/// To disable reporting of telemetry, run this terminal command:
-/// 
-/// [dart|flutter] --disable-telemetry.
-/// If you opt out of telemetry, an opt-out event will be sent,
-/// and then no further information will be sent.
-/// This data is collected in accordance with the
-/// Google Privacy Policy (https://policies.google.com/privacy).
+// This conditional should always run; the first time it is run, this
+// will return true since the consent message has never been shown
+if (analytics.shouldShowMessage) {
+  
+  // Simulates displaying the message, this will vary from
+  // client to client; ie. stdout, popup in IDE, etc.
+  print(analytics.getConsentMessage);
+
+  // After receiving confirmation that the message has been
+  // displayed, invoking the below method will successfully
+  // onboard the tool into the config file and allow for
+  // events to be sent on the next creation of the analytics
+  // instance
+  analytics.clientShowedMessage();
+}
 ```
 
 ## Checking User Opt-In Status
@@ -185,9 +177,6 @@ if (analytics.shouldShowMessage) {
   // onboard the tool into the config file and allow for
   // events to be sent on the next creation of the analytics
   // instance
-  //
-  // The rest of the example below assumes that the tool has
-  // already been onboarded in a previous run
   analytics.clientShowedMessage();
 }
 ```
