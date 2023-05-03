@@ -108,7 +108,18 @@ analytics.setTelemetry(status);
 
 ## Displaying Consent Message to Users
 
-When a user first uses any tool with this package enabled, the tool using this package will need to ensure that the user has seen the consent message. The tool using this package should check with the `Analytics` instance by invoking the `shouldShowMessage` getter. When this getter returns `true`, this means that the user has not been enrolled into analytics collection yet. It is at this point that the tool using this package will invoke the `getConsentMessage` getter to return a string to share with the user (each tool will have their own method of displaying the message through cli stdout, popup modal, etc.). Once the message has been shown, the tool using this package will need to confirm to the `Analytics` instance that it has shown the message; it is at this point that the user has officially been onboarded to analytics collection.
+When a user first uses any tool with this package enabled, the tool using
+this package will need to ensure that the user has seen the consent message.
+The tool using this package should check with the `Analytics` instance
+by invoking the `shouldShowMessage` getter. When this getter returns
+`true`, this means that the user has not been enrolled into analytics
+collection yet. It is at this point that the tool using this package will
+invoke the `getConsentMessage` getter to return a string to share with the
+user (each tool will have their own method of displaying the message
+through cli stdout, popup modal, etc.). Once the message has been shown,
+the tool using this package will need to confirm to the `Analytics` instance
+that it has shown the message; it is at this point that the user has
+officially been onboarded to analytics collection.
 
 
 
