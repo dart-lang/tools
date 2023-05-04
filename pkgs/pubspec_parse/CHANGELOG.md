@@ -1,3 +1,6 @@
+## 1.2.3
+- Added topics to `pubspec.yaml`.
+
 ## 1.2.2
 
 - Require Dart SDK >= 2.18.0
