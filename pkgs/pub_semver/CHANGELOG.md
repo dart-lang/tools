@@ -1,4 +1,6 @@
-## 2.1.4-dev
+## 2.1.4
+
+- Added topics to `pubspec.yaml`.
 
 ## 2.1.3
 

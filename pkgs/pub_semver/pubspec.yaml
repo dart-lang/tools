@@ -1,9 +1,12 @@
 name: pub_semver
-version: 2.1.4-dev
+version: 2.1.4
 description: >-
  Versions and version constraints implementing pub's versioning policy. This
  is very similar to vanilla semver, with a few corner cases.
 repository: https://github.com/dart-lang/pub_semver
+topics:
+ - dart-pub
+ - semver
 
 environment:
   sdk: '>=2.17.0 <3.0.0'
