@@ -1,6 +1,7 @@
-## 2.2.2-dev
+## 2.2.2
 
-- Require Dart 2.19
+- Added package topics to the pubspec file.
+- Require Dart 2.19.
 
 ## 2.2.1
 

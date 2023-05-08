@@ -1,7 +1,10 @@
 name: benchmark_harness
-version: 2.2.2-dev
+version: 2.2.2
 description: The official Dart project benchmark harness.
 repository: https://github.com/dart-lang/benchmark_harness
+
+topics:
+ - benchmarking
 
 environment:
   sdk: '>=2.19.0 <3.0.0'
