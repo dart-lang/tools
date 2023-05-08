@@ -39,7 +39,7 @@ void main() {
     analytics.clientShowedMessage();
   }
 
-  print('Current is opted in: ${analytics.telemetryEnabled}');
+  print('Current user is opted in: ${analytics.telemetryEnabled}');
 
   // Example of long running process
   int count = 0;
