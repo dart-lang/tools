@@ -4,7 +4,10 @@ It provides APIs to send events to Google Analytics using the Measurement Protoc
 ## Usage
 
 To get started using this package, import at the entrypoint dart file and
-initialize with the required parameters
+initialize with the required parameters.
+
+The example file shows an end-to-end usage guide for using this package and
+can be referred to here [unified_analytics_example.dart](example/unified_analytics_example.dart).
 
 **IMPORTANT**: It is best practice to close the http client connection when finished
 sending events, otherwise, you may notice that the dart process hangs on exit. The example below
@@ -12,80 +15,6 @@ shows how to handle closing the connection via `analytics.close()` method.
 
 [Link to documentation for http client's close method](https://pub.dev/documentation/http/latest/http/Client-class.html)
 
-```dart
-import 'unified_analytics/unified_analytics.dart';
-
-// Constants that should be resolved by the client using package
-final DashTool tool = DashTool.flutterTools; // Restricted to enum provided by package
-
-// Values that need to be provided by the client that may
-// need to be calculated
-final String channel = ...;
-final String flutterVersion = ...;
-final String dartVersion = ...;
-
-// Initialize the [Analytics] class with the required parameters;
-// preferably outside of the [main] method
-final Analytics analytics = Analytics(
-  tool: tool,
-  flutterChannel: channel,  // Optional; only if easy to determine
-  flutterVersion: flutterVersion,  // Optional; only if easy to determine
-  dartVersion: dartVersion,
-);
-
-// Timing a process and sending the event
-void main() {
-    DateTime start = DateTime.now();
-    int count = 0;
-
-    // Each client using this package will have it's own
-    // method to show the message but the below is a trivial
-    // example of how to properly initialize the analytics instance
-    if (analytics.shouldShowMessage) {
-      
-      // Simulates displaying the message, this will vary from
-      // client to client; ie. stdout, popup in IDE, etc.
-      print(analytics.getConsentMessage);
-
-      // After receiving confirmation that the message has been
-      // displayed, invoking the below method will successfully
-      // onboard the tool into the config file and allow for
-      // events to be sent on the next creation of the analytics
-      // instance
-      //
-      // The rest of the example below assumes that the tool has
-      // already been onboarded in a previous run
-      analytics.clientShowedMessage();
-    }
-
-    // Example of long running process
-    for (int i = 0; i < 2000; i++) {
-        count += i;
-    }
-    
-    // Calculate the metric to send
-    final int runTime = DateTime.now().difference(start).inMilliseconds;
-
-    // Generate the body for the event data
-    final Map<String, int> eventData = {
-      'time_ns': runTime,
-    };
-
-    // Choose one of the enum values for [DashEvent] which should
-    // have all possible events; if not there, open an issue for the
-    // team to add
-    final DashEvent eventName = ...; // Select appropriate DashEvent enum value
-
-    // Make a call to the [Analytics] api to send the data
-    analytics.sendEvent(
-      eventName: eventName,
-      eventData: eventData,
-    );
-
-    // Close the client connection on exit
-    analytics.close();
-}
-```
 
 ## Opting In and Out of Analytics Collection
 
