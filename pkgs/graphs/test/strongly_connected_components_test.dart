@@ -51,9 +51,13 @@ void main() {
       final result = components({
         'a': ['b'],
         'b': ['c'],
-        'c': ['a']
+        'c': ['d'],
+        'd': ['a'],
       });
-      expect(result, [allOf(contains('a'), contains('b'), contains('c'))]);
+      expect(
+        result,
+        [allOf(contains('a'), contains('b'), contains('c'), contains('d'))],
+      );
     });
 
     test('includes the first passed root last in a cycle', () {

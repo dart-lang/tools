@@ -45,21 +45,45 @@ List<List<T>> stronglyConnectedComponents<T extends Object>(
   var index = 0;
   final lastVisited = Queue<T>();
 
-  void strongConnect(T node) {
-    indexes[node] = index;
-    var lowLink = lowLinks[node] = index;
-    index++;
-    lastVisited.addLast(node);
-    onStack.add(node);
-    for (final next in edges(node)) {
+  final stack = [for (final node in nodes) _StackState(node)];
+  outer:
+  while (stack.isNotEmpty) {
+    final state = stack.removeLast();
+    final node = state.node;
+    var iterator = state.iterator;
+
+    int lowLink;
+    if (iterator == null) {
+      if (indexes.containsKey(node)) continue;
+      indexes[node] = index;
+      lowLink = lowLinks[node] = index;
+      index++;
+      iterator = edges(node).iterator;
+
+      // Nodes with no edges are always in their own component.
+      if (!iterator.moveNext()) {
+        result.add([node]);
+        continue;
+      }
+
+      lastVisited.addLast(node);
+      onStack.add(node);
+    } else {
+      lowLink = min(lowLinks[node]!, lowLinks[iterator.current]!);
+    }
+
+    do {
+      final next = iterator.current;
       if (!indexes.containsKey(next)) {
-        strongConnect(next);
-        lowLink = lowLinks[node] = min(lowLink, lowLinks[next]!);
+        stack.add(_StackState(node, iterator));
+        stack.add(_StackState(next));
+        continue outer;
       } else if (onStack.contains(next)) {
         lowLink = lowLinks[node] = min(lowLink, indexes[next]!);
       }
-    }
-    if (lowLinks[node] == indexes[node]) {
+    } while (iterator.moveNext());
+
+    if (lowLink == indexes[node]) {
       final component = <T>[];
       T next;
       do {
@@ -71,10 +95,23 @@ List<List<T>> stronglyConnectedComponents<T extends Object>(
     }
   }
 
-  for (final node in nodes) {
-    if (!indexes.containsKey(node)) strongConnect(node);
-  }
   return result;
+}
+
+/// The state of a pass on a single node in Tarjan's Algorithm.
+///
+/// This is used to perform the algorithm with an explicit stack rather than
+/// recursively, to avoid stack overflow errors for very large graphs.
+class _StackState<T> {
+  /// The node being inspected.
+  final T node;
+
+  /// The iterator traversing [node]'s edges.
+  ///
+  /// This is null if the node hasn't yet begun being traversed.
+  final Iterator<T>? iterator;
+
+  _StackState(this.node, [this.iterator]);
 }
 
 bool _defaultEquals(Object a, Object b) => a == b;

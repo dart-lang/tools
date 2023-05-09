@@ -57,24 +57,30 @@ List<T> topologicalSort<T>(
   final result = QueueList<T>();
   final permanentMark = HashSet<T>(equals: equals, hashCode: hashCode);
   final temporaryMark = LinkedHashSet<T>(equals: equals, hashCode: hashCode);
-  void visit(T node) {
-    if (permanentMark.contains(node)) return;
+  final stack = [...nodes];
+  while (stack.isNotEmpty) {
+    final node = stack.removeLast();
+    if (permanentMark.contains(node)) continue;
+
+    // If we're visiting this node while it's already marked and not through a
+    // dependency, that must mean we've traversed all its dependencies and it's
+    // safe to add it to the result.
     if (temporaryMark.contains(node)) {
-      throw CycleException(temporaryMark);
-    }
+      temporaryMark.remove(node);
+      permanentMark.add(node);
+      result.addFirst(node);
+    } else {
+      temporaryMark.add(node);
 
-    temporaryMark.add(node);
-    for (var child in edges(node)) {
-      visit(child);
+      // Revisit this node once we've visited all its children.
+      stack.add(node);
+      for (var child in edges(node)) {
+        if (temporaryMark.contains(child)) throw CycleException(temporaryMark);
+        stack.add(child);
+      }
     }
-    temporaryMark.remove(node);
-    permanentMark.add(node);
-    result.addFirst(node);
   }
 
-  for (var node in nodes) {
-    visit(node);
-  }
   return result;
 }
 

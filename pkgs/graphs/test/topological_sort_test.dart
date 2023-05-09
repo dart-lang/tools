@@ -118,7 +118,7 @@ void main() {
             3: [4],
             4: [1]
           }),
-          throwsCycleException([1, 2, 3, 4]),
+          throwsCycleException([4, 1, 2, 3]),
         );
       });
     });
@@ -331,7 +331,7 @@ void main() {
             },
             secondarySort: true,
           ),
-          throwsCycleException([1, 2, 3, 4]),
+          throwsCycleException([4, 1, 2, 3]),
         );
       });
     });

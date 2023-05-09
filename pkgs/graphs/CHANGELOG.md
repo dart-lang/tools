@@ -1,4 +1,9 @@
-# 2.2.1-dev
+# 2.3.0
+
+- Add a `transitiveClosure` function.
+
+- Make `stronglyConnectedComponents` and `topologicalSort` iterative rather than
+  recursive to avoid stack overflows on very large graphs.
 
 - Require Dart 2.18
 

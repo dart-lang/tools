@@ -8,3 +8,4 @@ export 'src/shortest_path.dart' show shortestPath, shortestPaths;
 export 'src/strongly_connected_components.dart'
     show stronglyConnectedComponents;
 export 'src/topological_sort.dart' show topologicalSort;
+export 'src/transitive_closure.dart' show transitiveClosure;
