@@ -17,7 +17,7 @@ final Analytics analytics = Analytics.development(
 );
 
 // Timing a process and sending the event
-void main() {
+void main() async {
   DateTime start = DateTime.now();
 
   // Each client using this package will have it's own
@@ -46,6 +46,7 @@ void main() {
   for (int i = 0; i < 2000; i++) {
     count += i;
   }
+  await Future<void>.delayed(const Duration(seconds: 100));
 
   // Calculate the metric to send
   final int runTime = DateTime.now().difference(start).inMilliseconds;
@@ -61,7 +62,7 @@ void main() {
       DashEvent.hotReloadTime; // Select appropriate DashEvent enum value
 
   // Make a call to the [Analytics] api to send the data
-  analytics.sendEvent(
+  await analytics.sendEvent(
     eventName: eventName,
     eventData: eventData,
   );
