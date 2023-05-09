@@ -14,6 +14,6 @@ void main() {
   });
 
   test('survey tester', () async {
-    await surveyHandler.fetchSurveyList();
+    print(await surveyHandler.fetchSurveyList());
   });
 }
