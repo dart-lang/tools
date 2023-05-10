@@ -192,6 +192,7 @@ class TokenKind {
   static const int MARGIN_DIRECTIVE_RIGHTBOTTOM = 685;
 
   // Simple selector type.
+  // TODO: These are unused and should be removed in a future version.
   static const int CLASS_NAME = 700; // .class
   static const int ELEMENT_NAME = 701; // tagName
   static const int HASH_NAME = 702; // #elementId

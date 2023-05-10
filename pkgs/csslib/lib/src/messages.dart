@@ -43,6 +43,16 @@ class Message {
 
   Message(this.level, this.message, {this.span, this.useColors = false});
 
+  String get describe {
+    var span = this.span;
+    if (span == null) {
+      return message;
+    }
+
+    var start = span.start;
+    return '${start.line + 1}:${start.column + 1}:$message';
+  }
+
   @override
   String toString() {
     var output = StringBuffer();

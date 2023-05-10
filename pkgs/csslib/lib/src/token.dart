@@ -28,7 +28,7 @@ class Token {
   String toString() {
     var kindText = TokenKind.kindToString(kind);
     var actualText = text.trim();
-    if (kindText != actualText) {
+    if (actualText.isNotEmpty && kindText != actualText) {
       if (actualText.length > 10) {
         actualText = '${actualText.substring(0, 8)}...';
       }

@@ -603,32 +603,11 @@ foo {
 
   compileCss(input, errors: errors, opts: options);
 
-  expect(errors.isNotEmpty, true);
-  expect(errors.length, 6, reason: errors.toString());
-  var error = errors[0];
-  expect(error.message, 'parsing error expected ;');
-  expect(error.span!.start.line, 6);
-  expect(error.span!.end.offset, 69);
-  error = errors[1];
-  expect(error.message, 'expected :, but found }');
-  expect(error.span!.start.line, 7);
-  expect(error.span!.end.offset, 73);
-  error = errors[2];
-  expect(error.message, 'parsing error expected }');
-  expect(error.span!.start.line, 9);
-  expect(error.span!.end.offset, 83);
-  error = errors[3];
-  expect(error.message, 'expected {, but found end of file()');
-  expect(error.span!.start.line, 9);
-  expect(error.span!.end.offset, 86);
-  error = errors[4];
-  expect(error.message, 'expected }, but found end of file()');
-  expect(error.span!.start.line, 10);
-  expect(error.span!.end.offset, 86);
-  error = errors[5];
-  expect(error.message, 'Using top-level mixin a as a declaration');
-  expect(error.span!.start.line, 5);
-  expect(error.span!.end.offset, 56);
+  expect(errors, hasLength(4));
+  expect(errors[0].describe, '7:4:parsing error expected ;');
+  expect(errors[1].describe, '8:1:expected :, but found }');
+  expect(errors[2].describe, '10:11:expected }, but found end of file');
+  expect(errors[3].describe, '6:4:Using top-level mixin a as a declaration');
 }
 
 void main() {

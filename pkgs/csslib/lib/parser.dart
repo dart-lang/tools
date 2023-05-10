@@ -2228,10 +2228,54 @@ class _Parser {
   dynamic /* Expression | List<Expression> | ... */ processTerm(
       [bool ieFilter = false]) {
     var start = _peekToken.span;
-    Token? t; // token for term's value
-    dynamic value; // value of term (numeric values)
-
     var unary = '';
+
+    dynamic processIdentifier() {
+      var nameValue = identifier(); // Snarf up the ident we'll remap, maybe.
+
+      if (!ieFilter && _maybeEat(TokenKind.LPAREN)) {
+        var calc = processCalc(nameValue);
+        if (calc != null) return calc;
+        // FUNCTION
+        return processFunction(nameValue);
+      }
+      if (ieFilter) {
+        if (_maybeEat(TokenKind.COLON) &&
+            nameValue.name.toLowerCase() == 'progid') {
+          // IE filter:progid:
+          return processIEFilter(start);
+        } else {
+          // Handle filter:<name> where name is any filter e.g., alpha,
+          // chroma, Wave, blur, etc.
+          return processIEFilter(start);
+        }
+      }
+
+      // TODO(terry): Need to have a list of known identifiers today only
+      //              'from' is special.
+      if (nameValue.name == 'from') {
+        return LiteralTerm(nameValue, nameValue.name, _makeSpan(start));
+      }
+
+      // What kind of identifier is it, named color?
+      var colorEntry = TokenKind.matchColorName(nameValue.name);
+      if (colorEntry == null) {
+        if (isChecked) {
+          var propName = nameValue.name;
+          var errMsg = TokenKind.isPredefinedName(propName)
+              ? 'Improper use of property value $propName'
+              : 'Unknown property value $propName';
+          _warning(errMsg, _makeSpan(start));
+        }
+        return LiteralTerm(nameValue, nameValue.name, _makeSpan(start));
+      }
+
+      // Yes, process the color as an RGB value.
+      var rgbColor =
+          TokenKind.decimalToHex(TokenKind.colorValue(colorEntry), 6);
+      return _parseHex(rgbColor, _makeSpan(start));
+    }
+
     switch (_peek()) {
       case TokenKind.HASH:
         _eat(TokenKind.HASH);
@@ -2261,20 +2305,20 @@ class _Parser {
         return _parseHex(
             ' ${(processTerm() as LiteralTerm).text}', _makeSpan(start));
       case TokenKind.INTEGER:
-        t = _next();
-        value = int.parse('$unary${t.text}');
-        break;
+        var t = _next();
+        var value = int.parse('$unary${t.text}');
+        return processDimension(t, value, _makeSpan(start));
       case TokenKind.DOUBLE:
-        t = _next();
-        value = double.parse('$unary${t.text}');
-        break;
+        var t = _next();
+        var value = double.parse('$unary${t.text}');
+        return processDimension(t, value, _makeSpan(start));
       case TokenKind.SINGLE_QUOTE:
-        value = processQuotedString(false);
-        value = "'${_escapeString(value as String, single: true)}'";
+        var value = processQuotedString(false);
+        value = "'${_escapeString(value, single: true)}'";
         return LiteralTerm(value, value, _makeSpan(start));
       case TokenKind.DOUBLE_QUOTE:
-        value = processQuotedString(false);
-        value = '"${_escapeString(value as String)}"';
+        var value = processQuotedString(false);
+        value = '"${_escapeString(value)}"';
         return LiteralTerm(value, value, _makeSpan(start));
       case TokenKind.LPAREN:
         _next();
@@ -2304,49 +2348,7 @@ class _Parser {
 
         return ItemTerm(term.value, term.text, _makeSpan(start));
       case TokenKind.IDENTIFIER:
-        var nameValue = identifier(); // Snarf up the ident we'll remap, maybe.
-
-        if (!ieFilter && _maybeEat(TokenKind.LPAREN)) {
-          var calc = processCalc(nameValue);
-          if (calc != null) return calc;
-          // FUNCTION
-          return processFunction(nameValue);
-        }
-        if (ieFilter) {
-          if (_maybeEat(TokenKind.COLON) &&
-              nameValue.name.toLowerCase() == 'progid') {
-            // IE filter:progid:
-            return processIEFilter(start);
-          } else {
-            // Handle filter:<name> where name is any filter e.g., alpha,
-            // chroma, Wave, blur, etc.
-            return processIEFilter(start);
-          }
-        }
-
-        // TODO(terry): Need to have a list of known identifiers today only
-        //              'from' is special.
-        if (nameValue.name == 'from') {
-          return LiteralTerm(nameValue, nameValue.name, _makeSpan(start));
-        }
-
-        // What kind of identifier is it, named color?
-        var colorEntry = TokenKind.matchColorName(nameValue.name);
-        if (colorEntry == null) {
-          if (isChecked) {
-            var propName = nameValue.name;
-            var errMsg = TokenKind.isPredefinedName(propName)
-                ? 'Improper use of property value $propName'
-                : 'Unknown property value $propName';
-            _warning(errMsg, _makeSpan(start));
-          }
-          return LiteralTerm(nameValue, nameValue.name, _makeSpan(start));
-        }
-
-        // Yes, process the color as an RGB value.
-        var rgbColor =
-            TokenKind.decimalToHex(TokenKind.colorValue(colorEntry), 6);
-        return _parseHex(rgbColor, _makeSpan(start));
+        return processIdentifier();
       case TokenKind.UNICODE_RANGE:
         String? first;
         String? second;
@@ -2394,11 +2396,15 @@ class _Parser {
           return expr.expressions;
         }
         break;
+      default:
+        // For tokens that we don't match above, but that are identifier like
+        // ('PT', 'PX', ...) handle them like identifiers.
+        if (TokenKind.isKindIdentifier(_peek())) {
+          return processIdentifier();
+        } else {
+          return null;
+        }
     }
-
-    return t != null
-        ? processDimension(t, value as Object, _makeSpan(start))
-        : null;
   }
 
   /// Process all dimension units.
