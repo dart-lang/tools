@@ -397,7 +397,6 @@ void mixinManyArgs() {
 }
 ''', r'''
 var-values: #f00, #0f0, #00f;
-
 .primary {
   color: #f00;
   background-color: #0f0;

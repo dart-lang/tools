@@ -6,6 +6,7 @@
 - Fixed a regression parsing declaration values containing spaces.
 - Add support for `lh` and `rlh` units.
 - Refactor the package example.
+- Addressed an issue with the indent level of the `CssPrinter` output.
 
 ## 0.17.2
 

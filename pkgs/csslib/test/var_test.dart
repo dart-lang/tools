@@ -179,12 +179,12 @@ void expressionsVar() {
   content: var(content);
   text-shadow: var(text-shadow);
 }
-@font-face  {
+@font-face {
   font-family: var(font-family);
   src: var(src);
   unicode-range: var(unicode-range);
 }
-@font-face  {
+@font-face {
   font-family: var(font-family);
   src: var(src-1);
   unicode-range: var(unicode-range-1);
@@ -214,12 +214,12 @@ void expressionsVar() {
   content: "✔";
   text-shadow: 0 -1px 0 #bfbfbf;
 }
-@font-face  {
+@font-face {
   font-family: Gentium;
   src: url("http://example.com/fonts/Gentium.ttf");
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
 }
-@font-face  {
+@font-face {
   font-family: Gentium;
   src: local(Gentium Bold), local(Gentium-Bold), url("GentiumBold.ttf");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
@@ -602,12 +602,12 @@ void parserVar() {
   content: var(content);
   text-shadow: var(text-shadow);
 }
-@font-face  {
+@font-face {
   font-family: var(font-family);
   src: var(src);
   unicode-range: var(unicode-range);
 }
-@font-face  {
+@font-face {
   font-family: var(font-family);
   src: var(src-1);
   unicode-range: var(unicode-range-1);
@@ -637,12 +637,12 @@ void parserVar() {
   content: "✔";
   text-shadow: 0 -1px 0 #bfbfbf;
 }
-@font-face  {
+@font-face {
   font-family: Gentium;
   src: url("http://example.com/fonts/Gentium.ttf");
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
 }
-@font-face  {
+@font-face {
   font-family: Gentium;
   src: local(Gentium Bold), local(Gentium-Bold), url("GentiumBold.ttf");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
@@ -667,7 +667,6 @@ void testVar() {
   final generated = '''
 var-color-background: #f00;
 var-color-foreground: #00f;
-
 .test {
   background-color: var(color-background);
   color: var(color-foreground);
@@ -692,7 +691,6 @@ var-color-foreground: #00f;
   final generated2 = '''
 var-color-background: #f00;
 var-color-foreground: #00f;
-
 .test {
   background-color: var(color-background);
   color: var(color-foreground);
@@ -720,7 +718,6 @@ void testLess() {
   final generated = '''
 var-color-background: #f00;
 var-color-foreground: #00f;
-
 .test {
   background-color: var(color-background);
   color: var(color-foreground);
@@ -745,7 +742,6 @@ var-color-foreground: #00f;
   final generated2 = '''
 var-color-background: #f00;
 var-color-foreground: #00f;
-
 .test {
   background-color: var(color-background);
   color: var(color-foreground);

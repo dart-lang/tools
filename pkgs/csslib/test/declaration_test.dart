@@ -166,7 +166,7 @@ void testComposites() {
 }
 @-webkit-keyframes pulsate {
   0% {
-  -webkit-transform: translate3d(0, 0, 0) scale(1.0);
+    -webkit-transform: translate3d(0, 0, 0) scale(1.0);
   }
 }''';
 
@@ -311,9 +311,9 @@ void testNewerCss() {
 
   final generated = r'''
 @media screen, print {
-.foobar_screen {
-  width: 10px;
-}
+  .foobar_screen {
+    width: 10px;
+  }
 }
 @page {
   height: 22px;
@@ -323,14 +323,14 @@ void testNewerCss() {
   width: 10px;
 }
 @page bar:left {
-@top-left {
-  margin: 8px;
-}
+  @top-left {
+    margin: 8px;
+  }
 }
 @page {
-@top-left {
-  margin: 8px;
-}
+  @top-left {
+    margin: 8px;
+  }
   width: 10px;
 }
 @charset "ISO-8859-1";
@@ -355,12 +355,12 @@ void testMediaQueries() {
 }''';
   var generated = '''
 @media screen AND (-webkit-min-device-pixel-ratio:0) {
-.todo-item .toggle {
-  background: none;
-}
-#todo-item .toggle {
-  height: 40px;
-}
+  .todo-item .toggle {
+    background: none;
+  }
+  #todo-item .toggle {
+    height: 40px;
+  }
 }''';
 
   var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
@@ -386,27 +386,27 @@ void testMediaQueries() {
       border: 20px;
     }
   }''';
-  generated =
-      '''@media handheld AND (min-width:20em), screen AND (min-width:20em) {
-#id {
-  color: #f00;
-}
-.myclass {
-  height: 20px;
-}
+  generated = '''
+@media handheld AND (min-width:20em), screen AND (min-width:20em) {
+  #id {
+    color: #f00;
+  }
+  .myclass {
+    height: 20px;
+  }
 }
 @media print AND (min-resolution:300dpi) {
-#anotherId {
-  color: #fff;
-}
+  #anotherId {
+    color: #fff;
+  }
 }
 @media print AND (min-resolution:280dpcm) {
-#finalId {
-  color: #aaa;
-}
-.class2 {
-  border: 20px;
-}
+  #finalId {
+    color: #aaa;
+  }
+  .class2 {
+    border: 20px;
+  }
 }''';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
@@ -421,9 +421,12 @@ void testMediaQueries() {
         font-size: 10em;
       }
     }''';
-  generated = '@media ONLY screen AND (min-device-width:4000px) '
-      'AND (min-device-height:2000px), screen AND (another:100px) {\n'
-      'html {\n  font-size: 10em;\n}\n}';
+  generated = '''
+@media ONLY screen AND (min-device-width:4000px) AND (min-device-height:2000px), screen AND (another:100px) {
+  html {
+    font-size: 10em;
+  }
+}''';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
@@ -439,7 +442,7 @@ void testMediaQueries() {
     }''';
   generated = '@media screen, print AND (min-device-width:4000px) AND '
       '(min-device-height:2000px), screen AND (another:100px) {\n'
-      'html {\n  font-size: 10em;\n}\n}';
+      '  html {\n    font-size: 10em;\n  }\n}';
 
   stylesheet = parseCss(input, errors: errors..clear(), opts: simpleOptions);
 
@@ -482,15 +485,16 @@ void testMediaQueries() {
     }
   }
 }''';
-  generated = '''@media (min-width:840px) {
-.cell {
-  width: calc(33% - 16px);
-}
-@supports (display: grid) {
-.cell {
-  grid-column-end: span 4;
-}
-}
+  generated = '''
+@media (min-width:840px) {
+  .cell {
+    width: calc(33% - 16px);
+  }
+  @supports (display: grid) {
+    .cell {
+      grid-column-end: span 4;
+    }
+  }
 }''';
   expectCss(input, generated);
 }
@@ -504,10 +508,11 @@ void testMozDocument() {
     color: #000;
   }
 }''';
-  var expected = '''@-moz-document url-prefix() {
-div {
-  color: #000;
-}
+  var expected = '''
+@-moz-document url-prefix() {
+  div {
+    color: #000;
+  }
 }''';
   var styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
@@ -521,10 +526,11 @@ div {
     color: #000;
   }
 }''';
-  expected = '''@-moz-document url-prefix("http://www.w3.org/Style/") {
-div {
-  color: #000;
-}
+  expected = '''
+@-moz-document url-prefix("http://www.w3.org/Style/") {
+  div {
+    color: #000;
+  }
 }''';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
@@ -538,10 +544,11 @@ div {
     color: #000;
   }
 }''';
-  expected = '''@-moz-document domain("google.com") {
-div {
-  color: #000;
-}
+  expected = '''
+@-moz-document domain("google.com") {
+  div {
+    color: #000;
+  }
 }''';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
@@ -558,7 +565,7 @@ div {
       'url("http://www.w3.org/"), '
       'url-prefix("http://www.w3.org/Style/"), '
       'domain("google.com"), '
-      'regexp("https:.*") {\ndiv {\n  color: #000;\n}\n}';
+      'regexp("https:.*") {\n  div {\n    color: #000;\n  }\n}';
   styleSheet = parseCss(css, errors: errors);
   expect(styleSheet, isNotNull);
   expect(errors, isEmpty);
@@ -573,10 +580,11 @@ void testSupports() {
     -webkit-appearance: none;
   }
 }''';
-  var expected = '''@supports (-webkit-appearance: none) {
-div {
-  -webkit-appearance: none;
-}
+  var expected = '''
+@supports (-webkit-appearance: none) {
+  div {
+    -webkit-appearance: none;
+  }
 }''';
   expectCss(css, expected);
 
@@ -585,10 +593,11 @@ div {
 @supports not ( display: flex ) {
   body { width: 100%; }
 }''';
-  expected = '''@supports not (display: flex) {
-body {
-  width: 100%;
-}
+  expected = '''
+@supports not (display: flex) {
+  body {
+    width: 100%;
+  }
 }''';
   expectCss(css, expected);
 
@@ -606,9 +615,9 @@ body {
       '(-moz-box-shadow: 0 0 2px #000 inset) or '
       '(-webkit-box-shadow: 0 0 2px #000 inset) or '
       '(-o-box-shadow: 0 0 2px #000 inset) {\n'
-      '.box {\n'
-      '  box-shadow: 0 0 2px #000 inset;\n'
-      '}\n'
+      '  .box {\n'
+      '    box-shadow: 0 0 2px #000 inset;\n'
+      '  }\n'
       '}';
   expectCss(css, expected);
 
@@ -625,10 +634,10 @@ body {
   expected = '@supports '
       '((transition-property: color) or (animation-name: foo)) and '
       '(transform: rotate(10deg)) {\n'
-      'div {\n'
-      '  transition-property: color;\n'
-      '  transform: rotate(10deg);\n'
-      '}\n'
+      '  div {\n'
+      '    transition-property: color;\n'
+      '    transform: rotate(10deg);\n'
+      '  }\n'
       '}';
   expectCss(css, expected);
 
@@ -682,7 +691,7 @@ void testFontFace() {
   src: url(fonts/BBCBengali.ttf) format("opentype");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
 }''';
-  final generated = '''@font-face  {
+  final generated = '''@font-face {
   font-family: BBCBengali;
   src: url("fonts/BBCBengali.ttf") format("opentype");
   unicode-range: U+0A-FF, U+980-9FF, U+????, U+3???;
@@ -698,7 +707,7 @@ void testFontFace() {
   src: url(http://example.com/fonts/Gentium.ttf);
   src: url(http://example.com/fonts/Gentium.ttf);
 }''';
-  final generated1 = '''@font-face  {
+  final generated1 = '''@font-face {
   font-family: Gentium;
   src: url("http://example.com/fonts/Gentium.ttf");
   src: url("http://example.com/fonts/Gentium.ttf");
@@ -715,7 +724,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
      url(basic-sans-serif.ttf) format("opentype"),
      local(Gentium Bold);
 }''';
-  final generated2 = '@font-face  {\n'
+  final generated2 = '@font-face {\n'
       '  src: url("ideal-sans-serif.woff") '
       'format("woff"), url("basic-sans-serif.ttf") '
       'format("opentype"), local(Gentium Bold);\n}';
@@ -734,7 +743,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
   font-weight: bold;
 }''';
   final generated3 = '''
-@font-face  {
+@font-face {
   font-family: MyGentium Text Ornaments;
   src: local(Gentium Bold), local(Gentium-Bold), url("GentiumBold.ttf");
   font-weight: bold;
@@ -751,7 +760,7 @@ src: url(ideal-sans-serif.woff) format("woff"),
   src: local(STIXGeneral), url(/stixfonts/STIXGeneral.otf);
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
 }''';
-  final generated4 = '''@font-face  {
+  final generated4 = '''@font-face {
   font-family: STIXGeneral;
   src: local(STIXGeneral), url("/stixfonts/STIXGeneral.otf");
   unicode-range: U+000-49F, U+2000-27FF, U+2900-2BFF, U+1D400-1D7FF;
@@ -799,33 +808,34 @@ div[href^='test'] {
 }
 ''';
 
-  final generated = '@import "simple.css"; '
-      '@import "test.css" print; '
-      '@import "test.css" screen, print; '
-      '@import "http://google.com/maps/maps.css";\n'
-      'div[href^="test"] {\n'
-      '  height: 10px;\n'
-      '}\n'
-      '@-webkit-keyframes pulsate {\n'
-      '  from {\n'
-      '  -webkit-transform: translate3d(0, 0, 0) scale(1.0);\n'
-      '  }\n'
-      '  10% {\n'
-      '  -webkit-transform: translate3d(0, 0, 0) scale(1.0);\n'
-      '  }\n'
-      '  30% {\n'
-      '  -webkit-transform: translate3d(0, 2, 0) scale(1.0);\n'
-      '  }\n'
-      '}\n'
-      '.foobar {\n'
-      '  grid-columns: 10px ("content" 1fr 10px) [4];\n'
-      '}\n'
-      '.test-background {\n'
-      '  background: url("http://www.foo.com/bar.png");\n'
-      '}\n'
-      '.test-background-with-multiple-properties {\n'
-      '  background: #000 url("http://www.foo.com/bar.png");\n'
-      '}';
+  final generated = '''
+@import "simple.css";
+@import "test.css" print;
+@import "test.css" screen, print;
+@import "http://google.com/maps/maps.css";
+div[href^="test"] {
+  height: 10px;
+}
+@-webkit-keyframes pulsate {
+  from {
+    -webkit-transform: translate3d(0, 0, 0) scale(1.0);
+  }
+  10% {
+    -webkit-transform: translate3d(0, 0, 0) scale(1.0);
+  }
+  30% {
+    -webkit-transform: translate3d(0, 2, 0) scale(1.0);
+  }
+}
+.foobar {
+  grid-columns: 10px ("content" 1fr 10px) [4];
+}
+.test-background {
+  background: url("http://www.foo.com/bar.png");
+}
+.test-background-with-multiple-properties {
+  background: #000 url("http://www.foo.com/bar.png");
+}''';
   var stylesheet = parseCss(input, errors: errors);
 
   expect(errors.isEmpty, true, reason: errors.toString());
@@ -865,14 +875,15 @@ div {
   color: rgba(0, 0, 0, 0.2);
 }
 ''';
-  final generated = 'div{color:green!important;background:red blue green}'
-      '.foo p[bar]{color:blue}'
-      '@page{@top-left{color:red}}'
-      '@page:first{}'
-      '@page foo:first{}'
-      '@media screen AND (max-width:800px){div{font-size:24px}}'
-      '@keyframes foo{0%{transform:scaleX(0)}}'
-      'div{color:rgba(0,0,0,0.2)}';
+  final generated = '''
+div{color:green!important;background:red blue green}
+.foo p[bar]{color:blue}
+@page{@top-left{color:red}}
+@page:first{}
+@page foo:first{}
+@media screen AND (max-width:800px){div{font-size:24px}}
+@keyframes foo{0%{transform:scaleX(0)}}
+div{color:rgba(0,0,0,0.2)}''';
 
   var stylesheet = parseCss(input, errors: errors);
 
@@ -1145,7 +1156,8 @@ background-position: 0 0;
   }
 }''';
 
-  final generated = '''.testIE-6 {
+  final generated = '''
+.testIE-6 {
   _zoom: 5;
 }
 .clearfix {
@@ -1180,42 +1192,42 @@ input.search-query {
 }
 @-webkit-keyframes progress-bar-stripes {
   from {
-  background-position: 40px 0;
+    background-position: 40px 0;
   }
   to {
-  background-position: 0 0;
+    background-position: 0 0;
   }
 }
 @-moz-keyframes progress-bar-stripes {
   from {
-  background-position: 40px 0;
+    background-position: 40px 0;
   }
   to {
-  background-position: 0 0;
+    background-position: 0 0;
   }
 }
 @keyframes progress-bar-stripes {
   from {
-  background-position: 40px 0;
+    background-position: 40px 0;
   }
   to {
-  background-position: 0 0;
+    background-position: 0 0;
   }
 }
 @-o-keyframes progress-bar-stripes {
   from {
-  background-position: 40px 0;
+    background-position: 40px 0;
   }
   to {
-  background-position: 0 0;
+    background-position: 0 0;
   }
 }
 @keyframes progress-bar-stripes {
   from {
-  background-position: 40px 0;
+    background-position: 40px 0;
   }
   to {
-  background-position: 0 0;
+    background-position: 0 0;
   }
 }''';
 

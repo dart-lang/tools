@@ -653,20 +653,20 @@ void testHost() {
   expect(errors.isEmpty, true, reason: errors.toString());
   expect(prettyPrint(stylesheet), r'''
 @host {
-:scope {
-  white-space: nowrap;
-  overflow-style: marquee-line;
-  overflow-x: marquee;
-}
-* {
-  color: #f00;
-}
-*:hover {
-  font-weight: bold;
-}
-:nth-child(odd) {
-  color: #00f;
-}
+  :scope {
+    white-space: nowrap;
+    overflow-style: marquee-line;
+    overflow-x: marquee;
+  }
+  * {
+    color: #f00;
+  }
+  *:hover {
+    font-weight: bold;
+  }
+  :nth-child(odd) {
+    color: #00f;
+  }
 }''');
 }
 

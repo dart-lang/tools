@@ -109,4 +109,34 @@ div.myComponent_xyzzy {
 void main() {
   test('Class Visitors', testClassVisitors);
   test('Polyfill', testPolyFill);
+  test('pretty-print', testPrettyPrint);
+}
+
+void testPrettyPrint() {
+  final input = '''
+.good { color: red; }
+@media screen { .better { color: blue; } }
+.best { color: green }''';
+
+  var styleSheet = parseCss(input);
+
+  // pretty print
+  expect(prettyPrint(styleSheet), '''
+.good {
+  color: #f00;
+}
+@media screen {
+  .better {
+    color: #00f;
+  }
+}
+.best {
+  color: #008000;
+}''');
+
+  // compact output
+  expect(compactOutput(styleSheet), '''
+.good{color:red}
+@media screen{.better{color:blue}}
+.best{color:green}''');
 }

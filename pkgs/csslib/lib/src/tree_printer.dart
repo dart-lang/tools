@@ -17,6 +17,7 @@ String treeToDebugString(StyleSheet styleSheet, [bool useSpan = false]) {
 class _TreePrinter extends Visitor {
   final TreeOutput output;
   final bool useSpan;
+
   _TreePrinter(this.output, this.useSpan) {
     output.printer = this;
   }

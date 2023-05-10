@@ -10,16 +10,18 @@ import 'package:csslib/visitor.dart';
 
 export 'package:csslib/src/preprocessor_options.dart';
 
-const simpleOptionsWithCheckedAndWarningsAsErrors = PreprocessorOptions(
-    useColors: false,
-    checked: true,
-    warningsAsErrors: true,
-    inputFile: 'memory');
+const PreprocessorOptions simpleOptionsWithCheckedAndWarningsAsErrors =
+    PreprocessorOptions(
+  useColors: false,
+  checked: true,
+  warningsAsErrors: true,
+  inputFile: 'memory',
+);
 
-const simpleOptions =
+const PreprocessorOptions simpleOptions =
     PreprocessorOptions(useColors: false, inputFile: 'memory');
 
-const options = PreprocessorOptions(
+const PreprocessorOptions options = PreprocessorOptions(
     useColors: false, warningsAsErrors: true, inputFile: 'memory');
 
 /// Spin-up CSS parser in checked mode to detect any problematic CSS.  Normally,
@@ -49,17 +51,11 @@ StyleSheet polyFillCompileCss(String input,
         {List<Message>? errors, PreprocessorOptions? opts}) =>
     compileCss(input, errors: errors, polyfill: true, opts: opts);
 
-/// CSS emitter walks the style sheet tree and emits readable CSS.
-final _emitCss = CssPrinter();
-
-/// Simple Visitor does nothing but walk tree.
-final _cssVisitor = Visitor();
-
 /// Pretty printer for CSS.
 String prettyPrint(StyleSheet ss) {
   // Walk the tree testing basic Visitor class.
   walkTree(ss);
-  return (_emitCss..visitTree(ss, pretty: true)).toString();
+  return (CssPrinter()..visitTree(ss, pretty: true)).toString();
 }
 
 /// Helper function to emit compact (non-pretty printed) CSS for suite test
@@ -67,12 +63,12 @@ String prettyPrint(StyleSheet ss) {
 /// expected suite test results.
 String compactOutput(StyleSheet ss) {
   walkTree(ss);
-  return (_emitCss..visitTree(ss, pretty: false)).toString();
+  return (CssPrinter()..visitTree(ss, pretty: false)).toString();
 }
 
 /// Walks the style sheet tree does nothing; insures the basic walker works.
 void walkTree(StyleSheet ss) {
-  _cssVisitor.visitTree(ss);
+  Visitor().visitTree(ss);
 }
 
 String dumpTree(StyleSheet ss) => treeToDebugString(ss);

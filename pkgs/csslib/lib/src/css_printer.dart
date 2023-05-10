@@ -7,35 +7,91 @@ part of '../visitor.dart';
 /// Visitor that produces a formatted string representation of the CSS tree.
 class CssPrinter extends Visitor {
   StringBuffer _buff = StringBuffer();
-  bool prettyPrint = true;
+  bool _prettyPrint = true;
   bool _isInKeyframes = false;
+  int _indent = 0;
+  bool _startOfLine = true;
 
   /// Walk the [tree] Stylesheet. [pretty] if true emits line breaks, extra
   /// spaces, friendly property values, etc., if false emits compacted output.
   @override
   void visitTree(StyleSheet tree, {bool pretty = false}) {
-    prettyPrint = pretty;
+    _prettyPrint = pretty;
     _buff = StringBuffer();
+    _indent = 0;
+    _startOfLine = true;
+
     visitStyleSheet(tree);
   }
 
   /// Appends [str] to the output buffer.
   void emit(String str) {
-    _buff.write(str);
+    if (_prettyPrint) {
+      if (_startOfLine) {
+        _startOfLine = false;
+        _buff.write(' ' * _indent);
+      }
+      _buff.write(str);
+    } else {
+      _buff.write(str);
+    }
+  }
+
+  void _emitLBrace() {
+    _indent += 2;
+    _buff.write('{');
+
+    if (_prettyPrint) {
+      _buff.writeln();
+      _startOfLine = true;
+    }
+  }
+
+  void _emitRBrace() {
+    _indent -= 2;
+
+    if (_prettyPrint) {
+      if (!_startOfLine) _buff.write('\n');
+      _buff.write('${' ' * _indent}}\n');
+      _startOfLine = true;
+    } else {
+      _buff.write('}');
+      if (_indent == 0) {
+        _buff.writeln();
+      }
+    }
+  }
+
+  void _emitSemicolon({bool forceLf = false}) {
+    if (_prettyPrint) {
+      _buff.write(';\n');
+      _startOfLine = true;
+    } else {
+      _buff.write(';');
+      if (forceLf) _buff.write('\n');
+    }
+  }
+
+  void _emitLf({bool force = false}) {
+    if (_prettyPrint) {
+      _buff.write('\n');
+      _startOfLine = true;
+    } else if (force) {
+      _buff.write('\n');
+    }
   }
 
   /// Returns the output buffer.
   @override
   String toString() => _buff.toString().trim();
 
-  String get _newLine => prettyPrint ? '\n' : '';
-  String get _sp => prettyPrint ? ' ' : '';
+  String get _sp => _prettyPrint ? ' ' : '';
 
   // TODO(terry): When adding obfuscation we'll need isOptimized (compact w/
   //              obfuscation) and have isTesting (compact no obfuscation) and
   //              isCompact would be !prettyPrint.  We'll need another boolean
   //              flag for obfuscation.
-  bool get _isTesting => !prettyPrint;
+  bool get _isTesting => !_prettyPrint;
 
   @override
   void visitCalcTerm(CalcTerm node) {
@@ -86,28 +142,30 @@ class CssPrinter extends Visitor {
 
   @override
   void visitDocumentDirective(DocumentDirective node) {
-    emit('$_newLine@-moz-document ');
+    emit('@-moz-document ');
     node.functions.first.visit(this);
     for (var function in node.functions.skip(1)) {
       emit(',$_sp');
       function.visit(this);
     }
-    emit('$_sp{');
+    emit(_sp);
+    _emitLBrace();
     for (var ruleSet in node.groupRuleBody) {
       ruleSet.visit(this);
     }
-    emit('$_newLine}');
+    _emitRBrace();
   }
 
   @override
   void visitSupportsDirective(SupportsDirective node) {
-    emit('$_newLine@supports ');
+    emit('@supports ');
     node.condition!.visit(this);
-    emit('$_sp{');
+    emit(_sp);
+    _emitLBrace();
     for (var rule in node.groupRuleBody) {
       rule.visit(this);
     }
-    emit('$_newLine}');
+    _emitRBrace();
   }
 
   @override
@@ -143,29 +201,32 @@ class CssPrinter extends Visitor {
 
   @override
   void visitViewportDirective(ViewportDirective node) {
-    emit('@${node.name}$_sp{$_newLine');
+    emit('@${node.name}$_sp');
+    _emitLBrace();
     node.declarations.visit(this);
-    emit('}');
+    _emitRBrace();
   }
 
   @override
   void visitMediaDirective(MediaDirective node) {
-    emit('$_newLine@media');
+    emit('@media');
     emitMediaQueries(node.mediaQueries.cast<MediaQuery>());
-    emit('$_sp{');
+    emit(_sp);
+    _emitLBrace();
     for (var ruleset in node.rules) {
       ruleset.visit(this);
     }
-    emit('$_newLine}');
+    _emitRBrace();
   }
 
   @override
   void visitHostDirective(HostDirective node) {
-    emit('$_newLine@host$_sp{');
+    emit('@host$_sp');
+    _emitLBrace();
     for (var ruleset in node.rules) {
       ruleset.visit(this);
     }
-    emit('$_newLine}');
+    _emitRBrace();
   }
 
   ///  @page : pseudoPage {
@@ -173,7 +234,7 @@ class CssPrinter extends Visitor {
   ///  }
   @override
   void visitPageDirective(PageDirective node) {
-    emit('$_newLine@page');
+    emit('@page');
     if (node.hasIdent || node.hasPseudoPage) {
       if (node.hasIdent) emit(' ');
       emit(node._ident!);
@@ -182,17 +243,19 @@ class CssPrinter extends Visitor {
 
     var declsMargin = node._declsMargin;
     var declsMarginLength = declsMargin.length;
-    emit('$_sp{$_newLine');
+    emit(_sp);
+    _emitLBrace();
     for (var i = 0; i < declsMarginLength; i++) {
       declsMargin[i].visit(this);
     }
-    emit('}');
+    _emitRBrace();
   }
 
   /// @charset "charset encoding"
   @override
   void visitCharsetDirective(CharsetDirective node) {
-    emit('$_newLine@charset "${node.charEncoding}";');
+    emit('@charset "${node.charEncoding}"');
+    _emitSemicolon(forceLf: true);
   }
 
   @override
@@ -201,51 +264,54 @@ class CssPrinter extends Visitor {
 
     if (_isTesting) {
       // Emit assuming url() was parsed; most suite tests use url function.
-      emit(' @import url(${node.import})');
+      emit('@import url(${node.import})');
     } else if (isStartingQuote(node.import)) {
-      emit(' @import ${node.import}');
+      emit('@import ${node.import}');
     } else {
       // url(...) isn't needed only a URI can follow an @import directive; emit
       // url as a string.
-      emit(' @import "${node.import}"');
+      emit('@import "${node.import}"');
     }
     emitMediaQueries(node.mediaQueries);
-    emit(';');
+    _emitSemicolon(forceLf: true);
   }
 
   @override
   void visitKeyFrameDirective(KeyFrameDirective node) {
-    emit('$_newLine${node.keyFrameName} ');
+    emit('${node.keyFrameName} ');
     node.name!.visit(this);
-    emit('$_sp{$_newLine');
+    emit(_sp);
+    _emitLBrace();
     _isInKeyframes = true;
     for (final block in node._blocks) {
       block.visit(this);
     }
     _isInKeyframes = false;
-    emit('}');
+    _emitRBrace();
   }
 
   @override
   void visitFontFaceDirective(FontFaceDirective node) {
-    emit('$_newLine@font-face ');
-    emit('$_sp{$_newLine');
+    emit('@font-face');
+    emit(_sp);
+    _emitLBrace();
     node._declarations.visit(this);
-    emit('}');
+    _emitRBrace();
   }
 
   @override
   void visitKeyFrameBlock(KeyFrameBlock node) {
-    emit('$_sp$_sp');
     node._blockSelectors.visit(this);
-    emit('$_sp{$_newLine');
+    emit(_sp);
+    _emitLBrace();
     node._declarations.visit(this);
-    emit('$_sp$_sp}$_newLine');
+    _emitRBrace();
   }
 
   @override
   void visitStyletDirective(StyletDirective node) {
-    emit('/* @stylet export as ${node.dartClassName} */\n');
+    emit('/* @stylet export as ${node.dartClassName} */');
+    _emitLf(force: true);
   }
 
   @override
@@ -253,49 +319,51 @@ class CssPrinter extends Visitor {
     bool isStartingQuote(String ch) => '\'"'.contains(ch);
 
     if (isStartingQuote(node._uri!)) {
-      emit(' @namespace ${node.prefix}"${node._uri}"');
+      emit('@namespace ${node.prefix}"${node._uri}"');
     } else {
       if (_isTesting) {
         // Emit exactly was we parsed.
-        emit(' @namespace ${node.prefix}url(${node._uri})');
+        emit('@namespace ${node.prefix}url(${node._uri})');
       } else {
         // url(...) isn't needed only a URI can follow a:
         //    @namespace prefix directive.
-        emit(' @namespace ${node.prefix}${node._uri}');
+        emit('@namespace ${node.prefix}${node._uri}');
       }
     }
-    emit(';');
+    _emitSemicolon(forceLf: true);
   }
 
   @override
   void visitVarDefinitionDirective(VarDefinitionDirective node) {
     visitVarDefinition(node.def);
-    emit(';$_newLine');
+    _emitSemicolon();
   }
 
   @override
   void visitMixinRulesetDirective(MixinRulesetDirective node) {
-    emit('@mixin ${node.name} {');
+    emit('@mixin ${node.name} ');
+    _emitLBrace();
     for (var ruleset in node.rulesets) {
       ruleset.visit(this);
     }
-    emit('}');
+    _emitRBrace();
   }
 
   @override
   void visitMixinDeclarationDirective(MixinDeclarationDirective node) {
-    emit('@mixin ${node.name} {\n');
+    emit('@mixin ${node.name}$_sp');
+    _emitLBrace();
     visitDeclarationGroup(node.declarations);
-    emit('}');
+    _emitRBrace();
   }
 
   /// Added optional newLine for handling @include at top-level vs/ inside of
   /// a declaration group.
   @override
   void visitIncludeDirective(IncludeDirective node, [bool topLevel = true]) {
-    if (topLevel) emit(_newLine);
+    if (topLevel) _emitLf();
     emit('@include ${node.name}');
-    emit(';');
+    _emitSemicolon(forceLf: true);
   }
 
   @override
@@ -305,11 +373,11 @@ class CssPrinter extends Visitor {
 
   @override
   void visitRuleSet(RuleSet node) {
-    emit(_newLine);
     node.selectorGroup!.visit(this);
-    emit('$_sp{$_newLine');
+    emit(_sp);
+    _emitLBrace();
     node.declarationGroup.visit(this);
-    emit('}');
+    _emitRBrace();
   }
 
   @override
@@ -317,15 +385,12 @@ class CssPrinter extends Visitor {
     var declarations = node.declarations;
     var declarationsLength = declarations.length;
     for (var i = 0; i < declarationsLength; i++) {
-      if (i > 0) emit(_newLine);
-      emit('$_sp$_sp');
       declarations[i].visit(this);
       // Don't emit the last semicolon in compact mode.
-      if (prettyPrint || i < declarationsLength - 1) {
-        emit(';');
+      if (_prettyPrint || i < declarationsLength - 1) {
+        _emitSemicolon();
       }
     }
-    if (declarationsLength > 0) emit(_newLine);
   }
 
   @override
@@ -333,11 +398,10 @@ class CssPrinter extends Visitor {
     var marginSymName =
         TokenKind.idToValue(TokenKind.MARGIN_DIRECTIVES, node.margin_sym);
 
-    emit('@$marginSymName$_sp{$_newLine');
-
+    emit('@$marginSymName$_sp');
+    _emitLBrace();
     visitDeclarationGroup(node);
-
-    emit('}$_newLine');
+    _emitRBrace();
   }
 
   @override
@@ -619,6 +683,7 @@ class CssPrinter extends Visitor {
   void visitExpressions(Expressions node) {
     var expressions = node.expressions;
     var expressionsLength = expressions.length;
+
     for (var i = 0; i < expressionsLength; i++) {
       // Add space seperator between terms without an operator.
       // TODO(terry): Should have a BinaryExpression to solve this problem.
