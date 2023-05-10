@@ -19,6 +19,7 @@ import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
 import 'session.dart';
+import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
 
@@ -62,6 +63,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      surveyHandler: const SurveyHandler(),
     );
   }
 
@@ -109,6 +111,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      surveyHandler: const SurveyHandler(),
     );
   }
 
@@ -127,6 +130,7 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     FileSystem? fs,
     required DevicePlatform platform,
+    List<Survey>? initializedSurveys,
   }) =>
       TestAnalytics(
         tool: tool,
@@ -143,6 +147,9 @@ abstract class Analytics {
                   : FileSystemStyle.posix,
             ),
         gaClient: FakeGAClient(),
+        surveyHandler: FakeSurveyHandler(
+          initializedSurveys: initializedSurveys ?? [],
+        ),
       );
 
   /// Retrieves the consent message to prompt users with on first
@@ -204,6 +211,7 @@ class AnalyticsImpl implements Analytics {
   final FileSystem fs;
   late final ConfigHandler _configHandler;
   final GAClient _gaClient;
+  final SurveyHandler _surveyHandler;
   late final String _clientId;
   late final File _clientIdFile;
   late final UserProperty userProperty;
@@ -239,8 +247,10 @@ class AnalyticsImpl implements Analytics {
     required DevicePlatform platform,
     required this.toolsMessageVersion,
     required this.fs,
-    required gaClient,
-  }) : _gaClient = gaClient {
+    required GAClient gaClient,
+    required SurveyHandler surveyHandler,
+  })  : _gaClient = gaClient,
+        _surveyHandler = surveyHandler {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -492,6 +502,7 @@ class TestAnalytics extends AnalyticsImpl {
     required super.toolsMessageVersion,
     required super.fs,
     required super.gaClient,
+    required super.surveyHandler,
   });
 
   @override

@@ -12,10 +12,23 @@ import 'log_handler.dart';
 class Condition {
   /// How to query the log file
   ///
+  ///
   /// Example: logFileStats.recordCount refers to the
   /// total record count being returned by [LogFileStats]
   final String field;
+
+  /// String representation of operator
+  ///
+  ///
+  /// Allowed values:
+  /// - '>=' `greater than or equal to`
+  /// - '<=' `less than or equal to`
+  /// - '>' `greater than`
+  /// - '<' `less then`
+  /// - '==' `equals`
   final String operatorString;
+
+  /// The value we will be comparing against using the [operatorString]
   final int value;
 
   Condition(
@@ -94,11 +107,7 @@ class Survey {
 }
 
 class SurveyHandler {
-  /// Contains metadata for each survey hosted at the [kContextualSurveyUrl]
-  /// endpoint; if there are no surveys available, the list will remain empty
-  final List<Map<String, Object?>> surveyList = [];
-
-  SurveyHandler();
+  const SurveyHandler();
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
@@ -113,4 +122,17 @@ class SurveyHandler {
 
     return surveyList;
   }
+}
+
+class FakeSurveyHandler implements SurveyHandler {
+  final List<Survey> _fakeInitializedSurveys;
+
+  /// Use this class in tests if you can provide the
+  /// list of [Survey] objects
+  FakeSurveyHandler({required List<Survey>? initializedSurveys})
+      : _fakeInitializedSurveys = initializedSurveys ?? [];
+
+  @override
+  Future<List<Survey>> fetchSurveyList() =>
+      Future<List<Survey>>.value(_fakeInitializedSurveys);
 }
