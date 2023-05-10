@@ -8,6 +8,7 @@
 - Add support for `lh` and `rlh` units.
 - Refactor the package example.
 - Addressed an issue with the indent level of the `CssPrinter` output.
+- Require Dart 2.19.
 
 ## 0.17.2
 
@@ -188,7 +189,7 @@
 
 ## 0.12.0+1
 
-* Allow the lastest version of `logging` package.
+* Allow the latest version of `logging` package.
 
 ## 0.12.0
 

@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library visitor_test;
-
 import 'package:csslib/src/messages.dart';
 import 'package:csslib/visitor.dart';
 import 'package:test/test.dart';

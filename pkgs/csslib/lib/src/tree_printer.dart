@@ -322,7 +322,7 @@ class _TreePrinter extends Visitor {
   void visitVarDefinition(VarDefinition node) {
     heading('Var', node);
     output.depth++;
-    output.write('defintion');
+    output.write('definition');
     super.visitVarDefinition(node);
     output.writeNode('expression', node.expression);
     output.depth--;

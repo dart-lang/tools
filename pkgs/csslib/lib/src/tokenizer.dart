@@ -75,7 +75,7 @@ class Tokenizer extends TokenizerBase {
           // looks like a number dot followed by digit(s).
           var number = finishNumber();
           if (number.kind == TokenKind.INTEGER) {
-            // It's a number but it's preceeded by a dot, so make it a double.
+            // It's a number but it's preceded by a dot, so make it a double.
             _startIndex = start;
             return _finishToken(TokenKind.DOUBLE);
           } else {

@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library error_test;
-
 import 'package:csslib/src/messages.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
@@ -72,7 +70,7 @@ error on line 1, column 24: Unknown property value inherit
 void testUnsupportedLineHeights() {
   var errors = <Message>[];
 
-  // line-height value in percentge unit.
+  // line-height value in percentage unit.
   var input = '.foobar { line-height: 120%; }';
   var stylesheet = parseCss(input, errors: errors);
 

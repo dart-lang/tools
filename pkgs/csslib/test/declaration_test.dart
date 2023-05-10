@@ -4,8 +4,6 @@
 
 // ignore_for_file: lines_longer_than_80_chars
 
-library declaration_test;
-
 import 'package:csslib/src/messages.dart';
 import 'package:csslib/visitor.dart';
 import 'package:test/test.dart';

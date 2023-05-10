@@ -2,13 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library debug;
-
 import 'package:test/test.dart';
+
 import 'testing.dart';
 
 void main() {
-  test('excercise debug', () {
+  test('exercise debug', () {
     var style = parseCss(_input);
 
     var debugValue = style.toDebugString();

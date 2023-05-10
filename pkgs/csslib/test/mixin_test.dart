@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library mixin_test;
-
 import 'package:csslib/src/messages.dart';
 import 'package:test/test.dart';
 
@@ -633,6 +631,7 @@ void main() {
 
   group('Mixin arguments', () {
     test('simple arg', mixinArg);
+    test('many args', mixinArgs, skip: 'hangs at runtime');
     test('multiple args and var decls as args', mixinManyArgs);
   });
 

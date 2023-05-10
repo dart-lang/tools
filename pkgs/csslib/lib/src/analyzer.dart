@@ -584,8 +584,8 @@ class CallMixin extends Visitor {
     }
   }
 
-  /// Given a mixin's defined arguments return a cloned mixin defintion that has
-  /// replaced all defined arguments with user's supplied VarUsages.
+  /// Given a mixin's defined arguments return a cloned mixin definition that
+  /// has replaced all defined arguments with user's supplied VarUsages.
   MixinDefinition transform(List<List<Expression>> callArgs) {
     // TODO(terry): Handle default arguments and varArgs.
     // Transform mixin with callArgs.
