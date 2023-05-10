@@ -15,23 +15,23 @@ class Condition {
   /// Example: logFileStats.recordCount refers to the
   /// total record count being returned by [LogFileStats]
   final String field;
-  final String operator;
+  final String operatorString;
   final int value;
 
   Condition(
     this.field,
-    this.operator,
+    this.operatorString,
     this.value,
   );
 
   Condition.fromJson(Map<String, dynamic> json)
       : field = json['field'],
-        operator = json['operator'],
+        operatorString = json['operator'],
         value = json['value'];
 
   Map<String, Object?> toMap() => <String, Object?>{
         'field': field,
-        'operator': operator,
+        'operator': operatorString,
         'value': value,
       };
 
