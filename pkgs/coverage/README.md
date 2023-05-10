@@ -9,7 +9,7 @@ Dart.
 
 `collect_coverage` collects coverage JSON from the Dart VM Service.
 `format_coverage` formats JSON coverage data into either
-[LCOV](http://ltp.sourceforge.net/coverage/lcov.php) or pretty-printed format.
+[LCOV](https://github.com/linux-test-project/lcov) or pretty-printed format.
 
 #### Install coverage
 
