@@ -52,7 +52,8 @@ reporting=1
 # displayed.''';
 
 /// Link to contextual survey metadata file
-const String kContextualSurveyUrl = 'https://docs.flutter.dev/f/contextual-survey-metadata.json';
+const String kContextualSurveyUrl =
+    'https://docs.flutter.dev/f/contextual-survey-metadata.json';
 
 /// Name of the directory where all of the files necessary for this package
 /// will be located
