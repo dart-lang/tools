@@ -82,9 +82,15 @@ class Survey {
         startDate = DateTime.parse(json['startDate']),
         endDate = DateTime.parse(json['endDate']),
         description = json['description'],
-        dismissForDays = int.parse(json['dismissForDays']),
+        // Handle both string and integer fields
+        dismissForDays = json['dismissForDays'].runtimeType == String
+            ? int.parse(json['dismissForDays'])
+            : json['dismissForDays'],
         moreInfoUrl = json['moreInfoURL'],
-        samplingRate = double.parse(json['samplingRate']),
+        // Handle both string and double fields
+        samplingRate = json['samplingRate'].runtimeType == String
+            ? double.parse(json['samplingRate'])
+            : json['samplingRate'],
         conditionList = (json['conditions'] as List)
             .map((e) => Condition.fromJson(e))
             .toList();
@@ -111,13 +117,28 @@ class SurveyHandler {
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
+    final List<dynamic> body;
     final Uri uri = Uri.parse(kContextualSurveyUrl);
-    final http.Response response = await http.get(uri);
+    try {
+      final http.Response response = await http.get(uri);
+      body = jsonDecode(response.body) as List;
+      // ignore: avoid_catches_without_on_clauses
+    } catch (err) {
+      return [];
+    }
 
-    final List<Survey> surveyList = (jsonDecode(response.body) as List)
-        .map(
-          (e) => Survey.fromJson(e),
-        )
+    final List<Survey> surveyList = body
+        .map((element) {
+          // Error handling to skip any surveys from the remote location
+          // that fail to parse
+          try {
+            return Survey.fromJson(element);
+            // ignore: avoid_catches_without_on_clauses
+          } catch (err) {
+            return null;
+          }
+        })
+        .whereType<Survey>()
         .toList();
 
     return surveyList;
@@ -129,8 +150,8 @@ class FakeSurveyHandler implements SurveyHandler {
 
   /// Use this class in tests if you can provide the
   /// list of [Survey] objects
-  FakeSurveyHandler({required List<Survey>? initializedSurveys})
-      : _fakeInitializedSurveys = initializedSurveys ?? [];
+  FakeSurveyHandler({required List<Survey> initializedSurveys})
+      : _fakeInitializedSurveys = initializedSurveys;
 
   @override
   Future<List<Survey>> fetchSurveyList() =>

@@ -128,7 +128,7 @@ abstract class Analytics {
     required String dartVersion,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
-    FileSystem? fs,
+    required FileSystem fs,
     required DevicePlatform platform,
     List<Survey>? initializedSurveys,
   }) =>
@@ -140,12 +140,7 @@ abstract class Analytics {
         flutterVersion: flutterVersion,
         dartVersion: dartVersion,
         platform: platform,
-        fs: fs ??
-            MemoryFileSystem.test(
-              style: io.Platform.isWindows
-                  ? FileSystemStyle.windows
-                  : FileSystemStyle.posix,
-            ),
+        fs: fs,
         gaClient: FakeGAClient(),
         surveyHandler: FakeSurveyHandler(
           initializedSurveys: initializedSurveys ?? [],
@@ -186,6 +181,15 @@ abstract class Analytics {
   /// Prevents the tool from hanging when if there are still requests
   /// that need to be sent off
   void close();
+
+  /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
+  ///
+  /// Any survey that is returned by this method has already passed
+  /// the survey conditions specified in the remote survey metadata file
+  ///
+  /// If the method returns an empty list, then there are no surveys to be
+  /// shared with the user
+  Future<List<Survey>> fetchAvailableSurveys();
 
   /// Query the persisted event data stored on the user's machine
   ///
@@ -377,6 +381,16 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
+  Future<List<Survey>> fetchAvailableSurveys() async {
+    final List<Survey> surveysToShow = [];
+    for (final Survey survey in await _surveyHandler.fetchSurveyList()) {
+      print(survey);
+    }
+
+    return surveysToShow;
+  }
+
+  @override
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
@@ -442,10 +456,6 @@ class AnalyticsImpl implements Analytics {
 /// This is for clients that opt to either not send analytics, or will migrate
 /// to use [AnalyticsImpl] at a later time.
 class NoOpAnalytics implements Analytics {
-  const NoOpAnalytics._();
-
-  factory NoOpAnalytics() => const NoOpAnalytics._();
-
   @override
   final String getConsentMessage = '';
 
@@ -465,11 +475,18 @@ class NoOpAnalytics implements Analytics {
   final Map<String, Map<String, Object?>> userPropertyMap =
       const <String, Map<String, Object?>>{};
 
+  factory NoOpAnalytics() => const NoOpAnalytics._();
+
+  const NoOpAnalytics._();
+
   @override
   void clientShowedMessage() {}
 
   @override
   void close() {}
+
+  @override
+  Future<List<Survey>> fetchAvailableSurveys() => Future.value([]);
 
   @override
   LogFileStats? logFileStats() => null;
