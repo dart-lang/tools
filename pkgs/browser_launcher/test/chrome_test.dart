@@ -183,7 +183,9 @@ void main() {
                 );
                 expect(result, contains(_userDataDirName));
               },
-              skip: headless, // headless mode does not allow chrome: urls.
+              // Note: When re-enabling, skip for headless mode because headless
+              // mode does not allow chrome: urls.
+              skip: 'https://github.com/dart-lang/sdk/issues/52357',
             );
           });
         }
