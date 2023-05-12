@@ -74,7 +74,7 @@ class LogFileStats {
   /// If label passed for [DateTime] instance variable, integer
   /// in the form of [DateTime.millisecondsSinceEpoch] will be
   /// returned
-  /// 
+  ///
   /// Returns null if the label passed does not match anything
   int? getValueByString(String label) {
     switch (label) {
