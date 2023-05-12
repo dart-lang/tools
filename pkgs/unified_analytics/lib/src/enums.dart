@@ -39,6 +39,10 @@ enum DashEvent {
     label: 'lint_usage_counts',
     description: 'Number of times each lint is enabled',
   ),
+  memoryInfo(
+    label: 'memory_info',
+    description: 'Memory usage information',
+  ),
   pluginRequest(
     label: 'plugin_request',
     description: 'Request responses from plugins',
