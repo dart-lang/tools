@@ -4,10 +4,21 @@
 
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:http/http.dart' as http;
 
 import 'constants.dart';
 import 'log_handler.dart';
+
+/// Function to ensure that each survey is still valid by
+/// checking the [Survey.startDate] and [Survey.endDate]
+/// against the current [clock.now()] date
+bool checkSurveyDate(Survey survey) {
+  if (survey.startDate.isBefore(clock.now()) &&
+      survey.endDate.isAfter(clock.now())) return true;
+
+  return false;
+}
 
 class Condition {
   /// How to query the log file
@@ -31,6 +42,17 @@ class Condition {
   /// The value we will be comparing against using the [operatorString]
   final int value;
 
+  /// One of the conditions that need to be valid for
+  /// a survey to be returned to the user
+  ///
+  /// Example of raw json
+  /// ```
+  /// {
+  /// 	"field": "logFileStats.recordCount",
+  /// 	"operator": ">=",
+  /// 	"value": 1000
+  /// }
+  /// ```
   Condition(
     this.field,
     this.operatorString,
@@ -139,6 +161,7 @@ class SurveyHandler {
           }
         })
         .whereType<Survey>()
+        .where((survey) => checkSurveyDate(survey))
         .toList();
 
     return surveyList;
@@ -146,12 +169,17 @@ class SurveyHandler {
 }
 
 class FakeSurveyHandler implements SurveyHandler {
-  final List<Survey> _fakeInitializedSurveys;
+  final List<Survey> _fakeInitializedSurveys = [];
 
   /// Use this class in tests if you can provide the
   /// list of [Survey] objects
-  FakeSurveyHandler({required List<Survey> initializedSurveys})
-      : _fakeInitializedSurveys = initializedSurveys;
+  FakeSurveyHandler({required List<Survey> initializedSurveys}) {
+    for (final Survey survey in initializedSurveys) {
+      if (checkSurveyDate(survey)) {
+        _fakeInitializedSurveys.add(survey);
+      }
+    }
+  }
 
   @override
   Future<List<Survey>> fetchSurveyList() =>

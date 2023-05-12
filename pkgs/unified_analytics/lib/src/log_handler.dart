@@ -67,6 +67,37 @@ class LogFileStats {
         'recordCount': recordCount,
         'eventCount': eventCount,
       });
+
+  /// Pass in a string label for one of the instance variables
+  /// and return the integer value of that label
+  ///
+  /// If label passed for [DateTime] instance variable, integer
+  /// in the form of [DateTime.millisecondsSinceEpoch] will be
+  /// returned
+  /// 
+  /// Returns null if the label passed does not match anything
+  int? getValueByString(String label) {
+    switch (label) {
+      case 'logFileStats.startDateTime':
+        return startDateTime.millisecondsSinceEpoch;
+      case 'logFileStats.minsFromStartDateTime':
+        return minsFromStartDateTime;
+      case 'logFileStats.endDateTime':
+        return endDateTime.millisecondsSinceEpoch;
+      case 'logFileStats.minsFromEndDateTime':
+        return minsFromEndDateTime;
+      case 'logFileStats.sessionCount':
+        return sessionCount;
+      case 'logFileStats.flutterChannelCount':
+        return flutterChannelCount;
+      case 'logFileStats.toolCount':
+        return toolCount;
+      case 'logFileStats.recordCount':
+        return recordCount;
+    }
+
+    return null;
+  }
 }
 
 /// This class is responsible for writing to a log
