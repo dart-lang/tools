@@ -39,13 +39,9 @@ enum DashEvent {
     label: 'lint_usage_counts',
     description: 'Number of times each lint is enabled',
   ),
-  memoryInitial(
-    label: 'memory_initial',
-    description: 'Initial memory usage after start',
-  ),
-  memoryDelta(
-    label: 'memory_delta',
-    description: 'Memory usage delta',
+  memoryInfo(
+    label: 'memory_info',
+    description: 'Memory usage information',
   ),
   pluginRequest(
     label: 'plugin_request',
