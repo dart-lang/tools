@@ -20,6 +20,23 @@ bool checkSurveyDate(Survey survey) {
   return false;
 }
 
+/// Function that takes in a json data structure that is in
+/// the form of a list and returns a list of [Survey]s
+List<Survey> parseSurveysFromJson(List<dynamic> body) => body
+    .map((element) {
+      // Error handling to skip any surveys from the remote location
+      // that fail to parse
+      try {
+        return Survey.fromJson(element);
+        // ignore: avoid_catches_without_on_clauses
+      } catch (err) {
+        return null;
+      }
+    })
+    .whereType<Survey>()
+    .where((survey) => checkSurveyDate(survey))
+    .toList();
+
 class Condition {
   /// How to query the log file
   ///
@@ -141,31 +158,24 @@ class SurveyHandler {
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
     final List<dynamic> body;
-    final Uri uri = Uri.parse(kContextualSurveyUrl);
     try {
-      final http.Response response = await http.get(uri);
-      body = jsonDecode(response.body) as List;
+      final String payload = await _fetchContents();
+      body = jsonDecode(payload) as List;
       // ignore: avoid_catches_without_on_clauses
     } catch (err) {
       return [];
     }
 
-    final List<Survey> surveyList = body
-        .map((element) {
-          // Error handling to skip any surveys from the remote location
-          // that fail to parse
-          try {
-            return Survey.fromJson(element);
-            // ignore: avoid_catches_without_on_clauses
-          } catch (err) {
-            return null;
-          }
-        })
-        .whereType<Survey>()
-        .where((survey) => checkSurveyDate(survey))
-        .toList();
+    final List<Survey> surveyList = parseSurveysFromJson(body);
 
     return surveyList;
+  }
+
+  /// Fetches the json in string form from the remote location
+  Future<String> _fetchContents() async {
+    final Uri uri = Uri.parse(kContextualSurveyUrl);
+    final http.Response response = await http.get(uri);
+    return response.body;
   }
 }
 
@@ -174,7 +184,7 @@ class FakeSurveyHandler implements SurveyHandler {
 
   /// Use this class in tests if you can provide the
   /// list of [Survey] objects
-  FakeSurveyHandler({required List<Survey> initializedSurveys}) {
+  FakeSurveyHandler.fromList({required List<Survey> initializedSurveys}) {
     for (final Survey survey in initializedSurveys) {
       if (checkSurveyDate(survey)) {
         _fakeInitializedSurveys.add(survey);
@@ -182,7 +192,19 @@ class FakeSurveyHandler implements SurveyHandler {
     }
   }
 
+  /// Use this class in tests if you can provide raw
+  /// json strings to mock a response from a remote server
+  FakeSurveyHandler.fromString({required String content}) {
+    final List<dynamic> body = jsonDecode(content) as List;
+    for (final fakeSurvey in parseSurveysFromJson(body)) {
+      _fakeInitializedSurveys.add(fakeSurvey);
+    }
+  }
+
   @override
   Future<List<Survey>> fetchSurveyList() =>
       Future<List<Survey>>.value(_fakeInitializedSurveys);
+
+  @override
+  Future<String> _fetchContents() => throw UnimplementedError();
 }

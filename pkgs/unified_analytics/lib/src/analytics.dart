@@ -130,7 +130,7 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     required FileSystem fs,
     required DevicePlatform platform,
-    List<Survey>? initializedSurveys,
+    SurveyHandler? surveyHandler,
   }) =>
       TestAnalytics(
         tool: tool,
@@ -142,9 +142,8 @@ abstract class Analytics {
         platform: platform,
         fs: fs,
         gaClient: FakeGAClient(),
-        surveyHandler: FakeSurveyHandler(
-          initializedSurveys: initializedSurveys ?? [],
-        ),
+        surveyHandler:
+            surveyHandler ?? FakeSurveyHandler.fromList(initializedSurveys: []),
       );
 
   /// Retrieves the consent message to prompt users with on first
