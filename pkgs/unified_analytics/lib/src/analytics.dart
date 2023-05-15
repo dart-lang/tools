@@ -414,6 +414,9 @@ class AnalyticsImpl implements Analytics {
           case '==':
             if (logFileStatsValue == condition.value) conditionsMet++;
             break;
+          case '!=':
+            if (logFileStatsValue != condition.value) conditionsMet++;
+            break;
         }
       }
 

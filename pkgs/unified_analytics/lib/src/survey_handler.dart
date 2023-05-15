@@ -37,6 +37,7 @@ class Condition {
   /// - '>' `greater than`
   /// - '<' `less then`
   /// - '==' `equals`
+  /// - '!=' `not equal`
   final String operatorString;
 
   /// The value we will be comparing against using the [operatorString]
