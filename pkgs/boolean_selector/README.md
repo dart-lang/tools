@@ -1,5 +1,6 @@
+[![Dart](https://github.com/dart-lang/boolean_selector/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/boolean_selector/actions/workflows/test-package.yml)
 [![Pub Package](https://img.shields.io/pub/v/boolean_selector.svg)](https://pub.dev/packages/boolean_selector)
-[![Build Status](https://travis-ci.org/dart-lang/boolean_selector.svg?branch=master)](https://travis-ci.org/dart-lang/boolean_selector)
+[![package publisher](https://img.shields.io/pub/publisher/boolean_selector.svg)](https://pub.dev/packages/boolean_selector/publisher)
 
 The `boolean_selector` package defines a simple and flexible syntax for boolean
 expressions. It can be used for filtering based on user-defined expressions. For
