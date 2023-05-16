@@ -201,5 +201,209 @@ void main() {
         expect(fetchedSurveys.length, 1);
       });
     });
+
+    test('does not return expired survey', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            initializedSurveys: <Survey>[
+              Survey(
+                'uniqueId',
+                'url',
+                DateTime(2022, 1, 1),
+                DateTime(2022, 12, 31),
+                'description',
+                10,
+                'moreInfoUrl',
+                0.1,
+                <Condition>[
+                  Condition('logFileStats.recordCount', '>=', 50),
+                  Condition('logFileStats.toolCount', '>', 0),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (int i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        final List<Survey> fetchedSurveys =
+            await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 0);
+      });
+    });
+
+    test('returns valid survey from json', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromString(content: '''
+[
+    {
+        "uniqueId": "xxxxxx",
+        "url": "xxxxx",
+        "startDate": "2023-01-01T09:00:00-07:00",
+        "endDate": "2023-12-31T09:00:00-07:00",
+	"description": "xxxxxxx",
+	"dismissForDays": "10",
+	"moreInfoURL": "xxxxxx",
+	"samplingRate": "0.1",
+	"conditions": [
+	    {
+	        "field": "logFileStats.recordCount",
+	        "operator": ">=",
+	        "value": 50
+      }
+	]
+    }
+]
+'''),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (int i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        final List<Survey> fetchedSurveys =
+            await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 1);
+      });
+    });
+
+    test('no survey returned from malformed json', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromString(content: '''
+[
+    {
+        "uniqueId": "xxxxxx",
+        "url": "xxxxx",
+        "startDate": "NOT A REAL DATE",
+        "endDate": "2023-12-31T09:00:00-07:00",
+	"description": "xxxxxxx",
+	"dismissForDays": "10BAD",
+	"moreInfoURL": "xxxxxx",
+	"samplingRate": "0.1",
+	"conditions": [
+	    {
+	        "field": "logFileStats.recordCount",
+	        "operator": ">=",
+	        "value": 50
+      }
+	]
+    }
+]
+'''),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (int i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        final List<Survey> fetchedSurveys =
+            await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 0);
+      });
+    });
+
+    test('returns two valid survey from json', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromString(content: '''
+[
+    {
+        "uniqueId": "12345",
+        "url": "xxxxx",
+        "startDate": "2023-01-01T09:00:00-07:00",
+        "endDate": "2023-12-31T09:00:00-07:00",
+	"description": "xxxxxxx",
+	"dismissForDays": "10",
+	"moreInfoURL": "xxxxxx",
+	"samplingRate": "0.1",
+	"conditions": [
+	    {
+	        "field": "logFileStats.recordCount",
+	        "operator": ">=",
+	        "value": 50
+      }
+	]
+    },
+    {
+        "uniqueId": "67890",
+        "url": "xxxxx",
+        "startDate": "2023-01-01T09:00:00-07:00",
+        "endDate": "2023-12-31T09:00:00-07:00",
+	"description": "xxxxxxx",
+	"dismissForDays": "10",
+	"moreInfoURL": "xxxxxx",
+	"samplingRate": "0.1",
+	"conditions": [
+	    {
+	        "field": "logFileStats.recordCount",
+	        "operator": ">=",
+	        "value": 50
+      }
+	]
+    }
+]
+'''),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (int i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        final List<Survey> fetchedSurveys =
+            await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 2);
+
+        final Survey firstSurvey = fetchedSurveys.first;
+        final Survey secondSurvey = fetchedSurveys.last;
+
+        expect(firstSurvey.uniqueId, '12345');
+        expect(secondSurvey.uniqueId, '67890');
+      });
+    });
   });
 }
