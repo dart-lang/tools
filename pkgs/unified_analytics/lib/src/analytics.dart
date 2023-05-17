@@ -384,6 +384,8 @@ class AnalyticsImpl implements Analytics {
     final List<Survey> surveysToShow = [];
     final LogFileStats? logFileStats = _logHandler.logFileStats();
 
+    if (logFileStats == null) return [];
+
     for (final Survey survey in await _surveyHandler.fetchSurveyList()) {
       // Counter to check each survey condition, if all are met, then
       // this integer will be equal to the number of conditions in
@@ -393,7 +395,7 @@ class AnalyticsImpl implements Analytics {
         // Retrieve the value from the [LogFileStats] with
         // the label provided in the condtion
         final int? logFileStatsValue =
-            logFileStats?.getValueByString(condition.field);
+            logFileStats.getValueByString(condition.field);
 
         if (logFileStatsValue == null) continue;
 
