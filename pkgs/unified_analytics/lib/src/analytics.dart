@@ -523,7 +523,7 @@ class NoOpAnalytics implements Analytics {
   void close() {}
 
   @override
-  Future<List<Survey>> fetchAvailableSurveys() => Future.value([]);
+  Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
 
   @override
   LogFileStats? logFileStats() => null;
