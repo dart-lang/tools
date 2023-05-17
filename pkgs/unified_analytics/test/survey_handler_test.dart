@@ -258,13 +258,13 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromString(content: '''
 [
     {
-        "uniqueId": "xxxxxx",
-        "url": "xxxxx",
+        "uniqueId": "uniqueId123",
+        "url": "url123",
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "xxxxxxx",
+	"description": "description123",
 	"dismissForDays": "10",
-	"moreInfoURL": "xxxxxx",
+	"moreInfoURL": "moreInfoUrl123",
 	"samplingRate": "0.1",
 	"conditions": [
 	    {
@@ -288,6 +288,26 @@ void main() {
             await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 1);
+
+        final Survey survey = fetchedSurveys.first;
+        expect(survey.uniqueId, 'uniqueId123');
+        expect(survey.url, 'url123');
+        expect(survey.startDate.year, 2023);
+        expect(survey.startDate.month, 1);
+        expect(survey.startDate.day, 1);
+        expect(survey.endDate.year, 2023);
+        expect(survey.endDate.month, 12);
+        expect(survey.endDate.day, 31);
+        expect(survey.description, 'description123');
+        expect(survey.dismissForDays, 10);
+        expect(survey.moreInfoUrl, 'moreInfoUrl123');
+        expect(survey.samplingRate, 0.1);
+        expect(survey.conditionList.length, 1);
+
+        final Condition condition = survey.conditionList.first;
+        expect(condition.field, 'logFileStats.recordCount');
+        expect(condition.operatorString, '>=');
+        expect(condition.value, 50);
       });
     });
 
