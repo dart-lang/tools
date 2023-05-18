@@ -35,6 +35,12 @@ abstract class Analytics {
     // resolve on their own
     const FileSystem fs = LocalFileSystem();
 
+    // Ensure that the home directory has permissions enabled to write
+    final Directory homeDirectory = getHomeDirectory(fs);
+    if (!checkDirectoryForWritePermissions(homeDirectory)) {
+      return NoOpAnalytics();
+    }
+
     // Resolve the OS using dart:io
     final DevicePlatform platform;
     if (io.Platform.operatingSystem == 'linux') {
@@ -77,6 +83,12 @@ abstract class Analytics {
     // Create the instance of the file system so clients don't need
     // resolve on their own
     const FileSystem fs = LocalFileSystem();
+
+    // Ensure that the home directory has permissions enabled to write
+    final Directory homeDirectory = getHomeDirectory(fs);
+    if (!checkDirectoryForWritePermissions(homeDirectory)) {
+      return NoOpAnalytics();
+    }
 
     // Resolve the OS using dart:io
     final DevicePlatform platform;

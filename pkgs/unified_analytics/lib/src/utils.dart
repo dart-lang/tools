@@ -20,6 +20,18 @@ String get dateStamp {
   return DateFormat('yyyy-MM-dd').format(clock.now());
 }
 
+/// Reads in a directory and returns `true` if write permissions are enabled
+/// 
+/// Uses the [FileStat] method `modeString()` to return a string in the form
+/// of `rwxrwxrwx` where the second character in the string indicates if write
+/// is enabled with a `w` or disabled with `-`
+bool checkDirectoryForWritePermissions(Directory directory) {
+  if (!directory.existsSync()) return false;
+
+  final FileStat fileStat = directory.statSync();
+  return fileStat.modeString()[1] == 'w';
+}
+
 /// Format time as 'yyyy-MM-dd HH:mm:ss Z' where Z is the difference between the
 /// timezone of t and UTC formatted according to RFC 822.
 String formatDateTime(DateTime t) {
