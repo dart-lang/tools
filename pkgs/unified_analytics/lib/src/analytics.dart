@@ -19,6 +19,7 @@ import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
 import 'session.dart';
+import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
 
@@ -62,6 +63,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      surveyHandler: const SurveyHandler(),
     );
   }
 
@@ -109,6 +111,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      surveyHandler: const SurveyHandler(),
     );
   }
 
@@ -125,8 +128,9 @@ abstract class Analytics {
     required String dartVersion,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
-    FileSystem? fs,
+    required FileSystem fs,
     required DevicePlatform platform,
+    SurveyHandler? surveyHandler,
   }) =>
       TestAnalytics(
         tool: tool,
@@ -136,13 +140,10 @@ abstract class Analytics {
         flutterVersion: flutterVersion,
         dartVersion: dartVersion,
         platform: platform,
-        fs: fs ??
-            MemoryFileSystem.test(
-              style: io.Platform.isWindows
-                  ? FileSystemStyle.windows
-                  : FileSystemStyle.posix,
-            ),
+        fs: fs,
         gaClient: FakeGAClient(),
+        surveyHandler:
+            surveyHandler ?? FakeSurveyHandler.fromList(initializedSurveys: []),
       );
 
   /// Retrieves the consent message to prompt users with on first
@@ -180,6 +181,15 @@ abstract class Analytics {
   /// that need to be sent off
   void close();
 
+  /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
+  ///
+  /// Any survey that is returned by this method has already passed
+  /// the survey conditions specified in the remote survey metadata file
+  ///
+  /// If the method returns an empty list, then there are no surveys to be
+  /// shared with the user
+  Future<List<Survey>> fetchAvailableSurveys();
+
   /// Query the persisted event data stored on the user's machine
   ///
   /// Returns null if there are no persisted logs
@@ -204,6 +214,7 @@ class AnalyticsImpl implements Analytics {
   final FileSystem fs;
   late final ConfigHandler _configHandler;
   final GAClient _gaClient;
+  final SurveyHandler _surveyHandler;
   late final String _clientId;
   late final File _clientIdFile;
   late final UserProperty userProperty;
@@ -239,8 +250,10 @@ class AnalyticsImpl implements Analytics {
     required DevicePlatform platform,
     required this.toolsMessageVersion,
     required this.fs,
-    required gaClient,
-  }) : _gaClient = gaClient {
+    required GAClient gaClient,
+    required SurveyHandler surveyHandler,
+  })  : _gaClient = gaClient,
+        _surveyHandler = surveyHandler {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -367,6 +380,56 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
+  Future<List<Survey>> fetchAvailableSurveys() async {
+    final List<Survey> surveysToShow = [];
+    final LogFileStats? logFileStats = _logHandler.logFileStats();
+
+    if (logFileStats == null) return [];
+
+    for (final Survey survey in await _surveyHandler.fetchSurveyList()) {
+      // Counter to check each survey condition, if all are met, then
+      // this integer will be equal to the number of conditions in
+      // [Survey.conditionList]
+      int conditionsMet = 0;
+      for (final Condition condition in survey.conditionList) {
+        // Retrieve the value from the [LogFileStats] with
+        // the label provided in the condtion
+        final int? logFileStatsValue =
+            logFileStats.getValueByString(condition.field);
+
+        if (logFileStatsValue == null) continue;
+
+        switch (condition.operatorString) {
+          case '>=':
+            if (logFileStatsValue >= condition.value) conditionsMet++;
+            break;
+          case '<=':
+            if (logFileStatsValue <= condition.value) conditionsMet++;
+            break;
+          case '>':
+            if (logFileStatsValue > condition.value) conditionsMet++;
+            break;
+          case '<':
+            if (logFileStatsValue < condition.value) conditionsMet++;
+            break;
+          case '==':
+            if (logFileStatsValue == condition.value) conditionsMet++;
+            break;
+          case '!=':
+            if (logFileStatsValue != condition.value) conditionsMet++;
+            break;
+        }
+      }
+
+      if (conditionsMet == survey.conditionList.length) {
+        surveysToShow.add(survey);
+      }
+    }
+
+    return surveysToShow;
+  }
+
+  @override
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
@@ -432,10 +495,6 @@ class AnalyticsImpl implements Analytics {
 /// This is for clients that opt to either not send analytics, or will migrate
 /// to use [AnalyticsImpl] at a later time.
 class NoOpAnalytics implements Analytics {
-  const NoOpAnalytics._();
-
-  factory NoOpAnalytics() => const NoOpAnalytics._();
-
   @override
   final String getConsentMessage = '';
 
@@ -455,11 +514,18 @@ class NoOpAnalytics implements Analytics {
   final Map<String, Map<String, Object?>> userPropertyMap =
       const <String, Map<String, Object?>>{};
 
+  factory NoOpAnalytics() => const NoOpAnalytics._();
+
+  const NoOpAnalytics._();
+
   @override
   void clientShowedMessage() {}
 
   @override
   void close() {}
+
+  @override
+  Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
 
   @override
   LogFileStats? logFileStats() => null;
@@ -492,6 +558,7 @@ class TestAnalytics extends AnalyticsImpl {
     required super.toolsMessageVersion,
     required super.fs,
     required super.gaClient,
+    required super.surveyHandler,
   });
 
   @override
