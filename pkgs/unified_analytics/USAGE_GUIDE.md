@@ -4,7 +4,10 @@ It provides APIs to send events to Google Analytics using the Measurement Protoc
 ## Usage
 
 To get started using this package, import at the entrypoint dart file and
-initialize with the required parameters
+initialize with the required parameters.
+
+The example file shows an end-to-end usage guide for using this package and
+can be referred to here [unified_analytics_example.dart](example/unified_analytics_example.dart).
 
 **IMPORTANT**: It is best practice to close the http client connection when finished
 sending events, otherwise, you may notice that the dart process hangs on exit. The example below
@@ -12,80 +15,6 @@ shows how to handle closing the connection via `analytics.close()` method.
 
 [Link to documentation for http client's close method](https://pub.dev/documentation/http/latest/http/Client-class.html)
 
-```dart
-import 'unified_analytics/unified_analytics.dart';
-
-// Constants that should be resolved by the client using package
-final DashTool tool = DashTool.flutterTools; // Restricted to enum provided by package
-
-// Values that need to be provided by the client that may
-// need to be calculated
-final String channel = ...;
-final String flutterVersion = ...;
-final String dartVersion = ...;
-
-// Initialize the [Analytics] class with the required parameters;
-// preferably outside of the [main] method
-final Analytics analytics = Analytics(
-  tool: tool,
-  flutterChannel: channel,  // Optional; only if easy to determine
-  flutterVersion: flutterVersion,  // Optional; only if easy to determine
-  dartVersion: dartVersion,
-);
-
-// Timing a process and sending the event
-void main() {
-    DateTime start = DateTime.now();
-    int count = 0;
-
-    // Each client using this package will have it's own
-    // method to show the message but the below is a trivial
-    // example of how to properly initialize the analytics instance
-    if (analytics.shouldShowMessage) {
-      
-      // Simulates displaying the message, this will vary from
-      // client to client; ie. stdout, popup in IDE, etc.
-      print(analytics.getConsentMessage);
-
-      // After receiving confirmation that the message has been
-      // displayed, invoking the below method will successfully
-      // onboard the tool into the config file and allow for
-      // events to be sent on the next creation of the analytics
-      // instance
-      //
-      // The rest of the example below assumes that the tool has
-      // already been onboarded in a previous run
-      analytics.clientShowedMessage();
-    }
-
-    // Example of long running process
-    for (int i = 0; i < 2000; i++) {
-        count += i;
-    }
-    
-    // Calculate the metric to send
-    final int runTime = DateTime.now().difference(start).inMilliseconds;
-
-    // Generate the body for the event data
-    final Map<String, int> eventData = {
-      'time_ns': runTime,
-    };
-
-    // Choose one of the enum values for [DashEvent] which should
-    // have all possible events; if not there, open an issue for the
-    // team to add
-    final DashEvent eventName = ...; // Select appropriate DashEvent enum value
-
-    // Make a call to the [Analytics] api to send the data
-    analytics.sendEvent(
-      eventName: eventName,
-      eventData: eventData,
-    );
-
-    // Close the client connection on exit
-    analytics.close();
-}
-```
 
 ## Opting In and Out of Analytics Collection
 
@@ -108,37 +37,40 @@ analytics.setTelemetry(status);
 
 ## Displaying Consent Message to Users
 
-When a user first uses any tool with this package enabled, they
-will be enrolled into Analytics collection. It will be the responsiblity
-of the tool using this package to display the proper Analytics messaging
-and inform them on how to Opt-Out of Analytics collection if they wish. The
-package will expose APIs that will make it easy to configure Opt-In status.
+When a user first uses any tool with this package enabled, the tool using
+this package will need to ensure that the user has seen the consent message.
+The tool using this package should check with the `Analytics` instance
+by invoking the `shouldShowMessage` getter. When this getter returns
+`true`, this means that the user has not been enrolled into analytics
+collection yet. It is at this point that the tool using this package will
+invoke the `getConsentMessage` getter to return a string to share with the
+user (each tool will have their own method of displaying the message
+through cli stdout, popup modal, etc.). Once the message has been shown,
+the tool using this package will need to confirm to the `Analytics` instance
+that it has shown the message; it is at this point that the user has
+officially been onboarded to analytics collection.
 
-For this use case, it is best to use the `Analytics` static method `getConsentMessage`
-which requires passing in the `DashTool` currently using this package.
 
-Passing in the `DashTool` is necessary so that the message can include which
-tool is seeking consent.
 
 ```dart
-final String consentMessage = Analytics.getConsentMessage(
-  tool: DashTool.flutterTools
-);
+// Begin by initializing the class near the entrypoint
+final Analytics analytics = Analytics(...);
 
-/// Printing out the consent message above returns the below
-///
-/// The flutter tools uses Google Analytics to report usage and diagnostic data
-/// along with package dependencies, and crash reporting to send basic crash reports.
-/// This data is used to help improve the Dart platform, Flutter framework, and related tools.
-/// 
-/// Telemetry is not sent on the very first run.
-/// To disable reporting of telemetry, run this terminal command:
-/// 
-/// [dart|flutter] --disable-telemetry.
-/// If you opt out of telemetry, an opt-out event will be sent,
-/// and then no further information will be sent.
-/// This data is collected in accordance with the
-/// Google Privacy Policy (https://policies.google.com/privacy).
+// This conditional should always run; the first time it is run, this
+// will return true since the consent message has never been shown
+if (analytics.shouldShowMessage) {
+  
+  // Simulates displaying the message, this will vary from
+  // client to client; ie. stdout, popup in IDE, etc.
+  print(analytics.getConsentMessage);
+
+  // After receiving confirmation that the message has been
+  // displayed, invoking the below method will successfully
+  // onboard the tool into the config file and allow for
+  // events to be sent on the next creation of the analytics
+  // instance
+  analytics.clientShowedMessage();
+}
 ```
 
 ## Checking User Opt-In Status
@@ -185,9 +117,6 @@ if (analytics.shouldShowMessage) {
   // onboard the tool into the config file and allow for
   // events to be sent on the next creation of the analytics
   // instance
-  //
-  // The rest of the example below assumes that the tool has
-  // already been onboarded in a previous run
   analytics.clientShowedMessage();
 }
 ```
