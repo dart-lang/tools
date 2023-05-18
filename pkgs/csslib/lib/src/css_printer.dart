@@ -56,9 +56,6 @@ class CssPrinter extends Visitor {
       _startOfLine = true;
     } else {
       _buff.write('}');
-      if (_indent == 0) {
-        _buff.writeln();
-      }
     }
   }
 

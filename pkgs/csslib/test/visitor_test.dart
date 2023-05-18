@@ -112,9 +112,7 @@ void main() {
 
 void testPrettyPrint() {
   final input = '''
-.good { color: red; }
-@media screen { .better { color: blue; } }
-.best { color: green }''';
+.good { color: red; }@media screen { .better { color: blue; } }.best { color: green }''';
 
   var styleSheet = parseCss(input);
 
@@ -134,7 +132,5 @@ void testPrettyPrint() {
 
   // compact output
   expect(compactOutput(styleSheet), '''
-.good{color:red}
-@media screen{.better{color:blue}}
-.best{color:green}''');
+.good{color:red}@media screen{.better{color:blue}}.best{color:green}''');
 }
