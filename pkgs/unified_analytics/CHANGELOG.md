@@ -1,3 +1,7 @@
+## 1.2.0
+
+- Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users
+
 ## 1.1.1
 
 - Refactoring `dateStamp` utility function to be defined in `utils.dart` instead of having static methods in `Initializer` and `ConfigHandler`
