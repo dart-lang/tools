@@ -60,7 +60,7 @@ abstract class Analytics {
 
     return AnalyticsImpl(
       tool: tool,
-      homeDirectory: getHomeDirectory(fs),
+      homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -113,7 +113,7 @@ abstract class Analytics {
 
     return AnalyticsImpl(
       tool: tool,
-      homeDirectory: getHomeDirectory(fs),
+      homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
