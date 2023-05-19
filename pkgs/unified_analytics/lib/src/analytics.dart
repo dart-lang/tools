@@ -11,6 +11,7 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
+import 'package:unified_analytics/src/asserts.dart';
 
 import 'config_handler.dart';
 import 'constants.dart';
@@ -109,6 +110,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      enableAsserts: true,
     );
   }
 
@@ -230,6 +232,10 @@ class AnalyticsImpl implements Analytics {
   /// If this is false, all events will be blocked from being sent
   bool _clientShowedMessage = false;
 
+  /// When set to `true`, various assert statements will be enabled
+  /// to ensure usage of this class is within GA4 limitations
+  final bool _enableAsserts;
+
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -240,7 +246,9 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
-  }) : _gaClient = gaClient {
+    enableAsserts = false,
+  })  : _gaClient = gaClient,
+        _enableAsserts = enableAsserts {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -385,6 +393,8 @@ class AnalyticsImpl implements Analytics {
     );
 
     _logHandler.save(data: body);
+
+    if (_enableAsserts) checkBody(body);
 
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
