@@ -1,6 +1,7 @@
-## 2.1.2-dev
+## 2.1.2
 
-- Require Dart 2.18
+- Allow `file` version `7.x`.
+- Require Dart 2.19.
 
 ## 2.1.1
 
