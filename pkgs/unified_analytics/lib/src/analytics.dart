@@ -154,6 +154,7 @@ abstract class Analytics {
                   : FileSystemStyle.posix,
             ),
         gaClient: FakeGAClient(),
+        enableAsserts: true,
       );
 
   /// Retrieves the consent message to prompt users with on first
@@ -255,9 +256,10 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
-    enableAsserts = false,
+    required enableAsserts,
   })  : _gaClient = gaClient,
         _enableAsserts = enableAsserts {
+    print(_enableAsserts);
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -511,6 +513,7 @@ class TestAnalytics extends AnalyticsImpl {
     required super.toolsMessageVersion,
     required super.fs,
     required super.gaClient,
+    required super.enableAsserts,
   });
 
   @override
