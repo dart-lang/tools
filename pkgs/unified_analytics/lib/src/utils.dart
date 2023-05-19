@@ -21,7 +21,7 @@ String get dateStamp {
 }
 
 /// Reads in a directory and returns `true` if write permissions are enabled
-/// 
+///
 /// Uses the [FileStat] method `modeString()` to return a string in the form
 /// of `rwxrwxrwx` where the second character in the string indicates if write
 /// is enabled with a `w` or disabled with `-`
