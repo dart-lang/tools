@@ -26,11 +26,15 @@ import 'utils.dart';
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
   /// of the [Analytics] abstract class using the [LocalFileSystem]
+  ///
+  /// If [enableAsserts] is set to `true`, then asserts for GA4 limitations
+  /// will be enabled
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
+    bool enableAsserts = false,
   }) {
     // Create the instance of the file system so clients don't need
     // resolve on their own
@@ -63,17 +67,22 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      enableAsserts: enableAsserts,
     );
   }
 
   /// Factory constructor to return the [AnalyticsImpl] class with
   /// Google Analytics credentials that point to a test instance and
   /// not the production instance where live data will be sent
+  ///
+  /// By default, [enableAsserts] is set to `true` to check against
+  /// GA4 limitations
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
+    bool enableAsserts = true,
   }) {
     // Create the instance of the file system so clients don't need
     // resolve on their own
@@ -110,7 +119,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      enableAsserts: true,
+      enableAsserts: enableAsserts,
     );
   }
 
