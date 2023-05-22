@@ -8,6 +8,14 @@ void checkBody(Map<String, Object?> body) {
   final Map<String, Object?> userProperties =
       body['user_properties'] as Map<String, Object?>;
 
+  // Ensure we have the correct top level keys
+  assert(body.keys.contains('client_id') == true,
+      'client_id key not found in body of request');
+  assert(body.keys.contains('events') == true,
+      'events key not found in body of request');
+  assert(body.keys.contains('user_properties') == true,
+      'user_properties key not found in body of request');
+
   // GA4 Limitation:
   // Requests can have a maximum of 25 events
   assert(events.length <= 25, 'Limit event params to 25 or less');
