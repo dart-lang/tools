@@ -99,11 +99,11 @@ class Pubspec {
     @Deprecated(
       'See https://dart.dev/tools/pub/pubspec#authorauthors',
     )
-        String? author,
+    String? author,
     @Deprecated(
       'See https://dart.dev/tools/pub/pubspec#authorauthors',
     )
-        List<String>? authors,
+    List<String>? authors,
     Map<String, VersionConstraint?>? environment,
     this.homepage,
     this.repository,
