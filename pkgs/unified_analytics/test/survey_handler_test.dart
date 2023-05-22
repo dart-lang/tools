@@ -425,5 +425,61 @@ void main() {
         expect(secondSurvey.uniqueId, '67890');
       });
     });
+
+    test('valid survey not returned if opted out', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            initializedSurveys: <Survey>[
+              Survey(
+                'uniqueId',
+                'url',
+                DateTime(2023, 1, 1),
+                DateTime(2023, 12, 31),
+                'description',
+                10,
+                'moreInfoUrl',
+                0.1,
+                <Condition>[
+                  Condition('logFileStats.recordCount', '>=', 50),
+                  Condition('logFileStats.toolCount', '>', 0),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (int i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        // Setting to false will prevent anything from getting returned
+        await analytics.setTelemetry(false);
+        List<Survey> fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 0);
+
+
+        // Setting telemetry back to true should enable the surveys to get returned
+        // again; we will also need to send the fake events again because on opt out,
+        // the log file will get cleared and one of the conditions for the fake survey
+        // loaded is that we need at least 50 records for one of the conditions
+        await analytics.setTelemetry(true);
+        for (int i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+        fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+      });
+    });
   });
 }
