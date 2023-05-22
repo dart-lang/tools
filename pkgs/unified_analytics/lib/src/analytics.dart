@@ -150,7 +150,7 @@ abstract class Analytics {
   /// run or when the message has been updated
   String get getConsentMessage;
 
-  /// Returns true if it is OK to send an analytics message. Do not cache,
+  /// Returns true if it is OK to send an analytics message.   Do not cache,
   /// as this depends on factors that can change, such as the configuration
   /// file contents.
   bool get okToSend;
@@ -382,9 +382,8 @@ class AnalyticsImpl implements Analytics {
   @override
   Future<List<Survey>> fetchAvailableSurveys() async {
     final List<Survey> surveysToShow = [];
-    if (!okToSend) return surveysToShow;
-
     final LogFileStats? logFileStats = _logHandler.logFileStats();
+
     if (logFileStats == null) return [];
 
     for (final Survey survey in await _surveyHandler.fetchSurveyList()) {
