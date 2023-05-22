@@ -42,7 +42,7 @@ T withClock<T>(
   Clock clock,
   T Function() callback, {
   @Deprecated('This parameter is deprecated and should be avoided')
-      bool isFinal = false,
+  bool isFinal = false,
 }) {
   if ((Zone.current[_isFinalKey] ?? false) == true) {
     throw StateError(
