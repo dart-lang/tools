@@ -382,6 +382,8 @@ class AnalyticsImpl implements Analytics {
   @override
   Future<List<Survey>> fetchAvailableSurveys() async {
     final List<Survey> surveysToShow = [];
+    if (!okToSend) return surveysToShow;
+
     final LogFileStats? logFileStats = _logHandler.logFileStats();
 
     if (logFileStats == null) return [];
