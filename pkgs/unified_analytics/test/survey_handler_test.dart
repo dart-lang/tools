@@ -467,7 +467,6 @@ void main() {
         List<Survey> fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 0);
 
-
         // Setting telemetry back to true should enable the surveys to get returned
         // again; we will also need to send the fake events again because on opt out,
         // the log file will get cleared and one of the conditions for the fake survey
