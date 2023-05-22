@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:file/file.dart';
-import 'package:file/memory.dart';
+import 'package:test/fake.dart';
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/utils.dart';
@@ -50,11 +50,47 @@ void main() {
   });
 
   test('Home directory without write permissions', () {
-    final FileSystem fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
-    final Directory home = fs.directory('home');
-    home.createSync();
+    final FakeDirectory home = FakeDirectory(writeEnabled: false);
 
-    expect(home.statSync().modeString(), 'r-xrw-rwx');
     expect(checkDirectoryForWritePermissions(home), false);
   });
+
+  test('Home directory with write permissions', () {
+    final FakeDirectory home = FakeDirectory(writeEnabled: true);
+
+    expect(checkDirectoryForWritePermissions(home), true);
+  });
+}
+
+class FakeDirectory extends Fake implements Directory {
+  final String _fakeModeString;
+
+  /// This fake directory class allows you to pass the permissions for
+  /// the user level, the group and global permissions will default to
+  /// being denied as indicated by the last 6 characters in [modeString]
+  FakeDirectory({
+    required bool writeEnabled,
+    bool readEnabled = true,
+    bool executeEnabled = true,
+  }) : _fakeModeString = '${readEnabled ? "r" : "-"}'
+            '${writeEnabled ? "w" : "-"}'
+            '${executeEnabled ? "x" : "-"}'
+            '------' {
+    assert(_fakeModeString.length == 9);
+  }
+
+  @override
+  bool existsSync() => true;
+
+  @override
+  FileStat statSync() => FakeFileStat(_fakeModeString);
+}
+
+class FakeFileStat extends Fake implements FileStat {
+  final String _fakeModeString;
+
+  FakeFileStat(this._fakeModeString);
+
+  @override
+  String modeString() => _fakeModeString;
 }
