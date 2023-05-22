@@ -259,7 +259,6 @@ class AnalyticsImpl implements Analytics {
     required enableAsserts,
   })  : _gaClient = gaClient,
         _enableAsserts = enableAsserts {
-    print(_enableAsserts);
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
