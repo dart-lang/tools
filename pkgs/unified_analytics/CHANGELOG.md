@@ -3,6 +3,7 @@
 - Refactoring `dateStamp` utility function to be defined in `utils.dart` instead of having static methods in `Initializer` and `ConfigHandler`
 - Remove the `pddFlag` now that the revisions to the PDD have been finalized to persist data in the log file and session json file
 - Opting out will now delete the contents of the CLIENT ID, session json, and log files; opting back in will regenerate them as events send
+- `enableAsserts` parameter added to constructors for `Analytics` to check body of POST request for Google Analytics 4 limitations
 
 ## 1.1.0
 
