@@ -41,6 +41,14 @@ void checkBody(Map<String, Object?> body) {
     // Loop through each of the event parameters
     (eventMap['params'] as Map<String, Object?>).forEach((key, value) {
       // GA4 Limitation:
+      // Ensure that each value for the event params is one
+      // of the following types:
+      // `String`, `int`, `double`, or `bool`
+      assert(
+          value is String || value is int || value is double || value is bool,
+          'Values for event params have to be String, int, double, or bool');
+
+      // GA4 Limitation:
       // Parameter names (including item parameters) must be 40 characters
       // or fewer, may only contain alpha-numeric characters and underscores,
       // and must start with an alphabetic character
