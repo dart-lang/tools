@@ -3,9 +3,15 @@ name: CI
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/graphs.yml'
+      - 'pkgs/graphs/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/graphs.yml'
+      - 'pkgs/graphs/**'
   schedule:
     - cron: "0 0 * * 0"
 
@@ -17,6 +23,9 @@ jobs:
   # against Dart beta.
   analyze:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/graphs/
     strategy:
       fail-fast: false
       matrix:
@@ -36,6 +45,9 @@ jobs:
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: pkgs/graphs/
     strategy:
       fail-fast: false
       matrix:
