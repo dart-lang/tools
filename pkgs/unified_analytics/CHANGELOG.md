@@ -1,6 +1,7 @@
 ## 1.2.0
 
 - Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users
+- Surveys will be disabled for any users that have been opted out
 
 ## 1.1.1
 
