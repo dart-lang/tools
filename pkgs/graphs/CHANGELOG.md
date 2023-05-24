@@ -1,3 +1,7 @@
+## 2.3.1
+
+- Update package repository after move.
+
 ## 2.3.0
 
 - Add a `transitiveClosure` function.
