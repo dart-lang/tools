@@ -3,11 +3,8 @@
 ///
 /// Limitations can be found:
 /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#limitations
-void checkBody(Map<String, Object?> body) {
-  final List events = body['events'] as List;
-  final Map<String, Object?> userProperties =
-      body['user_properties'] as Map<String, Object?>;
 
+void checkBody(Map<String, Object?> body) {
   // Ensure we have the correct top level keys
   assert(body.keys.contains('client_id') == true,
       'client_id key not found in body of request');
@@ -15,6 +12,10 @@ void checkBody(Map<String, Object?> body) {
       'events key not found in body of request');
   assert(body.keys.contains('user_properties') == true,
       'user_properties key not found in body of request');
+
+  final List events = body['events'] as List;
+  final Map<String, Object?> userProperties =
+      body['user_properties'] as Map<String, Object?>;
 
   // GA4 Limitation:
   // Requests can have a maximum of 25 events
