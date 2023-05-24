@@ -402,9 +402,9 @@ class AnalyticsImpl implements Analytics {
       userProperty: userProperty,
     );
 
-    _logHandler.save(data: body);
-
     if (_enableAsserts) checkBody(body);
+
+    _logHandler.save(data: body);
 
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
@@ -531,6 +531,8 @@ class TestAnalytics extends AnalyticsImpl {
       eventData: eventData,
       userProperty: userProperty,
     );
+
+    if (_enableAsserts) checkBody(body);
 
     _logHandler.save(data: body);
 
