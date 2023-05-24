@@ -58,8 +58,6 @@ void checkBody(Map<String, Object?> body) {
       assert(RegExp(r'^[A-Za-z]+$').hasMatch(key[0]),
           'Event param name first char must be alphabetic char');
 
-      // TODO (eliasyishak): need to check if passing a Map that gets converted to
-      //  a string is what is breaking this
       // GA4 Limitation:
       // Parameter values (including item parameter values) must be 100
       // characters or fewer
