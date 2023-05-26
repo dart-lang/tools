@@ -21,7 +21,9 @@ jobs:
     steps:
       - uses: actions/stale@1160a2240286f5da8ec72b1c0816ce2481aabf84
         with:
+          # Don't automatically mark inactive issues+PRs as stale.
           days-before-stale: -1
+          # Close needs-info issues and PRs after 14 days of inactivity.
           days-before-close: 14
           stale-issue-label: "needs-info"
           close-issue-message: >
