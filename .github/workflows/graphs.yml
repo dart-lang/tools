@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/graphs.yml'
+      - 'pkgs/graphs/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/graphs.yml'
+      - 'pkgs/graphs/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+jobs:
+  # Check code formatting and static analysis on a single OS (linux)
+  # against Dart beta.
+  analyze:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/graphs/
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev]
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+      - run: dart analyze --fatal-infos
+        if: always() && steps.install.outcome == 'success'
+
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: pkgs/graphs/
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        sdk: [2.18.0, dev]
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        run: dart pub get
+      - run: dart test --platform vm
+        if: always() && steps.install.outcome == 'success'
+      - run: dart test --platform chrome
+        if: always() && steps.install.outcome == 'success'
