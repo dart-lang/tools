@@ -388,6 +388,6 @@ void main() {
       }
     };
 
-    expect(() => checkBody(body), isA<void>());
+    expect(() => checkBody(body), returnsNormally);
   });
 }
