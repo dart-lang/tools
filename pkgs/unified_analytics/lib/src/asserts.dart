@@ -28,29 +28,34 @@ void checkBody(Map<String, Object?> body) {
 
   // Checks for each event object
   for (Map<String, Object?> eventMap in events) {
+    final String eventName = eventMap['name'] as String;
+
     // GA4 Limitation:
     // Event names must be 40 characters or fewer, may only contain
     // alpha-numeric characters and underscores, and must start
     // with an alphabetic character
-    if ((eventMap['name'] as String).length > 40) {
+    if (eventName.length > 40) {
       throw AnalyticsException('Limit event names to 40 chars or less');
     }
-    if (!RegExp(r'^[A-Za-z0-9_]+$').hasMatch(eventMap['name'] as String)) {
+    if (!RegExp(r'^[A-Za-z0-9_]+$').hasMatch(eventName)) {
       throw AnalyticsException(
           'Event name can only have alphanumeric chars and underscores');
     }
-    if (!RegExp(r'^[A-Za-z]+$').hasMatch((eventMap['name'] as String)[0])) {
+    if (!RegExp(r'^[A-Za-z]+$').hasMatch(eventName[0])) {
       throw AnalyticsException('Event name first char must be alphabetic char');
     }
 
+    final Map<String, Object?> eventParams =
+        eventMap['params'] as Map<String, Object?>;
+
     // GA4 Limitation:
     // Events can have a maximum of 25 parameters
-    if ((eventMap['params'] as Map<String, Object?>).length > 25) {
+    if (eventParams.length > 25) {
       throw AnalyticsException('Limit params for each event to less than 25');
     }
 
     // Loop through each of the event parameters
-    (eventMap['params'] as Map<String, Object?>).forEach((key, value) {
+    eventParams.forEach((key, value) {
       // GA4 Limitation:
       // Ensure that each value for the event params is one
       // of the following types:
