@@ -3,7 +3,6 @@
 ///
 /// Limitations can be found:
 /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#limitations
-
 void checkBody(Map<String, Object?> body) {
   // Ensure we have the correct top level keys
   if (!body.keys.contains('client_id')) {
@@ -55,7 +54,10 @@ void checkBody(Map<String, Object?> body) {
     }
 
     // Loop through each of the event parameters
-    eventParams.forEach((key, value) {
+    for (MapEntry entry in eventParams.entries) {
+      final String key = entry.key;
+      final Object? value = entry.value;
+
       // GA4 Limitation:
       // Ensure that each value for the event params is one
       // of the following types:
@@ -94,7 +96,7 @@ void checkBody(Map<String, Object?> body) {
               'Limit characters in event param value to 100 chars or less');
         }
       }
-    });
+    }
   }
 
   // GA4 Limitation:
@@ -104,8 +106,9 @@ void checkBody(Map<String, Object?> body) {
   }
 
   // Checks for each user property item
-  userProperties.forEach((key, value) {
-    value as Map<String, Object?>;
+  for (MapEntry entry in userProperties.entries) {
+    final String key = entry.key;
+    final Map<String, Object?> value = entry.value as Map<String, Object?>;
 
     // GA4 Limitation:
     // User property names must be 24 characters or fewer
@@ -121,7 +124,7 @@ void checkBody(Map<String, Object?> body) {
             'Limit user property values to 36 chars or less');
       }
     }
-  });
+  }
 }
 
 class AnalyticsException implements Exception {
