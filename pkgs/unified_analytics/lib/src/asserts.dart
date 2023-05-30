@@ -118,11 +118,10 @@ void checkBody(Map<String, Object?> body) {
 
     // GA4 Limitation:
     // User property values must be 36 characters or fewer
-    if (value['value'].runtimeType == String) {
-      if ((value['value'] as String).length > 36) {
-        throw AnalyticsException(
-            'Limit user property values to 36 chars or less');
-      }
+    final Object? userPropValue = value['value'];
+    if (userPropValue is String && userPropValue.length > 36) {
+      throw AnalyticsException(
+          'Limit user property values to 36 chars or less');
     }
   }
 }
