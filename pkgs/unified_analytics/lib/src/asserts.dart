@@ -1,3 +1,9 @@
+/// Matches only alphabetic chars
+final RegExp alphabeticPattern = RegExp(r'^[A-Za-z]+$');
+
+/// Matches strings that contain alphanumeric chars and underscores
+final RegExp alphaNumericPattern = RegExp(r'^[A-Za-z0-9_]+$');
+
 /// Checks that the body of the request being sent to
 /// GA4 is within the limitations
 ///
@@ -36,11 +42,11 @@ void checkBody(Map<String, Object?> body) {
     if (eventName.length > 40) {
       throw AnalyticsException('Limit event names to 40 chars or less');
     }
-    if (!RegExp(r'^[A-Za-z0-9_]+$').hasMatch(eventName)) {
+    if (!alphaNumericPattern.hasMatch(eventName)) {
       throw AnalyticsException(
           'Event name can only have alphanumeric chars and underscores');
     }
-    if (!RegExp(r'^[A-Za-z]+$').hasMatch(eventName[0])) {
+    if (!alphabeticPattern.hasMatch(eventName[0])) {
       throw AnalyticsException('Event name first char must be alphabetic char');
     }
 
@@ -77,11 +83,11 @@ void checkBody(Map<String, Object?> body) {
       if (key.length > 40) {
         throw AnalyticsException('Limit event param names to 40 chars or less');
       }
-      if (!RegExp(r'^[A-Za-z0-9_]+$').hasMatch(key)) {
+      if (!alphaNumericPattern.hasMatch(key)) {
         throw AnalyticsException(
             'Event param name can only have alphanumeric chars and underscores');
       }
-      if (!RegExp(r'^[A-Za-z]+$').hasMatch(key[0])) {
+      if (!alphabeticPattern.hasMatch(key[0])) {
         throw AnalyticsException(
             'Event param name first char must be alphabetic char');
       }
