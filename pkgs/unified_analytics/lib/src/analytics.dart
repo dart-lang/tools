@@ -11,6 +11,7 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
+import 'package:unified_analytics/src/asserts.dart';
 
 import 'config_handler.dart';
 import 'constants.dart';
@@ -25,11 +26,15 @@ import 'utils.dart';
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
   /// of the [Analytics] abstract class using the [LocalFileSystem]
+  ///
+  /// If [enableAsserts] is set to `true`, then asserts for GA4 limitations
+  /// will be enabled
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
+    bool enableAsserts = false,
   }) {
     // Create the instance of the file system so clients don't need
     // resolve on their own
@@ -69,17 +74,22 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      enableAsserts: enableAsserts,
     );
   }
 
   /// Factory constructor to return the [AnalyticsImpl] class with
   /// Google Analytics credentials that point to a test instance and
   /// not the production instance where live data will be sent
+  ///
+  /// By default, [enableAsserts] is set to `true` to check against
+  /// GA4 limitations
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
+    bool enableAsserts = true,
   }) {
     // Create the instance of the file system so clients don't need
     // resolve on their own
@@ -123,6 +133,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      enableAsserts: enableAsserts,
     );
   }
 
@@ -157,6 +168,7 @@ abstract class Analytics {
                   : FileSystemStyle.posix,
             ),
         gaClient: FakeGAClient(),
+        enableAsserts: true,
       );
 
   /// Retrieves the consent message to prompt users with on first
@@ -244,6 +256,10 @@ class AnalyticsImpl implements Analytics {
   /// If this is false, all events will be blocked from being sent
   bool _clientShowedMessage = false;
 
+  /// When set to `true`, various assert statements will be enabled
+  /// to ensure usage of this class is within GA4 limitations
+  final bool _enableAsserts;
+
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -254,7 +270,9 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required gaClient,
-  }) : _gaClient = gaClient {
+    required enableAsserts,
+  })  : _gaClient = gaClient,
+        _enableAsserts = enableAsserts {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -398,6 +416,8 @@ class AnalyticsImpl implements Analytics {
       userProperty: userProperty,
     );
 
+    if (_enableAsserts) checkBody(body);
+
     _logHandler.save(data: body);
 
     // Pass to the google analytics client to send
@@ -506,6 +526,7 @@ class TestAnalytics extends AnalyticsImpl {
     required super.toolsMessageVersion,
     required super.fs,
     required super.gaClient,
+    required super.enableAsserts,
   });
 
   @override
@@ -524,6 +545,8 @@ class TestAnalytics extends AnalyticsImpl {
       eventData: eventData,
       userProperty: userProperty,
     );
+
+    if (_enableAsserts) checkBody(body);
 
     _logHandler.save(data: body);
 
