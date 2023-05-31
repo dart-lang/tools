@@ -46,7 +46,7 @@ void main() async {
   for (int i = 0; i < 2000; i++) {
     count += i;
   }
-  await Future<void>.delayed(const Duration(seconds: 100));
+  await Future<void>.delayed(const Duration(milliseconds: 100));
 
   // Calculate the metric to send
   final int runTime = DateTime.now().difference(start).inMilliseconds;
