@@ -88,7 +88,7 @@ Map<String, Object?> generateRequestBody({
 /// This will use environment variables to get the user's
 /// home directory where all the directory will be created that will
 /// contain all of the analytics files
-Directory getHomeDirectory(FileSystem fs) {
+Directory? getHomeDirectory(FileSystem fs) {
   String? home;
   Map<String, String> envVars = io.Platform.environment;
 
@@ -100,7 +100,9 @@ Directory getHomeDirectory(FileSystem fs) {
     home = envVars['AppData'];
   }
 
-  return fs.directory(home!);
+  if (home == null) return null;
+
+  return fs.directory(home);
 }
 
 /// Returns `true` if user has opted out of legacy analytics in Dart or Flutter
