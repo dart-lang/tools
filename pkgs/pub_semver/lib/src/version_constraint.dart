@@ -70,7 +70,7 @@ abstract class VersionConstraint {
       var comparison = startComparison.firstMatch(text);
       if (comparison == null) return null;
 
-      var op = comparison[0];
+      var op = comparison[0]!;
       text = text.substring(comparison.end);
       skipWhitespace();
 
@@ -80,17 +80,13 @@ abstract class VersionConstraint {
             '"$originalText", got "$text".');
       }
 
-      switch (op) {
-        case '<=':
-          return VersionRange(max: version, includeMax: true);
-        case '<':
-          return VersionRange(max: version, alwaysIncludeMaxPreRelease: true);
-        case '>=':
-          return VersionRange(min: version, includeMin: true);
-        case '>':
-          return VersionRange(min: version);
-      }
-      throw UnsupportedError(op!);
+      return switch (op) {
+        '<=' => VersionRange(max: version, includeMax: true),
+        '<' => VersionRange(max: version, alwaysIncludeMaxPreRelease: true),
+        '>=' => VersionRange(min: version, includeMin: true),
+        '>' => VersionRange(min: version),
+        _ => throw UnsupportedError(op),
+      };
     }
 
     // Try to parse the "^" operator followed by a version.
