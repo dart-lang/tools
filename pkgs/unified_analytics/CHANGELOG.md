@@ -1,4 +1,4 @@
-## 2.1.0
+## 2.1.0-dev
 
 - Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users
 - Surveys will be disabled for any users that have been opted out
