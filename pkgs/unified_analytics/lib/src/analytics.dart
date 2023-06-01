@@ -413,22 +413,22 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Future<List<Survey>> fetchAvailableSurveys() async {
-    final List<Survey> surveysToShow = [];
+    final surveysToShow = <Survey>[];
     if (!okToSend) return surveysToShow;
 
-    final LogFileStats? logFileStats = _logHandler.logFileStats();
+    final logFileStats = _logHandler.logFileStats();
 
     if (logFileStats == null) return [];
 
-    for (final Survey survey in await _surveyHandler.fetchSurveyList()) {
+    for (final survey in await _surveyHandler.fetchSurveyList()) {
       // Counter to check each survey condition, if all are met, then
       // this integer will be equal to the number of conditions in
       // [Survey.conditionList]
-      int conditionsMet = 0;
-      for (final Condition condition in survey.conditionList) {
+      var conditionsMet = 0;
+      for (final condition in survey.conditionList) {
         // Retrieve the value from the [LogFileStats] with
         // the label provided in the condtion
-        final int? logFileStatsValue =
+        final logFileStatsValue =
             logFileStats.getValueByString(condition.field);
 
         if (logFileStatsValue == null) continue;
