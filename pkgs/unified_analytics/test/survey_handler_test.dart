@@ -14,10 +14,10 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   group('Unit testing function checkSurveyDate:', () {
-    final DateTime date = DateTime(2023, 5, 1);
+    final date = DateTime(2023, 5, 1);
     // Two surveys created, one that is within the survey date
     // range, and one that is not
-    final Survey validSurvey = Survey(
+    final validSurvey = Survey(
       'uniqueId',
       'url',
       DateTime(2023, 1, 1),
@@ -28,7 +28,7 @@ void main() {
       0.1,
       <Condition>[],
     );
-    final Survey invalidSurvey = Survey(
+    final invalidSurvey = Survey(
       'uniqueId',
       'url',
       DateTime(2022, 1, 1),
@@ -41,14 +41,14 @@ void main() {
     );
 
     test('expired survey', () {
-      final Clock clock = Clock.fixed(date);
+      final clock = Clock.fixed(date);
       withClock(clock, () {
         expect(checkSurveyDate(invalidSurvey), false);
       });
     });
 
     test('valid survey', () {
-      final Clock clock = Clock.fixed(date);
+      final clock = Clock.fixed(date);
       withClock(clock, () {
         expect(checkSurveyDate(validSurvey), true);
       });
@@ -56,7 +56,7 @@ void main() {
   });
 
   group('Unit testing function parseSurveysFromJson', () {
-    final String validContents = '''
+    final validContents = '''
 [
 	{
 		"uniqueId": "xxxxx",
@@ -82,7 +82,7 @@ void main() {
 	}
 ]
 ''';
-    final String invalidContents = '''
+    final invalidContents = '''
 [
 	{
 		"uniqueId": "xxxxx",
@@ -106,15 +106,14 @@ void main() {
 
     test('valid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
-        final List<Survey> parsedSurveys =
-            parseSurveysFromJson(jsonDecode(validContents));
+        final parsedSurveys =
+            parseSurveysFromJson(jsonDecode(validContents) as List);
 
         expect(parsedSurveys.length, 1);
         expect(parsedSurveys.first.conditionList.length, 2);
 
-        final Condition firstCondition =
-            parsedSurveys.first.conditionList.first;
-        final Condition secondCondition = parsedSurveys.first.conditionList[1];
+        final firstCondition = parsedSurveys.first.conditionList.first;
+        final secondCondition = parsedSurveys.first.conditionList[1];
 
         expect(firstCondition.field, 'logFileStats.recordCount');
         expect(firstCondition.operatorString, '>=');
@@ -128,8 +127,8 @@ void main() {
 
     test('invalid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
-        final List<Survey> parsedSurveys =
-            parseSurveysFromJson(jsonDecode(invalidContents));
+        final parsedSurveys =
+            parseSurveysFromJson(jsonDecode(invalidContents) as List);
 
         expect(parsedSurveys.length, 0,
             reason: 'The condition value is not a '
@@ -147,7 +146,7 @@ void main() {
       fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
       homeDirectory = fs.directory('home');
 
-      final Analytics initialAnalytics = Analytics.test(
+      final initialAnalytics = Analytics.test(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         measurementId: 'measurementId',
@@ -190,13 +189,12 @@ void main() {
         );
 
         // Simulate 60 events to send so that the first condition is satisified
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
 
-        final List<Survey> fetchedSurveys =
-            await analytics.fetchAvailableSurveys();
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 1);
       });
@@ -233,13 +231,12 @@ void main() {
         );
 
         // Simulate 60 events to send so that the first condition is satisified
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
 
-        final List<Survey> fetchedSurveys =
-            await analytics.fetchAvailableSurveys();
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 0);
       });
@@ -279,17 +276,16 @@ void main() {
         );
 
         // Simulate 60 events to send so that the first condition is satisified
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
 
-        final List<Survey> fetchedSurveys =
-            await analytics.fetchAvailableSurveys();
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 1);
 
-        final Survey survey = fetchedSurveys.first;
+        final survey = fetchedSurveys.first;
         expect(survey.uniqueId, 'uniqueId123');
         expect(survey.url, 'url123');
         expect(survey.startDate.year, 2023);
@@ -304,7 +300,7 @@ void main() {
         expect(survey.samplingRate, 0.1);
         expect(survey.conditionList.length, 1);
 
-        final Condition condition = survey.conditionList.first;
+        final condition = survey.conditionList.first;
         expect(condition.field, 'logFileStats.recordCount');
         expect(condition.operatorString, '>=');
         expect(condition.value, 50);
@@ -345,13 +341,12 @@ void main() {
         );
 
         // Simulate 60 events to send so that the first condition is satisified
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
 
-        final List<Survey> fetchedSurveys =
-            await analytics.fetchAvailableSurveys();
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 0);
       });
@@ -408,18 +403,17 @@ void main() {
         );
 
         // Simulate 60 events to send so that the first condition is satisified
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
 
-        final List<Survey> fetchedSurveys =
-            await analytics.fetchAvailableSurveys();
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 2);
 
-        final Survey firstSurvey = fetchedSurveys.first;
-        final Survey secondSurvey = fetchedSurveys.last;
+        final firstSurvey = fetchedSurveys.first;
+        final secondSurvey = fetchedSurveys.last;
 
         expect(firstSurvey.uniqueId, '12345');
         expect(secondSurvey.uniqueId, '67890');
@@ -457,22 +451,23 @@ void main() {
         );
 
         // Simulate 60 events to send so that the first condition is satisified
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
 
         // Setting to false will prevent anything from getting returned
         await analytics.setTelemetry(false);
-        List<Survey> fetchedSurveys = await analytics.fetchAvailableSurveys();
+        var fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 0);
 
-        // Setting telemetry back to true should enable the surveys to get returned
-        // again; we will also need to send the fake events again because on opt out,
-        // the log file will get cleared and one of the conditions for the fake survey
-        // loaded is that we need at least 50 records for one of the conditions
+        // Setting telemetry back to true should enable the surveys to get
+        // returned again; we will also need to send the fake events again
+        // because on opt out, the log file will get cleared and one of
+        // the conditions for the fake survey loaded is that we need
+        // at least 50 records for one of the conditions
         await analytics.setTelemetry(true);
-        for (int i = 0; i < 60; i++) {
+        for (var i = 0; i < 60; i++) {
           await analytics.sendEvent(
               eventName: DashEvent.analyticsCollectionEnabled);
         }
