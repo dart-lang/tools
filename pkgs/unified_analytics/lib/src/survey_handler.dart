@@ -166,7 +166,7 @@ class SurveyHandler {
       return [];
     }
 
-    final List<Survey> surveyList = parseSurveysFromJson(body);
+    final surveyList = parseSurveysFromJson(body);
 
     return surveyList;
   }
@@ -185,7 +185,7 @@ class FakeSurveyHandler implements SurveyHandler {
   /// Use this class in tests if you can provide the
   /// list of [Survey] objects
   FakeSurveyHandler.fromList({required List<Survey> initializedSurveys}) {
-    for (final Survey survey in initializedSurveys) {
+    for (final survey in initializedSurveys) {
       if (checkSurveyDate(survey)) {
         _fakeInitializedSurveys.add(survey);
       }
