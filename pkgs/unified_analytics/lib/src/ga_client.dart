@@ -38,8 +38,8 @@ class GAClient {
   GAClient({
     required this.measurementId,
     required this.apiSecret,
-  })  : postUrl =
-            '$kAnalyticsUrl?measurement_id=$measurementId&api_secret=$apiSecret',
+  })  : postUrl = '$kAnalyticsUrl?'
+            'measurement_id=$measurementId&api_secret=$apiSecret',
         _client = http.Client();
 
   /// Closes the http client's connection to prevent lingering requests
@@ -54,7 +54,7 @@ class GAClient {
   /// A response status code of `500` indicates an error occured on the send
   /// can the error message can be found in the [Response.body]
   Future<http.Response> sendData(Map<String, Object?> body) async {
-    final Uri uri = Uri.parse(postUrl);
+    final uri = Uri.parse(postUrl);
 
     /// Using a try catch all since post method can result in several
     /// errors; clients using this method can check the awaited status
