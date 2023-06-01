@@ -74,7 +74,7 @@ class Initializer {
   /// the last ping which will be used to increment the session
   /// if current timestamp is greater than the session window
   static void createSessionFile({required File sessionFile}) {
-    final DateTime now = clock.now();
+    final now = clock.now();
     sessionFile.createSync(recursive: true);
     sessionFile.writeAsStringSync(jsonEncode(<String, int>{
       'session_id': now.millisecondsSinceEpoch,
@@ -91,7 +91,7 @@ class Initializer {
   /// if they currently exist on disk.
   void run({bool forceReset = false}) {
     // Begin by checking for the config file
-    final File configFile = fs.file(
+    final configFile = fs.file(
         p.join(homeDirectory.path, kDartToolDirectoryName, kConfigFileName));
 
     // When the config file doesn't exist, initialize it with the default tools
@@ -107,21 +107,21 @@ class Initializer {
     }
 
     // Begin initialization checks for the client id
-    final File clientFile = fs.file(
+    final clientFile = fs.file(
         p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
     if (!clientFile.existsSync()) {
       createClientIdFile(clientFile: clientFile);
     }
 
     // Begin initialization checks for the session file
-    final File sessionFile = fs.file(
+    final sessionFile = fs.file(
         p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
     if (!sessionFile.existsSync()) {
       createSessionFile(sessionFile: sessionFile);
     }
 
     // Begin initialization checks for the log file to persist events locally
-    final File logFile = fs
+    final logFile = fs
         .file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
     if (!logFile.existsSync()) {
       createLogFile(logFile: logFile);

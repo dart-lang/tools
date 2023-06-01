@@ -15,20 +15,20 @@ void main() {
   late Directory home;
   late Analytics analytics;
 
-  const String homeDirName = 'home';
-  const DashTool initialTool = DashTool.flutterTool;
-  const String measurementId = 'measurementId';
-  const String apiSecret = 'apiSecret';
-  const int toolsMessageVersion = 1;
-  const String toolsMessage = 'toolsMessage';
-  const String flutterChannel = 'flutterChannel';
-  const String flutterVersion = 'flutterVersion';
-  const String dartVersion = 'dartVersion';
-  const DevicePlatform platform = DevicePlatform.macos;
+  const homeDirName = 'home';
+  const initialTool = DashTool.flutterTool;
+  const measurementId = 'measurementId';
+  const apiSecret = 'apiSecret';
+  const toolsMessageVersion = 1;
+  const toolsMessage = 'toolsMessage';
+  const flutterChannel = 'flutterChannel';
+  const flutterVersion = 'flutterVersion';
+  const dartVersion = 'dartVersion';
+  const platform = DevicePlatform.macos;
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final FileSystemStyle fsStyle =
+    final fsStyle =
         io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
@@ -36,7 +36,7 @@ void main() {
 
   test('Honor legacy dart analytics opt out', () {
     // Create the file for the dart legacy opt out
-    final File dartLegacyConfigFile =
+    final dartLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     dartLegacyConfigFile.createSync(recursive: true);
     dartLegacyConfigFile.writeAsStringSync('''
@@ -69,7 +69,7 @@ void main() {
 
   test('Telemetry enabled if legacy dart analytics is enabled', () {
     // Create the file for the dart legacy opt out
-    final File dartLegacyConfigFile =
+    final dartLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     dartLegacyConfigFile.createSync(recursive: true);
     dartLegacyConfigFile.writeAsStringSync('''
@@ -102,7 +102,7 @@ void main() {
 
   test('Honor legacy flutter analytics opt out', () {
     // Create the file for the dart legacy opt out
-    final File flutterLegacyConfigFile =
+    final flutterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     flutterLegacyConfigFile.createSync(recursive: true);
     flutterLegacyConfigFile.writeAsStringSync('''
@@ -134,7 +134,7 @@ void main() {
 
   test('Telemetry enabled if legacy flutter analytics is enabled', () {
     // Create the file for the dart legacy opt out
-    final File flutterLegacyConfigFile =
+    final flutterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     flutterLegacyConfigFile.createSync(recursive: true);
     flutterLegacyConfigFile.writeAsStringSync('''
@@ -167,7 +167,7 @@ void main() {
   test('Telemetry disabled if dart config file corrupted', () {
     // Create the file for the dart legacy opt out with text that
     // is not valid JSON
-    final File dartLegacyConfigFile =
+    final dartLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     dartLegacyConfigFile.createSync(recursive: true);
     dartLegacyConfigFile.writeAsStringSync('''
@@ -201,7 +201,7 @@ NOT VALID JSON
   test('Telemetry disabled if flutter config file corrupted', () {
     // Create the file for the dart legacy opt out with text that
     // is not valid JSON
-    final File fluttterLegacyConfigFile =
+    final fluttterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     fluttterLegacyConfigFile.createSync(recursive: true);
     fluttterLegacyConfigFile.writeAsStringSync('''

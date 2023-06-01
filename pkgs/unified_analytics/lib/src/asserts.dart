@@ -21,9 +21,8 @@ void checkBody(Map<String, Object?> body) {
     throw AnalyticsException('user_properties missing from top level keys');
   }
 
-  final List events = body['events'] as List;
-  final Map<String, Object?> userProperties =
-      body['user_properties'] as Map<String, Object?>;
+  final events = body['events'] as List;
+  final userProperties = body['user_properties'] as Map<String, Object?>;
 
   // GA4 Limitation:
   // Requests can have a maximum of 25 events
@@ -32,8 +31,8 @@ void checkBody(Map<String, Object?> body) {
   }
 
   // Checks for each event object
-  for (Map<String, Object?> eventMap in events) {
-    final String eventName = eventMap['name'] as String;
+  for (var eventMap in events.cast<Map<String, Object?>>()) {
+    final eventName = eventMap['name'] as String;
 
     // GA4 Limitation:
     // Event names must be 40 characters or fewer, may only contain
@@ -50,8 +49,7 @@ void checkBody(Map<String, Object?> body) {
       throw AnalyticsException('Event name first char must be alphabetic char');
     }
 
-    final Map<String, Object?> eventParams =
-        eventMap['params'] as Map<String, Object?>;
+    final eventParams = eventMap['params'] as Map<String, Object?>;
 
     // GA4 Limitation:
     // Events can have a maximum of 25 parameters
@@ -60,9 +58,9 @@ void checkBody(Map<String, Object?> body) {
     }
 
     // Loop through each of the event parameters
-    for (MapEntry entry in eventParams.entries) {
-      final String key = entry.key;
-      final Object? value = entry.value;
+    for (var entry in eventParams.entries) {
+      final key = entry.key;
+      final value = entry.value;
 
       // GA4 Limitation:
       // Ensure that each value for the event params is one
@@ -85,7 +83,8 @@ void checkBody(Map<String, Object?> body) {
       }
       if (!alphaNumericPattern.hasMatch(key)) {
         throw AnalyticsException(
-            'Event param name can only have alphanumeric chars and underscores');
+          'Event param name can only have alphanumeric chars and underscores',
+        );
       }
       if (!alphabeticPattern.hasMatch(key[0])) {
         throw AnalyticsException(
@@ -112,9 +111,9 @@ void checkBody(Map<String, Object?> body) {
   }
 
   // Checks for each user property item
-  for (MapEntry entry in userProperties.entries) {
-    final String key = entry.key;
-    final Map<String, Object?> value = entry.value as Map<String, Object?>;
+  for (var entry in userProperties.entries) {
+    final key = entry.key;
+    final value = entry.value as Map<String, Object?>;
 
     // GA4 Limitation:
     // User property names must be 24 characters or fewer
@@ -124,7 +123,7 @@ void checkBody(Map<String, Object?> body) {
 
     // GA4 Limitation:
     // User property values must be 36 characters or fewer
-    final Object? userPropValue = value['value'];
+    final userPropValue = value['value'];
     if (userPropValue is String && userPropValue.length > 36) {
       throw AnalyticsException(
           'Limit user property values to 36 chars or less');

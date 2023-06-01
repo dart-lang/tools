@@ -99,28 +99,29 @@ class LogHandler {
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final List<LogItem> records = logFile
+    final records = logFile
         .readAsLinesSync()
-        .map((String e) => LogItem.fromRecord(jsonDecode(e)))
+        .map((String e) =>
+            LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>))
         .whereType<LogItem>()
         .toList();
 
     if (records.isEmpty) return null;
 
     // Get the start and end dates for the log file
-    final DateTime startDateTime = records.first.localTime;
-    final DateTime endDateTime = records.last.localTime;
+    final startDateTime = records.first.localTime;
+    final endDateTime = records.last.localTime;
 
     // Map with counters for user properties
-    final Map<String, Set<Object>> counter = <String, Set<Object>>{
+    final counter = <String, Set<Object>>{
       'sessions': <int>{},
       'flutter_channel': <String>{},
       'tool': <String>{},
     };
 
     // Map of counters for each event
-    final Map<String, int> eventCount = <String, int>{};
-    for (LogItem record in records) {
+    final eventCount = <String, int>{};
+    for (var record in records) {
       counter['sessions']!.add(record.sessionId);
       counter['tool']!.add(record.tool);
       if (record.flutterChannel != null) {
@@ -135,7 +136,7 @@ class LogHandler {
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
     }
 
-    final DateTime now = clock.now();
+    final now = clock.now();
 
     return LogFileStats(
       startDateTime: startDateTime,
@@ -155,8 +156,8 @@ class LogHandler {
   /// This will keep the max number of records limited to equal to
   /// or less than [kLogFileLength] records
   void save({required Map<String, Object?> data}) {
-    List<String> records = logFile.readAsLinesSync();
-    final String content = '${jsonEncode(data)}\n';
+    var records = logFile.readAsLinesSync();
+    final content = '${jsonEncode(data)}\n';
 
     // When the record count is less than the max, add as normal;
     // else drop the oldest records until equal to max
@@ -251,34 +252,33 @@ class LogItem {
     try {
       // Parse out values from the top level key = 'events' and return
       // a map for the one event in the value
-      final Map<String, Object?> eventProp =
-          ((record['events']! as List<Object?>).first as Map<String, Object?>);
-      final String eventName = eventProp['name'] as String;
+      final eventProp =
+          (record['events']! as List<Object?>).first as Map<String, Object?>;
+      final eventName = eventProp['name'] as String;
 
       // Parse the data out of the `user_properties` value
-      final Map<String, Object?> userProps =
-          record['user_properties'] as Map<String, Object?>;
+      final userProps = record['user_properties'] as Map<String, Object?>;
 
       // Parse out the values from the top level key = 'user_properties`
-      final int? sessionId =
+      final sessionId =
           (userProps['session_id']! as Map<String, Object?>)['value'] as int?;
-      final String? flutterChannel = (userProps['flutter_channel']!
+      final flutterChannel = (userProps['flutter_channel']!
           as Map<String, Object?>)['value'] as String?;
-      final String? host =
+      final host =
           (userProps['host']! as Map<String, Object?>)['value'] as String?;
-      final String? flutterVersion = (userProps['flutter_version']!
+      final flutterVersion = (userProps['flutter_version']!
           as Map<String, Object?>)['value'] as String?;
-      final String? dartVersion = (userProps['dart_version']!
+      final dartVersion = (userProps['dart_version']!
           as Map<String, Object?>)['value'] as String?;
-      final String? tool =
+      final tool =
           (userProps['tool']! as Map<String, Object?>)['value'] as String?;
-      final String? localTimeString = (userProps['local_time']!
+      final localTimeString = (userProps['local_time']!
           as Map<String, Object?>)['value'] as String?;
 
       // If any of the above values are null, return null since that
       // indicates the record is malformed; note that `flutter_version`
       // and `flutter_channel` are nullable fields in the log file
-      final List<Object?> values = <Object?>[
+      final values = <Object?>[
         // Values associated with the top level key = 'events'
         eventName,
 
@@ -289,12 +289,12 @@ class LogItem {
         tool,
         localTimeString,
       ];
-      for (Object? value in values) {
+      for (var value in values) {
         if (value == null) return null;
       }
 
       // Parse the local time from the string extracted
-      final DateTime localTime = DateTime.parse(localTimeString!).toLocal();
+      final localTime = DateTime.parse(localTimeString!).toLocal();
 
       return LogItem(
         eventName: eventName,
@@ -306,6 +306,7 @@ class LogItem {
         tool: tool!,
         localTime: localTime,
       );
+      // ignore: avoid_catching_errors
     } on TypeError {
       return null;
     } on FormatException {

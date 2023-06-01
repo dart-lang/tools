@@ -3,14 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
-
 import 'package:unified_analytics/src/asserts.dart';
 
 void main() {
   test('Failure if client_id top level key is missing', () {
-    final Map<String, Object?> body = {};
+    final body = <String, Object?>{};
 
-    final String expectedErrorMessage = 'client_id missing from top level keys';
+    final expectedErrorMessage = 'client_id missing from top level keys';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -19,9 +18,9 @@ void main() {
   });
 
   test('Failure if events top level key is missing', () {
-    final Map<String, Object?> body = {'client_id': 'xxxxxxx'};
+    final body = <String, Object?>{'client_id': 'xxxxxxx'};
 
-    final String expectedErrorMessage = 'events missing from top level keys';
+    final expectedErrorMessage = 'events missing from top level keys';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -30,10 +29,9 @@ void main() {
   });
 
   test('Failure if user_properties top level key is missing', () {
-    final Map<String, Object?> body = {'client_id': 'xxxxxxx', 'events': []};
+    final body = <String, Object?>{'client_id': 'xxxxxxx', 'events': []};
 
-    final String expectedErrorMessage =
-        'user_properties missing from top level keys';
+    final expectedErrorMessage = 'user_properties missing from top level keys';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -42,18 +40,18 @@ void main() {
   });
 
   test('Failure if more than 25 events found in events list', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[],
       'user_properties': <String, Object?>{}
     };
 
     // Add more than the 25 allowed events
-    for (int i = 0; i < 30; i++) {
+    for (var i = 0; i < 30; i++) {
       (body['events'] as List).add({'name': i});
     }
 
-    final String expectedErrorMessage = '25 is the max number of events';
+    final expectedErrorMessage = '25 is the max number of events';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -62,7 +60,7 @@ void main() {
   });
 
   test('Failure when event name is greater than 40 chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -74,7 +72,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage = 'Limit event names to 40 chars or less';
+    final expectedErrorMessage = 'Limit event names to 40 chars or less';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -83,7 +81,7 @@ void main() {
   });
 
   test('Failure when event name has invalid chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -94,7 +92,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Event name can only have alphanumeric chars and underscores';
     expect(
         () => checkBody(body),
@@ -104,7 +102,7 @@ void main() {
   });
 
   test('Failure when event name does not start with alphabetic char', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -115,7 +113,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Event name first char must be alphabetic char';
     expect(
         () => checkBody(body),
@@ -125,7 +123,7 @@ void main() {
   });
 
   test('Failure when an event has more than 25 event params', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -136,16 +134,15 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final Map<String, Object?> params = {};
-    for (int i = 0; i < 30; i++) {
+    final params = <String, Object?>{};
+    for (var i = 0; i < 30; i++) {
       params['$i'] = i;
     }
 
     // Add the params to the first event in the body
-    (body['events'] as List).first['params'] = params;
+    ((body['events'] as List).first as Map)['params'] = params;
 
-    final String expectedErrorMessage =
-        'Limit params for each event to less than 25';
+    final expectedErrorMessage = 'Limit params for each event to less than 25';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -155,7 +152,7 @@ void main() {
 
   test('Failure when an value for event params is not a supported type (list)',
       () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -170,7 +167,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Values for event params have to be String, int, double, or bool';
     expect(
         () => checkBody(body),
@@ -181,7 +178,7 @@ void main() {
 
   test('Failure when an value for event params is not a supported type (map)',
       () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -196,7 +193,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Values for event params have to be String, int, double, or bool';
     expect(
         () => checkBody(body),
@@ -206,7 +203,7 @@ void main() {
   });
 
   test('Failure when event param name is more than 40 chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -217,8 +214,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
-        'Limit event param names to 40 chars or less';
+    final expectedErrorMessage = 'Limit event param names to 40 chars or less';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -227,7 +223,7 @@ void main() {
   });
 
   test('Failure for event param name that has invalid chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -238,7 +234,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Event param name can only have alphanumeric chars and underscores';
     expect(
         () => checkBody(body),
@@ -248,30 +244,31 @@ void main() {
   });
 
   test(
-      'Failure for event param name that does not start with an alphabetic char',
-      () {
-    final Map<String, Object?> body = {
-      'client_id': 'xxxxxxx',
-      'events': <Map<String, Object?>>[
-        {
-          'name': 'hot_reload_time',
-          'params': {'22time_ns': 133}
-        }
-      ],
-      'user_properties': <String, Object?>{}
-    };
+    'Failure for event param name that does not start with an alphabetic char',
+    () {
+      final body = <String, Object?>{
+        'client_id': 'xxxxxxx',
+        'events': <Map<String, Object?>>[
+          {
+            'name': 'hot_reload_time',
+            'params': {'22time_ns': 133}
+          }
+        ],
+        'user_properties': <String, Object?>{}
+      };
 
-    final String expectedErrorMessage =
-        'Event param name first char must be alphabetic char';
-    expect(
-        () => checkBody(body),
-        throwsA(predicate(
-            (AnalyticsException e) => e.message == expectedErrorMessage,
-            expectedErrorMessage)));
-  });
+      final expectedErrorMessage =
+          'Event param name first char must be alphabetic char';
+      expect(
+          () => checkBody(body),
+          throwsA(predicate(
+              (AnalyticsException e) => e.message == expectedErrorMessage,
+              expectedErrorMessage)));
+    },
+  );
 
   test('Failure for event param values that are greater than 100 chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -287,7 +284,7 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Limit characters in event param value to 100 chars or less';
     expect(
         () => checkBody(body),
@@ -297,7 +294,7 @@ void main() {
   });
 
   test('Failure when body has more than 25 user properties', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -308,11 +305,11 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    for (int i = 0; i < 30; i++) {
+    for (var i = 0; i < 30; i++) {
       (body['user_properties']! as Map<String, Object?>)['$i'] = i;
     }
 
-    final String expectedErrorMessage = 'Limit user properties to 25 or less';
+    final expectedErrorMessage = 'Limit user properties to 25 or less';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -321,7 +318,7 @@ void main() {
   });
 
   test('Failure when user properties names are greater than 24 chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -334,7 +331,7 @@ void main() {
       }
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Limit user property names to 24 chars or less';
     expect(
         () => checkBody(body),
@@ -344,7 +341,7 @@ void main() {
   });
 
   test('Failure when user properties values are greater than 36 chars', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': 'xxxxxxx',
       'events': <Map<String, Object?>>[
         {
@@ -359,7 +356,7 @@ void main() {
       }
     };
 
-    final String expectedErrorMessage =
+    final expectedErrorMessage =
         'Limit user property values to 36 chars or less';
     expect(
         () => checkBody(body),
@@ -369,7 +366,7 @@ void main() {
   });
 
   test('Successful body passes all asserts', () {
-    final Map<String, Object?> body = {
+    final body = <String, Object?>{
       'client_id': '46cc0ba6-f604-4fd9-aa2f-8a20beb24cd4',
       'events': [
         {

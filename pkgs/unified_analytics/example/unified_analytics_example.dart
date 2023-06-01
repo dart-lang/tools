@@ -18,7 +18,7 @@ final Analytics analytics = Analytics.development(
 
 // Timing a process and sending the event
 void main() async {
-  DateTime start = DateTime.now();
+  var start = DateTime.now();
 
   // Each client using this package will have it's own
   // method to show the message but the below is a trivial
@@ -42,23 +42,23 @@ void main() async {
   print('Current user is opted in: ${analytics.telemetryEnabled}');
 
   // Example of long running process
-  int count = 0;
-  for (int i = 0; i < 2000; i++) {
+  var count = 0;
+  for (var i = 0; i < 2000; i++) {
     count += i;
   }
   await Future<void>.delayed(const Duration(milliseconds: 100));
 
   // Calculate the metric to send
-  final int runTime = DateTime.now().difference(start).inMilliseconds;
+  final runTime = DateTime.now().difference(start).inMilliseconds;
   // Generate the body for the event data
-  final Map<String, int> eventData = {
+  final eventData = <String, int>{
     'time_ms': runTime,
     'count': count,
   };
   // Choose one of the enum values for [DashEvent] which should
   // have all possible events; if not there, open an issue for the
   // team to add
-  final DashEvent eventName =
+  final eventName =
       DashEvent.hotReloadTime; // Select appropriate DashEvent enum value
 
   // Make a call to the [Analytics] api to send the data

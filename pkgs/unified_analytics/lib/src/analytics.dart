@@ -41,7 +41,7 @@ abstract class Analytics {
     const FileSystem fs = LocalFileSystem();
 
     // Ensure that the home directory has permissions enabled to write
-    final Directory? homeDirectory = getHomeDirectory(fs);
+    final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
       return NoOpAnalytics();
@@ -59,7 +59,7 @@ abstract class Analytics {
 
     // Create the instance of the GA Client which will create
     // an [http.Client] to send requests
-    final GAClient gaClient = GAClient(
+    final gaClient = GAClient(
       measurementId: kGoogleAnalyticsMeasurementId,
       apiSecret: kGoogleAnalyticsApiSecret,
     );
@@ -96,7 +96,7 @@ abstract class Analytics {
     const FileSystem fs = LocalFileSystem();
 
     // Ensure that the home directory has permissions enabled to write
-    final Directory? homeDirectory = getHomeDirectory(fs);
+    final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
       return NoOpAnalytics();
@@ -113,12 +113,12 @@ abstract class Analytics {
     }
 
     // Credentials defined below for the test Google Analytics instance
-    const String kTestMeasurementId = 'G-N1NXG28J5B';
-    const String kTestApiSecret = '4yT8__oER3Cd84dtx6r-_A';
+    const kTestMeasurementId = 'G-N1NXG28J5B';
+    const kTestApiSecret = '4yT8__oER3Cd84dtx6r-_A';
 
     // Create the instance of the GA Client which will create
     // an [http.Client] to send requests
-    final GAClient gaClient = GAClient(
+    final gaClient = GAClient(
       measurementId: kTestMeasurementId,
       apiSecret: kTestApiSecret,
     );
@@ -190,7 +190,8 @@ abstract class Analytics {
   /// Boolean indicating whether or not telemetry is enabled
   bool get telemetryEnabled;
 
-  /// Returns a map representation of the [UserProperty] for the [Analytics] instance
+  /// Returns a map representation of the [UserProperty] for the [Analytics]
+  /// instance.
   ///
   /// This is what will get sent to Google Analytics with every request
   Map<String, Map<String, Object?>> get userPropertyMap;
@@ -269,8 +270,8 @@ class AnalyticsImpl implements Analytics {
     required DevicePlatform platform,
     required this.toolsMessageVersion,
     required this.fs,
-    required gaClient,
-    required enableAsserts,
+    required GAClient gaClient,
+    required bool enableAsserts,
   })  : _gaClient = gaClient,
         _enableAsserts = enableAsserts {
     // Initialize date formatting for `package:intl` within constructor
@@ -280,7 +281,7 @@ class AnalyticsImpl implements Analytics {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
-    final Initializer initializer = Initializer(
+    final initializer = Initializer(
       fs: fs,
       tool: tool.label,
       homeDirectory: homeDirectory,
@@ -309,7 +310,7 @@ class AnalyticsImpl implements Analytics {
     //
     // If the tool has not been added to the config file, then
     // we will show the message as well
-    final int currentVersion =
+    final currentVersion =
         _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
     if (currentVersion < toolsMessageVersion) {
       _showMessage = true;
@@ -340,8 +341,7 @@ class AnalyticsImpl implements Analytics {
   @override
   String get getConsentMessage {
     // The command to swap in the consent message
-    final String commandString =
-        tool == DashTool.flutterTool ? 'flutter' : 'dart';
+    final commandString = tool == DashTool.flutterTool ? 'flutter' : 'dart';
 
     return kToolsMessage
         .replaceAll('[tool name]', tool.description)
@@ -409,7 +409,7 @@ class AnalyticsImpl implements Analytics {
     if (!okToSend) return null;
 
     // Construct the body of the request
-    final Map<String, Object?> body = generateRequestBody(
+    final body = generateRequestBody(
       clientId: _clientId,
       eventName: eventName,
       eventData: eventData,
@@ -433,7 +433,7 @@ class AnalyticsImpl implements Analytics {
     //
     // We use don't use the sendEvent method because it may
     // be blocked by the [telemetryEnabled] getter
-    final Map<String, Object?> body = generateRequestBody(
+    final body = generateRequestBody(
       clientId: _clientId,
       eventName: DashEvent.analyticsCollectionEnabled,
       eventData: {'status': reportingBool},
@@ -539,7 +539,7 @@ class TestAnalytics extends AnalyticsImpl {
     // Calling the [generateRequestBody] method will ensure that the
     // session file is getting updated without actually making any
     // POST requests to Google Analytics
-    final Map<String, Object?> body = generateRequestBody(
+    final body = generateRequestBody(
       clientId: _clientId,
       eventName: eventName,
       eventData: eventData,

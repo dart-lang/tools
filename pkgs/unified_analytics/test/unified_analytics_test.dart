@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: lines_longer_than_80_chars, avoid_dynamic_calls
+
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:math';
@@ -10,13 +12,12 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
-import 'package:yaml/yaml.dart';
-
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/session.dart';
 import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
+import 'package:yaml/yaml.dart';
 
 void main() {
   late FileSystem fs;
@@ -30,21 +31,21 @@ void main() {
   late File logFile;
   late UserProperty userProperty;
 
-  const String homeDirName = 'home';
-  const DashTool initialTool = DashTool.flutterTool;
-  const DashTool secondTool = DashTool.dartTool;
-  const String measurementId = 'measurementId';
-  const String apiSecret = 'apiSecret';
-  const int toolsMessageVersion = 1;
-  const String toolsMessage = 'toolsMessage';
-  const String flutterChannel = 'flutterChannel';
-  const String flutterVersion = 'flutterVersion';
-  const String dartVersion = 'dartVersion';
-  const DevicePlatform platform = DevicePlatform.macos;
+  const homeDirName = 'home';
+  const initialTool = DashTool.flutterTool;
+  const secondTool = DashTool.dartTool;
+  const measurementId = 'measurementId';
+  const apiSecret = 'apiSecret';
+  const toolsMessageVersion = 1;
+  const toolsMessage = 'toolsMessage';
+  const flutterChannel = 'flutterChannel';
+  const flutterVersion = 'flutterVersion';
+  const dartVersion = 'dartVersion';
+  const platform = DevicePlatform.macos;
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final FileSystemStyle fsStyle =
+    final fsStyle =
         io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
@@ -138,11 +139,11 @@ void main() {
     sessionFile.writeAsStringSync('contents');
 
     // Define the initial time to start
-    final DateTime start = DateTime(1995, 3, 3, 12, 0);
+    final start = DateTime(1995, 3, 3, 12, 0);
 
     // Set the clock to the start value defined above
     withClock(Clock.fixed(start), () {
-      final String timestamp = clock.now().millisecondsSinceEpoch.toString();
+      final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.readAsStringSync(), 'contents');
       userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
@@ -152,7 +153,7 @@ void main() {
 
   test('New tool is successfully added to config file', () {
     // Create a new instance of the analytics class with the new tool
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',
@@ -225,8 +226,8 @@ void main() {
         reason: 'Session file gets regenerated on opt in');
 
     // Extract the last log item to check for the keys
-    final Map<String, Object?> lastLogItem =
-        jsonDecode(logFile.readAsLinesSync().last);
+    final lastLogItem =
+        jsonDecode(logFile.readAsLinesSync().last) as Map<String, Object?>;
     expect((lastLogItem['events'] as List).last['name'],
         'analytics_collection_enabled',
         reason: 'Check on event name');
@@ -246,7 +247,7 @@ void main() {
 
     // Initialize a second analytics class, which simulates a second tool
     // Create a new instance of the analytics class with the new tool
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',
@@ -270,7 +271,7 @@ void main() {
       'Two concurrent instances are running '
       'and reflect an accurate up to date telemetry status', () async {
     // Initialize a second analytics class, which simulates a second tool
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',
@@ -324,7 +325,7 @@ void main() {
 
     // Initialize a second analytics class, which simulates a second tool
     // which should correct the missing trailing new line character
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',
@@ -355,7 +356,7 @@ void main() {
     // Initialize a second analytics class for the same tool as
     // the first analytics instance except with a newer version for
     // the tools message and version
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -477,7 +478,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     //
     // This second instance should reset the config file when it goes
     // to increment the version in the file
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -502,7 +503,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Creating a third instance after the second instance
     // has reset the config file should include the newly added
     // tool again with its incremented version number
-    final Analytics thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -532,7 +533,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
   });
 
   test('Check that UserProperty class has all the necessary keys', () {
-    const List<String> userPropertyKeys = <String>[
+    const userPropertyKeys = <String>[
       'session_id',
       'flutter_channel',
       'host',
@@ -544,7 +545,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');
-    for (String key in userPropertyKeys) {
+    for (var key in userPropertyKeys) {
       expect(analytics.userPropertyMap.keys.contains(key), true,
           reason: 'The $key variable is required');
     }
@@ -566,12 +567,12 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         reason: 'The directory should have been cleared');
 
     // Define the initial time to start
-    final DateTime start = DateTime(1995, 3, 3, 12, 0);
+    final start = DateTime(1995, 3, 3, 12, 0);
 
     // Set the clock to the start value defined above
     withClock(Clock.fixed(start), () {
       // This class will be constructed at a fixed time
-      final Analytics secondAnalytics = Analytics.test(
+      final secondAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
         measurementId: 'measurementId',
@@ -587,8 +588,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       secondAnalytics.clientShowedMessage();
 
       // Read the contents of the session file
-      final String sessionFileContents = sessionFile.readAsStringSync();
-      final Map<String, dynamic> sessionObj = jsonDecode(sessionFileContents);
+      final sessionFileContents = sessionFile.readAsStringSync();
+      final sessionObj =
+          jsonDecode(sessionFileContents) as Map<String, Object?>;
 
       expect(secondAnalytics.userPropertyMap['session_id']?['value'],
           start.millisecondsSinceEpoch);
@@ -596,15 +598,14 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     // Add time to the start time that is less than the duration
-    final DateTime end =
-        start.add(Duration(minutes: kSessionDurationMinutes - 1));
+    final end = start.add(Duration(minutes: kSessionDurationMinutes - 1));
 
     // Use a new clock to ensure that the session id didn't change
     withClock(Clock.fixed(end), () {
       // A new instance will need to be created since the second
       // instance in the previous block is scoped - this new instance
       // should not reset the files generated by the second instance
-      final Analytics thirdAnalytics = Analytics.test(
+      final thirdAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
         measurementId: 'measurementId',
@@ -626,8 +627,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
       // Read the contents of the session file
-      final String sessionFileContents = sessionFile.readAsStringSync();
-      final Map<String, dynamic> sessionObj = jsonDecode(sessionFileContents);
+      final sessionFileContents = sessionFile.readAsStringSync();
+      final sessionObj =
+          jsonDecode(sessionFileContents) as Map<String, Object?>;
 
       expect(thirdAnalytics.userPropertyMap['session_id']?['value'],
           start.millisecondsSinceEpoch,
@@ -647,12 +649,12 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         reason: 'The directory should have been cleared');
 
     // Define the initial time to start
-    final DateTime start = DateTime(1995, 3, 3, 12, 0);
+    final start = DateTime(1995, 3, 3, 12, 0);
 
     // Set the clock to the start value defined above
     withClock(Clock.fixed(start), () {
       // This class will be constructed at a fixed time
-      final Analytics secondAnalytics = Analytics.test(
+      final secondAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
         measurementId: 'measurementId',
@@ -668,8 +670,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       secondAnalytics.clientShowedMessage();
 
       // Read the contents of the session file
-      final String sessionFileContents = sessionFile.readAsStringSync();
-      final Map<String, dynamic> sessionObj = jsonDecode(sessionFileContents);
+      final sessionFileContents = sessionFile.readAsStringSync();
+      final sessionObj =
+          jsonDecode(sessionFileContents) as Map<String, Object?>;
 
       expect(secondAnalytics.userPropertyMap['session_id']?['value'],
           start.millisecondsSinceEpoch);
@@ -680,15 +683,14 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     // Add time to the start time that is less than the duration
-    final DateTime end =
-        start.add(Duration(minutes: kSessionDurationMinutes + 1));
+    final end = start.add(Duration(minutes: kSessionDurationMinutes + 1));
 
     // Use a new clock to ensure that the session id didn't change
     withClock(Clock.fixed(end), () {
       // A new instance will need to be created since the second
       // instance in the previous block is scoped - this new instance
       // should not reset the files generated by the second instance
-      final Analytics thirdAnalytics = Analytics.test(
+      final thirdAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
         measurementId: 'measurementId',
@@ -710,8 +712,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
       // Read the contents of the session file
-      final String sessionFileContents = sessionFile.readAsStringSync();
-      final Map<String, dynamic> sessionObj = jsonDecode(sessionFileContents);
+      final sessionFileContents = sessionFile.readAsStringSync();
+      final sessionObj =
+          jsonDecode(sessionFileContents) as Map<String, Object?>;
 
       expect(thirdAnalytics.userPropertyMap['session_id']?['value'],
           end.millisecondsSinceEpoch,
@@ -732,7 +735,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Validate the request body', () {
     // Sample map for event data
-    final Map<String, dynamic> eventData = <String, dynamic>{
+    final eventData = <String, dynamic>{
       'time': 5,
       'command': 'run',
     };
@@ -753,13 +756,13 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         reason: '"user_properties" is required at the top level');
 
     // Regex for the client id
-    final RegExp clientIdPattern = RegExp(
+    final clientIdPattern = RegExp(
         r'^[0-9a-z]{8}\-[0-9a-z]{4}\-[0-9a-z]{4}\-[0-9a-z]{4}\-[0-9a-z]{12}$');
 
     // Checks for the top level values
     expect(body['client_id'].runtimeType, String,
         reason: 'The client id must be a string');
-    expect(clientIdPattern.hasMatch(body['client_id']), true,
+    expect(clientIdPattern.hasMatch(body['client_id'] as String), true,
         reason: 'The client id is not properly formatted, ie '
             '46cc0ba6-f604-4fd9-aa2f-8a20beb24cd4');
     expect(
@@ -773,7 +776,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
   test('Check that log file is correctly persisting events sent', () {
     final int numberOfEvents = max((kLogFileLength * 0.1).floor(), 5);
 
-    for (int i = 0; i < numberOfEvents; i++) {
+    for (var i = 0; i < numberOfEvents; i++) {
       analytics.sendEvent(
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
     }
@@ -782,7 +785,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         reason: 'The number of events should be $numberOfEvents');
 
     // Add the max number of events to confirm it does not exceed the max
-    for (int i = 0; i < kLogFileLength; i++) {
+    for (var i = 0; i < kLogFileLength; i++) {
       analytics.sendEvent(
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
     }
@@ -794,8 +797,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
   test('Check the query on the log file works as expected', () {
     // Define a new clock so that we can check the output of the
     // log file stats method explicitly
-    final DateTime start = DateTime(1995, 3, 3, 12, 0);
-    final Clock firstClock = Clock.fixed(start);
+    final start = DateTime(1995, 3, 3, 12, 0);
+    final firstClock = Clock.fixed(start);
 
     // Run with the simulated clock for the initial events
     withClock(firstClock, () {
@@ -805,7 +808,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       analytics.sendEvent(
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
-      final LogFileStats firstQuery = analytics.logFileStats()!;
+      final firstQuery = analytics.logFileStats()!;
       expect(firstQuery.sessionCount, 1,
           reason:
               'There should only be one session after the initial send event');
@@ -816,7 +819,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     // Define a new clock that is outside of the session duration
-    final DateTime secondClock =
+    final secondClock =
         start.add(Duration(minutes: kSessionDurationMinutes + 1));
 
     // Use the new clock to send an event that will change the session identifier
@@ -824,7 +827,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       analytics.sendEvent(
           eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
-      final LogFileStats secondQuery = analytics.logFileStats()!;
+      final secondQuery = analytics.logFileStats()!;
 
       // Construct the expected response for the second query
       //
@@ -862,7 +865,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // twice to account for no events being sent on the first instance
     // run for a given tool
     Analytics? secondAnalytics;
-    for (int i = 0; i < 2; i++) {
+    for (var i = 0; i < 2; i++) {
       secondAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
@@ -886,7 +889,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     // Query the log file stats to verify that there are two tools
-    LogFileStats query = analytics.logFileStats()!;
+    var query = analytics.logFileStats()!;
 
     expect(query.toolCount, 2,
         reason: 'There should have been two tools in the persisted logs');
@@ -894,8 +897,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Check that log data missing some keys results in null for stats', () {
     // The following string represents a log item that is malformed (missing the `tool` key)
-    const String malformedLog =
-        '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
+    const malformedLog = '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
         '"events":[{"name":"hot_reload_time","params":{"time_ns":345}}],'
         '"user_properties":{'
         '"session_id":{"value":1675193534342},'
@@ -907,7 +909,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         '"local_time":{"value":"2023-01-31 14:32:14.592898 -0500"}}}';
 
     logFile.writeAsStringSync(malformedLog);
-    final LogFileStats? query = analytics.logFileStats();
+    final query = analytics.logFileStats();
 
     expect(query, isNull,
         reason:
@@ -916,8 +918,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Malformed local_time string should result in null for stats', () {
     // The following string represents a log item that is malformed (missing the `tool` key)
-    const String malformedLog =
-        '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
+    const malformedLog = '{"client_id":"d40133a0-7ea6-4347-b668-ffae94bb8774",'
         '"events":[{"name":"hot_reload_time","params":{"time_ns":345}}],'
         '"user_properties":{'
         '"session_id":{"value":1675193534342},'
@@ -929,7 +930,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         '"local_time":{"value":"2023-xx-31 14:32:14.592898 -0500"}}}'; // PURPOSEFULLY MALFORMED
 
     logFile.writeAsStringSync(malformedLog);
-    final LogFileStats? query = analytics.logFileStats();
+    final query = analytics.logFileStats();
 
     expect(query, isNull,
         reason:
@@ -939,11 +940,11 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
   test('Version is the same in the change log, pubspec, and constants.dart',
       () {
     // Parse the contents of the pubspec.yaml
-    final String pubspecYamlString = io.File('pubspec.yaml').readAsStringSync();
+    final pubspecYamlString = io.File('pubspec.yaml').readAsStringSync();
 
     // Parse into a yaml document to extract the version number
-    final YamlMap doc = loadYaml(pubspecYamlString);
-    final String version = doc['version'];
+    final doc = loadYaml(pubspecYamlString) as YamlMap;
+    final version = doc['version'] as String;
 
     expect(version, kPackageVersion,
         reason: 'The package version in the pubspec and '
@@ -952,7 +953,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
             'Make sure both are the same');
 
     // Parse the contents of the change log file
-    final String changeLogFirstLineString =
+    final changeLogFirstLineString =
         io.File('CHANGELOG.md').readAsLinesSync().first;
     expect(changeLogFirstLineString.substring(3), kPackageVersion,
         reason: 'The CHANGELOG.md file needs the first line to '
@@ -965,7 +966,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // twice to account for no events being sent on the first instance
     // run for a given tool
     Analytics? secondAnalytics;
-    for (int i = 0; i < 2; i++) {
+    for (var i = 0; i < 2; i++) {
       secondAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
@@ -987,7 +988,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
 
     // Query the log file stats to verify that there are two tools
-    LogFileStats query = analytics.logFileStats()!;
+    var query = analytics.logFileStats()!;
 
     expect(query.toolCount, 1,
         reason: 'There should have only been on tool that sent events');
@@ -1024,7 +1025,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     //    characters and underscores, and must start with an alphabetic character
     test('max 25 user properties per event', () {
       final Map<String, Object> userPropPayload = userProperty.preparePayload();
-      const int maxUserPropKeys = 25;
+      const maxUserPropKeys = 25;
 
       expect(userPropPayload.keys.length < maxUserPropKeys, true,
           reason: 'There are too many keys in the UserProperty payload');
@@ -1032,11 +1033,11 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
     test('max 24 characters for user prop keys', () {
       final Map<String, Object> userPropPayload = userProperty.preparePayload();
-      const int maxUserPropLength = 24;
+      const maxUserPropLength = 24;
 
-      bool userPropLengthValid = true;
-      final List<String> invalidUserProps = <String>[];
-      for (String key in userPropPayload.keys) {
+      var userPropLengthValid = true;
+      final invalidUserProps = <String>[];
+      for (var key in userPropPayload.keys) {
         if (key.length > maxUserPropLength) {
           userPropLengthValid = false;
           invalidUserProps.add(key);
@@ -1052,10 +1053,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // Checks item 3
       // All tools must be under 36 characters (and enforce each tool
       // begins with a letter)
-      final RegExp toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_-]{0,35}$');
-      bool toolLengthValid = true;
-      final List<DashTool> invalidTools = <DashTool>[];
-      for (DashTool tool in DashTool.values) {
+      final toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_-]{0,35}$');
+      var toolLengthValid = true;
+      final invalidTools = <DashTool>[];
+      for (var tool in DashTool.values) {
         if (!toolLabelPattern.hasMatch(tool.label)) {
           toolLengthValid = false;
           invalidTools.add(tool);
@@ -1072,11 +1073,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // Check that each event name is less than 40 chars and starts with
       // an alphabetic character; the entire string has to be alphanumeric
       // and underscores
-      final RegExp eventLabelPattern =
-          RegExp(r'^[a-zA-Z]{1}[a-zA-Z0-9\_]{0,39}$');
-      bool eventValid = true;
-      final List<DashEvent> invalidEvents = <DashEvent>[];
-      for (DashEvent event in DashEvent.values) {
+      final eventLabelPattern = RegExp(r'^[a-zA-Z]{1}[a-zA-Z0-9\_]{0,39}$');
+      var eventValid = true;
+      final invalidEvents = <DashEvent>[];
+      for (var event in DashEvent.values) {
         if (!eventLabelPattern.hasMatch(event.label)) {
           eventValid = false;
           invalidEvents.add(event);
@@ -1096,7 +1096,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Consent message is formatted correctly for the flutter tool', () {
     // Retrieve the consent message for flutter tools
-    final String consentMessage = analytics.getConsentMessage;
+    final consentMessage = analytics.getConsentMessage;
 
     expect(consentMessage, equalsIgnoringWhitespace(r'''
 The Flutter CLI developer tool uses Google Analytics to report usage and
@@ -1116,7 +1116,7 @@ the Google Privacy Policy (https://policies.google.com/privacy).
   test('Consent message is formatted correctly for any tool other than flutter',
       () {
     // Create a new instance of the analytics class with the new tool
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',
@@ -1131,7 +1131,7 @@ the Google Privacy Policy (https://policies.google.com/privacy).
     );
 
     // Retrieve the consent message for flutter tools
-    final String consentMessage = secondAnalytics.getConsentMessage;
+    final consentMessage = secondAnalytics.getConsentMessage;
     expect(consentMessage, equalsIgnoringWhitespace(r'''
 The Dart CLI developer tool uses Google Analytics to report usage and
 diagnostic data along with package dependencies, and crash reporting to
