@@ -8,7 +8,7 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   test('NoOpAnalytics.telemetryEnabled is always false', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     expect(analytics.telemetryEnabled, isFalse);
     await analytics.setTelemetry(true);
@@ -16,7 +16,7 @@ void main() {
   });
 
   test('NoOpAnalytics.shouldShowMessage is always false', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     expect(analytics.shouldShowMessage, isFalse);
     analytics.clientShowedMessage();
@@ -24,7 +24,7 @@ void main() {
   });
 
   test('NoOpAnalytics.sendEvent() always returns null', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     await analytics.setTelemetry(true);
     analytics.clientShowedMessage();
@@ -35,7 +35,7 @@ void main() {
   });
 
   test('NoOpAnalytics.logFileStats() always returns null', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     expect(analytics.logFileStats(), isNull);
 

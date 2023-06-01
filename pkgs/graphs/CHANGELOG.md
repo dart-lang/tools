@@ -1,3 +1,7 @@
+## 2.3.2-wip
+
+- Require Dart 3.0
+
 ## 2.3.1
 
 - Update package repository after move.

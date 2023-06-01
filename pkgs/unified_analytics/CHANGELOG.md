@@ -1,3 +1,7 @@
+## 1.1.2-wip
+
+- Allow latest package versions for `file` and `http`.
+
 ## 1.1.1
 
 - Refactoring `dateStamp` utility function to be defined in `utils.dart` instead of having static methods in `Initializer` and `ConfigHandler`

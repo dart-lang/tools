@@ -40,12 +40,11 @@ class Session {
   /// because the last ping variable will always need to be persisted
   int getSessionId() {
     _refreshSessionData();
-    final DateTime now = clock.now();
+    final now = clock.now();
 
     // Convert the epoch time from the last ping into datetime and
     // check if we are within the [sessionDurationMinutes]
-    final DateTime lastPingDateTime =
-        DateTime.fromMillisecondsSinceEpoch(_lastPing);
+    final lastPingDateTime = DateTime.fromMillisecondsSinceEpoch(_lastPing);
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
       // In this case, we will need to change both the session id
       // and the last ping value
@@ -79,8 +78,9 @@ class Session {
   void _refreshSessionData() {
     /// Using a nested function here to reduce verbosity
     void parseContents() {
-      final String sessionFileContents = sessionFile.readAsStringSync();
-      final Map<String, Object?> sessionObj = jsonDecode(sessionFileContents);
+      final sessionFileContents = sessionFile.readAsStringSync();
+      final sessionObj =
+          jsonDecode(sessionFileContents) as Map<String, Object?>;
       _sessionId = sessionObj['session_id'] as int;
       _lastPing = sessionObj['last_ping'] as int;
     }
