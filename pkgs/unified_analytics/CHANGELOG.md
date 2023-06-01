@@ -3,6 +3,10 @@
 - Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users
 - Surveys will be disabled for any users that have been opted out
 
+## 2.0.1-wip
+
+- Allow latest package versions for `file` and `http`.
+
 ## 2.0.0
 
 - Refactoring `dateStamp` utility function to be defined in `utils.dart` instead of having static methods in `Initializer` and `ConfigHandler`

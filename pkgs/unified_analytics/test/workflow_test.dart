@@ -7,7 +7,6 @@ import 'dart:io' as io;
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
-
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
@@ -21,21 +20,21 @@ void main() {
   late File configFile;
   late File logFile;
 
-  const String homeDirName = 'home';
-  const DashTool initialTool = DashTool.flutterTool;
-  const DashTool secondTool = DashTool.dartTool;
-  const String measurementId = 'measurementId';
-  const String apiSecret = 'apiSecret';
-  const int toolsMessageVersion = 1;
-  const String toolsMessage = 'toolsMessage';
-  const String flutterChannel = 'flutterChannel';
-  const String flutterVersion = 'flutterVersion';
-  const String dartVersion = 'dartVersion';
-  const DevicePlatform platform = DevicePlatform.macos;
+  const homeDirName = 'home';
+  const initialTool = DashTool.flutterTool;
+  const secondTool = DashTool.dartTool;
+  const measurementId = 'measurementId';
+  const apiSecret = 'apiSecret';
+  const toolsMessageVersion = 1;
+  const toolsMessage = 'toolsMessage';
+  const flutterChannel = 'flutterChannel';
+  const flutterVersion = 'flutterVersion';
+  const dartVersion = 'dartVersion';
+  const platform = DevicePlatform.macos;
 
   setUp(() {
     // Setup the filesystem with the home directory
-    final FileSystemStyle fsStyle =
+    final fsStyle =
         io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
@@ -54,7 +53,7 @@ void main() {
   });
 
   test('Confirm workflow for checking tools into the config file', () {
-    final Analytics firstAnalytics = Analytics.test(
+    final firstAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -80,9 +79,12 @@ void main() {
         reason: 'The $kConfigFileName was not found');
     expect(logFile.existsSync(), true,
         reason: 'The $kLogFileName file was not found');
-    expect(dartToolDirectory.listSync().length, equals(4),
-        reason:
-            'There should only be 4 files in the $kDartToolDirectoryName directory');
+    expect(
+      dartToolDirectory.listSync().length,
+      equals(4),
+      reason: 'There should only be 4 files in the $kDartToolDirectoryName '
+          'directory',
+    );
     expect(configFile.readAsStringSync(), kConfigString);
 
     expect(firstAnalytics.shouldShowMessage, true);
@@ -109,7 +111,7 @@ void main() {
 
     // Creating a second analytics instance from the same tool now should
     // allow for events to be sent
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -140,12 +142,12 @@ void main() {
     // a new analytics instance has been created with a newer version for
     // message that should be shown
     //
-    // In this case, it should be treated as a new tool being added for the first
-    // time and all events should be blocked
+    // In this case, it should be treated as a new tool being added for the
+    // first time and all events should be blocked
 
     // Delete the log file to reset the counter of events sent
     logFile.deleteSync();
-    final Analytics thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -179,7 +181,7 @@ void main() {
 
     // The fourth instance of the analytics class with the consent message
     // version incremented should now be able to send messages
-    final Analytics fourthAnalytics = Analytics.test(
+    final fourthAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -208,7 +210,7 @@ void main() {
   });
 
   test('Disable second instance if first one did not show message', () {
-    final Analytics firstAnalytics = Analytics.test(
+    final firstAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -224,7 +226,7 @@ void main() {
 
     expect(firstAnalytics.shouldShowMessage, true);
 
-    final Analytics secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -242,7 +244,7 @@ void main() {
 
     secondAnalytics.clientShowedMessage();
 
-    final Analytics thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
       measurementId: measurementId,
@@ -260,8 +262,8 @@ void main() {
   });
 
   test('Passing large version number gets logged in config', () {
-    final int firstVersion = toolsMessageVersion + 3;
-    final Analytics secondAnalytics = Analytics.test(
+    final firstVersion = toolsMessageVersion + 3;
+    final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',
@@ -284,8 +286,8 @@ void main() {
 
     // Create a new instane of the secondTool with an even
     // bigger version
-    final int secondVersion = firstVersion + 3;
-    final Analytics thirdAnalytics = Analytics.test(
+    final secondVersion = firstVersion + 3;
+    final thirdAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
       measurementId: 'measurementId',

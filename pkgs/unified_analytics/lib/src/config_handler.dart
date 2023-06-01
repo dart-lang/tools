@@ -93,7 +93,7 @@ class ConfigHandler {
 
     // New string to be appended to the bottom of the configuration file
     // with a newline character for new tools to be added
-    String newTool = '$tool=$dateStamp,$versionNumber\n';
+    var newTool = '$tool=$dateStamp,$versionNumber\n';
     if (!configFile.readAsStringSync().endsWith('\n')) {
       newTool = '\n$newTool';
     }
@@ -114,11 +114,11 @@ class ConfigHandler {
 
     // Read in the config file contents and use a regex pattern to
     // match the line for the current tool (ie. flutter-tools=2023-01-05,1)
-    final String configString = configFile.readAsStringSync();
-    final String pattern = '^($tool)=([0-9]{4}-[0-9]{2}-[0-9]{2}),([0-9]+)\$';
+    final configString = configFile.readAsStringSync();
+    final pattern = '^($tool)=([0-9]{4}-[0-9]{2}-[0-9]{2}),([0-9]+)\$';
 
-    final RegExp regex = RegExp(pattern, multiLine: true);
-    final Iterable<RegExpMatch> matches = regex.allMatches(configString);
+    final regex = RegExp(pattern, multiLine: true);
+    final matches = regex.allMatches(configString);
 
     // If there isn't exactly one match for the given tool, that suggests the
     // file has been altered and needs to be reset
@@ -129,12 +129,11 @@ class ConfigHandler {
 
     // Construct the new tool line for the config line and replace it
     // in the original config string to prep for writing back out
-    final String newToolString = '$tool=$dateStamp,$newVersionNumber';
-    final String newConfigString =
-        configString.replaceAll(regex, newToolString);
+    final newToolString = '$tool=$dateStamp,$newVersionNumber';
+    final newConfigString = configString.replaceAll(regex, newToolString);
     configFile.writeAsStringSync(newConfigString);
 
-    final ToolInfo? toolInfo = parsedTools[tool];
+    final toolInfo = parsedTools[tool];
     if (toolInfo == null) {
       return;
     }
@@ -155,14 +154,14 @@ class ConfigHandler {
     // Read the configuration file as a string and run the two regex patterns
     // on it to get information around which tools have been parsed and whether
     // or not telemetry has been disabled by the user
-    final String configString = configFile.readAsStringSync();
+    final configString = configFile.readAsStringSync();
 
     // Collect the tools logged in the configuration file
     toolRegex.allMatches(configString).forEach((RegExpMatch element) {
       // Extract the information relevant for the [ToolInfo] class
-      final String tool = element.group(1) as String;
-      final DateTime lastRun = DateTime.parse(element.group(2) as String);
-      final int versionNumber = int.parse(element.group(3) as String);
+      final tool = element.group(1) as String;
+      final lastRun = DateTime.parse(element.group(2) as String);
+      final versionNumber = int.parse(element.group(3) as String);
 
       // Initialize an instance of the [ToolInfo] class to store
       // in the [parsedTools] map object
@@ -192,22 +191,21 @@ class ConfigHandler {
 
   /// Disables the reporting capabilities if false is passed
   Future<void> setTelemetry(bool reportingBool) async {
-    final String flag = reportingBool ? '1' : '0';
-    final String configString = await configFile.readAsString();
+    final flag = reportingBool ? '1' : '0';
+    final configString = await configFile.readAsString();
 
-    final Iterable<RegExpMatch> matches =
-        telemetryFlagRegex.allMatches(configString);
+    final matches = telemetryFlagRegex.allMatches(configString);
 
-    // If there isn't exactly one match for the reporting flag, that suggests the
-    // file has been altered and needs to be reset
+    // If there isn't exactly one match for the reporting flag, that suggests
+    // the file has been altered and needs to be reset
     if (matches.length != 1) {
       resetConfig();
       return;
     }
 
-    final String newTelemetryString = 'reporting=$flag';
+    final newTelemetryString = 'reporting=$flag';
 
-    final String newConfigString =
+    final newConfigString =
         configString.replaceAll(telemetryFlagRegex, newTelemetryString);
 
     await configFile.writeAsString(newConfigString);

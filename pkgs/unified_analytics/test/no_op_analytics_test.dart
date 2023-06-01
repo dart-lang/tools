@@ -11,7 +11,7 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   test('NoOpAnalytics.telemetryEnabled is always false', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     expect(analytics.telemetryEnabled, isFalse);
     await analytics.setTelemetry(true);
@@ -19,7 +19,7 @@ void main() {
   });
 
   test('NoOpAnalytics.shouldShowMessage is always false', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     expect(analytics.shouldShowMessage, isFalse);
     analytics.clientShowedMessage();
@@ -27,7 +27,7 @@ void main() {
   });
 
   test('NoOpAnalytics.sendEvent() always returns null', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     await analytics.setTelemetry(true);
     analytics.clientShowedMessage();
@@ -38,7 +38,7 @@ void main() {
   });
 
   test('NoOpAnalytics.logFileStats() always returns null', () async {
-    final NoOpAnalytics analytics = NoOpAnalytics();
+    final analytics = NoOpAnalytics();
 
     expect(analytics.logFileStats(), isNull);
 
@@ -50,13 +50,13 @@ void main() {
   });
 
   test('Home directory without write permissions', () {
-    final FakeDirectory home = FakeDirectory(writeEnabled: false);
+    final home = FakeDirectory(writeEnabled: false);
 
     expect(checkDirectoryForWritePermissions(home), false);
   });
 
   test('Home directory with write permissions', () {
-    final FakeDirectory home = FakeDirectory(writeEnabled: true);
+    final home = FakeDirectory(writeEnabled: true);
 
     expect(checkDirectoryForWritePermissions(home), true);
   });

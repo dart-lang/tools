@@ -28,17 +28,17 @@ String get dateStamp {
 bool checkDirectoryForWritePermissions(Directory directory) {
   if (!directory.existsSync()) return false;
 
-  final FileStat fileStat = directory.statSync();
+  final fileStat = directory.statSync();
   return fileStat.modeString()[1] == 'w';
 }
 
 /// Format time as 'yyyy-MM-dd HH:mm:ss Z' where Z is the difference between the
 /// timezone of t and UTC formatted according to RFC 822.
 String formatDateTime(DateTime t) {
-  final String sign = t.timeZoneOffset.isNegative ? '-' : '+';
-  final Duration tzOffset = t.timeZoneOffset.abs();
-  final int hoursOffset = tzOffset.inHours;
-  final int minutesOffset =
+  final sign = t.timeZoneOffset.isNegative ? '-' : '+';
+  final tzOffset = t.timeZoneOffset.abs();
+  final hoursOffset = tzOffset.inHours;
+  final minutesOffset =
       tzOffset.inMinutes - (Duration.minutesPerHour * hoursOffset);
   assert(hoursOffset < 24);
   assert(minutesOffset < 60);
@@ -90,7 +90,7 @@ Map<String, Object?> generateRequestBody({
 /// contain all of the analytics files
 Directory? getHomeDirectory(FileSystem fs) {
   String? home;
-  Map<String, String> envVars = io.Platform.environment;
+  var envVars = io.Platform.environment;
 
   if (io.Platform.isMacOS) {
     home = envVars['HOME'];
@@ -117,9 +117,9 @@ bool legacyOptOut({
   required FileSystem fs,
   required Directory home,
 }) {
-  final File dartLegacyConfigFile =
+  final dartLegacyConfigFile =
       fs.file(p.join(home.path, '.dart', 'dartdev.json'));
-  final File flutterLegacyConfigFile = fs.file(p.join(home.path, '.flutter'));
+  final flutterLegacyConfigFile = fs.file(p.join(home.path, '.flutter'));
 
   // Example of what the file looks like for dart
   //
@@ -134,8 +134,8 @@ bool legacyOptOut({
       // Read in the json object into a Map and check for
       // the enabled key being set to false; this means the user
       // has opted out of analytics for dart
-      final Map<String, Object?> dartObj =
-          jsonDecode(dartLegacyConfigFile.readAsStringSync());
+      final dartObj = jsonDecode(dartLegacyConfigFile.readAsStringSync())
+          as Map<String, Object?>;
       if (dartObj.containsKey('enabled') && dartObj['enabled'] == false) {
         return true;
       }
@@ -161,8 +161,8 @@ bool legacyOptOut({
   if (flutterLegacyConfigFile.existsSync()) {
     try {
       // Same process as above for dart
-      final Map<String, Object?> flutterObj =
-          jsonDecode(dartLegacyConfigFile.readAsStringSync());
+      final flutterObj = jsonDecode(dartLegacyConfigFile.readAsStringSync())
+          as Map<String, Object?>;
       if (flutterObj.containsKey('enabled') && flutterObj['enabled'] == false) {
         return true;
       }
@@ -199,7 +199,7 @@ class Uuid {
   /// random numbers as the source of the generated uuid.
   String generateV4() {
     // Generate xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx / 8-4-4-4-12.
-    int special = 8 + _random.nextInt(4);
+    var special = 8 + _random.nextInt(4);
 
     return '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}-'
         '${_bitsDigits(16, 4)}-'
