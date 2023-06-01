@@ -40,6 +40,13 @@ abstract class Analytics {
     // resolve on their own
     const FileSystem fs = LocalFileSystem();
 
+    // Ensure that the home directory has permissions enabled to write
+    final Directory? homeDirectory = getHomeDirectory(fs);
+    if (homeDirectory == null ||
+        !checkDirectoryForWritePermissions(homeDirectory)) {
+      return NoOpAnalytics();
+    }
+
     // Resolve the OS using dart:io
     final DevicePlatform platform;
     if (io.Platform.operatingSystem == 'linux') {
@@ -59,7 +66,7 @@ abstract class Analytics {
 
     return AnalyticsImpl(
       tool: tool,
-      homeDirectory: getHomeDirectory(fs),
+      homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -88,6 +95,13 @@ abstract class Analytics {
     // resolve on their own
     const FileSystem fs = LocalFileSystem();
 
+    // Ensure that the home directory has permissions enabled to write
+    final Directory? homeDirectory = getHomeDirectory(fs);
+    if (homeDirectory == null ||
+        !checkDirectoryForWritePermissions(homeDirectory)) {
+      return NoOpAnalytics();
+    }
+
     // Resolve the OS using dart:io
     final DevicePlatform platform;
     if (io.Platform.operatingSystem == 'linux') {
@@ -111,7 +125,7 @@ abstract class Analytics {
 
     return AnalyticsImpl(
       tool: tool,
-      homeDirectory: getHomeDirectory(fs),
+      homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
