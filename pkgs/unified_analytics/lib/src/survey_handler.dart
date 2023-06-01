@@ -131,9 +131,10 @@ class Survey {
         samplingRate = json['samplingRate'] is String
             ? double.parse(json['samplingRate'] as String)
             : json['samplingRate'] as double,
-        conditionList = (json['conditions'] as List<Map<String, dynamic>>)
-            .map(Condition.fromJson)
-            .toList();
+        conditionList = (json['conditions'] as List<dynamic>).map((e) {
+          e as Map<String, dynamic>;
+          return Condition.fromJson(e);
+        }).toList();
 
   @override
   String toString() {
@@ -157,10 +158,10 @@ class SurveyHandler {
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
-    final List<dynamic> body;
+    final List<Map<String, dynamic>> body;
     try {
       final payload = await _fetchContents();
-      body = jsonDecode(payload) as List;
+      body = jsonDecode(payload) as List<Map<String, dynamic>>;
       // ignore: avoid_catches_without_on_clauses
     } catch (err) {
       return [];
@@ -195,7 +196,7 @@ class FakeSurveyHandler implements SurveyHandler {
   /// Use this class in tests if you can provide raw
   /// json strings to mock a response from a remote server
   FakeSurveyHandler.fromString({required String content}) {
-    final body = jsonDecode(content) as List;
+    final body = jsonDecode(content) as List<dynamic>;
     for (final fakeSurvey in parseSurveysFromJson(body)) {
       _fakeInitializedSurveys.add(fakeSurvey);
     }

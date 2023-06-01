@@ -106,8 +106,8 @@ void main() {
 
     test('valid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
-        final parsedSurveys =
-            parseSurveysFromJson(jsonDecode(validContents) as List);
+        final parsedSurveys = parseSurveysFromJson(
+            jsonDecode(validContents) as List);
 
         expect(parsedSurveys.length, 1);
         expect(parsedSurveys.first.conditionList.length, 2);
@@ -127,8 +127,8 @@ void main() {
 
     test('invalid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
-        final parsedSurveys =
-            parseSurveysFromJson(jsonDecode(invalidContents) as List);
+        final parsedSurveys = parseSurveysFromJson(
+            jsonDecode(invalidContents) as List);
 
         expect(parsedSurveys.length, 0,
             reason: 'The condition value is not a '
