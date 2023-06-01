@@ -50,13 +50,13 @@ void main() {
   });
 
   test('Home directory without write permissions', () {
-    final FakeDirectory home = FakeDirectory(writeEnabled: false);
+    final home = FakeDirectory(writeEnabled: false);
 
     expect(checkDirectoryForWritePermissions(home), false);
   });
 
   test('Home directory with write permissions', () {
-    final FakeDirectory home = FakeDirectory(writeEnabled: true);
+    final home = FakeDirectory(writeEnabled: true);
 
     expect(checkDirectoryForWritePermissions(home), true);
   });

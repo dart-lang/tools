@@ -41,7 +41,7 @@ abstract class Analytics {
     const FileSystem fs = LocalFileSystem();
 
     // Ensure that the home directory has permissions enabled to write
-    final Directory? homeDirectory = getHomeDirectory(fs);
+    final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
       return NoOpAnalytics();
@@ -96,7 +96,7 @@ abstract class Analytics {
     const FileSystem fs = LocalFileSystem();
 
     // Ensure that the home directory has permissions enabled to write
-    final Directory? homeDirectory = getHomeDirectory(fs);
+    final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
       return NoOpAnalytics();

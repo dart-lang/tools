@@ -28,7 +28,7 @@ String get dateStamp {
 bool checkDirectoryForWritePermissions(Directory directory) {
   if (!directory.existsSync()) return false;
 
-  final FileStat fileStat = directory.statSync();
+  final fileStat = directory.statSync();
   return fileStat.modeString()[1] == 'w';
 }
 
