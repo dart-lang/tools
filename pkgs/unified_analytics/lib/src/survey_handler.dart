@@ -27,14 +27,14 @@ List<Survey> parseSurveysFromJson(List<dynamic> body) => body
       // Error handling to skip any surveys from the remote location
       // that fail to parse
       try {
-        return Survey.fromJson(element);
+        return Survey.fromJson(element as Map<String, dynamic>);
         // ignore: avoid_catches_without_on_clauses
       } catch (err) {
         return null;
       }
     })
     .whereType<Survey>()
-    .where((survey) => checkSurveyDate(survey))
+    .where(checkSurveyDate)
     .toList();
 
 class Condition {
@@ -78,9 +78,9 @@ class Condition {
   );
 
   Condition.fromJson(Map<String, dynamic> json)
-      : field = json['field'],
-        operatorString = json['operator'],
-        value = json['value'];
+      : field = json['field'] as String,
+        operatorString = json['operator'] as String,
+        value = json['value'] as int;
 
   Map<String, Object?> toMap() => <String, Object?>{
         'field': field,
@@ -117,27 +117,27 @@ class Survey {
 
   /// Parse the contents of the json metadata file hosted externally
   Survey.fromJson(Map<String, dynamic> json)
-      : uniqueId = json['uniqueId'],
-        url = json['url'],
-        startDate = DateTime.parse(json['startDate']),
-        endDate = DateTime.parse(json['endDate']),
-        description = json['description'],
+      : uniqueId = json['uniqueId'] as String,
+        url = json['url'] as String,
+        startDate = DateTime.parse(json['startDate'] as String),
+        endDate = DateTime.parse(json['endDate'] as String),
+        description = json['description'] as String,
         // Handle both string and integer fields
-        dismissForDays = json['dismissForDays'].runtimeType == String
-            ? int.parse(json['dismissForDays'])
-            : json['dismissForDays'],
-        moreInfoUrl = json['moreInfoURL'],
+        dismissForDays = json['dismissForDays'] is String
+            ? int.parse(json['dismissForDays'] as String)
+            : json['dismissForDays'] as int,
+        moreInfoUrl = json['moreInfoURL'] as String,
         // Handle both string and double fields
-        samplingRate = json['samplingRate'].runtimeType == String
-            ? double.parse(json['samplingRate'])
-            : json['samplingRate'],
-        conditionList = (json['conditions'] as List)
-            .map((e) => Condition.fromJson(e))
+        samplingRate = json['samplingRate'] is String
+            ? double.parse(json['samplingRate'] as String)
+            : json['samplingRate'] as double,
+        conditionList = (json['conditions'] as List<Map<String, dynamic>>)
+            .map(Condition.fromJson)
             .toList();
 
   @override
   String toString() {
-    final JsonEncoder encoder = JsonEncoder.withIndent('  ');
+    final encoder = JsonEncoder.withIndent('  ');
     return encoder.convert({
       'uniqueId': uniqueId,
       'url': url,
@@ -159,7 +159,7 @@ class SurveyHandler {
   Future<List<Survey>> fetchSurveyList() async {
     final List<dynamic> body;
     try {
-      final String payload = await _fetchContents();
+      final payload = await _fetchContents();
       body = jsonDecode(payload) as List;
       // ignore: avoid_catches_without_on_clauses
     } catch (err) {
@@ -173,8 +173,8 @@ class SurveyHandler {
 
   /// Fetches the json in string form from the remote location
   Future<String> _fetchContents() async {
-    final Uri uri = Uri.parse(kContextualSurveyUrl);
-    final http.Response response = await http.get(uri);
+    final uri = Uri.parse(kContextualSurveyUrl);
+    final response = await http.get(uri);
     return response.body;
   }
 }
@@ -195,7 +195,7 @@ class FakeSurveyHandler implements SurveyHandler {
   /// Use this class in tests if you can provide raw
   /// json strings to mock a response from a remote server
   FakeSurveyHandler.fromString({required String content}) {
-    final List<dynamic> body = jsonDecode(content) as List;
+    final body = jsonDecode(content) as List;
     for (final fakeSurvey in parseSurveysFromJson(body)) {
       _fakeInitializedSurveys.add(fakeSurvey);
     }
