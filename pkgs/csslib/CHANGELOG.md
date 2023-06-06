@@ -1,3 +1,7 @@
+## 1.0.0
+
+- Rev to `1.0.0` (note however that there are no API changes from `0.17.x`).
+
 ## 0.17.3
 
 - Add markdown badges to the readme.
