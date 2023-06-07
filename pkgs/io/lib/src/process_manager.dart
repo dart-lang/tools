@@ -215,13 +215,13 @@ class _ForwardingSpawn extends Spawn {
   }
 
   _ForwardingSpawn._delegate(
-    io.Process delegate,
+    super.delegate,
     this._stdInSub,
     this._stdOutSub,
     this._stdErrSub,
     this._stdOut,
     this._stdErr,
-  ) : super._(delegate);
+  ) : super._();
 
   @override
   void _onClosed() {
@@ -240,24 +240,16 @@ class _ForwardingSpawn extends Spawn {
 
 class _UnixProcessManager extends ProcessManager {
   const _UnixProcessManager(
-    Stream<List<int>> stdin,
-    io.IOSink stdout,
-    io.IOSink stderr,
-  ) : super._(
-          stdin,
-          stdout,
-          stderr,
-        );
+    super.stdin,
+    super.stdout,
+    super.stderr,
+  ) : super._();
 }
 
 class _WindowsProcessManager extends ProcessManager {
   const _WindowsProcessManager(
-    Stream<List<int>> stdin,
-    io.IOSink stdout,
-    io.IOSink stderr,
-  ) : super._(
-          stdin,
-          stdout,
-          stderr,
-        );
+    super.stdin,
+    super.stdout,
+    super.stderr,
+  ) : super._();
 }

@@ -3,12 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:io';
+
 import 'package:io/ansi.dart';
 import 'package:test/test.dart';
 
 const _ansiEscapeLiteral = '\x1B';
-const _ansiEscapeForScript = '\\033';
+const _ansiEscapeForScript = r'\033';
 const sampleInput = 'sample input';
 
 void main() {

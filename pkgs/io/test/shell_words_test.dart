@@ -157,7 +157,7 @@ void main() {
       });
 
       test('that contain escaped characters', () {
-        expect(shellSplit(r'"\$\`\"\\"'), equals(['\$`"\\']));
+        expect(shellSplit(r'"\$\`\"\\"'), equals([r'$`"\']));
       });
 
       test('that contain an escaped newline', () {
@@ -178,7 +178,7 @@ void main() {
 
       test('without a closing quote', () {
         expect(() => shellSplit('"foo bar'), throwsFormatException);
-        expect(() => shellSplit('"foo bar\\'), throwsFormatException);
+        expect(() => shellSplit(r'"foo bar\'), throwsFormatException);
       });
     });
   });

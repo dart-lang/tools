@@ -34,18 +34,13 @@ bool _hasPermission(
   return (stat.mode & (1 << index)) != 0;
 }
 
-int _permissionBitIndex(_FilePermission permission, _FilePermissionRole role) {
-  switch (permission) {
-    case _FilePermission.setUid:
-      return 11;
-    case _FilePermission.setGid:
-      return 10;
-    case _FilePermission.sticky:
-      return 9;
-    default:
-      return (role.index * 3) + permission.index;
-  }
-}
+int _permissionBitIndex(_FilePermission permission, _FilePermissionRole role) =>
+    switch (permission) {
+      _FilePermission.setUid => 11,
+      _FilePermission.setGid => 10,
+      _FilePermission.sticky => 9,
+      _ => (role.index * 3) + permission.index
+    };
 
 /// Returns whether [path] is considered an executable file on this OS.
 ///

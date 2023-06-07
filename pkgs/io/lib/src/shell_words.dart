@@ -47,7 +47,6 @@ List<String> shellSplit(String command) {
 
         hasToken = true;
         token.writeCharCode(scanner.readChar());
-        break;
 
       case $singleQuote:
         hasToken = true;
@@ -59,7 +58,6 @@ List<String> shellSplit(String command) {
           _checkUnmatchedQuote(scanner, firstQuote);
           token.writeCharCode(scanner.readChar());
         }
-        break;
 
       case $doubleQuote:
         hasToken = true;
@@ -99,7 +97,6 @@ List<String> shellSplit(String command) {
             token.writeCharCode(scanner.readChar());
           }
         }
-        break;
 
       case $hash:
         // Section 2.3: If the current character is a '#' [and the previous
@@ -115,7 +112,6 @@ List<String> shellSplit(String command) {
         while (!scanner.isDone && scanner.peekChar() != $lf) {
           scanner.readChar();
         }
-        break;
 
       case $space:
       case $tab:
@@ -124,7 +120,6 @@ List<String> shellSplit(String command) {
         if (hasToken) results.add(token.toString());
         hasToken = false;
         token.clear();
-        break;
 
       default:
         hasToken = true;

@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:io' as io;
 
 const _ansiEscapeLiteral = '\x1B';
-const _ansiEscapeForScript = '\\033';
+const _ansiEscapeForScript = r'\033';
 
 /// Whether formatted ANSI output is enabled for [wrapWith] and [AnsiCode.wrap].
 ///
@@ -136,14 +136,12 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
           throw ArgumentError.value(codes, 'codes',
               'Cannot contain more than one foreground color code.');
         }
-        break;
       case AnsiCodeType.background:
         background++;
         if (background > 1) {
           throw ArgumentError.value(codes, 'codes',
               'Cannot contain more than one foreground color code.');
         }
-        break;
       case AnsiCodeType.reset:
         throw ArgumentError.value(
             codes, 'codes', 'Cannot contain reset codes.');
