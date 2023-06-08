@@ -1,10 +1,9 @@
-## 1.5.2-dev
+## 1.5.2-wip
 
-* Require Dart 2.19
+* Require Dart 3.0.
 
 ## 1.5.1
 
-* Switch to using `package:lints` for analysis.
 * Populate the pubspec `repository` field.
 
 ## 1.5.0
