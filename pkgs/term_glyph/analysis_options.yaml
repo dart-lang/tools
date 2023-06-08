@@ -1,3 +1,4 @@
+# https://dart.dev/guides/language/analysis-options
 include: package:dart_flutter_team_lints/analysis_options.yaml
 
 analyzer:
@@ -18,10 +19,8 @@ linter:
     - avoid_unused_constructor_parameters
     - avoid_void_async
     - cancel_subscriptions
-    #- cascade_invocations
     - comment_references
     - join_return_with_assignment
-    #- lines_longer_than_80_chars
     - literal_only_boolean_expressions
     - missing_whitespace_between_adjacent_strings
     - no_adjacent_strings_in_list
@@ -34,4 +33,8 @@ linter:
     - prefer_relative_imports
     - test_types_in_equals
     - unnecessary_await_in_return
+    - unnecessary_breaks
+    - use_if_null_to_convert_nulls_to_bools
+    - use_raw_strings
     - use_string_buffers
+    - use_super_parameters
