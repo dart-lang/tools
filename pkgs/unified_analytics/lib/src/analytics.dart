@@ -64,7 +64,7 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
-    return AnalyticsImpl(
+    return AnalyticsImplNoEvents(
       tool: tool,
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
@@ -78,7 +78,7 @@ abstract class Analytics {
     );
   }
 
-  /// Factory constructor to return the [AnalyticsImpl] class with
+  /// Factory constructor to return the [AnalyticsImplNoEvents] class with
   /// Google Analytics credentials that point to a test instance and
   /// not the production instance where live data will be sent
   ///
@@ -123,7 +123,7 @@ abstract class Analytics {
       apiSecret: kTestApiSecret,
     );
 
-    return AnalyticsImpl(
+    return AnalyticsImplNoEvents(
       tool: tool,
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
@@ -137,7 +137,7 @@ abstract class Analytics {
     );
   }
 
-  /// Factory constructor to return the [AnalyticsImpl] class with a
+  /// Factory constructor to return the [AnalyticsImplNoEvents] class with a
   /// [MemoryFileSystem] to use for testing
   @visibleForTesting
   factory Analytics.test({
@@ -226,7 +226,7 @@ abstract class Analytics {
   Future<void> setTelemetry(bool reportingBool);
 }
 
-class AnalyticsImpl implements Analytics {
+class AnalyticsImplNoEvents implements Analytics {
   final DashTool tool;
   final FileSystem fs;
   late final ConfigHandler _configHandler;
@@ -261,7 +261,7 @@ class AnalyticsImpl implements Analytics {
   /// to ensure usage of this class is within GA4 limitations
   final bool _enableAsserts;
 
-  AnalyticsImpl({
+  AnalyticsImplNoEvents({
     required this.tool,
     required Directory homeDirectory,
     String? flutterChannel,
@@ -464,7 +464,7 @@ class AnalyticsImpl implements Analytics {
 /// An implementation that will never send events.
 ///
 /// This is for clients that opt to either not send analytics, or will migrate
-/// to use [AnalyticsImpl] at a later time.
+/// to use [AnalyticsImplNoEvents] at a later time.
 class NoOpAnalytics implements Analytics {
   const NoOpAnalytics._();
 
@@ -509,13 +509,13 @@ class NoOpAnalytics implements Analytics {
   Future<void> setTelemetry(bool reportingBool) async {}
 }
 
-/// This class extends [AnalyticsImpl] and subs out any methods that
+/// This class extends [AnalyticsImplNoEvents] and subs out any methods that
 /// are not suitable for tests; the following have been altered from the
 /// default implementation. All other methods are included
 ///
 /// - `sendEvent(...)` has been altered to prevent data from being sent to GA
 /// during testing
-class TestAnalytics extends AnalyticsImpl {
+class TestAnalytics extends AnalyticsImplNoEvents {
   TestAnalytics({
     required super.tool,
     required super.homeDirectory,
