@@ -11,8 +11,9 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:unified_analytics/src/asserts.dart';
 
+import 'analytics_events.dart';
+import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
@@ -64,7 +65,7 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
-    return AnalyticsImplNoEvents(
+    return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,

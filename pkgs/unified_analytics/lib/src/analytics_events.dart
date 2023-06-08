@@ -15,6 +15,8 @@ class AnalyticsImpl extends AnalyticsImplNoEvents {
   AnalyticsImpl({
     required super.tool,
     required super.homeDirectory,
+    String? flutterChannel,
+    String? flutterVersion,
     required super.dartVersion,
     required super.platform,
     required super.toolsMessageVersion,
