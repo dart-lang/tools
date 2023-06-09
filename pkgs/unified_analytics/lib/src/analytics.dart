@@ -187,7 +187,7 @@ abstract class Analytics {
 
   /// Send preconfigured events using specific named constructors
   /// on the [Event] class
-  /// 
+  ///
   /// Example
   /// ```dart
   /// analytics.send(Event.memory(periodSec: 123));
@@ -409,6 +409,10 @@ class AnalyticsImpl implements Analytics {
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
 
+    // Creation of the [Event] for opting out
+    final collectionEvent =
+        Event.analyticsCollectionEnabled(status: reportingBool);
+
     // Construct the body of the request to signal
     // telemetry status toggling
     //
@@ -416,8 +420,8 @@ class AnalyticsImpl implements Analytics {
     // be blocked by the [telemetryEnabled] getter
     final body = generateRequestBody(
       clientId: _clientId,
-      eventName: DashEvent.analyticsCollectionEnabled,
-      eventData: {'status': reportingBool},
+      eventName: collectionEvent.eventName,
+      eventData: collectionEvent.eventData,
       userProperty: userProperty,
     );
 
