@@ -7,14 +7,16 @@ import 'dart:io' as io;
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
+import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
+import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
-import 'events.dart';
+import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
@@ -183,13 +185,14 @@ abstract class Analytics {
   /// out of the configuration file
   Map<String, ToolInfo> get parsedTools;
 
-  /// Used to send specific events from [Analytics]
-  ///
+  /// Send preconfigured events using specific named constructors
+  /// on the [Event] class
+  /// 
   /// Example
   /// ```dart
-  /// analytics.send.memoryEvent(...)
+  /// analytics.send(Event.memory(periodSec: 123));
   /// ```
-  Events get send;
+  Future<Response>? send(Event event);
 
   /// Boolean that lets the client know if they should display the message
   bool get shouldShowMessage;
@@ -367,16 +370,6 @@ class AnalyticsImpl implements Analytics {
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
 
   @override
-  Events get send => Events(
-        gaClient: _gaClient,
-        okToSend: okToSend,
-        clientId: _clientId,
-        enableAsserts: _enableAsserts,
-        logHandler: _logHandler,
-        userProperty: userProperty,
-      );
-
-  @override
   bool get shouldShowMessage => _showMessage;
 
   @override
@@ -447,6 +440,26 @@ class AnalyticsImpl implements Analytics {
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
   }
+
+  @override
+  Future<Response>? send(Event event) {
+    if (!okToSend) return null;
+
+    // Construct the body of the request
+    final body = generateRequestBody(
+      clientId: _clientId,
+      eventName: event.eventName,
+      eventData: event.eventData,
+      userProperty: userProperty,
+    );
+
+    if (_enableAsserts) checkBody(body);
+
+    _logHandler.save(data: body);
+
+    // Pass to the google analytics client to send
+    return _gaClient.sendData(body);
+  }
 }
 
 /// An implementation that will never send events.
@@ -478,10 +491,6 @@ class NoOpAnalytics implements Analytics {
   const NoOpAnalytics._();
 
   @override
-  // TODO: implement send
-  Events get send => throw UnimplementedError();
-
-  @override
   void clientShowedMessage() {}
 
   @override
@@ -492,4 +501,7 @@ class NoOpAnalytics implements Analytics {
 
   @override
   Future<void> setTelemetry(bool reportingBool) async {}
+
+  @override
+  Future<Response>? send(Event event) => null;
 }
