@@ -1,4 +1,9 @@
+## 1.2.4-wip
+
+- Require Dart 3.0
+
 ## 1.2.3
+
 - Added topics to `pubspec.yaml`.
 
 ## 1.2.2

@@ -5,8 +5,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 // ignore_for_file: lines_longer_than_80_chars
 
-library parse_test;
-
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 

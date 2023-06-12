@@ -74,19 +74,14 @@ Dependency? _fromJson(Object? data, String name) {
 
         final key = matchedKeys.single;
 
-        switch (key) {
-          case 'git':
-            return GitDependency.fromData(data[key]);
-          case 'path':
-            return PathDependency.fromData(data[key]);
-          case 'sdk':
-            return _$SdkDependencyFromJson(data);
-          case 'hosted':
-            final hosted = _$HostedDependencyFromJson(data);
-            hosted.hosted?._nameOfPackage = name;
-            return hosted;
-        }
-        throw StateError('There is a bug in pubspec_parse.');
+        return switch (key) {
+          'git' => GitDependency.fromData(data[key]),
+          'path' => PathDependency.fromData(data[key]),
+          'sdk' => _$SdkDependencyFromJson(data),
+          'hosted' => _$HostedDependencyFromJson(data)
+            ..hosted?._nameOfPackage = name,
+          _ => throw StateError('There is a bug in pubspec_parse.'),
+        };
       });
     }
   }
