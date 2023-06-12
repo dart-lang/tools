@@ -16,7 +16,7 @@ In this package we provide:
     original source map specification. These data types are great for tracking
     source locations on source maps, but they can also be used by tools to
     reporting useful error messages that include on source locations.
-  * A builder that creates a source map programatically and produces the encoded
+  * A builder that creates a source map programmatically and produces the encoded
     source map format.
   * A parser that reads the source map format and provides APIs to read the
     mapping information.

@@ -1,3 +1,7 @@
+## 0.10.13-wip
+
+- Require Dart 3.0
+
 ## 0.10.12
 
 * Add additional types at API boundaries.
