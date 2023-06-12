@@ -317,7 +317,7 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
       return result
           // Break possible sync processing of future completion, so slice
           // trackers can be finished
-          .whenComplete(() => Future.value())
+          .whenComplete(Future.value)
           .whenComplete(() => _tracking = false) as T;
     } else {
       _tracking = false;

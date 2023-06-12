@@ -1,3 +1,7 @@
+## 1.0.2-wip
+
+- Require Dart `3.0`.
+
 ## 1.0.1
 
 - Require Dart `2.14`.
