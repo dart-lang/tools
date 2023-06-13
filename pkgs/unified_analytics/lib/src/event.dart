@@ -15,16 +15,17 @@ class Event {
         eventData = {'status': status};
 
   Event.clientNotification({
-    String? duration,
-    String? latency,
-    String? method,
+    required String duration,
+    required String latency,
+    required String method,
   })  : eventName = DashEvent.clientNotification,
         eventData = {
-          if (duration != null) 'duration': duration,
-          if (latency != null) 'latency': latency,
-          if (method != null) 'method': method,
+          'duration': duration,
+          'latency': latency,
+          'method': method,
         };
 
+  // TODO(eliasyishak): potential refactor for this event
   Event.clientRequest({
     String? added,
     String? command,
@@ -54,50 +55,40 @@ class Event {
         };
 
   Event.contextStructure({
-    String? contextsFromBothFiles,
-    String? contextsFromOptionsFiles,
-    String? contextsFromPackagesFiles,
-    String? contextsWithoutFiles,
-    String? immediateFileCount,
-    String? immediateFileLineCount,
-    String? numberOfContexts,
-    String? transitiveFileCount,
-    String? transitiveFileLineCount,
-    String? transitiveFileUniqueCount,
-    String? transitiveFileUniqueLineCount,
+    required String contextsFromBothFiles,
+    required String contextsFromOptionsFiles,
+    required String contextsFromPackagesFiles,
+    required String contextsWithoutFiles,
+    required String immediateFileCount,
+    required String immediateFileLineCount,
+    required String numberOfContexts,
+    required String transitiveFileCount,
+    required String transitiveFileLineCount,
+    required String transitiveFileUniqueCount,
+    required String transitiveFileUniqueLineCount,
   })  : eventName = DashEvent.contextStructure,
         eventData = {
-          if (contextsFromBothFiles != null)
-            'contextsFromBothFiles': contextsFromBothFiles,
-          if (contextsFromOptionsFiles != null)
-            'contextsFromOptionsFiles': contextsFromOptionsFiles,
-          if (contextsFromPackagesFiles != null)
-            'contextsFromPackagesFiles': contextsFromPackagesFiles,
-          if (contextsWithoutFiles != null)
-            'contextsWithoutFiles': contextsWithoutFiles,
-          if (immediateFileCount != null)
-            'immediateFileCount': immediateFileCount,
-          if (immediateFileLineCount != null)
-            'immediateFileLineCount': immediateFileLineCount,
-          if (numberOfContexts != null) 'numberOfContexts': numberOfContexts,
-          if (transitiveFileCount != null)
-            'transitiveFileCount': transitiveFileCount,
-          if (transitiveFileLineCount != null)
-            'transitiveFileLineCount': transitiveFileLineCount,
-          if (transitiveFileUniqueCount != null)
-            'transitiveFileUniqueCount': transitiveFileUniqueCount,
-          if (transitiveFileUniqueLineCount != null)
-            'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
+          'contextsFromBothFiles': contextsFromBothFiles,
+          'contextsFromOptionsFiles': contextsFromOptionsFiles,
+          'contextsFromPackagesFiles': contextsFromPackagesFiles,
+          'contextsWithoutFiles': contextsWithoutFiles,
+          'immediateFileCount': immediateFileCount,
+          'immediateFileLineCount': immediateFileLineCount,
+          'numberOfContexts': numberOfContexts,
+          'transitiveFileCount': transitiveFileCount,
+          'transitiveFileLineCount': transitiveFileLineCount,
+          'transitiveFileUniqueCount': transitiveFileUniqueCount,
+          'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
         };
 
   Event.hotReloadTime({int? timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {if (timeMs != null) 'timeMs': timeMs};
 
-  Event.lintUsageCounts({String? usageCounts})
+  Event.lintUsageCounts({required String usageCounts})
       : eventName = DashEvent.lintUsageCounts,
         eventData = {
-          if (usageCounts != null) 'usageCounts': usageCounts,
+          'usageCounts': usageCounts,
         };
 
   Event.memoryInfo({
@@ -112,16 +103,17 @@ class Event {
         };
 
   Event.pluginRequest({
-    String? duration,
-    String? method,
-    String? pluginId,
+    required String duration,
+    required String method,
+    required String pluginId,
   })  : eventName = DashEvent.pluginRequest,
         eventData = {
-          if (duration != null) 'duration': duration,
-          if (method != null) 'method': method,
-          if (pluginId != null) 'pluginId': pluginId,
+          'duration': duration,
+          'method': method,
+          'pluginId': pluginId,
         };
 
+  // TODO(eliasyishak): potential refactor for this event
   Event.serverSession({
     String? clientId,
     String? clientVersion,
@@ -139,6 +131,7 @@ class Event {
           if (plugins != null) 'plugins': plugins,
         };
 
+  // TODO(eliasyishak): potential refactor for this event
   Event.severityAdjustments({String? adjustmentCounts})
       : eventName = DashEvent.severityAdjustments,
         eventData = {
