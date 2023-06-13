@@ -185,15 +185,6 @@ abstract class Analytics {
   /// out of the configuration file
   Map<String, ToolInfo> get parsedTools;
 
-  /// Send preconfigured events using specific named constructors
-  /// on the [Event] class
-  ///
-  /// Example
-  /// ```dart
-  /// analytics.send(Event.memory(periodSec: 123));
-  /// ```
-  Future<Response>? send(Event event);
-
   /// Boolean that lets the client know if they should display the message
   bool get shouldShowMessage;
 
@@ -221,6 +212,15 @@ abstract class Analytics {
   ///
   /// Returns null if there are no persisted logs
   LogFileStats? logFileStats();
+
+  /// Send preconfigured events using specific named constructors
+  /// on the [Event] class
+  ///
+  /// Example
+  /// ```dart
+  /// analytics.send(Event.memory(periodSec: 123));
+  /// ```
+  Future<Response>? send(Event event);
 
   /// Pass a boolean to either enable or disable telemetry and make
   /// the necessary changes in the persisted configuration file
@@ -406,6 +406,26 @@ class AnalyticsImpl implements Analytics {
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
+  Future<Response>? send(Event event) {
+    if (!okToSend) return null;
+
+    // Construct the body of the request
+    final body = generateRequestBody(
+      clientId: _clientId,
+      eventName: event.eventName,
+      eventData: event.eventData,
+      userProperty: userProperty,
+    );
+
+    if (_enableAsserts) checkBody(body);
+
+    _logHandler.save(data: body);
+
+    // Pass to the google analytics client to send
+    return _gaClient.sendData(body);
+  }
+
+  @override
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
 
@@ -440,26 +460,6 @@ class AnalyticsImpl implements Analytics {
       Initializer.createClientIdFile(clientFile: _clientIdFile);
       Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
     }
-
-    // Pass to the google analytics client to send
-    return _gaClient.sendData(body);
-  }
-
-  @override
-  Future<Response>? send(Event event) {
-    if (!okToSend) return null;
-
-    // Construct the body of the request
-    final body = generateRequestBody(
-      clientId: _clientId,
-      eventName: event.eventName,
-      eventData: event.eventData,
-      userProperty: userProperty,
-    );
-
-    if (_enableAsserts) checkBody(body);
-
-    _logHandler.save(data: body);
 
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
@@ -504,8 +504,8 @@ class NoOpAnalytics implements Analytics {
   LogFileStats? logFileStats() => null;
 
   @override
-  Future<void> setTelemetry(bool reportingBool) async {}
+  Future<Response>? send(Event event) => null;
 
   @override
-  Future<Response>? send(Event event) => null;
+  Future<void> setTelemetry(bool reportingBool) async {}
 }
