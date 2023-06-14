@@ -1,6 +1,8 @@
-## 2.0.1-wip
+## 3.0.0
 
-- Allow latest package versions for `file` and `http`.
+- Allow latest package versions for `file` and `http`
+- Introducing new `Event` class that will standardize what event data can be sent with each event
+- Deprecating the `sendEvent` method in favor of the `send` method
 
 ## 2.0.0
 
