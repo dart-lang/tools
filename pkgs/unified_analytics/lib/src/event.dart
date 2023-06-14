@@ -4,7 +4,7 @@
 
 import 'enums.dart';
 
-class Event {
+final class Event {
   final DashEvent eventName;
   final Map<String, Object?> eventData;
 
