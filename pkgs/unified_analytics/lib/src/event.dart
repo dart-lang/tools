@@ -81,9 +81,9 @@ class Event {
           'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
         };
 
-  Event.hotReloadTime({int? timeMs})
+  Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
-        eventData = {if (timeMs != null) 'timeMs': timeMs};
+        eventData = {'timeMs': timeMs};
 
   Event.lintUsageCounts({required String usageCounts})
       : eventName = DashEvent.lintUsageCounts,
