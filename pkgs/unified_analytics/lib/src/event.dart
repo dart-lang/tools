@@ -10,6 +10,8 @@ final class Event {
 
   /// Event that is emitted whenever a user has opted in
   /// or out of the analytics collection
+  /// 
+  /// [status] - boolean value where `true` indicates user is opting in
   Event.analyticsCollectionEnabled({required bool status})
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
