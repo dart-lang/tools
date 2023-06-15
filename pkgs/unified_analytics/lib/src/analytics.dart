@@ -151,8 +151,9 @@ abstract class Analytics {
     required String dartVersion,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
-    FileSystem? fs,
+    required FileSystem fs,
     required DevicePlatform platform,
+    GAClient? gaClient,
   }) =>
       AnalyticsImpl(
         tool: tool,
@@ -162,13 +163,8 @@ abstract class Analytics {
         flutterVersion: flutterVersion,
         dartVersion: dartVersion,
         platform: platform,
-        fs: fs ??
-            MemoryFileSystem.test(
-              style: io.Platform.isWindows
-                  ? FileSystemStyle.windows
-                  : FileSystemStyle.posix,
-            ),
-        gaClient: FakeGAClient(),
+        fs: fs,
+        gaClient: gaClient ?? FakeGAClient(),
         enableAsserts: true,
       );
 
