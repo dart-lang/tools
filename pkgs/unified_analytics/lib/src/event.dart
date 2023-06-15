@@ -205,7 +205,7 @@ final class Event {
   ///
   /// [rss] - the resident set size in megabytes
   ///
-  /// If this is not the first time memory has been reported for this isession,
+  /// If this is not the first time memory has been reported for this session,
   /// then the following parameters should be included:
   ///
   /// [periodSec] - the number of seconds since the last memory usage data was
