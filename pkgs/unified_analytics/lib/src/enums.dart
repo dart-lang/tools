@@ -31,13 +31,17 @@ enum DashEvent {
     label: 'client_request',
     description: 'Requests sent from the client',
   ),
+  commandExecuted(
+    label: 'commandExecuted',
+    description: 'Number of times a command is executed',
+  ),
   contextStructure(
     label: 'context_structure',
     description: 'Structure of the analysis contexts being analyzed',
   ),
-  lintUsageCounts(
-    label: 'lint_usage_counts',
-    description: 'Number of times each lint is enabled',
+  lintUsageCount(
+    label: 'lint_usage_count',
+    description: 'Number of times a given lint is enabled',
   ),
   memoryInfo(
     label: 'memory_info',
@@ -47,12 +51,16 @@ enum DashEvent {
     label: 'plugin_request',
     description: 'Request responses from plugins',
   ),
+  pluginUse(
+    label: 'pluginUse',
+    description: 'Information about how often a plugin was used',
+  ),
   serverSession(
     label: 'server_session',
     description: 'Dart Analyzer Server session data',
   ),
-  severityAdjustments(
-    label: 'severity_adjustments',
+  severityAdjustment(
+    label: 'severity_adjustment',
     description: 'Number of times diagnostic severity is changed',
   ),
   ;
