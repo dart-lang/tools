@@ -1,4 +1,4 @@
-## 3.0.0
+## 3.0.0-wip
 
 - Allow latest package versions for `file` and `http`
 - Introducing new `Event` class that will standardize what event data can be sent with each event
