@@ -13,6 +13,7 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/session.dart';
 import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
@@ -42,6 +43,8 @@ void main() {
   const flutterVersion = 'flutterVersion';
   const dartVersion = 'dartVersion';
   const platform = DevicePlatform.macos;
+
+  final testEvent = Event.hotReloadTime(timeMs: 50);
 
   setUp(() {
     // Setup the filesystem with the home directory
@@ -184,15 +187,12 @@ void main() {
     // Send an event with the first analytics class; this should result
     // in no logs in the log file which keeps track of all the events
     // that have been sent
-    initializationAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    initializationAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    initializationAnalytics.send(testEvent);
+    initializationAnalytics.send(testEvent);
 
     // Use the second instance of analytics defined in setUp() to send the actual
     // events to simulate the second time the tool ran
-    analytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    analytics.send(testEvent);
 
     expect(logFile.readAsLinesSync().length, 1,
         reason: 'The second analytics instance should have logged an event');
@@ -623,8 +623,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // Calling the send event method will result in the session file
       // getting updated but because we use the `Analytics.test()` constructor
       // no events will be sent
-      thirdAnalytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      thirdAnalytics.send(testEvent);
 
       // Read the contents of the session file
       final sessionFileContents = sessionFile.readAsStringSync();
@@ -678,8 +677,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
           start.millisecondsSinceEpoch);
       expect(sessionObj['last_ping'], start.millisecondsSinceEpoch);
 
-      secondAnalytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      secondAnalytics.send(testEvent);
     });
 
     // Add time to the start time that is less than the duration
@@ -708,8 +706,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // Calling the send event method will result in the session file
       // getting updated but because we use the `Analytics.test()` constructor
       // no events will be sent
-      thirdAnalytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      thirdAnalytics.send(testEvent);
 
       // Read the contents of the session file
       final sessionFileContents = sessionFile.readAsStringSync();
@@ -777,8 +774,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     final int numberOfEvents = max((kLogFileLength * 0.1).floor(), 5);
 
     for (var i = 0; i < numberOfEvents; i++) {
-      analytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      analytics.send(testEvent);
     }
 
     expect(logFile.readAsLinesSync().length, numberOfEvents,
@@ -786,8 +782,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
     // Add the max number of events to confirm it does not exceed the max
     for (var i = 0; i < kLogFileLength; i++) {
-      analytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      analytics.send(testEvent);
     }
 
     expect(logFile.readAsLinesSync().length, kLogFileLength,
@@ -805,8 +800,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(analytics.logFileStats(), isNull,
           reason: 'The result for the log file stats should be null when '
               'there are no logs');
-      analytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      analytics.send(testEvent);
 
       final firstQuery = analytics.logFileStats()!;
       expect(firstQuery.sessionCount, 1,
@@ -824,8 +818,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
     // Use the new clock to send an event that will change the session identifier
     withClock(Clock.fixed(secondClock), () {
-      analytics.sendEvent(
-          eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+      analytics.send(testEvent);
 
       final secondQuery = analytics.logFileStats()!;
 
@@ -883,10 +876,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     }
 
     // Send events with both instances of the classes
-    analytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    secondAnalytics!.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    analytics.send(testEvent);
+    secondAnalytics!.send(testEvent);
 
     // Query the log file stats to verify that there are two tools
     var query = analytics.logFileStats()!;
@@ -984,8 +975,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     }
 
     // Send an event and check that the query stats reflects what is expected
-    secondAnalytics!.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    secondAnalytics!.send(testEvent);
 
     // Query the log file stats to verify that there are two tools
     var query = analytics.logFileStats()!;
@@ -998,8 +988,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
     // Sending a query with the first analytics instance which has flutter information
     // available should reflect in the query that there is 1 flutter channel present
-    analytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    analytics.send(testEvent);
     LogFileStats? query2 = analytics.logFileStats()!;
 
     expect(query2.toolCount, 2,

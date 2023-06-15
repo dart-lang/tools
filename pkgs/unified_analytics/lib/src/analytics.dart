@@ -11,11 +11,12 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:unified_analytics/src/asserts.dart';
 
+import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
+import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
@@ -150,10 +151,11 @@ abstract class Analytics {
     required String dartVersion,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
-    FileSystem? fs,
+    required FileSystem fs,
     required DevicePlatform platform,
+    GAClient? gaClient,
   }) =>
-      TestAnalytics(
+      AnalyticsImpl(
         tool: tool,
         homeDirectory: homeDirectory,
         flutterChannel: flutterChannel,
@@ -161,13 +163,8 @@ abstract class Analytics {
         flutterVersion: flutterVersion,
         dartVersion: dartVersion,
         platform: platform,
-        fs: fs ??
-            MemoryFileSystem.test(
-              style: io.Platform.isWindows
-                  ? FileSystemStyle.windows
-                  : FileSystemStyle.posix,
-            ),
-        gaClient: FakeGAClient(),
+        fs: fs,
+        gaClient: gaClient ?? FakeGAClient(),
         enableAsserts: true,
       );
 
@@ -212,11 +209,14 @@ abstract class Analytics {
   /// Returns null if there are no persisted logs
   LogFileStats? logFileStats();
 
-  /// API to send events to Google Analytics to track usage
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  });
+  /// Send preconfigured events using specific named constructors
+  /// on the [Event] class
+  ///
+  /// Example
+  /// ```dart
+  /// analytics.send(Event.memory(periodSec: 123));
+  /// ```
+  Future<Response>? send(Event event);
 
   /// Pass a boolean to either enable or disable telemetry and make
   /// the necessary changes in the persisted configuration file
@@ -402,17 +402,14 @@ class AnalyticsImpl implements Analytics {
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) {
+  Future<Response>? send(Event event) {
     if (!okToSend) return null;
 
     // Construct the body of the request
     final body = generateRequestBody(
       clientId: _clientId,
-      eventName: eventName,
-      eventData: eventData,
+      eventName: event.eventName,
+      eventData: event.eventData,
       userProperty: userProperty,
     );
 
@@ -428,6 +425,10 @@ class AnalyticsImpl implements Analytics {
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
 
+    // Creation of the [Event] for opting out
+    final collectionEvent =
+        Event.analyticsCollectionEnabled(status: reportingBool);
+
     // Construct the body of the request to signal
     // telemetry status toggling
     //
@@ -435,8 +436,8 @@ class AnalyticsImpl implements Analytics {
     // be blocked by the [telemetryEnabled] getter
     final body = generateRequestBody(
       clientId: _clientId,
-      eventName: DashEvent.analyticsCollectionEnabled,
-      eventData: {'status': reportingBool},
+      eventName: collectionEvent.eventName,
+      eventData: collectionEvent.eventData,
       userProperty: userProperty,
     );
 
@@ -466,10 +467,6 @@ class AnalyticsImpl implements Analytics {
 /// This is for clients that opt to either not send analytics, or will migrate
 /// to use [AnalyticsImpl] at a later time.
 class NoOpAnalytics implements Analytics {
-  const NoOpAnalytics._();
-
-  factory NoOpAnalytics() => const NoOpAnalytics._();
-
   @override
   final String getConsentMessage = '';
 
@@ -489,6 +486,10 @@ class NoOpAnalytics implements Analytics {
   final Map<String, Map<String, Object?>> userPropertyMap =
       const <String, Map<String, Object?>>{};
 
+  factory NoOpAnalytics() => const NoOpAnalytics._();
+
+  const NoOpAnalytics._();
+
   @override
   void clientShowedMessage() {}
 
@@ -499,57 +500,8 @@ class NoOpAnalytics implements Analytics {
   LogFileStats? logFileStats() => null;
 
   @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) =>
-      null;
+  Future<Response>? send(Event event) => null;
 
   @override
   Future<void> setTelemetry(bool reportingBool) async {}
-}
-
-/// This class extends [AnalyticsImpl] and subs out any methods that
-/// are not suitable for tests; the following have been altered from the
-/// default implementation. All other methods are included
-///
-/// - `sendEvent(...)` has been altered to prevent data from being sent to GA
-/// during testing
-class TestAnalytics extends AnalyticsImpl {
-  TestAnalytics({
-    required super.tool,
-    required super.homeDirectory,
-    super.flutterChannel,
-    super.flutterVersion,
-    required super.dartVersion,
-    required super.platform,
-    required super.toolsMessageVersion,
-    required super.fs,
-    required super.gaClient,
-    required super.enableAsserts,
-  });
-
-  @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) {
-    if (!okToSend) return null;
-
-    // Calling the [generateRequestBody] method will ensure that the
-    // session file is getting updated without actually making any
-    // POST requests to Google Analytics
-    final body = generateRequestBody(
-      clientId: _clientId,
-      eventName: eventName,
-      eventData: eventData,
-      userProperty: userProperty,
-    );
-
-    if (_enableAsserts) checkBody(body);
-
-    _logHandler.save(data: body);
-
-    return null;
-  }
 }

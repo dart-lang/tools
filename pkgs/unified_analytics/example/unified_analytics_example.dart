@@ -42,30 +42,17 @@ void main() async {
   print('Current user is opted in: ${analytics.telemetryEnabled}');
 
   // Example of long running process
-  var count = 0;
-  for (var i = 0; i < 2000; i++) {
-    count += i;
-  }
   await Future<void>.delayed(const Duration(milliseconds: 100));
 
   // Calculate the metric to send
   final runTime = DateTime.now().difference(start).inMilliseconds;
-  // Generate the body for the event data
-  final eventData = <String, int>{
-    'time_ms': runTime,
-    'count': count,
-  };
-  // Choose one of the enum values for [DashEvent] which should
-  // have all possible events; if not there, open an issue for the
-  // team to add
-  final eventName =
-      DashEvent.hotReloadTime; // Select appropriate DashEvent enum value
+
+  // Create the event that will be sent for the hot reload time
+  // as an example
+  final hotReloadEvent = Event.hotReloadTime(timeMs: runTime);
 
   // Make a call to the [Analytics] api to send the data
-  await analytics.sendEvent(
-    eventName: eventName,
-    eventData: eventData,
-  );
+  await analytics.send(hotReloadEvent);
 
   // Close the client connection on exit
   analytics.close();

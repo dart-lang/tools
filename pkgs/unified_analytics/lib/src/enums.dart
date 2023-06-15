@@ -79,11 +79,6 @@ enum DashTool {
     label: 'dart-tool',
     description: 'Dart CLI developer tool',
   ),
-  @Deprecated('From a prerelease version of analytics; do not use.')
-  dartTools(
-    label: 'dart_tools',
-    description: 'A CLI for Dart development',
-  ),
   devtools(
     label: 'devtools',
     description: 'DevTools debugging and performance tools',
@@ -91,11 +86,6 @@ enum DashTool {
   flutterTool(
     label: 'flutter-tool',
     description: 'Flutter CLI developer tool',
-  ),
-  @Deprecated('From a prerelease version of analytics; do not use.')
-  flutterTools(
-    label: 'flutter_tools',
-    description: 'Runs flutter applications from CLI',
   ),
   intellijPlugins(
     label: 'intellij-plugins',
