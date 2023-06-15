@@ -245,7 +245,7 @@ final class Event {
           'pluginId': pluginId,
         };
 
-  /// Event that is emitted periodically to report the fequency with which a
+  /// Event that is emitted periodically to report the frequency with which a
   /// given plugin has been used.
   ///
   /// [count] - the number of times plugins usage was changed, which will always
