@@ -1,5 +1,6 @@
-## 1.0.3-dev
+## 1.0.3
 
+* Require `package:protobuf` >= 3.0.0.
 * Require Dart SDK >= 2.19.0
 
 ## 1.0.2
