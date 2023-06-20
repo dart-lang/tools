@@ -1,7 +1,9 @@
-## 2.1.2-dev
+## 2.1.2
 
 * Require Dart 2.19
 * Add an example.
+* Fix a race condition in `IsolateChannel.connectReceive()` where the channel
+  could hang forever if its sink was closed before the connection was established.
 
 ## 2.1.1
 

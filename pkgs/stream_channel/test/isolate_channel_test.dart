@@ -162,5 +162,13 @@ void main() {
       expect(connectedChannel.stream.toList(), throwsStateError);
       expect(connectedChannel.sink.done, completes);
     });
+
+    test('the receiving channel closes gracefully without a connection',
+        () async {
+      var connectedChannel = IsolateChannel.connectReceive(connectPort);
+      await connectedChannel.sink.close();
+      await expectLater(connectedChannel.stream.toList(), completion(isEmpty));
+      await expectLater(connectedChannel.sink.done, completes);
+    });
   });
 }
