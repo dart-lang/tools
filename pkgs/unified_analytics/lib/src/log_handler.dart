@@ -29,14 +29,40 @@ class LogFileStats {
   /// The number of unique session ids found in the log file
   final int sessionCount;
 
-  /// The number of unique flutter channels found in the log file
-  final int flutterChannelCount;
+  /// The map containing all of the flutter channels and a count
+  /// of how many events were under each channel
+  /// 
+  /// ```
+  /// {
+  ///   'stable': 123,
+  ///   'beta': 50,
+  ///   'master': 5,
+  /// }
+  /// ```
+  final Map<String, int> flutterChannelCount;
 
-  /// The number of unique tools found in the log file
-  final int toolCount;
+  /// The map containing all of the tools that have sent events
+  /// and how many events were sent by each tool
+  /// 
+  /// ```
+  /// {
+  ///   'flutter-tool': 500,
+  ///   'dart-tool': 45,
+  ///   'vscode-plugins': 321,
+  /// }
+  /// ```
+  final Map<String, int> toolCount;
 
   /// The map containing all of the events in the file along with
   /// how many times they have occured
+  /// 
+  /// ```
+  /// {
+  ///   'client_request': 345,
+  ///   'hot_reload_time': 765,
+  ///   'memory_info': 90,
+  /// }
+  /// ```
   final Map<String, int> eventCount;
 
   /// Total number of records in the log file
