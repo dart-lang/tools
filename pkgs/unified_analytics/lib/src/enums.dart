@@ -32,7 +32,7 @@ enum DashEvent {
     description: 'Requests sent from the client',
   ),
   commandExecuted(
-    label: 'commandExecuted',
+    label: 'command_executed',
     description: 'Number of times a command is executed',
   ),
   contextStructure(
@@ -52,7 +52,7 @@ enum DashEvent {
     description: 'Request responses from plugins',
   ),
   pluginUse(
-    label: 'pluginUse',
+    label: 'plugin_use',
     description: 'Information about how often a plugin was used',
   ),
   serverSession(
