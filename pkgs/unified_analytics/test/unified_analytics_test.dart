@@ -823,24 +823,6 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final secondQuery = analytics.logFileStats()!;
 
       // Construct the expected response for the second query
-      //
-      // This will need to be updated as the output for [LogFileStats]
-      // changes in the future
-      //
-      // Expecting the below returned
-      // {
-      //     "startDateTime": "1995-03-03 12:00:00.000",
-      //     "minsFromStartDateTime": 31,
-      //     "endDateTime": "1995-03-03 12:31:00.000",
-      //     "minsFromEndDateTime": 0,
-      //     "sessionCount": 2,
-      //     "flutterChannelCount": 1,
-      //     "toolCount": 1,
-      //     "recordCount": 2,
-      //     "eventCount": {
-      //         "hot_reload_time": 2
-      //     }
-      // }
       expect(secondQuery.startDateTime, DateTime(1995, 3, 3, 12, 0));
       expect(secondQuery.minsFromStartDateTime, 31);
       expect(secondQuery.endDateTime, DateTime(1995, 3, 3, 12, 31));
