@@ -33,7 +33,7 @@ void main() {
             1: [2],
             2: [3],
             3: [4],
-            4: []
+            4: [],
           }),
           equals([1, 2, 3, 4]),
         );
@@ -44,7 +44,7 @@ void main() {
           1: [2, 3, 4],
           2: [],
           3: [],
-          4: []
+          4: [],
         });
         expect(result.indexOf(1), lessThan(result.indexOf(2)));
         expect(result.indexOf(1), lessThan(result.indexOf(3)));
@@ -56,7 +56,7 @@ void main() {
           1: [2, 4],
           2: [],
           3: [],
-          4: [3]
+          4: [3],
         });
         expect(result.indexOf(1), lessThan(result.indexOf(2)));
         expect(result.indexOf(1), lessThan(result.indexOf(3)));
@@ -69,7 +69,7 @@ void main() {
           1: [2, 3],
           2: [4],
           3: [4],
-          4: []
+          4: [],
         });
         expect(result.indexOf(1), lessThan(result.indexOf(2)));
         expect(result.indexOf(1), lessThan(result.indexOf(3)));
@@ -86,7 +86,7 @@ void main() {
             0: [2],
             3: [4],
             5: [6],
-            7: []
+            7: [],
           },
           equals: (i, j) => (i ~/ 2) == (j ~/ 2),
           hashCode: (i) => (i ~/ 2).hashCode,
@@ -95,7 +95,7 @@ void main() {
           0,
           anyOf([2, 3]),
           anyOf([4, 5]),
-          anyOf([6, 7])
+          anyOf([6, 7]),
         ]),
       );
     });
@@ -104,7 +104,7 @@ void main() {
       test('a one-node cycle', () {
         expect(
           () => _topologicalSort({
-            1: [1]
+            1: [1],
           }),
           throwsCycleException([1]),
         );
@@ -116,7 +116,7 @@ void main() {
             1: [2],
             2: [3],
             3: [4],
-            4: [1]
+            4: [1],
           }),
           throwsCycleException([4, 1, 2, 3]),
         );
@@ -148,7 +148,7 @@ void main() {
               1: [2],
               2: [3],
               3: [4],
-              4: []
+              4: [],
             },
             secondarySort: true,
           ),
@@ -162,7 +162,7 @@ void main() {
             1: [2, 3, 4],
             2: [],
             3: [],
-            4: []
+            4: [],
           },
           secondarySort: true,
         );
@@ -177,7 +177,7 @@ void main() {
             1: [2, 4],
             2: [],
             3: [],
-            4: [3]
+            4: [3],
           },
           secondarySort: true,
         );
@@ -193,7 +193,7 @@ void main() {
             1: [2, 3],
             2: [4],
             3: [4],
-            4: []
+            4: [],
           },
           secondarySort: true,
         );
@@ -218,7 +218,7 @@ void main() {
             4: [],
             3: [1],
             1: [],
-            2: []
+            2: [],
           },
           secondarySort: true,
         );
@@ -227,7 +227,7 @@ void main() {
           equals(
             anyOf([
               [2, 3, 1, 4],
-              [3, 1, 2, 4]
+              [3, 1, 2, 4],
             ]),
           ),
         );
@@ -239,7 +239,7 @@ void main() {
             4: [3],
             3: [2],
             2: [1],
-            1: []
+            1: [],
           },
           secondarySort: true,
         );
@@ -255,7 +255,7 @@ void main() {
               3: [],
               4: [5],
               5: [6],
-              6: []
+              6: [],
             },
             secondarySort: true,
           );
@@ -270,7 +270,7 @@ void main() {
               4: [2],
               2: [6],
               5: [],
-              6: []
+              6: [],
             },
             secondarySort: true,
           );
@@ -278,7 +278,7 @@ void main() {
             result,
             anyOf([
               equals([1, 3, 4, 2, 5, 6]),
-              equals([1, 4, 2, 3, 5, 6])
+              equals([1, 4, 2, 3, 5, 6]),
             ]),
           );
         });
@@ -292,7 +292,7 @@ void main() {
             0: [2],
             3: [4],
             5: [6],
-            7: []
+            7: [],
           },
           equals: (i, j) => (i ~/ 2) == (j ~/ 2),
           hashCode: (i) => (i ~/ 2).hashCode,
@@ -302,7 +302,7 @@ void main() {
           0,
           anyOf([2, 3]),
           anyOf([4, 5]),
-          anyOf([6, 7])
+          anyOf([6, 7]),
         ]),
       );
     });
@@ -312,7 +312,7 @@ void main() {
         expect(
           () => _topologicalSort(
             {
-              1: [1]
+              1: [1],
             },
             secondarySort: true,
           ),
@@ -327,7 +327,7 @@ void main() {
               1: [2],
               2: [3],
               3: [4],
-              4: [1]
+              4: [1],
             },
             secondarySort: true,
           ),

@@ -105,7 +105,7 @@ Map<T, Set<T>> _cyclicTransitiveClosure<T extends Object>(
     // children over and over.
     final downstreamComponents = {
       for (final node in component)
-        for (final child in edges(node)) nodesToComponents[child]!
+        for (final child in edges(node)) nodesToComponents[child]!,
     };
     for (final childComponent in downstreamComponents) {
       if (childComponent == component) continue;
