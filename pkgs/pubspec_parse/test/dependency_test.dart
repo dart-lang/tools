@@ -112,7 +112,7 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
   test('map w/ version and hosted as Map', () {
     final dep = _dependency<HostedDependency>({
       'version': '^1.0.0',
-      'hosted': {'name': 'hosted_name', 'url': 'https://hosted_url'}
+      'hosted': {'name': 'hosted_name', 'url': 'https://hosted_url'},
     });
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted!.name, 'hosted_name');
@@ -124,7 +124,7 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
     final dep = _dependency<HostedDependency>(
       {
         'version': '^1.0.0',
-        'hosted': {'url': 'https://hosted_url'}
+        'hosted': {'url': 'https://hosted_url'},
       },
       skipTryPub: true, // todo: Unskip once pub supports this syntax
     );
@@ -139,7 +139,7 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
     _expectThrows(
       {
         'version': 'not a version',
-        'hosted': {'name': 'hosted_name', 'url': 'hosted_url'}
+        'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
       },
       r'''
 line 5, column 15: Unsupported value for "version". Could not parse version "not a version". Unknown text at "not a version".
@@ -155,7 +155,7 @@ line 5, column 15: Unsupported value for "version". Could not parse version "not
       {
         'version': '^1.0.0',
         'hosted': {'name': 'hosted_name', 'url': 'hosted_url'},
-        'not_supported': null
+        'not_supported': null,
       },
       r'''
 line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git, path, hosted]
@@ -286,7 +286,7 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
 
   test('map', () {
     final dep = _dependency<GitDependency>({
-      'git': {'url': 'url', 'path': 'path', 'ref': 'ref'}
+      'git': {'url': 'url', 'path': 'path', 'ref': 'ref'},
     });
     expect(dep.url.toString(), 'url');
     expect(dep.path, 'path');
@@ -332,7 +332,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   test('git - null url', () {
     _expectThrowsContaining(
       {
-        'git': {'url': null}
+        'git': {'url': null},
       },
       r"type 'Null' is not a subtype of type 'String'",
     );
@@ -341,7 +341,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   test('git - int url', () {
     _expectThrowsContaining(
       {
-        'git': {'url': 42}
+        'git': {'url': 42},
       },
       r"type 'int' is not a subtype of type 'String'",
     );
@@ -407,7 +407,7 @@ void _expectThrows(Object content, String expectedError) {
   expectParseThrows(
     {
       'name': 'sample',
-      'dependencies': {'dep': content}
+      'dependencies': {'dep': content},
     },
     expectedError,
   );
@@ -417,7 +417,7 @@ void _expectThrowsContaining(Object content, String errorText) {
   expectParseThrowsContaining(
     {
       'name': 'sample',
-      'dependencies': {'dep': content}
+      'dependencies': {'dep': content},
     },
     errorText,
   );
@@ -430,7 +430,7 @@ T _dependency<T extends Dependency>(
   final value = parse(
     {
       ...defaultPubspec,
-      'dependencies': {'dep': content}
+      'dependencies': {'dep': content},
     },
     skipTryPub: skipTryPub,
   );

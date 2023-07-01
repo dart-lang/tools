@@ -53,7 +53,7 @@ void main() {
       ],
       'topics': ['widget', 'button'],
       'screenshots': [
-        {'description': 'my screenshot', 'path': 'path/to/screenshot'}
+        {'description': 'my screenshot', 'path': 'path/to/screenshot'},
       ],
     });
     expect(value.name, 'sample');
@@ -91,7 +91,7 @@ void main() {
         'environment': {
           'sdk': '>=2.12.0 <3.0.0',
           'bob': null,
-        }
+        },
       },
       skipTryPub: true,
     );
@@ -135,7 +135,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       null: null,
       'http': 'http://example.com',
       'https': 'https://example.com',
-      'none': 'none'
+      'none': 'none',
     }.entries) {
       test('can be ${entry.key}', () {
         final value = parse({
@@ -160,7 +160,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
     test('one author, via authors', () {
       final value = parse({
         ...defaultPubspec,
-        'authors': ['name@example.com']
+        'authors': ['name@example.com'],
       });
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
@@ -169,7 +169,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
     test('many authors', () {
       final value = parse({
         ...defaultPubspec,
-        'authors': ['name@example.com', 'name2@example.com']
+        'authors': ['name@example.com', 'name2@example.com'],
       });
       expect(value.author, isNull);
       expect(value.authors, ['name@example.com', 'name2@example.com']);
@@ -179,7 +179,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       final value = parse({
         ...defaultPubspec,
         'author': 'name@example.com',
-        'authors': ['name2@example.com']
+        'authors': ['name2@example.com'],
       });
       expect(value.author, isNull);
       expect(value.authors, ['name@example.com', 'name2@example.com']);
@@ -189,7 +189,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       final value = parse({
         ...defaultPubspec,
         'author': 'name@example.com',
-        'authors': ['name@example.com', 'name@example.com']
+        'authors': ['name@example.com', 'name@example.com'],
       });
       expect(value.author, 'name@example.com');
       expect(value.authors, ['name@example.com']);
@@ -269,7 +269,7 @@ line 2, column 10: Unsupported value for "name". "name" cannot be empty.
       expectParseThrows(
         {
           'name': 'sample',
-          'environment': {'dart': 'cool'}
+          'environment': {'dart': 'cool'},
         },
         r'''
 line 4, column 3: Use "sdk" to for Dart SDK constraints.
@@ -284,7 +284,7 @@ line 4, column 3: Use "sdk" to for Dart SDK constraints.
       expectParseThrows(
         {
           'name': 'sample',
-          'environment': {'sdk': 42}
+          'environment': {'sdk': 42},
         },
         r'''
 line 4, column 10: Unsupported value for "sdk". `42` is not a String.
@@ -313,7 +313,7 @@ line 3, column 13: Unsupported value for "version". Could not parse "invalid".
       expectParseThrows(
         {
           'name': 'sample',
-          'environment': {'sdk': 'silly'}
+          'environment': {'sdk': 'silly'},
         },
         r'''
 line 4, column 10: Unsupported value for "sdk". Could not parse version "silly". Unknown text at "silly".
@@ -430,7 +430,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
       final value = parse({
         ...defaultPubspec,
         'screenshots': [
-          {'description': 'my screenshot', 'path': 'path/to/screenshot'}
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
         ],
       });
       expect(value.screenshots, hasLength(1));
@@ -445,7 +445,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
           {'description': 'my screenshot', 'path': 'path/to/screenshot'},
           {
             'description': 'my second screenshot',
-            'path': 'path/to/screenshot2'
+            'path': 'path/to/screenshot2',
           },
         ],
       });
@@ -464,7 +464,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
           {
             'description': 'my screenshot',
             'path': 'path/to/screenshot',
-            'extraKey': 'not important'
+            'extraKey': 'not important',
           },
           'not a screenshot',
         ],
@@ -659,7 +659,7 @@ line 1, column 1: Not a map
             'name': 'sample',
             'dependencies': {
               'foo': {
-                'git': {'url': 1}
+                'git': {'url': 1},
               },
             },
             'issue_tracker': {'x': 'y'},
