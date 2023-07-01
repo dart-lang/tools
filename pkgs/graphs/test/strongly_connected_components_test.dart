@@ -30,7 +30,7 @@ void main() {
     test('single item for single node', () {
       final result = components({'a': []});
       expect(result, [
-        ['a']
+        ['a'],
       ]);
     });
 
@@ -38,12 +38,12 @@ void main() {
       final result = components({
         'a': ['b'],
         'b': ['c'],
-        'c': []
+        'c': [],
       });
       expect(result, [
         ['c'],
         ['b'],
-        ['a']
+        ['a'],
       ]);
     });
 
@@ -65,7 +65,7 @@ void main() {
       // value in nodes should always come last.
       final graph = {
         'a': ['b'],
-        'b': ['a']
+        'b': ['a'],
       };
       final resultFromA = components(graph, startNodes: ['a']);
       final resultFromB = components(graph, startNodes: ['b']);
@@ -106,7 +106,7 @@ void main() {
         'b1': [],
         'b2': [],
         'c1': [],
-        'c2': []
+        'c2': [],
       });
 
       expect(
@@ -114,7 +114,7 @@ void main() {
         containsAllInOrder([
           ['c1'],
           ['c'],
-          ['a']
+          ['a'],
         ]),
       );
       expect(
@@ -122,7 +122,7 @@ void main() {
         containsAllInOrder([
           ['c2'],
           ['c'],
-          ['a']
+          ['a'],
         ]),
       );
       expect(
@@ -130,7 +130,7 @@ void main() {
         containsAllInOrder([
           ['b1'],
           ['b'],
-          ['a']
+          ['a'],
         ]),
       );
       expect(
@@ -138,7 +138,7 @@ void main() {
         containsAllInOrder([
           ['b2'],
           ['b'],
-          ['a']
+          ['a'],
         ]),
       );
     });
@@ -150,7 +150,7 @@ void main() {
       });
       expect(result, [
         ['b'],
-        ['a']
+        ['a'],
       ]);
     });
   });
@@ -181,7 +181,7 @@ void main() {
     test('single item for single node', () {
       final result = components({'a': []});
       expect(result, [
-        ['a']
+        ['a'],
       ]);
     });
 
@@ -189,12 +189,12 @@ void main() {
       final result = components({
         'a': ['b'],
         'b': ['c'],
-        'c': []
+        'c': [],
       });
       expect(result, [
         ['c'],
         ['b'],
-        ['a']
+        ['a'],
       ]);
     });
 
@@ -202,7 +202,7 @@ void main() {
       final result = components({
         'a': ['b'],
         'b': ['c'],
-        'c': ['a']
+        'c': ['a'],
       });
       expect(result, [allOf(contains('a'), contains('b'), contains('c'))]);
     });
@@ -212,7 +212,7 @@ void main() {
       // value in nodes should always come last.
       final graph = {
         'a': ['b'],
-        'b': ['a']
+        'b': ['a'],
       };
       final resultFromA = components(graph, startNodes: ['a']);
       final resultFromB = components(graph, startNodes: ['b']);
@@ -253,7 +253,7 @@ void main() {
         'b1': [],
         'b2': [],
         'c1': [],
-        'c2': []
+        'c2': [],
       });
 
       expect(
@@ -261,7 +261,7 @@ void main() {
         containsAllInOrder([
           ['c1'],
           ['c'],
-          ['a']
+          ['a'],
         ]),
       );
       expect(
@@ -269,7 +269,7 @@ void main() {
         containsAllInOrder([
           ['c2'],
           ['c'],
-          ['a']
+          ['a'],
         ]),
       );
       expect(
@@ -277,7 +277,7 @@ void main() {
         containsAllInOrder([
           ['b1'],
           ['b'],
-          ['a']
+          ['a'],
         ]),
       );
       expect(
@@ -285,7 +285,7 @@ void main() {
         containsAllInOrder([
           ['b2'],
           ['b'],
-          ['a']
+          ['a'],
         ]),
       );
     });
@@ -297,7 +297,7 @@ void main() {
       });
       expect(result, [
         ['b'],
-        ['a']
+        ['a'],
       ]);
     });
   });

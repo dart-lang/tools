@@ -34,7 +34,7 @@ void main() {
         'c': ['d'],
         'd': [],
       }, [
-        'a'
+        'a',
       ]);
       expect(result, hasLength(4));
       expect(
@@ -49,7 +49,7 @@ void main() {
         'b': ['c'],
         'c': ['b'],
       }, [
-        'a'
+        'a',
       ]);
       expect(result, hasLength(3));
       expect(result, allOf(contains('a'), contains('b'), contains('c')));
@@ -60,7 +60,7 @@ void main() {
         'a': ['b'],
         'b': ['b'],
       }, [
-        'a'
+        'a',
       ]);
       expect(result, hasLength(2));
       expect(result, allOf(contains('a'), contains('b')));
@@ -71,7 +71,7 @@ void main() {
         'a': ['b'],
         'b': null,
       }, [
-        'a'
+        'a',
       ]);
       expect(result, hasLength(2));
       expect(result, allOf(contains('a'), contains('b')));
@@ -81,7 +81,7 @@ void main() {
       final result = await crawl({
         'a': ['b'],
       }, [
-        'a'
+        'a',
       ]);
       expect(result, ['a', null]);
     });

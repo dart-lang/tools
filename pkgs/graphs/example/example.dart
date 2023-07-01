@@ -37,7 +37,7 @@ void main() {
   final graph = Graph({
     nodeA: [nodeB, nodeC],
     nodeB: [nodeC, nodeD],
-    nodeC: [nodeB, nodeD]
+    nodeC: [nodeB, nodeD],
   });
 
   final components = stronglyConnectedComponents<Node>(
