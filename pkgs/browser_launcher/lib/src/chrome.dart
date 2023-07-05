@@ -28,7 +28,7 @@ String get _executable {
     final windowsPrefixes = [
       Platform.environment['LOCALAPPDATA'],
       Platform.environment['PROGRAMFILES'],
-      Platform.environment['PROGRAMFILES(X86)']
+      Platform.environment['PROGRAMFILES(X86)'],
     ];
     return p.join(
       windowsPrefixes.firstWhere(
