@@ -38,4 +38,6 @@ void main() async {
   } on RpcException catch (error) {
     print('RPC error ${error.code}: ${error.message}');
   }
+
+  await client.close();
 }

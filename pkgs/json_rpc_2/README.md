@@ -12,12 +12,20 @@ A JSON-RPC 2.0 server exposes a set of methods that can be called by clients.
 These methods can be registered using `Server.registerMethod`:
 
 ```dart
+import 'dart:io';
+
 import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-void main() {
-  var socket = WebSocketChannel.connect(Uri.parse('ws://localhost:4321'));
+void main() async {
+  var httpServer = await HttpServer.bind(InternetAddress.loopbackIPv4, 4321);
+  var connectedChannels =
+      httpServer.transform(WebSocketTransformer()).map(IOWebSocketChannel.new);
+  connectedChannels.listen(handleClient);
+}
 
+void handleClient(WebSocketChannel socket) {
   // The socket is a `StreamChannel<dynamic>` because it might emit binary
   // `List<int>`, but JSON RPC 2 only works with Strings so we assert it only
   // emits those by casting it.
@@ -122,6 +130,8 @@ void main() async {
   } on RpcException catch (error) {
     print('RPC error ${error.code}: ${error.message}');
   }
+
+  await client.close();
 }
 ```
 

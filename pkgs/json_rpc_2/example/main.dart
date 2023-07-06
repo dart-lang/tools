@@ -2,12 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-void main() {
-  var socket = WebSocketChannel.connect(Uri.parse('ws://localhost:4321'));
+void main() async {
+  var httpServer = await HttpServer.bind(InternetAddress.loopbackIPv4, 4321);
+  var connectedChannels =
+      httpServer.transform(WebSocketTransformer()).map(IOWebSocketChannel.new);
+  connectedChannels.listen(handleClient);
+}
 
+void handleClient(WebSocketChannel socket) {
   // The socket is a `StreamChannel<dynamic>` because it might emit binary
   // `List<int>`, but JSON RPC 2 only works with Strings so we assert it only
   // emits those by casting it.
