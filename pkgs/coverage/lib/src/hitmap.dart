@@ -76,7 +76,7 @@ class HitMap {
           final path = resolver.resolve(source);
           if (path != null) {
             final lines = loader.loadSync(path) ?? [];
-            ignoredLinesList = getIgnoredLines(lines);
+            ignoredLinesList = getIgnoredLines(path, lines);
 
             // Ignore the whole file.
             if (ignoredLinesList.length == 1 &&

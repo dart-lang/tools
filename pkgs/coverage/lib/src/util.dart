@@ -74,13 +74,13 @@ Future<int> getOpenPort() async {
   }
 }
 
-final muliLineIgnoreStart = RegExp(r'// coverage:ignore-start\s*$');
-final muliLineIgnoreEnd = RegExp(r'// coverage:ignore-end\s*$');
-final singleLineIgnore = RegExp(r'// coverage:ignore-line\s*$');
-final ignoreFile = RegExp(r'// coverage:ignore-file\s*$');
+final muliLineIgnoreStart = RegExp(r'//\s*coverage:ignore-start[\w\d\s]*$');
+final muliLineIgnoreEnd = RegExp(r'//\s*coverage:ignore-end[\w\d\s]*$');
+final singleLineIgnore = RegExp(r'//\s*coverage:ignore-line[\w\d\s]*$');
+final ignoreFile = RegExp(r'//\s*coverage:ignore-file[\w\d\s]*$');
 
 /// Return list containing inclusive range of lines to be ignored by coverage.
-/// If there is a error in balancing the statements it will ignore nothing,
+/// If there is a error in balancing the statements it will throw a FormatException,
 /// unless `coverage:ignore-file` is found.
 /// Return [0, lines.length] if the whole file is ignored.
 ///
@@ -100,7 +100,7 @@ final ignoreFile = RegExp(r'// coverage:ignore-file\s*$');
 /// ]
 /// ```
 ///
-List<List<int>> getIgnoredLines(List<String>? lines) {
+List<List<int>> getIgnoredLines(String filePath, List<String>? lines) {
   final ignoredLines = <List<int>>[];
   if (lines == null) return ignoredLines;
 
@@ -108,36 +108,56 @@ List<List<int>> getIgnoredLines(List<String>? lines) {
     [0, lines.length]
   ];
 
-  var isError = false;
+  FormatException? err;
   var i = 0;
   while (i < lines.length) {
     if (lines[i].contains(ignoreFile)) return allLines;
 
-    if (lines[i].contains(muliLineIgnoreEnd)) isError = true;
+    if (lines[i].contains(muliLineIgnoreEnd)) {
+      err ??= FormatException(
+        'unmatched coverage:ignore-end found at $filePath:${i + 1}',
+      );
+    }
 
     if (lines[i].contains(singleLineIgnore)) ignoredLines.add([i + 1, i + 1]);
 
     if (lines[i].contains(muliLineIgnoreStart)) {
       final start = i;
+      var isUnmatched = true;
       ++i;
       while (i < lines.length) {
         if (lines[i].contains(ignoreFile)) return allLines;
         if (lines[i].contains(muliLineIgnoreStart)) {
-          isError = true;
+          err ??= FormatException(
+            'coverage:ignore-start found at $filePath:${i + 1}'
+            ' before previous coverage:ignore-start ended',
+          );
           break;
         }
 
         if (lines[i].contains(muliLineIgnoreEnd)) {
           ignoredLines.add([start + 1, i + 1]);
+          isUnmatched = false;
           break;
         }
         ++i;
+      }
+
+      if (isUnmatched) {
+        err ??= FormatException(
+          'coverage:ignore-start found at $filePath:${start + 1}'
+          ' has no matching coverage:ignore-end',
+        );
       }
     }
     ++i;
   }
 
-  return isError ? [] : ignoredLines;
+  if (err == null) {
+    return ignoredLines;
+  }
+
+  throw err;
 }
 
 extension StandardOutExtension on Stream<List<int>> {
