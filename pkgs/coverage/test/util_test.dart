@@ -176,10 +176,53 @@ void main() {
         ''',
     ];
 
-    test('returns empty when the annotations are not balanced', () {
-      for (final content in invalidSources) {
-        expect(getIgnoredLines(content.split('\n')), isEmpty);
+    test('throws FormatException when the annotations are not balanced', () {
+      void runTest(int index, String errMsg) {
+        final content = invalidSources[index].split('\n');
+        expect(
+          () => getIgnoredLines('content-$index.dart', content),
+          throwsA(
+            allOf(
+              isFormatException,
+              predicate((FormatException e) => e.message == errMsg),
+            ),
+          ),
+          reason: 'expected FormatException with message "$errMsg"',
+        );
       }
+
+      runTest(
+        0,
+        'coverage:ignore-start found at content-0.dart:3 before previous coverage:ignore-start ended',
+      );
+      runTest(
+        1,
+        'coverage:ignore-start found at content-1.dart:3 before previous coverage:ignore-start ended',
+      );
+      runTest(
+        2,
+        'unmatched coverage:ignore-end found at content-2.dart:5',
+      );
+      runTest(
+        3,
+        'unmatched coverage:ignore-end found at content-3.dart:1',
+      );
+      runTest(
+        4,
+        'unmatched coverage:ignore-end found at content-4.dart:1',
+      );
+      runTest(
+        5,
+        'unmatched coverage:ignore-end found at content-5.dart:1',
+      );
+      runTest(
+        6,
+        'unmatched coverage:ignore-end found at content-6.dart:1',
+      );
+      runTest(
+        7,
+        'coverage:ignore-start found at content-7.dart:1 has no matching coverage:ignore-end',
+      );
     });
 
     test(
@@ -188,20 +231,20 @@ void main() {
       for (final content in invalidSources) {
         final lines = content.split('\n');
         lines.add(' // coverage:ignore-file');
-        expect(getIgnoredLines(lines), [
+        expect(getIgnoredLines('', lines), [
           [0, lines.length]
         ]);
       }
     });
 
-    test('Returns [[0,lines.length]] when the whole file is ignored', () {
+    test('returns [[0,lines.length]] when the whole file is ignored', () {
       final lines = '''final str = ''; // coverage:ignore-start
       final str = ''; // coverage:ignore-end
       final str = ''; // coverage:ignore-file
       '''
           .split('\n');
 
-      expect(getIgnoredLines(lines), [
+      expect(getIgnoredLines('', lines), [
         [0, lines.length]
       ]);
     });
@@ -217,7 +260,7 @@ void main() {
       '''
           .split('\n');
 
-      expect(getIgnoredLines(lines), [
+      expect(getIgnoredLines('', lines), [
         [1, 3],
         [4, 6],
       ]);
@@ -231,14 +274,14 @@ void main() {
       '''
           .split('\n');
 
-      expect(getIgnoredLines(lines), [
+      expect(getIgnoredLines('', lines), [
         [1, 1],
         [2, 2],
         [3, 3],
       ]);
     });
 
-    test('Ingore comments have no effect inside string literals', () {
+    test('ignore comments have no effect inside string literals', () {
       final lines = '''
       final str = '// coverage:ignore-file';
       final str = '// coverage:ignore-line';
@@ -248,12 +291,12 @@ void main() {
       '''
           .split('\n');
 
-      expect(getIgnoredLines(lines), [
+      expect(getIgnoredLines('', lines), [
         [3, 3],
       ]);
     });
 
-    test('Allow white-space after ignore comments', () {
+    test('allow white-space after ignore comments', () {
       // Using multiple strings, rather than splitting a multi-line string,
       // because many code editors remove trailing white-space.
       final lines = [
@@ -265,7 +308,41 @@ void main() {
         "final str = ''; // coverage:ignore-end  \t    \t ",
       ];
 
-      expect(getIgnoredLines(lines), [
+      expect(getIgnoredLines('', lines), [
+        [1, 3],
+        [4, 4],
+        [5, 6],
+      ]);
+    });
+
+    test('allow omitting space after //', () {
+      final lines = [
+        "final str = ''; //coverage:ignore-start",
+        "final str = ''; //coverage:ignore-line",
+        "final str = ''; //coverage:ignore-end",
+        "final str = ''; //coverage:ignore-line",
+        "final str = ''; //coverage:ignore-start",
+        "final str = ''; //coverage:ignore-end",
+      ];
+
+      expect(getIgnoredLines('', lines), [
+        [1, 3],
+        [4, 4],
+        [5, 6],
+      ]);
+    });
+
+    test('allow text after ignore comments', () {
+      final lines = [
+        "final str = ''; // coverage:ignore-start due to XYZ",
+        "final str = ''; // coverage:ignore-line",
+        "final str = ''; // coverage:ignore-end due to XYZ",
+        "final str = ''; // coverage:ignore-line due to 123",
+        "final str = ''; // coverage:ignore-start",
+        "final str = ''; // coverage:ignore-end it is done",
+      ];
+
+      expect(getIgnoredLines('', lines), [
         [1, 3],
         [4, 4],
         [5, 6],
