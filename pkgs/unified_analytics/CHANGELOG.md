@@ -1,4 +1,8 @@
-## 3.0.0-wip
+## 3.0.1-wip
+
+- Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
+
+## 3.0.0
 
 - Allow latest package versions for `file` and `http`
 - Introducing new `Event` class that will standardize what event data can be sent with each event
