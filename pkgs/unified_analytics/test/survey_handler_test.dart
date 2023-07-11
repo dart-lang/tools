@@ -178,7 +178,7 @@ void main() {
                 'description',
                 10,
                 'moreInfoUrl',
-                0.1,
+                1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount', '>', 0),
@@ -262,7 +262,7 @@ void main() {
 	"description": "description123",
 	"dismissForDays": "10",
 	"moreInfoURL": "moreInfoUrl123",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -297,7 +297,7 @@ void main() {
         expect(survey.description, 'description123');
         expect(survey.dismissForDays, 10);
         expect(survey.moreInfoUrl, 'moreInfoUrl123');
-        expect(survey.samplingRate, 0.1);
+        expect(survey.samplingRate, 1.0);
         expect(survey.conditionList.length, 1);
 
         final condition = survey.conditionList.first;
@@ -372,7 +372,7 @@ void main() {
 	"description": "xxxxxxx",
 	"dismissForDays": "10",
 	"moreInfoURL": "xxxxxx",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -389,7 +389,7 @@ void main() {
 	"description": "xxxxxxx",
 	"dismissForDays": "10",
 	"moreInfoURL": "xxxxxx",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -440,7 +440,7 @@ void main() {
                 'description',
                 10,
                 'moreInfoUrl',
-                0.1,
+                1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount', '>', 0),
