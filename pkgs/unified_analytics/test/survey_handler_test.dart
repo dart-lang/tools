@@ -85,6 +85,7 @@ void main() {
 	}
 ]
 ''';
+    // The value for the condition is not a valid integer
     final invalidContents = '''
 [
 	{
