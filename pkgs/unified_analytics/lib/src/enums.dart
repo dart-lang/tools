@@ -14,6 +14,22 @@ enum DashEvent {
     label: 'analytics_collection_enabled',
     description: 'The opt-in status for analytics collection',
   ),
+  cliCommandExecuted(
+    label: 'cli_command_executed',
+    description:
+      'Information about the execution of a Dart or Flutter CLI command',
+  ),
+  timing(
+    label: 'timing',
+    description: 'Timing data collected after performing some operation',
+  ),
+
+  // Events for the Dart CLI
+  pubGet(
+    label: 'pub_get',
+    description: 'Pub package resolution details',
+    toolOwner: DashTool.dartTool,
+  ),
 
   // Events for flutter_tools
   hotReloadTime(
@@ -54,10 +70,6 @@ enum DashEvent {
   pluginUse(
     label: 'plugin_use',
     description: 'Information about how often a plugin was used',
-  ),
-  pubGet(
-    label: 'pub_get',
-    description: 'Pub package resolution details',
   ),
   serverSession(
     label: 'server_session',

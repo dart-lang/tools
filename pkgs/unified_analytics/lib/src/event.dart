@@ -16,6 +16,68 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
+  /// Event that is emitted when a Dart or Flutter CLI command has been
+  /// executed.
+  ///
+  /// [name] - the name of the command that was executed
+  ///
+  /// [flags] - the set of names for flags and options provided to the command.
+  ///    Does not include values provided by users for options.
+  ///
+  /// [enabledExperiments] - the set of Dart language experiments enabled when
+  ///    running the command.
+  ///
+  /// [exitCode] - the process exit code set as a result of running the command.
+  Event.cliCommandExecuted({
+    required String name,
+    required List<String> flags,
+    required List<String> enabledExperiments,
+    int? exitCode,
+  })  : eventName = DashEvent.cliCommandExecuted,
+        eventData = {
+          'name': name,
+          'flags': flags,
+          'enabledExperiments': enabledExperiments,
+          if (exitCode != null) 'exitCode': exitCode,
+        };
+
+  /// Event that captures timing data associated with some operation.
+  ///
+  /// [operation] - the operation performed that was timed for this event.
+  ///
+  /// [timeMs] - the time the operation took to complete, in milliseconds.
+  Event.timing({
+    required String operation,
+    required int timeMs,
+  }) : eventName = DashEvent.timing,
+       eventData = {
+         'operation': operation,
+         'timeMs': timeMs,
+       };
+
+  /// Event that is emitted when `pub get` is run.
+  ///
+  /// [packageName] - the name of the package that was resolved
+  ///
+  /// [version] - the resolved, canonicalized package version
+  ///
+  /// [dependencyKind] - the kind of dependency that resulted in this package
+  ///     being resolved (e.g., direct, transitive, or dev dependencies).
+  Event.pubGet({
+    required String packageName,
+    required String version,
+    required String dependencyType,
+  })  : eventName = DashEvent.pubGet,
+        eventData = {
+          'packageName': packageName,
+          'version': version,
+          'dependencyType': dependencyType,
+        };
+
+  Event.hotReloadTime({required int timeMs})
+      : eventName = DashEvent.hotReloadTime,
+        eventData = {'timeMs': timeMs};
+
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of notification from the
   /// client.
@@ -198,10 +260,6 @@ final class Event {
           'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
         };
 
-  Event.hotReloadTime({required int timeMs})
-      : eventName = DashEvent.hotReloadTime,
-        eventData = {'timeMs': timeMs};
-
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
@@ -328,24 +386,5 @@ final class Event {
         eventData = {
           'diagnostic': diagnostic,
           'adjustments': adjustments,
-        };
-
-  /// Event that is emitted when `pub get` is run.
-  ///
-  /// [packageName] - the name of the package that was resolved
-  ///
-  /// [version] - the resolved, canonicalized package version
-  ///
-  /// [dependencyKind] - the kind of dependency that resulted in this package
-  ///     being resolved (e.g., direct, transitive, or dev dependencies).
-  Event.pubGet({
-    required String packageName,
-    required String version,
-    required String dependencyType,
-  })  : eventName = DashEvent.pubGet,
-        eventData = {
-          'packageName': packageName,
-          'version': version,
-          'dependencyType': dependencyType,
         };
 }
