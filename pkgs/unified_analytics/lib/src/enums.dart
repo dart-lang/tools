@@ -55,6 +55,10 @@ enum DashEvent {
     label: 'plugin_use',
     description: 'Information about how often a plugin was used',
   ),
+  pubGet(
+    label: 'pub_get',
+    description: 'Pub package resolution details',
+  ),
   serverSession(
     label: 'server_session',
     description: 'Dart Analyzer Server session data',
