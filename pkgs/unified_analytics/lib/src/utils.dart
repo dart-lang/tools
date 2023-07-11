@@ -181,6 +181,15 @@ bool legacyOptOut({
   return false;
 }
 
+/// Will use two strings to produce a double for applying a sampling
+/// rate for [Survey] to be returned to the user
+double sampleRate(String string1, String string2) {
+  final int1 = string1.codeUnits.reduce((a, b) => a + b);
+  final int2 = string2.codeUnits.reduce((a, b) => a + b);
+
+  return ((int1 * int2) % 100) / 100;
+}
+
 /// A UUID generator.
 ///
 /// This will generate unique IDs in the format:
