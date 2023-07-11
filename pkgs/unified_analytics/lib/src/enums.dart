@@ -17,7 +17,7 @@ enum DashEvent {
   cliCommandExecuted(
     label: 'cli_command_executed',
     description:
-      'Information about the execution of a Dart or Flutter CLI command',
+        'Information about the execution of a Dart or Flutter CLI command',
   ),
   timing(
     label: 'timing',

@@ -49,11 +49,11 @@ final class Event {
   Event.timing({
     required String operation,
     required int timeMs,
-  }) : eventName = DashEvent.timing,
-       eventData = {
-         'operation': operation,
-         'timeMs': timeMs,
-       };
+  })  : eventName = DashEvent.timing,
+        eventData = {
+          'operation': operation,
+          'timeMs': timeMs,
+        };
 
   /// Event that is emitted when `pub get` is run.
   ///
@@ -175,10 +175,8 @@ final class Event {
   /// [count] - the number of times the command was executed
   ///
   /// [name] - the name of the command that was executed
-  Event.commandExecuted({
-    required int count,
-    required String name,
-  })  : eventName = DashEvent.commandExecuted,
+  Event.commandExecuted({required int count, required String name})
+      : eventName = DashEvent.commandExecuted,
         eventData = {
           'count': count,
           'name': name,
