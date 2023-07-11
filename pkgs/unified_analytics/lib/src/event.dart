@@ -175,28 +175,13 @@ final class Event {
   /// [count] - the number of times the command was executed
   ///
   /// [name] - the name of the command that was executed
-  ///
-  /// [flags] - the set of names for flags and options provided to the command.
-  ///    Does not include values provided by users for options.
-  ///
-  /// [enabledExperiments] - the set of Dart language experiments enabled when
-  ///    running the command.
-  ///
-  /// [exitCode] - the process exit code set as a result of running the command.
   Event.commandExecuted({
     required int count,
     required String name,
-    List<String>? flags,
-    List<String>? enabledExperiments,
-    int? exitCode,
   })  : eventName = DashEvent.commandExecuted,
         eventData = {
           'count': count,
           'name': name,
-          if (flags != null) 'flags': flags,
-          if (enableExperiments != null)
-            'enabledExperiments': enabledExperiments,
-          if (exitCode != null) 'exitCode': exitCode,
         };
 
   /// Event that is emitted on shutdown to report the structure of the analysis
