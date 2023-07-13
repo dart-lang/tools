@@ -368,7 +368,7 @@ class AnalyticsImpl implements Analytics {
   ///
   /// Additionally, if the client has not invoked `clientShowedMessage`,
   /// then no events shall be sent.
-  /// 
+  ///
   /// If the user has suppressed telemetry [_telemetrySuppressed] will
   /// return `true` to prevent events from being sent for current invocation
   @override
