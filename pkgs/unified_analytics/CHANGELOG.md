@@ -1,3 +1,7 @@
+## 3.0.1-wip
+
+- Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
+
 ## 3.0.0
 
 - Allow latest package versions for `file` and `http`
