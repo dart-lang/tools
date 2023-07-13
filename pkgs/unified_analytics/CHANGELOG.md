@@ -1,6 +1,7 @@
 ## 3.0.1-wip
 
 - Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
+- Added new method to suppress telemetry collection temporarily for current invocation via `analytics.suppressTelemetry()`
 
 ## 3.0.0
 
