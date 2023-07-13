@@ -17,7 +17,7 @@ Matcher throwsCycleException<T>(List<T> cycle) => throwsA(
         predicate((exception) {
           expect((exception as CycleException<T>).cycle, equals(cycle));
           return true;
-        })
+        }),
       ]),
     );
 
