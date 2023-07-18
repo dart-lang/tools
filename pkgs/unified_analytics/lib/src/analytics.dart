@@ -459,7 +459,7 @@ class AnalyticsImpl implements Analytics {
       // the clientID and survey description strings and compared against the
       // sampling rate found in the survey
       if (conditionsMet == survey.conditionList.length &&
-          survey.samplingRate >= sampleRate(_clientId, survey.description)) {
+          survey.samplingRate >= sampleRate(_clientId, survey.uniqueId)) {
         surveysToShow.add(survey);
       }
     }
