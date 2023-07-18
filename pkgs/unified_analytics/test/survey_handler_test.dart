@@ -493,10 +493,11 @@ void main() {
     });
 
     test('Unit testing the sampleRate method', () {
+      // These strings had a predetermined output from the utility function
       final string1 = 'string1';
       final string2 = 'string2';
 
-      expect(sampleRate(string1, string2), 0.56);
+      expect(sampleRate(string1, string2), 0.17);
     });
 
     test('Sampling rate correctly returns a valid survey', () async {
@@ -561,7 +562,7 @@ void main() {
           'description',
           10,
           'moreInfoUrl',
-          0.3,
+          0.15,
           <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount', '>', 0),
@@ -588,7 +589,7 @@ void main() {
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
-        expect(survey.samplingRate, 0.3);
+        expect(survey.samplingRate, 0.15);
         expect(fetchedSurveys.length, 0);
       });
     });
