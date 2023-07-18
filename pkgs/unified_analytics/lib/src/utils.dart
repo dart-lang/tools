@@ -107,7 +107,7 @@ Directory? getHomeDirectory(FileSystem fs) {
 
 /// Function used to convert a string into an integer value
 int intFromString(String input) {
-  const lookup = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const lookup = 'abcdefghijklmnopqrstuvwxyz0123456789-';
   var result = 1;
 
   for (var codeUnit in input.codeUnits) {
