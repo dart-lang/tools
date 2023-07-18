@@ -224,6 +224,13 @@ abstract class Analytics {
   /// Setting the telemetry status will also send an event to GA
   /// indicating the latest status of the telemetry from [reportingBool]
   Future<void> setTelemetry(bool reportingBool);
+
+  /// Calling this will result in telemetry collection being suppressed for
+  /// the current invocation
+  ///
+  /// If you would like to permanently disable telemetry
+  /// collection use `setTelemetry(false)`
+  void suppressTelemetry();
 }
 
 class AnalyticsImpl implements Analytics {
@@ -260,6 +267,9 @@ class AnalyticsImpl implements Analytics {
   /// When set to `true`, various assert statements will be enabled
   /// to ensure usage of this class is within GA4 limitations
   final bool _enableAsserts;
+
+  /// Telemetry suppression flag that is set via `suppressTelemetry()`
+  bool _telemetrySuppressed = false;
 
   AnalyticsImpl({
     required this.tool,
@@ -358,9 +368,15 @@ class AnalyticsImpl implements Analytics {
   ///
   /// Additionally, if the client has not invoked `clientShowedMessage`,
   /// then no events shall be sent.
+  ///
+  /// If the user has suppressed telemetry [_telemetrySuppressed] will
+  /// return `true` to prevent events from being sent for current invocation
   @override
   bool get okToSend =>
-      telemetryEnabled && !_showMessage && _clientShowedMessage;
+      telemetryEnabled &&
+      !_showMessage &&
+      _clientShowedMessage &&
+      !_telemetrySuppressed;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -460,6 +476,9 @@ class AnalyticsImpl implements Analytics {
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
   }
+
+  @override
+  void suppressTelemetry() => _telemetrySuppressed = true;
 }
 
 /// An implementation that will never send events.
@@ -504,4 +523,7 @@ class NoOpAnalytics implements Analytics {
 
   @override
   Future<void> setTelemetry(bool reportingBool) async {}
+
+  @override
+  void suppressTelemetry() {}
 }
