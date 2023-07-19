@@ -60,7 +60,8 @@ const String kContextualSurveyUrl =
 const String kDartToolDirectoryName = '.dart-tool';
 
 /// Name of the file where we persist dismissed survey ids
-const String kDismissedSurveyFileName = 'dismissed-surveys';
+const String kDismissedSurveyFileName =
+    'dart-flutter-telemetry-dismissed-surveys';
 
 /// The API secret associated with the GA4 instance's Measurement Protocol
 const String kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';

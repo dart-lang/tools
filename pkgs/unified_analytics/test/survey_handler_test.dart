@@ -187,6 +187,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[
               Survey(
                 'uniqueId',
@@ -228,6 +230,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[
               Survey(
                 'uniqueId',
@@ -268,7 +272,8 @@ void main() {
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromString(content: '''
+          surveyHandler: FakeSurveyHandler.fromString(
+              homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -332,7 +337,8 @@ void main() {
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromString(content: '''
+          surveyHandler: FakeSurveyHandler.fromString(
+              homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
         "uniqueId": "xxxxxx",
@@ -376,7 +382,8 @@ void main() {
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromString(content: '''
+          surveyHandler: FakeSurveyHandler.fromString(
+              homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
         "uniqueId": "12345",
@@ -444,6 +451,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[
               Survey(
                 'uniqueId',
@@ -527,6 +536,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[survey],
           ),
         );
@@ -571,6 +582,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[survey],
           ),
         );

@@ -5,7 +5,9 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'log_handler.dart';
@@ -154,7 +156,16 @@ class Survey {
 }
 
 class SurveyHandler {
-  const SurveyHandler();
+  final File _dismissedSurveyFile;
+
+  SurveyHandler({
+    required Directory homeDirectory,
+    required FileSystem fs,
+  }) : _dismissedSurveyFile = fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        ));
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
@@ -178,14 +189,43 @@ class SurveyHandler {
     final response = await http.get(uri);
     return response.body;
   }
+
+  /// Invoking this method will persist the survey's id in
+  /// the local file containing dismissed survey ids to ensure that
+  /// it won't be shown to the user again.
+  void dismiss(Survey survey) =>
+      _dismissedSurveyFile.writeAsStringSync('${survey.uniqueId}\n',
+          mode: FileMode.writeOnlyAppend);
+
+  /// Retrieve a list of strings for each dismissed [Survey] persisted on disk
+  List<String> fetchDismissedSurveys() =>
+      _dismissedSurveyFile.readAsLinesSync();
 }
 
 class FakeSurveyHandler implements SurveyHandler {
+  @override
+  final File _dismissedSurveyFile;
   final List<Survey> _fakeInitializedSurveys = [];
 
   /// Use this class in tests if you can provide the
   /// list of [Survey] objects
-  FakeSurveyHandler.fromList({required List<Survey> initializedSurveys}) {
+  ///
+  /// Important: the surveys in the [initializedSurveys] list
+  /// will have their dates checked to ensure they are valid; it is
+  /// recommended to use `package:clock` to set a fixed time for testing
+  FakeSurveyHandler.fromList({
+    required Directory homeDirectory,
+    required FileSystem fs,
+    required List<Survey> initializedSurveys,
+  }) : _dismissedSurveyFile = fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        )) {
+    // We must pass the surveys from the list to the
+    // `checkSurveyDate` function here and not for the
+    // `.fromString()` constructor because the `parseSurveysFromJson`
+    // method already checks their date
     for (final survey in initializedSurveys) {
       if (checkSurveyDate(survey)) {
         _fakeInitializedSurveys.add(survey);
@@ -195,7 +235,15 @@ class FakeSurveyHandler implements SurveyHandler {
 
   /// Use this class in tests if you can provide raw
   /// json strings to mock a response from a remote server
-  FakeSurveyHandler.fromString({required String content}) {
+  FakeSurveyHandler.fromString({
+    required Directory homeDirectory,
+    required FileSystem fs,
+    required String content,
+  }) : _dismissedSurveyFile = fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        )) {
     final body = jsonDecode(content) as List<dynamic>;
     for (final fakeSurvey in parseSurveysFromJson(body)) {
       _fakeInitializedSurveys.add(fakeSurvey);
@@ -208,4 +256,13 @@ class FakeSurveyHandler implements SurveyHandler {
 
   @override
   Future<String> _fetchContents() => throw UnimplementedError();
+
+  @override
+  void dismiss(Survey survey) =>
+      _dismissedSurveyFile.writeAsStringSync('${survey.uniqueId}\n',
+          mode: FileMode.writeOnlyAppend);
+
+  @override
+  List<String> fetchDismissedSurveys() =>
+      _dismissedSurveyFile.readAsLinesSync();
 }

@@ -76,7 +76,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: const SurveyHandler(),
+      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
     );
   }
@@ -136,7 +136,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: const SurveyHandler(),
+      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
     );
   }
@@ -168,8 +168,12 @@ abstract class Analytics {
         dartVersion: dartVersion,
         platform: platform,
         fs: fs,
-        surveyHandler:
-            surveyHandler ?? FakeSurveyHandler.fromList(initializedSurveys: []),
+        surveyHandler: surveyHandler ??
+            FakeSurveyHandler.fromList(
+              homeDirectory: homeDirectory,
+              fs: fs,
+              initializedSurveys: [],
+            ),
         gaClient: gaClient ?? FakeGAClient(),
         enableAsserts: true,
       );
@@ -441,7 +445,14 @@ class AnalyticsImpl implements Analytics {
 
     if (logFileStats == null) return [];
 
+    // TODO: eliasyishak
+    // Call for surveys that have already been dismissed from
+    // persisted survey ids on disk
+
     for (final survey in await _surveyHandler.fetchSurveyList()) {
+      // TODO: eliasyishak
+      // Check if survey id is list of dismissed surveys
+
       // Counter to check each survey condition, if all are met, then
       // this integer will be equal to the number of conditions in
       // [Survey.conditionList]
