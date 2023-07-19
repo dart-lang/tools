@@ -7,9 +7,12 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:unified_analytics/src/constants.dart';
 
 import 'package:unified_analytics/src/survey_handler.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -82,6 +85,7 @@ void main() {
 	}
 ]
 ''';
+    // The value for the condition is not a valid integer
     final invalidContents = '''
 [
 	{
@@ -141,10 +145,22 @@ void main() {
     late Analytics analytics;
     late Directory homeDirectory;
     late FileSystem fs;
+    late File clientIdFile;
 
     setUp(() {
       fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
       homeDirectory = fs.directory('home');
+
+      // Write the client ID file out so that we don't get
+      // a randomly assigned id for this test generated within
+      // the analytics constructor
+      clientIdFile = fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kClientIdFileName,
+      ));
+      clientIdFile.createSync(recursive: true);
+      clientIdFile.writeAsStringSync('string1');
 
       final initialAnalytics = Analytics.test(
         tool: DashTool.flutterTool,
@@ -178,7 +194,7 @@ void main() {
                 'description',
                 10,
                 'moreInfoUrl',
-                0.1,
+                1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount', '>', 0),
@@ -262,7 +278,7 @@ void main() {
 	"description": "description123",
 	"dismissForDays": "10",
 	"moreInfoURL": "moreInfoUrl123",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -297,7 +313,7 @@ void main() {
         expect(survey.description, 'description123');
         expect(survey.dismissForDays, 10);
         expect(survey.moreInfoUrl, 'moreInfoUrl123');
-        expect(survey.samplingRate, 0.1);
+        expect(survey.samplingRate, 1.0);
         expect(survey.conditionList.length, 1);
 
         final condition = survey.conditionList.first;
@@ -372,7 +388,7 @@ void main() {
 	"description": "xxxxxxx",
 	"dismissForDays": "10",
 	"moreInfoURL": "xxxxxx",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -389,7 +405,7 @@ void main() {
 	"description": "xxxxxxx",
 	"dismissForDays": "10",
 	"moreInfoURL": "xxxxxx",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -440,7 +456,7 @@ void main() {
                 'description',
                 10,
                 'moreInfoUrl',
-                0.1,
+                1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount', '>', 0),
@@ -473,6 +489,108 @@ void main() {
         }
         fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
+      });
+    });
+
+    test('Unit testing the sampleRate method', () {
+      // These strings had a predetermined output from the utility function
+      final string1 = 'string1';
+      final string2 = 'string2';
+
+      expect(sampleRate(string1, string2), 0.17);
+    });
+
+    test('Sampling rate correctly returns a valid survey', () async {
+      // This test will use a predefined client ID string of `string1`
+      // which has been set in the setup along with a predefined
+      // string for the survey ID of `string2` to get a sample rate value
+      //
+      // The combination of `string1` and `string2` will return 0.17
+      // from the sampleRate utility function so we have set the threshold
+      // to be 0.6 which should return surveys
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        final survey = Survey(
+          'string2',
+          'url',
+          DateTime(2023, 1, 1),
+          DateTime(2023, 12, 31),
+          'description',
+          10,
+          'moreInfoUrl',
+          0.6,
+          <Condition>[
+            Condition('logFileStats.recordCount', '>=', 50),
+            Condition('logFileStats.toolCount', '>', 0),
+          ],
+        );
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            initializedSurveys: <Survey>[survey],
+          ),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (var i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(survey.samplingRate, 0.6);
+        expect(fetchedSurveys.length, 1);
+      });
+    });
+
+    test('Sampling rate filters out a survey', () async {
+      // We will reduce the survey's sampling rate to be 0.3 which is
+      // less than value returned from the predefined client ID and
+      // survey sample
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        final survey = Survey(
+          'string2',
+          'url',
+          DateTime(2023, 1, 1),
+          DateTime(2023, 12, 31),
+          'description',
+          10,
+          'moreInfoUrl',
+          0.15,
+          <Condition>[
+            Condition('logFileStats.recordCount', '>=', 50),
+            Condition('logFileStats.toolCount', '>', 0),
+          ],
+        );
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            initializedSurveys: <Survey>[survey],
+          ),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (var i = 0; i < 60; i++) {
+          await analytics.sendEvent(
+              eventName: DashEvent.analyticsCollectionEnabled);
+        }
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(survey.samplingRate, 0.15);
+        expect(fetchedSurveys.length, 0);
       });
     });
   });

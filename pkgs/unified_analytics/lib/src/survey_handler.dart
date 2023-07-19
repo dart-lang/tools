@@ -158,10 +158,10 @@ class SurveyHandler {
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
-    final List<Map<String, dynamic>> body;
+    final List<dynamic> body;
     try {
       final payload = await _fetchContents();
-      body = jsonDecode(payload) as List<Map<String, dynamic>>;
+      body = jsonDecode(payload) as List<dynamic>;
       // ignore: avoid_catches_without_on_clauses
     } catch (err) {
       return [];

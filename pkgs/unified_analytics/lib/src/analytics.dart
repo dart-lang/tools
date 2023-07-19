@@ -455,7 +455,11 @@ class AnalyticsImpl implements Analytics {
         }
       }
 
-      if (conditionsMet == survey.conditionList.length) {
+      // If all conditions are met above, a double value will be generated from
+      // the clientID and survey description strings and compared against the
+      // sampling rate found in the survey
+      if (conditionsMet == survey.conditionList.length &&
+          survey.samplingRate >= sampleRate(_clientId, survey.uniqueId)) {
         surveysToShow.add(survey);
       }
     }
