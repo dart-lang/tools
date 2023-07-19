@@ -79,7 +79,7 @@ void main() {
 				"value": 1000
 			},
 			{
-				"field": "logFileStats.toolCount",
+				"field": "logFileStats.toolCount.flutter-tool",
 				"operator": "<",
 				"value": 3
 			}
@@ -125,7 +125,7 @@ void main() {
         expect(firstCondition.operatorString, '>=');
         expect(firstCondition.value, 1000);
 
-        expect(secondCondition.field, 'logFileStats.toolCount');
+        expect(secondCondition.field, 'logFileStats.toolCount.flutter-tool');
         expect(secondCondition.operatorString, '<');
         expect(secondCondition.value, 3);
       });
@@ -199,7 +199,7 @@ void main() {
                 1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
-                  Condition('logFileStats.toolCount', '>', 0),
+                  Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
               ),
             ],
@@ -240,7 +240,7 @@ void main() {
                 0.1,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
-                  Condition('logFileStats.toolCount', '>', 0),
+                  Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
               ),
             ],
@@ -456,7 +456,7 @@ void main() {
                 1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
-                  Condition('logFileStats.toolCount', '>', 0),
+                  Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
               ),
             ],
@@ -515,7 +515,7 @@ void main() {
           0.6,
           <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
-            Condition('logFileStats.toolCount', '>', 0),
+            Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
         );
         analytics = Analytics.test(
@@ -559,7 +559,7 @@ void main() {
           0.15,
           <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
-            Condition('logFileStats.toolCount', '>', 0),
+            Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
         );
         analytics = Analytics.test(
