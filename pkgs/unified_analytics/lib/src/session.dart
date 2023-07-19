@@ -13,14 +13,16 @@ import 'constants.dart';
 import 'initializer.dart';
 
 class Session {
+  final Directory homeDirectory;
+  final FileSystem fs;
   final File sessionFile;
 
   late int _sessionId;
   late int _lastPing;
 
   Session({
-    required Directory homeDirectory,
-    required FileSystem fs,
+    required this.homeDirectory,
+    required this.fs,
   }) : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)) {
     _refreshSessionData();
@@ -95,4 +97,38 @@ class Session {
       parseContents();
     }
   }
+}
+
+class NoopSession implements Session {
+  @override
+  final int _lastPing = 0;
+
+  @override
+  final int _sessionId = DateTime.now().millisecondsSinceEpoch;
+
+  @override
+  void _refreshSessionData() {}
+
+  @override
+  File get sessionFile => throw UnimplementedError();
+
+  @override
+  FileSystem get fs => throw UnimplementedError();
+
+  @override
+  int getSessionId() => _sessionId;
+
+  @override
+  Directory get homeDirectory => throw UnimplementedError();
+
+  @override
+  String toJson() {
+    throw UnimplementedError();
+  }
+
+  @override
+  set _lastPing(int lastPing) {}
+
+  @override
+  set _sessionId(int sessionId) {}
 }
