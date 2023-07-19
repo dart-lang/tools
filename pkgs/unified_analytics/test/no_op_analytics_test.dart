@@ -10,6 +10,8 @@ import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
+  final testEvent = Event.hotReloadTime(timeMs: 50);
+
   test('NoOpAnalytics.telemetryEnabled is always false', () async {
     final analytics = NoOpAnalytics();
 
@@ -32,7 +34,7 @@ void main() {
     await analytics.setTelemetry(true);
     analytics.clientShowedMessage();
     expect(
-      analytics.sendEvent(eventName: DashEvent.analyticsCollectionEnabled),
+      analytics.send(testEvent),
       isNull,
     );
   });
@@ -44,7 +46,7 @@ void main() {
 
     await analytics.setTelemetry(true);
     analytics.clientShowedMessage();
-    await analytics.sendEvent(eventName: DashEvent.analyticsCollectionEnabled);
+    await analytics.send(testEvent);
 
     expect(analytics.logFileStats(), isNull);
   });

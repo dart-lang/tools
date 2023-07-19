@@ -29,14 +29,40 @@ class LogFileStats {
   /// The number of unique session ids found in the log file
   final int sessionCount;
 
-  /// The number of unique flutter channels found in the log file
-  final int flutterChannelCount;
+  /// The map containing all of the flutter channels and a count
+  /// of how many events were under each channel
+  ///
+  /// ```
+  /// {
+  ///   'stable': 123,
+  ///   'beta': 50,
+  ///   'master': 5,
+  /// }
+  /// ```
+  final Map<String, int> flutterChannelCount;
 
-  /// The number of unique tools found in the log file
-  final int toolCount;
+  /// The map containing all of the tools that have sent events
+  /// and how many events were sent by each tool
+  ///
+  /// ```
+  /// {
+  ///   'flutter-tool': 500,
+  ///   'dart-tool': 45,
+  ///   'vscode-plugins': 321,
+  /// }
+  /// ```
+  final Map<String, int> toolCount;
 
   /// The map containing all of the events in the file along with
   /// how many times they have occured
+  ///
+  /// ```
+  /// {
+  ///   'client_request': 345,
+  ///   'hot_reload_time': 765,
+  ///   'memory_info': 90,
+  /// }
+  /// ```
   final Map<String, int> eventCount;
 
   /// Total number of records in the log file
@@ -62,10 +88,10 @@ class LogFileStats {
         'endDateTime': endDateTime.toString(),
         'minsFromEndDateTime': minsFromEndDateTime,
         'sessionCount': sessionCount,
-        'flutterChannelCount': flutterChannelCount,
-        'toolCount': toolCount,
         'recordCount': recordCount,
         'eventCount': eventCount,
+        'toolCount': toolCount,
+        'flutterChannelCount': flutterChannelCount,
       });
 
   /// Pass in a string label for one of the instance variables
@@ -152,6 +178,8 @@ class LogHandler {
 
     // Map of counters for each event
     final eventCount = <String, int>{};
+    final flutterChannelCount = <String, int>{};
+    final toolCount = <String, int>{};
     for (var record in records) {
       counter['sessions']!.add(record.sessionId);
       counter['tool']!.add(record.tool);
@@ -165,6 +193,24 @@ class LogHandler {
         eventCount[record.eventName] = 0;
       }
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
+
+      // Counting how many events were recorded for each tool
+      if (!toolCount.containsKey(record.tool)) {
+        toolCount[record.tool] = 0;
+      }
+      toolCount[record.tool] = toolCount[record.tool]! + 1;
+
+      // Necessary to perform a null check for flutter channel because
+      // not all events will have information about flutter
+      if (record.flutterChannel != null) {
+        final flutterChannel = record.flutterChannel!;
+        if (!flutterChannelCount.containsKey(flutterChannel)) {
+          flutterChannelCount[flutterChannel] = 0;
+        }
+
+        flutterChannelCount[flutterChannel] =
+            flutterChannelCount[flutterChannel]! + 1;
+      }
     }
 
     final now = clock.now();
@@ -175,8 +221,8 @@ class LogHandler {
       endDateTime: endDateTime,
       minsFromEndDateTime: now.difference(endDateTime).inMinutes,
       sessionCount: counter['sessions']!.length,
-      flutterChannelCount: counter['flutter_channel']!.length,
-      toolCount: counter['tool']!.length,
+      flutterChannelCount: flutterChannelCount,
+      toolCount: toolCount,
       eventCount: eventCount,
       recordCount: records.length,
     );

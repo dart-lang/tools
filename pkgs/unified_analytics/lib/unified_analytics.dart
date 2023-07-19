@@ -4,6 +4,7 @@
 
 export 'src/analytics.dart' show Analytics, NoOpAnalytics;
 export 'src/config_handler.dart' show ToolInfo;
-export 'src/enums.dart';
+export 'src/enums.dart' show DashTool;
+export 'src/event.dart' show Event;
 export 'src/log_handler.dart' show LogFileStats;
 export 'src/survey_handler.dart' show FakeSurveyHandler, SurveyHandler;

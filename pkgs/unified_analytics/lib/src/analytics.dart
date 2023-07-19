@@ -11,11 +11,12 @@ import 'package:http/http.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:unified_analytics/src/asserts.dart';
 
+import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
+import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
@@ -156,8 +157,9 @@ abstract class Analytics {
     required FileSystem fs,
     required DevicePlatform platform,
     SurveyHandler? surveyHandler,
+    GAClient? gaClient,
   }) =>
-      TestAnalytics(
+      AnalyticsImpl(
         tool: tool,
         homeDirectory: homeDirectory,
         flutterChannel: flutterChannel,
@@ -166,9 +168,9 @@ abstract class Analytics {
         dartVersion: dartVersion,
         platform: platform,
         fs: fs,
-        gaClient: FakeGAClient(),
         surveyHandler:
             surveyHandler ?? FakeSurveyHandler.fromList(initializedSurveys: []),
+        gaClient: gaClient ?? FakeGAClient(),
         enableAsserts: true,
       );
 
@@ -222,11 +224,14 @@ abstract class Analytics {
   /// Returns null if there are no persisted logs
   LogFileStats? logFileStats();
 
-  /// API to send events to Google Analytics to track usage
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  });
+  /// Send preconfigured events using specific named constructors
+  /// on the [Event] class
+  ///
+  /// Example
+  /// ```dart
+  /// analytics.send(Event.memory(periodSec: 123));
+  /// ```
+  Future<Response>? send(Event event);
 
   /// Pass a boolean to either enable or disable telemetry and make
   /// the necessary changes in the persisted configuration file
@@ -234,6 +239,13 @@ abstract class Analytics {
   /// Setting the telemetry status will also send an event to GA
   /// indicating the latest status of the telemetry from [reportingBool]
   Future<void> setTelemetry(bool reportingBool);
+
+  /// Calling this will result in telemetry collection being suppressed for
+  /// the current invocation
+  ///
+  /// If you would like to permanently disable telemetry
+  /// collection use `setTelemetry(false)`
+  void suppressTelemetry();
 }
 
 class AnalyticsImpl implements Analytics {
@@ -271,6 +283,9 @@ class AnalyticsImpl implements Analytics {
   /// When set to `true`, various assert statements will be enabled
   /// to ensure usage of this class is within GA4 limitations
   final bool _enableAsserts;
+
+  /// Telemetry suppression flag that is set via `suppressTelemetry()`
+  bool _telemetrySuppressed = false;
 
   AnalyticsImpl({
     required this.tool,
@@ -371,9 +386,15 @@ class AnalyticsImpl implements Analytics {
   ///
   /// Additionally, if the client has not invoked `clientShowedMessage`,
   /// then no events shall be sent.
+  ///
+  /// If the user has suppressed telemetry [_telemetrySuppressed] will
+  /// return `true` to prevent events from being sent for current invocation
   @override
   bool get okToSend =>
-      telemetryEnabled && !_showMessage && _clientShowedMessage;
+      telemetryEnabled &&
+      !_showMessage &&
+      _clientShowedMessage &&
+      !_telemetrySuppressed;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -471,17 +492,14 @@ class AnalyticsImpl implements Analytics {
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) {
+  Future<Response>? send(Event event) {
     if (!okToSend) return null;
 
     // Construct the body of the request
     final body = generateRequestBody(
       clientId: _clientId,
-      eventName: eventName,
-      eventData: eventData,
+      eventName: event.eventName,
+      eventData: event.eventData,
       userProperty: userProperty,
     );
 
@@ -497,6 +515,10 @@ class AnalyticsImpl implements Analytics {
   Future<void> setTelemetry(bool reportingBool) {
     _configHandler.setTelemetry(reportingBool);
 
+    // Creation of the [Event] for opting out
+    final collectionEvent =
+        Event.analyticsCollectionEnabled(status: reportingBool);
+
     // Construct the body of the request to signal
     // telemetry status toggling
     //
@@ -504,8 +526,8 @@ class AnalyticsImpl implements Analytics {
     // be blocked by the [telemetryEnabled] getter
     final body = generateRequestBody(
       clientId: _clientId,
-      eventName: DashEvent.analyticsCollectionEnabled,
-      eventData: {'status': reportingBool},
+      eventName: collectionEvent.eventName,
+      eventData: collectionEvent.eventData,
       userProperty: userProperty,
     );
 
@@ -528,6 +550,9 @@ class AnalyticsImpl implements Analytics {
     // Pass to the google analytics client to send
     return _gaClient.sendData(body);
   }
+
+  @override
+  void suppressTelemetry() => _telemetrySuppressed = true;
 }
 
 /// An implementation that will never send events.
@@ -571,58 +596,11 @@ class NoOpAnalytics implements Analytics {
   LogFileStats? logFileStats() => null;
 
   @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) =>
-      null;
+  Future<Response>? send(Event event) => null;
 
   @override
   Future<void> setTelemetry(bool reportingBool) async {}
-}
-
-/// This class extends [AnalyticsImpl] and subs out any methods that
-/// are not suitable for tests; the following have been altered from the
-/// default implementation. All other methods are included
-///
-/// - `sendEvent(...)` has been altered to prevent data from being sent to GA
-/// during testing
-class TestAnalytics extends AnalyticsImpl {
-  TestAnalytics({
-    required super.tool,
-    required super.homeDirectory,
-    super.flutterChannel,
-    super.flutterVersion,
-    required super.dartVersion,
-    required super.platform,
-    required super.toolsMessageVersion,
-    required super.fs,
-    required super.gaClient,
-    required super.surveyHandler,
-    required super.enableAsserts,
-  });
 
   @override
-  Future<Response>? sendEvent({
-    required DashEvent eventName,
-    Map<String, Object?> eventData = const {},
-  }) {
-    if (!okToSend) return null;
-
-    // Calling the [generateRequestBody] method will ensure that the
-    // session file is getting updated without actually making any
-    // POST requests to Google Analytics
-    final body = generateRequestBody(
-      clientId: _clientId,
-      eventName: eventName,
-      eventData: eventData,
-      userProperty: userProperty,
-    );
-
-    if (_enableAsserts) checkBody(body);
-
-    _logHandler.save(data: body);
-
-    return null;
-  }
+  void suppressTelemetry() {}
 }

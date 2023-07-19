@@ -8,6 +8,7 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -31,6 +32,8 @@ void main() {
   const flutterVersion = 'flutterVersion';
   const dartVersion = 'dartVersion';
   const platform = DevicePlatform.macos;
+
+  final testEvent = Event.hotReloadTime(timeMs: 50);
 
   setUp(() {
     // Setup the filesystem with the home directory
@@ -96,17 +99,14 @@ void main() {
     // Even after invoking the method, it should be prevented from
     // sending a message because it is the first time the tool was
     // run in this instance
-    firstAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    firstAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 0);
     firstAnalytics.clientShowedMessage();
 
     // Attempt to send two events, both should be blocked because it is
     // part of the first instance
-    firstAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    firstAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    firstAnalytics.send(testEvent);
+    firstAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 0);
 
     // Creating a second analytics instance from the same tool now should
@@ -126,16 +126,13 @@ void main() {
     );
 
     expect(secondAnalytics.shouldShowMessage, false);
-    secondAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    secondAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 1,
         reason: 'Events will be blocked until invoking method '
             'ensuring client has seen message');
 
-    secondAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    secondAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    secondAnalytics.send(testEvent);
+    secondAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 3);
 
     // Next, we will want to confirm that the message should be showing when
@@ -165,18 +162,15 @@ void main() {
         reason: 'The $kLogFileName file was not found');
     expect(thirdAnalytics.shouldShowMessage, true,
         reason: 'New version number should require showing message');
-    thirdAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    thirdAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 0);
     thirdAnalytics.clientShowedMessage();
 
     // Attempt to send two events, both should be blocked because it is
     // part of the third instance which has a new version for the consent
     // message which will be treated as a new tool being onboarded
-    thirdAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    thirdAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    thirdAnalytics.send(testEvent);
+    thirdAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 0);
 
     // The fourth instance of the analytics class with the consent message
@@ -196,16 +190,13 @@ void main() {
     );
 
     expect(fourthAnalytics.shouldShowMessage, false);
-    fourthAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    fourthAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 1,
         reason: 'Events will be blocked until invoking method '
             'ensuring client has seen message');
 
-    fourthAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
-    fourthAnalytics.sendEvent(
-        eventName: DashEvent.hotReloadTime, eventData: <String, dynamic>{});
+    fourthAnalytics.send(testEvent);
+    fourthAnalytics.send(testEvent);
     expect(logFile.readAsLinesSync().length, 3);
   });
 

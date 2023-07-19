@@ -1,11 +1,15 @@
-## 2.1.0-wip
+## 3.1.0-wip
 
+- Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
+- Added new method to suppress telemetry collection temporarily for current invocation via `analytics.suppressTelemetry()`
 - Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users
 - Surveys will be disabled for any users that have been opted out
 
-## 2.0.1-wip
+## 3.0.0
 
-- Allow latest package versions for `file` and `http`.
+- Allow latest package versions for `file` and `http`
+- Introducing new `Event` class that will standardize what event data can be sent with each event
+- Deprecating the `sendEvent` method in favor of the `send` method
 
 ## 2.0.0
 

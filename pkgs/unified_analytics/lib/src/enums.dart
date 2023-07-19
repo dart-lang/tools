@@ -31,13 +31,17 @@ enum DashEvent {
     label: 'client_request',
     description: 'Requests sent from the client',
   ),
+  commandExecuted(
+    label: 'command_executed',
+    description: 'Number of times a command is executed',
+  ),
   contextStructure(
     label: 'context_structure',
     description: 'Structure of the analysis contexts being analyzed',
   ),
-  lintUsageCounts(
-    label: 'lint_usage_counts',
-    description: 'Number of times each lint is enabled',
+  lintUsageCount(
+    label: 'lint_usage_count',
+    description: 'Number of times a given lint is enabled',
   ),
   memoryInfo(
     label: 'memory_info',
@@ -47,12 +51,16 @@ enum DashEvent {
     label: 'plugin_request',
     description: 'Request responses from plugins',
   ),
+  pluginUse(
+    label: 'plugin_use',
+    description: 'Information about how often a plugin was used',
+  ),
   serverSession(
     label: 'server_session',
     description: 'Dart Analyzer Server session data',
   ),
-  severityAdjustments(
-    label: 'severity_adjustments',
+  severityAdjustment(
+    label: 'severity_adjustment',
     description: 'Number of times diagnostic severity is changed',
   ),
   ;
@@ -79,11 +87,6 @@ enum DashTool {
     label: 'dart-tool',
     description: 'Dart CLI developer tool',
   ),
-  @Deprecated('From a prerelease version of analytics; do not use.')
-  dartTools(
-    label: 'dart_tools',
-    description: 'A CLI for Dart development',
-  ),
   devtools(
     label: 'devtools',
     description: 'DevTools debugging and performance tools',
@@ -91,11 +94,6 @@ enum DashTool {
   flutterTool(
     label: 'flutter-tool',
     description: 'Flutter CLI developer tool',
-  ),
-  @Deprecated('From a prerelease version of analytics; do not use.')
-  flutterTools(
-    label: 'flutter_tools',
-    description: 'Runs flutter applications from CLI',
   ),
   intellijPlugins(
     label: 'intellij-plugins',
