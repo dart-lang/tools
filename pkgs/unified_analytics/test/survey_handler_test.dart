@@ -9,13 +9,15 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
-import 'package:unified_analytics/src/constants.dart';
 
+import 'package:unified_analytics/src/constants.dart';
+import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
+  final testEvent = Event.hotReloadTime(timeMs: 10);
   group('Unit testing function checkSurveyDate:', () {
     final date = DateTime(2023, 5, 1);
     // Two surveys created, one that is within the survey date
@@ -206,8 +208,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -248,8 +249,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -293,8 +293,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -358,8 +357,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -420,8 +418,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -468,8 +465,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         // Setting to false will prevent anything from getting returned
@@ -484,8 +480,7 @@ void main() {
         // at least 50 records for one of the conditions
         await analytics.setTelemetry(true);
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
         fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
@@ -538,8 +533,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -583,8 +577,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.sendEvent(
-              eventName: DashEvent.analyticsCollectionEnabled);
+          await analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
