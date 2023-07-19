@@ -505,7 +505,7 @@ void main() {
       // which has been set in the setup along with a predefined
       // string for the survey ID of `string2` to get a sample rate value
       //
-      // The combination of `string1` and `string2` will return 0.56
+      // The combination of `string1` and `string2` will return 0.17
       // from the sampleRate utility function so we have set the threshold
       // to be 0.6 which should return surveys
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
