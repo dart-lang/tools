@@ -1,0 +1,10 @@
+name: hello_world
+version: 1.0.0
+publish_to: none # This is an example, don't publish!
+
+dependencies:
+  extension_discovery: # ^1.0.0
+    path: ../../
+
+environment:
+  sdk: ^3.0.0

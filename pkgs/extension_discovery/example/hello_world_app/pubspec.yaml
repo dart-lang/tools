@@ -1,0 +1,11 @@
+name: my_hello_world_app
+publish_to: none # applications should never be published!
+
+dependencies:
+  hello_world: # ^1.0.0
+    path: ../hello_world
+  hello_world_german: # ^1.0.0
+    path: ../hello_world_german
+
+environment:
+  sdk: ^3.0.0
