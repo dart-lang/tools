@@ -73,6 +73,7 @@ Future<void> sayHello(String language) async {
   // WARNING: This only works when running in JIT-mode, if running in AOT-mode
   //          you must supply the `packageConfig` argument, and have a local
   //          `.dart_tool/package_config.json` and `$PUB_CACHE`.
+  //          See "Runtime limitations" section further down.
   final extensions = await findExtensions('hello_world');
 
   // Search extensions to see if one provides a message for language
