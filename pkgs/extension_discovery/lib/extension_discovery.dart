@@ -25,6 +25,14 @@ final class Extension {
   ///
   /// This folder usually contains a `lib/` folder and a `pubspec.yaml`
   /// (assuming dependencies are fetched using the pub package manager).
+  ///
+  /// **Examples:** If `foo` is installed in pub-cache this would be:
+  ///  * `/home/my_user/.pub-cache/hosted/pub.dev/foo-1.0.0/`
+  ///
+  /// See `rootUri` in the [specification for `package_config.json`][1],
+  /// for details.
+  ///
+  /// [1]: https://github.com/dart-lang/language/blob/main/accepted/2.8/language-versioning/package-config-file-v2.md
   final Uri rootUri;
 
   /// Path to the library import path relative to [rootUri].
@@ -32,7 +40,13 @@ final class Extension {
   /// In Dart code the `package:<package>/<path>` will be resolved as
   /// `<rootUri>/<packageUri>/<path>`.
   ///
-  /// This is almost always `lib/`, and technically, it's probably perf
+  /// If dependencies are installed using `dart pub`, then this is
+  /// **always** `lib/`.
+  ///
+  /// See `packageUri` in the [specification for `package_config.json`][1],
+  /// for details.
+  ///
+  /// [1]: https://github.com/dart-lang/language/blob/main/accepted/2.8/language-versioning/package-config-file-v2.md
   final Uri packageUri;
 
   /// Contents of `extension/<targetPackage>/config.json` parsed as JSON.

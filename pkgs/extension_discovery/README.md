@@ -1,7 +1,7 @@
 # Package Extension Discovery
 
-A convention to allow other packages to provide extension for your package.
-Including logic for finding extensions that honors this convention.
+A convention to allow other packages to provide extension for your package
+(or tool). Including logic for finding extensions that honors this convention.
 
 The convention implemented in this package is that if `foo` provides an
 extension for `<targetPackage>`.
@@ -28,6 +28,21 @@ The `findExtensions(targetPackage, packageConfig: ...)` function will:
 It is the responsibility package that can be extended to validate extensions,
 decide when they should be enabled, and documenting how such extensions are
 created.
+
+
+## Packages that extend tools
+
+You can also use this package (and associated convention), if you are developing
+a tool that can be extended by packages. In this case, you would call
+`findExtensions(<my_tool_package_name>, packageConfig: ...)` where
+`packageConfig` points to the `.dart_tool/packge_config.json` in the workspace
+the tool is operating on.
+
+If you tool is not distributed through pub.dev, you might consider publishing
+a placeholder package in order to reserve a unique name (and avoid collisions).
+Using a placeholder package to reserve a unique is also recommended for tools
+that wish to cache files in `.dart_tool/<my_tool_package_name>/`.
+See [package layout documentation][2] for details.
 
 
 ## Example: Hello World
@@ -214,3 +229,4 @@ out how to embed the extensions, `findExtensions` only helps
 you find the extensions during code-gen.
 
 [1]: https://dart.dev/tools/pub/pubspec#topics
+[2]: https://dart.dev/tools/pub/package-layout#project-specific-caching-for-tools

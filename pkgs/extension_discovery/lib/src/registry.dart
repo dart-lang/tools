@@ -5,7 +5,7 @@
 import 'dart:convert' show jsonEncode;
 import 'dart:io' show File, FileSystemEntityType, IOException;
 
-import 'expectjson.dart';
+import 'expect_json.dart';
 import 'io.dart';
 
 /// Entry in the `.dart_tool/extension_discovery/<package>.json` file.

@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io' show File, IOException;
-import 'expectjson.dart';
+import 'expect_json.dart';
 
 typedef PackageConfigEntry = ({String name, Uri rootUri, Uri packageUri});
 typedef PackageConfig = List<PackageConfigEntry>;
