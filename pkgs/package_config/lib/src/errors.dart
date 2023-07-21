@@ -29,4 +29,5 @@ class PackageConfigFormatException extends FormatException
 }
 
 /// The default `onError` handler.
+// ignore: only_throw_errors
 Never throwError(Object error) => throw error;

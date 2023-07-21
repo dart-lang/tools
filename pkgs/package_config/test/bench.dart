@@ -5,9 +5,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:package_config/src/errors.dart';
 import 'package:package_config/src/package_config_json.dart';
-
-void throwError(Object error) => throw error;
 
 void bench(final int size, final bool doPrint) {
   var sb = StringBuffer();
@@ -32,20 +31,21 @@ void bench(final int size, final bool doPrint) {
   sb.writeln('}');
   var stopwatch = Stopwatch()..start();
   var config = parsePackageConfigBytes(
-      // ignore: unnecessary_cast
-      utf8.encode(sb.toString()) as Uint8List,
-      Uri.parse('file:///tmp/.dart_tool/file.dart'),
-      throwError);
-  final int read = stopwatch.elapsedMilliseconds;
+    // ignore: unnecessary_cast
+    utf8.encode(sb.toString()) as Uint8List,
+    Uri.parse('file:///tmp/.dart_tool/file.dart'),
+    throwError,
+  );
+  final read = stopwatch.elapsedMilliseconds;
 
   stopwatch.reset();
   for (var i = 0; i < size; i++) {
     if (config.packageOf(Uri.parse('file:///p_$i/lib/src/foo.dart'))!.name !=
         'p_$i') {
-      throw "Unexpected result!";
+      throw StateError('Unexpected result!');
     }
   }
-  final int lookup = stopwatch.elapsedMilliseconds;
+  final lookup = stopwatch.elapsedMilliseconds;
 
   if (doPrint) {
     print('Read file with $size packages in $read ms, '
@@ -55,12 +55,12 @@ void bench(final int size, final bool doPrint) {
 
 void main(List<String> args) {
   if (args.length != 1 && args.length != 2) {
-    throw "Expects arguments: <size> <warmup iterations>?";
+    throw ArgumentError('Expects arguments: <size> <warmup iterations>?');
   }
   final size = int.parse(args[0]);
   if (args.length > 1) {
     final warmups = int.parse(args[1]);
-    print("Performing $warmups warmup iterations.");
+    print('Performing $warmups warmup iterations.');
     for (var i = 0; i < warmups; i++) {
       bench(10, false);
     }

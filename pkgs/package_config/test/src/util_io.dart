@@ -4,8 +4,8 @@
 
 import 'dart:io';
 
-import 'package:test/test.dart';
 import 'package:package_config/src/util_io.dart';
+import 'package:test/test.dart';
 
 /// Creates a directory structure from [description] and runs [fileTest].
 ///

@@ -5,8 +5,8 @@
 @TestOn('vm')
 library package_config.discovery_test;
 
-import 'package:test/test.dart';
 import 'package:package_config/package_config.dart';
+import 'package:test/test.dart';
 
 import 'src/util.dart';
 
@@ -151,8 +151,8 @@ void main() {
       '.packages': packagesFile,
       'script.dart': 'main(){}'
     }, (directory, loader) async {
-      var config = (await findPackageConfigUri(directory,
-          minVersion: 2, loader: loader));
+      var config =
+          await findPackageConfigUri(directory, minVersion: 2, loader: loader);
       expect(config, null);
     });
 

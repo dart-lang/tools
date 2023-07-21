@@ -12,6 +12,6 @@
 /// {@canonicalFor errors.PackageConfigError}
 library package_config.package_config_types;
 
-export 'src/package_config.dart'
-    show PackageConfig, Package, LanguageVersion, InvalidLanguageVersion;
 export 'src/errors.dart' show PackageConfigError;
+export 'src/package_config.dart'
+    show InvalidLanguageVersion, LanguageVersion, Package, PackageConfig;

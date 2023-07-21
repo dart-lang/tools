@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:package_config/package_config.dart';
 import 'dart:io' show Directory;
+
+import 'package:package_config/package_config.dart';
 
 void main() async {
   var packageConfig = await findPackageConfig(Directory.current);

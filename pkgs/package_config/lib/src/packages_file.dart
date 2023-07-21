@@ -2,10 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package_config_impl.dart';
-
-import 'util.dart';
 import 'errors.dart';
+import 'package_config_impl.dart';
+import 'util.dart';
 
 /// The language version prior to the release of language versioning.
 ///
@@ -127,7 +126,7 @@ PackageConfig parse(
     var package = SimplePackage.validate(packageName, rootUri, packageLocation,
         _languageVersion, null, relativeRoot, (error) {
       if (error is ArgumentError) {
-        onError(PackageConfigFormatException(error.message, source));
+        onError(PackageConfigFormatException(error.message.toString(), source));
       } else {
         onError(error);
       }

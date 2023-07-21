@@ -5,14 +5,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:package_config/package_config_types.dart';
+import 'package:package_config/src/errors.dart';
+import 'package:package_config/src/package_config_json.dart';
+import 'package:package_config/src/packages_file.dart' as packages;
 import 'package:test/test.dart';
 
-import 'package:package_config/package_config_types.dart';
-import 'package:package_config/src/packages_file.dart' as packages;
-import 'package:package_config/src/package_config_json.dart';
 import 'src/util.dart';
-
-void throwError(Object error) => throw error;
 
 void main() {
   group('.packages', () {
@@ -318,8 +317,12 @@ void main() {
         test(name, () {
           dynamic exception;
           try {
-            parsePackageConfigBytes(utf8.encode(source) as Uint8List,
-                Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError);
+            parsePackageConfigBytes(
+              // ignore: unnecessary_cast
+              utf8.encode(source) as Uint8List,
+              Uri.parse('file:///tmp/.dart_tool/file.dart'),
+              throwError,
+            );
           } catch (e) {
             exception = e;
           }
@@ -440,8 +443,9 @@ void main() {
           'package root of foo is inside the root of bar');
 
       // This shouldn't be allowed, but for internal reasons it is.
-      test("package inside package root", () {
+      test('package inside package root', () {
         var config = parsePackageConfigBytes(
+            // ignore: unnecessary_cast
             utf8.encode(
               '{$cfg,"packages":['
               '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'

@@ -167,7 +167,9 @@ PackageConfig parsePackageConfigJson(
         name!, root, packageRoot, version, extraData, relativeRoot, (error) {
       if (error is ArgumentError) {
         onError(
-            PackageConfigFormatException(error.message, error.invalidValue));
+          PackageConfigFormatException(
+              error.message.toString(), error.invalidValue),
+        );
       } else {
         onError(error);
       }
@@ -214,7 +216,10 @@ PackageConfig parsePackageConfigJson(
   }
   return SimplePackageConfig(configVersion!, packageList!, extraData, (error) {
     if (error is ArgumentError) {
-      onError(PackageConfigFormatException(error.message, error.invalidValue));
+      onError(
+        PackageConfigFormatException(
+            error.message.toString(), error.invalidValue),
+      );
     } else {
       onError(error);
     }

@@ -5,10 +5,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package_config_io.dart';
-
 import 'errors.dart';
 import 'package_config_impl.dart';
+import 'package_config_io.dart';
 import 'package_config_json.dart';
 import 'packages_file.dart' as packages_file;
 import 'util_io.dart' show defaultLoader, pathJoin;

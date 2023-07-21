@@ -6,8 +6,9 @@
 library package_config.discovery_test;
 
 import 'dart:io';
-import 'package:test/test.dart';
+
 import 'package:package_config/package_config.dart';
+import 'package:test/test.dart';
 
 import 'src/util.dart';
 import 'src/util_io.dart';
@@ -207,7 +208,7 @@ void main() {
       '.packages': packagesFile,
       'script.dart': 'main(){}'
     }, (Directory directory) async {
-      var config = (await findPackageConfig(directory, minVersion: 2));
+      var config = await findPackageConfig(directory, minVersion: 2);
       expect(config, null);
     });
 
