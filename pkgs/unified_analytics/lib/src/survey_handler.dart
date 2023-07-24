@@ -8,6 +8,7 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
+import 'package:unified_analytics/src/initializer.dart';
 
 import 'constants.dart';
 import 'log_handler.dart';
@@ -209,8 +210,7 @@ class SurveyHandler {
   /// }
   /// ```
   void dismiss(Survey survey, bool permanently) {
-    final contents = jsonDecode(_dismissedSurveyFile.readAsStringSync())
-        as Map<String, dynamic>;
+    final contents = _parseJsonFile();
 
     // Add the new data and write back out to the file
     final status = permanently ? 'dismissed' : 'snoozed';
@@ -226,8 +226,7 @@ class SurveyHandler {
   ///
   /// The survey may be in a snoozed or dismissed state based on user action
   Map<String, PersistedSurvey> fetchPersistedSurveys() {
-    final contents = jsonDecode(_dismissedSurveyFile.readAsStringSync())
-        as Map<String, dynamic>;
+    final contents = _parseJsonFile();
 
     // Initialize the list of persisted surveys and add to them
     // as they are being parsed
@@ -271,6 +270,21 @@ class SurveyHandler {
     final uri = Uri.parse(kContextualSurveyUrl);
     final response = await http.get(uri);
     return response.body;
+  }
+
+  /// Method to return a Map representation of the json persisted file
+  Map<String, dynamic> _parseJsonFile() {
+    Map<String, dynamic> contents;
+    try {
+      contents = jsonDecode(_dismissedSurveyFile.readAsStringSync())
+          as Map<String, dynamic>;
+    } on FormatException {
+      Initializer.createDismissedSurveyFile(
+          dismissedSurveyFile: _dismissedSurveyFile);
+      contents = {};
+    }
+
+    return contents;
   }
 }
 

@@ -813,5 +813,75 @@ void main() {
         expect(fetchedSurveys.length, 0);
       });
     });
+
+    test('malformed persisted json file for surveys', () async {
+      // When the survey handler encounters an error when parsing the
+      // persisted json file, it will reset it using the static method
+      // under the [Initializer] class and reset it to be an empty json object
+      final minutesToSnooze = 10;
+      final surveyToLoad = Survey(
+        'uniqueId',
+        'url',
+        DateTime(2023, 1, 1),
+        DateTime(2023, 12, 31),
+        'description',
+        minutesToSnooze,
+        'moreInfoUrl',
+        1.0,
+        <Condition>[],
+      );
+
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        // Simulate sending one event since logFileStats cannot be null
+        await analytics.send(testEvent);
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+
+        // Dismissing permanently will ensure that this survey is not
+        // shown again
+        final survey = fetchedSurveys.first;
+        analytics.dismissSurvey(survey: survey, permanently: true);
+      });
+
+      // Purposefully write invalid json into the persisted file
+      dismissedSurveyFile.writeAsStringSync('{');
+
+      // Moving out a week
+      await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+      });
+    });
   });
 }
