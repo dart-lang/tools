@@ -21,8 +21,8 @@ final class Event {
   ///
   /// [name] - the name of the command that was executed
   ///
-  /// [enabledExperiments] - a comma separated set of Dart language experiments
-  ///    enabled when running the command.
+  /// [enabledExperiments] - a set of Dart language experiments enabled when
+  ///          running the command.
   ///
   /// [exitCode] - the process exit code set as a result of running the command.
   Event.cliCommandExecuted({
