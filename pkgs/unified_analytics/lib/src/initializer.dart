@@ -66,6 +66,7 @@ class Initializer {
   /// Creates that file that will persist dismissed survey ids
   void createDismissedSurveyFile({required File dismissedSurveyFile}) {
     dismissedSurveyFile.createSync(recursive: true);
+    dismissedSurveyFile.writeAsStringSync('{}');
   }
 
   /// Creates that log file that will store the record formatted
