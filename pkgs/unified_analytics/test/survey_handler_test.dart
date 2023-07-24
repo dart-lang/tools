@@ -69,7 +69,7 @@ void main() {
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForDays": "10",
+		"dismissForMinutes": "10",
 		"moreInfoURL": "xxxxxx",
 		"samplingRate": "0.1",
 		"conditions": [
@@ -96,7 +96,7 @@ void main() {
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForDays": "10",
+		"dismissForMinutes": "10",
 		"moreInfoURL": "xxxxxx",
 		"samplingRate": "0.1",
 		"conditions": [
@@ -281,7 +281,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "description123",
-	"dismissForDays": "10",
+	"dismissForMinutes": "10",
 	"moreInfoURL": "moreInfoUrl123",
 	"samplingRate": "1.0",
 	"conditions": [
@@ -315,7 +315,7 @@ void main() {
         expect(survey.endDate.month, 12);
         expect(survey.endDate.day, 31);
         expect(survey.description, 'description123');
-        expect(survey.dismissForDays, 10);
+        expect(survey.dismissForMinutes, 10);
         expect(survey.moreInfoUrl, 'moreInfoUrl123');
         expect(survey.samplingRate, 1.0);
         expect(survey.conditionList.length, 1);
@@ -346,7 +346,7 @@ void main() {
         "startDate": "NOT A REAL DATE",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "xxxxxxx",
-	"dismissForDays": "10BAD",
+	"dismissForMinutes": "10BAD",
 	"moreInfoURL": "xxxxxx",
 	"samplingRate": "0.1",
 	"conditions": [
@@ -391,7 +391,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "xxxxxxx",
-	"dismissForDays": "10",
+	"dismissForMinutes": "10",
 	"moreInfoURL": "xxxxxx",
 	"samplingRate": "1.0",
 	"conditions": [
@@ -408,7 +408,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "xxxxxxx",
-	"dismissForDays": "10",
+	"dismissForMinutes": "10",
 	"moreInfoURL": "xxxxxx",
 	"samplingRate": "1.0",
 	"conditions": [
@@ -600,4 +600,5 @@ void main() {
       });
     });
   });
+  // TODO: eliasyishak, add tests for dismissing surveys
 }
