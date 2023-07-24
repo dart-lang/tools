@@ -68,6 +68,35 @@ List<Survey> parseSurveysFromJson(List<dynamic> body) => body
     .where(checkSurveyDate)
     .toList();
 
+/// Function to persist the provided [Survey] in the file on disk
+///
+/// Each entry for a survey will have the following format
+/// ```
+/// {
+///   "survey-unique-id": {
+///     "status": "snoozed",  // status is either snoozed or dismissed
+///     "timestamp": 1690219834859
+///   }
+/// }
+/// ```
+void persistSurvey(
+  Survey survey,
+  bool permanently,
+  File dismissedSurveyFile,
+) {
+  final contents = jsonDecode(dismissedSurveyFile.readAsStringSync())
+      as Map<String, dynamic>;
+
+  // Add the new data and write back out to the file
+  final status = permanently ? 'dismissed' : 'snoozed';
+  contents[survey.uniqueId] = {
+    'status': status,
+    'timestamp': clock.now().millisecondsSinceEpoch,
+  };
+
+  dismissedSurveyFile.writeAsStringSync(jsonEncode(contents));
+}
+
 class Condition {
   /// How to query the log file
   ///
@@ -224,7 +253,8 @@ class SurveyHandler {
   ///
   /// In the snoozed state, the survey will be prompted again after
   /// the survey's specified snooze period
-  void dismiss(Survey survey, bool permanently) {}
+  void dismiss(Survey survey, bool permanently) =>
+      persistSurvey(survey, permanently, _dismissedSurveyFile);
 
   /// Retrieve a list of strings for each [Survey] persisted on disk
   ///
@@ -305,7 +335,8 @@ class FakeSurveyHandler implements SurveyHandler {
   }
 
   @override
-  void dismiss(Survey survey, bool permanently) {}
+  void dismiss(Survey survey, bool permanently) =>
+      persistSurvey(survey, permanently, _dismissedSurveyFile);
 
   @override
   Map<String, PersistedSurvey> fetchPersistedSurveys() =>
