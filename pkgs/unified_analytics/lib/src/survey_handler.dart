@@ -22,8 +22,37 @@ bool checkSurveyDate(Survey survey) {
   return false;
 }
 
+/// Function to parse the contents of the persisted dismissed surveys
+Map<String, PersistedSurvey> parsePersistedSurveys(File dismissedSurveyFile) {
+  final contents = jsonDecode(dismissedSurveyFile.readAsStringSync())
+      as Map<String, dynamic>;
+
+  // Initialize the list of persisted surveys and add to them
+  // as they are being parsed
+  var persistedSurveys = <String, PersistedSurvey>{};
+  contents.forEach((key, value) {
+    value as Map<String, dynamic>;
+
+    final uniqueId = key;
+    final snoozed = value['status'] == 'snoozed' ? true : false;
+    final timestamp =
+        DateTime.fromMillisecondsSinceEpoch(value['timestamp'] as int);
+
+    persistedSurveys[uniqueId] = PersistedSurvey(
+      uniqueId: uniqueId,
+      snoozed: snoozed,
+      timestamp: timestamp,
+    );
+  });
+
+  return persistedSurveys;
+}
+
 /// Function that takes in a json data structure that is in
 /// the form of a list and returns a list of [Survey]s
+///
+/// This will also check the survey's dates to make sure it
+/// has not expired
 List<Survey> parseSurveysFromJson(List<dynamic> body) => body
     .map((element) {
       // Error handling to skip any surveys from the remote location
@@ -94,6 +123,26 @@ class Condition {
   String toString() => jsonEncode(toMap());
 }
 
+/// Data class for the persisted survey contents
+class PersistedSurvey {
+  final String uniqueId;
+  final bool snoozed;
+  final DateTime timestamp;
+
+  PersistedSurvey({
+    required this.uniqueId,
+    required this.snoozed,
+    required this.timestamp,
+  });
+
+  @override
+  String toString() => jsonEncode({
+        'uniqueId': uniqueId,
+        'snoozed': snoozed,
+        'timestamp': timestamp.toString(),
+      });
+}
+
 class Survey {
   final String uniqueId;
   final String url;
@@ -105,6 +154,8 @@ class Survey {
   final double samplingRate;
   final List<Condition> conditionList;
 
+  /// A data class that contains the relevant information for a given
+  /// survey parsed from the survey's metadata file
   Survey(
     this.uniqueId,
     this.url,
@@ -167,6 +218,20 @@ class SurveyHandler {
           kDismissedSurveyFileName,
         ));
 
+  /// Invoking this method will persist the survey's id in
+  /// the local file with either a snooze or permanently dismissed
+  /// indicator
+  ///
+  /// In the snoozed state, the survey will be prompted again after
+  /// the survey's specified snooze period
+  void dismiss(Survey survey, bool permanently) {}
+
+  /// Retrieve a list of strings for each [Survey] persisted on disk
+  ///
+  /// The survey may be in a snoozed or dismissed state based on user action
+  Map<String, PersistedSurvey> fetchPersistedSurveys() =>
+      parsePersistedSurveys(_dismissedSurveyFile);
+
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
     final List<dynamic> body;
@@ -189,17 +254,6 @@ class SurveyHandler {
     final response = await http.get(uri);
     return response.body;
   }
-
-  /// Invoking this method will persist the survey's id in
-  /// the local file containing dismissed survey ids to ensure that
-  /// it won't be shown to the user again.
-  void dismiss(Survey survey) =>
-      _dismissedSurveyFile.writeAsStringSync('${survey.uniqueId}\n',
-          mode: FileMode.writeOnlyAppend);
-
-  /// Retrieve a list of strings for each dismissed [Survey] persisted on disk
-  List<String> fetchDismissedSurveys() =>
-      _dismissedSurveyFile.readAsLinesSync();
 }
 
 class FakeSurveyHandler implements SurveyHandler {
@@ -251,18 +305,16 @@ class FakeSurveyHandler implements SurveyHandler {
   }
 
   @override
+  void dismiss(Survey survey, bool permanently) {}
+
+  @override
+  Map<String, PersistedSurvey> fetchPersistedSurveys() =>
+      parsePersistedSurveys(_dismissedSurveyFile);
+
+  @override
   Future<List<Survey>> fetchSurveyList() =>
       Future<List<Survey>>.value(_fakeInitializedSurveys);
 
   @override
   Future<String> _fetchContents() => throw UnimplementedError();
-
-  @override
-  void dismiss(Survey survey) =>
-      _dismissedSurveyFile.writeAsStringSync('${survey.uniqueId}\n',
-          mode: FileMode.writeOnlyAppend);
-
-  @override
-  List<String> fetchDismissedSurveys() =>
-      _dismissedSurveyFile.readAsLinesSync();
 }

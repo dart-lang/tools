@@ -214,6 +214,15 @@ abstract class Analytics {
   /// that need to be sent off
   void close();
 
+  /// Method to either snooze or dismiss a survey permanently
+  ///
+  /// Pass a [Survey] instance which can be retrieved from
+  /// `fetchAvailableSurveys()`
+  ///
+  /// To snooze, leave the [permanently] parameter set as `false`
+  /// and to dismiss permanently, set to `true`
+  void dismissSurvey({required Survey survey, bool permanently = false});
+
   /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
   ///
   /// Any survey that is returned by this method has already passed
@@ -437,6 +446,10 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
+  void dismissSurvey({required Survey survey, bool permanently = false}) =>
+      _surveyHandler.dismiss(survey, permanently);
+
+  @override
   Future<List<Survey>> fetchAvailableSurveys() async {
     final surveysToShow = <Survey>[];
     if (!okToSend) return surveysToShow;
@@ -445,13 +458,14 @@ class AnalyticsImpl implements Analytics {
 
     if (logFileStats == null) return [];
 
-    // TODO: eliasyishak
     // Call for surveys that have already been dismissed from
     // persisted survey ids on disk
+    final persistedSurveyMap = _surveyHandler.fetchPersistedSurveys();
 
     for (final survey in await _surveyHandler.fetchSurveyList()) {
-      // TODO: eliasyishak
-      // Check if survey id is list of dismissed surveys
+      // If the survey has been permanently dismissed or has temporarily
+      // been snoozed, skip it
+      if (surveySnoozedOrDismissed(survey, persistedSurveyMap)) continue;
 
       // Counter to check each survey condition, if all are met, then
       // this integer will be equal to the number of conditions in
@@ -490,8 +504,11 @@ class AnalyticsImpl implements Analytics {
       // If all conditions are met above, a double value will be generated from
       // the clientID and survey description strings and compared against the
       // sampling rate found in the survey
-      if (conditionsMet == survey.conditionList.length &&
-          survey.samplingRate >= sampleRate(_clientId, survey.uniqueId)) {
+      // if (conditionsMet == survey.conditionList.length &&
+      //     survey.samplingRate >= sampleRate(_clientId, survey.uniqueId)) {
+      //   surveysToShow.add(survey);
+      // }
+      if (conditionsMet == survey.conditionList.length) {
         surveysToShow.add(survey);
       }
     }
@@ -614,4 +631,7 @@ class NoOpAnalytics implements Analytics {
 
   @override
   void suppressTelemetry() {}
+
+  @override
+  void dismissSurvey({required Survey survey, bool permanently = false}) {}
 }
