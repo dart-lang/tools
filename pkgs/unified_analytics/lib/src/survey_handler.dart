@@ -178,7 +178,7 @@ class Survey {
   final DateTime startDate;
   final DateTime endDate;
   final String description;
-  final int dismissForDays;
+  final int dismissForMinutes;
   final String moreInfoUrl;
   final double samplingRate;
   final List<Condition> conditionList;
@@ -191,7 +191,7 @@ class Survey {
     this.startDate,
     this.endDate,
     this.description,
-    this.dismissForDays,
+    this.dismissForMinutes,
     this.moreInfoUrl,
     this.samplingRate,
     this.conditionList,
@@ -205,9 +205,9 @@ class Survey {
         endDate = DateTime.parse(json['endDate'] as String),
         description = json['description'] as String,
         // Handle both string and integer fields
-        dismissForDays = json['dismissForDays'] is String
-            ? int.parse(json['dismissForDays'] as String)
-            : json['dismissForDays'] as int,
+        dismissForMinutes = json['dismissForMinutes'] is String
+            ? int.parse(json['dismissForMinutes'] as String)
+            : json['dismissForMinutes'] as int,
         moreInfoUrl = json['moreInfoURL'] as String,
         // Handle both string and double fields
         samplingRate = json['samplingRate'] is String
@@ -227,7 +227,7 @@ class Survey {
       'startDate': startDate.toString(),
       'endDate': endDate.toString(),
       'description': description,
-      'dismissForDays': dismissForDays,
+      'dismissForMinutes': dismissForMinutes,
       'moreInfoUrl': moreInfoUrl,
       'samplingRate': samplingRate,
       'conditionList': conditionList.map((e) => e.toMap()).toList(),
