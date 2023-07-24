@@ -21,22 +21,17 @@ final class Event {
   ///
   /// [name] - the name of the command that was executed
   ///
-  /// [flags] - the set of names for flags and options provided to the command.
-  ///    Does not include values provided by users for options.
-  ///
-  /// [enabledExperiments] - the set of Dart language experiments enabled when
-  ///    running the command.
+  /// [enabledExperiments] - a comma separated set of Dart language experiments
+  ///    enabled when running the command.
   ///
   /// [exitCode] - the process exit code set as a result of running the command.
   Event.cliCommandExecuted({
     required String name,
-    required List<String> flags,
-    required List<String> enabledExperiments,
+    required String enabledExperiments,
     int? exitCode,
   })  : eventName = DashEvent.cliCommandExecuted,
         eventData = {
           'name': name,
-          'flags': flags,
           'enabledExperiments': enabledExperiments,
           if (exitCode != null) 'exitCode': exitCode,
         };
