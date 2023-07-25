@@ -701,7 +701,7 @@ void main() {
         // We will snooze the survey now and it should not show up
         // if we fetch surveys again before the minutes to snooze time
         // has finished
-        analytics.dismissSurvey(survey: survey, permanently: false);
+        analytics.surveyShown(survey);
       });
 
       // This analytics instance will be simulated to be shortly after the first
@@ -789,7 +789,7 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, permanently: true);
+        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
       });
 
       // Moving out a week
@@ -856,7 +856,7 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, permanently: true);
+        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
       });
 
       // Purposefully write invalid json into the persisted file

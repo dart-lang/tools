@@ -214,14 +214,14 @@ abstract class Analytics {
   /// that need to be sent off
   void close();
 
-  /// Method to either snooze or dismiss a survey permanently
+  /// Method to dismiss a survey permanently
   ///
   /// Pass a [Survey] instance which can be retrieved from
   /// `fetchAvailableSurveys()`
   ///
-  /// To snooze, leave the [permanently] parameter set as `false`
-  /// and to dismiss permanently, set to `true`
-  void dismissSurvey({required Survey survey, bool permanently = false});
+  /// [surveyAccepted] indicates if the user opened the survey if `true`
+  ///   or `false` if the user rejects to open it
+  void dismissSurvey({required Survey survey, required bool surveyAccepted});
 
   /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
   ///
@@ -259,6 +259,14 @@ abstract class Analytics {
   /// If you would like to permanently disable telemetry
   /// collection use `setTelemetry(false)`
   void suppressTelemetry();
+
+  /// Method to be called after a survey has been shown to the user
+  ///
+  /// Calling this will snooze the survey so it won't be shown immediately
+  ///
+  /// The snooze period is defined within the `dismissForMinutes`
+  /// field in [Survey]
+  void surveyShown(Survey survey);
 }
 
 class AnalyticsImpl implements Analytics {
@@ -446,8 +454,9 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
-  void dismissSurvey({required Survey survey, bool permanently = false}) =>
-      _surveyHandler.dismiss(survey, permanently);
+  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {
+    _surveyHandler.dismiss(survey, true);
+  }
 
   @override
   Future<List<Survey>> fetchAvailableSurveys() async {
@@ -581,6 +590,11 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void suppressTelemetry() => _telemetrySuppressed = true;
+
+  @override
+  void surveyShown(Survey survey) {
+    _surveyHandler.dismiss(survey, false);
+  }
 }
 
 /// An implementation that will never send events.
@@ -618,6 +632,9 @@ class NoOpAnalytics implements Analytics {
   void close() {}
 
   @override
+  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {}
+
+  @override
   Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
 
   @override
@@ -633,5 +650,5 @@ class NoOpAnalytics implements Analytics {
   void suppressTelemetry() {}
 
   @override
-  void dismissSurvey({required Survey survey, bool permanently = false}) {}
+  void surveyShown(Survey survey) {}
 }
