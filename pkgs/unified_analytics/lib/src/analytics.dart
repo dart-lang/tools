@@ -463,6 +463,13 @@ class AnalyticsImpl implements Analytics {
     final persistedSurveyMap = _surveyHandler.fetchPersistedSurveys();
 
     for (final survey in await _surveyHandler.fetchSurveyList()) {
+      // Apply the survey's sample rate; if the generated value from
+      // the client id and survey's uniqueId are less, it will not get
+      // sent to the user
+      if (survey.samplingRate < sampleRate(_clientId, survey.uniqueId)) {
+        continue;
+      }
+
       // If the survey has been permanently dismissed or has temporarily
       // been snoozed, skip it
       if (surveySnoozedOrDismissed(survey, persistedSurveyMap)) continue;
@@ -501,11 +508,7 @@ class AnalyticsImpl implements Analytics {
         }
       }
 
-      // If all conditions are met above, a double value will be generated from
-      // the clientID and survey description strings and compared against the
-      // sampling rate found in the survey
-      if (conditionsMet == survey.conditionList.length &&
-          survey.samplingRate >= sampleRate(_clientId, survey.uniqueId)) {
+      if (conditionsMet == survey.conditionList.length) {
         surveysToShow.add(survey);
       }
     }
