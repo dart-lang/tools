@@ -282,6 +282,10 @@ class SurveyHandler {
       Initializer.createDismissedSurveyFile(
           dismissedSurveyFile: _dismissedSurveyFile);
       contents = {};
+    } on FileSystemException {
+      Initializer.createDismissedSurveyFile(
+          dismissedSurveyFile: _dismissedSurveyFile);
+      contents = {};
     }
 
     return contents;
