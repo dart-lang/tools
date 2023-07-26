@@ -10,7 +10,6 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
-import 'package:unified_analytics/src/ga_client.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -67,6 +66,7 @@ void main() {
       measurementId: 'measurementId',
       apiSecret: 'apiSecret',
       dartVersion: 'dartVersion',
+      toolsMessageVersion: 1,
       fs: fs,
       platform: DevicePlatform.macos,
     );
@@ -82,7 +82,6 @@ void main() {
         platform: DevicePlatform.macos,
         toolsMessageVersion: 1,
         fs: fs,
-        gaClient: FakeGAClient(),
         surveyHandler: FakeSurveyHandler.fromList(
           homeDirectory: homeDirectory,
           fs: fs,

@@ -25,13 +25,13 @@ class MockAnalytics extends AnalyticsImpl {
     required super.platform,
     required super.toolsMessageVersion,
     required super.fs,
-    required super.gaClient,
     required super.surveyHandler,
     required super.enableAsserts,
     super.flutterChannel,
     super.flutterVersion,
+    FakeGAClient super.gaClient = const FakeGAClient(),
   })  : _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory),
-        _gaClient = FakeGAClient();
+        _gaClient = gaClient;
 
   @override
   Future<Response>? send(Event event) {
