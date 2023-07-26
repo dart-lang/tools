@@ -250,7 +250,9 @@ bool surveySnoozedOrDismissed(
 ///
 /// This class was taken from the previous `usage` package (https://github.com/dart-lang/usage/blob/master/lib/uuid/uuid.dart)
 class Uuid {
-  final Random _random = Random();
+  final Random _random;
+
+  Uuid([int? seed]) : _random = Random(seed);
 
   /// Generate a version 4 (random) uuid. This is a uuid scheme that only uses
   /// random numbers as the source of the generated uuid.
