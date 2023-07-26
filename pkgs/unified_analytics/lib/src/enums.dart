@@ -18,6 +18,10 @@ enum DashEvent {
     label: 'survey_action',
     description: 'Actions taken by users when shown survey',
   ),
+  surveyShown(
+    label: 'survey_shown',
+    description: 'Survey shown to the user',
+  ),
 
   // Events for flutter_tools
   hotReloadTime(
