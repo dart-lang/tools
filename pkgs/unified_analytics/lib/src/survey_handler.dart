@@ -5,7 +5,10 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
+import 'package:unified_analytics/src/initializer.dart';
 
 import 'constants.dart';
 import 'log_handler.dart';
@@ -22,6 +25,9 @@ bool checkSurveyDate(Survey survey) {
 
 /// Function that takes in a json data structure that is in
 /// the form of a list and returns a list of [Survey]s
+///
+/// This will also check the survey's dates to make sure it
+/// has not expired
 List<Survey> parseSurveysFromJson(List<dynamic> body) => body
     .map((element) {
       // Error handling to skip any surveys from the remote location
@@ -92,24 +98,46 @@ class Condition {
   String toString() => jsonEncode(toMap());
 }
 
+/// Data class for the persisted survey contents
+class PersistedSurvey {
+  final String uniqueId;
+  final bool snoozed;
+  final DateTime timestamp;
+
+  PersistedSurvey({
+    required this.uniqueId,
+    required this.snoozed,
+    required this.timestamp,
+  });
+
+  @override
+  String toString() => jsonEncode({
+        'uniqueId': uniqueId,
+        'snoozed': snoozed,
+        'timestamp': timestamp.toString(),
+      });
+}
+
 class Survey {
   final String uniqueId;
   final String url;
   final DateTime startDate;
   final DateTime endDate;
   final String description;
-  final int dismissForDays;
+  final int dismissForMinutes;
   final String moreInfoUrl;
   final double samplingRate;
   final List<Condition> conditionList;
 
+  /// A data class that contains the relevant information for a given
+  /// survey parsed from the survey's metadata file
   Survey(
     this.uniqueId,
     this.url,
     this.startDate,
     this.endDate,
     this.description,
-    this.dismissForDays,
+    this.dismissForMinutes,
     this.moreInfoUrl,
     this.samplingRate,
     this.conditionList,
@@ -123,9 +151,9 @@ class Survey {
         endDate = DateTime.parse(json['endDate'] as String),
         description = json['description'] as String,
         // Handle both string and integer fields
-        dismissForDays = json['dismissForDays'] is String
-            ? int.parse(json['dismissForDays'] as String)
-            : json['dismissForDays'] as int,
+        dismissForMinutes = json['dismissForMinutes'] is String
+            ? int.parse(json['dismissForMinutes'] as String)
+            : json['dismissForMinutes'] as int,
         moreInfoUrl = json['moreInfoURL'] as String,
         // Handle both string and double fields
         samplingRate = json['samplingRate'] is String
@@ -145,7 +173,7 @@ class Survey {
       'startDate': startDate.toString(),
       'endDate': endDate.toString(),
       'description': description,
-      'dismissForDays': dismissForDays,
+      'dismissForMinutes': dismissForMinutes,
       'moreInfoUrl': moreInfoUrl,
       'samplingRate': samplingRate,
       'conditionList': conditionList.map((e) => e.toMap()).toList(),
@@ -154,7 +182,72 @@ class Survey {
 }
 
 class SurveyHandler {
-  const SurveyHandler();
+  final File _dismissedSurveyFile;
+
+  SurveyHandler({
+    required Directory homeDirectory,
+    required FileSystem fs,
+  }) : _dismissedSurveyFile = fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        ));
+
+  /// Invoking this method will persist the survey's id in
+  /// the local file with either a snooze or permanently dismissed
+  /// indicator
+  ///
+  /// In the snoozed state, the survey will be prompted again after
+  /// the survey's specified snooze period
+  ///
+  /// Each entry for a survey will have the following format
+  /// ```
+  /// {
+  ///   "survey-unique-id": {
+  ///     "status": "snoozed",  // status is either snoozed or dismissed
+  ///     "timestamp": 1690219834859
+  ///   }
+  /// }
+  /// ```
+  void dismiss(Survey survey, bool permanently) {
+    final contents = _parseJsonFile();
+
+    // Add the new data and write back out to the file
+    final status = permanently ? 'dismissed' : 'snoozed';
+    contents[survey.uniqueId] = {
+      'status': status,
+      'timestamp': clock.now().millisecondsSinceEpoch,
+    };
+
+    _dismissedSurveyFile.writeAsStringSync(jsonEncode(contents));
+  }
+
+  /// Retrieve a list of strings for each [Survey] persisted on disk
+  ///
+  /// The survey may be in a snoozed or dismissed state based on user action
+  Map<String, PersistedSurvey> fetchPersistedSurveys() {
+    final contents = _parseJsonFile();
+
+    // Initialize the list of persisted surveys and add to them
+    // as they are being parsed
+    var persistedSurveys = <String, PersistedSurvey>{};
+    contents.forEach((key, value) {
+      value as Map<String, dynamic>;
+
+      final uniqueId = key;
+      final snoozed = value['status'] == 'snoozed' ? true : false;
+      final timestamp =
+          DateTime.fromMillisecondsSinceEpoch(value['timestamp'] as int);
+
+      persistedSurveys[uniqueId] = PersistedSurvey(
+        uniqueId: uniqueId,
+        snoozed: snoozed,
+        timestamp: timestamp,
+      );
+    });
+
+    return persistedSurveys;
+  }
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl]
   Future<List<Survey>> fetchSurveyList() async {
@@ -178,14 +271,45 @@ class SurveyHandler {
     final response = await http.get(uri);
     return response.body;
   }
+
+  /// Method to return a Map representation of the json persisted file
+  Map<String, dynamic> _parseJsonFile() {
+    Map<String, dynamic> contents;
+    try {
+      contents = jsonDecode(_dismissedSurveyFile.readAsStringSync())
+          as Map<String, dynamic>;
+    } on FormatException {
+      Initializer.createDismissedSurveyFile(
+          dismissedSurveyFile: _dismissedSurveyFile);
+      contents = {};
+    } on FileSystemException {
+      Initializer.createDismissedSurveyFile(
+          dismissedSurveyFile: _dismissedSurveyFile);
+      contents = {};
+    }
+
+    return contents;
+  }
 }
 
-class FakeSurveyHandler implements SurveyHandler {
+class FakeSurveyHandler extends SurveyHandler {
   final List<Survey> _fakeInitializedSurveys = [];
 
   /// Use this class in tests if you can provide the
   /// list of [Survey] objects
-  FakeSurveyHandler.fromList({required List<Survey> initializedSurveys}) {
+  ///
+  /// Important: the surveys in the [initializedSurveys] list
+  /// will have their dates checked to ensure they are valid; it is
+  /// recommended to use `package:clock` to set a fixed time for testing
+  FakeSurveyHandler.fromList({
+    required Directory homeDirectory,
+    required FileSystem fs,
+    required List<Survey> initializedSurveys,
+  }) : super(fs: fs, homeDirectory: homeDirectory) {
+    // We must pass the surveys from the list to the
+    // `checkSurveyDate` function here and not for the
+    // `.fromString()` constructor because the `parseSurveysFromJson`
+    // method already checks their date
     for (final survey in initializedSurveys) {
       if (checkSurveyDate(survey)) {
         _fakeInitializedSurveys.add(survey);
@@ -195,7 +319,11 @@ class FakeSurveyHandler implements SurveyHandler {
 
   /// Use this class in tests if you can provide raw
   /// json strings to mock a response from a remote server
-  FakeSurveyHandler.fromString({required String content}) {
+  FakeSurveyHandler.fromString({
+    required Directory homeDirectory,
+    required FileSystem fs,
+    required String content,
+  }) : super(fs: fs, homeDirectory: homeDirectory) {
     final body = jsonDecode(content) as List<dynamic>;
     for (final fakeSurvey in parseSurveysFromJson(body)) {
       _fakeInitializedSurveys.add(fakeSurvey);

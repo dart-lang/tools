@@ -76,7 +76,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: const SurveyHandler(),
+      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
     );
   }
@@ -136,7 +136,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: const SurveyHandler(),
+      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
     );
   }
@@ -168,8 +168,12 @@ abstract class Analytics {
         dartVersion: dartVersion,
         platform: platform,
         fs: fs,
-        surveyHandler:
-            surveyHandler ?? FakeSurveyHandler.fromList(initializedSurveys: []),
+        surveyHandler: surveyHandler ??
+            FakeSurveyHandler.fromList(
+              homeDirectory: homeDirectory,
+              fs: fs,
+              initializedSurveys: [],
+            ),
         gaClient: gaClient ?? FakeGAClient(),
         enableAsserts: true,
       );
@@ -210,6 +214,15 @@ abstract class Analytics {
   /// that need to be sent off
   void close();
 
+  /// Method to dismiss a survey permanently
+  ///
+  /// Pass a [Survey] instance which can be retrieved from
+  /// `fetchAvailableSurveys()`
+  ///
+  /// [surveyAccepted] indicates if the user opened the survey if `true`
+  ///   or `false` if the user rejects to open it
+  void dismissSurvey({required Survey survey, required bool surveyAccepted});
+
   /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
   ///
   /// Any survey that is returned by this method has already passed
@@ -246,6 +259,14 @@ abstract class Analytics {
   /// If you would like to permanently disable telemetry
   /// collection use `setTelemetry(false)`
   void suppressTelemetry();
+
+  /// Method to be called after a survey has been shown to the user
+  ///
+  /// Calling this will snooze the survey so it won't be shown immediately
+  ///
+  /// The snooze period is defined within the `dismissForMinutes`
+  /// field in [Survey]
+  void surveyShown(Survey survey);
 }
 
 class AnalyticsImpl implements Analytics {
@@ -433,6 +454,11 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
+  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {
+    _surveyHandler.dismiss(survey, true);
+  }
+
+  @override
   Future<List<Survey>> fetchAvailableSurveys() async {
     final surveysToShow = <Survey>[];
     if (!okToSend) return surveysToShow;
@@ -441,7 +467,22 @@ class AnalyticsImpl implements Analytics {
 
     if (logFileStats == null) return [];
 
+    // Call for surveys that have already been dismissed from
+    // persisted survey ids on disk
+    final persistedSurveyMap = _surveyHandler.fetchPersistedSurveys();
+
     for (final survey in await _surveyHandler.fetchSurveyList()) {
+      // Apply the survey's sample rate; if the generated value from
+      // the client id and survey's uniqueId are less, it will not get
+      // sent to the user
+      if (survey.samplingRate < sampleRate(_clientId, survey.uniqueId)) {
+        continue;
+      }
+
+      // If the survey has been permanently dismissed or has temporarily
+      // been snoozed, skip it
+      if (surveySnoozedOrDismissed(survey, persistedSurveyMap)) continue;
+
       // Counter to check each survey condition, if all are met, then
       // this integer will be equal to the number of conditions in
       // [Survey.conditionList]
@@ -476,11 +517,7 @@ class AnalyticsImpl implements Analytics {
         }
       }
 
-      // If all conditions are met above, a double value will be generated from
-      // the clientID and survey description strings and compared against the
-      // sampling rate found in the survey
-      if (conditionsMet == survey.conditionList.length &&
-          survey.samplingRate >= sampleRate(_clientId, survey.uniqueId)) {
+      if (conditionsMet == survey.conditionList.length) {
         surveysToShow.add(survey);
       }
     }
@@ -542,7 +579,7 @@ class AnalyticsImpl implements Analytics {
     } else {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
-      // to persist from `sendEvent()`
+      // to persist from events sent
       Initializer.createClientIdFile(clientFile: _clientIdFile);
       Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
     }
@@ -553,6 +590,11 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void suppressTelemetry() => _telemetrySuppressed = true;
+
+  @override
+  void surveyShown(Survey survey) {
+    _surveyHandler.dismiss(survey, false);
+  }
 }
 
 /// An implementation that will never send events.
@@ -590,6 +632,9 @@ class NoOpAnalytics implements Analytics {
   void close() {}
 
   @override
+  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {}
+
+  @override
   Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
 
   @override
@@ -603,4 +648,7 @@ class NoOpAnalytics implements Analytics {
 
   @override
   void suppressTelemetry() {}
+
+  @override
+  void surveyShown(Survey survey) {}
 }

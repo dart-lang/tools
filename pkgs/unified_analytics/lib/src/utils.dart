@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import 'enums.dart';
+import 'survey_handler.dart';
 import 'user_property.dart';
 
 /// Get a string representation of the current date in the following format
@@ -202,6 +203,39 @@ double sampleRate(String string1, String string2) {
   final int2 = intFromString(string2);
 
   return ((int1 + int2) % 101) / 100;
+}
+
+/// Function to check if a given [Survey] can be shown again
+/// by checking if it was snoozed or permanently dismissed
+///
+/// If the [Survey] doesn't exist in the persisted file, then it
+/// will be shown to the user
+///
+/// If the [Survey] has been permanently dismissed, we will not
+/// show it to the user
+///
+/// If the [Survey] has been snoozed, we will check the timestamp
+/// that it was snoozed at with the current time from [clock.now()]
+/// and if the snooze period has elapsed, then we will show it to the user
+bool surveySnoozedOrDismissed(
+  Survey survey,
+  Map<String, PersistedSurvey> persistedSurveyMap,
+) {
+  // If this survey hasn't been persisted yet, it is okay to pass
+  // to the user
+  if (!persistedSurveyMap.containsKey(survey.uniqueId)) return false;
+
+  final persistedSurveyObj = persistedSurveyMap[survey.uniqueId]!;
+
+  // If the survey has been dismissed permanently, we will not show the
+  // survey
+  if (!persistedSurveyObj.snoozed) return true;
+
+  // Find how many minutes has elapsed from the timestamp and now
+  final minutesElapsed =
+      clock.now().difference(persistedSurveyObj.timestamp).inMinutes;
+
+  return survey.dismissForMinutes > minutesElapsed;
 }
 
 /// A UUID generator.

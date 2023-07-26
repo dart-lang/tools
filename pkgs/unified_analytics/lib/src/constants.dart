@@ -53,11 +53,15 @@ reporting=1
 
 /// Link to contextual survey metadata file
 const String kContextualSurveyUrl =
-    'https://docs.flutter.dev/f/contextual-survey-metadata.json';
+    'https://storage.googleapis.com/flutter-uxr/surveys/contextual-survey-metadata.json';
 
 /// Name of the directory where all of the files necessary for this package
 /// will be located
 const String kDartToolDirectoryName = '.dart-tool';
+
+/// Name of the file where we persist dismissed survey ids
+const String kDismissedSurveyFileName =
+    'dart-flutter-telemetry-dismissed-surveys.json';
 
 /// The API secret associated with the GA4 instance's Measurement Protocol
 const String kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';

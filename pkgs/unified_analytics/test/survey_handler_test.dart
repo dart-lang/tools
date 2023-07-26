@@ -30,7 +30,7 @@ void main() {
       'description',
       10,
       'moreInfoUrl',
-      0.1,
+      1.0,
       <Condition>[],
     );
     final invalidSurvey = Survey(
@@ -41,7 +41,7 @@ void main() {
       'description',
       10,
       'moreInfoUrl',
-      0.1,
+      1.0,
       <Condition>[],
     );
 
@@ -69,9 +69,9 @@ void main() {
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForDays": "10",
+		"dismissForMinutes": "10",
 		"moreInfoURL": "xxxxxx",
-		"samplingRate": "0.1",
+		"samplingRate": "1.0",
 		"conditions": [
 			{
 				"field": "logFileStats.recordCount",
@@ -96,9 +96,9 @@ void main() {
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForDays": "10",
+		"dismissForMinutes": "10",
 		"moreInfoURL": "xxxxxx",
-		"samplingRate": "0.1",
+		"samplingRate": "1.0",
 		"conditions": [
 			{
 				"field": "logFileStats.recordCount",
@@ -148,6 +148,7 @@ void main() {
     late Directory homeDirectory;
     late FileSystem fs;
     late File clientIdFile;
+    late File dismissedSurveyFile;
 
     setUp(() {
       fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
@@ -163,6 +164,13 @@ void main() {
       ));
       clientIdFile.createSync(recursive: true);
       clientIdFile.writeAsStringSync('string1');
+
+      // Assign the json file that will hold the persisted surveys
+      dismissedSurveyFile = fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kDismissedSurveyFileName,
+      ));
 
       final initialAnalytics = Analytics.test(
         tool: DashTool.flutterTool,
@@ -187,6 +195,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[
               Survey(
                 'uniqueId',
@@ -228,6 +238,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[
               Survey(
                 'uniqueId',
@@ -237,7 +249,7 @@ void main() {
                 'description',
                 10,
                 'moreInfoUrl',
-                0.1,
+                1.0,
                 <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -258,6 +270,52 @@ void main() {
       });
     });
 
+    test('does not return survey if opted out of telemetry', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[
+              Survey(
+                'uniqueId',
+                'url',
+                DateTime(2023, 1, 1),
+                DateTime(2023, 12, 31),
+                'description',
+                10,
+                'moreInfoUrl',
+                1.0,
+                <Condition>[
+                  Condition('logFileStats.recordCount', '>=', 50),
+                  Condition('logFileStats.toolCount.flutter-tool', '>', 0),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        // Simulate 60 events to send so that the first condition is satisified
+        for (var i = 0; i < 60; i++) {
+          await analytics.send(testEvent);
+        }
+
+        await analytics.setTelemetry(false);
+        expect(analytics.okToSend, false);
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 0);
+      });
+    });
+
     test('returns valid survey from json', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         analytics = Analytics.test(
@@ -268,7 +326,8 @@ void main() {
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromString(content: '''
+          surveyHandler: FakeSurveyHandler.fromString(
+              homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -276,7 +335,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "description123",
-	"dismissForDays": "10",
+	"dismissForMinutes": "10",
 	"moreInfoURL": "moreInfoUrl123",
 	"samplingRate": "1.0",
 	"conditions": [
@@ -310,7 +369,7 @@ void main() {
         expect(survey.endDate.month, 12);
         expect(survey.endDate.day, 31);
         expect(survey.description, 'description123');
-        expect(survey.dismissForDays, 10);
+        expect(survey.dismissForMinutes, 10);
         expect(survey.moreInfoUrl, 'moreInfoUrl123');
         expect(survey.samplingRate, 1.0);
         expect(survey.conditionList.length, 1);
@@ -332,7 +391,8 @@ void main() {
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromString(content: '''
+          surveyHandler: FakeSurveyHandler.fromString(
+              homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
         "uniqueId": "xxxxxx",
@@ -340,9 +400,9 @@ void main() {
         "startDate": "NOT A REAL DATE",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "xxxxxxx",
-	"dismissForDays": "10BAD",
+	"dismissForMinutes": "10BAD",
 	"moreInfoURL": "xxxxxx",
-	"samplingRate": "0.1",
+	"samplingRate": "1.0",
 	"conditions": [
 	    {
 	        "field": "logFileStats.recordCount",
@@ -376,7 +436,8 @@ void main() {
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
-          surveyHandler: FakeSurveyHandler.fromString(content: '''
+          surveyHandler: FakeSurveyHandler.fromString(
+              homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
         "uniqueId": "12345",
@@ -384,7 +445,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "xxxxxxx",
-	"dismissForDays": "10",
+	"dismissForMinutes": "10",
 	"moreInfoURL": "xxxxxx",
 	"samplingRate": "1.0",
 	"conditions": [
@@ -401,7 +462,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
 	"description": "xxxxxxx",
-	"dismissForDays": "10",
+	"dismissForMinutes": "10",
 	"moreInfoURL": "xxxxxx",
 	"samplingRate": "1.0",
 	"conditions": [
@@ -444,6 +505,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[
               Survey(
                 'uniqueId',
@@ -527,6 +590,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[survey],
           ),
         );
@@ -571,6 +636,8 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
             initializedSurveys: <Survey>[survey],
           ),
         );
@@ -584,6 +651,306 @@ void main() {
 
         expect(survey.samplingRate, 0.15);
         expect(fetchedSurveys.length, 0);
+      });
+    });
+
+    test('Snoozing survey is successful with snooze timeout from survey',
+        () async {
+      expect(dismissedSurveyFile.readAsStringSync(), '{}',
+          reason: 'Should be an empty object');
+
+      // Initialize the survey class that we will use for this test
+      final minutesToSnooze = 30;
+      final surveyToLoad = Survey(
+        'uniqueId',
+        'url',
+        DateTime(2023, 1, 1),
+        DateTime(2023, 12, 31),
+        'description',
+        minutesToSnooze, // Initialized survey with `minutesToSnooze`
+        'moreInfoUrl',
+        1.0,
+        <Condition>[],
+      );
+
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        // Simulate sending one event since logFileStats cannot be null
+        await analytics.send(testEvent);
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+
+        final survey = fetchedSurveys.first;
+        expect(survey.dismissForMinutes, minutesToSnooze);
+
+        // We will snooze the survey now and it should not show up
+        // if we fetch surveys again before the minutes to snooze time
+        // has finished
+        analytics.surveyShown(survey);
+      });
+
+      // This analytics instance will be simulated to be shortly after the first
+      // snooze, but before the snooze period has elapsed
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 15)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 0,
+            reason: 'The snooze period has not elapsed yet');
+      });
+
+      // This analytics instance will be simulated to be after the snooze period
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 35)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1,
+            reason: 'The snooze period has elapsed');
+      });
+    });
+
+    test('Dimissing permanently is successful', () async {
+      final minutesToSnooze = 10;
+      final surveyToLoad = Survey(
+        'uniqueId',
+        'url',
+        DateTime(2023, 1, 1),
+        DateTime(2023, 12, 31),
+        'description',
+        minutesToSnooze,
+        'moreInfoUrl',
+        1.0,
+        <Condition>[],
+      );
+
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        // Simulate sending one event since logFileStats cannot be null
+        await analytics.send(testEvent);
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+
+        // Dismissing permanently will ensure that this survey is not
+        // shown again
+        final survey = fetchedSurveys.first;
+        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+      });
+
+      // Moving out a week
+      await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 0);
+      });
+    });
+
+    test('malformed persisted json file for surveys', () async {
+      // When the survey handler encounters an error when parsing the
+      // persisted json file, it will reset it using the static method
+      // under the [Initializer] class and reset it to be an empty json object
+      final minutesToSnooze = 10;
+      final surveyToLoad = Survey(
+        'uniqueId',
+        'url',
+        DateTime(2023, 1, 1),
+        DateTime(2023, 12, 31),
+        'description',
+        minutesToSnooze,
+        'moreInfoUrl',
+        1.0,
+        <Condition>[],
+      );
+
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        // Simulate sending one event since logFileStats cannot be null
+        await analytics.send(testEvent);
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+
+        // Dismissing permanently will ensure that this survey is not
+        // shown again
+        final survey = fetchedSurveys.first;
+        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+      });
+
+      // Purposefully write invalid json into the persisted file
+      dismissedSurveyFile.writeAsStringSync('{');
+
+      // Moving out a week
+      await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+      });
+    });
+
+    test('persisted json file goes missing handled', () async {
+      // If the persisted json file with the dismissed surveys is missing
+      // there should be error handling to recreate the file again with
+      // an empty json object
+      final minutesToSnooze = 10;
+      final surveyToLoad = Survey(
+        'uniqueId',
+        'url',
+        DateTime(2023, 1, 1),
+        DateTime(2023, 12, 31),
+        'description',
+        minutesToSnooze,
+        'moreInfoUrl',
+        1.0,
+        <Condition>[],
+      );
+
+      await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        // Simulate sending one event since logFileStats cannot be null
+        await analytics.send(testEvent);
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
+
+        // Dismissing permanently will ensure that this survey is not
+        // shown again
+        final survey = fetchedSurveys.first;
+        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+      });
+
+      // Moving out a week
+      await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[surveyToLoad],
+          ),
+        );
+
+        // Purposefully delete the file
+        dismissedSurveyFile.deleteSync();
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+        expect(fetchedSurveys.length, 1);
       });
     });
   });

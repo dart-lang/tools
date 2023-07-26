@@ -82,17 +82,20 @@ class LogFileStats {
   });
 
   @override
-  String toString() => jsonEncode(<String, Object?>{
-        'startDateTime': startDateTime.toString(),
-        'minsFromStartDateTime': minsFromStartDateTime,
-        'endDateTime': endDateTime.toString(),
-        'minsFromEndDateTime': minsFromEndDateTime,
-        'sessionCount': sessionCount,
-        'recordCount': recordCount,
-        'eventCount': eventCount,
-        'toolCount': toolCount,
-        'flutterChannelCount': flutterChannelCount,
-      });
+  String toString() {
+    final encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert({
+      'startDateTime': startDateTime.toString(),
+      'minsFromStartDateTime': minsFromStartDateTime,
+      'endDateTime': endDateTime.toString(),
+      'minsFromEndDateTime': minsFromEndDateTime,
+      'sessionCount': sessionCount,
+      'recordCount': recordCount,
+      'eventCount': eventCount,
+      'toolCount': toolCount,
+      'flutterChannelCount': flutterChannelCount,
+    });
+  }
 
   /// Pass in a string label for one of the instance variables
   /// and return the integer value of that label
