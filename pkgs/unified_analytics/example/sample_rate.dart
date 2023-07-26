@@ -19,11 +19,11 @@ void main() {
   //
   // Setting 0.3 means any generated doubles less than or
   // equal to 0.3 results in a survey getting delievered
-  final testSampleRate = 0.3;
+  const testSampleRate = 0.3;
 
   // Define how many iterations to run, each iteration can
   // be thought of as a developer using a dash tool
-  final iterations = 10000;
+  const iterations = 10000;
 
   // Initializing a counter that will count the number of
   // iterations that were below the sampling rate
