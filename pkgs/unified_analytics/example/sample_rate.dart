@@ -57,4 +57,18 @@ Actual sample rate = ${count / iterations}
 
 Runtime = ${end.difference(start).inMilliseconds}ms
 ''');
+
+// Output from run above with set parameters
+// 
+// '''
+// Test sample rate = 0.3
+// Number of iterations = 10000
+// ---
+//
+// Count of iterations sampled (successes) = 3093
+// Actual sample rate = 0.3093
+// ---
+//
+// Runtime = 25ms
+// '''
 }
