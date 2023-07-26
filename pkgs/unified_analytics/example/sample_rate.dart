@@ -59,7 +59,7 @@ Runtime = ${end.difference(start).inMilliseconds}ms
 ''');
 
 // Output from run above with set parameters
-// 
+//
 // '''
 // Test sample rate = 0.3
 // Number of iterations = 10000
