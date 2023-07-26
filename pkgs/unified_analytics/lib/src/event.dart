@@ -312,4 +312,20 @@ final class Event {
           'diagnostic': diagnostic,
           'adjustments': adjustments,
         };
+
+  /// Event that is emitted by `package:unified_analytics` when
+  /// the user takes action when prompted with a survey
+  /// 
+  /// [surveyId] - the unique id for a given survey
+  /// 
+  /// [status] - `'snoozed'` if the survey was only shown, `'accepted'` if the 
+  ///     user accepted the survey, or `'dismissed'` if the user rejected it
+  Event.surveyAction({
+    required String surveyId,
+    required String status,
+  })  : eventName = DashEvent.surveyAction,
+        eventData = {
+          'surveyId': surveyId,
+          'status': status,
+        };
 }
