@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'constants.dart';
 
 class FakeGAClient implements GAClient {
+  const FakeGAClient();
+
   @override
   String get apiSecret => throw UnimplementedError();
 

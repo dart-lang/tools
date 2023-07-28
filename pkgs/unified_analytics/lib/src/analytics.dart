@@ -456,6 +456,8 @@ class AnalyticsImpl implements Analytics {
   @override
   void dismissSurvey({required Survey survey, required bool surveyAccepted}) {
     _surveyHandler.dismiss(survey, true);
+    final status = surveyAccepted ? 'accepted' : 'dismissed';
+    send(Event.surveyAction(surveyId: survey.uniqueId, status: status));
   }
 
   @override
@@ -594,6 +596,7 @@ class AnalyticsImpl implements Analytics {
   @override
   void surveyShown(Survey survey) {
     _surveyHandler.dismiss(survey, false);
+    send(Event.surveyShown(surveyId: survey.uniqueId));
   }
 }
 

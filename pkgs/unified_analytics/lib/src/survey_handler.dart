@@ -131,17 +131,17 @@ class Survey {
 
   /// A data class that contains the relevant information for a given
   /// survey parsed from the survey's metadata file
-  Survey(
-    this.uniqueId,
-    this.url,
-    this.startDate,
-    this.endDate,
-    this.description,
-    this.dismissForMinutes,
-    this.moreInfoUrl,
-    this.samplingRate,
-    this.conditionList,
-  );
+  Survey({
+    required this.uniqueId,
+    required this.url,
+    required this.startDate,
+    required this.endDate,
+    required this.description,
+    required this.dismissForMinutes,
+    required this.moreInfoUrl,
+    required this.samplingRate,
+    required this.conditionList,
+  });
 
   /// Parse the contents of the json metadata file hosted externally
   Survey.fromJson(Map<String, dynamic> json)

@@ -14,6 +14,14 @@ enum DashEvent {
     label: 'analytics_collection_enabled',
     description: 'The opt-in status for analytics collection',
   ),
+  surveyAction(
+    label: 'survey_action',
+    description: 'Actions taken by users when shown survey',
+  ),
+  surveyShown(
+    label: 'survey_shown',
+    description: 'Survey shown to the user',
+  ),
 
   // Events for flutter_tools
   hotReloadTime(
