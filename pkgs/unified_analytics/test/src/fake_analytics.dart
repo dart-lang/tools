@@ -11,14 +11,14 @@ import 'package:unified_analytics/src/ga_client.dart';
 import 'package:unified_analytics/src/log_handler.dart';
 import 'package:unified_analytics/src/utils.dart';
 
-class MockAnalytics extends AnalyticsImpl {
+class FakeAnalytics extends AnalyticsImpl {
   final List<Event> sentEvents = [];
   final LogHandler _logHandler;
   final FakeGAClient _gaClient;
   final String _clientId = 'hard-coded-client-id';
 
   /// Class to use when you want to see which events were sent
-  MockAnalytics({
+  FakeAnalytics({
     required super.tool,
     required super.homeDirectory,
     required super.dartVersion,

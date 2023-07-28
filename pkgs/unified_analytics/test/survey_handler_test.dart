@@ -23,26 +23,26 @@ void main() {
     // Two surveys created, one that is within the survey date
     // range, and one that is not
     final validSurvey = Survey(
-      'uniqueId',
-      'url',
-      DateTime(2023, 1, 1),
-      DateTime(2023, 12, 31),
-      'description',
-      10,
-      'moreInfoUrl',
-      1.0,
-      <Condition>[],
+      uniqueId: 'uniqueId',
+      url: 'url',
+      startDate: DateTime(2023, 1, 1),
+      endDate: DateTime(2023, 12, 31),
+      description: 'description',
+      dismissForMinutes: 10,
+      moreInfoUrl: 'moreInfoUrl',
+      samplingRate: 1.0,
+      conditionList: <Condition>[],
     );
     final invalidSurvey = Survey(
-      'uniqueId',
-      'url',
-      DateTime(2022, 1, 1),
-      DateTime(2022, 12, 31),
-      'description',
-      10,
-      'moreInfoUrl',
-      1.0,
-      <Condition>[],
+      uniqueId: 'uniqueId',
+      url: 'url',
+      startDate: DateTime(2022, 1, 1),
+      endDate: DateTime(2022, 12, 31),
+      description: 'description',
+      dismissForMinutes: 10,
+      moreInfoUrl: 'moreInfoUrl',
+      samplingRate: 1.0,
+      conditionList: <Condition>[],
     );
 
     test('expired survey', () {
@@ -199,15 +199,15 @@ void main() {
             fs: fs,
             initializedSurveys: <Survey>[
               Survey(
-                'uniqueId',
-                'url',
-                DateTime(2023, 1, 1),
-                DateTime(2023, 12, 31),
-                'description',
-                10,
-                'moreInfoUrl',
-                1.0,
-                <Condition>[
+                uniqueId: 'uniqueId',
+                url: 'url',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                dismissForMinutes: 10,
+                moreInfoUrl: 'moreInfoUrl',
+                samplingRate: 1.0,
+                conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
@@ -242,15 +242,15 @@ void main() {
             fs: fs,
             initializedSurveys: <Survey>[
               Survey(
-                'uniqueId',
-                'url',
-                DateTime(2022, 1, 1),
-                DateTime(2022, 12, 31),
-                'description',
-                10,
-                'moreInfoUrl',
-                1.0,
-                <Condition>[
+                uniqueId: 'uniqueId',
+                url: 'url',
+                startDate: DateTime(2022, 1, 1),
+                endDate: DateTime(2022, 12, 31),
+                description: 'description',
+                dismissForMinutes: 10,
+                moreInfoUrl: 'moreInfoUrl',
+                samplingRate: 1.0,
+                conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
@@ -285,15 +285,15 @@ void main() {
             fs: fs,
             initializedSurveys: <Survey>[
               Survey(
-                'uniqueId',
-                'url',
-                DateTime(2023, 1, 1),
-                DateTime(2023, 12, 31),
-                'description',
-                10,
-                'moreInfoUrl',
-                1.0,
-                <Condition>[
+                uniqueId: 'uniqueId',
+                url: 'url',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                dismissForMinutes: 10,
+                moreInfoUrl: 'moreInfoUrl',
+                samplingRate: 1.0,
+                conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
@@ -509,15 +509,15 @@ void main() {
             fs: fs,
             initializedSurveys: <Survey>[
               Survey(
-                'uniqueId',
-                'url',
-                DateTime(2023, 1, 1),
-                DateTime(2023, 12, 31),
-                'description',
-                10,
-                'moreInfoUrl',
-                1.0,
-                <Condition>[
+                uniqueId: 'uniqueId',
+                url: 'url',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                dismissForMinutes: 10,
+                moreInfoUrl: 'moreInfoUrl',
+                samplingRate: 1.0,
+                conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
@@ -568,15 +568,15 @@ void main() {
       // to be 0.6 which should return surveys
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         final survey = Survey(
-          'string2',
-          'url',
-          DateTime(2023, 1, 1),
-          DateTime(2023, 12, 31),
-          'description',
-          10,
-          'moreInfoUrl',
-          0.6,
-          <Condition>[
+          uniqueId: 'string2',
+          url: 'url',
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 12, 31),
+          description: 'description',
+          dismissForMinutes: 10,
+          moreInfoUrl: 'moreInfoUrl',
+          samplingRate: 0.6,
+          conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
@@ -614,15 +614,15 @@ void main() {
       // survey sample
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         final survey = Survey(
-          'string2',
-          'url',
-          DateTime(2023, 1, 1),
-          DateTime(2023, 12, 31),
-          'description',
-          10,
-          'moreInfoUrl',
-          0.15,
-          <Condition>[
+          uniqueId: 'string2',
+          url: 'url',
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 12, 31),
+          description: 'description',
+          dismissForMinutes: 10,
+          moreInfoUrl: 'moreInfoUrl',
+          samplingRate: 0.15,
+          conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
@@ -662,15 +662,16 @@ void main() {
       // Initialize the survey class that we will use for this test
       final minutesToSnooze = 30;
       final surveyToLoad = Survey(
-        'uniqueId',
-        'url',
-        DateTime(2023, 1, 1),
-        DateTime(2023, 12, 31),
-        'description',
-        minutesToSnooze, // Initialized survey with `minutesToSnooze`
-        'moreInfoUrl',
-        1.0,
-        <Condition>[],
+        uniqueId: 'uniqueId',
+        url: 'url',
+        startDate: DateTime(2023, 1, 1),
+        endDate: DateTime(2023, 12, 31),
+        description: 'description',
+        dismissForMinutes:
+            minutesToSnooze, // Initialized survey with `minutesToSnooze`
+        moreInfoUrl: 'moreInfoUrl',
+        samplingRate: 1.0,
+        conditionList: <Condition>[],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -753,15 +754,15 @@ void main() {
     test('Dimissing permanently is successful', () async {
       final minutesToSnooze = 10;
       final surveyToLoad = Survey(
-        'uniqueId',
-        'url',
-        DateTime(2023, 1, 1),
-        DateTime(2023, 12, 31),
-        'description',
-        minutesToSnooze,
-        'moreInfoUrl',
-        1.0,
-        <Condition>[],
+        uniqueId: 'uniqueId',
+        url: 'url',
+        startDate: DateTime(2023, 1, 1),
+        endDate: DateTime(2023, 12, 31),
+        description: 'description',
+        dismissForMinutes: minutesToSnooze,
+        moreInfoUrl: 'moreInfoUrl',
+        samplingRate: 1.0,
+        conditionList: <Condition>[],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -820,15 +821,15 @@ void main() {
       // under the [Initializer] class and reset it to be an empty json object
       final minutesToSnooze = 10;
       final surveyToLoad = Survey(
-        'uniqueId',
-        'url',
-        DateTime(2023, 1, 1),
-        DateTime(2023, 12, 31),
-        'description',
-        minutesToSnooze,
-        'moreInfoUrl',
-        1.0,
-        <Condition>[],
+        uniqueId: 'uniqueId',
+        url: 'url',
+        startDate: DateTime(2023, 1, 1),
+        endDate: DateTime(2023, 12, 31),
+        description: 'description',
+        dismissForMinutes: minutesToSnooze,
+        moreInfoUrl: 'moreInfoUrl',
+        samplingRate: 1.0,
+        conditionList: <Condition>[],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -890,15 +891,15 @@ void main() {
       // an empty json object
       final minutesToSnooze = 10;
       final surveyToLoad = Survey(
-        'uniqueId',
-        'url',
-        DateTime(2023, 1, 1),
-        DateTime(2023, 12, 31),
-        'description',
-        minutesToSnooze,
-        'moreInfoUrl',
-        1.0,
-        <Condition>[],
+        uniqueId: 'uniqueId',
+        url: 'url',
+        startDate: DateTime(2023, 1, 1),
+        endDate: DateTime(2023, 12, 31),
+        description: 'description',
+        dismissForMinutes: minutesToSnooze,
+        moreInfoUrl: 'moreInfoUrl',
+        samplingRate: 1.0,
+        conditionList: <Condition>[],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {

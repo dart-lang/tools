@@ -5,39 +5,36 @@
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
-import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
-import 'src/mock_analytics.dart';
+import 'src/fake_analytics.dart';
 
 void main() {
-  // The mocked analytics instance can be used to ensure events
+  // The fake analytics instance can be used to ensure events
   // are being sent when invoking methods on the `Analytics` instance
 
-  late MockAnalytics mockAnalytics;
+  late FakeAnalytics fakeAnalytics;
   late FileSystem fs;
   late Directory homeDirectory;
-  late File clientIdFile;
 
-  /// Survey to load into the mock instance to fetch
+  /// Survey to load into the fake instance to fetch
   ///
   /// The 1.0 sample rate means that this will always show
   /// up from the method to fetch available surveys
   final testSurvey = Survey(
-    'uniqueId',
-    'url',
-    DateTime(2022, 1, 1),
-    DateTime(2022, 12, 31),
-    'description',
-    10,
-    'moreInfoUrl',
-    1.0, // 100% sample rate
-    <Condition>[],
+    uniqueId: 'uniqueId',
+    url: 'url',
+    startDate: DateTime(2022, 1, 1),
+    endDate: DateTime(2022, 12, 31),
+    description: 'description',
+    dismissForMinutes: 10,
+    moreInfoUrl: 'moreInfoUrl',
+    samplingRate: 1.0, // 100% sample rate
+    conditionList: <Condition>[],
   );
 
   /// Test event that will need to be sent since surveys won't
@@ -48,17 +45,6 @@ void main() {
   setUp(() async {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
-
-    // Write the client ID file out so that we don't get
-    // a randomly assigned id for this test generated within
-    // the analytics constructor
-    clientIdFile = fs.file(p.join(
-      homeDirectory.path,
-      kDartToolDirectoryName,
-      kClientIdFileName,
-    ));
-    clientIdFile.createSync(recursive: true);
-    clientIdFile.writeAsStringSync('string1');
 
     final initialAnalytics = Analytics.test(
       tool: DashTool.flutterTool,
@@ -74,8 +60,8 @@ void main() {
 
     // Recreate a second instance since events cannot be sent on
     // the first run
-    await withClock(Clock.fixed(DateTime(2022, 3, 3)), () async {
-      mockAnalytics = MockAnalytics(
+    withClock(Clock.fixed(DateTime(2022, 3, 3)), () {
+      fakeAnalytics = FakeAnalytics(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         dartVersion: 'dartVersion',
@@ -94,63 +80,63 @@ void main() {
 
   test('event sent when survey shown', () async {
     // Fire off the test event to allow surveys to be fetched
-    await mockAnalytics.send(testEvent);
+    await fakeAnalytics.send(testEvent);
 
-    final surveyList = await mockAnalytics.fetchAvailableSurveys();
+    final surveyList = await fakeAnalytics.fetchAvailableSurveys();
     expect(surveyList.length, 1);
-    expect(mockAnalytics.sentEvents.length, 1,
+    expect(fakeAnalytics.sentEvents.length, 1,
         reason: 'Only one event sent from the test event above');
 
     final survey = surveyList.first;
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    mockAnalytics.surveyShown(survey);
+    fakeAnalytics.surveyShown(survey);
 
-    expect(mockAnalytics.sentEvents.length, 2);
-    expect(mockAnalytics.sentEvents.last.eventName, DashEvent.surveyShown);
-    expect(mockAnalytics.sentEvents.last.eventData, {'surveyId': 'uniqueId'});
+    expect(fakeAnalytics.sentEvents.length, 2);
+    expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyShown);
+    expect(fakeAnalytics.sentEvents.last.eventData, {'surveyId': 'uniqueId'});
   });
 
   test('event sent when survey accepted', () async {
     // Fire off the test event to allow surveys to be fetched
-    await mockAnalytics.send(testEvent);
+    await fakeAnalytics.send(testEvent);
 
-    final surveyList = await mockAnalytics.fetchAvailableSurveys();
+    final surveyList = await fakeAnalytics.fetchAvailableSurveys();
     expect(surveyList.length, 1);
-    expect(mockAnalytics.sentEvents.length, 1,
+    expect(fakeAnalytics.sentEvents.length, 1,
         reason: 'Only one event sent from the test event above');
 
     final survey = surveyList.first;
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    mockAnalytics.dismissSurvey(survey: survey, surveyAccepted: true);
+    fakeAnalytics.dismissSurvey(survey: survey, surveyAccepted: true);
 
-    expect(mockAnalytics.sentEvents.length, 2);
-    expect(mockAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
-    expect(mockAnalytics.sentEvents.last.eventData,
+    expect(fakeAnalytics.sentEvents.length, 2);
+    expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
+    expect(fakeAnalytics.sentEvents.last.eventData,
         {'surveyId': 'uniqueId', 'status': 'accepted'});
   });
 
   test('event sent when survey rejected', () async {
     // Fire off the test event to allow surveys to be fetched
-    await mockAnalytics.send(testEvent);
+    await fakeAnalytics.send(testEvent);
 
-    final surveyList = await mockAnalytics.fetchAvailableSurveys();
+    final surveyList = await fakeAnalytics.fetchAvailableSurveys();
     expect(surveyList.length, 1);
-    expect(mockAnalytics.sentEvents.length, 1,
+    expect(fakeAnalytics.sentEvents.length, 1,
         reason: 'Only one event sent from the test event above');
 
     final survey = surveyList.first;
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    mockAnalytics.dismissSurvey(survey: survey, surveyAccepted: false);
+    fakeAnalytics.dismissSurvey(survey: survey, surveyAccepted: false);
 
-    expect(mockAnalytics.sentEvents.length, 2);
-    expect(mockAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
-    expect(mockAnalytics.sentEvents.last.eventData,
+    expect(fakeAnalytics.sentEvents.length, 2);
+    expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
+    expect(fakeAnalytics.sentEvents.last.eventData,
         {'surveyId': 'uniqueId', 'status': 'dismissed'});
   });
 }
