@@ -72,7 +72,15 @@ class GAClient {
       );
       // ignore: avoid_catches_without_on_clauses
     } catch (error) {
-      return Future<http.Response>.value(http.Response(error.toString(), 500));
+      return Future<http.Response>.value(
+        http.Response(
+          error.toString(),
+          500,
+          headers: <String, String>{
+            'content-type': 'text/plain; charset=utf-8',
+          },
+        ),
+      );
     }
   }
 }
