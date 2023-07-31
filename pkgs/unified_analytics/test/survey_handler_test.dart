@@ -63,12 +63,10 @@ void main() {
 [
 	{
 		"uniqueId": "xxxxx",
-		"url": "xxxxx",
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
 		"dismissForMinutes": "10",
-		"moreInfoURL": "xxxxxx",
 		"samplingRate": "1.0",
 		"conditions": [
 			{
@@ -81,7 +79,14 @@ void main() {
 				"operator": "<",
 				"value": 3
 			}
-		]
+		],
+    "buttons": [
+        {
+            "buttonText": "Take Survey",
+            "action": "accept",
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2"
+        }
+    ]
 	}
 ]
 ''';
@@ -90,12 +95,10 @@ void main() {
 [
 	{
 		"uniqueId": "xxxxx",
-		"url": "xxxxx",
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
 		"dismissForMinutes": "10",
-		"moreInfoURL": "xxxxxx",
 		"samplingRate": "1.0",
 		"conditions": [
 			{
@@ -103,7 +106,14 @@ void main() {
 				"operator": ">=",
 				"value": "1000xxxx"
 			}
-		]
+		],
+    "buttons": [
+        {
+            "buttonText": "Take Survey",
+            "action": "accept",
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2"
+        }
+    ]
 	}
 ]
 ''';
@@ -126,6 +136,8 @@ void main() {
         expect(secondCondition.field, 'logFileStats.toolCount.flutter-tool');
         expect(secondCondition.operatorString, '<');
         expect(secondCondition.value, 3);
+
+        expect(parsedSurveys.first.surveyButtonList.length, 1);
       });
     });
 
@@ -207,7 +219,13 @@ void main() {
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
-                surveyButtonList: [],
+                surveyButtonList: [
+                  SurveyButton(
+                    buttonText: 'buttonText',
+                    action: ButtonAction.accept,
+                    url: 'http://example.com',
+                  ),
+                ],
               ),
             ],
           ),
@@ -221,6 +239,10 @@ void main() {
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 1);
+        
+        final survey = fetchedSurveys.first;
+        expect(survey.conditionList.length, 2);
+        expect(survey.surveyButtonList.length, 1);
       });
     });
 
@@ -325,33 +347,33 @@ void main() {
               homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
-        "uniqueId": "eca0100a-505b-4539-96d0-57235f816cef",
-        "startDate": "2023-07-01T09:00:00-07:00",
-        "endDate": "2023-07-30T09:00:00-07:00",
-        "description": "Help improve Flutter's release builds with this 3-question survey!",
-        "dismissForMinutes": "7200",
-        "samplingRate": "0.1",
+        "uniqueId": "uniqueId123",
+        "startDate": "2023-01-01T09:00:00-07:00",
+        "endDate": "2023-12-31T09:00:00-07:00",
+        "description": "description123",
+        "dismissForMinutes": "10",
+        "samplingRate": "1.0",
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
                 "operator": ">=",
-                "value": 1000
+                "value": 50
             }
         ],
         "buttons": [
             {
                 "buttonText": "Take Survey",
-                "action": "accepted",
-                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG5Et5Yy2"
+                "action": "accept",
+                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2"
             },
             {
                 "buttonText": "Dismiss",
-                "action": "dismissed",
+                "action": "dismiss",
                 "url": null
             },
             {
                 "buttonText": "More Info",
-                "action": "snoozed",
+                "action": "snooze",
                 "url": "https://docs.flutter.dev/reference/crash-reporting"
             }
         ]
@@ -386,6 +408,22 @@ void main() {
         expect(condition.field, 'logFileStats.recordCount');
         expect(condition.operatorString, '>=');
         expect(condition.value, 50);
+
+        final buttonList = survey.surveyButtonList;
+        expect(buttonList.length, 3);
+        expect(buttonList.first.buttonText, 'Take Survey');
+        expect(buttonList.first.action, ButtonAction.accept);
+        expect(buttonList.first.url,
+            'https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2');
+
+        expect(buttonList.elementAt(1).buttonText, 'Dismiss');
+        expect(buttonList.elementAt(1).action, ButtonAction.dismiss);
+        expect(buttonList.elementAt(1).url, isNull);
+
+        expect(buttonList.last.buttonText, 'More Info');
+        expect(buttonList.last.action, ButtonAction.snooze);
+        expect(buttonList.last.url,
+            'https://docs.flutter.dev/reference/crash-reporting');
       });
     });
 
@@ -403,7 +441,7 @@ void main() {
               homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
-        "uniqueId": "eca0100a-505b-4539-96d0-57235f816cef",
+        "uniqueId": "uniqueId123",
         "startDate": "NOT A REAL DATE",
         "endDate": "2023-07-30T09:00:00-07:00",
         "description": "Help improve Flutter's release builds with this 3-question survey!",
@@ -419,17 +457,17 @@ void main() {
         "buttons": [
             {
                 "buttonText": "Take Survey",
-                "action": "accepted",
+                "action": "accept",
                 "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG5Et5Yy2"
             },
             {
                 "buttonText": "Dismiss",
-                "action": "dismissed",
+                "action": "dismiss",
                 "url": null
             },
             {
                 "buttonText": "More Info",
-                "action": "snoozed",
+                "action": "snooze",
                 "url": "https://docs.flutter.dev/reference/crash-reporting"
             }
         ]
@@ -464,37 +502,41 @@ void main() {
 [
     {
         "uniqueId": "12345",
-        "url": "xxxxx",
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "xxxxxxx",
-	"dismissForMinutes": "10",
-	"moreInfoURL": "xxxxxx",
-	"samplingRate": "1.0",
-	"conditions": [
-	    {
-	        "field": "logFileStats.recordCount",
-	        "operator": ">=",
-	        "value": 50
-      }
-	]
+        "description": "xxxxxxx",
+        "dismissForMinutes": "10",
+        "samplingRate": "1.0",
+        "conditions": [
+            {
+                "field": "logFileStats.recordCount",
+                "operator": ">=",
+                "value": 50
+            }
+	      ], 
+        "buttons": []
     },
     {
         "uniqueId": "67890",
-        "url": "xxxxx",
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "xxxxxxx",
-	"dismissForMinutes": "10",
-	"moreInfoURL": "xxxxxx",
-	"samplingRate": "1.0",
-	"conditions": [
-	    {
-	        "field": "logFileStats.recordCount",
-	        "operator": ">=",
-	        "value": 50
-      }
-	]
+        "description": "xxxxxxx",
+        "dismissForMinutes": "10",
+        "samplingRate": "1.0",
+        "conditions": [
+            {
+                "field": "logFileStats.recordCount",
+                "operator": ">=",
+                "value": 50
+            }
+        ],
+        "buttons": [
+            {
+                "buttonText": "More Info",
+                "action": "snooze",
+                "url": "https://docs.flutter.dev/reference/crash-reporting"
+            }
+        ]
     }
 ]
 '''),
@@ -514,6 +556,12 @@ void main() {
 
         expect(firstSurvey.uniqueId, '12345');
         expect(secondSurvey.uniqueId, '67890');
+
+        final secondSurveyButtons = secondSurvey.surveyButtonList;
+        expect(secondSurveyButtons.length, 1);
+        expect(secondSurveyButtons.first.buttonText, 'More Info');
+        expect(secondSurveyButtons.first.action, ButtonAction.snooze);
+        expect(secondSurveyButtons.first.url, 'https://docs.flutter.dev/reference/crash-reporting');
       });
     });
 
