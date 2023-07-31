@@ -27,14 +27,13 @@ void main() {
   /// up from the method to fetch available surveys
   final testSurvey = Survey(
     uniqueId: 'uniqueId',
-    url: 'url',
     startDate: DateTime(2022, 1, 1),
     endDate: DateTime(2022, 12, 31),
     description: 'description',
     dismissForMinutes: 10,
-    moreInfoUrl: 'moreInfoUrl',
     samplingRate: 1.0, // 100% sample rate
     conditionList: <Condition>[],
+    surveyButtonList: [],
   );
 
   /// Test event that will need to be sent since surveys won't
