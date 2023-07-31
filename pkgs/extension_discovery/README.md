@@ -1,19 +1,19 @@
 # Package Extension Discovery
 
-A convention to allow other packages to provide extension for your package
-(or tool). Including logic for finding extensions that honors this convention.
+A convention to allow other packages to provide extensions for your package
+(or tool). Including logic for finding extensions that honor this convention.
 
 The convention implemented in this package is that if `foo` provides an
 extension for `<targetPackage>`.
 Then `foo` must contain a config file `extension/<targetPackage>/config.json`.
-This file indicates that `foo` provides and extension for `<targetPackage>`.
+This file indicates that `foo` provides an extension for `<targetPackage>`.
 
 If `<targetPackage>` accepts extensions from other packages it must:
  * Find extensions using `findExtensions('<targetPackage>')` from this package.
  * Document how extensions are implemented:
    * What should the contents of the `extension/<targetPackage>/config.json` file be?
-   * Should packages providing extension have a dependency constraint on `<targetPackage>`?
-   * What libraries/assets should packages that provide extension include?
+   * Should packages providing extensions have a dependency constraint on `<targetPackage>`?
+   * What libraries/assets should packages that provide extensions include?
    * Should packages providing extensions specify a [topic in `pubspec.yaml`][1]
      for easy discovery on pub.dev.
 
