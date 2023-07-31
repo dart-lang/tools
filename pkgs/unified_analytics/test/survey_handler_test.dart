@@ -222,7 +222,7 @@ void main() {
                 surveyButtonList: [
                   SurveyButton(
                     buttonText: 'buttonText',
-                    action: ButtonAction.accept,
+                    action: 'accept',
                     url: 'http://example.com',
                   ),
                 ],
@@ -412,16 +412,16 @@ void main() {
         final buttonList = survey.surveyButtonList;
         expect(buttonList.length, 3);
         expect(buttonList.first.buttonText, 'Take Survey');
-        expect(buttonList.first.action, ButtonAction.accept);
+        expect(buttonList.first.action, 'accept');
         expect(buttonList.first.url,
             'https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2');
 
         expect(buttonList.elementAt(1).buttonText, 'Dismiss');
-        expect(buttonList.elementAt(1).action, ButtonAction.dismiss);
+        expect(buttonList.elementAt(1).action, 'dismiss');
         expect(buttonList.elementAt(1).url, isNull);
 
         expect(buttonList.last.buttonText, 'More Info');
-        expect(buttonList.last.action, ButtonAction.snooze);
+        expect(buttonList.last.action, 'snooze');
         expect(buttonList.last.url,
             'https://docs.flutter.dev/reference/crash-reporting');
       });
@@ -560,7 +560,7 @@ void main() {
         final secondSurveyButtons = secondSurvey.surveyButtonList;
         expect(secondSurveyButtons.length, 1);
         expect(secondSurveyButtons.first.buttonText, 'More Info');
-        expect(secondSurveyButtons.first.action, ButtonAction.snooze);
+        expect(secondSurveyButtons.first.action, 'snooze');
         expect(secondSurveyButtons.first.url, 'https://docs.flutter.dev/reference/crash-reporting');
       });
     });
@@ -856,7 +856,7 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+        analytics.dismissSurvey(survey: survey, status: 'accept');
       });
 
       // Moving out a week
@@ -922,7 +922,7 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+        analytics.dismissSurvey(survey: survey, status: 'accept');
       });
 
       // Purposefully write invalid json into the persisted file
@@ -991,7 +991,7 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+        analytics.dismissSurvey(survey: survey, status: 'accept');
       });
 
       // Moving out a week

@@ -221,7 +221,7 @@ abstract class Analytics {
   ///
   /// [surveyAccepted] indicates if the user opened the survey if `true`
   ///   or `false` if the user rejects to open it
-  void dismissSurvey({required Survey survey, required bool surveyAccepted});
+  void dismissSurvey({required Survey survey, required String status});
 
   /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
   ///
@@ -454,9 +454,8 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
-  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {
+  void dismissSurvey({required Survey survey, required String status}) {
     _surveyHandler.dismiss(survey, true);
-    final status = surveyAccepted ? 'accepted' : 'dismissed';
     send(Event.surveyAction(surveyId: survey.uniqueId, status: status));
   }
 
@@ -635,7 +634,7 @@ class NoOpAnalytics implements Analytics {
   void close() {}
 
   @override
-  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {}
+  void dismissSurvey({required Survey survey, required String status}) {}
 
   @override
   Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];

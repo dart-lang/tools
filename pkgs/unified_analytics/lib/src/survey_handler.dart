@@ -13,24 +13,6 @@ import 'package:unified_analytics/src/initializer.dart';
 import 'constants.dart';
 import 'log_handler.dart';
 
-enum ButtonAction {
-  /// The user has decided to accept the survey being passed to them
-  ///
-  /// This will permanently dismiss the survey from showing up again
-  accept,
-
-  /// The user has decided to dismiss the survey by clicking the dismiss
-  /// button being provided the survey
-  ///
-  /// This will permanently dismiss the survey from showing up again
-  dismiss,
-
-  /// If this button is provided by a survey, it will temporarily dismiss
-  /// the survey from being prompted to the user for a period of time
-  /// specified in [Survey] field [dismissForMinutes]
-  snooze,
-}
-
 class Condition {
   /// How to query the log file
   ///
@@ -169,7 +151,7 @@ class Survey {
 
 class SurveyButton {
   final String buttonText;
-  final ButtonAction action;
+  final String action;
   final String? url;
 
   SurveyButton({
@@ -180,12 +162,7 @@ class SurveyButton {
 
   SurveyButton.fromJson(Map<String, dynamic> json)
       : buttonText = json['buttonText'] as String,
-        action = switch (json['action']) {
-          'accept' => ButtonAction.accept,
-          'dismiss' => ButtonAction.dismiss,
-          'snooze' => ButtonAction.snooze,
-          _ => throw ArgumentError('Action for button not valid')
-        },
+        action = json['action'] as String,
         url = json['url'] as String?;
 }
 
