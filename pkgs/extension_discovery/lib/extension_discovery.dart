@@ -87,6 +87,10 @@ final class Extension {
 /// their projects, then you must specify the path the
 /// `.dart_tool/package_config.json` for the users project as [packageConfig].
 ///
+/// The [packageConfig] parameter must reference a file, absolute or
+/// relative-path, may use the `file://` scheme. This method throws, if
+/// [packageConfig] is not a valid [Uri] for a file-path.
+///
 /// ## Detection of extensions
 ///
 /// An extension for [targetPackage] is detected in `package:foo` if `foo`
@@ -124,12 +128,39 @@ Future<List<Extension>> findExtensions(
   bool useCache = true,
   Uri? packageConfig,
 }) async {
-  final packageConfigUri = packageConfig ?? await Isolate.packageConfig;
-  if (packageConfigUri == null) {
+  packageConfig ??= await Isolate.packageConfig;
+  if (packageConfig == null) {
     throw UnsupportedError(
       'packageConfigUri must be provided, if not running in JIT mode',
     );
   }
+  if ((packageConfig.hasScheme && !packageConfig.isScheme('file')) ||
+      packageConfig.hasEmptyPath ||
+      packageConfig.hasFragment ||
+      packageConfig.hasPort ||
+      packageConfig.hasQuery) {
+    throw ArgumentError.value(
+      packageConfig,
+      'packageConfig',
+      'must be a file:// URI',
+    );
+  }
+  // Always normalize to an absolute URI
+  final packageConfigUri = File.fromUri(packageConfig).absolute.uri;
+
+  return await _findExtensions(
+    targetPackage: targetPackage,
+    useCache: useCache,
+    packageConfigUri: packageConfigUri,
+  );
+}
+
+/// Find extensions with normalized arguments.
+Future<List<Extension>> _findExtensions({
+  required String targetPackage,
+  required bool useCache,
+  required Uri packageConfigUri,
+}) async {
   final packageConfigFile = File.fromUri(packageConfigUri);
   final registryFile = File.fromUri(packageConfigFile.parent.uri.resolve(
     'extension_discovery/$targetPackage.json',
