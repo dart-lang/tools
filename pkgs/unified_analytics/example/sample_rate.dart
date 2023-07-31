@@ -52,7 +52,7 @@ Number of iterations = $iterations
 ---
 
 Count of iterations sampled (successes) = $count
-Actual sample rate = ${count / iterations}
+Actual sample rate = ${(count / iterations).toStringAsFixed(4)}
 ---
 
 Runtime = ${end.difference(start).inMilliseconds}ms
