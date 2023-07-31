@@ -264,7 +264,7 @@ abstract class Analytics {
   ///
   /// Calling this will snooze the survey so it won't be shown immediately
   ///
-  /// The snooze period is defined within the `dismissForMinutes`
+  /// The snooze period is defined within the `snoozeForMinutes`
   /// field in [Survey]
   void surveyShown(Survey survey);
 }

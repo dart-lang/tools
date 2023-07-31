@@ -30,7 +30,7 @@ void main() {
     startDate: DateTime(2022, 1, 1),
     endDate: DateTime(2022, 12, 31),
     description: 'description',
-    dismissForMinutes: 10,
+    snoozeForMinutes: 10,
     samplingRate: 1.0, // 100% sample rate
     conditionList: <Condition>[],
     surveyButtonList: [],

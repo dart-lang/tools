@@ -27,7 +27,7 @@ void main() {
       startDate: DateTime(2023, 1, 1),
       endDate: DateTime(2023, 12, 31),
       description: 'description',
-      dismissForMinutes: 10,
+      snoozeForMinutes: 10,
       samplingRate: 1.0,
       conditionList: <Condition>[],
       surveyButtonList: [],
@@ -37,7 +37,7 @@ void main() {
       startDate: DateTime(2022, 1, 1),
       endDate: DateTime(2022, 12, 31),
       description: 'description',
-      dismissForMinutes: 10,
+      snoozeForMinutes: 10,
       samplingRate: 1.0,
       conditionList: <Condition>[],
       surveyButtonList: [],
@@ -66,7 +66,7 @@ void main() {
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForMinutes": "10",
+		"snoozeForMinutes": "10",
 		"samplingRate": "1.0",
 		"conditions": [
 			{
@@ -98,7 +98,7 @@ void main() {
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForMinutes": "10",
+		"snoozeForMinutes": "10",
 		"samplingRate": "1.0",
 		"conditions": [
 			{
@@ -213,7 +213,7 @@ void main() {
                 startDate: DateTime(2023, 1, 1),
                 endDate: DateTime(2023, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
@@ -265,7 +265,7 @@ void main() {
                 startDate: DateTime(2022, 1, 1),
                 endDate: DateTime(2022, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
@@ -307,7 +307,7 @@ void main() {
                 startDate: DateTime(2023, 1, 1),
                 endDate: DateTime(2023, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
@@ -351,7 +351,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
         "description": "description123",
-        "dismissForMinutes": "10",
+        "snoozeForMinutes": "10",
         "samplingRate": "1.0",
         "conditions": [
             {
@@ -400,7 +400,7 @@ void main() {
         expect(survey.endDate.month, 12);
         expect(survey.endDate.day, 31);
         expect(survey.description, 'description123');
-        expect(survey.dismissForMinutes, 10);
+        expect(survey.snoozeForMinutes, 10);
         expect(survey.samplingRate, 1.0);
         expect(survey.conditionList.length, 1);
 
@@ -445,7 +445,7 @@ void main() {
         "startDate": "NOT A REAL DATE",
         "endDate": "2023-07-30T09:00:00-07:00",
         "description": "Help improve Flutter's release builds with this 3-question survey!",
-        "dismissForMinutes": "7200",
+        "snoozeForMinutes": "7200",
         "samplingRate": "0.1",
         "conditions": [
             {
@@ -505,7 +505,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
         "description": "xxxxxxx",
-        "dismissForMinutes": "10",
+        "snoozeForMinutes": "10",
         "samplingRate": "1.0",
         "conditions": [
             {
@@ -521,7 +521,7 @@ void main() {
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
         "description": "xxxxxxx",
-        "dismissForMinutes": "10",
+        "snoozeForMinutes": "10",
         "samplingRate": "1.0",
         "conditions": [
             {
@@ -584,7 +584,7 @@ void main() {
                 startDate: DateTime(2023, 1, 1),
                 endDate: DateTime(2023, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
@@ -642,7 +642,7 @@ void main() {
           startDate: DateTime(2023, 1, 1),
           endDate: DateTime(2023, 12, 31),
           description: 'description',
-          dismissForMinutes: 10,
+          snoozeForMinutes: 10,
           samplingRate: 0.6,
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
@@ -687,7 +687,7 @@ void main() {
           startDate: DateTime(2023, 1, 1),
           endDate: DateTime(2023, 12, 31),
           description: 'description',
-          dismissForMinutes: 10,
+          snoozeForMinutes: 10,
           samplingRate: 0.15,
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
@@ -734,7 +734,7 @@ void main() {
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes:
+        snoozeForMinutes:
             minutesToSnooze, // Initialized survey with `minutesToSnooze`
         samplingRate: 1.0,
         conditionList: <Condition>[],
@@ -764,7 +764,7 @@ void main() {
         expect(fetchedSurveys.length, 1);
 
         final survey = fetchedSurveys.first;
-        expect(survey.dismissForMinutes, minutesToSnooze);
+        expect(survey.snoozeForMinutes, minutesToSnooze);
 
         // We will snooze the survey now and it should not show up
         // if we fetch surveys again before the minutes to snooze time
@@ -825,7 +825,7 @@ void main() {
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes: minutesToSnooze,
+        snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
         surveyButtonList: [],
@@ -891,7 +891,7 @@ void main() {
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes: minutesToSnooze,
+        snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
         surveyButtonList: [],
@@ -960,7 +960,7 @@ void main() {
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes: minutesToSnooze,
+        snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
         surveyButtonList: [],

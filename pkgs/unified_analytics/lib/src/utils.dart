@@ -235,7 +235,7 @@ bool surveySnoozedOrDismissed(
   final minutesElapsed =
       clock.now().difference(persistedSurveyObj.timestamp).inMinutes;
 
-  return survey.dismissForMinutes > minutesElapsed;
+  return survey.snoozeForMinutes > minutesElapsed;
 }
 
 /// A UUID generator.
