@@ -13,7 +13,23 @@ import 'package:unified_analytics/src/initializer.dart';
 import 'constants.dart';
 import 'log_handler.dart';
 
-enum ButtonAction { accept, dismiss, snooze }
+enum ButtonAction {
+  /// The user has decided to accept the survey being passed to them
+  ///
+  /// This will permanently dismiss the survey from showing up again
+  accept,
+
+  /// The user has decided to dismiss the survey by clicking the dismiss
+  /// button being provided the survey
+  ///
+  /// This will permanently dismiss the survey from showing up again
+  dismiss,
+
+  /// If this button is provided by a survey, it will temporarily dismiss
+  /// the survey from being prompted to the user for a period of time
+  /// specified in [Survey] field [dismissForMinutes]
+  snooze,
+}
 
 class Condition {
   /// How to query the log file
