@@ -145,6 +145,7 @@ class Survey {
       'snoozeForMinutes': snoozeForMinutes,
       'samplingRate': samplingRate,
       'conditionList': conditionList.map((e) => e.toMap()).toList(),
+      'surveyButtonList': surveyButtonList.map((e) => e.toMap()).toList(),
     });
   }
 }
@@ -152,18 +153,28 @@ class Survey {
 class SurveyButton {
   final String buttonText;
   final String action;
+  final bool promptRemainsVisible;
   final String? url;
 
   SurveyButton({
     required this.buttonText,
     required this.action,
+    required this.promptRemainsVisible,
     this.url,
   });
 
   SurveyButton.fromJson(Map<String, dynamic> json)
       : buttonText = json['buttonText'] as String,
         action = json['action'] as String,
+        promptRemainsVisible = json['promptRemainsVisible'] as bool,
         url = json['url'] as String?;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+        'buttonText': buttonText,
+        'action': action,
+        'promptRemainsVisible': promptRemainsVisible,
+        'url': url,
+      };
 }
 
 class SurveyHandler {

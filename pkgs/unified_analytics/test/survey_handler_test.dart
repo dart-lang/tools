@@ -84,7 +84,8 @@ void main() {
         {
             "buttonText": "Take Survey",
             "action": "accept",
-            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2"
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+            "promptRemainsVisible": false
         }
     ]
 	}
@@ -111,7 +112,8 @@ void main() {
         {
             "buttonText": "Take Survey",
             "action": "accept",
-            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2"
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+            "promptRemainsVisible": false
         }
     ]
 	}
@@ -138,6 +140,8 @@ void main() {
         expect(secondCondition.value, 3);
 
         expect(parsedSurveys.first.surveyButtonList.length, 1);
+        expect(parsedSurveys.first.surveyButtonList.first.promptRemainsVisible,
+            false);
       });
     });
 
@@ -224,6 +228,7 @@ void main() {
                     buttonText: 'buttonText',
                     action: 'accept',
                     url: 'http://example.com',
+                    promptRemainsVisible: false,
                   ),
                 ],
               ),
@@ -239,7 +244,7 @@ void main() {
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 1);
-        
+
         final survey = fetchedSurveys.first;
         expect(survey.conditionList.length, 2);
         expect(survey.surveyButtonList.length, 1);
@@ -364,17 +369,20 @@ void main() {
             {
                 "buttonText": "Take Survey",
                 "action": "accept",
-                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2"
+                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+                "promptRemainsVisible": false
             },
             {
                 "buttonText": "Dismiss",
                 "action": "dismiss",
-                "url": null
+                "url": null,
+                "promptRemainsVisible": false
             },
             {
                 "buttonText": "More Info",
                 "action": "snooze",
-                "url": "https://docs.flutter.dev/reference/crash-reporting"
+                "url": "https://docs.flutter.dev/reference/crash-reporting",
+                "promptRemainsVisible": true
             }
         ]
     }
@@ -415,19 +423,23 @@ void main() {
         expect(buttonList.first.action, 'accept');
         expect(buttonList.first.url,
             'https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2');
+        expect(buttonList.first.promptRemainsVisible, false);
 
         expect(buttonList.elementAt(1).buttonText, 'Dismiss');
         expect(buttonList.elementAt(1).action, 'dismiss');
         expect(buttonList.elementAt(1).url, isNull);
+        expect(buttonList.elementAt(1).promptRemainsVisible, false);
 
         expect(buttonList.last.buttonText, 'More Info');
         expect(buttonList.last.action, 'snooze');
         expect(buttonList.last.url,
             'https://docs.flutter.dev/reference/crash-reporting');
+        expect(buttonList.last.promptRemainsVisible, true);
       });
     });
 
     test('no survey returned from malformed json', () async {
+      // The date is not valid for the start date
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
@@ -458,17 +470,20 @@ void main() {
             {
                 "buttonText": "Take Survey",
                 "action": "accept",
-                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG5Et5Yy2"
+                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG5Et5Yy2",
+                "promptRemainsVisible": false
             },
             {
                 "buttonText": "Dismiss",
                 "action": "dismiss",
-                "url": null
+                "url": null,
+                "promptRemainsVisible": false
             },
             {
                 "buttonText": "More Info",
                 "action": "snooze",
-                "url": "https://docs.flutter.dev/reference/crash-reporting"
+                "url": "https://docs.flutter.dev/reference/crash-reporting",
+                "promptRemainsVisible": false
             }
         ]
     }
@@ -534,7 +549,8 @@ void main() {
             {
                 "buttonText": "More Info",
                 "action": "snooze",
-                "url": "https://docs.flutter.dev/reference/crash-reporting"
+                "url": "https://docs.flutter.dev/reference/crash-reporting",
+                "promptRemainsVisible": true
             }
         ]
     }
@@ -561,7 +577,10 @@ void main() {
         expect(secondSurveyButtons.length, 1);
         expect(secondSurveyButtons.first.buttonText, 'More Info');
         expect(secondSurveyButtons.first.action, 'snooze');
-        expect(secondSurveyButtons.first.url, 'https://docs.flutter.dev/reference/crash-reporting');
+        expect(secondSurveyButtons.first.url,
+            'https://docs.flutter.dev/reference/crash-reporting');
+        expect(secondSurveyButtons.first.promptRemainsVisible,
+            true);
       });
     });
 
@@ -828,7 +847,18 @@ void main() {
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [],
+        surveyButtonList: [
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'accept',
+            promptRemainsVisible: false,
+          ),
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'dismiss',
+            promptRemainsVisible: false,
+          ),
+        ],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -856,7 +886,10 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, status: 'accept');
+        analytics.surveyInteracted(
+          survey: survey,
+          surveyButton: survey.surveyButtonList.first,
+        );
       });
 
       // Moving out a week
@@ -894,7 +927,18 @@ void main() {
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [],
+        surveyButtonList: [
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'accept',
+            promptRemainsVisible: false,
+          ),
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'dismiss',
+            promptRemainsVisible: false,
+          ),
+        ],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -922,7 +966,11 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, status: 'accept');
+        expect(survey.surveyButtonList.length, 2);
+        analytics.surveyInteracted(
+          survey: survey,
+          surveyButton: survey.surveyButtonList.first,
+        );
       });
 
       // Purposefully write invalid json into the persisted file
@@ -963,7 +1011,18 @@ void main() {
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [],
+        surveyButtonList: [
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'accept',
+            promptRemainsVisible: false,
+          ),
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'dismiss',
+            promptRemainsVisible: false,
+          ),
+        ],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -991,7 +1050,11 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, status: 'accept');
+        expect(survey.surveyButtonList.length, 2);
+        analytics.surveyInteracted(
+          survey: survey,
+          surveyButton: survey.surveyButtonList.first,
+        );
       });
 
       // Moving out a week

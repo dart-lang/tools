@@ -33,7 +33,18 @@ void main() {
     snoozeForMinutes: 10,
     samplingRate: 1.0, // 100% sample rate
     conditionList: <Condition>[],
-    surveyButtonList: [],
+    surveyButtonList: [
+      SurveyButton(
+        buttonText: 'buttonText',
+        action: 'accept',
+        promptRemainsVisible: false,
+      ),
+      SurveyButton(
+        buttonText: 'buttonText',
+        action: 'dismiss',
+        promptRemainsVisible: false,
+      ),
+    ],
   );
 
   /// Test event that will need to be sent since surveys won't
@@ -110,7 +121,12 @@ void main() {
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    fakeAnalytics.dismissSurvey(survey: survey, status: 'accept');
+    //
+    // The first button is the accept button
+    fakeAnalytics.surveyInteracted(
+      survey: survey,
+      surveyButton: survey.surveyButtonList.first,
+    );
 
     expect(fakeAnalytics.sentEvents.length, 2);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
@@ -131,7 +147,12 @@ void main() {
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    fakeAnalytics.dismissSurvey(survey: survey, status: 'dismiss');
+    //
+    // The last button is the reject button
+    fakeAnalytics.surveyInteracted(
+      survey: survey,
+      surveyButton: survey.surveyButtonList.last,
+    );
 
     expect(fakeAnalytics.sentEvents.length, 2);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
