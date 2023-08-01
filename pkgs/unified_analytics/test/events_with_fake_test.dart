@@ -33,7 +33,7 @@ void main() {
     snoozeForMinutes: 10,
     samplingRate: 1.0, // 100% sample rate
     conditionList: <Condition>[],
-    surveyButtonList: [
+    buttonList: [
       SurveyButton(
         buttonText: 'buttonText',
         action: 'accept',
@@ -125,7 +125,7 @@ void main() {
     // The first button is the accept button
     fakeAnalytics.surveyInteracted(
       survey: survey,
-      surveyButton: survey.surveyButtonList.first,
+      surveyButton: survey.buttonList.first,
     );
 
     expect(fakeAnalytics.sentEvents.length, 2);
@@ -151,7 +151,7 @@ void main() {
     // The last button is the reject button
     fakeAnalytics.surveyInteracted(
       survey: survey,
-      surveyButton: survey.surveyButtonList.last,
+      surveyButton: survey.buttonList.last,
     );
 
     expect(fakeAnalytics.sentEvents.length, 2);

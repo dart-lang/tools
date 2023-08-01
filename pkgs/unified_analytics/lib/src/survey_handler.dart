@@ -96,7 +96,7 @@ class Survey {
   final int snoozeForMinutes;
   final double samplingRate;
   final List<Condition> conditionList;
-  final List<SurveyButton> surveyButtonList;
+  final List<SurveyButton> buttonList;
 
   /// A data class that contains the relevant information for a given
   /// survey parsed from the survey's metadata file
@@ -108,7 +108,7 @@ class Survey {
     required this.snoozeForMinutes,
     required this.samplingRate,
     required this.conditionList,
-    required this.surveyButtonList,
+    required this.buttonList,
   });
 
   /// Parse the contents of the json metadata file hosted externally
@@ -129,7 +129,7 @@ class Survey {
           e as Map<String, dynamic>;
           return Condition.fromJson(e);
         }).toList(),
-        surveyButtonList = (json['buttons'] as List<dynamic>).map((e) {
+        buttonList = (json['buttons'] as List<dynamic>).map((e) {
           e as Map<String, dynamic>;
           return SurveyButton.fromJson(e);
         }).toList();
@@ -145,7 +145,7 @@ class Survey {
       'snoozeForMinutes': snoozeForMinutes,
       'samplingRate': samplingRate,
       'conditionList': conditionList.map((e) => e.toMap()).toList(),
-      'surveyButtonList': surveyButtonList.map((e) => e.toMap()).toList(),
+      'buttonList': buttonList.map((e) => e.toMap()).toList(),
     });
   }
 }

@@ -30,7 +30,7 @@ void main() {
       snoozeForMinutes: 10,
       samplingRate: 1.0,
       conditionList: <Condition>[],
-      surveyButtonList: [],
+      buttonList: [],
     );
     final invalidSurvey = Survey(
       uniqueId: 'uniqueId',
@@ -40,7 +40,7 @@ void main() {
       snoozeForMinutes: 10,
       samplingRate: 1.0,
       conditionList: <Condition>[],
-      surveyButtonList: [],
+      buttonList: [],
     );
 
     test('expired survey', () {
@@ -139,8 +139,8 @@ void main() {
         expect(secondCondition.operatorString, '<');
         expect(secondCondition.value, 3);
 
-        expect(parsedSurveys.first.surveyButtonList.length, 1);
-        expect(parsedSurveys.first.surveyButtonList.first.promptRemainsVisible,
+        expect(parsedSurveys.first.buttonList.length, 1);
+        expect(parsedSurveys.first.buttonList.first.promptRemainsVisible,
             false);
       });
     });
@@ -223,7 +223,7 @@ void main() {
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
-                surveyButtonList: [
+                buttonList: [
                   SurveyButton(
                     buttonText: 'buttonText',
                     action: 'accept',
@@ -247,7 +247,7 @@ void main() {
 
         final survey = fetchedSurveys.first;
         expect(survey.conditionList.length, 2);
-        expect(survey.surveyButtonList.length, 1);
+        expect(survey.buttonList.length, 1);
       });
     });
 
@@ -276,7 +276,7 @@ void main() {
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
-                surveyButtonList: [],
+                buttonList: [],
               ),
             ],
           ),
@@ -318,7 +318,7 @@ void main() {
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
-                surveyButtonList: [],
+                buttonList: [],
               ),
             ],
           ),
@@ -417,7 +417,7 @@ void main() {
         expect(condition.operatorString, '>=');
         expect(condition.value, 50);
 
-        final buttonList = survey.surveyButtonList;
+        final buttonList = survey.buttonList;
         expect(buttonList.length, 3);
         expect(buttonList.first.buttonText, 'Take Survey');
         expect(buttonList.first.action, 'accept');
@@ -573,7 +573,7 @@ void main() {
         expect(firstSurvey.uniqueId, '12345');
         expect(secondSurvey.uniqueId, '67890');
 
-        final secondSurveyButtons = secondSurvey.surveyButtonList;
+        final secondSurveyButtons = secondSurvey.buttonList;
         expect(secondSurveyButtons.length, 1);
         expect(secondSurveyButtons.first.buttonText, 'More Info');
         expect(secondSurveyButtons.first.action, 'snooze');
@@ -609,7 +609,7 @@ void main() {
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
-                surveyButtonList: [],
+                buttonList: [],
               ),
             ],
           ),
@@ -667,7 +667,7 @@ void main() {
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
-          surveyButtonList: [],
+          buttonList: [],
         );
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
@@ -712,7 +712,7 @@ void main() {
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
-          surveyButtonList: [],
+          buttonList: [],
         );
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
@@ -757,7 +757,7 @@ void main() {
             minutesToSnooze, // Initialized survey with `minutesToSnooze`
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [],
+        buttonList: [],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -847,7 +847,7 @@ void main() {
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [
+        buttonList: [
           SurveyButton(
             buttonText: 'buttonText',
             action: 'accept',
@@ -888,7 +888,7 @@ void main() {
         final survey = fetchedSurveys.first;
         analytics.surveyInteracted(
           survey: survey,
-          surveyButton: survey.surveyButtonList.first,
+          surveyButton: survey.buttonList.first,
         );
       });
 
@@ -927,7 +927,7 @@ void main() {
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [
+        buttonList: [
           SurveyButton(
             buttonText: 'buttonText',
             action: 'accept',
@@ -966,10 +966,10 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        expect(survey.surveyButtonList.length, 2);
+        expect(survey.buttonList.length, 2);
         analytics.surveyInteracted(
           survey: survey,
-          surveyButton: survey.surveyButtonList.first,
+          surveyButton: survey.buttonList.first,
         );
       });
 
@@ -1011,7 +1011,7 @@ void main() {
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
-        surveyButtonList: [
+        buttonList: [
           SurveyButton(
             buttonText: 'buttonText',
             action: 'accept',
@@ -1050,10 +1050,10 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        expect(survey.surveyButtonList.length, 2);
+        expect(survey.buttonList.length, 2);
         analytics.surveyInteracted(
           survey: survey,
-          surveyButton: survey.surveyButtonList.first,
+          surveyButton: survey.buttonList.first,
         );
       });
 
