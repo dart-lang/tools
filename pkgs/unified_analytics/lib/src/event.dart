@@ -320,8 +320,8 @@ final class Event {
   ///
   /// [surveyId] - the unique id for a given survey
   ///
-  /// [status] - `'accepted'` if the user accepted the survey, or
-  ///      `'dismissed'` if the user rejected it
+  /// [status] - the string identifier for a given [SurveyButton] under
+  ///     the `action` field
   Event.surveyAction({
     required String surveyId,
     required String status,
