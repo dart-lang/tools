@@ -178,16 +178,6 @@ class SurveyHandler {
           kDismissedSurveyFileName,
         ));
 
-  /// Function to ensure that each survey is still valid by
-  /// checking the [Survey.startDate] and [Survey.endDate]
-  /// against the current [clock.now()] date
-  static bool checkSurveyDate(Survey survey) {
-    if (survey.startDate.isBefore(clock.now()) &&
-        survey.endDate.isAfter(clock.now())) return true;
-
-    return false;
-  }
-
   /// Invoking this method will persist the survey's id in
   /// the local file with either a snooze or permanently dismissed
   /// indicator
@@ -260,26 +250,6 @@ class SurveyHandler {
     return surveyList;
   }
 
-  /// Function that takes in a json data structure that is in
-  /// the form of a list and returns a list of [Survey]s
-  ///
-  /// This will also check the survey's dates to make sure it
-  /// has not expired
-  static List<Survey> parseSurveysFromJson(List<dynamic> body) => body
-      .map((element) {
-        // Error handling to skip any surveys from the remote location
-        // that fail to parse
-        try {
-          return Survey.fromJson(element as Map<String, dynamic>);
-          // ignore: avoid_catches_without_on_clauses
-        } catch (err) {
-          return null;
-        }
-      })
-      .whereType<Survey>()
-      .where(checkSurveyDate)
-      .toList();
-
   /// Fetches the json in string form from the remote location
   Future<String> _fetchContents() async {
     final uri = Uri.parse(kContextualSurveyUrl);
@@ -305,6 +275,36 @@ class SurveyHandler {
 
     return contents;
   }
+
+  /// Function to ensure that each survey is still valid by
+  /// checking the [Survey.startDate] and [Survey.endDate]
+  /// against the current [clock.now()] date
+  static bool checkSurveyDate(Survey survey) {
+    if (survey.startDate.isBefore(clock.now()) &&
+        survey.endDate.isAfter(clock.now())) return true;
+
+    return false;
+  }
+
+  /// Function that takes in a json data structure that is in
+  /// the form of a list and returns a list of [Survey]s
+  ///
+  /// This will also check the survey's dates to make sure it
+  /// has not expired
+  static List<Survey> parseSurveysFromJson(List<dynamic> body) => body
+      .map((element) {
+        // Error handling to skip any surveys from the remote location
+        // that fail to parse
+        try {
+          return Survey.fromJson(element as Map<String, dynamic>);
+          // ignore: avoid_catches_without_on_clauses
+        } catch (err) {
+          return null;
+        }
+      })
+      .whereType<Survey>()
+      .where(checkSurveyDate)
+      .toList();
 }
 
 class FakeSurveyHandler extends SurveyHandler {
