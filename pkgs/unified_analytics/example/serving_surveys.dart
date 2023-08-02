@@ -135,6 +135,12 @@ void main() async {
     surveyButton: selectedSurveyButton,
   );
 
+  // Conditional to check if there is a URl to route to
+  if (selectedSurveyButton.url != null) {
+    print('***This button also has a survey URL link '
+        'to route to at "${selectedSurveyButton.url}"***\n');
+  }
+
   // Conditional to check what simulating a popup to stay up
   if (selectedSurveyButton.promptRemainsVisible) {
     print('***This button has its promptRemainsVisible field set to `true` '
