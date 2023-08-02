@@ -140,8 +140,8 @@ void main() {
         expect(secondCondition.value, 3);
 
         expect(parsedSurveys.first.buttonList.length, 1);
-        expect(parsedSurveys.first.buttonList.first.promptRemainsVisible,
-            false);
+        expect(
+            parsedSurveys.first.buttonList.first.promptRemainsVisible, false);
       });
     });
 
@@ -579,8 +579,7 @@ void main() {
         expect(secondSurveyButtons.first.action, 'snooze');
         expect(secondSurveyButtons.first.url,
             'https://docs.flutter.dev/reference/crash-reporting');
-        expect(secondSurveyButtons.first.promptRemainsVisible,
-            true);
+        expect(secondSurveyButtons.first.promptRemainsVisible, true);
       });
     });
 
