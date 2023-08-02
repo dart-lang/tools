@@ -27,14 +27,24 @@ void main() {
   /// up from the method to fetch available surveys
   final testSurvey = Survey(
     uniqueId: 'uniqueId',
-    url: 'url',
     startDate: DateTime(2022, 1, 1),
     endDate: DateTime(2022, 12, 31),
     description: 'description',
-    dismissForMinutes: 10,
-    moreInfoUrl: 'moreInfoUrl',
+    snoozeForMinutes: 10,
     samplingRate: 1.0, // 100% sample rate
     conditionList: <Condition>[],
+    buttonList: [
+      SurveyButton(
+        buttonText: 'buttonText',
+        action: 'accept',
+        promptRemainsVisible: false,
+      ),
+      SurveyButton(
+        buttonText: 'buttonText',
+        action: 'dismiss',
+        promptRemainsVisible: false,
+      ),
+    ],
   );
 
   /// Test event that will need to be sent since surveys won't
@@ -111,12 +121,17 @@ void main() {
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    fakeAnalytics.dismissSurvey(survey: survey, surveyAccepted: true);
+    //
+    // The first button is the accept button
+    fakeAnalytics.surveyInteracted(
+      survey: survey,
+      surveyButton: survey.buttonList.first,
+    );
 
     expect(fakeAnalytics.sentEvents.length, 2);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
     expect(fakeAnalytics.sentEvents.last.eventData,
-        {'surveyId': 'uniqueId', 'status': 'accepted'});
+        {'surveyId': 'uniqueId', 'status': 'accept'});
   });
 
   test('event sent when survey rejected', () async {
@@ -132,11 +147,16 @@ void main() {
     expect(survey.uniqueId, 'uniqueId');
 
     // Simulate the survey being shown
-    fakeAnalytics.dismissSurvey(survey: survey, surveyAccepted: false);
+    //
+    // The last button is the reject button
+    fakeAnalytics.surveyInteracted(
+      survey: survey,
+      surveyButton: survey.buttonList.last,
+    );
 
     expect(fakeAnalytics.sentEvents.length, 2);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
     expect(fakeAnalytics.sentEvents.last.eventData,
-        {'surveyId': 'uniqueId', 'status': 'dismissed'});
+        {'surveyId': 'uniqueId', 'status': 'dismiss'});
   });
 }

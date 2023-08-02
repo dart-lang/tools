@@ -13,36 +13,6 @@ import 'package:unified_analytics/src/initializer.dart';
 import 'constants.dart';
 import 'log_handler.dart';
 
-/// Function to ensure that each survey is still valid by
-/// checking the [Survey.startDate] and [Survey.endDate]
-/// against the current [clock.now()] date
-bool checkSurveyDate(Survey survey) {
-  if (survey.startDate.isBefore(clock.now()) &&
-      survey.endDate.isAfter(clock.now())) return true;
-
-  return false;
-}
-
-/// Function that takes in a json data structure that is in
-/// the form of a list and returns a list of [Survey]s
-///
-/// This will also check the survey's dates to make sure it
-/// has not expired
-List<Survey> parseSurveysFromJson(List<dynamic> body) => body
-    .map((element) {
-      // Error handling to skip any surveys from the remote location
-      // that fail to parse
-      try {
-        return Survey.fromJson(element as Map<String, dynamic>);
-        // ignore: avoid_catches_without_on_clauses
-      } catch (err) {
-        return null;
-      }
-    })
-    .whereType<Survey>()
-    .where(checkSurveyDate)
-    .toList();
-
 class Condition {
   /// How to query the log file
   ///
@@ -120,41 +90,37 @@ class PersistedSurvey {
 
 class Survey {
   final String uniqueId;
-  final String url;
   final DateTime startDate;
   final DateTime endDate;
   final String description;
-  final int dismissForMinutes;
-  final String moreInfoUrl;
+  final int snoozeForMinutes;
   final double samplingRate;
   final List<Condition> conditionList;
+  final List<SurveyButton> buttonList;
 
   /// A data class that contains the relevant information for a given
   /// survey parsed from the survey's metadata file
   Survey({
     required this.uniqueId,
-    required this.url,
     required this.startDate,
     required this.endDate,
     required this.description,
-    required this.dismissForMinutes,
-    required this.moreInfoUrl,
+    required this.snoozeForMinutes,
     required this.samplingRate,
     required this.conditionList,
+    required this.buttonList,
   });
 
   /// Parse the contents of the json metadata file hosted externally
   Survey.fromJson(Map<String, dynamic> json)
       : uniqueId = json['uniqueId'] as String,
-        url = json['url'] as String,
         startDate = DateTime.parse(json['startDate'] as String),
         endDate = DateTime.parse(json['endDate'] as String),
         description = json['description'] as String,
         // Handle both string and integer fields
-        dismissForMinutes = json['dismissForMinutes'] is String
-            ? int.parse(json['dismissForMinutes'] as String)
-            : json['dismissForMinutes'] as int,
-        moreInfoUrl = json['moreInfoURL'] as String,
+        snoozeForMinutes = json['snoozeForMinutes'] is String
+            ? int.parse(json['snoozeForMinutes'] as String)
+            : json['snoozeForMinutes'] as int,
         // Handle both string and double fields
         samplingRate = json['samplingRate'] is String
             ? double.parse(json['samplingRate'] as String)
@@ -162,6 +128,10 @@ class Survey {
         conditionList = (json['conditions'] as List<dynamic>).map((e) {
           e as Map<String, dynamic>;
           return Condition.fromJson(e);
+        }).toList(),
+        buttonList = (json['buttons'] as List<dynamic>).map((e) {
+          e as Map<String, dynamic>;
+          return SurveyButton.fromJson(e);
         }).toList();
 
   @override
@@ -169,16 +139,42 @@ class Survey {
     final encoder = JsonEncoder.withIndent('  ');
     return encoder.convert({
       'uniqueId': uniqueId,
-      'url': url,
       'startDate': startDate.toString(),
       'endDate': endDate.toString(),
       'description': description,
-      'dismissForMinutes': dismissForMinutes,
-      'moreInfoUrl': moreInfoUrl,
+      'snoozeForMinutes': snoozeForMinutes,
       'samplingRate': samplingRate,
       'conditionList': conditionList.map((e) => e.toMap()).toList(),
+      'buttonList': buttonList.map((e) => e.toMap()).toList(),
     });
   }
+}
+
+class SurveyButton {
+  final String buttonText;
+  final String action;
+  final bool promptRemainsVisible;
+  final String? url;
+
+  SurveyButton({
+    required this.buttonText,
+    required this.action,
+    required this.promptRemainsVisible,
+    this.url,
+  });
+
+  SurveyButton.fromJson(Map<String, dynamic> json)
+      : buttonText = json['buttonText'] as String,
+        action = json['action'] as String,
+        promptRemainsVisible = json['promptRemainsVisible'] as bool,
+        url = json['url'] as String?;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+        'buttonText': buttonText,
+        'action': action,
+        'promptRemainsVisible': promptRemainsVisible,
+        'url': url,
+      };
 }
 
 class SurveyHandler {
@@ -290,6 +286,36 @@ class SurveyHandler {
 
     return contents;
   }
+
+  /// Function to ensure that each survey is still valid by
+  /// checking the [Survey.startDate] and [Survey.endDate]
+  /// against the current [clock.now()] date
+  static bool checkSurveyDate(Survey survey) {
+    if (survey.startDate.isBefore(clock.now()) &&
+        survey.endDate.isAfter(clock.now())) return true;
+
+    return false;
+  }
+
+  /// Function that takes in a json data structure that is in
+  /// the form of a list and returns a list of [Survey]s
+  ///
+  /// This will also check the survey's dates to make sure it
+  /// has not expired
+  static List<Survey> parseSurveysFromJson(List<dynamic> body) => body
+      .map((element) {
+        // Error handling to skip any surveys from the remote location
+        // that fail to parse
+        try {
+          return Survey.fromJson(element as Map<String, dynamic>);
+          // ignore: avoid_catches_without_on_clauses
+        } catch (err) {
+          return null;
+        }
+      })
+      .whereType<Survey>()
+      .where(checkSurveyDate)
+      .toList();
 }
 
 class FakeSurveyHandler extends SurveyHandler {
@@ -311,7 +337,7 @@ class FakeSurveyHandler extends SurveyHandler {
     // `.fromString()` constructor because the `parseSurveysFromJson`
     // method already checks their date
     for (final survey in initializedSurveys) {
-      if (checkSurveyDate(survey)) {
+      if (SurveyHandler.checkSurveyDate(survey)) {
         _fakeInitializedSurveys.add(survey);
       }
     }
@@ -325,7 +351,7 @@ class FakeSurveyHandler extends SurveyHandler {
     required String content,
   }) : super(fs: fs, homeDirectory: homeDirectory) {
     final body = jsonDecode(content) as List<dynamic>;
-    for (final fakeSurvey in parseSurveysFromJson(body)) {
+    for (final fakeSurvey in SurveyHandler.parseSurveysFromJson(body)) {
       _fakeInitializedSurveys.add(fakeSurvey);
     }
   }

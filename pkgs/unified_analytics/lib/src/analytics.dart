@@ -214,15 +214,6 @@ abstract class Analytics {
   /// that need to be sent off
   void close();
 
-  /// Method to dismiss a survey permanently
-  ///
-  /// Pass a [Survey] instance which can be retrieved from
-  /// `fetchAvailableSurveys()`
-  ///
-  /// [surveyAccepted] indicates if the user opened the survey if `true`
-  ///   or `false` if the user rejects to open it
-  void dismissSurvey({required Survey survey, required bool surveyAccepted});
-
   /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
   ///
   /// Any survey that is returned by this method has already passed
@@ -260,11 +251,22 @@ abstract class Analytics {
   /// collection use `setTelemetry(false)`
   void suppressTelemetry();
 
+  /// Method to run after interacting with a [Survey]
+  ///
+  /// Pass a [Survey] instance which can be retrieved from
+  /// `fetchAvailableSurveys()`
+  ///
+  /// [sureyButton] is the button that was interacted with by the user
+  void surveyInteracted({
+    required Survey survey,
+    required SurveyButton surveyButton,
+  });
+
   /// Method to be called after a survey has been shown to the user
   ///
   /// Calling this will snooze the survey so it won't be shown immediately
   ///
-  /// The snooze period is defined within the `dismissForMinutes`
+  /// The snooze period is defined within the `snoozeForMinutes`
   /// field in [Survey]
   void surveyShown(Survey survey);
 }
@@ -454,13 +456,6 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
-  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {
-    _surveyHandler.dismiss(survey, true);
-    final status = surveyAccepted ? 'accepted' : 'dismissed';
-    send(Event.surveyAction(surveyId: survey.uniqueId, status: status));
-  }
-
-  @override
   Future<List<Survey>> fetchAvailableSurveys() async {
     final surveysToShow = <Survey>[];
     if (!okToSend) return surveysToShow;
@@ -594,6 +589,20 @@ class AnalyticsImpl implements Analytics {
   void suppressTelemetry() => _telemetrySuppressed = true;
 
   @override
+  void surveyInteracted({
+    required Survey survey,
+    required SurveyButton surveyButton,
+  }) {
+    // Any action, except for 'snooze' will permanently dismiss a given survey
+    final permanentlyDismissed = surveyButton.action == 'snooze' ? false : true;
+    _surveyHandler.dismiss(survey, permanentlyDismissed);
+    send(Event.surveyAction(
+      surveyId: survey.uniqueId,
+      status: surveyButton.action,
+    ));
+  }
+
+  @override
   void surveyShown(Survey survey) {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
@@ -635,9 +644,6 @@ class NoOpAnalytics implements Analytics {
   void close() {}
 
   @override
-  void dismissSurvey({required Survey survey, required bool surveyAccepted}) {}
-
-  @override
   Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
 
   @override
@@ -651,6 +657,12 @@ class NoOpAnalytics implements Analytics {
 
   @override
   void suppressTelemetry() {}
+
+  @override
+  void surveyInteracted({
+    required Survey survey,
+    required SurveyButton surveyButton,
+  }) {}
 
   @override
   void surveyShown(Survey survey) {}

@@ -24,38 +24,36 @@ void main() {
     // range, and one that is not
     final validSurvey = Survey(
       uniqueId: 'uniqueId',
-      url: 'url',
       startDate: DateTime(2023, 1, 1),
       endDate: DateTime(2023, 12, 31),
       description: 'description',
-      dismissForMinutes: 10,
-      moreInfoUrl: 'moreInfoUrl',
+      snoozeForMinutes: 10,
       samplingRate: 1.0,
       conditionList: <Condition>[],
+      buttonList: [],
     );
     final invalidSurvey = Survey(
       uniqueId: 'uniqueId',
-      url: 'url',
       startDate: DateTime(2022, 1, 1),
       endDate: DateTime(2022, 12, 31),
       description: 'description',
-      dismissForMinutes: 10,
-      moreInfoUrl: 'moreInfoUrl',
+      snoozeForMinutes: 10,
       samplingRate: 1.0,
       conditionList: <Condition>[],
+      buttonList: [],
     );
 
     test('expired survey', () {
       final clock = Clock.fixed(date);
       withClock(clock, () {
-        expect(checkSurveyDate(invalidSurvey), false);
+        expect(SurveyHandler.checkSurveyDate(invalidSurvey), false);
       });
     });
 
     test('valid survey', () {
       final clock = Clock.fixed(date);
       withClock(clock, () {
-        expect(checkSurveyDate(validSurvey), true);
+        expect(SurveyHandler.checkSurveyDate(validSurvey), true);
       });
     });
   });
@@ -65,12 +63,10 @@ void main() {
 [
 	{
 		"uniqueId": "xxxxx",
-		"url": "xxxxx",
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForMinutes": "10",
-		"moreInfoURL": "xxxxxx",
+		"snoozeForMinutes": "10",
 		"samplingRate": "1.0",
 		"conditions": [
 			{
@@ -83,7 +79,15 @@ void main() {
 				"operator": "<",
 				"value": 3
 			}
-		]
+		],
+    "buttons": [
+        {
+            "buttonText": "Take Survey",
+            "action": "accept",
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+            "promptRemainsVisible": false
+        }
+    ]
 	}
 ]
 ''';
@@ -92,12 +96,10 @@ void main() {
 [
 	{
 		"uniqueId": "xxxxx",
-		"url": "xxxxx",
 		"startDate": "2023-06-01T09:00:00-07:00",
 		"endDate": "2023-06-30T09:00:00-07:00",
 		"description": "xxxxxxx",
-		"dismissForMinutes": "10",
-		"moreInfoURL": "xxxxxx",
+		"snoozeForMinutes": "10",
 		"samplingRate": "1.0",
 		"conditions": [
 			{
@@ -105,15 +107,23 @@ void main() {
 				"operator": ">=",
 				"value": "1000xxxx"
 			}
-		]
+		],
+    "buttons": [
+        {
+            "buttonText": "Take Survey",
+            "action": "accept",
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+            "promptRemainsVisible": false
+        }
+    ]
 	}
 ]
 ''';
 
     test('valid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
-        final parsedSurveys =
-            parseSurveysFromJson(jsonDecode(validContents) as List);
+        final parsedSurveys = SurveyHandler.parseSurveysFromJson(
+            jsonDecode(validContents) as List);
 
         expect(parsedSurveys.length, 1);
         expect(parsedSurveys.first.conditionList.length, 2);
@@ -128,13 +138,17 @@ void main() {
         expect(secondCondition.field, 'logFileStats.toolCount.flutter-tool');
         expect(secondCondition.operatorString, '<');
         expect(secondCondition.value, 3);
+
+        expect(parsedSurveys.first.buttonList.length, 1);
+        expect(parsedSurveys.first.buttonList.first.promptRemainsVisible,
+            false);
       });
     });
 
     test('invalid json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
-        final parsedSurveys =
-            parseSurveysFromJson(jsonDecode(invalidContents) as List);
+        final parsedSurveys = SurveyHandler.parseSurveysFromJson(
+            jsonDecode(invalidContents) as List);
 
         expect(parsedSurveys.length, 0,
             reason: 'The condition value is not a '
@@ -200,16 +214,22 @@ void main() {
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
-                url: 'url',
                 startDate: DateTime(2023, 1, 1),
                 endDate: DateTime(2023, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
-                moreInfoUrl: 'moreInfoUrl',
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
+                ],
+                buttonList: [
+                  SurveyButton(
+                    buttonText: 'buttonText',
+                    action: 'accept',
+                    url: 'http://example.com',
+                    promptRemainsVisible: false,
+                  ),
                 ],
               ),
             ],
@@ -224,6 +244,10 @@ void main() {
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
 
         expect(fetchedSurveys.length, 1);
+
+        final survey = fetchedSurveys.first;
+        expect(survey.conditionList.length, 2);
+        expect(survey.buttonList.length, 1);
       });
     });
 
@@ -243,17 +267,16 @@ void main() {
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
-                url: 'url',
                 startDate: DateTime(2022, 1, 1),
                 endDate: DateTime(2022, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
-                moreInfoUrl: 'moreInfoUrl',
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
+                buttonList: [],
               ),
             ],
           ),
@@ -286,17 +309,16 @@ void main() {
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
-                url: 'url',
                 startDate: DateTime(2023, 1, 1),
                 endDate: DateTime(2023, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
-                moreInfoUrl: 'moreInfoUrl',
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
+                buttonList: [],
               ),
             ],
           ),
@@ -331,20 +353,38 @@ void main() {
 [
     {
         "uniqueId": "uniqueId123",
-        "url": "url123",
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "description123",
-	"dismissForMinutes": "10",
-	"moreInfoURL": "moreInfoUrl123",
-	"samplingRate": "1.0",
-	"conditions": [
-	    {
-	        "field": "logFileStats.recordCount",
-	        "operator": ">=",
-	        "value": 50
-      }
-	]
+        "description": "description123",
+        "snoozeForMinutes": "10",
+        "samplingRate": "1.0",
+        "conditions": [
+            {
+                "field": "logFileStats.recordCount",
+                "operator": ">=",
+                "value": 50
+            }
+        ],
+        "buttons": [
+            {
+                "buttonText": "Take Survey",
+                "action": "accept",
+                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+                "promptRemainsVisible": false
+            },
+            {
+                "buttonText": "Dismiss",
+                "action": "dismiss",
+                "url": null,
+                "promptRemainsVisible": false
+            },
+            {
+                "buttonText": "More Info",
+                "action": "snooze",
+                "url": "https://docs.flutter.dev/reference/crash-reporting",
+                "promptRemainsVisible": true
+            }
+        ]
     }
 ]
 '''),
@@ -361,7 +401,6 @@ void main() {
 
         final survey = fetchedSurveys.first;
         expect(survey.uniqueId, 'uniqueId123');
-        expect(survey.url, 'url123');
         expect(survey.startDate.year, 2023);
         expect(survey.startDate.month, 1);
         expect(survey.startDate.day, 1);
@@ -369,8 +408,7 @@ void main() {
         expect(survey.endDate.month, 12);
         expect(survey.endDate.day, 31);
         expect(survey.description, 'description123');
-        expect(survey.dismissForMinutes, 10);
-        expect(survey.moreInfoUrl, 'moreInfoUrl123');
+        expect(survey.snoozeForMinutes, 10);
         expect(survey.samplingRate, 1.0);
         expect(survey.conditionList.length, 1);
 
@@ -378,10 +416,30 @@ void main() {
         expect(condition.field, 'logFileStats.recordCount');
         expect(condition.operatorString, '>=');
         expect(condition.value, 50);
+
+        final buttonList = survey.buttonList;
+        expect(buttonList.length, 3);
+        expect(buttonList.first.buttonText, 'Take Survey');
+        expect(buttonList.first.action, 'accept');
+        expect(buttonList.first.url,
+            'https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2');
+        expect(buttonList.first.promptRemainsVisible, false);
+
+        expect(buttonList.elementAt(1).buttonText, 'Dismiss');
+        expect(buttonList.elementAt(1).action, 'dismiss');
+        expect(buttonList.elementAt(1).url, isNull);
+        expect(buttonList.elementAt(1).promptRemainsVisible, false);
+
+        expect(buttonList.last.buttonText, 'More Info');
+        expect(buttonList.last.action, 'snooze');
+        expect(buttonList.last.url,
+            'https://docs.flutter.dev/reference/crash-reporting');
+        expect(buttonList.last.promptRemainsVisible, true);
       });
     });
 
     test('no survey returned from malformed json', () async {
+      // The date is not valid for the start date
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
@@ -395,21 +453,39 @@ void main() {
               homeDirectory: homeDirectory, fs: fs, content: '''
 [
     {
-        "uniqueId": "xxxxxx",
-        "url": "xxxxx",
+        "uniqueId": "uniqueId123",
         "startDate": "NOT A REAL DATE",
-        "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "xxxxxxx",
-	"dismissForMinutes": "10BAD",
-	"moreInfoURL": "xxxxxx",
-	"samplingRate": "1.0",
-	"conditions": [
-	    {
-	        "field": "logFileStats.recordCount",
-	        "operator": ">=",
-	        "value": 50
-      }
-	]
+        "endDate": "2023-07-30T09:00:00-07:00",
+        "description": "Help improve Flutter's release builds with this 3-question survey!",
+        "snoozeForMinutes": "7200",
+        "samplingRate": "0.1",
+        "conditions": [
+            {
+                "field": "logFileStats.recordCount",
+                "operator": ">=",
+                "value": 1000
+            }
+        ],
+        "buttons": [
+            {
+                "buttonText": "Take Survey",
+                "action": "accept",
+                "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG5Et5Yy2",
+                "promptRemainsVisible": false
+            },
+            {
+                "buttonText": "Dismiss",
+                "action": "dismiss",
+                "url": null,
+                "promptRemainsVisible": false
+            },
+            {
+                "buttonText": "More Info",
+                "action": "snooze",
+                "url": "https://docs.flutter.dev/reference/crash-reporting",
+                "promptRemainsVisible": false
+            }
+        ]
     }
 ]
 '''),
@@ -441,37 +517,42 @@ void main() {
 [
     {
         "uniqueId": "12345",
-        "url": "xxxxx",
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "xxxxxxx",
-	"dismissForMinutes": "10",
-	"moreInfoURL": "xxxxxx",
-	"samplingRate": "1.0",
-	"conditions": [
-	    {
-	        "field": "logFileStats.recordCount",
-	        "operator": ">=",
-	        "value": 50
-      }
-	]
+        "description": "xxxxxxx",
+        "snoozeForMinutes": "10",
+        "samplingRate": "1.0",
+        "conditions": [
+            {
+                "field": "logFileStats.recordCount",
+                "operator": ">=",
+                "value": 50
+            }
+	      ], 
+        "buttons": []
     },
     {
         "uniqueId": "67890",
-        "url": "xxxxx",
         "startDate": "2023-01-01T09:00:00-07:00",
         "endDate": "2023-12-31T09:00:00-07:00",
-	"description": "xxxxxxx",
-	"dismissForMinutes": "10",
-	"moreInfoURL": "xxxxxx",
-	"samplingRate": "1.0",
-	"conditions": [
-	    {
-	        "field": "logFileStats.recordCount",
-	        "operator": ">=",
-	        "value": 50
-      }
-	]
+        "description": "xxxxxxx",
+        "snoozeForMinutes": "10",
+        "samplingRate": "1.0",
+        "conditions": [
+            {
+                "field": "logFileStats.recordCount",
+                "operator": ">=",
+                "value": 50
+            }
+        ],
+        "buttons": [
+            {
+                "buttonText": "More Info",
+                "action": "snooze",
+                "url": "https://docs.flutter.dev/reference/crash-reporting",
+                "promptRemainsVisible": true
+            }
+        ]
     }
 ]
 '''),
@@ -491,6 +572,15 @@ void main() {
 
         expect(firstSurvey.uniqueId, '12345');
         expect(secondSurvey.uniqueId, '67890');
+
+        final secondSurveyButtons = secondSurvey.buttonList;
+        expect(secondSurveyButtons.length, 1);
+        expect(secondSurveyButtons.first.buttonText, 'More Info');
+        expect(secondSurveyButtons.first.action, 'snooze');
+        expect(secondSurveyButtons.first.url,
+            'https://docs.flutter.dev/reference/crash-reporting');
+        expect(secondSurveyButtons.first.promptRemainsVisible,
+            true);
       });
     });
 
@@ -510,17 +600,16 @@ void main() {
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
-                url: 'url',
                 startDate: DateTime(2023, 1, 1),
                 endDate: DateTime(2023, 12, 31),
                 description: 'description',
-                dismissForMinutes: 10,
-                moreInfoUrl: 'moreInfoUrl',
+                snoozeForMinutes: 10,
                 samplingRate: 1.0,
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
                 ],
+                buttonList: [],
               ),
             ],
           ),
@@ -569,17 +658,16 @@ void main() {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         final survey = Survey(
           uniqueId: 'string2',
-          url: 'url',
           startDate: DateTime(2023, 1, 1),
           endDate: DateTime(2023, 12, 31),
           description: 'description',
-          dismissForMinutes: 10,
-          moreInfoUrl: 'moreInfoUrl',
+          snoozeForMinutes: 10,
           samplingRate: 0.6,
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
+          buttonList: [],
         );
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
@@ -615,17 +703,16 @@ void main() {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
         final survey = Survey(
           uniqueId: 'string2',
-          url: 'url',
           startDate: DateTime(2023, 1, 1),
           endDate: DateTime(2023, 12, 31),
           description: 'description',
-          dismissForMinutes: 10,
-          moreInfoUrl: 'moreInfoUrl',
+          snoozeForMinutes: 10,
           samplingRate: 0.15,
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
           ],
+          buttonList: [],
         );
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
@@ -663,15 +750,14 @@ void main() {
       final minutesToSnooze = 30;
       final surveyToLoad = Survey(
         uniqueId: 'uniqueId',
-        url: 'url',
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes:
+        snoozeForMinutes:
             minutesToSnooze, // Initialized survey with `minutesToSnooze`
-        moreInfoUrl: 'moreInfoUrl',
         samplingRate: 1.0,
         conditionList: <Condition>[],
+        buttonList: [],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -697,7 +783,7 @@ void main() {
         expect(fetchedSurveys.length, 1);
 
         final survey = fetchedSurveys.first;
-        expect(survey.dismissForMinutes, minutesToSnooze);
+        expect(survey.snoozeForMinutes, minutesToSnooze);
 
         // We will snooze the survey now and it should not show up
         // if we fetch surveys again before the minutes to snooze time
@@ -755,14 +841,24 @@ void main() {
       final minutesToSnooze = 10;
       final surveyToLoad = Survey(
         uniqueId: 'uniqueId',
-        url: 'url',
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes: minutesToSnooze,
-        moreInfoUrl: 'moreInfoUrl',
+        snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
+        buttonList: [
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'accept',
+            promptRemainsVisible: false,
+          ),
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'dismiss',
+            promptRemainsVisible: false,
+          ),
+        ],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -790,7 +886,10 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+        analytics.surveyInteracted(
+          survey: survey,
+          surveyButton: survey.buttonList.first,
+        );
       });
 
       // Moving out a week
@@ -822,14 +921,24 @@ void main() {
       final minutesToSnooze = 10;
       final surveyToLoad = Survey(
         uniqueId: 'uniqueId',
-        url: 'url',
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes: minutesToSnooze,
-        moreInfoUrl: 'moreInfoUrl',
+        snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
+        buttonList: [
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'accept',
+            promptRemainsVisible: false,
+          ),
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'dismiss',
+            promptRemainsVisible: false,
+          ),
+        ],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -857,7 +966,11 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+        expect(survey.buttonList.length, 2);
+        analytics.surveyInteracted(
+          survey: survey,
+          surveyButton: survey.buttonList.first,
+        );
       });
 
       // Purposefully write invalid json into the persisted file
@@ -892,14 +1005,24 @@ void main() {
       final minutesToSnooze = 10;
       final surveyToLoad = Survey(
         uniqueId: 'uniqueId',
-        url: 'url',
         startDate: DateTime(2023, 1, 1),
         endDate: DateTime(2023, 12, 31),
         description: 'description',
-        dismissForMinutes: minutesToSnooze,
-        moreInfoUrl: 'moreInfoUrl',
+        snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
         conditionList: <Condition>[],
+        buttonList: [
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'accept',
+            promptRemainsVisible: false,
+          ),
+          SurveyButton(
+            buttonText: 'buttonText',
+            action: 'dismiss',
+            promptRemainsVisible: false,
+          ),
+        ],
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -927,7 +1050,11 @@ void main() {
         // Dismissing permanently will ensure that this survey is not
         // shown again
         final survey = fetchedSurveys.first;
-        analytics.dismissSurvey(survey: survey, surveyAccepted: true);
+        expect(survey.buttonList.length, 2);
+        analytics.surveyInteracted(
+          survey: survey,
+          surveyButton: survey.buttonList.first,
+        );
       });
 
       // Moving out a week
