@@ -462,8 +462,6 @@ class AnalyticsImpl implements Analytics {
 
     final logFileStats = _logHandler.logFileStats();
 
-    if (logFileStats == null) return [];
-
     // Call for surveys that have already been dismissed from
     // persisted survey ids on disk
     final persistedSurveyMap = _surveyHandler.fetchPersistedSurveys();
@@ -485,6 +483,8 @@ class AnalyticsImpl implements Analytics {
       // [Survey.conditionList]
       var conditionsMet = 0;
       for (final condition in survey.conditionList) {
+        if (logFileStats == null) continue;
+
         // Retrieve the value from the [LogFileStats] with
         // the label provided in the condtion
         final logFileStatsValue =

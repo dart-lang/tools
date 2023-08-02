@@ -79,9 +79,6 @@ void main() async {
             ),
           ],
         ));
-
-    // Send one event to allow `LogFileStats` to not be null
-    await analytics.send(Event.hotReloadTime(timeMs: 50));
   });
 
   // Each client of this package will be able to fetch all of

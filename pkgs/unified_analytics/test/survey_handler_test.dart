@@ -463,7 +463,7 @@ void main() {
             {
                 "field": "logFileStats.recordCount",
                 "operator": ">=",
-                "value": 1000
+                "value": 50
             }
         ],
         "buttons": [
@@ -775,9 +775,6 @@ void main() {
           ),
         );
 
-        // Simulate sending one event since logFileStats cannot be null
-        await analytics.send(testEvent);
-
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
 
@@ -876,9 +873,6 @@ void main() {
           ),
         );
 
-        // Simulate sending one event since logFileStats cannot be null
-        await analytics.send(testEvent);
-
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
 
@@ -955,9 +949,6 @@ void main() {
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
-
-        // Simulate sending one event since logFileStats cannot be null
-        await analytics.send(testEvent);
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
@@ -1039,9 +1030,6 @@ void main() {
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
-
-        // Simulate sending one event since logFileStats cannot be null
-        await analytics.send(testEvent);
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);

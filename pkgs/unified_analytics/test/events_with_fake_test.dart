@@ -47,11 +47,6 @@ void main() {
     ],
   );
 
-  /// Test event that will need to be sent since surveys won't
-  /// be fetched until at least one event is logged in the persisted
-  /// log file on disk
-  final testEvent = Event.hotReloadTime(timeMs: 10);
-
   setUp(() async {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
@@ -89,13 +84,9 @@ void main() {
   });
 
   test('event sent when survey shown', () async {
-    // Fire off the test event to allow surveys to be fetched
-    await fakeAnalytics.send(testEvent);
-
     final surveyList = await fakeAnalytics.fetchAvailableSurveys();
     expect(surveyList.length, 1);
-    expect(fakeAnalytics.sentEvents.length, 1,
-        reason: 'Only one event sent from the test event above');
+    expect(fakeAnalytics.sentEvents.length, 0);
 
     final survey = surveyList.first;
     expect(survey.uniqueId, 'uniqueId');
@@ -103,19 +94,15 @@ void main() {
     // Simulate the survey being shown
     fakeAnalytics.surveyShown(survey);
 
-    expect(fakeAnalytics.sentEvents.length, 2);
+    expect(fakeAnalytics.sentEvents.length, 1);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyShown);
     expect(fakeAnalytics.sentEvents.last.eventData, {'surveyId': 'uniqueId'});
   });
 
   test('event sent when survey accepted', () async {
-    // Fire off the test event to allow surveys to be fetched
-    await fakeAnalytics.send(testEvent);
-
     final surveyList = await fakeAnalytics.fetchAvailableSurveys();
     expect(surveyList.length, 1);
-    expect(fakeAnalytics.sentEvents.length, 1,
-        reason: 'Only one event sent from the test event above');
+    expect(fakeAnalytics.sentEvents.length, 0);
 
     final survey = surveyList.first;
     expect(survey.uniqueId, 'uniqueId');
@@ -128,20 +115,16 @@ void main() {
       surveyButton: survey.buttonList.first,
     );
 
-    expect(fakeAnalytics.sentEvents.length, 2);
+    expect(fakeAnalytics.sentEvents.length, 1);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
     expect(fakeAnalytics.sentEvents.last.eventData,
         {'surveyId': 'uniqueId', 'status': 'accept'});
   });
 
   test('event sent when survey rejected', () async {
-    // Fire off the test event to allow surveys to be fetched
-    await fakeAnalytics.send(testEvent);
-
     final surveyList = await fakeAnalytics.fetchAvailableSurveys();
     expect(surveyList.length, 1);
-    expect(fakeAnalytics.sentEvents.length, 1,
-        reason: 'Only one event sent from the test event above');
+    expect(fakeAnalytics.sentEvents.length, 0);
 
     final survey = surveyList.first;
     expect(survey.uniqueId, 'uniqueId');
@@ -154,7 +137,7 @@ void main() {
       surveyButton: survey.buttonList.last,
     );
 
-    expect(fakeAnalytics.sentEvents.length, 2);
+    expect(fakeAnalytics.sentEvents.length, 1);
     expect(fakeAnalytics.sentEvents.last.eventName, DashEvent.surveyAction);
     expect(fakeAnalytics.sentEvents.last.eventData,
         {'surveyId': 'uniqueId', 'status': 'dismiss'});
