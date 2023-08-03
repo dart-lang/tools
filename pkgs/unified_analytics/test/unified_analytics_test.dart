@@ -30,6 +30,7 @@ void main() {
   late File sessionFile;
   late File configFile;
   late File logFile;
+  late File dismissedSurveyFile;
   late UserProperty userProperty;
 
   const homeDirName = 'home';
@@ -101,6 +102,9 @@ void main() {
         home.childDirectory(kDartToolDirectoryName).childFile(kConfigFileName);
     logFile =
         home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
+    dismissedSurveyFile = home
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kDismissedSurveyFileName);
 
     // Create the user property object that is also
     // created within analytics for testing
@@ -125,9 +129,11 @@ void main() {
         reason: 'The $kConfigFileName was not found');
     expect(logFile.existsSync(), true,
         reason: 'The $kLogFileName file was not found');
-    expect(dartToolDirectory.listSync().length, equals(4),
+    expect(dismissedSurveyFile.existsSync(), true,
+        reason: 'The $dismissedSurveyFile file was not found');
+    expect(dartToolDirectory.listSync().length, equals(5),
         reason:
-            'There should only be 4 files in the $kDartToolDirectoryName directory');
+            'There should only be 5 files in the $kDartToolDirectoryName directory');
     expect(initializationAnalytics.shouldShowMessage, true,
         reason: 'For the first run, the message should be shown');
     expect(configFile.readAsLinesSync().length,
@@ -806,9 +812,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(firstQuery.sessionCount, 1,
           reason:
               'There should only be one session after the initial send event');
-      expect(firstQuery.flutterChannelCount, 1,
+      expect(firstQuery.flutterChannelCount, {'flutterChannel': 1},
           reason: 'There should only be one flutter channel logged');
-      expect(firstQuery.toolCount, 1,
+      expect(firstQuery.toolCount, {'flutter-tool': 1},
           reason: 'There should only be one tool logged');
     });
 
@@ -823,33 +829,15 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final secondQuery = analytics.logFileStats()!;
 
       // Construct the expected response for the second query
-      //
-      // This will need to be updated as the output for [LogFileStats]
-      // changes in the future
-      //
-      // Expecting the below returned
-      // {
-      //     "startDateTime": "1995-03-03 12:00:00.000",
-      //     "minsFromStartDateTime": 31,
-      //     "endDateTime": "1995-03-03 12:31:00.000",
-      //     "minsFromEndDateTime": 0,
-      //     "sessionCount": 2,
-      //     "flutterChannelCount": 1,
-      //     "toolCount": 1,
-      //     "recordCount": 2,
-      //     "eventCount": {
-      //         "hot_reload_time": 2
-      //     }
-      // }
       expect(secondQuery.startDateTime, DateTime(1995, 3, 3, 12, 0));
       expect(secondQuery.minsFromStartDateTime, 31);
       expect(secondQuery.endDateTime, DateTime(1995, 3, 3, 12, 31));
       expect(secondQuery.minsFromEndDateTime, 0);
       expect(secondQuery.sessionCount, 2);
-      expect(secondQuery.flutterChannelCount, 1);
-      expect(secondQuery.toolCount, 1);
+      expect(secondQuery.flutterChannelCount, {'flutterChannel': 2});
+      expect(secondQuery.toolCount, {'flutter-tool': 2});
       expect(secondQuery.recordCount, 2);
-      expect(secondQuery.eventCount, <String, int>{'hot_reload_time': 2});
+      expect(secondQuery.eventCount, {'hot_reload_time': 2});
     });
   });
 
@@ -882,7 +870,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Query the log file stats to verify that there are two tools
     var query = analytics.logFileStats()!;
 
-    expect(query.toolCount, 2,
+    expect(query.toolCount, {'flutter-tool': 1, 'dart-tool': 1},
         reason: 'There should have been two tools in the persisted logs');
   });
 
@@ -980,9 +968,9 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Query the log file stats to verify that there are two tools
     var query = analytics.logFileStats()!;
 
-    expect(query.toolCount, 1,
+    expect(query.toolCount, {'dart-tool': 1},
         reason: 'There should have only been on tool that sent events');
-    expect(query.flutterChannelCount, 0,
+    expect(query.flutterChannelCount.isEmpty, true,
         reason:
             'The instance does not have flutter information so it should be 0');
 
@@ -991,12 +979,12 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     analytics.send(testEvent);
     LogFileStats? query2 = analytics.logFileStats()!;
 
-    expect(query2.toolCount, 2,
+    expect(query2.toolCount, {'dart-tool': 1, 'flutter-tool': 1},
         reason: 'Two different analytics instances have '
             'been initialized and sent events');
     expect(query2.sessionCount, query.sessionCount,
         reason: 'The session should have remained the same');
-    expect(query2.flutterChannelCount, 1,
+    expect(query2.flutterChannelCount, {'flutterChannel': 1},
         reason: 'The first instance has flutter information initialized');
   });
 

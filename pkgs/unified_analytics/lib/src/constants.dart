@@ -51,9 +51,17 @@ reporting=1
 # a number representing the version of the message that was
 # displayed.''';
 
+/// Link to contextual survey metadata file
+const String kContextualSurveyUrl =
+    'https://storage.googleapis.com/flutter-uxr/surveys/contextual-survey-metadata.json';
+
 /// Name of the directory where all of the files necessary for this package
 /// will be located
 const String kDartToolDirectoryName = '.dart-tool';
+
+/// Name of the file where we persist dismissed survey ids
+const String kDismissedSurveyFileName =
+    'dart-flutter-telemetry-dismissed-surveys.json';
 
 /// The API secret associated with the GA4 instance's Measurement Protocol
 const String kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';
@@ -70,7 +78,7 @@ const int kLogFileLength = 2500;
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '3.0.0';
+const String kPackageVersion = '3.1.0';
 
 /// The minimum length for a session
 const int kSessionDurationMinutes = 30;
