@@ -1,3 +1,7 @@
+// Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
@@ -7,6 +11,13 @@ import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
+/// This example code is intended to only be used as guidance for
+/// clients using this package. Clients using this package should avoid
+/// the use of the [Analytics.test] constructor.
+/// 
+/// It was used in this example file so that the real [FileSystem] was swapped
+/// out for a [MemoryFileSystem] so that repeated runs of this script yield
+/// the same results.
 void main() async {
   late final MemoryFileSystem fs;
   late final Analytics analytics;
@@ -16,7 +27,7 @@ void main() async {
   await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
     // Use a memory file system to repeatedly run this example
     // file with the test instance
-    fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
+    fs = MemoryFileSystem(style: FileSystemStyle.posix);
     home = fs.directory('home');
     home.createSync();
 

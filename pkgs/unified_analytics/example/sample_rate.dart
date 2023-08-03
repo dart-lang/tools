@@ -4,6 +4,36 @@
 
 import 'package:unified_analytics/src/utils.dart';
 
+/// The purpose of this example file is to demonstrate the sampling
+/// rate functionality from the survey handler.
+///
+/// It defines a [remoteUniqueId] that subs in for a real survey's unique
+/// ID that is hosted in the remote json file.
+///
+/// Begin the simulation by setting the [testSampleRate] and [iterations]
+/// variables, where [iterations] simulates real users and [testSampleRate]
+/// represents a fraction of how many people should be sampled.
+///
+/// In this example, we have set the [testSampleRate] to `0.3`, meaning we want
+/// sample 30% of users, and [iterations] to `10,000`, which simulates `10,000`
+/// users.
+///
+/// Running the script with predefined seed of `123` will
+/// generate the below `stdout`
+/// ```
+/// Test sample rate = 0.3
+/// Number of iterations = 10000
+/// ---
+///
+/// Count of iterations sampled (successes) = 3046
+/// Actual sample rate = 0.3046
+/// ---
+///
+/// Runtime = 8ms
+/// ```
+///
+/// The actual results yielded 3,046 people selected for a rate
+/// of `30.46%` which is about the `30%` defined in [testSampleRate].
 void main() {
   // Seed has been set to replicate results
   //
@@ -57,18 +87,4 @@ Actual sample rate = ${(count / iterations).toStringAsFixed(4)}
 
 Runtime = ${end.difference(start).inMilliseconds}ms
 ''');
-
-// Output from run above with set parameters
-//
-// '''
-// Test sample rate = 0.3
-// Number of iterations = 10000
-// ---
-
-// Count of iterations sampled (successes) = 3046
-// Actual sample rate = 0.3046
-// ---
-
-// Runtime = 8ms
-// '''
 }
