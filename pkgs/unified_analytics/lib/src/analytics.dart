@@ -266,8 +266,7 @@ abstract class Analytics {
   ///
   /// Calling this will snooze the survey so it won't be shown immediately
   ///
-  /// The snooze period is defined within the `snoozeForMinutes`
-  /// field in [Survey]
+  /// The snooze period is defined by the [Survey.snoozeForMinutes] field.
   void surveyShown(Survey survey);
 }
 
@@ -482,35 +481,29 @@ class AnalyticsImpl implements Analytics {
       // this integer will be equal to the number of conditions in
       // [Survey.conditionList]
       var conditionsMet = 0;
-      for (final condition in survey.conditionList) {
-        if (logFileStats == null) continue;
+      if (logFileStats != null) {
+        for (final condition in survey.conditionList) {
+          // Retrieve the value from the [LogFileStats] with
+          // the label provided in the condtion
+          final logFileStatsValue =
+              logFileStats.getValueByString(condition.field);
 
-        // Retrieve the value from the [LogFileStats] with
-        // the label provided in the condtion
-        final logFileStatsValue =
-            logFileStats.getValueByString(condition.field);
+          if (logFileStatsValue == null) continue;
 
-        if (logFileStatsValue == null) continue;
-
-        switch (condition.operatorString) {
-          case '>=':
-            if (logFileStatsValue >= condition.value) conditionsMet++;
-            break;
-          case '<=':
-            if (logFileStatsValue <= condition.value) conditionsMet++;
-            break;
-          case '>':
-            if (logFileStatsValue > condition.value) conditionsMet++;
-            break;
-          case '<':
-            if (logFileStatsValue < condition.value) conditionsMet++;
-            break;
-          case '==':
-            if (logFileStatsValue == condition.value) conditionsMet++;
-            break;
-          case '!=':
-            if (logFileStatsValue != condition.value) conditionsMet++;
-            break;
+          switch (condition.operatorString) {
+            case '>=':
+              if (logFileStatsValue >= condition.value) conditionsMet++;
+            case '<=':
+              if (logFileStatsValue <= condition.value) conditionsMet++;
+            case '>':
+              if (logFileStatsValue > condition.value) conditionsMet++;
+            case '<':
+              if (logFileStatsValue < condition.value) conditionsMet++;
+            case '==':
+              if (logFileStatsValue == condition.value) conditionsMet++;
+            case '!=':
+              if (logFileStatsValue != condition.value) conditionsMet++;
+          }
         }
       }
 
