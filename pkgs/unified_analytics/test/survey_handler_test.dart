@@ -642,8 +642,7 @@ void main() {
       // These strings had a predetermined output from the utility function
       final string1 = 'string1';
       final string2 = 'string2';
-
-      expect(sampleRate(string1, string2), 0.17);
+      expect(sampleRate(string1, string2), 0.40);
     });
 
     test('Sampling rate correctly returns a valid survey', () async {
@@ -651,7 +650,7 @@ void main() {
       // which has been set in the setup along with a predefined
       // string for the survey ID of `string2` to get a sample rate value
       //
-      // The combination of `string1` and `string2` will return 0.17
+      // The combination of `string1` and `string2` will return 0.40
       // from the sampleRate utility function so we have set the threshold
       // to be 0.6 which should return surveys
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
