@@ -18,6 +18,55 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   final testEvent = Event.hotReloadTime(timeMs: 10);
+
+  group('Unit testing function sampleRate:', () {
+    // Set a string that can be used in place of a survey's unique ID
+    final iterations = 1000;
+    final uuid = Uuid(123);
+    final uniqueSurveyId = uuid.generateV4();
+
+    // Set how much the actual sampled rate can be (allowing 5% of variability)
+    final marginOfError = 0.05;
+
+    test('Unit testing the sampleRate method', () {
+      // These strings had a predetermined output from the utility function
+      final string1 = 'string1';
+      final string2 = 'string2';
+      expect(sampleRate(string1, string2), 0.40);
+    });
+
+    test('Simulating with various sample rates', () {
+      final sampleRateToTestList = [
+        0.10,
+        0.25,
+        0.50,
+        0.75,
+        0.80,
+        0.95,
+      ];
+      for (final sampleRateToTest in sampleRateToTestList) {
+        var count = 0;
+        for (var i = 0; i < iterations; i++) {
+          // Regenerate the client id to simulate a unique user
+          final generatedClientId = uuid.generateV4();
+          if (sampleRate(uniqueSurveyId, generatedClientId) <=
+              sampleRateToTest) {
+            count += 1;
+          }
+        }
+
+        final actualSampledRate = count / iterations;
+        final actualMarginOfError =
+            (sampleRateToTest - actualSampledRate).abs();
+
+        expect(actualMarginOfError < marginOfError, true,
+            reason: 'Failed on sample rate = $sampleRateToTest with'
+                ' actual rate $actualMarginOfError '
+                'and a margin of error = $marginOfError');
+      }
+    });
+  });
+
   group('Unit testing function checkSurveyDate:', () {
     final date = DateTime(2023, 5, 1);
     // Two surveys created, one that is within the survey date
@@ -636,13 +685,6 @@ void main() {
         fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
       });
-    });
-
-    test('Unit testing the sampleRate method', () {
-      // These strings had a predetermined output from the utility function
-      final string1 = 'string1';
-      final string2 = 'string2';
-      expect(sampleRate(string1, string2), 0.40);
     });
 
     test('Sampling rate correctly returns a valid survey', () async {
