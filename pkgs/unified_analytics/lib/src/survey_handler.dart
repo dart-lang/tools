@@ -100,7 +100,7 @@ class Survey {
 
   /// A data class that contains the relevant information for a given
   /// survey parsed from the survey's metadata file
-  Survey({
+  const Survey({
     required this.uniqueId,
     required this.startDate,
     required this.endDate,
