@@ -82,17 +82,73 @@ class LogFileStats {
   });
 
   @override
-  String toString() => jsonEncode(<String, Object?>{
-        'startDateTime': startDateTime.toString(),
-        'minsFromStartDateTime': minsFromStartDateTime,
-        'endDateTime': endDateTime.toString(),
-        'minsFromEndDateTime': minsFromEndDateTime,
-        'sessionCount': sessionCount,
-        'recordCount': recordCount,
-        'eventCount': eventCount,
-        'toolCount': toolCount,
-        'flutterChannelCount': flutterChannelCount,
-      });
+  String toString() {
+    final encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert({
+      'startDateTime': startDateTime.toString(),
+      'minsFromStartDateTime': minsFromStartDateTime,
+      'endDateTime': endDateTime.toString(),
+      'minsFromEndDateTime': minsFromEndDateTime,
+      'sessionCount': sessionCount,
+      'recordCount': recordCount,
+      'eventCount': eventCount,
+      'toolCount': toolCount,
+      'flutterChannelCount': flutterChannelCount,
+    });
+  }
+
+  /// Pass in a string label for one of the instance variables
+  /// and return the integer value of that label
+  ///
+  /// If label passed for [DateTime] instance variable, integer
+  /// in the form of [DateTime.millisecondsSinceEpoch] will be
+  /// returned
+  ///
+  /// Returns null if the label passed does not match anything
+  int? getValueByString(String label) {
+    // When querying counts, the label will include the
+    // key for the appropriate map
+    //
+    // Example: logFileStats.toolCount.flutter-tool is asking
+    //   for the number of events sent via flutter cli
+    final parts = label.split('.');
+    String? key;
+    if (parts.length >= 3) {
+      // Assign the first two parts of the string as the label
+      // ie. logFileStats.toolCount.flutter-tool -> logFileStats.toolCount
+      label = parts.sublist(0, 2).join('.');
+      key = parts.sublist(2, parts.length).join('.');
+    }
+
+    switch (label) {
+      case 'logFileStats.startDateTime':
+        return startDateTime.millisecondsSinceEpoch;
+      case 'logFileStats.minsFromStartDateTime':
+        return minsFromStartDateTime;
+      case 'logFileStats.endDateTime':
+        return endDateTime.millisecondsSinceEpoch;
+      case 'logFileStats.minsFromEndDateTime':
+        return minsFromEndDateTime;
+      case 'logFileStats.sessionCount':
+        return sessionCount;
+      case 'logFileStats.recordCount':
+        return recordCount;
+      case 'logFileStats.flutterChannelCount':
+        if (key != null && flutterChannelCount.containsKey(key)) {
+          return flutterChannelCount[key];
+        }
+      case 'logFileStats.toolCount':
+        if (key != null && toolCount.containsKey(key)) {
+          return toolCount[key];
+        }
+      case 'logFileStats.eventCount':
+        if (key != null && eventCount.containsKey(key)) {
+          return eventCount[key];
+        }
+    }
+
+    return null;
+  }
 }
 
 /// This class is responsible for writing to a log

@@ -21,6 +21,7 @@ import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
 import 'session.dart';
+import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
 
@@ -75,6 +76,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
     );
   }
@@ -134,6 +136,7 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
+      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
     );
   }
@@ -153,6 +156,7 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     required FileSystem fs,
     required DevicePlatform platform,
+    SurveyHandler? surveyHandler,
     GAClient? gaClient,
   }) =>
       AnalyticsImpl(
@@ -164,6 +168,12 @@ abstract class Analytics {
         dartVersion: dartVersion,
         platform: platform,
         fs: fs,
+        surveyHandler: surveyHandler ??
+            FakeSurveyHandler.fromList(
+              homeDirectory: homeDirectory,
+              fs: fs,
+              initializedSurveys: [],
+            ),
         gaClient: gaClient ?? FakeGAClient(),
         enableAsserts: true,
       );
@@ -204,6 +214,15 @@ abstract class Analytics {
   /// that need to be sent off
   void close();
 
+  /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
+  ///
+  /// Any survey that is returned by this method has already passed
+  /// the survey conditions specified in the remote survey metadata file
+  ///
+  /// If the method returns an empty list, then there are no surveys to be
+  /// shared with the user
+  Future<List<Survey>> fetchAvailableSurveys();
+
   /// Query the persisted event data stored on the user's machine
   ///
   /// Returns null if there are no persisted logs
@@ -231,6 +250,24 @@ abstract class Analytics {
   /// If you would like to permanently disable telemetry
   /// collection use `setTelemetry(false)`
   void suppressTelemetry();
+
+  /// Method to run after interacting with a [Survey]
+  ///
+  /// Pass a [Survey] instance which can be retrieved from
+  /// `fetchAvailableSurveys()`
+  ///
+  /// [sureyButton] is the button that was interacted with by the user
+  void surveyInteracted({
+    required Survey survey,
+    required SurveyButton surveyButton,
+  });
+
+  /// Method to be called after a survey has been shown to the user
+  ///
+  /// Calling this will snooze the survey so it won't be shown immediately
+  ///
+  /// The snooze period is defined by the [Survey.snoozeForMinutes] field.
+  void surveyShown(Survey survey);
 }
 
 class AnalyticsImpl implements Analytics {
@@ -238,6 +275,7 @@ class AnalyticsImpl implements Analytics {
   final FileSystem fs;
   late final ConfigHandler _configHandler;
   final GAClient _gaClient;
+  final SurveyHandler _surveyHandler;
   late final String _clientId;
   late final File _clientIdFile;
   late final UserProperty userProperty;
@@ -281,8 +319,10 @@ class AnalyticsImpl implements Analytics {
     required this.toolsMessageVersion,
     required this.fs,
     required GAClient gaClient,
+    required SurveyHandler surveyHandler,
     required bool enableAsserts,
   })  : _gaClient = gaClient,
+        _surveyHandler = surveyHandler,
         _enableAsserts = enableAsserts {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
@@ -415,6 +455,67 @@ class AnalyticsImpl implements Analytics {
   void close() => _gaClient.close();
 
   @override
+  Future<List<Survey>> fetchAvailableSurveys() async {
+    final surveysToShow = <Survey>[];
+    if (!okToSend) return surveysToShow;
+
+    final logFileStats = _logHandler.logFileStats();
+
+    // Call for surveys that have already been dismissed from
+    // persisted survey ids on disk
+    final persistedSurveyMap = _surveyHandler.fetchPersistedSurveys();
+
+    for (final survey in await _surveyHandler.fetchSurveyList()) {
+      // Apply the survey's sample rate; if the generated value from
+      // the client id and survey's uniqueId are less, it will not get
+      // sent to the user
+      if (survey.samplingRate < sampleRate(_clientId, survey.uniqueId)) {
+        continue;
+      }
+
+      // If the survey has been permanently dismissed or has temporarily
+      // been snoozed, skip it
+      if (surveySnoozedOrDismissed(survey, persistedSurveyMap)) continue;
+
+      // Counter to check each survey condition, if all are met, then
+      // this integer will be equal to the number of conditions in
+      // [Survey.conditionList]
+      var conditionsMet = 0;
+      if (logFileStats != null) {
+        for (final condition in survey.conditionList) {
+          // Retrieve the value from the [LogFileStats] with
+          // the label provided in the condtion
+          final logFileStatsValue =
+              logFileStats.getValueByString(condition.field);
+
+          if (logFileStatsValue == null) continue;
+
+          switch (condition.operatorString) {
+            case '>=':
+              if (logFileStatsValue >= condition.value) conditionsMet++;
+            case '<=':
+              if (logFileStatsValue <= condition.value) conditionsMet++;
+            case '>':
+              if (logFileStatsValue > condition.value) conditionsMet++;
+            case '<':
+              if (logFileStatsValue < condition.value) conditionsMet++;
+            case '==':
+              if (logFileStatsValue == condition.value) conditionsMet++;
+            case '!=':
+              if (logFileStatsValue != condition.value) conditionsMet++;
+          }
+        }
+      }
+
+      if (conditionsMet == survey.conditionList.length) {
+        surveysToShow.add(survey);
+      }
+    }
+
+    return surveysToShow;
+  }
+
+  @override
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
@@ -468,7 +569,7 @@ class AnalyticsImpl implements Analytics {
     } else {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
-      // to persist from `sendEvent()`
+      // to persist from events sent
       Initializer.createClientIdFile(clientFile: _clientIdFile);
       Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
     }
@@ -479,6 +580,26 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void suppressTelemetry() => _telemetrySuppressed = true;
+
+  @override
+  void surveyInteracted({
+    required Survey survey,
+    required SurveyButton surveyButton,
+  }) {
+    // Any action, except for 'snooze' will permanently dismiss a given survey
+    final permanentlyDismissed = surveyButton.action == 'snooze' ? false : true;
+    _surveyHandler.dismiss(survey, permanentlyDismissed);
+    send(Event.surveyAction(
+      surveyId: survey.uniqueId,
+      status: surveyButton.action,
+    ));
+  }
+
+  @override
+  void surveyShown(Survey survey) {
+    _surveyHandler.dismiss(survey, false);
+    send(Event.surveyShown(surveyId: survey.uniqueId));
+  }
 }
 
 /// An implementation that will never send events.
@@ -516,6 +637,9 @@ class NoOpAnalytics implements Analytics {
   void close() {}
 
   @override
+  Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
+
+  @override
   LogFileStats? logFileStats() => null;
 
   @override
@@ -526,4 +650,13 @@ class NoOpAnalytics implements Analytics {
 
   @override
   void suppressTelemetry() {}
+
+  @override
+  void surveyInteracted({
+    required Survey survey,
+    required SurveyButton surveyButton,
+  }) {}
+
+  @override
+  void surveyShown(Survey survey) {}
 }

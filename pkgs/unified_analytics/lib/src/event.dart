@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'enums.dart';
 
 final class Event {
@@ -312,4 +314,37 @@ final class Event {
           'diagnostic': diagnostic,
           'adjustments': adjustments,
         };
+
+  /// Event that is emitted by `package:unified_analytics` when
+  /// the user takes action when prompted with a survey
+  ///
+  /// [surveyId] - the unique id for a given survey
+  ///
+  /// [status] - the string identifier for a given [SurveyButton] under
+  ///     the `action` field
+  Event.surveyAction({
+    required String surveyId,
+    required String status,
+  })  : eventName = DashEvent.surveyAction,
+        eventData = {
+          'surveyId': surveyId,
+          'status': status,
+        };
+
+  /// Event that is emitted by `package:unified_analytics` when the
+  /// user has been shown a survey
+  ///
+  /// [surveyId] - the unique id for a given survey
+  Event.surveyShown({
+    required String surveyId,
+  })  : eventName = DashEvent.surveyShown,
+        eventData = {
+          'surveyId': surveyId,
+        };
+
+  @override
+  String toString() => jsonEncode({
+        'eventName': eventName.label,
+        'eventData': eventData,
+      });
 }

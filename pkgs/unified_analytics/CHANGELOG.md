@@ -1,7 +1,9 @@
-## 3.1.0-wip
+## 3.1.0
 
 - Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
 - Added new method to suppress telemetry collection temporarily for current invocation via `analytics.suppressTelemetry()`
+- Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users along with functionality to dismiss them
+- Surveys will be disabled for any users that have been opted out
 
 ## 3.0.0
 

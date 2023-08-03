@@ -7,3 +7,4 @@ export 'src/config_handler.dart' show ToolInfo;
 export 'src/enums.dart' show DashTool;
 export 'src/event.dart' show Event;
 export 'src/log_handler.dart' show LogFileStats;
+export 'src/survey_handler.dart' show SurveyButton, SurveyHandler;

@@ -63,6 +63,12 @@ class Initializer {
     }
   }
 
+  /// Creates that file that will persist dismissed survey ids
+  static void createDismissedSurveyFile({required File dismissedSurveyFile}) {
+    dismissedSurveyFile.createSync(recursive: true);
+    dismissedSurveyFile.writeAsStringSync('{}');
+  }
+
   /// Creates that log file that will store the record formatted
   /// events locally on the user's machine
   void createLogFile({required File logFile}) {
@@ -125,6 +131,13 @@ class Initializer {
         .file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
     if (!logFile.existsSync()) {
       createLogFile(logFile: logFile);
+    }
+
+    // Begin initialization checks for the dismissed survey file
+    final dismissedSurveyFile = fs.file(p.join(
+        homeDirectory.path, kDartToolDirectoryName, kDismissedSurveyFileName));
+    if (!dismissedSurveyFile.existsSync()) {
+      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
     }
   }
 }
