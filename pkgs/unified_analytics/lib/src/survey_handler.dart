@@ -306,8 +306,10 @@ class SurveyHandler {
         // that fail to parse
         try {
           return Survey.fromJson(element as Map<String, dynamic>);
-          // ignore: avoid_catches_without_on_clauses
-        } catch (err) {
+          // ignore: avoid_catching_errors
+        } on TypeError {
+          return null;
+        } on FormatException {
           return null;
         }
       })
