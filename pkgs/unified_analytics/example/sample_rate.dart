@@ -64,11 +64,11 @@ Runtime = ${end.difference(start).inMilliseconds}ms
 // Test sample rate = 0.3
 // Number of iterations = 10000
 // ---
-//
-// Count of iterations sampled (successes) = 3093
-// Actual sample rate = 0.3093
+
+// Count of iterations sampled (successes) = 3046
+// Actual sample rate = 0.3046
 // ---
-//
-// Runtime = 25ms
+
+// Runtime = 8ms
 // '''
 }

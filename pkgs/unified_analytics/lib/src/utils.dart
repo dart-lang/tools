@@ -106,20 +106,6 @@ Directory? getHomeDirectory(FileSystem fs) {
   return fs.directory(home);
 }
 
-/// Function used to convert a string into an integer value
-int intFromString(String input) {
-  const lookup = 'abcdefghijklmnopqrstuvwxyz0123456789-';
-  var result = 1;
-
-  for (var codeUnit in input.codeUnits) {
-    var char = String.fromCharCode(codeUnit);
-    var val = lookup.indexOf(char);
-    if (val > 0) result = result + val;
-  }
-
-  return result;
-}
-
 /// Returns `true` if user has opted out of legacy analytics in Dart or Flutter
 ///
 /// Checks legacy opt-out status for the Flutter
@@ -198,12 +184,8 @@ bool legacyOptOut({
 
 /// Will use two strings to produce a double for applying a sampling
 /// rate for [Survey] to be returned to the user
-double sampleRate(String string1, String string2) {
-  final int1 = intFromString(string1);
-  final int2 = intFromString(string2);
-
-  return ((int1 + int2) % 101) / 100;
-}
+double sampleRate(String string1, String string2) =>
+    ((string1.hashCode + string2.hashCode) % 101) / 100;
 
 /// Function to check if a given [Survey] can be shown again
 /// by checking if it was snoozed or permanently dismissed

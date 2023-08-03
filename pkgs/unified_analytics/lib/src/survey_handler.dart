@@ -291,10 +291,8 @@ class SurveyHandler {
   /// checking the [Survey.startDate] and [Survey.endDate]
   /// against the current [clock.now()] date
   static bool checkSurveyDate(Survey survey) {
-    if (survey.startDate.isBefore(clock.now()) &&
-        survey.endDate.isAfter(clock.now())) return true;
-
-    return false;
+    final now = clock.now();
+    return survey.startDate.isBefore(now) && survey.endDate.isAfter(now);
   }
 
   /// Function that takes in a json data structure that is in
