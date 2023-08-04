@@ -1,3 +1,7 @@
+## 0.1.2-wip
+
+- Add usage docs to the readme.
+
 ## 0.1.1
 
 - Support non-String map keys in YAML configuration files.
