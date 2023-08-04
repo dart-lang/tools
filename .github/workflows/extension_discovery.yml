@@ -1,0 +1,44 @@
+name: package:extension_discovery
+permissions: read-all
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/unified_analytics.yml'
+      - 'pkgs/extension_discovery/**'
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/extension_discovery.yml'
+      - 'pkgs/extension_discovery/**'
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/extension_discovery
+    strategy:
+      matrix:
+        sdk: [stable, dev] # {pkgs.versions}
+        include:
+          - sdk: stable
+            run-tests: true
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: ${{matrix.sdk}}
+
+      - run: dart pub get
+
+      - run: dart analyze --fatal-infos
+
+      - run: dart format --output=none --set-exit-if-changed .
+        if: ${{matrix.run-tests}}
+
+      - run: dart test
+        if: ${{matrix.run-tests}}

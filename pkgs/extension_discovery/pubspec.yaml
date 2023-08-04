@@ -1,6 +1,6 @@
 name: extension_discovery
 description: >-
-  Discovery of packages that provide extensions for your package.
+  A convention and utilities for package extension discovery.
 version: 1.0.0
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/extension_discovery
 
