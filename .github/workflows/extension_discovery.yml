@@ -22,6 +22,7 @@ jobs:
       run:
         working-directory: pkgs/extension_discovery
     strategy:
+      fail-fast: false
       matrix:
         sdk: [stable, dev] # {pkgs.versions}
         include:
