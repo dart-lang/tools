@@ -34,6 +34,10 @@ jobs:
           sdk: ${{matrix.sdk}}
 
       - run: dart pub get
+      - run: |
+          (cd example/hello_world && dart pub get)
+          (cd example/hello_world_app && dart pub get)
+          (cd example/hello_world_german && dart pub get)
 
       - run: dart analyze --fatal-infos
 
