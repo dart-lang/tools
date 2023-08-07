@@ -1,4 +1,10 @@
-# Package Extension Discovery
+[![package:extension_discovery](https://github.com/dart-lang/tools/actions/workflows/extension_discovery.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/extension_discovery.yml)
+[![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery)
+[![package publisher](https://img.shields.io/pub/publisher/extension_discovery.svg)](https://pub.dev/packages/extension_discovery/publisher)
+
+A convention and utilities for package extension discovery.
+
+## What's this?
 
 A convention to allow other packages to provide extensions for your package
 (or tool). Including logic for finding extensions that honor this convention.

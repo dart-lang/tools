@@ -13,7 +13,7 @@ import 'test_descriptor.dart' as d;
 void main() {
   test('findExtensions', () async {
     // Override the maturity delay for reliable testing of caching logic.
-    modificationMaturityDelay = Duration(milliseconds: 50);
+    modificationMaturityDelay = Duration(milliseconds: 500);
 
     final pkgLibDir = await Isolate.resolvePackageUri(
       Uri.parse('package:extension_discovery/'),
@@ -231,13 +231,23 @@ void main() {
     }
 
     // ################################## Changes to bar are not detected
-    await d.file('bar/extension/myapp/config.json').io.delete();
 
     // Ensure that we wait long enough for the cache to be trusted,
     // this delay is to make sure that the logic we have handling races isn't
     // triggered. Think of it as waiting...
-    await Future.delayed(modificationMaturityDelay);
-    await Future.delayed(modificationMaturityDelay);
+    // If the modification time of package_config.json and the cache is no more
+    // than [modificationMaturityDelay] time apart, we'll ignore the cache.
+    // Under the assumption that there was a tiny risk of a race condition.
+    await Future.delayed(modificationMaturityDelay * 2);
+    // Ensure that we have a cache value!
+    await findExtensions(
+      'myapp',
+      packageConfig: d.fileUri('myapp/.dart_tool/package_config.json'),
+    );
+
+    // Delete config from package that has an absolute path, hence, a package
+    // we assume to be immutable.
+    await d.file('bar/extension/myapp/config.json').io.delete();
 
     // Check that we do find both extensions
     {
@@ -246,6 +256,12 @@ void main() {
         packageConfig: d.fileUri('myapp/.dart_tool/package_config.json'),
       );
       expect(ext.any((e) => e.package == 'foo'), isTrue);
+      // This is the wrong result, but it is expected. Essentially, if we expect
+      // that if you have packages in package_config.json using an absolute path
+      // then these won't be modified. If you do modify the
+      //   extension/<targetPackage>/config.json
+      // file, then the cache will give the wrong result. The workaround is to
+      // touch `package_config.json`, or run `dart pub get` (essentially).
       expect(ext.any((e) => e.package == 'bar'), isTrue);
     }
 
