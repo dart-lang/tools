@@ -256,7 +256,7 @@ abstract class Analytics {
   /// Pass a [Survey] instance which can be retrieved from
   /// `fetchAvailableSurveys()`
   ///
-  /// [sureyButton] is the button that was interacted with by the user
+  /// [surveyButton] is the button that was interacted with by the user
   void surveyInteracted({
     required Survey survey,
     required SurveyButton surveyButton,
