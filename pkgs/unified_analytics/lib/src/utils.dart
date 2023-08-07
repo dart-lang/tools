@@ -15,17 +15,19 @@ import 'enums.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
 
-/// Get a string representation of the current date in the following format
+/// Get a string representation of the current date in the following format:
+/// ```text
 /// yyyy-MM-dd (2023-01-09)
+/// ```
 String get dateStamp {
   return DateFormat('yyyy-MM-dd').format(clock.now());
 }
 
-/// Reads in a directory and returns `true` if write permissions are enabled
+/// Reads in a directory and returns `true` if write permissions are enabled.
 ///
 /// Uses the [FileStat] method `modeString()` to return a string in the form
 /// of `rwxrwxrwx` where the second character in the string indicates if write
-/// is enabled with a `w` or disabled with `-`
+/// is enabled with a `w` or disabled with `-`.
 bool checkDirectoryForWritePermissions(Directory directory) {
   if (!directory.existsSync()) return false;
 
@@ -49,9 +51,9 @@ String formatDateTime(DateTime t) {
 }
 
 /// Construct the Map that will be converted to json for the
-/// body of the request
+/// body of the request.
 ///
-/// Follows the following schema
+/// Follows the following schema:
 ///
 /// ```
 /// {
@@ -88,7 +90,7 @@ Map<String, Object?> generateRequestBody({
 
 /// This will use environment variables to get the user's
 /// home directory where all the directory will be created that will
-/// contain all of the analytics files
+/// contain all of the analytics files.
 Directory? getHomeDirectory(FileSystem fs) {
   String? home;
   var envVars = io.Platform.environment;
@@ -106,10 +108,10 @@ Directory? getHomeDirectory(FileSystem fs) {
   return fs.directory(home);
 }
 
-/// Returns `true` if user has opted out of legacy analytics in Dart or Flutter
+/// Returns `true` if user has opted out of legacy analytics in Dart or Flutter.
 ///
 /// Checks legacy opt-out status for the Flutter
-/// and Dart in the following locations
+/// and Dart in the following locations.
 ///
 /// Dart: `$HOME/.dart/dartdev.json`
 ///
@@ -183,22 +185,22 @@ bool legacyOptOut({
 }
 
 /// Will use two strings to produce a double for applying a sampling
-/// rate for [Survey] to be returned to the user
+/// rate for [Survey] to be returned to the user.
 double sampleRate(String string1, String string2) =>
     ((string1.hashCode + string2.hashCode) % 101) / 100;
 
 /// Function to check if a given [Survey] can be shown again
-/// by checking if it was snoozed or permanently dismissed
+/// by checking if it was snoozed or permanently dismissed.
 ///
 /// If the [Survey] doesn't exist in the persisted file, then it
-/// will be shown to the user
+/// will be shown to the user.
 ///
 /// If the [Survey] has been permanently dismissed, we will not
-/// show it to the user
+/// show it to the user.
 ///
 /// If the [Survey] has been snoozed, we will check the timestamp
-/// that it was snoozed at with the current time from [clock.now()]
-/// and if the snooze period has elapsed, then we will show it to the user
+/// that it was snoozed at with the current time from [clock]
+/// and if the snooze period has elapsed, then we will show it to the user.
 bool surveySnoozedOrDismissed(
   Survey survey,
   Map<String, PersistedSurvey> persistedSurveyMap,
@@ -230,7 +232,7 @@ bool surveySnoozedOrDismissed(
 /// For more information, see
 /// [en.wikipedia.org/wiki/Universally_unique_identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier).
 ///
-/// This class was taken from the previous `usage` package (https://github.com/dart-lang/usage/blob/master/lib/uuid/uuid.dart)
+/// This class was taken from the previous `usage` package (https://github.com/dart-lang/usage/blob/master/lib/uuid/uuid.dart).
 class Uuid {
   final Random _random;
 

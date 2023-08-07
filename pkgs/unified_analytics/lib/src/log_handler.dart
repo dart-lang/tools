@@ -12,25 +12,25 @@ import 'constants.dart';
 import 'initializer.dart';
 
 /// Data class that will be returned when analyzing the
-/// persisted log file on the client's machine
+/// persisted log file on the client's machine.
 class LogFileStats {
-  /// The oldest timestamp in the log file
+  /// The oldest timestamp in the log file.
   final DateTime startDateTime;
 
-  /// Number of minutes from [startDateTime] to [clock.now()]
+  /// Number of minutes from [startDateTime] to now using [clock].
   final int minsFromStartDateTime;
 
-  /// The latest timestamp in the log file
+  /// The latest timestamp in the log file.
   final DateTime endDateTime;
 
-  /// Number of minutes from [endDateTime] to [clock.now()]
+  /// Number of minutes from [endDateTime] to now using [clock].
   final int minsFromEndDateTime;
 
-  /// The number of unique session ids found in the log file
+  /// The number of unique session ids found in the log file.
   final int sessionCount;
 
   /// The map containing all of the flutter channels and a count
-  /// of how many events were under each channel
+  /// of how many events were under each channel.
   ///
   /// ```
   /// {
@@ -42,7 +42,7 @@ class LogFileStats {
   final Map<String, int> flutterChannelCount;
 
   /// The map containing all of the tools that have sent events
-  /// and how many events were sent by each tool
+  /// and how many events were sent by each tool.
   ///
   /// ```
   /// {
@@ -54,7 +54,7 @@ class LogFileStats {
   final Map<String, int> toolCount;
 
   /// The map containing all of the events in the file along with
-  /// how many times they have occured
+  /// how many times they have occured.
   ///
   /// ```
   /// {
@@ -65,10 +65,10 @@ class LogFileStats {
   /// ```
   final Map<String, int> eventCount;
 
-  /// Total number of records in the log file
+  /// Total number of records in the log file.
   final int recordCount;
 
-  /// Contains the data from the [LogHandler.logFileStats] method
+  /// Contains the data from the [LogHandler.logFileStats] method.
   const LogFileStats({
     required this.startDateTime,
     required this.minsFromStartDateTime,
@@ -98,13 +98,13 @@ class LogFileStats {
   }
 
   /// Pass in a string label for one of the instance variables
-  /// and return the integer value of that label
+  /// and return the integer value of that label.
   ///
   /// If label passed for [DateTime] instance variable, integer
   /// in the form of [DateTime.millisecondsSinceEpoch] will be
-  /// returned
+  /// returned.
   ///
-  /// Returns null if the label passed does not match anything
+  /// Returns null if the label passed does not match anything.
   int? getValueByString(String label) {
     // When querying counts, the label will include the
     // key for the appropriate map
@@ -152,17 +152,17 @@ class LogFileStats {
 }
 
 /// This class is responsible for writing to a log
-/// file that has been initialized by the [Initializer]
+/// file that has been initialized by the [Initializer].
 ///
 /// It will be treated as an append only log and will be limited
-/// to have has many data records as specified by [kLogFileLength]
+/// to have has many data records as specified by [kLogFileLength].
 class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
   final File logFile;
 
   /// A log handler constructor that will delegate saving
-  /// logs and retrieving stats from the persisted log
+  /// logs and retrieving stats from the persisted log.
   LogHandler({
     required this.fs,
     required this.homeDirectory,
@@ -172,11 +172,11 @@ class LogHandler {
           kLogFileName,
         ));
 
-  /// Get stats from the persisted log file
+  /// Get stats from the persisted log file.
   ///
   /// Note that some developers may only be Dart
   /// developers and will not have any data for flutter
-  /// related metrics
+  /// related metrics.
   LogFileStats? logFileStats() {
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
@@ -253,10 +253,10 @@ class LogHandler {
     );
   }
 
-  /// Saves the data passed in as a single line in the log file
+  /// Saves the data passed in as a single line in the log file.
   ///
   /// This will keep the max number of records limited to equal to
-  /// or less than [kLogFileLength] records
+  /// or less than [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
     var records = logFile.readAsLinesSync();
     final content = '${jsonEncode(data)}\n';
@@ -274,7 +274,7 @@ class LogHandler {
   }
 }
 
-/// Data class for each record persisted on the client's machine
+/// Data class for each record persisted on the client's machine.
 class LogItem {
   final String eventName;
   final int sessionId;
@@ -296,14 +296,14 @@ class LogItem {
     required this.localTime,
   });
 
-  /// Serves a parser for each record in the log file
+  /// Serves a parser for each record in the log file.
   ///
   /// Using this method guarantees that we have parsed out
   /// fields that are necessary for the [LogHandler.logFileStats]
-  /// method
+  /// method.
   ///
-  /// If the returned value is [null], that indicates a malformed
-  /// record which can be discarded during analysis
+  /// If the returned value is null, that indicates a malformed
+  /// record which can be discarded during analysis.
   ///
   /// Example of what a record looks like:
   /// ```
