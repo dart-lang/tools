@@ -5,5 +5,9 @@
 
 'package:cli_config':
   - 'pkgs/cli_config/**'
+'package:extension_discovery':
+  - 'pkgs/extension_discovery/**'
+'package:graphs':
+  - 'pkgs/graphs/**'
 'package:unified_analytics':
   - 'pkgs/unified_analytics/**'
