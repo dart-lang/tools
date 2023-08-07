@@ -69,10 +69,10 @@ class Condition {
 }
 
 /// Data class for the persisted survey contents.
-/// 
+///
 /// [uniqueId] is the identifier for each survey, [timestamp] refers
 /// to when the survey was added to the persisted file.
-/// 
+///
 /// The boolean [snoozed] is set to `true` if the survey has been dismissed
 /// temporarily by the user. When set to `false` this indicates that the survey
 /// has been dismissed permanently and will not be shown to the user again.
