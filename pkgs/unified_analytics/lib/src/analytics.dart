@@ -585,6 +585,8 @@ class AnalyticsImpl implements Analytics {
       _sessionHandler.sessionFile.writeAsStringSync('');
       _logHandler.logFile.writeAsStringSync('');
       _clientIdFile.writeAsStringSync('');
+
+      _clientId = _clientIdFile.readAsStringSync();
     }
 
     // Pass to the google analytics client to send
