@@ -205,6 +205,8 @@ void main() {
   });
 
   test('Toggling telemetry boolean through Analytics class api', () async {
+    final originalClientId = clientIdFile.readAsStringSync();
+
     expect(analytics.telemetryEnabled, true,
         reason: 'Telemetry should be enabled by default '
             'when initialized for the first time');
@@ -239,6 +241,9 @@ void main() {
         reason: 'Check on event name');
     expect((lastLogItem['events'] as List).last['params']['status'], true,
         reason: 'Status should be false');
+    expect((lastLogItem['client_id'] as String).isNotEmpty, true);
+    expect(originalClientId != lastLogItem['client_id'], true,
+        reason: 'When opting in again, the client id should be regenerated');
   });
 
   test(
