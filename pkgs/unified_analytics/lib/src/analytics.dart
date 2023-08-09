@@ -27,10 +27,13 @@ import 'utils.dart';
 
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
-  /// of the [Analytics] abstract class using the [LocalFileSystem]
+  /// of the [Analytics] abstract class using the [LocalFileSystem].
   ///
   /// If [enableAsserts] is set to `true`, then asserts for GA4 limitations
-  /// will be enabled
+  /// will be enabled.
+  ///
+  /// [flutterChannel] and [flutterVersion] are nullable in case the client
+  /// using this package is unable to resolve those values.
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
@@ -83,10 +86,13 @@ abstract class Analytics {
 
   /// Factory constructor to return the [AnalyticsImpl] class with
   /// Google Analytics credentials that point to a test instance and
-  /// not the production instance where live data will be sent
+  /// not the production instance where live data will be sent.
   ///
   /// By default, [enableAsserts] is set to `true` to check against
-  /// GA4 limitations
+  /// GA4 limitations.
+  ///
+  /// [flutterChannel] and [flutterVersion] are nullable in case the client
+  /// using this package is unable to resolve those values.
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
@@ -142,22 +148,22 @@ abstract class Analytics {
   }
 
   /// Factory constructor to return the [AnalyticsImpl] class with a
-  /// [MemoryFileSystem] to use for testing
+  /// [MemoryFileSystem] to use for testing.
   @visibleForTesting
   factory Analytics.test({
     required DashTool tool,
     required Directory homeDirectory,
     required String measurementId,
     required String apiSecret,
-    String? flutterChannel,
-    String? flutterVersion,
     required String dartVersion,
-    int toolsMessageVersion = kToolsMessageVersion,
-    String toolsMessage = kToolsMessage,
     required FileSystem fs,
     required DevicePlatform platform,
+    String? flutterChannel,
+    String? flutterVersion,
     SurveyHandler? surveyHandler,
     GAClient? gaClient,
+    int toolsMessageVersion = kToolsMessageVersion,
+    String toolsMessage = kToolsMessage,
   }) =>
       AnalyticsImpl(
         tool: tool,
@@ -179,57 +185,57 @@ abstract class Analytics {
       );
 
   /// Retrieves the consent message to prompt users with on first
-  /// run or when the message has been updated
+  /// run or when the message has been updated.
   String get getConsentMessage;
 
-  /// Returns true if it is OK to send an analytics message.   Do not cache,
+  /// Returns true if it is OK to send an analytics message. Do not cache,
   /// as this depends on factors that can change, such as the configuration
   /// file contents.
   bool get okToSend;
 
   /// Returns a map object with all of the tools that have been parsed
-  /// out of the configuration file
+  /// out of the configuration file.
   Map<String, ToolInfo> get parsedTools;
 
-  /// Boolean that lets the client know if they should display the message
+  /// Boolean that lets the client know if they should display the message.
   bool get shouldShowMessage;
 
-  /// Boolean indicating whether or not telemetry is enabled
+  /// Boolean indicating whether or not telemetry is enabled.
   bool get telemetryEnabled;
 
   /// Returns a map representation of the [UserProperty] for the [Analytics]
   /// instance.
   ///
-  /// This is what will get sent to Google Analytics with every request
+  /// This is what will get sent to Google Analytics with every request.
   Map<String, Map<String, Object?>> get userPropertyMap;
 
   /// Method to be invoked by the client using this package to confirm
   /// that the client has shown the message and that it can be added to
-  /// the config file and start sending events the next time it starts up
+  /// the config file and start sending events the next time it starts up.
   void clientShowedMessage();
 
-  /// Call this method when the tool using this package is closed
+  /// Call this method when the tool using this package is closed.
   ///
   /// Prevents the tool from hanging when if there are still requests
-  /// that need to be sent off
+  /// that need to be sent off.
   void close();
 
-  /// Method to fetch surveys from the specified endpoint [kContextualSurveyUrl]
+  /// Method to fetch surveys from the endpoint [kContextualSurveyUrl].
   ///
   /// Any survey that is returned by this method has already passed
-  /// the survey conditions specified in the remote survey metadata file
+  /// the survey conditions specified in the remote survey metadata file.
   ///
   /// If the method returns an empty list, then there are no surveys to be
-  /// shared with the user
+  /// shared with the user.
   Future<List<Survey>> fetchAvailableSurveys();
 
-  /// Query the persisted event data stored on the user's machine
+  /// Query the persisted event data stored on the user's machine.
   ///
-  /// Returns null if there are no persisted logs
+  /// Returns null if there are no persisted logs.
   LogFileStats? logFileStats();
 
   /// Send preconfigured events using specific named constructors
-  /// on the [Event] class
+  /// on the [Event] class.
   ///
   /// Example
   /// ```dart
@@ -238,33 +244,37 @@ abstract class Analytics {
   Future<Response>? send(Event event);
 
   /// Pass a boolean to either enable or disable telemetry and make
-  /// the necessary changes in the persisted configuration file
+  /// the necessary changes in the persisted configuration file.
   ///
   /// Setting the telemetry status will also send an event to GA
-  /// indicating the latest status of the telemetry from [reportingBool]
+  /// indicating the latest status of the telemetry from [reportingBool].
   Future<void> setTelemetry(bool reportingBool);
 
   /// Calling this will result in telemetry collection being suppressed for
-  /// the current invocation
+  /// the current invocation.
   ///
   /// If you would like to permanently disable telemetry
-  /// collection use `setTelemetry(false)`
+  /// collection use:
+  ///
+  /// ```dart
+  /// analytics.setTelemetry(false)
+  /// ```
   void suppressTelemetry();
 
-  /// Method to run after interacting with a [Survey]
+  /// Method to run after interacting with a [Survey] instance.
   ///
   /// Pass a [Survey] instance which can be retrieved from
-  /// `fetchAvailableSurveys()`
+  /// [Analytics.fetchAvailableSurveys].
   ///
-  /// [surveyButton] is the button that was interacted with by the user
+  /// [surveyButton] is the button that was interacted with by the user.
   void surveyInteracted({
     required Survey survey,
     required SurveyButton surveyButton,
   });
 
-  /// Method to be called after a survey has been shown to the user
+  /// Method to be called after a survey has been shown to the user.
   ///
-  /// Calling this will snooze the survey so it won't be shown immediately
+  /// Calling this will snooze the survey so it won't be shown immediately.
   ///
   /// The snooze period is defined by the [Survey.snoozeForMinutes] field.
   void surveyShown(Survey survey);
@@ -286,27 +296,27 @@ class AnalyticsImpl implements Analytics {
   /// Tells the client if they need to show a message to the
   /// user; this will return true if it is the first time the
   /// package is being used for a developer or if the consent
-  /// message has been updated by the package
+  /// message has been updated by the package.
   late bool _showMessage;
 
   /// This will be switch to true once it has been confirmed by the
-  /// client using this package that they have shown this message
-  /// to the developer
+  /// client using this package that they have shown the
+  /// consent message to the developer.
   ///
   /// If the tool using this package as already shown the consent message
-  /// and it has been added to the config file, it will be set as true
+  /// and it has been added to the config file, it will be set as true.
   ///
   /// It will also be set to true once the tool using this package has
-  /// invoked [clientShowedMessage]
+  /// invoked [clientShowedMessage].
   ///
-  /// If this is false, all events will be blocked from being sent
+  /// If this is false, all events will be blocked from being sent.
   bool _clientShowedMessage = false;
 
   /// When set to `true`, various assert statements will be enabled
-  /// to ensure usage of this class is within GA4 limitations
+  /// to ensure usage of this class is within GA4 limitations.
   final bool _enableAsserts;
 
-  /// Telemetry suppression flag that is set via `suppressTelemetry()`
+  /// Telemetry suppression flag that is set via [Analytics.suppressTelemetry].
   bool _telemetrySuppressed = false;
 
   AnalyticsImpl({
@@ -399,18 +409,18 @@ class AnalyticsImpl implements Analytics {
   }
 
   /// Checking the [telemetryEnabled] boolean reflects what the
-  /// config file reflects
+  /// config file reflects.
   ///
   /// Checking the [_showMessage] boolean indicates if this the first
   /// time the tool is using analytics or if there has been an update
   /// the messaging found in constants.dart - in both cases, analytics
-  /// will not be sent until the second time the tool is used
+  /// will not be sent until the second time the tool is used.
   ///
-  /// Additionally, if the client has not invoked `clientShowedMessage`,
-  /// then no events shall be sent.
+  /// Additionally, if the client has not invoked
+  /// [Analytics.clientShowedMessage], then no events shall be sent.
   ///
   /// If the user has suppressed telemetry [_telemetrySuppressed] will
-  /// return `true` to prevent events from being sent for current invocation
+  /// return `true` to prevent events from being sent for current invocation.
   @override
   bool get okToSend =>
       telemetryEnabled &&

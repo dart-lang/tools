@@ -11,9 +11,9 @@ final class Event {
   final Map<String, Object?> eventData;
 
   /// Event that is emitted whenever a user has opted in
-  /// or out of the analytics collection
+  /// or out of the analytics collection.
   ///
-  /// [status] - boolean value where `true` indicates user is opting in
+  /// [status] - boolean value where `true` indicates user is opting in.
   Event.analyticsCollectionEnabled({required bool status})
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
@@ -24,13 +24,13 @@ final class Event {
   ///
   /// [duration] - json encoded percentile values indicating how long it took
   ///     from the time the server started handling the notification until the
-  ///     server had finished handling the notification
+  ///     server had finished handling the notification.
   ///
   /// [latency] - json encoded percentile values indicating how long it took
   ///     from the time the notification was sent until the server started
-  ///     handling it
+  ///     handling it.
   ///
-  /// [method] - the name of the notification method that was sent
+  /// [method] - the name of the notification method that was sent.
   Event.clientNotification({
     required String duration,
     required String latency,
@@ -47,52 +47,52 @@ final class Event {
   ///
   /// [duration] - json encoded percentile values indicating how long it took
   ///     from the time the server started handling the request until the server
-  ///     had send a response
+  ///     had send a response.
   ///
   /// [latency] - json encoded percentile values indicating how long it took
   ///     from the time the request was sent until the server started handling
-  ///     it
+  ///     it.
   ///
-  /// [method] - the name of the request method that was sent
+  /// [method] - the name of the request method that was sent.
   ///
   /// If the method is `workspace/didChangeWorkspaceFolders`, then the following
   /// parameters should be included:
   ///
   /// [added] - json encoded percentile values indicating the number of folders
-  ///     that were added
+  ///     that were added.
   ///
   /// [removed] - json encoded percentile values indicating the number of
-  ///     folders that were removed
+  ///     folders that were removed.
   ///
   /// If the method is `initialized`, then the following parameters should be
   /// included:
   ///
   /// [openWorkspacePaths] - json encoded percentile values indicating the
-  ///     number of workspace paths that were opened
+  ///     number of workspace paths that were opened.
   ///
   /// If the method is `analysis.setAnalysisRoots`, then the following
   /// parameters should be included:
   ///
   /// [included] - json encoded percentile values indicating the number of
-  ///     analysis roots in the included list
+  ///     analysis roots in the included list.
   ///
   /// [excluded] - json encoded percentile values indicating the number of
-  ///     analysis roots in the excluded list
+  ///     analysis roots in the excluded list.
   ///
   /// If the method is `analysis.setPriorityFiles`, then the following
   /// parameters should be included:
   ///
   /// [files] - json encoded percentile values indicating the number of priority
-  ///     files
+  ///     files.
   ///
   Event.clientRequest({
-    String? added,
     required String duration,
+    required String latency,
+    required String method,
+    String? added,
     String? excluded,
     String? files,
     String? included,
-    required String latency,
-    required String method,
     String? openWorkspacePaths,
     String? removed,
   })  : eventName = DashEvent.clientRequest,
@@ -112,11 +112,13 @@ final class Event {
   /// Event that is emitted periodically to report the number of times a given
   /// command has been executed.
   ///
-  /// [count] - the number of times the command was executed
+  /// [count] - the number of times the command was executed.
   ///
-  /// [name] - the name of the command that was executed
-  Event.commandExecuted({required int count, required String name})
-      : eventName = DashEvent.commandExecuted,
+  /// [name] - the name of the command that was executed.
+  Event.commandExecuted({
+    required int count,
+    required String name,
+  })  : eventName = DashEvent.commandExecuted,
         eventData = {
           'count': count,
           'name': name,
@@ -129,32 +131,33 @@ final class Event {
   ///     of both a package config and an analysis options file.
   ///
   /// [contextsFromOptionsFiles] - the number of contexts that were created
-  ///     because of an analysis options file
+  ///     because of an analysis options file.
   ///
   /// [contextsFromPackagesFiles] - the number of contexts that were created
-  ///     because of a package config file
+  ///     because of a package config file.
   ///
   /// [contextsWithoutFiles] - the number of contexts that were created because
   ///     of the lack of either a package config or an analysis options file.
   ///
-  /// [immediateFileCount] - the number of files in one of the analysis contexts
+  /// [immediateFileCount] - the number of files in one of the analysis
+  ///     contexts.
   ///
-  /// [immediateFileLineCount] - the number of lines in the immediate files
+  /// [immediateFileLineCount] - the number of lines in the immediate files.
   ///
-  /// [numberOfContexts] - the number of analysis context created
+  /// [numberOfContexts] - the number of analysis context created.
   ///
   /// [transitiveFileCount] - the number of files reachable from the files in
   ///     each analysis context, where files can be counted multiple times if
-  ///     they are reachable from multiple contexts
+  ///     they are reachable from multiple contexts.
   ///
   /// [transitiveFileLineCount] - the number of lines in the transitive files,
   ///     where files can be counted multiple times if they are reachable from
-  ///     multiple contexts
+  ///     multiple contexts.
   ///
   /// [transitiveFileUniqueCount] - the number of unique files reachable from
-  ///     the files in each analysis context
+  ///     the files in each analysis context.
   ///
-  /// [transitiveFileUniqueLineCount] - the number of lines in the unique
+  /// [transitiveFileUniqueLineCount] - the number of lines in the unique.
   ///     transitive files
   Event.contextStructure({
     required int contextsFromBothFiles,
@@ -190,9 +193,9 @@ final class Event {
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
-  /// [count] - the number of contexts in which the lint was enabled
+  /// [count] - the number of contexts in which the lint was enabled.
   ///
-  /// [name] - the name of the lint
+  /// [name] - the name of the lint.
   Event.lintUsageCount({
     required int count,
     required String name,
@@ -205,16 +208,16 @@ final class Event {
   /// Event that is emitted periodically to report the amount of memory being
   /// used.
   ///
-  /// [rss] - the resident set size in megabytes
+  /// [rss] - the resident set size in megabytes.
   ///
   /// If this is not the first time memory has been reported for this session,
   /// then the following parameters should be included:
   ///
   /// [periodSec] - the number of seconds since the last memory usage data was
-  ///     gathered
+  ///     gathered.
   ///
   /// [mbPerSec] - the number of megabytes of memory that were added or
-  ///     subtracted per second since the last report
+  ///     subtracted per second since the last report.
   Event.memoryInfo({
     required int rss,
     int? periodSec,
@@ -231,11 +234,11 @@ final class Event {
   ///
   /// [duration] - json encoded percentile values indicating how long it took
   ///     from the time the request was sent to the plugin until the response
-  ///     was processed by the server
+  ///     was processed by the server.
   ///
-  /// [method] - the name of the request sent to the plugin
+  /// [method] - the name of the request sent to the plugin.
   ///
-  /// [pluginId] - the id of the plugin whose performance is being reported
+  /// [pluginId] - the id of the plugin whose performance is being reported.
   Event.pluginRequest({
     required String duration,
     required String method,
@@ -251,12 +254,12 @@ final class Event {
   /// given plugin has been used.
   ///
   /// [count] - the number of times plugins usage was changed, which will always
-  ///     be at least one
+  ///     be at least one.
   ///
   /// [enabled] - json encoded percentile values indicating the number of
-  ///     contexts for which the plugin was enabled
+  ///     contexts for which the plugin was enabled.
   ///
-  /// [pluginId] - the id of the plugin associated with the data
+  /// [pluginId] - the id of the plugin associated with the data.
   Event.pluginUse({
     required int count,
     required String enabled,
@@ -271,19 +274,19 @@ final class Event {
   /// Event that is emitted on shutdown to report information about the whole
   /// session for which the analysis server was running.
   ///
-  /// [clientId] - the id of the client that started the server
+  /// [clientId] - the id of the client that started the server.
   ///
-  /// [clientVersion] - the version of the client that started the server
+  /// [clientVersion] - the version of the client that started the server.
   ///
-  /// [duration] - the number of milliseconds for which the server was running
+  /// [duration] - the number of milliseconds for which the server was running.
   ///
   /// [flags] - the flags passed to the analysis server on startup, without any
   ///     argument values for flags that take values, or an empty string if
-  ///     there were no arguments
+  ///     there were no arguments.
   ///
   /// [parameters] - the names of the parameters passed to the `initialize`
   ///     request, or an empty string if the `initialize` request was not sent
-  ///     or if there were no parameters given
+  ///     or if there were no parameters given.
   Event.serverSession({
     required String clientId,
     required String clientVersion,
@@ -302,10 +305,10 @@ final class Event {
   /// Event that is emitted periodically to report the number of times the
   /// severity of a diagnostic was changed in the analysis options file.
   ///
-  /// [diagnostic] - the name of the diagnostic whose severity was changed
+  /// [diagnostic] - the name of the diagnostic whose severity was changed.
   ///
   /// [adjustments] - json encoded map of severities to the number of times the
-  ///     diagnostic's severity was changed to the key
+  ///     diagnostic's severity was changed to the key.
   Event.severityAdjustment({
     required String diagnostic,
     required String adjustments,
@@ -316,12 +319,12 @@ final class Event {
         };
 
   /// Event that is emitted by `package:unified_analytics` when
-  /// the user takes action when prompted with a survey
+  /// the user takes action when prompted with a survey.
   ///
-  /// [surveyId] - the unique id for a given survey
+  /// [surveyId] - the unique id for a given survey.
   ///
   /// [status] - the string identifier for a given [SurveyButton] under
-  ///     the `action` field
+  ///     the `action` field.
   Event.surveyAction({
     required String surveyId,
     required String status,
@@ -332,9 +335,9 @@ final class Event {
         };
 
   /// Event that is emitted by `package:unified_analytics` when the
-  /// user has been shown a survey
+  /// user has been shown a survey.
   ///
-  /// [surveyId] - the unique id for a given survey
+  /// [surveyId] - the unique id for a given survey.
   Event.surveyShown({
     required String surveyId,
   })  : eventName = DashEvent.surveyShown,

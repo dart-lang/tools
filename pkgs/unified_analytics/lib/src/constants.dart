@@ -2,18 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// URL endpoint for sending Google Analytics Events
+/// URL endpoint for sending Google Analytics Events.
 const String kAnalyticsUrl = 'https://www.google-analytics.com/mp/collect';
 
 /// Name for the text file that will contain the user's randomly generated
-/// client id
+/// client id.
 const String kClientIdFileName = 'CLIENT_ID';
 
-/// Name for the file where telemetry status and tools data will be stored
+/// Name for the file where telemetry status and tools data will be stored.
 const String kConfigFileName = 'dart-flutter-telemetry.config';
 
 /// The string that will provide the boilerplate for the configuration file
-/// stored on the user's machine
+/// stored on the user's machine.
 const String kConfigString = '''
 # INTRODUCTION
 #
@@ -51,42 +51,42 @@ reporting=1
 # a number representing the version of the message that was
 # displayed.''';
 
-/// Link to contextual survey metadata file
+/// Link to contextual survey metadata file.
 const String kContextualSurveyUrl =
     'https://storage.googleapis.com/flutter-uxr/surveys/contextual-survey-metadata.json';
 
 /// Name of the directory where all of the files necessary for this package
-/// will be located
+/// will be located.
 const String kDartToolDirectoryName = '.dart-tool';
 
-/// Name of the file where we persist dismissed survey ids
+/// Name of the file where we persist dismissed survey ids.
 const String kDismissedSurveyFileName =
     'dart-flutter-telemetry-dismissed-surveys.json';
 
-/// The API secret associated with the GA4 instance's Measurement Protocol
+/// The API secret associated with the GA4 instance's Measurement Protocol.
 const String kGoogleAnalyticsApiSecret = 'Ka1jc8tZSzWc_GXMWHfPHA';
 
-/// The measurement ID related to the GA4 instance
+/// The measurement ID related to the GA4 instance.
 ///
-/// Serves as an identifier for a web data stream
+/// Serves as an identifier for a web data stream.
 const String kGoogleAnalyticsMeasurementId = 'G-04BXPVBCWJ';
 
-/// How many data records to store in the log file
+/// How many data records to store in the log file.
 const int kLogFileLength = 2500;
 
-/// Filename for the log file to persist sent events on user's machine
+/// Filename for the log file to persist sent events on user's machine.
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
 const String kPackageVersion = '3.1.0';
 
-/// The minimum length for a session
+/// The minimum length for a session.
 const int kSessionDurationMinutes = 30;
 
-/// Name for the json file where the session details will be stored
+/// Name for the json file where the session details will be stored.
 const String kSessionFileName = 'dart-flutter-telemetry-session.json';
 
-/// The message that should be shown to the user
+/// The message that should be shown to the user.
 const String kToolsMessage = '''
 The [tool name] uses Google Analytics to report usage and diagnostic data
 along with package dependencies, and crash reporting to send basic crash reports.
@@ -102,8 +102,8 @@ This data is collected in accordance with the
 Google Privacy Policy (https://policies.google.com/privacy).
 ''';
 
-/// The version number for the message below
+/// The version number for the message below.
 ///
 /// If the message below is altered, the version should be incremented so that
-/// users can be prompted with the updated messaging
+/// users can be prompted with the updated messaging.
 const int kToolsMessageVersion = 1;
