@@ -32,8 +32,8 @@ abstract class Analytics {
   /// If [enableAsserts] is set to `true`, then asserts for GA4 limitations
   /// will be enabled.
   ///
-  /// [flutterChannel] and [flutterVersion] are nullable incase the client
-  /// using this package is unable to resolve those values
+  /// [flutterChannel] and [flutterVersion] are nullable in case the client
+  /// using this package is unable to resolve those values.
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
@@ -91,8 +91,8 @@ abstract class Analytics {
   /// By default, [enableAsserts] is set to `true` to check against
   /// GA4 limitations.
   ///
-  /// [flutterChannel] and [flutterVersion] are nullable incase the client
-  /// using this package is unable to resolve those values
+  /// [flutterChannel] and [flutterVersion] are nullable in case the client
+  /// using this package is unable to resolve those values.
   factory Analytics.development({
     required DashTool tool,
     required String dartVersion,
@@ -188,7 +188,7 @@ abstract class Analytics {
   /// run or when the message has been updated.
   String get getConsentMessage;
 
-  /// Returns true if it is OK to send an analytics message.   Do not cache,
+  /// Returns true if it is OK to send an analytics message. Do not cache,
   /// as this depends on factors that can change, such as the configuration
   /// file contents.
   bool get okToSend;
@@ -220,8 +220,7 @@ abstract class Analytics {
   /// that need to be sent off.
   void close();
 
-  /// Method to fetch surveys from the specified
-  /// endpoint [kContextualSurveyUrl].
+  /// Method to fetch surveys from the endpoint [kContextualSurveyUrl].
   ///
   /// Any survey that is returned by this method has already passed
   /// the survey conditions specified in the remote survey metadata file.
