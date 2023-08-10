@@ -205,6 +205,8 @@ void main() {
   });
 
   test('Toggling telemetry boolean through Analytics class api', () async {
+    final originalClientId = clientIdFile.readAsStringSync();
+
     expect(analytics.telemetryEnabled, true,
         reason: 'Telemetry should be enabled by default '
             'when initialized for the first time');
@@ -239,6 +241,50 @@ void main() {
         reason: 'Check on event name');
     expect((lastLogItem['events'] as List).last['params']['status'], true,
         reason: 'Status should be false');
+    expect((lastLogItem['client_id'] as String).isNotEmpty, true);
+    expect(originalClientId != lastLogItem['client_id'], true,
+        reason: 'When opting in again, the client id should be regenerated');
+  });
+
+  test('Confirm client id is not empty string after opting in', () async {
+    await analytics.setTelemetry(false);
+    expect(logFile.readAsLinesSync().length, 0,
+        reason: 'Log file should have been cleared after opting out');
+    expect(clientIdFile.readAsStringSync().length, 0,
+        reason: 'CLIENT ID file gets cleared on opt out');
+
+    // Start up a second instance to simulate starting another
+    // command being run
+    final secondAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    // Setting telemetry back on will emit a new event
+    // where the client id string should not be empty
+    await secondAnalytics.setTelemetry(true);
+    expect(analytics.telemetryEnabled, true,
+        reason: 'Analytics telemetry should be enabled');
+    expect(logFile.readAsLinesSync().length, 1,
+        reason: 'There should only one event since it was cleared on opt out');
+    expect(clientIdFile.readAsStringSync().length, greaterThan(0),
+        reason: 'CLIENT ID file gets regenerated on opt in');
+
+    // Extract the last log item to check for the keys
+    final lastLogItem =
+        jsonDecode(logFile.readAsLinesSync().last) as Map<String, Object?>;
+    expect((lastLogItem['client_id'] as String).isNotEmpty, true,
+        reason: 'The client id should have been regenerated and '
+            'emitted in the opt in event');
   });
 
   test(

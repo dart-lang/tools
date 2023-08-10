@@ -286,7 +286,7 @@ class AnalyticsImpl implements Analytics {
   late final ConfigHandler _configHandler;
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
-  late final String _clientId;
+  late String _clientId;
   late final File _clientIdFile;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
@@ -556,32 +556,47 @@ class AnalyticsImpl implements Analytics {
     final collectionEvent =
         Event.analyticsCollectionEnabled(status: reportingBool);
 
-    // Construct the body of the request to signal
-    // telemetry status toggling
-    //
-    // We use don't use the sendEvent method because it may
-    // be blocked by the [telemetryEnabled] getter
-    final body = generateRequestBody(
-      clientId: _clientId,
-      eventName: collectionEvent.eventName,
-      eventData: collectionEvent.eventData,
-      userProperty: userProperty,
-    );
+    // The body of the request that will be sent to GA4
+    final Map<String, Object?> body;
 
-    _logHandler.save(data: body);
-
-    // Conditional logic for clearing contents of persisted
-    // files (except for config file) on opt out
-    if (!reportingBool) {
-      _sessionHandler.sessionFile.writeAsStringSync('');
-      _logHandler.logFile.writeAsStringSync('');
-      _clientIdFile.writeAsStringSync('');
-    } else {
+    if (reportingBool) {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
       // to persist from events sent
       Initializer.createClientIdFile(clientFile: _clientIdFile);
       Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
+
+      // Reread the client ID string so an empty string is not being
+      // sent to GA4 since the persisted files are cleared when a user
+      // decides to opt out of telemetry collection
+      _clientId = _clientIdFile.readAsStringSync();
+
+      // We must construct the body at this point after we have read in the
+      // new client id string that was generated
+      body = generateRequestBody(
+        clientId: _clientId,
+        eventName: collectionEvent.eventName,
+        eventData: collectionEvent.eventData,
+        userProperty: userProperty,
+      );
+
+      _logHandler.save(data: body);
+    } else {
+      // Construct the body of the request to signal
+      // telemetry status toggling
+      body = generateRequestBody(
+        clientId: _clientId,
+        eventName: collectionEvent.eventName,
+        eventData: collectionEvent.eventData,
+        userProperty: userProperty,
+      );
+
+      // For opted out users, data in the persisted files is cleared
+      _sessionHandler.sessionFile.writeAsStringSync('');
+      _logHandler.logFile.writeAsStringSync('');
+      _clientIdFile.writeAsStringSync('');
+
+      _clientId = _clientIdFile.readAsStringSync();
     }
 
     // Pass to the google analytics client to send
