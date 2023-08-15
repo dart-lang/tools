@@ -31,13 +31,13 @@ class Session {
   /// This will use the data parsed from the
   /// session json file in the dart-tool directory
   /// to get the session id if the last ping was within
-  /// [sessionDurationMinutes]
+  /// [sessionDurationMinutes].
   ///
   /// If time since last ping exceeds the duration, then the file
-  /// will be updated with a new session id and that will be returned
+  /// will be updated with a new session id and that will be returned.
   ///
   /// Note, the file will always be updated when calling this method
-  /// because the last ping variable will always need to be persisted
+  /// because the last ping variable will always need to be persisted.
   int getSessionId() {
     _refreshSessionData();
     final now = clock.now();
@@ -61,7 +61,7 @@ class Session {
     return _sessionId;
   }
 
-  /// Return a json formatted representation of the class
+  /// Return a json formatted representation of the class.
   String toJson() => jsonEncode(<String, int>{
         'session_id': _sessionId,
         'last_ping': _lastPing,
@@ -70,11 +70,11 @@ class Session {
   /// This will go to the session file within the dart-tool
   /// directory and fetch the latest data from the json to update
   /// the class's variables. If the json file is malformed, a new
-  /// session file will be recreated
+  /// session file will be recreated.
   ///
   /// This allows the session data in this class to always be up
   /// to date incase another tool is also calling this package and
-  /// making updates to the session file
+  /// making updates to the session file.
   void _refreshSessionData() {
     /// Using a nested function here to reduce verbosity
     void parseContents() {
@@ -97,38 +97,4 @@ class Session {
       parseContents();
     }
   }
-}
-
-class NoopSession implements Session {
-  @override
-  final int _lastPing = 0;
-
-  @override
-  final int _sessionId = DateTime.now().millisecondsSinceEpoch;
-
-  @override
-  void _refreshSessionData() {}
-
-  @override
-  File get sessionFile => throw UnimplementedError();
-
-  @override
-  FileSystem get fs => throw UnimplementedError();
-
-  @override
-  int getSessionId() => _sessionId;
-
-  @override
-  Directory get homeDirectory => throw UnimplementedError();
-
-  @override
-  String toJson() {
-    throw UnimplementedError();
-  }
-
-  @override
-  set _lastPing(int lastPing) {}
-
-  @override
-  set _sessionId(int sessionId) {}
 }

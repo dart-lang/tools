@@ -12,37 +12,63 @@ import 'constants.dart';
 import 'initializer.dart';
 
 /// Data class that will be returned when analyzing the
-/// persisted log file on the client's machine
+/// persisted log file on the client's machine.
 class LogFileStats {
-  /// The oldest timestamp in the log file
+  /// The oldest timestamp in the log file.
   final DateTime startDateTime;
 
-  /// Number of minutes from [startDateTime] to [clock.now()]
+  /// Number of minutes from [startDateTime] to now using [clock].
   final int minsFromStartDateTime;
 
-  /// The latest timestamp in the log file
+  /// The latest timestamp in the log file.
   final DateTime endDateTime;
 
-  /// Number of minutes from [endDateTime] to [clock.now()]
+  /// Number of minutes from [endDateTime] to now using [clock].
   final int minsFromEndDateTime;
 
-  /// The number of unique session ids found in the log file
+  /// The number of unique session ids found in the log file.
   final int sessionCount;
 
-  /// The number of unique flutter channels found in the log file
-  final int flutterChannelCount;
+  /// The map containing all of the flutter channels and a count
+  /// of how many events were under each channel.
+  ///
+  /// ```
+  /// {
+  ///   'stable': 123,
+  ///   'beta': 50,
+  ///   'master': 5,
+  /// }
+  /// ```
+  final Map<String, int> flutterChannelCount;
 
-  /// The number of unique tools found in the log file
-  final int toolCount;
+  /// The map containing all of the tools that have sent events
+  /// and how many events were sent by each tool.
+  ///
+  /// ```
+  /// {
+  ///   'flutter-tool': 500,
+  ///   'dart-tool': 45,
+  ///   'vscode-plugins': 321,
+  /// }
+  /// ```
+  final Map<String, int> toolCount;
 
   /// The map containing all of the events in the file along with
-  /// how many times they have occured
+  /// how many times they have occured.
+  ///
+  /// ```
+  /// {
+  ///   'client_request': 345,
+  ///   'hot_reload_time': 765,
+  ///   'memory_info': 90,
+  /// }
+  /// ```
   final Map<String, int> eventCount;
 
-  /// Total number of records in the log file
+  /// Total number of records in the log file.
   final int recordCount;
 
-  /// Contains the data from the [LogHandler.logFileStats] method
+  /// Contains the data from the [LogHandler.logFileStats] method.
   const LogFileStats({
     required this.startDateTime,
     required this.minsFromStartDateTime,
@@ -56,31 +82,87 @@ class LogFileStats {
   });
 
   @override
-  String toString() => jsonEncode(<String, Object?>{
-        'startDateTime': startDateTime.toString(),
-        'minsFromStartDateTime': minsFromStartDateTime,
-        'endDateTime': endDateTime.toString(),
-        'minsFromEndDateTime': minsFromEndDateTime,
-        'sessionCount': sessionCount,
-        'flutterChannelCount': flutterChannelCount,
-        'toolCount': toolCount,
-        'recordCount': recordCount,
-        'eventCount': eventCount,
-      });
+  String toString() {
+    final encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert({
+      'startDateTime': startDateTime.toString(),
+      'minsFromStartDateTime': minsFromStartDateTime,
+      'endDateTime': endDateTime.toString(),
+      'minsFromEndDateTime': minsFromEndDateTime,
+      'sessionCount': sessionCount,
+      'recordCount': recordCount,
+      'eventCount': eventCount,
+      'toolCount': toolCount,
+      'flutterChannelCount': flutterChannelCount,
+    });
+  }
+
+  /// Pass in a string label for one of the instance variables
+  /// and return the integer value of that label.
+  ///
+  /// If label passed for [DateTime] instance variable, integer
+  /// in the form of [DateTime.millisecondsSinceEpoch] will be
+  /// returned.
+  ///
+  /// Returns null if the label passed does not match anything.
+  int? getValueByString(String label) {
+    // When querying counts, the label will include the
+    // key for the appropriate map
+    //
+    // Example: logFileStats.toolCount.flutter-tool is asking
+    //   for the number of events sent via flutter cli
+    final parts = label.split('.');
+    String? key;
+    if (parts.length >= 3) {
+      // Assign the first two parts of the string as the label
+      // ie. logFileStats.toolCount.flutter-tool -> logFileStats.toolCount
+      label = parts.sublist(0, 2).join('.');
+      key = parts.sublist(2, parts.length).join('.');
+    }
+
+    switch (label) {
+      case 'logFileStats.startDateTime':
+        return startDateTime.millisecondsSinceEpoch;
+      case 'logFileStats.minsFromStartDateTime':
+        return minsFromStartDateTime;
+      case 'logFileStats.endDateTime':
+        return endDateTime.millisecondsSinceEpoch;
+      case 'logFileStats.minsFromEndDateTime':
+        return minsFromEndDateTime;
+      case 'logFileStats.sessionCount':
+        return sessionCount;
+      case 'logFileStats.recordCount':
+        return recordCount;
+      case 'logFileStats.flutterChannelCount':
+        if (key != null && flutterChannelCount.containsKey(key)) {
+          return flutterChannelCount[key];
+        }
+      case 'logFileStats.toolCount':
+        if (key != null && toolCount.containsKey(key)) {
+          return toolCount[key];
+        }
+      case 'logFileStats.eventCount':
+        if (key != null && eventCount.containsKey(key)) {
+          return eventCount[key];
+        }
+    }
+
+    return null;
+  }
 }
 
 /// This class is responsible for writing to a log
-/// file that has been initialized by the [Initializer]
+/// file that has been initialized by the [Initializer].
 ///
 /// It will be treated as an append only log and will be limited
-/// to have has many data records as specified by [kLogFileLength]
+/// to have has many data records as specified by [kLogFileLength].
 class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
   final File logFile;
 
   /// A log handler constructor that will delegate saving
-  /// logs and retrieving stats from the persisted log
+  /// logs and retrieving stats from the persisted log.
   LogHandler({
     required this.fs,
     required this.homeDirectory,
@@ -90,11 +172,11 @@ class LogHandler {
           kLogFileName,
         ));
 
-  /// Get stats from the persisted log file
+  /// Get stats from the persisted log file.
   ///
   /// Note that some developers may only be Dart
   /// developers and will not have any data for flutter
-  /// related metrics
+  /// related metrics.
   LogFileStats? logFileStats() {
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
@@ -121,6 +203,8 @@ class LogHandler {
 
     // Map of counters for each event
     final eventCount = <String, int>{};
+    final flutterChannelCount = <String, int>{};
+    final toolCount = <String, int>{};
     for (var record in records) {
       counter['sessions']!.add(record.sessionId);
       counter['tool']!.add(record.tool);
@@ -134,6 +218,24 @@ class LogHandler {
         eventCount[record.eventName] = 0;
       }
       eventCount[record.eventName] = eventCount[record.eventName]! + 1;
+
+      // Counting how many events were recorded for each tool
+      if (!toolCount.containsKey(record.tool)) {
+        toolCount[record.tool] = 0;
+      }
+      toolCount[record.tool] = toolCount[record.tool]! + 1;
+
+      // Necessary to perform a null check for flutter channel because
+      // not all events will have information about flutter
+      if (record.flutterChannel != null) {
+        final flutterChannel = record.flutterChannel!;
+        if (!flutterChannelCount.containsKey(flutterChannel)) {
+          flutterChannelCount[flutterChannel] = 0;
+        }
+
+        flutterChannelCount[flutterChannel] =
+            flutterChannelCount[flutterChannel]! + 1;
+      }
     }
 
     final now = clock.now();
@@ -144,17 +246,17 @@ class LogHandler {
       endDateTime: endDateTime,
       minsFromEndDateTime: now.difference(endDateTime).inMinutes,
       sessionCount: counter['sessions']!.length,
-      flutterChannelCount: counter['flutter_channel']!.length,
-      toolCount: counter['tool']!.length,
+      flutterChannelCount: flutterChannelCount,
+      toolCount: toolCount,
       eventCount: eventCount,
       recordCount: records.length,
     );
   }
 
-  /// Saves the data passed in as a single line in the log file
+  /// Saves the data passed in as a single line in the log file.
   ///
   /// This will keep the max number of records limited to equal to
-  /// or less than [kLogFileLength] records
+  /// or less than [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
     var records = logFile.readAsLinesSync();
     final content = '${jsonEncode(data)}\n';
@@ -172,7 +274,7 @@ class LogHandler {
   }
 }
 
-/// Data class for each record persisted on the client's machine
+/// Data class for each record persisted on the client's machine.
 class LogItem {
   final String eventName;
   final int sessionId;
@@ -194,14 +296,14 @@ class LogItem {
     required this.localTime,
   });
 
-  /// Serves a parser for each record in the log file
+  /// Serves a parser for each record in the log file.
   ///
   /// Using this method guarantees that we have parsed out
   /// fields that are necessary for the [LogHandler.logFileStats]
-  /// method
+  /// method.
   ///
-  /// If the returned value is [null], that indicates a malformed
-  /// record which can be discarded during analysis
+  /// If the returned value is null, that indicates a malformed
+  /// record which can be discarded during analysis.
   ///
   /// Example of what a record looks like:
   /// ```
@@ -313,21 +415,4 @@ class LogItem {
       return null;
     }
   }
-}
-
-class NoopLogHandler implements LogHandler {
-  @override
-  FileSystem get fs => throw UnimplementedError();
-
-  @override
-  Directory get homeDirectory => throw UnimplementedError();
-
-  @override
-  File get logFile => throw UnimplementedError();
-
-  @override
-  LogFileStats? logFileStats() => null;
-
-  @override
-  void save({required Map<String, Object?> data}) {}
 }

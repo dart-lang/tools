@@ -19,14 +19,14 @@ class Initializer {
   bool firstRun = false;
 
   /// Responsibe for the initialization of the files
-  /// necessary for analytics reporting
+  /// necessary for analytics reporting.
   ///
   /// Creates the configuration file that allows the user to
   /// mannually opt out of reporting along with the file containing
-  /// the client ID to be used across all relevant tooling
+  /// the client ID to be used across all relevant tooling.
   ///
   /// Updating of the config file with new versions will
-  /// not be handled by the [Initializer]
+  /// not be handled by the [Initializer].
   Initializer({
     required this.fs,
     required this.tool,
@@ -36,14 +36,14 @@ class Initializer {
 
   /// Creates the text file that will contain the client ID
   /// which will be used across all related tools for analytics
-  /// reporting in GA
+  /// reporting in GA.
   static void createClientIdFile({required File clientFile}) {
     clientFile.createSync(recursive: true);
     clientFile.writeAsStringSync(Uuid().generateV4());
   }
 
   /// Creates the configuration file with the default message
-  /// in the user's home directory
+  /// in the user's home directory.
   void createConfigFile({
     required File configFile,
     required String dateStamp,
@@ -63,8 +63,14 @@ class Initializer {
     }
   }
 
+  /// Creates that file that will persist dismissed survey ids.
+  static void createDismissedSurveyFile({required File dismissedSurveyFile}) {
+    dismissedSurveyFile.createSync(recursive: true);
+    dismissedSurveyFile.writeAsStringSync('{}');
+  }
+
   /// Creates that log file that will store the record formatted
-  /// events locally on the user's machine
+  /// events locally on the user's machine.
   void createLogFile({required File logFile}) {
     logFile.createSync(recursive: true);
   }
@@ -72,7 +78,7 @@ class Initializer {
   /// Creates the session json file which will contain
   /// the current session id along with the timestamp for
   /// the last ping which will be used to increment the session
-  /// if current timestamp is greater than the session window
+  /// if current timestamp is greater than the session window.
   static void createSessionFile({required File sessionFile}) {
     final now = clock.now();
     sessionFile.createSync(recursive: true);
@@ -84,7 +90,7 @@ class Initializer {
 
   /// This will check that there is a client ID populated in
   /// the user's home directory under the dart-tool directory.
-  /// If it doesn't exist, one will be created there
+  /// If it doesn't exist, one will be created there.
   ///
   /// Passing [forceReset] as true will only reset the configuration
   /// file, it won't recreate the client id, session, and log files
@@ -125,6 +131,13 @@ class Initializer {
         .file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
     if (!logFile.existsSync()) {
       createLogFile(logFile: logFile);
+    }
+
+    // Begin initialization checks for the dismissed survey file
+    final dismissedSurveyFile = fs.file(p.join(
+        homeDirectory.path, kDartToolDirectoryName, kDismissedSurveyFileName));
+    if (!dismissedSurveyFile.existsSync()) {
+      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
     }
   }
 }

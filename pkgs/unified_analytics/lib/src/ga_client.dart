@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'constants.dart';
 
 class FakeGAClient implements GAClient {
+  const FakeGAClient();
+
   @override
   String get apiSecret => throw UnimplementedError();
 
@@ -42,24 +44,24 @@ class GAClient {
             'measurement_id=$measurementId&api_secret=$apiSecret',
         _client = http.Client();
 
-  /// Closes the http client's connection to prevent lingering requests
+  /// Closes the http client's connection to prevent lingering requests.
   void close() => _client.close();
 
   /// Receive the payload in Map form and parse
-  /// into JSON to send to GA
+  /// into JSON to send to GA.
   ///
   /// The [Response] returned from this method can be
   /// checked to ensure that events have been sent. A response
   /// status code of `2xx` indicates a successful send event.
   /// A response status code of `500` indicates an error occured on the send
-  /// can the error message can be found in the [Response.body]
+  /// can the error message can be found in the [Response.body].
   Future<http.Response> sendData(Map<String, Object?> body) async {
     final uri = Uri.parse(postUrl);
 
-    /// Using a try catch all since post method can result in several
-    /// errors; clients using this method can check the awaited status
-    /// code to get a specific error message if the status code returned
-    /// is a 500 error status code
+    // Using a try catch all since post method can result in several
+    // errors; clients using this method can check the awaited status
+    // code to get a specific error message if the status code returned
+    // is a 500 error status code
     try {
       return await _client.post(
         uri,
@@ -70,7 +72,15 @@ class GAClient {
       );
       // ignore: avoid_catches_without_on_clauses
     } catch (error) {
-      return Future<http.Response>.value(http.Response(error.toString(), 500));
+      return Future<http.Response>.value(
+        http.Response(
+          error.toString(),
+          500,
+          headers: <String, String>{
+            'content-type': 'text/plain; charset=utf-8',
+          },
+        ),
+      );
     }
   }
 }

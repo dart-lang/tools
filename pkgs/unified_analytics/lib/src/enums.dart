@@ -2,14 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Values for the event name to be sent to Google Analytics
+/// Values for the event name to be sent to Google Analytics.
 ///
 /// The [label] for each enum value is what will be logged, the [description]
-/// is here for documentation purposes
+/// is here for documentation purposes.
+///
+/// Set the nullable [toolOwner] parameter if the event belongs to one specific
+/// tool, otherwise, if multiple tools will be sending the event, leave it null.
 enum DashEvent {
   // Events that can be sent by all tools; these
   // events should not be tool specific; toolOwner
   // not necessary for these events
+
   analyticsCollectionEnabled(
     label: 'analytics_collection_enabled',
     description: 'The opt-in status for analytics collection',
@@ -19,9 +23,13 @@ enum DashEvent {
     description:
         'Information about the execution of a Dart or Flutter CLI command',
   ),
-  timing(
-    label: 'timing',
-    description: 'Timing data collected after performing some operation',
+  surveyAction(
+    label: 'survey_action',
+    description: 'Actions taken by users when shown survey',
+  ),
+  surveyShown(
+    label: 'survey_shown',
+    description: 'Survey shown to the user',
   ),
 
   // Events for the Dart CLI
@@ -38,7 +46,8 @@ enum DashEvent {
     toolOwner: DashTool.flutterTool,
   ),
 
-  // Events for language_server
+  // Events for language_server below
+
   clientNotification(
     label: 'client_notification',
     description: 'Notifications sent from the client',
@@ -134,7 +143,7 @@ enum DashTool {
   });
 }
 
-/// Enumerate options for platform
+/// Enumerate options for platforms supported.
 enum DevicePlatform {
   windows('Windows'),
   macos('macOS'),

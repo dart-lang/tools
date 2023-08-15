@@ -1,11 +1,15 @@
-/// Matches only alphabetic chars
+// Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+/// Matches only alphabetic characters.
 final RegExp alphabeticPattern = RegExp(r'^[A-Za-z]+$');
 
-/// Matches strings that contain alphanumeric chars and underscores
+/// Matches strings that contain alphanumeric characters and underscores.
 final RegExp alphaNumericPattern = RegExp(r'^[A-Za-z0-9_]+$');
 
 /// Checks that the body of the request being sent to
-/// GA4 is within the limitations
+/// GA4 is within the limitations.
 ///
 /// Limitations can be found:
 /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#limitations
