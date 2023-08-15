@@ -36,20 +36,6 @@ final class Event {
           if (exitCode != null) 'exitCode': exitCode,
         };
 
-  /// Event that captures timing data associated with some operation.
-  ///
-  /// [operation] - the operation performed that was timed for this event.
-  ///
-  /// [timeMs] - the time the operation took to complete, in milliseconds.
-  Event.timing({
-    required String operation,
-    required int timeMs,
-  })  : eventName = DashEvent.timing,
-        eventData = {
-          'operation': operation,
-          'timeMs': timeMs,
-        };
-
   /// Event that is emitted when `pub get` is run.
   ///
   /// [packageName] - the name of the package that was resolved
