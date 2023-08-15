@@ -18,11 +18,6 @@ enum DashEvent {
     label: 'analytics_collection_enabled',
     description: 'The opt-in status for analytics collection',
   ),
-  cliCommandExecuted(
-    label: 'cli_command_executed',
-    description:
-        'Information about the execution of a Dart or Flutter CLI command',
-  ),
   surveyAction(
     label: 'survey_action',
     description: 'Actions taken by users when shown survey',
@@ -33,6 +28,12 @@ enum DashEvent {
   ),
 
   // Events for the Dart CLI
+  dartCliCommandExecuted(
+    label: 'dart_cli_command_executed',
+    description:
+        'Information about the execution of a Dart or Flutter CLI command',
+    toolOwner: DashTool.dartTool,
+  ),
   pubGet(
     label: 'pub_get',
     description: 'Pub package resolution details',

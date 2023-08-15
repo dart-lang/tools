@@ -18,8 +18,7 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
-  /// Event that is emitted when a Dart or Flutter CLI command has been
-  /// executed.
+  /// Event that is emitted when a Dart CLI command has been executed.
   ///
   /// [name] - the name of the command that was executed
   ///
@@ -27,11 +26,11 @@ final class Event {
   ///          running the command.
   ///
   /// [exitCode] - the process exit code set as a result of running the command.
-  Event.cliCommandExecuted({
+  Event.dartCliCommandExecuted({
     required String name,
     required String enabledExperiments,
     int? exitCode,
-  })  : eventName = DashEvent.cliCommandExecuted,
+  })  : eventName = DashEvent.dartCliCommandExecuted,
         eventData = {
           'name': name,
           'enabledExperiments': enabledExperiments,
