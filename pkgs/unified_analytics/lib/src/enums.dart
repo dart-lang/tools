@@ -31,7 +31,7 @@ enum DashEvent {
   dartCliCommandExecuted(
     label: 'dart_cli_command_executed',
     description:
-        'Information about the execution of a Dart or Flutter CLI command',
+        'Information about the execution of a Dart CLI command',
     toolOwner: DashTool.dartTool,
   ),
   pubGet(
