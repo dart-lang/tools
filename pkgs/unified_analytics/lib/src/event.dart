@@ -18,6 +18,48 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
+  /// Event that is emitted when a Dart CLI command has been executed.
+  ///
+  /// [name] - the name of the command that was executed
+  ///
+  /// [enabledExperiments] - a set of Dart language experiments enabled when
+  ///          running the command.
+  ///
+  /// [exitCode] - the process exit code set as a result of running the command.
+  Event.dartCliCommandExecuted({
+    required String name,
+    required String enabledExperiments,
+    int? exitCode,
+  })  : eventName = DashEvent.dartCliCommandExecuted,
+        eventData = {
+          'name': name,
+          'enabledExperiments': enabledExperiments,
+          if (exitCode != null) 'exitCode': exitCode,
+        };
+
+  /// Event that is emitted when `pub get` is run.
+  ///
+  /// [packageName] - the name of the package that was resolved
+  ///
+  /// [version] - the resolved, canonicalized package version
+  ///
+  /// [dependencyKind] - the kind of dependency that resulted in this package
+  ///     being resolved (e.g., direct, transitive, or dev dependencies).
+  Event.pubGet({
+    required String packageName,
+    required String version,
+    required String dependencyType,
+  })  : eventName = DashEvent.pubGet,
+        eventData = {
+          'packageName': packageName,
+          'version': version,
+          'dependencyType': dependencyType,
+        };
+
+  Event.hotReloadTime({required int timeMs})
+      : eventName = DashEvent.hotReloadTime,
+        eventData = {'timeMs': timeMs};
+
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of notification from the
   /// client.
@@ -185,10 +227,6 @@ final class Event {
           'transitiveFileUniqueCount': transitiveFileUniqueCount,
           'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
         };
-
-  Event.hotReloadTime({required int timeMs})
-      : eventName = DashEvent.hotReloadTime,
-        eventData = {'timeMs': timeMs};
 
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.

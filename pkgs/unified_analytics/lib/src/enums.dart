@@ -27,6 +27,18 @@ enum DashEvent {
     description: 'Survey shown to the user',
   ),
 
+  // Events for the Dart CLI
+  dartCliCommandExecuted(
+    label: 'dart_cli_command_executed',
+    description: 'Information about the execution of a Dart CLI command',
+    toolOwner: DashTool.dartTool,
+  ),
+  pubGet(
+    label: 'pub_get',
+    description: 'Pub package resolution details',
+    toolOwner: DashTool.dartTool,
+  ),
+
   // Events for flutter_tools
   hotReloadTime(
     label: 'hot_reload_time',
