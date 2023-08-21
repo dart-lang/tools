@@ -34,6 +34,13 @@ extension ExpectJson on Map<String, Object?> {
     }
   }
 
+  Uri? optionalUri(String key) {
+    if (containsKey(key)) {
+      return expectUri(key);
+    }
+    return null;
+  }
+
   List<Object?> expectList(String key) {
     if (this[key] case List<Object?> v) return v;
     throw FormatException('"key" must be a list');

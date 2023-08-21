@@ -105,9 +105,53 @@ void main() {
 
     // ################################## Cannot read version 99
 
-    final pkgcfg = jsonDecode(packageConfigFile.readAsStringSync()) as Map;
-    pkgcfg['configVersion'] = 99;
-    packageConfigFile.writeAsStringSync(jsonEncode(pkgcfg));
+    {
+      final pkgcfg = jsonDecode(packageConfigFile.readAsStringSync()) as Map;
+      pkgcfg['configVersion'] = 99;
+      packageConfigFile.writeAsStringSync(jsonEncode(pkgcfg));
+    }
+
+    // Loading before `dart pub get` throws PackageConfigException
+    expect(
+      loadPackageConfig(packageConfigFile),
+      throwsA(isA<PackageConfigException>()),
+    );
+
+    // ################################## packageUri is optional
+
+    // Get dependencies
+    await d.dartPubGet(d.path('myapp'));
+
+    {
+      final pkgcfg = jsonDecode(packageConfigFile.readAsStringSync()) as Map;
+      for (final p in pkgcfg['packages'] as List) {
+        (p as Map).remove('packageUri');
+      }
+      packageConfigFile.writeAsStringSync(jsonEncode(pkgcfg));
+    }
+
+    // Parse package_config
+    {
+      final packages = await loadPackageConfig(packageConfigFile);
+      expect(packages, isNotEmpty);
+      expect(packages.any((p) => p.name == 'myapp'), isTrue);
+      expect(packages.any((p) => p.name == 'foo'), isTrue);
+      expect(packages.any((p) => p.name == 'bar'), isTrue);
+      expect(packages.every((p) => p.rootUri == p.packageUri), isTrue);
+    }
+
+    // ################################## packageUri is optional
+
+    // Get dependencies
+    await d.dartPubGet(d.path('myapp'));
+
+    {
+      final pkgcfg = jsonDecode(packageConfigFile.readAsStringSync()) as Map;
+      for (final p in pkgcfg['packages'] as List) {
+        (p as Map).remove('rootUri');
+      }
+      packageConfigFile.writeAsStringSync(jsonEncode(pkgcfg));
+    }
 
     // Loading before `dart pub get` throws PackageConfigException
     expect(

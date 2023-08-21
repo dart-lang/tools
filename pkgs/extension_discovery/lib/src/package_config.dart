@@ -18,14 +18,14 @@ Future<PackageConfig> loadPackageConfig(
     if (packageConfig.expectNumber('configVersion') != 2) {
       throw FormatException('"configVersion" must be 2');
     }
-    return packageConfig
-        .expectListObjects('packages')
-        .map((p) => (
-              name: p.expectString('name'),
-              rootUri: p.expectUri('rootUri').asDirectory(),
-              packageUri: p.expectUri('packageUri').asDirectory(),
-            ))
-        .toList();
+    return packageConfig.expectListObjects('packages').map((p) {
+      final rootUri = p.expectUri('rootUri').asDirectory();
+      return (
+        name: p.expectString('name'),
+        rootUri: rootUri,
+        packageUri: p.optionalUri('packageUri')?.asDirectory() ?? rootUri,
+      );
+    }).toList();
   } on IOException catch (e) {
     if (!packageConfigFile.existsSync()) {
       throw packageConfigNotFound(packageConfigFile.uri);
