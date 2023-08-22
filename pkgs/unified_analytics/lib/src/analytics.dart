@@ -660,7 +660,7 @@ class FakeAnalytics extends AnalyticsImpl {
       userProperty: userProperty,
     );
 
-    checkBody(body);
+    if (_enableAsserts) checkBody(body);
 
     _logHandler.save(data: body);
 
