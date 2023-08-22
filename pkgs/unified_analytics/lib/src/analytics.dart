@@ -108,7 +108,7 @@ abstract class Analytics {
     final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
-      return NoOpAnalytics();
+      throw Exception('Permissions error on the home directory!');
     }
 
     // Resolve the OS using dart:io
@@ -624,6 +624,50 @@ class AnalyticsImpl implements Analytics {
   void surveyShown(Survey survey) {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
+  }
+}
+
+class FakeAnalytics extends AnalyticsImpl {
+  /// Use this list to check for events that have been emitted when
+  /// invoking the send method
+  final List<Event> sentEvents = [];
+
+  /// Class to use when you want to see which events were sent
+  FakeAnalytics({
+    required super.tool,
+    required super.homeDirectory,
+    required super.dartVersion,
+    required super.platform,
+    required super.fs,
+    required super.surveyHandler,
+    super.flutterChannel,
+    super.flutterVersion,
+  }) : super(
+          gaClient: const FakeGAClient(),
+          enableAsserts: true,
+          toolsMessageVersion: kToolsMessageVersion,
+        );
+
+  @override
+  Future<Response>? send(Event event) {
+    if (!okToSend) return null;
+
+    // Construct the body of the request
+    final body = generateRequestBody(
+      clientId: _clientId,
+      eventName: event.eventName,
+      eventData: event.eventData,
+      userProperty: userProperty,
+    );
+
+    checkBody(body);
+
+    _logHandler.save(data: body);
+
+    // Using this list to validate that events are being sent
+    // for internal methods in the `Analytics` instance
+    sentEvents.add(event);
+    return _gaClient.sendData(body);
   }
 }
 
