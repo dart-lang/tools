@@ -392,7 +392,6 @@ final class Event {
       other is Event &&
       other.runtimeType == runtimeType &&
       other.eventName == eventName &&
-      other.eventData == eventData &&
       compareEventData(other.eventData, eventData);
 
   @override

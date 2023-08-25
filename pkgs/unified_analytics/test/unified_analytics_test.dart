@@ -1169,4 +1169,35 @@ further information will be sent. This data is collected in accordance with
 the Google Privacy Policy (https://policies.google.com/privacy).
 '''));
   });
+
+  test('Equality operator works for identical events', () {
+    final eventOne = Event.clientRequest(
+      duration: 'duration',
+      latency: 'latency',
+      method: 'method',
+    );
+    final eventTwo = Event.clientRequest(
+      duration: 'duration',
+      latency: 'latency',
+      method: 'method',
+    );
+
+    expect(eventOne == eventTwo, true);
+  });
+
+  test('Equality operator works for non-identical events', () {
+    final eventOne = Event.clientRequest(
+      duration: 'duration',
+      latency: 'latency',
+      method: 'method',
+      added: 'DIFFERENT FROM EVENT TWO',
+    );
+    final eventTwo = Event.clientRequest(
+      duration: 'duration',
+      latency: 'latency',
+      method: 'method',
+    );
+
+    expect(eventOne == eventTwo, false);
+  });
 }

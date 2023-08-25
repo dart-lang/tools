@@ -39,10 +39,13 @@ bool checkDirectoryForWritePermissions(Directory directory) {
 /// to ensure that they have the same keys and values
 bool compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
   final keySetA = a.keys.toSet();
-  final keySetb = a.keys.toSet();
+  final keySetB = b.keys.toSet();
 
   // Ensure that the keys are the same for each object
-  if (keySetA != keySetb) return false;
+  if (keySetA.intersection(keySetB).length != keySetA.length ||
+      keySetA.intersection(keySetB).length != keySetB.length) {
+    return false;
+  }
 
   // Ensure that each of the key's values are the same
   for (final key in a.keys) {
