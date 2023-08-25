@@ -1200,4 +1200,18 @@ the Google Privacy Policy (https://policies.google.com/privacy).
 
     expect(eventOne == eventTwo, false);
   });
+
+  test('Find a match for an event in a list of events', () {
+    final eventList = [
+      Event.analyticsCollectionEnabled(status: true),
+      Event.memoryInfo(rss: 500),
+      Event.clientRequest(
+          duration: 'duration', latency: 'latency', method: 'method'),
+    ];
+
+    final eventToMatch = Event.memoryInfo(rss: 500);
+
+    expect(eventList.contains(eventToMatch), true);
+    expect(eventList.where((element) => element == eventToMatch).length, 1);
+  });
 }
