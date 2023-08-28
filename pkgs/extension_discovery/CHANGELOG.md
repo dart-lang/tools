@@ -1,4 +1,4 @@
-## 1.0.1-wip
+## 1.0.1
 
 - Support optional `packageUri`.
 - Improve error messaging for `package_config.json` parsing.
