@@ -6,13 +6,13 @@
 library;
 
 import 'dart:collection' show UnmodifiableListView;
-import 'dart:convert' show jsonDecode;
 import 'dart:io' show File, IOException;
 import 'dart:isolate' show Isolate;
 
 import 'src/io.dart';
 import 'src/package_config.dart';
 import 'src/registry.dart';
+import 'src/yaml_config_format.dart';
 
 export 'src/package_config.dart' show PackageConfigException;
 
@@ -49,9 +49,10 @@ final class Extension {
   /// [1]: https://github.com/dart-lang/language/blob/main/accepted/2.8/language-versioning/package-config-file-v2.md
   final Uri packageUri;
 
-  /// Contents of `extension/<targetPackage>/config.json` parsed as JSON.
+  /// Contents of `extension/<targetPackage>/config.yaml` parsed as YAML and
+  /// converted to JSON compatible types.
   ///
-  /// If parsing JSON from this file failed, then no [Extension] entry
+  /// If parsing YAML from this file failed, then no [Extension] entry
   /// will exist.
   ///
   /// This field is always a structure consisting of the following types:
@@ -61,7 +62,7 @@ final class Extension {
   ///  * [num] ([int] or [double]),
   ///  * [List<Object?>], and,
   ///  * [Map<String, Object?>].
-  final Object? config;
+  final Map<String, Object?> config;
 
   Extension._({
     required this.package,
@@ -94,20 +95,20 @@ final class Extension {
 /// ## Detection of extensions
 ///
 /// An extension for [targetPackage] is detected in `package:foo` if `foo`
-/// contains `extension/<targetPackage>/config.json`, and the contents of this
-/// file is valid JSON.
+/// contains `extension/<targetPackage>/config.yaml`, and the contents of this
+/// file is valid YAML, that can be represented as JSON.
 ///
 /// ### Caching results
 ///
 /// When [useCache] is `true` then the detected extensions will be cached
-/// in `.dart_tool/extension_discovery/<targetPackage>.json`.
+/// in `.dart_tool/extension_discovery/<targetPackage>.yaml`.
 /// This function will compare modification timestamps of
 /// `.dart_tool/package_config.json` with the cache file, before reusing cached
 /// results.
 /// This function will also treat relative path-dependencies as mutable
 /// packages, and check such packages for extensions every time [findExtensions]
 /// is called. Notably, it'll compare the modification time of the
-/// `extension/<targetPackage>/config.json` file, to ensure that it's older than
+/// `extension/<targetPackage>/config.yaml` file, to ensure that it's older than
 /// the extension cache file. Otherwise, it'll reload the extension
 /// configuration.
 ///
@@ -180,7 +181,7 @@ Future<List<Extension>> _findExtensions({
     }
   }
 
-  final configFileName = 'extension/$targetPackage/config.json';
+  final configFileName = 'extension/$targetPackage/config.yaml';
   var registryUpdated = false;
   if (registry != null) {
     // Update mutable entries in registry
@@ -199,7 +200,7 @@ Future<List<Extension>> _findExtensions({
               package: p.package,
               rootUri: p.rootUri,
               packageUri: p.packageUri,
-              config: jsonDecode(await configFile.readAsString()),
+              config: parseYamlFromConfigFile(await configFile.readAsString()),
               present: true,
             );
             continue;
@@ -246,7 +247,7 @@ Future<List<Extension>> _findExtensions({
             package: p.name,
             rootUri: p.rootUri,
             packageUri: p.packageUri,
-            config: jsonDecode(await configFile.readAsString()),
+            config: parseYamlFromConfigFile(await configFile.readAsString()),
             present: true,
           );
         }
@@ -277,12 +278,12 @@ Future<List<Extension>> _findExtensions({
 
   return UnmodifiableListView(
     registry
-        .where((e) => e.present)
+        .where((e) => e.present) // TODO: Use config != null
         .map((e) => Extension._(
               package: e.package,
               rootUri: packageConfigUri.resolveUri(e.rootUri),
               packageUri: e.packageUri,
-              config: e.config,
+              config: e.config!,
             ))
         .toList(growable: false),
   );

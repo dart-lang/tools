@@ -20,8 +20,8 @@ typedef RegistryEntry = ({
   String package,
   Uri rootUri,
   Uri packageUri,
-  Object? config,
-  bool present,
+  Map<String, Object?>? config,
+  bool present, // TODO: Consider removing this field in favor of config = null
 });
 
 typedef Registry = List<RegistryEntry>;
@@ -38,7 +38,7 @@ Future<Registry?> loadRegistry(File registryFile) async {
               package: e.expectString('package'),
               rootUri: e.expectUri('rootUri'),
               packageUri: e.expectUri('packageUri'),
-              config: e['config'],
+              config: e.optionalMap('config'),
               present: e.expectBool('present'),
             ))
         .toList(growable: false);
@@ -80,7 +80,7 @@ Future<void> saveRegistry(
                 'package': e.package,
                 'rootUri': e.rootUri.toString(),
                 'packageUri': e.packageUri.toString(),
-                'config': e.config,
+                if (e.config != null) 'config': e.config,
                 'present': e.present,
               })
           .toList(),
