@@ -13,7 +13,7 @@ import 'io.dart';
 /// If the [rootUri] is not an absolute path, then we will assume that the
 /// package is mutable (either it's the root package or a path dependency).
 /// If there is no extension config file for a mutable package, then we will
-/// still store a [RegistryEntry] with `present = false`. Because everytime we
+/// still store a [RegistryEntry] with `config = null`. Because everytime we
 /// load the registry, we still need to check if a configuration file has been
 /// added to the mutable package.
 typedef RegistryEntry = ({
@@ -21,7 +21,6 @@ typedef RegistryEntry = ({
   Uri rootUri,
   Uri packageUri,
   Map<String, Object?>? config,
-  bool present, // TODO: Consider removing this field in favor of config = null
 });
 
 typedef Registry = List<RegistryEntry>;
@@ -29,8 +28,8 @@ typedef Registry = List<RegistryEntry>;
 Future<Registry?> loadRegistry(File registryFile) async {
   try {
     final registryJson = decodeJsonMap(await registryFile.readAsString());
-    if (registryJson.expectNumber('version') != 1) {
-      throw FormatException('"version" must be 1');
+    if (registryJson.expectNumber('version') != 2) {
+      throw FormatException('"version" must be 2');
     }
     return registryJson
         .expectListObjects('entries')
@@ -39,7 +38,6 @@ Future<Registry?> loadRegistry(File registryFile) async {
               rootUri: e.expectUri('rootUri'),
               packageUri: e.expectUri('packageUri'),
               config: e.optionalMap('config'),
-              present: e.expectBool('present'),
             ))
         .toList(growable: false);
   } on IOException {
@@ -74,14 +72,13 @@ Future<void> saveRegistry(
     }
 
     await tmpFile.writeAsString(jsonEncode({
-      'version': 1,
+      'version': 2,
       'entries': registry
           .map((e) => {
                 'package': e.package,
                 'rootUri': e.rootUri.toString(),
                 'packageUri': e.packageUri.toString(),
                 if (e.config != null) 'config': e.config,
-                'present': e.present,
               })
           .toList(),
     }));

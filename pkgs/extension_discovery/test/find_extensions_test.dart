@@ -346,5 +346,5 @@ writtenAsYaml: true
         isTrue,
       );
     }
-  }, timeout: Timeout.none);
+  });
 }

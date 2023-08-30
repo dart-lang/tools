@@ -201,7 +201,6 @@ Future<List<Extension>> _findExtensions({
               rootUri: p.rootUri,
               packageUri: p.packageUri,
               config: parseYamlFromConfigFile(await configFile.readAsString()),
-              present: true,
             );
             continue;
           } on FormatException {
@@ -215,20 +214,18 @@ Future<List<Extension>> _findExtensions({
             rootUri: p.rootUri,
             packageUri: p.packageUri,
             config: null,
-            present: false,
           );
         }
       } else {
         // If there is no file present, but registry says there is then we need
         // to update the registry.
-        if (p.present) {
+        if (p.config != null) {
           registryUpdated = true;
           registry[i] = (
             package: p.package,
             rootUri: p.rootUri,
             packageUri: p.packageUri,
             config: null,
-            present: false,
           );
         }
       }
@@ -248,7 +245,6 @@ Future<List<Extension>> _findExtensions({
             rootUri: p.rootUri,
             packageUri: p.packageUri,
             config: parseYamlFromConfigFile(await configFile.readAsString()),
-            present: true,
           );
         }
       } on FormatException {
@@ -262,7 +258,6 @@ Future<List<Extension>> _findExtensions({
           rootUri: p.rootUri,
           packageUri: p.packageUri,
           config: null,
-          present: false,
         );
       }
       return null;
@@ -278,13 +273,19 @@ Future<List<Extension>> _findExtensions({
 
   return UnmodifiableListView(
     registry
-        .where((e) => e.present) // TODO: Use config != null
-        .map((e) => Extension._(
-              package: e.package,
-              rootUri: packageConfigUri.resolveUri(e.rootUri),
-              packageUri: e.packageUri,
-              config: e.config!,
-            ))
+        .map((e) {
+          final config = e.config;
+          if (config == null) {
+            return null;
+          }
+          return Extension._(
+            package: e.package,
+            rootUri: packageConfigUri.resolveUri(e.rootUri),
+            packageUri: e.packageUri,
+            config: config,
+          );
+        })
+        .whereType<Extension>()
         .toList(growable: false),
   );
 }

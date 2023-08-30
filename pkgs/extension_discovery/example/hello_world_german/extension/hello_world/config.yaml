@@ -1,0 +1,9 @@
+# This config file let's `package:extension_discovery` find out that
+# `package:hello_world_german` has an extension for `package:hello_world`.
+#
+# The root object must be a map, and the data structure must be representable
+# as JSON, but those are the only constraints. Beyond that it is the
+# responsibility of `package:hello_world` to define what this file should
+# contain, to validate the contents, and do something useful with it.
+language: german
+message: "Hello Welt!"
