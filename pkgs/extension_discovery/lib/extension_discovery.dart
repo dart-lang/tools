@@ -273,19 +273,13 @@ Future<List<Extension>> _findExtensions({
 
   return UnmodifiableListView(
     registry
-        .map((e) {
-          final config = e.config;
-          if (config == null) {
-            return null;
-          }
-          return Extension._(
-            package: e.package,
-            rootUri: packageConfigUri.resolveUri(e.rootUri),
-            packageUri: e.packageUri,
-            config: config,
-          );
-        })
-        .whereType<Extension>()
+        .where((e) => e.config != null)
+        .map((e) => Extension._(
+              package: e.package,
+              rootUri: packageConfigUri.resolveUri(e.rootUri),
+              packageUri: e.packageUri,
+              config: e.config!,
+            ))
         .toList(growable: false),
   );
 }
