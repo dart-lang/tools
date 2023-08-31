@@ -10,6 +10,6 @@ class SyncSimpleWorker extends SyncWorkerLoop {
   @override
   WorkResponse performRequest(WorkRequest request) {
     File('hello.txt').writeAsStringSync(request.arguments.first);
-    return WorkResponse()..exitCode = EXIT_CODE_OK;
+    return WorkResponse(exitCode: EXIT_CODE_OK);
   }
 }

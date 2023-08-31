@@ -14,7 +14,7 @@ BAZEL_REPO=.dart_tool/bazel_worker/bazel.git/
 rm -rf "$BAZEL_REPO"
 git clone --depth 1 https://github.com/bazelbuild/bazel.git "$BAZEL_REPO"
 
-protoc --proto_path="${BAZEL_REPO}/src/main/protobuf" --dart_out=lib/src worker_protocol.proto
+protoc --proto_path="${BAZEL_REPO}/src/main/protobuf" --dart_out="lib/src" worker_protocol.proto
 dart format lib/src/worker_protocol.pb.dart
 
 # We only care about the *.pb.dart file, not the extra files

@@ -9,7 +9,7 @@ void main() async {
           [Platform.script.resolve('worker.dart').toFilePath()],
           workingDirectory: scratchSpace.path),
       maxWorkers: 4);
-  var response = await driver.doWork(WorkRequest()..arguments.add('foo'));
+  var response = await driver.doWork(WorkRequest(arguments: ['foo']));
   if (response.exitCode != EXIT_CODE_OK) {
     print('Worker request failed');
   } else {

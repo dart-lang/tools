@@ -39,9 +39,10 @@ abstract class SyncWorkerLoop implements WorkerLoop {
           response.output = '${response.output}$printMessages';
         }
       } catch (e, s) {
-        response = WorkResponse()
-          ..exitCode = EXIT_CODE_ERROR
-          ..output = '$e\n$s';
+        response = WorkResponse(
+          exitCode: EXIT_CODE_ERROR,
+          output: '$e\n$s',
+        );
       }
 
       connection.writeResponse(response);

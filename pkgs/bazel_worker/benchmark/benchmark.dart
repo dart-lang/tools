@@ -12,9 +12,10 @@ Future<void> main() async {
     var path = 'blaze-bin/some/path/to/a/file/that/is/an/input/$i';
     workRequest
       ..arguments.add('--input=$path')
-      ..inputs.add(Input()
-        ..path = ''
-        ..digest.addAll(List.filled(70, 0x11)));
+      ..inputs.add(Input(
+        path: '',
+        digest: List.filled(70, 0x11),
+      ));
   }
 
   // Serialize it.

@@ -150,11 +150,12 @@ class BazelWorkerDriver {
           rescheduled = _tryReschedule(attempt);
           if (rescheduled) return;
           stderr.writeln('Failed to run request ${attempt.request}');
-          response = WorkResponse()
-            ..exitCode = EXIT_CODE_ERROR
-            ..output =
+          response = WorkResponse(
+            exitCode: EXIT_CODE_ERROR,
+            output:
                 'Invalid response from worker, this probably means it wrote '
-                    'invalid output or died.';
+                'invalid output or died.',
+          );
         }
         attempt.responseCompleter.complete(response);
         _cleanUp(worker);
@@ -166,9 +167,10 @@ class BazelWorkerDriver {
       if (!attempt.responseCompleter.isCompleted) {
         rescheduled = _tryReschedule(attempt);
         if (rescheduled) return;
-        var response = WorkResponse()
-          ..exitCode = EXIT_CODE_ERROR
-          ..output = 'Error running worker:\n$e\n$s';
+        var response = WorkResponse(
+          exitCode: EXIT_CODE_ERROR,
+          output: 'Error running worker:\n$e\n$s',
+        );
         attempt.responseCompleter.complete(response);
         _cleanUp(worker);
       }

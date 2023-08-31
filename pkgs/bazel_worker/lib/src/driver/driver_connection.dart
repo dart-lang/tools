@@ -51,9 +51,10 @@ class StdDriverConnection implements DriverConnection {
   Future<WorkResponse> readResponse() async {
     var buffer = await _messageGrouper.next;
     if (buffer == null) {
-      return WorkResponse()
-        ..exitCode = EXIT_CODE_BROKEN_PIPE
-        ..output = 'Connection to worker closed';
+      return WorkResponse(
+        exitCode: EXIT_CODE_BROKEN_PIPE,
+        output: 'Connection to worker closed',
+      );
     }
 
     WorkResponse response;
@@ -63,9 +64,10 @@ class StdDriverConnection implements DriverConnection {
       try {
         // Try parsing the message as a string and set that as the output.
         var output = utf8.decode(buffer);
-        var response = WorkResponse()
-          ..exitCode = EXIT_CODE_ERROR
-          ..output = 'Worker sent an invalid response:\n$output';
+        var response = WorkResponse(
+          exitCode: EXIT_CODE_ERROR,
+          output: 'Worker sent an invalid response:\n$output',
+        );
         return response;
       } catch (_) {
         // Fall back to original exception and rethrow if we fail to parse as
@@ -108,9 +110,10 @@ class IsolateDriverConnection implements DriverConnection {
   @override
   Future<WorkResponse> readResponse() async {
     if (!await _receivePortIterator.moveNext()) {
-      return WorkResponse()
-        ..exitCode = EXIT_CODE_BROKEN_PIPE
-        ..output = 'Connection to worker closed.';
+      return WorkResponse(
+        exitCode: EXIT_CODE_BROKEN_PIPE,
+        output: 'Connection to worker closed.',
+      );
     }
     return WorkResponse.fromBuffer(_receivePortIterator.current as List<int>);
   }

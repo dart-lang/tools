@@ -12,10 +12,10 @@ import 'package:test/test.dart';
 
 void main() {
   BazelWorkerDriver? driver;
-  final disconnectedResponse = WorkResponse()
-    ..exitCode = EXIT_CODE_BROKEN_PIPE
-    ..output = 'Connection closed'
-    ..freeze();
+  final disconnectedResponse = WorkResponse(
+    exitCode: EXIT_CODE_BROKEN_PIPE,
+    output: 'Connection closed',
+  )..freeze();
 
   group('basic driver', () {
     test('can run a single request', () async {

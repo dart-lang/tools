@@ -54,12 +54,11 @@ void runTests<T extends TestWorkerConnection>(
   });
 
   test('basic', () async {
-    var request = WorkRequest();
-    request.arguments.addAll(['--foo=bar']);
+    var request = WorkRequest(arguments: ['--foo=bar']);
     stdinStream.addInputBytes(protoToDelimitedBuffer(request));
     stdinStream.close();
 
-    var response = WorkResponse()..output = 'Hello World';
+    var response = WorkResponse(output: 'Hello World');
     workerLoop.enqueueResponse(response);
 
     // Make sure `print` never gets called in the parent zone.
@@ -85,8 +84,7 @@ void runTests<T extends TestWorkerConnection>(
   });
 
   test('Exception in the worker.', () async {
-    var request = WorkRequest();
-    request.arguments.addAll(['--foo=bar']);
+    var request = WorkRequest(arguments: ['--foo=bar']);
     stdinStream.addInputBytes(protoToDelimitedBuffer(request));
     stdinStream.close();
 

@@ -16,8 +16,9 @@ class ExampleAsyncWorker extends AsyncWorkerLoop {
 
   @override
   Future<WorkResponse> performRequest(WorkRequest request) async {
-    return WorkResponse()
-      ..exitCode = 0
-      ..output = request.arguments.join('\n');
+    return WorkResponse(
+      exitCode: 0,
+      output: request.arguments.join('\n'),
+    );
   }
 }
