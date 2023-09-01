@@ -55,9 +55,9 @@ void main() {
         'name': 'foo',
         'environment': {'sdk': '^3.0.0'},
       }),
-      // It has a config.json for myapp
+      // It has a config.yaml for myapp
       d.dir('extension/myapp', [
-        d.json('config.json', {'fromFoo': true}),
+        d.json('config.yaml', {'fromFoo': true}),
       ]),
     ]).create();
 
@@ -89,14 +89,14 @@ void main() {
               e.package == 'foo' &&
               e.rootUri == d.directoryUri('foo/') &&
               e.packageUri == Uri.parse('lib/') &&
-              (e.config as Map)['fromFoo'] == true,
+              e.config['fromFoo'] == true,
         ),
         isTrue,
       );
     }
 
     // ################################## Modify the config
-    await d.json('foo/extension/myapp/config.json', {'fromFoo': 42}).create();
+    await d.json('foo/extension/myapp/config.yaml', {'fromFoo': 42}).create();
 
     // Check that we do find an extension
     {
@@ -111,14 +111,14 @@ void main() {
               e.package == 'foo' &&
               e.rootUri == d.directoryUri('foo/') &&
               e.packageUri == Uri.parse('lib/') &&
-              (e.config as Map)['fromFoo'] == 42,
+              e.config['fromFoo'] == 42,
         ),
         isTrue,
       );
     }
 
     // ################################## Make config invalid
-    await d.file('foo/extension/myapp/config.json', 'invalid json').create();
+    await d.file('foo/extension/myapp/config.yaml', 'invalid YAML').create();
 
     // Check that we do not find extensions
     {
@@ -130,7 +130,7 @@ void main() {
     }
 
     // ################################## Make config valid again
-    await d.json('foo/extension/myapp/config.json', true).create();
+    await d.json('foo/extension/myapp/config.yaml', {'fromFoo': true}).create();
 
     // Check that we do find extensions
     {
@@ -142,7 +142,7 @@ void main() {
     }
 
     // ################################## Remove config file
-    await d.file('foo/extension/myapp/config.json').io.delete();
+    await d.file('foo/extension/myapp/config.yaml').io.delete();
     // Check that we do not find extensions
     {
       final ext = await findExtensions(
@@ -153,7 +153,7 @@ void main() {
     }
 
     // ################################## Make config valid again
-    await d.json('foo/extension/myapp/config.json', {'fromFoo': true}).create();
+    await d.json('foo/extension/myapp/config.yaml', {'fromFoo': true}).create();
 
     // Check that we do find extensions
     {
@@ -170,9 +170,9 @@ void main() {
         'name': 'bar',
         'environment': {'sdk': '^3.0.0'},
       }),
-      // It has a config.json for myapp
+      // It has a config.yaml for myapp
       d.dir('extension/myapp', [
-        d.json('config.json', {'fromFoo': false}),
+        d.json('config.yaml', {'fromFoo': false}),
       ]),
     ]).create();
 
@@ -214,7 +214,7 @@ void main() {
               e.package == 'foo' &&
               e.rootUri == d.directoryUri('foo/') &&
               e.packageUri == Uri.parse('lib/') &&
-              (e.config as Map)['fromFoo'] == true,
+              e.config['fromFoo'] == true,
         ),
         isTrue,
       );
@@ -224,7 +224,7 @@ void main() {
               e.package == 'bar' &&
               e.rootUri == d.directoryUri('bar/') &&
               e.packageUri == Uri.parse('lib/') &&
-              (e.config as Map)['fromFoo'] == false,
+              e.config['fromFoo'] == false,
         ),
         isTrue,
       );
@@ -247,7 +247,7 @@ void main() {
 
     // Delete config from package that has an absolute path, hence, a package
     // we assume to be immutable.
-    await d.file('bar/extension/myapp/config.json').io.delete();
+    await d.file('bar/extension/myapp/config.yaml').io.delete();
 
     // Check that we do find both extensions
     {
@@ -259,7 +259,7 @@ void main() {
       // This is the wrong result, but it is expected. Essentially, if we expect
       // that if you have packages in package_config.json using an absolute path
       // then these won't be modified. If you do modify the
-      //   extension/<targetPackage>/config.json
+      //   extension/<targetPackage>/config.yaml
       // file, then the cache will give the wrong result. The workaround is to
       // touch `package_config.json`, or run `dart pub get` (essentially).
       expect(ext.any((e) => e.package == 'bar'), isTrue);
@@ -296,7 +296,7 @@ void main() {
 
     // ################################## What if foo has extensions for bar
     await d.dir('foo/extension/bar', [
-      d.json('config.json', {'fromFoo': true}),
+      d.json('config.yaml', {'fromFoo': true}),
     ]).create();
 
     {
@@ -311,7 +311,7 @@ void main() {
 
     // ################################## myapp could also extend bar
     await d.dir('myapp/extension/bar', [
-      d.json('config.json', {'fromFoo': false}),
+      d.json('config.yaml', {'fromFoo': false}),
     ]).create();
 
     {
@@ -322,6 +322,29 @@ void main() {
       expect(ext.any((e) => e.package == 'foo'), isTrue);
       expect(ext.any((e) => e.package == 'bar'), isFalse);
       expect(ext.any((e) => e.package == 'myapp'), isTrue);
+    }
+
+    // ################################## config could also be written in YAML
+    await d.dir('myapp/extension/bar', [
+      d.file('config.yaml', '''
+writtenAsYaml: true
+'''),
+    ]).create();
+
+    {
+      final ext = await findExtensions(
+        'bar',
+        packageConfig: d.fileUri('myapp/.dart_tool/package_config.json'),
+      );
+      expect(ext.any((e) => e.package == 'foo'), isTrue);
+      expect(ext.any((e) => e.package == 'bar'), isFalse);
+      expect(ext.any((e) => e.package == 'myapp'), isTrue);
+      expect(
+        ext.any(
+          (e) => e.package == 'myapp' && e.config['writtenAsYaml'] == true,
+        ),
+        isTrue,
+      );
     }
   });
 }

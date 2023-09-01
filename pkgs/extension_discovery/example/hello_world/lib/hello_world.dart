@@ -14,9 +14,6 @@ Future<void> sayHello(String language) async {
   // Search extensions to see if one provides a message for language
   for (final ext in extensions) {
     final config = ext.config;
-    if (config is! Map<String, Object?>) {
-      continue; // ignore extensions with invalid configation
-    }
     if (config['language'] == language) {
       print(config['message']);
       return; // Don't print more messages!

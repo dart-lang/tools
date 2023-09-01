@@ -96,9 +96,9 @@ Future<void> main(List<String> args) async {
         'name': 'foo',
         'environment': {'sdk': '^3.0.0'},
       }),
-      // It has a config.json for myapp
+      // It has a config.yaml for myapp
       d.dir('extension/myapp', [
-        d.json('config.json', {'fromFoo': true}),
+        d.json('config.yaml', {'fromFoo': true}),
       ]),
     ]).create();
 

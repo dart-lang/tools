@@ -34,6 +34,18 @@ extension ExpectJson on Map<String, Object?> {
     }
   }
 
+  Map<String, Object?> expectMap(String key) {
+    if (this[key] case Map<String, Object?> v) return v;
+    throw FormatException('The value at "$key" must be a map:\n$toString()');
+  }
+
+  Map<String, Object?>? optionalMap(String key) {
+    if (containsKey(key)) {
+      return expectMap(key);
+    }
+    return null;
+  }
+
   Uri? optionalUri(String key) {
     if (containsKey(key)) {
       return expectUri(key);

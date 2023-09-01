@@ -11,13 +11,13 @@ A convention to allow other packages to provide extensions for your package
 
 The convention implemented in this package is that if `foo` provides an
 extension for `<targetPackage>`.
-Then `foo` must contain a config file `extension/<targetPackage>/config.json`.
+Then `foo` must contain a config file `extension/<targetPackage>/config.yaml`.
 This file indicates that `foo` provides an extension for `<targetPackage>`.
 
 If `<targetPackage>` accepts extensions from other packages it must:
  * Find extensions using `findExtensions('<targetPackage>')` from this package.
  * Document how extensions are implemented:
-   * What should the contents of the `extension/<targetPackage>/config.json` file be?
+   * What should the contents of the `extension/<targetPackage>/config.yaml` file be?
    * Should packages providing extensions have a dependency constraint on `<targetPackage>`?
    * What libraries/assets should packages that provide extensions include?
    * Should packages providing extensions specify a [topic in `pubspec.yaml`][1]
@@ -25,8 +25,8 @@ If `<targetPackage>` accepts extensions from other packages it must:
 
 The `findExtensions(targetPackage, packageConfig: ...)` function will:
  * Load `.dart_tool/package_config.json` and find all packages that contain a
-   valid JSON file: `extension/<targetPackage>/config.json`.
- * Provide the package name, location and contents of the `config.json` file,
+   valid YAML file: `extension/<targetPackage>/config.yaml`.
+ * Provide the package name, location and contents of the `config.yaml` file,
    for all detected extensions (aimed at `targetPackage`).
  * Cache the results for fast loading, comparing modification timestamps to
    ensure consistent results.
@@ -41,7 +41,7 @@ created.
 You can also use this package (and associated convention), if you are developing
 a tool that can be extended by packages. In this case, you would call
 `findExtensions(<my_tool_package_name>, packageConfig: ...)` where
-`packageConfig` points to the `.dart_tool/packge_config.json` in the workspace
+`packageConfig` points to the `.dart_tool/package_config.json` in the workspace
 the tool is operating on.
 
 If you tool is not distributed through pub.dev, you might consider publishing
@@ -103,7 +103,7 @@ Future<void> sayHello(String language) async {
 ```
 
 The `findExtensions` function will search other packages for
-`extension/hello_world/config.json`, and provide the contents of this file as
+`extension/hello_world/config.yaml`, and provide the contents of this file as
 well as provide the location of the extending packages.
 As authors of the `hello_world` package we should also document how other
 packages can extend `hello_world`. This is typically done by adding a segment
@@ -115,18 +115,16 @@ to the `README.md`.
 If in another package `hello_world_german` we wanted to extend `hello_world`
 and provide a translation for German, then we would create a
 `hello_world_german` package containing an
-**`extension/hello_world/config.json`**:
+**`extension/hello_world/config.yaml`**:
 
-```json
-{
-  "language": "german",
-  "message": "Hello Welt!"
-}
+```yaml
+language: german
+message: "Hello Welt!"
 ```
 
 Obviously, this is a contrived example. The authors of the `hello_world` package
 could specify all sorts configuration options that extension authors can
-specify in `extension/hello_world/config.json`.
+specify in `extension/hello_world/config.yaml`.
 
 The authors of `hello_world` could also specify that extensions must provide
 certain assets in `extension/hello_world/` or that they must provide certain
@@ -175,7 +173,7 @@ what extension packages can provide. For this reason it is important that the
 authors of `hello_world` very explicitly document how an extension is written.
 
 Obviously, authors of `hello_world` should document what should be specified in
-`extension/hello_world/config.json`. They could also specify that other files
+`extension/hello_world/config.yaml`. They could also specify that other files
 should be provided in `extension/hello_world/`, or that certain Dart libraries
 should be provided in `lib/src/hello_world/...` or something like that.
 
