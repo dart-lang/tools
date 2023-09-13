@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-export 'src/analytics.dart' show Analytics, NoOpAnalytics;
+export 'src/analytics.dart' show Analytics, FakeAnalytics, NoOpAnalytics;
 export 'src/config_handler.dart' show ToolInfo;
 export 'src/enums.dart' show DashTool;
 export 'src/event.dart' show Event;
