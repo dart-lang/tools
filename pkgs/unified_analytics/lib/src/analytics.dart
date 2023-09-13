@@ -106,8 +106,11 @@ abstract class Analytics {
 
     // Ensure that the home directory has permissions enabled to write
     final homeDirectory = getHomeDirectory(fs);
-    if (homeDirectory == null ||
-        !checkDirectoryForWritePermissions(homeDirectory)) {
+    if (homeDirectory == null) {
+      throw Exception('Unable to determine the home directory, '
+          'ensure it is available in the environment');
+    }
+    if (!checkDirectoryForWritePermissions(homeDirectory)) {
       throw Exception('Permissions error on the home directory!');
     }
 
@@ -627,6 +630,13 @@ class AnalyticsImpl implements Analytics {
   }
 }
 
+/// This fake instance of [Analytics] is intended to be used by clients of
+/// this package for testing purposes. It exposes a list [sentEvents] that
+/// keeps track of all events that have been sent.
+/// 
+/// This is useful for confirming that events are being sent for a given
+/// workflow. Invoking the [send] method on this instance will not make any
+/// network requests to Google Analytics.
 class FakeAnalytics extends AnalyticsImpl {
   /// Use this list to check for events that have been emitted when
   /// invoking the send method
