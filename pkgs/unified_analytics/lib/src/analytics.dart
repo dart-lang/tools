@@ -633,7 +633,7 @@ class AnalyticsImpl implements Analytics {
 /// This fake instance of [Analytics] is intended to be used by clients of
 /// this package for testing purposes. It exposes a list [sentEvents] that
 /// keeps track of all events that have been sent.
-/// 
+///
 /// This is useful for confirming that events are being sent for a given
 /// workflow. Invoking the [send] method on this instance will not make any
 /// network requests to Google Analytics.
