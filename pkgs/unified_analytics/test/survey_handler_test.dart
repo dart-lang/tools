@@ -78,6 +78,7 @@ void main() {
       description: 'description',
       snoozeForMinutes: 10,
       samplingRate: 1.0,
+      excludeDashToolList: [],
       conditionList: <Condition>[],
       buttonList: [],
     );
@@ -88,6 +89,7 @@ void main() {
       description: 'description',
       snoozeForMinutes: 10,
       samplingRate: 1.0,
+      excludeDashToolList: [],
       conditionList: <Condition>[],
       buttonList: [],
     );
@@ -117,6 +119,7 @@ void main() {
 		"description": "xxxxxxx",
 		"snoozeForMinutes": "10",
 		"samplingRate": "1.0",
+    "excludeDashTools": [],
 		"conditions": [
 			{
 				"field": "logFileStats.recordCount",
@@ -150,6 +153,7 @@ void main() {
 		"description": "xxxxxxx",
 		"snoozeForMinutes": "10",
 		"samplingRate": "1.0",
+    "excludeDashTools": [],
 		"conditions": [
 			{
 				"field": "logFileStats.recordCount",
@@ -268,6 +272,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -321,6 +326,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -363,6 +369,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -407,6 +414,7 @@ void main() {
         "description": "description123",
         "snoozeForMinutes": "10",
         "samplingRate": "1.0",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -508,6 +516,7 @@ void main() {
         "description": "Help improve Flutter's release builds with this 3-question survey!",
         "snoozeForMinutes": "7200",
         "samplingRate": "0.1",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -571,6 +580,7 @@ void main() {
         "description": "xxxxxxx",
         "snoozeForMinutes": "10",
         "samplingRate": "1.0",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -587,6 +597,7 @@ void main() {
         "description": "xxxxxxx",
         "snoozeForMinutes": "10",
         "samplingRate": "1.0",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -653,6 +664,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -703,6 +715,7 @@ void main() {
           description: 'description',
           snoozeForMinutes: 10,
           samplingRate: 0.6,
+          excludeDashToolList: [],
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -748,6 +761,7 @@ void main() {
           description: 'description',
           snoozeForMinutes: 10,
           samplingRate: 0.15,
+          excludeDashToolList: [],
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -796,6 +810,7 @@ void main() {
         snoozeForMinutes:
             minutesToSnooze, // Initialized survey with `minutesToSnooze`
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [],
       );
@@ -883,6 +898,7 @@ void main() {
         description: 'description',
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [
           SurveyButton(
@@ -960,6 +976,7 @@ void main() {
         description: 'description',
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [
           SurveyButton(
@@ -1041,6 +1058,7 @@ void main() {
         description: 'description',
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [
           SurveyButton(
