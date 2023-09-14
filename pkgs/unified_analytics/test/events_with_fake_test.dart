@@ -11,8 +11,6 @@ import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
-import 'src/fake_analytics.dart';
-
 void main() {
   // The fake analytics instance can be used to ensure events
   // are being sent when invoking methods on the `Analytics` instance
@@ -72,14 +70,12 @@ void main() {
         homeDirectory: homeDirectory,
         dartVersion: 'dartVersion',
         platform: DevicePlatform.macos,
-        toolsMessageVersion: 1,
         fs: fs,
         surveyHandler: FakeSurveyHandler.fromList(
           homeDirectory: homeDirectory,
           fs: fs,
           initializedSurveys: [testSurvey],
         ),
-        enableAsserts: true,
       );
     });
   });
