@@ -67,6 +67,7 @@ void main() async {
               description: 'description',
               snoozeForMinutes: 10,
               samplingRate: 1.0,
+              excludeDashToolList: [],
               conditionList: [],
               buttonList: [
                 SurveyButton(

@@ -141,6 +141,17 @@ enum DashTool {
     required this.label,
     required this.description,
   });
+
+  /// This takes in the string label for a given [DashTool] and returns the
+  /// enum for that string label.
+  static DashTool getDashToolByLabel(String label) {
+    for (final tool in DashTool.values) {
+      if (tool.label == label) return tool;
+    }
+
+    throw Exception('The tool $label from the survey metadata file is not '
+        'a valid DashTool enum value');
+  }
 }
 
 /// Enumerate options for platforms supported.

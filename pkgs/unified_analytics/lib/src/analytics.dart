@@ -476,6 +476,10 @@ class AnalyticsImpl implements Analytics {
     final persistedSurveyMap = _surveyHandler.fetchPersistedSurveys();
 
     for (final survey in await _surveyHandler.fetchSurveyList()) {
+      // If the survey has listed the tool running this package in the exclude
+      // list, it will not be returned
+      if (survey.excludeDashToolList.contains(tool)) continue;
+
       // Apply the survey's sample rate; if the generated value from
       // the client id and survey's uniqueId are less, it will not get
       // sent to the user
