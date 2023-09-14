@@ -239,7 +239,13 @@ void main() {
         kDismissedSurveyFileName,
       ));
 
-      final initialAnalytics = Analytics.test(
+      // Setup two tools to be onboarded with this package so
+      // that we can simulate two different tools interacting with
+      // surveys
+      //
+      // This is especially useful when testing the "excludeDashTools" array
+      // to prevent certain tools from getting a survey from this package
+      final initialAnalyticsFlutter = Analytics.test(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         measurementId: 'measurementId',
@@ -248,7 +254,17 @@ void main() {
         fs: fs,
         platform: DevicePlatform.macos,
       );
-      initialAnalytics.clientShowedMessage();
+      final initialAnalyticsDart = Analytics.test(
+        tool: DashTool.dartTool,
+        homeDirectory: homeDirectory,
+        measurementId: 'measurementId',
+        apiSecret: 'apiSecret',
+        dartVersion: 'dartVersion',
+        fs: fs,
+        platform: DevicePlatform.macos,
+      );
+      initialAnalyticsFlutter.clientShowedMessage();
+      initialAnalyticsDart.clientShowedMessage();
     });
 
     test('returns valid survey', () async {
@@ -1125,6 +1141,104 @@ void main() {
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
+      });
+    });
+
+    test('Filtering out with excludeDashTool array', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[
+              Survey(
+                uniqueId: 'uniqueId',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                snoozeForMinutes: 10,
+                samplingRate: 1.0,
+                // This should be the same as the tool in the
+                // Analytics constructor above
+                excludeDashToolList: [
+                  DashTool.flutterTool,
+                ],
+                conditionList: [],
+                buttonList: [
+                  SurveyButton(
+                    buttonText: 'buttonText',
+                    action: 'accept',
+                    url: 'http://example.com',
+                    promptRemainsVisible: false,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 0);
+      });
+    });
+
+    test(
+        'Filter from excludeDashTool array does not '
+        'apply for different tool', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[
+              Survey(
+                uniqueId: 'uniqueId',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                snoozeForMinutes: 10,
+                samplingRate: 1.0,
+                // This should be different from the tool in the
+                // Analytics constructor above
+                excludeDashToolList: [
+                  DashTool.devtools,
+                ],
+                conditionList: [],
+                buttonList: [
+                  SurveyButton(
+                    buttonText: 'buttonText',
+                    action: 'accept',
+                    url: 'http://example.com',
+                    promptRemainsVisible: false,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 1);
+
+        final survey = fetchedSurveys.first;
+        expect(survey.excludeDashToolList.length, 1);
+        expect(survey.excludeDashToolList.contains(DashTool.devtools), true);
       });
     });
   });
