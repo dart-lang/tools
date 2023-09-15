@@ -326,6 +326,8 @@ class SurveyHandler {
           return null;
         } on FormatException {
           return null;
+        } on Exception {
+          return null;
         }
       })
       .whereType<Survey>()

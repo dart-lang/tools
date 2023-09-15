@@ -143,8 +143,9 @@ void main() {
 	}
 ]
 ''';
+
     // The value for the condition is not a valid integer
-    final invalidContents = '''
+    final invalidConditionValueContents = '''
 [
 	{
 		"uniqueId": "xxxxx",
@@ -159,6 +160,44 @@ void main() {
 				"field": "logFileStats.recordCount",
 				"operator": ">=",
 				"value": "1000xxxx"
+			}
+		],
+    "buttons": [
+        {
+            "buttonText": "Take Survey",
+            "action": "accept",
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+            "promptRemainsVisible": false
+        }
+    ]
+	}
+]
+''';
+
+    // Using a dash tool in the excludeDashTools array that is not a valid
+    // DashTool label
+    final invalidDashToolContents = '''
+[
+	{
+		"uniqueId": "xxxxx",
+		"startDate": "2023-06-01T09:00:00-07:00",
+		"endDate": "2023-06-30T09:00:00-07:00",
+		"description": "xxxxxxx",
+		"snoozeForMinutes": "10",
+		"samplingRate": "1.0",
+    "excludeDashTools": [
+      "not-a-valid-dash-tool"
+    ],
+		"conditions": [
+			{
+				"field": "logFileStats.recordCount",
+				"operator": ">=",
+				"value": 1000
+			},
+			{
+				"field": "logFileStats.toolCount.flutter-tool",
+				"operator": "<",
+				"value": 3
 			}
 		],
     "buttons": [
@@ -198,14 +237,25 @@ void main() {
       });
     });
 
-    test('invalid json', () {
+    test('invalid condition json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
         final parsedSurveys = SurveyHandler.parseSurveysFromJson(
-            jsonDecode(invalidContents) as List);
+            jsonDecode(invalidConditionValueContents) as List);
 
         expect(parsedSurveys.length, 0,
             reason: 'The condition value is not a '
                 'proper integer so it should error returning no surveys');
+      });
+    });
+
+    test('invalid dash tool json', () {
+      withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
+        final parsedSurveys = SurveyHandler.parseSurveysFromJson(
+            jsonDecode(invalidDashToolContents) as List);
+
+        expect(parsedSurveys.length, 0,
+            reason: 'The dash tool in the exclude array is not valid '
+                'so it should error returning no surveys');
       });
     });
   });
