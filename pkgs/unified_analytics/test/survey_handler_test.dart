@@ -112,26 +112,26 @@ void main() {
   group('Unit testing function parseSurveysFromJson', () {
     final validContents = '''
 [
-	{
-		"uniqueId": "xxxxx",
-		"startDate": "2023-06-01T09:00:00-07:00",
-		"endDate": "2023-06-30T09:00:00-07:00",
-		"description": "xxxxxxx",
-		"snoozeForMinutes": "10",
-		"samplingRate": "1.0",
+  {
+    "uniqueId": "xxxxx",
+    "startDate": "2023-06-01T09:00:00-07:00",
+    "endDate": "2023-06-30T09:00:00-07:00",
+    "description": "xxxxxxx",
+    "snoozeForMinutes": "10",
+    "samplingRate": "1.0",
     "excludeDashTools": [],
-		"conditions": [
-			{
-				"field": "logFileStats.recordCount",
-				"operator": ">=",
-				"value": 1000
-			},
-			{
-				"field": "logFileStats.toolCount.flutter-tool",
-				"operator": "<",
-				"value": 3
-			}
-		],
+    "conditions": [
+      {
+        "field": "logFileStats.recordCount",
+        "operator": ">=",
+        "value": 1000
+      },
+      {
+        "field": "logFileStats.toolCount.flutter-tool",
+        "operator": "<",
+        "value": 3
+      }
+    ],
     "buttons": [
         {
             "buttonText": "Take Survey",
@@ -140,28 +140,28 @@ void main() {
             "promptRemainsVisible": false
         }
     ]
-	}
+  }
 ]
 ''';
 
     // The value for the condition is not a valid integer
     final invalidConditionValueContents = '''
 [
-	{
-		"uniqueId": "xxxxx",
-		"startDate": "2023-06-01T09:00:00-07:00",
-		"endDate": "2023-06-30T09:00:00-07:00",
-		"description": "xxxxxxx",
-		"snoozeForMinutes": "10",
-		"samplingRate": "1.0",
+  {
+    "uniqueId": "xxxxx",
+    "startDate": "2023-06-01T09:00:00-07:00",
+    "endDate": "2023-06-30T09:00:00-07:00",
+    "description": "xxxxxxx",
+    "snoozeForMinutes": "10",
+    "samplingRate": "1.0",
     "excludeDashTools": [],
-		"conditions": [
-			{
-				"field": "logFileStats.recordCount",
-				"operator": ">=",
-				"value": "1000xxxx"
-			}
-		],
+    "conditions": [
+      {
+        "field": "logFileStats.recordCount",
+        "operator": ">=",
+        "value": "1000xxxx"
+      }
+    ],
     "buttons": [
         {
             "buttonText": "Take Survey",
@@ -170,7 +170,7 @@ void main() {
             "promptRemainsVisible": false
         }
     ]
-	}
+  }
 ]
 ''';
 
@@ -178,28 +178,28 @@ void main() {
     // DashTool label
     final invalidDashToolContents = '''
 [
-	{
-		"uniqueId": "xxxxx",
-		"startDate": "2023-06-01T09:00:00-07:00",
-		"endDate": "2023-06-30T09:00:00-07:00",
-		"description": "xxxxxxx",
-		"snoozeForMinutes": "10",
-		"samplingRate": "1.0",
+  {
+    "uniqueId": "xxxxx",
+    "startDate": "2023-06-01T09:00:00-07:00",
+    "endDate": "2023-06-30T09:00:00-07:00",
+    "description": "xxxxxxx",
+    "snoozeForMinutes": "10",
+    "samplingRate": "1.0",
     "excludeDashTools": [
       "not-a-valid-dash-tool"
     ],
-		"conditions": [
-			{
-				"field": "logFileStats.recordCount",
-				"operator": ">=",
-				"value": 1000
-			},
-			{
-				"field": "logFileStats.toolCount.flutter-tool",
-				"operator": "<",
-				"value": 3
-			}
-		],
+    "conditions": [
+      {
+        "field": "logFileStats.recordCount",
+        "operator": ">=",
+        "value": 1000
+      },
+      {
+        "field": "logFileStats.toolCount.flutter-tool",
+        "operator": "<",
+        "value": 3
+      }
+    ],
     "buttons": [
         {
             "buttonText": "Take Survey",
@@ -208,7 +208,7 @@ void main() {
             "promptRemainsVisible": false
         }
     ]
-	}
+  }
 ]
 ''';
 
@@ -653,7 +653,7 @@ void main() {
                 "operator": ">=",
                 "value": 50
             }
-	      ], 
+        ], 
         "buttons": []
     },
     {
