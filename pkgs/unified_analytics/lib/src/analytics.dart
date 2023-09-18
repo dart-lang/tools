@@ -629,7 +629,7 @@ class AnalyticsImpl implements Analytics {
       status: surveyButton.action,
     ));
   }
-  
+
   @override
   void surveyShown(Survey survey) {
     _surveyHandler.dismiss(survey, false);
@@ -745,7 +745,7 @@ class NoOpAnalytics implements Analytics {
     required Survey survey,
     required SurveyButton surveyButton,
   }) {}
-  
+
   @override
   void surveyShown(Survey survey) {}
 }
