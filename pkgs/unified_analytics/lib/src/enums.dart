@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// The valid dash tool labels stored in the [DashTool] enum
-Set<String> get validDashTools => DashTool.values.map((e) => e.label).toSet();
+/// The valid dash tool labels stored in the [DashTool] enum.
+List<String> get validDashTools =>
+    DashTool.values.map((e) => e.label).toList()..sort();
 
 /// Values for the event name to be sent to Google Analytics.
 ///
