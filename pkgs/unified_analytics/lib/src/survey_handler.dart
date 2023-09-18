@@ -137,16 +137,13 @@ class Survey {
             : json['samplingRate'] as double,
         excludeDashToolList =
             (json['excludeDashTools'] as List<dynamic>).map((e) {
-          e as String;
-          return DashTool.getDashToolByLabel(e);
+          return DashTool.getDashToolByLabel(e as String);
         }).toList(),
         conditionList = (json['conditions'] as List<dynamic>).map((e) {
-          e as Map<String, dynamic>;
-          return Condition.fromJson(e);
+          return Condition.fromJson(e as Map<String, dynamic>);
         }).toList(),
         buttonList = (json['buttons'] as List<dynamic>).map((e) {
-          e as Map<String, dynamic>;
-          return SurveyButton.fromJson(e);
+          return SurveyButton.fromJson(e as Map<String, dynamic>);
         }).toList();
 
   @override
