@@ -2,6 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// The valid dash tool labels stored in the [DashTool] enum.
+List<String> get validDashTools =>
+    DashTool.values.map((e) => e.label).toList()..sort();
+
 /// Values for the event name to be sent to Google Analytics.
 ///
 /// The [label] for each enum value is what will be logged, the [description]
@@ -141,6 +145,18 @@ enum DashTool {
     required this.label,
     required this.description,
   });
+
+  /// This takes in the string label for a given [DashTool] and returns the
+  /// enum for that string label.
+  static DashTool getDashToolByLabel(String label) {
+    for (final tool in DashTool.values) {
+      if (tool.label == label) return tool;
+    }
+
+    throw Exception('The tool $label from the survey metadata file is not '
+        'a valid DashTool enum value\n'
+        'Valid labels for dash tools: ${validDashTools.join(', ')}');
+  }
 }
 
 /// Enumerate options for platforms supported.

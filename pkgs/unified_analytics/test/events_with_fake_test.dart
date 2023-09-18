@@ -30,6 +30,7 @@ void main() {
     description: 'description',
     snoozeForMinutes: 10,
     samplingRate: 1.0, // 100% sample rate
+    excludeDashToolList: [],
     conditionList: <Condition>[],
     buttonList: [
       SurveyButton(

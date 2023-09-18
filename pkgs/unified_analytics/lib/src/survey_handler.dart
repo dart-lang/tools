@@ -8,9 +8,10 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
-import 'package:unified_analytics/src/initializer.dart';
 
 import 'constants.dart';
+import 'enums.dart';
+import 'initializer.dart';
 import 'log_handler.dart';
 
 class Condition {
@@ -102,6 +103,7 @@ class Survey {
   final String description;
   final int snoozeForMinutes;
   final double samplingRate;
+  final List<DashTool> excludeDashToolList;
   final List<Condition> conditionList;
   final List<SurveyButton> buttonList;
 
@@ -114,6 +116,7 @@ class Survey {
     required this.description,
     required this.snoozeForMinutes,
     required this.samplingRate,
+    required this.excludeDashToolList,
     required this.conditionList,
     required this.buttonList,
   });
@@ -132,13 +135,15 @@ class Survey {
         samplingRate = json['samplingRate'] is String
             ? double.parse(json['samplingRate'] as String)
             : json['samplingRate'] as double,
+        excludeDashToolList =
+            (json['excludeDashTools'] as List<dynamic>).map((e) {
+          return DashTool.getDashToolByLabel(e as String);
+        }).toList(),
         conditionList = (json['conditions'] as List<dynamic>).map((e) {
-          e as Map<String, dynamic>;
-          return Condition.fromJson(e);
+          return Condition.fromJson(e as Map<String, dynamic>);
         }).toList(),
         buttonList = (json['buttons'] as List<dynamic>).map((e) {
-          e as Map<String, dynamic>;
-          return SurveyButton.fromJson(e);
+          return SurveyButton.fromJson(e as Map<String, dynamic>);
         }).toList();
 
   @override
@@ -317,6 +322,8 @@ class SurveyHandler {
         } on TypeError {
           return null;
         } on FormatException {
+          return null;
+        } on Exception {
           return null;
         }
       })

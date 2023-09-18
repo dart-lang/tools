@@ -78,6 +78,7 @@ void main() {
       description: 'description',
       snoozeForMinutes: 10,
       samplingRate: 1.0,
+      excludeDashToolList: [],
       conditionList: <Condition>[],
       buttonList: [],
     );
@@ -88,6 +89,7 @@ void main() {
       description: 'description',
       snoozeForMinutes: 10,
       samplingRate: 1.0,
+      excludeDashToolList: [],
       conditionList: <Condition>[],
       buttonList: [],
     );
@@ -110,25 +112,26 @@ void main() {
   group('Unit testing function parseSurveysFromJson', () {
     final validContents = '''
 [
-	{
-		"uniqueId": "xxxxx",
-		"startDate": "2023-06-01T09:00:00-07:00",
-		"endDate": "2023-06-30T09:00:00-07:00",
-		"description": "xxxxxxx",
-		"snoozeForMinutes": "10",
-		"samplingRate": "1.0",
-		"conditions": [
-			{
-				"field": "logFileStats.recordCount",
-				"operator": ">=",
-				"value": 1000
-			},
-			{
-				"field": "logFileStats.toolCount.flutter-tool",
-				"operator": "<",
-				"value": 3
-			}
-		],
+  {
+    "uniqueId": "xxxxx",
+    "startDate": "2023-06-01T09:00:00-07:00",
+    "endDate": "2023-06-30T09:00:00-07:00",
+    "description": "xxxxxxx",
+    "snoozeForMinutes": "10",
+    "samplingRate": "1.0",
+    "excludeDashTools": [],
+    "conditions": [
+      {
+        "field": "logFileStats.recordCount",
+        "operator": ">=",
+        "value": 1000
+      },
+      {
+        "field": "logFileStats.toolCount.flutter-tool",
+        "operator": "<",
+        "value": 3
+      }
+    ],
     "buttons": [
         {
             "buttonText": "Take Survey",
@@ -137,26 +140,28 @@ void main() {
             "promptRemainsVisible": false
         }
     ]
-	}
+  }
 ]
 ''';
+
     // The value for the condition is not a valid integer
-    final invalidContents = '''
+    final invalidConditionValueContents = '''
 [
-	{
-		"uniqueId": "xxxxx",
-		"startDate": "2023-06-01T09:00:00-07:00",
-		"endDate": "2023-06-30T09:00:00-07:00",
-		"description": "xxxxxxx",
-		"snoozeForMinutes": "10",
-		"samplingRate": "1.0",
-		"conditions": [
-			{
-				"field": "logFileStats.recordCount",
-				"operator": ">=",
-				"value": "1000xxxx"
-			}
-		],
+  {
+    "uniqueId": "xxxxx",
+    "startDate": "2023-06-01T09:00:00-07:00",
+    "endDate": "2023-06-30T09:00:00-07:00",
+    "description": "xxxxxxx",
+    "snoozeForMinutes": "10",
+    "samplingRate": "1.0",
+    "excludeDashTools": [],
+    "conditions": [
+      {
+        "field": "logFileStats.recordCount",
+        "operator": ">=",
+        "value": "1000xxxx"
+      }
+    ],
     "buttons": [
         {
             "buttonText": "Take Survey",
@@ -165,7 +170,45 @@ void main() {
             "promptRemainsVisible": false
         }
     ]
-	}
+  }
+]
+''';
+
+    // Using a dash tool in the excludeDashTools array that is not a valid
+    // DashTool label
+    final invalidDashToolContents = '''
+[
+  {
+    "uniqueId": "xxxxx",
+    "startDate": "2023-06-01T09:00:00-07:00",
+    "endDate": "2023-06-30T09:00:00-07:00",
+    "description": "xxxxxxx",
+    "snoozeForMinutes": "10",
+    "samplingRate": "1.0",
+    "excludeDashTools": [
+      "not-a-valid-dash-tool"
+    ],
+    "conditions": [
+      {
+        "field": "logFileStats.recordCount",
+        "operator": ">=",
+        "value": 1000
+      },
+      {
+        "field": "logFileStats.toolCount.flutter-tool",
+        "operator": "<",
+        "value": 3
+      }
+    ],
+    "buttons": [
+        {
+            "buttonText": "Take Survey",
+            "action": "accept",
+            "url": "https://google.qualtrics.com/jfe/form/SV_5gsB2EuG324y2",
+            "promptRemainsVisible": false
+        }
+    ]
+  }
 ]
 ''';
 
@@ -194,14 +237,25 @@ void main() {
       });
     });
 
-    test('invalid json', () {
+    test('invalid condition json', () {
       withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
         final parsedSurveys = SurveyHandler.parseSurveysFromJson(
-            jsonDecode(invalidContents) as List);
+            jsonDecode(invalidConditionValueContents) as List);
 
         expect(parsedSurveys.length, 0,
             reason: 'The condition value is not a '
                 'proper integer so it should error returning no surveys');
+      });
+    });
+
+    test('invalid dash tool json', () {
+      withClock(Clock.fixed(DateTime(2023, 6, 15)), () {
+        final parsedSurveys = SurveyHandler.parseSurveysFromJson(
+            jsonDecode(invalidDashToolContents) as List);
+
+        expect(parsedSurveys.length, 0,
+            reason: 'The dash tool in the exclude array is not valid '
+                'so it should error returning no surveys');
       });
     });
   });
@@ -235,7 +289,13 @@ void main() {
         kDismissedSurveyFileName,
       ));
 
-      final initialAnalytics = Analytics.test(
+      // Setup two tools to be onboarded with this package so
+      // that we can simulate two different tools interacting with
+      // surveys
+      //
+      // This is especially useful when testing the "excludeDashTools" array
+      // to prevent certain tools from getting a survey from this package
+      final initialAnalyticsFlutter = Analytics.test(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         measurementId: 'measurementId',
@@ -244,7 +304,17 @@ void main() {
         fs: fs,
         platform: DevicePlatform.macos,
       );
-      initialAnalytics.clientShowedMessage();
+      final initialAnalyticsDart = Analytics.test(
+        tool: DashTool.dartTool,
+        homeDirectory: homeDirectory,
+        measurementId: 'measurementId',
+        apiSecret: 'apiSecret',
+        dartVersion: 'dartVersion',
+        fs: fs,
+        platform: DevicePlatform.macos,
+      );
+      initialAnalyticsFlutter.clientShowedMessage();
+      initialAnalyticsDart.clientShowedMessage();
     });
 
     test('returns valid survey', () async {
@@ -268,6 +338,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -321,6 +392,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -363,6 +435,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -407,6 +480,7 @@ void main() {
         "description": "description123",
         "snoozeForMinutes": "10",
         "samplingRate": "1.0",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -508,6 +582,7 @@ void main() {
         "description": "Help improve Flutter's release builds with this 3-question survey!",
         "snoozeForMinutes": "7200",
         "samplingRate": "0.1",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -571,13 +646,14 @@ void main() {
         "description": "xxxxxxx",
         "snoozeForMinutes": "10",
         "samplingRate": "1.0",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
                 "operator": ">=",
                 "value": 50
             }
-	      ], 
+        ], 
         "buttons": []
     },
     {
@@ -587,6 +663,7 @@ void main() {
         "description": "xxxxxxx",
         "snoozeForMinutes": "10",
         "samplingRate": "1.0",
+        "excludeDashTools": [],
         "conditions": [
             {
                 "field": "logFileStats.recordCount",
@@ -653,6 +730,7 @@ void main() {
                 description: 'description',
                 snoozeForMinutes: 10,
                 samplingRate: 1.0,
+                excludeDashToolList: [],
                 conditionList: <Condition>[
                   Condition('logFileStats.recordCount', '>=', 50),
                   Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -703,6 +781,7 @@ void main() {
           description: 'description',
           snoozeForMinutes: 10,
           samplingRate: 0.6,
+          excludeDashToolList: [],
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -748,6 +827,7 @@ void main() {
           description: 'description',
           snoozeForMinutes: 10,
           samplingRate: 0.15,
+          excludeDashToolList: [],
           conditionList: <Condition>[
             Condition('logFileStats.recordCount', '>=', 50),
             Condition('logFileStats.toolCount.flutter-tool', '>', 0),
@@ -796,6 +876,7 @@ void main() {
         snoozeForMinutes:
             minutesToSnooze, // Initialized survey with `minutesToSnooze`
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [],
       );
@@ -883,6 +964,7 @@ void main() {
         description: 'description',
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [
           SurveyButton(
@@ -960,6 +1042,7 @@ void main() {
         description: 'description',
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [
           SurveyButton(
@@ -1041,6 +1124,7 @@ void main() {
         description: 'description',
         snoozeForMinutes: minutesToSnooze,
         samplingRate: 1.0,
+        excludeDashToolList: [],
         conditionList: <Condition>[],
         buttonList: [
           SurveyButton(
@@ -1107,6 +1191,104 @@ void main() {
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
+      });
+    });
+
+    test('Filtering out with excludeDashTool array', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[
+              Survey(
+                uniqueId: 'uniqueId',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                snoozeForMinutes: 10,
+                samplingRate: 1.0,
+                // This should be the same as the tool in the
+                // Analytics constructor above
+                excludeDashToolList: [
+                  DashTool.flutterTool,
+                ],
+                conditionList: [],
+                buttonList: [
+                  SurveyButton(
+                    buttonText: 'buttonText',
+                    action: 'accept',
+                    url: 'http://example.com',
+                    promptRemainsVisible: false,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 0);
+      });
+    });
+
+    test(
+        'Filter from excludeDashTool array does not '
+        'apply for different tool', () async {
+      await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
+        analytics = Analytics.test(
+          tool: DashTool.flutterTool,
+          homeDirectory: homeDirectory,
+          measurementId: 'measurementId',
+          apiSecret: 'apiSecret',
+          dartVersion: 'dartVersion',
+          fs: fs,
+          platform: DevicePlatform.macos,
+          surveyHandler: FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            initializedSurveys: <Survey>[
+              Survey(
+                uniqueId: 'uniqueId',
+                startDate: DateTime(2023, 1, 1),
+                endDate: DateTime(2023, 12, 31),
+                description: 'description',
+                snoozeForMinutes: 10,
+                samplingRate: 1.0,
+                // This should be different from the tool in the
+                // Analytics constructor above
+                excludeDashToolList: [
+                  DashTool.devtools,
+                ],
+                conditionList: [],
+                buttonList: [
+                  SurveyButton(
+                    buttonText: 'buttonText',
+                    action: 'accept',
+                    url: 'http://example.com',
+                    promptRemainsVisible: false,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+
+        final fetchedSurveys = await analytics.fetchAvailableSurveys();
+
+        expect(fetchedSurveys.length, 1);
+
+        final survey = fetchedSurveys.first;
+        expect(survey.excludeDashToolList.length, 1);
+        expect(survey.excludeDashToolList.contains(DashTool.devtools), true);
       });
     });
   });
