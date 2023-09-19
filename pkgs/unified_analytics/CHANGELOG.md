@@ -1,10 +1,11 @@
-## 3.1.0
+## 4.0.0
 
 - Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
 - Added new method to suppress telemetry collection temporarily for current invocation via `analytics.suppressTelemetry()`
 - Added `SurveyHandler` feature to `Analytics` instance to fetch available surveys from remote endpoint to display to users along with functionality to dismiss them
 - Surveys will be disabled for any users that have been opted out
 - Shipping `FakeAnalytics` for clients of this tool that need to ensure workflows are sending events in tests
+- Adding getter to `Analytics` instance to fetch the client ID being sent to GA4
 
 ## 3.0.0
 

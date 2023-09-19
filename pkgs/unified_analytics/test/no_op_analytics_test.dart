@@ -62,6 +62,11 @@ void main() {
 
     expect(checkDirectoryForWritePermissions(home), true);
   });
+
+  test('Fetching the client id', () {
+    final analytics = NoOpAnalytics();
+    expect(analytics.clientId, 'xxxx-xxxx');
+  });
 }
 
 class FakeDirectory extends Fake implements Directory {

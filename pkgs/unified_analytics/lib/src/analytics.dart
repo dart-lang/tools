@@ -187,6 +187,10 @@ abstract class Analytics {
         enableAsserts: true,
       );
 
+  /// The shared identifier for Flutter and Dart related tooling using
+  /// package:unified_analytics.
+  String get clientId;
+
   /// Retrieves the consent message to prompt users with on first
   /// run or when the message has been updated.
   String get getConsentMessage;
@@ -400,6 +404,9 @@ class AnalyticsImpl implements Analytics {
     // Initialize the log handler to persist events that are being sent
     _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
   }
+
+  @override
+  String get clientId => _clientId;
 
   @override
   String get getConsentMessage {
@@ -712,6 +719,9 @@ class NoOpAnalytics implements Analytics {
   factory NoOpAnalytics() => const NoOpAnalytics._();
 
   const NoOpAnalytics._();
+
+  @override
+  String get clientId => 'xxxx-xxxx';
 
   @override
   void clientShowedMessage() {}
