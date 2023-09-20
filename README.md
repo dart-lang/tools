@@ -14,9 +14,9 @@ don't naturally belong to other topic monorepos (like
 
 | Package | Description | Version |
 | --- | --- | --- |
-| [cli_config](pkgs/cli_config/) | A package to take config values from configuration files, CLI arguments, and environment variables. |[![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
-| [extension_discovery](pkgs/extension_discovery/) | Discovery of packages that provide extensions for your package. |[![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
-| [graphs](pkgs/graphs/) | Graph algorithms that do not specify a particular approach for representing a Graph. |[![pub package](https://img.shields.io/pub/v/graphs.svg)](https://pub.dev/packages/graphs) |
+| [cli_config](pkgs/cli_config/) | A library to take config values from configuration files, CLI arguments, and environment variables. | [![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
+| [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
+| [graphs](pkgs/graphs/) | Graph algorithms that operate on graphs in any representation | [![pub package](https://img.shields.io/pub/v/graphs.svg)](https://pub.dev/packages/graphs) |
 | [unified_analytics](pkgs/unified_analytics/) | A package for logging analytics for all Dart and Flutter related tooling to Google Analytics. | [![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics) |
 
 ## Publishing automation

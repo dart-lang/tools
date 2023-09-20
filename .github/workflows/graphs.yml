@@ -1,4 +1,5 @@
-name: CI
+name: package:graphs
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
