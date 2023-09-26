@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// The hard coded client ID for the [NoOpAnalytics]
+/// The hard coded client ID for the [NoOpAnalytics] instance.
 const String clientIdNoOp = 'xxxx-xxxx';
 
 /// URL endpoint for sending Google Analytics Events.
