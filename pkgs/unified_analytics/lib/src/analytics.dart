@@ -721,7 +721,7 @@ class NoOpAnalytics implements Analytics {
   const NoOpAnalytics._();
 
   @override
-  String get clientId => 'xxxx-xxxx';
+  String get clientId => clientIdNoOp;
 
   @override
   void clientShowedMessage() {}
