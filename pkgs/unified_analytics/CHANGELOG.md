@@ -1,3 +1,6 @@
+## 4.0.1
+- Adding constant for the NoOpAnalytics instance client ID to enable clients to reference it in tests
+
 ## 4.0.0
 
 - Enhanced `LogFileStats` data to include information about flutter channel counts and tool counts
