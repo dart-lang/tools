@@ -74,7 +74,7 @@ class FakeDirectory extends Fake implements Directory {
 
   /// This fake directory class allows you to pass the permissions for
   /// the user level, the group and global permissions will default to
-  /// being denied as indicated by the last 6 characters in [modeString]
+  /// being denied as indicated by the last 6 characters in the mode string.
   FakeDirectory({
     required bool writeEnabled,
     bool readEnabled = true,

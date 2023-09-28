@@ -1,3 +1,7 @@
+## 4.0.2-wip
+
+- Update to the latest version of `package:dart_flutter_team_lints`.
+
 ## 4.0.1
 
 - Adding constant for the NoOpAnalytics instance client ID to enable clients to reference it in tests

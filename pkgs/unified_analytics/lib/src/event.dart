@@ -297,7 +297,7 @@ final class Event {
   ///
   /// [version] - the resolved, canonicalized package version
   ///
-  /// [dependencyKind] - the kind of dependency that resulted in this package
+  /// [dependencyType] - the kind of dependency that resulted in this package
   ///     being resolved (e.g., direct, transitive, or dev dependencies).
   Event.pubGet({
     required String packageName,
@@ -362,8 +362,8 @@ final class Event {
   ///
   /// [surveyId] - the unique id for a given survey.
   ///
-  /// [status] - the string identifier for a given [SurveyButton] under
-  ///     the `action` field.
+  /// [status] - the string identifier for a given `SurveyButton` under the
+  ///     `action` field.
   Event.surveyAction({
     required String surveyId,
     required String status,
