@@ -697,6 +697,9 @@ class FakeAnalytics extends AnalyticsImpl {
 /// This is for clients that opt to either not send analytics, or will migrate
 /// to use [AnalyticsImpl] at a later time.
 class NoOpAnalytics implements Analytics {
+  /// The hard-coded client ID value for each NoOp instance.
+  static String get staticClientId => 'xxxx-xxxx';
+
   @override
   final String getConsentMessage = '';
 
@@ -721,7 +724,7 @@ class NoOpAnalytics implements Analytics {
   const NoOpAnalytics._();
 
   @override
-  String get clientId => 'xxxx-xxxx';
+  String get clientId => staticClientId;
 
   @override
   void clientShowedMessage() {}
