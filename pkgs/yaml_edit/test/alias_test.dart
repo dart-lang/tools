@@ -16,7 +16,7 @@ void main() {
 - &SS Sammy Sosa
 - *SS
 ''');
-      expect(() => doc.remove([0]), throwsAliasError);
+      expect(() => doc.remove([0]), throwsAliasException);
     });
 
     test('removing an alias reference results in AliasError', () {
@@ -25,7 +25,7 @@ void main() {
 - *SS
 ''');
 
-      expect(() => doc.remove([1]), throwsAliasError);
+      expect(() => doc.remove([1]), throwsAliasException);
     });
 
     test('it is okay to remove a non-alias node', () {
@@ -50,7 +50,7 @@ a: &SS Sammy Sosa
 b: *SS
 ''');
 
-      expect(() => doc.remove(['a']), throwsAliasError);
+      expect(() => doc.remove(['a']), throwsAliasException);
     });
 
     test('removing an alias reference value results in AliasError', () {
@@ -59,7 +59,7 @@ a: &SS Sammy Sosa
 b: *SS
 ''');
 
-      expect(() => doc.remove(['b']), throwsAliasError);
+      expect(() => doc.remove(['b']), throwsAliasException);
     });
 
     test('removing an alias anchor key results in AliasError', () {
@@ -68,7 +68,7 @@ b: *SS
 b: *SS
 ''');
 
-      expect(() => doc.remove(['Sammy Sosa']), throwsAliasError);
+      expect(() => doc.remove(['Sammy Sosa']), throwsAliasException);
     });
 
     test('removing an alias reference key results in AliasError', () {
@@ -77,7 +77,7 @@ a: &SS Sammy Sosa
 *SS : b
 ''');
 
-      expect(() => doc.remove(['Sammy Sosa']), throwsAliasError);
+      expect(() => doc.remove(['Sammy Sosa']), throwsAliasException);
     });
 
     test('it is okay to remove a non-alias node', () {
@@ -103,7 +103,7 @@ b: *SS
 - *SS
 ''');
 
-      expect(() => doc.remove([0]), throwsAliasError);
+      expect(() => doc.remove([0]), throwsAliasException);
     });
 
     test('nested list alias references are detected too', () {
@@ -113,7 +113,7 @@ b: *SS
   - *SS
 ''');
 
-      expect(() => doc.remove([1]), throwsAliasError);
+      expect(() => doc.remove([1]), throwsAliasException);
     });
 
     test('removing nested map alias anchor results in AliasError', () {
@@ -123,7 +123,7 @@ a:
 b: *SS
 ''');
 
-      expect(() => doc.remove(['a']), throwsAliasError);
+      expect(() => doc.remove(['a']), throwsAliasException);
     });
 
     test('removing nested map alias reference results in AliasError', () {
@@ -133,7 +133,7 @@ b:
   c: *SS
 ''');
 
-      expect(() => doc.remove(['b']), throwsAliasError);
+      expect(() => doc.remove(['b']), throwsAliasException);
     });
   });
 }

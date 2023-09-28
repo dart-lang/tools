@@ -199,6 +199,8 @@ class YamlEditor {
   ///
   /// Throws a [ArgumentError] if [path] is invalid.
   ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  ///
   /// **Example:** (using [update])
   /// ```dart
   /// final doc = YamlEditor('''
@@ -279,6 +281,8 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  ///
   /// **Example:**
   /// ```dart
   /// final doc = YamlEditor('[0, 1]');
@@ -295,6 +299,8 @@ class YamlEditor {
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
   ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
+  ///
   /// **Example:**
   /// ```dart
   /// final doc = YamlEditor('[1, 2]');
@@ -310,6 +316,8 @@ class YamlEditor {
   ///
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
+  ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
   ///
   /// **Example:**
   /// ```dart
@@ -339,6 +347,8 @@ class YamlEditor {
   ///
   /// Throws a [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid.
+  ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
   ///
   /// **Example:**
   /// ```dart
@@ -375,7 +385,9 @@ class YamlEditor {
   /// Removes the node at [path]. Comments "belonging" to the node will be
   /// removed while surrounding comments will be left untouched.
   ///
-  /// Throws a [ArgumentError] if [path] is invalid.
+  /// Throws an [ArgumentError] if [path] is invalid.
+  ///
+  /// Throws an [AliasException] if a node on [path] is an alias or anchor.
   ///
   /// **Example:**
   /// ```dart
@@ -441,7 +453,7 @@ class YamlEditor {
   ///
   /// If [orElse] is omitted, it defaults to throwing a [PathError].
   ///
-  /// If [checkAlias] is `true`, throw [AliasError] if an aliased node is
+  /// If [checkAlias] is `true`, throw [AliasException] if an aliased node is
   /// encountered.
   YamlNode _traverse(Iterable<Object?> path,
       {bool checkAlias = false, YamlNode Function()? orElse}) {
@@ -454,7 +466,7 @@ class YamlEditor {
       final keyOrIndex = pathList[i];
 
       if (checkAlias && _aliases.contains(currentNode)) {
-        throw AliasError(path, currentNode);
+        throw AliasException(path, currentNode);
       }
 
       if (currentNode is YamlList) {
@@ -473,7 +485,7 @@ class YamlEditor {
         final keyNode = getKeyNode(map, keyOrIndex);
 
         if (checkAlias) {
-          if (_aliases.contains(keyNode)) throw AliasError(path, keyNode);
+          if (_aliases.contains(keyNode)) throw AliasException(path, keyNode);
         }
 
         currentNode = map.nodes[keyNode]!;
@@ -498,7 +510,7 @@ class YamlEditor {
   /// Asserts that [node] and none its children are aliases
   void _assertNoChildAlias(Iterable<Object?> path, [YamlNode? node]) {
     if (node == null) return _assertNoChildAlias(path, _traverse(path));
-    if (_aliases.contains(node)) throw AliasError(path, node);
+    if (_aliases.contains(node)) throw AliasException(path, node);
 
     if (node is YamlScalar) return;
 
@@ -514,7 +526,7 @@ class YamlEditor {
       for (var i = 0; i < node.length; i++) {
         final updatedPath = [...path, keyList[i]];
         if (_aliases.contains(keyList[i])) {
-          throw AliasError(path, keyList[i] as YamlNode);
+          throw AliasException(path, keyList[i] as YamlNode);
         }
         _assertNoChildAlias(updatedPath, node.nodes[keyList[i]]);
       }
@@ -527,9 +539,10 @@ class YamlEditor {
   ///
   /// Throws [ArgumentError] if the element at the given path is not a
   /// [YamlList] or if the path is invalid. If [checkAlias] is `true`, and an
-  /// aliased node is encountered along [path], an [AliasError] will be thrown.
+  /// aliased node is encountered along [path], an [AliasException] will be
+  /// thrown.
   YamlList _traverseToList(Iterable<Object?> path, {bool checkAlias = false}) {
-    final possibleList = _traverse(path, checkAlias: true);
+    final possibleList = _traverse(path, checkAlias: checkAlias);
 
     if (possibleList is YamlList) {
       return possibleList;

@@ -41,7 +41,7 @@ class PathError extends ArgumentError {
   }
 }
 
-/// Error thrown when the path contains an alias along the way.
+/// Exception thrown when the path contains an alias along the way.
 ///
 /// When a path contains an aliased node, the behavior becomes less well-defined
 /// because we cannot be certain if the user wishes for the change to
@@ -50,14 +50,14 @@ class PathError extends ArgumentError {
 /// the detection that our change will impact an alias, and we do not intend
 /// on supporting such changes for the foreseeable future.
 @sealed
-class AliasError extends UnsupportedError {
+class AliasException extends FormatException {
   /// The path that caused the error
   final Iterable<Object?> path;
 
   /// The anchor node of the alias
   final YamlNode anchor;
 
-  AliasError(this.path, this.anchor)
+  AliasException(this.path, this.anchor)
       : super('Encountered an alias node along $path! '
             'Alias nodes are nodes that refer to a previously serialized '
             'nodes, and are denoted by either the "*" or the "&" indicators in '

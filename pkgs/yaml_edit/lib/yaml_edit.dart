@@ -23,5 +23,6 @@
 library yaml_edit;
 
 export 'src/editor.dart';
+export 'src/errors.dart' show AliasException;
 export 'src/source_edit.dart';
 export 'src/wrap.dart' show wrapAsYamlNode;

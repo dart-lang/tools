@@ -32,7 +32,7 @@ Matcher notEquals(dynamic expected) => isNot(equals(expected));
 Matcher throwsPathError = throwsA(isA<PathError>());
 
 /// A matcher for functions that throw [AliasError].
-Matcher throwsAliasError = throwsA(isA<AliasError>());
+Matcher throwsAliasException = throwsA(isA<AliasException>());
 
 /// Enum to hold the possible modification methods.
 enum YamlModificationMethod {

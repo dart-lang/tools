@@ -1,3 +1,13 @@
+## 2.2.0
+- `AliasError` is changed to `AliasException` and exposed in the public API.
+
+  All node-mutating methods on `YamlEditor`, i.e. `update()`, `appendToList()`,
+  `prependToList()`, `insertIntoList()`, `spliceList()`, `remove()` will now
+  throw an exception instead of an error when encountering an alias on the path
+  to modify.
+
+  This allows catching and handling when this is happening.
+
 ## 2.1.1
 
 - Require Dart 2.19
