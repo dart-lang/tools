@@ -8,9 +8,12 @@ import 'dart:io' show File, FileSystemEntityType, IOException;
 import 'expect_json.dart';
 import 'io.dart';
 
+// TODO: Convert the 'rootUri' reference below to a doc comment reference once
+// https://github.com/dart-lang/linter/issues/4645 is addressed.
+
 /// Entry in the `.dart_tool/extension_discovery/<package>.json` file.
 ///
-/// If the [rootUri] is not an absolute path, then we will assume that the
+/// If the `rootUri` is not an absolute path, then we will assume that the
 /// package is mutable (either it's the root package or a path dependency).
 /// If there is no extension config file for a mutable package, then we will
 /// still store a [RegistryEntry] with `config = null`. Because everytime we
