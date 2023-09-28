@@ -29,7 +29,7 @@ Future<Registry?> loadRegistry(File registryFile) async {
   try {
     final registryJson = decodeJsonMap(await registryFile.readAsString());
     if (registryJson.expectNumber('version') != 2) {
-      throw FormatException('"version" must be 2');
+      throw const FormatException('"version" must be 2');
     }
     return registryJson
         .expectListObjects('entries')

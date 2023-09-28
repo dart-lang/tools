@@ -10,7 +10,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 export 'package:test_descriptor/test_descriptor.dart';
 
 d.FileDescriptor json(String fileName, Object? json) =>
-    d.file(fileName, JsonEncoder.withIndent('  ').convert(json));
+    d.file(fileName, const JsonEncoder.withIndent('  ').convert(json));
 
 d.FileDescriptor pubspec(Map<String, Object?> pubspec) =>
     json('pubspec.yaml', pubspec);

@@ -134,7 +134,7 @@ void main() {
       ''';
       final data = parseYamlFromConfigFile(yaml);
       expect(
-        DeepCollectionEquality().equals(data, {
+        const DeepCollectionEquality().equals(data, {
           'keyA': 'hello',
           'keyB': 42,
           'keyC': 42.2,
