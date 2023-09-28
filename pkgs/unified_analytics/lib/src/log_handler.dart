@@ -183,8 +183,13 @@ class LogHandler {
     // removed later through `whereType<LogItem>`
     final records = logFile
         .readAsLinesSync()
-        .map((String e) =>
-            LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>))
+        .map((String e) {
+          try {
+            return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
+          } on FormatException {
+            return null;
+          }
+        })
         .whereType<LogItem>()
         .toList();
 
