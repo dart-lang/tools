@@ -1,6 +1,7 @@
-## 0.1.2-wip
+## 0.1.2
 
 - Add usage docs to the readme.
+- Require Dart 3.0.
 
 ## 0.1.1
 

@@ -355,7 +355,7 @@ class Config {
   /// finally the config file.
   ///
   /// For cli defines and environment variables, the value must be parseble
-  /// by [int.parse].
+  /// by [core.int.parse].
   /// For the config file, it must be an integer.
   core.int int(String key) {
     final value = optionalInt(key);
@@ -369,7 +369,7 @@ class Config {
   /// finally the config file.
   ///
   /// For cli defines and environment variables, the value must be parseble
-  /// by [int.parse].
+  /// by [core.int.parse].
   /// For the config file, it must be an integer or null.
   core.int? optionalInt(String key) {
     core.int? value;
@@ -385,7 +385,7 @@ class Config {
   /// finally the config file.
   ///
   /// For cli defines and environment variables, the value must be parseble
-  /// by [double.parse].
+  /// by [core.double.parse].
   /// For the config file, it must be an double.
   core.double double(String key) {
     final value = optionalDouble(key);
@@ -399,7 +399,7 @@ class Config {
   /// finally the config file.
   ///
   /// For cli defines and environment variables, the value must be parseble
-  /// by [double.parse].
+  /// by [core.double.parse].
   /// For the config file, it must be an double or null.
   core.double? optionalDouble(String key) {
     core.double? value;
