@@ -119,4 +119,22 @@ void main() {
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, countOfEventsToSend);
   });
+
+  test('Valid json but invalid keys', () {
+    
+    // The second line here is missing the "events" top level
+    // key which should cause an error for that record only
+    final contents = '''
+{"client_id":"fe4a035b-bba8-4d4b-a651-ea213e9b8a2c","events":[{"name":"lint_usage_count","params":{"count":1,"name":"prefer_final_fields"}}],"user_properties":{"session_id":{"value":1695147041117},"flutter_channel":{"value":null},"host":{"value":"macOS"},"flutter_version":{"value":"3.14.0-14.0.pre.303"},"dart_version":{"value":"3.2.0-140.0.dev"},"analytics_pkg_version":{"value":"3.1.0"},"tool":{"value":"vscode-plugins"},"local_time":{"value":"2023-09-19 14:44:11.528153 -0400"}}}
+{"client_id":"fe4a035b-bba8-4d4b-a651-ea213e9b8a2c","WRONG_EVENT_KEY":[{"name":"lint_usage_count","params":{"count":1,"name":"prefer_for_elements_to_map_fromIterable"}}],"user_properties":{"session_id":{"value":1695147041117},"flutter_channel":{"value":null},"host":{"value":"macOS"},"flutter_version":{"value":"3.14.0-14.0.pre.303"},"dart_version":{"value":"3.2.0-140.0.dev"},"analytics_pkg_version":{"value":"3.1.0"},"tool":{"value":"vscode-plugins"},"local_time":{"value":"2023-09-19 14:44:11.565549 -0400"}}}
+{"client_id":"fe4a035b-bba8-4d4b-a651-ea213e9b8a2c","events":[{"name":"lint_usage_count","params":{"count":1,"name":"prefer_function_declarations_over_variables"}}],"user_properties":{"session_id":{"value":1695147041117},"flutter_channel":{"value":null},"host":{"value":"macOS"},"flutter_version":{"value":"3.14.0-14.0.pre.303"},"dart_version":{"value":"3.2.0-140.0.dev"},"analytics_pkg_version":{"value":"3.1.0"},"tool":{"value":"vscode-plugins"},"local_time":{"value":"2023-09-19 14:44:11.589338 -0400"}}}
+''';
+    logFile.writeAsStringSync(contents);
+
+    final logFileStats = analytics.logFileStats();
+
+    expect(logFile.readAsLinesSync().length, 3);
+    expect(logFileStats, isNotNull);
+    expect(logFileStats!.recordCount, 2);
+  });
 }
