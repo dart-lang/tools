@@ -20,7 +20,7 @@ const _maxAttempts = 20;
 ///
 /// This ensures that if `pub get` is racing with cache writing then we won't
 /// rely on the result.
-Duration modificationMaturityDelay = Duration(seconds: 5);
+Duration modificationMaturityDelay = const Duration(seconds: 5);
 
 /// On windows some renaming files/folders recently created can be problematic
 /// as they may be locked by security scanning systems.
@@ -45,7 +45,7 @@ Future<T> _attempt<T>(FutureOr<T> Function() fn) async {
       if (code != 5 && code != 32) rethrow;
 
       // Sleep a bit a try again.
-      await Future.delayed(Duration(milliseconds: 5));
+      await Future<void>.delayed(const Duration(milliseconds: 5));
     }
   }
 }

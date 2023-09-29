@@ -44,7 +44,7 @@ Map<String, Object?> parseYamlFromConfigFile(String yamlString) {
   final visited = <YamlNode>{};
   Object? toPlainType(YamlNode n) {
     if (!visited.add(n)) {
-      throw FormatException(
+      throw const FormatException(
         'Anchors/aliases are not supported in YAML config files',
       );
     }
@@ -54,7 +54,7 @@ Map<String, Object?> parseYamlFromConfigFile(String yamlString) {
         String s => s,
         num n => n,
         bool b => b,
-        _ => throw FormatException(
+        _ => throw const FormatException(
             'Only null, string, number, bool, map and lists are supported '
             'in YAML config files',
           ),
@@ -67,7 +67,7 @@ Map<String, Object?> parseYamlFromConfigFile(String yamlString) {
       return n.nodes.map((key, value) {
         final k = toPlainType(key as YamlNode);
         if (k is! String) {
-          throw FormatException(
+          throw const FormatException(
             'Only string keys are allowed in YAML config files',
           );
         }
@@ -79,7 +79,7 @@ Map<String, Object?> parseYamlFromConfigFile(String yamlString) {
 
   final value = toPlainType(loadYamlNode(yamlString));
   if (value is! Map<String, Object?>) {
-    throw FormatException('The root of a YAML config file must be a map');
+    throw const FormatException('The root of a YAML config file must be a map');
   }
   return value;
 }

@@ -1,4 +1,10 @@
+## 2.0.1-wip
+
+- Require Dart 3.0.
+- Update to the latest version of `package:dart_flutter_team_lints`.
+
 ## 2.0.0
+
 - Use `extension/<package>/config.yaml` instead of
   `extension/<package>/config.json` for better consistency with other tooling.
 - Require that the top-level value in `extension/<package>/config.yaml` is
