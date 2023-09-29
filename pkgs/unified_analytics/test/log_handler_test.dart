@@ -121,7 +121,6 @@ void main() {
   });
 
   test('Valid json but invalid keys', () {
-    
     // The second line here is missing the "events" top level
     // key which should cause an error for that record only
     final contents = '''
