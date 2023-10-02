@@ -1,8 +1,9 @@
-## 1.6.4-wip.
+## 1.6.4
 
 - allow omitting space between `//` and `coverage` in coverage ignore comments
 - allow text after coverage ignore comments
 - throw FormatException when encountering unbalanced ignore comments instead of silently erroring
+- Update `package:vm_service` constraints to '>= 9.4.0 <12.0.0'.
 
 ## 1.6.3
 
