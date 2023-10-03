@@ -11,8 +11,8 @@ import 'package:test/test.dart';
 import 'test_utils.dart';
 
 void main() {
-  test('minimal set values', () {
-    final value = parse(defaultPubspec);
+  test('minimal set values', () async {
+    final value = await parse(defaultPubspec);
     expect(value.name, 'sample');
     expect(value.version, isNull);
     expect(value.publishTo, isNull);
@@ -34,10 +34,10 @@ void main() {
     expect(value.screenshots, isEmpty);
   });
 
-  test('all fields set', () {
+  test('all fields set', () async {
     final version = Version.parse('1.2.3');
     final sdkConstraint = VersionConstraint.parse('>=2.12.0 <3.0.0');
-    final value = parse({
+    final value = await parse({
       'name': 'sample',
       'version': version.toString(),
       'publish_to': 'none',
@@ -84,8 +84,8 @@ void main() {
     expect(value.screenshots!.first.path, 'path/to/screenshot');
   });
 
-  test('environment values can be null', () {
-    final value = parse(
+  test('environment values can be null', () async {
+    final value = await parse(
       {
         'name': 'sample',
         'environment': {
@@ -137,8 +137,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       'https': 'https://example.com',
       'none': 'none',
     }.entries) {
-      test('can be ${entry.key}', () {
-        final value = parse({
+      test('can be ${entry.key}', () async {
+        final value = await parse({
           ...defaultPubspec,
           'publish_to': entry.value,
         });
@@ -148,8 +148,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
   });
 
   group('author, authors', () {
-    test('one author', () {
-      final value = parse({
+    test('one author', () async {
+      final value = await parse({
         ...defaultPubspec,
         'author': 'name@example.com',
       });
@@ -157,8 +157,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       expect(value.authors, ['name@example.com']);
     });
 
-    test('one author, via authors', () {
-      final value = parse({
+    test('one author, via authors', () async {
+      final value = await parse({
         ...defaultPubspec,
         'authors': ['name@example.com'],
       });
@@ -166,8 +166,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       expect(value.authors, ['name@example.com']);
     });
 
-    test('many authors', () {
-      final value = parse({
+    test('many authors', () async {
+      final value = await parse({
         ...defaultPubspec,
         'authors': ['name@example.com', 'name2@example.com'],
       });
@@ -175,8 +175,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       expect(value.authors, ['name@example.com', 'name2@example.com']);
     });
 
-    test('author and authors', () {
-      final value = parse({
+    test('author and authors', () async {
+      final value = await parse({
         ...defaultPubspec,
         'author': 'name@example.com',
         'authors': ['name2@example.com'],
@@ -185,8 +185,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       expect(value.authors, ['name@example.com', 'name2@example.com']);
     });
 
-    test('duplicate author values', () {
-      final value = parse({
+    test('duplicate author values', () async {
+      final value = await parse({
         ...defaultPubspec,
         'author': 'name@example.com',
         'authors': ['name@example.com', 'name@example.com'],
@@ -195,8 +195,8 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
       expect(value.authors, ['name@example.com']);
     });
 
-    test('flutter', () {
-      final value = parse({
+    test('flutter', () async {
+      final value = await parse({
         ...defaultPubspec,
         'flutter': {'key': 'value'},
       });
@@ -411,8 +411,8 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
       );
     });
 
-    test('invalid data - lenient', () {
-      final value = parse(
+    test('invalid data - lenient', () async {
+      final value = await parse(
         {
           ...defaultPubspec,
           'topics': [1],
@@ -426,8 +426,8 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
   });
 
   group('screenshots', () {
-    test('one screenshot', () {
-      final value = parse({
+    test('one screenshot', () async {
+      final value = await parse({
         ...defaultPubspec,
         'screenshots': [
           {'description': 'my screenshot', 'path': 'path/to/screenshot'},
@@ -438,8 +438,8 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
       expect(value.screenshots!.first.path, 'path/to/screenshot');
     });
 
-    test('many screenshots', () {
-      final value = parse({
+    test('many screenshots', () async {
+      final value = await parse({
         ...defaultPubspec,
         'screenshots': [
           {'description': 'my screenshot', 'path': 'path/to/screenshot'},
@@ -456,8 +456,8 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
       expect(value.screenshots!.last.path, 'path/to/screenshot2');
     });
 
-    test('one screenshot plus invalid entries', () {
-      final value = parse({
+    test('one screenshot plus invalid entries', () async {
+      final value = await parse({
         ...defaultPubspec,
         'screenshots': [
           42,
@@ -474,8 +474,8 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
       expect(value.screenshots!.first.path, 'path/to/screenshot');
     });
 
-    test('invalid entries', () {
-      final value = parse({
+    test('invalid entries', () async {
+      final value = await parse({
         ...defaultPubspec,
         'screenshots': [
           42,
@@ -566,8 +566,8 @@ line 9, column 12: Unsupported value for "path". `42` is not a String
       );
     });
 
-    test('invalid screenshot - lenient', () {
-      final value = parse(
+    test('invalid screenshot - lenient', () async {
+      final value = await parse(
         {
           ...defaultPubspec,
           'screenshots': 'Invalid value',
@@ -614,8 +614,8 @@ line 1, column 1: Not a map
       );
     });
 
-    test('bad repository url', () {
-      final value = parse(
+    test('bad repository url', () async {
+      final value = await parse(
         {
           ...defaultPubspec,
           'repository': {'x': 'y'},
@@ -626,8 +626,8 @@ line 1, column 1: Not a map
       expect(value.repository, isNull);
     });
 
-    test('bad issue_tracker url', () {
-      final value = parse(
+    test('bad issue_tracker url', () async {
+      final value = await parse(
         {
           ...defaultPubspec,
           'issue_tracker': {'x': 'y'},
@@ -638,8 +638,8 @@ line 1, column 1: Not a map
       expect(value.issueTracker, isNull);
     });
 
-    test('multiple bad values', () {
-      final value = parse(
+    test('multiple bad values', () async {
+      final value = await parse(
         {
           ...defaultPubspec,
           'repository': {'x': 'y'},

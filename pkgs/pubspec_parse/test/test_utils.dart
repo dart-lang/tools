@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore: deprecated_member_use
-import 'dart:cli';
 import 'dart:convert';
 
 import 'package:checked_yaml/checked_yaml.dart';
@@ -61,18 +59,18 @@ void _printDebugParsedYamlException(ParsedYamlException e) {
   }
 }
 
-Pubspec parse(
+Future<Pubspec> parse(
   Object? content, {
   bool quietOnError = false,
   bool skipTryPub = false,
   bool lenient = false,
-}) {
+}) async {
   final encoded = _encodeJson(content);
 
   ProcResult? pubResult;
   if (!skipTryPub) {
     // ignore: deprecated_member_use
-    pubResult = waitFor(tryPub(encoded));
+    pubResult = await tryPub(encoded);
     expect(pubResult, isNotNull);
   }
 

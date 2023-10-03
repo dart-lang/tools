@@ -70,21 +70,21 @@ line 5, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
 }
 
 void _hostedDependency() {
-  test('null', () {
-    final dep = _dependency<HostedDependency>(null);
+  test('null', () async {
+    final dep = await _dependency<HostedDependency>(null);
     expect(dep.version.toString(), 'any');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
-  test('empty map', () {
-    final dep = _dependency<HostedDependency>({});
+  test('empty map', () async {
+    final dep = await _dependency<HostedDependency>({});
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
   });
 
-  test('string version', () {
-    final dep = _dependency<HostedDependency>('^1.0.0');
+  test('string version', () async {
+    final dep = await _dependency<HostedDependency>('^1.0.0');
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
@@ -102,15 +102,15 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
     );
   });
 
-  test('map w/ just version', () {
-    final dep = _dependency<HostedDependency>({'version': '^1.0.0'});
+  test('map w/ just version', () async {
+    final dep = await _dependency<HostedDependency>({'version': '^1.0.0'});
     expect(dep.version.toString(), '^1.0.0');
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
-  test('map w/ version and hosted as Map', () {
-    final dep = _dependency<HostedDependency>({
+  test('map w/ version and hosted as Map', () async {
+    final dep = await _dependency<HostedDependency>({
       'version': '^1.0.0',
       'hosted': {'name': 'hosted_name', 'url': 'https://hosted_url'},
     });
@@ -120,8 +120,8 @@ line 4, column 10: Unsupported value for "dep". Could not parse version "not a v
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
-  test('map /w hosted as a map without name', () {
-    final dep = _dependency<HostedDependency>(
+  test('map /w hosted as a map without name', () async {
+    final dep = await _dependency<HostedDependency>(
       {
         'version': '^1.0.0',
         'hosted': {'url': 'https://hosted_url'},
@@ -166,8 +166,8 @@ line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git
     );
   });
 
-  test('map w/ version and hosted as String', () {
-    final dep = _dependency<HostedDependency>(
+  test('map w/ version and hosted as String', () async {
+    final dep = await _dependency<HostedDependency>(
       {'version': '^1.0.0', 'hosted': 'hosted_url'},
       skipTryPub: true, // todo: Unskip once put supports this
     );
@@ -178,8 +178,8 @@ line 10, column 4: Unrecognized keys: [not_supported]; supported keys: [sdk, git
     expect(dep.toString(), 'HostedDependency: ^1.0.0');
   });
 
-  test('map w/ hosted as String', () {
-    final dep = _dependency<HostedDependency>({'hosted': 'hosted_url'});
+  test('map w/ hosted as String', () async {
+    final dep = await _dependency<HostedDependency>({'hosted': 'hosted_url'});
     expect(dep.version, VersionConstraint.any);
     expect(dep.hosted!.declaredName, isNull);
     expect(dep.hosted!.name, 'dep');
@@ -199,8 +199,8 @@ line 5, column 4: These keys had `null` values, which is not allowed: [hosted]
     );
   });
 
-  test('map w/ null version is fine', () {
-    final dep = _dependency<HostedDependency>({'version': null});
+  test('map w/ null version is fine', () async {
+    final dep = await _dependency<HostedDependency>({'version': null});
     expect(dep.version, VersionConstraint.any);
     expect(dep.hosted, isNull);
     expect(dep.toString(), 'HostedDependency: any');
@@ -208,15 +208,15 @@ line 5, column 4: These keys had `null` values, which is not allowed: [hosted]
 }
 
 void _sdkDependency() {
-  test('without version', () {
-    final dep = _dependency<SdkDependency>({'sdk': 'flutter'});
+  test('without version', () async {
+    final dep = await _dependency<SdkDependency>({'sdk': 'flutter'});
     expect(dep.sdk, 'flutter');
     expect(dep.version, VersionConstraint.any);
     expect(dep.toString(), 'SdkDependency: flutter');
   });
 
-  test('with version', () {
-    final dep = _dependency<SdkDependency>(
+  test('with version', () async {
+    final dep = await _dependency<SdkDependency>(
       {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'},
     );
     expect(dep.sdk, 'flutter');
@@ -240,29 +240,30 @@ void _sdkDependency() {
 }
 
 void _gitDependency() {
-  test('string', () {
-    final dep = _dependency<GitDependency>({'git': 'url'});
+  test('string', () async {
+    final dep = await _dependency<GitDependency>({'git': 'url'});
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
     expect(dep.toString(), 'GitDependency: url@url');
   });
 
-  test('string with version key is ignored', () {
+  test('string with version key is ignored', () async {
     // Regression test for https://github.com/dart-lang/pubspec_parse/issues/13
-    final dep = _dependency<GitDependency>({'git': 'url', 'version': '^1.2.3'});
+    final dep =
+        await _dependency<GitDependency>({'git': 'url', 'version': '^1.2.3'});
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
     expect(dep.toString(), 'GitDependency: url@url');
   });
 
-  test('string with user@ URL', () {
+  test('string with user@ URL', () async {
     final skipTryParse = Platform.environment.containsKey('TRAVIS');
     if (skipTryParse) {
       print('FYI: not validating git@ URI on travis due to failure');
     }
-    final dep = _dependency<GitDependency>(
+    final dep = await _dependency<GitDependency>(
       {'git': 'git@localhost:dep.git'},
       skipTryPub: skipTryParse,
     );
@@ -284,8 +285,8 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
     );
   });
 
-  test('map', () {
-    final dep = _dependency<GitDependency>({
+  test('map', () async {
+    final dep = await _dependency<GitDependency>({
       'git': {'url': 'url', 'path': 'path', 'ref': 'ref'},
     });
     expect(dep.url.toString(), 'url');
@@ -349,15 +350,16 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
 }
 
 void _pathDependency() {
-  test('valid', () {
-    final dep = _dependency<PathDependency>({'path': '../path'});
+  test('valid', () async {
+    final dep = await _dependency<PathDependency>({'path': '../path'});
     expect(dep.path, '../path');
     expect(dep.toString(), 'PathDependency: path@../path');
   });
 
-  test('valid with version key is ignored', () {
-    final dep =
-        _dependency<PathDependency>({'path': '../path', 'version': '^1.2.3'});
+  test('valid with version key is ignored', () async {
+    final dep = await _dependency<PathDependency>(
+      {'path': '../path', 'version': '^1.2.3'},
+    );
     expect(dep.path, '../path');
     expect(dep.toString(), 'PathDependency: path@../path');
   });
@@ -423,11 +425,11 @@ void _expectThrowsContaining(Object content, String errorText) {
   );
 }
 
-T _dependency<T extends Dependency>(
+Future<T> _dependency<T extends Dependency>(
   Object? content, {
   bool skipTryPub = false,
-}) {
-  final value = parse(
+}) async {
+  final value = await parse(
     {
       ...defaultPubspec,
       'dependencies': {'dep': content},
