@@ -61,11 +61,11 @@ void main() {
     expect(analytics.logFileStats(), isNull);
   });
 
-  test('LogFileStats returns valid response after sent events', () {
+  test('LogFileStats returns valid response after sent events', () async {
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
-      analytics.send(testEvent);
+      await analytics.send(testEvent);
     }
 
     expect(analytics.logFileStats(), isNotNull);
@@ -84,14 +84,14 @@ void main() {
             'one record is in there and it is malformed');
   });
 
-  test('The first record is malformed, but rest are valid', () {
+  test('The first record is malformed, but rest are valid', () async {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
-      analytics.send(testEvent);
+      await analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
 
@@ -100,7 +100,7 @@ void main() {
     expect(logFileStats!.recordCount, countOfEventsToSend);
   });
 
-  test('Several records are malformed', () {
+  test('Several records are malformed', () async {
     final countOfMalformedRecords = 4;
     for (var i = 0; i < countOfMalformedRecords; i++) {
       final currentContents = logFile.readAsStringSync();
@@ -110,7 +110,7 @@ void main() {
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
-      analytics.send(testEvent);
+      await analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
 
@@ -135,5 +135,31 @@ void main() {
     expect(logFile.readAsLinesSync().length, 3);
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, 2);
+  });
+
+  test('Malformed record gets phased out after several events', () async {
+    // Write invalid json for the only log record
+    logFile.writeAsStringSync('{{\n');
+
+    // Send the max number of events minus one so that we have
+    // one malformed record on top of the logs and the rest
+    // are valid log records
+    for (var i = 0; i < kLogFileLength - 1; i++) {
+      await analytics.send(testEvent);
+    }
+    final logFileStats = analytics.logFileStats();
+    expect(logFile.readAsLinesSync().length, kLogFileLength);
+    expect(logFileStats, isNotNull);
+    expect(logFileStats!.recordCount, kLogFileLength - 1,
+        reason: 'The first record should be malformed');
+    expect(logFile.readAsLinesSync()[0].trim(), '{{');
+
+    // Sending one more event should flush out the malformed record
+    await analytics.send(testEvent);
+
+    final secondLogFileStats = analytics.logFileStats();
+    expect(secondLogFileStats, isNotNull);
+    expect(secondLogFileStats!.recordCount, kLogFileLength);
+    expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
   });
 }
