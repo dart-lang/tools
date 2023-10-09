@@ -32,6 +32,7 @@ enum DashEvent {
   ),
 
   // Events for the Dart CLI
+
   dartCliCommandExecuted(
     label: 'dart_cli_command_executed',
     description: 'Information about the execution of a Dart CLI command',
@@ -43,7 +44,18 @@ enum DashEvent {
     toolOwner: DashTool.dartTool,
   ),
 
-  // Events for flutter_tools
+  // Events for the Flutter CLI
+
+  doctorResult(
+    label: 'doctor_result',
+    description: 'Results from flutter doctor invocation',
+    toolOwner: DashTool.flutterTool,
+  ),
+  doctorValidatorResult(
+    label: 'doctor_validator_result',
+    description: 'Results from a specific doctor validator',
+    toolOwner: DashTool.flutterTool,
+  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',

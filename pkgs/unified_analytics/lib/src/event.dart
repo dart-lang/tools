@@ -206,6 +206,31 @@ final class Event {
           if (exitCode != null) 'exitCode': exitCode,
         };
 
+  /// Event that contains the results from a flutter doctor invocation
+  /// along with the results for each validator.
+  ///
+  /// [success] - boolean value where `true` is a successful doctor invocation.
+  Event.doctorResult({
+    required bool success,
+  })  : eventName = DashEvent.doctorResult,
+        eventData = {
+          'success': success,
+        };
+
+  /// Event that contains the results for a specific doctor validator.
+  ///
+  /// [validatorName] - the name for the doctor validator.
+  ///
+  /// [success] - boolean value where `true` is a successful doctor invocation.
+  Event.doctorValidatorResult({
+    required String validatorName,
+    required bool success,
+  })  : eventName = DashEvent.doctorValidatorResult,
+        eventData = {
+          'validatorName': validatorName,
+          'success': success,
+        };
+
   Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
