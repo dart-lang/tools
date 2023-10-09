@@ -184,9 +184,14 @@ class LogHandler {
     final records = logFile
         .readAsLinesSync()
         .map((String e) {
+          // TODO: eliasyishak, once https://github.com/dart-lang/tools/issues/167 has landed
+          //  ensure we are sending an event for each error with helpful messages
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException {
+            return null;
+          // ignore: avoid_catching_errors
+          } on TypeError {
             return null;
           }
         })

@@ -166,4 +166,23 @@ void main() {
     expect(secondLogFileStats!.recordCount, kLogFileLength);
     expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
   });
+
+  test('Catching cast errors for each log record silently', () async {
+    // Write a json array to the log file which will cause
+    // a cast error when parsing each line
+    logFile.writeAsStringSync('[{}, 1, 2, 3]\n');
+
+    final logFileStats = analytics.logFileStats();
+    expect(logFileStats, isNull);
+
+    // Ensure it will work as expected after writing correct logs
+    final countOfEventsToSend = 10;
+    for (var i = 0; i < countOfEventsToSend; i++) {
+      await analytics.send(testEvent);
+    }
+    final secondLogFileStats = analytics.logFileStats();
+
+    expect(secondLogFileStats, isNotNull);
+    expect(secondLogFileStats!.recordCount, countOfEventsToSend);
+  });
 }
