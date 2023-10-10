@@ -650,7 +650,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     // Add time to the start time that is less than the duration
-    final end = start.add(Duration(minutes: kSessionDurationMinutes - 1));
+    final end = start.add(const Duration(minutes: kSessionDurationMinutes - 1));
 
     // Use a new clock to ensure that the session id didn't change
     withClock(Clock.fixed(end), () {
@@ -733,7 +733,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     // Add time to the start time that is less than the duration
-    final end = start.add(Duration(minutes: kSessionDurationMinutes + 1));
+    final end = start.add(const Duration(minutes: kSessionDurationMinutes + 1));
 
     // Use a new clock to ensure that the session id didn't change
     withClock(Clock.fixed(end), () {
@@ -866,7 +866,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
     // Define a new clock that is outside of the session duration
     final secondClock =
-        start.add(Duration(minutes: kSessionDurationMinutes + 1));
+        start.add(const Duration(minutes: kSessionDurationMinutes + 1));
 
     // Use the new clock to send an event that will change the session identifier
     withClock(Clock.fixed(secondClock), () {

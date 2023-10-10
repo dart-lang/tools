@@ -83,7 +83,7 @@ class LogFileStats {
 
   @override
   String toString() {
-    final encoder = JsonEncoder.withIndent('  ');
+    final encoder = const JsonEncoder.withIndent('  ');
     return encoder.convert({
       'startDateTime': startDateTime.toString(),
       'minsFromStartDateTime': minsFromStartDateTime,

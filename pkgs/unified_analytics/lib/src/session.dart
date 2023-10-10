@@ -31,7 +31,7 @@ class Session {
   /// This will use the data parsed from the
   /// session json file in the dart-tool directory
   /// to get the session id if the last ping was within
-  /// [sessionDurationMinutes].
+  /// [kSessionDurationMinutes].
   ///
   /// If time since last ping exceeds the duration, then the file
   /// will be updated with a new session id and that will be returned.
@@ -42,8 +42,8 @@ class Session {
     _refreshSessionData();
     final now = clock.now();
 
-    // Convert the epoch time from the last ping into datetime and
-    // check if we are within the [sessionDurationMinutes]
+    // Convert the epoch time from the last ping into datetime and check if we
+    // are within the kSessionDurationMinutes.
     final lastPingDateTime = DateTime.fromMillisecondsSinceEpoch(_lastPing);
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
       // In this case, we will need to change both the session id
