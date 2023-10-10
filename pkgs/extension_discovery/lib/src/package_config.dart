@@ -16,7 +16,7 @@ Future<PackageConfig> loadPackageConfig(
   try {
     final packageConfig = decodeJsonMap(await packageConfigFile.readAsString());
     if (packageConfig.expectNumber('configVersion') != 2) {
-      throw FormatException('"configVersion" must be 2');
+      throw const FormatException('"configVersion" must be 2');
     }
     return packageConfig.expectListObjects('packages').map((p) {
       final rootUri = p.expectUri('rootUri').asDirectory();

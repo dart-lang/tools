@@ -14,7 +14,8 @@ class FileParser {
       sourceUrl: sourceUrl,
     );
     if (parsedYaml is! Map) {
-      throw FormatException('YAML config must be set of key value pairs.');
+      throw const FormatException(
+          'YAML config must be set of key value pairs.');
     }
     return parseToplevelMap(parsedYaml);
   }

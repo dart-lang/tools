@@ -7,7 +7,7 @@ import 'dart:convert' show jsonDecode;
 Map<String, Object?> decodeJsonMap(String json) {
   final root = jsonDecode(json);
   if (root case Map<String, Object?> v) return v;
-  throw FormatException('root must be a map');
+  throw const FormatException('root must be a map');
 }
 
 extension ExpectJson on Map<String, Object?> {

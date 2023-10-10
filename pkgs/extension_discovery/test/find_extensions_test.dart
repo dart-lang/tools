@@ -13,7 +13,7 @@ import 'test_descriptor.dart' as d;
 void main() {
   test('findExtensions', () async {
     // Override the maturity delay for reliable testing of caching logic.
-    modificationMaturityDelay = Duration(milliseconds: 500);
+    modificationMaturityDelay = const Duration(milliseconds: 500);
 
     final pkgLibDir = await Isolate.resolvePackageUri(
       Uri.parse('package:extension_discovery/'),
@@ -238,7 +238,7 @@ void main() {
     // If the modification time of package_config.json and the cache is no more
     // than [modificationMaturityDelay] time apart, we'll ignore the cache.
     // Under the assumption that there was a tiny risk of a race condition.
-    await Future.delayed(modificationMaturityDelay * 2);
+    await Future<void>.delayed(modificationMaturityDelay * 2);
     // Ensure that we have a cache value!
     await findExtensions(
       'myapp',

@@ -10,7 +10,7 @@ import 'source.dart';
 class EnvironmentSource extends Source {
   /// Configuration options passed in via the [Platform.environment].
   ///
-  /// The keys have been transformed by [EnvironmentParser.parseKey].
+  /// The keys have been transformed by `EnvironmentParser.parseKey`.
   ///
   /// Environment values are left intact.
   ///
