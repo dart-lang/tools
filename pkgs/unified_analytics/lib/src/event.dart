@@ -158,8 +158,8 @@ final class Event {
   /// [transitiveFileUniqueCount] - the number of unique files reachable from
   ///     the files in each analysis context.
   ///
-  /// [transitiveFileUniqueLineCount] - the number of lines in the unique.
-  ///     transitive files
+  /// [transitiveFileUniqueLineCount] - the number of lines in the unique
+  ///     transitive files.
   Event.contextStructure({
     required int contextsFromBothFiles,
     required int contextsFromOptionsFiles,
