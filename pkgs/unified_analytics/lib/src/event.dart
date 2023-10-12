@@ -222,8 +222,7 @@ final class Event {
   ///
   /// [validatorName] - the name for the doctor validator.
   ///
-  /// [result] - the final result from the doctor invocation, usually will
-  ///   be either "fail", "success", or "warning".
+  /// [result] - the final result for a specific doctor validator.
   Event.doctorValidatorResult({
     required String validatorName,
     required String result,
