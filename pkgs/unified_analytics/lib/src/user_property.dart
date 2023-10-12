@@ -33,8 +33,8 @@ class UserProperty {
   /// This method will take the data in this class and convert it into
   /// a Map that is suitable for the POST request schema.
   ///
-  /// This will call the [Session] object's [getSessionId] method which will
-  /// update the session file and get a new session id if necessary.
+  /// This will call the [Session] object's [Session.getSessionId] method which
+  /// will update the session file and get a new session id if necessary.
   ///
   /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/user-properties?client_type=gtag
   Map<String, Map<String, Object?>> preparePayload() {

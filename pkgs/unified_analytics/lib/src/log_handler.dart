@@ -83,7 +83,7 @@ class LogFileStats {
 
   @override
   String toString() {
-    final encoder = JsonEncoder.withIndent('  ');
+    final encoder = const JsonEncoder.withIndent('  ');
     return encoder.convert({
       'startDateTime': startDateTime.toString(),
       'minsFromStartDateTime': minsFromStartDateTime,
@@ -183,8 +183,19 @@ class LogHandler {
     // removed later through `whereType<LogItem>`
     final records = logFile
         .readAsLinesSync()
-        .map((String e) =>
-            LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>))
+        .map((String e) {
+          // TODO: eliasyishak, once https://github.com/dart-lang/tools/issues/167
+          //  has landed ensure we are sending an event for each error
+          //  with helpful messages
+          try {
+            return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
+          } on FormatException {
+            return null;
+            // ignore: avoid_catching_errors
+          } on TypeError {
+            return null;
+          }
+        })
         .whereType<LogItem>()
         .toList();
 
