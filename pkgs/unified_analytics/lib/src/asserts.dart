@@ -45,19 +45,19 @@ void checkBody(Map<String, Object?> body) {
     if (eventName.length > 40) {
       throw AnalyticsException(
         'Limit event names to 40 chars or less',
-        moreInfo: 'Event name: $eventName is too long',
+        moreInfo: 'Event name: "$eventName" is too long',
       );
     }
     if (!alphaNumericPattern.hasMatch(eventName)) {
       throw AnalyticsException(
         'Event name can only have alphanumeric chars and underscores',
-        moreInfo: 'Event name: $eventName contains invalid characters',
+        moreInfo: 'Event name: "$eventName" contains invalid characters',
       );
     }
     if (!alphabeticPattern.hasMatch(eventName[0])) {
       throw AnalyticsException(
         'Event name first char must be alphabetic char',
-        moreInfo: 'Event name: $eventName must begin with a valid character',
+        moreInfo: 'Event name: "$eventName" must begin with a valid character',
       );
     }
 
@@ -68,7 +68,7 @@ void checkBody(Map<String, Object?> body) {
     if (eventParams.length > 25) {
       throw AnalyticsException(
         'Limit params for each event to less than 25',
-        moreInfo: 'Event: $eventName has too many parameters',
+        moreInfo: 'Event: "$eventName" has too many parameters',
       );
     }
 
@@ -87,7 +87,8 @@ void checkBody(Map<String, Object?> body) {
           value is bool)) {
         throw AnalyticsException(
           'Values for event params have to be String, int, double, or bool',
-          moreInfo: 'Value for $key is not a valid type for event: $eventName',
+          moreInfo:
+              'Value for "$key" is not a valid type for event: "$eventName"',
         );
       }
 
@@ -98,20 +99,20 @@ void checkBody(Map<String, Object?> body) {
       if (key.length > 40) {
         throw AnalyticsException(
           'Limit event param names to 40 chars or less',
-          moreInfo: 'The key: $key under the event: $eventName is too long',
+          moreInfo: 'The key: "$key" under the event: "$eventName" is too long',
         );
       }
       if (!alphaNumericPattern.hasMatch(key)) {
         throw AnalyticsException(
           'Event param name can only have alphanumeric chars and underscores',
-          moreInfo: 'The key: $key under the event: $eventName contains '
+          moreInfo: 'The key: "$key" under the event: "$eventName" contains '
               'invalid characters',
         );
       }
       if (!alphabeticPattern.hasMatch(key[0])) {
         throw AnalyticsException(
           'Event param name first char must be alphabetic char',
-          moreInfo: 'The key: $key under the event: $eventName must begin '
+          moreInfo: 'The key: "$key" under the event: "$eventName" must begin '
               'in a valid character',
         );
       }
@@ -124,7 +125,7 @@ void checkBody(Map<String, Object?> body) {
         if (value.length > 100) {
           throw AnalyticsException(
             'Limit characters in event param value to 100 chars or less',
-            moreInfo: 'Value for $key is too long, value=$value',
+            moreInfo: 'Value for "$key" is too long, value="$value"',
           );
         }
       }
@@ -146,7 +147,7 @@ void checkBody(Map<String, Object?> body) {
     // User property names must be 24 characters or fewer
     if (key.length > 24) {
       throw AnalyticsException('Limit user property names to 24 chars or less',
-          moreInfo: 'The user property: $key has a value that is too long');
+          moreInfo: 'The user property key: "$key" is too long');
     }
 
     // GA4 Limitation:
@@ -155,8 +156,8 @@ void checkBody(Map<String, Object?> body) {
     if (userPropValue is String && userPropValue.length > 36) {
       throw AnalyticsException(
         'Limit user property values to 36 chars or less',
-        moreInfo: 'The value for the user property: $key which has '
-            'a value: $value is too long',
+        moreInfo: 'The value for the user property: "$key" which has '
+            'a value: "${value['value']}" is too long',
       );
     }
   }
