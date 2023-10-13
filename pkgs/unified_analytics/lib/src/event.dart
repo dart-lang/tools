@@ -206,30 +206,34 @@ final class Event {
           if (exitCode != null) 'exitCode': exitCode,
         };
 
-  /// Event that contains the results from a flutter doctor invocation
-  /// along with the results for each validator.
-  ///
-  /// [result] - the final result from the doctor invocation, usually will
-  ///   be either "fail", "success", or "warning".
-  Event.doctorResult({
-    required String result,
-  })  : eventName = DashEvent.doctorResult,
-        eventData = {
-          'result': result,
-        };
-
   /// Event that contains the results for a specific doctor validator.
   ///
   /// [validatorName] - the name for the doctor validator.
   ///
   /// [result] - the final result for a specific doctor validator.
+  ///
+  /// [partOfGroupedValidator] - `true` indicates that this validator belongs
+  ///   to a grouped validator.
+  ///
+  /// [timestamp] - epoch formatted timestamp that can be used in combination
+  ///   with the client ID in GA4 to group the validators that ran in one
+  ///   doctor invocation.
+  ///
+  /// [statusInfo] - optional description of the result from the
+  ///   doctor validator.
   Event.doctorValidatorResult({
     required String validatorName,
     required String result,
+    required bool partOfGroupedValidator,
+    required int timestamp,
+    String? statusInfo,
   })  : eventName = DashEvent.doctorValidatorResult,
         eventData = {
           'validatorName': validatorName,
           'result': result,
+          'partOfGroupedValidator': partOfGroupedValidator,
+          'timestamp': timestamp,
+          if (statusInfo != null) 'statusInfo': statusInfo,
         };
 
   Event.hotReloadTime({required int timeMs})

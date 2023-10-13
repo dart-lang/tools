@@ -46,11 +46,6 @@ enum DashEvent {
 
   // Events for the Flutter CLI
 
-  doctorResult(
-    label: 'doctor_result',
-    description: 'Results from flutter doctor invocation',
-    toolOwner: DashTool.flutterTool,
-  ),
   doctorValidatorResult(
     label: 'doctor_validator_result',
     description: 'Results from a specific doctor validator',
