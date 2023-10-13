@@ -43,14 +43,22 @@ void checkBody(Map<String, Object?> body) {
     // alpha-numeric characters and underscores, and must start
     // with an alphabetic character
     if (eventName.length > 40) {
-      throw AnalyticsException('Limit event names to 40 chars or less');
+      throw AnalyticsException(
+        'Limit event names to 40 chars or less',
+        moreInfo: 'Event name: $eventName is too long',
+      );
     }
     if (!alphaNumericPattern.hasMatch(eventName)) {
       throw AnalyticsException(
-          'Event name can only have alphanumeric chars and underscores');
+        'Event name can only have alphanumeric chars and underscores',
+        moreInfo: 'Event name: $eventName contains invalid characters',
+      );
     }
     if (!alphabeticPattern.hasMatch(eventName[0])) {
-      throw AnalyticsException('Event name first char must be alphabetic char');
+      throw AnalyticsException(
+        'Event name first char must be alphabetic char',
+        moreInfo: 'Event name: $eventName must begin with a valid character',
+      );
     }
 
     final eventParams = eventMap['params'] as Map<String, Object?>;
@@ -58,7 +66,10 @@ void checkBody(Map<String, Object?> body) {
     // GA4 Limitation:
     // Events can have a maximum of 25 parameters
     if (eventParams.length > 25) {
-      throw AnalyticsException('Limit params for each event to less than 25');
+      throw AnalyticsException(
+        'Limit params for each event to less than 25',
+        moreInfo: 'Event: $eventName has too many parameters',
+      );
     }
 
     // Loop through each of the event parameters
@@ -75,7 +86,9 @@ void checkBody(Map<String, Object?> body) {
           value is double ||
           value is bool)) {
         throw AnalyticsException(
-            'Values for event params have to be String, int, double, or bool');
+          'Values for event params have to be String, int, double, or bool',
+          moreInfo: 'Value for $key is not a valid type for event: $eventName',
+        );
       }
 
       // GA4 Limitation:
@@ -83,16 +96,24 @@ void checkBody(Map<String, Object?> body) {
       // or fewer, may only contain alpha-numeric characters and underscores,
       // and must start with an alphabetic character
       if (key.length > 40) {
-        throw AnalyticsException('Limit event param names to 40 chars or less');
+        throw AnalyticsException(
+          'Limit event param names to 40 chars or less',
+          moreInfo: 'The key: $key under the event: $eventName is too long',
+        );
       }
       if (!alphaNumericPattern.hasMatch(key)) {
         throw AnalyticsException(
           'Event param name can only have alphanumeric chars and underscores',
+          moreInfo: 'The key: $key under the event: $eventName contains '
+              'invalid characters',
         );
       }
       if (!alphabeticPattern.hasMatch(key[0])) {
         throw AnalyticsException(
-            'Event param name first char must be alphabetic char');
+          'Event param name first char must be alphabetic char',
+          moreInfo: 'The key: $key under the event: $eventName must begin '
+              'in a valid character',
+        );
       }
 
       // GA4 Limitation:
@@ -102,7 +123,9 @@ void checkBody(Map<String, Object?> body) {
         value as String;
         if (value.length > 100) {
           throw AnalyticsException(
-              'Limit characters in event param value to 100 chars or less');
+            'Limit characters in event param value to 100 chars or less',
+            moreInfo: 'Value for $key is too long, value=$value',
+          );
         }
       }
     }
@@ -122,7 +145,8 @@ void checkBody(Map<String, Object?> body) {
     // GA4 Limitation:
     // User property names must be 24 characters or fewer
     if (key.length > 24) {
-      throw AnalyticsException('Limit user property names to 24 chars or less');
+      throw AnalyticsException('Limit user property names to 24 chars or less',
+          moreInfo: 'The user property: $key has a value that is too long');
     }
 
     // GA4 Limitation:
@@ -130,7 +154,10 @@ void checkBody(Map<String, Object?> body) {
     final userPropValue = value['value'];
     if (userPropValue is String && userPropValue.length > 36) {
       throw AnalyticsException(
-          'Limit user property values to 36 chars or less');
+        'Limit user property values to 36 chars or less',
+        moreInfo: 'The value for the user property: $key which has '
+            'a value: $value is too long',
+      );
     }
   }
 }
@@ -138,5 +165,18 @@ void checkBody(Map<String, Object?> body) {
 class AnalyticsException implements Exception {
   final String message;
 
-  AnalyticsException(this.message);
+  /// Optional field to pass if there is specific details
+  /// that can be included with the error message.
+  final String? moreInfo;
+
+  AnalyticsException(this.message, {this.moreInfo});
+
+  @override
+  String toString() {
+    if (moreInfo == null) {
+      return 'AnalyticsException: $message';
+    }
+
+    return 'AnalyticsException: $message\nDetails:\n$moreInfo';
+  }
 }
