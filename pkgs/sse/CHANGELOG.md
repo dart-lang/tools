@@ -1,6 +1,6 @@
 ## 4.1.3-dev
 
-- Update the minimum Dart SDK version to `2.19.0`.
+- Update the minimum Dart SDK version to `3.1.0`.
 
 ## 4.1.2
 

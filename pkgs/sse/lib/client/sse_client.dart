@@ -34,7 +34,7 @@ class SseClient extends StreamChannelMixin<String?> {
 
   final _logger = Logger('SseClient');
 
-  final _onConnected = Completer();
+  final _onConnected = Completer<void>();
 
   int _lastMessageId = -1;
 
@@ -97,7 +97,7 @@ class SseClient extends StreamChannelMixin<String?> {
     _eventSource.close();
     // If the initial connection was never established. Add a listener so close
     // adds a done event to [sink].
-    if (!_onConnected.isCompleted) _outgoingController.stream.drain();
+    if (!_onConnected.isCompleted) _outgoingController.stream.drain<void>();
     _incomingController.close();
     _outgoingController.close();
   }
