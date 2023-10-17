@@ -72,7 +72,10 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final expectedErrorMessage = 'Limit event names to 40 chars or less';
+    final expectedErrorMessage = 'Limit event names to 40 chars or less\n'
+        'Event name: '
+        '"hot_reload_timehot_reload_timehot_reload_timehot_reload_time"'
+        ' is too long';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -93,7 +96,8 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Event name can only have alphanumeric chars and underscores';
+        'Event name can only have alphanumeric chars and underscores\n'
+        'Event name: "hot_reload_time!!" contains invalid characters';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -114,7 +118,8 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Event name first char must be alphabetic char';
+        'Event name first char must be alphabetic char\n'
+        'Event name: "2hot_reload_time" must begin with a valid character';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -142,7 +147,8 @@ void main() {
     // Add the params to the first event in the body
     ((body['events'] as List).first as Map)['params'] = params;
 
-    final expectedErrorMessage = 'Limit params for each event to less than 25';
+    final expectedErrorMessage = 'Limit params for each event to less than 25\n'
+        'Event: "hot_reload_time" has too many parameters';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -168,7 +174,8 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Values for event params have to be String, int, double, or bool';
+        'Values for event params have to be String, int, double, or bool\n'
+        'Value for "count" is not a valid type for event: "hot_reload_time"';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -194,7 +201,8 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Values for event params have to be String, int, double, or bool';
+        'Values for event params have to be String, int, double, or bool\n'
+        'Value for "count" is not a valid type for event: "hot_reload_time"';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -214,7 +222,9 @@ void main() {
       'user_properties': <String, Object?>{}
     };
 
-    final expectedErrorMessage = 'Limit event param names to 40 chars or less';
+    final expectedErrorMessage = 'Limit event param names to 40 chars or less\n'
+        'The key: "time_mstime_mstime_mstime_mstime_mstime_ms" '
+        'under the event: "hot_reload_time" is too long';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -235,7 +245,10 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Event param name can only have alphanumeric chars and underscores';
+        'Event param name can only have alphanumeric chars and underscores\n'
+        'The key: "time_ns!" under the event: "hot_reload_time" contains '
+        'invalid characters';
+
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -258,7 +271,9 @@ void main() {
       };
 
       final expectedErrorMessage =
-          'Event param name first char must be alphabetic char';
+          'Event param name first char must be alphabetic char\n'
+          'The key: "22time_ns" under the event: "hot_reload_time" must begin '
+          'in a valid character';
       expect(
           () => checkBody(body),
           throwsA(predicate(
@@ -285,7 +300,12 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Limit characters in event param value to 100 chars or less';
+        'Limit characters in event param value to 100 chars or less\n'
+        'Value for "time_ns" is too long, value="'
+        'dsfjlksdjfajlfdsfjlks'
+        'djfajlfdsfjlksdjfajlfdsfjlksdjfaj'
+        'lfdsfjlksdjfajlfdsfjlksdjfajlfdsf'
+        'jlksdjfajlfdsfjlksdjfajlf"';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -332,7 +352,8 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Limit user property names to 24 chars or less';
+        'Limit user property names to 24 chars or less\n'
+        'The user property key: "testtesttesttesttesttesttest" is too long';
     expect(
         () => checkBody(body),
         throwsA(predicate(
@@ -357,7 +378,9 @@ void main() {
     };
 
     final expectedErrorMessage =
-        'Limit user property values to 36 chars or less';
+        'Limit user property values to 36 chars or less\n'
+        'For the user property key "test", the value '
+        '"testtesttesttesttesttesttesttesttesttest" is too long';
     expect(
         () => checkBody(body),
         throwsA(predicate(
