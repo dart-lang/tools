@@ -215,9 +215,9 @@ final class Event {
   /// [partOfGroupedValidator] - `true` indicates that this validator belongs
   ///   to a grouped validator.
   ///
-  /// [timestamp] - epoch formatted timestamp that can be used in combination
-  ///   with the client ID in GA4 to group the validators that ran in one
-  ///   doctor invocation.
+  /// [doctorInvocationId] - epoch formatted timestamp that can be used in
+  ///   combination with the client ID in GA4 to group the validators that
+  ///   ran in one doctor invocation.
   ///
   /// [statusInfo] - optional description of the result from the
   ///   doctor validator.
@@ -225,14 +225,14 @@ final class Event {
     required String validatorName,
     required String result,
     required bool partOfGroupedValidator,
-    required int timestamp,
+    required int doctorInvocationId,
     String? statusInfo,
   })  : eventName = DashEvent.doctorValidatorResult,
         eventData = {
           'validatorName': validatorName,
           'result': result,
           'partOfGroupedValidator': partOfGroupedValidator,
-          'timestamp': timestamp,
+          'doctorInvocationId': doctorInvocationId,
           if (statusInfo != null) 'statusInfo': statusInfo,
         };
 
