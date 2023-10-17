@@ -155,7 +155,8 @@ void checkBody(Map<String, Object?> body) {
     if (userPropValue is String && userPropValue.length > 36) {
       throw AnalyticsException(
         'Limit user property values to 36 chars or less\n'
-        'For the user property key "$key", the value "$value" is too long',
+        'For the user property key "$key", the value "${value['value']}" '
+        'is too long',
       );
     }
   }

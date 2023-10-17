@@ -379,8 +379,8 @@ void main() {
 
     final expectedErrorMessage =
         'Limit user property values to 36 chars or less\n'
-        'The value for the user property: "test" which has '
-        'a value: "testtesttesttesttesttesttesttesttesttest" is too long';
+        'For the user property key "test", the value '
+        '"testtesttesttesttesttesttesttesttesttest" is too long';
     expect(
         () => checkBody(body),
         throwsA(predicate(
