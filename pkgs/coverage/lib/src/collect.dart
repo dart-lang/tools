@@ -41,8 +41,14 @@ const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 /// If [scopedOutput] is non-empty, coverage will be restricted so that only
 /// scripts that start with any of the provided paths are considered.
 ///
-/// if [isolateIds] is set, the coverage gathering will be restricted to only
+/// If [isolateIds] is set, the coverage gathering will be restricted to only
 /// those VM isolates.
+///
+/// If [coverableLineCache] is set, the collector will avoid recompiling
+/// libraries it has already seen (see VmService.getSourceReport's
+/// librariesAlreadyCompiled parameter). This is only useful when doing more
+/// than one [collect] call over the same libraries. Pass an empty map to the
+/// first call, and then pass the same map to all subsequent calls.
 ///
 /// [serviceOverrideForTesting] is for internal testing only, and should not be
 /// set by users.
@@ -52,6 +58,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     Duration? timeout,
     bool functionCoverage = false,
     bool branchCoverage = false,
+    Map<String, Set<int>>? coverableLineCache,
     VmService? serviceOverrideForTesting}) async {
   scopedOutput ??= <String>{};
 
@@ -92,7 +99,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     }
 
     return await _getAllCoverage(service, includeDart, functionCoverage,
-        branchCoverage, scopedOutput, isolateIds);
+        branchCoverage, scopedOutput, isolateIds, coverableLineCache);
   } finally {
     if (resume) {
       await _resumeIsolates(service);
@@ -115,7 +122,8 @@ Future<Map<String, dynamic>> _getAllCoverage(
     bool functionCoverage,
     bool branchCoverage,
     Set<String>? scopedOutput,
-    Set<String>? isolateIds) async {
+    Set<String>? isolateIds,
+    Map<String, Set<int>>? coverableLineCache) async {
   scopedOutput ??= <String>{};
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
@@ -124,15 +132,21 @@ Future<Map<String, dynamic>> _getAllCoverage(
   final branchCoverageSupported = _versionCheck(version, 3, 56);
   final libraryFilters = _versionCheck(version, 3, 57);
   final fastIsoGroups = _versionCheck(version, 3, 61);
+  final lineCacheSupported = _versionCheck(version, 4, 13);
+
   if (branchCoverage && !branchCoverageSupported) {
     branchCoverage = false;
     stderr.writeln('Branch coverage was requested, but is not supported'
         ' by the VM version. Try updating to a newer version of Dart');
   }
+
   final sourceReportKinds = [
     SourceReportKind.kCoverage,
     if (branchCoverage) SourceReportKind.kBranchCoverage,
   ];
+
+  final librariesAlreadyCompiled =
+      lineCacheSupported ? coverableLineCache?.keys.toList() : null;
 
   // Program counters are shared between isolates in the same group. So we need
   // to make sure we're only gathering coverage data for one isolate in each
@@ -173,15 +187,24 @@ Future<Map<String, dynamic>> _getAllCoverage(
         late final SourceReport scriptReport;
         try {
           scriptReport = await service.getSourceReport(
-              isolateRef.id!, sourceReportKinds,
-              forceCompile: true,
-              scriptId: script.id,
-              reportLines: reportLines ? true : null);
+            isolateRef.id!,
+            sourceReportKinds,
+            forceCompile: true,
+            scriptId: script.id,
+            reportLines: reportLines ? true : null,
+            librariesAlreadyCompiled: librariesAlreadyCompiled,
+          );
         } on SentinelException {
           continue;
         }
-        final coverage = await _getCoverageJson(service, isolateRef,
-            scriptReport, includeDart, functionCoverage, reportLines);
+        final coverage = await _processSourceReport(
+            service,
+            isolateRef,
+            scriptReport,
+            includeDart,
+            functionCoverage,
+            reportLines,
+            coverableLineCache);
         allCoverage.addAll(coverage);
       }
     } else {
@@ -195,12 +218,19 @@ Future<Map<String, dynamic>> _getAllCoverage(
           libraryFilters: scopedOutput.isNotEmpty && libraryFilters
               ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
               : null,
+          librariesAlreadyCompiled: librariesAlreadyCompiled,
         );
       } on SentinelException {
         continue;
       }
-      final coverage = await _getCoverageJson(service, isolateRef,
-          isolateReport, includeDart, functionCoverage, reportLines);
+      final coverage = await _processSourceReport(
+          service,
+          isolateRef,
+          isolateReport,
+          includeDart,
+          functionCoverage,
+          reportLines,
+          coverableLineCache);
       allCoverage.addAll(coverage);
     }
   }
@@ -276,13 +306,14 @@ int? _getLineFromTokenPos(Script script, int tokenPos) {
 }
 
 /// Returns a JSON coverage list backward-compatible with pre-1.16.0 SDKs.
-Future<List<Map<String, dynamic>>> _getCoverageJson(
+Future<List<Map<String, dynamic>>> _processSourceReport(
     VmService service,
     IsolateRef isolateRef,
     SourceReport report,
     bool includeDart,
     bool functionCoverage,
-    bool reportLines) async {
+    bool reportLines,
+    Map<String, Set<int>>? coverableLineCache) async {
   final hitMaps = <Uri, HitMap>{};
   final scripts = <ScriptRef, Script>{};
   final libraries = <LibraryRef>{};
@@ -333,7 +364,16 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 
   for (var range in report.ranges!) {
     final scriptRef = report.scripts![range.scriptIndex!];
-    final scriptUri = Uri.parse(scriptRef.uri!);
+    final scriptUriString = scriptRef.uri!;
+    final scriptUri = Uri.parse(scriptUriString);
+
+    // If we have a coverableLineCache, use it in the same way we use
+    // SourceReportCoverage.misses: to add zeros to the coverage result for all
+    // the lines that don't have a hit. Afterwards, add all the lines that were
+    // hit or missed to the cache, so that the next coverage collection won't
+    // need to compile this libarry.
+    final coverableLines =
+        coverableLineCache?.putIfAbsent(scriptUriString, () => <int>{});
 
     // Not returned in scripts section of source report.
     if (scriptUri.scheme == 'evaluate') continue;
@@ -379,7 +419,8 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
 
     if (coverage == null) continue;
 
-    void forEachLine(List<int> tokenPositions, void Function(int line) body) {
+    void forEachLine(List<int>? tokenPositions, void Function(int line) body) {
+      if (tokenPositions == null) return;
       for (final pos in tokenPositions) {
         final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
         if (line == null) {
@@ -393,14 +434,22 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
       }
     }
 
-    forEachLine(coverage.hits!, (line) {
+    if (coverableLines != null) {
+      for (final line in coverableLines) {
+        hits.lineHits.putIfAbsent(line, () => 0);
+      }
+    }
+
+    forEachLine(coverage.hits, (line) {
       hits.lineHits.increment(line);
+      coverableLines?.add(line);
       if (hits.funcNames != null && hits.funcNames!.containsKey(line)) {
         hits.funcHits!.increment(line);
       }
     });
-    forEachLine(coverage.misses!, (line) {
+    forEachLine(coverage.misses, (line) {
       hits.lineHits.putIfAbsent(line, () => 0);
+      coverableLines?.add(line);
     });
     hits.funcNames?.forEach((line, funcName) {
       hits.funcHits?.putIfAbsent(line, () => 0);
@@ -409,10 +458,10 @@ Future<List<Map<String, dynamic>>> _getCoverageJson(
     final branchCoverage = range.branchCoverage;
     if (branchCoverage != null) {
       hits.branchHits ??= <int, int>{};
-      forEachLine(branchCoverage.hits!, (line) {
+      forEachLine(branchCoverage.hits, (line) {
         hits.branchHits!.increment(line);
       });
-      forEachLine(branchCoverage.misses!, (line) {
+      forEachLine(branchCoverage.misses, (line) {
         hits.branchHits!.putIfAbsent(line, () => 0);
       });
     }

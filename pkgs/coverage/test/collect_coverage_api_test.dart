@@ -95,13 +95,51 @@ void main() {
     expect(sources[_isolateLibFileUri],
         everyElement(containsPair('branchHits', isNotEmpty)));
   }, skip: !platformVersionCheck(2, 17));
+
+  test('collect_coverage_api with coverableLineCache', () async {
+    final coverableLineCache = <String, Set<int>>{};
+    final coverage =
+        await _collectCoverage(coverableLineCache: coverableLineCache);
+    final result = await HitMap.parseJson(
+        coverage['coverage'] as List<Map<String, dynamic>>);
+
+    expect(coverableLineCache, contains(_sampleAppFileUri));
+    expect(coverableLineCache, contains(_isolateLibFileUri));
+
+    // Expect that we have some missed lines.
+    expect(result[_sampleAppFileUri]!.lineHits.containsValue(0), isTrue);
+    expect(result[_isolateLibFileUri]!.lineHits.containsValue(0), isTrue);
+
+    // Clear _sampleAppFileUri's cache entry, then gather coverage again. We're
+    // doing this to verify that force compilation is disabled for these
+    // libraries. The result should be that _isolateLibFileUri should be the
+    // same, but _sampleAppFileUri should be missing all its missed lines.
+    coverableLineCache[_sampleAppFileUri] = {};
+    final coverage2 =
+        await _collectCoverage(coverableLineCache: coverableLineCache);
+    final result2 = await HitMap.parseJson(
+        coverage2['coverage'] as List<Map<String, dynamic>>);
+
+    // _isolateLibFileUri still has missed lines, but _sampleAppFileUri doesn't.
+    expect(result2[_sampleAppFileUri]!.lineHits.containsValue(0), isFalse);
+    expect(result2[_isolateLibFileUri]!.lineHits.containsValue(0), isTrue);
+
+    // _isolateLibFileUri is the same. _sampleAppFileUri is the same, but
+    // without all its missed lines.
+    expect(result2[_isolateLibFileUri]!.lineHits,
+        result[_isolateLibFileUri]!.lineHits);
+    result[_sampleAppFileUri]!.lineHits.removeWhere((line, hits) => hits == 0);
+    expect(result2[_sampleAppFileUri]!.lineHits,
+        result[_sampleAppFileUri]!.lineHits);
+  }, skip: !platformVersionCheck(3, 2));
 }
 
 Future<Map<String, dynamic>> _collectCoverage(
     {Set<String> scopedOutput = const {},
     bool isolateIds = false,
     bool functionCoverage = false,
-    bool branchCoverage = false}) async {
+    bool branchCoverage = false,
+    Map<String, Set<int>>? coverableLineCache}) async {
   final openPort = await getOpenPort();
 
   // run the sample app, with the right flags
@@ -114,5 +152,6 @@ Future<Map<String, dynamic>> _collectCoverage(
       timeout: timeout,
       isolateIds: isolateIdSet,
       functionCoverage: functionCoverage,
-      branchCoverage: branchCoverage);
+      branchCoverage: branchCoverage,
+      coverableLineCache: coverableLineCache);
 }

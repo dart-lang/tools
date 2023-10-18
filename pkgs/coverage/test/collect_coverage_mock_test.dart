@@ -455,5 +455,178 @@ void main() {
 
       expect(result.length, 0);
     });
+
+    test('Collect coverage, coverableLineCache, old vm service', () async {
+      // Expect that getSourceReport's librariesAlreadyCompiled param is not set
+      // when coverableLineCache is non-null but the service version is too old.
+      final service = _mockService(4, 12);
+      when(service.getSourceReport('isolate', ['Coverage'],
+              forceCompile: true, reportLines: true))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [12],
+                      misses: [47],
+                    ),
+                  ),
+                  _range(
+                    1,
+                    SourceReportCoverage(
+                      hits: [95],
+                      misses: [52],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:foo/foo.dart',
+                    id: 'foo',
+                  ),
+                  ScriptRef(
+                    uri: 'package:bar/bar.dart',
+                    id: 'bar',
+                  ),
+                ],
+              ));
+
+      final coverableLineCache = <String, Set<int>>{};
+      final jsonResult = await collect(Uri(), false, false, false, null,
+          coverableLineCache: coverableLineCache,
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 2);
+      expect(result['package:foo/foo.dart']?.lineHits, {12: 1, 47: 0});
+      expect(result['package:bar/bar.dart']?.lineHits, {95: 1, 52: 0});
+    });
+
+    test('Collect coverage, coverableLineCache', () async {
+      // Expect that on the first getSourceReport call, librariesAlreadyCompiled
+      // is empty.
+      final service = _mockService(4, 13);
+      when(
+              service.getSourceReport('isolate', ['Coverage'],
+                  forceCompile: true,
+                  reportLines: true,
+                  librariesAlreadyCompiled: []))
+          .thenAnswer((_) async => SourceReport(
+                ranges: [
+                  _range(
+                    0,
+                    SourceReportCoverage(
+                      hits: [12],
+                      misses: [47],
+                    ),
+                  ),
+                  _range(
+                    1,
+                    SourceReportCoverage(
+                      hits: [95],
+                      misses: [52],
+                    ),
+                  ),
+                ],
+                scripts: [
+                  ScriptRef(
+                    uri: 'package:foo/foo.dart',
+                    id: 'foo',
+                  ),
+                  ScriptRef(
+                    uri: 'package:bar/bar.dart',
+                    id: 'bar',
+                  ),
+                ],
+              ));
+
+      final coverableLineCache = <String, Set<int>>{};
+      final jsonResult = await collect(Uri(), false, false, false, null,
+          coverableLineCache: coverableLineCache,
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 2);
+      expect(result['package:foo/foo.dart']?.lineHits, {12: 1, 47: 0});
+      expect(result['package:bar/bar.dart']?.lineHits, {95: 1, 52: 0});
+
+      // The coverableLineCache should now be filled with all the lines that
+      // were hit or missed.
+      expect(coverableLineCache, {
+        'package:foo/foo.dart': {12, 47},
+        'package:bar/bar.dart': {95, 52},
+      });
+
+      // The second getSourceReport call should now list all the libraries we've
+      // seen. The response won't contain any misses for these libraries,
+      // because they won't be force compiled. We'll also return a 3rd library,
+      // which will contain misses, as it hasn't been compiled yet.
+      when(
+          service.getSourceReport('isolate', ['Coverage'],
+              forceCompile: true,
+              reportLines: true,
+              librariesAlreadyCompiled: [
+                'package:foo/foo.dart',
+                'package:bar/bar.dart'
+              ])).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [95],
+                ),
+              ),
+              _range(
+                2,
+                SourceReportCoverage(
+                  hits: [36],
+                  misses: [81],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+              ScriptRef(
+                uri: 'package:baz/baz.dart',
+                id: 'baz',
+              ),
+            ],
+          ));
+
+      final jsonResult2 = await collect(Uri(), false, false, false, null,
+          coverableLineCache: coverableLineCache,
+          serviceOverrideForTesting: service);
+      final result2 = await HitMap.parseJson(
+          jsonResult2['coverage'] as List<Map<String, dynamic>>);
+
+      // The missed lines still appear in foo and bar, even though they weren't
+      // returned in the response. They were read from the cache.
+      expect(result2.length, 3);
+      expect(result2['package:foo/foo.dart']?.lineHits, {12: 0, 47: 1});
+      expect(result2['package:bar/bar.dart']?.lineHits, {95: 1, 52: 0});
+      expect(result2['package:baz/baz.dart']?.lineHits, {36: 1, 81: 0});
+
+      // The coverableLineCache should now also contain the baz library.
+      expect(coverableLineCache, {
+        'package:foo/foo.dart': {12, 47},
+        'package:bar/bar.dart': {95, 52},
+        'package:baz/baz.dart': {36, 81},
+      });
+    });
   });
 }
