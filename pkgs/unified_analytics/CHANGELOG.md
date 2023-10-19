@@ -1,6 +1,7 @@
-## 4.0.2-wip
+## 4.0.2
 
-- Update to the latest version of `package:dart_flutter_team_lints`.
+- Update to the latest version of `package:dart_flutter_team_lints`
+- Added the `Event.doctorValidatorResult` constructor.
 
 ## 4.0.1
 
