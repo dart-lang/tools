@@ -76,7 +76,7 @@ void main() {
 
   test('Suppression works as expected', () async {
     analytics.suppressTelemetry();
-    await analytics.send(testEvent);
+    analytics.send(testEvent);
 
     final logFileStats = analytics.logFileStats();
 
@@ -86,7 +86,7 @@ void main() {
 
   test('Second instance is not suppressed', () async {
     analytics.suppressTelemetry();
-    await analytics.send(testEvent);
+    analytics.send(testEvent);
 
     final logFileStats = analytics.logFileStats();
 
@@ -110,7 +110,7 @@ void main() {
 
     // Using a new event here to differentiate from the first one
     final newEvent = Event.commandExecuted(count: 2, name: 'commandName');
-    await secondAnalytics.send(newEvent);
+    secondAnalytics.send(newEvent);
 
     // Both instances of `Analytics` should now have data retrieved
     // from `LogFileStats()` even though only the second instance
