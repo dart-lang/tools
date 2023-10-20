@@ -1,0 +1,46 @@
+name: "[package:unified_analytics] Request a new event"
+description: "Create a request for collecting a new event or new event data."
+labels: "package:unified_analytics"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An event is an action that a user, or the tool, performs. 
+        You can see the events that are being collected [here](./pkgs/unified_analytics/lib/src/enums.dart)
+        and the data associated with those events [here](./pkgs/unified_analytics/lib/src/event.dart).
+  - type: checkboxes
+    attributes:
+      label: Has this already been approved in the privacy design documentation?
+      description: You can request that a new event be added to the package 
+      regardless of whether it's included in the privacy design documentation. 
+      However, the privacy team will need to approve before it is added.
+      options:
+        - label: This field is already covered in the PDD 
+          
+  - type: textarea
+    attributes:
+      label: Event name
+      description: |
+        If the event already exists, please tell us the name of the event 
+        you would like to add data to.
+
+        If this is a new event, tell us the name, description, and tool owner. 
+        Possible tool owners can be found in the `DashTool` enum [here](./pkgs/unified_analytics/lib/src/enums.dart).
+
+        For example, pub_get represents pub package resolution details. The owner is the Dart tool.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Event data
+      description: |
+        Event data are key-value pairs that are associated with an event.
+        Please list the different event data associated with this event. 
+        You should also include a description of the event data values.
+
+        For example, if the event is pub_get, one event data may be 
+        the packageName. The values would be the name of the package 
+        as a string.
+    validations:
+      required: true
