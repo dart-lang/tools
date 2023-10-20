@@ -14,10 +14,10 @@ body:
       options:
         - label: This field is already covered in the PDD 
       description: |
-      You can request that a new event be added to the package 
-      regardless of whether it's included in the privacy design documentation. 
-      However, the privacy team will need to approve before it is added.
-          
+        You can request that a new event be added to the package 
+        regardless of whether it's included in the privacy design documentation. 
+        However, the privacy team will need to approve before it is added.
+            
   - type: textarea
     attributes:
       label: Event name
