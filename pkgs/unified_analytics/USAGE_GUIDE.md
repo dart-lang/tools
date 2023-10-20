@@ -137,7 +137,7 @@ the Flutter channel used. To request that a new user property
 be added, file an issue [using this template](https://github.com/dart-lang/tools/issues/new?template=unified_analytics_user_property.yml). 
 
 To add a new user property, add a new property to the `UserProperty` class 
-in the [`user_property.dart`` file](./pkgs/unified_analytics/lib/src/user_property.dart). 
+in the [`user_property.dart` file](./lib/src/user_property.dart). 
 
 #### Events
 Events are actions that the user, or tool, performs. In Google Analytics, 
@@ -148,10 +148,10 @@ To request new events, or event data, file an issue
 [using this template](https://github.com/dart-lang/tools/issues/new?template=unified_analytics_event.yml).
 
 To add a new event, create a new field in the `DashEvent` enum in 
-the [`enums.dart`` file](./pkgs/unified_analytics/lib/src/enums.dart). 
+the [`enums.dart` file](./lib/src/enums.dart). 
 
 Then, add event data, create a new method for the `Event` class 
-in the [`event.data` file](./pkgs/unified_analytics/lib/src/event.dart).
+in the [`event.data` file](./lib/src/event.dart).
 
 
 ### Testing event collection

@@ -8,7 +8,7 @@ body:
         A user property is a key-value pair that is used to segment users. 
         For example, the Flutter channel that the user is on. You can see 
         which user properties are being collected 
-        [here](./pkgs/unified_analytics/lib/src/user_property).
+        [here](../../pkgs/unified_analytics/lib/src/user_property).
 
   - type: checkboxes
     attributes:

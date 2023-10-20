@@ -6,8 +6,8 @@ body:
     attributes:
       value: |
         An event is an action that a user, or the tool, performs. 
-        You can see the events that are being collected [here](./pkgs/unified_analytics/lib/src/enums.dart)
-        and the data associated with those events [here](./pkgs/unified_analytics/lib/src/event.dart).
+        You can see the events that are being collected [here](../../pkgs/unified_analytics/lib/src/enums.dart)
+        and the data associated with those events [here](../../pkgs/unified_analytics/lib/src/event.dart).
   - type: checkboxes
     attributes:
       label: Has this already been approved in the privacy design documentation?
@@ -26,7 +26,7 @@ body:
         you would like to add data to.
 
         If this is a new event, tell us the name, description, and tool owner. 
-        Possible tool owners can be found in the `DashTool` enum [here](./pkgs/unified_analytics/lib/src/enums.dart).
+        Possible tool owners can be found in the `DashTool` enum [here](../../pkgs/unified_analytics/lib/src/enums.dart).
 
         For example, pub_get represents pub package resolution details. The owner is the Dart tool.
     validations:
