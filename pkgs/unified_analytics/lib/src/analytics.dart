@@ -225,7 +225,13 @@ abstract class Analytics {
   ///
   /// Prevents the tool from hanging when if there are still requests
   /// that need to be sent off.
-  Future<void> close();
+  ///
+  /// Providing [delayDuration] in milliseconds will allow the instance
+  /// to wait the provided time before closing the http connection. Keeping
+  /// the connection open for some time will allow any pending events that
+  /// are waiting to be sent to the Google Analytics server. Default value
+  /// of 250 ms applied.
+  Future<void> close({int delayDuration = kDelayDuration});
 
   /// Method to fetch surveys from the endpoint [kContextualSurveyUrl].
   ///
@@ -476,8 +482,11 @@ class AnalyticsImpl implements Analytics {
   }
 
   @override
-  Future<void> close() async {
-    await Future.wait(_futures);
+  Future<void> close({int delayDuration = kDelayDuration}) async {
+    await Future.wait(_futures).timeout(
+      Duration(milliseconds: delayDuration),
+      onTimeout: () => [],
+    );
     _gaClient.close();
   }
 
@@ -737,7 +746,7 @@ class NoOpAnalytics implements Analytics {
   void clientShowedMessage() {}
 
   @override
-  Future<void> close() async {}
+  Future<void> close({int delayDuration = kDelayDuration}) async {}
 
   @override
   Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
