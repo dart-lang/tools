@@ -183,7 +183,7 @@ abstract class Analytics {
               fs: fs,
               initializedSurveys: [],
             ),
-        gaClient: gaClient ?? FakeGAClient(),
+        gaClient: gaClient ?? const FakeGAClient(),
         enableAsserts: true,
       );
 

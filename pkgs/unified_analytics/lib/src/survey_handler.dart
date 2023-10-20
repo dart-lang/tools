@@ -148,7 +148,7 @@ class Survey {
 
   @override
   String toString() {
-    final encoder = JsonEncoder.withIndent('  ');
+    final encoder = const JsonEncoder.withIndent('  ');
     return encoder.convert({
       'uniqueId': uniqueId,
       'startDate': startDate.toString(),
@@ -342,10 +342,10 @@ class FakeSurveyHandler extends SurveyHandler {
   /// will have their dates checked to ensure they are valid; it is
   /// recommended to use `package:clock` to set a fixed time for testing.
   FakeSurveyHandler.fromList({
-    required Directory homeDirectory,
-    required FileSystem fs,
+    required super.homeDirectory,
+    required super.fs,
     required List<Survey> initializedSurveys,
-  }) : super(fs: fs, homeDirectory: homeDirectory) {
+  }) {
     // We must pass the surveys from the list to the
     // `checkSurveyDate` function here and not for the
     // `.fromString()` constructor because the `parseSurveysFromJson`
@@ -360,10 +360,10 @@ class FakeSurveyHandler extends SurveyHandler {
   /// Use this class in tests if you can provide raw
   /// json strings to simulate a response from a remote server.
   FakeSurveyHandler.fromString({
-    required Directory homeDirectory,
-    required FileSystem fs,
+    required super.homeDirectory,
+    required super.fs,
     required String content,
-  }) : super(fs: fs, homeDirectory: homeDirectory) {
+  }) {
     final body = jsonDecode(content) as List<dynamic>;
     for (final fakeSurvey in SurveyHandler.parseSurveysFromJson(body)) {
       _fakeInitializedSurveys.add(fakeSurvey);
