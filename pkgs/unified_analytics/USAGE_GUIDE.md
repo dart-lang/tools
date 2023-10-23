@@ -147,10 +147,10 @@ in key-value pairs.
 To request new events, or event data, file an issue 
 [using this template](https://github.com/dart-lang/tools/issues/new?template=unified_analytics_event.yml).
 
-To add a new event, create a new field in the `DashEvent` enum in 
+To add a new event, create a new field in the `DashEvent` enum (if necessary) in
 the [`enums.dart` file](./lib/src/enums.dart). 
 
-Then, add event data, create a new method for the `Event` class 
+Then, add event data, create a new constructor for the `Event` class 
 in the [`event.data` file](./lib/src/event.dart).
 
 
