@@ -333,8 +333,8 @@ class AnalyticsImpl implements Analytics {
   bool _telemetrySuppressed = false;
 
   /// The list of futures that will contain all of the send events
-  /// from the [GAClient]
-  final List<Future<Response>> _futures = [];
+  /// from the [GAClient].
+  final _futures = <Future<Response>>[];
 
   AnalyticsImpl({
     required this.tool,

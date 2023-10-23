@@ -60,7 +60,7 @@ const String kContextualSurveyUrl =
 const String kDartToolDirectoryName = '.dart-tool';
 
 /// The default time to wait before closing the http connection to allow for
-/// pending events to be sent
+/// pending events to be sent.
 const int kDelayDuration = 250;
 
 /// Name of the file where we persist dismissed survey ids.
