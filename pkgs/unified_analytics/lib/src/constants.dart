@@ -59,6 +59,10 @@ const String kContextualSurveyUrl =
 /// will be located.
 const String kDartToolDirectoryName = '.dart-tool';
 
+/// The default time to wait before closing the http connection to allow for
+/// pending events to be sent.
+const int kDelayDuration = 250;
+
 /// Name of the file where we persist dismissed survey ids.
 const String kDismissedSurveyFileName =
     'dart-flutter-telemetry-dismissed-surveys.json';
@@ -78,7 +82,7 @@ const int kLogFileLength = 2500;
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '4.0.2-wip';
+const String kPackageVersion = '5.0.0-wip';
 
 /// The minimum length for a session.
 const int kSessionDurationMinutes = 30;

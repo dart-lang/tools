@@ -225,7 +225,13 @@ abstract class Analytics {
   ///
   /// Prevents the tool from hanging when if there are still requests
   /// that need to be sent off.
-  void close();
+  ///
+  /// Providing [delayDuration] in milliseconds will allow the instance
+  /// to wait the provided time before closing the http connection. Keeping
+  /// the connection open for some time will allow any pending events that
+  /// are waiting to be sent to the Google Analytics server. Default value
+  /// of 250 ms applied.
+  Future<void> close({int delayDuration = kDelayDuration});
 
   /// Method to fetch surveys from the endpoint [kContextualSurveyUrl].
   ///
@@ -248,7 +254,7 @@ abstract class Analytics {
   /// ```dart
   /// analytics.send(Event.memory(periodSec: 123));
   /// ```
-  Future<Response>? send(Event event);
+  void send(Event event);
 
   /// Pass a boolean to either enable or disable telemetry and make
   /// the necessary changes in the persisted configuration file.
@@ -325,6 +331,10 @@ class AnalyticsImpl implements Analytics {
 
   /// Telemetry suppression flag that is set via [Analytics.suppressTelemetry].
   bool _telemetrySuppressed = false;
+
+  /// The list of futures that will contain all of the send events
+  /// from the [GAClient].
+  final _futures = <Future<Response>>[];
 
   AnalyticsImpl({
     required this.tool,
@@ -472,7 +482,13 @@ class AnalyticsImpl implements Analytics {
   }
 
   @override
-  void close() => _gaClient.close();
+  Future<void> close({int delayDuration = kDelayDuration}) async {
+    await Future.wait(_futures).timeout(
+      Duration(milliseconds: delayDuration),
+      onTimeout: () => [],
+    );
+    _gaClient.close();
+  }
 
   @override
   Future<List<Survey>> fetchAvailableSurveys() async {
@@ -543,8 +559,8 @@ class AnalyticsImpl implements Analytics {
   LogFileStats? logFileStats() => _logHandler.logFileStats();
 
   @override
-  Future<Response>? send(Event event) {
-    if (!okToSend) return null;
+  void send(Event event) {
+    if (!okToSend) return;
 
     // Construct the body of the request
     final body = generateRequestBody(
@@ -558,8 +574,9 @@ class AnalyticsImpl implements Analytics {
 
     _logHandler.save(data: body);
 
-    // Pass to the google analytics client to send
-    return _gaClient.sendData(body);
+    final gaClientFuture = _gaClient.sendData(body);
+    _futures.add(gaClientFuture);
+    gaClientFuture.whenComplete(() => _futures.remove(gaClientFuture));
   }
 
   @override
@@ -670,8 +687,8 @@ class FakeAnalytics extends AnalyticsImpl {
         );
 
   @override
-  Future<Response>? send(Event event) {
-    if (!okToSend) return null;
+  void send(Event event) {
+    if (!okToSend) return;
 
     // Construct the body of the request
     final body = generateRequestBody(
@@ -688,7 +705,6 @@ class FakeAnalytics extends AnalyticsImpl {
     // Using this list to validate that events are being sent
     // for internal methods in the `Analytics` instance
     sentEvents.add(event);
-    return _gaClient.sendData(body);
   }
 }
 
@@ -730,7 +746,7 @@ class NoOpAnalytics implements Analytics {
   void clientShowedMessage() {}
 
   @override
-  void close() {}
+  Future<void> close({int delayDuration = kDelayDuration}) async {}
 
   @override
   Future<List<Survey>> fetchAvailableSurveys() async => const <Survey>[];
