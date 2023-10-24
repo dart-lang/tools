@@ -358,7 +358,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -405,7 +405,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -448,7 +448,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         await analytics.setTelemetry(false);
@@ -515,7 +515,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -617,7 +617,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -686,7 +686,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -743,7 +743,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         // Setting to false will prevent anything from getting returned
@@ -758,7 +758,7 @@ void main() {
         // at least 50 records for one of the conditions
         await analytics.setTelemetry(true);
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
         fetchedSurveys = await analytics.fetchAvailableSurveys();
         expect(fetchedSurveys.length, 1);
@@ -805,7 +805,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();
@@ -851,7 +851,7 @@ void main() {
 
         // Simulate 60 events to send so that the first condition is satisified
         for (var i = 0; i < 60; i++) {
-          await analytics.send(testEvent);
+          analytics.send(testEvent);
         }
 
         final fetchedSurveys = await analytics.fetchAvailableSurveys();

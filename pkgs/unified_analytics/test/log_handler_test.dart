@@ -65,7 +65,7 @@ void main() {
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
-      await analytics.send(testEvent);
+      analytics.send(testEvent);
     }
 
     expect(analytics.logFileStats(), isNotNull);
@@ -91,7 +91,7 @@ void main() {
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
-      await analytics.send(testEvent);
+      analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
 
@@ -110,7 +110,7 @@ void main() {
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
-      await analytics.send(testEvent);
+      analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
 
@@ -149,7 +149,7 @@ void main() {
     // one malformed record on top of the logs and the rest
     // are valid log records
     for (var i = 0; i < kLogFileLength - 1; i++) {
-      await analytics.send(testEvent);
+      analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
     expect(logFile.readAsLinesSync().length, kLogFileLength);
@@ -159,7 +159,7 @@ void main() {
     expect(logFile.readAsLinesSync()[0].trim(), '{{');
 
     // Sending one more event should flush out the malformed record
-    await analytics.send(testEvent);
+    analytics.send(testEvent);
 
     final secondLogFileStats = analytics.logFileStats();
     expect(secondLogFileStats, isNotNull);
@@ -178,7 +178,7 @@ void main() {
     // Ensure it will work as expected after writing correct logs
     final countOfEventsToSend = 10;
     for (var i = 0; i < countOfEventsToSend; i++) {
-      await analytics.send(testEvent);
+      analytics.send(testEvent);
     }
     final secondLogFileStats = analytics.logFileStats();
 

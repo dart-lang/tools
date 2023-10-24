@@ -53,8 +53,8 @@ void main() async {
   final hotReloadEvent = Event.hotReloadTime(timeMs: runTime);
 
   // Make a call to the [Analytics] api to send the data
-  await analytics.send(hotReloadEvent);
+  analytics.send(hotReloadEvent);
 
   // Close the client connection on exit
-  analytics.close();
+  await analytics.close();
 }
