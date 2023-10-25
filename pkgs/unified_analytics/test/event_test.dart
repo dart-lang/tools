@@ -16,6 +16,7 @@ void main() {
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.analyticsCollectionEnabled);
     expect(constructedEvent.eventData['status'], false);
+    expect(constructedEvent.eventData.length, 1);
   });
 
   test('Event.clientNotification constructed', () {
@@ -32,6 +33,7 @@ void main() {
     expect(constructedEvent.eventData['duration'], 'duration');
     expect(constructedEvent.eventData['latency'], 'latency');
     expect(constructedEvent.eventData['method'], 'method');
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.clientRequest constructed', () {
@@ -61,6 +63,7 @@ void main() {
     expect(
         constructedEvent.eventData['openWorkspacePaths'], 'openWorkspacePaths');
     expect(constructedEvent.eventData['removed'], 'removed');
+    expect(constructedEvent.eventData.length, 9);
   });
 
   test('Event.commandExecuted constructed', () {
@@ -75,6 +78,7 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.commandExecuted);
     expect(constructedEvent.eventData['count'], 5);
     expect(constructedEvent.eventData['name'], 'name');
+    expect(constructedEvent.eventData.length, 2);
   });
 
   test('Event.contextStructure constructed', () {
@@ -107,6 +111,7 @@ void main() {
     expect(constructedEvent.eventData['transitiveFileLineCount'], 9);
     expect(constructedEvent.eventData['transitiveFileUniqueCount'], 10);
     expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 11);
+    expect(constructedEvent.eventData.length, 11);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
@@ -124,6 +129,7 @@ void main() {
     expect(
         constructedEvent.eventData['enabledExperiments'], 'enabledExperiments');
     expect(constructedEvent.eventData['exitCode'], 0);
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.doctorValidatorResult constructed', () {
@@ -144,6 +150,7 @@ void main() {
     expect(constructedEvent.eventData['partOfGroupedValidator'], false);
     expect(constructedEvent.eventData['doctorInvocationId'], 123);
     expect(constructedEvent.eventData['statusInfo'], 'statusInfo');
+    expect(constructedEvent.eventData.length, 5);
   });
 
   test('Event.hotReloadTime constructed', () {
@@ -154,6 +161,7 @@ void main() {
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.hotReloadTime);
     expect(constructedEvent.eventData['timeMs'], 500);
+    expect(constructedEvent.eventData.length, 1);
   });
 
   test('Event.lintUsageCount constructed', () {
@@ -168,6 +176,7 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.lintUsageCount);
     expect(constructedEvent.eventData['count'], 5);
     expect(constructedEvent.eventData['name'], 'name');
+    expect(constructedEvent.eventData.length, 2);
   });
 
   test('Event.memoryInfo constructed', () {
@@ -184,6 +193,7 @@ void main() {
     expect(constructedEvent.eventData['rss'], 4);
     expect(constructedEvent.eventData['periodSec'], 5);
     expect(constructedEvent.eventData['mbPerSec'], 5.55);
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.pluginRequest constructed', () {
@@ -200,6 +210,7 @@ void main() {
     expect(constructedEvent.eventData['duration'], 'duration');
     expect(constructedEvent.eventData['method'], 'method');
     expect(constructedEvent.eventData['pluginId'], 'pluginId');
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.pluginUse constructed', () {
@@ -216,6 +227,7 @@ void main() {
     expect(constructedEvent.eventData['count'], 5);
     expect(constructedEvent.eventData['enabled'], 'enabled');
     expect(constructedEvent.eventData['pluginId'], 'pluginId');
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.pubGet constructed', () {
@@ -232,6 +244,7 @@ void main() {
     expect(constructedEvent.eventData['packageName'], 'packageName');
     expect(constructedEvent.eventData['version'], 'version');
     expect(constructedEvent.eventData['dependencyType'], 'dependencyType');
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.serverSession constructed', () {
@@ -252,6 +265,7 @@ void main() {
     expect(constructedEvent.eventData['duration'], 5);
     expect(constructedEvent.eventData['flags'], 'flags');
     expect(constructedEvent.eventData['parameters'], 'parameters');
+    expect(constructedEvent.eventData.length, 5);
   });
 
   test('Event.severityAdjustment constructed', () {
@@ -266,6 +280,7 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.severityAdjustment);
     expect(constructedEvent.eventData['diagnostic'], 'diagnostic');
     expect(constructedEvent.eventData['adjustments'], 'adjustments');
+    expect(constructedEvent.eventData.length, 2);
   });
 
   test('Event.surveyAction constructed', () {
@@ -280,6 +295,7 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.surveyAction);
     expect(constructedEvent.eventData['surveyId'], 'surveyId');
     expect(constructedEvent.eventData['status'], 'status');
+    expect(constructedEvent.eventData.length, 2);
   });
 
   test('Event.surveyShown constructed', () {
@@ -290,5 +306,6 @@ void main() {
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.surveyShown);
     expect(constructedEvent.eventData['surveyId'], 'surveyId');
+    expect(constructedEvent.eventData.length, 1);
   });
 }
