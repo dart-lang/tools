@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:mirrors';
+
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/enums.dart';
@@ -307,5 +309,21 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.surveyShown);
     expect(constructedEvent.eventData['surveyId'], 'surveyId');
     expect(constructedEvent.eventData.length, 1);
+  });
+
+  test('Confirm all constructors were checked', () {
+    var constructorCount = 0;
+    for (var declaration in reflectClass(Event).declarations.keys) {
+      if (declaration.toString().contains('Event.')) constructorCount++;
+    }
+
+    // Change this integer below if your PR either adds or removes
+    // an Event constructor
+    final eventsAccountedForInTests = 17;
+    expect(eventsAccountedForInTests, constructorCount,
+        reason: 'If you added or removed an event constructor, '
+            'ensure you have updated '
+            '`pkgs/unified_analytics/test/event_test.dart` '
+            'to reflect the changes made');
   });
 }
