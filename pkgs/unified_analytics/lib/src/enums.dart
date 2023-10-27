@@ -51,6 +51,11 @@ enum DashEvent {
     description: 'Results from a specific doctor validator',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterBuildInfo(
+    label: 'flutter_build_info',
+    description: 'Information for a flutter build invocation',
+    toolOwner: DashTool.flutterTool,
+  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',

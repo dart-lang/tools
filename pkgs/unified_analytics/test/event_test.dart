@@ -311,6 +311,27 @@ void main() {
     expect(constructedEvent.eventData.length, 1);
   });
 
+  test('Event.flutterBuildInfo constructed', () {
+    Event generateEvent() => Event.flutterBuildInfo(
+          label: 'label',
+          buildType: 'buildType',
+          command: 'command',
+          settings: 'settings',
+          error: 'error',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.flutterBuildInfo);
+    expect(constructedEvent.eventData['label'], 'label');
+    expect(constructedEvent.eventData['buildType'], 'buildType');
+    expect(constructedEvent.eventData['command'], 'command');
+    expect(constructedEvent.eventData['settings'], 'settings');
+    expect(constructedEvent.eventData['error'], 'error');
+    expect(constructedEvent.eventData.length, 5);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {

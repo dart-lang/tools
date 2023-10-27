@@ -236,6 +236,33 @@ final class Event {
           if (statusInfo != null) 'statusInfo': statusInfo,
         };
 
+  /// Event that is emitted from the flutter tool when a build invocation
+  /// has been run by the user
+  ///
+  /// [label] -
+  ///
+  /// [buildType] -
+  ///
+  /// [command] -
+  ///
+  /// [settings] -
+  ///
+  /// [error] -
+  Event.flutterBuildInfo({
+    required String label,
+    required String buildType,
+    required String command,
+    required String settings,
+    required String error,
+  })  : eventName = DashEvent.flutterBuildInfo,
+        eventData = {
+          'label': label,
+          'buildType': buildType,
+          'command': command,
+          'settings': settings,
+          'error': error,
+        };
+
   Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
