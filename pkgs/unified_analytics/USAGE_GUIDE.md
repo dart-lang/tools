@@ -151,7 +151,7 @@ To add a new event, create a new field in the `DashEvent` enum (if necessary) in
 the [`enums.dart` file](./lib/src/enums.dart). 
 
 Then, add event data, create a new constructor for the `Event` class 
-in the [`event.data` file](./lib/src/event.dart).
+in the [`event.dart` file](./lib/src/event.dart).
 
 
 ### Testing event collection
