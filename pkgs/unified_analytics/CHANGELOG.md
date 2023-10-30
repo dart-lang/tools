@@ -1,3 +1,7 @@
+## 5.1.0
+
+- Added the `Event.flutterBuildInfo` constructor
+
 ## 5.0.0
 
 - Update to the latest version of `package:dart_flutter_team_lints`
