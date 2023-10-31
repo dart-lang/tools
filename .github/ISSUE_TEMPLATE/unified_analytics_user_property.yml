@@ -1,0 +1,37 @@
+name: "[package:unified_analytics] Request a new user property"
+description: "Create a request for collecting a new user property."
+labels: "package:unified_analytics"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A user property is a key-value pair that is used to segment users. 
+        For example, the Flutter channel that the user is on. You can see 
+        which user properties are being collected 
+        [here](../../pkgs/unified_analytics/lib/src/user_property.dart).
+
+  - type: checkboxes
+    attributes:
+      label: Has this already been approved in the privacy design documentation?
+      options:
+        - label: This field is already covered in the PDD 
+      description: |
+        You can request that a new user property be added to the package 
+        regardless of whether it's included in the privacy design documentation. 
+        However, the privacy team will need to approve before it is added.
+          
+  - type: textarea
+    attributes:
+      label: User property name
+      description: |
+        Please tell us the name of the user property you would like to add (e.g. flutter_channel).
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: User property values
+      description: |
+        Please list or describe the unique values for this property (e.g. master, beta, stable).
+    validations:
+      required: true

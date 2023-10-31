@@ -126,6 +126,36 @@ the consent message.
 
 ## Developing Within `package:unified_analytics`
 
+### Adding new data classes
+
+#### User properties
+In Google Analytics, new data fields can be collected as user properties 
+or events. 
+
+User properties are key-value pairs that can be used to segment users. For example, 
+the Flutter channel used. To request that a new user property 
+be added, file an issue [using this template](https://github.com/dart-lang/tools/issues/new?template=unified_analytics_user_property.yml). 
+
+To add a new user property, add a new property to the `UserProperty` class 
+in the [`user_property.dart` file](./lib/src/user_property.dart). 
+
+#### Events
+Events are actions that the user, or tool, performs. In Google Analytics, 
+events can have associated data. This event data is stored 
+in key-value pairs. 
+
+To request new events, or event data, file an issue 
+[using this template](https://github.com/dart-lang/tools/issues/new?template=unified_analytics_event.yml).
+
+To add a new event, create a new field in the `DashEvent` enum (if necessary) in
+the [`enums.dart` file](./lib/src/enums.dart). 
+
+Then, add event data, create a new constructor for the `Event` class 
+in the [`event.dart` file](./lib/src/event.dart).
+
+
+### Testing event collection
+
 When contributing to this package, if the developer needs to verify that
 events have been sent, the developer should the use development constructor
 so that the events being sent are not going into the production instance.
