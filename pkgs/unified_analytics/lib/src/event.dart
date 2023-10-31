@@ -236,6 +236,36 @@ final class Event {
           if (statusInfo != null) 'statusInfo': statusInfo,
         };
 
+  /// Event that is emitted from the flutter tool when a build invocation
+  /// has been run by the user.
+  ///
+  /// [label] - the identifier for that build event.
+  ///
+  /// [buildType] - the identifier for which platform the build event was for,
+  ///   examples include "ios", "gradle", and "web".
+  ///
+  /// [command] - the command that was ran to kick off the build event.
+  ///
+  /// [settings] - the settings used for the build event related to
+  ///   configuration and other relevant build information.
+  ///
+  /// [error] - short identifier used to explain the cause of the build error,
+  ///   stacktraces should not be passed to this parameter.
+  Event.flutterBuildInfo({
+    required String label,
+    required String buildType,
+    String? command,
+    String? settings,
+    String? error,
+  })  : eventName = DashEvent.flutterBuildInfo,
+        eventData = {
+          'label': label,
+          'buildType': buildType,
+          if (command != null) 'command': command,
+          if (settings != null) 'settings': settings,
+          if (error != null) 'error': error,
+        };
+
   Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
