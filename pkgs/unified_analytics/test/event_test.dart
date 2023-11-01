@@ -334,6 +334,7 @@ void main() {
 
   test('Event.hotRunnerInfo constructed', () {
     Event generateEvent() => Event.hotRunnerInfo(
+          label: 'label',
           targetPlatform: 'targetPlatform',
           sdkName: 'sdkName',
           emulator: false,
@@ -358,6 +359,7 @@ void main() {
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.hotRunnerInfo);
+    expect(constructedEvent.eventData['label'], 'label');
     expect(constructedEvent.eventData['targetPlatform'], 'targetPlatform');
     expect(constructedEvent.eventData['sdkName'], 'sdkName');
     expect(constructedEvent.eventData['emulator'], false);
@@ -376,7 +378,7 @@ void main() {
     expect(constructedEvent.eventData['scannedSourcesCount'], 15);
     expect(constructedEvent.eventData['reassembleTimeInMs'], 16);
     expect(constructedEvent.eventData['reloadVMTimeInMs'], 17);
-    expect(constructedEvent.eventData.length, 18);
+    expect(constructedEvent.eventData.length, 19);
   });
 
   test('Confirm all constructors were checked', () {

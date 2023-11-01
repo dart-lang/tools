@@ -274,6 +274,7 @@ final class Event {
 
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
+    required String label,
     required String targetPlatform,
     required String sdkName,
     required bool emulator,
@@ -294,6 +295,7 @@ final class Event {
     int? reloadVMTimeInMs,
   })  : eventName = DashEvent.hotRunnerInfo,
         eventData = {
+          'label': label,
           'targetPlatform': targetPlatform,
           'sdkName': sdkName,
           'emulator': emulator,
