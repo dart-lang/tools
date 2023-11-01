@@ -272,6 +272,7 @@ final class Event {
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
 
+  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
     required String label,
