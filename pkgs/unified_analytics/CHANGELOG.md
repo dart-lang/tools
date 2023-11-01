@@ -1,3 +1,7 @@
+## 5.2.0
+
+- Added the `Event.hotRunnerInfo` constructor
+
 ## 5.1.0
 
 - Added the `Event.flutterBuildInfo` constructor

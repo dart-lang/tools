@@ -266,9 +266,60 @@ final class Event {
           if (error != null) 'error': error,
         };
 
+  // TODO: eliasyishak, remove this or replace once we have a generic
+  //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
+
+  /// Events to be sent for the Flutter Hot Runner.
+  Event.hotRunnerInfo({
+    required String targetPlatform,
+    required String sdkName,
+    required bool emulator,
+    required bool fullRestart,
+    String? reason,
+    int? finalLibraryCount,
+    int? syncedLibraryCount,
+    int? syncedClassesCount,
+    int? syncedProceduresCount,
+    int? syncedBytes,
+    int? invalidatedSourcesCount,
+    int? transferTimeInMs,
+    int? overallTimeInMs,
+    int? compileTimeInMs,
+    int? findInvalidatedTimeInMs,
+    int? scannedSourcesCount,
+    int? reassembleTimeInMs,
+    int? reloadVMTimeInMs,
+  })  : eventName = DashEvent.hotRunnerInfo,
+        eventData = {
+          'targetPlatform': targetPlatform,
+          'sdkName': sdkName,
+          'emulator': emulator,
+          'fullRestart': fullRestart,
+          if (reason != null) 'reason': reason,
+          if (finalLibraryCount != null) 'finalLibraryCount': finalLibraryCount,
+          if (syncedLibraryCount != null)
+            'syncedLibraryCount': syncedLibraryCount,
+          if (syncedClassesCount != null)
+            'syncedClassesCount': syncedClassesCount,
+          if (syncedProceduresCount != null)
+            'syncedProceduresCount': syncedProceduresCount,
+          if (syncedBytes != null) 'syncedBytes': syncedBytes,
+          if (invalidatedSourcesCount != null)
+            'invalidatedSourcesCount': invalidatedSourcesCount,
+          if (transferTimeInMs != null) 'transferTimeInMs': transferTimeInMs,
+          if (overallTimeInMs != null) 'overallTimeInMs': overallTimeInMs,
+          if (compileTimeInMs != null) 'compileTimeInMs': compileTimeInMs,
+          if (findInvalidatedTimeInMs != null)
+            'findInvalidatedTimeInMs': findInvalidatedTimeInMs,
+          if (scannedSourcesCount != null)
+            'scannedSourcesCount': scannedSourcesCount,
+          if (reassembleTimeInMs != null)
+            'reassembleTimeInMs': reassembleTimeInMs,
+          if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
+        };
 
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.

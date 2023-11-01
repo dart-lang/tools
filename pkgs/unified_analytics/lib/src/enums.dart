@@ -61,6 +61,11 @@ enum DashEvent {
     description: 'Hot reload duration',
     toolOwner: DashTool.flutterTool,
   ),
+  hotRunnerInfo(
+    label: 'hot_runner_info',
+    description: 'Information related to the Flutter hot runner',
+    toolOwner: DashTool.flutterTool,
+  ),
 
   // Events for language_server below
 
