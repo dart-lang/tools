@@ -332,6 +332,55 @@ void main() {
     expect(constructedEvent.eventData.length, 5);
   });
 
+  test('Event.hotRunnerInfo constructed', () {
+    Event generateEvent() => Event.hotRunnerInfo(
+          label: 'label',
+          targetPlatform: 'targetPlatform',
+          sdkName: 'sdkName',
+          emulator: false,
+          fullRestart: true,
+          reason: 'reason',
+          finalLibraryCount: 5,
+          syncedLibraryCount: 6,
+          syncedClassesCount: 7,
+          syncedProceduresCount: 8,
+          syncedBytes: 9,
+          invalidatedSourcesCount: 10,
+          transferTimeInMs: 11,
+          overallTimeInMs: 12,
+          compileTimeInMs: 13,
+          findInvalidatedTimeInMs: 14,
+          scannedSourcesCount: 15,
+          reassembleTimeInMs: 16,
+          reloadVMTimeInMs: 17,
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.hotRunnerInfo);
+    expect(constructedEvent.eventData['label'], 'label');
+    expect(constructedEvent.eventData['targetPlatform'], 'targetPlatform');
+    expect(constructedEvent.eventData['sdkName'], 'sdkName');
+    expect(constructedEvent.eventData['emulator'], false);
+    expect(constructedEvent.eventData['fullRestart'], true);
+    expect(constructedEvent.eventData['reason'], 'reason');
+    expect(constructedEvent.eventData['finalLibraryCount'], 5);
+    expect(constructedEvent.eventData['syncedLibraryCount'], 6);
+    expect(constructedEvent.eventData['syncedClassesCount'], 7);
+    expect(constructedEvent.eventData['syncedProceduresCount'], 8);
+    expect(constructedEvent.eventData['syncedBytes'], 9);
+    expect(constructedEvent.eventData['invalidatedSourcesCount'], 10);
+    expect(constructedEvent.eventData['transferTimeInMs'], 11);
+    expect(constructedEvent.eventData['overallTimeInMs'], 12);
+    expect(constructedEvent.eventData['compileTimeInMs'], 13);
+    expect(constructedEvent.eventData['findInvalidatedTimeInMs'], 14);
+    expect(constructedEvent.eventData['scannedSourcesCount'], 15);
+    expect(constructedEvent.eventData['reassembleTimeInMs'], 16);
+    expect(constructedEvent.eventData['reloadVMTimeInMs'], 17);
+    expect(constructedEvent.eventData.length, 19);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -340,7 +389,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 18;
+    final eventsAccountedForInTests = 19;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
