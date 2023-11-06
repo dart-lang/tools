@@ -44,6 +44,8 @@ void main() {
   const flutterVersion = 'flutterVersion';
   const dartVersion = 'dartVersion';
   const platform = DevicePlatform.macos;
+  const hostOsVersion = 'Version 14.1 (Build 23B74)';
+  const locale = 'en';
 
   final testEvent = Event.hotReloadTime(timeMs: 50);
 
@@ -115,6 +117,8 @@ void main() {
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       tool: initialTool.label,
+      hostOsVersion: hostOsVersion,
+      locale: locale,
     );
   });
 
@@ -594,6 +598,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'analytics_pkg_version',
       'tool',
       'local_time',
+      'host_os_version',
+      'locale',
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');

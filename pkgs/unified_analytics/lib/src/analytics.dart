@@ -409,6 +409,8 @@ class AnalyticsImpl implements Analytics {
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       tool: tool.label,
+      hostOsVersion: io.Platform.operatingSystemVersion,
+      locale: io.Platform.localeName,
     );
 
     // Initialize the log handler to persist events that are being sent

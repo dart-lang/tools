@@ -17,6 +17,8 @@ class UserProperty {
   final String? flutterVersion;
   final String dartVersion;
   final String tool;
+  final String hostOsVersion;
+  final String locale;
 
   /// This class is intended to capture all of the user's
   /// metadata when the class gets initialized as well as collecting
@@ -28,6 +30,8 @@ class UserProperty {
     required this.flutterVersion,
     required this.dartVersion,
     required this.tool,
+    required this.hostOsVersion,
+    required this.locale,
   });
 
   /// This method will take the data in this class and convert it into
@@ -60,5 +64,7 @@ class UserProperty {
         'analytics_pkg_version': kPackageVersion,
         'tool': tool,
         'local_time': formatDateTime(clock.now()),
+        'host_os_version': hostOsVersion,
+        'locale': locale,
       };
 }
