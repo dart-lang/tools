@@ -58,7 +58,7 @@ enum DashEvent {
   ),
   flutterPubResult(
     label: 'flutter_pub_result',
-    description: '',
+    description: 'Information related to a flutter pub result invocation',
     toolOwner: DashTool.flutterTool,
   ),
   hotReloadTime(
