@@ -266,13 +266,27 @@ final class Event {
           if (error != null) 'error': error,
         };
 
+  /// Event that is emitted from Flutter returning the results of a pub run.
+  ///
+  /// [context] - the context with which pub was run such as "create" and "get".
+  ///
+  /// [result] - string value that is either "success" or "failure".
+  Event.flutterPubResult({
+    required String context,
+    required String result,
+  })  : eventName = DashEvent.flutterPubResult,
+        eventData = {
+          'context': context,
+          'result': result,
+        };
+
+  // TODO: eliasyishak, add better dartdocs to explain each param
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
 
-  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
     required String label,

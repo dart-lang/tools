@@ -381,6 +381,21 @@ void main() {
     expect(constructedEvent.eventData.length, 19);
   });
 
+  test('Event.flutterPubResult constructed', () {
+    Event generateEvent() => Event.flutterPubResult(
+          context: 'context',
+          result: 'result',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.flutterPubResult);
+    expect(constructedEvent.eventData['context'], 'context');
+    expect(constructedEvent.eventData['result'], 'result');
+    expect(constructedEvent.eventData.length, 2);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -389,7 +404,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 19;
+    final eventsAccountedForInTests = 20;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

@@ -1,3 +1,7 @@
+## 5.3.0
+
+- Added the `Event.flutterPubResult` constructor
+
 ## 5.2.0
 
 - Added the `Event.hotRunnerInfo` constructor
