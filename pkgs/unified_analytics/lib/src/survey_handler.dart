@@ -258,6 +258,9 @@ class SurveyHandler {
   }
 
   /// Retrieves the survey metadata file from [kContextualSurveyUrl].
+  ///
+  /// Note: This will only return surveys that are within the start and end
+  /// periods of a given survey.
   Future<List<Survey>> fetchSurveyList() async {
     final List<dynamic> body;
     try {
