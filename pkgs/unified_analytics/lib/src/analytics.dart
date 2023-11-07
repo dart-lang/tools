@@ -34,11 +34,16 @@ abstract class Analytics {
   ///
   /// [flutterChannel] and [flutterVersion] are nullable in case the client
   /// using this package is unable to resolve those values.
+  ///
+  /// An optional parameter [clientIde] is also available for dart and flutter
+  /// tooling that are running from IDEs can be resolved. Such as "VSCode"
+  /// running the flutter-tool.
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
+    String? clientIde,
     bool enableAsserts = false,
   }) {
     // Create the instance of the file system so clients don't need
@@ -81,6 +86,7 @@ abstract class Analytics {
       gaClient: gaClient,
       surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
+      clientIde: clientIde,
     );
   }
 
@@ -98,6 +104,7 @@ abstract class Analytics {
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
+    String? clientIde,
     bool enableAsserts = true,
   }) {
     // Create the instance of the file system so clients don't need
@@ -147,6 +154,7 @@ abstract class Analytics {
       gaClient: gaClient,
       surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
+      clientIde: clientIde,
     );
   }
 
@@ -163,6 +171,7 @@ abstract class Analytics {
     required DevicePlatform platform,
     String? flutterChannel,
     String? flutterVersion,
+    String? clientIde,
     SurveyHandler? surveyHandler,
     GAClient? gaClient,
     int toolsMessageVersion = kToolsMessageVersion,
@@ -185,6 +194,7 @@ abstract class Analytics {
             ),
         gaClient: gaClient ?? const FakeGAClient(),
         enableAsserts: true,
+        clientIde: clientIde,
       );
 
   /// The shared identifier for Flutter and Dart related tooling using
@@ -339,8 +349,9 @@ class AnalyticsImpl implements Analytics {
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
-    String? flutterChannel,
-    String? flutterVersion,
+    required String? flutterChannel,
+    required String? flutterVersion,
+    required String? clientIde,
     required String dartVersion,
     required DevicePlatform platform,
     required this.toolsMessageVersion,
@@ -411,6 +422,7 @@ class AnalyticsImpl implements Analytics {
       tool: tool.label,
       hostOsVersion: io.Platform.operatingSystemVersion,
       locale: io.Platform.localeName,
+      clientIde: clientIde,
     );
 
     // Initialize the log handler to persist events that are being sent
@@ -682,6 +694,7 @@ class FakeAnalytics extends AnalyticsImpl {
     required super.surveyHandler,
     super.flutterChannel,
     super.flutterVersion,
+    super.clientIde,
   }) : super(
           gaClient: const FakeGAClient(),
           enableAsserts: true,

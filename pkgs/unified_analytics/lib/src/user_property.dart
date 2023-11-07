@@ -19,6 +19,7 @@ class UserProperty {
   final String tool;
   final String hostOsVersion;
   final String locale;
+  final String? clientIde;
 
   /// This class is intended to capture all of the user's
   /// metadata when the class gets initialized as well as collecting
@@ -32,6 +33,7 @@ class UserProperty {
     required this.tool,
     required this.hostOsVersion,
     required this.locale,
+    required this.clientIde,
   });
 
   /// This method will take the data in this class and convert it into
@@ -66,5 +68,6 @@ class UserProperty {
         'local_time': formatDateTime(clock.now()),
         'host_os_version': hostOsVersion,
         'locale': locale,
+        'clientIde': clientIde,
       };
 }

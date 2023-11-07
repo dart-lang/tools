@@ -13,6 +13,7 @@ final Analytics analytics = Analytics.development(
   tool: DashTool.flutterTool,
   flutterChannel: 'ey-test-channel',
   flutterVersion: 'Flutter 3.6.0-7.0.pre.47',
+  clientIde: 'VSCode',
   dartVersion: 'Dart 2.19.0',
 );
 

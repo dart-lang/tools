@@ -46,6 +46,7 @@ void main() {
   const platform = DevicePlatform.macos;
   const hostOsVersion = 'Version 14.1 (Build 23B74)';
   const locale = 'en';
+  const clientIde = 'VSCode';
 
   final testEvent = Event.hotReloadTime(timeMs: 50);
 
@@ -91,6 +92,7 @@ void main() {
       dartVersion: dartVersion,
       fs: fs,
       platform: platform,
+      clientIde: clientIde,
     );
     analytics.clientShowedMessage();
 
@@ -119,6 +121,7 @@ void main() {
       tool: initialTool.label,
       hostOsVersion: hostOsVersion,
       locale: locale,
+      clientIde: clientIde,
     );
   });
 
@@ -600,6 +603,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'local_time',
       'host_os_version',
       'locale',
+      'clientIde',
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');
