@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import 'enums.dart';
+import 'event.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
 
@@ -252,8 +253,8 @@ bool surveySnoozedOrDismissed(
 /// "Linux 6.2.0-1015-azure #15~22.04.1-Ubuntu SMP Fri Oct  6 13:20:44 UTC 2023"
 ///
 /// The above string is what is returned by [io.Platform.operatingSystemVersion]
-/// for certain machines running GitHub Actions, this function will truncate that
-/// value down to the maximum length at 36 characters and return the below
+/// for certain machines running GitHub Actions, this function will truncate
+/// that value down to the maximum length at 36 characters and return the below
 ///
 /// Return:
 /// "Linux 6.2.0-1015-azure #15~22."
