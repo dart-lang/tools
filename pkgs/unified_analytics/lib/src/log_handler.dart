@@ -413,7 +413,7 @@ class LogItem {
           as Map<String, Object?>)['value'] as String?;
 
       // If any of the above values are null, return null since that
-      // indicates the record is malformed; note that `flutter_version`, 
+      // indicates the record is malformed; note that `flutter_version`,
       // `flutter_channel`, and `client_ide` are nullable fields in the log file
       final values = <Object?>[
         // Values associated with the top level key = 'events'
