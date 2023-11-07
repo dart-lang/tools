@@ -420,7 +420,10 @@ class AnalyticsImpl implements Analytics {
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
       tool: tool.label,
-      hostOsVersion: io.Platform.operatingSystemVersion,
+      // We truncate this to a maximum of 36 characters since this can
+      // a very long string for some operating systems
+      hostOsVersion:
+          truncateStringToLength(io.Platform.operatingSystemVersion, 36),
       locale: io.Platform.localeName,
       clientIde: clientIde,
     );

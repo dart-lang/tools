@@ -9,6 +9,7 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -184,5 +185,61 @@ void main() {
 
     expect(secondLogFileStats, isNotNull);
     expect(secondLogFileStats!.recordCount, countOfEventsToSend);
+  });
+
+  test(
+      'truncateStringToLength returns same string when '
+      'max length greater than string length', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    final maxLength = 100;
+
+    expect(testString.length < maxLength, true);
+
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+
+    expect(runTruncateString, returnsNormally);
+
+    final newString = runTruncateString();
+    expect(newString, testString);
+  });
+
+  test(
+      'truncateStringToLength returns truncated string when '
+      'max length less than string length', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    final maxLength = 10;
+
+    expect(testString.length > maxLength, true);
+
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+
+    expect(runTruncateString, returnsNormally);
+
+    final newString = runTruncateString();
+    expect(newString.length, maxLength);
+    expect(newString, 'Version 14');
+  });
+
+  test('truncateStringToLength handle errors for invalid max length', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    var maxLength = 0;
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+
+    expect(runTruncateString, throwsArgumentError);
+
+    maxLength = -1;
+    expect(runTruncateString, throwsArgumentError);
+  });
+
+  test('truncateStringToLength same string when max length is the same', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    final maxLength = testString.length;
+
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+    expect(runTruncateString, returnsNormally);
+
+    final newString = runTruncateString();
+    expect(newString.length, maxLength);
+    expect(newString, testString);
   });
 }

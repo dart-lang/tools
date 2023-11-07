@@ -242,6 +242,35 @@ bool surveySnoozedOrDismissed(
   return survey.snoozeForMinutes > minutesElapsed;
 }
 
+/// Due to some limitations for GA4, this function can be used to
+/// truncate fields that we may not care about truncating, such as
+/// the host os details.
+///
+/// [maxLength] represents the maximum length allowed for the string.
+///
+/// Example:
+/// "Linux 6.2.0-1015-azure #15~22.04.1-Ubuntu SMP Fri Oct  6 13:20:44 UTC 2023"
+///
+/// The above string is what is returned by [io.Platform.operatingSystemVersion]
+/// for certain machines running GitHub Actions, this function will truncate that
+/// value down to the maximum length at 36 characters and return the below
+///
+/// Return:
+/// "Linux 6.2.0-1015-azure #15~22."
+///
+/// This should only be used on fields that are okay to be truncated, this
+/// should not be used for parameters on the [Event] constructors.
+String truncateStringToLength(String str, int maxLength) {
+  if (maxLength <= 0) {
+    throw ArgumentError(
+        'The length to truncate a string must be greater than 0');
+  }
+
+  if (maxLength > str.length) return str;
+
+  return str.substring(0, maxLength);
+}
+
 /// A UUID generator.
 ///
 /// This will generate unique IDs in the format:
