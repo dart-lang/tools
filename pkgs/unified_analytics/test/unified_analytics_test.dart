@@ -603,7 +603,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'local_time',
       'host_os_version',
       'locale',
-      'clientIde',
+      'client_ide',
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');

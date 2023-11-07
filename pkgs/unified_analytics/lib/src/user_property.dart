@@ -68,6 +68,6 @@ class UserProperty {
         'local_time': formatDateTime(clock.now()),
         'host_os_version': hostOsVersion,
         'locale': locale,
-        'clientIde': clientIde,
+        'client_ide': clientIde,
       };
 }
