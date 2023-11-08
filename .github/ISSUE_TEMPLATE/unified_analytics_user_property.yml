@@ -1,4 +1,4 @@
-name: "[package:unified_analytics] Request a new user property"
+name: "package:unified_analytics - request a new user property"
 description: "Create a request for collecting a new user property."
 labels: "package:unified_analytics"
 body:
