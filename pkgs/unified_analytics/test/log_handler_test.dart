@@ -9,6 +9,7 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -128,9 +129,9 @@ void main() {
     // like the other malformed records, instead the LogItem.fromRecord
     // constructor will return null if all the keys are not available
     final contents = '''
-{"client_id":"fe4a035b-bba8-4d4b-a651-ea213e9b8a2c","events":[{"name":"lint_usage_count","params":{"count":1,"name":"prefer_final_fields"}}],"user_properties":{"session_id":{"value":1695147041117},"flutter_channel":{"value":null},"host":{"value":"macOS"},"flutter_version":{"value":"3.14.0-14.0.pre.303"},"dart_version":{"value":"3.2.0-140.0.dev"},"analytics_pkg_version":{"value":"3.1.0"},"tool":{"value":"vscode-plugins"},"local_time":{"value":"2023-09-19 14:44:11.528153 -0400"}}}
-{"client_id":"fe4a035b-bba8-4d4b-a651-ea213e9b8a2c","WRONG_EVENT_KEY":[{"name":"lint_usage_count","params":{"count":1,"name":"prefer_for_elements_to_map_fromIterable"}}],"user_properties":{"session_id":{"value":1695147041117},"flutter_channel":{"value":null},"host":{"value":"macOS"},"flutter_version":{"value":"3.14.0-14.0.pre.303"},"dart_version":{"value":"3.2.0-140.0.dev"},"analytics_pkg_version":{"value":"3.1.0"},"tool":{"value":"vscode-plugins"},"local_time":{"value":"2023-09-19 14:44:11.565549 -0400"}}}
-{"client_id":"fe4a035b-bba8-4d4b-a651-ea213e9b8a2c","events":[{"name":"lint_usage_count","params":{"count":1,"name":"prefer_function_declarations_over_variables"}}],"user_properties":{"session_id":{"value":1695147041117},"flutter_channel":{"value":null},"host":{"value":"macOS"},"flutter_version":{"value":"3.14.0-14.0.pre.303"},"dart_version":{"value":"3.2.0-140.0.dev"},"analytics_pkg_version":{"value":"3.1.0"},"tool":{"value":"vscode-plugins"},"local_time":{"value":"2023-09-19 14:44:11.589338 -0400"}}}
+{"client_id":"ffcea97b-db5e-4c66-98c2-3942de4fac40","events":[{"name":"hot_reload_time","params":{"timeMs":136}}],"user_properties":{"session_id":{"value":1699385899950},"flutter_channel":{"value":"ey-test-channel"},"host":{"value":"macOS"},"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},"dart_version":{"value":"Dart 2.19.0"},"analytics_pkg_version":{"value":"5.2.0"},"tool":{"value":"flutter-tool"},"local_time":{"value":"2023-11-07 15:37:26.685761 -0500"},"host_os_version":{"value":"Version 14.1 (Build 23B74)"},"locale":{"value":"en"},"client_ide":{"value":"VSCode"}}}
+{"client_id":"ffcea97b-db5e-4c66-98c2-3942de4fac40","WRONG_EVENT_KEY":[{"name":"hot_reload_time","params":{"timeMs":136}}],"user_properties":{"session_id":{"value":1699385899950},"flutter_channel":{"value":"ey-test-channel"},"host":{"value":"macOS"},"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},"dart_version":{"value":"Dart 2.19.0"},"analytics_pkg_version":{"value":"5.2.0"},"tool":{"value":"flutter-tool"},"local_time":{"value":"2023-11-07 15:37:26.685761 -0500"},"host_os_version":{"value":"Version 14.1 (Build 23B74)"},"locale":{"value":"en"},"client_ide":{"value":"VSCode"}}}
+{"client_id":"ffcea97b-db5e-4c66-98c2-3942de4fac40","events":[{"name":"hot_reload_time","params":{"timeMs":136}}],"user_properties":{"session_id":{"value":1699385899950},"flutter_channel":{"value":"ey-test-channel"},"host":{"value":"macOS"},"flutter_version":{"value":"Flutter 3.6.0-7.0.pre.47"},"dart_version":{"value":"Dart 2.19.0"},"analytics_pkg_version":{"value":"5.2.0"},"tool":{"value":"flutter-tool"},"local_time":{"value":"2023-11-07 15:37:26.685761 -0500"},"host_os_version":{"value":"Version 14.1 (Build 23B74)"},"locale":{"value":"en"},"client_ide":{"value":"VSCode"}}}
 ''';
     logFile.writeAsStringSync(contents);
 
@@ -184,5 +185,61 @@ void main() {
 
     expect(secondLogFileStats, isNotNull);
     expect(secondLogFileStats!.recordCount, countOfEventsToSend);
+  });
+
+  test(
+      'truncateStringToLength returns same string when '
+      'max length greater than string length', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    final maxLength = 100;
+
+    expect(testString.length < maxLength, true);
+
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+
+    expect(runTruncateString, returnsNormally);
+
+    final newString = runTruncateString();
+    expect(newString, testString);
+  });
+
+  test(
+      'truncateStringToLength returns truncated string when '
+      'max length less than string length', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    final maxLength = 10;
+
+    expect(testString.length > maxLength, true);
+
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+
+    expect(runTruncateString, returnsNormally);
+
+    final newString = runTruncateString();
+    expect(newString.length, maxLength);
+    expect(newString, 'Version 14');
+  });
+
+  test('truncateStringToLength handle errors for invalid max length', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    var maxLength = 0;
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+
+    expect(runTruncateString, throwsArgumentError);
+
+    maxLength = -1;
+    expect(runTruncateString, throwsArgumentError);
+  });
+
+  test('truncateStringToLength same string when max length is the same', () {
+    final testString = 'Version 14.1 (Build 23B74)';
+    final maxLength = testString.length;
+
+    String runTruncateString() => truncateStringToLength(testString, maxLength);
+    expect(runTruncateString, returnsNormally);
+
+    final newString = runTruncateString();
+    expect(newString.length, maxLength);
+    expect(newString, testString);
   });
 }

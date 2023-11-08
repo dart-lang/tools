@@ -295,6 +295,9 @@ class LogItem {
   final String dartVersion;
   final String tool;
   final DateTime localTime;
+  final String hostOsVersion;
+  final String locale;
+  final String? clientIde;
 
   LogItem({
     required this.eventName,
@@ -305,6 +308,9 @@ class LogItem {
     required this.dartVersion,
     required this.tool,
     required this.localTime,
+    required this.hostOsVersion,
+    required this.locale,
+    required this.clientIde,
   });
 
   /// Serves a parser for each record in the log file.
@@ -319,18 +325,18 @@ class LogItem {
   /// Example of what a record looks like:
   /// ```
   /// {
-  ///     "client_id": "d40133a0-7ea6-4347-b668-ffae94bb8774",
+  ///     "client_id": "ffcea97b-db5e-4c66-98c2-3942de4fac40",
   ///     "events": [
   ///         {
   ///             "name": "hot_reload_time",
   ///             "params": {
-  ///                 "time_ns": 345
+  ///                 "timeMs": 135
   ///             }
   ///         }
   ///     ],
   ///     "user_properties": {
   ///         "session_id": {
-  ///             "value": 1675193534342
+  ///             "value": 1699385899950
   ///         },
   ///         "flutter_channel": {
   ///             "value": "ey-test-channel"
@@ -344,11 +350,23 @@ class LogItem {
   ///         "dart_version": {
   ///             "value": "Dart 2.19.0"
   ///         },
+  ///         "analytics_pkg_version": {
+  ///             "value": "5.2.0"
+  ///         },
   ///         "tool": {
-  ///             "value": "flutter-tools"
+  ///             "value": "flutter-tool"
   ///         },
   ///         "local_time": {
-  ///             "value": "2023-01-31 14:32:14.592898 -0500"
+  ///             "value": "2023-11-07 15:09:03.025559 -0500"
+  ///         },
+  ///         "host_os_version": {
+  ///             "value": "Version 14.1 (Build 23B74)"
+  ///         },
+  ///         "locale": {
+  ///             "value": "en"
+  ///         },
+  ///         "clientIde": {
+  ///             "value": "VSCode"
   ///         }
   ///     }
   /// }
@@ -387,10 +405,16 @@ class LogItem {
           (userProps['tool']! as Map<String, Object?>)['value'] as String?;
       final localTimeString = (userProps['local_time']!
           as Map<String, Object?>)['value'] as String?;
+      final hostOsVersion = (userProps['host_os_version']!
+          as Map<String, Object?>)['value'] as String?;
+      final locale =
+          (userProps['locale']! as Map<String, Object?>)['value'] as String?;
+      final clientIde = (userProps['client_ide']!
+          as Map<String, Object?>)['value'] as String?;
 
       // If any of the above values are null, return null since that
-      // indicates the record is malformed; note that `flutter_version`
-      // and `flutter_channel` are nullable fields in the log file
+      // indicates the record is malformed; note that `flutter_version`,
+      // `flutter_channel`, and `client_ide` are nullable fields in the log file
       final values = <Object?>[
         // Values associated with the top level key = 'events'
         eventName,
@@ -401,6 +425,8 @@ class LogItem {
         dartVersion,
         tool,
         localTimeString,
+        hostOsVersion,
+        locale,
       ];
       for (var value in values) {
         if (value == null) return null;
@@ -418,6 +444,9 @@ class LogItem {
         dartVersion: dartVersion!,
         tool: tool!,
         localTime: localTime,
+        hostOsVersion: hostOsVersion!,
+        locale: locale!,
+        clientIde: clientIde,
       );
       // ignore: avoid_catching_errors
     } on TypeError {
