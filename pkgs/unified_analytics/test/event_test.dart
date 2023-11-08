@@ -381,6 +381,21 @@ void main() {
     expect(constructedEvent.eventData.length, 19);
   });
 
+  test('Event.flutterCommandResult constructed', () {
+    Event generateEvent() => Event.flutterCommandResult(
+          commandPath: 'commandPath',
+          result: 'result',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.flutterCommandResult);
+    expect(constructedEvent.eventData['commandPath'], 'commandPath');
+    expect(constructedEvent.eventData['commandPath'], 'commandPath');
+    expect(constructedEvent.eventData.length, 2);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -389,7 +404,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 19;
+    final eventsAccountedForInTests = 20;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

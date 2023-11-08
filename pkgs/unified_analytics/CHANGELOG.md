@@ -3,6 +3,7 @@
 - User property "host_os_version" added to provide detail version information about the host
 - User property "locale" added to provide language related information
 - User property "client_ide" (optional) added to provide the IDE used by the Dash tool using this package, if applicable
+- Added the `Event.flutterCommandResult` constructor
 
 ## 5.2.0
 
