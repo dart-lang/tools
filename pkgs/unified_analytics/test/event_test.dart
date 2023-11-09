@@ -385,6 +385,7 @@ void main() {
     Event generateEvent() => Event.flutterCommandResult(
           commandPath: 'commandPath',
           result: 'result',
+          maxRss: 123,
         );
 
     final constructedEvent = generateEvent();
@@ -392,8 +393,9 @@ void main() {
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.flutterCommandResult);
     expect(constructedEvent.eventData['commandPath'], 'commandPath');
-    expect(constructedEvent.eventData['commandPath'], 'commandPath');
-    expect(constructedEvent.eventData.length, 2);
+    expect(constructedEvent.eventData['result'], 'result');
+    expect(constructedEvent.eventData['maxRss'], 123);
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Confirm all constructors were checked', () {

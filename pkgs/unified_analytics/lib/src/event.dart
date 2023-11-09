@@ -275,10 +275,12 @@ final class Event {
   Event.flutterCommandResult({
     required String commandPath,
     required String result,
+    int? maxRss,
   })  : eventName = DashEvent.flutterCommandResult,
         eventData = {
           'commandPath': commandPath,
           'result': result,
+          if (maxRss != null) 'maxRss': maxRss,
         };
 
   // TODO: eliasyishak, remove this or replace once we have a generic
