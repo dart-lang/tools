@@ -73,24 +73,16 @@ class Scanner {
       return Token(TokenType.endOfFile, _scanner.spanFrom(_scanner.state));
     }
 
-    switch (_scanner.peekChar()) {
-      case 0x28 /* ( */ :
-        return _scanOperator(TokenType.leftParen);
-      case 0x29 /* ) */ :
-        return _scanOperator(TokenType.rightParen);
-      case 0x3F /* ? */ :
-        return _scanOperator(TokenType.questionMark);
-      case 0x3A /* : */ :
-        return _scanOperator(TokenType.colon);
-      case 0x21 /* ! */ :
-        return _scanOperator(TokenType.not);
-      case 0x7C /* | */ :
-        return _scanOr();
-      case 0x26 /* & */ :
-        return _scanAnd();
-      default:
-        return _scanIdentifier();
-    }
+    return switch (_scanner.peekChar()) {
+      0x28 /* ( */ => _scanOperator(TokenType.leftParen),
+      0x29 /* ) */ => _scanOperator(TokenType.rightParen),
+      0x3F /* ? */ => _scanOperator(TokenType.questionMark),
+      0x3A /* : */ => _scanOperator(TokenType.colon),
+      0x21 /* ! */ => _scanOperator(TokenType.not),
+      0x7C /* | */ => _scanOr(),
+      0x26 /* & */ => _scanAnd(),
+      _ => _scanIdentifier()
+    };
   }
 
   /// Scans a single-character operator and returns a token of type [type].

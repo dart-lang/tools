@@ -19,7 +19,7 @@ class IntersectionSelector implements BooleanSelector {
   IntersectionSelector(this._selector1, this._selector2);
 
   @override
-  bool evaluate(semantics) =>
+  bool evaluate(bool Function(String variable) semantics) =>
       _selector1.evaluate(semantics) && _selector2.evaluate(semantics);
 
   @override
@@ -39,7 +39,7 @@ class IntersectionSelector implements BooleanSelector {
   String toString() => '($_selector1) && ($_selector2)';
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is IntersectionSelector &&
       _selector1 == other._selector1 &&
       _selector2 == other._selector2;

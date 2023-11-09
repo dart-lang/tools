@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:source_span/source_span.dart';
+
 import '../boolean_selector.dart';
 import 'ast.dart';
 import 'evaluator.dart';
@@ -12,9 +14,9 @@ import 'validator.dart';
 
 /// The concrete implementation of a [BooleanSelector] parsed from a string.
 ///
-/// This is separate from [BooleanSelector] so that [intersect] and [union] can
-/// check to see whether they're passed a [BooleanSelectorImpl] or a different
-/// class that implements [BooleanSelector].
+/// This is separate from [BooleanSelector] so that [intersection] and [union]
+/// can check to see whether they're passed a [BooleanSelectorImpl] or a
+/// different class that implements [BooleanSelector].
 class BooleanSelectorImpl implements BooleanSelector {
   /// The parsed AST.
   final Node _selector;
@@ -62,7 +64,7 @@ class BooleanSelectorImpl implements BooleanSelector {
   String toString() => _selector.toString();
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is BooleanSelectorImpl && _selector == other._selector;
 
   @override

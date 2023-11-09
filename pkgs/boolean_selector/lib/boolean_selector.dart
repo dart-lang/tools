@@ -41,11 +41,11 @@ abstract class BooleanSelector {
   bool evaluate(bool Function(String variable) semantics);
 
   /// Returns a new [BooleanSelector] that matches only inputs matched by both
-  /// [this] and [other].
+  /// `this` and [other].
   BooleanSelector intersection(BooleanSelector other);
 
   /// Returns a new [BooleanSelector] that matches all inputs matched by either
-  /// [this] or [other].
+  /// `this` or [other].
   BooleanSelector union(BooleanSelector other);
 
   /// Throws a [FormatException] if any variables are undefined.

@@ -7,7 +7,7 @@ import 'package:boolean_selector/src/token.dart';
 import 'package:test/test.dart';
 
 /// A matcher that asserts that a value is a [IdentifierToken].
-final _isIdentifierToken = TypeMatcher<IdentifierToken>();
+const _isIdentifierToken = TypeMatcher<IdentifierToken>();
 
 void main() {
   group('peek()', () {

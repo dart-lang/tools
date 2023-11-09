@@ -20,7 +20,7 @@ abstract class Node {
   /// All the variables in this node, in the order they appear.
   Iterable<String> get variables;
 
-  /// Calls the appropriate [Visitor] method on [this] and returns the result.
+  /// Calls the appropriate [Visitor] method on `this` and returns the result.
   T accept<T>(Visitor<T> visitor);
 }
 
@@ -44,7 +44,7 @@ class VariableNode implements Node {
   String toString() => name;
 
   @override
-  bool operator ==(other) => other is VariableNode && name == other.name;
+  bool operator ==(Object other) => other is VariableNode && name == other.name;
 
   @override
   int get hashCode => name.hashCode;
@@ -71,7 +71,7 @@ class NotNode implements Node {
       child is VariableNode || child is NotNode ? '!$child' : '!($child)';
 
   @override
-  bool operator ==(other) => other is NotNode && child == other.child;
+  bool operator ==(Object other) => other is NotNode && child == other.child;
 
   @override
   int get hashCode => ~child.hashCode;
@@ -109,7 +109,7 @@ class OrNode implements Node {
   }
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is OrNode && left == other.left && right == other.right;
 
   @override
@@ -148,7 +148,7 @@ class AndNode implements Node {
   }
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AndNode && left == other.left && right == other.right;
 
   @override
@@ -190,7 +190,7 @@ class ConditionalNode implements Node {
   }
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is ConditionalNode &&
       condition == other.condition &&
       whenTrue == other.whenTrue &&

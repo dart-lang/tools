@@ -1,3 +1,7 @@
+## 2.1.2-wip
+
+* Increase the SDK minimum to `3.1.0`.
+
 ## 2.1.1
 
 * Increase the SDK minimum to `2.17.0`.
