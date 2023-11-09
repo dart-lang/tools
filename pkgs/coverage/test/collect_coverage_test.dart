@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @Retry(3)
+library;
+
 import 'dart:async';
 import 'dart:convert' show json;
 import 'dart:io';
@@ -158,19 +160,11 @@ void main() {
       28: 'fooAsync',
       38: 'isolateTask'
     });
-    expect(isolateFile?.branchHits, {
-      11: 1,
-      12: 1,
-      15: 0,
-      19: 1,
-      23: 1,
-      28: 1,
-      if (platformVersionCheck(2, 18)) 29: 1,
-      32: 0,
-      38: 1,
-      42: 1
-    });
-  }, skip: !platformVersionCheck(2, 17));
+    expect(
+      isolateFile?.branchHits,
+      {11: 1, 12: 1, 15: 0, 19: 1, 23: 1, 28: 1, 29: 1, 32: 0, 38: 1, 42: 1},
+    );
+  });
 
   test('HitMap.parseJson, old VM without branch coverage', () async {
     final resultString = await _collectCoverage(true, true);
@@ -225,7 +219,7 @@ void main() {
       28: 'fooAsync',
       38: 'isolateTask'
     });
-  }, skip: platformVersionCheck(2, 17));
+  });
 
   test('parseCoverage', () async {
     final tempDir = await Directory.systemTemp.createTemp('coverage.test.');
@@ -286,49 +280,49 @@ void main() {
 
   test('mergeHitmaps', () {
     final resultMap = <String, Map<int, int>>{
-      "foo.dart": {10: 2, 20: 0},
-      "bar.dart": {10: 3, 20: 1, 30: 0},
+      'foo.dart': {10: 2, 20: 0},
+      'bar.dart': {10: 3, 20: 1, 30: 0},
     };
     final newMap = <String, Map<int, int>>{
-      "bar.dart": {10: 2, 20: 0, 40: 3},
-      "baz.dart": {10: 1, 20: 0, 30: 1},
+      'bar.dart': {10: 2, 20: 0, 40: 3},
+      'baz.dart': {10: 1, 20: 0, 30: 1},
     };
     // ignore: deprecated_member_use_from_same_package
     mergeHitmaps(newMap, resultMap);
     expect(resultMap, <String, Map<int, int>>{
-      "foo.dart": {10: 2, 20: 0},
-      "bar.dart": {10: 5, 20: 1, 30: 0, 40: 3},
-      "baz.dart": {10: 1, 20: 0, 30: 1},
+      'foo.dart': {10: 2, 20: 0},
+      'bar.dart': {10: 5, 20: 1, 30: 0, 40: 3},
+      'baz.dart': {10: 1, 20: 0, 30: 1},
     });
   });
 
   test('FileHitMaps.merge', () {
     final resultMap = <String, HitMap>{
-      "foo.dart":
-          HitMap({10: 2, 20: 0}, {15: 0, 25: 1}, {15: "bobble", 25: "cobble"}),
-      "bar.dart": HitMap(
-          {10: 3, 20: 1, 30: 0}, {15: 5, 25: 0}, {15: "gobble", 25: "wobble"}),
+      'foo.dart':
+          HitMap({10: 2, 20: 0}, {15: 0, 25: 1}, {15: 'bobble', 25: 'cobble'}),
+      'bar.dart': HitMap(
+          {10: 3, 20: 1, 30: 0}, {15: 5, 25: 0}, {15: 'gobble', 25: 'wobble'}),
     };
     final newMap = <String, HitMap>{
-      "bar.dart": HitMap(
-          {10: 2, 20: 0, 40: 3}, {15: 1, 35: 4}, {15: "gobble", 35: "dobble"}),
-      "baz.dart": HitMap(
-          {10: 1, 20: 0, 30: 1}, {15: 0, 25: 2}, {15: "lobble", 25: "zobble"}),
+      'bar.dart': HitMap(
+          {10: 2, 20: 0, 40: 3}, {15: 1, 35: 4}, {15: 'gobble', 35: 'dobble'}),
+      'baz.dart': HitMap(
+          {10: 1, 20: 0, 30: 1}, {15: 0, 25: 2}, {15: 'lobble', 25: 'zobble'}),
     };
     resultMap.merge(newMap);
-    expect(resultMap["foo.dart"]?.lineHits, <int, int>{10: 2, 20: 0});
-    expect(resultMap["foo.dart"]?.funcHits, <int, int>{15: 0, 25: 1});
-    expect(resultMap["foo.dart"]?.funcNames,
-        <int, String>{15: "bobble", 25: "cobble"});
-    expect(resultMap["bar.dart"]?.lineHits,
+    expect(resultMap['foo.dart']?.lineHits, <int, int>{10: 2, 20: 0});
+    expect(resultMap['foo.dart']?.funcHits, <int, int>{15: 0, 25: 1});
+    expect(resultMap['foo.dart']?.funcNames,
+        <int, String>{15: 'bobble', 25: 'cobble'});
+    expect(resultMap['bar.dart']?.lineHits,
         <int, int>{10: 5, 20: 1, 30: 0, 40: 3});
-    expect(resultMap["bar.dart"]?.funcHits, <int, int>{15: 6, 25: 0, 35: 4});
-    expect(resultMap["bar.dart"]?.funcNames,
-        <int, String>{15: "gobble", 25: "wobble", 35: "dobble"});
-    expect(resultMap["baz.dart"]?.lineHits, <int, int>{10: 1, 20: 0, 30: 1});
-    expect(resultMap["baz.dart"]?.funcHits, <int, int>{15: 0, 25: 2});
-    expect(resultMap["baz.dart"]?.funcNames,
-        <int, String>{15: "lobble", 25: "zobble"});
+    expect(resultMap['bar.dart']?.funcHits, <int, int>{15: 6, 25: 0, 35: 4});
+    expect(resultMap['bar.dart']?.funcNames,
+        <int, String>{15: 'gobble', 25: 'wobble', 35: 'dobble'});
+    expect(resultMap['baz.dart']?.lineHits, <int, int>{10: 1, 20: 0, 30: 1});
+    expect(resultMap['baz.dart']?.funcHits, <int, int>{15: 0, 25: 2});
+    expect(resultMap['baz.dart']?.funcNames,
+        <int, String>{15: 'lobble', 25: 'zobble'});
   });
 }
 
@@ -363,7 +357,8 @@ Future<String> _collectCoverage(
 
   await toolResult.shouldExit(0).timeout(
         timeout,
-        onTimeout: () => throw 'We timed out waiting for the tool to finish.',
+        onTimeout: () =>
+            throw StateError('We timed out waiting for the tool to finish.'),
       );
 
   await sampleProcess.shouldExit();

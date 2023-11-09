@@ -18,8 +18,7 @@ Future<TestProcess> runTestApp(int openPort) => TestProcess.start(
       [
         '--enable-vm-service=$openPort',
         '--pause_isolates_on_exit',
-        // Dart VM versions before 2.17 don't support branch coverage.
-        if (platformVersionCheck(2, 17)) '--branch-coverage',
+        '--branch-coverage',
         testAppPath
       ],
     );
@@ -32,6 +31,7 @@ List<Map<String, dynamic>> coverageDataFromJson(Map<String, dynamic> json) {
 }
 
 final _versionPattern = RegExp('([0-9]+)\\.([0-9]+)\\.([0-9]+)');
+
 bool platformVersionCheck(int minMajor, int minMinor) {
   final match = _versionPattern.matchAsPrefix(Platform.version);
   if (match == null) return false;

@@ -4,6 +4,7 @@
 
 // TODO(#388): Fix and re-enable this test.
 @TestOn('!windows')
+library;
 
 import 'dart:convert';
 import 'dart:io';
@@ -42,9 +43,11 @@ void main() {
       sourceUriProvider,
     );
 
-    final sourceReport = report['coverage'].firstWhere(
-        (Map<String, dynamic> report) =>
-            report['source'].toString().contains('main_test.dart'));
+    final sourceReport =
+        (report['coverage'] as List<Map<String, dynamic>>).firstWhere(
+      (Map<String, dynamic> report) =>
+          report['source'].toString().contains('main_test.dart'),
+    );
 
     final expectedHits = {
       7: 1,

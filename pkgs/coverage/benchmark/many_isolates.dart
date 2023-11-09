@@ -10,8 +10,8 @@ Future<void> main(List<String> args, dynamic message) async {
     // If there is no message, it means this instance was created by
     // run_benchmarks.dart. In that case, this is the parent instance that
     // spawns all the others.
-    int sum = 0;
-    for (int i = 0; i < 10; ++i) {
+    var sum = 0;
+    for (var i = 0; i < 10; ++i) {
       final port = ReceivePort();
       final isolate =
           Isolate.spawnUri(Uri.file('many_isolates.dart'), [], port.sendPort);

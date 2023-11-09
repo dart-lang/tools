@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: only_throw_errors
+
 import 'dart:async';
 
 import 'package:coverage/src/util.dart';
@@ -80,6 +82,7 @@ void main() {
 
       try {
         await retry(failCountTimes, _delay, timeout: unsafeTimeoutDuration);
+        // ignore: avoid_catching_errors
       } on StateError catch (e) {
         expect(e.message, 'Failed to complete within 25ms');
         caught = true;
@@ -193,11 +196,13 @@ void main() {
 
       runTest(
         0,
-        'coverage:ignore-start found at content-0.dart:3 before previous coverage:ignore-start ended',
+        'coverage:ignore-start found at content-0.dart:'
+        '3 before previous coverage:ignore-start ended',
       );
       runTest(
         1,
-        'coverage:ignore-start found at content-1.dart:3 before previous coverage:ignore-start ended',
+        'coverage:ignore-start found at content-1.dart:'
+        '3 before previous coverage:ignore-start ended',
       );
       runTest(
         2,
@@ -221,7 +226,8 @@ void main() {
       );
       runTest(
         7,
-        'coverage:ignore-start found at content-7.dart:1 has no matching coverage:ignore-end',
+        'coverage:ignore-start found at content-7.dart:'
+        '1 has no matching coverage:ignore-end',
       );
     });
 

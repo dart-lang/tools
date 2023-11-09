@@ -80,7 +80,8 @@ final singleLineIgnore = RegExp(r'//\s*coverage:ignore-line[\w\d\s]*$');
 final ignoreFile = RegExp(r'//\s*coverage:ignore-file[\w\d\s]*$');
 
 /// Return list containing inclusive range of lines to be ignored by coverage.
-/// If there is a error in balancing the statements it will throw a FormatException,
+/// If there is a error in balancing the statements it will throw a
+/// [FormatException],
 /// unless `coverage:ignore-file` is found.
 /// Return [0, lines.length] if the whole file is ignored.
 ///
@@ -162,7 +163,7 @@ List<List<int>> getIgnoredLines(String filePath, List<String>? lines) {
 
 extension StandardOutExtension on Stream<List<int>> {
   Stream<String> lines() =>
-      transform(SystemEncoding().decoder).transform(const LineSplitter());
+      transform(const SystemEncoding().decoder).transform(const LineSplitter());
 }
 
 Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {

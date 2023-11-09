@@ -54,3 +54,5 @@ void main() {
   print(libraryFunction());
   print(otherLibraryFunction());
 }
+
+// ignore_for_file: unreachable_from_main

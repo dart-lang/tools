@@ -32,7 +32,6 @@ void main() {
     final isolateFile = hitMap[_sampleAppFileUri]!;
     expect(isolateFile.funcHits, {
       7: 1,
-      if (!platformVersionCheck(2, 19)) 12: 0,
       16: 1,
       21: 1,
       25: 1,
@@ -43,7 +42,6 @@ void main() {
     });
     expect(isolateFile.funcNames, {
       7: 'normalFunction',
-      if (!platformVersionCheck(2, 19)) 12: 'BaseClass.abstractMethod',
       16: 'SomeClass.SomeClass',
       21: 'SomeClass.normalMethod',
       25: 'SomeClass.staticMethod',
@@ -99,7 +97,8 @@ Future<String> _collectCoverage() async {
 
   await toolResult.shouldExit(0).timeout(
         timeout,
-        onTimeout: () => throw 'We timed out waiting for the tool to finish.',
+        onTimeout: () =>
+            throw StateError('We timed out waiting for the tool to finish.'),
       );
 
   await sampleProcess.shouldExit();

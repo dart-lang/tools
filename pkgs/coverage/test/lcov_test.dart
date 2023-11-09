@@ -11,8 +11,6 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
-import 'test_util.dart';
-
 final _sampleAppPath = p.join('test', 'test_files', 'test_app.dart');
 final _isolateLibPath = p.join('test', 'test_files', 'test_app_isolate.dart');
 
@@ -47,7 +45,7 @@ void main() {
         reason: 'be careful if you modify the test file');
     expect(sampleAppBranchHits, containsPair(41, 1),
         reason: 'be careful if you modify the test file');
-  }, skip: !platformVersionCheck(2, 17));
+  });
 
   test('validate hitMap, old VM without branch coverage', () async {
     final hitmap = await _getHitMap();
@@ -73,7 +71,7 @@ void main() {
         reason: 'be careful if you modify the test file');
     expect(sampleAppFuncNames, containsPair(45, 'usedMethod'),
         reason: 'be careful if you modify the test file');
-  }, skip: platformVersionCheck(2, 17));
+  });
 
   group('LcovFormatter', () {
     test('format()', () async {
@@ -244,7 +242,7 @@ void main() {
       expect(res, contains('      1|  if (x == answer) {'));
       expect(res, contains('      0|  while (i < lines.length) {'));
       expect(res, contains('       |  bar.baz();'));
-    }, skip: !platformVersionCheck(2, 17));
+    });
   });
 }
 
@@ -258,8 +256,7 @@ Future<Map<String, HitMap>> _getHitMap() async {
   final sampleAppArgs = [
     '--pause-isolates-on-exit',
     '--enable-vm-service=$port',
-    // Dart VM versions before 2.17 don't support branch coverage.
-    if (platformVersionCheck(2, 17)) '--branch-coverage',
+    '--branch-coverage',
     _sampleAppPath
   ];
   final sampleProcess =

@@ -5,8 +5,8 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
-import 'package:coverage/src/resolver.dart';
-import 'package:coverage/src/util.dart';
+import 'resolver.dart';
+import 'util.dart';
 
 /// Contains line and function hit information for a single script.
 class HitMap {
@@ -66,7 +66,7 @@ class HitMap {
 
       if (checkIgnoredLines) {
         if (ignoredLinesInFilesCache.containsKey(source)) {
-          final List<List<int>>? cacheHit = ignoredLinesInFilesCache[source];
+          final cacheHit = ignoredLinesInFilesCache[source];
           if (cacheHit == null) {
             // Null-entry indicates that the whole file was ignored.
             continue;
@@ -157,7 +157,7 @@ class HitMap {
         }
       }
 
-      final sourceHitMap = globalHitMap.putIfAbsent(source, () => HitMap());
+      final sourceHitMap = globalHitMap.putIfAbsent(source, HitMap.new);
       fillHitMap(e['hits'] as List, sourceHitMap.lineHits);
       if (e.containsKey('funcHits')) {
         sourceHitMap.funcHits ??= <int, int>{};
@@ -188,7 +188,7 @@ class HitMap {
     @Deprecated('Use packagePath') String? packagesPath,
     String? packagePath,
   }) async {
-    final Resolver resolver = await Resolver.create(
+    final resolver = await Resolver.create(
         packagesPath: packagesPath, packagePath: packagePath);
     return parseJsonSync(jsonResult,
         checkIgnoredLines: checkIgnoredLines,
@@ -375,7 +375,7 @@ List _sortHits(List hits) {
     final lineOrLineRange = hits[i];
     final firstLineInRange = lineOrLineRange is int
         ? lineOrLineRange
-        : int.parse(lineOrLineRange.split('-')[0] as String);
+        : int.parse((lineOrLineRange as String).split('-')[0]);
     structuredHits.add(_HitInfo(firstLineInRange, hits[i], hits[i + 1] as int));
   }
   structuredHits.sort((a, b) => a.firstLine.compareTo(b.firstLine));

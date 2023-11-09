@@ -35,13 +35,13 @@ Future<String> fooAsync(int x) async {
 /// The number of covered lines is tested and expected to be 4.
 ///
 /// If you modify this method, you may have to update the tests!
-void isolateTask(dynamic threeThings) {
+void isolateTask(List threeThings) {
   sleep(const Duration(milliseconds: 500));
 
   fooSync(answer);
   fooAsync(answer).then((_) {
     final port = threeThings.first as SendPort;
-    final sum = (threeThings[1] + threeThings[2]) as int;
+    final sum = (threeThings[1] as int) + (threeThings[2] as int);
     port.send(sum);
   });
 
