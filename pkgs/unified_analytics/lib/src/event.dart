@@ -266,6 +266,23 @@ final class Event {
           if (error != null) 'error': error,
         };
 
+  /// Provides information about which flutter command was run
+  /// and whether it was successful.
+  ///
+  /// [commandPath] - information about the flutter command, such as "build/apk".
+  ///
+  /// [result] - if the command failed or succeeded.
+  Event.flutterCommandResult({
+    required String commandPath,
+    required String result,
+    int? maxRss,
+  })  : eventName = DashEvent.flutterCommandResult,
+        eventData = {
+          'commandPath': commandPath,
+          'result': result,
+          if (maxRss != null) 'maxRss': maxRss,
+        };
+
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})

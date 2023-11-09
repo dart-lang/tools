@@ -56,6 +56,11 @@ enum DashEvent {
     description: 'Information for a flutter build invocation',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterCommandResult(
+    label: 'flutter_command_result',
+    description: 'Provides information about flutter commands that ran',
+    toolOwner: DashTool.flutterTool,
+  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
