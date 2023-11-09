@@ -205,7 +205,8 @@ class Loader {
   /// Returns `null` if the resource could not be loaded.
   List<String>? loadSync(String path) {
     try {
-      // Ensure `readAsLinesSync` runs within the try block so errors are caught.
+      // Ensure `readAsLinesSync` runs within the try block so errors are
+      // caught.
       return File(path).readAsLinesSync();
     } catch (_) {
       failed.add(path);

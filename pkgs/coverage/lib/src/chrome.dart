@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:coverage/src/hitmap.dart';
 import 'package:source_maps/parser.dart';
+
+import 'hitmap.dart';
 
 /// Returns a Dart based hit-map containing coverage report for the provided
 /// Chrome [preciseCoverage].
@@ -37,6 +38,7 @@ Future<Map<String, dynamic>> parseChromeCoverage(
       mapping = parse(mapResponse) as SingleMapping;
     } on FormatException {
       continue;
+      // ignore: avoid_catching_errors
     } on ArgumentError {
       continue;
     }

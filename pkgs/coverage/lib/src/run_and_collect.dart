@@ -35,7 +35,7 @@ Future<Map<String, dynamic>> runAndCollect(String scriptPath,
       timeout: timeout,
     );
   } finally {
-    await process.stderr.drain();
+    await process.stderr.drain<void>();
   }
   final exitStatus = await process.exitCode;
   if (exitStatus != 0) {

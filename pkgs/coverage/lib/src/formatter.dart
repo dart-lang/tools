@@ -4,8 +4,8 @@
 
 import 'package:path/path.dart' as p;
 
-import 'resolver.dart';
 import 'hitmap.dart';
+import 'resolver.dart';
 
 @Deprecated('Migrate to FileHitMapsFormatter')
 abstract class Formatter {
@@ -144,14 +144,17 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     for (final entry in entries) {
       final v = entry.value;
       if (reportFuncs && v.funcHits == null) {
-        throw 'Function coverage formatting was requested, but the hit map is '
-            'missing function coverage information. Did you run '
-            'collect_coverage with the --function-coverage flag?';
+        throw StateError(
+          'Function coverage formatting was requested, but the hit map is '
+          'missing function coverage information. Did you run '
+          'collect_coverage with the --function-coverage flag?',
+        );
       }
       if (reportBranches && v.branchHits == null) {
-        throw 'Branch coverage formatting was requested, but the hit map is '
+        throw StateError(
+            'Branch coverage formatting was requested, but the hit map is '
             'missing branch coverage information. Did you run '
-            'collect_coverage with the --branch-coverage flag?';
+            'collect_coverage with the --branch-coverage flag?');
       }
       final hits = reportFuncs
           ? v.funcHits!

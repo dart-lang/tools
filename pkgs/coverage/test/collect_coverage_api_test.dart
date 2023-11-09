@@ -94,7 +94,7 @@ void main() {
         everyElement(containsPair('branchHits', isNotEmpty)));
     expect(sources[_isolateLibFileUri],
         everyElement(containsPair('branchHits', isNotEmpty)));
-  }, skip: !platformVersionCheck(2, 17));
+  });
 
   test('collect_coverage_api with coverableLineCache', () async {
     final coverableLineCache = <String, Set<int>>{};

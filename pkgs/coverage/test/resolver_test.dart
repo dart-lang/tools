@@ -10,7 +10,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 void main() {
   group('Default Resolver', () {
     setUp(() async {
-      final String sandboxUriPath = p.toUri(d.sandbox).toString();
+      final sandboxUriPath = p.toUri(d.sandbox).toString();
       await d.dir('bar', [
         d.dir('lib', [
           d.file('bar.dart', 'final fizz = "bar";'),

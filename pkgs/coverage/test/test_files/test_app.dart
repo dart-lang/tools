@@ -49,3 +49,6 @@ int usedMethod(int a, int b) {
 int unusedMethod(int a, int b) {
   return a - b;
 }
+
+// ignore_for_file: unreachable_from_main, only_throw_errors
+// ignore_for_file: deprecated_member_use

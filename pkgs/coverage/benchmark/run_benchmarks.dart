@@ -14,12 +14,12 @@ import '../bin/format_coverage.dart' as format_coverage;
 class CoverageBenchmark extends AsyncBenchmarkBase {
   CoverageBenchmark(
     ScoreEmitter emitter,
-    String name,
+    super.name,
     this.script, {
     this.gatherCoverage = false,
     this.functionCoverage = false,
     this.branchCoverage = false,
-  }) : super(name, emitter: emitter);
+  }) : super(emitter: emitter);
 
   final String script;
   final bool gatherCoverage;
@@ -102,9 +102,9 @@ class JsonEmitter implements ScoreEmitter {
 }
 
 Future<void> runBenchmark(CoverageBenchmark benchmark) async {
-  for (int i = 0; i < 3; ++i) {
+  for (var i = 0; i < 3; ++i) {
     try {
-      await benchmark.report().timeout(Duration(minutes: 2));
+      await benchmark.report().timeout(const Duration(minutes: 2));
       return;
     } on TimeoutException {
       print('Timed out');

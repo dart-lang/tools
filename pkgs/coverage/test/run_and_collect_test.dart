@@ -31,8 +31,8 @@ void main() {
 
     final hitMap = await HitMap.parseJson(coverage, checkIgnoredLines: true);
     checkHitmap(hitMap);
-    final Resolver resolver = await Resolver.create();
-    final Map<String, List<List<int>>?> ignoredLinesInFilesCache = {};
+    final resolver = await Resolver.create();
+    final ignoredLinesInFilesCache = <String, List<List<int>>?>{};
     final hitMap2 = HitMap.parseJsonSync(coverage,
         checkIgnoredLines: true,
         ignoredLinesInFilesCache: ignoredLinesInFilesCache,
@@ -74,12 +74,12 @@ class ThrowingResolver implements Resolver {
 void checkIgnoredLinesInFilesCache(
     Map<String, List<List<int>>?> ignoredLinesInFilesCache) {
   expect(ignoredLinesInFilesCache.length, 3);
-  final List<String> keys = ignoredLinesInFilesCache.keys.toList();
-  final String testAppKey =
+  final keys = ignoredLinesInFilesCache.keys.toList();
+  final testAppKey =
       keys.where((element) => element.endsWith('test_app.dart')).single;
-  final String testAppIsolateKey =
+  final testAppIsolateKey =
       keys.where((element) => element.endsWith('test_app_isolate.dart')).single;
-  final String packageUtilKey = keys
+  final packageUtilKey = keys
       .where((element) => element.endsWith('package:coverage/src/util.dart'))
       .single;
   expect(ignoredLinesInFilesCache[packageUtilKey], isEmpty);

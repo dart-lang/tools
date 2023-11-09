@@ -80,9 +80,8 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
           controller.close();
           service.dispose();
         });
-        service = VmService(
-            controller.stream, (String message) => socket.add(message),
-            log: StdoutLog(), disposeHandler: () => socket.close());
+        service = VmService(controller.stream, socket.add,
+            log: StdoutLog(), disposeHandler: socket.close);
         await service.getVM().timeout(_retryInterval);
       } on TimeoutException {
         // The signature changed in vm_service version 6.0.0.
@@ -269,11 +268,11 @@ Future _waitIsolatesPaused(VmService service, {Duration? timeout}) async {
 
   Future allPaused() async {
     final vm = await service.getVM();
-    if (vm.isolates!.isEmpty) throw 'No isolates.';
+    if (vm.isolates!.isEmpty) throw StateError('No isolates.');
     for (var isolateRef in vm.isolates!) {
       final isolate = await service.getIsolate(isolateRef.id!);
       if (!pauseEvents.contains(isolate.pauseEvent!.kind)) {
-        throw 'Unpaused isolates remaining.';
+        throw StateError('Unpaused isolates remaining.');
       }
     }
   }
@@ -330,8 +329,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     return scripts[scriptRef];
   }
 
-  HitMap getHitMap(Uri scriptUri) =>
-      hitMaps.putIfAbsent(scriptUri, () => HitMap());
+  HitMap getHitMap(Uri scriptUri) => hitMaps.putIfAbsent(scriptUri, HitMap.new);
 
   Future<void> processFunction(FuncRef funcRef) async {
     final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
