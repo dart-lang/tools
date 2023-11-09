@@ -268,9 +268,9 @@ final class Event {
 
   /// Provides information about which flutter command was run
   /// and whether it was successful.
-  /// 
+  ///
   /// [commandPath] - information about the flutter command, such as "build/apk".
-  /// 
+  ///
   /// [result] - if the command failed or succeeded.
   Event.flutterCommandResult({
     required String commandPath,
