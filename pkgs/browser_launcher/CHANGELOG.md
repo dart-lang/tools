@@ -1,6 +1,6 @@
-## 1.1.2-dev
+## 1.1.2-wip
 
-- Require Dart 2.17
+- Require Dart 3.0
 - Log errors from chrome
 - Allow tests to detect headless-only environment (for CI).
 

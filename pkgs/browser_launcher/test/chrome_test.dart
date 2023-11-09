@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @OnPlatform({'windows': Skip('appveyor is not setup to install Chrome')})
+library;
+
 import 'dart:async';
 import 'dart:io';
 
