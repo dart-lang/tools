@@ -112,7 +112,7 @@ final class Event {
 
   /// An event that reports when the code size measurement is run
   /// via `--analyze-size`.
-  /// 
+  ///
   /// [kind] - string identifier for which platform was run "ios", "apk",
   ///   "aab", etc.
   Event.codeSizeAnalysis({required String kind})
