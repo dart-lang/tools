@@ -399,13 +399,13 @@ void main() {
   });
 
   test('Event.codeSizeAnalysis constructed', () {
-    Event generateEvent() => Event.codeSizeAnalysis(kind: 'kind');
+    Event generateEvent() => Event.codeSizeAnalysis(platform: 'platform');
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.codeSizeAnalysis);
-    expect(constructedEvent.eventData['kind'], 'kind');
+    expect(constructedEvent.eventData['platform'], 'platform');
     expect(constructedEvent.eventData.length, 1);
   });
 
