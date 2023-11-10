@@ -398,6 +398,17 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
+  test('Event.codeSizeAnalysis constructed', () {
+    Event generateEvent() => Event.codeSizeAnalysis(kind: 'kind');
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.codeSizeAnalysis);
+    expect(constructedEvent.eventData['kind'], 'kind');
+    expect(constructedEvent.eventData.length, 1);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -406,7 +417,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 20;
+    final eventsAccountedForInTests = 21;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

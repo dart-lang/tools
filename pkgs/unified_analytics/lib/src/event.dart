@@ -110,6 +110,15 @@ final class Event {
           if (removed != null) 'removed': removed,
         };
 
+  /// An event that reports when the code size measurement is run
+  /// via `--analyze-size`.
+  /// 
+  /// [kind] - string identifier for which platform was run "ios", "apk",
+  ///   "aab", etc.
+  Event.codeSizeAnalysis({required String kind})
+      : eventName = DashEvent.codeSizeAnalysis,
+        eventData = {'kind': kind};
+
   /// Event that is emitted periodically to report the number of times a given
   /// command has been executed.
   ///
