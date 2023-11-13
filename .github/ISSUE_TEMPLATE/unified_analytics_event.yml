@@ -1,4 +1,4 @@
-name: "[package:unified_analytics] Request a new event"
+name: "package:unified_analytics - request a new event"
 description: "Create a request for collecting a new event or new event data."
 labels: "package:unified_analytics"
 body:
