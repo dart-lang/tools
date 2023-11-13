@@ -76,6 +76,11 @@ enum DashEvent {
     description: 'Information related to the Flutter hot runner',
     toolOwner: DashTool.flutterTool,
   ),
+  nullSafetyAnalysisResult(
+    label: 'null_safety_analysis_results',
+    description: 'Information related to null safety analysis within flutter',
+    toolOwner: DashTool.flutterTool,
+  ),
 
   // Events for language_server below
 

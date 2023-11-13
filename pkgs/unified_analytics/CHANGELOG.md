@@ -1,3 +1,7 @@
+## 5.5.0
+
+- Added the `Event.nullSafetyAnalysisResult` constructor
+
 ## 5.4.0
 
 - Added the `Event.codeSizeAnalysis` constructor

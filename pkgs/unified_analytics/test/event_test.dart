@@ -409,6 +409,24 @@ void main() {
     expect(constructedEvent.eventData.length, 1);
   });
 
+  test('Event.nullSafetyAnalysisResult constructed', () {
+    Event generateEvent() => Event.nullSafetyAnalysisResult(
+        runtimeMode: 'runtimeMode',
+        nullSafeMigratedLibraries: 4,
+        nullSafeTotalLibraries: 5,
+        languageVersion: 'languageVersion');
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.nullSafetyAnalysisResult);
+    expect(constructedEvent.eventData['runtimeMode'], 'runtimeMode');
+    expect(constructedEvent.eventData['nullSafeMigratedLibraries'], 4);
+    expect(constructedEvent.eventData['nullSafeTotalLibraries'], 5);
+    expect(constructedEvent.eventData['languageVersion'], 'languageVersion');
+    expect(constructedEvent.eventData.length, 4);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -417,7 +435,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 21;
+    final eventsAccountedForInTests = 22;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

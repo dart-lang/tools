@@ -43,6 +43,30 @@ final class Event {
           'method': method,
         };
 
+  /// Contains information about null safety migration within a flutter project.
+  ///
+  /// [runtimeMode] - The null safety runtime mode the app should be built in.
+  ///
+  /// [nullSafeMigratedLibraries] - count of libraries with language versions
+  ///   that are greater than 2.12 to indicate migration to null safety.
+  ///
+  /// [nullSafeTotalLibraries] - the total number of packages in the package
+  ///   config.
+  ///
+  /// [languageVersion] - the dart language version for the package.
+  Event.nullSafetyAnalysisResult({
+    required String runtimeMode,
+    required int nullSafeMigratedLibraries,
+    required int nullSafeTotalLibraries,
+    String? languageVersion,
+  })  : eventName = DashEvent.nullSafetyAnalysisResult,
+        eventData = {
+          'runtimeMode': runtimeMode,
+          'nullSafeMigratedLibraries': nullSafeMigratedLibraries,
+          'nullSafeTotalLibraries': nullSafeTotalLibraries,
+          if (languageVersion != null) 'languageVersion': languageVersion,
+        };
+
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of request from the client.
   ///
