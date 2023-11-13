@@ -46,6 +46,11 @@ enum DashEvent {
 
   // Events for the Flutter CLI
 
+  codeSizeAnalysis(
+    label: 'code_size_analysis',
+    description: 'Indicates when the "--analyize-size" command is run',
+    toolOwner: DashTool.flutterTool,
+  ),
   doctorValidatorResult(
     label: 'doctor_validator_result',
     description: 'Results from a specific doctor validator',

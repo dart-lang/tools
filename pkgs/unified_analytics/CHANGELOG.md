@@ -1,3 +1,7 @@
+## 5.4.0
+
+- Added the `Event.codeSizeAnalysis` constructor
+
 ## 5.3.0
 
 - User property "host_os_version" added to provide detail version information about the host
