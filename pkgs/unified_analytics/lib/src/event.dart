@@ -54,12 +54,12 @@ final class Event {
   ///   config.
   ///
   /// [languageVersion] - the dart language version for the package.
-  Event.nullSafetyAnalysisResult({
+  Event.nullSafetyMigrationResult({
     required String runtimeMode,
     required int nullSafeMigratedLibraries,
     required int nullSafeTotalLibraries,
     String? languageVersion,
-  })  : eventName = DashEvent.nullSafetyAnalysisResult,
+  })  : eventName = DashEvent.nullSafetyMigrationResult,
         eventData = {
           'runtimeMode': runtimeMode,
           'nullSafeMigratedLibraries': nullSafeMigratedLibraries,

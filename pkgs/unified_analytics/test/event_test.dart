@@ -409,8 +409,8 @@ void main() {
     expect(constructedEvent.eventData.length, 1);
   });
 
-  test('Event.nullSafetyAnalysisResult constructed', () {
-    Event generateEvent() => Event.nullSafetyAnalysisResult(
+  test('Event.nullSafetyMigrationResult constructed', () {
+    Event generateEvent() => Event.nullSafetyMigrationResult(
         runtimeMode: 'runtimeMode',
         nullSafeMigratedLibraries: 4,
         nullSafeTotalLibraries: 5,
@@ -419,7 +419,7 @@ void main() {
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
-    expect(constructedEvent.eventName, DashEvent.nullSafetyAnalysisResult);
+    expect(constructedEvent.eventName, DashEvent.nullSafetyMigrationResult);
     expect(constructedEvent.eventData['runtimeMode'], 'runtimeMode');
     expect(constructedEvent.eventData['nullSafeMigratedLibraries'], 4);
     expect(constructedEvent.eventData['nullSafeTotalLibraries'], 5);

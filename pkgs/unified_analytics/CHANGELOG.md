@@ -1,6 +1,6 @@
 ## 5.5.0
 
-- Added the `Event.nullSafetyAnalysisResult` constructor
+- Added the `Event.nullSafetyMigrationResult` constructor
 
 ## 5.4.0
 
