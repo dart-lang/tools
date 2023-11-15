@@ -283,10 +283,10 @@ final class Event {
   /// [commandPath] - information about the flutter command, such as "build/apk".
   ///
   /// [result] - if the command failed or succeeded.
-  /// 
+  ///
   /// [commandHasTerminal] - boolean indicating if the flutter command ran with
   ///   a terminal.
-  /// 
+  ///
   /// [maxRss] - maximum resident size for a given flutter command.
   Event.flutterCommandResult({
     required String commandPath,
