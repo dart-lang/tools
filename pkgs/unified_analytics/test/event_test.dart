@@ -385,6 +385,7 @@ void main() {
     Event generateEvent() => Event.flutterCommandResult(
           commandPath: 'commandPath',
           result: 'result',
+          commandHasTerminal: true,
           maxRss: 123,
         );
 
@@ -394,8 +395,9 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.flutterCommandResult);
     expect(constructedEvent.eventData['commandPath'], 'commandPath');
     expect(constructedEvent.eventData['result'], 'result');
+    expect(constructedEvent.eventData['commandHasTerminal'], true);
     expect(constructedEvent.eventData['maxRss'], 123);
-    expect(constructedEvent.eventData.length, 3);
+    expect(constructedEvent.eventData.length, 4);
   });
 
   test('Event.codeSizeAnalysis constructed', () {
