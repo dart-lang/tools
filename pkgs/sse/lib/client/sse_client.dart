@@ -4,12 +4,12 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
+import 'dart:js_interop';
 
-import 'package:js/js.dart';
 import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:web/helpers.dart';
 
 import '../src/util/uuid.dart';
 
@@ -52,14 +52,15 @@ class SseClient extends StreamChannelMixin<String?> {
             ? generateUuidV4()
             : '$debugKey-${generateUuidV4()}' {
     _serverUrl = '$serverUrl?sseClientId=$_clientId';
-    _eventSource = EventSource(_serverUrl, withCredentials: true);
+    _eventSource =
+        EventSource(_serverUrl, EventSourceInit(withCredentials: true));
     _eventSource.onOpen.first.whenComplete(() {
       _onConnected.complete();
       _outgoingController.stream
           .listen(_onOutgoingMessage, onDone: _onOutgoingDone);
     });
-    _eventSource.addEventListener('message', _onIncomingMessage);
-    _eventSource.addEventListener('control', _onIncomingControlMessage);
+    _eventSource.addEventListener('message', _onIncomingMessage.toJS);
+    _eventSource.addEventListener('control', _onIncomingControlMessage.toJS);
 
     _eventSource.onOpen.listen((_) {
       _errorTimer?.cancel();
@@ -114,7 +115,7 @@ class SseClient extends StreamChannelMixin<String?> {
 
   void _onIncomingControlMessage(Event message) {
     var data = (message as MessageEvent).data;
-    if (data == 'close') {
+    if (data.dartify() == 'close') {
       close();
     } else {
       throw UnsupportedError('[$_clientId] Illegal Control Message "$data"');
@@ -147,8 +148,10 @@ class SseClient extends StreamChannelMixin<String?> {
         final url = '$_serverUrl&messageId=${++_lastMessageId}';
         await _fetch(
             url,
-            _FetchOptions(
-                method: 'POST', body: encodedMessage, credentials: 'include'));
+            RequestInit(
+                method: 'POST',
+                body: encodedMessage?.toJS,
+                credentials: 'include'));
       } catch (error) {
         final augmentedError =
             '[$_clientId] SSE client failed to send $message:\n $error';
@@ -159,20 +162,5 @@ class SseClient extends StreamChannelMixin<String?> {
   }
 }
 
-// Custom implementation of Fetch API until Dart supports GET vs. POST,
-// credentials, etc. See https://github.com/dart-lang/http/issues/595.
-@JS('fetch')
-external Object _nativeJsFetch(String resourceUrl, _FetchOptions options);
-
-Future<dynamic> _fetch(String resourceUrl, _FetchOptions options) =>
-    promiseToFuture(_nativeJsFetch(resourceUrl, options));
-
-@JS()
-@anonymous
-class _FetchOptions {
-  external factory _FetchOptions({
-    required String method, // e.g., 'GET', 'POST'
-    required String credentials, // e.g., 'omit', 'same-origin', 'include'
-    required String? body,
-  });
-}
+Future<void> _fetch(String resourceUrl, RequestInit options) =>
+    window.fetch(resourceUrl.toJS, options).toDart;

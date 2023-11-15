@@ -158,7 +158,7 @@ class SseConnection extends StreamChannelMixin<String?> {
       // period.
       // If the connection comes back, this will be cancelled and all messages
       // left in the queue tried again.
-      _keepAliveTimer = Timer(_keepAlive!, _close);
+      _keepAliveTimer = Timer(_keepAlive, _close);
     }
   }
 
