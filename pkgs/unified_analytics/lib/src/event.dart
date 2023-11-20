@@ -266,6 +266,14 @@ final class Event {
           if (statusInfo != null) 'statusInfo': statusInfo,
         };
 
+  /// Generic event for all dash tools to use when encountering an
+  /// exception that we want to log.
+  ///
+  /// [exception] - string representation of the exception that occured.
+  Event.exception({required String exception})
+      : eventName = DashEvent.exception,
+        eventData = {'exception': exception};
+
   /// Event that is emitted from the flutter tool when a build invocation
   /// has been run by the user.
   ///
