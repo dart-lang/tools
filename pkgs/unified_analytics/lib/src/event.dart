@@ -19,6 +19,25 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
+  /// This is for various workflows within the flutter tool related
+  /// to iOS and macOS workflows.
+  ///
+  /// [workflow] - which workflow is running, such as "assemble".
+  ///
+  /// [parameter] - subcategory of the workflow, such as "ios-archive".
+  ///
+  /// [label] - usually to indicate success or failure of the workflow.
+  Event.appleUsageEvent({
+    required String workflow,
+    required String parameter,
+    String? label,
+  })  : eventName = DashEvent.appleUsageEvent,
+        eventData = {
+          'workflow': workflow,
+          'parameter': parameter,
+          if (label != null) 'label': label,
+        };
+
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of notification from the
   /// client.
@@ -275,25 +294,6 @@ final class Event {
           if (command != null) 'command': command,
           if (settings != null) 'settings': settings,
           if (error != null) 'error': error,
-        };
-
-  /// This is for various workflows within the flutter tool related
-  /// to iOS and macOS workflows.
-  ///
-  /// [workflow] - which workflow is running, such as "assemble".
-  ///
-  /// [parameter] - subcategory of the workflow, such as "ios-archive".
-  ///
-  /// [label] - usually to indicate success or failure of the workflow.
-  Event.appleUsageEvent({
-    required String workflow,
-    required String parameter,
-    String? label,
-  })  : eventName = DashEvent.appleUsageEvent,
-        eventData = {
-          'workflow': workflow,
-          'parameter': parameter,
-          if (label != null) 'label': label,
         };
 
   /// Provides information about which flutter command was run
