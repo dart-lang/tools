@@ -647,8 +647,12 @@ class AnalyticsImpl implements Analytics {
       _clientId = _clientIdFile.readAsStringSync();
     }
 
-    // Pass to the google analytics client to send
-    return _gaClient.sendData(body);
+    // Pass to the google analytics client to send with a
+    // timeout incase http clients hang
+    return _gaClient.sendData(body).timeout(
+          const Duration(milliseconds: kDelayDuration),
+          onTimeout: () => Response('', 200),
+        );
   }
 
   @override
