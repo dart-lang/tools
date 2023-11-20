@@ -22,6 +22,10 @@ enum DashEvent {
     label: 'analytics_collection_enabled',
     description: 'The opt-in status for analytics collection',
   ),
+  exception(
+    label: 'exception',
+    description: 'General errors to log',
+  ),
   surveyAction(
     label: 'survey_action',
     description: 'Actions taken by users when shown survey',
@@ -46,6 +50,12 @@ enum DashEvent {
 
   // Events for the Flutter CLI
 
+  appleUsageEvent(
+    label: 'apple_usage_event',
+    description:
+        'Events related to iOS/macOS workflows within the flutter tool',
+    toolOwner: DashTool.flutterTool,
+  ),
   codeSizeAnalysis(
     label: 'code_size_analysis',
     description: 'Indicates when the "--analyize-size" command is run',

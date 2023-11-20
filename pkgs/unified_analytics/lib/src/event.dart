@@ -19,6 +19,25 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
+  /// This is for various workflows within the flutter tool related
+  /// to iOS and macOS workflows.
+  ///
+  /// [workflow] - which workflow is running, such as "assemble".
+  ///
+  /// [parameter] - subcategory of the workflow, such as "ios-archive".
+  ///
+  /// [result] - usually to indicate success or failure of the workflow.
+  Event.appleUsageEvent({
+    required String workflow,
+    required String parameter,
+    String? result,
+  })  : eventName = DashEvent.appleUsageEvent,
+        eventData = {
+          'workflow': workflow,
+          'parameter': parameter,
+          if (result != null) 'result': result,
+        };
+
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of notification from the
   /// client.
@@ -246,6 +265,14 @@ final class Event {
           'doctorInvocationId': doctorInvocationId,
           if (statusInfo != null) 'statusInfo': statusInfo,
         };
+
+  /// Generic event for all dash tools to use when encountering an
+  /// exception that we want to log.
+  ///
+  /// [exception] - string representation of the exception that occured.
+  Event.exception({required String exception})
+      : eventName = DashEvent.exception,
+        eventData = {'exception': exception};
 
   /// Event that is emitted from the flutter tool when a build invocation
   /// has been run by the user.

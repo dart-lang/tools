@@ -411,6 +411,34 @@ void main() {
     expect(constructedEvent.eventData.length, 1);
   });
 
+  test('Event.appleUsageEvent constructed', () {
+    Event generateEvent() => Event.appleUsageEvent(
+          workflow: 'workflow',
+          parameter: 'parameter',
+          result: 'result',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.appleUsageEvent);
+    expect(constructedEvent.eventData['workflow'], 'workflow');
+    expect(constructedEvent.eventData['parameter'], 'parameter');
+    expect(constructedEvent.eventData['result'], 'result');
+    expect(constructedEvent.eventData.length, 3);
+  });
+
+  test('Event.exception constructed', () {
+    Event generateEvent() => Event.exception(exception: 'exception');
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.exception);
+    expect(constructedEvent.eventData['exception'], 'exception');
+    expect(constructedEvent.eventData.length, 1);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -419,7 +447,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 21;
+    final eventsAccountedForInTests = 23;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
