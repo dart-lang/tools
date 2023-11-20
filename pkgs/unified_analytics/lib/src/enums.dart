@@ -46,6 +46,12 @@ enum DashEvent {
 
   // Events for the Flutter CLI
 
+  appleUsageEvent(
+    label: 'apple_usage_event',
+    description:
+        'Events related to iOS/macOS workflows within the flutter tool',
+    toolOwner: DashTool.flutterTool,
+  ),
   codeSizeAnalysis(
     label: 'code_size_analysis',
     description: 'Indicates when the "--analyize-size" command is run',

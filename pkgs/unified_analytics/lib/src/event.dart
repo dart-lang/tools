@@ -277,6 +277,25 @@ final class Event {
           if (error != null) 'error': error,
         };
 
+  /// This is for various workflows within the flutter tool related
+  /// to iOS and macOS workflows.
+  ///
+  /// [workflow] - which workflow is running, such as "assemble".
+  ///
+  /// [parameter] - subcategory of the workflow, such as "ios-archive".
+  ///
+  /// [label] - usually to indicate success or failure of the workflow.
+  Event.appleUsageEvent({
+    required String workflow,
+    required String parameter,
+    String? label,
+  })  : eventName = DashEvent.appleUsageEvent,
+        eventData = {
+          'workflow': workflow,
+          'parameter': parameter,
+          if (label != null) 'label': label,
+        };
+
   /// Provides information about which flutter command was run
   /// and whether it was successful.
   ///

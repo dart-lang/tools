@@ -2,6 +2,7 @@
 
 - Edit to the `Event.flutterCommandResult` constructor to add `commandHasTerminal`
 - Added timeout for `Analytics.setTelemetry` to prevent the clients from hanging
+- Added the `Event.appleUsageEvent` constructor
 
 ## 5.4.0
 
