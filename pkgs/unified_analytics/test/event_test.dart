@@ -415,7 +415,7 @@ void main() {
     Event generateEvent() => Event.appleUsageEvent(
           workflow: 'workflow',
           parameter: 'parameter',
-          label: 'label',
+          result: 'result',
         );
 
     final constructedEvent = generateEvent();
@@ -424,7 +424,7 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.appleUsageEvent);
     expect(constructedEvent.eventData['workflow'], 'workflow');
     expect(constructedEvent.eventData['parameter'], 'parameter');
-    expect(constructedEvent.eventData['label'], 'label');
+    expect(constructedEvent.eventData['result'], 'result');
     expect(constructedEvent.eventData.length, 3);
   });
 

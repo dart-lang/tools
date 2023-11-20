@@ -26,16 +26,16 @@ final class Event {
   ///
   /// [parameter] - subcategory of the workflow, such as "ios-archive".
   ///
-  /// [label] - usually to indicate success or failure of the workflow.
+  /// [result] - usually to indicate success or failure of the workflow.
   Event.appleUsageEvent({
     required String workflow,
     required String parameter,
-    String? label,
+    String? result,
   })  : eventName = DashEvent.appleUsageEvent,
         eventData = {
           'workflow': workflow,
           'parameter': parameter,
-          if (label != null) 'label': label,
+          if (result != null) 'result': result,
         };
 
   /// Event that is emitted periodically to report the performance of the
