@@ -24,14 +24,14 @@ final class Event {
   /// [workflow] - the overall process or command being run, for example
   ///   "build" is a possible value for the flutter tool.
   ///
-  /// [variableName] - the specific variable being measure, for example
+  /// [variableName] - the specific variable being measured, for example
   ///   "gradle" would indicate how long it took for a gradle build under the
   ///   "build" [workflow].
   ///
   /// [elapsedMilliseconds] - how long the process took in milliseconds.
   ///
   /// [label] - an optional field that can be used for further filtering, for
-  ///   example, "success" can indicate how long a successful build in grade
+  ///   example, "success" can indicate how long a successful build in gradle
   ///   takes to complete.
   Event.timing({
     required String workflow,
