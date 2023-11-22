@@ -1,3 +1,7 @@
+## 5.6.0
+
+- Added the `Event.timing` constructor
+
 ## 5.5.0
 
 - Edit to the `Event.flutterCommandResult` constructor to add `commandHasTerminal`

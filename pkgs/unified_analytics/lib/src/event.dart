@@ -19,6 +19,33 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
+  /// Event that records how long a given process takes to complete.
+  /// 
+  /// [workflow] - the overall process or command being run, for example
+  ///   "build" is a possible value for the flutter tool.
+  /// 
+  /// [variableName] - the specific variable being measure, for example
+  ///   "gradle" would indicate how long it took for a gradle build under the
+  ///   "build" [workflow].
+  /// 
+  /// [elapsedMilliseconds] - how long the process took in milliseconds.
+  /// 
+  /// [label] - an optional field that can be used for further filtering, for
+  ///   example, "success" can indicate how long a successful build in grade
+  ///   takes to complete.
+  Event.timing({
+    required String workflow,
+    required String variableName,
+    required int elapsedMilliseconds,
+    String? label,
+  })  : eventName = DashEvent.timing,
+        eventData = {
+          'workflow': workflow,
+          'variableName': variableName,
+          'elapsedMilliseconds': elapsedMilliseconds,
+          if (label != null) 'label': label,
+        };
+
   /// This is for various workflows within the flutter tool related
   /// to iOS and macOS workflows.
   ///
