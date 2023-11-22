@@ -1,3 +1,7 @@
+## 4.1.4
+
+- Fix incorrect cast causing failure with `dart2wasm`.
+
 ## 4.1.3
 
 - Update the minimum Dart SDK version to `3.2.0`.
