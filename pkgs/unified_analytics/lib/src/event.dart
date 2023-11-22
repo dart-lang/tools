@@ -20,16 +20,16 @@ final class Event {
         eventData = {'status': status};
 
   /// Event that records how long a given process takes to complete.
-  /// 
+  ///
   /// [workflow] - the overall process or command being run, for example
   ///   "build" is a possible value for the flutter tool.
-  /// 
+  ///
   /// [variableName] - the specific variable being measure, for example
   ///   "gradle" would indicate how long it took for a gradle build under the
   ///   "build" [workflow].
-  /// 
+  ///
   /// [elapsedMilliseconds] - how long the process took in milliseconds.
-  /// 
+  ///
   /// [label] - an optional field that can be used for further filtering, for
   ///   example, "success" can indicate how long a successful build in grade
   ///   takes to complete.
