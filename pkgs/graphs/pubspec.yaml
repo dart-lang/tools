@@ -14,6 +14,6 @@ dev_dependencies:
   test: ^1.16.0
 
   # For examples
-  analyzer: ^5.2.0
+  analyzer: '>=5.2.0 <7.0.0'
   path: ^1.8.0
   pool: ^1.5.0
