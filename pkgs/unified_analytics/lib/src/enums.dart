@@ -34,6 +34,10 @@ enum DashEvent {
     label: 'survey_shown',
     description: 'Survey shown to the user',
   ),
+  timing(
+    label: 'timing',
+    description: 'Events for timing how long a process takes',
+  ),
 
   // Events for the Dart CLI
 
