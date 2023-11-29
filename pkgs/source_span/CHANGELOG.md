@@ -1,3 +1,7 @@
+## 1.10.1-wip
+
+* Require Dart 3.1
+
 ## 1.10.0
 
 * Add a `SourceFile.codeUnits` property.
