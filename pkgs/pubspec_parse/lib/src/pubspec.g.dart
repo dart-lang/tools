@@ -34,6 +34,8 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
                   .toList()),
           topics: $checkedConvert('topics',
               (v) => (v as List<dynamic>?)?.map((e) => e as String).toList()),
+          ignoredAdvisories: $checkedConvert('ignored_advisories',
+              (v) => (v as List<dynamic>?)?.map((e) => e as String).toList()),
           screenshots: $checkedConvert(
               'screenshots', (v) => parseScreenshots(v as List?)),
           documentation: $checkedConvert('documentation', (v) => v as String?),
@@ -55,6 +57,7 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
       fieldKeyMap: const {
         'publishTo': 'publish_to',
         'issueTracker': 'issue_tracker',
+        'ignoredAdvisories': 'ignored_advisories',
         'devDependencies': 'dev_dependencies',
         'dependencyOverrides': 'dependency_overrides'
       },

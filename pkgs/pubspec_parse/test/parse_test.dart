@@ -52,6 +52,7 @@ void main() {
         'https://patreon.com/example',
       ],
       'topics': ['widget', 'button'],
+      'ignored_advisories': ['111', '222'],
       'screenshots': [
         {'description': 'my screenshot', 'path': 'path/to/screenshot'},
       ],
@@ -79,6 +80,9 @@ void main() {
     expect(value.topics, hasLength(2));
     expect(value.topics!.first, 'widget');
     expect(value.topics!.last, 'button');
+    expect(value.ignoredAdvisories, hasLength(2));
+    expect(value.ignoredAdvisories!.first, '111');
+    expect(value.ignoredAdvisories!.last, '222');
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
@@ -422,6 +426,43 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
       );
       expect(value.name, 'sample');
       expect(value.topics, isNull);
+    });
+  });
+
+  group('ignored_advisories', () {
+    test('not a list', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'ignored_advisories': 1,
+        },
+        "Unsupported value for \"ignored_advisories\". type 'int' is not a subtype of type 'List<dynamic>?'",
+        skipTryPub: true,
+      );
+    });
+
+    test('not a string', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'ignored_advisories': [1],
+        },
+        "Unsupported value for \"ignored_advisories\". type 'int' is not a subtype of type 'String'",
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid data - lenient', () async {
+      final value = await parse(
+        {
+          ...defaultPubspec,
+          'ignored_advisories': [1],
+        },
+        skipTryPub: true,
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.ignoredAdvisories, isNull);
     });
   });
 

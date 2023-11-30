@@ -47,6 +47,9 @@ class Pubspec {
   /// Optional field to list the topics that this packages belongs to.
   final List<String>? topics;
 
+  /// Optional field to list advisories to be ignored by the client.
+  final List<String>? ignoredAdvisories;
+
   /// Optional field for specifying included screenshot files.
   @JsonKey(fromJson: parseScreenshots)
   final List<Screenshot>? screenshots;
@@ -110,6 +113,7 @@ class Pubspec {
     this.issueTracker,
     this.funding,
     this.topics,
+    this.ignoredAdvisories,
     this.screenshots,
     this.documentation,
     this.description,
