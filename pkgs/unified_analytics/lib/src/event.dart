@@ -19,33 +19,6 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
-  /// Event that records how long a given process takes to complete.
-  ///
-  /// [workflow] - the overall process or command being run, for example
-  ///   "build" is a possible value for the flutter tool.
-  ///
-  /// [variableName] - the specific variable being measured, for example
-  ///   "gradle" would indicate how long it took for a gradle build under the
-  ///   "build" [workflow].
-  ///
-  /// [elapsedMilliseconds] - how long the process took in milliseconds.
-  ///
-  /// [label] - an optional field that can be used for further filtering, for
-  ///   example, "success" can indicate how long a successful build in gradle
-  ///   takes to complete.
-  Event.timing({
-    required String workflow,
-    required String variableName,
-    required int elapsedMilliseconds,
-    String? label,
-  })  : eventName = DashEvent.timing,
-        eventData = {
-          'workflow': workflow,
-          'variableName': variableName,
-          'elapsedMilliseconds': elapsedMilliseconds,
-          if (label != null) 'label': label,
-        };
-
   /// This is for various workflows within the flutter tool related
   /// to iOS and macOS workflows.
   ///
@@ -180,6 +153,102 @@ final class Event {
         eventData = {
           'count': count,
           'name': name,
+        };
+
+  /// Event to capture previous custom dimension values from
+  /// legacy flutter analytics.
+  ///
+  /// The parameters below are a superset of all the implementations
+  /// of the `usageValues` getter in the `FlutterCommand` class within
+  /// the flutter-tool. There should never be a time where all of the parameters
+  /// are passed to this constructor.
+  ///
+  /// The custom dimensions from each implementation are grouped by sharing
+  /// the same prefix.
+  Event.commandUsageValues({
+    required String workflow,
+    // Assemble && build bundle implementation parameters
+    String? buildBundleTargetPlatform,
+    bool? buildBundleIsModule,
+
+    // Build aar implementation parameters
+    String? buildAarProjectType,
+    String? buildAarTargetPlatform,
+
+    // Build apk implementation parameters
+    String? buildApkTargetPlatform,
+    String? buildApkBuildMode,
+    bool? buildApkSplitPerAbi,
+
+    // Build app bundle implementation parameters
+    String? buildAppBundleTargetPlatform,
+    String? buildAppBundleBuildMode,
+
+    // Create implementation parameters
+    String? createProjectType,
+    String? createAndroidLanguage,
+    String? createIosLanguage,
+
+    // Packages implementation parameters
+    int? packagesNumberPlugins,
+    bool? packagesProjectModule,
+    String? packagesAndroidEmbeddingVersion,
+
+    // Run implementation parameters
+    bool? runIsEmulator,
+    String? runTargetName,
+    String? runTargetOsVersion,
+    String? runModeName,
+    bool? runProjectModule,
+    String? runProjectHostLanguage,
+    String? runAndroidEmbeddingVersion,
+    bool? runEnableImpeller,
+    String? runIOSInterfaceType,
+    bool? runIsTest,
+  })  : eventName = DashEvent.commandUsageValues,
+        eventData = {
+          'workflow': workflow,
+          if (buildBundleTargetPlatform != null)
+            'buildBundleTargetPlatform': buildBundleTargetPlatform,
+          if (buildBundleIsModule != null)
+            'buildBundleIsModule': buildBundleIsModule,
+          if (buildAarProjectType != null)
+            'buildAarProjectType': buildAarProjectType,
+          if (buildAarTargetPlatform != null)
+            'buildAarTargetPlatform': buildAarTargetPlatform,
+          if (buildApkTargetPlatform != null)
+            'buildApkTargetPlatform': buildApkTargetPlatform,
+          if (buildApkBuildMode != null) 'buildApkBuildMode': buildApkBuildMode,
+          if (buildApkSplitPerAbi != null)
+            'buildApkSplitPerAbi': buildApkSplitPerAbi,
+          if (buildAppBundleTargetPlatform != null)
+            'buildAppBundleTargetPlatform': buildAppBundleTargetPlatform,
+          if (buildAppBundleBuildMode != null)
+            'buildAppBundleBuildMode': buildAppBundleBuildMode,
+          if (createProjectType != null) 'createProjectType': createProjectType,
+          if (createAndroidLanguage != null)
+            'createAndroidLanguage': createAndroidLanguage,
+          if (createIosLanguage != null) 'createIosLanguage': createIosLanguage,
+          if (packagesNumberPlugins != null)
+            'packagesNumberPlugins': packagesNumberPlugins,
+          if (packagesProjectModule != null)
+            'packagesProjectModule': packagesProjectModule,
+          if (packagesAndroidEmbeddingVersion != null)
+            'packagesAndroidEmbeddingVersion': packagesAndroidEmbeddingVersion,
+          if (runIsEmulator != null) 'runIsEmulator': runIsEmulator,
+          if (runTargetName != null) 'runTargetName': runTargetName,
+          if (runTargetOsVersion != null)
+            'runTargetOsVersion': runTargetOsVersion,
+          if (runModeName != null) 'runModeName': runModeName,
+          if (runProjectModule != null) 'runProjectModule': runProjectModule,
+          if (runProjectHostLanguage != null)
+            'runProjectHostLanguage': runProjectHostLanguage,
+          if (runAndroidEmbeddingVersion != null)
+            'runAndroidEmbeddingVersion': runAndroidEmbeddingVersion,
+          if (runEnableImpeller != null) 'runEnableImpeller': runEnableImpeller,
+          if (runIOSInterfaceType != null)
+            'runIOSInterfaceType': runIOSInterfaceType,
+          if (runIsTest != null) 'runIsTest': runIsTest,
         };
 
   /// Event that is emitted on shutdown to report the structure of the analysis
@@ -585,6 +654,33 @@ final class Event {
   })  : eventName = DashEvent.surveyShown,
         eventData = {
           'surveyId': surveyId,
+        };
+
+  /// Event that records how long a given process takes to complete.
+  ///
+  /// [workflow] - the overall process or command being run, for example
+  ///   "build" is a possible value for the flutter tool.
+  ///
+  /// [variableName] - the specific variable being measured, for example
+  ///   "gradle" would indicate how long it took for a gradle build under the
+  ///   "build" [workflow].
+  ///
+  /// [elapsedMilliseconds] - how long the process took in milliseconds.
+  ///
+  /// [label] - an optional field that can be used for further filtering, for
+  ///   example, "success" can indicate how long a successful build in gradle
+  ///   takes to complete.
+  Event.timing({
+    required String workflow,
+    required String variableName,
+    required int elapsedMilliseconds,
+    String? label,
+  })  : eventName = DashEvent.timing,
+        eventData = {
+          'workflow': workflow,
+          'variableName': variableName,
+          'elapsedMilliseconds': elapsedMilliseconds,
+          if (label != null) 'label': label,
         };
 
   @override

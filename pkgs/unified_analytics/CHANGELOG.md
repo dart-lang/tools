@@ -1,3 +1,7 @@
+## 5.7.0
+
+- Added the `Event.commandUsageValues` constructor
+
 ## 5.6.0
 
 - Added the `Event.timing` constructor
