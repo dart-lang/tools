@@ -164,7 +164,8 @@ final class Event {
   /// are passed to this constructor.
   ///
   /// The custom dimensions from each implementation are grouped by sharing
-  /// the same prefix.
+  /// the same prefix. The [workflow] indicates which implementation is being
+  /// sent, for example, "create".
   Event.commandUsageValues({
     required String workflow,
     // Assemble && build bundle implementation parameters
