@@ -211,7 +211,7 @@ final class Event {
   })  : eventName = DashEvent.commandUsageValues,
         eventData = {
           'workflow': workflow,
-          // 'commandHasTerminal': commandHasTerminal,
+          'commandHasTerminal': commandHasTerminal,
           if (buildBundleTargetPlatform != null)
             'buildBundleTargetPlatform': buildBundleTargetPlatform,
           if (buildBundleIsModule != null)
