@@ -1,13 +1,13 @@
 name: test_reflective_loader
-version: 0.2.2
+version: 0.2.3-wip
 description: Support for discovering tests and test suites using reflection.
 repository: https://github.com/dart-lang/test_reflective_loader
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ^3.1.0
 
 dependencies:
   test: ^1.16.0
 
 dev_dependencies:
-  lints: ^2.0.0
+  dart_flutter_team_lints: ^2.0.0

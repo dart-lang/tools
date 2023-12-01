@@ -1,11 +1,5 @@
-include: package:lints/recommended.yaml
-
-analyzer:
-  errors:
-    slash_for_doc_comments: ignore
+include: package:dart_flutter_team_lints/analysis_options.yaml
 
 linter:
   rules:
-    - always_declare_return_types
-    - directives_ordering
     - public_member_api_docs

@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sdk: [dev, stable]
+        sdk: [dev, 3.1]
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
@@ -26,14 +26,8 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
           
-      - name: pub get
-        run: dart pub get
-
+      - run: dart pub get
       - name: dart format
         run: dart format --output=none --set-exit-if-changed .
-
-      - name: dart analyze
-        run: dart analyze
-
-      - name: dart test
-        run: dart test
+      - run: dart analyze --fatal-infos
+      - run: dart test

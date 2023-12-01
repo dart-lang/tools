@@ -1,3 +1,7 @@
+## 0.2.3-wip
+
+- Require Dart `^3.1.0`.
+
 ## 0.2.2
 
 - Update to package:lints 2.0.0 and move it to a dev dependency.

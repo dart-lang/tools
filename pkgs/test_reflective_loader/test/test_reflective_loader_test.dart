@@ -28,7 +28,7 @@ class TestReflectiveLoaderTest {
 
   @failingTest
   void test_fails_throws_sync() {
-    throw 'foo';
+    throw StateError('foo');
   }
 
   @failingTest
@@ -38,7 +38,7 @@ class TestReflectiveLoaderTest {
 
   @skippedTest
   void test_fails_but_skipped() {
-    throw 'foo';
+    throw StateError('foo');
   }
 
   @skippedTest
