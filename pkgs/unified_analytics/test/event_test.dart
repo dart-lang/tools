@@ -461,6 +461,7 @@ void main() {
   test('Event.commandUsageValues constructed', () {
     Event generateEvent() => Event.commandUsageValues(
           workflow: 'workflow',
+          commandHasTerminal: true,
           buildBundleTargetPlatform: 'buildBundleTargetPlatform',
           buildBundleIsModule: true,
           buildAarProjectType: 'buildAarProjectType',
@@ -485,6 +486,7 @@ void main() {
           runAndroidEmbeddingVersion: 'runAndroidEmbeddingVersion',
           runEnableImpeller: true,
           runIOSInterfaceType: 'runIOSInterfaceType',
+          runIsTest: true,
         );
 
     final constructedEvent = generateEvent();
@@ -531,7 +533,7 @@ void main() {
     expect(constructedEvent.eventData['runEnableImpeller'], true);
     expect(constructedEvent.eventData['runIOSInterfaceType'],
         'runIOSInterfaceType');
-    expect(constructedEvent.eventData.length, 25);
+    expect(constructedEvent.eventData.length, 27);
   });
 
   test('Confirm all constructors were checked', () {

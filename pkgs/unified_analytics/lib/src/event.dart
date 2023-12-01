@@ -168,6 +168,8 @@ final class Event {
   /// sent, for example, "create".
   Event.commandUsageValues({
     required String workflow,
+    required bool commandHasTerminal,
+
     // Assemble && build bundle implementation parameters
     String? buildBundleTargetPlatform,
     bool? buildBundleIsModule,
@@ -209,6 +211,7 @@ final class Event {
   })  : eventName = DashEvent.commandUsageValues,
         eventData = {
           'workflow': workflow,
+          // 'commandHasTerminal': commandHasTerminal,
           if (buildBundleTargetPlatform != null)
             'buildBundleTargetPlatform': buildBundleTargetPlatform,
           if (buildBundleIsModule != null)
