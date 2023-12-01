@@ -7,7 +7,6 @@ analyzer:
 
 linter:
   rules:
-    - avoid_returning_null
     - avoid_unused_constructor_parameters
     - cancel_subscriptions
     - literal_only_boolean_expressions

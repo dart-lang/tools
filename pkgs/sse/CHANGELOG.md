@@ -1,3 +1,7 @@
+## 4.1.5-wip
+
+- Drop unneeded dependency on `package:js`.
+
 ## 4.1.4
 
 - Fix incorrect cast causing failure with `dart2wasm`.
