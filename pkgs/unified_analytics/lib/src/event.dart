@@ -155,17 +155,14 @@ final class Event {
           'name': name,
         };
 
-  /// Event to capture previous custom dimension values from
-  /// legacy flutter analytics.
+  /// Event to capture usage values for different flutter commands.
   ///
-  /// The parameters below are a superset of all the implementations
-  /// of the `usageValues` getter in the `FlutterCommand` class within
-  /// the flutter-tool. There should never be a time where all of the parameters
-  /// are passed to this constructor.
-  ///
-  /// The custom dimensions from each implementation are grouped by sharing
-  /// the same prefix. The [workflow] indicates which implementation is being
-  /// sent, for example, "create".
+  /// There are several implementations of the `FlutterCommand` class within the
+  /// flutter-tool that pass information based on the [workflow] being ran. An
+  /// example of a [workflow] can be "create". The optional parameters for this
+  /// constructor are a superset of all the implementations of `FlutterCommand`.
+  /// There should never be a time where all of the parameters are passed to
+  /// this constructor.
   Event.commandUsageValues({
     required String workflow,
     required bool commandHasTerminal,
