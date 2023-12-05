@@ -65,6 +65,12 @@ enum DashEvent {
     description: 'Indicates when the "--analyize-size" command is run',
     toolOwner: DashTool.flutterTool,
   ),
+  commandUsageValues(
+    label: 'command_usage_values',
+    description: 'Contains command level custom dimensions from legacy '
+        'flutter analytics',
+    toolOwner: DashTool.flutterTool,
+  ),
   doctorValidatorResult(
     label: 'doctor_validator_result',
     description: 'Results from a specific doctor validator',

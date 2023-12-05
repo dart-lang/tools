@@ -458,6 +458,84 @@ void main() {
     expect(constructedEvent.eventData.length, 4);
   });
 
+  test('Event.commandUsageValues constructed', () {
+    Event generateEvent() => Event.commandUsageValues(
+          workflow: 'workflow',
+          commandHasTerminal: true,
+          buildBundleTargetPlatform: 'buildBundleTargetPlatform',
+          buildBundleIsModule: true,
+          buildAarProjectType: 'buildAarProjectType',
+          buildAarTargetPlatform: 'buildAarTargetPlatform',
+          buildApkTargetPlatform: 'buildApkTargetPlatform',
+          buildApkBuildMode: 'buildApkBuildMode',
+          buildApkSplitPerAbi: true,
+          buildAppBundleTargetPlatform: 'buildAppBundleTargetPlatform',
+          buildAppBundleBuildMode: 'buildAppBundleBuildMode',
+          createProjectType: 'createProjectType',
+          createAndroidLanguage: 'createAndroidLanguage',
+          createIosLanguage: 'createIosLanguage',
+          packagesNumberPlugins: 123,
+          packagesProjectModule: true,
+          packagesAndroidEmbeddingVersion: 'packagesAndroidEmbeddingVersion',
+          runIsEmulator: true,
+          runTargetName: 'runTargetName',
+          runTargetOsVersion: 'runTargetOsVersion',
+          runModeName: 'runModeName',
+          runProjectModule: true,
+          runProjectHostLanguage: 'runProjectHostLanguage',
+          runAndroidEmbeddingVersion: 'runAndroidEmbeddingVersion',
+          runEnableImpeller: true,
+          runIOSInterfaceType: 'runIOSInterfaceType',
+          runIsTest: true,
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.commandUsageValues);
+    expect(constructedEvent.eventData['workflow'], 'workflow');
+    expect(constructedEvent.eventData['buildBundleTargetPlatform'],
+        'buildBundleTargetPlatform');
+    expect(constructedEvent.eventData['buildBundleIsModule'], true);
+    expect(constructedEvent.eventData['buildAarProjectType'],
+        'buildAarProjectType');
+    expect(constructedEvent.eventData['buildAarTargetPlatform'],
+        'buildAarTargetPlatform');
+    expect(constructedEvent.eventData['buildApkTargetPlatform'],
+        'buildApkTargetPlatform');
+    expect(
+        constructedEvent.eventData['buildApkBuildMode'], 'buildApkBuildMode');
+    expect(constructedEvent.eventData['buildApkSplitPerAbi'], true);
+    expect(constructedEvent.eventData['buildAppBundleTargetPlatform'],
+        'buildAppBundleTargetPlatform');
+    expect(constructedEvent.eventData['buildAppBundleBuildMode'],
+        'buildAppBundleBuildMode');
+    expect(
+        constructedEvent.eventData['createProjectType'], 'createProjectType');
+    expect(constructedEvent.eventData['createAndroidLanguage'],
+        'createAndroidLanguage');
+    expect(
+        constructedEvent.eventData['createIosLanguage'], 'createIosLanguage');
+    expect(constructedEvent.eventData['packagesNumberPlugins'], 123);
+    expect(constructedEvent.eventData['packagesProjectModule'], true);
+    expect(constructedEvent.eventData['packagesAndroidEmbeddingVersion'],
+        'packagesAndroidEmbeddingVersion');
+    expect(constructedEvent.eventData['runIsEmulator'], true);
+    expect(constructedEvent.eventData['runTargetName'], 'runTargetName');
+    expect(
+        constructedEvent.eventData['runTargetOsVersion'], 'runTargetOsVersion');
+    expect(constructedEvent.eventData['runModeName'], 'runModeName');
+    expect(constructedEvent.eventData['runProjectModule'], true);
+    expect(constructedEvent.eventData['runProjectHostLanguage'],
+        'runProjectHostLanguage');
+    expect(constructedEvent.eventData['runAndroidEmbeddingVersion'],
+        'runAndroidEmbeddingVersion');
+    expect(constructedEvent.eventData['runEnableImpeller'], true);
+    expect(constructedEvent.eventData['runIOSInterfaceType'],
+        'runIOSInterfaceType');
+    expect(constructedEvent.eventData.length, 27);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -466,7 +544,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 24;
+    final eventsAccountedForInTests = 25;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
