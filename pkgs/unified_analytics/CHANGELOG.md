@@ -1,3 +1,7 @@
+## 5.7.1-wip
+
+- Fix template string for consent message
+
 ## 5.7.0
 
 - Added the `Event.commandUsageValues` constructor
