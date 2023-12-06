@@ -92,7 +92,7 @@ const String kSessionFileName = 'dart-flutter-telemetry-session.json';
 
 /// The message that should be shown to the user.
 const String kToolsMessage = '''
-The [tool name] uses Google Analytics to report usage and diagnostic
+The {{ toolDescription }} uses Google Analytics to report usage and diagnostic
 data along with package dependencies, and crash reporting to send basic crash
 reports. This data is used to help improve the Dart platform, Flutter framework,
 and related tools.
@@ -100,7 +100,7 @@ and related tools.
 Telemetry is not sent on the very first run. To disable reporting of telemetry,
 run this terminal command:
 
-    [dart|flutter] --disable-analytics
+    {{ toolName }} --disable-analytics
 
 If you opt out of telemetry, an opt-out event will be sent, and then no further
 information will be sent. This data is collected in accordance with the Google
