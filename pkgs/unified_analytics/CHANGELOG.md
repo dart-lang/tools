@@ -1,4 +1,4 @@
-## 5.7.1
+## 5.8.0
 
 - Fix template string for consent message
 - Add `enabledFeatures` to constructor to collect features enabled for each dash tool
