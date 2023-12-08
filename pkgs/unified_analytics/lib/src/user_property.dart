@@ -20,6 +20,7 @@ class UserProperty {
   final String hostOsVersion;
   final String locale;
   final String? clientIde;
+  final String? enabledFeatures;
 
   /// This class is intended to capture all of the user's
   /// metadata when the class gets initialized as well as collecting
@@ -34,6 +35,7 @@ class UserProperty {
     required this.hostOsVersion,
     required this.locale,
     required this.clientIde,
+    required this.enabledFeatures,
   });
 
   /// This method will take the data in this class and convert it into
@@ -69,5 +71,6 @@ class UserProperty {
         'host_os_version': hostOsVersion,
         'locale': locale,
         'client_ide': clientIde,
+        'enabled_features': enabledFeatures,
       };
 }
