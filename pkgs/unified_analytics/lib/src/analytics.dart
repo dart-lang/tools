@@ -38,7 +38,7 @@ abstract class Analytics {
   /// An optional parameter [clientIde] is also available for dart and flutter
   /// tooling that are running from IDEs can be resolved. Such as "VSCode"
   /// running the flutter-tool.
-  /// 
+  ///
   /// [enabledFeatures] is also an optional field that can be added to collect
   /// any features that are enabled for a user. For example,
   /// "enable-linux-desktop,cli-animations" are two features that can be enabled
