@@ -47,6 +47,7 @@ void main() {
   const hostOsVersion = 'Version 14.1 (Build 23B74)';
   const locale = 'en';
   const clientIde = 'VSCode';
+  const enabledFeatures = 'enable-linux-desktop,cli-animations';
 
   final testEvent = Event.hotReloadTime(timeMs: 50);
 
@@ -122,6 +123,7 @@ void main() {
       hostOsVersion: hostOsVersion,
       locale: locale,
       clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
     );
   });
 
@@ -604,6 +606,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'host_os_version',
       'locale',
       'client_ide',
+      'enabled_features',
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');

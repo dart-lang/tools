@@ -38,12 +38,18 @@ abstract class Analytics {
   /// An optional parameter [clientIde] is also available for dart and flutter
   /// tooling that are running from IDEs can be resolved. Such as "VSCode"
   /// running the flutter-tool.
+  ///
+  /// [enabledFeatures] is also an optional field that can be added to collect
+  /// any features that are enabled for a user. For example,
+  /// "enable-linux-desktop,cli-animations" are two features that can be enabled
+  /// for the flutter-tool.
   factory Analytics({
     required DashTool tool,
     required String dartVersion,
     String? flutterChannel,
     String? flutterVersion,
     String? clientIde,
+    String? enabledFeatures,
     bool enableAsserts = false,
   }) {
     // Create the instance of the file system so clients don't need
@@ -87,6 +93,7 @@ abstract class Analytics {
       surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
     );
   }
 
@@ -105,6 +112,7 @@ abstract class Analytics {
     String? flutterChannel,
     String? flutterVersion,
     String? clientIde,
+    String? enabledFeatures,
     bool enableAsserts = true,
   }) {
     // Create the instance of the file system so clients don't need
@@ -155,6 +163,7 @@ abstract class Analytics {
       surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
     );
   }
 
@@ -172,6 +181,7 @@ abstract class Analytics {
     String? flutterChannel,
     String? flutterVersion,
     String? clientIde,
+    String? enabledFeatures,
     SurveyHandler? surveyHandler,
     GAClient? gaClient,
     int toolsMessageVersion = kToolsMessageVersion,
@@ -195,6 +205,7 @@ abstract class Analytics {
         gaClient: gaClient ?? const FakeGAClient(),
         enableAsserts: true,
         clientIde: clientIde,
+        enabledFeatures: enabledFeatures,
       );
 
   /// The shared identifier for Flutter and Dart related tooling using
@@ -352,6 +363,7 @@ class AnalyticsImpl implements Analytics {
     required String? flutterChannel,
     required String? flutterVersion,
     required String? clientIde,
+    required String? enabledFeatures,
     required String dartVersion,
     required DevicePlatform platform,
     required this.toolsMessageVersion,
@@ -426,6 +438,7 @@ class AnalyticsImpl implements Analytics {
           truncateStringToLength(io.Platform.operatingSystemVersion, 36),
       locale: io.Platform.localeName,
       clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
     );
 
     // Initialize the log handler to persist events that are being sent
@@ -705,6 +718,7 @@ class FakeAnalytics extends AnalyticsImpl {
     super.flutterChannel,
     super.flutterVersion,
     super.clientIde,
+    super.enabledFeatures,
   }) : super(
           gaClient: const FakeGAClient(),
           enableAsserts: true,

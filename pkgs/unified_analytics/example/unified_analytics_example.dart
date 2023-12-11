@@ -18,6 +18,7 @@ final Analytics analytics = Analytics.development(
   // This can be set to true while testing to validate
   // against GA4 usage limitations (character limits, etc.)
   enableAsserts: false,
+  enabledFeatures: 'feature-1,feature-2',
 );
 
 // Timing a process and sending the event
