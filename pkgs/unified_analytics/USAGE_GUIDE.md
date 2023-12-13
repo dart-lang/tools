@@ -194,13 +194,15 @@ print(analytics.logFileStats());
 //     "endDateTime": "2023-03-08 15:46:36.318211",
 //     "minsFromEndDateTime": 136,
 //     "sessionCount": 7,
-//     "flutterChannelCount": 2,
 //     "toolCount": 1,
 //     "recordCount": 23,
 //     "eventCount": {
 //         "hot_reload_time": 16,
 //         "analytics_collection_enabled": 7,
 //         ... scales up with number of events
+//     },
+//     "flutterChannelCount": {
+//         "stable": 5
 //     }
 // }
 ```
