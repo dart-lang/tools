@@ -1,4 +1,6 @@
-## 1.7.2-wip
+## 1.7.2
+
+- Update `package:vm_service` constraints to '>=12.0.0 <15.0.0'.
 
 ## 1.7.1
 
