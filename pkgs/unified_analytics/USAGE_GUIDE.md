@@ -186,26 +186,8 @@ final Analytics analytics = Analytics(...);
 // string to view; data can also be accessed through
 // [LogFileStats] getters
 print(analytics.logFileStats());
-
-// Prints out the below
-// {
-//     "startDateTime": "2023-02-22 15:23:24.410921",
-//     "minsFromStartDateTime": 20319,
-//     "endDateTime": "2023-03-08 15:46:36.318211",
-//     "minsFromEndDateTime": 136,
-//     "sessionCount": 7,
-//     "toolCount": 1,
-//     "recordCount": 23,
-//     "eventCount": {
-//         "hot_reload_time": 16,
-//         "analytics_collection_enabled": 7,
-//         ... scales up with number of events
-//     },
-//     "flutterChannelCount": {
-//         "stable": 5
-//     }
-// }
 ```
+Refer to the `LogFileStats` instance [variables](lib/src/log_handler.dart) for details on the result.
 
 Explanation of the each key above
 
