@@ -1,3 +1,7 @@
+## 2.2.3-wip
+
+- Require Dart 3.2.
+
 ## 2.2.2
 
 - Added package topics to the pubspec file.
