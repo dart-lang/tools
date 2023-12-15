@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/dart-lang/cli_util/workflows/Dart/badge.svg)](https://github.com/dart-lang/cli_util/actions)
+[![Dart CI](https://github.com/dart-lang/cli_util/actions/workflows/build.yaml/badge.svg)](https://github.com/dart-lang/cli_util/actions/workflows/build.yaml)
 [![Pub](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dev/packages/cli_util)
 [![package publisher](https://img.shields.io/pub/publisher/cli_util.svg)](https://pub.dev/packages/cli_util/publisher)
 

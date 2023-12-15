@@ -1,7 +1,12 @@
+## 0.4.1
+
+- Fix a broken link in the readme.
+- Require Dart 3.0.
+
 ## 0.4.0
 
 - Remove the deprecated method `getSdkDir()` (instead, use `getSdkPath()`).
-- Require Dart 2.19
+- Require Dart 2.19.
 
 ## 0.3.5
 - Make `applicationConfigHome` throw an `Exception` when it fails to find a
