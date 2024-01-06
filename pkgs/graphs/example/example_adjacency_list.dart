@@ -14,9 +14,9 @@ void main() {
   final nodeC = Node('C', data: 3);
   final nodeD = Node('D', data: 4);
   final graph = DirectedGraphAdjacencyList({
-    nodeA: [nodeB, nodeC],
-    nodeB: [nodeC, nodeD],
-    nodeC: [nodeB, nodeD],
+    nodeA: {nodeB, nodeC},
+    nodeB: {nodeC, nodeD},
+    nodeC: {nodeB, nodeD},
   });
 
   print('In directed graph $nodeC next to ${graph.nodesNextTo(nodeC)}');

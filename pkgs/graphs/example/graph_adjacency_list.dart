@@ -15,7 +15,8 @@ import 'graph_node_edge.dart';
 ///
 /// Data is stored on the [Node] class.
 class DirectedGraphAdjacencyList<T> {
-  final Map<Node<T>, List<Node<T>>> nodes;
+  /// a Set because this model only supports one directed from-to per pair
+  final Map<Node<T>, Set<Node<T>>> nodes;
 
   DirectedGraphAdjacencyList(this.nodes);
 
