@@ -10,7 +10,11 @@ import 'graph_node_edge.dart';
 /// A representation of a directed graph.
 ///
 /// Graph is stored as a set of [DirectedEdge].
-/// Each edge relates two [Node]
+/// Each edge relates two [Node] objects.
+///
+/// [nodesNext] can be used as a edges function for directed graphs.
+/// It can support undirected graphs by adding reverse direction relationships
+/// for each forward relationship, adding two [DirectedEdge] for each.
 class DirectedGraphEdgeList<T> {
   final Set<DirectedEdge<T>> edges;
 
@@ -26,6 +30,8 @@ class DirectedGraphEdgeList<T> {
 ///
 /// Graph is stored as a set of [UndirectedEdge].
 /// Each edge relates two [Node]
+///
+/// [nodesNextTo] can be used as a edges function for undirected graphs.
 class UndirectedGraphEdgeList<T> {
   final Set<UndirectedEdge<T>> edges;
 

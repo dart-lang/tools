@@ -8,17 +8,23 @@ import 'graph_node_edge.dart';
 
 /// A representation of a directed graph.
 ///
+/// [nodesNext] can be used as a edges function for directed graphs.
+/// It can support undirected graphs by adding reverse direction relationships
+/// for each forward relationship
+/// or by using the, inefficient, bi-directional edge walker [nodesNextTo]
+///
 /// Data is stored on the [Node] class.
 class DirectedGraphAdjacencyList<T> {
   final Map<Node<T>, List<Node<T>>> nodes;
 
   DirectedGraphAdjacencyList(this.nodes);
 
-  /// Returns the nodes on the _to_ side of an edge _from_ [aNode]
+  /// Returns the nodes on the _to_ side of an edge _from_ [aNode].
+  /// This is a directed `edges` function for this graph
   Iterable<Node<T>> nodesNext(Node<T> aNode) => nodes[aNode] ?? [];
 
   /// Returns the nodes next to [aNode] on either side of a _from_ or _to_
-  /// This is essentially the `edges` function for this graph
+  /// This is an undirected `edges` function for this graph
   Iterable<Node<T>> nodesNextTo(Node<T> aNode) {
     final results = nodesNext(aNode).toSet();
 
