@@ -24,7 +24,7 @@ class Node<T> {
 }
 
 /// An [Edge] epresents the relationship of two nodes.
-class Edge<N, T> {
+abstract class Edge<N, T> {
   final Node<N> from;
   final Node<N> to;
   final T? data;
@@ -46,15 +46,25 @@ class Edge<N, T> {
 class DirectedEdge<N, T> extends Edge<N, T> {
   DirectedEdge(super.from, super.to, {super.data});
 
+  /// Includes the data type [runtimeType] but not the data.
+  /// Two edges between the same nodes of the same type represent the same edge
   @override
   bool operator ==(Object other) =>
-      other is DirectedEdge && other.from == from && other.to == to;
+      // Includes the runtime type because that takes into account generics
+      other is DirectedEdge &&
+      runtimeType == other.runtimeType &&
+      other.from == from &&
+      other.to == to;
 
+  /// Includes the data type [runtimeType] but not the data.
+  /// Two edges between the same nodes of the same type represent the same edge
   @override
   int get hashCode {
+    // Includes the runtime type because that takes into account generics
+    final typeHash = runtimeType.hashCode;
     final fromHash = from.hashCode;
     final toHash = to.hashCode;
-    return '$fromHash:$toHash'.hashCode;
+    return '$typeHash:$fromHash:$toHash'.hashCode;
   }
 }
 
@@ -66,20 +76,29 @@ class DirectedEdge<N, T> extends Edge<N, T> {
 class UndirectedEdge<N, T> extends Edge<N, T> {
   UndirectedEdge(super.from, super.to, {super.data});
 
+  /// Includes the data type [runtimeType] but not the data.
+  /// Two edges between the same nodes of the same type represent the same edge
   @override
   bool operator ==(Object other) =>
+      // Includes the runtime type because that takes into account generics
       other is UndirectedEdge &&
+      runtimeType == other.runtimeType &&
       ((other.from == from && other.to == to) ||
           (other.from == to && other.to == from));
 
+  /// Includes the data type [runtimeType] but not the data.
+  /// Two edges between the same nodes of the same type represent the same edge
   @override
   int get hashCode {
+    // Includes the runtime type because that takes into account generics
+    final typeHash = runtimeType.hashCode;
     final fromHash = from.hashCode;
     final toHash = to.hashCode;
+    // always put the smaller node hash first to be undirected
     if (toHash < fromHash) {
-      return '$toHash:$fromHash'.hashCode;
+      return '$typeHash:$toHash:$fromHash'.hashCode;
     } else {
-      return '$fromHash:$toHash'.hashCode;
+      return '$typeHash:$fromHash:$toHash'.hashCode;
     }
   }
 }
