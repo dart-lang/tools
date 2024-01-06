@@ -6,6 +6,8 @@ import 'package:graphs/graphs.dart';
 import 'graph_adjacency_list.dart';
 import 'graph_node_edge.dart';
 
+/// Uses representation of a directed graph implemented as an adjacency list.
+///
 void main() {
   final nodeA = Node('A', 1);
   final nodeB = Node('B', 2);

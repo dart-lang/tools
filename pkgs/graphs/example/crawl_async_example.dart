@@ -16,9 +16,19 @@ import 'package:pool/pool.dart';
 
 /// Print a transitive set of imported URIs where libraries are read
 /// asynchronously.
+///
+/// Treats source files/URI as nodes and
+/// import statements in the file as edges to other nodes/URIs/files.
+/// The graph can be of any size.
+/// Graph topology is discovered by analysis rather than pre-built.
+///
+/// It is essentially an adjacency list with a Map<Uri, Source> where
+/// the URI is the node and Source contains a list of related nodes
+///
 Future<void> main() async {
   // Limits calls to [findImports].
   final pool = Pool(10);
+  // Start with a single root that is this url.
   final allImports = await crawlAsync<Uri, Source>(
     [Uri.parse('package:graphs/graphs.dart')],
     read,
@@ -48,6 +58,7 @@ Future<AnalysisContext> get analysisContext async {
   return context;
 }
 
+/// Finds the edges bound to a [Source] (file), the 'dart:' imports
 Future<Iterable<Uri>> findImports(Uri from, Source source) async =>
     source.unit.directives
         .whereType<UriBasedDirective>()
@@ -70,6 +81,7 @@ Future<String> pathForUri(Uri uri) async {
   return p.fromUri(fileUri);
 }
 
+/// The [Source] object for a URI
 Future<Source> read(Uri uri) async => Source(uri, await parseUri(uri));
 
 Uri resolveImport(String import, Uri from) {
@@ -81,6 +93,8 @@ Uri resolveImport(String import, Uri from) {
   return Uri.parse('package:${p.join(package, path)}');
 }
 
+/// A representation of a source file located at URI
+/// The unit is the analysis of that source file including imports
 class Source {
   final Uri uri;
   final CompilationUnit unit;
