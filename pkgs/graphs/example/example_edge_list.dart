@@ -10,42 +10,48 @@ import 'graph_node_edge.dart';
 /// Uses representation of a directed graph implemented as an edge list.
 ///
 void main() {
-  final nodeA = Node('A', 1);
-  final nodeB = Node('B', 2);
-  final nodeC = Node('C', 3);
-  final nodeD = Node('D', 4);
+  final nodeA = Node('A', data: 1);
+  final nodeB = Node('B', data: 2);
+  final nodeC = Node('C', data: 3);
+  final nodeD = Node('D', data: 4);
 
   final nodes = <Node<int>>[nodeA, nodeB, nodeC, nodeD];
 
   final graphDirected = DirectedGraphEdgeList({
-    DirectedEdge(nodeA, nodeB),
-    DirectedEdge(nodeA, nodeC),
-    DirectedEdge(nodeB, nodeC),
-    DirectedEdge(nodeB, nodeD),
-    DirectedEdge(nodeC, nodeB),
-    DirectedEdge(nodeC, nodeD),
+    DirectedEdge(nodeA, nodeB, data: 'parent'),
+    DirectedEdge(nodeA, nodeC, data: 'parent'),
+    DirectedEdge(nodeB, nodeC, data: 'sibling'),
+    DirectedEdge(nodeB, nodeD, data: 'parent'),
+    DirectedEdge(nodeC, nodeB, data: 'sibling'),
+    DirectedEdge<int, void>(nodeC, nodeD),
   });
   print(
-    'In directed graph $nodeC next to ${graphDirected.nodesNext(nodeC)}',
+    'Directed: $nodeB next to ${graphDirected.nodesNextTo(nodeB)}',
+  );
+
+  print(
+    'Directed: edges leaving $nodeB : ${graphDirected.edgesNextTo(nodeB)}',
   );
 
   final components = stronglyConnectedComponents<Node<int>>(
     nodes,
-    graphDirected.nodesNext,
+    graphDirected.nodesNextTo,
   );
 
   print('Strongly connected components $components');
 
   final graphUndirected = UndirectedGraphEdgeList({
-    UndirectedEdge(nodeA, nodeB),
-    UndirectedEdge(nodeA, nodeC),
-    UndirectedEdge(nodeB, nodeC),
-    UndirectedEdge(nodeB, nodeD),
-    UndirectedEdge(nodeC, nodeB),
-    UndirectedEdge(nodeC, nodeD),
+    UndirectedEdge(nodeA, nodeB, data: 'parent'),
+    UndirectedEdge(nodeA, nodeC, data: 'parent'),
+    UndirectedEdge(nodeB, nodeC, data: 'sibling'),
+    UndirectedEdge(nodeB, nodeD, data: 'parent'),
+    UndirectedEdge(nodeC, nodeB, data: 'sibling'),
+    UndirectedEdge<int, void>(nodeC, nodeD),
   });
 
+  print('Undirected: $nodeB next to ${graphUndirected.nodesAdjacent(nodeB)}');
+
   print(
-    'In undirected graph $nodeC next to ${graphUndirected.nodesNextTo(nodeC)}',
+    'Unirected: edges leaving $nodeB : ${graphUndirected.edgesAdjacent(nodeB)}',
   );
 }

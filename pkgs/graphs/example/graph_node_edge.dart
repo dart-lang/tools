@@ -9,9 +9,9 @@
 /// Generic node where the id is used for identity purposes
 class Node<T> {
   final String id;
-  final T data;
+  final T? data;
 
-  Node(this.id, this.data);
+  Node(this.id, {this.data});
 
   @override
   bool operator ==(Object other) => other is Node && other.id == id;
@@ -24,20 +24,27 @@ class Node<T> {
 }
 
 /// An [Edge] epresents the relationship of two nodes.
-class Edge<T> {
-  final Node<T> from;
-  final Node<T> to;
-  Edge(this.from, this.to);
+class Edge<N, T> {
+  final Node<N> from;
+  final Node<N> to;
+  final T? data;
+  Edge(this.from, this.to, {this.data});
 
   @override
-  String toString() => '<$from -> $to>';
+  String toString() {
+    if (data == null) {
+      return '<$from -> $to>';
+    } else {
+      return '<$from -> $to : $data>';
+    }
+  }
 }
 
 /// An [Edge] epresents the relationship of two nodes.
 /// A [DirectedEdge] treates that relationship as directional
 /// equals and hashcode are implemented taking into account direction
-class DirectedEdge<T> extends Edge<T> {
-  DirectedEdge(super.from, super.to);
+class DirectedEdge<N, T> extends Edge<N, T> {
+  DirectedEdge(super.from, super.to, {super.data});
 
   @override
   bool operator ==(Object other) =>
@@ -56,8 +63,8 @@ class DirectedEdge<T> extends Edge<T> {
 
 /// equals and hashcode are implemented ignoring direction
 /// from and to are just names without directional meaning
-class UndirectedEdge<T> extends Edge<T> {
-  UndirectedEdge(super.from, super.to);
+class UndirectedEdge<N, T> extends Edge<N, T> {
+  UndirectedEdge(super.from, super.to, {super.data});
 
   @override
   bool operator ==(Object other) =>
