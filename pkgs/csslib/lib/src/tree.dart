@@ -22,12 +22,11 @@ class Identifier extends TreeNode {
   dynamic visit(VisitorBase visitor) => visitor.visitIdentifier(this);
 
   @override
-  String toString() {
-    // Try to use the identifier's original lexeme to preserve any escape codes
-    // as authored. The name, which may include escaped values, may no longer be
-    // a valid identifier.
-    return span?.text ?? name;
-  }
+  String toString() =>
+      // Try to use the identifier's original lexeme to preserve any escape
+      // codes as authored. The name, which may include escaped values, may no
+      // longer be a valid identifier.
+      span?.text ?? name;
 }
 
 class Wildcard extends TreeNode {
@@ -147,20 +146,13 @@ class SimpleSelectorSequence extends TreeNode {
   bool get isCombinatorDescendant =>
       combinator == TokenKind.COMBINATOR_DESCENDANT;
 
-  String get _combinatorToString {
-    switch (combinator) {
-      case TokenKind.COMBINATOR_DESCENDANT:
-        return ' ';
-      case TokenKind.COMBINATOR_GREATER:
-        return ' > ';
-      case TokenKind.COMBINATOR_PLUS:
-        return ' + ';
-      case TokenKind.COMBINATOR_TILDE:
-        return ' ~ ';
-      default:
-        return '';
-    }
-  }
+  String get _combinatorToString => switch (combinator) {
+        TokenKind.COMBINATOR_DESCENDANT => ' ',
+        TokenKind.COMBINATOR_GREATER => ' > ',
+        TokenKind.COMBINATOR_PLUS => ' + ',
+        TokenKind.COMBINATOR_TILDE => ' ~ ',
+        _ => ''
+      };
 
   @override
   SimpleSelectorSequence clone() =>
@@ -243,44 +235,27 @@ class AttributeSelector extends SimpleSelector {
 
   int get operatorKind => _op;
 
-  String? matchOperator() {
-    switch (_op) {
-      case TokenKind.EQUALS:
-        return '=';
-      case TokenKind.INCLUDES:
-        return '~=';
-      case TokenKind.DASH_MATCH:
-        return '|=';
-      case TokenKind.PREFIX_MATCH:
-        return '^=';
-      case TokenKind.SUFFIX_MATCH:
-        return '\$=';
-      case TokenKind.SUBSTRING_MATCH:
-        return '*=';
-      case TokenKind.NO_MATCH:
-        return '';
-    }
-    return null;
-  }
+  String? matchOperator() => switch (_op) {
+        TokenKind.EQUALS => '=',
+        TokenKind.INCLUDES => '~=',
+        TokenKind.DASH_MATCH => '|=',
+        TokenKind.PREFIX_MATCH => '^=',
+        TokenKind.SUFFIX_MATCH => '\$=',
+        TokenKind.SUBSTRING_MATCH => '*=',
+        TokenKind.NO_MATCH => '',
+        _ => null
+      };
 
   // Return the TokenKind for operator used by visitAttributeSelector.
-  String? matchOperatorAsTokenString() {
-    switch (_op) {
-      case TokenKind.EQUALS:
-        return 'EQUALS';
-      case TokenKind.INCLUDES:
-        return 'INCLUDES';
-      case TokenKind.DASH_MATCH:
-        return 'DASH_MATCH';
-      case TokenKind.PREFIX_MATCH:
-        return 'PREFIX_MATCH';
-      case TokenKind.SUFFIX_MATCH:
-        return 'SUFFIX_MATCH';
-      case TokenKind.SUBSTRING_MATCH:
-        return 'SUBSTRING_MATCH';
-    }
-    return null;
-  }
+  String? matchOperatorAsTokenString() => switch (_op) {
+        TokenKind.EQUALS => 'EQUALS',
+        TokenKind.INCLUDES => 'INCLUDES',
+        TokenKind.DASH_MATCH => 'DASH_MATCH',
+        TokenKind.PREFIX_MATCH => 'PREFIX_MATCH',
+        TokenKind.SUFFIX_MATCH => 'SUFFIX_MATCH',
+        TokenKind.SUBSTRING_MATCH => 'SUBSTRING_MATCH',
+        _ => null
+      };
 
   String valueToString() {
     if (value != null) {
@@ -406,9 +381,8 @@ class SelectorExpression extends TreeNode {
   SourceSpan get span => super.span!;
 
   @override
-  SelectorExpression clone() {
-    return SelectorExpression(expressions.map((e) => e.clone()).toList(), span);
-  }
+  SelectorExpression clone() =>
+      SelectorExpression(expressions.map((e) => e.clone()).toList(), span);
 
   @override
   dynamic visit(VisitorBase visitor) => visitor.visitSelectorExpression(this);
@@ -824,20 +798,15 @@ class KeyFrameDirective extends Directive {
     _blocks.add(block);
   }
 
-  String? get keyFrameName {
-    switch (_keyframeName) {
-      case TokenKind.DIRECTIVE_KEYFRAMES:
-      case TokenKind.DIRECTIVE_MS_KEYFRAMES:
-        return '@keyframes';
-      case TokenKind.DIRECTIVE_WEB_KIT_KEYFRAMES:
-        return '@-webkit-keyframes';
-      case TokenKind.DIRECTIVE_MOZ_KEYFRAMES:
-        return '@-moz-keyframes';
-      case TokenKind.DIRECTIVE_O_KEYFRAMES:
-        return '@-o-keyframes';
-    }
-    return null;
-  }
+  String? get keyFrameName => switch (_keyframeName) {
+        TokenKind.DIRECTIVE_KEYFRAMES ||
+        TokenKind.DIRECTIVE_MS_KEYFRAMES =>
+          '@keyframes',
+        TokenKind.DIRECTIVE_WEB_KIT_KEYFRAMES => '@-webkit-keyframes',
+        TokenKind.DIRECTIVE_MOZ_KEYFRAMES => '@-moz-keyframes',
+        TokenKind.DIRECTIVE_O_KEYFRAMES => '@-o-keyframes',
+        _ => null
+      };
 
   @override
   KeyFrameDirective clone() {
@@ -1611,9 +1580,8 @@ class FontExpression extends DartStyleExpression {
   }
 
   /// Merge the two FontExpression and return the result.
-  factory FontExpression.merge(FontExpression x, FontExpression y) {
-    return FontExpression._merge(x, y, y.span);
-  }
+  factory FontExpression.merge(FontExpression x, FontExpression y) =>
+      FontExpression._merge(x, y, y.span);
 
   FontExpression._merge(FontExpression x, FontExpression y, SourceSpan? span)
       : font = Font.merge(x.font, y.font)!,
@@ -1676,9 +1644,8 @@ class MarginExpression extends BoxExpression {
   }
 
   /// Merge the two MarginExpressions and return the result.
-  factory MarginExpression.merge(MarginExpression x, MarginExpression y) {
-    return MarginExpression._merge(x, y, y.span);
-  }
+  factory MarginExpression.merge(MarginExpression x, MarginExpression y) =>
+      MarginExpression._merge(x, y, y.span);
 
   MarginExpression._merge(
       MarginExpression x, MarginExpression y, SourceSpan? span)
@@ -1712,9 +1679,8 @@ class BorderExpression extends BoxExpression {
   }
 
   /// Merge the two BorderExpression and return the result.
-  factory BorderExpression.merge(BorderExpression x, BorderExpression y) {
-    return BorderExpression._merge(x, y, y.span);
-  }
+  factory BorderExpression.merge(BorderExpression x, BorderExpression y) =>
+      BorderExpression._merge(x, y, y.span);
 
   BorderExpression._merge(
       BorderExpression x, BorderExpression y, SourceSpan? span)
@@ -1793,9 +1759,8 @@ class PaddingExpression extends BoxExpression {
   }
 
   /// Merge the two PaddingExpression and return the result.
-  factory PaddingExpression.merge(PaddingExpression x, PaddingExpression y) {
-    return PaddingExpression._merge(x, y, y.span);
-  }
+  factory PaddingExpression.merge(PaddingExpression x, PaddingExpression y) =>
+      PaddingExpression._merge(x, y, y.span);
 
   PaddingExpression._merge(
       PaddingExpression x, PaddingExpression y, SourceSpan? span)

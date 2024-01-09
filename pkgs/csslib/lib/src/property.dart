@@ -504,14 +504,12 @@ class Rgba implements _StyleProperty, ColorBase {
 
   factory Rgba.fromColor(Color color) => color.rgba;
 
-  factory Rgba.fromArgbValue(num value) {
-    return Rgba(
-      (value.toInt() & 0xff000000) >> 0x18, // a
-      (value.toInt() & 0xff0000) >> 0x10, // r
-      (value.toInt() & 0xff00) >> 8, // g
-      value.toInt() & 0xff,
-    ); // b
-  }
+  factory Rgba.fromArgbValue(num value) => Rgba(
+        (value.toInt() & 0xff000000) >> 0x18, // a
+        (value.toInt() & 0xff0000) >> 0x10, // r
+        (value.toInt() & 0xff00) >> 8, // g
+        value.toInt() & 0xff,
+      ); // b
 
   factory Rgba.fromHsla(Hsla hsla) {
     // Convert to Rgba.
@@ -752,10 +750,9 @@ class PointXY implements _StyleProperty {
   const PointXY(this.x, this.y);
 
   @override
-  String? get cssExpression {
-    // TODO(terry): TBD
-    return null;
-  }
+  String? get cssExpression =>
+      // TODO(terry): TBD
+      null;
 }
 
 // TODO(terry): Implement style and color.
@@ -779,14 +776,12 @@ class Border implements _StyleProperty {
   int get height => top! + bottom!;
 
   @override
-  String get cssExpression {
-    return (top == left && bottom == right && top == right)
-        ? '${left}px'
-        : "${top != null ? '$top' : '0'}px "
-            "${right != null ? '$right' : '0'}px "
-            "${bottom != null ? '$bottom' : '0'}px "
-            "${left != null ? '$left' : '0'}px";
-  }
+  String get cssExpression => (top == left && bottom == right && top == right)
+      ? '${left}px'
+      : "${top != null ? '$top' : '0'}px "
+          "${right != null ? '$right' : '0'}px "
+          "${bottom != null ? '$bottom' : '0'}px "
+          "${left != null ? '$left' : '0'}px";
 }
 
 /// Font style constants.
@@ -1069,10 +1064,9 @@ class Font implements _StyleProperty {
   }
 
   @override
-  int get hashCode {
-    // TODO(jimhug): Lot's of potential collisions here. List of fonts, etc.
-    return size!.toInt() % family![0].hashCode;
-  }
+  int get hashCode =>
+      // TODO(jimhug): Lot's of potential collisions here. List of fonts, etc.
+      size!.toInt() % family![0].hashCode;
 
   @override
   bool operator ==(Object other) {

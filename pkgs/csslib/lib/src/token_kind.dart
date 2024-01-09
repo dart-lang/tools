@@ -507,24 +507,20 @@ class TokenKind {
   }
 
   /// Return the token that matches the unit ident found.
-  static int matchUnits(String text, int offset, int length) {
-    return matchList(_UNITS, 'unit', text, offset, length);
-  }
+  static int matchUnits(String text, int offset, int length) =>
+      matchList(_UNITS, 'unit', text, offset, length);
 
   /// Return the token that matches the directive name found.
-  static int matchDirectives(String text, int offset, int length) {
-    return matchList(_DIRECTIVES, 'type', text, offset, length);
-  }
+  static int matchDirectives(String text, int offset, int length) =>
+      matchList(_DIRECTIVES, 'type', text, offset, length);
 
   /// Return the token that matches the margin directive name found.
-  static int matchMarginDirectives(String text, int offset, int length) {
-    return matchList(MARGIN_DIRECTIVES, 'type', text, offset, length);
-  }
+  static int matchMarginDirectives(String text, int offset, int length) =>
+      matchList(MARGIN_DIRECTIVES, 'type', text, offset, length);
 
   /// Return the token that matches the media operator found.
-  static int matchMediaOperator(String text, int offset, int length) {
-    return matchList(MEDIA_OPERATORS, 'type', text, offset, length);
-  }
+  static int matchMediaOperator(String text, int offset, int length) =>
+      matchList(MEDIA_OPERATORS, 'type', text, offset, length);
 
   static String? idToValue(Iterable<Object?> identList, int tokenId) {
     for (var entry in identList) {
@@ -564,9 +560,7 @@ class TokenKind {
   }
 
   /// Return RGB value as [int] from a color entry in _EXTENDED_COLOR_NAMES.
-  static int colorValue(Map<String, Object> entry) {
-    return entry['value'] as int;
-  }
+  static int colorValue(Map<String, Object> entry) => entry['value'] as int;
 
   static String? hexToColorName(Object hexValue) {
     for (final entry in _EXTENDED_COLOR_NAMES) {
@@ -604,82 +598,44 @@ class TokenKind {
     return invertResult.toString();
   }
 
-  static String kindToString(int kind) {
-    switch (kind) {
-      case TokenKind.UNUSED:
-        return 'ERROR';
-      case TokenKind.END_OF_FILE:
-        return 'end of file';
-      case TokenKind.LPAREN:
-        return '(';
-      case TokenKind.RPAREN:
-        return ')';
-      case TokenKind.LBRACK:
-        return '[';
-      case TokenKind.RBRACK:
-        return ']';
-      case TokenKind.LBRACE:
-        return '{';
-      case TokenKind.RBRACE:
-        return '}';
-      case TokenKind.DOT:
-        return '.';
-      case TokenKind.SEMICOLON:
-        return ';';
-      case TokenKind.AT:
-        return '@';
-      case TokenKind.HASH:
-        return '#';
-      case TokenKind.PLUS:
-        return '+';
-      case TokenKind.GREATER:
-        return '>';
-      case TokenKind.TILDE:
-        return '~';
-      case TokenKind.ASTERISK:
-        return '*';
-      case TokenKind.NAMESPACE:
-        return '|';
-      case TokenKind.COLON:
-        return ':';
-      case TokenKind.PRIVATE_NAME:
-        return '_';
-      case TokenKind.COMMA:
-        return ',';
-      case TokenKind.SPACE:
-        return ' ';
-      case TokenKind.TAB:
-        return '\t';
-      case TokenKind.NEWLINE:
-        return '\n';
-      case TokenKind.RETURN:
-        return '\r';
-      case TokenKind.PERCENT:
-        return '%';
-      case TokenKind.SINGLE_QUOTE:
-        return "'";
-      case TokenKind.DOUBLE_QUOTE:
-        return '"';
-      case TokenKind.SLASH:
-        return '/';
-      case TokenKind.EQUALS:
-        return '=';
-      case TokenKind.CARET:
-        return '^';
-      case TokenKind.DOLLAR:
-        return '\$';
-      case TokenKind.LESS:
-        return '<';
-      case TokenKind.BANG:
-        return '!';
-      case TokenKind.MINUS:
-        return '-';
-      case TokenKind.BACKSLASH:
-        return '\\';
-      default:
-        throw StateError('Unknown TOKEN');
-    }
-  }
+  static String kindToString(int kind) => switch (kind) {
+        TokenKind.UNUSED => 'ERROR',
+        TokenKind.END_OF_FILE => 'end of file',
+        TokenKind.LPAREN => '(',
+        TokenKind.RPAREN => ')',
+        TokenKind.LBRACK => '[',
+        TokenKind.RBRACK => ']',
+        TokenKind.LBRACE => '{',
+        TokenKind.RBRACE => '}',
+        TokenKind.DOT => '.',
+        TokenKind.SEMICOLON => ';',
+        TokenKind.AT => '@',
+        TokenKind.HASH => '#',
+        TokenKind.PLUS => '+',
+        TokenKind.GREATER => '>',
+        TokenKind.TILDE => '~',
+        TokenKind.ASTERISK => '*',
+        TokenKind.NAMESPACE => '|',
+        TokenKind.COLON => ':',
+        TokenKind.PRIVATE_NAME => '_',
+        TokenKind.COMMA => ',',
+        TokenKind.SPACE => ' ',
+        TokenKind.TAB => '\t',
+        TokenKind.NEWLINE => '\n',
+        TokenKind.RETURN => '\r',
+        TokenKind.PERCENT => '%',
+        TokenKind.SINGLE_QUOTE => "'",
+        TokenKind.DOUBLE_QUOTE => '"',
+        TokenKind.SLASH => '/',
+        TokenKind.EQUALS => '=',
+        TokenKind.CARET => '^',
+        TokenKind.DOLLAR => '\$',
+        TokenKind.LESS => '<',
+        TokenKind.BANG => '!',
+        TokenKind.MINUS => '-',
+        TokenKind.BACKSLASH => '\\',
+        _ => throw StateError('Unknown TOKEN')
+      };
 
   static bool isKindIdentifier(int kind) {
     switch (kind) {
@@ -724,9 +680,7 @@ class TokenKind {
     }
   }
 
-  static bool isIdentifier(int kind) {
-    return kind == IDENTIFIER;
-  }
+  static bool isIdentifier(int kind) => kind == IDENTIFIER;
 }
 
 // Note: these names should match TokenKind names

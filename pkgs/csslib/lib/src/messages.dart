@@ -86,7 +86,7 @@ class Messages {
   final List<Message> messages = <Message>[];
 
   Messages({PreprocessorOptions? options, this.printHandler = print})
-      : options = options ?? PreprocessorOptions();
+      : options = options ?? const PreprocessorOptions();
 
   /// Report a compile-time CSS error.
   void error(String message, SourceSpan? span) {

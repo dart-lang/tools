@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:csslib/visitor.dart';
 import 'package:source_span/source_span.dart';
+
+import '../visitor.dart';
 
 /// Can be thrown on any Css runtime problem includes source location.
 class CssSelectorException extends SourceSpanException {

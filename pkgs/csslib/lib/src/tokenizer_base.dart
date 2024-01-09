@@ -107,14 +107,10 @@ abstract class TokenizerBase {
     return false;
   }
 
-  Token _finishToken(int kind) {
-    return Token(kind, _file.span(_startIndex, _index));
-  }
+  Token _finishToken(int kind) => Token(kind, _file.span(_startIndex, _index));
 
-  Token _errorToken([String? message]) {
-    return ErrorToken(
-        TokenKind.ERROR, _file.span(_startIndex, _index), message);
-  }
+  Token _errorToken([String? message]) =>
+      ErrorToken(TokenKind.ERROR, _file.span(_startIndex, _index), message);
 
   Token finishWhitespace() {
     _index--;

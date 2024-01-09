@@ -38,7 +38,7 @@ class ParserState extends TokenizerState {
 
 void _createMessages({List<Message>? errors, PreprocessorOptions? options}) {
   errors ??= [];
-  options ??= PreprocessorOptions(useColors: false, inputFile: 'memory');
+  options ??= const PreprocessorOptions(useColors: false, inputFile: 'memory');
 
   messages = Messages(options: options, printHandler: errors.add);
 }
@@ -258,9 +258,7 @@ class _Parser {
   ///////////////////////////////////////////////////////////////////
   // Basic support methods
   ///////////////////////////////////////////////////////////////////
-  int _peek() {
-    return _peekToken.kind;
-  }
+  int _peek() => _peekToken.kind;
 
   Token _next({bool unicodeRange = false}) {
     final next = _previousToken = _peekToken;
@@ -268,14 +266,10 @@ class _Parser {
     return next;
   }
 
-  bool _peekKind(int kind) {
-    return _peekToken.kind == kind;
-  }
+  bool _peekKind(int kind) => _peekToken.kind == kind;
 
   // Is the next token a legal identifier?  This includes pseudo-keywords.
-  bool _peekIdentifier() {
-    return TokenKind.isIdentifier(_peekToken.kind);
-  }
+  bool _peekIdentifier() => TokenKind.isIdentifier(_peekToken.kind);
 
   /// Marks the parser/tokenizer look ahead to support Less nested selectors.
   ParserState get _mark => ParserState(_peekToken, _previousToken, tokenizer);
@@ -792,9 +786,8 @@ class _Parser {
       }
 
       var declGroup = processDeclarations(checkBrace: false);
-      if (declGroup.declarations.any((decl) {
-        return decl is Declaration && decl is! IncludeMixinAtDeclaration;
-      })) {
+      if (declGroup.declarations.any((decl) =>
+          decl is Declaration && decl is! IncludeMixinAtDeclaration)) {
         var newDecls = <Declaration>[];
         for (var include in productions) {
           // If declGroup has items that are declarations then we assume
@@ -2038,40 +2031,31 @@ class _Parser {
   DartStyleExpression? processOneNumber(Expressions exprs, int part) {
     var value = marginValue(exprs.expressions[0]);
     if (value != null) {
-      switch (part) {
-        case _marginPartLeft:
-          return MarginExpression(exprs.span, left: value);
-        case _marginPartTop:
-          return MarginExpression(exprs.span, top: value);
-        case _marginPartRight:
-          return MarginExpression(exprs.span, right: value);
-        case _marginPartBottom:
-          return MarginExpression(exprs.span, bottom: value);
-        case _borderPartLeft:
-        case _borderPartLeftWidth:
-          return BorderExpression(exprs.span, left: value);
-        case _borderPartTop:
-        case _borderPartTopWidth:
-          return BorderExpression(exprs.span, top: value);
-        case _borderPartRight:
-        case _borderPartRightWidth:
-          return BorderExpression(exprs.span, right: value);
-        case _borderPartBottom:
-        case _borderPartBottomWidth:
-          return BorderExpression(exprs.span, bottom: value);
-        case _heightPart:
-          return HeightExpression(exprs.span, value);
-        case _widthPart:
-          return WidthExpression(exprs.span, value);
-        case _paddingPartLeft:
-          return PaddingExpression(exprs.span, left: value);
-        case _paddingPartTop:
-          return PaddingExpression(exprs.span, top: value);
-        case _paddingPartRight:
-          return PaddingExpression(exprs.span, right: value);
-        case _paddingPartBottom:
-          return PaddingExpression(exprs.span, bottom: value);
-      }
+      return switch (part) {
+        _marginPartLeft => MarginExpression(exprs.span, left: value),
+        _marginPartTop => MarginExpression(exprs.span, top: value),
+        _marginPartRight => MarginExpression(exprs.span, right: value),
+        _marginPartBottom => MarginExpression(exprs.span, bottom: value),
+        _borderPartLeft ||
+        _borderPartLeftWidth =>
+          BorderExpression(exprs.span, left: value),
+        _borderPartTop ||
+        _borderPartTopWidth =>
+          BorderExpression(exprs.span, top: value),
+        _borderPartRight ||
+        _borderPartRightWidth =>
+          BorderExpression(exprs.span, right: value),
+        _borderPartBottom ||
+        _borderPartBottomWidth =>
+          BorderExpression(exprs.span, bottom: value),
+        _heightPart => HeightExpression(exprs.span, value),
+        _widthPart => WidthExpression(exprs.span, value),
+        _paddingPartLeft => PaddingExpression(exprs.span, left: value),
+        _paddingPartTop => PaddingExpression(exprs.span, top: value),
+        _paddingPartRight => PaddingExpression(exprs.span, right: value),
+        _paddingPartBottom => PaddingExpression(exprs.span, bottom: value),
+        _ => null
+      };
     }
     return null;
   }

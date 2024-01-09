@@ -84,9 +84,8 @@ StyleSheet parseCss(
   String cssInput, {
   List<css.Message>? errors,
   css.PreprocessorOptions? opts,
-}) {
-  return css.parse(cssInput, errors: errors, options: opts ?? _default);
-}
+}) =>
+    css.parse(cssInput, errors: errors, options: opts ?? _default);
 
 /// Pretty printer for CSS.
 String prettyPrint(StyleSheet ss) =>
