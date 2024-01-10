@@ -59,7 +59,7 @@ void main() {
     fileTest('package_config.json', {
       '.packages': 'invalid .packages file',
       'script.dart': 'main(){}',
-      'packages': {'shouldNotBeFound': <Never>{}},
+      'packages': {'shouldNotBeFound': <Never, Never>{}},
       '.dart_tool': {
         'package_config.json': packageConfigFile,
       }

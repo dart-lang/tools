@@ -301,6 +301,25 @@ void main() {
           Uri.parse('package:qux/diz'));
     });
 
+    test('packageOf is case sensitive on windows', () {
+      var configBytes = utf8.encode(json.encode({
+        'configVersion': 2,
+        'packages': [
+          {'name': 'foo', 'rootUri': 'file:///C:/Foo/', 'packageUri': 'lib/'},
+        ]
+      }));
+      var config = parsePackageConfigBytes(
+          // ignore: unnecessary_cast
+          configBytes as Uint8List,
+          Uri.parse('file:///C:/tmp/.dart_tool/file.dart'),
+          throwError);
+      expect(config.version, 2);
+      expect(
+          config.packageOf(Uri.parse('file:///C:/foo/lala/lala.dart')), null);
+      expect(config.packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart'))!.name,
+          'foo');
+    });
+
     group('invalid', () {
       void testThrows(String name, String source) {
         test(name, () {
