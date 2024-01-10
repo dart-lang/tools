@@ -32,7 +32,7 @@ abstract class PackageConfig {
   /// absolute directory URIs, valid language version, if any),
   /// and there must not be two packages with the same name.
   ///
-  /// The package's root ([Package.rootUri]) and package-root
+  /// The package's root ([Package.root]) and package-root
   /// ([Package.packageUriRoot]) paths must satisfy a number of constraints
   /// We say that one path (which we know ends with a `/` charater)
   /// is inside another path, if the latter path is a prefix of the former path,
@@ -95,7 +95,7 @@ abstract class PackageConfig {
 
   /// Parses the JSON data of a package configuration file.
   ///
-  /// The [configuration] must be a JSON-like Dart data structure,
+  /// The [jsonData] must be a JSON-like Dart data structure,
   /// like the one provided by parsing JSON text using `dart:convert`,
   /// containing a valid package configuration.
   ///
@@ -167,7 +167,7 @@ abstract class PackageConfig {
   /// Provides the associated package for a specific [file] (or directory).
   ///
   /// Returns a [Package] which contains the [file]'s path, if any.
-  /// That is, the [Package.rootUri] directory is a parent directory
+  /// That is, the [Package.root] directory is a parent directory
   /// of the [file]'s location.
   ///
   /// Returns `null` if the file does not belong to any package.
@@ -247,7 +247,7 @@ abstract class Package {
   /// Is always an absolute URI with no query or fragment parts,
   /// and with a path ending in `/`.
   ///
-  /// All files in the [rootUri] directory are considered
+  /// All files in the [root] directory are considered
   /// part of the package for purposes where that that matters.
   Uri get root;
 

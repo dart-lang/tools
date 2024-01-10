@@ -75,10 +75,8 @@ PackageConfig parsePackageConfigString(
 ///     where the integer numeral cannot have a sign, and can only have a
 ///     leading zero if the entire numeral is a single zero.
 ///
-/// All other properties are stored in [extraData].
-///
 /// The [baseLocation] is used as base URI to resolve the "rootUri"
-/// URI referencestring.
+/// URI reference string.
 PackageConfig parsePackageConfigJson(
     Object? json, Uri baseLocation, void Function(Object error) onError) {
   if (!baseLocation.hasScheme || baseLocation.isScheme('package')) {
@@ -93,7 +91,7 @@ PackageConfig parsePackageConfigJson(
   String typeName<T>() {
     if (0 is T) return 'int';
     if ('' is T) return 'string';
-    if (const [] is T) return 'array';
+    if (const <Object?>[] is T) return 'array';
     return 'object';
   }
 
@@ -239,7 +237,7 @@ void writePackageConfigJsonString(
     PackageConfig config, Uri? baseUri, StringSink output) {
   // Can be optimized.
   var data = packageConfigToJson(config, baseUri);
-  output.write(JsonEncoder.withIndent('  ').convert(data));
+  output.write(const JsonEncoder.withIndent('  ').convert(data));
 }
 
 Map<String, Object?> packageConfigToJson(PackageConfig config, Uri? baseUri) =>

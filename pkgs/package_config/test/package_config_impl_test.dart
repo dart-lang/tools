@@ -36,7 +36,7 @@ void main() {
     void failParse(String name, String input) {
       test('$name - error', () {
         expect(() => LanguageVersion.parse(input),
-            throwsA(TypeMatcher<PackageConfigError>()));
+            throwsA(isA<PackageConfigError>()));
         expect(() => LanguageVersion.parse(input), throwsFormatException);
         var failed = false;
         var actual = LanguageVersion.parse(input, onError: (_) {

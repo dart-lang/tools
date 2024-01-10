@@ -148,12 +148,6 @@ PackageConfig parse(
 ///
 /// If [baseUri] is provided, package locations will be made relative
 /// to the base URI, if possible, before writing.
-///
-/// If [allowDefaultPackage] is `true`, the [packageMapping] may contain an
-/// empty string mapping to the _default package name_.
-///
-/// All the keys of [packageMapping] must be valid package names,
-/// and the values must be URIs that do not have the `package:` scheme.
 void write(StringSink output, PackageConfig config,
     {Uri? baseUri, String? comment}) {
   if (baseUri != null && !baseUri.isAbsolute) {

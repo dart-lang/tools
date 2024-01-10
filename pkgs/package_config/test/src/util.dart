@@ -28,7 +28,7 @@ ${packages.map((nu) => """
 }
 """;
 
-/// Mimics a directory structure of [description] and runs [fileTest].
+/// Mimics a directory structure of [description] and runs [loaderTest].
 ///
 /// Description is a map, each key is a file entry. If the value is a map,
 /// it's a subdirectory, otherwise it's a file and the value is the content

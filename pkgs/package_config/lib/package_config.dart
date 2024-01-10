@@ -102,7 +102,7 @@ Future<PackageConfig> loadPackageConfigUri(Uri file,
 /// then the parent directories are checked recursively,
 /// all the way to the root directory, to check if those contains
 /// a package configuration.
-/// If [recurse] is set to [false], this parent directory check is not
+/// If [recurse] is set to `false`, this parent directory check is not
 /// performed.
 ///
 /// If [onError] is provided, the configuration file parsing will report errors
@@ -140,7 +140,7 @@ Future<PackageConfig?> findPackageConfig(Directory directory,
 /// then the parent directories are checked recursively,
 /// all the way to the root directory, to check if those contains
 /// a package configuration.
-/// If [recurse] is set to [false], this parent directory check is not
+/// If [recurse] is set to `false`, this parent directory check is not
 /// performed.
 ///
 /// If [loader] is provided, URIs are loaded using that function.

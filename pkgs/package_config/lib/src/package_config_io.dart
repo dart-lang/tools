@@ -38,7 +38,7 @@ const packagesFileName = '.packages';
 /// If the [file] is a `.packages` file and [preferNewest] is true,
 /// first checks whether there is an adjacent `.dart_tool/package_config.json`
 /// file, and if so, reads that instead.
-/// If [preferNewset] is false, the specified file is loaded even if it is
+/// If [preferNewest] is false, the specified file is loaded even if it is
 /// a `.packages` file and there is an available `package_config.json` file.
 ///
 /// The file must exist and be a normal file.

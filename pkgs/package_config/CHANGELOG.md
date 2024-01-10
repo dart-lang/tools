@@ -1,6 +1,6 @@
 ## 2.1.1-wip
 
-- Require Dart 3.0
+- Require Dart 3.2
 
 ## 2.1.0
 

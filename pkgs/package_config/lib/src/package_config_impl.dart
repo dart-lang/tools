@@ -141,12 +141,6 @@ class SimplePackageConfig implements PackageConfig {
   @override
   Package? operator [](String packageName) => _packages[packageName];
 
-  /// Provides the associated package for a specific [file] (or directory).
-  ///
-  /// Returns a [Package] which contains the [file]'s path.
-  /// That is, the [Package.rootUri] directory is a parent directory
-  /// of the [file]'s location.
-  /// Returns `null` if the file does not belong to any package.
   @override
   Package? packageOf(Uri file) => _packageTree.packageOf(file);
 
@@ -270,7 +264,7 @@ class SimplePackage implements Package {
   }
 }
 
-/// Checks whether [version] is a valid Dart language version string.
+/// Checks whether [source] is a valid Dart language version string.
 ///
 /// The format is (as RegExp) `^(0|[1-9]\d+)\.(0|[1-9]\d+)$`.
 ///
@@ -553,9 +547,8 @@ enum ConflictType { sameRoots, interleaving, insidePackageRoot }
 /// Conflict between packages added to the same configuration.
 ///
 /// The [package] conflicts with [existingPackage] if it has
-/// the same root path ([isRootConflict]) or the package URI root path
-/// of [existingPackage] is inside the root path of [package]
-/// ([isPackageRootConflict]).
+/// the same root path or the package URI root path
+/// of [existingPackage] is inside the root path of [package].
 class ConflictException {
   /// The existing package that [package] conflicts with.
   final SimplePackage existingPackage;

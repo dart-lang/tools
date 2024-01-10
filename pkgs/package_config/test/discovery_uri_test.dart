@@ -56,7 +56,7 @@ void main() {
     loaderTest('package_config.json', {
       '.packages': 'invalid .packages file',
       'script.dart': 'main(){}',
-      'packages': {'shouldNotBeFound': {}},
+      'packages': {'shouldNotBeFound': <String, dynamic>{}},
       '.dart_tool': {
         'package_config.json': packageConfigFile,
       }
@@ -70,7 +70,7 @@ void main() {
     loaderTest('.packages', {
       '.packages': packagesFile,
       'script.dart': 'main(){}',
-      'packages': {'shouldNotBeFound': {}}
+      'packages': {'shouldNotBeFound': <String, dynamic>{}}
     }, (directory, loader) async {
       var config = (await findPackageConfigUri(directory, loader: loader))!;
       expect(config.version, 1); // Found .packages file.
@@ -107,7 +107,7 @@ void main() {
     // Does not find a packages/ directory, and returns null if nothing found.
     loaderTest('package directory packages not supported', {
       'packages': {
-        'foo': {},
+        'foo': <String, dynamic>{},
       }
     }, (Uri directory, loader) async {
       var config = await findPackageConfigUri(directory, loader: loader);
@@ -118,14 +118,14 @@ void main() {
       '.packages': 'not a .packages file',
     }, (Uri directory, loader) {
       expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(TypeMatcher<FormatException>()));
+          throwsA(isA<FormatException>()));
     });
 
     loaderTest('invalid .packages as JSON', {
       '.packages': packageConfigFile,
     }, (Uri directory, loader) {
       expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(TypeMatcher<FormatException>()));
+          throwsA(isA<FormatException>()));
     });
 
     loaderTest('invalid .packages', {
@@ -134,7 +134,7 @@ void main() {
       }
     }, (Uri directory, loader) {
       expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(TypeMatcher<FormatException>()));
+          throwsA(isA<FormatException>()));
     });
 
     loaderTest('invalid .packages as INI', {
@@ -143,7 +143,7 @@ void main() {
       }
     }, (Uri directory, loader) {
       expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(TypeMatcher<FormatException>()));
+          throwsA(isA<FormatException>()));
     });
 
     // Does not find .packages if no package_config.json and minVersion > 1.

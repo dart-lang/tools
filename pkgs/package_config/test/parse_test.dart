@@ -53,7 +53,7 @@ void main() {
         test(name, () {
           expect(
               () => packages.parse(utf8.encode(content), baseFile, throwError),
-              throwsA(TypeMatcher<FormatException>()));
+              throwsA(isA<FormatException>()));
         });
         test('$name, handle error', () {
           var hadError = false;
@@ -308,7 +308,7 @@ void main() {
               // ignore: unnecessary_cast
               () => parsePackageConfigBytes(utf8.encode(source) as Uint8List,
                   Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError),
-              throwsA(TypeMatcher<FormatException>()));
+              throwsA(isA<FormatException>()));
         });
       }
 
