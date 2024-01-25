@@ -333,19 +333,6 @@ class AnalyticsImpl implements Analytics {
   /// message has been updated by the package.
   late bool _showMessage;
 
-  /// This will be switch to true once it has been confirmed by the
-  /// client using this package that they have shown the
-  /// consent message to the developer.
-  ///
-  /// If the tool using this package as already shown the consent message
-  /// and it has been added to the config file, it will be set as true.
-  ///
-  /// It will also be set to true once the tool using this package has
-  /// invoked [clientShowedMessage].
-  ///
-  /// If this is false, all events will be blocked from being sent.
-  bool _clientShowedMessage = false;
-
   /// When set to `true`, various assert statements will be enabled
   /// to ensure usage of this class is within GA4 limitations.
   final bool _enableAsserts;
@@ -405,13 +392,6 @@ class AnalyticsImpl implements Analytics {
       homeDirectory: homeDirectory,
       initializer: initializer,
     );
-
-    // If the tool has already been added to the config file
-    // we can assume that the client has successfully shown
-    // the consent message
-    if (_configHandler.parsedTools.containsKey(tool.label)) {
-      _clientShowedMessage = true;
-    }
 
     // Check if the tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
@@ -490,11 +470,7 @@ class AnalyticsImpl implements Analytics {
   /// return `true` to prevent events from being sent for current invocation.
   @override
   bool get okToSend =>
-      telemetryEnabled &&
-      !_showMessage &&
-      _clientShowedMessage &&
-      !_telemetrySuppressed &&
-      !_firstRun;
+      telemetryEnabled && !_showMessage && !_telemetrySuppressed && !_firstRun;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -511,6 +487,7 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void clientShowedMessage() {
+    // Check the tool needs to be added to the config file
     if (!_configHandler.parsedTools.containsKey(tool.label)) {
       _configHandler.addTool(
         tool: tool.label,
@@ -518,6 +495,9 @@ class AnalyticsImpl implements Analytics {
       );
       _showMessage = false;
     }
+
+    // When the tool already exists but the consent message version
+    // has been updated
     if (_configHandler.parsedTools[tool.label]!.versionNumber <
         toolsMessageVersion) {
       _configHandler.incrementToolVersion(
@@ -526,7 +506,6 @@ class AnalyticsImpl implements Analytics {
       );
       _showMessage = false;
     }
-    _clientShowedMessage = true;
   }
 
   @override
