@@ -59,6 +59,31 @@ void main() {
         .childFile(kDismissedSurveyFileName);
   });
 
+  test('Confirm workflow for first run', () {
+    final firstAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(firstAnalytics.shouldShowMessage, true);
+    expect(firstAnalytics.okToSend, false);
+
+    firstAnalytics.clientShowedMessage();
+    expect(firstAnalytics.shouldShowMessage, false);
+    expect(firstAnalytics.okToSend, false,
+        reason: 'On the first run, we should not be ok '
+            'to send any events, even if the user accepts');
+  });
+
   test('Confirm workflow for checking tools into the config file', () {
     final firstAnalytics = Analytics.test(
       tool: initialTool,

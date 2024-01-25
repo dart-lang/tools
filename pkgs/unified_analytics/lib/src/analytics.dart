@@ -353,6 +353,9 @@ class AnalyticsImpl implements Analytics {
   /// Telemetry suppression flag that is set via [Analytics.suppressTelemetry].
   bool _telemetrySuppressed = false;
 
+  /// Indicates if this is the first run for a given tool.
+  bool _firstRun = false;
+
   /// The list of futures that will contain all of the send events
   /// from the [GAClient].
   final _futures = <Future<Response>>[];
@@ -388,7 +391,13 @@ class AnalyticsImpl implements Analytics {
       toolsMessageVersion: toolsMessageVersion,
     );
     initializer.run();
-    _showMessage = initializer.firstRun;
+    if (initializer.firstRun) {
+      _showMessage = true;
+      _firstRun = true;
+    } else {
+      _showMessage = false;
+      _firstRun = false;
+    }
 
     // Create the config handler that will parse the config file
     _configHandler = ConfigHandler(
@@ -414,6 +423,11 @@ class AnalyticsImpl implements Analytics {
         _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
     if (currentVersion < toolsMessageVersion) {
       _showMessage = true;
+
+      // If the message version has been updated, it will be considered
+      // as if it was a first run and any events attempting to get sent
+      // will be blocked
+      _firstRun = true;
     }
 
     _clientIdFile = fs.file(
@@ -479,7 +493,8 @@ class AnalyticsImpl implements Analytics {
       telemetryEnabled &&
       !_showMessage &&
       _clientShowedMessage &&
-      !_telemetrySuppressed;
+      !_telemetrySuppressed &&
+      !_firstRun;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -501,7 +516,7 @@ class AnalyticsImpl implements Analytics {
         tool: tool.label,
         versionNumber: toolsMessageVersion,
       );
-      _showMessage = true;
+      _showMessage = false;
     }
     if (_configHandler.parsedTools[tool.label]!.versionNumber <
         toolsMessageVersion) {
@@ -509,7 +524,7 @@ class AnalyticsImpl implements Analytics {
         tool: tool.label,
         newVersionNumber: toolsMessageVersion,
       );
-      _showMessage = true;
+      _showMessage = false;
     }
     _clientShowedMessage = true;
   }

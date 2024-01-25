@@ -74,7 +74,9 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    expect(initializationAnalytics.shouldShowMessage, true);
     initializationAnalytics.clientShowedMessage();
+    expect(initializationAnalytics.shouldShowMessage, false);
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
@@ -143,8 +145,6 @@ void main() {
     expect(dartToolDirectory.listSync().length, equals(5),
         reason:
             'There should only be 5 files in the $kDartToolDirectoryName directory');
-    expect(initializationAnalytics.shouldShowMessage, true,
-        reason: 'For the first run, the message should be shown');
     expect(configFile.readAsLinesSync().length,
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '
@@ -430,7 +430,12 @@ void main() {
       fs: fs,
       platform: platform,
     );
+    expect(secondAnalytics.shouldShowMessage, true);
+    expect(secondAnalytics.okToSend, false);
     secondAnalytics.clientShowedMessage();
+    expect(secondAnalytics.shouldShowMessage, false);
+    expect(secondAnalytics.okToSend, false,
+        reason: 'New version for the message will be treated as a first run');
 
     expect(secondAnalytics.parsedTools[initialTool.label]?.versionNumber,
         toolsMessageVersion + 1,
