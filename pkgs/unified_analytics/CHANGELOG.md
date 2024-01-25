@@ -1,3 +1,7 @@
+## 5.8.1
+
+- Refactor logic for `okToSend` and `shouldShowMessage`
+
 ## 5.8.0
 
 - Fix template string for consent message
