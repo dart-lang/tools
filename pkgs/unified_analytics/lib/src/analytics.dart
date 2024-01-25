@@ -458,16 +458,16 @@ class AnalyticsImpl implements Analytics {
   /// Checking the [telemetryEnabled] boolean reflects what the
   /// config file reflects.
   ///
-  /// Checking the [_showMessage] boolean indicates if this the first
-  /// time the tool is using analytics or if there has been an update
-  /// the messaging found in constants.dart - in both cases, analytics
-  /// will not be sent until the second time the tool is used.
-  ///
-  /// Additionally, if the client has not invoked
-  /// [Analytics.clientShowedMessage], then no events shall be sent.
+  /// Checking the [_showMessage] boolean indicates if the consent
+  /// message has been shown for the user, this boolean is set to `true`
+  /// when the tool using this package invokes the [clientShowedMessage]
+  /// method.
   ///
   /// If the user has suppressed telemetry [_telemetrySuppressed] will
   /// return `true` to prevent events from being sent for current invocation.
+  ///
+  /// Checking if it is the first time a tool is running with this package
+  /// as indicated by [_firstRun].
   @override
   bool get okToSend =>
       telemetryEnabled && !_showMessage && !_telemetrySuppressed && !_firstRun;
