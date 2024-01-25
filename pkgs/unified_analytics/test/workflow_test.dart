@@ -84,6 +84,74 @@ void main() {
             'to send any events, even if the user accepts');
   });
 
+  test('Confirm workflow for updated tools message version', () {
+    // Helper function to check the state of the instance
+    void checkAnalyticsInstance(Analytics instance) {
+      expect(instance.shouldShowMessage, true);
+      expect(instance.okToSend, false);
+
+      instance.clientShowedMessage();
+      expect(instance.shouldShowMessage, false);
+      expect(instance.okToSend, false,
+          reason: 'On the first run, we should not be ok '
+              'to send any events, even if the user accepts');
+    }
+
+    final firstAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    checkAnalyticsInstance(firstAnalytics);
+
+    // Instance where we increment the version of the message
+    final secondAnalytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    // Running the same checks for the second instance, it should
+    // behave the same as if it was a first run
+    checkAnalyticsInstance(secondAnalytics);
+
+    // Instance for a different tool with the incremented version
+    final thirdAnalytics = Analytics.test(
+      tool: secondTool, // Different tool
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    // The instance with a new tool getting onboarded should be
+    // treated the same as the 2 previous instances
+    checkAnalyticsInstance(thirdAnalytics);
+  });
+
   test('Confirm workflow for checking tools into the config file', () {
     final firstAnalytics = Analytics.test(
       tool: initialTool,
