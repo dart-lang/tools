@@ -84,7 +84,7 @@ void main() {
             'to send any events, even if the user accepts');
   });
 
-  test('Confirm workflow for updated tools message version', () {
+  test('Confirm workflow for updated tools message version + new tool', () {
     // Helper function to check the state of the instance
     void checkAnalyticsInstance(Analytics instance) {
       expect(instance.shouldShowMessage, true);
