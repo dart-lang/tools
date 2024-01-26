@@ -60,7 +60,7 @@ abstract class Analytics {
     final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
-      return NoOpAnalytics();
+      return const NoOpAnalytics();
     }
 
     // Resolve the OS using dart:io
@@ -225,6 +225,15 @@ abstract class Analytics {
   /// out of the configuration file.
   Map<String, ToolInfo> get parsedTools;
 
+  /// Use this list to check for events that have been emitted when
+  /// invoking the send method.
+  ///
+  /// This list will only get populated when running the [Analytics.test]
+  /// constructor, [Analytics.development], or an instance of [FakeAnalytics].
+  /// It will otherwise remain empty when used in production.
+  @visibleForTesting
+  List<Event> get sentEvents;
+
   /// Boolean that lets the client know if they should display the message.
   bool get shouldShowMessage;
 
@@ -357,6 +366,10 @@ class AnalyticsImpl implements Analytics {
   /// from the [GAClient].
   final _futures = <Future<Response>>[];
 
+  /// Stores the events that have been sent while the instance exists.
+  /// Events will only be stored in this list if
+  final List<Event> _sentEvents = [];
+
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -442,7 +455,11 @@ class AnalyticsImpl implements Analytics {
     );
 
     // Initialize the log handler to persist events that are being sent
-    _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
+    _logHandler = LogHandler(
+      fs: fs,
+      homeDirectory: homeDirectory,
+      analyticsInstance: this,
+    );
   }
 
   @override
@@ -483,6 +500,9 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
+
+  @override
+  List<Event> get sentEvents => _sentEvents;
 
   @override
   bool get shouldShowMessage => _showMessage;
@@ -603,7 +623,15 @@ class AnalyticsImpl implements Analytics {
       userProperty: userProperty,
     );
 
-    if (_enableAsserts) checkBody(body);
+    // This will be set to true by default if running the development or
+    // test constructors
+    //
+    // It will also be enabled by default for the
+    // [FakeAnalytics] instance
+    if (_enableAsserts) {
+      checkBody(body);
+      _sentEvents.add(event);
+    }
 
     _logHandler.save(data: body);
 
@@ -703,10 +731,6 @@ class AnalyticsImpl implements Analytics {
 /// workflow. Invoking the [send] method on this instance will not make any
 /// network requests to Google Analytics.
 class FakeAnalytics extends AnalyticsImpl {
-  /// Use this list to check for events that have been emitted when
-  /// invoking the send method
-  final List<Event> sentEvents = [];
-
   /// Class to use when you want to see which events were sent
   FakeAnalytics({
     required super.tool,
@@ -774,12 +798,13 @@ class NoOpAnalytics implements Analytics {
   final Map<String, Map<String, Object?>> userPropertyMap =
       const <String, Map<String, Object?>>{};
 
-  factory NoOpAnalytics() => const NoOpAnalytics._();
-
-  const NoOpAnalytics._();
+  const NoOpAnalytics();
 
   @override
   String get clientId => staticClientId;
+
+  @override
+  List<Event> get sentEvents => [];
 
   @override
   void clientShowedMessage() {}

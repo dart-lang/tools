@@ -8,6 +8,7 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
+import '../unified_analytics.dart';
 import 'constants.dart';
 import 'initializer.dart';
 
@@ -81,22 +82,6 @@ class LogFileStats {
     required this.eventCount,
   });
 
-  @override
-  String toString() {
-    final encoder = const JsonEncoder.withIndent('  ');
-    return encoder.convert({
-      'startDateTime': startDateTime.toString(),
-      'minsFromStartDateTime': minsFromStartDateTime,
-      'endDateTime': endDateTime.toString(),
-      'minsFromEndDateTime': minsFromEndDateTime,
-      'sessionCount': sessionCount,
-      'recordCount': recordCount,
-      'eventCount': eventCount,
-      'toolCount': toolCount,
-      'flutterChannelCount': flutterChannelCount,
-    });
-  }
-
   /// Pass in a string label for one of the instance variables
   /// and return the integer value of that label.
   ///
@@ -149,6 +134,22 @@ class LogFileStats {
 
     return null;
   }
+
+  @override
+  String toString() {
+    final encoder = const JsonEncoder.withIndent('  ');
+    return encoder.convert({
+      'startDateTime': startDateTime.toString(),
+      'minsFromStartDateTime': minsFromStartDateTime,
+      'endDateTime': endDateTime.toString(),
+      'minsFromEndDateTime': minsFromEndDateTime,
+      'sessionCount': sessionCount,
+      'recordCount': recordCount,
+      'eventCount': eventCount,
+      'toolCount': toolCount,
+      'flutterChannelCount': flutterChannelCount,
+    });
+  }
 }
 
 /// This class is responsible for writing to a log
@@ -160,17 +161,20 @@ class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
   final File logFile;
+  final Analytics _analyticsInstance;
 
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
   LogHandler({
     required this.fs,
     required this.homeDirectory,
-  }) : logFile = fs.file(p.join(
+    Analytics analyticsInstance = const NoOpAnalytics(),
+  })  : logFile = fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
           kLogFileName,
-        ));
+        )),
+        _analyticsInstance = analyticsInstance;
 
   /// Get stats from the persisted log file.
   ///
@@ -184,15 +188,21 @@ class LogHandler {
     final records = logFile
         .readAsLinesSync()
         .map((String e) {
-          // TODO: eliasyishak, once https://github.com/dart-lang/tools/issues/167
-          //  has landed ensure we are sending an event for each error
-          //  with helpful messages
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
-          } on FormatException {
+          } on FormatException catch (err) {
+            _analyticsInstance.send(Event.analyticsException(
+              workflow: 'LogFileStats.logFileStats',
+              error: err.runtimeType.toString(),
+              description: 'message: ${err.message}\nsource: ${err.source}',
+            ));
             return null;
             // ignore: avoid_catching_errors
-          } on TypeError {
+          } on TypeError catch (err) {
+            _analyticsInstance.send(Event.analyticsException(
+              workflow: 'LogFileStats.logFileStats',
+              error: err.runtimeType.toString(),
+            ));
             return null;
           }
         })

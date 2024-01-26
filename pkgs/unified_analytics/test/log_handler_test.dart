@@ -78,11 +78,20 @@ void main() {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
-    final logFileStats = analytics.logFileStats();
     expect(logFile.readAsLinesSync().length, 1);
+    final logFileStats = analytics.logFileStats();
     expect(logFileStats, isNull,
         reason: 'Null should be returned since only '
             'one record is in there and it is malformed');
+    expect(
+        analytics.sentEvents,
+        contains(
+          Event.analyticsException(
+            workflow: 'LogFileStats.logFileStats',
+            error: 'FormatException',
+            description: 'message: Unexpected character\nsource: {{',
+          ),
+        ));
   });
 
   test('The first record is malformed, but rest are valid', () async {

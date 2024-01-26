@@ -536,6 +536,23 @@ void main() {
     expect(constructedEvent.eventData.length, 27);
   });
 
+  test('Event.analyticsException constructed', () {
+    Event generateEvent() => Event.analyticsException(
+          workflow: 'workflow',
+          error: 'error',
+          description: 'description',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.analyticsException);
+    expect(constructedEvent.eventData['workflow'], 'workflow');
+    expect(constructedEvent.eventData['error'], 'error');
+    expect(constructedEvent.eventData['description'], 'description');
+    expect(constructedEvent.eventData.length, 3);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -544,7 +561,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 25;
+    final eventsAccountedForInTests = 26;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
