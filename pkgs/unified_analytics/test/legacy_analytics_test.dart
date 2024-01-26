@@ -271,8 +271,8 @@ NOT VALID JSON
     expect(analytics.telemetryEnabled, false);
   });
 
-  test('Telemetry disabled if flutter config file corrupted', () {
-    // Create the file for the dart legacy opt out with text that
+  test('Telemetry disabled if devtools config file corrupted', () {
+    // Create the file for the devtools legacy opt out with text that
     // is not valid JSON
     final devtoolsLegacyConfigFile =
         home.childDirectory('.flutter-devtools').childFile('.devtools');
@@ -309,8 +309,8 @@ NOT VALID JSON
     expect(analytics.telemetryEnabled, false);
   });
 
-  test('Telemetry disabled if devtools config file corrupted', () {
-    // Create the file for the devtools legacy opt out with text that
+  test('Telemetry disabled if flutter config file corrupted', () {
+    // Create the file for the flutter legacy opt out with text that
     // is not valid JSON
     final fluttterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
