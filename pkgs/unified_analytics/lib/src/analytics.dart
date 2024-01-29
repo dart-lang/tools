@@ -333,25 +333,15 @@ class AnalyticsImpl implements Analytics {
   /// message has been updated by the package.
   late bool _showMessage;
 
-  /// This will be switch to true once it has been confirmed by the
-  /// client using this package that they have shown the
-  /// consent message to the developer.
-  ///
-  /// If the tool using this package as already shown the consent message
-  /// and it has been added to the config file, it will be set as true.
-  ///
-  /// It will also be set to true once the tool using this package has
-  /// invoked [clientShowedMessage].
-  ///
-  /// If this is false, all events will be blocked from being sent.
-  bool _clientShowedMessage = false;
-
   /// When set to `true`, various assert statements will be enabled
   /// to ensure usage of this class is within GA4 limitations.
   final bool _enableAsserts;
 
   /// Telemetry suppression flag that is set via [Analytics.suppressTelemetry].
   bool _telemetrySuppressed = false;
+
+  /// Indicates if this is the first run for a given tool.
+  bool _firstRun = false;
 
   /// The list of futures that will contain all of the send events
   /// from the [GAClient].
@@ -388,7 +378,13 @@ class AnalyticsImpl implements Analytics {
       toolsMessageVersion: toolsMessageVersion,
     );
     initializer.run();
-    _showMessage = initializer.firstRun;
+    if (initializer.firstRun) {
+      _showMessage = true;
+      _firstRun = true;
+    } else {
+      _showMessage = false;
+      _firstRun = false;
+    }
 
     // Create the config handler that will parse the config file
     _configHandler = ConfigHandler(
@@ -396,13 +392,6 @@ class AnalyticsImpl implements Analytics {
       homeDirectory: homeDirectory,
       initializer: initializer,
     );
-
-    // If the tool has already been added to the config file
-    // we can assume that the client has successfully shown
-    // the consent message
-    if (_configHandler.parsedTools.containsKey(tool.label)) {
-      _clientShowedMessage = true;
-    }
 
     // Check if the tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
@@ -414,6 +403,11 @@ class AnalyticsImpl implements Analytics {
         _configHandler.parsedTools[tool.label]?.versionNumber ?? -1;
     if (currentVersion < toolsMessageVersion) {
       _showMessage = true;
+
+      // If the message version has been updated, it will be considered
+      // as if it was a first run and any events attempting to get sent
+      // will be blocked
+      _firstRun = true;
     }
 
     _clientIdFile = fs.file(
@@ -464,22 +458,19 @@ class AnalyticsImpl implements Analytics {
   /// Checking the [telemetryEnabled] boolean reflects what the
   /// config file reflects.
   ///
-  /// Checking the [_showMessage] boolean indicates if this the first
-  /// time the tool is using analytics or if there has been an update
-  /// the messaging found in constants.dart - in both cases, analytics
-  /// will not be sent until the second time the tool is used.
-  ///
-  /// Additionally, if the client has not invoked
-  /// [Analytics.clientShowedMessage], then no events shall be sent.
+  /// Checking the [_showMessage] boolean indicates if the consent
+  /// message has been shown for the user, this boolean is set to `true`
+  /// when the tool using this package invokes the [clientShowedMessage]
+  /// method.
   ///
   /// If the user has suppressed telemetry [_telemetrySuppressed] will
   /// return `true` to prevent events from being sent for current invocation.
+  ///
+  /// Checking if it is the first time a tool is running with this package
+  /// as indicated by [_firstRun].
   @override
   bool get okToSend =>
-      telemetryEnabled &&
-      !_showMessage &&
-      _clientShowedMessage &&
-      !_telemetrySuppressed;
+      telemetryEnabled && !_showMessage && !_telemetrySuppressed && !_firstRun;
 
   @override
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
@@ -496,22 +487,24 @@ class AnalyticsImpl implements Analytics {
 
   @override
   void clientShowedMessage() {
+    // Check the tool needs to be added to the config file
     if (!_configHandler.parsedTools.containsKey(tool.label)) {
       _configHandler.addTool(
         tool: tool.label,
         versionNumber: toolsMessageVersion,
       );
-      _showMessage = true;
     }
+
+    // When the tool already exists but the consent message version
+    // has been updated
     if (_configHandler.parsedTools[tool.label]!.versionNumber <
         toolsMessageVersion) {
       _configHandler.incrementToolVersion(
         tool: tool.label,
         newVersionNumber: toolsMessageVersion,
       );
-      _showMessage = true;
     }
-    _clientShowedMessage = true;
+    _showMessage = false;
   }
 
   @override
