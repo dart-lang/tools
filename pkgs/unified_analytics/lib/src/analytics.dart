@@ -504,7 +504,7 @@ class AnalyticsImpl implements Analytics {
         newVersionNumber: toolsMessageVersion,
       );
     }
-      _showMessage = false;
+    _showMessage = false;
   }
 
   @override
