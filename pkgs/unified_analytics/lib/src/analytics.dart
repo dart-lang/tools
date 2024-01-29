@@ -493,7 +493,6 @@ class AnalyticsImpl implements Analytics {
         tool: tool.label,
         versionNumber: toolsMessageVersion,
       );
-      _showMessage = false;
     }
 
     // When the tool already exists but the consent message version
@@ -504,8 +503,8 @@ class AnalyticsImpl implements Analytics {
         tool: tool.label,
         newVersionNumber: toolsMessageVersion,
       );
-      _showMessage = false;
     }
+      _showMessage = false;
   }
 
   @override
