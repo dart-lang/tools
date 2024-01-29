@@ -102,7 +102,7 @@ void main() {
   });
 
   test('Honor legacy flutter analytics opt out', () {
-    // Create the file for the dart legacy opt out
+    // Create the file for the flutter legacy opt out
     final flutterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     flutterLegacyConfigFile.createSync(recursive: true);
@@ -134,7 +134,7 @@ void main() {
   });
 
   test('Telemetry enabled if legacy flutter analytics is enabled', () {
-    // Create the file for the dart legacy opt out
+    // Create the file for the flutter legacy opt out
     final flutterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
     flutterLegacyConfigFile.createSync(recursive: true);
@@ -143,6 +143,78 @@ void main() {
   "firstRun": false,
   "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
   "enabled": true
+}
+''');
+
+    // The main analytics instance, other instances can be spawned within tests
+    // to test how to instances running together work
+    analytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(analytics.telemetryEnabled, true);
+  });
+
+  test('Honor legacy devtools analytics opt out', () {
+    // Create the file for the devtools legacy opt out
+    final devtoolsLegacyConfigFile =
+        home.childDirectory('.flutter-devtools').childFile('.devtools');
+    devtoolsLegacyConfigFile.createSync(recursive: true);
+    devtoolsLegacyConfigFile.writeAsStringSync('''
+{
+  "analyticsEnabled": false,
+  "isFirstRun": false,
+  "lastReleaseNotesVersion": "2.31.0",
+  "2023-Q4": {
+    "surveyActionTaken": false,
+    "surveyShownCount": 0
+  }
+}
+''');
+
+    // The main analytics instance, other instances can be spawned within tests
+    // to test how to instances running together work
+    analytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(analytics.telemetryEnabled, false);
+  });
+
+  test('Telemetry enabled if legacy devtools analytics is enabled', () {
+    // Create the file for the devtools legacy opt out
+    final devtoolsLegacyConfigFile =
+        home.childDirectory('.flutter-devtools').childFile('.devtools');
+    devtoolsLegacyConfigFile.createSync(recursive: true);
+    devtoolsLegacyConfigFile.writeAsStringSync('''
+{
+  "analyticsEnabled": true,
+  "isFirstRun": false,
+  "lastReleaseNotesVersion": "2.31.0",
+  "2023-Q4": {
+    "surveyActionTaken": false,
+    "surveyShownCount": 0
+  }
 }
 ''');
 
@@ -199,8 +271,46 @@ NOT VALID JSON
     expect(analytics.telemetryEnabled, false);
   });
 
+  test('Telemetry disabled if devtools config file corrupted', () {
+    // Create the file for the devtools legacy opt out with text that
+    // is not valid JSON
+    final devtoolsLegacyConfigFile =
+        home.childDirectory('.flutter-devtools').childFile('.devtools');
+    devtoolsLegacyConfigFile.createSync(recursive: true);
+    devtoolsLegacyConfigFile.writeAsStringSync('''
+NOT VALID JSON
+{
+  "analyticsEnabled": true,
+  "isFirstRun": false,
+  "lastReleaseNotesVersion": "2.31.0",
+  "2023-Q4": {
+    "surveyActionTaken": false,
+    "surveyShownCount": 0
+  }
+}
+''');
+
+    // The main analytics instance, other instances can be spawned within tests
+    // to test how to instances running together work
+    analytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(analytics.telemetryEnabled, false);
+  });
+
   test('Telemetry disabled if flutter config file corrupted', () {
-    // Create the file for the dart legacy opt out with text that
+    // Create the file for the flutter legacy opt out with text that
     // is not valid JSON
     final fluttterLegacyConfigFile =
         home.childDirectory('.dart').childFile('dartdev.json');
