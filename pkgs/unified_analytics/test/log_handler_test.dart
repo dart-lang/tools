@@ -103,9 +103,9 @@ void main() {
     for (var i = 0; i < countOfEventsToSend; i++) {
       analytics.send(testEvent);
     }
+    expect(logFile.readAsLinesSync().length, countOfEventsToSend + 1);
     final logFileStats = analytics.logFileStats();
 
-    expect(logFile.readAsLinesSync().length, countOfEventsToSend + 1);
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, countOfEventsToSend);
   });
@@ -122,10 +122,15 @@ void main() {
     for (var i = 0; i < countOfEventsToSend; i++) {
       analytics.send(testEvent);
     }
-    final logFileStats = analytics.logFileStats();
 
     expect(logFile.readAsLinesSync().length,
         countOfEventsToSend + countOfMalformedRecords);
+    final logFileStats = analytics.logFileStats();
+    expect(logFile.readAsLinesSync().length,
+        countOfEventsToSend + countOfMalformedRecords + 1,
+        reason:
+            'There should have been on error event sent when getting stats');
+
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, countOfEventsToSend);
   });
@@ -155,16 +160,23 @@ void main() {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
-    // Send the max number of events minus one so that we have
+    // Send the max number of events minus two so that we have
     // one malformed record on top of the logs and the rest
     // are valid log records
-    for (var i = 0; i < kLogFileLength - 1; i++) {
+    //
+    // We need to account for the event that is sent when
+    // calling [logFileStats()] fails and sends an instance
+    // of [Event.analyticsException]
+    final recordsToSendInitially = kLogFileLength - 2;
+    for (var i = 0; i < recordsToSendInitially; i++) {
       analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
+    expect(analytics.sentEvents.last.eventName, DashEvent.analyticsException,
+        reason: 'Calling for the stats should have caused an error');
     expect(logFile.readAsLinesSync().length, kLogFileLength);
     expect(logFileStats, isNotNull);
-    expect(logFileStats!.recordCount, kLogFileLength - 1,
+    expect(logFileStats!.recordCount, recordsToSendInitially,
         reason: 'The first record should be malformed');
     expect(logFile.readAsLinesSync()[0].trim(), '{{');
 
@@ -172,6 +184,7 @@ void main() {
     analytics.send(testEvent);
 
     final secondLogFileStats = analytics.logFileStats();
+    expect(analytics.sentEvents.last, testEvent);
     expect(secondLogFileStats, isNotNull);
     expect(secondLogFileStats!.recordCount, kLogFileLength);
     expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
@@ -193,7 +206,9 @@ void main() {
     final secondLogFileStats = analytics.logFileStats();
 
     expect(secondLogFileStats, isNotNull);
-    expect(secondLogFileStats!.recordCount, countOfEventsToSend);
+    expect(secondLogFileStats!.recordCount, countOfEventsToSend + 1,
+        reason: 'Plus one for the error event that is sent '
+            'from the first logFileStats call');
   });
 
   test(

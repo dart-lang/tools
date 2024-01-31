@@ -182,6 +182,9 @@ class LogHandler {
   /// developers and will not have any data for flutter
   /// related metrics.
   LogFileStats? logFileStats() {
+    // Ensure we are only sending once per invocation of this method
+    var eventSent = false;
+
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
@@ -191,18 +194,24 @@ class LogHandler {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
-            _analyticsInstance.send(Event.analyticsException(
-              workflow: 'LogFileStats.logFileStats',
-              error: err.runtimeType.toString(),
-              description: 'message: ${err.message}\nsource: ${err.source}',
-            ));
+            if (!eventSent) {
+              _analyticsInstance.send(Event.analyticsException(
+                workflow: 'LogFileStats.logFileStats',
+                error: err.runtimeType.toString(),
+                description: 'message: ${err.message}\nsource: ${err.source}',
+              ));
+              eventSent = true;
+            }
             return null;
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
-            _analyticsInstance.send(Event.analyticsException(
-              workflow: 'LogFileStats.logFileStats',
-              error: err.runtimeType.toString(),
-            ));
+            if (!eventSent) {
+              _analyticsInstance.send(Event.analyticsException(
+                workflow: 'LogFileStats.logFileStats',
+                error: err.runtimeType.toString(),
+              ));
+              eventSent = true;
+            }
             return null;
           }
         })
