@@ -168,7 +168,7 @@ class LogHandler {
   LogHandler({
     required this.fs,
     required this.homeDirectory,
-    Analytics analyticsInstance = const NoOpAnalytics(),
+    required Analytics analyticsInstance,
   })  : logFile = fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
