@@ -1,3 +1,8 @@
+## 5.8.1
+
+- Refactor logic for `okToSend` and `shouldShowMessage`
+- Check devtools config file for legacy opt out status
+
 ## 5.8.0
 
 - Fix template string for consent message
