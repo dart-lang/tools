@@ -431,7 +431,11 @@ class AnalyticsImpl implements Analytics {
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
     // exceeds [kSessionDurationMinutes]
-    _sessionHandler = Session(homeDirectory: homeDirectory, fs: fs);
+    _sessionHandler = Session(
+      homeDirectory: homeDirectory,
+      fs: fs,
+      analyticsInstance: this,
+    );
     userProperty = UserProperty(
       session: _sessionHandler,
       flutterChannel: flutterChannel,

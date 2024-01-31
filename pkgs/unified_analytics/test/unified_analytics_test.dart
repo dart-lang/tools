@@ -116,7 +116,11 @@ void main() {
     // Create the user property object that is also
     // created within analytics for testing
     userProperty = UserProperty(
-      session: Session(homeDirectory: home, fs: fs),
+      session: Session(
+        homeDirectory: home,
+        fs: fs,
+        analyticsInstance: analytics,
+      ),
       flutterChannel: flutterChannel,
       host: platform.label,
       flutterVersion: flutterVersion,
@@ -166,6 +170,39 @@ void main() {
       userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
           '{"session_id":$timestamp,"last_ping":$timestamp}');
+
+      // Attempting to fetch the session id when malformed should also
+      // send an error event while parsing
+      final lastEvent = analytics.sentEvents.last;
+      expect(lastEvent, isNotNull);
+      expect(lastEvent.eventName, DashEvent.analyticsException);
+      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(lastEvent.eventData['error']!, 'FormatException');
+    });
+  });
+
+  test('Resetting session file when file is removed', () {
+    // Purposefully write delete the file
+    sessionFile.deleteSync();
+
+    // Define the initial time to start
+    final start = DateTime(1995, 3, 3, 12, 0);
+
+    // Set the clock to the start value defined above
+    withClock(Clock.fixed(start), () {
+      final timestamp = clock.now().millisecondsSinceEpoch.toString();
+      expect(sessionFile.existsSync(), false);
+      userProperty.preparePayload();
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id":$timestamp,"last_ping":$timestamp}');
+
+      // Attempting to fetch the session id when malformed should also
+      // send an error event while parsing
+      final lastEvent = analytics.sentEvents.last;
+      expect(lastEvent, isNotNull);
+      expect(lastEvent.eventName, DashEvent.analyticsException);
+      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(lastEvent.eventData['error']!, 'FileSystemException');
     });
   });
 

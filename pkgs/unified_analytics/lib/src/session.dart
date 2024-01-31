@@ -9,22 +9,30 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
+import 'analytics.dart';
 import 'constants.dart';
+import 'event.dart';
 import 'initializer.dart';
 
 class Session {
   final Directory homeDirectory;
   final FileSystem fs;
   final File sessionFile;
+  final Analytics _analyticsInstance;
 
   late int _sessionId;
   late int _lastPing;
 
+  /// Ensure we are only sending once per invocation for this class.
+  var _errorEventSent = false;
+
   Session({
     required this.homeDirectory,
     required this.fs,
-  }) : sessionFile = fs.file(p.join(
-            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)) {
+    required Analytics analyticsInstance,
+  })  : sessionFile = fs.file(p.join(
+            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
+        _analyticsInstance = analyticsInstance {
     _refreshSessionData();
   }
 
@@ -87,12 +95,30 @@ class Session {
 
     try {
       parseContents();
-    } on FormatException {
+    } on FormatException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
+      if (!_errorEventSent) {
+        _analyticsInstance.send(Event.analyticsException(
+          workflow: 'Session._refreshSessionData',
+          error: err.runtimeType.toString(),
+          description: 'message: ${err.message}\nsource: ${err.source}',
+        ));
+        _errorEventSent = true;
+      }
+
       parseContents();
-    } on PathNotFoundException {
+    } on FileSystemException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
+
+      if (!_errorEventSent) {
+        _analyticsInstance.send(Event.analyticsException(
+          workflow: 'Session._refreshSessionData',
+          error: err.runtimeType.toString(),
+          description: err.osError?.toString(),
+        ));
+        _errorEventSent = true;
+      }
 
       parseContents();
     }
