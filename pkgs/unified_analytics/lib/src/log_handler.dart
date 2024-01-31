@@ -163,6 +163,9 @@ class LogHandler {
   final File logFile;
   final Analytics _analyticsInstance;
 
+  /// Ensure we are only sending once per invocation for this class.
+  var _errorEventSent = false;
+
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
   LogHandler({
@@ -182,9 +185,6 @@ class LogHandler {
   /// developers and will not have any data for flutter
   /// related metrics.
   LogFileStats? logFileStats() {
-    // Ensure we are only sending once per invocation of this method
-    var eventSent = false;
-
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
@@ -194,23 +194,23 @@ class LogHandler {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
-            if (!eventSent) {
+            if (!_errorEventSent) {
               _analyticsInstance.send(Event.analyticsException(
                 workflow: 'LogFileStats.logFileStats',
                 error: err.runtimeType.toString(),
                 description: 'message: ${err.message}\nsource: ${err.source}',
               ));
-              eventSent = true;
+              _errorEventSent = true;
             }
             return null;
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
-            if (!eventSent) {
+            if (!_errorEventSent) {
               _analyticsInstance.send(Event.analyticsException(
                 workflow: 'LogFileStats.logFileStats',
                 error: err.runtimeType.toString(),
               ));
-              eventSent = true;
+              _errorEventSent = true;
             }
             return null;
           }
