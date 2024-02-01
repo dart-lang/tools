@@ -1,4 +1,4 @@
-## 5.8.2
+## 5.8.2-wip
 
 - Added new event `Event.analyticsException` to track internal errors for this package
 - Redirecting the `Analytics.test` factory to return an instance of `FakeAnalytics`
