@@ -603,9 +603,7 @@ class AnalyticsImpl implements Analytics {
       userProperty: userProperty,
     );
 
-    if (_enableAsserts) {
-      checkBody(body);
-    }
+    if (_enableAsserts) checkBody(body);
 
     _logHandler.save(data: body);
 
