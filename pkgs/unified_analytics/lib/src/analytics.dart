@@ -603,8 +603,6 @@ class AnalyticsImpl implements Analytics {
       userProperty: userProperty,
     );
 
-    // This will be set to true by default if running the development or
-    // test constructors
     if (_enableAsserts) {
       checkBody(body);
     }
