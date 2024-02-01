@@ -13,7 +13,7 @@ import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
-  late Analytics analytics;
+  late FakeAnalytics analytics;
   late Directory homeDirectory;
   late FileSystem fs;
   late File logFile;
@@ -51,7 +51,7 @@ void main() {
       dartVersion: 'dartVersion',
       fs: fs,
       platform: DevicePlatform.macos,
-    );
+    ) as FakeAnalytics;
   });
 
   test('Ensure that log file is created', () {

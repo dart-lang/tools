@@ -25,7 +25,7 @@ void main() {
   late Directory home;
   late Directory dartToolDirectory;
   late Analytics initializationAnalytics;
-  late Analytics analytics;
+  late FakeAnalytics analytics;
   late File clientIdFile;
   late File sessionFile;
   late File configFile;
@@ -96,7 +96,7 @@ void main() {
       fs: fs,
       platform: platform,
       clientIde: clientIde,
-    );
+    ) as FakeAnalytics;
     analytics.clientShowedMessage();
 
     // The 3 files that should have been generated

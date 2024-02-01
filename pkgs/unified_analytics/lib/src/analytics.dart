@@ -187,7 +187,7 @@ abstract class Analytics {
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
   }) =>
-      AnalyticsImpl(
+      FakeAnalytics(
         tool: tool,
         homeDirectory: homeDirectory,
         flutterChannel: flutterChannel,
@@ -203,7 +203,6 @@ abstract class Analytics {
               initializedSurveys: [],
             ),
         gaClient: gaClient ?? const FakeGAClient(),
-        enableAsserts: true,
         clientIde: clientIde,
         enabledFeatures: enabledFeatures,
       );
@@ -224,15 +223,6 @@ abstract class Analytics {
   /// Returns a map object with all of the tools that have been parsed
   /// out of the configuration file.
   Map<String, ToolInfo> get parsedTools;
-
-  /// Use this list to check for events that have been emitted when
-  /// invoking the send method.
-  ///
-  /// This list will only get populated when running the [Analytics.test]
-  /// constructor, [Analytics.development], or an instance of [FakeAnalytics].
-  /// It will otherwise remain empty when used in production.
-  @visibleForTesting
-  List<Event> get sentEvents;
 
   /// Boolean that lets the client know if they should display the message.
   bool get shouldShowMessage;
@@ -355,10 +345,6 @@ class AnalyticsImpl implements Analytics {
   /// The list of futures that will contain all of the send events
   /// from the [GAClient].
   final _futures = <Future<Response>>[];
-
-  /// Stores the events that have been sent while the instance exists.
-  /// Events will only be stored in this list if
-  final List<Event> _sentEvents = [];
 
   AnalyticsImpl({
     required this.tool,
@@ -497,9 +483,6 @@ class AnalyticsImpl implements Analytics {
   Map<String, ToolInfo> get parsedTools => _configHandler.parsedTools;
 
   @override
-  List<Event> get sentEvents => _sentEvents;
-
-  @override
   bool get shouldShowMessage => _showMessage;
 
   @override
@@ -622,12 +605,8 @@ class AnalyticsImpl implements Analytics {
 
     // This will be set to true by default if running the development or
     // test constructors
-    //
-    // It will also be enabled by default for the
-    // [FakeAnalytics] instance
     if (_enableAsserts) {
       checkBody(body);
-      _sentEvents.add(event);
     }
 
     _logHandler.save(data: body);
@@ -728,6 +707,10 @@ class AnalyticsImpl implements Analytics {
 /// workflow. Invoking the [send] method on this instance will not make any
 /// network requests to Google Analytics.
 class FakeAnalytics extends AnalyticsImpl {
+  /// Use this list to check for events that have been emitted when
+  /// invoking the send method
+  final List<Event> sentEvents = [];
+
   /// Class to use when you want to see which events were sent
   FakeAnalytics({
     required super.tool,
@@ -740,10 +723,12 @@ class FakeAnalytics extends AnalyticsImpl {
     super.flutterVersion,
     super.clientIde,
     super.enabledFeatures,
+    int? toolsMessageVersion,
+    GAClient? gaClient,
   }) : super(
-          gaClient: const FakeGAClient(),
+          gaClient: gaClient ?? const FakeGAClient(),
           enableAsserts: true,
-          toolsMessageVersion: kToolsMessageVersion,
+          toolsMessageVersion: toolsMessageVersion ?? kToolsMessageVersion,
         );
 
   @override
@@ -799,9 +784,6 @@ class NoOpAnalytics implements Analytics {
 
   @override
   String get clientId => staticClientId;
-
-  @override
-  List<Event> get sentEvents => [];
 
   @override
   void clientShowedMessage() {}
