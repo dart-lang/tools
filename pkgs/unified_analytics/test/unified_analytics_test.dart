@@ -119,7 +119,7 @@ void main() {
       session: Session(
         homeDirectory: home,
         fs: fs,
-        analyticsInstance: analytics,
+        sendFunction: analytics.send,
       ),
       flutterChannel: flutterChannel,
       host: platform.label,

@@ -25,6 +25,9 @@ import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
 
+/// For passing the [Analytics.send] method to classes created by [Analytics].
+typedef SendFunction = void Function(Event event);
+
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
   /// of the [Analytics] abstract class using the [LocalFileSystem].
@@ -420,7 +423,7 @@ class AnalyticsImpl implements Analytics {
     _sessionHandler = Session(
       homeDirectory: homeDirectory,
       fs: fs,
-      analyticsInstance: this,
+      sendFunction: send,
     );
     userProperty = UserProperty(
       session: _sessionHandler,
@@ -442,7 +445,7 @@ class AnalyticsImpl implements Analytics {
     _logHandler = LogHandler(
       fs: fs,
       homeDirectory: homeDirectory,
-      analyticsInstance: this,
+      sendFunction: send,
     );
   }
 

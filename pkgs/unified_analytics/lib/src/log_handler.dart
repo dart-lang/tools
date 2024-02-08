@@ -8,8 +8,9 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
-import '../unified_analytics.dart';
+import 'analytics.dart';
 import 'constants.dart';
+import 'event.dart';
 import 'initializer.dart';
 
 /// Data class that will be returned when analyzing the
@@ -161,7 +162,7 @@ class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
   final File logFile;
-  final Analytics _analyticsInstance;
+  final SendFunction _sendFunction;
 
   /// Ensure we are only sending once per invocation for this class.
   var _errorEventSent = false;
@@ -171,13 +172,13 @@ class LogHandler {
   LogHandler({
     required this.fs,
     required this.homeDirectory,
-    required Analytics analyticsInstance,
+    required SendFunction sendFunction,
   })  : logFile = fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
           kLogFileName,
         )),
-        _analyticsInstance = analyticsInstance;
+        _sendFunction = sendFunction;
 
   /// Get stats from the persisted log file.
   ///
@@ -195,7 +196,7 @@ class LogHandler {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
             if (!_errorEventSent) {
-              _analyticsInstance.send(Event.analyticsException(
+              _sendFunction(Event.analyticsException(
                 workflow: 'LogFileStats.logFileStats',
                 error: err.runtimeType.toString(),
                 description: 'message: ${err.message}\nsource: ${err.source}',
@@ -206,7 +207,7 @@ class LogHandler {
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
             if (!_errorEventSent) {
-              _analyticsInstance.send(Event.analyticsException(
+              _sendFunction(Event.analyticsException(
                 workflow: 'LogFileStats.logFileStats',
                 error: err.runtimeType.toString(),
               ));

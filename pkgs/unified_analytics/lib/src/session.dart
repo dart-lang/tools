@@ -17,7 +17,7 @@ class Session {
   final Directory homeDirectory;
   final FileSystem fs;
   final File sessionFile;
-  final Analytics _analyticsInstance;
+  final SendFunction _sendFunction;
 
   late int _sessionId;
   late int _lastPing;
@@ -28,10 +28,10 @@ class Session {
   Session({
     required this.homeDirectory,
     required this.fs,
-    required Analytics analyticsInstance,
+    required SendFunction sendFunction,
   })  : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
-        _analyticsInstance = analyticsInstance {
+        _sendFunction = sendFunction {
     _refreshSessionData();
   }
 
@@ -98,7 +98,7 @@ class Session {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
       if (!_errorEventSent) {
-        _analyticsInstance.send(Event.analyticsException(
+        _sendFunction(Event.analyticsException(
           workflow: 'Session._refreshSessionData',
           error: err.runtimeType.toString(),
           description: 'message: ${err.message}\nsource: ${err.source}',
@@ -111,7 +111,7 @@ class Session {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
       if (!_errorEventSent) {
-        _analyticsInstance.send(Event.analyticsException(
+        _sendFunction(Event.analyticsException(
           workflow: 'Session._refreshSessionData',
           error: err.runtimeType.toString(),
           description: err.osError?.toString(),

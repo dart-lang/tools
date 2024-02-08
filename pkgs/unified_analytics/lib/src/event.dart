@@ -21,8 +21,10 @@ final class Event {
 
   /// Event that is emitted when an error occurs within
   /// `package:unified_analytics`, tools that are using this package
-  /// should not use this event constructor. Instead they should use
-  /// the more generic [Event.exception] constructor.
+  /// should not use this event constructor.
+  ///
+  /// Tools using this package should instead use the more generic
+  /// [Event.exception] constructor.
   ///
   /// [workflow] - refers to what process caused the error, such as
   ///   "LogHandler.logFileStats".

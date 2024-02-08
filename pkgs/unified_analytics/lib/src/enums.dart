@@ -24,7 +24,7 @@ enum DashEvent {
   ),
   analyticsException(
     label: 'analytics_exception',
-    description: 'Errors that occur within the package for logging',
+    description: 'Errors that are encountered within package:unified_analytics',
   ),
   exception(
     label: 'exception',
