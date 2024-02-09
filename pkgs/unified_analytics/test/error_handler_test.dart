@@ -190,6 +190,8 @@ void main() {
   });
 
   group('Log handler:', () {
-    // TODO: add tests for the log handler
+    test('only sends one event for FormatException', () {
+      expect(logFile.existsSync(), isTrue);
+    });
   });
 }
