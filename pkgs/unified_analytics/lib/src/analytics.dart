@@ -430,6 +430,7 @@ class AnalyticsImpl implements Analytics {
       homeDirectory: homeDirectory,
       fs: fs,
       errorHandler: _errorHandler,
+      telemetryEnabled: telemetryEnabled,
     );
     userProperty = UserProperty(
       session: _sessionHandler,

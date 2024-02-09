@@ -121,6 +121,7 @@ void main() {
         homeDirectory: home,
         fs: fs,
         errorHandler: ErrorHandler(sendFunction: analytics.send),
+        telemetryEnabled: analytics.telemetryEnabled,
       ),
       flutterChannel: flutterChannel,
       host: platform.label,
