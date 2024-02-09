@@ -8,8 +8,8 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
-import 'analytics.dart';
 import 'constants.dart';
+import 'error_handler.dart';
 import 'event.dart';
 import 'initializer.dart';
 
@@ -17,21 +17,18 @@ class Session {
   final Directory homeDirectory;
   final FileSystem fs;
   final File sessionFile;
-  final SendFunction _sendFunction;
+  final ErrorHandler _errorHandler;
 
   late int _sessionId;
   late int _lastPing;
 
-  /// Ensure we are only sending once per invocation for this class.
-  var _errorEventSent = false;
-
   Session({
     required this.homeDirectory,
     required this.fs,
-    required SendFunction sendFunction,
+    required ErrorHandler errorHandler,
   })  : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
-        _sendFunction = sendFunction {
+        _errorHandler = errorHandler {
     _refreshSessionData();
   }
 
@@ -97,27 +94,21 @@ class Session {
     } on FormatException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
-      if (!_errorEventSent) {
-        _sendFunction(Event.analyticsException(
-          workflow: 'Session._refreshSessionData',
-          error: err.runtimeType.toString(),
-          description: 'message: ${err.message}\nsource: ${err.source}',
-        ));
-        _errorEventSent = true;
-      }
+      _errorHandler.log(Event.analyticsException(
+        workflow: 'Session._refreshSessionData',
+        error: err.runtimeType.toString(),
+        description: 'message: ${err.message}\nsource: ${err.source}',
+      ));
 
       parseContents();
     } on FileSystemException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
-      if (!_errorEventSent) {
-        _sendFunction(Event.analyticsException(
-          workflow: 'Session._refreshSessionData',
-          error: err.runtimeType.toString(),
-          description: err.osError?.toString(),
-        ));
-        _errorEventSent = true;
-      }
+      _errorHandler.log(Event.analyticsException(
+        workflow: 'Session._refreshSessionData',
+        error: err.runtimeType.toString(),
+        description: err.osError?.toString(),
+      ));
 
       parseContents();
     }

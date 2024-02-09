@@ -16,6 +16,7 @@ import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
+import 'error_handler.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
@@ -327,6 +328,7 @@ class AnalyticsImpl implements Analytics {
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
   late final Session _sessionHandler;
+  late final ErrorHandler _errorHandler;
   final int toolsMessageVersion;
 
   /// Tells the client if they need to show a message to the
@@ -416,6 +418,10 @@ class AnalyticsImpl implements Analytics {
         p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
     _clientId = _clientIdFile.readAsStringSync();
 
+    // Initialization for the error handling class that will prevent duplicate
+    // [Event.analyticsException] events from being sent to GA4
+    _errorHandler = ErrorHandler(sendFunction: send);
+
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
@@ -423,7 +429,7 @@ class AnalyticsImpl implements Analytics {
     _sessionHandler = Session(
       homeDirectory: homeDirectory,
       fs: fs,
-      sendFunction: send,
+      errorHandler: _errorHandler,
     );
     userProperty = UserProperty(
       session: _sessionHandler,

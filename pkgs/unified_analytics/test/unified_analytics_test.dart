@@ -14,6 +14,7 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/error_handler.dart';
 import 'package:unified_analytics/src/session.dart';
 import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
@@ -119,7 +120,7 @@ void main() {
       session: Session(
         homeDirectory: home,
         fs: fs,
-        sendFunction: analytics.send,
+        errorHandler: ErrorHandler(sendFunction: analytics.send),
       ),
       flutterChannel: flutterChannel,
       host: platform.label,
