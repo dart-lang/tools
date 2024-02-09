@@ -30,7 +30,6 @@ class Session {
   })  : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
         _errorHandler = errorHandler {
-
     // We must check if telemetry is enabled to refresh the session data
     // because the refresh method will write to the session file and for
     // users that have opted out, we have to leave the session file empty
