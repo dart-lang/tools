@@ -28,7 +28,7 @@ class _SseMessage {
 }
 
 /// A bi-directional SSE connection between server and browser.
-class SseConnection extends StreamChannelMixin<String?> {
+class SseConnection extends StreamChannelMixin<String> {
   /// Incoming messages from the Browser client.
   final _incomingController = StreamController<String>();
 
