@@ -100,7 +100,7 @@ void main() {
     ) as FakeAnalytics;
     analytics.clientShowedMessage();
 
-    // The 3 files that should have been generated
+    // The 5 files that should have been generated
     clientIdFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kClientIdFileName);

@@ -8,8 +8,8 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
-import 'analytics.dart';
 import 'constants.dart';
+import 'error_handler.dart';
 import 'event.dart';
 import 'initializer.dart';
 
@@ -162,7 +162,7 @@ class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
   final File logFile;
-  final SendFunction _sendFunction;
+  final ErrorHandler _errorHandler;
 
   /// Ensure we are only sending once per invocation for this class.
   var _errorEventSent = false;
@@ -172,13 +172,13 @@ class LogHandler {
   LogHandler({
     required this.fs,
     required this.homeDirectory,
-    required SendFunction sendFunction,
+    required ErrorHandler errorHandler,
   })  : logFile = fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
           kLogFileName,
         )),
-        _sendFunction = sendFunction;
+        _errorHandler = errorHandler;
 
   /// Get stats from the persisted log file.
   ///
@@ -196,7 +196,7 @@ class LogHandler {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
             if (!_errorEventSent) {
-              _sendFunction(Event.analyticsException(
+              _errorHandler.log(Event.analyticsException(
                 workflow: 'LogFileStats.logFileStats',
                 error: err.runtimeType.toString(),
                 description: 'message: ${err.message}\nsource: ${err.source}',
@@ -207,7 +207,7 @@ class LogHandler {
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
             if (!_errorEventSent) {
-              _sendFunction(Event.analyticsException(
+              _errorHandler.log(Event.analyticsException(
                 workflow: 'LogFileStats.logFileStats',
                 error: err.runtimeType.toString(),
               ));

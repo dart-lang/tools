@@ -451,7 +451,7 @@ class AnalyticsImpl implements Analytics {
     _logHandler = LogHandler(
       fs: fs,
       homeDirectory: homeDirectory,
-      sendFunction: send,
+      errorHandler: _errorHandler,
     );
   }
 
