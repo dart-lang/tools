@@ -192,6 +192,60 @@ void main() {
   group('Log handler:', () {
     test('only sends one event for FormatException', () {
       expect(logFile.existsSync(), isTrue);
+
+      // Write invalid lines to the log file to have a FormatException
+      // thrown when trying to parse the log file
+      logFile.writeAsStringSync('''
+{{}
+{{}
+''');
+
+      // Send one event so that the logFileStats method returns a valid value
+      analytics.send(testEvent);
+      expect(analytics.sentEvents, hasLength(1));
+      expect(logFile.readAsLinesSync(), hasLength(3));
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        isEmpty,
+      );
+
+      // This call below will cause a FormatException while parsing the log file
+      final logFileStats = analytics.logFileStats();
+      expect(logFileStats, isNotNull);
+      expect(logFileStats!.recordCount, 1,
+          reason: 'The error event is not counted');
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(1),
+      );
+      expect(logFile.readAsLinesSync(), hasLength(4));
+    });
+
+    test('only sends one event for TypeError', () {
+      expect(logFile.existsSync(), isTrue);
+      // Write valid json but have one of the types wrong for
+      // the keys so that we throw a TypeError while casting the values
+      //
+      // In the json below, we have made the session id value a string when
+      // it should be an integer
+      logFile.writeAsStringSync('''
+{"client_id":"fcd6c0d5-6582-4c36-b09e-3ecedee9145c","events":[{"name":"command_usage_values","params":{"workflow":"doctor","commandHasTerminal":true}}],"user_properties":{"session_id":{"value":"this should be a string"},"flutter_channel":{"value":"master"},"host":{"value":"macOS"},"flutter_version":{"value":"3.20.0-2.0.pre.9"},"dart_version":{"value":"3.4.0 (build 3.4.0-99.0.dev)"},"analytics_pkg_version":{"value":"5.8.1"},"tool":{"value":"flutter-tool"},"local_time":{"value":"2024-02-07 15:46:19.920784 -0500"},"host_os_version":{"value":"Version 14.3 (Build 23D56)"},"locale":{"value":"en"},"client_ide":{"value":null},"enabled_features":{"value":"enable-native-assets"}}}
+''');
+      expect(logFile.readAsLinesSync(), hasLength(1));
+
+      // Send the test event so that the LogFileStats object is not null
+      analytics.send(testEvent);
+
+      final logFileStats = analytics.logFileStats();
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(1),
+      );
+      expect(logFileStats, isNotNull);
+      expect(logFileStats!.recordCount, 1);
     });
   });
 }

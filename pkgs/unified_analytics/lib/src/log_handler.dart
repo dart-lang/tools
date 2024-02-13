@@ -164,9 +164,6 @@ class LogHandler {
   final File logFile;
   final ErrorHandler _errorHandler;
 
-  /// Ensure we are only sending once per invocation for this class.
-  var _errorEventSent = false;
-
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
   LogHandler({
@@ -195,24 +192,20 @@ class LogHandler {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
-            if (!_errorEventSent) {
-              _errorHandler.log(Event.analyticsException(
-                workflow: 'LogFileStats.logFileStats',
-                error: err.runtimeType.toString(),
-                description: 'message: ${err.message}\nsource: ${err.source}',
-              ));
-              _errorEventSent = true;
-            }
+            _errorHandler.log(Event.analyticsException(
+              workflow: 'LogFileStats.logFileStats',
+              error: err.runtimeType.toString(),
+              description: 'message: ${err.message}\nsource: ${err.source}',
+            ));
+
             return null;
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
-            if (!_errorEventSent) {
-              _errorHandler.log(Event.analyticsException(
-                workflow: 'LogFileStats.logFileStats',
-                error: err.runtimeType.toString(),
-              ));
-              _errorEventSent = true;
-            }
+            _errorHandler.log(Event.analyticsException(
+              workflow: 'LogFileStats.logFileStats',
+              error: err.runtimeType.toString(),
+            ));
+
             return null;
           }
         })
@@ -397,82 +390,72 @@ class LogItem {
       return null;
     }
 
-    // Using a try/except here to parse out the fields if possible,
-    // if not, it will quietly return null and won't get processed
-    // downstream
-    try {
-      // Parse out values from the top level key = 'events' and return
-      // a map for the one event in the value
-      final eventProp =
-          (record['events']! as List<Object?>).first as Map<String, Object?>;
-      final eventName = eventProp['name'] as String;
+    // Parse out values from the top level key = 'events' and return
+    // a map for the one event in the value
+    final eventProp =
+        (record['events']! as List<Object?>).first as Map<String, Object?>;
+    final eventName = eventProp['name'] as String;
 
-      // Parse the data out of the `user_properties` value
-      final userProps = record['user_properties'] as Map<String, Object?>;
+    // Parse the data out of the `user_properties` value
+    final userProps = record['user_properties'] as Map<String, Object?>;
 
-      // Parse out the values from the top level key = 'user_properties`
-      final sessionId =
-          (userProps['session_id']! as Map<String, Object?>)['value'] as int?;
-      final flutterChannel = (userProps['flutter_channel']!
-          as Map<String, Object?>)['value'] as String?;
-      final host =
-          (userProps['host']! as Map<String, Object?>)['value'] as String?;
-      final flutterVersion = (userProps['flutter_version']!
-          as Map<String, Object?>)['value'] as String?;
-      final dartVersion = (userProps['dart_version']!
-          as Map<String, Object?>)['value'] as String?;
-      final tool =
-          (userProps['tool']! as Map<String, Object?>)['value'] as String?;
-      final localTimeString = (userProps['local_time']!
-          as Map<String, Object?>)['value'] as String?;
-      final hostOsVersion = (userProps['host_os_version']!
-          as Map<String, Object?>)['value'] as String?;
-      final locale =
-          (userProps['locale']! as Map<String, Object?>)['value'] as String?;
-      final clientIde = (userProps['client_ide']!
-          as Map<String, Object?>)['value'] as String?;
+    // Parse out the values from the top level key = 'user_properties`
+    final sessionId =
+        (userProps['session_id']! as Map<String, Object?>)['value'] as int?;
+    final flutterChannel = (userProps['flutter_channel']!
+        as Map<String, Object?>)['value'] as String?;
+    final host =
+        (userProps['host']! as Map<String, Object?>)['value'] as String?;
+    final flutterVersion = (userProps['flutter_version']!
+        as Map<String, Object?>)['value'] as String?;
+    final dartVersion = (userProps['dart_version']!
+        as Map<String, Object?>)['value'] as String?;
+    final tool =
+        (userProps['tool']! as Map<String, Object?>)['value'] as String?;
+    final localTimeString =
+        (userProps['local_time']! as Map<String, Object?>)['value'] as String?;
+    final hostOsVersion = (userProps['host_os_version']!
+        as Map<String, Object?>)['value'] as String?;
+    final locale =
+        (userProps['locale']! as Map<String, Object?>)['value'] as String?;
+    final clientIde =
+        (userProps['client_ide']! as Map<String, Object?>)['value'] as String?;
 
-      // If any of the above values are null, return null since that
-      // indicates the record is malformed; note that `flutter_version`,
-      // `flutter_channel`, and `client_ide` are nullable fields in the log file
-      final values = <Object?>[
-        // Values associated with the top level key = 'events'
-        eventName,
+    // If any of the above values are null, return null since that
+    // indicates the record is malformed; note that `flutter_version`,
+    // `flutter_channel`, and `client_ide` are nullable fields in the log file
+    final values = <Object?>[
+      // Values associated with the top level key = 'events'
+      eventName,
 
-        // Values associated with the top level key = 'events'
-        sessionId,
-        host,
-        dartVersion,
-        tool,
-        localTimeString,
-        hostOsVersion,
-        locale,
-      ];
-      for (var value in values) {
-        if (value == null) return null;
-      }
-
-      // Parse the local time from the string extracted
-      final localTime = DateTime.parse(localTimeString!).toLocal();
-
-      return LogItem(
-        eventName: eventName,
-        sessionId: sessionId!,
-        flutterChannel: flutterChannel,
-        host: host!,
-        flutterVersion: flutterVersion,
-        dartVersion: dartVersion!,
-        tool: tool!,
-        localTime: localTime,
-        hostOsVersion: hostOsVersion!,
-        locale: locale!,
-        clientIde: clientIde,
-      );
-      // ignore: avoid_catching_errors
-    } on TypeError {
-      return null;
-    } on FormatException {
-      return null;
+      // Values associated with the top level key = 'events'
+      sessionId,
+      host,
+      dartVersion,
+      tool,
+      localTimeString,
+      hostOsVersion,
+      locale,
+    ];
+    for (var value in values) {
+      if (value == null) return null;
     }
+
+    // Parse the local time from the string extracted
+    final localTime = DateTime.parse(localTimeString!).toLocal();
+
+    return LogItem(
+      eventName: eventName,
+      sessionId: sessionId!,
+      flutterChannel: flutterChannel,
+      host: host!,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion!,
+      tool: tool!,
+      localTime: localTime,
+      hostOsVersion: hostOsVersion!,
+      locale: locale!,
+      clientIde: clientIde,
+    );
   }
 }
