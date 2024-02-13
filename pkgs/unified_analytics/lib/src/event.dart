@@ -709,7 +709,7 @@ final class Event {
         };
 
   @override
-  int get hashCode => eventData.hashCode;
+  int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
   @override
   bool operator ==(Object other) =>

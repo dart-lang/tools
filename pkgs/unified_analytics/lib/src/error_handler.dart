@@ -9,7 +9,7 @@ import 'event.dart';
 class ErrorHandler {
   /// Stores each of the events that have been sent to GA4 so that the
   /// same error doesn't get sent twice.
-  final List<Event> _sentErrorEvents = [];
+  final Set<Event> _sentErrorEvents = {};
   final SendFunction _sendFunction;
 
   /// Handles any errors encountered within package:unified_analytics.
