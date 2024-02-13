@@ -13,7 +13,7 @@ void main() {
   final testEvent = Event.hotReloadTime(timeMs: 50);
 
   test('NoOpAnalytics.telemetryEnabled is always false', () async {
-    final analytics = NoOpAnalytics();
+    final analytics = const NoOpAnalytics();
 
     expect(analytics.telemetryEnabled, isFalse);
     await analytics.setTelemetry(true);
@@ -21,7 +21,7 @@ void main() {
   });
 
   test('NoOpAnalytics.shouldShowMessage is always false', () async {
-    final analytics = NoOpAnalytics();
+    final analytics = const NoOpAnalytics();
 
     expect(analytics.shouldShowMessage, isFalse);
     analytics.clientShowedMessage();
@@ -29,7 +29,7 @@ void main() {
   });
 
   test('NoOpAnalytics.sendEvent() always returns null', () async {
-    final analytics = NoOpAnalytics();
+    final analytics = const NoOpAnalytics();
 
     await analytics.setTelemetry(true);
     analytics.clientShowedMessage();
@@ -40,7 +40,7 @@ void main() {
   });
 
   test('NoOpAnalytics.logFileStats() always returns null', () async {
-    final analytics = NoOpAnalytics();
+    final analytics = const NoOpAnalytics();
 
     expect(analytics.logFileStats(), isNull);
 
@@ -64,7 +64,7 @@ void main() {
   });
 
   test('Fetching the client id', () {
-    final analytics = NoOpAnalytics();
+    final analytics = const NoOpAnalytics();
     expect(analytics.clientId, 'xxxx-xxxx');
   });
 }

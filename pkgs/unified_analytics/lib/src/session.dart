@@ -3,19 +3,21 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
+import 'error_handler.dart';
+import 'event.dart';
 import 'initializer.dart';
 
 class Session {
   final Directory homeDirectory;
   final FileSystem fs;
   final File sessionFile;
+  final ErrorHandler _errorHandler;
 
   late int _sessionId;
   late int _lastPing;
@@ -23,9 +25,16 @@ class Session {
   Session({
     required this.homeDirectory,
     required this.fs,
-  }) : sessionFile = fs.file(p.join(
-            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)) {
-    _refreshSessionData();
+    required ErrorHandler errorHandler,
+    required bool telemetryEnabled,
+  })  : sessionFile = fs.file(p.join(
+            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
+        _errorHandler = errorHandler {
+    // We must check if telemetry is enabled to refresh the session data
+    // because the refresh method will write to the session file and for
+    // users that have opted out, we have to leave the session file empty
+    // per the privacy document
+    if (telemetryEnabled) _refreshSessionData();
   }
 
   /// This will use the data parsed from the
@@ -87,12 +96,24 @@ class Session {
 
     try {
       parseContents();
-    } on FormatException {
+    } on FormatException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
+      _errorHandler.log(Event.analyticsException(
+        workflow: 'Session._refreshSessionData',
+        error: err.runtimeType.toString(),
+        description: 'message: ${err.message}\nsource: ${err.source}',
+      ));
+
       parseContents();
-    } on PathNotFoundException {
+    } on FileSystemException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
+
+      _errorHandler.log(Event.analyticsException(
+        workflow: 'Session._refreshSessionData',
+        error: err.runtimeType.toString(),
+        description: err.osError?.toString(),
+      ));
 
       parseContents();
     }

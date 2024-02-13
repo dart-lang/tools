@@ -19,6 +19,30 @@ final class Event {
       : eventName = DashEvent.analyticsCollectionEnabled,
         eventData = {'status': status};
 
+  /// Event that is emitted when an error occurs within
+  /// `package:unified_analytics`, tools that are using this package
+  /// should not use this event constructor.
+  ///
+  /// Tools using this package should instead use the more generic
+  /// [Event.exception] constructor.
+  ///
+  /// [workflow] - refers to what process caused the error, such as
+  ///   "LogHandler.logFileStats".
+  ///
+  /// [error] - the name of the error, such as "FormatException".
+  ///
+  /// [description] - the description of the error being caught.
+  Event.analyticsException({
+    required String workflow,
+    required String error,
+    String? description,
+  })  : eventName = DashEvent.analyticsException,
+        eventData = {
+          'workflow': workflow,
+          'error': error,
+          if (description != null) 'description': description,
+        };
+
   /// This is for various workflows within the flutter tool related
   /// to iOS and macOS workflows.
   ///
@@ -685,7 +709,7 @@ final class Event {
         };
 
   @override
-  int get hashCode => eventData.hashCode;
+  int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
   @override
   bool operator ==(Object other) =>

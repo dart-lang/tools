@@ -129,112 +129,86 @@ Directory? getHomeDirectory(FileSystem fs) {
   return fs.directory(home);
 }
 
-/// Returns `true` if user has opted out of legacy analytics in Dart or Flutter.
+/// Returns `true` if user has opted out of legacy analytics in
+/// Dart or Flutter.
 ///
 /// Checks legacy opt-out status for the Flutter
 /// and Dart in the following locations.
 ///
 /// Dart: `$HOME/.dart/dartdev.json`
+/// ```
+/// {
+///   "firstRun": false,
+///   "enabled": false,  <-- THIS USER HAS OPTED OUT
+///   "disclosureShown": true,
+///   "clientId": "52710e60-7c70-4335-b3a4-9d922630f12a"
+/// }
+/// ```
 ///
 /// Flutter: `$HOME/.flutter`
+/// ```
+/// {
+///   "firstRun": false,
+///   "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
+///   "enabled": false  <-- THIS USER HAS OPTED OUT
+/// }
+/// ```
 ///
 /// Devtools: `$HOME/.flutter-devtools/.devtools`
-bool legacyOptOut({
-  required FileSystem fs,
-  required Directory home,
-}) {
-  final dartLegacyConfigFile =
-      fs.file(p.join(home.path, '.dart', 'dartdev.json'));
-  final flutterLegacyConfigFile = fs.file(p.join(home.path, '.flutter'));
-  final devtoolsLegacyConfigFile =
-      fs.file(p.join(home.path, '.flutter-devtools', '.devtools'));
+/// ```
+/// {
+///   "analyticsEnabled": false,  <-- THIS USER HAS OPTED OUT
+///   "isFirstRun": false,
+///   "lastReleaseNotesVersion": "2.31.0",
+///   "2023-Q4": {
+///     "surveyActionTaken": false,
+///     "surveyShownCount": 0
+///   }
+/// }
+/// ```
+bool legacyOptOut({required FileSystem fs, required Directory home}) {
+  // List of Maps for each of the config file, `key` refers to the
+  // key in the json file that indicates if the user has been opted
+  // out or not
+  final legacyConfigFiles = [
+    {
+      'tool': DashTool.dartTool,
+      'file': fs.file(p.join(home.path, '.dart', 'dartdev.json')),
+      'key': 'enabled',
+    },
+    {
+      'tool': DashTool.flutterTool,
+      'file': fs.file(p.join(home.path, '.flutter')),
+      'key': 'enabled',
+    },
+    {
+      'tool': DashTool.devtools,
+      'file': fs.file(p.join(home.path, '.flutter-devtools', '.devtools')),
+      'key': 'analyticsEnabled',
+    },
+  ];
+  for (final legacyConfigObj in legacyConfigFiles) {
+    final legacyFile = legacyConfigObj['file']! as File;
+    final lookupKey = legacyConfigObj['key']! as String;
 
-  // Example of what the file looks like for dart
-  //
-  // {
-  //   "firstRun": false,
-  //   "enabled": false,  <-- THIS USER HAS OPTED OUT
-  //   "disclosureShown": true,
-  //   "clientId": "52710e60-7c70-4335-b3a4-9d922630f12a"
-  // }
-  if (dartLegacyConfigFile.existsSync()) {
-    try {
-      // Read in the json object into a Map and check for
-      // the enabled key being set to false; this means the user
-      // has opted out of analytics for dart
-      final dartObj = jsonDecode(dartLegacyConfigFile.readAsStringSync())
-          as Map<String, Object?>;
-      if (dartObj.containsKey('enabled') && dartObj['enabled'] == false) {
+    if (legacyFile.existsSync()) {
+      try {
+        final legacyFileObj =
+            jsonDecode(legacyFile.readAsStringSync()) as Map<String, Object?>;
+        if (legacyFileObj.containsKey(lookupKey) &&
+            legacyFileObj[lookupKey] == false) {
+          return true;
+        }
+      } on FormatException {
+        // In the case of an error when parsing the json file, return true
+        // which will result in the user being opted out of unified_analytics
+        //
+        // A corrupted file could mean they opted out previously but for some
+        // reason, the file was written incorrectly
+        return true;
+      } on FileSystemException {
         return true;
       }
-    } on FormatException {
-      // In the case of an error when parsing the json file, return true
-      // which will result in the user being opted out of unified_analytics
-      //
-      // A corrupted file could mean they opted out previously but for some
-      // reason, the file was written incorrectly
-      return true;
-    } on FileSystemException {
-      return true;
-    }
-  }
-
-  // Example of what the file looks like for flutter
-  //
-  // {
-  //   "firstRun": false,
-  //   "clientId": "4c3a3d1e-e545-47e7-b4f8-10129f6ab169",
-  //   "enabled": false  <-- THIS USER HAS OPTED OUT
-  // }
-  if (flutterLegacyConfigFile.existsSync()) {
-    try {
-      // Same process as above for dart
-      final flutterObj = jsonDecode(dartLegacyConfigFile.readAsStringSync())
-          as Map<String, Object?>;
-      if (flutterObj.containsKey('enabled') && flutterObj['enabled'] == false) {
-        return true;
-      }
-    } on FormatException {
-      // In the case of an error when parsing the json file, return true
-      // which will result in the user being opted out of unified_analytics
-      //
-      // A corrupted file could mean they opted out previously but for some
-      // reason, the file was written incorrectly
-      return true;
-    } on FileSystemException {
-      return true;
-    }
-  }
-
-  // Example of what the file looks like for devtools
-  //
-  // {
-  //   "analyticsEnabled": false,  <-- THIS USER HAS OPTED OUT
-  //   "isFirstRun": false,
-  //   "lastReleaseNotesVersion": "2.31.0",
-  //   "2023-Q4": {
-  //     "surveyActionTaken": false,
-  //     "surveyShownCount": 0
-  //   }
-  // }
-  if (devtoolsLegacyConfigFile.existsSync()) {
-    try {
-      final devtoolsObj =
-          jsonDecode(devtoolsLegacyConfigFile.readAsStringSync())
-              as Map<String, Object?>;
-      if (devtoolsObj.containsKey('analyticsEnabled') &&
-          devtoolsObj['analyticsEnabled'] == false) {
-        return true;
-      }
-    } on FormatException {
-      // In the case of an error when parsing the json file, return true
-      // which will result in the user being opted out of unified_analytics
-      //
-      // A corrupted file could mean they opted out previously but for some
-      // reason, the file was written incorrectly
-      return true;
-    } on FileSystemException {
-      return true;
     }
   }
 

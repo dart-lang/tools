@@ -1,3 +1,8 @@
+## 5.8.2-wip
+
+- Added new event `Event.analyticsException` to track internal errors for this package
+- Redirecting the `Analytics.test` factory to return an instance of `FakeAnalytics`
+
 ## 5.8.1
 
 - Refactor logic for `okToSend` and `shouldShowMessage`

@@ -16,6 +16,7 @@ import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
+import 'error_handler.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
@@ -24,6 +25,9 @@ import 'session.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
+
+/// For passing the [Analytics.send] method to classes created by [Analytics].
+typedef SendFunction = void Function(Event event);
 
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
@@ -60,7 +64,7 @@ abstract class Analytics {
     final homeDirectory = getHomeDirectory(fs);
     if (homeDirectory == null ||
         !checkDirectoryForWritePermissions(homeDirectory)) {
-      return NoOpAnalytics();
+      return const NoOpAnalytics();
     }
 
     // Resolve the OS using dart:io
@@ -187,7 +191,7 @@ abstract class Analytics {
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
   }) =>
-      AnalyticsImpl(
+      FakeAnalytics(
         tool: tool,
         homeDirectory: homeDirectory,
         flutterChannel: flutterChannel,
@@ -203,7 +207,6 @@ abstract class Analytics {
               initializedSurveys: [],
             ),
         gaClient: gaClient ?? const FakeGAClient(),
-        enableAsserts: true,
         clientIde: clientIde,
         enabledFeatures: enabledFeatures,
       );
@@ -325,6 +328,7 @@ class AnalyticsImpl implements Analytics {
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
   late final Session _sessionHandler;
+  late final ErrorHandler _errorHandler;
   final int toolsMessageVersion;
 
   /// Tells the client if they need to show a message to the
@@ -414,11 +418,20 @@ class AnalyticsImpl implements Analytics {
         p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
     _clientId = _clientIdFile.readAsStringSync();
 
+    // Initialization for the error handling class that will prevent duplicate
+    // [Event.analyticsException] events from being sent to GA4
+    _errorHandler = ErrorHandler(sendFunction: send);
+
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
     // exceeds [kSessionDurationMinutes]
-    _sessionHandler = Session(homeDirectory: homeDirectory, fs: fs);
+    _sessionHandler = Session(
+      homeDirectory: homeDirectory,
+      fs: fs,
+      errorHandler: _errorHandler,
+      telemetryEnabled: telemetryEnabled,
+    );
     userProperty = UserProperty(
       session: _sessionHandler,
       flutterChannel: flutterChannel,
@@ -436,7 +449,11 @@ class AnalyticsImpl implements Analytics {
     );
 
     // Initialize the log handler to persist events that are being sent
-    _logHandler = LogHandler(fs: fs, homeDirectory: homeDirectory);
+    _logHandler = LogHandler(
+      fs: fs,
+      homeDirectory: homeDirectory,
+      errorHandler: _errorHandler,
+    );
   }
 
   @override
@@ -712,10 +729,12 @@ class FakeAnalytics extends AnalyticsImpl {
     super.flutterVersion,
     super.clientIde,
     super.enabledFeatures,
+    int? toolsMessageVersion,
+    GAClient? gaClient,
   }) : super(
-          gaClient: const FakeGAClient(),
+          gaClient: gaClient ?? const FakeGAClient(),
           enableAsserts: true,
-          toolsMessageVersion: kToolsMessageVersion,
+          toolsMessageVersion: toolsMessageVersion ?? kToolsMessageVersion,
         );
 
   @override
@@ -767,9 +786,7 @@ class NoOpAnalytics implements Analytics {
   final Map<String, Map<String, Object?>> userPropertyMap =
       const <String, Map<String, Object?>>{};
 
-  factory NoOpAnalytics() => const NoOpAnalytics._();
-
-  const NoOpAnalytics._();
+  const NoOpAnalytics();
 
   @override
   String get clientId => staticClientId;

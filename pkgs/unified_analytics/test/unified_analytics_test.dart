@@ -14,6 +14,7 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/error_handler.dart';
 import 'package:unified_analytics/src/session.dart';
 import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
@@ -25,7 +26,7 @@ void main() {
   late Directory home;
   late Directory dartToolDirectory;
   late Analytics initializationAnalytics;
-  late Analytics analytics;
+  late FakeAnalytics analytics;
   late File clientIdFile;
   late File sessionFile;
   late File configFile;
@@ -96,10 +97,10 @@ void main() {
       fs: fs,
       platform: platform,
       clientIde: clientIde,
-    );
+    ) as FakeAnalytics;
     analytics.clientShowedMessage();
 
-    // The 3 files that should have been generated
+    // The 5 files that should have been generated
     clientIdFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kClientIdFileName);
@@ -116,7 +117,12 @@ void main() {
     // Create the user property object that is also
     // created within analytics for testing
     userProperty = UserProperty(
-      session: Session(homeDirectory: home, fs: fs),
+      session: Session(
+        homeDirectory: home,
+        fs: fs,
+        errorHandler: ErrorHandler(sendFunction: analytics.send),
+        telemetryEnabled: analytics.telemetryEnabled,
+      ),
       flutterChannel: flutterChannel,
       host: platform.label,
       flutterVersion: flutterVersion,
@@ -166,6 +172,39 @@ void main() {
       userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
           '{"session_id":$timestamp,"last_ping":$timestamp}');
+
+      // Attempting to fetch the session id when malformed should also
+      // send an error event while parsing
+      final lastEvent = analytics.sentEvents.last;
+      expect(lastEvent, isNotNull);
+      expect(lastEvent.eventName, DashEvent.analyticsException);
+      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(lastEvent.eventData['error']!, 'FormatException');
+    });
+  });
+
+  test('Resetting session file when file is removed', () {
+    // Purposefully write delete the file
+    sessionFile.deleteSync();
+
+    // Define the initial time to start
+    final start = DateTime(1995, 3, 3, 12, 0);
+
+    // Set the clock to the start value defined above
+    withClock(Clock.fixed(start), () {
+      final timestamp = clock.now().millisecondsSinceEpoch.toString();
+      expect(sessionFile.existsSync(), false);
+      userProperty.preparePayload();
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id":$timestamp,"last_ping":$timestamp}');
+
+      // Attempting to fetch the session id when malformed should also
+      // send an error event while parsing
+      final lastEvent = analytics.sentEvents.last;
+      expect(lastEvent, isNotNull);
+      expect(lastEvent.eventName, DashEvent.analyticsException);
+      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(lastEvent.eventData['error']!, 'FileSystemException');
     });
   });
 

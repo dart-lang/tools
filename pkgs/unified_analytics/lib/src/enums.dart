@@ -22,6 +22,10 @@ enum DashEvent {
     label: 'analytics_collection_enabled',
     description: 'The opt-in status for analytics collection',
   ),
+  analyticsException(
+    label: 'analytics_exception',
+    description: 'Errors that are encountered within package:unified_analytics',
+  ),
   exception(
     label: 'exception',
     description: 'General errors to log',
