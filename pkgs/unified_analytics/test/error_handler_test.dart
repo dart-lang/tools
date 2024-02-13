@@ -139,9 +139,10 @@ void main() {
       analytics.send(testEvent);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
 
-      final matchingEvents = analytics.sentEvents.where(
-          (element) => element.eventName == DashEvent.analyticsException);
-      expect(matchingEvents, hasLength(1));
+      expect(
+          analytics.sentEvents.where(
+              (element) => element.eventName == DashEvent.analyticsException),
+          hasLength(1));
 
       // Making the file empty again and sending an event should not send
       // an additional event
@@ -150,9 +151,10 @@ void main() {
       analytics.send(testEvent);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
 
-      final secondMatchingEvents = analytics.sentEvents.where(
-          (element) => element.eventName == DashEvent.analyticsException);
-      expect(secondMatchingEvents, hasLength(1),
+      expect(
+          analytics.sentEvents.where(
+              (element) => element.eventName == DashEvent.analyticsException),
+          hasLength(1),
           reason: 'We should not have added a new error event');
     });
 
@@ -186,6 +188,43 @@ void main() {
       );
       expect(sessionFile.existsSync(), isTrue);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
+    });
+
+    test('sends two unique errors', () {
+      // Begin with the session file empty, it should recreate the file
+      // and send an error event
+      sessionFile.writeAsStringSync('');
+      expect(sessionFile.readAsStringSync(), isEmpty);
+      analytics.send(testEvent);
+      expect(sessionFile.readAsStringSync(), isNotEmpty);
+
+      expect(
+          analytics.sentEvents.where(
+              (element) => element.eventName == DashEvent.analyticsException),
+          hasLength(1));
+
+      // Deleting the file now before sending an additional event should
+      // cause a different test error
+      sessionFile.deleteSync();
+      expect(sessionFile.existsSync(), isFalse);
+
+      analytics.send(testEvent);
+      expect(sessionFile.readAsStringSync(), isNotEmpty);
+      expect(
+          analytics.sentEvents.where(
+              (element) => element.eventName == DashEvent.analyticsException),
+          hasLength(2));
+      expect(analytics.sentEvents, hasLength(4));
+
+      sessionFile.deleteSync();
+      expect(sessionFile.existsSync(), isFalse);
+
+      analytics.send(testEvent);
+      expect(sessionFile.readAsStringSync(), isNotEmpty);
+      expect(
+          analytics.sentEvents.where(
+              (element) => element.eventName == DashEvent.analyticsException),
+          hasLength(2));
     });
   });
 
@@ -246,6 +285,59 @@ void main() {
       );
       expect(logFileStats, isNotNull);
       expect(logFileStats!.recordCount, 1);
+    });
+
+    test('sends two unique errors', () {
+      expect(logFile.existsSync(), isTrue);
+
+      // Write invalid lines to the log file to have a FormatException
+      // thrown when trying to parse the log file
+      logFile.writeAsStringSync('''
+{{}
+{{}
+''');
+
+      // Send one event so that the logFileStats method returns a valid value
+      analytics.send(testEvent);
+      expect(analytics.sentEvents, hasLength(1));
+      expect(logFile.readAsLinesSync(), hasLength(3));
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        isEmpty,
+      );
+
+      // This will cause the first error
+      analytics.logFileStats();
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(1),
+      );
+
+      // Overwrite the contents of the log file now to include something that
+      // will cause a TypeError by changing the expected value for session id
+      // from integer to a string
+      logFile.writeAsStringSync('''
+{"client_id":"fcd6c0d5-6582-4c36-b09e-3ecedee9145c","events":[{"name":"command_usage_values","params":{"workflow":"doctor","commandHasTerminal":true}}],"user_properties":{"session_id":{"value":"this should be a string"},"flutter_channel":{"value":"master"},"host":{"value":"macOS"},"flutter_version":{"value":"3.20.0-2.0.pre.9"},"dart_version":{"value":"3.4.0 (build 3.4.0-99.0.dev)"},"analytics_pkg_version":{"value":"5.8.1"},"tool":{"value":"flutter-tool"},"local_time":{"value":"2024-02-07 15:46:19.920784 -0500"},"host_os_version":{"value":"Version 14.3 (Build 23D56)"},"locale":{"value":"en"},"client_ide":{"value":null},"enabled_features":{"value":"enable-native-assets"}}}
+''');
+      expect(logFile.readAsLinesSync(), hasLength(1));
+
+      // This will cause the second error
+      analytics.logFileStats();
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(2),
+      );
+
+      // Attempting to cause the same error won't send another error event
+      analytics.logFileStats();
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(2),
+      );
     });
   });
 }
