@@ -1276,4 +1276,21 @@ Privacy Policy (https://policies.google.com/privacy).
     expect(eventList.contains(eventToMatch), true);
     expect(eventList.where((element) => element == eventToMatch).length, 1);
   });
+
+  group('Unit tests for util dartSDKVersion', () {
+    test('parses correctly for non-stable version', () {
+      final originalVersion =
+          '3.4.0-148.0.dev (dev) (Thu Feb 15 12:05:45 2024 -0800) on "macos_arm64"';
+
+      expect(parseDartSDKVersion(originalVersion),
+          '3.4.0 (build 3.4.0-148.0.dev)');
+    });
+
+    test('parses correctly for stable version', () {
+      final originalVersion =
+          '3.3.0 (stable) (Tue Feb 13 10:25:19 2024 +0000) on "macos_arm64"';
+
+      expect(parseDartSDKVersion(originalVersion), '3.3.0');
+    });
+  });
 }

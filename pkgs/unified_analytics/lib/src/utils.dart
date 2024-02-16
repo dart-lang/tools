@@ -215,6 +215,34 @@ bool legacyOptOut({required FileSystem fs, required Directory home}) {
   return false;
 }
 
+/// Helper method that can be used to resolve the Dart SDK version for clients
+/// of package:unified_analytics.
+///
+/// Input [versionString] for this method should be the returned string from
+/// [io.Platform.version].
+///
+/// For tools that don't already have a method for resolving the Dart
+/// SDK version in semver notation, this helper can be used. This uses
+/// the [io.Platform.version] to parse the semver.
+///
+/// Example for stable version:
+/// `3.3.0 (stable) (Tue Feb 13 10:25:19 2024 +0000) on "macos_arm64"` into
+/// `3.3.0`.
+///
+/// Example for non-stable version:
+/// `2.1.0-dev.8.0.flutter-312ae32` into `2.1.0 (build 2.1.0-dev.8.0 312ae32)`.
+String parseDartSDKVersion(String versionString) {
+  versionString = versionString.trim();
+  final justVersion = versionString.split(' ')[0];
+
+  // For non-stable versions, this regex will include build information
+  return justVersion.replaceFirstMapped(RegExp(r'(\d+\.\d+\.\d+)(.+)'),
+      (Match match) {
+    final noFlutter = match[2]!.replaceAll('.flutter-', ' ');
+    return '${match[1]} (build ${match[1]}$noFlutter)'.trim();
+  });
+}
+
 /// Will use two strings to produce a double for applying a sampling
 /// rate for [Survey] to be returned to the user.
 double sampleRate(String string1, String string2) =>
