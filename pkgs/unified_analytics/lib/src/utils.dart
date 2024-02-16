@@ -235,7 +235,7 @@ String parseDartSDKVersion(String versionString) {
   versionString = versionString.trim();
   final justVersion = versionString.split(' ')[0];
 
-  // For non-stable versions, this regex will include build information 
+  // For non-stable versions, this regex will include build information
   return justVersion.replaceFirstMapped(RegExp(r'(\d+\.\d+\.\d+)(.+)'),
       (Match match) {
     final noFlutter = match[2]!.replaceAll('.flutter-', ' ');

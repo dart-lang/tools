@@ -2,6 +2,7 @@
 
 - Added new event `Event.analyticsException` to track internal errors for this package
 - Redirecting the `Analytics.test` factory to return an instance of `FakeAnalytics`
+- Exposing new helper function that can be used to parse the Dart SDK version
 
 ## 5.8.1
 
