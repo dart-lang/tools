@@ -102,6 +102,8 @@ class Chrome {
       '--remote-debugging-port=$port',
       // When the DevTools has focus we don't want to slow down the application.
       '--disable-background-timer-throttling',
+      '--disable-blink-features=TimerThrottlingForBackgroundTabs',
+      '--disable-features=IntensiveWakeUpThrottling',
       // Since we are using a temp profile, disable features that slow the
       // Chrome launch.
       if (!signIn) '--disable-extensions',

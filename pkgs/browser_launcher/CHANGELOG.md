@@ -3,6 +3,7 @@
 - Require Dart 3.0
 - Log errors from chrome
 - Allow tests to detect headless-only environment (for CI).
+- Add extra flags that may help disable additional throttling in background tabs
 
 ## 1.1.1
 
