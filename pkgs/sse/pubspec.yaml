@@ -7,7 +7,7 @@ description: >-
 repository: https://github.com/dart-lang/sse
 
 environment:
-  sdk: ^3.2.0
+  sdk: ^3.3.0
 
 dependencies:
   async: ^2.0.8
@@ -16,7 +16,7 @@ dependencies:
   pool: ^1.5.0
   shelf: ^1.1.0
   stream_channel: ^2.0.0
-  web: '>=0.3.0 <0.5.0'
+  web: ^0.5.0
 
 dev_dependencies:
   dart_flutter_team_lints: ^2.0.0

@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:sse/client/sse_client.dart';
-import 'package:web/helpers.dart';
+import 'package:web/web.dart';
 
 void main() {
   var channel = SseClient('/test');

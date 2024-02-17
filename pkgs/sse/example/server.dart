@@ -7,7 +7,7 @@ import 'package:sse/server/sse_handler.dart';
 
 /// A basic server which sets up an SSE handler.
 ///
-/// When a client connnects it will send a simple message and print the
+/// When a client connects it will send a simple message and print the
 /// response.
 void main() async {
   var handler = SseHandler(Uri.parse('/sseHandler'));

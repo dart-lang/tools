@@ -9,7 +9,7 @@ import 'dart:js_interop';
 import 'package:logging/logging.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:web/helpers.dart';
+import 'package:web/web.dart';
 
 import '../src/util/uuid.dart';
 
@@ -21,7 +21,7 @@ import '../src/util/uuid.dart';
 /// Note Chrome's limit is 6000. So this gives us plenty of headroom.
 final _requestPool = Pool(1000);
 
-/// A client for bi-directional sse communcation.
+/// A client for bi-directional sse communication.
 ///
 /// The client can send any JSON-encodable messages to the server by adding
 /// them to the [sink] and listen to messages from the server on the [stream].

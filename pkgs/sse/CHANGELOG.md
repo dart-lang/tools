@@ -1,6 +1,8 @@
 ## 4.1.5-wip
 
 - Drop unneeded dependency on `package:js`.
+- Update the minimum Dart SDK version to `3.3.0`.
+- Support the latest `package:web`.
 
 ## 4.1.4
 
