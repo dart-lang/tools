@@ -191,7 +191,8 @@ class _MultiChannel<T> extends StreamChannelMixin<T>
     // If the inner channel has already closed, create new virtual channels in a
     // closed state.
     if (_inner == null) {
-      return VirtualChannel._(this, inputId, Stream.empty(), NullStreamSink());
+      return VirtualChannel._(
+          this, inputId, const Stream.empty(), NullStreamSink());
     }
 
     late StreamChannelController<T> controller;

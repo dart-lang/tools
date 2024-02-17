@@ -22,7 +22,7 @@ Future<void> main() async {
   // For example, we can handle standard input as strings:
   var stringChannel = stdioChannel
       .transform(StreamChannelTransformer.fromCodec(utf8))
-      .transformStream(LineSplitter());
+      .transformStream(const LineSplitter());
   stringChannel.sink.add('world!\n');
 
   // You can implement StreamChannel<T> by extending StreamChannelMixin<T>, but
@@ -84,8 +84,8 @@ Future<void> main() async {
   // given the corresponding `SendPort`, and then call
   // `IsolateChannel.connectSend`.
   var recv = ReceivePort();
-  var recvChannel = IsolateChannel.connectReceive(recv);
-  var sendChannel = IsolateChannel.connectSend(recv.sendPort);
+  var recvChannel = IsolateChannel<void>.connectReceive(recv);
+  var sendChannel = IsolateChannel<void>.connectSend(recv.sendPort);
 
   // You must manually close `IsolateChannel<T>` sinks, however.
   await recvChannel.sink.close();

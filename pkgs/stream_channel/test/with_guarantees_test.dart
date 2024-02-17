@@ -12,8 +12,8 @@ void main() {
   late StreamController sinkController;
   late StreamChannel channel;
   setUp(() {
-    streamController = StreamController();
-    sinkController = StreamController();
+    streamController = StreamController<void>();
+    sinkController = StreamController<void>();
     channel = StreamChannel.withGuarantees(
         streamController.stream, sinkController.sink);
   });
@@ -53,7 +53,7 @@ void main() {
             .listen(expectAsync1((event) {
               if (event == 2) channel.sink.close();
             }, count: 2))
-            .asFuture(),
+            .asFuture<void>(),
         completes);
   });
 
@@ -126,7 +126,7 @@ void main() {
   });
 
   test("events can't be added while a stream is being added", () {
-    var controller = StreamController();
+    var controller = StreamController<void>();
     channel.sink.addStream(controller.stream);
 
     expect(() => channel.sink.add(1), throwsStateError);
@@ -140,8 +140,8 @@ void main() {
 
   group('with allowSinkErrors: false', () {
     setUp(() {
-      streamController = StreamController();
-      sinkController = StreamController();
+      streamController = StreamController<void>();
+      sinkController = StreamController<void>();
       channel = StreamChannel.withGuarantees(
           streamController.stream, sinkController.sink,
           allowSinkErrors: false);
@@ -166,7 +166,7 @@ void main() {
               .listen(expectAsync1((event) {
                 if (event == 2) channel.sink.addError('oh no');
               }, count: 2))
-              .asFuture(),
+              .asFuture<void>(),
           completes);
     });
 
@@ -180,7 +180,7 @@ void main() {
         'adding an error via via addStream causes the stream to emit a done '
         'event', () async {
       var canceled = false;
-      var controller = StreamController(onCancel: () {
+      var controller = StreamController<void>(onCancel: () {
         canceled = true;
       });
 

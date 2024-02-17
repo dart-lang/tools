@@ -34,7 +34,7 @@ class StreamChannelCompleter<T> {
   /// instead contain just that error. The sink will silently discard all
   /// events.
   static StreamChannel fromFuture(Future<StreamChannel> channelFuture) {
-    var completer = StreamChannelCompleter();
+    var completer = StreamChannelCompleter<void>();
     channelFuture.then(completer.setChannel, onError: completer.setError);
     return completer.channel;
   }

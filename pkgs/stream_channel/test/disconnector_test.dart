@@ -14,8 +14,8 @@ void main() {
   late Disconnector disconnector;
   late StreamChannel channel;
   setUp(() {
-    streamController = StreamController();
-    sinkController = StreamController();
+    streamController = StreamController<void>();
+    sinkController = StreamController<void>();
     disconnector = Disconnector();
     channel = StreamChannel.withGuarantees(
             streamController.stream, sinkController.sink)
@@ -52,7 +52,7 @@ void main() {
     });
 
     test("events can't be added while a stream is being added", () {
-      var controller = StreamController();
+      var controller = StreamController<void>();
       channel.sink.addStream(controller.stream);
 
       expect(() => channel.sink.add(1), throwsStateError);
@@ -67,7 +67,7 @@ void main() {
 
   test('cancels addStream when disconnected', () async {
     var canceled = false;
-    var controller = StreamController(onCancel: () {
+    var controller = StreamController<void>(onCancel: () {
       canceled = true;
     });
     expect(channel.sink.addStream(controller.stream), completes);
@@ -78,9 +78,9 @@ void main() {
   });
 
   test('disconnect() returns the close future from the inner sink', () async {
-    var streamController = StreamController();
-    var sinkController = StreamController();
-    var disconnector = Disconnector();
+    var streamController = StreamController<void>();
+    var sinkController = StreamController<void>();
+    var disconnector = Disconnector<void>();
     var sink = _CloseCompleterSink(sinkController.sink);
     StreamChannel.withGuarantees(streamController.stream, sink)
         .transform(disconnector);
@@ -140,7 +140,7 @@ void main() {
 /// returned by [close] using [completer].
 class _CloseCompleterSink extends DelegatingStreamSink {
   /// The completer for the future returned by [close].
-  final completer = Completer();
+  final completer = Completer<void>();
 
   _CloseCompleterSink(super.inner);
 

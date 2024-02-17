@@ -53,7 +53,7 @@ void main() {
   });
 
   test("events can't be added while a stream is being added", () {
-    var controller = StreamController();
+    var controller = StreamController<void>();
     channel.sink.addStream(controller.stream);
 
     expect(() => channel.sink.add(1), throwsStateError);
@@ -109,7 +109,7 @@ void main() {
     test('the sink closes as soon as an error is added via addStream',
         () async {
       var canceled = false;
-      var controller = StreamController(onCancel: () {
+      var controller = StreamController<void>(onCancel: () {
         canceled = true;
       });
 
@@ -156,7 +156,7 @@ void main() {
 
     test('the receiving channel produces an error if it gets the wrong message',
         () {
-      var connectedChannel = IsolateChannel.connectReceive(connectPort);
+      var connectedChannel = IsolateChannel<int>.connectReceive(connectPort);
       connectPort.sendPort.send('wrong value');
 
       expect(connectedChannel.stream.toList(), throwsStateError);
@@ -165,7 +165,7 @@ void main() {
 
     test('the receiving channel closes gracefully without a connection',
         () async {
-      var connectedChannel = IsolateChannel.connectReceive(connectPort);
+      var connectedChannel = IsolateChannel<int>.connectReceive(connectPort);
       await connectedChannel.sink.close();
       await expectLater(connectedChannel.stream.toList(), completion(isEmpty));
       await expectLater(connectedChannel.sink.done, completes);

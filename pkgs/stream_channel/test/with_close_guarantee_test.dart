@@ -45,7 +45,7 @@ void main() {
             .listen(expectAsync1((event) {
               if (event == 2) channel.sink.close();
             }, count: 2))
-            .asFuture(),
+            .asFuture<void>(),
         completes);
 
     await pumpEventQueue();

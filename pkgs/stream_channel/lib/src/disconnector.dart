@@ -38,7 +38,7 @@ class Disconnector<T> implements StreamChannelTransformer<T, T> {
         _sinks.clear();
         return Future.wait(futures, eagerError: true);
       });
-  final _disconnectMemo = AsyncMemoizer();
+  final _disconnectMemo = AsyncMemoizer<List<void>>();
 
   @override
   StreamChannel<T> bind(StreamChannel<T> channel) {

@@ -83,7 +83,7 @@ class _GuaranteeSink<T> implements StreamSink<T> {
 
   @override
   Future<void> get done => _doneCompleter.future;
-  final _doneCompleter = Completer();
+  final _doneCompleter = Completer<void>();
 
   /// Whether connection is disconnected.
   ///

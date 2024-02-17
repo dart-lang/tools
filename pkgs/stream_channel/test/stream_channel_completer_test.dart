@@ -14,8 +14,8 @@ void main() {
   late StreamChannel innerChannel;
   setUp(() {
     completer = StreamChannelCompleter();
-    streamController = StreamController();
-    sinkController = StreamController();
+    streamController = StreamController<void>();
+    sinkController = StreamController<void>();
     innerChannel = StreamChannel(streamController.stream, sinkController.sink);
   });
 

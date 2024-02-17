@@ -51,7 +51,7 @@ class IsolateChannel<T> extends StreamChannelMixin<T> {
         .transform(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
       if (!isCompleted) {
         receivePort.close();
-        streamCompleter.setSourceStream(Stream.empty());
+        streamCompleter.setSourceStream(const Stream.empty());
         sinkCompleter.setDestinationSink(NullStreamSink<T>());
       }
       sink.close();

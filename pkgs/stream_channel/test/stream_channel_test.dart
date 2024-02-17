@@ -10,21 +10,17 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late StreamController streamController;
-  late StreamController sinkController;
-  late StreamChannel channel;
-  setUp(() {
-    streamController = StreamController();
-    sinkController = StreamController();
-    channel = StreamChannel(streamController.stream, sinkController.sink);
-  });
-
   test("pipe() pipes data from each channel's stream into the other's sink",
       () {
-    var otherStreamController = StreamController();
-    var otherSinkController = StreamController();
+    var otherStreamController = StreamController<int>();
+    var otherSinkController = StreamController<int>();
     var otherChannel =
         StreamChannel(otherStreamController.stream, otherSinkController.sink);
+
+    var streamController = StreamController<int>();
+    var sinkController = StreamController<int>();
+    var channel = StreamChannel(streamController.stream, sinkController.sink);
+
     channel.pipe(otherChannel);
 
     streamController.add(1);
@@ -41,6 +37,10 @@ void main() {
   });
 
   test('transform() transforms the channel', () async {
+    var streamController = StreamController<List<int>>();
+    var sinkController = StreamController<List<int>>();
+    var channel = StreamChannel(streamController.stream, sinkController.sink);
+
     var transformed = channel
         .cast<List<int>>()
         .transform(StreamChannelTransformer.fromCodec(utf8));
@@ -59,6 +59,10 @@ void main() {
   });
 
   test('transformStream() transforms only the stream', () async {
+    var streamController = StreamController<String>();
+    var sinkController = StreamController<String>();
+    var channel = StreamChannel(streamController.stream, sinkController.sink);
+
     var transformed =
         channel.cast<String>().transformStream(const LineSplitter());
 
@@ -75,8 +79,12 @@ void main() {
   });
 
   test('transformSink() transforms only the sink', () async {
+    var streamController = StreamController<String>();
+    var sinkController = StreamController<String>();
+    var channel = StreamChannel(streamController.stream, sinkController.sink);
+
     var transformed = channel.cast<String>().transformSink(
-        StreamSinkTransformer.fromStreamTransformer(const LineSplitter()));
+        const StreamSinkTransformer.fromStreamTransformer(LineSplitter()));
 
     streamController.add('fbl\nthp');
     unawaited(streamController.close());
@@ -91,7 +99,11 @@ void main() {
   });
 
   test('changeStream() changes the stream', () {
-    var newController = StreamController();
+    var streamController = StreamController<int>();
+    var sinkController = StreamController<int>();
+    var channel = StreamChannel(streamController.stream, sinkController.sink);
+
+    var newController = StreamController<int>();
     var changed = channel.changeStream((stream) {
       expect(stream, equals(channel.stream));
       return newController.stream;
@@ -107,7 +119,11 @@ void main() {
   });
 
   test('changeSink() changes the sink', () {
-    var newController = StreamController();
+    var streamController = StreamController<int>();
+    var sinkController = StreamController<int>();
+    var channel = StreamChannel(streamController.stream, sinkController.sink);
+
+    var newController = StreamController<int>();
     var changed = channel.changeSink((sink) {
       expect(sink, equals(channel.sink));
       return newController.sink;
