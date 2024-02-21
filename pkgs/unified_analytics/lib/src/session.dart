@@ -105,7 +105,10 @@ class Session {
         description: 'message: ${err.message}\nsource: ${err.source}',
       ));
 
-      parseContents();
+      // Fallback to setting the session id as the current time
+      final now = clock.now();
+      _sessionId = now.millisecondsSinceEpoch;
+      _lastPing = now.millisecondsSinceEpoch;
     } on FileSystemException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
@@ -115,7 +118,10 @@ class Session {
         description: err.osError?.toString(),
       ));
 
-      parseContents();
+      // Fallback to setting the session id as the current time
+      final now = clock.now();
+      _sessionId = now.millisecondsSinceEpoch;
+      _lastPing = now.millisecondsSinceEpoch;
     }
   }
 }

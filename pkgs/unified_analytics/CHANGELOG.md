@@ -1,3 +1,7 @@
+## 5.8.3
+
+- [Fix bug](https://github.com/flutter/flutter/issues/143792) when parsing session json file
+
 ## 5.8.2
 
 - Added new event `Event.analyticsException` to track internal errors for this package
