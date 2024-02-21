@@ -1,6 +1,6 @@
 ## 5.8.3
 
-- Fix bug when parsing session json file
+- [Fix bug](https://github.com/flutter/flutter/issues/143792) when parsing session json file
 
 ## 5.8.2
 
