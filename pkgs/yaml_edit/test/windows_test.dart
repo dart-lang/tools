@@ -167,6 +167,25 @@ c: 3\r
       expectYamlBuilderValue(doc, []);
     });
 
+    test('inserted nested map', () {
+      final doc = YamlEditor('''
+a:\r
+  b:\r
+''');
+      doc.update(
+        ['a', 'b'],
+        {
+          'c': {'d': 'e'}
+        },
+      );
+      expect(doc.toString(), equals('''
+a:\r
+  b:\r
+    c:\r
+      d: e\r
+'''));
+    });
+
     test('remove from block map', () {
       final doc = YamlEditor('''
 a: 1\r

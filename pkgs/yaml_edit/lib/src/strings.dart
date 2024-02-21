@@ -274,7 +274,7 @@ String yamlEncodeBlockString(
       /// Empty collections are always encoded in flow-style, so new-line must
       /// be avoided
       if (isCollection(entry.value) && !isEmpty(entry.value)) {
-        return '$formattedKey:\n$formattedValue';
+        return '$formattedKey:$lineEnding$formattedValue';
       }
 
       return '$formattedKey: $formattedValue';
