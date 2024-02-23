@@ -73,7 +73,7 @@ class SourceEdit {
       return SourceEdit(offset, length, replacement);
     }
 
-    throw FormatException('Invalid JSON passed to SourceEdit');
+    throw const FormatException('Invalid JSON passed to SourceEdit');
   }
 
   /// Encodes this object as JSON-compatible structure.

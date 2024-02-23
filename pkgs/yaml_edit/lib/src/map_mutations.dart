@@ -11,7 +11,7 @@ import 'strings.dart';
 import 'utils.dart';
 import 'wrap.dart';
 
-/// Performs the string operation on [yaml] to achieve the effect of setting
+/// Performs the string operation on [yamlEdit] to achieve the effect of setting
 /// the element at [key] to [newValue] when re-parsed.
 SourceEdit updateInMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
@@ -32,8 +32,8 @@ SourceEdit updateInMap(
   }
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of removing
-/// the element at [key] when re-parsed.
+/// Performs the string operation on [yamlEdit] to achieve the effect of
+/// removing the element at [key] when re-parsed.
 SourceEdit removeInMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   assert(containsKey(map, key));
   final keyNode = getKeyNode(map, key);
@@ -46,7 +46,7 @@ SourceEdit removeInMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   }
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of adding
+/// Performs the string operation on [yamlEdit] to achieve the effect of adding
 /// the [key]:[newValue] pair when reparsed, bearing in mind that this is a
 /// block map.
 SourceEdit _addToBlockMap(
@@ -95,7 +95,7 @@ SourceEdit _addToBlockMap(
   return SourceEdit(offset, 0, formattedValue);
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of adding
+/// Performs the string operation on [yamlEdit] to achieve the effect of adding
 /// the [key]:[newValue] pair when reparsed, bearing in mind that this is a flow
 /// map.
 SourceEdit _addToFlowMap(
@@ -120,9 +120,9 @@ SourceEdit _addToFlowMap(
   return SourceEdit(insertionOffset, 0, '$keyString: $valueString, ');
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of replacing
-/// the value at [key] with [newValue] when reparsed, bearing in mind that this
-/// is a block map.
+/// Performs the string operation on [yamlEdit] to achieve the effect of
+/// replacing the value at [key] with [newValue] when reparsed, bearing in mind
+/// that this is a block map.
 SourceEdit _replaceInBlockMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final yaml = yamlEdit.toString();
@@ -156,9 +156,9 @@ SourceEdit _replaceInBlockMap(
   return SourceEdit(start, end - start, valueAsString);
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of replacing
-/// the value at [key] with [newValue] when reparsed, bearing in mind that this
-/// is a flow map.
+/// Performs the string operation on [yamlEdit] to achieve the effect of
+/// replacing the value at [key] with [newValue] when reparsed, bearing in mind
+/// that this is a flow map.
 SourceEdit _replaceInFlowMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final valueSpan = map.nodes[key]!.span;
@@ -167,8 +167,9 @@ SourceEdit _replaceInFlowMap(
   return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of removing
-/// the [key] from the map, bearing in mind that this is a block map.
+/// Performs the string operation on [yamlEdit] to achieve the effect of
+/// removing the [keyNode] from the map, bearing in mind that this is a block
+/// map.
 SourceEdit _removeFromBlockMap(
     YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode valueNode) {
   final keySpan = keyNode.span;
@@ -214,8 +215,9 @@ SourceEdit _removeFromBlockMap(
   return SourceEdit(start, end - start, '');
 }
 
-/// Performs the string operation on [yaml] to achieve the effect of removing
-/// the [key] from the map, bearing in mind that this is a flow map.
+/// Performs the string operation on [yamlEdit] to achieve the effect of
+/// removing the [keyNode] from the map, bearing in mind that this is a flow
+/// map.
 SourceEdit _removeFromFlowMap(
     YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode valueNode) {
   var start = keyNode.span.start.offset;

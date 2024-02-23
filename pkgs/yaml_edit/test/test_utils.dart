@@ -20,7 +20,7 @@ void expectYamlBuilderValue(YamlEditor builder, Object expected) {
   expectDeepEquals(builderValue, expected);
 }
 
-/// Asserts that [builder] has the same internal value as [expected].
+/// Asserts that [actual] has the same internal value as [expected].
 void expectDeepEquals(Object? actual, Object expected) {
   expect(
       actual, predicate((actual) => deepEquals(actual, expected), '$expected'));
@@ -31,7 +31,7 @@ Matcher notEquals(dynamic expected) => isNot(equals(expected));
 /// A matcher for functions that throw [PathError].
 Matcher throwsPathError = throwsA(isA<PathError>());
 
-/// A matcher for functions that throw [AliasError].
+/// A matcher for functions that throw [AliasException].
 Matcher throwsAliasException = throwsA(isA<AliasException>());
 
 /// Enum to hold the possible modification methods.

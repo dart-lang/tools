@@ -44,11 +44,11 @@ class PathError extends ArgumentError {
 /// Exception thrown when the path contains an alias along the way.
 ///
 /// When a path contains an aliased node, the behavior becomes less well-defined
-/// because we cannot be certain if the user wishes for the change to
-/// propagate throughout all the other aliased nodes, or if the user wishes
-/// for only that particular node to be modified. As such, [AliasError] reflects
-/// the detection that our change will impact an alias, and we do not intend
-/// on supporting such changes for the foreseeable future.
+/// because we cannot be certain if the user wishes for the change to propagate
+/// throughout all the other aliased nodes, or if the user wishes for only that
+/// particular node to be modified. As such, [AliasException] reflects the
+/// detection that our change will impact an alias, and we do not intend on
+/// supporting such changes for the foreseeable future.
 @sealed
 class AliasException extends FormatException {
   /// The path that caused the error
@@ -70,7 +70,7 @@ class AliasException extends FormatException {
 /// Error thrown when an assertion about the YAML fails. Extends
 /// [AssertionError] to override the [toString] method for pretty printing.
 class _YamlAssertionError extends AssertionError {
-  _YamlAssertionError(message) : super(message);
+  _YamlAssertionError(super.message);
 
   @override
   String toString() {

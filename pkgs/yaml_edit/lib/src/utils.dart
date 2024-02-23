@@ -6,6 +6,7 @@ import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
 import 'editor.dart';
+import 'wrap.dart';
 
 /// Determines if [string] is dangerous by checking if parsing the plain string
 /// can return a result different from [string].
@@ -137,13 +138,13 @@ int getMapInsertionIndex(YamlMap map, Object newKey) {
   return map.length;
 }
 
-/// Returns the detected indentation step used in [yaml], or
-/// defaults to a value of `2` if no indentation step can be detected.
+/// Returns the detected indentation step used in [editor], or defaults to a
+/// value of `2` if no indentation step can be detected.
 ///
 /// Indentation step is determined by the difference in indentation of the
 /// first block-styled yaml collection in the second level as compared to the
 /// top-level elements. In the case where there are multiple possible
-/// candidates, we choose the candidate closest to the start of [yaml].
+/// candidates, we choose the candidate closest to the start of [editor].
 int getIndentation(YamlEditor editor) {
   final node = editor.parseAt([]);
   Iterable<YamlNode>? children;

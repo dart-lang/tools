@@ -10,8 +10,9 @@ import 'strings.dart';
 import 'utils.dart';
 import 'wrap.dart';
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of setting the element at [index] to [newValue] when re-parsed.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of setting the element at [index] to [newValue] when
+/// re-parsed.
 SourceEdit updateInList(
     YamlEditor yamlEdit, YamlList list, int index, YamlNode newValue) {
   RangeError.checkValueInInterval(index, 0, list.length - 1);
@@ -56,8 +57,8 @@ SourceEdit updateInList(
   }
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of appending [item] to the list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of appending [item] to the list.
 SourceEdit appendIntoList(YamlEditor yamlEdit, YamlList list, YamlNode item) {
   if (list.style == CollectionStyle.FLOW) {
     return _appendToFlowList(yamlEdit, list, item);
@@ -66,8 +67,8 @@ SourceEdit appendIntoList(YamlEditor yamlEdit, YamlList list, YamlNode item) {
   }
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of inserting [item] to the list at [index].
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of inserting [item] to the list at [index].
 SourceEdit insertInList(
     YamlEditor yamlEdit, YamlList list, int index, YamlNode item) {
   RangeError.checkValueInInterval(index, 0, list.length);
@@ -85,8 +86,8 @@ SourceEdit insertInList(
   }
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of removing the element at [index] when re-parsed.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of removing the element at [index] when re-parsed.
 SourceEdit removeInList(YamlEditor yamlEdit, YamlList list, int index) {
   final nodeToRemove = list.nodes[index];
 
@@ -97,17 +98,18 @@ SourceEdit removeInList(YamlEditor yamlEdit, YamlList list, int index) {
   }
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of addition [item] into [nodes], noting that this is a flow list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of addition [item] into [list], noting that this is a
+/// flow list.
 SourceEdit _appendToFlowList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
   final valueString = _formatNewFlow(list, item, true);
   return SourceEdit(list.span.end.offset - 1, 0, valueString);
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of addition [item] into [nodes], noting that this is a block
-/// list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of addition [item] into [list], noting that this is a
+/// block list.
 SourceEdit _appendToBlockList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
   var formattedValue = _formatNewBlock(yamlEdit, list, item);
@@ -159,11 +161,11 @@ String _formatNewFlow(YamlList list, YamlNode item, [bool isLast = false]) {
   return valueString;
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of inserting [item] into [nodes] at [index], noting that this is
-/// a block list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of inserting [item] into [list] at [index], noting that
+/// this is a block list.
 ///
-/// [index] should be non-negative and less than or equal to [length].
+/// [index] should be non-negative and less than or equal to `list.length`.
 SourceEdit _insertInBlockList(
     YamlEditor yamlEdit, YamlList list, int index, YamlNode item) {
   RangeError.checkValueInInterval(index, 0, list.length);
@@ -180,11 +182,11 @@ SourceEdit _insertInBlockList(
   return SourceEdit(start, 0, formattedValue);
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of inserting [item] into [nodes] at [index], noting that this is
-/// a flow list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of inserting [item] into [list] at [index], noting that
+/// this is a flow list.
 ///
-/// [index] should be non-negative and less than or equal to [length].
+/// [index] should be non-negative and less than or equal to `list.length`.
 SourceEdit _insertInFlowList(
     YamlEditor yamlEdit, YamlList list, int index, YamlNode item) {
   RangeError.checkValueInInterval(index, 0, list.length);
@@ -202,11 +204,11 @@ SourceEdit _insertInFlowList(
   return SourceEdit(start, 0, formattedValue);
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of removing [nodeToRemove] from [nodes], noting that this is a
-/// block list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of removing [nodeToRemove] from [list], noting that this
+/// is a block list.
 ///
-/// [index] should be non-negative and less than or equal to [length].
+/// [index] should be non-negative and less than or equal to `list.length`.
 SourceEdit _removeFromBlockList(
     YamlEditor yamlEdit, YamlList list, YamlNode nodeToRemove, int index) {
   RangeError.checkValueInInterval(index, 0, list.length - 1);
@@ -277,11 +279,11 @@ SourceEdit _removeFromBlockList(
   return SourceEdit(start, end - start, '');
 }
 
-/// Returns a [SourceEdit] describing the change to be made on [yaml] to achieve
-/// the effect of removing [nodeToRemove] from [nodes], noting that this is a
-/// flow list.
+/// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to
+/// achieve the effect of removing [nodeToRemove] from [list], noting that this
+/// is a flow list.
 ///
-/// [index] should be non-negative and less than or equal to [length].
+/// [index] should be non-negative and less than or equal to `list.length`.
 SourceEdit _removeFromFlowList(
     YamlEditor yamlEdit, YamlList list, YamlNode nodeToRemove, int index) {
   RangeError.checkValueInInterval(index, 0, list.length - 1);

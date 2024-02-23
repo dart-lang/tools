@@ -131,10 +131,10 @@ String _tryYamlEncodeLiteral(
 /// Returns [value] with the necessary formatting applied in a flow context
 /// if possible.
 ///
-/// If [value] is a [YamlScalar], we try to respect its [style] parameter where
-/// possible. Certain cases make this impossible (e.g. a plain string scalar
-/// that starts with '>'), in which case we will produce [value] with default
-/// styling options.
+/// If [value] is a [YamlScalar], we try to respect its [YamlScalar.style]
+/// parameter where possible. Certain cases make this impossible (e.g. a plain
+/// string scalar that starts with '>'), in which case we will produce [value]
+/// with default styling options.
 String _yamlEncodeFlowScalar(YamlNode value) {
   if (value is YamlScalar) {
     assertValidScalar(value.value);
@@ -161,10 +161,10 @@ String _yamlEncodeFlowScalar(YamlNode value) {
 /// Returns [value] with the necessary formatting applied in a block context
 /// if possible.
 ///
-/// If [value] is a [YamlScalar], we try to respect its [style] parameter where
-/// possible. Certain cases make this impossible (e.g. a folded string scalar
-/// 'null'), in which case we will produce [value] with default styling
-/// options.
+/// If [value] is a [YamlScalar], we try to respect its [YamlScalar.style]
+/// parameter where possible. Certain cases make this impossible (e.g. a folded
+/// string scalar 'null'), in which case we will produce [value] with default
+/// styling options.
 String yamlEncodeBlockScalar(
   YamlNode value,
   int indentation,
@@ -207,10 +207,11 @@ String yamlEncodeBlockScalar(
 
 /// Returns [value] with the necessary formatting applied in a flow context.
 ///
-/// If [value] is a [YamlNode], we try to respect its [style] parameter where
-/// possible. Certain cases make this impossible (e.g. a plain string scalar
-/// that starts with '>', a child having a block style parameters), in which
-/// case we will produce [value] with default styling options.
+/// If [value] is a [YamlNode], we try to respect its [YamlScalar.style]
+/// parameter where possible. Certain cases make this impossible (e.g. a plain
+/// string scalar that starts with '>', a child having a block style
+/// parameters), in which case we will produce [value] with default styling
+/// options.
 String yamlEncodeFlowString(YamlNode value) {
   if (value is YamlList) {
     final list = value.nodes;
@@ -231,8 +232,6 @@ String yamlEncodeFlowString(YamlNode value) {
 }
 
 /// Returns [value] with the necessary formatting applied in a block context.
-///
-/// If [value] is a [YamlNode], we respect its [style] parameter.
 String yamlEncodeBlockString(
   YamlNode value,
   int indentation,

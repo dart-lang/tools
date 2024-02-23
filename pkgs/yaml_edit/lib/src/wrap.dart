@@ -11,8 +11,8 @@ import 'package:yaml/yaml.dart';
 import 'equality.dart';
 import 'utils.dart';
 
-/// Returns a new [YamlMap] constructed by applying [update] onto the [nodes]
-/// of this [YamlMap].
+/// Returns a new [YamlMap] constructed by applying [update] onto the nodes of
+/// this [YamlMap].
 YamlMap updatedYamlMap(YamlMap map, Function(Map) update) {
   final dummyMap = deepEqualsMap();
   dummyMap.addAll(map.nodes);

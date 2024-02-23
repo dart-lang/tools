@@ -1,3 +1,7 @@
+## 2.2.1-wip
+
+- Require Dart 3.0
+
 ## 2.2.0
 
 - Fix inconsistent line endings when inserting maps into a document using `\r\n`.
