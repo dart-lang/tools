@@ -1,3 +1,7 @@
+## 5.8.4
+
+- Exporting all enums from [`enums.dart`](https://github.com/dart-lang/tools/blob/main/pkgs/unified_analytics/lib/src/enums.dart) through `lib/testing.dart`
+
 ## 5.8.3
 
 - [Fix bug](https://github.com/flutter/flutter/issues/143792) when parsing session json file
