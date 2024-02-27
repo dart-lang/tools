@@ -182,8 +182,7 @@ void main() {
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
     expect(errorEvent, isNotNull);
-    errorEvent!;
-    expect(errorEvent.eventData['workflow'], 'Session._refreshSessionData');
+    expect(errorEvent!.eventData['workflow'], 'Session._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
     expect(errorEvent.eventData['description'],
         'message: Unexpected character\nsource: contents');
