@@ -1110,7 +1110,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // 4. Event names must be 40 characters or fewer, may only contain alpha-numeric
     //    characters and underscores, and must start with an alphabetic character
     test('max 25 user properties per event', () {
-      final Map<String, Object> userPropPayload = analytics.userProperty.preparePayload();
+      final Map<String, Object> userPropPayload =
+          analytics.userProperty.preparePayload();
       const maxUserPropKeys = 25;
 
       expect(userPropPayload.keys.length < maxUserPropKeys, true,
@@ -1118,7 +1119,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     test('max 24 characters for user prop keys', () {
-      final Map<String, Object> userPropPayload = analytics.userProperty.preparePayload();
+      final Map<String, Object> userPropPayload =
+          analytics.userProperty.preparePayload();
       const maxUserPropLength = 24;
 
       var userPropLengthValid = true;
