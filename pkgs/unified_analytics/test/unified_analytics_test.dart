@@ -14,8 +14,6 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
-import 'package:unified_analytics/src/error_handler.dart';
-import 'package:unified_analytics/src/session.dart';
 import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
@@ -45,10 +43,7 @@ void main() {
   const flutterVersion = 'flutterVersion';
   const dartVersion = 'dartVersion';
   const platform = DevicePlatform.macos;
-  const hostOsVersion = 'Version 14.1 (Build 23B74)';
-  const locale = 'en';
   const clientIde = 'VSCode';
-  const enabledFeatures = 'enable-linux-desktop,cli-animations';
 
   final testEvent = Event.hotReloadTime(timeMs: 50);
 
@@ -113,25 +108,6 @@ void main() {
     dismissedSurveyFile = home
         .childDirectory(kDartToolDirectoryName)
         .childFile(kDismissedSurveyFileName);
-
-    // Create the user property object that is also
-    // created within analytics for testing
-    userProperty = UserProperty(
-      session: Session(
-        homeDirectory: home,
-        fs: fs,
-        errorHandler: ErrorHandler(sendFunction: analytics.send),
-      ),
-      flutterChannel: flutterChannel,
-      host: platform.label,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      tool: initialTool.label,
-      hostOsVersion: hostOsVersion,
-      locale: locale,
-      clientIde: clientIde,
-      enabledFeatures: enabledFeatures,
-    );
   });
 
   test('Initializer properly sets up on first run', () {
@@ -168,7 +144,7 @@ void main() {
     withClock(Clock.fixed(start), () {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.readAsStringSync(), 'contents');
-      userProperty.preparePayload();
+      analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
           '{"session_id":$timestamp,"last_ping":$timestamp}');
 
@@ -205,14 +181,14 @@ void main() {
     analytics.clientShowedMessage();
 
     final errorEvent = analytics.sentEvents
-        .where((element) =>
-            element.eventName == DashEvent.analyticsException)
+        .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
     expect(errorEvent, isNotNull);
     errorEvent!;
     expect(errorEvent.eventData['workflow'], 'Session._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
-    expect(errorEvent.eventData['description'], 'message: Unexpected character\nsource: contents');
+    expect(errorEvent.eventData['description'],
+        'message: Unexpected character\nsource: contents');
   });
 
   test('Resetting session file when file is removed', () {
@@ -226,7 +202,7 @@ void main() {
     withClock(Clock.fixed(start), () {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.existsSync(), false);
-      userProperty.preparePayload();
+      analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
           '{"session_id":$timestamp,"last_ping":$timestamp}');
 
@@ -882,7 +858,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       clientId: Uuid().generateV4(),
       eventName: DashEvent.hotReloadTime,
       eventData: eventData,
-      userProperty: userProperty,
+      userProperty: analytics.userProperty,
     );
 
     // Checks for the top level keys
@@ -1136,7 +1112,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // 4. Event names must be 40 characters or fewer, may only contain alpha-numeric
     //    characters and underscores, and must start with an alphabetic character
     test('max 25 user properties per event', () {
-      final Map<String, Object> userPropPayload = userProperty.preparePayload();
+      final Map<String, Object> userPropPayload = analytics.userProperty.preparePayload();
       const maxUserPropKeys = 25;
 
       expect(userPropPayload.keys.length < maxUserPropKeys, true,
@@ -1144,7 +1120,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     });
 
     test('max 24 characters for user prop keys', () {
-      final Map<String, Object> userPropPayload = userProperty.preparePayload();
+      final Map<String, Object> userPropPayload = analytics.userProperty.preparePayload();
       const maxUserPropLength = 24;
 
       var userPropLengthValid = true;
