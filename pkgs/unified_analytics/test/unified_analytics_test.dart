@@ -14,7 +14,6 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
-import 'package:unified_analytics/src/user_property.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 import 'package:yaml/yaml.dart';
@@ -30,7 +29,6 @@ void main() {
   late File configFile;
   late File logFile;
   late File dismissedSurveyFile;
-  late UserProperty userProperty;
 
   const homeDirName = 'home';
   const initialTool = DashTool.flutterTool;
