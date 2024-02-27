@@ -121,7 +121,6 @@ void main() {
         homeDirectory: home,
         fs: fs,
         errorHandler: ErrorHandler(sendFunction: analytics.send),
-        telemetryEnabled: analytics.telemetryEnabled,
       ),
       flutterChannel: flutterChannel,
       host: platform.label,
@@ -181,6 +180,39 @@ void main() {
       expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FormatException');
     });
+  });
+
+  test('Handles malformed session file on startup', () {
+    // Ensure that we are able to send an error message on startup if
+    // we encounter an error while parsing the contents of the json file
+    // for session data
+    sessionFile.writeAsStringSync('contents');
+
+    analytics = Analytics.test(
+      tool: initialTool,
+      homeDirectory: home,
+      measurementId: measurementId,
+      apiSecret: apiSecret,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+      clientIde: clientIde,
+    ) as FakeAnalytics;
+    analytics.clientShowedMessage();
+
+    final errorEvent = analytics.sentEvents
+        .where((element) =>
+            element.eventName == DashEvent.analyticsException)
+        .firstOrNull;
+    expect(errorEvent, isNotNull);
+    errorEvent!;
+    expect(errorEvent.eventData['workflow'], 'Session._refreshSessionData');
+    expect(errorEvent.eventData['error'], 'FormatException');
+    expect(errorEvent.eventData['description'], 'message: Unexpected character\nsource: contents');
   });
 
   test('Resetting session file when file is removed', () {

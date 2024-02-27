@@ -430,7 +430,6 @@ class AnalyticsImpl implements Analytics {
       homeDirectory: homeDirectory,
       fs: fs,
       errorHandler: _errorHandler,
-      telemetryEnabled: telemetryEnabled,
     );
     userProperty = UserProperty(
       session: _sessionHandler,
@@ -454,6 +453,10 @@ class AnalyticsImpl implements Analytics {
       homeDirectory: homeDirectory,
       errorHandler: _errorHandler,
     );
+
+    // Initialize the session handler with the session_id and last_ping
+    // variables by parsing the json file
+    _sessionHandler.initialize(telemetryEnabled);
   }
 
   @override
