@@ -1,3 +1,7 @@
+## 5.8.6
+
+- Refactored session handler class to use the last modified timestamp as the last ping value
+
 ## 5.8.5
 
 - Fix late initialization error for `Analytics.userProperty` [bug](https://github.com/dart-lang/tools/issues/238)
