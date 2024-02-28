@@ -4,6 +4,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'error_handler.dart';
@@ -22,8 +23,9 @@ class Session {
     required this.homeDirectory,
     required this.fs,
     required ErrorHandler errorHandler,
-    required this.sessionFile,
-  })  : _sessionId = DateTime.now().millisecondsSinceEpoch,
+  })  : sessionFile = fs.file(p.join(
+            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
+        _sessionId = DateTime.now().millisecondsSinceEpoch,
         _errorHandler = errorHandler;
 
   /// This will use the data parsed from the

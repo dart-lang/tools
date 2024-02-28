@@ -430,11 +430,6 @@ class AnalyticsImpl implements Analytics {
       homeDirectory: homeDirectory,
       fs: fs,
       errorHandler: _errorHandler,
-      sessionFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kSessionFileName,
-      )),
     );
     userProperty = UserProperty(
       session: _sessionHandler,
