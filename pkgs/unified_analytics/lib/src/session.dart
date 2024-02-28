@@ -44,8 +44,7 @@ class Session {
 
     // Convert the epoch time from the last ping into datetime and check if we
     // are within the kSessionDurationMinutes.
-    final lastPingDateTime = DateTime.fromMillisecondsSinceEpoch(
-        sessionFile.lastModifiedSync().millisecondsSinceEpoch);
+    final lastPingDateTime = sessionFile.lastModifiedSync();
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
       // Update the session file with the latest session id
       _sessionId = now.millisecondsSinceEpoch;
