@@ -2,11 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
-
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
-import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'error_handler.dart';
@@ -19,19 +16,18 @@ class Session {
   final File sessionFile;
   final ErrorHandler _errorHandler;
 
-  late int _sessionId;
-  late int _lastPing;
+  int _sessionId;
 
   Session({
     required this.homeDirectory,
     required this.fs,
     required ErrorHandler errorHandler,
-  })  : sessionFile = fs.file(p.join(
-            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
+    required this.sessionFile,
+  })  : _sessionId = int.parse(sessionFile.readAsStringSync()),
         _errorHandler = errorHandler;
 
   /// This will use the data parsed from the
-  /// session json file in the dart-tool directory
+  /// session file in the dart-tool directory
   /// to get the session id if the last ping was within
   /// [kSessionDurationMinutes].
   ///
@@ -46,24 +42,22 @@ class Session {
 
     // Convert the epoch time from the last ping into datetime and check if we
     // are within the kSessionDurationMinutes.
-    final lastPingDateTime = DateTime.fromMillisecondsSinceEpoch(_lastPing);
+    final lastPingDateTime = DateTime.fromMillisecondsSinceEpoch(
+        sessionFile.lastModifiedSync().millisecondsSinceEpoch);
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
-      // In this case, we will need to change both the session id
-      // and the last ping value
+      // Update the session file with the latest session id
       _sessionId = now.millisecondsSinceEpoch;
+      sessionFile.writeAsStringSync('$_sessionId');
     }
 
-    // Update the last ping to reflect session activity continuing
-    _lastPing = now.millisecondsSinceEpoch;
-
-    // Rewrite the session object back to the file to persist
-    // for future events
-    sessionFile.writeAsStringSync(toJson());
+    // Update the last modified timestamp with the current timestamp so that
+    // we can use it for the next _lastPing calculation
+    sessionFile.setLastModifiedSync(now);
 
     return _sessionId;
   }
 
-  /// Preps the [Session] class with the data found in the session json file.
+  /// Preps the [Session] class with the data found in the session file.
   ///
   /// We must check if telemetry is enabled to refresh the session data
   /// because the refresh method will write to the session file and for
@@ -73,15 +67,9 @@ class Session {
     if (telemetryEnabled) _refreshSessionData();
   }
 
-  /// Return a json formatted representation of the class.
-  String toJson() => jsonEncode(<String, int>{
-        'session_id': _sessionId,
-        'last_ping': _lastPing,
-      });
-
   /// This will go to the session file within the dart-tool
-  /// directory and fetch the latest data from the json to update
-  /// the class's variables. If the json file is malformed, a new
+  /// directory and fetch the latest data from the session file to update
+  /// the class's variables. If the session file is malformed, a new
   /// session file will be recreated.
   ///
   /// This allows the session data in this class to always be up
@@ -89,13 +77,8 @@ class Session {
   /// making updates to the session file.
   void _refreshSessionData() {
     /// Using a nested function here to reduce verbosity
-    void parseContents() {
-      final sessionFileContents = sessionFile.readAsStringSync();
-      final sessionObj =
-          jsonDecode(sessionFileContents) as Map<String, Object?>;
-      _sessionId = sessionObj['session_id'] as int;
-      _lastPing = sessionObj['last_ping'] as int;
-    }
+    void parseContents() =>
+        _sessionId = int.parse(sessionFile.readAsStringSync());
 
     try {
       parseContents();
@@ -111,7 +94,6 @@ class Session {
       // Fallback to setting the session id as the current time
       final now = clock.now();
       _sessionId = now.millisecondsSinceEpoch;
-      _lastPing = now.millisecondsSinceEpoch;
     } on FileSystemException catch (err) {
       Initializer.createSessionFile(sessionFile: sessionFile);
 
@@ -124,7 +106,6 @@ class Session {
       // Fallback to setting the session id as the current time
       final now = clock.now();
       _sessionId = now.millisecondsSinceEpoch;
-      _lastPing = now.millisecondsSinceEpoch;
     }
   }
 }

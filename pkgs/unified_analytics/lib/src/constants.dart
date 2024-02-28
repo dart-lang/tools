@@ -88,7 +88,7 @@ const String kPackageVersion = '5.8.5';
 const int kSessionDurationMinutes = 30;
 
 /// Name for the json file where the session details will be stored.
-const String kSessionFileName = 'dart-flutter-telemetry-session.json';
+const String kSessionFileName = 'dart-flutter-telemetry.session';
 
 /// The message that should be shown to the user.
 const String kToolsMessage = '''

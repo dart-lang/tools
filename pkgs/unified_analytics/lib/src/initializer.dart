@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
-
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
@@ -82,10 +80,7 @@ class Initializer {
   static void createSessionFile({required File sessionFile}) {
     final now = clock.now();
     sessionFile.createSync(recursive: true);
-    sessionFile.writeAsStringSync(jsonEncode(<String, int>{
-      'session_id': now.millisecondsSinceEpoch,
-      'last_ping': now.millisecondsSinceEpoch,
-    }));
+    sessionFile.writeAsStringSync('${now.millisecondsSinceEpoch}');
   }
 
   /// This will check that there is a client ID populated in
