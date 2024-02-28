@@ -23,7 +23,7 @@ class Session {
     required this.fs,
     required ErrorHandler errorHandler,
     required this.sessionFile,
-  })  : _sessionId = int.parse(sessionFile.readAsStringSync()),
+  })  : _sessionId = DateTime.now().millisecondsSinceEpoch,
         _errorHandler = errorHandler;
 
   /// This will use the data parsed from the

@@ -73,10 +73,8 @@ class Initializer {
     logFile.createSync(recursive: true);
   }
 
-  /// Creates the session json file which will contain
-  /// the current session id along with the timestamp for
-  /// the last ping which will be used to increment the session
-  /// if current timestamp is greater than the session window.
+  /// Creates the session file which will contain
+  /// the current session id which is the current timestamp.
   static void createSessionFile({required File sessionFile}) {
     final now = clock.now();
     sessionFile.createSync(recursive: true);
