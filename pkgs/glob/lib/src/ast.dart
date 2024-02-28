@@ -34,7 +34,7 @@ abstract class AstNode {
   /// In particular, this returns a glob AST with two guarantees:
   ///
   /// 1. There are no [OptionsNode]s other than the one at the top level.
-  /// 2. It matches the same set of paths as [this].
+  /// 2. It matches the same set of paths as `this`.
   ///
   /// For example, given the glob `{foo,bar}/{click/clack}`, this would return
   /// `{foo/click,foo/clack,bar/click,bar/clack}`.
@@ -189,10 +189,10 @@ class SequenceNode extends AstNode {
   @override
   bool operator ==(Object other) =>
       other is SequenceNode &&
-      const IterableEquality().equals(nodes, other.nodes);
+      const IterableEquality<AstNode>().equals(nodes, other.nodes);
 
   @override
-  int get hashCode => const IterableEquality().hash(nodes);
+  int get hashCode => const IterableEquality<AstNode>().hash(nodes);
 
   @override
   String toString() => nodes.join();
@@ -343,10 +343,11 @@ class RangeNode extends AstNode {
   bool operator ==(Object other) =>
       other is RangeNode &&
       other.negated == negated &&
-      SetEquality().equals(ranges, other.ranges);
+      const SetEquality<Range>().equals(ranges, other.ranges);
 
   @override
-  int get hashCode => (negated ? 1 : 3) * const SetEquality().hash(ranges);
+  int get hashCode =>
+      (negated ? 1 : 3) * const SetEquality<Range>().hash(ranges);
 
   @override
   String toString() {
@@ -389,10 +390,12 @@ class OptionsNode extends AstNode {
   @override
   bool operator ==(Object other) =>
       other is OptionsNode &&
-      const UnorderedIterableEquality().equals(options, other.options);
+      const UnorderedIterableEquality<SequenceNode>()
+          .equals(options, other.options);
 
   @override
-  int get hashCode => const UnorderedIterableEquality().hash(options);
+  int get hashCode =>
+      const UnorderedIterableEquality<SequenceNode>().hash(options);
 
   @override
   String toString() => '{${options.join(',')}}';
@@ -412,7 +415,7 @@ class LiteralNode extends AstNode {
   bool get canMatchAbsolute {
     var nativeText =
         _context!.style == p.Style.windows ? text.replaceAll('/', '\\') : text;
-    return _context!.isAbsolute(nativeText);
+    return _context.isAbsolute(nativeText);
   }
 
   @override

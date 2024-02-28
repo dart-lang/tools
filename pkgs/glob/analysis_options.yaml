@@ -9,5 +9,3 @@ linter:
     - avoid_unused_constructor_parameters
     - cancel_subscriptions
     - package_api_docs
-    - test_types_in_equals
-    - use_super_parameters

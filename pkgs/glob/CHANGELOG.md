@@ -1,3 +1,7 @@
+## 2.1.3-wip
+
+- Require Dart 3.3.
+
 ## 2.1.2
 
 - Allow `file` version `7.x`.

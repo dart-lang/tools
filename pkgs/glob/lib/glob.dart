@@ -48,7 +48,8 @@ class Glob implements Pattern {
   /// The parsed AST of the glob.
   final AstNode _ast;
 
-  /// The underlying object used to implement [list] and [listSync].
+  /// The underlying object used to implement [listFileSystem] and
+  /// [listFileSystemSync].
   ///
   /// This should not be read directly outside of [_listTreeForFileSystem].
   ListTree? _listTree;

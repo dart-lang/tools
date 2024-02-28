@@ -20,7 +20,7 @@ class Range {
   /// Returns a range that covers only [value].
   Range.singleton(int value) : this(value, value);
 
-  /// Whether [this] contains [value].
+  /// Whether `this` contains [value].
   bool contains(int value) => value >= min && value <= max;
 
   @override
@@ -31,7 +31,7 @@ class Range {
   int get hashCode => 3 * min + 7 * max;
 }
 
-/// An implementation of [Match] constructed by [Glob]s.
+/// An implementation of [Match] constructed by `Glob`s.
 class GlobMatch implements Match {
   @override
   final String input;

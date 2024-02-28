@@ -31,14 +31,14 @@ void main() {
     test('returns empty list for non-existent case-sensitive directories',
         () async {
       expect(await Glob('non/existent/**', caseSensitive: true).list().toList(),
-          []);
+          <Never>[]);
     });
 
     test('returns empty list for non-existent case-insensitive directories',
         () async {
       expect(
           await Glob('non/existent/**', caseSensitive: false).list().toList(),
-          []);
+          <Never>[]);
     });
   });
 
@@ -48,26 +48,30 @@ void main() {
     });
 
     test('returns empty list for non-existent case-sensitive directories', () {
-      expect(Glob('non/existent/**', caseSensitive: true).listSync(), []);
+      expect(
+          Glob('non/existent/**', caseSensitive: true).listSync(), <Never>[]);
     });
 
     test('returns empty list for non-existent case-insensitive directories',
         () {
-      expect(Glob('non/existent/**', caseSensitive: false).listSync(), []);
+      expect(
+          Glob('non/existent/**', caseSensitive: false).listSync(), <Never>[]);
     });
   });
 
   group('when case-sensitive', () {
     test('lists literals case-sensitively', () {
-      expect(Glob('foo/BAZ/qux', caseSensitive: true).listSync(), []);
+      expect(Glob('foo/BAZ/qux', caseSensitive: true).listSync(), <Never>[]);
     });
 
     test('lists ranges case-sensitively', () {
-      expect(Glob('foo/[BX][A-Z]z/qux', caseSensitive: true).listSync(), []);
+      expect(Glob('foo/[BX][A-Z]z/qux', caseSensitive: true).listSync(),
+          <Never>[]);
     });
 
     test('options preserve case-sensitivity', () {
-      expect(Glob('foo/{BAZ,ZAP}/qux', caseSensitive: true).listSync(), []);
+      expect(
+          Glob('foo/{BAZ,ZAP}/qux', caseSensitive: true).listSync(), <Never>[]);
     });
   });
 
@@ -317,7 +321,7 @@ typedef ListFn = FutureOr<List<String>> Function(String glob,
     {bool recursive, bool followLinks, bool? caseSensitive});
 
 /// Runs [callback] in two groups with two values of [listFn]: one that uses
-/// [Glob.list], one that uses [Glob.listSync].
+/// `Glob.list`, one that uses `Glob.listSync`.
 void syncAndAsync(FutureOr Function(ListFn) callback) {
   group('async', () {
     callback((pattern, {recursive = false, followLinks = true, caseSensitive}) {
