@@ -26,16 +26,9 @@ class Session {
     required this.homeDirectory,
     required this.fs,
     required ErrorHandler errorHandler,
-    required bool telemetryEnabled,
   })  : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
-        _errorHandler = errorHandler {
-    // We must check if telemetry is enabled to refresh the session data
-    // because the refresh method will write to the session file and for
-    // users that have opted out, we have to leave the session file empty
-    // per the privacy document
-    if (telemetryEnabled) _refreshSessionData();
-  }
+        _errorHandler = errorHandler;
 
   /// This will use the data parsed from the
   /// session json file in the dart-tool directory
@@ -68,6 +61,16 @@ class Session {
     sessionFile.writeAsStringSync(toJson());
 
     return _sessionId;
+  }
+
+  /// Preps the [Session] class with the data found in the session json file.
+  ///
+  /// We must check if telemetry is enabled to refresh the session data
+  /// because the refresh method will write to the session file and for
+  /// users that have opted out, we have to leave the session file empty
+  /// per the privacy document
+  void initialize(bool telemetryEnabled) {
+    if (telemetryEnabled) _refreshSessionData();
   }
 
   /// Return a json formatted representation of the class.

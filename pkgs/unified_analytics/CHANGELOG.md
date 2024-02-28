@@ -1,3 +1,7 @@
+## 5.8.5
+
+- Fix late initialization error for `Analytics.userProperty` [bug](https://github.com/dart-lang/tools/issues/238)
+
 ## 5.8.4
 
 - Exporting all enums from [`enums.dart`](https://github.com/dart-lang/tools/blob/main/pkgs/unified_analytics/lib/src/enums.dart) through `lib/testing.dart`
