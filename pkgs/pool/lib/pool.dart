@@ -239,23 +239,26 @@ class Pool {
   /// an error, the returned future completes with that error.
   ///
   /// This may be called more than once; it returns the same [Future] each time.
-  Future close() => _closeMemo.runOnce(() {
-        if (_closeGroup != null) return _closeGroup!.future;
+  Future close() => _closeMemo.runOnce(_close);
 
-        _resetTimer();
+  Future<void> _close() {
+    if (_closeGroup != null) return _closeGroup!.future;
 
-        _closeGroup = FutureGroup();
-        for (var callback in _onReleaseCallbacks) {
-          _closeGroup!.add(Future.sync(callback));
-        }
+    _resetTimer();
 
-        _allocatedResources -= _onReleaseCallbacks.length;
-        _onReleaseCallbacks.clear();
+    _closeGroup = FutureGroup();
+    for (var callback in _onReleaseCallbacks) {
+      _closeGroup!.add(Future.sync(callback));
+    }
 
-        if (_allocatedResources == 0) _closeGroup!.close();
-        return _closeGroup!.future;
-      });
-  final _closeMemo = AsyncMemoizer();
+    _allocatedResources -= _onReleaseCallbacks.length;
+    _onReleaseCallbacks.clear();
+
+    if (_allocatedResources == 0) _closeGroup!.close();
+    return _closeGroup!.future;
+  }
+
+  final _closeMemo = AsyncMemoizer<void>();
 
   /// If there are any pending requests, this will fire the oldest one.
   void _onResourceReleased() {
@@ -272,7 +275,7 @@ class Pool {
 
   /// If there are any pending requests, this will fire the oldest one after
   /// running [onRelease].
-  void _onResourceReleaseAllowed(Function() onRelease) {
+  void _onResourceReleaseAllowed(void Function() onRelease) {
     _resetTimer();
 
     if (_requestedResources.isNotEmpty) {
@@ -294,7 +297,7 @@ class Pool {
   ///
   /// Futures returned by [_runOnRelease] always complete in the order they were
   /// created, even if earlier [onRelease] callbacks take longer to run.
-  Future<PoolResource> _runOnRelease(Function() onRelease) {
+  Future<PoolResource> _runOnRelease(void Function() onRelease) {
     Future.sync(onRelease).then((value) {
       _onReleaseCompleters.removeFirst().complete(PoolResource._(this));
     }).catchError((Object error, StackTrace stackTrace) {
@@ -367,7 +370,7 @@ class PoolResource {
   /// This is useful when a resource's main function is complete, but it may
   /// produce additional information later on. For example, an isolate's task
   /// may be complete, but it could still emit asynchronous errors.
-  void allowRelease(Function() onRelease) {
+  void allowRelease(FutureOr<void> Function() onRelease) {
     if (_released) {
       throw StateError('A PoolResource may only be released once.');
     }

@@ -41,7 +41,7 @@ void main() {
           // This will only complete once [lastAllocatedResource] is released.
           expect(pool.request(), completes);
 
-          Future.delayed(const Duration(microseconds: 1)).then((_) {
+          Future<void>.delayed(const Duration(microseconds: 1)).then((_) {
             lastAllocatedResource.release();
           });
         });
@@ -55,7 +55,7 @@ void main() {
     test('can be called freely up to the limit', () {
       var pool = Pool(50);
       for (var i = 0; i < 50; i++) {
-        pool.withResource(expectAsync0(() => Completer().future));
+        pool.withResource(expectAsync0(() => Completer<void>().future));
       }
     });
 
@@ -63,7 +63,7 @@ void main() {
       FakeAsync().run((async) {
         var pool = Pool(50);
         for (var i = 0; i < 50; i++) {
-          pool.withResource(expectAsync0(() => Completer().future));
+          pool.withResource(expectAsync0(() => Completer<void>().future));
         }
         pool.withResource(expectNoAsync());
 
@@ -75,20 +75,20 @@ void main() {
       FakeAsync().run((async) {
         var pool = Pool(50);
         for (var i = 0; i < 49; i++) {
-          pool.withResource(expectAsync0(() => Completer().future));
+          pool.withResource(expectAsync0(() => Completer<void>().future));
         }
 
-        var completer = Completer();
+        var completer = Completer<void>();
         pool.withResource(() => completer.future);
         var blockedResourceAllocated = false;
         pool.withResource(() {
           blockedResourceAllocated = true;
         });
 
-        Future.delayed(const Duration(microseconds: 1)).then((_) {
+        Future<void>.delayed(const Duration(microseconds: 1)).then((_) {
           expect(blockedResourceAllocated, isFalse);
           completer.complete();
-          return Future.delayed(const Duration(microseconds: 1));
+          return Future<void>.delayed(const Duration(microseconds: 1));
         }).then((_) {
           expect(blockedResourceAllocated, isTrue);
         });
@@ -128,7 +128,7 @@ void main() {
           // This will only complete once [lastAllocatedResource] is released.
           expect(pool.request(), completes);
 
-          Future.delayed(const Duration(seconds: 3)).then((_) {
+          Future<void>.delayed(const Duration(seconds: 3)).then((_) {
             lastAllocatedResource.release();
             expect(pool.request(), doesNotComplete);
           });
@@ -146,7 +146,7 @@ void main() {
         }
         expect(pool.request(), doesNotComplete);
 
-        Future.delayed(const Duration(seconds: 3)).then((_) {
+        Future<void>.delayed(const Duration(seconds: 3)).then((_) {
           expect(pool.request(), doesNotComplete);
         });
 
@@ -177,11 +177,11 @@ void main() {
       var resource = await pool.request();
       var onReleaseCalled = false;
       resource.allowRelease(() => onReleaseCalled = true);
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(onReleaseCalled, isFalse);
 
       expect(pool.request(), completes);
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(onReleaseCalled, isTrue);
     });
 
@@ -195,7 +195,7 @@ void main() {
 
       var onReleaseCalled = false;
       resource.allowRelease(() => onReleaseCalled = true);
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(onReleaseCalled, isTrue);
     });
 
@@ -206,13 +206,13 @@ void main() {
       var requestComplete = false;
       unawaited(pool.request().then((_) => requestComplete = true));
 
-      var completer = Completer();
+      var completer = Completer<void>();
       resource.allowRelease(() => completer.future);
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(requestComplete, isFalse);
 
       completer.complete();
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(requestComplete, isTrue);
     });
 
@@ -228,21 +228,21 @@ void main() {
       unawaited(pool.request().then((_) => request2Complete = true));
 
       var onRelease1Called = false;
-      var completer1 = Completer();
+      var completer1 = Completer<void>();
       resource1.allowRelease(() {
         onRelease1Called = true;
         return completer1.future;
       });
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(onRelease1Called, isTrue);
 
       var onRelease2Called = false;
-      var completer2 = Completer();
+      var completer2 = Completer<void>();
       resource2.allowRelease(() {
         onRelease2Called = true;
         return completer2.future;
       });
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(onRelease2Called, isTrue);
       expect(request1Complete, isFalse);
       expect(request2Complete, isFalse);
@@ -251,12 +251,12 @@ void main() {
       // was triggered by the second blocking request, it should complete the
       // first one to preserve ordering.
       completer2.complete();
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(request1Complete, isTrue);
       expect(request2Complete, isFalse);
 
       completer1.complete();
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       expect(request1Complete, isTrue);
       expect(request2Complete, isTrue);
     });
@@ -286,7 +286,7 @@ void main() {
     var resource = await pool.request();
     resource.release();
 
-    await Future.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
   });
 
   group('close()', () {
@@ -313,7 +313,7 @@ void main() {
       var pool = Pool(1);
       var resource1 = await pool.request();
 
-      var completer = Completer();
+      var completer = Completer<void>();
       expect(
           pool.request().then((resource2) {
             expect(completer.isCompleted, isTrue);
@@ -323,7 +323,7 @@ void main() {
       expect(pool.close(), completes);
 
       resource1.allowRelease(() => completer.future);
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       completer.complete();
     });
@@ -347,11 +347,11 @@ void main() {
 
       resource1Released = true;
       resource1.release();
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       resource2Released = true;
       resource2.release();
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       var resource3 = await resource3Future;
       resource3Released = true;
@@ -364,7 +364,7 @@ void main() {
 
       // Set up an onRelease callback whose completion is controlled by
       // [completer].
-      var completer = Completer();
+      var completer = Completer<void>();
       resource.allowRelease(() => completer.future);
       expect(
           pool.request().then((_) {
@@ -372,10 +372,10 @@ void main() {
           }),
           completes);
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       unawaited(pool.close());
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       completer.complete();
     });
 
@@ -384,9 +384,9 @@ void main() {
       var resource1 = await pool.request();
       var resource2 = await pool.request();
 
-      var completer1 = Completer();
+      var completer1 = Completer<void>();
       resource1.allowRelease(() => completer1.future);
-      var completer2 = Completer();
+      var completer2 = Completer<void>();
       resource2.allowRelease(() => completer2.future);
 
       expect(
@@ -396,10 +396,10 @@ void main() {
           }),
           completes);
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       completer1.complete();
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       completer2.complete();
     });
 
@@ -407,17 +407,17 @@ void main() {
       var pool = Pool(1);
       var resource = await pool.request();
 
-      var completer = Completer();
+      var completer = Completer<void>();
       expect(
           pool.close().then((_) {
             expect(completer.isCompleted, isTrue);
           }),
           completes);
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       resource.allowRelease(() => completer.future);
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       completer.complete();
     });
 
@@ -425,13 +425,13 @@ void main() {
       var pool = Pool(1);
       var resource = await pool.request();
 
-      var completer = Completer();
+      var completer = Completer<void>();
       resource.allowRelease(() => completer.future);
 
       expect(pool.done, throwsA('oh no!'));
       expect(pool.close(), throwsA('oh no!'));
 
-      await Future.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
       completer.completeError('oh no!');
     });
   });
@@ -446,7 +446,7 @@ void main() {
     const delayedToStringDuration = Duration(milliseconds: 10);
 
     Future<String> delayedToString(int i) =>
-        Future.delayed(delayedToStringDuration, () => i.toString());
+        Future<String>.delayed(delayedToStringDuration, () => i.toString());
 
     for (var itemCount in [0, 5]) {
       for (var poolSize in [1, 5, 6]) {
@@ -505,7 +505,7 @@ void main() {
                     'before the entire iterable is iterated.');
             return i;
           }), (i) async {
-        await Future.delayed(Duration(milliseconds: i));
+        await Future<void>.delayed(Duration(milliseconds: i));
         return i;
       });
 
@@ -585,7 +585,7 @@ void main() {
         pool.close();
       });
 
-      await subscription.asFuture();
+      await subscription.asFuture<void>();
       expect(dataCount, 100);
       await subscription.cancel();
     });
@@ -616,7 +616,7 @@ void main() {
 
           if (int.parse(data) % 3 == 1) {
             subscription.pause(Future(() async {
-              await Future.delayed(const Duration(milliseconds: 100));
+              await Future<void>.delayed(const Duration(milliseconds: 100));
             }));
           }
         },
@@ -690,7 +690,7 @@ void main() {
         pool = Pool(20);
 
         var listFuture = pool.forEach(Iterable<int>.generate(100), (i) async {
-          await Future.delayed(const Duration(milliseconds: 10));
+          await Future<void>.delayed(const Duration(milliseconds: 10));
           if (i == 10) {
             throw UnsupportedError('10 is not supported');
           }
@@ -705,7 +705,7 @@ void main() {
 
         var list = await pool.forEach(Iterable<int>.generate(100),
             (int i) async {
-          await Future.delayed(const Duration(milliseconds: 10));
+          await Future<void>.delayed(const Duration(milliseconds: 10));
           if (i % 10 == 0) {
             throw UnsupportedError('Multiples of 10 not supported');
           }
