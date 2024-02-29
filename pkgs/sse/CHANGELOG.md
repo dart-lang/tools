@@ -1,4 +1,4 @@
-## 4.1.5-wip
+## 4.1.5
 
 - Drop unneeded dependency on `package:js`.
 - Update the minimum Dart SDK version to `3.3.0`.
