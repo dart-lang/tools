@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
@@ -48,7 +50,7 @@ class Session {
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
       // Update the session file with the latest session id
       _sessionId = now.millisecondsSinceEpoch;
-      sessionFile.writeAsStringSync('$_sessionId');
+      sessionFile.writeAsStringSync('{"session_id": $_sessionId}');
     }
 
     // Update the last modified timestamp with the current timestamp so that
@@ -78,13 +80,23 @@ class Session {
   /// making updates to the session file.
   void _refreshSessionData() {
     /// Using a nested function here to reduce verbosity
-    void parseContents() =>
-        _sessionId = int.parse(sessionFile.readAsStringSync());
+    void parseContents() {
+      final sessionFileContents = sessionFile.readAsStringSync();
+      final sessionObj =
+          jsonDecode(sessionFileContents) as Map<String, Object?>;
+      _sessionId = sessionObj['session_id'] as int;
+    }
 
     try {
+      // Failing to parse the contents will result in the current timestamp
+      // being used as the session id and will get used to recreate the file
       parseContents();
     } on FormatException catch (err) {
-      Initializer.createSessionFile(sessionFile: sessionFile);
+      final now = clock.now();
+      Initializer.createSessionFile(
+        sessionFile: sessionFile,
+        sessionIdOverride: now,
+      );
 
       _errorHandler.log(Event.analyticsException(
         workflow: 'Session._refreshSessionData',
@@ -93,10 +105,13 @@ class Session {
       ));
 
       // Fallback to setting the session id as the current time
-      final now = clock.now();
       _sessionId = now.millisecondsSinceEpoch;
     } on FileSystemException catch (err) {
-      Initializer.createSessionFile(sessionFile: sessionFile);
+      final now = clock.now();
+      Initializer.createSessionFile(
+        sessionFile: sessionFile,
+        sessionIdOverride: now,
+      );
 
       _errorHandler.log(Event.analyticsException(
         workflow: 'Session._refreshSessionData',
@@ -105,7 +120,6 @@ class Session {
       ));
 
       // Fallback to setting the session id as the current time
-      final now = clock.now();
       _sessionId = now.millisecondsSinceEpoch;
     }
   }

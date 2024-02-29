@@ -75,10 +75,17 @@ class Initializer {
 
   /// Creates the session file which will contain
   /// the current session id which is the current timestamp.
-  static void createSessionFile({required File sessionFile}) {
-    final now = clock.now();
+  ///
+  /// [sessionIdOverride] can be provided as an override, otherwise it
+  /// will use the current timestamp from [Clock.now].
+  static void createSessionFile({
+    required File sessionFile,
+    DateTime? sessionIdOverride,
+  }) {
+    final now = sessionIdOverride ?? clock.now();
     sessionFile.createSync(recursive: true);
-    sessionFile.writeAsStringSync('${now.millisecondsSinceEpoch}');
+    sessionFile
+        .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
   }
 
   /// This will check that there is a client ID populated in

@@ -143,7 +143,7 @@ void main() {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.readAsStringSync(), 'contents');
       analytics.userProperty.preparePayload();
-      expect(sessionFile.readAsStringSync(), timestamp);
+      expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
@@ -184,7 +184,7 @@ void main() {
     expect(errorEvent!.eventData['workflow'], 'Session._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
     expect(errorEvent.eventData['description'],
-        'message: Invalid radix-10 number\nsource: not a valid session id');
+        'message: Unexpected character\nsource: not a valid session id');
   });
 
   test('Resetting session file when file is removed', () {
@@ -199,7 +199,7 @@ void main() {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.existsSync(), false);
       analytics.userProperty.preparePayload();
-      expect(sessionFile.readAsStringSync(), timestamp);
+      expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
