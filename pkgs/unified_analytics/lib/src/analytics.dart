@@ -454,7 +454,7 @@ class AnalyticsImpl implements Analytics {
       errorHandler: _errorHandler,
     );
 
-    // Initialize the session handler with the session_id 
+    // Initialize the session handler with the session_id
     // by parsing the json file
     _sessionHandler.initialize(telemetryEnabled);
   }
