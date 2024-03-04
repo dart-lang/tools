@@ -739,7 +739,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
               'within the duration');
       expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
           end.millisecondsSinceEpoch,
-          reason: 'The last_ping value should have been updated');
+          reason: 'The last modified value should have been updated');
     });
   });
 
@@ -814,7 +814,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
               'outside the duration');
       expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
           end.millisecondsSinceEpoch,
-          reason: 'The last_ping value should have been updated');
+          reason: 'The last modified value should have been updated');
     });
   });
 

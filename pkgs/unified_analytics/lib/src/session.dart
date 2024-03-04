@@ -19,7 +19,7 @@ class Session {
   final File sessionFile;
   final ErrorHandler _errorHandler;
 
-  int _sessionId;
+  int? _sessionId;
 
   Session({
     required this.homeDirectory,
@@ -27,7 +27,6 @@ class Session {
     required ErrorHandler errorHandler,
   })  : sessionFile = fs.file(p.join(
             homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
-        _sessionId = DateTime.now().millisecondsSinceEpoch,
         _errorHandler = errorHandler;
 
   /// This will use the data parsed from the
@@ -40,7 +39,7 @@ class Session {
   ///
   /// Note, the file will always be updated when calling this method
   /// because the last ping variable will always need to be persisted.
-  int getSessionId() {
+  int? getSessionId() {
     _refreshSessionData();
     final now = clock.now();
 
