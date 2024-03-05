@@ -26,7 +26,7 @@ abstract class PackageConfig {
   /// is expected, but none have been specified or found.
   static const PackageConfig empty = SimplePackageConfig.empty();
 
-  /// Creats a package configuration with the provided available [packages].
+  /// Creates a package configuration with the provided available [packages].
   ///
   /// The packages must be valid packages (valid package name, valid
   /// absolute directory URIs, valid language version, if any),
