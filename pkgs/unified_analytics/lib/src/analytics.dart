@@ -94,7 +94,15 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
+      surveyHandler: SurveyHandler(
+        homeDirectory: homeDirectory,
+        fs: fs,
+        dismissedSurveyFile: fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        )),
+      ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
@@ -164,7 +172,15 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
+      surveyHandler: SurveyHandler(
+        homeDirectory: homeDirectory,
+        fs: fs,
+        dismissedSurveyFile: fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        )),
+      ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
@@ -204,6 +220,11 @@ abstract class Analytics {
             FakeSurveyHandler.fromList(
               homeDirectory: homeDirectory,
               fs: fs,
+              dismissedSurveyFile: fs.file(p.join(
+                homeDirectory.path,
+                kDartToolDirectoryName,
+                kDismissedSurveyFileName,
+              )),
               initializedSurveys: [],
             ),
         gaClient: gaClient ?? const FakeGAClient(),

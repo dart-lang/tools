@@ -5,8 +5,10 @@
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
@@ -18,6 +20,7 @@ void main() {
   late FakeAnalytics fakeAnalytics;
   late FileSystem fs;
   late Directory homeDirectory;
+  late File dismissedSurveyFile;
 
   /// Survey to load into the fake instance to fetch
   ///
@@ -49,6 +52,11 @@ void main() {
   setUp(() async {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
+    dismissedSurveyFile = fs.file(p.join(
+      homeDirectory.path,
+      kDartToolDirectoryName,
+      kDismissedSurveyFileName,
+    ));
 
     final initialAnalytics = Analytics.test(
       tool: DashTool.flutterTool,
@@ -74,6 +82,7 @@ void main() {
         surveyHandler: FakeSurveyHandler.fromList(
           homeDirectory: homeDirectory,
           fs: fs,
+          dismissedSurveyFile: dismissedSurveyFile,
           initializedSurveys: [testSurvey],
         ),
       );

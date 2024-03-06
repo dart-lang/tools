@@ -330,6 +330,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
@@ -384,6 +385,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
@@ -427,6 +429,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
@@ -471,7 +474,10 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              homeDirectory: homeDirectory, fs: fs, content: '''
+              homeDirectory: homeDirectory,
+              fs: fs,
+              dismissedSurveyFile: dismissedSurveyFile,
+              content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -573,7 +579,10 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              homeDirectory: homeDirectory, fs: fs, content: '''
+              homeDirectory: homeDirectory,
+              fs: fs,
+              dismissedSurveyFile: dismissedSurveyFile,
+              content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -637,7 +646,10 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              homeDirectory: homeDirectory, fs: fs, content: '''
+              homeDirectory: homeDirectory,
+              fs: fs,
+              dismissedSurveyFile: dismissedSurveyFile,
+              content: '''
 [
     {
         "uniqueId": "12345",
@@ -722,6 +734,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
@@ -799,6 +812,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[survey],
           ),
         );
@@ -845,6 +859,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[survey],
           ),
         );
@@ -893,6 +908,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -923,6 +939,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -945,6 +962,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -992,6 +1010,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -1021,6 +1040,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -1070,6 +1090,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -1103,6 +1124,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -1152,6 +1174,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -1182,6 +1205,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
         );
@@ -1207,6 +1231,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
@@ -1255,6 +1280,7 @@ void main() {
           surveyHandler: FakeSurveyHandler.fromList(
             homeDirectory: homeDirectory,
             fs: fs,
+            dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
                 uniqueId: 'uniqueId',
