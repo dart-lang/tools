@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
-
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
@@ -75,17 +73,19 @@ class Initializer {
     logFile.createSync(recursive: true);
   }
 
-  /// Creates the session json file which will contain
-  /// the current session id along with the timestamp for
-  /// the last ping which will be used to increment the session
-  /// if current timestamp is greater than the session window.
-  static void createSessionFile({required File sessionFile}) {
-    final now = clock.now();
+  /// Creates the session file which will contain
+  /// the current session id which is the current timestamp.
+  ///
+  /// [sessionIdOverride] can be provided as an override, otherwise it
+  /// will use the current timestamp from [Clock.now].
+  static void createSessionFile({
+    required File sessionFile,
+    DateTime? sessionIdOverride,
+  }) {
+    final now = sessionIdOverride ?? clock.now();
     sessionFile.createSync(recursive: true);
-    sessionFile.writeAsStringSync(jsonEncode(<String, int>{
-      'session_id': now.millisecondsSinceEpoch,
-      'last_ping': now.millisecondsSinceEpoch,
-    }));
+    sessionFile
+        .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
   }
 
   /// This will check that there is a client ID populated in

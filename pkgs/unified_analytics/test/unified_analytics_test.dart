@@ -132,7 +132,7 @@ void main() {
 
   test('Resetting session file when data is malformed', () {
     // Purposefully write content to the session file that
-    // can't be decoded as json
+    // can't be decoded as an integer
     sessionFile.writeAsStringSync('contents');
 
     // Define the initial time to start
@@ -143,8 +143,7 @@ void main() {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.readAsStringSync(), 'contents');
       analytics.userProperty.preparePayload();
-      expect(sessionFile.readAsStringSync(),
-          '{"session_id":$timestamp,"last_ping":$timestamp}');
+      expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
@@ -158,9 +157,9 @@ void main() {
 
   test('Handles malformed session file on startup', () {
     // Ensure that we are able to send an error message on startup if
-    // we encounter an error while parsing the contents of the json file
+    // we encounter an error while parsing the contents of the session file
     // for session data
-    sessionFile.writeAsStringSync('contents');
+    sessionFile.writeAsStringSync('not a valid session id');
 
     analytics = Analytics.test(
       tool: initialTool,
@@ -185,7 +184,7 @@ void main() {
     expect(errorEvent!.eventData['workflow'], 'Session._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
     expect(errorEvent.eventData['description'],
-        'message: Unexpected character\nsource: contents');
+        'message: Unexpected character\nsource: not a valid session id');
   });
 
   test('Resetting session file when file is removed', () {
@@ -200,8 +199,7 @@ void main() {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.existsSync(), false);
       analytics.userProperty.preparePayload();
-      expect(sessionFile.readAsStringSync(),
-          '{"session_id":$timestamp,"last_ping":$timestamp}');
+      expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
@@ -701,14 +699,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       );
       secondAnalytics.clientShowedMessage();
 
-      // Read the contents of the session file
-      final sessionFileContents = sessionFile.readAsStringSync();
-      final sessionObj =
-          jsonDecode(sessionFileContents) as Map<String, Object?>;
-
       expect(secondAnalytics.userPropertyMap['session_id']?['value'],
           start.millisecondsSinceEpoch);
-      expect(sessionObj['last_ping'], start.millisecondsSinceEpoch);
+      expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
+          start.millisecondsSinceEpoch);
     });
 
     // Add time to the start time that is less than the duration
@@ -739,17 +733,13 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // no events will be sent
       thirdAnalytics.send(testEvent);
 
-      // Read the contents of the session file
-      final sessionFileContents = sessionFile.readAsStringSync();
-      final sessionObj =
-          jsonDecode(sessionFileContents) as Map<String, Object?>;
-
       expect(thirdAnalytics.userPropertyMap['session_id']?['value'],
           start.millisecondsSinceEpoch,
           reason: 'The session id should not have changed since it was made '
               'within the duration');
-      expect(sessionObj['last_ping'], end.millisecondsSinceEpoch,
-          reason: 'The last_ping value should have been updated');
+      expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
+          end.millisecondsSinceEpoch,
+          reason: 'The last modified value should have been updated');
     });
   });
 
@@ -782,14 +772,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       );
       secondAnalytics.clientShowedMessage();
 
-      // Read the contents of the session file
-      final sessionFileContents = sessionFile.readAsStringSync();
-      final sessionObj =
-          jsonDecode(sessionFileContents) as Map<String, Object?>;
-
       expect(secondAnalytics.userPropertyMap['session_id']?['value'],
           start.millisecondsSinceEpoch);
-      expect(sessionObj['last_ping'], start.millisecondsSinceEpoch);
+      expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
+          start.millisecondsSinceEpoch);
 
       secondAnalytics.send(testEvent);
     });
@@ -822,17 +808,13 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // no events will be sent
       thirdAnalytics.send(testEvent);
 
-      // Read the contents of the session file
-      final sessionFileContents = sessionFile.readAsStringSync();
-      final sessionObj =
-          jsonDecode(sessionFileContents) as Map<String, Object?>;
-
       expect(thirdAnalytics.userPropertyMap['session_id']?['value'],
           end.millisecondsSinceEpoch,
           reason: 'The session id should have changed since it was made '
               'outside the duration');
-      expect(sessionObj['last_ping'], end.millisecondsSinceEpoch,
-          reason: 'The last_ping value should have been updated');
+      expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
+          end.millisecondsSinceEpoch,
+          reason: 'The last modified value should have been updated');
     });
   });
 
