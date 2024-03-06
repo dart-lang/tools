@@ -395,6 +395,11 @@ class AnalyticsImpl implements Analytics {
       fs: fs,
       homeDirectory: homeDirectory,
       initializer: initializer,
+      configFile: fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kConfigFileName,
+      )),
     );
 
     // Check if the tool has already been onboarded, and if it

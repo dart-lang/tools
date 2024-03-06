@@ -7,9 +7,7 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart' as p;
 
-import 'constants.dart';
 import 'initializer.dart';
 import 'utils.dart';
 
@@ -40,7 +38,7 @@ class ConfigHandler {
 
   final Map<String, ToolInfo> parsedTools = <String, ToolInfo>{};
 
-  late DateTime configFileLastModified;
+  DateTime configFileLastModified;
 
   /// Reporting enabled unless specified by user
   bool _telemetryEnabled = true;
@@ -49,15 +47,8 @@ class ConfigHandler {
     required this.fs,
     required this.homeDirectory,
     required this.initializer,
-  }) : configFile = fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kConfigFileName,
-        )) {
-    // Get the last time the file was updated and check this
-    // datestamp whenever the client asks for the telemetry enabled boolean
-    configFileLastModified = configFile.lastModifiedSync();
-
+    required this.configFile,
+  }) : configFileLastModified = configFile.lastModifiedSync() {
     // Call the method to parse the contents of the config file when
     // this class is initialized
     parseConfig();
