@@ -1,4 +1,4 @@
-## 5.8.6
+## 5.8.6-wip
 
 - Refactored session handler class to use the last modified timestamp as the last ping value
 

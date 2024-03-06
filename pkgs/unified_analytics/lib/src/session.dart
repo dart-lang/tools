@@ -50,11 +50,11 @@ class Session {
       // Update the session file with the latest session id
       _sessionId = now.millisecondsSinceEpoch;
       sessionFile.writeAsStringSync('{"session_id": $_sessionId}');
+    } else {
+      // Update the last modified timestamp with the current timestamp so that
+      // we can use it for the next _lastPing calculation
+      sessionFile.setLastModifiedSync(now);
     }
-
-    // Update the last modified timestamp with the current timestamp so that
-    // we can use it for the next _lastPing calculation
-    sessionFile.setLastModifiedSync(now);
 
     return _sessionId;
   }
