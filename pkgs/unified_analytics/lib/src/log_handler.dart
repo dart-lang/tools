@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
-import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'error_handler.dart';
@@ -170,12 +169,8 @@ class LogHandler {
     required this.fs,
     required this.homeDirectory,
     required ErrorHandler errorHandler,
-  })  : logFile = fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kLogFileName,
-        )),
-        _errorHandler = errorHandler;
+    required this.logFile,
+  }) : _errorHandler = errorHandler;
 
   /// Get stats from the persisted log file.
   ///

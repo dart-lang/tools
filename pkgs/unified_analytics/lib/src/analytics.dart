@@ -457,6 +457,11 @@ class AnalyticsImpl implements Analytics {
       fs: fs,
       homeDirectory: homeDirectory,
       errorHandler: _errorHandler,
+      logFile: fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kLogFileName,
+      )),
     );
 
     // Initialize the session handler with the session_id
