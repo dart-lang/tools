@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
-import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'error_handler.dart';
@@ -25,9 +24,8 @@ class Session {
     required this.homeDirectory,
     required this.fs,
     required ErrorHandler errorHandler,
-  })  : sessionFile = fs.file(p.join(
-            homeDirectory.path, kDartToolDirectoryName, kSessionFileName)),
-        _errorHandler = errorHandler;
+    required this.sessionFile,
+  }) : _errorHandler = errorHandler;
 
   /// This will use the data parsed from the
   /// session file in the dart-tool directory
