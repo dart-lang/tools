@@ -94,7 +94,6 @@ abstract class Analytics {
     final configHandler = ConfigHandler(
       fs: fs,
       homeDirectory: homeDirectory,
-      initializer: initializer,
       configFile: fs.file(p.join(
         homeDirectory.path,
         kDartToolDirectoryName,
@@ -192,7 +191,6 @@ abstract class Analytics {
     final configHandler = ConfigHandler(
       fs: fs,
       homeDirectory: homeDirectory,
-      initializer: initializer,
       configFile: fs.file(p.join(
         homeDirectory.path,
         kDartToolDirectoryName,
@@ -810,7 +808,6 @@ class FakeAnalytics extends AnalyticsImpl {
           configHandler: ConfigHandler(
             fs: fs,
             homeDirectory: homeDirectory,
-            initializer: initializer,
             configFile: fs.file(p.join(
               homeDirectory.path,
               kDartToolDirectoryName,

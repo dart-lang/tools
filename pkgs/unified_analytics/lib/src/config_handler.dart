@@ -7,7 +7,9 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 
+import 'constants.dart';
 import 'initializer.dart';
 import 'utils.dart';
 
@@ -33,7 +35,6 @@ class ConfigHandler {
 
   final FileSystem fs;
   final Directory homeDirectory;
-  final Initializer initializer;
   final File configFile;
 
   final Map<String, ToolInfo> parsedTools = <String, ToolInfo>{};
@@ -46,7 +47,6 @@ class ConfigHandler {
   ConfigHandler({
     required this.fs,
     required this.homeDirectory,
-    required this.initializer,
     required this.configFile,
   }) : configFileLastModified = configFile.lastModifiedSync() {
     // Call the method to parse the contents of the config file when
@@ -175,7 +175,15 @@ class ConfigHandler {
   /// This will reset the configuration file and clear the
   /// [parsedTools] map and trigger parsing the config again.
   void resetConfig() {
-    initializer.run(forceReset: true);
+    Initializer.createConfigFile(
+      configFile: fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kConfigFileName,
+      )),
+      fs: fs,
+      homeDirectory: homeDirectory,
+    );
     parsedTools.clear();
     parseConfig();
   }

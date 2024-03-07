@@ -42,11 +42,10 @@ class Initializer {
 
   /// Creates the configuration file with the default message
   /// in the user's home directory.
-  void createConfigFile({
+  static void createConfigFile({
     required File configFile,
-    required String dateStamp,
-    required String tool,
-    required int toolsMessageVersion,
+    required Directory homeDirectory,
+    required FileSystem fs,
   }) {
     configFile.createSync(recursive: true);
 
@@ -69,7 +68,7 @@ class Initializer {
 
   /// Creates that log file that will store the record formatted
   /// events locally on the user's machine.
-  void createLogFile({required File logFile}) {
+  static void createLogFile({required File logFile}) {
     logFile.createSync(recursive: true);
   }
 
@@ -106,9 +105,8 @@ class Initializer {
       firstRun = true;
       createConfigFile(
         configFile: configFile,
-        dateStamp: dateStamp,
-        tool: tool,
-        toolsMessageVersion: toolsMessageVersion,
+        fs: fs,
+        homeDirectory: homeDirectory,
       );
     }
 
