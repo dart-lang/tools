@@ -392,8 +392,7 @@ class AnalyticsImpl implements Analytics {
   final ConfigHandler _configHandler;
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
-  late String _clientId;
-  late final File _clientIdFile;
+  final File _clientIdFile;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
   late final Session _sessionHandler;
@@ -420,6 +419,9 @@ class AnalyticsImpl implements Analytics {
   /// from the [GAClient].
   final _futures = <Future<Response>>[];
 
+  /// Internal value for the client id which will be lazily loaded.
+  String? _clientId;
+
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -439,7 +441,12 @@ class AnalyticsImpl implements Analytics {
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
         _enableAsserts = enableAsserts,
-        _configHandler = configHandler {
+        _configHandler = configHandler,
+        _clientIdFile = fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kClientIdFileName,
+        )) {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -471,10 +478,6 @@ class AnalyticsImpl implements Analytics {
       // will be blocked
       _firstRun = true;
     }
-
-    _clientIdFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
-    _clientId = _clientIdFile.readAsStringSync();
 
     // Initialization for the error handling class that will prevent duplicate
     // [Event.analyticsException] events from being sent to GA4
@@ -528,7 +531,14 @@ class AnalyticsImpl implements Analytics {
   }
 
   @override
-  String get clientId => _clientId;
+  String get clientId {
+    if (!_clientIdFile.existsSync()) {
+      Initializer.createClientIdFile(clientIdFile: _clientIdFile);
+    }
+    _clientId ??= _clientIdFile.readAsStringSync();
+
+    return _clientId!;
+  }
 
   @override
   String get getConsentMessage {
@@ -623,7 +633,7 @@ class AnalyticsImpl implements Analytics {
       // Apply the survey's sample rate; if the generated value from
       // the client id and survey's uniqueId are less, it will not get
       // sent to the user
-      if (survey.samplingRate < sampleRate(_clientId, survey.uniqueId)) {
+      if (survey.samplingRate < sampleRate(clientId, survey.uniqueId)) {
         continue;
       }
 
@@ -678,7 +688,7 @@ class AnalyticsImpl implements Analytics {
 
     // Construct the body of the request
     final body = generateRequestBody(
-      clientId: _clientId,
+      clientId: clientId,
       eventName: event.eventName,
       eventData: event.eventData,
       userProperty: userProperty,
@@ -708,7 +718,7 @@ class AnalyticsImpl implements Analytics {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
       // to persist from events sent
-      Initializer.createClientIdFile(clientFile: _clientIdFile);
+      Initializer.createClientIdFile(clientIdFile: _clientIdFile);
       Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
 
       // Reread the client ID string so an empty string is not being
@@ -719,7 +729,7 @@ class AnalyticsImpl implements Analytics {
       // We must construct the body at this point after we have read in the
       // new client id string that was generated
       body = generateRequestBody(
-        clientId: _clientId,
+        clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
         userProperty: userProperty,
@@ -730,7 +740,7 @@ class AnalyticsImpl implements Analytics {
       // Construct the body of the request to signal
       // telemetry status toggling
       body = generateRequestBody(
-        clientId: _clientId,
+        clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
         userProperty: userProperty,
@@ -741,7 +751,7 @@ class AnalyticsImpl implements Analytics {
       _logHandler.logFile.writeAsStringSync('');
       _clientIdFile.writeAsStringSync('');
 
-      _clientId = _clientIdFile.readAsStringSync();
+      _clientId = '';
     }
 
     // Pass to the google analytics client to send with a
@@ -822,7 +832,7 @@ class FakeAnalytics extends AnalyticsImpl {
 
     // Construct the body of the request
     final body = generateRequestBody(
-      clientId: _clientId,
+      clientId: clientId,
       eventName: event.eventName,
       eventData: event.eventData,
       userProperty: userProperty,
