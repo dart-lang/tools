@@ -1,3 +1,8 @@
+## 1.1.1
+
+* Fix a bug where if spawnWorker threw an error, work requests would hang
+  forever instead of failing.
+
 ## 1.1.0
 
 * Add constructors with named parameters to
