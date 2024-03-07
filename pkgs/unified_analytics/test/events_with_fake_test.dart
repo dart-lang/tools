@@ -10,6 +10,7 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/initializer.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -73,17 +74,25 @@ void main() {
     // Recreate a second instance since events cannot be sent on
     // the first run
     withClock(Clock.fixed(DateTime(2022, 3, 3)), () {
+      final toolsMessageVersion = kToolsMessageVersion;
       fakeAnalytics = FakeAnalytics(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         dartVersion: 'dartVersion',
         platform: DevicePlatform.macos,
         fs: fs,
+        toolsMessageVersion: toolsMessageVersion,
         surveyHandler: FakeSurveyHandler.fromList(
           homeDirectory: homeDirectory,
           fs: fs,
           dismissedSurveyFile: dismissedSurveyFile,
           initializedSurveys: [testSurvey],
+        ),
+        initializer: Initializer(
+          fs: fs,
+          tool: DashTool.flutterTool.label,
+          homeDirectory: homeDirectory,
+          toolsMessageVersion: toolsMessageVersion,
         ),
       );
     });

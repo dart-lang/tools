@@ -84,6 +84,24 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
+    final initializer = Initializer(
+      fs: fs,
+      tool: tool.label,
+      homeDirectory: homeDirectory,
+      toolsMessageVersion: kToolsMessageVersion,
+    );
+    initializer.run();
+    final configHandler = ConfigHandler(
+      fs: fs,
+      homeDirectory: homeDirectory,
+      initializer: initializer,
+      configFile: fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kConfigFileName,
+      )),
+    );
+
     return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
@@ -106,6 +124,8 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      configHandler: configHandler,
+      initializer: initializer,
     );
   }
 
@@ -162,6 +182,24 @@ abstract class Analytics {
       apiSecret: kTestApiSecret,
     );
 
+    final initializer = Initializer(
+      fs: fs,
+      tool: tool.label,
+      homeDirectory: homeDirectory,
+      toolsMessageVersion: kToolsMessageVersion,
+    );
+    initializer.run();
+    final configHandler = ConfigHandler(
+      fs: fs,
+      homeDirectory: homeDirectory,
+      initializer: initializer,
+      configFile: fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kConfigFileName,
+      )),
+    );
+
     return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
@@ -184,6 +222,8 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      configHandler: configHandler,
+      initializer: initializer,
     );
   }
 
@@ -206,31 +246,41 @@ abstract class Analytics {
     GAClient? gaClient,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
-  }) =>
-      FakeAnalytics(
-        tool: tool,
-        homeDirectory: homeDirectory,
-        flutterChannel: flutterChannel,
-        toolsMessageVersion: toolsMessageVersion,
-        flutterVersion: flutterVersion,
-        dartVersion: dartVersion,
-        platform: platform,
-        fs: fs,
-        surveyHandler: surveyHandler ??
-            FakeSurveyHandler.fromList(
-              homeDirectory: homeDirectory,
-              fs: fs,
-              dismissedSurveyFile: fs.file(p.join(
-                homeDirectory.path,
-                kDartToolDirectoryName,
-                kDismissedSurveyFileName,
-              )),
-              initializedSurveys: [],
-            ),
-        gaClient: gaClient ?? const FakeGAClient(),
-        clientIde: clientIde,
-        enabledFeatures: enabledFeatures,
-      );
+  }) {
+    final initializer = Initializer(
+      fs: fs,
+      tool: tool.label,
+      homeDirectory: homeDirectory,
+      toolsMessageVersion: toolsMessageVersion,
+    );
+    initializer.run();
+
+    return FakeAnalytics(
+      tool: tool,
+      homeDirectory: homeDirectory,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      platform: platform,
+      fs: fs,
+      surveyHandler: surveyHandler ??
+          FakeSurveyHandler.fromList(
+            homeDirectory: homeDirectory,
+            fs: fs,
+            dismissedSurveyFile: fs.file(p.join(
+              homeDirectory.path,
+              kDartToolDirectoryName,
+              kDismissedSurveyFileName,
+            )),
+            initializedSurveys: [],
+          ),
+      gaClient: gaClient ?? const FakeGAClient(),
+      clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
+      initializer: initializer,
+    );
+  }
 
   /// The shared identifier for Flutter and Dart related tooling using
   /// package:unified_analytics.
@@ -341,7 +391,7 @@ abstract class Analytics {
 class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
-  late final ConfigHandler _configHandler;
+  final ConfigHandler _configHandler;
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
   late String _clientId;
@@ -386,9 +436,12 @@ class AnalyticsImpl implements Analytics {
     required GAClient gaClient,
     required SurveyHandler surveyHandler,
     required bool enableAsserts,
+    required Initializer initializer,
+    required ConfigHandler configHandler,
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
-        _enableAsserts = enableAsserts {
+        _enableAsserts = enableAsserts,
+        _configHandler = configHandler {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -396,13 +449,6 @@ class AnalyticsImpl implements Analytics {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
-    final initializer = Initializer(
-      fs: fs,
-      tool: tool.label,
-      homeDirectory: homeDirectory,
-      toolsMessageVersion: toolsMessageVersion,
-    );
-    initializer.run();
     if (initializer.firstRun) {
       _showMessage = true;
       _firstRun = true;
@@ -410,18 +456,6 @@ class AnalyticsImpl implements Analytics {
       _showMessage = false;
       _firstRun = false;
     }
-
-    // Create the config handler that will parse the config file
-    _configHandler = ConfigHandler(
-      fs: fs,
-      homeDirectory: homeDirectory,
-      initializer: initializer,
-      configFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kConfigFileName,
-      )),
-    );
 
     // Check if the tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
@@ -764,16 +798,25 @@ class FakeAnalytics extends AnalyticsImpl {
     required super.platform,
     required super.fs,
     required super.surveyHandler,
+    required super.initializer,
     super.flutterChannel,
     super.flutterVersion,
     super.clientIde,
     super.enabledFeatures,
-    int? toolsMessageVersion,
-    GAClient? gaClient,
+    super.toolsMessageVersion = kToolsMessageVersion,
+    super.gaClient = const FakeGAClient(),
+    super.enableAsserts = true,
   }) : super(
-          gaClient: gaClient ?? const FakeGAClient(),
-          enableAsserts: true,
-          toolsMessageVersion: toolsMessageVersion ?? kToolsMessageVersion,
+          configHandler: ConfigHandler(
+            fs: fs,
+            homeDirectory: homeDirectory,
+            initializer: initializer,
+            configFile: fs.file(p.join(
+              homeDirectory.path,
+              kDartToolDirectoryName,
+              kConfigFileName,
+            )),
+          ),
         );
 
   @override
