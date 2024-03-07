@@ -211,7 +211,7 @@ class Config {
   /// [environment].
   /// If not provided, [workingDirectory] defaults to [Directory.current].
   ///
-  /// This async constructor is intended to be used directly in CLI files.
+  /// This synchronous constructor is intended to be used directly in CLI files.
   static Config fromArgumentsSync({
     required List<String> arguments,
     Map<String, String>? environment,
