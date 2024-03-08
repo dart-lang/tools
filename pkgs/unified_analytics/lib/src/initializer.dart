@@ -85,6 +85,8 @@ class Initializer {
     sessionFile.createSync(recursive: true);
     sessionFile
         .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
+    // TODO: eliasyishak, remove the below once https://github.com/google/file.dart/issues/236 is fixed
+    sessionFile.setLastModifiedSync(clock.now());
   }
 
   /// This will check that there is a client ID populated in
