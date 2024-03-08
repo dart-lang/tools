@@ -21,7 +21,6 @@ import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
-import 'session.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
@@ -395,7 +394,6 @@ class AnalyticsImpl implements Analytics {
   final File _clientIdFile;
   late final UserProperty userProperty;
   late final LogHandler _logHandler;
-  late final Session _sessionHandler;
   late final ErrorHandler _errorHandler;
   final int toolsMessageVersion;
 
@@ -487,18 +485,12 @@ class AnalyticsImpl implements Analytics {
     // each event that is sent to Google Analytics -- it will be responsible
     // for getting the session id or rolling the session if the duration
     // exceeds [kSessionDurationMinutes]
-    _sessionHandler = Session(
-      homeDirectory: homeDirectory,
-      fs: fs,
-      errorHandler: _errorHandler,
+    userProperty = UserProperty(
       sessionFile: fs.file(p.join(
         homeDirectory.path,
         kDartToolDirectoryName,
         kSessionFileName,
       )),
-    );
-    userProperty = UserProperty(
-      session: _sessionHandler,
       flutterChannel: flutterChannel,
       host: platform.label,
       flutterVersion: flutterVersion,
@@ -511,6 +503,8 @@ class AnalyticsImpl implements Analytics {
       locale: io.Platform.localeName,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      errorHandler: _errorHandler,
+      telemetryEnabled: telemetryEnabled,
     );
 
     // Initialize the log handler to persist events that are being sent
@@ -524,10 +518,6 @@ class AnalyticsImpl implements Analytics {
         kLogFileName,
       )),
     );
-
-    // Initialize the session handler with the session_id
-    // by parsing the json file
-    _sessionHandler.initialize(telemetryEnabled);
   }
 
   @override
@@ -719,7 +709,7 @@ class AnalyticsImpl implements Analytics {
       // recreate the log file since it will only receives events
       // to persist from events sent
       Initializer.createClientIdFile(clientIdFile: _clientIdFile);
-      Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
+      Initializer.createSessionFile(sessionFile: userProperty.sessionFile);
 
       // Reread the client ID string so an empty string is not being
       // sent to GA4 since the persisted files are cleared when a user
@@ -747,7 +737,7 @@ class AnalyticsImpl implements Analytics {
       );
 
       // For opted out users, data in the persisted files is cleared
-      _sessionHandler.sessionFile.writeAsStringSync('');
+      userProperty.sessionFile.writeAsStringSync('');
       _logHandler.logFile.writeAsStringSync('');
       _clientIdFile.writeAsStringSync('');
 

@@ -177,6 +177,12 @@ void main() {
     ) as FakeAnalytics;
     analytics.clientShowedMessage();
 
+    // Invoking a send command should reset the session file to a good state
+    //
+    // Having it reformat the session file before any send event happens will just
+    // add additional work on startup
+    analytics.send(testEvent);
+
     final errorEvent = analytics.sentEvents
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
