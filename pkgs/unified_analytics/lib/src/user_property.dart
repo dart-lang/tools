@@ -47,43 +47,6 @@ class UserProperty {
     required bool telemetryEnabled,
   }) : _errorHandler = errorHandler;
 
-  /// This method will take the data in this class and convert it into
-  /// a Map that is suitable for the POST request schema.
-  ///
-  /// This will call the [UserProperty] object's [UserProperty.getSessionId]
-  /// method which will update the session file and get a new session id
-  /// if necessary.
-  ///
-  /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/user-properties?client_type=gtag
-  Map<String, Map<String, Object?>> preparePayload() {
-    return <String, Map<String, Object?>>{
-      for (MapEntry<String, Object?> entry in _toMap().entries)
-        entry.key: <String, Object?>{'value': entry.value}
-    };
-  }
-
-  @override
-  String toString() {
-    return jsonEncode(_toMap());
-  }
-
-  /// Convert the data stored in this class into a map while also
-  /// getting the latest session id using the [UserProperty] class.
-  Map<String, Object?> _toMap() => <String, Object?>{
-        'session_id': getSessionId(),
-        'flutter_channel': flutterChannel,
-        'host': host,
-        'flutter_version': flutterVersion,
-        'dart_version': dartVersion,
-        'analytics_pkg_version': kPackageVersion,
-        'tool': tool,
-        'local_time': formatDateTime(clock.now()),
-        'host_os_version': hostOsVersion,
-        'locale': locale,
-        'client_ide': clientIde,
-        'enabled_features': enabledFeatures,
-      };
-
   /// This will use the data parsed from the
   /// session file in the dart-tool directory
   /// to get the session id if the last ping was within
@@ -124,6 +87,26 @@ class UserProperty {
     if (telemetryEnabled) _refreshSessionData();
   }
 
+  /// This method will take the data in this class and convert it into
+  /// a Map that is suitable for the POST request schema.
+  ///
+  /// This will call the [UserProperty] object's [UserProperty.getSessionId]
+  /// method which will update the session file and get a new session id
+  /// if necessary.
+  ///
+  /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/user-properties?client_type=gtag
+  Map<String, Map<String, Object?>> preparePayload() {
+    return <String, Map<String, Object?>>{
+      for (MapEntry<String, Object?> entry in _toMap().entries)
+        entry.key: <String, Object?>{'value': entry.value}
+    };
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(_toMap());
+  }
+
   /// This will go to the session file within the dart-tool
   /// directory and fetch the latest data from the session file to update
   /// the class's variables. If the session file is malformed, a new
@@ -153,7 +136,7 @@ class UserProperty {
       );
 
       _errorHandler.log(Event.analyticsException(
-        workflow: 'Session._refreshSessionData',
+        workflow: 'UserProperty._refreshSessionData',
         error: err.runtimeType.toString(),
         description: 'message: ${err.message}\nsource: ${err.source}',
       ));
@@ -168,7 +151,7 @@ class UserProperty {
       );
 
       _errorHandler.log(Event.analyticsException(
-        workflow: 'Session._refreshSessionData',
+        workflow: 'UserProperty._refreshSessionData',
         error: err.runtimeType.toString(),
         description: err.osError?.toString(),
       ));
@@ -177,4 +160,21 @@ class UserProperty {
       _sessionId = now.millisecondsSinceEpoch;
     }
   }
+
+  /// Convert the data stored in this class into a map while also
+  /// getting the latest session id using the [UserProperty] class.
+  Map<String, Object?> _toMap() => <String, Object?>{
+        'session_id': getSessionId(),
+        'flutter_channel': flutterChannel,
+        'host': host,
+        'flutter_version': flutterVersion,
+        'dart_version': dartVersion,
+        'analytics_pkg_version': kPackageVersion,
+        'tool': tool,
+        'local_time': formatDateTime(clock.now()),
+        'host_os_version': hostOsVersion,
+        'locale': locale,
+        'client_ide': clientIde,
+        'enabled_features': enabledFeatures,
+      };
 }

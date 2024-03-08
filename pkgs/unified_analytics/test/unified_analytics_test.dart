@@ -150,7 +150,7 @@ void main() {
       final lastEvent = analytics.sentEvents.last;
       expect(lastEvent, isNotNull);
       expect(lastEvent.eventName, DashEvent.analyticsException);
-      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(lastEvent.eventData['workflow']!, 'UserProperty._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FormatException');
     });
   });
@@ -187,7 +187,7 @@ void main() {
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
     expect(errorEvent, isNotNull);
-    expect(errorEvent!.eventData['workflow'], 'Session._refreshSessionData');
+    expect(errorEvent!.eventData['workflow'], 'UserProperty._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
     expect(errorEvent.eventData['description'],
         'message: Unexpected character\nsource: not a valid session id');
@@ -212,7 +212,7 @@ void main() {
       final lastEvent = analytics.sentEvents.last;
       expect(lastEvent, isNotNull);
       expect(lastEvent.eventName, DashEvent.analyticsException);
-      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(lastEvent.eventData['workflow']!, 'UserProperty._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FileSystemException');
     });
   });
