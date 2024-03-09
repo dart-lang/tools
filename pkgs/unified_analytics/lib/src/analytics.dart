@@ -88,8 +88,7 @@ abstract class Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: kToolsMessageVersion,
-    );
-    initializer.run();
+    )..run();
     final configHandler = ConfigHandler(
       fs: fs,
       homeDirectory: homeDirectory,
@@ -185,8 +184,7 @@ abstract class Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: kToolsMessageVersion,
-    );
-    initializer.run();
+    )..run();
     final configHandler = ConfigHandler(
       fs: fs,
       homeDirectory: homeDirectory,
@@ -249,8 +247,7 @@ abstract class Analytics {
       tool: tool.label,
       homeDirectory: homeDirectory,
       toolsMessageVersion: toolsMessageVersion,
-    );
-    initializer.run();
+    )..run();
 
     return FakeAnalytics(
       tool: tool,
