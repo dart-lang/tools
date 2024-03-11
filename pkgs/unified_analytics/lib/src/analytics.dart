@@ -451,8 +451,6 @@ class AnalyticsImpl implements Analytics {
           )),
         ),
         _logHandler = LogHandler(
-          fs: fs,
-          homeDirectory: homeDirectory,
           logFile: fs.file(p.join(
             homeDirectory.path,
             kDartToolDirectoryName,
