@@ -8,7 +8,6 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 
 import 'constants.dart';
-import 'error_handler.dart';
 import 'event.dart';
 import 'initializer.dart';
 import 'utils.dart';
@@ -25,7 +24,7 @@ class UserProperty {
   final String? enabledFeatures;
 
   final File sessionFile;
-  final ErrorHandler _errorHandler;
+  final Set<Event> errorSet = {};
 
   int? _sessionId;
 
@@ -43,9 +42,7 @@ class UserProperty {
     required this.clientIde,
     required this.enabledFeatures,
     required this.sessionFile,
-    required ErrorHandler errorHandler,
-    required bool telemetryEnabled,
-  }) : _errorHandler = errorHandler;
+  });
 
   /// This will use the data parsed from the
   /// session file in the dart-tool directory
@@ -125,7 +122,7 @@ class UserProperty {
         sessionIdOverride: now,
       );
 
-      _errorHandler.log(Event.analyticsException(
+      errorSet.add(Event.analyticsException(
         workflow: 'UserProperty._refreshSessionData',
         error: err.runtimeType.toString(),
         description: 'message: ${err.message}\nsource: ${err.source}',
@@ -140,7 +137,7 @@ class UserProperty {
         sessionIdOverride: now,
       );
 
-      _errorHandler.log(Event.analyticsException(
+      errorSet.add(Event.analyticsException(
         workflow: 'UserProperty._refreshSessionData',
         error: err.runtimeType.toString(),
         description: err.osError?.toString(),

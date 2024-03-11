@@ -8,7 +8,6 @@ import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 
 import 'constants.dart';
-import 'error_handler.dart';
 import 'event.dart';
 import 'initializer.dart';
 
@@ -161,16 +160,16 @@ class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
   final File logFile;
-  final ErrorHandler _errorHandler;
+
+  final Set<Event> errorSet = {};
 
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
   LogHandler({
     required this.fs,
     required this.homeDirectory,
-    required ErrorHandler errorHandler,
     required this.logFile,
-  }) : _errorHandler = errorHandler;
+  });
 
   /// Get stats from the persisted log file.
   ///
@@ -187,7 +186,7 @@ class LogHandler {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
-            _errorHandler.log(Event.analyticsException(
+            errorSet.add(Event.analyticsException(
               workflow: 'LogFileStats.logFileStats',
               error: err.runtimeType.toString(),
               description: 'message: ${err.message}\nsource: ${err.source}',
@@ -196,7 +195,7 @@ class LogHandler {
             return null;
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
-            _errorHandler.log(Event.analyticsException(
+            errorSet.add(Event.analyticsException(
               workflow: 'LogFileStats.logFileStats',
               error: err.runtimeType.toString(),
             ));

@@ -16,7 +16,6 @@ import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
-import 'error_handler.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
@@ -389,9 +388,8 @@ class AnalyticsImpl implements Analytics {
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
   final File _clientIdFile;
-  late final UserProperty userProperty;
-  late final LogHandler _logHandler;
-  late final ErrorHandler _errorHandler;
+  final UserProperty userProperty;
+  final LogHandler _logHandler;
   final int toolsMessageVersion;
 
   /// Tells the client if they need to show a message to the
@@ -417,6 +415,13 @@ class AnalyticsImpl implements Analytics {
   /// Internal value for the client id which will be lazily loaded.
   String? _clientId;
 
+  /// Internal collection of [Event]s that have been sent
+  /// for errors encountered within package:unified_analytics.
+  ///
+  /// Stores each of the events that have been sent to GA4 so that the
+  /// same error doesn't get sent twice.
+  final Set<Event> _sentErrorEvents = {};
+
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -441,7 +446,35 @@ class AnalyticsImpl implements Analytics {
           homeDirectory.path,
           kDartToolDirectoryName,
           kClientIdFileName,
-        )) {
+        )),
+        userProperty = UserProperty(
+          sessionFile: fs.file(p.join(
+            homeDirectory.path,
+            kDartToolDirectoryName,
+            kSessionFileName,
+          )),
+          flutterChannel: flutterChannel,
+          host: platform.label,
+          flutterVersion: flutterVersion,
+          dartVersion: dartVersion,
+          tool: tool.label,
+          // We truncate this to a maximum of 36 characters since this can
+          // a very long string for some operating systems
+          hostOsVersion:
+              truncateStringToLength(io.Platform.operatingSystemVersion, 36),
+          locale: io.Platform.localeName,
+          clientIde: clientIde,
+          enabledFeatures: enabledFeatures,
+        ),
+        _logHandler = LogHandler(
+          fs: fs,
+          homeDirectory: homeDirectory,
+          logFile: fs.file(p.join(
+            homeDirectory.path,
+            kDartToolDirectoryName,
+            kLogFileName,
+          )),
+        ) {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -473,48 +506,6 @@ class AnalyticsImpl implements Analytics {
       // will be blocked
       _firstRun = true;
     }
-
-    // Initialization for the error handling class that will prevent duplicate
-    // [Event.analyticsException] events from being sent to GA4
-    _errorHandler = ErrorHandler(sendFunction: send);
-
-    // Initialize the user property class that will be attached to
-    // each event that is sent to Google Analytics -- it will be responsible
-    // for getting the session id or rolling the session if the duration
-    // exceeds [kSessionDurationMinutes]
-    userProperty = UserProperty(
-      sessionFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kSessionFileName,
-      )),
-      flutterChannel: flutterChannel,
-      host: platform.label,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      tool: tool.label,
-      // We truncate this to a maximum of 36 characters since this can
-      // a very long string for some operating systems
-      hostOsVersion:
-          truncateStringToLength(io.Platform.operatingSystemVersion, 36),
-      locale: io.Platform.localeName,
-      clientIde: clientIde,
-      enabledFeatures: enabledFeatures,
-      errorHandler: _errorHandler,
-      telemetryEnabled: telemetryEnabled,
-    );
-
-    // Initialize the log handler to persist events that are being sent
-    _logHandler = LogHandler(
-      fs: fs,
-      homeDirectory: homeDirectory,
-      errorHandler: _errorHandler,
-      logFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kLogFileName,
-      )),
-    );
   }
 
   @override
@@ -594,6 +585,9 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Future<void> close({int delayDuration = kDelayDuration}) async {
+    // Collect any errors encountered and send
+    _sendPendingErrorEvents();
+
     await Future.wait(_futures).timeout(
       Duration(milliseconds: delayDuration),
       onTimeout: () => [],
@@ -771,6 +765,30 @@ class AnalyticsImpl implements Analytics {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
   }
+
+  /// Send any pending error events, useful for tests to avoid closing
+  /// the connection.
+  ///
+  /// In the main implementation, [AnalyticsImpl], error events are only
+  /// sent on exit when [close] is invoked. This helper method can instead
+  /// have those error events sent immediately to help with tests that check
+  /// [FakeAnalytics.sentEvents].
+  void _sendPendingErrorEvents() {
+    // Collect any errors encountered and send
+    final errorEvents = {...userProperty.errorSet, ..._logHandler.errorSet};
+    errorEvents
+        .where((event) =>
+            event.eventName == DashEvent.analyticsException &&
+            !_sentErrorEvents.contains(event))
+        .forEach(send);
+
+    // Ensure the same event doesn't get sent again
+    _sentErrorEvents.addAll(errorEvents);
+
+    // Clear error sets
+    userProperty.errorSet.clear();
+    _logHandler.errorSet.clear();
+  }
 }
 
 /// This fake instance of [Analytics] is intended to be used by clients of
@@ -833,6 +851,10 @@ class FakeAnalytics extends AnalyticsImpl {
     // for internal methods in the `Analytics` instance
     sentEvents.add(event);
   }
+
+  /// Public instance method to invoke private method that sends any
+  /// pending error events.
+  void sendPendingErrorEvents() => _sendPendingErrorEvents();
 }
 
 /// An implementation that will never send events.

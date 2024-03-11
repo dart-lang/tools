@@ -145,6 +145,8 @@ void main() {
       analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
 
+      analytics.sendPendingErrorEvents();
+
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
       final lastEvent = analytics.sentEvents.last;
@@ -184,6 +186,8 @@ void main() {
     // add additional work on startup
     analytics.send(testEvent);
 
+    analytics.close();
+
     final errorEvent = analytics.sentEvents
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
@@ -208,6 +212,8 @@ void main() {
       expect(sessionFile.existsSync(), false);
       analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
+
+      analytics.close();
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
