@@ -85,7 +85,6 @@ void main() {
             'one record is in there and it is malformed');
 
     analytics.sendPendingErrorEvents();
-
     expect(
         analytics.sentEvents,
         contains(
@@ -130,7 +129,7 @@ void main() {
         countOfEventsToSend + countOfMalformedRecords);
     final logFileStats = analytics.logFileStats();
 
-    await analytics.close();
+    analytics.sendPendingErrorEvents();
     expect(logFile.readAsLinesSync().length,
         countOfEventsToSend + countOfMalformedRecords + 1,
         reason:

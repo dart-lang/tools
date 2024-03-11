@@ -191,11 +191,7 @@ class SurveyButton {
 class SurveyHandler {
   final File dismissedSurveyFile;
 
-  SurveyHandler({
-    required Directory homeDirectory,
-    required FileSystem fs,
-    required this.dismissedSurveyFile,
-  });
+  SurveyHandler({required this.dismissedSurveyFile});
 
   /// Invoking this method will persist the survey's id in
   /// the local file with either a snooze or permanently dismissed
@@ -338,8 +334,6 @@ class FakeSurveyHandler extends SurveyHandler {
   /// will have their dates checked to ensure they are valid; it is
   /// recommended to use `package:clock` to set a fixed time for testing.
   FakeSurveyHandler.fromList({
-    required super.homeDirectory,
-    required super.fs,
     required super.dismissedSurveyFile,
     required List<Survey> initializedSurveys,
   }) {
@@ -357,8 +351,6 @@ class FakeSurveyHandler extends SurveyHandler {
   /// Use this class in tests if you can provide raw
   /// json strings to simulate a response from a remote server.
   FakeSurveyHandler.fromString({
-    required super.homeDirectory,
-    required super.fs,
     required super.dismissedSurveyFile,
     required String content,
   }) {

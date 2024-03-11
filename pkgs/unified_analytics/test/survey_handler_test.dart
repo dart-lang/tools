@@ -328,8 +328,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
@@ -383,8 +381,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
@@ -427,8 +423,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
@@ -474,10 +468,7 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              homeDirectory: homeDirectory,
-              fs: fs,
-              dismissedSurveyFile: dismissedSurveyFile,
-              content: '''
+              dismissedSurveyFile: dismissedSurveyFile, content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -579,10 +570,7 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              homeDirectory: homeDirectory,
-              fs: fs,
-              dismissedSurveyFile: dismissedSurveyFile,
-              content: '''
+              dismissedSurveyFile: dismissedSurveyFile, content: '''
 [
     {
         "uniqueId": "uniqueId123",
@@ -646,10 +634,7 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromString(
-              homeDirectory: homeDirectory,
-              fs: fs,
-              dismissedSurveyFile: dismissedSurveyFile,
-              content: '''
+              dismissedSurveyFile: dismissedSurveyFile, content: '''
 [
     {
         "uniqueId": "12345",
@@ -732,8 +717,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
@@ -810,8 +793,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[survey],
           ),
@@ -857,8 +838,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[survey],
           ),
@@ -906,8 +885,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -937,8 +914,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -960,8 +935,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1008,8 +981,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1038,8 +1009,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1088,8 +1057,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1122,8 +1089,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1172,8 +1137,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1203,8 +1166,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[surveyToLoad],
           ),
@@ -1229,8 +1190,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(
@@ -1278,8 +1237,6 @@ void main() {
           fs: fs,
           platform: DevicePlatform.macos,
           surveyHandler: FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: dismissedSurveyFile,
             initializedSurveys: <Survey>[
               Survey(

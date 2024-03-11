@@ -97,8 +97,6 @@ abstract class Analytics {
       fs: fs,
       gaClient: gaClient,
       surveyHandler: SurveyHandler(
-        homeDirectory: homeDirectory,
-        fs: fs,
         dismissedSurveyFile: fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
@@ -183,8 +181,6 @@ abstract class Analytics {
       fs: fs,
       gaClient: gaClient,
       surveyHandler: SurveyHandler(
-        homeDirectory: homeDirectory,
-        fs: fs,
         dismissedSurveyFile: fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
@@ -236,8 +232,6 @@ abstract class Analytics {
       fs: fs,
       surveyHandler: surveyHandler ??
           FakeSurveyHandler.fromList(
-            homeDirectory: homeDirectory,
-            fs: fs,
             dismissedSurveyFile: fs.file(p.join(
               homeDirectory.path,
               kDartToolDirectoryName,

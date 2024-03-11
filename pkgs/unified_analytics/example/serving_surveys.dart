@@ -58,8 +58,6 @@ void main() async {
         fs: fs,
         platform: DevicePlatform.macos,
         surveyHandler: FakeSurveyHandler.fromList(
-          homeDirectory: home,
-          fs: fs,
           dismissedSurveyFile: fs.file(p.join(
             home.path,
             kDartToolDirectoryName,

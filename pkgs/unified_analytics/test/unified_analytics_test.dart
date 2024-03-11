@@ -186,8 +186,7 @@ void main() {
     // add additional work on startup
     analytics.send(testEvent);
 
-    analytics.close();
-
+    analytics.sendPendingErrorEvents();
     final errorEvent = analytics.sentEvents
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
@@ -213,7 +212,7 @@ void main() {
       analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
 
-      analytics.close();
+      analytics.sendPendingErrorEvents();
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing

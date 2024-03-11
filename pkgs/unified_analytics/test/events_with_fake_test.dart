@@ -83,8 +83,6 @@ void main() {
         fs: fs,
         toolsMessageVersion: toolsMessageVersion,
         surveyHandler: FakeSurveyHandler.fromList(
-          homeDirectory: homeDirectory,
-          fs: fs,
           dismissedSurveyFile: dismissedSurveyFile,
           initializedSurveys: [testSurvey],
         ),
