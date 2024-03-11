@@ -396,7 +396,7 @@ class AnalyticsImpl implements Analytics {
   /// user; this will return true if it is the first time the
   /// package is being used for a developer or if the consent
   /// message has been updated by the package.
-  late bool _showMessage;
+  bool _showMessage = false;
 
   /// When set to `true`, various assert statements will be enabled
   /// to ensure usage of this class is within GA4 limitations.

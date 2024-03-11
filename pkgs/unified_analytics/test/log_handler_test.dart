@@ -209,6 +209,7 @@ void main() {
     for (var i = 0; i < countOfEventsToSend; i++) {
       analytics.send(testEvent);
     }
+    analytics.sendPendingErrorEvents();
     final secondLogFileStats = analytics.logFileStats();
 
     expect(secondLogFileStats, isNotNull);
