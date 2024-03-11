@@ -24,9 +24,6 @@ import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
 
-/// For passing the [Analytics.send] method to classes created by [Analytics].
-typedef SendFunction = void Function(Event event);
-
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
   /// of the [Analytics] abstract class using the [LocalFileSystem].
@@ -88,15 +85,6 @@ abstract class Analytics {
       homeDirectory: homeDirectory,
       toolsMessageVersion: kToolsMessageVersion,
     )..run();
-    final configHandler = ConfigHandler(
-      fs: fs,
-      homeDirectory: homeDirectory,
-      configFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kConfigFileName,
-      )),
-    );
 
     return AnalyticsImpl(
       tool: tool,
@@ -120,7 +108,6 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      configHandler: configHandler,
       initializer: initializer,
     );
   }
@@ -184,15 +171,6 @@ abstract class Analytics {
       homeDirectory: homeDirectory,
       toolsMessageVersion: kToolsMessageVersion,
     )..run();
-    final configHandler = ConfigHandler(
-      fs: fs,
-      homeDirectory: homeDirectory,
-      configFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kConfigFileName,
-      )),
-    );
 
     return AnalyticsImpl(
       tool: tool,
@@ -216,7 +194,6 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      configHandler: configHandler,
       initializer: initializer,
     );
   }
@@ -437,11 +414,9 @@ class AnalyticsImpl implements Analytics {
     required SurveyHandler surveyHandler,
     required bool enableAsserts,
     required Initializer initializer,
-    required ConfigHandler configHandler,
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
         _enableAsserts = enableAsserts,
-        _configHandler = configHandler,
         _clientIdFile = fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
@@ -465,6 +440,15 @@ class AnalyticsImpl implements Analytics {
           locale: io.Platform.localeName,
           clientIde: clientIde,
           enabledFeatures: enabledFeatures,
+        ),
+        _configHandler = ConfigHandler(
+          fs: fs,
+          homeDirectory: homeDirectory,
+          configFile: fs.file(p.join(
+            homeDirectory.path,
+            kDartToolDirectoryName,
+            kConfigFileName,
+          )),
         ),
         _logHandler = LogHandler(
           fs: fs,
@@ -819,17 +803,7 @@ class FakeAnalytics extends AnalyticsImpl {
     super.toolsMessageVersion = kToolsMessageVersion,
     super.gaClient = const FakeGAClient(),
     super.enableAsserts = true,
-  }) : super(
-          configHandler: ConfigHandler(
-            fs: fs,
-            homeDirectory: homeDirectory,
-            configFile: fs.file(p.join(
-              homeDirectory.path,
-              kDartToolDirectoryName,
-              kConfigFileName,
-            )),
-          ),
-        );
+  });
 
   /// Getter to reference the private [UserProperty].
   UserProperty get userProperty => _userProperty;
