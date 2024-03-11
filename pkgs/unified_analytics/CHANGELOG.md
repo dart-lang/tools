@@ -1,6 +1,9 @@
 ## 5.8.6-wip
 
 - Refactored session handler class to use the last modified timestamp as the last ping value
+- Consolidate `Session` functionality into `UserProperty`
+- Remove `ErrorHandler` class and move its functionality/logic into `AnalyticsImpl`
+- Get rid of `late` variables throughout implementation class, `AnalyticsImpl`
 
 ## 5.8.5
 

@@ -24,6 +24,9 @@ class UserProperty {
   final String? enabledFeatures;
 
   final File sessionFile;
+
+  /// Contains instances of [Event.analyticsException] that were encountered
+  /// during a workflow and will be sent to GA4 for collection.
   final Set<Event> errorSet = {};
 
   int? _sessionId;
