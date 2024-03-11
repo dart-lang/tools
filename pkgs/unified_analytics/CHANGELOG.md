@@ -1,6 +1,7 @@
 ## 5.8.6-wip
 
 - Refactored session handler class to use the last modified timestamp as the last ping value
+- Bumping intl package to 0.19.0 to fix version solving issue with flutter_tools
 
 ## 5.8.5
 
