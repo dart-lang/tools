@@ -829,6 +829,9 @@ class FakeAnalytics extends AnalyticsImpl {
 
   /// Public instance method to invoke private method that sends any
   /// pending error events.
+  ///
+  /// If this is never invoked, any pending error events will be sent
+  /// when invoking the [close] method.
   void sendPendingErrorEvents() => _sendPendingErrorEvents();
 }
 
