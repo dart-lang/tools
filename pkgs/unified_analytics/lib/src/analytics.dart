@@ -384,13 +384,13 @@ abstract class Analytics {
 class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
+  final int toolsMessageVersion;
   final ConfigHandler _configHandler;
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
   final File _clientIdFile;
-  final UserProperty userProperty;
+  final UserProperty _userProperty;
   final LogHandler _logHandler;
-  final int toolsMessageVersion;
 
   /// Tells the client if they need to show a message to the
   /// user; this will return true if it is the first time the
@@ -447,7 +447,7 @@ class AnalyticsImpl implements Analytics {
           kDartToolDirectoryName,
           kClientIdFileName,
         )),
-        userProperty = UserProperty(
+        _userProperty = UserProperty(
           sessionFile: fs.file(p.join(
             homeDirectory.path,
             kDartToolDirectoryName,
@@ -559,7 +559,7 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
-      userProperty.preparePayload();
+      _userProperty.preparePayload();
 
   @override
   void clientShowedMessage() {
@@ -672,7 +672,7 @@ class AnalyticsImpl implements Analytics {
       clientId: clientId,
       eventName: event.eventName,
       eventData: event.eventData,
-      userProperty: userProperty,
+      userProperty: _userProperty,
     );
 
     if (_enableAsserts) checkBody(body);
@@ -700,7 +700,7 @@ class AnalyticsImpl implements Analytics {
       // recreate the log file since it will only receives events
       // to persist from events sent
       Initializer.createClientIdFile(clientIdFile: _clientIdFile);
-      Initializer.createSessionFile(sessionFile: userProperty.sessionFile);
+      Initializer.createSessionFile(sessionFile: _userProperty.sessionFile);
 
       // Reread the client ID string so an empty string is not being
       // sent to GA4 since the persisted files are cleared when a user
@@ -713,7 +713,7 @@ class AnalyticsImpl implements Analytics {
         clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
-        userProperty: userProperty,
+        userProperty: _userProperty,
       );
 
       _logHandler.save(data: body);
@@ -724,11 +724,11 @@ class AnalyticsImpl implements Analytics {
         clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
-        userProperty: userProperty,
+        userProperty: _userProperty,
       );
 
       // For opted out users, data in the persisted files is cleared
-      userProperty.sessionFile.writeAsStringSync('');
+      _userProperty.sessionFile.writeAsStringSync('');
       _logHandler.logFile.writeAsStringSync('');
       _clientIdFile.writeAsStringSync('');
 
@@ -775,7 +775,7 @@ class AnalyticsImpl implements Analytics {
   /// [FakeAnalytics.sentEvents].
   void _sendPendingErrorEvents() {
     // Collect any errors encountered and send
-    final errorEvents = {...userProperty.errorSet, ..._logHandler.errorSet};
+    final errorEvents = {..._userProperty.errorSet, ..._logHandler.errorSet};
     errorEvents
         .where((event) =>
             event.eventName == DashEvent.analyticsException &&
@@ -786,7 +786,7 @@ class AnalyticsImpl implements Analytics {
     _sentErrorEvents.addAll(errorEvents);
 
     // Clear error sets
-    userProperty.errorSet.clear();
+    _userProperty.errorSet.clear();
     _logHandler.errorSet.clear();
   }
 }
@@ -831,6 +831,9 @@ class FakeAnalytics extends AnalyticsImpl {
           ),
         );
 
+  /// Getter to reference the private [UserProperty].
+  UserProperty get userProperty => _userProperty;
+
   @override
   void send(Event event) {
     if (!okToSend) return;
@@ -840,7 +843,7 @@ class FakeAnalytics extends AnalyticsImpl {
       clientId: clientId,
       eventName: event.eventName,
       eventData: event.eventData,
-      userProperty: userProperty,
+      userProperty: _userProperty,
     );
 
     if (_enableAsserts) checkBody(body);
