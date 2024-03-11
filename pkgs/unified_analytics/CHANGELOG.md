@@ -6,6 +6,7 @@
 - Get rid of `late` variables throughout implementation class, `AnalyticsImpl`
 - Any error events (`Event.analyticsException`) encountered within package will be sent when invoking `Analytics.close`
 - Exposing new method for `FakeAnalytics.sendPendingErrorEvents` to send error events on command
+- Bumping intl package to 0.19.0 to fix version solving issue with flutter_tools
 
 ## 5.8.5
 
