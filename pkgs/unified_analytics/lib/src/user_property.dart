@@ -77,16 +77,6 @@ class UserProperty {
     return _sessionId;
   }
 
-  /// Preps the [UserProperty] class with the data found in the session file.
-  ///
-  /// We must check if telemetry is enabled to refresh the session data
-  /// because the refresh method will write to the session file and for
-  /// users that have opted out, we have to leave the session file empty
-  /// per the privacy document
-  void initialize(bool telemetryEnabled) {
-    if (telemetryEnabled) _refreshSessionData();
-  }
-
   /// This method will take the data in this class and convert it into
   /// a Map that is suitable for the POST request schema.
   ///
