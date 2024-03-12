@@ -79,12 +79,7 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
-    final initializer = Initializer(
-      fs: fs,
-      tool: tool.label,
-      homeDirectory: homeDirectory,
-      toolsMessageVersion: kToolsMessageVersion,
-    )..run();
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
 
     return AnalyticsImpl(
       tool: tool,
@@ -106,7 +101,7 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      initializer: initializer,
+      firstRun: firstRun,
     );
   }
 
@@ -163,12 +158,7 @@ abstract class Analytics {
       apiSecret: kTestApiSecret,
     );
 
-    final initializer = Initializer(
-      fs: fs,
-      tool: tool.label,
-      homeDirectory: homeDirectory,
-      toolsMessageVersion: kToolsMessageVersion,
-    )..run();
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
 
     return AnalyticsImpl(
       tool: tool,
@@ -190,7 +180,7 @@ abstract class Analytics {
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      initializer: initializer,
+      firstRun: firstRun,
     );
   }
 
@@ -214,12 +204,7 @@ abstract class Analytics {
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
   }) {
-    final initializer = Initializer(
-      fs: fs,
-      tool: tool.label,
-      homeDirectory: homeDirectory,
-      toolsMessageVersion: toolsMessageVersion,
-    )..run();
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
 
     return FakeAnalytics(
       tool: tool,
@@ -242,7 +227,7 @@ abstract class Analytics {
       gaClient: gaClient ?? const FakeGAClient(),
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
-      initializer: initializer,
+      firstRun: firstRun,
     );
   }
 
@@ -407,7 +392,7 @@ class AnalyticsImpl implements Analytics {
     required GAClient gaClient,
     required SurveyHandler surveyHandler,
     required bool enableAsserts,
-    required Initializer initializer,
+    required bool firstRun,
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
         _enableAsserts = enableAsserts,
@@ -458,7 +443,7 @@ class AnalyticsImpl implements Analytics {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
-    if (initializer.firstRun) {
+    if (firstRun) {
       _showMessage = true;
       _firstRun = true;
     } else {
@@ -487,7 +472,7 @@ class AnalyticsImpl implements Analytics {
   @override
   String get clientId {
     if (!_clientIdFile.existsSync()) {
-      Initializer.createClientIdFile(clientIdFile: _clientIdFile);
+      createClientIdFile(clientIdFile: _clientIdFile);
     }
     _clientId ??= _clientIdFile.readAsStringSync();
 
@@ -675,8 +660,8 @@ class AnalyticsImpl implements Analytics {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
       // to persist from events sent
-      Initializer.createClientIdFile(clientIdFile: _clientIdFile);
-      Initializer.createSessionFile(sessionFile: _userProperty.sessionFile);
+      createClientIdFile(clientIdFile: _clientIdFile);
+      createSessionFile(sessionFile: _userProperty.sessionFile);
 
       // Reread the client ID string so an empty string is not being
       // sent to GA4 since the persisted files are cleared when a user
@@ -787,7 +772,7 @@ class FakeAnalytics extends AnalyticsImpl {
     required super.platform,
     required super.fs,
     required super.surveyHandler,
-    required super.initializer,
+    required super.firstRun,
     super.flutterChannel,
     super.flutterVersion,
     super.clientIde,

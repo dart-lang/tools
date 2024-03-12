@@ -120,7 +120,7 @@ class UserProperty {
       parseContents();
     } on FormatException catch (err) {
       final now = clock.now();
-      Initializer.createSessionFile(
+      createSessionFile(
         sessionFile: sessionFile,
         sessionIdOverride: now,
       );
@@ -135,7 +135,7 @@ class UserProperty {
       _sessionId = now.millisecondsSinceEpoch;
     } on FileSystemException catch (err) {
       final now = clock.now();
-      Initializer.createSessionFile(
+      createSessionFile(
         sessionFile: sessionFile,
         sessionIdOverride: now,
       );

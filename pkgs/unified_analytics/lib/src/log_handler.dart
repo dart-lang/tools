@@ -152,7 +152,7 @@ class LogFileStats {
 }
 
 /// This class is responsible for writing to a log
-/// file that has been initialized by the [Initializer].
+/// file that has been initialized by the [createLogFile].
 ///
 /// It will be treated as an append only log and will be limited
 /// to have has many data records as specified by [kLogFileLength].

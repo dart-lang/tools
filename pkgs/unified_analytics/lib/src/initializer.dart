@@ -9,135 +9,120 @@ import 'package:path/path.dart' as p;
 import 'constants.dart';
 import 'utils.dart';
 
-class Initializer {
-  final FileSystem fs;
-  final String tool;
-  final Directory homeDirectory;
-  final int toolsMessageVersion;
-  bool firstRun = false;
+/// Creates the text file that will contain the client ID
+/// which will be used across all related tools for analytics
+/// reporting in GA.
+void createClientIdFile({required File clientIdFile}) {
+  clientIdFile.createSync(recursive: true);
+  clientIdFile.writeAsStringSync(Uuid().generateV4());
+}
 
-  /// Responsibe for the initialization of the files
-  /// necessary for analytics reporting.
-  ///
-  /// Creates the configuration file that allows the user to
-  /// mannually opt out of reporting along with the file containing
-  /// the client ID to be used across all relevant tooling.
-  ///
-  /// Updating of the config file with new versions will
-  /// not be handled by the [Initializer].
-  Initializer({
-    required this.fs,
-    required this.tool,
-    required this.homeDirectory,
-    required this.toolsMessageVersion,
-  });
+/// Creates the configuration file with the default message
+/// in the user's home directory.
+void createConfigFile({
+  required File configFile,
+  required Directory homeDirectory,
+  required FileSystem fs,
+}) {
+  configFile.createSync(recursive: true);
 
-  /// Creates the text file that will contain the client ID
-  /// which will be used across all related tools for analytics
-  /// reporting in GA.
-  static void createClientIdFile({required File clientIdFile}) {
-    clientIdFile.createSync(recursive: true);
-    clientIdFile.writeAsStringSync(Uuid().generateV4());
+  // If the user was previously opted out, then we will
+  // replace the line that assumes automatic opt in with
+  // an opt out from the start
+  if (legacyOptOut(fs: fs, home: homeDirectory)) {
+    configFile.writeAsStringSync(
+        kConfigString.replaceAll('reporting=1', 'reporting=0'));
+  } else {
+    configFile.writeAsStringSync(kConfigString);
+  }
+}
+
+/// Creates that file that will persist dismissed survey ids.
+void createDismissedSurveyFile({required File dismissedSurveyFile}) {
+  dismissedSurveyFile.createSync(recursive: true);
+  dismissedSurveyFile.writeAsStringSync('{}');
+}
+
+/// Creates that log file that will store the record formatted
+/// events locally on the user's machine.
+void createLogFile({required File logFile}) {
+  logFile.createSync(recursive: true);
+}
+
+/// Creates the session file which will contain
+/// the current session id which is the current timestamp.
+///
+/// [sessionIdOverride] can be provided as an override, otherwise it
+/// will use the current timestamp from [Clock.now].
+void createSessionFile({
+  required File sessionFile,
+  DateTime? sessionIdOverride,
+}) {
+  final now = sessionIdOverride ?? clock.now();
+  sessionFile.createSync(recursive: true);
+  sessionFile
+      .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
+  // TODO: eliasyishak, remove the below once https://github.com/google/file.dart/issues/236 is fixed
+  sessionFile.setLastModifiedSync(clock.now());
+}
+
+/// Performs all of the initialization checks for the required files.
+///
+/// Returns `true` if the config file was created indicating it is the first
+/// time this package was run on a user's machine.
+///
+/// Checks for the following:
+/// - Config file
+/// - Client ID file
+/// - Session JSON file
+/// - Log file
+/// - Dismissed survey JSON file
+bool runInitialization({
+  required Directory homeDirectory,
+  required FileSystem fs,
+}) {
+  var firstRun = false;
+
+  // When the config file doesn't exist, initialize it with the default tools
+  // and the current date
+  final configFile = fs.file(
+      p.join(homeDirectory.path, kDartToolDirectoryName, kConfigFileName));
+  if (!configFile.existsSync()) {
+    firstRun = true;
+    createConfigFile(
+      configFile: configFile,
+      fs: fs,
+      homeDirectory: homeDirectory,
+    );
   }
 
-  /// Creates the configuration file with the default message
-  /// in the user's home directory.
-  static void createConfigFile({
-    required File configFile,
-    required Directory homeDirectory,
-    required FileSystem fs,
-  }) {
-    configFile.createSync(recursive: true);
-
-    // If the user was previously opted out, then we will
-    // replace the line that assumes automatic opt in with
-    // an opt out from the start
-    if (legacyOptOut(fs: fs, home: homeDirectory)) {
-      configFile.writeAsStringSync(
-          kConfigString.replaceAll('reporting=1', 'reporting=0'));
-    } else {
-      configFile.writeAsStringSync(kConfigString);
-    }
+  // Begin initialization checks for the client id
+  final clientFile = fs.file(
+      p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
+  if (!clientFile.existsSync()) {
+    createClientIdFile(clientIdFile: clientFile);
   }
 
-  /// Creates that file that will persist dismissed survey ids.
-  static void createDismissedSurveyFile({required File dismissedSurveyFile}) {
-    dismissedSurveyFile.createSync(recursive: true);
-    dismissedSurveyFile.writeAsStringSync('{}');
+  // Begin initialization checks for the session file
+  final sessionFile = fs.file(
+      p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
+  if (!sessionFile.existsSync()) {
+    createSessionFile(sessionFile: sessionFile);
   }
 
-  /// Creates that log file that will store the record formatted
-  /// events locally on the user's machine.
-  static void createLogFile({required File logFile}) {
-    logFile.createSync(recursive: true);
+  // Begin initialization checks for the log file to persist events locally
+  final logFile =
+      fs.file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
+  if (!logFile.existsSync()) {
+    createLogFile(logFile: logFile);
   }
 
-  /// Creates the session file which will contain
-  /// the current session id which is the current timestamp.
-  ///
-  /// [sessionIdOverride] can be provided as an override, otherwise it
-  /// will use the current timestamp from [Clock.now].
-  static void createSessionFile({
-    required File sessionFile,
-    DateTime? sessionIdOverride,
-  }) {
-    final now = sessionIdOverride ?? clock.now();
-    sessionFile.createSync(recursive: true);
-    sessionFile
-        .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
-    // TODO: eliasyishak, remove the below once https://github.com/google/file.dart/issues/236 is fixed
-    sessionFile.setLastModifiedSync(clock.now());
+  // Begin initialization checks for the dismissed survey file
+  final dismissedSurveyFile = fs.file(p.join(
+      homeDirectory.path, kDartToolDirectoryName, kDismissedSurveyFileName));
+  if (!dismissedSurveyFile.existsSync()) {
+    createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
   }
 
-  /// This will check that there is a client ID populated in
-  /// the user's home directory under the dart-tool directory.
-  /// If it doesn't exist, one will be created there.
-  ///
-  /// Passing [forceReset] as true will only reset the configuration
-  /// file, it won't recreate the client id, session, and log files
-  /// if they currently exist on disk.
-  void run({bool forceReset = false}) {
-    // Begin by checking for the config file
-    final configFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kConfigFileName));
-
-    // When the config file doesn't exist, initialize it with the default tools
-    // and the current date
-    if (!configFile.existsSync() || forceReset) {
-      firstRun = true;
-      createConfigFile(
-        configFile: configFile,
-        fs: fs,
-        homeDirectory: homeDirectory,
-      );
-    }
-
-    // Begin initialization checks for the client id
-    final clientFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
-    if (!clientFile.existsSync()) {
-      createClientIdFile(clientIdFile: clientFile);
-    }
-
-    // Begin initialization checks for the session file
-    final sessionFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kSessionFileName));
-    if (!sessionFile.existsSync()) {
-      createSessionFile(sessionFile: sessionFile);
-    }
-
-    // Begin initialization checks for the log file to persist events locally
-    final logFile = fs
-        .file(p.join(homeDirectory.path, kDartToolDirectoryName, kLogFileName));
-    if (!logFile.existsSync()) {
-      createLogFile(logFile: logFile);
-    }
-
-    // Begin initialization checks for the dismissed survey file
-    final dismissedSurveyFile = fs.file(p.join(
-        homeDirectory.path, kDartToolDirectoryName, kDismissedSurveyFileName));
-    if (!dismissedSurveyFile.existsSync()) {
-      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
-    }
-  }
+  return firstRun;
 }

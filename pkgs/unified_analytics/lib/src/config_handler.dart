@@ -175,7 +175,7 @@ class ConfigHandler {
   /// This will reset the configuration file and clear the
   /// [parsedTools] map and trigger parsing the config again.
   void resetConfig() {
-    Initializer.createConfigFile(
+    createConfigFile(
       configFile: fs.file(p.join(
         homeDirectory.path,
         kDartToolDirectoryName,

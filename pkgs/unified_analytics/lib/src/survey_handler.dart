@@ -279,12 +279,10 @@ class SurveyHandler {
       contents = jsonDecode(dismissedSurveyFile.readAsStringSync())
           as Map<String, dynamic>;
     } on FormatException {
-      Initializer.createDismissedSurveyFile(
-          dismissedSurveyFile: dismissedSurveyFile);
+      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
       contents = {};
     } on FileSystemException {
-      Initializer.createDismissedSurveyFile(
-          dismissedSurveyFile: dismissedSurveyFile);
+      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
       contents = {};
     }
 

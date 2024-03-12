@@ -10,7 +10,6 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
-import 'package:unified_analytics/src/initializer.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -86,12 +85,7 @@ void main() {
           dismissedSurveyFile: dismissedSurveyFile,
           initializedSurveys: [testSurvey],
         ),
-        initializer: Initializer(
-          fs: fs,
-          tool: DashTool.flutterTool.label,
-          homeDirectory: homeDirectory,
-          toolsMessageVersion: toolsMessageVersion,
-        ),
+        firstRun: false,
       );
     });
   });
