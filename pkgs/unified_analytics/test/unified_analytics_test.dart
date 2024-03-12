@@ -1045,6 +1045,14 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Null values for flutter parameters is reflected properly in log file',
       () {
+    // Because we are using the `MemoryFileSystem.test` constructor,
+    // we don't have a real clock in the filesystem, and because we
+    // are checking the last modified timestamp for the session file
+    // to determine if we need to update the session id, manually setting
+    // that timestamp will ensure we are not updating session id when it
+    // first gets created
+    sessionFile.setLastModifiedSync(DateTime.now());
+
     // Use a for loop two initialize the second analytics instance
     // twice to account for no events being sent on the first instance
     // run for a given tool

@@ -62,8 +62,6 @@ void createSessionFile({
   sessionFile.createSync(recursive: true);
   sessionFile
       .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
-  // TODO: eliasyishak, remove the below once https://github.com/google/file.dart/issues/236 is fixed
-  sessionFile.setLastModifiedSync(clock.now());
 }
 
 /// Performs all of the initialization checks for the required files.
