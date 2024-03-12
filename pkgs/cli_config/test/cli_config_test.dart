@@ -164,8 +164,8 @@ void main() {
         }
       },
     ));
-    final config = await Config.fromArgs(
-      args: [
+    final config = await Config.fromArguments(
+      arguments: [
         '--config',
         configFile.path,
         '-Dbuild.out_dir=path/in/cli_arguments/',
@@ -194,15 +194,24 @@ void main() {
         }
       },
     ));
-    final config = await Config.fromArgs(
-      args: [
+
+    final config = await Config.fromArguments(
+      arguments: [
         '--config',
         configFile.path,
       ],
     );
-
     final result = config.optionalPath('build.out_dir');
     expect(result!.path, resolvedPath.path);
+
+    final configSync = Config.fromArgumentsSync(
+      arguments: [
+        '--config',
+        configFile.path,
+      ],
+    );
+    final resultSync = configSync.optionalPath('build.out_dir');
+    expect(resultSync!.path, resolvedPath.path);
   });
 
   test('provide pre-parsed config', () {

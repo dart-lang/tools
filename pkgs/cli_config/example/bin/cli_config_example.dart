@@ -5,7 +5,7 @@
 import 'package:cli_config/cli_config.dart';
 
 Future<void> main(List<String> args) async {
-  final config = await Config.fromArgs(args: args);
+  final config = await Config.fromArguments(arguments: args);
   final myPath =
       config.optionalPath('my_path', resolveUri: true, mustExist: false);
   print(myPath?.toFilePath());
