@@ -52,16 +52,15 @@ void createLogFile({required File logFile}) {
 /// Creates the session file which will contain
 /// the current session id which is the current timestamp.
 ///
-/// [sessionIdOverride] can be provided as an override, otherwise it
-/// will use the current timestamp from [Clock.now].
-void createSessionFile({
-  required File sessionFile,
-  DateTime? sessionIdOverride,
-}) {
-  final now = sessionIdOverride ?? clock.now();
+/// It also returns the timestamp used for the session if it needs
+/// to be accessed.
+DateTime createSessionFile({required File sessionFile}) {
+  final now = clock.now();
   sessionFile.createSync(recursive: true);
   sessionFile
       .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
+
+  return now;
 }
 
 /// Performs all of the initialization checks for the required files.

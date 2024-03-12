@@ -119,11 +119,7 @@ class UserProperty {
       // being used as the session id and will get used to recreate the file
       parseContents();
     } on FormatException catch (err) {
-      final now = clock.now();
-      createSessionFile(
-        sessionFile: sessionFile,
-        sessionIdOverride: now,
-      );
+      final now = createSessionFile(sessionFile: sessionFile);
 
       errorSet.add(Event.analyticsException(
         workflow: 'UserProperty._refreshSessionData',
@@ -134,11 +130,7 @@ class UserProperty {
       // Fallback to setting the session id as the current time
       _sessionId = now.millisecondsSinceEpoch;
     } on FileSystemException catch (err) {
-      final now = clock.now();
-      createSessionFile(
-        sessionFile: sessionFile,
-        sessionIdOverride: now,
-      );
+      final now = createSessionFile(sessionFile: sessionFile);
 
       errorSet.add(Event.analyticsException(
         workflow: 'UserProperty._refreshSessionData',
