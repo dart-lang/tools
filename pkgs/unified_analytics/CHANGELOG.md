@@ -1,10 +1,9 @@
 ## 6.0.0-wip
 
-- Refactored session handler class to use the last modified timestamp as the last ping value
-- Consolidate `Session` functionality into `UserProperty`
-- Remove `ErrorHandler` class and move its functionality/logic into `AnalyticsImpl`
+- Refactored session handler class to use the last modified timestamp as the last ping value to prevent writing to file with each send
+- Consolidate `Session` functionality into `UserProperty` to prevent race condition crash where session logic crashed before initializing `UserProperty`
 - Get rid of `late` variables throughout implementation class, `AnalyticsImpl`
-- Any error events (`Event.analyticsException`) encountered within package will be sent when invoking `Analytics.close`
+- Any error events (`Event.analyticsException`) encountered within package will be sent when invoking `Analytics.close`; replacing `ErrorHandler` functionality
 - Exposing new method for `FakeAnalytics.sendPendingErrorEvents` to send error events on command
 - Bumping intl package to 0.19.0 to fix version solving issue with flutter_tools
 
