@@ -448,18 +448,12 @@ final class Event {
           if (maxRss != null) 'maxRss': maxRss,
         };
 
-  /// Returns an instance of [Event] from the data in [json].
-  Event.fromJson(Map<String, Object?> json)
-      : eventName = DashEvent.getDashEventByLabel(json['eventName'] as String),
-        eventData = json['eventData'] as Map<String, Object?>;
-
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
 
-  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
     required String label,
@@ -511,6 +505,7 @@ final class Event {
           if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
         };
 
+  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
@@ -712,6 +707,12 @@ final class Event {
           if (label != null) 'label': label,
         };
 
+  /// Returns an instance of [Event] from the data in [json].
+  Event._fromJsonMap(Map<String, Object?> jsonMap)
+      : eventName =
+            DashEvent.getDashEventByLabel(jsonMap['eventName'] as String),
+        eventData = jsonMap['eventData'] as Map<String, Object?>;
+
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
@@ -764,5 +765,35 @@ final class Event {
     }
 
     return true;
+  }
+
+  /// Returns a valid instance of [Event] if [json] follows the correct schema.
+  ///
+  /// Schema is below with the following notes:
+  /// - The `eventName` key must have a string value that exists in [DashEvent].
+  /// - The `eventData` key must have a nested object as its value.
+  /// ```json
+  /// {
+  ///   "eventName": "string-label",
+  ///   "eventData": {
+  ///     "myVar1": "value1",
+  ///     "myVar2": 123
+  ///   }
+  /// }
+  /// ```
+  static Event? fromJson(String json) {
+    try {
+      final jsonMap = jsonDecode(json) as Map<String, Object?>;
+      return Event._fromJsonMap(jsonMap);
+    } on FormatException {
+      return null;
+    } on Exception {
+      // One possible Exception thrown is if the "eventName" value
+      // is not a valid DashEvent label
+      return null;
+      // ignore: avoid_catching_errors
+    } on TypeError {
+      return null;
+    }
   }
 }
