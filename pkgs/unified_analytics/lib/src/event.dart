@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 import 'enums.dart';
-import 'utils.dart';
 
 final class Event {
   final DashEvent eventName;
@@ -449,6 +448,11 @@ final class Event {
           if (maxRss != null) 'maxRss': maxRss,
         };
 
+  /// Returns an instance of [Event] from the data in [json].
+  Event.fromJson(Map<String, Object?> json)
+      : eventName = DashEvent.getDashEventByLabel(json['eventName'] as String),
+        eventData = json['eventData'] as Map<String, Object?>;
+
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})
@@ -716,11 +720,49 @@ final class Event {
       other is Event &&
       other.runtimeType == runtimeType &&
       other.eventName == eventName &&
-      compareEventData(other.eventData, eventData);
+      _compareEventData(other.eventData, eventData);
 
-  @override
-  String toString() => jsonEncode({
+  /// Converts an instance of [Event] to JSON.
+  ///
+  /// Example for [Event.timing] converted to JSON below.
+  /// ```json
+  /// {
+  ///   "eventName": "timing",
+  ///   "eventData": {
+  ///     "workflow": "my-work-flow",
+  ///     "variableName": "my-variable",
+  ///     "elapsedMilliseconds": 123,
+  ///     "label": "my-label"
+  ///   }
+  /// }
+  /// ```
+  String toJson() => jsonEncode({
         'eventName': eventName.label,
         'eventData': eventData,
       });
+
+  @override
+  String toString() => toJson();
+
+  /// Utility function to take in two maps [a] and [b] and compares them
+  /// to ensure that they have the same keys and values.
+  ///
+  /// Used for the equality operator.
+  bool _compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
+    final keySetA = a.keys.toSet();
+    final keySetB = b.keys.toSet();
+
+    // Ensure that the keys are the same for each object
+    if (keySetA.intersection(keySetB).length != keySetA.length ||
+        keySetA.intersection(keySetB).length != keySetB.length) {
+      return false;
+    }
+
+    // Ensure that each of the key's values are the same
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+
+    return true;
+  }
 }
