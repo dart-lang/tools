@@ -454,6 +454,7 @@ final class Event {
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
 
+  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
     required String label,
@@ -505,7 +506,6 @@ final class Event {
           if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
         };
 
-  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
