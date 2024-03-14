@@ -144,7 +144,7 @@ void main() {
       expect(sessionFile.readAsStringSync(), 'contents');
       analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
-          '{"session_id": $timestamp, "last_ping": null}');
+          '{"session_id": $timestamp, "last_ping": $timestamp}');
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
@@ -201,7 +201,7 @@ void main() {
       expect(sessionFile.existsSync(), false);
       analytics.userProperty.preparePayload();
       expect(sessionFile.readAsStringSync(),
-          '{"session_id": $timestamp, "last_ping": null}');
+          '{"session_id": $timestamp, "last_ping": $timestamp}');
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
