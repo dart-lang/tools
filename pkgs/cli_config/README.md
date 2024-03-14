@@ -60,11 +60,11 @@ In the API they are made available lower-cased and with underscores, and
 ## Example usage
 
 This example creates a configuration which first looks for command-line defines
-in the `args` list then looks in `Platform.environment`, then looks in any local
-configuration file.
+in the `arguments` list then looks in `Platform.environment`, then looks in any
+local configuration file.
 
 ```dart
-final config = await Config.fromArgs(args: args);
+final config = await Config.fromArguments(arguments: arguments);
 final pathValue =
     config.optionalPath('my_path', resolveUri: true, mustExist: false);
 print(pathValue?.toFilePath());

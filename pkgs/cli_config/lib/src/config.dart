@@ -165,7 +165,7 @@ class Config {
 
   /// Constructs a config by parsing CLI arguments and loading the config file.
   ///
-  /// The [args] must be commandline arguments.
+  /// The [arguments] must be commandline arguments.
   ///
   /// If provided, [environment] must be a map containing environment variables.
   /// If not provided, [environment] defaults to [Platform.environment].
@@ -175,12 +175,12 @@ class Config {
   /// If not provided, [workingDirectory] defaults to [Directory.current].
   ///
   /// This async constructor is intended to be used directly in CLI files.
-  static Future<Config> fromArgs({
-    required List<String> args,
+  static Future<Config> fromArguments({
+    required List<String> arguments,
     Map<String, String>? environment,
     Uri? workingDirectory,
   }) async {
-    final results = CliParser().parse(args);
+    final results = CliParser().parse(arguments);
 
     // Load config file.
     final configFile = results['config'] as String?;
@@ -188,6 +188,43 @@ class Config {
     Uri? fileSourceUri;
     if (configFile != null) {
       fileContents = await File(configFile).readAsString();
+      fileSourceUri = Uri.file(configFile);
+    }
+
+    return Config.fromConfigFileContents(
+      commandLineDefines: results['define'] as List<String>,
+      workingDirectory: workingDirectory ?? Directory.current.uri,
+      environment: environment ?? Platform.environment,
+      fileContents: fileContents,
+      fileSourceUri: fileSourceUri,
+    );
+  }
+
+  /// Constructs a config by parsing CLI arguments and loading the config file.
+  ///
+  /// The [arguments] must be commandline arguments.
+  ///
+  /// If provided, [environment] must be a map containing environment variables.
+  /// If not provided, [environment] defaults to [Platform.environment].
+  ///
+  /// If provided, [workingDirectory] is used to resolves paths inside
+  /// [environment].
+  /// If not provided, [workingDirectory] defaults to [Directory.current].
+  ///
+  /// This synchronous constructor is intended to be used directly in CLI files.
+  static Config fromArgumentsSync({
+    required List<String> arguments,
+    Map<String, String>? environment,
+    Uri? workingDirectory,
+  }) {
+    final results = CliParser().parse(arguments);
+
+    // Load config file.
+    final configFile = results['config'] as String?;
+    String? fileContents;
+    Uri? fileSourceUri;
+    if (configFile != null) {
+      fileContents = File(configFile).readAsStringSync();
       fileSourceUri = Uri.file(configFile);
     }
 

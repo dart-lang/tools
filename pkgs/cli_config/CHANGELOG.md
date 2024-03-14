@@ -1,3 +1,8 @@
+## 0.2.0
+
+- **Breaking Change** Rename `Config.fromArgs` to `Config.fromArguments`.
+- Add `Config.fromArgumentsSync`.
+
 ## 0.1.2
 
 - Add usage docs to the readme.
