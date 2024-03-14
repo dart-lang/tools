@@ -84,9 +84,9 @@ class Initializer {
   }) {
     final now = sessionIdOverride ?? clock.now();
     sessionFile.createSync(recursive: true);
-    sessionFile.writeAsStringSync(
-        '{"session_id": ${now.millisecondsSinceEpoch}, '
-        '"last_ping": ${now.millisecondsSinceEpoch}}');
+    sessionFile
+        .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}, '
+            '"last_ping": ${now.millisecondsSinceEpoch}}');
   }
 
   /// This will check that there is a client ID populated in
