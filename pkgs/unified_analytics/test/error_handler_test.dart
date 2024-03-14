@@ -190,6 +190,34 @@ void main() {
       expect(sessionFile.readAsStringSync(), isNotEmpty);
     });
 
+    test('only sends one event for TypeError', () {
+      // Rewriting the session JSON file with valid JSON that does not contain
+      // the required keys will result in a TypeError
+      sessionFile.writeAsStringSync('{"wrong-key": 123}');
+      analytics.send(testEvent);
+
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(1),
+      );
+      expect(sessionFile.existsSync(), isTrue);
+      expect(sessionFile.readAsStringSync(), isNotEmpty);
+
+      // Write the wrong json string again
+      sessionFile.writeAsStringSync('{"not-correct-key": 123}');
+      analytics.send(testEvent);
+
+      expect(
+        analytics.sentEvents.where(
+            (element) => element.eventName == DashEvent.analyticsException),
+        hasLength(1),
+        reason: 'Only the first error event should exist',
+      );
+      expect(sessionFile.existsSync(), isTrue);
+      expect(sessionFile.readAsStringSync(), isNotEmpty);
+    });
+
     test('sends two unique errors', () {
       // Begin with the session file empty, it should recreate the file
       // and send an error event

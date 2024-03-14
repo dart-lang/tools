@@ -120,6 +120,21 @@ class Session {
 
       // Fallback to setting the session id as the current time
       _sessionId = now.millisecondsSinceEpoch;
+      // ignore: avoid_catching_errors
+    } on TypeError catch (err) {
+      final now = clock.now();
+      Initializer.createSessionFile(
+        sessionFile: sessionFile,
+        sessionIdOverride: now,
+      );
+
+      _errorHandler.log(Event.analyticsException(
+        workflow: 'Session._refreshSessionData',
+        error: err.runtimeType.toString(),
+      ));
+
+      // Fallback to setting the session id as the current time
+      _sessionId = now.millisecondsSinceEpoch;
     }
   }
 }
