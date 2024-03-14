@@ -84,6 +84,9 @@ class Initializer {
   }) {
     final now = sessionIdOverride ?? clock.now();
     sessionFile.createSync(recursive: true);
+
+    // `last_ping` has been deprecated, remains included for backward
+    // compatibility
     sessionFile
         .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}, '
             '"last_ping": ${now.millisecondsSinceEpoch}}');
