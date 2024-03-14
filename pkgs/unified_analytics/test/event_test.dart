@@ -556,7 +556,9 @@ void main() {
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
-      if (declaration.toString().contains('Event.')) constructorCount++;
+      // Count public constructors but omit private constructors
+      if (declaration.toString().contains('Event.') &&
+          !declaration.toString().contains('Event._')) constructorCount++;
     }
 
     // Change this integer below if your PR either adds or removes
