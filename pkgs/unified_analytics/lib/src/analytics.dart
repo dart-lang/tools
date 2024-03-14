@@ -640,7 +640,7 @@ class AnalyticsImpl implements Analytics {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
       // to persist from events sent
-      Initializer.createClientIdFile(clientFile: _clientIdFile);
+      Initializer.createClientIdFile(clientIdFile: _clientIdFile);
       Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
 
       // Reread the client ID string so an empty string is not being

@@ -35,9 +35,9 @@ class Initializer {
   /// Creates the text file that will contain the client ID
   /// which will be used across all related tools for analytics
   /// reporting in GA.
-  static void createClientIdFile({required File clientFile}) {
-    clientFile.createSync(recursive: true);
-    clientFile.writeAsStringSync(Uuid().generateV4());
+  static void createClientIdFile({required File clientIdFile}) {
+    clientIdFile.createSync(recursive: true);
+    clientIdFile.writeAsStringSync(Uuid().generateV4());
   }
 
   /// Creates the configuration file with the default message
@@ -120,7 +120,7 @@ class Initializer {
     final clientFile = fs.file(
         p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
     if (!clientFile.existsSync()) {
-      createClientIdFile(clientFile: clientFile);
+      createClientIdFile(clientIdFile: clientFile);
     }
 
     // Begin initialization checks for the session file
