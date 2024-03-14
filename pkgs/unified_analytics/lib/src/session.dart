@@ -120,7 +120,6 @@ class Session {
 
       // Fallback to setting the session id as the current time
       _sessionId = now.millisecondsSinceEpoch;
-      // ignore: avoid_catching_errors
     }
   }
 }
