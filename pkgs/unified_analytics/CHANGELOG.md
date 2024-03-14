@@ -1,3 +1,7 @@
+## 5.8.7
+
+- [Bug fix](https://github.com/dart-lang/tools/issues/252) to rewrite the `last_ping` key into the session json file
+
 ## 5.8.6
 
 - Refactored session handler class to use the last modified timestamp as the last ping value
