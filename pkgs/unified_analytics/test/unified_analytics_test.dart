@@ -780,6 +780,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
           start.millisecondsSinceEpoch);
 
       secondAnalytics.send(testEvent);
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id": ${start.millisecondsSinceEpoch}, "last_ping": ${start.millisecondsSinceEpoch}}');
     });
 
     // Add time to the start time that is less than the duration
@@ -817,6 +819,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
           end.millisecondsSinceEpoch,
           reason: 'The last modified value should have been updated');
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id": ${end.millisecondsSinceEpoch}, "last_ping": ${end.millisecondsSinceEpoch}}');
     });
   });
 

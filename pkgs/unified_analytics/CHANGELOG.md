@@ -1,3 +1,7 @@
+## 5.8.8
+
+- [Bug fix](https://github.com/dart-lang/tools/issues/252) rewrite the other call site for the session file
+
 ## 5.8.7
 
 - [Bug fix](https://github.com/dart-lang/tools/issues/252) to rewrite the `last_ping` key into the session json file

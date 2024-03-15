@@ -12,6 +12,7 @@ import 'constants.dart';
 import 'error_handler.dart';
 import 'event.dart';
 import 'initializer.dart';
+import 'utils.dart';
 
 class Session {
   final Directory homeDirectory;
@@ -49,7 +50,7 @@ class Session {
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
       // Update the session file with the latest session id
       _sessionId = now.millisecondsSinceEpoch;
-      sessionFile.writeAsStringSync('{"session_id": $_sessionId}');
+      writeSessionContents(sessionFile: sessionFile);
     } else {
       // Update the last modified timestamp with the current timestamp so that
       // we can use it for the next _lastPing calculation
