@@ -310,6 +310,16 @@ String truncateStringToLength(String str, int maxLength) {
   return str.substring(0, maxLength);
 }
 
+/// Writes the JSON string payload to the provided [sessionFile].
+///
+/// The `last_ping` key:value pair has been deprecated, it remains included
+/// for backward compatibility.
+void writeSessionContents({required File sessionFile}) {
+  final now = clock.now();
+  sessionFile.writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}, '
+      '"last_ping": ${now.millisecondsSinceEpoch}}');
+}
+
 /// A UUID generator.
 ///
 /// This will generate unique IDs in the format:

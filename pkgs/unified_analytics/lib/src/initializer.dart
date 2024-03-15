@@ -82,14 +82,8 @@ class Initializer {
     required File sessionFile,
     DateTime? sessionIdOverride,
   }) {
-    final now = sessionIdOverride ?? clock.now();
     sessionFile.createSync(recursive: true);
-
-    // `last_ping` has been deprecated, remains included for backward
-    // compatibility
-    sessionFile
-        .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}, '
-            '"last_ping": ${now.millisecondsSinceEpoch}}');
+    writeSessionContents(sessionFile: sessionFile);
   }
 
   /// This will check that there is a client ID populated in
