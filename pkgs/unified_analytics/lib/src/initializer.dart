@@ -57,8 +57,7 @@ void createLogFile({required File logFile}) {
 DateTime createSessionFile({required File sessionFile}) {
   final now = clock.now();
   sessionFile.createSync(recursive: true);
-  sessionFile
-      .writeAsStringSync('{"session_id": ${now.millisecondsSinceEpoch}}');
+  writeSessionContents(sessionFile: sessionFile);
 
   return now;
 }

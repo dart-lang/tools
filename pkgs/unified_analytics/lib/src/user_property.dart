@@ -67,7 +67,7 @@ class UserProperty {
     if (now.difference(lastPingDateTime).inMinutes > kSessionDurationMinutes) {
       // Update the session file with the latest session id
       _sessionId = now.millisecondsSinceEpoch;
-      sessionFile.writeAsStringSync('{"session_id": $_sessionId}');
+      writeSessionContents(sessionFile: sessionFile);
     } else {
       // Update the last modified timestamp with the current timestamp so that
       // we can use it for the next _lastPing calculation
