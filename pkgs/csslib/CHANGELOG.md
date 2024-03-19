@@ -1,6 +1,7 @@
 ## 1.0.1-wip
 
-- Require Dart 3.0
+- Update `ExpressionsProcessor.processFont` to handle null expressions.
+- Require Dart 3.0.
 
 ## 1.0.0
 

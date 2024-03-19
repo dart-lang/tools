@@ -260,6 +260,33 @@ void testUnits() {
   expect(prettyPrint(stylesheet), generated);
 }
 
+void testNoValues() {
+  var errors = <Message>[];
+  final input = r'''
+.foo {
+  color: ;
+}
+.bar {
+  font:;
+  color: blue;
+}
+''';
+
+  final generated = r'''
+.foo {
+  color: ;
+}
+.bar {
+  font: ;
+  color: #00f;
+}''';
+
+  var stylesheet = parseCss(input, errors: errors, opts: simpleOptions);
+
+  expect(errors.isEmpty, true, reason: errors.toString());
+  expect(prettyPrint(stylesheet), generated);
+}
+
 void testUnicode() {
   var errors = <Message>[];
   final input = r'''
@@ -1435,6 +1462,7 @@ void main() {
   test('Identifiers', testIdentifiers);
   test('Composites', testComposites);
   test('Units', testUnits);
+  test('No Values', testNoValues);
   test('Unicode', testUnicode);
   test('Newer CSS', testNewerCss);
   test('Media Queries', testMediaQueries);
