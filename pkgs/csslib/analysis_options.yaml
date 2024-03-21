@@ -6,7 +6,7 @@ analyzer:
     strict-inference: true
     strict-raw-types: true
   errors:
-    comment_references: ignore #too many false positives
+    comment_references: ignore # too many false positives
 
 linter:
   rules:

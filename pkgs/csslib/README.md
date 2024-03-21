@@ -11,7 +11,7 @@ Parsing CSS is easy!
 ```dart
 import 'package:csslib/parser.dart';
 
-main() {
+void main() {
   var stylesheet = parse(
       '.foo { color: red; left: 20px; top: 20px; width: 100px; height:200px }');
   print(stylesheet.toDebugString());
