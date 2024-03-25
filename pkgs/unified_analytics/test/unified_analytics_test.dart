@@ -143,14 +143,18 @@ void main() {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.readAsStringSync(), 'contents');
       analytics.userProperty.preparePayload();
-      expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id": $timestamp, "last_ping": $timestamp}');
+
+      analytics.sendPendingErrorEvents();
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
       final lastEvent = analytics.sentEvents.last;
       expect(lastEvent, isNotNull);
       expect(lastEvent.eventName, DashEvent.analyticsException);
-      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(
+          lastEvent.eventData['workflow']!, 'UserProperty._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FormatException');
     });
   });
@@ -177,11 +181,19 @@ void main() {
     ) as FakeAnalytics;
     analytics.clientShowedMessage();
 
+    // Invoking a send command should reset the session file to a good state
+    //
+    // Having it reformat the session file before any send event happens will just
+    // add additional work on startup
+    analytics.send(testEvent);
+
+    analytics.sendPendingErrorEvents();
     final errorEvent = analytics.sentEvents
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
     expect(errorEvent, isNotNull);
-    expect(errorEvent!.eventData['workflow'], 'Session._refreshSessionData');
+    expect(
+        errorEvent!.eventData['workflow'], 'UserProperty._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
     expect(errorEvent.eventData['description'],
         'message: Unexpected character\nsource: not a valid session id');
@@ -199,14 +211,18 @@ void main() {
       final timestamp = clock.now().millisecondsSinceEpoch.toString();
       expect(sessionFile.existsSync(), false);
       analytics.userProperty.preparePayload();
-      expect(sessionFile.readAsStringSync(), '{"session_id": $timestamp}');
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id": $timestamp, "last_ping": $timestamp}');
+
+      analytics.sendPendingErrorEvents();
 
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
       final lastEvent = analytics.sentEvents.last;
       expect(lastEvent, isNotNull);
       expect(lastEvent.eventName, DashEvent.analyticsException);
-      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(
+          lastEvent.eventData['workflow']!, 'UserProperty._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FileSystemException');
     });
   });
@@ -778,6 +794,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
           start.millisecondsSinceEpoch);
 
       secondAnalytics.send(testEvent);
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id": ${start.millisecondsSinceEpoch}, "last_ping": ${start.millisecondsSinceEpoch}}');
     });
 
     // Add time to the start time that is less than the duration
@@ -815,6 +833,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       expect(sessionFile.lastModifiedSync().millisecondsSinceEpoch,
           end.millisecondsSinceEpoch,
           reason: 'The last modified value should have been updated');
+      expect(sessionFile.readAsStringSync(),
+          '{"session_id": ${end.millisecondsSinceEpoch}, "last_ping": ${end.millisecondsSinceEpoch}}');
     });
   });
 
@@ -1031,6 +1051,14 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('Null values for flutter parameters is reflected properly in log file',
       () {
+    // Because we are using the `MemoryFileSystem.test` constructor,
+    // we don't have a real clock in the filesystem, and because we
+    // are checking the last modified timestamp for the session file
+    // to determine if we need to update the session id, manually setting
+    // that timestamp will ensure we are not updating session id when it
+    // first gets created
+    sessionFile.setLastModifiedSync(DateTime.now());
+
     // Use a for loop two initialize the second analytics instance
     // twice to account for no events being sent on the first instance
     // run for a given tool

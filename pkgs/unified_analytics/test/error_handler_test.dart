@@ -139,6 +139,7 @@ void main() {
       analytics.send(testEvent);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
 
+      analytics.sendPendingErrorEvents();
       expect(
           analytics.sentEvents.where(
               (element) => element.eventName == DashEvent.analyticsException),
@@ -167,6 +168,7 @@ void main() {
       expect(sessionFile.existsSync(), isFalse);
       analytics.send(testEvent);
 
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -198,6 +200,7 @@ void main() {
       analytics.send(testEvent);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
 
+      analytics.sendPendingErrorEvents();
       expect(
           analytics.sentEvents.where(
               (element) => element.eventName == DashEvent.analyticsException),
@@ -210,6 +213,7 @@ void main() {
 
       analytics.send(testEvent);
       expect(sessionFile.readAsStringSync(), isNotEmpty);
+      analytics.sendPendingErrorEvents();
       expect(
           analytics.sentEvents.where(
               (element) => element.eventName == DashEvent.analyticsException),
@@ -243,6 +247,7 @@ void main() {
       analytics.send(testEvent);
       expect(analytics.sentEvents, hasLength(1));
       expect(logFile.readAsLinesSync(), hasLength(3));
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -254,6 +259,7 @@ void main() {
       expect(logFileStats, isNotNull);
       expect(logFileStats!.recordCount, 1,
           reason: 'The error event is not counted');
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -278,6 +284,7 @@ void main() {
       analytics.send(testEvent);
 
       final logFileStats = analytics.logFileStats();
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -301,6 +308,7 @@ void main() {
       analytics.send(testEvent);
       expect(analytics.sentEvents, hasLength(1));
       expect(logFile.readAsLinesSync(), hasLength(3));
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -309,6 +317,7 @@ void main() {
 
       // This will cause the first error
       analytics.logFileStats();
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -325,6 +334,7 @@ void main() {
 
       // This will cause the second error
       analytics.logFileStats();
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),
@@ -333,6 +343,7 @@ void main() {
 
       // Attempting to cause the same error won't send another error event
       analytics.logFileStats();
+      analytics.sendPendingErrorEvents();
       expect(
         analytics.sentEvents.where(
             (element) => element.eventName == DashEvent.analyticsException),

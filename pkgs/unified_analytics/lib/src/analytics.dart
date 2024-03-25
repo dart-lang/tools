@@ -16,18 +16,13 @@ import 'asserts.dart';
 import 'config_handler.dart';
 import 'constants.dart';
 import 'enums.dart';
-import 'error_handler.dart';
 import 'event.dart';
 import 'ga_client.dart';
 import 'initializer.dart';
 import 'log_handler.dart';
-import 'session.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
-
-/// For passing the [Analytics.send] method to classes created by [Analytics].
-typedef SendFunction = void Function(Event event);
 
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
@@ -84,6 +79,8 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+
     return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
@@ -94,10 +91,17 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
+      surveyHandler: SurveyHandler(
+        dismissedSurveyFile: fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        )),
+      ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      firstRun: firstRun,
     );
   }
 
@@ -154,6 +158,8 @@ abstract class Analytics {
       apiSecret: kTestApiSecret,
     );
 
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+
     return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
@@ -164,10 +170,17 @@ abstract class Analytics {
       toolsMessageVersion: kToolsMessageVersion,
       fs: fs,
       gaClient: gaClient,
-      surveyHandler: SurveyHandler(homeDirectory: homeDirectory, fs: fs),
+      surveyHandler: SurveyHandler(
+        dismissedSurveyFile: fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kDismissedSurveyFileName,
+        )),
+      ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
+      firstRun: firstRun,
     );
   }
 
@@ -190,26 +203,33 @@ abstract class Analytics {
     GAClient? gaClient,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
-  }) =>
-      FakeAnalytics(
-        tool: tool,
-        homeDirectory: homeDirectory,
-        flutterChannel: flutterChannel,
-        toolsMessageVersion: toolsMessageVersion,
-        flutterVersion: flutterVersion,
-        dartVersion: dartVersion,
-        platform: platform,
-        fs: fs,
-        surveyHandler: surveyHandler ??
-            FakeSurveyHandler.fromList(
-              homeDirectory: homeDirectory,
-              fs: fs,
-              initializedSurveys: [],
-            ),
-        gaClient: gaClient ?? const FakeGAClient(),
-        clientIde: clientIde,
-        enabledFeatures: enabledFeatures,
-      );
+  }) {
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+
+    return FakeAnalytics(
+      tool: tool,
+      homeDirectory: homeDirectory,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      platform: platform,
+      fs: fs,
+      surveyHandler: surveyHandler ??
+          FakeSurveyHandler.fromList(
+            dismissedSurveyFile: fs.file(p.join(
+              homeDirectory.path,
+              kDartToolDirectoryName,
+              kDismissedSurveyFileName,
+            )),
+            initializedSurveys: [],
+          ),
+      gaClient: gaClient ?? const FakeGAClient(),
+      clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
+      firstRun: firstRun,
+    );
+  }
 
   /// The shared identifier for Flutter and Dart related tooling using
   /// package:unified_analytics.
@@ -320,22 +340,19 @@ abstract class Analytics {
 class AnalyticsImpl implements Analytics {
   final DashTool tool;
   final FileSystem fs;
-  late final ConfigHandler _configHandler;
+  final int toolsMessageVersion;
+  final ConfigHandler _configHandler;
   final GAClient _gaClient;
   final SurveyHandler _surveyHandler;
-  late String _clientId;
-  late final File _clientIdFile;
-  late final UserProperty userProperty;
-  late final LogHandler _logHandler;
-  late final Session _sessionHandler;
-  late final ErrorHandler _errorHandler;
-  final int toolsMessageVersion;
+  final File _clientIdFile;
+  final UserProperty _userProperty;
+  final LogHandler _logHandler;
 
   /// Tells the client if they need to show a message to the
   /// user; this will return true if it is the first time the
   /// package is being used for a developer or if the consent
   /// message has been updated by the package.
-  late bool _showMessage;
+  bool _showMessage = false;
 
   /// When set to `true`, various assert statements will be enabled
   /// to ensure usage of this class is within GA4 limitations.
@@ -351,6 +368,16 @@ class AnalyticsImpl implements Analytics {
   /// from the [GAClient].
   final _futures = <Future<Response>>[];
 
+  /// Internal value for the client id which will be lazily loaded.
+  String? _clientId;
+
+  /// Internal collection of [Event]s that have been sent
+  /// for errors encountered within package:unified_analytics.
+  ///
+  /// Stores each of the events that have been sent to GA4 so that the
+  /// same error doesn't get sent twice.
+  final Set<Event> _sentErrorEvents = {};
+
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
@@ -365,9 +392,50 @@ class AnalyticsImpl implements Analytics {
     required GAClient gaClient,
     required SurveyHandler surveyHandler,
     required bool enableAsserts,
+    required bool firstRun,
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
-        _enableAsserts = enableAsserts {
+        _enableAsserts = enableAsserts,
+        _clientIdFile = fs.file(p.join(
+          homeDirectory.path,
+          kDartToolDirectoryName,
+          kClientIdFileName,
+        )),
+        _userProperty = UserProperty(
+          sessionFile: fs.file(p.join(
+            homeDirectory.path,
+            kDartToolDirectoryName,
+            kSessionFileName,
+          )),
+          flutterChannel: flutterChannel,
+          host: platform.label,
+          flutterVersion: flutterVersion,
+          dartVersion: dartVersion,
+          tool: tool.label,
+          // We truncate this to a maximum of 36 characters since this can
+          // a very long string for some operating systems
+          hostOsVersion:
+              truncateStringToLength(io.Platform.operatingSystemVersion, 36),
+          locale: io.Platform.localeName,
+          clientIde: clientIde,
+          enabledFeatures: enabledFeatures,
+        ),
+        _configHandler = ConfigHandler(
+          fs: fs,
+          homeDirectory: homeDirectory,
+          configFile: fs.file(p.join(
+            homeDirectory.path,
+            kDartToolDirectoryName,
+            kConfigFileName,
+          )),
+        ),
+        _logHandler = LogHandler(
+          logFile: fs.file(p.join(
+            homeDirectory.path,
+            kDartToolDirectoryName,
+            kLogFileName,
+          )),
+        ) {
     // Initialize date formatting for `package:intl` within constructor
     // so clients using this package won't need to
     initializeDateFormatting();
@@ -375,27 +443,13 @@ class AnalyticsImpl implements Analytics {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
-    final initializer = Initializer(
-      fs: fs,
-      tool: tool.label,
-      homeDirectory: homeDirectory,
-      toolsMessageVersion: toolsMessageVersion,
-    );
-    initializer.run();
-    if (initializer.firstRun) {
+    if (firstRun) {
       _showMessage = true;
       _firstRun = true;
     } else {
       _showMessage = false;
       _firstRun = false;
     }
-
-    // Create the config handler that will parse the config file
-    _configHandler = ConfigHandler(
-      fs: fs,
-      homeDirectory: homeDirectory,
-      initializer: initializer,
-    );
 
     // Check if the tool has already been onboarded, and if it
     // has, check if the latest message version is greater to
@@ -413,54 +467,17 @@ class AnalyticsImpl implements Analytics {
       // will be blocked
       _firstRun = true;
     }
-
-    _clientIdFile = fs.file(
-        p.join(homeDirectory.path, kDartToolDirectoryName, kClientIdFileName));
-    _clientId = _clientIdFile.readAsStringSync();
-
-    // Initialization for the error handling class that will prevent duplicate
-    // [Event.analyticsException] events from being sent to GA4
-    _errorHandler = ErrorHandler(sendFunction: send);
-
-    // Initialize the user property class that will be attached to
-    // each event that is sent to Google Analytics -- it will be responsible
-    // for getting the session id or rolling the session if the duration
-    // exceeds [kSessionDurationMinutes]
-    _sessionHandler = Session(
-      homeDirectory: homeDirectory,
-      fs: fs,
-      errorHandler: _errorHandler,
-    );
-    userProperty = UserProperty(
-      session: _sessionHandler,
-      flutterChannel: flutterChannel,
-      host: platform.label,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      tool: tool.label,
-      // We truncate this to a maximum of 36 characters since this can
-      // a very long string for some operating systems
-      hostOsVersion:
-          truncateStringToLength(io.Platform.operatingSystemVersion, 36),
-      locale: io.Platform.localeName,
-      clientIde: clientIde,
-      enabledFeatures: enabledFeatures,
-    );
-
-    // Initialize the log handler to persist events that are being sent
-    _logHandler = LogHandler(
-      fs: fs,
-      homeDirectory: homeDirectory,
-      errorHandler: _errorHandler,
-    );
-
-    // Initialize the session handler with the session_id
-    // by parsing the json file
-    _sessionHandler.initialize(telemetryEnabled);
   }
 
   @override
-  String get clientId => _clientId;
+  String get clientId {
+    if (!_clientIdFile.existsSync()) {
+      createClientIdFile(clientIdFile: _clientIdFile);
+    }
+    _clientId ??= _clientIdFile.readAsStringSync();
+
+    return _clientId!;
+  }
 
   @override
   String get getConsentMessage {
@@ -503,7 +520,7 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Map<String, Map<String, Object?>> get userPropertyMap =>
-      userProperty.preparePayload();
+      _userProperty.preparePayload();
 
   @override
   void clientShowedMessage() {
@@ -529,6 +546,9 @@ class AnalyticsImpl implements Analytics {
 
   @override
   Future<void> close({int delayDuration = kDelayDuration}) async {
+    // Collect any errors encountered and send
+    _sendPendingErrorEvents();
+
     await Future.wait(_futures).timeout(
       Duration(milliseconds: delayDuration),
       onTimeout: () => [],
@@ -555,7 +575,7 @@ class AnalyticsImpl implements Analytics {
       // Apply the survey's sample rate; if the generated value from
       // the client id and survey's uniqueId are less, it will not get
       // sent to the user
-      if (survey.samplingRate < sampleRate(_clientId, survey.uniqueId)) {
+      if (survey.samplingRate < sampleRate(clientId, survey.uniqueId)) {
         continue;
       }
 
@@ -610,10 +630,10 @@ class AnalyticsImpl implements Analytics {
 
     // Construct the body of the request
     final body = generateRequestBody(
-      clientId: _clientId,
+      clientId: clientId,
       eventName: event.eventName,
       eventData: event.eventData,
-      userProperty: userProperty,
+      userProperty: _userProperty,
     );
 
     if (_enableAsserts) checkBody(body);
@@ -640,8 +660,8 @@ class AnalyticsImpl implements Analytics {
       // Recreate the session and client id file; no need to
       // recreate the log file since it will only receives events
       // to persist from events sent
-      Initializer.createClientIdFile(clientFile: _clientIdFile);
-      Initializer.createSessionFile(sessionFile: _sessionHandler.sessionFile);
+      createClientIdFile(clientIdFile: _clientIdFile);
+      createSessionFile(sessionFile: _userProperty.sessionFile);
 
       // Reread the client ID string so an empty string is not being
       // sent to GA4 since the persisted files are cleared when a user
@@ -651,10 +671,10 @@ class AnalyticsImpl implements Analytics {
       // We must construct the body at this point after we have read in the
       // new client id string that was generated
       body = generateRequestBody(
-        clientId: _clientId,
+        clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
-        userProperty: userProperty,
+        userProperty: _userProperty,
       );
 
       _logHandler.save(data: body);
@@ -662,18 +682,18 @@ class AnalyticsImpl implements Analytics {
       // Construct the body of the request to signal
       // telemetry status toggling
       body = generateRequestBody(
-        clientId: _clientId,
+        clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
-        userProperty: userProperty,
+        userProperty: _userProperty,
       );
 
       // For opted out users, data in the persisted files is cleared
-      _sessionHandler.sessionFile.writeAsStringSync('');
+      _userProperty.sessionFile.writeAsStringSync('');
       _logHandler.logFile.writeAsStringSync('');
       _clientIdFile.writeAsStringSync('');
 
-      _clientId = _clientIdFile.readAsStringSync();
+      _clientId = '';
     }
 
     // Pass to the google analytics client to send with a
@@ -706,6 +726,30 @@ class AnalyticsImpl implements Analytics {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
   }
+
+  /// Send any pending error events, useful for tests to avoid closing
+  /// the connection.
+  ///
+  /// In the main implementation, [AnalyticsImpl], error events are only
+  /// sent on exit when [close] is invoked. This helper method can instead
+  /// have those error events sent immediately to help with tests that check
+  /// [FakeAnalytics.sentEvents].
+  void _sendPendingErrorEvents() {
+    // Collect any errors encountered and send
+    final errorEvents = {..._userProperty.errorSet, ..._logHandler.errorSet};
+    errorEvents
+        .where((event) =>
+            event.eventName == DashEvent.analyticsException &&
+            !_sentErrorEvents.contains(event))
+        .forEach(send);
+
+    // Ensure the same event doesn't get sent again
+    _sentErrorEvents.addAll(errorEvents);
+
+    // Clear error sets
+    _userProperty.errorSet.clear();
+    _logHandler.errorSet.clear();
+  }
 }
 
 /// This fake instance of [Analytics] is intended to be used by clients of
@@ -728,17 +772,18 @@ class FakeAnalytics extends AnalyticsImpl {
     required super.platform,
     required super.fs,
     required super.surveyHandler,
+    required super.firstRun,
     super.flutterChannel,
     super.flutterVersion,
     super.clientIde,
     super.enabledFeatures,
-    int? toolsMessageVersion,
-    GAClient? gaClient,
-  }) : super(
-          gaClient: gaClient ?? const FakeGAClient(),
-          enableAsserts: true,
-          toolsMessageVersion: toolsMessageVersion ?? kToolsMessageVersion,
-        );
+    super.toolsMessageVersion = kToolsMessageVersion,
+    super.gaClient = const FakeGAClient(),
+    super.enableAsserts = true,
+  });
+
+  /// Getter to reference the private [UserProperty].
+  UserProperty get userProperty => _userProperty;
 
   @override
   void send(Event event) {
@@ -746,10 +791,10 @@ class FakeAnalytics extends AnalyticsImpl {
 
     // Construct the body of the request
     final body = generateRequestBody(
-      clientId: _clientId,
+      clientId: clientId,
       eventName: event.eventName,
       eventData: event.eventData,
-      userProperty: userProperty,
+      userProperty: _userProperty,
     );
 
     if (_enableAsserts) checkBody(body);
@@ -760,6 +805,13 @@ class FakeAnalytics extends AnalyticsImpl {
     // for internal methods in the `Analytics` instance
     sentEvents.add(event);
   }
+
+  /// Public instance method to invoke private method that sends any
+  /// pending error events.
+  ///
+  /// If this is never invoked, any pending error events will be sent
+  /// when invoking the [close] method.
+  void sendPendingErrorEvents() => _sendPendingErrorEvents();
 }
 
 /// An implementation that will never send events.

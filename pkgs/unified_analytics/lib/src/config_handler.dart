@@ -35,12 +35,11 @@ class ConfigHandler {
 
   final FileSystem fs;
   final Directory homeDirectory;
-  final Initializer initializer;
   final File configFile;
 
   final Map<String, ToolInfo> parsedTools = <String, ToolInfo>{};
 
-  late DateTime configFileLastModified;
+  DateTime configFileLastModified;
 
   /// Reporting enabled unless specified by user
   bool _telemetryEnabled = true;
@@ -48,16 +47,8 @@ class ConfigHandler {
   ConfigHandler({
     required this.fs,
     required this.homeDirectory,
-    required this.initializer,
-  }) : configFile = fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kConfigFileName,
-        )) {
-    // Get the last time the file was updated and check this
-    // datestamp whenever the client asks for the telemetry enabled boolean
-    configFileLastModified = configFile.lastModifiedSync();
-
+    required this.configFile,
+  }) : configFileLastModified = configFile.lastModifiedSync() {
     // Call the method to parse the contents of the config file when
     // this class is initialized
     parseConfig();
@@ -184,7 +175,15 @@ class ConfigHandler {
   /// This will reset the configuration file and clear the
   /// [parsedTools] map and trigger parsing the config again.
   void resetConfig() {
-    initializer.run(forceReset: true);
+    createConfigFile(
+      configFile: fs.file(p.join(
+        homeDirectory.path,
+        kDartToolDirectoryName,
+        kConfigFileName,
+      )),
+      fs: fs,
+      homeDirectory: homeDirectory,
+    );
     parsedTools.clear();
     parseConfig();
   }

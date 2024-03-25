@@ -6,10 +6,8 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
-import 'package:path/path.dart' as p;
 
 import 'constants.dart';
-import 'error_handler.dart';
 import 'event.dart';
 import 'initializer.dart';
 
@@ -154,28 +152,20 @@ class LogFileStats {
 }
 
 /// This class is responsible for writing to a log
-/// file that has been initialized by the [Initializer].
+/// file that has been initialized by the [createLogFile].
 ///
 /// It will be treated as an append only log and will be limited
 /// to have has many data records as specified by [kLogFileLength].
 class LogHandler {
-  final FileSystem fs;
-  final Directory homeDirectory;
   final File logFile;
-  final ErrorHandler _errorHandler;
+
+  /// Contains instances of [Event.analyticsException] that were encountered
+  /// during a workflow and will be sent to GA4 for collection.
+  final Set<Event> errorSet = {};
 
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
-  LogHandler({
-    required this.fs,
-    required this.homeDirectory,
-    required ErrorHandler errorHandler,
-  })  : logFile = fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kLogFileName,
-        )),
-        _errorHandler = errorHandler;
+  LogHandler({required this.logFile});
 
   /// Get stats from the persisted log file.
   ///
@@ -192,7 +182,7 @@ class LogHandler {
           try {
             return LogItem.fromRecord(jsonDecode(e) as Map<String, Object?>);
           } on FormatException catch (err) {
-            _errorHandler.log(Event.analyticsException(
+            errorSet.add(Event.analyticsException(
               workflow: 'LogFileStats.logFileStats',
               error: err.runtimeType.toString(),
               description: 'message: ${err.message}\nsource: ${err.source}',
@@ -201,7 +191,7 @@ class LogHandler {
             return null;
             // ignore: avoid_catching_errors
           } on TypeError catch (err) {
-            _errorHandler.log(Event.analyticsException(
+            errorSet.add(Event.analyticsException(
               workflow: 'LogFileStats.logFileStats',
               error: err.runtimeType.toString(),
             ));
