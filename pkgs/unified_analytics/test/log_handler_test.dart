@@ -74,7 +74,7 @@ void main() {
     expect(analytics.logFileStats()!.recordCount, countOfEventsToSend);
   });
 
-  test('The only record in the log file is malformed', () {
+  test('The only record in the log file is malformed', () async {
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
@@ -83,6 +83,8 @@ void main() {
     expect(logFileStats, isNull,
         reason: 'Null should be returned since only '
             'one record is in there and it is malformed');
+
+    analytics.sendPendingErrorEvents();
     expect(
         analytics.sentEvents,
         contains(
@@ -126,6 +128,8 @@ void main() {
     expect(logFile.readAsLinesSync().length,
         countOfEventsToSend + countOfMalformedRecords);
     final logFileStats = analytics.logFileStats();
+
+    analytics.sendPendingErrorEvents();
     expect(logFile.readAsLinesSync().length,
         countOfEventsToSend + countOfMalformedRecords + 1,
         reason:
@@ -172,6 +176,7 @@ void main() {
       analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
+    analytics.sendPendingErrorEvents();
     expect(analytics.sentEvents.last.eventName, DashEvent.analyticsException,
         reason: 'Calling for the stats should have caused an error');
     expect(logFile.readAsLinesSync().length, kLogFileLength);
@@ -203,6 +208,7 @@ void main() {
     for (var i = 0; i < countOfEventsToSend; i++) {
       analytics.send(testEvent);
     }
+    analytics.sendPendingErrorEvents();
     final secondLogFileStats = analytics.logFileStats();
 
     expect(secondLogFileStats, isNotNull);

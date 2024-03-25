@@ -146,12 +146,15 @@ void main() {
       expect(sessionFile.readAsStringSync(),
           '{"session_id": $timestamp, "last_ping": $timestamp}');
 
+      analytics.sendPendingErrorEvents();
+
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
       final lastEvent = analytics.sentEvents.last;
       expect(lastEvent, isNotNull);
       expect(lastEvent.eventName, DashEvent.analyticsException);
-      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(
+          lastEvent.eventData['workflow']!, 'UserProperty._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FormatException');
     });
   });
@@ -178,11 +181,19 @@ void main() {
     ) as FakeAnalytics;
     analytics.clientShowedMessage();
 
+    // Invoking a send command should reset the session file to a good state
+    //
+    // Having it reformat the session file before any send event happens will just
+    // add additional work on startup
+    analytics.send(testEvent);
+
+    analytics.sendPendingErrorEvents();
     final errorEvent = analytics.sentEvents
         .where((element) => element.eventName == DashEvent.analyticsException)
         .firstOrNull;
     expect(errorEvent, isNotNull);
-    expect(errorEvent!.eventData['workflow'], 'Session._refreshSessionData');
+    expect(
+        errorEvent!.eventData['workflow'], 'UserProperty._refreshSessionData');
     expect(errorEvent.eventData['error'], 'FormatException');
     expect(errorEvent.eventData['description'],
         'message: Unexpected character\nsource: not a valid session id');
@@ -203,12 +214,15 @@ void main() {
       expect(sessionFile.readAsStringSync(),
           '{"session_id": $timestamp, "last_ping": $timestamp}');
 
+      analytics.sendPendingErrorEvents();
+
       // Attempting to fetch the session id when malformed should also
       // send an error event while parsing
       final lastEvent = analytics.sentEvents.last;
       expect(lastEvent, isNotNull);
       expect(lastEvent.eventName, DashEvent.analyticsException);
-      expect(lastEvent.eventData['workflow']!, 'Session._refreshSessionData');
+      expect(
+          lastEvent.eventData['workflow']!, 'UserProperty._refreshSessionData');
       expect(lastEvent.eventData['error']!, 'FileSystemException');
     });
   });

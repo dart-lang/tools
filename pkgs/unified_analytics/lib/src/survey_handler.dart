@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as p;
 
 import 'constants.dart';
 import 'enums.dart';
@@ -190,16 +189,9 @@ class SurveyButton {
 }
 
 class SurveyHandler {
-  final File _dismissedSurveyFile;
+  final File dismissedSurveyFile;
 
-  SurveyHandler({
-    required Directory homeDirectory,
-    required FileSystem fs,
-  }) : _dismissedSurveyFile = fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kDismissedSurveyFileName,
-        ));
+  SurveyHandler({required this.dismissedSurveyFile});
 
   /// Invoking this method will persist the survey's id in
   /// the local file with either a snooze or permanently dismissed
@@ -227,7 +219,7 @@ class SurveyHandler {
       'timestamp': clock.now().millisecondsSinceEpoch,
     };
 
-    _dismissedSurveyFile.writeAsStringSync(jsonEncode(contents));
+    dismissedSurveyFile.writeAsStringSync(jsonEncode(contents));
   }
 
   /// Retrieve a list of strings for each [Survey] persisted on disk.
@@ -284,15 +276,13 @@ class SurveyHandler {
   Map<String, dynamic> _parseJsonFile() {
     Map<String, dynamic> contents;
     try {
-      contents = jsonDecode(_dismissedSurveyFile.readAsStringSync())
+      contents = jsonDecode(dismissedSurveyFile.readAsStringSync())
           as Map<String, dynamic>;
     } on FormatException {
-      Initializer.createDismissedSurveyFile(
-          dismissedSurveyFile: _dismissedSurveyFile);
+      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
       contents = {};
     } on FileSystemException {
-      Initializer.createDismissedSurveyFile(
-          dismissedSurveyFile: _dismissedSurveyFile);
+      createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
       contents = {};
     }
 
@@ -342,8 +332,7 @@ class FakeSurveyHandler extends SurveyHandler {
   /// will have their dates checked to ensure they are valid; it is
   /// recommended to use `package:clock` to set a fixed time for testing.
   FakeSurveyHandler.fromList({
-    required super.homeDirectory,
-    required super.fs,
+    required super.dismissedSurveyFile,
     required List<Survey> initializedSurveys,
   }) {
     // We must pass the surveys from the list to the
@@ -360,8 +349,7 @@ class FakeSurveyHandler extends SurveyHandler {
   /// Use this class in tests if you can provide raw
   /// json strings to simulate a response from a remote server.
   FakeSurveyHandler.fromString({
-    required super.homeDirectory,
-    required super.fs,
+    required super.dismissedSurveyFile,
     required String content,
   }) {
     final body = jsonDecode(content) as List<dynamic>;
