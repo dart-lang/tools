@@ -784,23 +784,27 @@ final class Event {
     try {
       final jsonMap = jsonDecode(json) as Map<String, Object?>;
 
+      // Ensure the required keys are present
       if (!jsonMap.containsKey('eventName') ||
           !jsonMap.containsKey('eventData')) {
         return null;
       }
 
-      final dashEvent =
-          DashEvent.getDashEventByLabel(jsonMap['eventName'] as String);
+      // Ensure the values for each key is the correct type
+      final eventName = jsonMap['eventName'];
+      final eventData = jsonMap['eventData'];
+      if (eventName is! String || eventData is! Map<String, Object?>) {
+        return null;
+      }
+
+      // Retrieve the correct DashEvent enum from the provided label
+      final dashEvent = DashEvent.getDashEventByLabel(eventName);
       if (dashEvent == null) {
         return null;
       }
-      final eventData = jsonMap['eventData'] as Map<String, Object?>;
 
       return Event._(eventName: dashEvent, eventData: eventData);
     } on FormatException {
-      return null;
-      // ignore: avoid_catching_errors
-    } on TypeError {
       return null;
     }
   }
