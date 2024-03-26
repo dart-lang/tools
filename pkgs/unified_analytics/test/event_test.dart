@@ -604,11 +604,19 @@ void main() {
     });
   });
 
-  test('Deserializing string to event unsuccessful', () {
+  test('Deserializing string to event unsuccessful for invalid eventName', () {
     final eventJson = '{"eventName":"NOT_VALID_NAME",'
         '"eventData":{"workflow":"workflow",'
         '"error":"error",'
         '"description":"description"}}';
+
+    final eventConstructed = Event.fromJson(eventJson);
+    expect(eventConstructed, isNull);
+  });
+
+  test('Deserializing string to event unsuccessful for invalid eventData', () {
+    final eventJson = '{"eventName":"analytics_exception",'
+        '"eventData": "not_valid_event_data"}';
 
     final eventConstructed = Event.fromJson(eventJson);
     expect(eventConstructed, isNull);
