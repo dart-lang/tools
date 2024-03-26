@@ -56,6 +56,14 @@ enum DashEvent {
     toolOwner: DashTool.dartTool,
   ),
 
+  // Events for Flutter devtools
+
+  devtoolsAction(
+    label: 'devtools_action',
+    description: 'Information for various devtools actions',
+    toolOwner: DashTool.devtools,
+  ),
+
   // Events for the Flutter CLI
 
   appleUsageEvent(
