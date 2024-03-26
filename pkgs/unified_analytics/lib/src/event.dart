@@ -707,11 +707,9 @@ final class Event {
           if (label != null) 'label': label,
         };
 
-  /// Returns an instance of [Event] from the data in [json].
-  Event._fromJsonMap(Map<String, Object?> jsonMap)
-      : eventName =
-            DashEvent.getDashEventByLabel(jsonMap['eventName'] as String),
-        eventData = jsonMap['eventData'] as Map<String, Object?>;
+  /// Private constructor to be used when deserializing JSON into an instance
+  /// of [Event].
+  Event._({required this.eventName, required this.eventData});
 
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
@@ -785,12 +783,21 @@ final class Event {
   static Event? fromJson(String json) {
     try {
       final jsonMap = jsonDecode(json) as Map<String, Object?>;
-      return Event._fromJsonMap(jsonMap);
+
+      if (!jsonMap.containsKey('eventName') ||
+          !jsonMap.containsKey('eventData')) {
+        return null;
+      }
+
+      final dashEvent =
+          DashEvent.getDashEventByLabel(jsonMap['eventName'] as String);
+      if (dashEvent == null) {
+        return null;
+      }
+      final eventData = jsonMap['eventData'] as Map<String, Object?>;
+
+      return Event._(eventName: dashEvent, eventData: eventData);
     } on FormatException {
-      return null;
-    } on Exception {
-      // One possible Exception thrown is if the "eventName" value
-      // is not a valid DashEvent label
       return null;
       // ignore: avoid_catching_errors
     } on TypeError {

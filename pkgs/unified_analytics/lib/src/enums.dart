@@ -156,12 +156,12 @@ enum DashEvent {
 
   /// This takes in the string label for a given [DashEvent] and returns the
   /// enum for that string label.
-  static DashEvent getDashEventByLabel(String label) {
+  static DashEvent? getDashEventByLabel(String label) {
     for (final event in DashEvent.values) {
       if (event.label == label) return event;
     }
 
-    throw Exception('The event $label is not a valid DashEvent enum value');
+    return null;
   }
 }
 
