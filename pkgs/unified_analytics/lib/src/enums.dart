@@ -206,8 +206,15 @@ enum DashTool {
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
-  static DashTool? fromLabel(String label) =>
-      DashTool.values.firstWhereOrNull((e) => e.label == label);
+  static DashTool? fromLabel(String label) {
+    for (final tool in DashTool.values) {
+      if (tool.label == label) return tool;
+    }
+
+    throw Exception('The tool $label from the survey metadata file is not '
+        'a valid DashTool enum value\n'
+        'Valid labels for dash tools: ${validDashTools.join(', ')}');
+  }
 }
 
 /// Enumerate options for platforms supported.

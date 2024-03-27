@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
-import 'package:collection/collection.dart';
 import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
 
