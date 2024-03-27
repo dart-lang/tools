@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:collection/collection.dart';
 import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
 
@@ -134,10 +135,12 @@ class Survey {
         samplingRate = json['samplingRate'] is String
             ? double.parse(json['samplingRate'] as String)
             : json['samplingRate'] as double,
-        excludeDashToolList =
-            (json['excludeDashTools'] as List<dynamic>).map((e) {
-          return DashTool.getDashToolByLabel(e as String);
-        }).toList(),
+        excludeDashToolList = (json['excludeDashTools'] as List<dynamic>)
+            .map((e) {
+              return DashTool.fromLabel(e as String);
+            })
+            .whereType<DashTool>()
+            .toList(),
         conditionList = (json['conditions'] as List<dynamic>).map((e) {
           return Condition.fromJson(e as Map<String, dynamic>);
         }).toList(),

@@ -771,9 +771,9 @@ final class Event {
           case {
             'eventName': final String eventName,
             'eventData': final Map<String, Object?> eventData,
-          } when DashEvent.getDashEventByLabel(eventName) != null) {
+          } when DashEvent.fromLabel(eventName) != null) {
         return Event._(
-          eventName: DashEvent.getDashEventByLabel(eventName)!,
+          eventName: DashEvent.fromLabel(eventName)!,
           eventData: eventData,
         );
       }
