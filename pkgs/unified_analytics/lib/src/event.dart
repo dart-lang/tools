@@ -4,11 +4,15 @@
 
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
+
 import 'enums.dart';
 
 final class Event {
   final DashEvent eventName;
   final Map<String, Object?> eventData;
+  final DeepCollectionEquality _deepCollectionEquality =
+      const DeepCollectionEquality();
 
   /// Event that is emitted whenever a user has opted in
   /// or out of the analytics collection.
@@ -719,7 +723,7 @@ final class Event {
       other is Event &&
       other.runtimeType == runtimeType &&
       other.eventName == eventName &&
-      _compareEventData(other.eventData, eventData);
+      _deepCollectionEquality.equals(other.eventData, eventData);
 
   /// Converts an instance of [Event] to JSON.
   ///
@@ -742,29 +746,6 @@ final class Event {
 
   @override
   String toString() => toJson();
-
-  /// Utility function to take in two maps [a] and [b] and compares them
-  /// to ensure that they have the same keys and values.
-  ///
-  /// Used for the equality operator.
-  bool _compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
-    final keySetA = a.keys.toSet();
-    final keySetB = b.keys.toSet();
-    final intersection = keySetA.intersection(keySetB);
-
-    // Ensure that the keys are the same for each object
-    if (intersection.length != keySetA.length ||
-        intersection.length != keySetB.length) {
-      return false;
-    }
-
-    // Ensure that each of the key's values are the same
-    for (final key in a.keys) {
-      if (a[key] != b[key]) return false;
-    }
-
-    return true;
-  }
 
   /// Returns a valid instance of [Event] if [json] follows the correct schema.
   ///
