@@ -4,12 +4,15 @@
 
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
+
 import 'enums.dart';
-import 'utils.dart';
 
 final class Event {
   final DashEvent eventName;
   final Map<String, Object?> eventData;
+  final DeepCollectionEquality _deepCollectionEquality =
+      const DeepCollectionEquality();
 
   /// Event that is emitted whenever a user has opted in
   /// or out of the analytics collection.
@@ -708,6 +711,10 @@ final class Event {
           if (label != null) 'label': label,
         };
 
+  /// Private constructor to be used when deserializing JSON into an instance
+  /// of [Event].
+  Event._({required this.eventName, required this.eventData});
+
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
@@ -716,11 +723,64 @@ final class Event {
       other is Event &&
       other.runtimeType == runtimeType &&
       other.eventName == eventName &&
-      compareEventData(other.eventData, eventData);
+      _deepCollectionEquality.equals(other.eventData, eventData);
 
-  @override
-  String toString() => jsonEncode({
+  /// Converts an instance of [Event] to JSON.
+  ///
+  /// Example for [Event.timing] converted to JSON below.
+  /// ```json
+  /// {
+  ///   "eventName": "timing",
+  ///   "eventData": {
+  ///     "workflow": "my-work-flow",
+  ///     "variableName": "my-variable",
+  ///     "elapsedMilliseconds": 123,
+  ///     "label": "my-label"
+  ///   }
+  /// }
+  /// ```
+  String toJson() => jsonEncode({
         'eventName': eventName.label,
         'eventData': eventData,
       });
+
+  @override
+  String toString() => toJson();
+
+  /// Returns a valid instance of [Event] if [json] follows the correct schema.
+  ///
+  /// Schema is below with the following notes:
+  /// - The `eventName` key must have a string value that exists in [DashEvent].
+  /// - The `eventData` key must have a nested object as its value.
+  /// ```json
+  /// {
+  ///   "eventName": "string-label",
+  ///   "eventData": {
+  ///     "myVar1": "value1",
+  ///     "myVar2": 123
+  ///   }
+  /// }
+  /// ```
+  static Event? fromJson(String json) {
+    try {
+      final jsonMap = jsonDecode(json) as Map<String, Object?>;
+
+      // Ensure that eventName is a string and a valid label and
+      // eventData is a nested object
+      if (jsonMap
+          case {
+            'eventName': final String eventName,
+            'eventData': final Map<String, Object?> eventData,
+          } when DashEvent.fromLabel(eventName) != null) {
+        return Event._(
+          eventName: DashEvent.fromLabel(eventName)!,
+          eventData: eventData,
+        );
+      }
+
+      return null;
+    } on FormatException {
+      return null;
+    }
+  }
 }

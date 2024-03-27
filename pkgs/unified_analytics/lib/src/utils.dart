@@ -36,26 +36,6 @@ bool checkDirectoryForWritePermissions(Directory directory) {
   return fileStat.modeString()[1] == 'w';
 }
 
-/// Utility function to take in two maps [a] and [b] and compares them
-/// to ensure that they have the same keys and values
-bool compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
-  final keySetA = a.keys.toSet();
-  final keySetB = b.keys.toSet();
-
-  // Ensure that the keys are the same for each object
-  if (keySetA.intersection(keySetB).length != keySetA.length ||
-      keySetA.intersection(keySetB).length != keySetB.length) {
-    return false;
-  }
-
-  // Ensure that each of the key's values are the same
-  for (final key in a.keys) {
-    if (a[key] != b[key]) return false;
-  }
-
-  return true;
-}
-
 /// Format time as 'yyyy-MM-dd HH:mm:ss Z' where Z is the difference between the
 /// timezone of t and UTC formatted according to RFC 822.
 String formatDateTime(DateTime t) {

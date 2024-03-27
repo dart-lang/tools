@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:collection/collection.dart';
+
 /// The valid dash tool labels stored in the [DashTool] enum.
 List<String> get validDashTools =>
     DashTool.values.map((e) => e.label).toList()..sort();
@@ -153,6 +155,11 @@ enum DashEvent {
     required this.description,
     this.toolOwner,
   });
+
+  /// This takes in the string label for a given [DashEvent] and returns the
+  /// enum for that string label.
+  static DashEvent? fromLabel(String label) =>
+      DashEvent.values.firstWhereOrNull((e) => e.label == label);
 }
 
 /// Officially-supported clients of this package as logical
@@ -199,7 +206,7 @@ enum DashTool {
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
-  static DashTool getDashToolByLabel(String label) {
+  static DashTool? fromLabel(String label) {
     for (final tool in DashTool.values) {
       if (tool.label == label) return tool;
     }

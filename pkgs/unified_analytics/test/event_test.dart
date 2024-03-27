@@ -556,7 +556,9 @@ void main() {
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
-      if (declaration.toString().contains('Event.')) constructorCount++;
+      // Count public constructors but omit private constructors
+      if (declaration.toString().contains('Event.') &&
+          !declaration.toString().contains('Event._')) constructorCount++;
     }
 
     // Change this integer below if your PR either adds or removes
@@ -567,5 +569,56 @@ void main() {
             'ensure you have updated '
             '`pkgs/unified_analytics/test/event_test.dart` '
             'to reflect the changes made');
+  });
+
+  test('Serializing event to json successful', () {
+    final event = Event.analyticsException(
+      workflow: 'workflow',
+      error: 'error',
+      description: 'description',
+    );
+
+    final expectedResult = '{"eventName":"analytics_exception",'
+        '"eventData":{"workflow":"workflow",'
+        '"error":"error",'
+        '"description":"description"}}';
+
+    expect(event.toJson(), expectedResult);
+  });
+
+  test('Deserializing string to event successful', () {
+    final eventJson = '{"eventName":"analytics_exception",'
+        '"eventData":{"workflow":"workflow",'
+        '"error":"error",'
+        '"description":"description"}}';
+
+    final eventConstructed = Event.fromJson(eventJson);
+    expect(eventConstructed, isNotNull);
+    eventConstructed!;
+
+    expect(eventConstructed.eventName, DashEvent.analyticsException);
+    expect(eventConstructed.eventData, {
+      'workflow': 'workflow',
+      'error': 'error',
+      'description': 'description',
+    });
+  });
+
+  test('Deserializing string to event unsuccessful for invalid eventName', () {
+    final eventJson = '{"eventName":"NOT_VALID_NAME",'
+        '"eventData":{"workflow":"workflow",'
+        '"error":"error",'
+        '"description":"description"}}';
+
+    final eventConstructed = Event.fromJson(eventJson);
+    expect(eventConstructed, isNull);
+  });
+
+  test('Deserializing string to event unsuccessful for invalid eventData', () {
+    final eventJson = '{"eventName":"analytics_exception",'
+        '"eventData": "not_valid_event_data"}';
+
+    final eventConstructed = Event.fromJson(eventJson);
+    expect(eventConstructed, isNull);
   });
 }
