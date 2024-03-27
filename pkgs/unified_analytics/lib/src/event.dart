@@ -357,6 +357,92 @@ final class Event {
           if (exitCode != null) 'exitCode': exitCode,
         };
 
+  /// Event that is sent from devtools for various different actions as
+  /// indicated by the [eventCategory].
+  Event.devtoolsAction({
+    required String eventCategory,
+    required String label,
+    required int value,
+    required bool nonInteraction,
+    required String userApp,
+    required String userBuild,
+    required String userPlatform,
+    required String devtoolsPlatform,
+    required String devtoolsChrome,
+    required String devtoolsVersion,
+    required String ideLaunched,
+    required String isExternalBuild,
+    required String isEmbedded,
+    required String ideLaunchedFeature,
+
+    // Optional parameters
+    String? g3Username,
+
+    // PerformanceScreenMetrics
+    int? uiDurationMicros,
+    int? rasterDurationMicros,
+    int? shaderCompilationDurationMicros,
+    int? traceEventCount,
+
+    // ProfilerScreenMetrics
+    int? cpuSampleCount,
+    int? cpuStackDepth,
+
+    // MemoryScreenMetrics
+    int? heapDiffObjectsBefore,
+    int? heapDiffObjectsAfter,
+    int? heapObjectsTotal,
+
+    // InspectorScreenMetrics
+    int? rootSetCount,
+    int? rowCount,
+    int? inspectorTreeControllerId,
+  })  : eventName = DashEvent.devtoolsAction,
+        eventData = {
+          'eventCategory': eventCategory,
+          'label': label,
+          'value': value,
+          'nonInteraction': nonInteraction,
+          'userApp': userApp,
+          'userBuild': userBuild,
+          'userPlatform': userPlatform,
+          'devtoolsPlatform': devtoolsPlatform,
+          'devtoolsChrome': devtoolsChrome,
+          'devtoolsVersion': devtoolsVersion,
+          'ideLaunched': ideLaunched,
+          'isExternalBuild': isExternalBuild,
+          'isEmbedded': isEmbedded,
+          'ideLaunchedFeature': ideLaunchedFeature,
+
+          // Optional parameters
+          if (g3Username != null) 'g3Username': g3Username,
+
+          // PerformanceScreenMetrics
+          if (uiDurationMicros != null) 'uiDurationMicros': uiDurationMicros,
+          if (rasterDurationMicros != null)
+            'rasterDurationMicros': rasterDurationMicros,
+          if (shaderCompilationDurationMicros != null)
+            'shaderCompilationDurationMicros': shaderCompilationDurationMicros,
+          if (traceEventCount != null) 'traceEventCount': traceEventCount,
+
+          // ProfilerScreenMetrics
+          if (cpuSampleCount != null) 'cpuSampleCount': cpuSampleCount,
+          if (cpuStackDepth != null) 'cpuStackDepth': cpuStackDepth,
+
+          // MemoryScreenMetrics
+          if (heapDiffObjectsBefore != null)
+            'heapDiffObjectsBefore': heapDiffObjectsBefore,
+          if (heapDiffObjectsAfter != null)
+            'heapDiffObjectsAfter': heapDiffObjectsAfter,
+          if (heapObjectsTotal != null) 'heapObjectsTotal': heapObjectsTotal,
+
+          // InspectorScreenMetrics
+          if (rootSetCount != null) 'rootSetCount': rootSetCount,
+          if (rowCount != null) 'rowCount': rowCount,
+          if (inspectorTreeControllerId != null)
+            'inspectorTreeControllerId': inspectorTreeControllerId,
+        };
+
   /// Event that contains the results for a specific doctor validator.
   ///
   /// [validatorName] - the name for the doctor validator.
