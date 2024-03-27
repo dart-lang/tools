@@ -784,26 +784,20 @@ final class Event {
     try {
       final jsonMap = jsonDecode(json) as Map<String, Object?>;
 
-      // Ensure the required keys are present
-      if (!jsonMap.containsKey('eventName') ||
-          !jsonMap.containsKey('eventData')) {
-        return null;
+      // Ensure that eventName is a string and a valid label and
+      // eventData is a nested object
+      if (jsonMap
+          case {
+            'eventName': final String eventName,
+            'eventData': final Map<String, Object?> eventData,
+          } when DashEvent.getDashEventByLabel(eventName) != null) {
+        return Event._(
+          eventName: DashEvent.getDashEventByLabel(eventName)!,
+          eventData: eventData,
+        );
       }
 
-      // Ensure the values for each key is the correct type
-      final eventName = jsonMap['eventName'];
-      final eventData = jsonMap['eventData'];
-      if (eventName is! String || eventData is! Map<String, Object?>) {
-        return null;
-      }
-
-      // Retrieve the correct DashEvent enum from the provided label
-      final dashEvent = DashEvent.getDashEventByLabel(eventName);
-      if (dashEvent == null) {
-        return null;
-      }
-
-      return Event._(eventName: dashEvent, eventData: eventData);
+      return null;
     } on FormatException {
       return null;
     }
