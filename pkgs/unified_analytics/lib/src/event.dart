@@ -771,9 +771,12 @@ final class Event {
           case {
             'eventName': final String eventName,
             'eventData': final Map<String, Object?> eventData,
-          } when DashEvent.fromLabel(eventName) != null) {
+          }) {
+        final dashEvent = DashEvent.fromLabel(eventName);
+        if (dashEvent == null) return null;
+
         return Event._(
-          eventName: DashEvent.fromLabel(eventName)!,
+          eventName: dashEvent,
           eventData: eventData,
         );
       }
