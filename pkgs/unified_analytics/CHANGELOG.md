@@ -4,6 +4,7 @@
 - Get rid of `late` variables throughout implementation class, `AnalyticsImpl`
 - Any error events (`Event.analyticsException`) encountered within package will be sent when invoking `Analytics.close`; replacing `ErrorHandler` functionality
 - Exposing new method for `FakeAnalytics.sendPendingErrorEvents` to send error events on command
+- Add `DevicePlatform.fromOs` method.
 
 ## 5.8.8
 

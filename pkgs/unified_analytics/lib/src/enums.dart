@@ -219,4 +219,16 @@ enum DevicePlatform {
 
   final String label;
   const DevicePlatform(this.label);
+
+  /// Returns the [DevicePlatform] that matches the provided [os].
+  /// 
+  /// Where possible, the value for [os] should be derived from
+  /// 'Platform.operatingSystem' from dart:io.
+  static DevicePlatform fromOs(String os) {
+    return switch (os) {
+      'linux' => DevicePlatform.linux,
+      'macos' => DevicePlatform.macos,
+      _ => DevicePlatform.windows,
+    };
+  }
 }

@@ -63,14 +63,7 @@ abstract class Analytics {
     }
 
     // Resolve the OS using dart:io
-    final DevicePlatform platform;
-    if (io.Platform.operatingSystem == 'linux') {
-      platform = DevicePlatform.linux;
-    } else if (io.Platform.operatingSystem == 'macos') {
-      platform = DevicePlatform.macos;
-    } else {
-      platform = DevicePlatform.windows;
-    }
+    final platform = DevicePlatform.fromOs(io.Platform.operatingSystem);
 
     // Create the instance of the GA Client which will create
     // an [http.Client] to send requests
@@ -138,14 +131,7 @@ abstract class Analytics {
     }
 
     // Resolve the OS using dart:io
-    final DevicePlatform platform;
-    if (io.Platform.operatingSystem == 'linux') {
-      platform = DevicePlatform.linux;
-    } else if (io.Platform.operatingSystem == 'macos') {
-      platform = DevicePlatform.macos;
-    } else {
-      platform = DevicePlatform.windows;
-    }
+    final platform = DevicePlatform.fromOs(io.Platform.operatingSystem);
 
     // Credentials defined below for the test Google Analytics instance
     const kTestMeasurementId = 'G-N1NXG28J5B';
