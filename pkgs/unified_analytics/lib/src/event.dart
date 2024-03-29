@@ -363,20 +363,22 @@ final class Event {
     required String eventCategory,
     required String label,
     required int value,
-    required bool nonInteraction,
-    required String userApp,
-    required String userBuild,
-    required String userPlatform,
-    required String devtoolsPlatform,
-    required String devtoolsChrome,
-    required String devtoolsVersion,
-    required String ideLaunched,
-    required String isExternalBuild,
-    required String isEmbedded,
-    required String ideLaunchedFeature,
+
+    // Defaulted values
+    bool userInitiatedInteraction = true,
 
     // Optional parameters
     String? g3Username,
+    String? userApp,
+    String? userBuild,
+    String? userPlatform,
+    String? devtoolsPlatform,
+    String? devtoolsChrome,
+    String? devtoolsVersion,
+    String? ideLaunched,
+    String? isExternalBuild,
+    String? isEmbedded,
+    String? ideLaunchedFeature,
 
     // PerformanceScreenMetrics
     int? uiDurationMicros,
@@ -397,25 +399,27 @@ final class Event {
     int? rootSetCount,
     int? rowCount,
     int? inspectorTreeControllerId,
-  })  : eventName = DashEvent.devtoolsAction,
+  })  : eventName = DashEvent.devtoolsEvent,
         eventData = {
           'eventCategory': eventCategory,
           'label': label,
           'value': value,
-          'nonInteraction': nonInteraction,
-          'userApp': userApp,
-          'userBuild': userBuild,
-          'userPlatform': userPlatform,
-          'devtoolsPlatform': devtoolsPlatform,
-          'devtoolsChrome': devtoolsChrome,
-          'devtoolsVersion': devtoolsVersion,
-          'ideLaunched': ideLaunched,
-          'isExternalBuild': isExternalBuild,
-          'isEmbedded': isEmbedded,
-          'ideLaunchedFeature': ideLaunchedFeature,
+
+          'userInitiatedInteraction': userInitiatedInteraction,
 
           // Optional parameters
           if (g3Username != null) 'g3Username': g3Username,
+          if (userApp != null) 'userApp': userApp,
+          if (userBuild != null) 'userBuild': userBuild,
+          if (userPlatform != null) 'userPlatform': userPlatform,
+          if (devtoolsPlatform != null) 'devtoolsPlatform': devtoolsPlatform,
+          if (devtoolsChrome != null) 'devtoolsChrome': devtoolsChrome,
+          if (devtoolsVersion != null) 'devtoolsVersion': devtoolsVersion,
+          if (ideLaunched != null) 'ideLaunched': ideLaunched,
+          if (isExternalBuild != null) 'isExternalBuild': isExternalBuild,
+          if (isEmbedded != null) 'isEmbedded': isEmbedded,
+          if (ideLaunchedFeature != null)
+            'ideLaunchedFeature': ideLaunchedFeature,
 
           // PerformanceScreenMetrics
           if (uiDurationMicros != null) 'uiDurationMicros': uiDurationMicros,
