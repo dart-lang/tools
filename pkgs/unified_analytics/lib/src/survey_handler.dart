@@ -135,9 +135,7 @@ class Survey {
             ? double.parse(json['samplingRate'] as String)
             : json['samplingRate'] as double,
         excludeDashToolList = (json['excludeDashTools'] as List<dynamic>)
-            .map((e) {
-              return DashTool.fromLabel(e as String);
-            })
+            .map((e) => DashTool.fromLabel(e as String))
             .whereType<DashTool>()
             .toList(),
         conditionList = (json['conditions'] as List<dynamic>).map((e) {

@@ -8,11 +8,12 @@ import 'package:collection/collection.dart';
 
 import 'enums.dart';
 
+final DeepCollectionEquality _deepCollectionEquality =
+    const DeepCollectionEquality();
+
 final class Event {
   final DashEvent eventName;
   final Map<String, Object?> eventData;
-  final DeepCollectionEquality _deepCollectionEquality =
-      const DeepCollectionEquality();
 
   /// Event that is emitted whenever a user has opted in
   /// or out of the analytics collection.
