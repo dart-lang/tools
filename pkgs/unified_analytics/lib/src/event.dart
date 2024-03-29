@@ -4,12 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
-
 import 'enums.dart';
-
-final DeepCollectionEquality _deepCollectionEquality =
-    const DeepCollectionEquality();
 
 final class Event {
   final DashEvent eventName;
@@ -459,7 +454,6 @@ final class Event {
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
 
-  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
     required String label,
@@ -511,6 +505,7 @@ final class Event {
           if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
         };
 
+  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
@@ -724,22 +719,9 @@ final class Event {
       other is Event &&
       other.runtimeType == runtimeType &&
       other.eventName == eventName &&
-      _deepCollectionEquality.equals(other.eventData, eventData);
+      _compareEventData(other.eventData, eventData);
 
   /// Converts an instance of [Event] to JSON.
-  ///
-  /// Example for [Event.timing] converted to JSON below.
-  /// ```json
-  /// {
-  ///   "eventName": "timing",
-  ///   "eventData": {
-  ///     "workflow": "my-work-flow",
-  ///     "variableName": "my-variable",
-  ///     "elapsedMilliseconds": 123,
-  ///     "label": "my-label"
-  ///   }
-  /// }
-  /// ```
   String toJson() => jsonEncode({
         'eventName': eventName.label,
         'eventData': eventData,
@@ -748,20 +730,27 @@ final class Event {
   @override
   String toString() => toJson();
 
+  /// Utility function to take in two maps [a] and [b] and compares them
+  /// to ensure that they have the same keys and values
+  bool _compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
+    final keySetA = a.keys.toSet();
+    final keySetB = b.keys.toSet();
+
+    // Ensure that the keys are the same for each object
+    if (keySetA.intersection(keySetB).length != keySetA.length ||
+        keySetA.intersection(keySetB).length != keySetB.length) {
+      return false;
+    }
+
+    // Ensure that each of the key's values are the same
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+
+    return true;
+  }
+
   /// Returns a valid instance of [Event] if [json] follows the correct schema.
-  ///
-  /// Schema is below with the following notes:
-  /// - The `eventName` key must have a string value that exists in [DashEvent].
-  /// - The `eventData` key must have a nested object as its value.
-  /// ```json
-  /// {
-  ///   "eventName": "string-label",
-  ///   "eventData": {
-  ///     "myVar1": "value1",
-  ///     "myVar2": 123
-  ///   }
-  /// }
-  /// ```
   static Event? fromJson(String json) {
     try {
       final jsonMap = jsonDecode(json) as Map<String, Object?>;
