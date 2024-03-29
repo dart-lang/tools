@@ -153,6 +153,11 @@ enum DashEvent {
     required this.description,
     this.toolOwner,
   });
+
+  /// This takes in the string label for a given [DashEvent] and returns the
+  /// enum for that string label.
+  static DashEvent? fromLabel(String label) =>
+      DashEvent.values.where((e) => e.label == label).firstOrNull;
 }
 
 /// Officially-supported clients of this package as logical
@@ -199,10 +204,9 @@ enum DashTool {
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
-  static DashTool getDashToolByLabel(String label) {
-    for (final tool in DashTool.values) {
-      if (tool.label == label) return tool;
-    }
+  static DashTool fromLabel(String label) {
+    final tool = DashTool.values.where((t) => t.label == label).firstOrNull;
+    if (tool != null) return tool;
 
     throw Exception('The tool $label from the survey metadata file is not '
         'a valid DashTool enum value\n'
