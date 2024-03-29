@@ -751,6 +751,10 @@ final class Event {
   }
 
   /// Returns a valid instance of [Event] if [json] follows the correct schema.
+  ///
+  /// Common use case for this static method involves clients of this package
+  /// that have a client-server setup where the server sends events that the
+  /// client creates.
   static Event? fromJson(String json) {
     try {
       final jsonMap = jsonDecode(json) as Map<String, Object?>;
