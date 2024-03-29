@@ -58,9 +58,9 @@ enum DashEvent {
 
   // Events for Flutter devtools
 
-  devtoolsAction(
-    label: 'devtools_action',
-    description: 'Information for various devtools actions',
+  devtoolsEvent(
+    label: 'devtools_event',
+    description: 'Information for various devtools events',
     toolOwner: DashTool.devtools,
   ),
 
