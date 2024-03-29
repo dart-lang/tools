@@ -735,10 +735,11 @@ final class Event {
   bool _compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
     final keySetA = a.keys.toSet();
     final keySetB = b.keys.toSet();
+    final intersection = keySetA.intersection(keySetB);
 
     // Ensure that the keys are the same for each object
-    if (keySetA.intersection(keySetB).length != keySetA.length ||
-        keySetA.intersection(keySetB).length != keySetB.length) {
+    if (intersection.length != keySetA.length ||
+        intersection.length != keySetB.length) {
       return false;
     }
 
