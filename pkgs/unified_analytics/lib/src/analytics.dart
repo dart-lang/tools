@@ -23,6 +23,7 @@ import 'log_handler.dart';
 import 'survey_handler.dart';
 import 'user_property.dart';
 import 'utils.dart';
+import 'utils_io.dart';
 
 abstract class Analytics {
   /// The default factory constructor that will return an implementation
@@ -63,7 +64,7 @@ abstract class Analytics {
     }
 
     // Resolve the OS using dart:io
-    final platform = DevicePlatform.fromOs(io.Platform.operatingSystem);
+    final platform = DevicePlatformIO.fromOs();
 
     // Create the instance of the GA Client which will create
     // an [http.Client] to send requests
@@ -131,7 +132,7 @@ abstract class Analytics {
     }
 
     // Resolve the OS using dart:io
-    final platform = DevicePlatform.fromOs(io.Platform.operatingSystem);
+    final platform = DevicePlatformIO.fromOs();
 
     // Credentials defined below for the test Google Analytics instance
     const kTestMeasurementId = 'G-N1NXG28J5B';
