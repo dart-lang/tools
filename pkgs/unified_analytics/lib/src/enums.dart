@@ -205,9 +205,8 @@ enum DashTool {
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
   static DashTool fromLabel(String label) {
-    for (final tool in DashTool.values) {
-      if (tool.label == label) return tool;
-    }
+    final tool = DashTool.values.where((t) => t.label == label).firstOrNull;
+    if (tool != null) return tool;
 
     throw Exception('The tool $label from the survey metadata file is not '
         'a valid DashTool enum value\n'
