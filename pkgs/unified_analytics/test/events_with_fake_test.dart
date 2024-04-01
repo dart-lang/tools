@@ -61,8 +61,6 @@ void main() {
     final initialAnalytics = Analytics.test(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
       dartVersion: 'dartVersion',
       toolsMessageVersion: 1,
       fs: fs,

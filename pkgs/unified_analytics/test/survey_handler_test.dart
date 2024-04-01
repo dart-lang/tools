@@ -298,8 +298,6 @@ void main() {
       final initialAnalyticsFlutter = Analytics.test(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
-        measurementId: 'measurementId',
-        apiSecret: 'apiSecret',
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
@@ -307,8 +305,6 @@ void main() {
       final initialAnalyticsDart = Analytics.test(
         tool: DashTool.dartTool,
         homeDirectory: homeDirectory,
-        measurementId: 'measurementId',
-        apiSecret: 'apiSecret',
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
@@ -322,8 +318,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -375,8 +369,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -417,8 +409,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -462,8 +452,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -564,8 +552,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -628,8 +614,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -711,8 +695,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -787,8 +769,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -832,8 +812,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -879,8 +857,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -908,8 +884,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -929,8 +903,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -975,8 +947,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1003,8 +973,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1051,8 +1019,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1083,8 +1049,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1131,8 +1095,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1160,8 +1122,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1184,8 +1144,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1231,8 +1189,6 @@ void main() {
         analytics = Analytics.test(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,

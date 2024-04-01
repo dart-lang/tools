@@ -25,8 +25,6 @@ void main() {
   const homeDirName = 'home';
   const initialTool = DashTool.flutterTool;
   const secondTool = DashTool.dartTool;
-  const measurementId = 'measurementId';
-  const apiSecret = 'apiSecret';
   const toolsMessageVersion = 1;
   const toolsMessage = 'toolsMessage';
   const flutterChannel = 'flutterChannel';
@@ -63,8 +61,6 @@ void main() {
     final firstAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -100,8 +96,6 @@ void main() {
     final firstAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -117,8 +111,7 @@ void main() {
     final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
+
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -136,8 +129,7 @@ void main() {
     final thirdAnalytics = Analytics.test(
       tool: secondTool, // Different tool
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
+
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -156,8 +148,6 @@ void main() {
     final firstAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -213,8 +203,6 @@ void main() {
     final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -246,8 +234,7 @@ void main() {
     final thirdAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
+
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -277,8 +264,7 @@ void main() {
     final fourthAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
+
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -303,8 +289,6 @@ void main() {
     final firstAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -319,8 +303,6 @@ void main() {
     final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -337,8 +319,6 @@ void main() {
     final thirdAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -356,8 +336,6 @@ void main() {
     final secondAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
       flutterChannel: flutterChannel,
       toolsMessageVersion: firstVersion,
       toolsMessage: toolsMessage,
@@ -380,8 +358,6 @@ void main() {
     final thirdAnalytics = Analytics.test(
       tool: secondTool,
       homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
       flutterChannel: flutterChannel,
       toolsMessageVersion: secondVersion,
       toolsMessage: toolsMessage,
