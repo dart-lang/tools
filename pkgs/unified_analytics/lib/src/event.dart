@@ -359,7 +359,7 @@ final class Event {
 
   /// Event that is sent from devtools for various different actions as
   /// indicated by the [eventCategory].
-  Event.devtoolsAction({
+  Event.devtoolsEvent({
     required String eventCategory,
     required String label,
     required int value,
