@@ -19,7 +19,7 @@ import 'package:unified_analytics/unified_analytics.dart';
 import 'package:yaml/yaml.dart';
 
 void main() {
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late Directory home;
   late Directory dartToolDirectory;
   late Analytics initializationAnalytics;
@@ -53,7 +53,7 @@ void main() {
 
     // This is the first analytics instance that will be used to demonstrate
     // that events will not be sent with the first run of analytics
-    initializationAnalytics = Analytics.test(
+    initializationAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -73,7 +73,7 @@ void main() {
     //
     // This instance should have the same parameters as the one above for
     // [initializationAnalytics]
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -84,7 +84,7 @@ void main() {
       fs: fs,
       platform: platform,
       clientIde: clientIde,
-    ) as FakeAnalytics;
+    );
     analytics.clientShowedMessage();
 
     // The 5 files that should have been generated
@@ -159,7 +159,7 @@ void main() {
     // for session data
     sessionFile.writeAsStringSync('not a valid session id');
 
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -170,7 +170,7 @@ void main() {
       fs: fs,
       platform: platform,
       clientIde: clientIde,
-    ) as FakeAnalytics;
+    );
     analytics.clientShowedMessage();
 
     // Invoking a send command should reset the session file to a good state
@@ -221,7 +221,7 @@ void main() {
 
   test('New tool is successfully added to config file', () {
     // Create a new instance of the analytics class with the new tool
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
       flutterChannel: 'ey-test-channel',
@@ -312,7 +312,7 @@ void main() {
 
     // Start up a second instance to simulate starting another
     // command being run
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -354,7 +354,7 @@ void main() {
 
     // Initialize a second analytics class, which simulates a second tool
     // Create a new instance of the analytics class with the new tool
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
       flutterChannel: 'ey-test-channel',
@@ -376,7 +376,7 @@ void main() {
       'Two concurrent instances are running '
       'and reflect an accurate up to date telemetry status', () async {
     // Initialize a second analytics class, which simulates a second tool
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
       flutterChannel: 'ey-test-channel',
@@ -428,7 +428,7 @@ void main() {
 
     // Initialize a second analytics class, which simulates a second tool
     // which should correct the missing trailing new line character
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
       flutterChannel: 'ey-test-channel',
@@ -457,7 +457,7 @@ void main() {
     // Initialize a second analytics class for the same tool as
     // the first analytics instance except with a newer version for
     // the tools message and version
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -582,7 +582,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     //
     // This second instance should reset the config file when it goes
     // to increment the version in the file
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -605,7 +605,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Creating a third instance after the second instance
     // has reset the config file should include the newly added
     // tool again with its incremented version number
-    final thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
       flutterChannel: flutterChannel,
@@ -676,7 +676,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Set the clock to the start value defined above
     withClock(Clock.fixed(start), () {
       // This class will be constructed at a fixed time
-      final secondAnalytics = Analytics.test(
+      final secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
         flutterChannel: flutterChannel,
@@ -703,7 +703,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // A new instance will need to be created since the second
       // instance in the previous block is scoped - this new instance
       // should not reset the files generated by the second instance
-      final thirdAnalytics = Analytics.test(
+      final thirdAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
         flutterChannel: flutterChannel,
@@ -717,7 +717,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       thirdAnalytics.clientShowedMessage();
 
       // Calling the send event method will result in the session file
-      // getting updated but because we use the `Analytics.test()` constructor
+      // getting updated but because we use the `Analytics.fake()` constructor
       // no events will be sent
       thirdAnalytics.send(testEvent);
 
@@ -745,7 +745,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Set the clock to the start value defined above
     withClock(Clock.fixed(start), () {
       // This class will be constructed at a fixed time
-      final secondAnalytics = Analytics.test(
+      final secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
         flutterChannel: flutterChannel,
@@ -776,7 +776,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       // A new instance will need to be created since the second
       // instance in the previous block is scoped - this new instance
       // should not reset the files generated by the second instance
-      final thirdAnalytics = Analytics.test(
+      final thirdAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
         flutterChannel: flutterChannel,
@@ -790,7 +790,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       thirdAnalytics.clientShowedMessage();
 
       // Calling the send event method will result in the session file
-      // getting updated but because we use the `Analytics.test()` constructor
+      // getting updated but because we use the `Analytics.fake()` constructor
       // no events will be sent
       thirdAnalytics.send(testEvent);
 
@@ -925,7 +925,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // run for a given tool
     Analytics? secondAnalytics;
     for (var i = 0; i < 2; i++) {
-      secondAnalytics = Analytics.test(
+      secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
         flutterChannel: flutterChannel,
@@ -1030,7 +1030,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // run for a given tool
     Analytics? secondAnalytics;
     for (var i = 0; i < 2; i++) {
-      secondAnalytics = Analytics.test(
+      secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
         // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
@@ -1179,7 +1179,7 @@ Privacy Policy (https://policies.google.com/privacy).
   test('Consent message is formatted correctly for any tool other than flutter',
       () {
     // Create a new instance of the analytics class with the new tool
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
       flutterChannel: 'ey-test-channel',

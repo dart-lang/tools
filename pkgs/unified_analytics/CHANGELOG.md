@@ -6,6 +6,7 @@
 - Exposing new method for `FakeAnalytics.sendPendingErrorEvents` to send error events on command
 - Added `Event.fromJson` static method to generate instance of `Event` from JSON
 - Remove unused parameters `measurementId` and `apiSecret` from the `Analytics.test` constructor
+- Remove `Analytics.test` factory constructor in favor of `Analytics.fake` static method to return a `FakeAnalytics` instance
 
 ## 5.8.8
 

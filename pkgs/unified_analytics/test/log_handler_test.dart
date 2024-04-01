@@ -15,7 +15,7 @@ import 'package:unified_analytics/unified_analytics.dart';
 void main() {
   late FakeAnalytics analytics;
   late Directory homeDirectory;
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late File logFile;
 
   final testEvent = Event.hotReloadTime(timeMs: 10);
@@ -30,7 +30,7 @@ void main() {
     ));
 
     // Create the initialization analytics instance to onboard the tool
-    final initializationAnalytics = Analytics.test(
+    final initializationAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
       dartVersion: 'dartVersion',
@@ -41,13 +41,13 @@ void main() {
 
     // This instance is free to send events since the instance above
     // has confirmed that the client has shown the message
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
       dartVersion: 'dartVersion',
       fs: fs,
       platform: DevicePlatform.macos,
-    ) as FakeAnalytics;
+    );
   });
 
   test('Ensure that log file is created', () {
