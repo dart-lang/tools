@@ -1033,7 +1033,6 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       secondAnalytics = Analytics.test(
         tool: secondTool,
         homeDirectory: home,
-
         // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,

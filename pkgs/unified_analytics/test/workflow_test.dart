@@ -111,7 +111,6 @@ void main() {
     final secondAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -129,7 +128,6 @@ void main() {
     final thirdAnalytics = Analytics.test(
       tool: secondTool, // Different tool
       homeDirectory: home,
-
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -234,7 +232,6 @@ void main() {
     final thirdAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -264,7 +261,6 @@ void main() {
     final fourthAnalytics = Analytics.test(
       tool: initialTool,
       homeDirectory: home,
-
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
