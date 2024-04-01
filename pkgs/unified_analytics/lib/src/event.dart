@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 import 'enums.dart';
-import 'utils.dart';
 
 final class Event {
   final DashEvent eventName;
@@ -545,7 +544,6 @@ final class Event {
       : eventName = DashEvent.hotReloadTime,
         eventData = {'timeMs': timeMs};
 
-  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
     required String label,
@@ -597,6 +595,7 @@ final class Event {
           if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
         };
 
+  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
@@ -798,6 +797,10 @@ final class Event {
           if (label != null) 'label': label,
         };
 
+  /// Private constructor to be used when deserializing JSON into an instance
+  /// of [Event].
+  Event._({required this.eventName, required this.eventData});
+
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
@@ -806,11 +809,66 @@ final class Event {
       other is Event &&
       other.runtimeType == runtimeType &&
       other.eventName == eventName &&
-      compareEventData(other.eventData, eventData);
+      _compareEventData(other.eventData, eventData);
 
-  @override
-  String toString() => jsonEncode({
+  /// Converts an instance of [Event] to JSON.
+  String toJson() => jsonEncode({
         'eventName': eventName.label,
         'eventData': eventData,
       });
+
+  @override
+  String toString() => toJson();
+
+  /// Utility function to take in two maps [a] and [b] and compares them
+  /// to ensure that they have the same keys and values
+  bool _compareEventData(Map<String, Object?> a, Map<String, Object?> b) {
+    final keySetA = a.keys.toSet();
+    final keySetB = b.keys.toSet();
+    final intersection = keySetA.intersection(keySetB);
+
+    // Ensure that the keys are the same for each object
+    if (intersection.length != keySetA.length ||
+        intersection.length != keySetB.length) {
+      return false;
+    }
+
+    // Ensure that each of the key's values are the same
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+
+    return true;
+  }
+
+  /// Returns a valid instance of [Event] if [json] follows the correct schema.
+  ///
+  /// Common use case for this static method involves clients of this package
+  /// that have a client-server setup where the server sends events that the
+  /// client creates.
+  static Event? fromJson(String json) {
+    try {
+      final jsonMap = jsonDecode(json) as Map<String, Object?>;
+
+      // Ensure that eventName is a string and a valid label and
+      // eventData is a nested object
+      if (jsonMap
+          case {
+            'eventName': final String eventName,
+            'eventData': final Map<String, Object?> eventData,
+          }) {
+        final dashEvent = DashEvent.fromLabel(eventName);
+        if (dashEvent == null) return null;
+
+        return Event._(
+          eventName: dashEvent,
+          eventData: eventData,
+        );
+      }
+
+      return null;
+    } on FormatException {
+      return null;
+    }
+  }
 }
