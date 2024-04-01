@@ -18,7 +18,7 @@ void main() {
   // are being sent when invoking methods on the `Analytics` instance
 
   late FakeAnalytics fakeAnalytics;
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late Directory homeDirectory;
   late File dismissedSurveyFile;
 
@@ -58,7 +58,7 @@ void main() {
       kDismissedSurveyFileName,
     ));
 
-    final initialAnalytics = Analytics.test(
+    final initialAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
       dartVersion: 'dartVersion',

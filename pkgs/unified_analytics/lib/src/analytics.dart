@@ -184,51 +184,6 @@ abstract class Analytics {
     );
   }
 
-  /// Factory constructor to return the [AnalyticsImpl] class with a
-  /// [MemoryFileSystem] to use for testing.
-  @visibleForTesting
-  factory Analytics.test({
-    required DashTool tool,
-    required Directory homeDirectory,
-    required String dartVersion,
-    required FileSystem fs,
-    required DevicePlatform platform,
-    String? flutterChannel,
-    String? flutterVersion,
-    String? clientIde,
-    String? enabledFeatures,
-    SurveyHandler? surveyHandler,
-    GAClient? gaClient,
-    int toolsMessageVersion = kToolsMessageVersion,
-    String toolsMessage = kToolsMessage,
-  }) {
-    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
-
-    return FakeAnalytics(
-      tool: tool,
-      homeDirectory: homeDirectory,
-      flutterChannel: flutterChannel,
-      toolsMessageVersion: toolsMessageVersion,
-      flutterVersion: flutterVersion,
-      dartVersion: dartVersion,
-      platform: platform,
-      fs: fs,
-      surveyHandler: surveyHandler ??
-          FakeSurveyHandler.fromList(
-            dismissedSurveyFile: fs.file(p.join(
-              homeDirectory.path,
-              kDartToolDirectoryName,
-              kDismissedSurveyFileName,
-            )),
-            initializedSurveys: [],
-          ),
-      gaClient: gaClient ?? const FakeGAClient(),
-      clientIde: clientIde,
-      enabledFeatures: enabledFeatures,
-      firstRun: firstRun,
-    );
-  }
-
   /// The shared identifier for Flutter and Dart related tooling using
   /// package:unified_analytics.
   String get clientId;
@@ -333,6 +288,51 @@ abstract class Analytics {
   ///
   /// The snooze period is defined by the [Survey.snoozeForMinutes] field.
   void surveyShown(Survey survey);
+
+  /// Returns an instance of [FakeAnalytics] which can be used in tests to check
+  /// for certain [Event] instances within [FakeAnalytics.sentEvents].
+  @visibleForTesting
+  static FakeAnalytics fake({
+    required DashTool tool,
+    required Directory homeDirectory,
+    required String dartVersion,
+    required MemoryFileSystem fs,
+    required DevicePlatform platform,
+    String? flutterChannel,
+    String? flutterVersion,
+    String? clientIde,
+    String? enabledFeatures,
+    SurveyHandler? surveyHandler,
+    GAClient? gaClient,
+    int toolsMessageVersion = kToolsMessageVersion,
+    String toolsMessage = kToolsMessage,
+  }) {
+    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+
+    return FakeAnalytics(
+      tool: tool,
+      homeDirectory: homeDirectory,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      platform: platform,
+      fs: fs,
+      surveyHandler: surveyHandler ??
+          FakeSurveyHandler.fromList(
+            dismissedSurveyFile: fs.file(p.join(
+              homeDirectory.path,
+              kDartToolDirectoryName,
+              kDismissedSurveyFileName,
+            )),
+            initializedSurveys: [],
+          ),
+      gaClient: gaClient ?? const FakeGAClient(),
+      clientIde: clientIde,
+      enabledFeatures: enabledFeatures,
+      firstRun: firstRun,
+    );
+  }
 }
 
 class AnalyticsImpl implements Analytics {
