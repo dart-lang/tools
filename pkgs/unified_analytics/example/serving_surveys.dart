@@ -39,8 +39,6 @@ void main() async {
     final initialAnalytics = Analytics.test(
       tool: DashTool.flutterTool,
       homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
       dartVersion: 'dartVersion',
       fs: fs,
       platform: DevicePlatform.macos,
@@ -52,8 +50,6 @@ void main() async {
     analytics = Analytics.test(
         tool: DashTool.flutterTool,
         homeDirectory: home,
-        measurementId: 'measurementId',
-        apiSecret: 'apiSecret',
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,

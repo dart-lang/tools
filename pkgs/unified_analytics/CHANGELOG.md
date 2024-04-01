@@ -5,6 +5,7 @@
 - Any error events (`Event.analyticsException`) encountered within package will be sent when invoking `Analytics.close`; replacing `ErrorHandler` functionality
 - Exposing new method for `FakeAnalytics.sendPendingErrorEvents` to send error events on command
 - Added `Event.fromJson` static method to generate instance of `Event` from JSON
+- Remove unused parameters `measurementId` and `apiSecret` from the `Analytics.test` constructor
 
 ## 5.8.8
 

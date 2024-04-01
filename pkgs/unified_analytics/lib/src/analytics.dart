@@ -190,8 +190,6 @@ abstract class Analytics {
   factory Analytics.test({
     required DashTool tool,
     required Directory homeDirectory,
-    required String measurementId,
-    required String apiSecret,
     required String dartVersion,
     required FileSystem fs,
     required DevicePlatform platform,
