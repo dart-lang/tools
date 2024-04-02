@@ -1,4 +1,4 @@
-## 6.0.0-wip
+## 6.0.0
 
 - Consolidate `Session` functionality into `UserProperty` to prevent race condition crash where session logic crashed before initializing `UserProperty`
 - Get rid of `late` variables throughout implementation class, `AnalyticsImpl`
