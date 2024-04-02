@@ -14,7 +14,7 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 /// This example code is intended to only be used as guidance for
 /// clients using this package. Clients using this package should avoid
-/// the use of the [Analytics.fake] constructor.
+/// the use of the [Analytics.fake] static method.
 ///
 /// It was used in this example file so that the real [FileSystem] was swapped
 /// out for a [MemoryFileSystem] so that repeated runs of this script yield

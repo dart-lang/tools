@@ -72,7 +72,7 @@ void main() {
     // the first run
     withClock(Clock.fixed(DateTime(2022, 3, 3)), () {
       final toolsMessageVersion = kToolsMessageVersion;
-      fakeAnalytics = FakeAnalytics(
+      fakeAnalytics = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         dartVersion: 'dartVersion',
@@ -83,7 +83,6 @@ void main() {
           dismissedSurveyFile: dismissedSurveyFile,
           initializedSurveys: [testSurvey],
         ),
-        firstRun: false,
       );
     });
   });

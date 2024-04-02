@@ -297,19 +297,20 @@ abstract class Analytics {
     required Directory homeDirectory,
     required String dartVersion,
     required MemoryFileSystem fs,
-    required DevicePlatform platform,
     String? flutterChannel,
     String? flutterVersion,
     String? clientIde,
     String? enabledFeatures,
     SurveyHandler? surveyHandler,
     GAClient? gaClient,
+    DevicePlatform platform = DevicePlatform.linux,
     int toolsMessageVersion = kToolsMessageVersion,
     String toolsMessage = kToolsMessage,
+    bool enableAsserts = true,
   }) {
     final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
 
-    return FakeAnalytics(
+    return FakeAnalytics._(
       tool: tool,
       homeDirectory: homeDirectory,
       flutterChannel: flutterChannel,
@@ -331,6 +332,7 @@ abstract class Analytics {
       clientIde: clientIde,
       enabledFeatures: enabledFeatures,
       firstRun: firstRun,
+      enableAsserts: enableAsserts,
     );
   }
 }
@@ -763,7 +765,7 @@ class FakeAnalytics extends AnalyticsImpl {
   final List<Event> sentEvents = [];
 
   /// Class to use when you want to see which events were sent
-  FakeAnalytics({
+  FakeAnalytics._({
     required super.tool,
     required super.homeDirectory,
     required super.dartVersion,
