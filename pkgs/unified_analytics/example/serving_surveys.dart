@@ -14,7 +14,7 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 /// This example code is intended to only be used as guidance for
 /// clients using this package. Clients using this package should avoid
-/// the use of the [Analytics.test] constructor.
+/// the use of the [Analytics.fake] static method.
 ///
 /// It was used in this example file so that the real [FileSystem] was swapped
 /// out for a [MemoryFileSystem] so that repeated runs of this script yield
@@ -36,7 +36,7 @@ void main() async {
     // send events after its first run; this instance won't be used below
     //
     // ignore: invalid_use_of_visible_for_testing_member
-    final initialAnalytics = Analytics.test(
+    final initialAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: home,
       dartVersion: 'dartVersion',
@@ -47,7 +47,7 @@ void main() async {
     initialAnalytics.clientShowedMessage();
 
     // ignore: invalid_use_of_visible_for_testing_member
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: home,
         dartVersion: 'dartVersion',

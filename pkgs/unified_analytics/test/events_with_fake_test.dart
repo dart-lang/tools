@@ -18,7 +18,7 @@ void main() {
   // are being sent when invoking methods on the `Analytics` instance
 
   late FakeAnalytics fakeAnalytics;
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late Directory homeDirectory;
   late File dismissedSurveyFile;
 
@@ -58,7 +58,7 @@ void main() {
       kDismissedSurveyFileName,
     ));
 
-    final initialAnalytics = Analytics.test(
+    final initialAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
       dartVersion: 'dartVersion',
@@ -72,7 +72,7 @@ void main() {
     // the first run
     withClock(Clock.fixed(DateTime(2022, 3, 3)), () {
       final toolsMessageVersion = kToolsMessageVersion;
-      fakeAnalytics = FakeAnalytics(
+      fakeAnalytics = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
         dartVersion: 'dartVersion',
@@ -83,7 +83,6 @@ void main() {
           dismissedSurveyFile: dismissedSurveyFile,
           initializedSurveys: [testSurvey],
         ),
-        firstRun: false,
       );
     });
   });
