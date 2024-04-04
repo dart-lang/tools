@@ -2,6 +2,10 @@
 [![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics)
 [![package publisher](https://img.shields.io/pub/publisher/unified_analytics.svg)](https://pub.dev/packages/unified_analytics/publisher)
 
+## Hotfix `5.8.8+1` special release for Flutter 3.22
+
+[Diff](https://github.com/dart-lang/tools/compare/f611290b530123ee2f0a3fda7c440d85dd080a30...eliasyishak:tools:hotfix-5.8.8+1) between `5.8.8` and this hotfix release.
+
 ## What's this?
 
 This package is intended to be used on Dart and Flutter related
