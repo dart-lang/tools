@@ -715,8 +715,8 @@ class AnalyticsImpl implements Analytics {
 
     // Construct the body of the request
     //
-    // This does not add the session id which was what caused
-    // the cyclic error causing a stack overflow
+    // This hard codes the session id to the current timestamp and doens't
+    // try to parse the session json file again when attempting to send an error
     final body = {
       'client_id': _clientId,
       'events': <Map<String, Object?>>[
@@ -726,6 +726,7 @@ class AnalyticsImpl implements Analytics {
         }
       ],
       'user_properties': <String, Map<String, Object?>>{
+        'session_id': {'value': clock.now().millisecondsSinceEpoch},
         'flutter_channel': {'value': userProperty.flutterChannel},
         'flutter_version': {'value': userProperty.flutterVersion},
         'host': {'value': userProperty.host},
