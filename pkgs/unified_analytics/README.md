@@ -4,7 +4,7 @@
 
 ## Hotfix `5.8.8+1` special release for Flutter 3.22
 
-[Diff](https://github.com/dart-lang/tools/compare/f611290b530123ee2f0a3fda7c440d85dd080a30...eliasyishak:tools:hotfix-5.8.8+1) between `5.8.8` and this hotfix release.
+[Diff](https://github.com/dart-lang/tools/compare/unified_analytics-v5.8.8...hotfix-analytics-5.8.8+1?expand=1) between `5.8.8` and this hotfix release.
 
 ## What's this?
 
