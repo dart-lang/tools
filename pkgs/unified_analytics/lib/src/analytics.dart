@@ -4,6 +4,7 @@
 
 import 'dart:io' as io;
 
+import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
@@ -420,7 +421,7 @@ class AnalyticsImpl implements Analytics {
 
     // Initialization for the error handling class that will prevent duplicate
     // [Event.analyticsException] events from being sent to GA4
-    _errorHandler = ErrorHandler(sendFunction: send);
+    _errorHandler = ErrorHandler(sendFunction: _sendError);
 
     // Initialize the user property class that will be attached to
     // each event that is sent to Google Analytics -- it will be responsible
@@ -705,6 +706,45 @@ class AnalyticsImpl implements Analytics {
   void surveyShown(Survey survey) {
     _surveyHandler.dismiss(survey, false);
     send(Event.surveyShown(surveyId: survey.uniqueId));
+  }
+
+  /// Private method for sending an instance of [Event] that does not create
+  /// a session id, which was found to cause a stack overflow error.
+  void _sendError(Event event) {
+    if (!okToSend) return;
+
+    // Construct the body of the request
+    //
+    // This does not add the session id which was what caused
+    // the cyclic error causing a stack overflow
+    final body = {
+      'client_id': _clientId,
+      'events': <Map<String, Object?>>[
+        <String, Object?>{
+          'name': event.eventName.label,
+          'params': event.eventData,
+        }
+      ],
+      'user_properties': <String, Map<String, Object?>>{
+        'flutter_channel': {'value': userProperty.flutterChannel},
+        'flutter_version': {'value': userProperty.flutterVersion},
+        'host': {'value': userProperty.host},
+        'dart_version': {'value': userProperty.dartVersion},
+        'analytics_pkg_version': {'value': kPackageVersion},
+        'tool': {'value': userProperty.tool},
+        'local_time': {'value': formatDateTime(clock.now())},
+        'host_os_version': {'value': userProperty.hostOsVersion},
+        'locale': {'value': userProperty.locale},
+        'client_ide': {'value': userProperty.clientIde},
+        'enabled_features': {'value': userProperty.enabledFeatures},
+      },
+    };
+
+    if (_enableAsserts) checkBody(body);
+
+    final gaClientFuture = _gaClient.sendData(body);
+    _futures.add(gaClientFuture);
+    gaClientFuture.whenComplete(() => _futures.remove(gaClientFuture));
   }
 }
 
