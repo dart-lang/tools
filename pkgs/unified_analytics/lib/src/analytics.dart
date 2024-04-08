@@ -715,7 +715,7 @@ class AnalyticsImpl implements Analytics {
 
     // Construct the body of the request
     //
-    // This hard codes the session id to the current timestamp and doens't
+    // This hard codes the session id to the current timestamp and doesn't
     // try to parse the session json file again when attempting to send an error
     final body = {
       'client_id': _clientId,
