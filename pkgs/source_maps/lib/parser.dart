@@ -66,7 +66,7 @@ Mapping parseJson(Map map,
     if (map.containsKey('mappings') ||
         map.containsKey('sources') ||
         map.containsKey('names')) {
-      throw FormatException('map containing "sections" '
+      throw const FormatException('map containing "sections" '
           'cannot contain "mappings", "sources", or "names".');
     }
     return MultiSectionMapping.fromJson(map['sections'] as List, otherMaps,
@@ -110,13 +110,13 @@ class MultiSectionMapping extends Mapping {
       {/*String|Uri*/ Object? mapUrl}) {
     for (var section in sections.cast<Map>()) {
       var offset = section['offset'] as Map?;
-      if (offset == null) throw FormatException('section missing offset');
+      if (offset == null) throw const FormatException('section missing offset');
 
       var line = offset['line'] as int?;
-      if (line == null) throw FormatException('offset missing line');
+      if (line == null) throw const FormatException('offset missing line');
 
       var column = offset['column'] as int?;
-      if (column == null) throw FormatException('offset missing column');
+      if (column == null) throw const FormatException('offset missing column');
 
       _lineStart.add(line);
       _columnStart.add(column);
@@ -125,7 +125,8 @@ class MultiSectionMapping extends Mapping {
       var map = section['map'] as Map?;
 
       if (url != null && map != null) {
-        throw FormatException("section can't use both url and map entries");
+        throw const FormatException(
+            "section can't use both url and map entries");
       } else if (url != null) {
         var other = otherMaps?[url];
         if (otherMaps == null || other == null) {
@@ -137,11 +138,11 @@ class MultiSectionMapping extends Mapping {
       } else if (map != null) {
         _maps.add(parseJson(map, otherMaps: otherMaps, mapUrl: mapUrl));
       } else {
-        throw FormatException('section missing url or map');
+        throw const FormatException('section missing url or map');
       }
     }
     if (_lineStart.isEmpty) {
-      throw FormatException('expected at least one section');
+      throw const FormatException('expected at least one section');
     }
   }
 
@@ -342,7 +343,7 @@ class SingleMapping extends Mapping {
         urls.keys.toList(), names.keys.toList(), lines);
   }
 
-  SingleMapping.fromJson(Map<String, dynamic> map, {mapUrl})
+  SingleMapping.fromJson(Map<String, dynamic> map, {Object? mapUrl})
       : targetUrl = map['file'] as String?,
         urls = List<String>.from(map['sources'] as List),
         names = List<String>.from((map['names'] as List?) ?? []),

@@ -14,9 +14,8 @@ class SourceMapSpan extends SourceSpanBase {
   /// If this is `true`, [text] is the value of the identifier.
   final bool isIdentifier;
 
-  SourceMapSpan(SourceLocation start, SourceLocation end, String text,
-      {this.isIdentifier = false})
-      : super(start, end, text);
+  SourceMapSpan(super.start, super.end, super.text,
+      {this.isIdentifier = false});
 
   /// Creates a [SourceMapSpan] for an identifier with value [text] starting at
   /// [start].

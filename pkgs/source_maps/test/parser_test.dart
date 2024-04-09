@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: inference_failure_on_collection_literal
+// ignore_for_file: inference_failure_on_instance_creation
+
 import 'dart:convert';
 
 import 'package:source_maps/source_maps.dart';
