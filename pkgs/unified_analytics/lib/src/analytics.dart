@@ -715,8 +715,8 @@ class AnalyticsImpl implements Analytics {
 
     // Construct the body of the request
     //
-    // This hard codes the session id to the current timestamp and doesn't
-    // try to parse the session json file again when attempting to send an error
+    // This method omits the session id from the user property payload so that
+    // it doesn't skew session length calculations
     final body = {
       'client_id': _clientId,
       'events': <Map<String, Object?>>[
@@ -726,7 +726,6 @@ class AnalyticsImpl implements Analytics {
         }
       ],
       'user_properties': <String, Map<String, Object?>>{
-        'session_id': {'value': clock.now().millisecondsSinceEpoch},
         'flutter_channel': {'value': userProperty.flutterChannel},
         'flutter_version': {'value': userProperty.flutterVersion},
         'host': {'value': userProperty.host},
