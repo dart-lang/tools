@@ -800,6 +800,12 @@ class FakeAnalytics extends AnalyticsImpl {
     // for internal methods in the `Analytics` instance
     sentEvents.add(event);
   }
+
+  @override
+  void _sendError(Event event) {
+    super._sendError(event);
+    sentEvents.add(event);
+  }
 }
 
 /// An implementation that will never send events.
