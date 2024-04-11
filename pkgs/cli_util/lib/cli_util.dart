@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Utilities to return the Dart SDK location.
+/// Utilities to locate the Dart SDK.
 library cli_util;
 
 import 'dart:async';
@@ -10,11 +10,14 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 
-/// Return the path to the current Dart SDK.
-String getSdkPath() => path.dirname(path.dirname(Platform.resolvedExecutable));
+/// The path to the current Dart SDK.
+String get sdkPath => path.dirname(path.dirname(Platform.resolvedExecutable));
 
-/// Get the user-specific application configuration folder for the current
-/// platform.
+/// Returns the path to the current Dart SDK.
+@Deprecated("Use 'sdkPath' instead")
+String getSdkPath() => sdkPath;
+
+/// The user-specific application configuration folder for the current platform.
 ///
 /// This is a location appropriate for storing application specific
 /// configuration for the current user. The [productName] should be unique to
@@ -29,12 +32,12 @@ String getSdkPath() => path.dirname(path.dirname(Platform.resolvedExecutable));
 ///     (if `$XDG_CONFIG_HOME` is defined), and,
 ///  * `$HOME/.config/<productName>` otherwise.
 ///
-/// This aims follows best practices for each platform, honoring the
-/// [XDG Base Directory Specification][1] on Linux and [File System Basics][2]
-/// on Mac OS.
+/// The chosen location aims to follow best practices for each platform,
+/// honoring the [XDG Base Directory Specification][1] on Linux and
+/// [File System Basics][2] on Mac OS.
 ///
-/// Throws an [EnvironmentNotFoundException] if `%APPDATA%` or `$HOME` is needed
-/// but undefined.
+/// Throws an [EnvironmentNotFoundException] if an environment entry,
+/// `%APPDATA%` or `$HOME`, is needed and not available.
 ///
 /// [1]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 /// [2]: https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW1
@@ -43,16 +46,11 @@ String applicationConfigHome(String productName) =>
 
 String get _configHome {
   if (Platform.isWindows) {
-    final appdata = _env['APPDATA'];
-    if (appdata == null) {
-      throw EnvironmentNotFoundException(
-          'Environment variable %APPDATA% is not defined!');
-    }
-    return appdata;
+    return _requireEnv('APPDATA');
   }
 
   if (Platform.isMacOS) {
-    return path.join(_home, 'Library', 'Application Support');
+    return path.join(_requireEnv('HOME'), 'Library', 'Application Support');
   }
 
   if (Platform.isLinux) {
@@ -62,26 +60,26 @@ String get _configHome {
     }
     // XDG Base Directory Specification says to use $HOME/.config/ when
     // $XDG_CONFIG_HOME isn't defined.
-    return path.join(_home, '.config');
+    return path.join(_requireEnv('HOME'), '.config');
   }
 
   // We have no guidelines, perhaps we should just do: $HOME/.config/
   // same as XDG specification would specify as fallback.
-  return path.join(_home, '.config');
+  return path.join(_requireEnv('HOME'), '.config');
 }
 
-String get _home {
-  final home = _env['HOME'];
-  if (home == null) {
-    throw EnvironmentNotFoundException(
-        r'Environment variable $HOME is not defined!');
-  }
-  return home;
-}
+String _requireEnv(String name) =>
+    _env[name] ?? (throw EnvironmentNotFoundException(name));
 
+/// Exception thrown if a required environment entry does not exist.
+///
+/// Thrown by [applicationConfigHome] if an expected and required
+/// platform specific environment entry is not available.
 class EnvironmentNotFoundException implements Exception {
-  final String message;
-  EnvironmentNotFoundException(this.message);
+  /// Name of environment entry which was needed, but not found.
+  final String entryName;
+  String get message => 'Environment variable \'$entryName\' is not defined!';
+  EnvironmentNotFoundException(this.entryName);
   @override
   String toString() => message;
 }

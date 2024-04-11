@@ -7,7 +7,7 @@ A package to help in building Dart command-line apps.
 ## What's this?
 
 `package:cli_util` provides:
-- utilities to find the Dart SDK directory (`getSdkPath()`)
+- utilities to find the Dart SDK directory (`sdkPath`)
 - utilities to find the settings directory for a tool (`applicationConfigHome()`)
 - utilities to aid in showing rich CLI output and progress information (`cli_logging.dart`)
 
@@ -20,11 +20,11 @@ import 'package:cli_util/cli_util.dart';
 import 'package:path/path.dart' as path;
 
 main(args) {
-  // Get sdk dir from cli_util.
-  var sdkPath = getSdkPath();
+  // Get SDK directory from cli_util.
+  var sdkDir = sdkPath;
   
   // Do stuff... For example, print version string
-  var versionFile = File(path.join(sdkPath, 'version'));
+  var versionFile = File(path.join(sdkDir, 'version'));
   print(versionFile.readAsStringSync());
 }
 ```

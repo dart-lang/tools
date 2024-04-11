@@ -1,3 +1,7 @@
+## 0.4.2-wip
+
+- Add `sdkPath` getter, deprecate `getSdkPath` function.
+  
 ## 0.4.1
 
 - Fix a broken link in the readme.
