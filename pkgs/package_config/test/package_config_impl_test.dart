@@ -126,7 +126,7 @@ void main() {
   });
 
   group('package config', () {
-    test('emtpy', () {
+    test('empty', () {
       var empty = PackageConfig([], extraData: unique);
       expect(empty.version, 2);
       expect(empty.packages, isEmpty);

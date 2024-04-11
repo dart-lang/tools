@@ -164,7 +164,7 @@ bool hasAbsolutePath(Uri uri) =>
 /// the [baseUri], or if there is no overlap in the paths of the
 /// two URIs at all, the [uri] is returned as-is.
 ///
-/// Otherwise the result is a path-only URI which satsifies
+/// Otherwise the result is a path-only URI which satisfies
 /// `baseUri.resolveUri(result) == uri`,
 ///
 /// The `baseUri` must be absolute.

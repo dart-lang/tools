@@ -33,7 +33,7 @@ final Uri parentPath = Uri(path: '..');
 /// Returns `null` if no configuration was found. If a configuration
 /// is needed, then the caller can supply [PackageConfig.empty].
 ///
-/// If [minVersion] is greated than 1, `.packages` files are ignored.
+/// If [minVersion] is greater than 1, `.packages` files are ignored.
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
 Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
@@ -46,7 +46,7 @@ Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
   do {
     // Check for $cwd/.packages
     var packageConfig =
-        await findPackagConfigInDirectory(directory, minVersion, onError);
+        await findPackageConfigInDirectory(directory, minVersion, onError);
     if (packageConfig != null) return packageConfig;
     if (!recursive) break;
     // Check in parent directories.
@@ -113,10 +113,10 @@ Future<PackageConfig?> findPackageConfigUri(
 /// a best-effort attempt is made to return a package configuration.
 /// This may be the empty package configuration.
 ///
-/// If [minVersion] is greated than 1, `.packages` files are ignored.
+/// If [minVersion] is greater than 1, `.packages` files are ignored.
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
-Future<PackageConfig?> findPackagConfigInDirectory(Directory directory,
+Future<PackageConfig?> findPackageConfigInDirectory(Directory directory,
     int minVersion, void Function(Object error) onError) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {

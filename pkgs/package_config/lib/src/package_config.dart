@@ -34,7 +34,7 @@ abstract class PackageConfig {
   ///
   /// The package's root ([Package.root]) and package-root
   /// ([Package.packageUriRoot]) paths must satisfy a number of constraints
-  /// We say that one path (which we know ends with a `/` charater)
+  /// We say that one path (which we know ends with a `/` character)
   /// is inside another path, if the latter path is a prefix of the former path,
   /// including the two paths being the same.
   ///
@@ -159,7 +159,7 @@ abstract class PackageConfig {
 
   /// Look up a package by name.
   ///
-  /// Returns the [Package] fron [packages] with [packageName] as
+  /// Returns the [Package] from [packages] with [packageName] as
   /// [Package.name]. Returns `null` if the package is not available in the
   /// current configuration.
   Package? operator [](String packageName);
@@ -377,7 +377,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
 
 /// An *invalid* language version.
 ///
-/// Stored in a [Package] when the orginal language version string
+/// Stored in a [Package] when the original language version string
 /// was invalid and a `onError` handler was passed to the parser
 /// which did not throw on an error.
 abstract class InvalidLanguageVersion implements LanguageVersion {

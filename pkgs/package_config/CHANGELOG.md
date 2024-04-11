@@ -53,7 +53,7 @@
 - Based on new JSON file format with more content.
 - This version includes all the new functionality intended for a 2.0.0
   version, as well as the, now deprecated, version 1 functionality.
-  When we release 2.0.0, the deprectated functionality will be removed.
+  When we release 2.0.0, the deprecated functionality will be removed.
 
 ## 1.1.0
 

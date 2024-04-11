@@ -436,7 +436,7 @@ class TriePackageTree implements PackageTree {
       }
 
       // For internal reasons we allow this (for now). One should still never do
-      // it thouh.
+      // it though.
       // 3) The new package is inside the packageUriRoot of existing package.
       if (_disallowPackagesInsidePackageUriRoot) {
         if (_beginsWith(0, existingPackage.packageUriRoot.toString(),

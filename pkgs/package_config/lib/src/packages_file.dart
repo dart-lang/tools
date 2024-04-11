@@ -114,7 +114,7 @@ PackageConfig parse(
     }
     if (packageNames.contains(packageName)) {
       onError(PackageConfigFormatException(
-          'Same package name occured more than once', source, start));
+          'Same package name occurred more than once', source, start));
       continue;
     }
     var rootUri = packageLocation;
