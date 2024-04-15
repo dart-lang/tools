@@ -229,9 +229,7 @@ void main() {
   });
 
   group('Log handler:', () {
-    // Skipping this test since the hotfix affects how many records are written
-    // to the log file
-    test(skip: true, 'only sends one event for FormatException', () {
+    test('only sends one event for FormatException', () {
       expect(logFile.existsSync(), isTrue);
 
       // Write invalid lines to the log file to have a FormatException
@@ -261,7 +259,10 @@ void main() {
             (element) => element.eventName == DashEvent.analyticsException),
         hasLength(1),
       );
-      expect(logFile.readAsLinesSync(), hasLength(4));
+
+      // Removing this test case because we are no longer writing error events
+      // to the locally persisted log file
+      // expect(logFile.readAsLinesSync(), hasLength(4));
     });
 
     test('only sends one event for TypeError', () {

@@ -6,6 +6,8 @@
 
 [Diff](https://github.com/dart-lang/tools/compare/unified_analytics-v5.8.8...hotfix-analytics-5.8.8+1?expand=1) between `5.8.8` and this hotfix release.
 
+This release also includes altered tests for log file related tests. This release changes the functionality for error events by not persisting them locally.
+
 ## What's this?
 
 This package is intended to be used on Dart and Flutter related
