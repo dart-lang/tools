@@ -1,3 +1,7 @@
+## 5.8.8+1
+
+- Edit to error handler to not use default `Analytic.send` method and use new `Analytics._sendError` method that doesn't create a session id
+
 ## 5.8.8
 
 - [Bug fix](https://github.com/dart-lang/tools/issues/252) rewrite the other call site for the session file

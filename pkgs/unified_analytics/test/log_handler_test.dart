@@ -126,10 +126,13 @@ void main() {
     expect(logFile.readAsLinesSync().length,
         countOfEventsToSend + countOfMalformedRecords);
     final logFileStats = analytics.logFileStats();
-    expect(logFile.readAsLinesSync().length,
-        countOfEventsToSend + countOfMalformedRecords + 1,
-        reason:
-            'There should have been on error event sent when getting stats');
+
+    // Removing this test case because we are no longer writing error events
+    // to the locally persisted log file
+    // expect(logFile.readAsLinesSync().length,
+    //     countOfEventsToSend + countOfMalformedRecords + 1,
+    //     reason:
+    //         'There should have been on error event sent when getting stats');
 
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, countOfEventsToSend);
@@ -172,9 +175,13 @@ void main() {
       analytics.send(testEvent);
     }
     final logFileStats = analytics.logFileStats();
-    expect(analytics.sentEvents.last.eventName, DashEvent.analyticsException,
-        reason: 'Calling for the stats should have caused an error');
-    expect(logFile.readAsLinesSync().length, kLogFileLength);
+
+    // Removing this test case because we are no longer writing error events
+    // to the locally persisted log file
+    // expect(analytics.sentEvents.last.eventName, DashEvent.analyticsException,
+    //     reason: 'Calling for the stats should have caused an error');
+    // expect(logFile.readAsLinesSync().length, kLogFileLength);
+
     expect(logFileStats, isNotNull);
     expect(logFileStats!.recordCount, recordsToSendInitially,
         reason: 'The first record should be malformed');
@@ -186,8 +193,11 @@ void main() {
     final secondLogFileStats = analytics.logFileStats();
     expect(analytics.sentEvents.last, testEvent);
     expect(secondLogFileStats, isNotNull);
-    expect(secondLogFileStats!.recordCount, kLogFileLength);
-    expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
+    expect(secondLogFileStats!.recordCount, kLogFileLength - 1);
+
+    // Removing this test case because we are no longer writing error events
+    // to the locally persisted log file
+    // expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
   });
 
   test('Catching cast errors for each log record silently', () async {
@@ -206,9 +216,12 @@ void main() {
     final secondLogFileStats = analytics.logFileStats();
 
     expect(secondLogFileStats, isNotNull);
-    expect(secondLogFileStats!.recordCount, countOfEventsToSend + 1,
-        reason: 'Plus one for the error event that is sent '
-            'from the first logFileStats call');
+
+    // Removing this test case because we are no longer writing error events
+    // to the locally persisted log file
+    // expect(secondLogFileStats!.recordCount, countOfEventsToSend + 1,
+    //     reason: 'Plus one for the error event that is sent '
+    //         'from the first logFileStats call');
   });
 
   test(

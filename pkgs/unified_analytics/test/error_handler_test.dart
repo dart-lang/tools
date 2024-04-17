@@ -259,7 +259,10 @@ void main() {
             (element) => element.eventName == DashEvent.analyticsException),
         hasLength(1),
       );
-      expect(logFile.readAsLinesSync(), hasLength(4));
+
+      // Removing this test case because we are no longer writing error events
+      // to the locally persisted log file
+      // expect(logFile.readAsLinesSync(), hasLength(4));
     });
 
     test('only sends one event for TypeError', () {
