@@ -1,6 +1,10 @@
-## 2.2.3-wip
+## 2.2.3
 
 - Require Dart 3.2.
+- Add `PerfBenchmarkBase` class which runs the 'perf stat' command from
+linux-tools on a benchmark and reports metrics from the hardware
+performance counters and the iteration count, as well as the run time
+measurement reported by `BenchmarkBase`.
 
 ## 2.2.2
 

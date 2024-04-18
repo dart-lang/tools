@@ -64,6 +64,6 @@ class AsyncBenchmarkBase {
 
   /// Run the benchmark and report results on the [emitter].
   Future<void> report() async {
-    emitter.emit(name, await measure());
+    emitter.emit(name, await measure(), unit: 'us.');
   }
 }

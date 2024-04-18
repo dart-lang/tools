@@ -3,5 +3,5 @@
 // BSD-style license that can be found in the LICENSE file.
 
 export 'src/async_benchmark_base.dart';
-export 'src/benchmark_base.dart';
+export 'src/benchmark_base.dart' show BenchmarkBase;
 export 'src/score_emitter.dart';

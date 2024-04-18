@@ -13,7 +13,8 @@ class MockResultEmitter extends ScoreEmitter {
   int emitCount = 0;
 
   @override
-  void emit(String name, double value) {
+  void emit(String name, double value,
+      {String metric = 'RunTime', String unit = ''}) {
     emitCount++;
   }
 }
