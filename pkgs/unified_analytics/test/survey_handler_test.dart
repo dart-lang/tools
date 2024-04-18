@@ -263,7 +263,7 @@ void main() {
   group('Testing with FakeSurveyHandler', () {
     late Analytics analytics;
     late Directory homeDirectory;
-    late FileSystem fs;
+    late MemoryFileSystem fs;
     late File clientIdFile;
     late File dismissedSurveyFile;
 
@@ -295,20 +295,16 @@ void main() {
       //
       // This is especially useful when testing the "excludeDashTools" array
       // to prevent certain tools from getting a survey from this package
-      final initialAnalyticsFlutter = Analytics.test(
+      final initialAnalyticsFlutter = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
-        measurementId: 'measurementId',
-        apiSecret: 'apiSecret',
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
       );
-      final initialAnalyticsDart = Analytics.test(
+      final initialAnalyticsDart = Analytics.fake(
         tool: DashTool.dartTool,
         homeDirectory: homeDirectory,
-        measurementId: 'measurementId',
-        apiSecret: 'apiSecret',
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
@@ -319,11 +315,9 @@ void main() {
 
     test('returns valid survey', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -372,11 +366,9 @@ void main() {
 
     test('does not return expired survey', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -414,11 +406,9 @@ void main() {
 
     test('does not return survey if opted out of telemetry', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -459,11 +449,9 @@ void main() {
 
     test('returns valid survey from json', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -561,11 +549,9 @@ void main() {
     test('no survey returned from malformed json', () async {
       // The date is not valid for the start date
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -625,11 +611,9 @@ void main() {
 
     test('returns two valid survey from json', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -708,11 +692,9 @@ void main() {
 
     test('valid survey not returned if opted out', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -784,11 +766,9 @@ void main() {
           ],
           buttonList: [],
         );
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -829,11 +809,9 @@ void main() {
           ],
           buttonList: [],
         );
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -876,11 +854,9 @@ void main() {
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -905,11 +881,9 @@ void main() {
       // This analytics instance will be simulated to be shortly after the first
       // snooze, but before the snooze period has elapsed
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 15)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -926,11 +900,9 @@ void main() {
 
       // This analytics instance will be simulated to be after the snooze period
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 35)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -972,11 +944,9 @@ void main() {
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1000,11 +970,9 @@ void main() {
 
       // Moving out a week
       await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1048,11 +1016,9 @@ void main() {
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1080,11 +1046,9 @@ void main() {
 
       // Moving out a week
       await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1128,11 +1092,9 @@ void main() {
       );
 
       await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1157,11 +1119,9 @@ void main() {
 
       // Moving out a week
       await withClock(Clock.fixed(DateTime(2023, 3, 10, 12, 0)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1181,11 +1141,9 @@ void main() {
 
     test('Filtering out with excludeDashTool array', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1228,11 +1186,9 @@ void main() {
         'Filter from excludeDashTool array does not '
         'apply for different tool', () async {
       await withClock(Clock.fixed(DateTime(2023, 3, 3)), () async {
-        analytics = Analytics.test(
+        analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
-          measurementId: 'measurementId',
-          apiSecret: 'apiSecret',
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,

@@ -11,15 +11,13 @@ import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late Directory home;
   late Analytics initializationAnalytics;
   late Analytics analytics;
 
   const homeDirName = 'home';
   const initialTool = DashTool.flutterTool;
-  const measurementId = 'measurementId';
-  const apiSecret = 'apiSecret';
   const toolsMessageVersion = 1;
   const toolsMessage = 'toolsMessage';
   const flutterChannel = 'flutterChannel';
@@ -38,11 +36,9 @@ void main() {
 
     // This is the first analytics instance that will be used to demonstrate
     // that events will not be sent with the first run of analytics
-    initializationAnalytics = Analytics.test(
+    initializationAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -58,11 +54,9 @@ void main() {
     //
     // This instance should have the same parameters as the one above for
     // [initializationAnalytics]
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -94,11 +88,9 @@ void main() {
         reason: 'Returns null because no records have been recorded');
 
     // The newly created instance will not be suppressed
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,

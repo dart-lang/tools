@@ -1,10 +1,13 @@
-## 6.0.0-wip
+## 6.0.0
 
 - Consolidate `Session` functionality into `UserProperty` to prevent race condition crash where session logic crashed before initializing `UserProperty`
 - Get rid of `late` variables throughout implementation class, `AnalyticsImpl`
 - Any error events (`Event.analyticsException`) encountered within package will be sent when invoking `Analytics.close`; replacing `ErrorHandler` functionality
 - Exposing new method for `FakeAnalytics.sendPendingErrorEvents` to send error events on command
 - Added `Event.fromJson` static method to generate instance of `Event` from JSON
+- Remove unused parameters `measurementId` and `apiSecret` from the `Analytics.test` constructor
+- Remove `Analytics.test` factory constructor in favor of `Analytics.fake` static method to return a `FakeAnalytics` instance
+- Remove `FakeAnalytics` default constructor in favor of `Analytics.fake`
 
 ## 5.8.8
 

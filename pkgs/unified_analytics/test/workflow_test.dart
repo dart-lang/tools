@@ -13,7 +13,7 @@ import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late Directory home;
   late Directory dartToolDirectory;
   late File clientIdFile;
@@ -25,8 +25,6 @@ void main() {
   const homeDirName = 'home';
   const initialTool = DashTool.flutterTool;
   const secondTool = DashTool.dartTool;
-  const measurementId = 'measurementId';
-  const apiSecret = 'apiSecret';
   const toolsMessageVersion = 1;
   const toolsMessage = 'toolsMessage';
   const flutterChannel = 'flutterChannel';
@@ -60,11 +58,9 @@ void main() {
   });
 
   test('Confirm workflow for first run', () {
-    final firstAnalytics = Analytics.test(
+    final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -97,11 +93,9 @@ void main() {
               'to send any events, even if the user accepts');
     }
 
-    final firstAnalytics = Analytics.test(
+    final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -114,11 +108,9 @@ void main() {
     checkAnalyticsInstance(firstAnalytics);
 
     // Instance where we increment the version of the message
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -133,11 +125,9 @@ void main() {
     checkAnalyticsInstance(secondAnalytics);
 
     // Instance for a different tool with the incremented version
-    final thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.fake(
       tool: secondTool, // Different tool
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -153,11 +143,9 @@ void main() {
   });
 
   test('Confirm workflow for checking tools into the config file', () {
-    final firstAnalytics = Analytics.test(
+    final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -210,11 +198,9 @@ void main() {
 
     // Creating a second analytics instance from the same tool now should
     // allow for events to be sent
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -243,11 +229,9 @@ void main() {
 
     // Delete the log file to reset the counter of events sent
     logFile.deleteSync();
-    final thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -274,11 +258,9 @@ void main() {
 
     // The fourth instance of the analytics class with the consent message
     // version incremented should now be able to send messages
-    final fourthAnalytics = Analytics.test(
+    final fourthAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -300,11 +282,9 @@ void main() {
   });
 
   test('Disable second instance if first one did not show message', () {
-    final firstAnalytics = Analytics.test(
+    final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -316,11 +296,9 @@ void main() {
 
     expect(firstAnalytics.shouldShowMessage, true);
 
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -334,11 +312,9 @@ void main() {
 
     secondAnalytics.clientShowedMessage();
 
-    final thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -353,11 +329,9 @@ void main() {
 
   test('Passing large version number gets logged in config', () {
     final firstVersion = toolsMessageVersion + 3;
-    final secondAnalytics = Analytics.test(
+    final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
       flutterChannel: flutterChannel,
       toolsMessageVersion: firstVersion,
       toolsMessage: toolsMessage,
@@ -377,11 +351,9 @@ void main() {
     // Create a new instane of the secondTool with an even
     // bigger version
     final secondVersion = firstVersion + 3;
-    final thirdAnalytics = Analytics.test(
+    final thirdAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
-      measurementId: 'measurementId',
-      apiSecret: 'apiSecret',
       flutterChannel: flutterChannel,
       toolsMessageVersion: secondVersion,
       toolsMessage: toolsMessage,

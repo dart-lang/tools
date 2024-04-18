@@ -12,14 +12,12 @@ import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
-  late FileSystem fs;
+  late MemoryFileSystem fs;
   late Directory home;
   late Analytics analytics;
 
   const homeDirName = 'home';
   const initialTool = DashTool.flutterTool;
-  const measurementId = 'measurementId';
-  const apiSecret = 'apiSecret';
   const toolsMessageVersion = 1;
   const toolsMessage = 'toolsMessage';
   const flutterChannel = 'flutterChannel';
@@ -51,11 +49,9 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -84,11 +80,9 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -116,11 +110,9 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -148,11 +140,9 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -184,11 +174,9 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -220,11 +208,9 @@ void main() {
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -254,11 +240,9 @@ NOT VALID JSON
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -292,11 +276,9 @@ NOT VALID JSON
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -326,11 +308,9 @@ NOT VALID JSON
 
     // The main analytics instance, other instances can be spawned within tests
     // to test how to instances running together work
-    analytics = Analytics.test(
+    analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
-      measurementId: measurementId,
-      apiSecret: apiSecret,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
