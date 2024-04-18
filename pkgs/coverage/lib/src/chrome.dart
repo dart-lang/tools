@@ -166,6 +166,6 @@ class _Position {
   int get hashCode => Object.hash(line, column);
 
   @override
-  bool operator ==(dynamic o) =>
+  bool operator ==(Object o) =>
       o is _Position && o.line == line && o.column == column;
 }
