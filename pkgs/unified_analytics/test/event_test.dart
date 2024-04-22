@@ -553,6 +553,71 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
+  test('Event.devtoolsEvent constructed', () {
+    Event generateEvent() => Event.devtoolsEvent(
+          eventCategory: 'eventCategory',
+          label: 'label',
+          value: 1,
+          userInitiatedInteraction: true,
+          g3Username: 'g3Username',
+          userApp: 'userApp',
+          userBuild: 'userBuild',
+          userPlatform: 'userPlatform',
+          devtoolsPlatform: 'devtoolsPlatform',
+          devtoolsChrome: 'devtoolsChrome',
+          devtoolsVersion: 'devtoolsVersion',
+          ideLaunched: 'ideLaunched',
+          isExternalBuild: 'isExternalBuild',
+          isEmbedded: 'isEmbedded',
+          ideLaunchedFeature: 'ideLaunchedFeature',
+          uiDurationMicros: 123,
+          rasterDurationMicros: 123,
+          shaderCompilationDurationMicros: 123,
+          traceEventCount: 123,
+          cpuSampleCount: 123,
+          cpuStackDepth: 123,
+          heapDiffObjectsBefore: 123,
+          heapDiffObjectsAfter: 123,
+          heapObjectsTotal: 123,
+          rootSetCount: 123,
+          rowCount: 123,
+          inspectorTreeControllerId: 123,
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventData['eventCategory'], 'eventCategory');
+    expect(constructedEvent.eventData['label'], 'label');
+    expect(constructedEvent.eventData['value'], 1);
+    expect(constructedEvent.eventData['userInitiatedInteraction'], true);
+    expect(constructedEvent.eventData['g3Username'], 'g3Username');
+    expect(constructedEvent.eventData['userApp'], 'userApp');
+    expect(constructedEvent.eventData['userBuild'], 'userBuild');
+    expect(constructedEvent.eventData['userPlatform'], 'userPlatform');
+    expect(constructedEvent.eventData['devtoolsPlatform'], 'devtoolsPlatform');
+    expect(constructedEvent.eventData['devtoolsChrome'], 'devtoolsChrome');
+    expect(constructedEvent.eventData['devtoolsVersion'], 'devtoolsVersion');
+    expect(constructedEvent.eventData['ideLaunched'], 'ideLaunched');
+    expect(constructedEvent.eventData['isExternalBuild'], 'isExternalBuild');
+    expect(constructedEvent.eventData['isEmbedded'], 'isEmbedded');
+    expect(
+        constructedEvent.eventData['ideLaunchedFeature'], 'ideLaunchedFeature');
+    expect(constructedEvent.eventData['uiDurationMicros'], 123);
+    expect(constructedEvent.eventData['rasterDurationMicros'], 123);
+    expect(constructedEvent.eventData['shaderCompilationDurationMicros'], 123);
+    expect(constructedEvent.eventData['traceEventCount'], 123);
+    expect(constructedEvent.eventData['cpuSampleCount'], 123);
+    expect(constructedEvent.eventData['cpuStackDepth'], 123);
+    expect(constructedEvent.eventData['heapDiffObjectsBefore'], 123);
+    expect(constructedEvent.eventData['heapDiffObjectsAfter'], 123);
+    expect(constructedEvent.eventData['heapObjectsTotal'], 123);
+    expect(constructedEvent.eventData['rootSetCount'], 123);
+    expect(constructedEvent.eventData['rowCount'], 123);
+    expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
+    expect(constructedEvent.eventData.length, 27);
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (var declaration in reflectClass(Event).declarations.keys) {
@@ -563,7 +628,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 26;
+    final eventsAccountedForInTests = 27;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

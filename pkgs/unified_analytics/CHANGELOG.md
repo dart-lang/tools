@@ -1,3 +1,7 @@
+## 6.1.0
+
+- Added new event constructor `Event.devtoolsEvent` for the single devtools event with a new enum value `DashEvent.devtoolsEvent`
+
 ## 6.0.0
 
 - Consolidate `Session` functionality into `UserProperty` to prevent race condition crash where session logic crashed before initializing `UserProperty`
