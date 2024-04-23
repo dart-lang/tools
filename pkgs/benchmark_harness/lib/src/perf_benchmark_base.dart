@@ -18,7 +18,10 @@ class PerfBenchmarkBase extends BenchmarkBase {
   late final Process perfProcess;
   late final List<String> perfProcessArgs;
 
-  PerfBenchmarkBase(super.name, {super.emitter = const PrintEmitter()});
+  PerfBenchmarkBase(super.name,
+      {ScoreEmitterV2 super.emitter = const PrintEmitterV2()});
+
+  ScoreEmitterV2 get _emitterV2 => emitter as ScoreEmitterV2;
 
   Future<void> _createFifos() async {
     perfControlFifo = '${fifoDir.path}/perf_control_fifo';
@@ -81,11 +84,11 @@ class PerfBenchmarkBase extends BenchmarkBase {
             String event && ('cycles' || 'page-faults'),
             ...
           ]) {
-        emitter.emit(name, double.parse(counter) / totalIterations,
+        _emitterV2.emit(name, double.parse(counter) / totalIterations,
             metric: metrics[event]!);
       }
     }
-    emitter.emit('$name.totalIterations', totalIterations.toDouble(),
+    _emitterV2.emit('$name.totalIterations', totalIterations.toDouble(),
         metric: 'Count');
   }
 
@@ -118,7 +121,7 @@ class PerfBenchmarkBase extends BenchmarkBase {
   }
 
   Future<void> reportPerf() async {
-    emitter.emit(name, await measurePerf(), unit: 'us.');
+    _emitterV2.emit(name, await measurePerf(), unit: 'us.');
   }
 
   void _waitForAck() {

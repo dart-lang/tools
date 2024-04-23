@@ -1,6 +1,9 @@
-## 2.2.3
+## 2.3.0
 
 - Require Dart 3.2.
+- Add ScoreEmitterV2 interface, documented with the intention to change
+ScoreEmitter interface to match it in the next major release,
+ a breaking change.
 - Add `PerfBenchmarkBase` class which runs the 'perf stat' command from
 linux-tools on a benchmark and reports metrics from the hardware
 performance counters and the iteration count, as well as the run time

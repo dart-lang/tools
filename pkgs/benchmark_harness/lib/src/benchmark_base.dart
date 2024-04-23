@@ -58,7 +58,7 @@ class BenchmarkBase {
   }
 
   void report() {
-    emitter.emit(name, measure(), unit: 'us.');
+    emitter.emit(name, measure());
   }
 }
 
