@@ -1,6 +1,8 @@
-## 2.2.1-wip
+## 2.2.1
 
 - Require Dart 3.0
+- Fix removal of last key in blockmap when key has no value
+  ([#55](https://github.com/dart-lang/yaml_edit/issues/55)).
 
 ## 2.2.0
 

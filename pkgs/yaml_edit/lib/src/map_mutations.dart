@@ -145,6 +145,7 @@ SourceEdit _replaceInBlockMap(
   }
 
   /// +1 accounts for the colon
+  // TODO: What if here is a whitespace following the key, before the colon?
   final start = keyNode.span.end.offset + 1;
   var end = getContentSensitiveEnd(map.nodes[key]!);
 
@@ -175,9 +176,19 @@ SourceEdit _removeFromBlockMap(
   final keySpan = keyNode.span;
   var end = getContentSensitiveEnd(valueNode);
   final yaml = yamlEdit.toString();
+  final lineEnding = getLineEnding(yaml);
 
   if (map.length == 1) {
     final start = map.span.start.offset;
+    final nextNewLine = yaml.indexOf(lineEnding, end);
+    if (nextNewLine != -1) {
+      // Remove everything up to the next newline, this strips comments that
+      // follows on the same line as the value we're removing.
+      // It also ensures we consume colon when [valueNode.value] is `null`
+      // because there is no value (e.g. `key: \n`). Because [valueNode.span] in
+      // such cases point to the colon `:`.
+      end = nextNewLine;
+    }
     return SourceEdit(start, end - start, '{}');
   }
 
@@ -187,16 +198,16 @@ SourceEdit _removeFromBlockMap(
   ///
   /// We do this because we suspect that our users will want the inline
   /// comments to disappear too.
-  final nextNewLine = yaml.indexOf('\n', end);
+  final nextNewLine = yaml.indexOf(lineEnding, end);
   if (nextNewLine != -1) {
-    end = nextNewLine + 1;
+    end = nextNewLine + lineEnding.length;
   }
 
   final nextNode = getNextKeyNode(map, keyNode);
 
   if (start > 0) {
     final lastHyphen = yaml.lastIndexOf('-', start - 1);
-    final lastNewLine = yaml.lastIndexOf('\n', start - 1);
+    final lastNewLine = yaml.lastIndexOf(lineEnding, start - 1);
     if (lastHyphen > lastNewLine) {
       start = lastHyphen + 2;
 
@@ -208,7 +219,7 @@ SourceEdit _removeFromBlockMap(
         end += nextNode.span.start.column;
       }
     } else if (lastNewLine > lastHyphen) {
-      start = lastNewLine + 1;
+      start = lastNewLine + lineEnding.length;
     }
   }
 
