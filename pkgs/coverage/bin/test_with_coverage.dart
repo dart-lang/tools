@@ -80,6 +80,10 @@ ArgParser _createArgParser() => ArgParser()
     defaultsTo: false,
     help: 'Collect branch coverage info.',
   )
+  ..addMultiOption('scope-output',
+      help: 'restrict coverage results so that only scripts that start with '
+          'the provided package path are considered. Defaults to the name of '
+          'the package under test.')
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
@@ -90,7 +94,8 @@ class Flags {
     this.port,
     this.testScript,
     this.functionCoverage,
-    this.branchCoverage, {
+    this.branchCoverage,
+    this.scopeOutput, {
     required this.rest,
   });
 
@@ -101,6 +106,7 @@ class Flags {
   final String testScript;
   final bool functionCoverage;
   final bool branchCoverage;
+  final List<String> scopeOutput;
   final List<String> rest;
 }
 
@@ -154,6 +160,7 @@ ${parser.usage}
     args['test'] as String,
     args['function-coverage'] as bool,
     args['branch-coverage'] as bool,
+    args['scope-output'] as List<String>,
     rest: args.rest,
   );
 }
@@ -195,11 +202,13 @@ Future<void> main(List<String> arguments) async {
   );
   final serviceUri = await serviceUriCompleter.future;
 
+  final scopes =
+      flags.scopeOutput.isEmpty ? [flags.packageName] : flags.scopeOutput;
   await collect_coverage.main([
     '--wait-paused',
     '--resume-isolates',
     '--uri=$serviceUri',
-    '--scope-output=${flags.packageName}',
+    for (final scope in scopes) '--scope-output=$scope',
     if (flags.branchCoverage) '--branch-coverage',
     if (flags.functionCoverage) '--function-coverage',
     '-o',
