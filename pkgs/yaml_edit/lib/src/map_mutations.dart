@@ -188,6 +188,9 @@ SourceEdit _removeFromBlockMap(
       // because there is no value (e.g. `key: \n`). Because [valueNode.span] in
       // such cases point to the colon `:`.
       end = nextNewLine;
+    } else {
+      // Remove everything until the end of the document, if there is no newline
+      end = yaml.length;
     }
     return SourceEdit(start, end - start, '{}');
   }
@@ -201,6 +204,9 @@ SourceEdit _removeFromBlockMap(
   final nextNewLine = yaml.indexOf(lineEnding, end);
   if (nextNewLine != -1) {
     end = nextNewLine + lineEnding.length;
+  } else {
+    // Remove everything until the end of the document, if there is no newline
+    end = yaml.length;
   }
 
   final nextNode = getNextKeyNode(map, keyNode);

@@ -217,6 +217,30 @@ b:
 c: 3
 '''));
     });
+
+    test('issue #55 reopend', () {
+      final doc = YamlEditor('''name: sample
+version: 0.1.0
+environment:
+  sdk: ^3.0.0
+dependencies:
+  retry: ^3.1.2
+dev_dependencies:
+  retry:''');
+      doc.remove(['dev_dependencies']);
+    });
+
+    test('issue #55 reopend, variant 2', () {
+      final doc = YamlEditor('''name: sample
+version: 0.1.0
+environment:
+  sdk: ^3.0.0
+dependencies:
+  retry: ^3.1.2
+dev_dependencies:
+  retry:''');
+      doc.remove(['dev_dependencies', 'retry']);
+    });
   });
 
   group('flow map', () {
