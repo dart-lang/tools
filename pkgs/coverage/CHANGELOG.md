@@ -1,3 +1,7 @@
+## 1.8.0
+
+- Copy collect_coverage's `--scope-output` flag to test_with_coverage.
+
 ## 1.7.2
 
 - Update `package:vm_service` constraints to '>=12.0.0 <15.0.0'.
