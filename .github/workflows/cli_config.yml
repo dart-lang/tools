@@ -28,7 +28,7 @@ jobs:
           - sdk: stable
             run-tests: true
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
           sdk: ${{matrix.sdk}}
@@ -50,7 +50,7 @@ jobs:
         run: dart pub global run coverage:test_with_coverage
         if: ${{ matrix.sdk == 'stable' }}
       - name: Upload coverage
-        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949
+        uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: cli_config_linux
@@ -69,7 +69,7 @@ jobs:
           - sdk: stable
             run-tests: true
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
           sdk: ${{matrix.sdk}}
@@ -86,7 +86,7 @@ jobs:
         run: dart pub global run coverage:test_with_coverage
         if: ${{ matrix.sdk == 'stable' }}
       - name: Upload coverage
-        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949
+        uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: cli_config_windows
