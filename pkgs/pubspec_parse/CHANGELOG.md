@@ -1,7 +1,8 @@
-## 1.2.4-wip
+## 1.3.0
 
 - Require Dart 3.0
 - Added support for `ignored_advisories` field.
+- Added structural equality for `Dependency` subclasses and `HostedDetails`.
 
 ## 1.2.3
 

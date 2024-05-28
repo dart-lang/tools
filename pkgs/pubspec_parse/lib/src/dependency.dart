@@ -111,6 +111,13 @@ class SdkDependency extends Dependency {
 
   @override
   String get _info => sdk;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SdkDependency && other.sdk == sdk && other.version == version;
+
+  @override
+  int get hashCode => Object.hash(sdk, version);
 }
 
 @JsonSerializable()
@@ -136,6 +143,16 @@ class GitDependency extends Dependency {
 
   @override
   String get _info => 'url@$url';
+
+  @override
+  bool operator ==(Object other) =>
+      other is GitDependency &&
+      other.url == url &&
+      other.ref == ref &&
+      other.path == path;
+
+  @override
+  int get hashCode => Object.hash(url, ref, path);
 }
 
 Uri? parseGitUriOrNull(String? value) =>
@@ -188,6 +205,13 @@ class PathDependency extends Dependency {
 
   @override
   String get _info => 'path@$path';
+
+  @override
+  bool operator ==(Object other) =>
+      other is PathDependency && other.path == path;
+
+  @override
+  int get hashCode => path.hashCode;
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -204,6 +228,15 @@ class HostedDependency extends Dependency {
 
   @override
   String get _info => version.toString();
+
+  @override
+  bool operator ==(Object other) =>
+      other is HostedDependency &&
+      other.version == version &&
+      other.hosted == hosted;
+
+  @override
+  int get hashCode => Object.hash(version, hosted);
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -240,6 +273,13 @@ class HostedDetails {
 
     throw ArgumentError.value(data, 'hosted', 'Must be a Map or String.');
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is HostedDetails && other.name == name && other.url == url;
+
+  @override
+  int get hashCode => Object.hash(name, url);
 }
 
 VersionConstraint _constraintFromString(String? input) =>
