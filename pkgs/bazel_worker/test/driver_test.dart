@@ -159,7 +159,7 @@ void main() {
 Future _doRequests(
     {BazelWorkerDriver? driver,
     int count = 100,
-    Function(Future<WorkResponse?>)? trackWork}) async {
+    void Function(Future<WorkResponse?>)? trackWork}) async {
   // If we create a driver, we need to make sure and terminate it.
   var terminateDriver = driver == null;
   driver ??= BazelWorkerDriver(MockWorker.spawn);
@@ -178,8 +178,7 @@ Future _doRequests(
 class MockWorkerLoop extends AsyncWorkerLoop {
   final Queue<WorkResponse> _responseQueue;
 
-  MockWorkerLoop(this._responseQueue, {AsyncWorkerConnection? connection})
-      : super(connection: connection);
+  MockWorkerLoop(this._responseQueue, {super.connection});
 
   @override
   Future<WorkResponse> performRequest(WorkRequest request) async {

@@ -6,6 +6,8 @@ import 'dart:typed_data';
 
 import 'package:protobuf/protobuf.dart';
 
+import 'message_grouper.dart';
+
 /// State held by the [MessageGrouper] while waiting for additional data to
 /// arrive.
 class MessageGrouperState {
@@ -18,7 +20,7 @@ class MessageGrouperState {
   /// Handle one byte at a time.
   ///
   /// Returns a [List<int>] of message bytes if [byte] was the last byte in a
-  /// message, otherwise returns [null].
+  /// message, otherwise returns `null`.
   List<int>? handleInput(int byte) {
     if (!_lengthReader.done) {
       _lengthReader.readByte(byte);

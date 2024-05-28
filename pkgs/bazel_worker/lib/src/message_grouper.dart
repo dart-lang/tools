@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'async_message_grouper.dart';
+import 'sync_message_grouper.dart';
+
 /// Interface for a [MessageGrouper], which groups bytes in  delimited proto
 /// format into the bytes for each message.
 ///

@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../worker_protocol.pb.dart';
+import 'async_worker_loop.dart';
+import 'sync_worker_loop.dart';
 
 /// Interface for a [WorkerLoop].
 ///
@@ -13,6 +15,6 @@ abstract class WorkerLoop {
   /// a [Future<WorkResponse>].
   dynamic performRequest(WorkRequest request);
 
-  /// Run the worker loop. Should return either a [Future] or [null].
+  /// Run the worker loop. Should return either a [Future] or `null`.
   dynamic run();
 }

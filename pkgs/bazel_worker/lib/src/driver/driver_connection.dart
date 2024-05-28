@@ -9,6 +9,7 @@ import 'dart:isolate';
 
 import '../async_message_grouper.dart';
 import '../constants.dart';
+import '../message_grouper.dart';
 import '../utils.dart';
 import '../worker_protocol.pb.dart';
 

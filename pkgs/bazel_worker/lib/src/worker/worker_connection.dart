@@ -16,7 +16,7 @@ import '../worker_protocol.pb.dart';
 /// program using `BazelWorkerDriver`, or any other process that speaks the
 /// protocol).
 abstract class WorkerConnection {
-  /// Reads a [WorkRequest] or returns [null] if there are none left.
+  /// Reads a [WorkRequest] or returns `null` if there are none left.
   ///
   /// See [AsyncWorkerConnection] and [SyncWorkerConnection] for more narrow
   /// interfaces.

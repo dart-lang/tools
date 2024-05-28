@@ -1,3 +1,7 @@
+## 1.1.2-wip
+
+* Require Dart SDK `^3.1.0`.
+
 ## 1.1.1
 
 * Fix a bug where if spawnWorker threw an error, work requests would hang

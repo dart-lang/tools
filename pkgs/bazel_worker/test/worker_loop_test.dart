@@ -112,7 +112,7 @@ void runTests<T extends TestWorkerConnection>(
       (stdinStream as TestStdinSync).pendingBytes.clear();
       await workerLoop.run();
     } else if (stdinStream is TestStdinAsync) {
-      var done = Completer();
+      var done = Completer<void>();
       // ignore: avoid_dynamic_calls
       workerLoop.run().then((_) => done.complete(null));
       (stdinStream as TestStdinAsync).controller.addError('Error!!');

@@ -23,7 +23,7 @@ class BazelWorkerDriver {
   /// The maximum number of idle workers at any given time.
   final int _maxIdleWorkers;
 
-  /// The maximum number of times to retry a [WorkAttempt] if there is an error.
+  /// The maximum number of times to retry a [_WorkAttempt] if there is an error.
   final int _maxRetries;
 
   /// The maximum number of concurrent workers to run at any given time.
@@ -57,7 +57,7 @@ class BazelWorkerDriver {
   /// to determine when actual work is being done versus just waiting for an
   /// available worker.
   Future<WorkResponse> doWork(WorkRequest request,
-      {Function(Future<WorkResponse?>)? trackWork}) {
+      {void Function(Future<WorkResponse?>)? trackWork}) {
     var attempt = _WorkAttempt(request, trackWork: trackWork);
     _workQueue.add(attempt);
     _runWorkQueue();
@@ -130,7 +130,7 @@ class BazelWorkerDriver {
     _runWorkQueue();
   }
 
-  /// Sends [request] to [worker].
+  /// Sends [attempt] to [worker].
   ///
   /// Once the worker responds then it will be added back to the pool of idle
   /// workers.
@@ -227,7 +227,7 @@ class BazelWorkerDriver {
 class _WorkAttempt {
   final WorkRequest request;
   final responseCompleter = Completer<WorkResponse>();
-  final Function(Future<WorkResponse?>)? trackWork;
+  final void Function(Future<WorkResponse?>)? trackWork;
 
   Future<WorkResponse> get response => responseCompleter.future;
 

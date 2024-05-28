@@ -7,7 +7,7 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bazel_worker/bazel_worker.dart';
+import 'bazel_worker.dart';
 
 export 'src/async_message_grouper.dart';
 export 'src/sync_message_grouper.dart';
@@ -150,7 +150,7 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   }
 
   /// Adds [response] to the queue. These will be returned from
-  /// [performResponse] in the order they are added, otherwise it will throw
+  /// [performRequest] in the order they are added, otherwise it will throw
   /// if the queue is empty.
   @override
   void enqueueResponse(WorkResponse response) {
@@ -194,7 +194,7 @@ class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   }
 
   /// Adds [response] to the queue. These will be returned from
-  /// [performResponse] in the order they are added, otherwise it will throw
+  /// [performRequest] in the order they are added, otherwise it will throw
   /// if the queue is empty.
   @override
   void enqueueResponse(WorkResponse response) {

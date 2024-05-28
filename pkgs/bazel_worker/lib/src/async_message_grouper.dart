@@ -23,7 +23,7 @@ class AsyncMessageGrouper implements MessageGrouper {
   /// Position in the current input buffer.
   int _inputBufferPos = 0;
 
-  /// Completes after [cancel] is called or [inputStream] is closed.
+  /// Completes after [cancel] is called or `inputStream` is closed.
   Future<void> get done => _done.future;
   final _done = Completer<void>();
 
