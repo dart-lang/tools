@@ -1,3 +1,6 @@
+## 2.2.2-wip
+- Suppress warnings previously printed to `stdout` when parsing YAML internally.
+
 ## 2.2.1
 
 - Require Dart 3.0
