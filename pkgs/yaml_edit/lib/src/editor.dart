@@ -574,7 +574,7 @@ class YamlEditor {
           _yaml);
     }
 
-    final actualTree = loadYamlNode(_yaml);
+    final actualTree = withYamlWarningCallback(() => loadYamlNode(_yaml));
     if (!deepEquals(actualTree, expectedTree)) {
       throw createAssertionError(
           'Modification did not result in expected result.',

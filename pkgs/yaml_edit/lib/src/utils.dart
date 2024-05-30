@@ -8,6 +8,25 @@ import 'package:yaml/yaml.dart';
 import 'editor.dart';
 import 'wrap.dart';
 
+/// Invoke [fn] while setting [yamlWarningCallback] to [warn], and restore
+/// [YamlWarningCallback] after [fn] returns.
+///
+/// Defaults to a [warn] function that ignores all warnings.
+T withYamlWarningCallback<T>(
+  T Function() fn, {
+  YamlWarningCallback warn = _ignoreWarning,
+}) {
+  final original = yamlWarningCallback;
+  try {
+    yamlWarningCallback = warn;
+    return fn();
+  } finally {
+    yamlWarningCallback = original;
+  }
+}
+
+void _ignoreWarning(String warning, [SourceSpan? span]) {/* ignore warning */}
+
 /// Determines if [string] is dangerous by checking if parsing the plain string
 /// can return a result different from [string].
 ///
@@ -15,7 +34,8 @@ import 'wrap.dart';
 /// in [string].
 bool isDangerousString(String string) {
   try {
-    if (loadYamlNode(string).value != string) {
+    final node = withYamlWarningCallback(() => loadYamlNode(string));
+    if (node.value != string) {
       return true;
     }
 

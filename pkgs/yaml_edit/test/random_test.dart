@@ -2,8 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-import 'dart:math';
+import 'dart:math' show Random;
 
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
@@ -44,15 +43,10 @@ dev_dependencies:
 ''');
 
       for (var j = 0; j < modificationsPerRound; j++) {
-        /// Using [runZoned] to hide `package:yaml`'s warnings.
-        /// Test failures and errors will still be shown.
-        runZoned(() {
-          expect(
-              () => generator.performNextModification(editor), returnsNormally);
-        },
-            zoneSpecification: ZoneSpecification(
-                print: (Zone self, ZoneDelegate parent, Zone zone,
-                    String message) {}));
+        expect(
+          () => generator.performNextModification(editor),
+          returnsNormally,
+        );
       }
     });
   }
