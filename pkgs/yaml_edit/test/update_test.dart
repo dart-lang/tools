@@ -715,9 +715,12 @@ c: 3
         doc.update(['XML'], 'Extensible Markup Language');
 
         expect(
-            doc.toString(),
-            equals('{XML: Extensible Markup Language, '
-                "YAML: YAML Ain't Markup Language}"));
+          doc.toString(),
+          equals(
+            "{YAML: YAML Ain't Markup Language, "
+            'XML: Extensible Markup Language}',
+          ),
+        );
         expectYamlBuilderValue(doc, {
           'XML': 'Extensible Markup Language',
           'YAML': "YAML Ain't Markup Language",
@@ -875,6 +878,42 @@ d: 4
         expectYamlBuilderValue(doc, {
           'a': {'key': {}}
         });
+      });
+
+      test('adds and preserves key order (ascending)', () {
+        final doc = YamlEditor('''
+a: 1
+b: 2
+c: 3
+
+
+''');
+
+        doc.update(['d'], 4);
+        expect(doc.toString(), equals('''
+a: 1
+b: 2
+c: 3
+d: 4
+
+
+'''));
+      });
+
+      test('adds at the end when no key order is present', () {
+        final doc = YamlEditor('''
+a: 1
+c: 2
+b: 3
+''');
+
+        doc.update(['d'], 4);
+        expect(doc.toString(), equals('''
+a: 1
+c: 2
+b: 3
+d: 4
+'''));
       });
     });
 

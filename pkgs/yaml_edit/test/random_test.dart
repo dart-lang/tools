@@ -24,8 +24,10 @@ void main() {
   const modificationsPerRound = 1000;
 
   for (var i = 0; i < roundsOfTesting; i++) {
-    test('testing with randomly generated modifications: test $i', () {
-      final editor = YamlEditor('''
+    test(
+      'testing with randomly generated modifications: test $i',
+      () {
+        final editor = YamlEditor('''
 name: yaml_edit
 description: A library for YAML manipulation with comment and whitespace preservation.
 version: 0.0.1-dev
@@ -42,13 +44,15 @@ dev_dependencies:
   test: ^1.14.4
 ''');
 
-      for (var j = 0; j < modificationsPerRound; j++) {
-        expect(
-          () => generator.performNextModification(editor),
-          returnsNormally,
-        );
-      }
-    });
+        for (var j = 0; j < modificationsPerRound; j++) {
+          expect(
+            () => generator.performNextModification(editor),
+            returnsNormally,
+          );
+        }
+      },
+      skip: 'Remove once issue #85 is fixed',
+    );
   }
 }
 

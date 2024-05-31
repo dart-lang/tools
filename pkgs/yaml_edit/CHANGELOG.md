@@ -1,5 +1,9 @@
 ## 2.2.2-wip
+
 - Suppress warnings previously printed to `stdout` when parsing YAML internally.
+- Fix error thrown when inserting duplicate keys to different maps in the same
+  list.
+  ([#69](https://github.com/dart-lang/yaml_edit/issues/69))
 
 ## 2.2.1
 

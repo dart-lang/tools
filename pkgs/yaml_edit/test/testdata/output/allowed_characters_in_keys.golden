@@ -1,26 +1,26 @@
 test: test
 ---
-"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
 test: test
+"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
 ---
+test: test
+"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
 ?foo: safe question mark
-"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
-test: test
 ---
+test: test
+"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
+?foo: safe question mark
 :foo: safe colon
-?foo: safe question mark
-"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
-test: test
 ---
+test: test
+"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
+?foo: safe question mark
+:foo: safe colon
 -foo: safe dash
-:foo: safe colon
-?foo: safe question mark
-"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
-test: test
 ---
--foo: safe dash
-:foo: safe colon
-?foo: safe question mark
-"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
 test: test
+"a!\"#$%&'()*+,-.\/09:;<=>?@AZ[\\]^_`az{|}~": safe
+?foo: safe question mark
+:foo: safe colon
+-foo: safe dash
 this is#not: a comment
