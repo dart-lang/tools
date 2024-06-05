@@ -201,7 +201,7 @@ void main() {
         throw FileSystemException(
           'writeFrom failed',
           logFilePath,
-          OSError('No space left on device', 28),
+          const OSError('No space left on device', 28),
         );
       }
     });
