@@ -1,3 +1,7 @@
+## 6.1.1
+
+- Fixed bug where calling `Analytics.send` could result in a `FileSystemException` when unable to write to a log file.
+
 ## 6.1.0
 
 - Added new event constructor `Event.devtoolsEvent` for the single devtools event with a new enum value `DashEvent.devtoolsEvent`
