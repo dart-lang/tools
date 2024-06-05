@@ -13,20 +13,52 @@ import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
+  late FakeAnalytics analytics;
+  late Directory homeDirectory;
+  late MemoryFileSystem fs;
+  late File logFile;
+
   final testEvent = Event.hotReloadTime(timeMs: 10);
 
+  setUp(() {
+    fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
+    homeDirectory = fs.directory('home');
+    logFile = fs.file(p.join(
+      homeDirectory.path,
+      kDartToolDirectoryName,
+      kLogFileName,
+    ));
+
+    // Create the initialization analytics instance to onboard the tool
+    final initializationAnalytics = Analytics.fake(
+      tool: DashTool.flutterTool,
+      homeDirectory: homeDirectory,
+      dartVersion: 'dartVersion',
+      fs: fs,
+      platform: DevicePlatform.macos,
+    );
+    initializationAnalytics.clientShowedMessage();
+
+    // This instance is free to send events since the instance above
+    // has confirmed that the client has shown the message
+    analytics = Analytics.fake(
+      tool: DashTool.flutterTool,
+      homeDirectory: homeDirectory,
+      dartVersion: 'dartVersion',
+      fs: fs,
+      platform: DevicePlatform.macos,
+    );
+  });
+
   test('Ensure that log file is created', () {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
     expect(logFile.existsSync(), true);
   });
 
   test('LogFileStats is null before events are sent', () {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
     expect(analytics.logFileStats(), isNull);
   });
 
   test('LogFileStats returns valid response after sent events', () async {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
     final countOfEventsToSend = 10;
 
     for (var i = 0; i < countOfEventsToSend; i++) {
@@ -39,8 +71,6 @@ void main() {
   });
 
   test('The only record in the log file is malformed', () async {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
-
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
@@ -63,8 +93,6 @@ void main() {
   });
 
   test('The first record is malformed, but rest are valid', () async {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
-
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
@@ -81,8 +109,6 @@ void main() {
   });
 
   test('Several records are malformed', () async {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
-
     final countOfMalformedRecords = 4;
     for (var i = 0; i < countOfMalformedRecords; i++) {
       final currentContents = logFile.readAsStringSync();
@@ -110,8 +136,6 @@ void main() {
   });
 
   test('Valid json but invalid keys', () {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
-
     // The second line here is missing the "events" top level
     // key which should cause an error for that record only
     //
@@ -133,8 +157,6 @@ void main() {
   });
 
   test('Malformed record gets phased out after several events', () async {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
-
     // Write invalid json for the only log record
     logFile.writeAsStringSync('{{\n');
 
@@ -170,8 +192,6 @@ void main() {
   });
 
   test('Catching cast errors for each log record silently', () async {
-    final (fs, logFile, analytics) = _setUpFakeAnalytics();
-
     // Write a json array to the log file which will cause
     // a cast error when parsing each line
     logFile.writeAsStringSync('[{}, 1, 2, 3]\n');
@@ -248,36 +268,4 @@ void main() {
     expect(newString.length, maxLength);
     expect(newString, testString);
   });
-}
-
-(FileSystem fs, File logFile, FakeAnalytics analytics) _setUpFakeAnalytics() {
-  final fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
-  final homeDirectory = fs.directory('home');
-  final logFile = fs.file(p.join(
-    homeDirectory.path,
-    kDartToolDirectoryName,
-    kLogFileName,
-  ));
-
-  // Create the initialization analytics instance to onboard the tool
-  final initializationAnalytics = Analytics.fake(
-    tool: DashTool.flutterTool,
-    homeDirectory: homeDirectory,
-    dartVersion: 'dartVersion',
-    fs: fs,
-    platform: DevicePlatform.macos,
-  );
-  initializationAnalytics.clientShowedMessage();
-
-  // This instance is free to send events since the instance above
-  // has confirmed that the client has shown the message
-  final analytics = Analytics.fake(
-    tool: DashTool.flutterTool,
-    homeDirectory: homeDirectory,
-    dartVersion: 'dartVersion',
-    fs: fs,
-    platform: DevicePlatform.macos,
-  );
-
-  return (fs, logFile, analytics);
 }
