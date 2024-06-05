@@ -26,7 +26,7 @@ const String kConfigString = '''
 # All other lines are configuration lines. They have
 # the form "name=value". If multiple lines contain
 # the same configuration name with different values,
-# the parser will default to a conservative value. 
+# the parser will default to a conservative value.
 
 # DISABLING TELEMETRY REPORTING
 #
@@ -82,7 +82,7 @@ const int kLogFileLength = 2500;
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '5.8.8+1';
+const String kPackageVersion = '5.8.8+2';
 
 /// The minimum length for a session.
 const int kSessionDurationMinutes = 30;

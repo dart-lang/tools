@@ -285,15 +285,20 @@ class LogHandler {
     var records = logFile.readAsLinesSync();
     final content = '${jsonEncode(data)}\n';
 
-    // When the record count is less than the max, add as normal;
-    // else drop the oldest records until equal to max
-    if (records.length < kLogFileLength) {
-      logFile.writeAsStringSync(content, mode: FileMode.writeOnlyAppend);
-    } else {
-      records.add(content);
-      records = records.skip(records.length - kLogFileLength).toList();
+    try {
+      // When the record count is less than the max, add as normal;
+      // else drop the oldest records until equal to max
+      if (records.length < kLogFileLength) {
+        logFile.writeAsStringSync(content, mode: FileMode.writeOnlyAppend);
+      } else {
+        records.add(content);
+        records = records.skip(records.length - kLogFileLength).toList();
 
-      logFile.writeAsStringSync(records.join('\n'));
+        logFile.writeAsStringSync(records.join('\n'));
+      }
+    } on FileSystemException {
+      // Logging isn't important enough to warrant raising a
+      // FileSystemException that will surprise consumers of this package.
     }
   }
 }
