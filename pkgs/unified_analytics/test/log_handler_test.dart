@@ -9,6 +9,7 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/log_handler.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -189,6 +190,26 @@ void main() {
     expect(secondLogFileStats, isNotNull);
     expect(secondLogFileStats!.recordCount, kLogFileLength);
     expect(logFile.readAsLinesSync()[0].trim(), isNot('{{'));
+  });
+
+  test(
+      'Catches and discards any FileSystemException raised from attempting '
+      'to write to the log file', () async {
+    final logFilePath = 'log.txt';
+    final fs = MemoryFileSystem.test(opHandle: (context, operation) {
+      if (context == logFilePath && operation == FileSystemOp.write) {
+        throw FileSystemException(
+          'writeFrom failed',
+          logFilePath,
+          const OSError('No space left on device', 28),
+        );
+      }
+    });
+    final logFile = fs.file(logFilePath);
+    logFile.createSync();
+    final logHandler = LogHandler(logFile: logFile);
+
+    logHandler.save(data: {});
   });
 
   test('Catching cast errors for each log record silently', () async {
