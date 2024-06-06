@@ -210,10 +210,12 @@ int getListIndentation(String yaml, YamlList list) {
   }
 
   final lastSpanOffset = list.nodes.last.span.start.offset;
-  final lastNewLine = yaml.lastIndexOf('\n', lastSpanOffset - 1);
   final lastHyphen = yaml.lastIndexOf('-', lastSpanOffset - 1);
 
-  if (lastNewLine == -1) return lastHyphen;
+  if (lastHyphen == 0) return lastHyphen;
+
+  // Look for '\n' that's before hyphen
+  final lastNewLine = yaml.lastIndexOf('\n', lastHyphen - 1);
 
   return lastHyphen - lastNewLine - 1;
 }

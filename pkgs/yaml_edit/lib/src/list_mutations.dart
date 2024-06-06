@@ -112,7 +112,9 @@ SourceEdit _appendToFlowList(
 /// block list.
 SourceEdit _appendToBlockList(
     YamlEditor yamlEdit, YamlList list, YamlNode item) {
-  var formattedValue = _formatNewBlock(yamlEdit, list, item);
+  var (indentSize, valueToIndent) = _formatNewBlock(yamlEdit, list, item);
+  var formattedValue = '${' ' * indentSize}$valueToIndent';
+
   final yaml = yamlEdit.toString();
   var offset = list.span.end.offset;
 
@@ -132,7 +134,8 @@ SourceEdit _appendToBlockList(
 }
 
 /// Formats [item] into a new node for block lists.
-String _formatNewBlock(YamlEditor yamlEdit, YamlList list, YamlNode item) {
+(int indentSize, String valueStringToIndent) _formatNewBlock(
+    YamlEditor yamlEdit, YamlList list, YamlNode item) {
   final yaml = yamlEdit.toString();
   final listIndentation = getListIndentation(yaml, list);
   final newIndentation = listIndentation + getIndentation(yamlEdit);
@@ -142,9 +145,8 @@ String _formatNewBlock(YamlEditor yamlEdit, YamlList list, YamlNode item) {
   if (isCollection(item) && !isFlowYamlCollectionNode(item) && !isEmpty(item)) {
     valueString = valueString.substring(newIndentation);
   }
-  final indentedHyphen = '${' ' * listIndentation}- ';
 
-  return '$indentedHyphen$valueString$lineEnding';
+  return (listIndentation, '- $valueString$lineEnding');
 }
 
 /// Formats [item] into a new node for flow lists.
@@ -172,14 +174,107 @@ SourceEdit _insertInBlockList(
 
   if (index == list.length) return _appendToBlockList(yamlEdit, list, item);
 
-  final formattedValue = _formatNewBlock(yamlEdit, list, item);
+  var (indentSize, formattedValue) = _formatNewBlock(yamlEdit, list, item);
 
   final currNode = list.nodes[index];
   final currNodeStart = currNode.span.start.offset;
   final yaml = yamlEdit.toString();
-  final start = yaml.lastIndexOf('\n', currNodeStart) + 1;
 
-  return SourceEdit(start, 0, formattedValue);
+  final currSequenceOffset = yaml.lastIndexOf('-', currNodeStart - 1);
+
+  final (isNested, offset) = _isNestedInBlockList(currSequenceOffset, yaml);
+
+  /// We have to get rid of the left indentation applied by default
+  if (isNested && index == 0) {
+    /// The [insertionIndex] will be equal to the start of
+    /// [currentSequenceOffset] of the element we are inserting before in most
+    /// cases.
+    ///
+    /// Example:
+    ///
+    ///   - - value
+    ///     ^ Inserting before this and we get rid of indent
+    ///
+    /// If not, we need to account for the space between them that is not an
+    /// indent.
+    ///
+    /// Example:
+    ///
+    ///   -   - value
+    ///       ^ Inserting before this and we get rid of indent. But also account
+    ///         for space in between
+    final leftPad = currSequenceOffset - offset;
+    final padding = ' ' * leftPad;
+
+    final indent = ' ' * (indentSize - leftPad);
+
+    // Give the indent to the first element
+    formattedValue = '$padding${formattedValue.trimLeft()}$indent';
+  } else {
+    final indent = ' ' * indentSize; // Calculate indent normally
+    formattedValue = '$indent$formattedValue';
+  }
+
+  return SourceEdit(offset, 0, formattedValue);
+}
+
+/// Determines if the list containing an element is nested within another list.
+/// The [currentSequenceOffset] indicates the index of the element's `-` and
+/// [yaml] represents the entire yaml document.
+///
+/// ```yaml
+/// # Returns true
+/// - - value
+///
+/// # Returns true
+/// -       - value
+///
+/// # Returns false
+/// key:
+///   - value
+///
+/// # Returns false. Even though nested, a "\n" precedes the previous "-"
+/// -
+///   - value
+/// ```
+(bool isNested, int offset) _isNestedInBlockList(
+    int currentSequenceOffset, String yaml) {
+  final startIndex = currentSequenceOffset - 1;
+
+  /// Indicates the element we are inserting before is at index `0` of the list
+  /// at the root of the yaml
+  ///
+  /// Example:
+  ///
+  /// - foo
+  /// ^ Inserting before this
+  if (startIndex < 0) return (false, 0);
+
+  final newLineStart = yaml.lastIndexOf('\n', startIndex);
+  final seqStart = yaml.lastIndexOf('-', startIndex);
+
+  /// Indicates that a `\n` is closer to the last `-`. Meaning this list is not
+  /// nested.
+  ///
+  /// Example:
+  ///
+  ///   key:
+  ///     - value
+  ///     ^ Inserting before this and we need to keep the indent.
+  ///
+  /// Also this list may be nested but the nested list starts its indent after
+  /// a new line.
+  ///
+  /// Example:
+  ///
+  ///   -
+  ///     - value
+  ///     ^ Inserting before this and we need to keep the indent.
+  if (newLineStart >= seqStart) {
+    return (false, newLineStart + 1);
+  }
+
+  return (true, seqStart + 2); // Inclusive of space
 }
 
 /// Returns a [SourceEdit] describing the change to be made on [yamlEdit] to

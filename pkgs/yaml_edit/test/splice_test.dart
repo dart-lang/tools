@@ -75,6 +75,100 @@ void main() {
 
       expectDeepEquals(nodes2.toList(), ['June']);
     });
+
+    test('nested block list (inline)', () {
+      final doc = YamlEditor('''
+- - Jan
+  - Tuesday
+  - April
+''');
+
+      final nodes = doc.spliceList([0], 1, 1, ['Feb', 'March']);
+
+      expectDeepEquals(nodes.toList(), ['Tuesday']);
+
+      expect(doc.toString(), equals('''
+- - Jan
+  - Feb
+  - March
+  - April
+'''));
+    });
+
+    test('nested block list (inline with multiple new lines)', () {
+      final doc = YamlEditor('''
+- 
+
+
+
+
+  - Jan
+  - Tuesday
+  - April
+''');
+
+      final nodes = doc.spliceList([0], 1, 1, ['Feb', 'March']);
+
+      expectDeepEquals(nodes.toList(), ['Tuesday']);
+
+      expect(doc.toString(), equals('''
+- 
+
+
+
+
+  - Jan
+  - Feb
+  - March
+  - April
+'''));
+    });
+
+    test('update before nested list', () {
+      final doc = YamlEditor('''
+key:
+  - value
+  - another
+  - - nested
+    - continued
+''');
+
+      final nodes = doc.spliceList(['key'], 2, 0, ['spliced']);
+
+      expectDeepEquals(nodes.toList(), []);
+
+      expect(doc.toString(), equals('''
+key:
+  - value
+  - another
+  - spliced
+  - - nested
+    - continued
+'''));
+    });
+
+    test('replace nested block', () {
+      final doc = YamlEditor('''
+key:
+  - value
+  - another
+  - - nested
+    - continued
+''');
+
+      final nodes = doc.spliceList(['key'], 2, 1, ['spliced']);
+
+      expectDeepEquals(nodes.toList(), [
+        ['nested', 'continued'],
+      ]);
+
+      expect(doc.toString(), equals('''
+key:
+  - value
+  - another
+  - spliced
+'''));
+    });
   });
 
   group('flow list', () {
