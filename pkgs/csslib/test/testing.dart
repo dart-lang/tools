@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Common definitions used for setting up the test environment.
-library testing;
+library;
 
 import 'package:csslib/parser.dart';
 import 'package:csslib/visitor.dart';
