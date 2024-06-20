@@ -1,6 +1,6 @@
 ## 2.1.5-wip
 
-- Require Dart `3.0.0`.
+- Require Dart `3.4.0`.
 
 ## 2.1.4
 
