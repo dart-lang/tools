@@ -78,17 +78,3 @@ jobs:
 
       - run: dart test
         if: ${{matrix.run-tests}}
-
-      - name: Install coverage
-        run: dart pub global activate coverage
-        if: ${{ matrix.sdk == 'stable' }}
-      - name: Collect coverage
-        run: dart pub global run coverage:test_with_coverage
-        if: ${{ matrix.sdk == 'stable' }}
-      - name: Upload coverage
-        uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: cli_config_windows
-          path-to-lcov: ./pkgs/cli_config/coverage/lcov.info
-        if: ${{ matrix.sdk == 'stable' }}
