@@ -2,9 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/fake.dart';
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
@@ -212,6 +215,47 @@ void main() {
     logHandler.save(data: {});
   });
 
+  test('deletes log file larger than kMaxLogFileSize', () async {
+    var deletedLargeLogFile = false;
+    var wroteDataToLogFile = false;
+    const data = <String, Object?>{};
+    final logFile = _FakeFile('log.txt')
+      .._deleteSyncImpl = (() => deletedLargeLogFile = true)
+      .._createSyncImpl = () {}
+      .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
+      .._writeAsStringSync = (contents, {mode = FileMode.append}) {
+        expect(contents.trim(), data.toString());
+        expect(mode, FileMode.writeOnlyAppend);
+        wroteDataToLogFile = true;
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    logHandler.save(data: data);
+    expect(deletedLargeLogFile, isTrue);
+    expect(wroteDataToLogFile, isTrue);
+  });
+
+  test('does not delete log file if smaller than kMaxLogFileSize', () async {
+    var wroteDataToLogFile = false;
+    const data = <String, Object?>{};
+    final logFile = _FakeFile('log.txt')
+      .._deleteSyncImpl =
+          (() => fail('called logFile.deleteSync() when file was less than '
+              'kMaxLogFileSize'))
+      .._createSyncImpl = () {}
+      .._readAsLinesSyncImpl = (() => ['three', 'previous', 'lines'])
+      .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize - 1))
+      .._writeAsStringSync = (contents, {mode = FileMode.append}) {
+        expect(contents.trim(), data.toString());
+        expect(mode, FileMode.writeOnlyAppend);
+        wroteDataToLogFile = true;
+      };
+    final logHandler = LogHandler(logFile: logFile);
+
+    logHandler.save(data: data);
+    expect(wroteDataToLogFile, isTrue);
+  });
+
   test('Catching cast errors for each log record silently', () async {
     // Write a json array to the log file which will cause
     // a cast error when parsing each line
@@ -289,4 +333,52 @@ void main() {
     expect(newString.length, maxLength);
     expect(newString, testString);
   });
+}
+
+class _FakeFileStat extends Fake implements FileStat {
+  _FakeFileStat(this.size);
+
+  @override
+  final int size;
+}
+
+class _FakeFile extends Fake implements File {
+  _FakeFile(this.path);
+
+  List<String> Function()? _readAsLinesSyncImpl;
+
+  @override
+  List<String> readAsLinesSync({Encoding encoding = utf8}) =>
+      _readAsLinesSyncImpl!();
+
+  @override
+  final String path;
+
+  FileStat Function()? _statSyncImpl;
+
+  @override
+  FileStat statSync() => _statSyncImpl!();
+
+  void Function()? _deleteSyncImpl;
+
+  @override
+  void deleteSync({bool recursive = false}) => _deleteSyncImpl!();
+
+  void Function()? _createSyncImpl;
+
+  @override
+  void createSync({bool recursive = false, bool exclusive = false}) {
+    return _createSyncImpl!();
+  }
+
+  void Function(String contents, {FileMode mode})? _writeAsStringSync;
+
+  @override
+  void writeAsStringSync(
+    String contents, {
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
+  }) =>
+      _writeAsStringSync!(contents, mode: mode);
 }
