@@ -649,7 +649,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');
-    for (var key in userPropertyKeys) {
+    for (final key in userPropertyKeys) {
       expect(analytics.userPropertyMap.keys.contains(key), true,
           reason: 'The $key variable is required');
     }
@@ -944,7 +944,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     secondAnalytics!.send(testEvent);
 
     // Query the log file stats to verify that there are two tools
-    var query = analytics.logFileStats()!;
+    final query = analytics.logFileStats()!;
 
     expect(query.toolCount, {'flutter-tool': 1, 'dart-tool': 1},
         reason: 'There should have been two tools in the persisted logs');
@@ -1048,7 +1048,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     secondAnalytics!.send(testEvent);
 
     // Query the log file stats to verify that there are two tools
-    var query = analytics.logFileStats()!;
+    final query = analytics.logFileStats()!;
 
     expect(query.toolCount, {'dart-tool': 1},
         reason: 'There should have only been on tool that sent events');
@@ -1059,7 +1059,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     // Sending a query with the first analytics instance which has flutter information
     // available should reflect in the query that there is 1 flutter channel present
     analytics.send(testEvent);
-    LogFileStats? query2 = analytics.logFileStats()!;
+    final query2 = analytics.logFileStats()!;
 
     expect(query2.toolCount, {'dart-tool': 1, 'flutter-tool': 1},
         reason: 'Two different analytics instances have '
@@ -1098,7 +1098,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
       var userPropLengthValid = true;
       final invalidUserProps = <String>[];
-      for (var key in userPropPayload.keys) {
+      for (final key in userPropPayload.keys) {
         if (key.length > maxUserPropLength) {
           userPropLengthValid = false;
           invalidUserProps.add(key);
@@ -1117,7 +1117,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final toolLabelPattern = RegExp(r'^[a-zA-Z][a-zA-Z\_-]{0,35}$');
       var toolLengthValid = true;
       final invalidTools = <DashTool>[];
-      for (var tool in DashTool.values) {
+      for (final tool in DashTool.values) {
         if (!toolLabelPattern.hasMatch(tool.label)) {
           toolLengthValid = false;
           invalidTools.add(tool);
@@ -1137,7 +1137,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final eventLabelPattern = RegExp(r'^[a-zA-Z]{1}[a-zA-Z0-9\_]{0,39}$');
       var eventValid = true;
       final invalidEvents = <DashEvent>[];
-      for (var event in DashEvent.values) {
+      for (final event in DashEvent.values) {
         if (!eventLabelPattern.hasMatch(event.label)) {
           eventValid = false;
           invalidEvents.add(event);
