@@ -3,12 +3,3 @@ include: package:dart_flutter_team_lints/analysis_options.yaml
 analyzer:
   language:
     strict-casts: true
-
-linter:
-  rules:
-    - comment_references
-    - always_declare_return_types
-    - omit_local_variable_types
-    - prefer_single_quotes
-    - unawaited_futures
-    - use_super_parameters
