@@ -7,9 +7,7 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart' as p;
 
-import 'constants.dart';
 import 'initializer.dart';
 import 'utils.dart';
 
@@ -33,7 +31,6 @@ class ConfigHandler {
       RegExp(telemetryFlagPattern, multiLine: true);
   static RegExp toolRegex = RegExp(toolPattern, multiLine: true);
 
-  final FileSystem fs;
   final Directory homeDirectory;
   final File configFile;
 
@@ -45,7 +42,6 @@ class ConfigHandler {
   bool _telemetryEnabled = true;
 
   ConfigHandler({
-    required this.fs,
     required this.homeDirectory,
     required this.configFile,
   }) : configFileLastModified = configFile.lastModifiedSync() {
@@ -176,12 +172,7 @@ class ConfigHandler {
   /// [parsedTools] map and trigger parsing the config again.
   void resetConfig() {
     createConfigFile(
-      configFile: fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kConfigFileName,
-      )),
-      fs: fs,
+      configFile: configFile,
       homeDirectory: homeDirectory,
     );
     parsedTools.clear();

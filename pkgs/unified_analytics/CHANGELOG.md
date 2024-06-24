@@ -1,3 +1,7 @@
+## 6.1.2-wip
+
+- Remove direct usage of `package:path` in favor of `package:file`.
+
 ## 6.1.1
 
 - Fixed bug where calling `Analytics.send` could result in a `FileSystemException` when unable to write to a log file.

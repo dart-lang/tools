@@ -4,7 +4,6 @@
 
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
@@ -24,11 +23,9 @@ void main() {
   setUp(() {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
-    logFile = fs.file(p.join(
-      homeDirectory.path,
-      kDartToolDirectoryName,
-      kLogFileName,
-    ));
+    logFile = homeDirectory
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kLogFileName);
 
     // Create the initialization analytics instance to onboard the tool
     final initializationAnalytics = Analytics.fake(
