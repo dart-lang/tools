@@ -94,7 +94,7 @@ Map<String, Object?> generateRequestBody({
 /// contain all of the analytics files.
 Directory? getHomeDirectory(FileSystem fs) {
   String? home;
-  var envVars = io.Platform.environment;
+  final envVars = io.Platform.environment;
 
   if (io.Platform.isMacOS) {
     home = envVars['HOME'];
@@ -320,7 +320,7 @@ class Uuid {
   /// random numbers as the source of the generated uuid.
   String generateV4() {
     // Generate xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx / 8-4-4-4-12.
-    var special = 8 + _random.nextInt(4);
+    final special = 8 + _random.nextInt(4);
 
     return '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}-'
         '${_bitsDigits(16, 4)}-'

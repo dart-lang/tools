@@ -136,7 +136,7 @@ class LogFileStats {
 
   @override
   String toString() {
-    final encoder = const JsonEncoder.withIndent('  ');
+    const encoder = JsonEncoder.withIndent('  ');
     return encoder.convert({
       'startDateTime': startDateTime.toString(),
       'minsFromStartDateTime': minsFromStartDateTime,
@@ -219,7 +219,7 @@ class LogHandler {
     final eventCount = <String, int>{};
     final flutterChannelCount = <String, int>{};
     final toolCount = <String, int>{};
-    for (var record in records) {
+    for (final record in records) {
       counter['sessions']!.add(record.sessionId);
       counter['tool']!.add(record.tool);
       if (record.flutterChannel != null) {
@@ -432,7 +432,7 @@ class LogItem {
       hostOsVersion,
       locale,
     ];
-    for (var value in values) {
+    for (final value in values) {
       if (value == null) return null;
     }
 
