@@ -35,7 +35,7 @@ void checkBody(Map<String, Object?> body) {
   }
 
   // Checks for each event object
-  for (var eventMap in events.cast<Map<String, Object?>>()) {
+  for (final eventMap in events.cast<Map<String, Object?>>()) {
     final eventName = eventMap['name'] as String;
 
     // GA4 Limitation:
@@ -73,7 +73,7 @@ void checkBody(Map<String, Object?> body) {
     }
 
     // Loop through each of the event parameters
-    for (var entry in eventParams.entries) {
+    for (final entry in eventParams.entries) {
       final key = entry.key;
       final value = entry.value;
 
@@ -138,7 +138,7 @@ void checkBody(Map<String, Object?> body) {
   }
 
   // Checks for each user property item
-  for (var entry in userProperties.entries) {
+  for (final entry in userProperties.entries) {
     final key = entry.key;
     final value = entry.value as Map<String, Object?>;
 

@@ -146,7 +146,7 @@ class Survey {
 
   @override
   String toString() {
-    final encoder = const JsonEncoder.withIndent('  ');
+    const encoder = JsonEncoder.withIndent('  ');
     return encoder.convert({
       'uniqueId': uniqueId,
       'startDate': startDate.toString(),
@@ -229,7 +229,7 @@ class SurveyHandler {
 
     // Initialize the list of persisted surveys and add to them
     // as they are being parsed
-    var persistedSurveys = <String, PersistedSurvey>{};
+    final persistedSurveys = <String, PersistedSurvey>{};
     contents.forEach((key, value) {
       value as Map<String, dynamic>;
 

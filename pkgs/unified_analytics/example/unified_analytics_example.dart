@@ -23,7 +23,7 @@ final Analytics analytics = Analytics.development(
 
 // Timing a process and sending the event
 void main() async {
-  var start = DateTime.now();
+  final start = DateTime.now();
 
   // Each client using this package will have it's own
   // method to show the message but the below is a trivial

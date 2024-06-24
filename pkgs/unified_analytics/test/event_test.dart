@@ -620,7 +620,7 @@ void main() {
 
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
-    for (var declaration in reflectClass(Event).declarations.keys) {
+    for (final declaration in reflectClass(Event).declarations.keys) {
       // Count public constructors but omit private constructors
       if (declaration.toString().contains('Event.') &&
           !declaration.toString().contains('Event._')) constructorCount++;

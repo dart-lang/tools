@@ -87,7 +87,7 @@ class UserProperty {
   /// https://developers.google.com/analytics/devguides/collection/protocol/ga4/user-properties?client_type=gtag
   Map<String, Map<String, Object?>> preparePayload() {
     return <String, Map<String, Object?>>{
-      for (MapEntry<String, Object?> entry in _toMap().entries)
+      for (final entry in _toMap().entries)
         entry.key: <String, Object?>{'value': entry.value}
     };
   }
