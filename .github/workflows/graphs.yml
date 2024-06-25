@@ -2,13 +2,11 @@ name: package:graphs
 permissions: read-all
 
 on:
-  # Run on PRs and pushes to the default branch.
-  push:
-    branches: [ main ]
+  pull_request:
     paths:
       - '.github/workflows/graphs.yml'
       - 'pkgs/graphs/**'
-  pull_request:
+  push:
     branches: [ main ]
     paths:
       - '.github/workflows/graphs.yml'
