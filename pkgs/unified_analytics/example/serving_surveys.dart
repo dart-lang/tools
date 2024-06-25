@@ -5,7 +5,6 @@
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:path/path.dart' as p;
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
@@ -54,11 +53,9 @@ void main() async {
         fs: fs,
         platform: DevicePlatform.macos,
         surveyHandler: FakeSurveyHandler.fromList(
-          dismissedSurveyFile: fs.file(p.join(
-            home.path,
-            kDartToolDirectoryName,
-            kDismissedSurveyFileName,
-          )),
+          dismissedSurveyFile: home
+              .childDirectory(kDartToolDirectoryName)
+              .childFile(kDismissedSurveyFileName),
           initializedSurveys: [
             Survey(
               uniqueId: 'uniqueId',

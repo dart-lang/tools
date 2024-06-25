@@ -1,3 +1,7 @@
+## 6.1.3-wip
+
+- Remove direct usage of `package:path` in favor of `package:file`.
+
 ## 6.1.2
 
 - Avoid opening large telemetry log files to prevent out of memory errors.
