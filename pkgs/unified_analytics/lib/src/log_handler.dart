@@ -272,10 +272,18 @@ class LogHandler {
   /// This will keep the max number of records limited to equal to
   /// or less than [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
-    var records = logFile.readAsLinesSync();
-    final content = '${jsonEncode(data)}\n';
-
     try {
+      final stat = logFile.statSync();
+      List<String> records;
+      if (stat.size > kMaxLogFileSize) {
+        logFile.deleteSync();
+        logFile.createSync();
+        records = [];
+      } else {
+        records = logFile.readAsLinesSync();
+      }
+      final content = '${jsonEncode(data)}\n';
+
       // When the record count is less than the max, add as normal;
       // else drop the oldest records until equal to max
       if (records.length < kLogFileLength) {

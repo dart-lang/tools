@@ -1,3 +1,7 @@
+## 6.1.2
+
+- Avoid opening large telemetry log files to prevent out of memory errors.
+
 ## 6.1.1
 
 - Fixed bug where calling `Analytics.send` could result in a `FileSystemException` when unable to write to a log file.

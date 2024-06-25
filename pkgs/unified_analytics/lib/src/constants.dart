@@ -78,11 +78,16 @@ const String kGoogleAnalyticsMeasurementId = 'G-04BXPVBCWJ';
 /// How many data records to store in the log file.
 const int kLogFileLength = 2500;
 
+/// The maximum allowed size of the telemetry log file.
+///
+/// 25 MiB.
+const int kMaxLogFileSize = 25 * (1 << 20);
+
 /// Filename for the log file to persist sent events on user's machine.
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '6.1.1';
+const String kPackageVersion = '6.1.2';
 
 /// The minimum length for a session.
 const int kSessionDurationMinutes = 30;
