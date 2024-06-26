@@ -16,7 +16,7 @@ void main() {
   setUp(() => controller = ServerController());
 
   test('calls a registered method with the given name', () {
-    controller.server.registerMethod('foo', (params) {
+    controller.server.registerMethod('foo', (json_rpc.Parameters params) {
       return {'params': params.value};
     });
 
@@ -59,14 +59,19 @@ void main() {
 
     expectErrorResponse(
         controller,
-        {'jsonrpc': '2.0', 'method': 'foo', 'params': {}, 'id': 1234},
+        {
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': <String, dynamic>{},
+          'id': 1234
+        },
         error_code.INVALID_PARAMS,
         'No parameters are allowed for method "foo".');
   });
 
   test('an unexpected error in a method is captured', () {
     controller.server
-        .registerMethod('foo', () => throw FormatException('bad format'));
+        .registerMethod('foo', () => throw const FormatException('bad format'));
 
     expect(
         controller
@@ -80,7 +85,7 @@ void main() {
             'data': {
               'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
               'full': 'FormatException: bad format',
-              'stack': TypeMatcher<String>()
+              'stack': isA<String>()
             }
           }
         }));
@@ -90,8 +95,8 @@ void main() {
     controller.server.registerMethod('foo', (args) => 'result');
 
     expect(
-        controller
-            .handleRequest({'jsonrpc': '2.0', 'method': 'foo', 'params': {}}),
+        controller.handleRequest(
+            {'jsonrpc': '2.0', 'method': 'foo', 'params': <String, dynamic>{}}),
         doesNotComplete);
   });
 
@@ -102,7 +107,12 @@ void main() {
 
     expectErrorResponse(
         controller,
-        {'jsonrpc': '2.0', 'method': 'foo', 'params': {}, 'id': 1234},
+        {
+          'jsonrpc': '2.0',
+          'method': 'foo',
+          'params': <String, dynamic>{},
+          'id': 1234
+        },
         5,
         'Error message.',
         data: 'data value');
@@ -164,7 +174,7 @@ void main() {
 
     test('an unexpected error in a fallback is captured', () {
       controller.server
-          .registerFallback((_) => throw FormatException('bad format'));
+          .registerFallback((_) => throw const FormatException('bad format'));
 
       expect(
           controller
@@ -178,7 +188,7 @@ void main() {
               'data': {
                 'request': {'jsonrpc': '2.0', 'method': 'foo', 'id': 1234},
                 'full': 'FormatException: bad format',
-                'stack': TypeMatcher<String>()
+                'stack': isA<String>()
               }
             }
           }));

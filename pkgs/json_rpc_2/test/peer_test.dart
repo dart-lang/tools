@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: inference_failure_on_instance_creation
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -86,10 +88,10 @@ void main() {
     });
 
     test('requests terminates when the channel is closed', () async {
-      var incomingController = StreamController();
+      var incomingController = StreamController<void>();
       var channel = StreamChannel.withGuarantees(
         incomingController.stream,
-        StreamController(),
+        StreamController<void>(),
       );
       var peer = json_rpc.Peer.withoutJson(channel);
       unawaited(peer.listen());

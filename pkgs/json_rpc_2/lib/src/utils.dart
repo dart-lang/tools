@@ -9,7 +9,7 @@ import 'package:stream_channel/stream_channel.dart';
 import '../error_code.dart' as error_code;
 import 'exception.dart';
 
-typedef ZeroArgumentFunction = Function();
+typedef ZeroArgumentFunction = FutureOr Function();
 
 /// A regular expression to match the exception prefix that some exceptions'
 /// [Object.toString] values contain.
@@ -18,7 +18,7 @@ final _exceptionPrefix = RegExp(r'^([A-Z][a-zA-Z]*)?(Exception|Error): ');
 /// Get a string description of an exception.
 ///
 /// Many exceptions include the exception class name at the beginning of their
-/// [toString], so we remove that if it exists.
+/// `toString`, so we remove that if it exists.
 String getErrorMessage(Object error) =>
     error.toString().replaceFirst(_exceptionPrefix, '');
 
@@ -27,7 +27,7 @@ String getErrorMessage(Object error) =>
 ///
 /// This is synchronicity-agnostic relative to [body]. If [body] returns a
 /// [Future], this wil run asynchronously; otherwise it will run synchronously.
-void tryFinally(Function() body, Function() whenComplete) {
+void tryFinally(dynamic Function() body, void Function() whenComplete) {
   dynamic result;
   try {
     result = body();

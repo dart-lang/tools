@@ -109,8 +109,8 @@ class Parameter extends Parameters {
   // The parent parameters, used to construct [_path].
   final Parameters _parent;
 
-  /// The key used to access [this], used to construct [_path].
-  final dynamic _key;
+  /// The key used to access `this`, used to construct [_path].
+  final Object _key;
 
   /// A human-readable representation of the path of getters used to get this.
   ///
@@ -130,20 +130,22 @@ class Parameter extends Parameters {
       return _key is int ? (_key + 1).toString() : jsonEncode(_key);
     }
 
-    String quoteKey(key) {
+    String quoteKey(String key) {
       if (key.contains(RegExp(r'[^a-zA-Z0-9_-]'))) return jsonEncode(key);
       return key;
     }
 
-    String computePath(params) {
+    String computePath(Parameter params) {
       if (params._parent is! Parameter) {
-        return params._key is int ? '[${params._key}]' : quoteKey(params._key);
+        return params._key is int
+            ? '[${params._key}]'
+            : quoteKey(params._key as String);
       }
 
       var path = computePath(params._parent);
       return params._key is int
           ? '$path[${params._key}]'
-          : '$path.${quoteKey(params._key)}';
+          : '$path.${quoteKey(params._key as String)}';
     }
 
     return computePath(this);
@@ -152,8 +154,7 @@ class Parameter extends Parameters {
   /// Whether this parameter exists.
   bool get exists => true;
 
-  Parameter._(String method, value, this._parent, this._key)
-      : super(method, value);
+  Parameter._(super.method, super.value, this._parent, this._key);
 
   /// Returns [value], or [defaultValue] if this parameter wasn't passed.
   dynamic valueOr(Object? defaultValue) => value;
@@ -260,8 +261,7 @@ class Parameter extends Parameters {
   /// If [value] doesn't exist, this returns [defaultValue].
   Uri asUriOr(Uri defaultValue) => asUri;
 
-  /// Get a parameter named [named] that matches [test], or the value of calling
-  /// [orElse].
+  /// Get a parameter named [type] that matches [test].
   ///
   /// [type] is used for the error message. It should begin with an indefinite
   /// article.
@@ -271,7 +271,7 @@ class Parameter extends Parameters {
         '"$method" must be $type, but was ${jsonEncode(value)}.');
   }
 
-  dynamic _getParsed(String description, Function(String) parse) {
+  dynamic _getParsed(String description, void Function(String) parse) {
     var string = asString;
     try {
       return parse(string);
@@ -316,7 +316,7 @@ class _MissingParameter extends Parameter {
   @override
   bool get exists => false;
 
-  _MissingParameter(String method, Parameters parent, key)
+  _MissingParameter(String method, Parameters parent, Object key)
       : super._(method, null, parent, key);
 
   @override

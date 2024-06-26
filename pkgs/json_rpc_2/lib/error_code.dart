@@ -4,7 +4,9 @@
 
 // ignore_for_file: constant_identifier_names
 
-/// Error codes defined in the [JSON-RPC 2.0 specificiation][spec].
+import 'src/exception.dart';
+
+/// Error codes defined in the [JSON-RPC 2.0 specification][spec].
 ///
 /// These codes are generally used for protocol-level communication. Most of
 /// them shouldn't be used by the application. Those that should have
@@ -38,20 +40,12 @@ const SERVER_ERROR = -32000;
 /// Returns a human-readable name for [errorCode] if it's one specified by the
 /// JSON-RPC 2.0 spec.
 ///
-/// If [errorCode] isn't defined in the JSON-RPC 2.0 spec, returns null.
-String? name(int errorCode) {
-  switch (errorCode) {
-    case PARSE_ERROR:
-      return 'parse error';
-    case INVALID_REQUEST:
-      return 'invalid request';
-    case METHOD_NOT_FOUND:
-      return 'method not found';
-    case INVALID_PARAMS:
-      return 'invalid parameters';
-    case INTERNAL_ERROR:
-      return 'internal error';
-    default:
-      return null;
-  }
-}
+/// If [errorCode] isn't defined in the JSON-RPC 2.0 spec, returns `null`.
+String? name(int errorCode) => switch (errorCode) {
+      PARSE_ERROR => 'parse error',
+      INVALID_REQUEST => 'invalid request',
+      METHOD_NOT_FOUND => 'method not found',
+      INVALID_PARAMS => 'invalid parameters',
+      INTERNAL_ERROR => 'internal error',
+      _ => null
+    };

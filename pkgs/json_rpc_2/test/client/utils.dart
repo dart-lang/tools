@@ -32,7 +32,7 @@ class ClientController {
   /// returns a String, that's sent as the response directly. If it returns
   /// null, no response is sent. Otherwise, the return value is encoded and sent
   /// as the response.
-  void expectRequest(Function(dynamic) callback) {
+  void expectRequest(FutureOr Function(dynamic) callback) {
     expect(
         _requestController.stream.first.then((request) {
           return callback(jsonDecode(request));
@@ -49,7 +49,7 @@ class ClientController {
     sendJsonResponse(jsonEncode(response));
   }
 
-  /// Sends [response], a JSON-encoded response, to [client].
+  /// Sends [request], a JSON-encoded response, to [client].
   void sendJsonResponse(String request) {
     _responseController.add(request);
   }

@@ -47,19 +47,19 @@ class Client {
 
   /// Creates a [Client] that communicates over [channel].
   ///
-  /// Note that the client won't begin listening to [responses] until
+  /// Note that the client won't begin listening to [channel] until
   /// [Client.listen] is called.
   Client(StreamChannel<String> channel)
       : this.withoutJson(
             jsonDocument.bind(channel).transformStream(ignoreFormatExceptions));
 
   /// Creates a [Client] that communicates using decoded messages over
-  /// [channel].
+  /// [_channel].
   ///
   /// Unlike [Client.new], this doesn't read or write JSON strings. Instead, it
   /// reads and writes decoded maps or lists.
   ///
-  /// Note that the client won't begin listening to [responses] until
+  /// Note that the client won't begin listening to [_channel] until
   /// [Client.listen] is called.
   Client.withoutJson(this._channel) {
     done.whenComplete(() {
@@ -80,7 +80,8 @@ class Client {
   ///
   /// [listen] may only be called once.
   Future listen() {
-    _channel.stream.listen(_handleResponse, onError: (error, stackTrace) {
+    _channel.stream.listen(_handleResponse,
+        onError: (Object error, StackTrace stackTrace) {
       _done.completeError(error, stackTrace);
       _channel.sink.close();
     }, onDone: () {
@@ -113,11 +114,11 @@ class Client {
   ///
   /// Throws a [StateError] if the client is closed while the request is in
   /// flight, or if the client is closed when this method is called.
-  Future sendRequest(String method, [Object? parameters]) {
+  Future<Object?> sendRequest(String method, [Object? parameters]) {
     var id = _id++;
     _send(method, parameters, id);
 
-    var completer = Completer.sync();
+    var completer = Completer<Object?>.sync();
     _pendingRequests[id] = _Request(method, completer, Chain.current());
     return completer.future;
   }
@@ -141,7 +142,7 @@ class Client {
   ///
   /// Sends a request to invoke [method] with [parameters]. If [id] is given,
   /// the request uses that id.
-  void _send(String method, parameters, [int? id]) {
+  void _send(String method, Object? parameters, [int? id]) {
     if (parameters is Iterable) parameters = parameters.toList();
     if (parameters is! Map && parameters is! List && parameters != null) {
       throw ArgumentError('Only maps and lists may be used as JSON-RPC '
@@ -172,7 +173,7 @@ class Client {
   /// If this is called in the context of another [withBatch] call, it just
   /// invokes [callback] without creating another batch. This means that
   /// responses are batched until the first batch ends.
-  void withBatch(Function() callback) {
+  void withBatch(FutureOr<void> Function() callback) {
     if (_batch != null) {
       callback();
       return;
@@ -186,7 +187,7 @@ class Client {
   }
 
   /// Handles a decoded response from the server.
-  void _handleResponse(response) {
+  void _handleResponse(Object? response) {
     if (response is List) {
       response.forEach(_handleSingleResponse);
     } else {
@@ -196,8 +197,9 @@ class Client {
 
   /// Handles a decoded response from the server after batches have been
   /// resolved.
-  void _handleSingleResponse(response) {
-    if (!_isResponseValid(response)) return;
+  void _handleSingleResponse(Object? response_) {
+    if (!_isResponseValid(response_)) return;
+    final response = response_ as Map;
     var id = response['id'];
     id = (id is String) ? int.parse(id) : id;
     var request = _pendingRequests.remove(id)!;
@@ -212,7 +214,7 @@ class Client {
   }
 
   /// Determines whether the server's response is valid per the spec.
-  bool _isResponseValid(response) {
+  bool _isResponseValid(Object? response) {
     if (response is! Map) return false;
     if (response['jsonrpc'] != '2.0') return false;
     var id = response['id'];

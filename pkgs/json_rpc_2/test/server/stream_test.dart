@@ -23,7 +23,7 @@ void main() {
   test('.withoutJson supports decoded stream and sink', () {
     server.listen();
 
-    server.registerMethod('foo', (params) {
+    server.registerMethod('foo', (json_rpc.Parameters params) {
       return {'params': params.value};
     });
 

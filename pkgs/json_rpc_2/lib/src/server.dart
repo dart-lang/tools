@@ -21,8 +21,7 @@ typedef ErrorCallback = void Function(dynamic error, dynamic stackTrace);
 ///
 /// A server exposes methods that are called by requests, to which it provides
 /// responses. Methods can be registered using [registerMethod] and
-/// [registerFallback]. Requests can be handled using [handleRequest] and
-/// [parseRequest].
+/// [registerFallback].
 ///
 /// Note that since requests can arrive asynchronously and methods can run
 /// asynchronously, it's possible for multiple methods to be invoked at the same
@@ -72,7 +71,7 @@ class Server {
 
   /// Creates a [Server] that communicates over [channel].
   ///
-  /// Note that the server won't begin listening to [requests] until
+  /// Note that the server won't begin listening to [channel] until
   /// [Server.listen] is called.
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
@@ -89,12 +88,12 @@ class Server {
             strictProtocolChecks: strictProtocolChecks);
 
   /// Creates a [Server] that communicates using decoded messages over
-  /// [channel].
+  /// [_channel].
   ///
   /// Unlike [Server.new], this doesn't read or write JSON strings. Instead, it
   /// reads and writes decoded maps or lists.
   ///
-  /// Note that the server won't begin listening to [requests] until
+  /// Note that the server won't begin listening to [_channel] until
   /// [Server.listen] is called.
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
@@ -113,7 +112,8 @@ class Server {
   ///
   /// [listen] may only be called once.
   Future listen() {
-    _channel.stream.listen(_handleRequest, onError: (error, stackTrace) {
+    _channel.stream.listen(_handleRequest,
+        onError: (Object error, StackTrace stackTrace) {
       _done.completeError(error, stackTrace);
       _channel.sink.close();
     }, onDone: () {
@@ -160,7 +160,7 @@ class Server {
   /// completes to a JSON-serializable object. Any errors in [callback] will be
   /// reported to the client as JSON-RPC 2.0 errors. [callback] may send custom
   /// errors by throwing an [RpcException].
-  void registerFallback(Function(Parameters parameters) callback) {
+  void registerFallback(void Function(Parameters parameters) callback) {
     _fallbacks.add(callback);
   }
 
@@ -169,9 +169,8 @@ class Server {
   /// [request] is expected to be a JSON-serializable object representing a
   /// request sent by a client. This calls the appropriate method or methods for
   /// handling that request and returns a JSON-serializable response, or `null`
-  /// if no response should be sent. [callback] may send custom
-  /// errors by throwing an [RpcException].
-  Future _handleRequest(request) async {
+  /// if no response should be sent.
+  Future _handleRequest(Object? request) async {
     dynamic response;
     if (request is List) {
       if (request.isEmpty) {
@@ -241,7 +240,7 @@ class Server {
   }
 
   /// Validates that [request] matches the JSON-RPC spec.
-  void _validateRequest(request) {
+  void _validateRequest(Object? request) {
     if (request is! Map) {
       throw RpcException(
           error_code.INVALID_REQUEST,

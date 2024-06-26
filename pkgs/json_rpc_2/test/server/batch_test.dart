@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:json_rpc_2/error_code.dart' as error_code;
+import 'package:json_rpc_2/src/parameters.dart' show Parameters;
 import 'package:test/test.dart';
 
 import 'utils.dart';
@@ -14,8 +15,8 @@ void main() {
     controller = ServerController();
     controller.server
       ..registerMethod('foo', () => 'foo')
-      ..registerMethod('id', (params) => params.value)
-      ..registerMethod('arg', (params) => params['arg'].value);
+      ..registerMethod('id', (Parameters params) => params.value)
+      ..registerMethod('arg', (Parameters params) => params['arg'].value);
   });
 
   test('handles a batch of requests', () {

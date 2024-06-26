@@ -29,11 +29,11 @@ class Peer implements Client, Server {
 
   /// A stream controller that forwards incoming messages to [_server] if
   /// they're requests.
-  final _serverIncomingForwarder = StreamController(sync: true);
+  final _serverIncomingForwarder = StreamController<Object?>(sync: true);
 
   /// A stream controller that forwards incoming messages to [_client] if
   /// they're responses.
-  final _clientIncomingForwarder = StreamController(sync: true);
+  final _clientIncomingForwarder = StreamController<Object?>(sync: true);
 
   @override
   late final Future done = Future.wait([_client.done, _server.done]);
@@ -66,12 +66,12 @@ class Peer implements Client, Server {
             onUnhandledError: onUnhandledError,
             strictProtocolChecks: strictProtocolChecks);
 
-  /// Creates a [Peer] that communicates using decoded messages over [channel].
+  /// Creates a [Peer] that communicates using decoded messages over [_channel].
   ///
   /// Unlike [Peer.new], this doesn't read or write JSON strings. Instead, it
   /// reads and writes decoded maps or lists.
   ///
-  /// Note that the peer won't begin listening to [channel] until
+  /// Note that the peer won't begin listening to [_channel] until
   /// [Peer.listen] is called.
   ///
   /// Unhandled exceptions in callbacks will be forwarded to [onUnhandledError].
@@ -102,7 +102,7 @@ class Peer implements Client, Server {
       _client.sendNotification(method, parameters);
 
   @override
-  void withBatch(Function() callback) => _client.withBatch(callback);
+  void withBatch(void Function() callback) => _client.withBatch(callback);
 
   // Server methods.
 
@@ -111,7 +111,7 @@ class Peer implements Client, Server {
       _server.registerMethod(name, callback);
 
   @override
-  void registerFallback(Function(Parameters parameters) callback) =>
+  void registerFallback(void Function(Parameters parameters) callback) =>
       _server.registerFallback(callback);
 
   // Shared methods.
@@ -141,7 +141,7 @@ class Peer implements Client, Server {
         // server since it knows how to send error responses.
         _serverIncomingForwarder.add(message);
       }
-    }, onError: (error, stackTrace) {
+    }, onError: (Object error, StackTrace stackTrace) {
       _serverIncomingForwarder.addError(error, stackTrace);
     }, onDone: close);
     return done;

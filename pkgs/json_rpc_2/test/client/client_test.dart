@@ -89,7 +89,7 @@ void main() {
 
   test('sends a synchronous batch of requests', () {
     controller.expectRequest((request) {
-      expect(request, TypeMatcher<List>());
+      expect(request, isA<List>());
       expect(request, hasLength(3));
       expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
       expect(
@@ -121,7 +121,7 @@ void main() {
 
   test('sends an asynchronous batch of requests', () {
     controller.expectRequest((request) {
-      expect(request, TypeMatcher<List>());
+      expect(request, isA<List>());
       expect(request, hasLength(3));
       expect(request[0], equals({'jsonrpc': '2.0', 'method': 'foo'}));
       expect(
@@ -143,14 +143,12 @@ void main() {
     });
 
     controller.client.withBatch(() {
-      return Future.value().then((_) {
+      return Future<void>.value().then<void>((_) {
         controller.client.sendNotification('foo');
-        return Future.value();
-      }).then((_) {
+      }).then<void>((_) {
         expect(controller.client.sendRequest('bar', {'param': 'value'}),
             completion(equals('bar response')));
-        return Future.value();
-      }).then((_) {
+      }).then<void>((_) {
         expect(controller.client.sendRequest('baz'),
             completion(equals('baz response')));
       });
@@ -177,7 +175,7 @@ void main() {
 
     expect(
         controller.client.sendRequest('foo', {'param': 'value'}),
-        throwsA(TypeMatcher<json_rpc.RpcException>()
+        throwsA(isA<json_rpc.RpcException>()
             .having((e) => e.code, 'code', error_code.SERVER_ERROR)
             .having((e) => e.message, 'message', 'you are bad at requests')
             .having((e) => e.data, 'data', 'some junk')));

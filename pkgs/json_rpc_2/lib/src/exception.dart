@@ -46,8 +46,10 @@ class RpcException implements Exception {
   Map<String, dynamic> serialize(Object? request) {
     dynamic modifiedData;
     if (data is Map && !(data as Map).containsKey('request')) {
-      modifiedData = Map.from(data as Map);
-      modifiedData['request'] = request;
+      modifiedData = {
+        ...data as Map,
+        'request': request,
+      };
     } else if (data == null) {
       modifiedData = {'request': request};
     } else {
