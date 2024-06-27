@@ -5,6 +5,13 @@
   list.
   ([#69](https://github.com/dart-lang/yaml_edit/issues/69))
 
+- Fix error thrown when inserting in nested list using `spliceList` method
+  ([#83](https://github.com/dart-lang/yaml_edit/issues/83))
+
+- Fix error thrown when string has spaces when applying `ScalarStyle.FOLDED`.
+  ([#41](https://github.com/dart-lang/yaml_edit/issues/41)). Resolves
+  ([[#86](https://github.com/dart-lang/yaml_edit/issues/86)]).
+
 ## 2.2.1
 
 - Require Dart 3.0

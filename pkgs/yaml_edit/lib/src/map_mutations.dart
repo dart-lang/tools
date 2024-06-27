@@ -54,7 +54,7 @@ SourceEdit _addToBlockMap(
   final yaml = yamlEdit.toString();
   final newIndentation =
       getMapIndentation(yaml, map) + getIndentation(yamlEdit);
-  final keyString = yamlEncodeFlowString(wrapAsYamlNode(key));
+  final keyString = yamlEncodeFlow(wrapAsYamlNode(key));
   final lineEnding = getLineEnding(yaml);
 
   var formattedValue = ' ' * getMapIndentation(yaml, map);
@@ -83,7 +83,7 @@ SourceEdit _addToBlockMap(
     }
   }
 
-  var valueString = yamlEncodeBlockString(newValue, newIndentation, lineEnding);
+  var valueString = yamlEncodeBlock(newValue, newIndentation, lineEnding);
   if (isCollection(newValue) &&
       !isFlowYamlCollectionNode(newValue) &&
       !isEmpty(newValue)) {
@@ -100,8 +100,8 @@ SourceEdit _addToBlockMap(
 /// map.
 SourceEdit _addToFlowMap(
     YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode newValue) {
-  final keyString = yamlEncodeFlowString(keyNode);
-  final valueString = yamlEncodeFlowString(newValue);
+  final keyString = yamlEncodeFlow(keyNode);
+  final valueString = yamlEncodeFlow(newValue);
 
   // The -1 accounts for the closing bracket.
   if (map.isEmpty) {
@@ -131,8 +131,8 @@ SourceEdit _replaceInBlockMap(
       getMapIndentation(yaml, map) + getIndentation(yamlEdit);
 
   final keyNode = getKeyNode(map, key);
-  var valueAsString = yamlEncodeBlockString(
-      wrapAsYamlNode(newValue), newIndentation, lineEnding);
+  var valueAsString =
+      yamlEncodeBlock(wrapAsYamlNode(newValue), newIndentation, lineEnding);
   if (isCollection(newValue) &&
       !isFlowYamlCollectionNode(newValue) &&
       !isEmpty(newValue)) {
@@ -163,7 +163,7 @@ SourceEdit _replaceInBlockMap(
 SourceEdit _replaceInFlowMap(
     YamlEditor yamlEdit, YamlMap map, Object? key, YamlNode newValue) {
   final valueSpan = map.nodes[key]!.span;
-  final valueString = yamlEncodeFlowString(newValue);
+  final valueString = yamlEncodeFlow(newValue);
 
   return SourceEdit(valueSpan.start.offset, valueSpan.length, valueString);
 }

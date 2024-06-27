@@ -244,7 +244,7 @@ class YamlEditor {
       final end = getContentSensitiveEnd(_contents);
       final lineEnding = getLineEnding(_yaml);
       final edit = SourceEdit(
-          start, end - start, yamlEncodeBlockString(valueNode, 0, lineEnding));
+          start, end - start, yamlEncodeBlock(valueNode, 0, lineEnding));
 
       return _performEdit(edit, path, valueNode);
     }
