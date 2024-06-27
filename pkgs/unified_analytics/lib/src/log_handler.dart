@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
@@ -161,8 +162,13 @@ class LogFileStats {
 class LogHandler {
   final FileSystem fs;
   final Directory homeDirectory;
-  final File logFile;
+  File _logFile;
   final ErrorHandler _errorHandler;
+
+  File get logFile => _logFile;
+
+  @visibleForTesting
+  set logFile(File value) => _logFile = value;
 
   /// A log handler constructor that will delegate saving
   /// logs and retrieving stats from the persisted log.
@@ -170,7 +176,7 @@ class LogHandler {
     required this.fs,
     required this.homeDirectory,
     required ErrorHandler errorHandler,
-  })  : logFile = fs.file(p.join(
+  })  : _logFile = fs.file(p.join(
           homeDirectory.path,
           kDartToolDirectoryName,
           kLogFileName,
@@ -186,7 +192,7 @@ class LogHandler {
     // Parse each line of the log file through [LogItem],
     // some returned records may be null if malformed, they will be
     // removed later through `whereType<LogItem>`
-    final records = logFile
+    final records = _logFile
         .readAsLinesSync()
         .map((String e) {
           try {
@@ -283,26 +289,26 @@ class LogHandler {
   /// or less than [kLogFileLength] records.
   void save({required Map<String, Object?> data}) {
     try {
-      final stat = logFile.statSync();
+      final stat = _logFile.statSync();
       List<String> records;
       if (stat.size > kMaxLogFileSize) {
-        logFile.deleteSync();
-        logFile.createSync();
+        _logFile.deleteSync();
+        _logFile.createSync();
         records = [];
       } else {
-        records = logFile.readAsLinesSync();
+        records = _logFile.readAsLinesSync();
       }
       final content = '${jsonEncode(data)}\n';
 
       // When the record count is less than the max, add as normal;
       // else drop the oldest records until equal to max
       if (records.length < kLogFileLength) {
-        logFile.writeAsStringSync(content, mode: FileMode.writeOnlyAppend);
+        _logFile.writeAsStringSync(content, mode: FileMode.writeOnlyAppend);
       } else {
         records.add(content);
         records = records.skip(records.length - kLogFileLength).toList();
 
-        logFile.writeAsStringSync(records.join('\n'));
+        _logFile.writeAsStringSync(records.join('\n'));
       }
     } on FileSystemException {
       // Logging isn't important enough to warrant raising a

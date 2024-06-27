@@ -12,6 +12,7 @@ import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/error_handler.dart';
 import 'package:unified_analytics/src/log_handler.dart';
 import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
@@ -207,19 +208,20 @@ void main() {
   test(
       'Catches and discards any FileSystemException raised from attempting '
       'to write to the log file', () async {
-    final logFilePath = 'log.txt';
     final fs = MemoryFileSystem.test(opHandle: (context, operation) {
-      if (context == logFilePath && operation == FileSystemOp.write) {
+      if (context.endsWith(kLogFileName) && operation == FileSystemOp.write) {
         throw FileSystemException(
           'writeFrom failed',
-          logFilePath,
+          context,
           const OSError('No space left on device', 28),
         );
       }
     });
-    final logFile = fs.file(logFilePath);
-    logFile.createSync();
-    final logHandler = LogHandler(logFile: logFile);
+    final logHandler = LogHandler(
+      fs: fs,
+      homeDirectory: fs.currentDirectory,
+      errorHandler: ErrorHandler(sendFunction: (_) {}),
+    );
 
     logHandler.save(data: {});
   });
@@ -228,7 +230,13 @@ void main() {
     var deletedLargeLogFile = false;
     var wroteDataToLogFile = false;
     const data = <String, Object?>{};
-    final logFile = _FakeFile('log.txt')
+
+    final logHandler = LogHandler(
+      fs: fs,
+      homeDirectory: fs.currentDirectory,
+      errorHandler: ErrorHandler(sendFunction: (_) {}),
+    );
+    logHandler.logFile = _FakeFile('log.txt')
       .._deleteSyncImpl = (() => deletedLargeLogFile = true)
       .._createSyncImpl = () {}
       .._statSyncImpl = (() => _FakeFileStat(kMaxLogFileSize + 1))
@@ -237,7 +245,6 @@ void main() {
         expect(mode, FileMode.writeOnlyAppend);
         wroteDataToLogFile = true;
       };
-    final logHandler = LogHandler(logFile: logFile);
 
     logHandler.save(data: data);
     expect(deletedLargeLogFile, isTrue);
@@ -247,7 +254,7 @@ void main() {
   test('does not delete log file if smaller than kMaxLogFileSize', () async {
     var wroteDataToLogFile = false;
     const data = <String, Object?>{};
-    final logFile = _FakeFile('log.txt')
+    final fakeLogFile = _FakeFile('log.txt')
       .._deleteSyncImpl =
           (() => fail('called logFile.deleteSync() when file was less than '
               'kMaxLogFileSize'))
@@ -259,7 +266,12 @@ void main() {
         expect(mode, FileMode.writeOnlyAppend);
         wroteDataToLogFile = true;
       };
-    final logHandler = LogHandler(logFile: logFile);
+    final logHandler = LogHandler(
+      fs: fs,
+      homeDirectory: fs.currentDirectory,
+      errorHandler: ErrorHandler(sendFunction: (_) {}),
+    );
+    logHandler.logFile = fakeLogFile;
 
     logHandler.save(data: data);
     expect(wroteDataToLogFile, isTrue);
