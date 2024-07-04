@@ -96,7 +96,7 @@ String? _tryYamlEncodeSingleQuoted(String string) {
 String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
   // A string that starts with space or newline followed by space can't be
   // encoded in folded mode.
-  if (string.isEmpty || string.trimLeft().length != string.length) return null;
+  if (string.isEmpty || string.trim().length != string.length) return null;
 
   if (_hasUnprintableCharacters(string)) return null;
 
@@ -164,7 +164,7 @@ String? _tryYamlEncodeFolded(String string, int indentSize, String lineEnding) {
 /// See: https://yaml.org/spec/1.2.2/#812-literal-style
 String? _tryYamlEncodeLiteral(
     String string, int indentSize, String lineEnding) {
-  if (string.isEmpty || string.trimLeft().length != string.length) return null;
+  if (string.isEmpty || string.trim().length != string.length) return null;
 
   // A string that starts with space or newline followed by space can't be
   // encoded in literal mode.
