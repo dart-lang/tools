@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Utilities to locate the Dart SDK.
-library cli_util;
+library;
 
 import 'dart:async';
 import 'dart:io';

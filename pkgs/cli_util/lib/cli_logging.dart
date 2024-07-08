@@ -4,7 +4,7 @@
 
 /// This library contains functionality to help command-line utilities to easily
 /// create aesthetic output.
-library cli_logging;
+library;
 
 import 'dart:async';
 import 'dart:io' as io;
