@@ -1,6 +1,6 @@
 ## 1.1.2-wip
 
-- Require Dart 3.0
+- Require Dart 3.4
 - Log errors from chrome
 - Allow tests to detect headless-only environment (for CI).
 - Add extra flags that may help disable additional throttling in background tabs
@@ -12,8 +12,8 @@
 ## 1.1.0
 
 - Add optional `signIn` argument to `startWithDebugPort`.
-  To be used together with `user-data-dir` to start a chrome
-  window signed into the default profile with extensions enabled.
+  To be used together with `user-data-dir` to start a Chrome
+  window signed in to the default profile with extensions enabled.
 - Enable the `avoid_dynamic_calls` lint.
 
 ## 1.0.0
