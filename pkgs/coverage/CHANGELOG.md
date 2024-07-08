@@ -1,3 +1,7 @@
+## 1.8.1-wip
+
+- Require Dart ^3.4
+
 ## 1.8.0
 
 - Copy collect_coverage's `--scope-output` flag to test_with_coverage.

@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sdk: [stable]
+        sdk: [dev]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        sdk: [3.0.0, dev]
+        sdk: [3.4, dev]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
