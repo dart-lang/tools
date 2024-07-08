@@ -2,7 +2,7 @@ name: cli_config
 description: >-
   A library to take config values from configuration files, CLI arguments, and
   environment variables.
-version: 0.2.0
+version: 0.2.1-wip
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/cli_config
 
 environment:
