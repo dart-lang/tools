@@ -1,3 +1,7 @@
+## 6.1.3-wip
+
+- Require Dart 3.4.
+
 ## 6.1.2
 
 - Avoid opening large telemetry log files to prevent out of memory errors.
