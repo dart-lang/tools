@@ -12,4 +12,4 @@ dependencies:
     path: ../hello_world
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.4.0

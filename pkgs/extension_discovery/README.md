@@ -147,7 +147,7 @@ dependencies:
   hello_world: ^1.0.0
   hello_world_german: ^1.0.0
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.4.0
 ```
 
 Then I can write a `bin/hello.dart` as follows:
