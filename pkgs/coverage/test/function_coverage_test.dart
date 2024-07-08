@@ -57,8 +57,8 @@ void main() {
     final testLibraryUri = p.toUri(testLibraryPath).toString();
     expect(hitMap, contains(testLibraryUri));
     final libraryfile = hitMap[testLibraryUri]!;
-    expect(libraryfile.funcHits, {9: 1});
-    expect(libraryfile.funcNames, {9: 'libraryFunction'});
+    expect(libraryfile.funcHits, {7: 1});
+    expect(libraryfile.funcNames, {7: 'libraryFunction'});
 
     // test_library_part.dart.
     final testLibraryPartPath =
