@@ -1272,4 +1272,81 @@ Privacy Policy (https://policies.google.com/privacy).
       expect(parseDartSDKVersion(originalVersion), '3.3.0');
     });
   });
+  
+  otherTest();
+}
+
+
+void otherTest() {
+  late MemoryFileSystem fs;
+  late Directory home;
+
+  const homeDirName = 'home';
+  const toolsMessageVersion = 1;
+  const toolsMessage = 'toolsMessage';
+  const flutterChannel = 'flutterChannel';
+  const flutterVersion = 'flutterVersion';
+  const dartVersion = 'dartVersion';
+  const platform = DevicePlatform.macos;
+
+  setUp(() {
+    // Setup the filesystem with the home directory
+    final fsStyle =
+        io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
+    fs = MemoryFileSystem.test(style: fsStyle);
+    home = fs.directory(homeDirName);
+
+  });
+
+  test(
+      'running a second tool for the first time does not re-enable analytics',
+      () async {
+    // This is the first analytics instance that will be used to demonstrate
+    // that events will not be sent with the first run of analytics
+    final firstDartToolAnalytics = Analytics.fake(
+      tool: DashTool.dartTool,
+      homeDirectory: home,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+    expect(firstDartToolAnalytics.shouldShowMessage, true);
+    expect(firstDartToolAnalytics.okToSend, isFalse);
+    firstDartToolAnalytics.clientShowedMessage();
+    expect(firstDartToolAnalytics.shouldShowMessage, false);
+
+    final secondDartToolAnalytics = Analytics.fake(
+      tool: DashTool.dartTool,
+      homeDirectory: home,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+    expect(secondDartToolAnalytics.okToSend, isTrue);
+
+    await secondDartToolAnalytics.setTelemetry(false);
+
+    final flutterToolAnalytics = Analytics.fake(
+      tool: DashTool.flutterTool,
+      homeDirectory: home,
+      flutterChannel: flutterChannel,
+      toolsMessageVersion: toolsMessageVersion,
+      toolsMessage: toolsMessage,
+      flutterVersion: flutterVersion,
+      dartVersion: dartVersion,
+      fs: fs,
+      platform: platform,
+    );
+
+    expect(flutterToolAnalytics.shouldShowMessage, isTrue);
+    expect(flutterToolAnalytics.okToSend, isFalse);
+  });
 }

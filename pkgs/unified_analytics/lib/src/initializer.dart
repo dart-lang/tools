@@ -77,14 +77,14 @@ bool runInitialization({
   required Directory homeDirectory,
   required FileSystem fs,
 }) {
-  var firstRun = false;
+  var firstAnalyticsRun = false;
 
   // When the config file doesn't exist, initialize it with the default tools
   // and the current date
   final configFile = fs.file(
       p.join(homeDirectory.path, kDartToolDirectoryName, kConfigFileName));
   if (!configFile.existsSync()) {
-    firstRun = true;
+    firstAnalyticsRun = true;
     createConfigFile(
       configFile: configFile,
       fs: fs,
@@ -120,5 +120,5 @@ bool runInitialization({
     createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
   }
 
-  return firstRun;
+  return firstAnalyticsRun;
 }
