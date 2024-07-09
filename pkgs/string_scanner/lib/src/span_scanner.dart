@@ -91,6 +91,17 @@ class SpanScanner extends StringScanner implements LineScanner {
     return _sourceFile.span(startState.position, endPosition);
   }
 
+  /// Creates a [FileSpan] representing the source range between [startPosition]
+  /// and [endPosition], or the current position if [endPosition] is null.
+  ///
+  /// Each position should be a code unit offset into the string being scanned,
+  /// with the same conventions as [StringScanner.position].
+  ///
+  /// Throws a [RangeError] if [startPosition] or [endPosition] aren't within
+  /// this source file.
+  FileSpan spanFromPosition(int startPosition, [int? endPosition]) =>
+      _sourceFile.span(startPosition, endPosition ?? position);
+
   @override
   bool matches(Pattern pattern) {
     if (!super.matches(pattern)) {

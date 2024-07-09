@@ -79,6 +79,18 @@ class RelativeSpanScanner extends StringScanner implements SpanScanner {
   }
 
   @override
+  FileSpan spanFromPosition(int startPosition, [int? endPosition]) {
+    RangeError.checkValidRange(
+        startPosition,
+        endPosition,
+        _sourceFile.length - _startLocation.offset,
+        'startPosition',
+        'endPosition');
+    return _sourceFile.span(_startLocation.offset + startPosition,
+        _startLocation.offset + (endPosition ?? position));
+  }
+
+  @override
   bool matches(Pattern pattern) {
     if (!super.matches(pattern)) {
       _lastSpan = null;

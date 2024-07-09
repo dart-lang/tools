@@ -75,6 +75,16 @@ void main() {
       expect(span.text, equals('o\nbar\nba'));
     });
 
+    test('.spanFromPosition() returns a span from a previous state', () {
+      scanner.scan('fo');
+      final start = scanner.position;
+      scanner.scan('o\nba');
+      scanner.scan('r\nba');
+
+      final span = scanner.spanFromPosition(start + 2, start + 5);
+      expect(span.text, equals('bar'));
+    });
+
     test('.emptySpan returns an empty span at the current location', () {
       scanner.scan('foo\nba');
 
@@ -137,6 +147,16 @@ void testForImplementation(
 
       final span = scanner.spanFrom(state);
       expect(span.text, equals('o\nbar\nba'));
+    });
+
+    test('.spanFromPosition() returns a span from a previous state', () {
+      scanner.scan('fo');
+      final start = scanner.position;
+      scanner.scan('o\nba');
+      scanner.scan('r\nba');
+
+      final span = scanner.spanFromPosition(start + 2, start + 5);
+      expect(span.text, equals('bar'));
     });
 
     test('.emptySpan returns an empty span at the current location', () {

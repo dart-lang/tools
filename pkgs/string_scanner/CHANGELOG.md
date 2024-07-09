@@ -1,6 +1,9 @@
-## 1.2.1-wip
+## 1.3.0
 
 * Require Dart 3.1.0
+
+* Add a `SpanScanner.spanFromPosition()` method which takes raw code units
+  rather than `SpanScanner.spanFrom()`'s `LineScannerState`s.
 
 ## 1.2.0
 
