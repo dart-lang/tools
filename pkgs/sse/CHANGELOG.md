@@ -1,3 +1,7 @@
+## 4.1.6
+
+- Require package `web: '>=0.5.0 <2.0.0'`.
+
 ## 4.1.5
 
 - Drop unneeded dependency on `package:js`.
