@@ -22,7 +22,6 @@ Future<void> main() async {
     read,
     (from, source) => pool.withResource(() => findImports(from, source)),
   ).toList();
-  await _analysisContextCollection?.dispose();
   print(allImports.map((s) => s.uri).toList());
 }
 
