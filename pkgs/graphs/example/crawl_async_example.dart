@@ -5,9 +5,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
-import 'package:analyzer/dart/analysis/context_builder.dart';
-import 'package:analyzer/dart/analysis/context_locator.dart';
+import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:graphs/graphs.dart';
@@ -24,28 +22,25 @@ Future<void> main() async {
     read,
     (from, source) => pool.withResource(() => findImports(from, source)),
   ).toList();
+  await _analysisContextCollection?.dispose();
   print(allImports.map((s) => s.uri).toList());
 }
 
-AnalysisContext? _analysisContext;
+AnalysisContextCollection? _analysisContextCollection;
 
-Future<AnalysisContext> get analysisContext async {
-  var context = _analysisContext;
-  if (context == null) {
+Future<AnalysisContextCollection> get analysisContextCollection async {
+  var collection = _analysisContextCollection;
+  if (collection == null) {
     final libUri = Uri.parse('package:graphs/');
     final libPath = await pathForUri(libUri);
     final packagePath = p.dirname(libPath);
 
-    final roots = ContextLocator().locateRoots(includedPaths: [packagePath]);
-    if (roots.length != 1) {
-      throw StateError('Expected to find exactly one context root, got $roots');
-    }
-
-    context = _analysisContext =
-        ContextBuilder().createContext(contextRoot: roots[0]);
+    collection = _analysisContextCollection = AnalysisContextCollection(
+      includedPaths: [packagePath],
+    );
   }
 
-  return context;
+  return collection;
 }
 
 Future<Iterable<Uri>> findImports(Uri from, Source source) async =>
@@ -57,7 +52,8 @@ Future<Iterable<Uri>> findImports(Uri from, Source source) async =>
 
 Future<CompilationUnit> parseUri(Uri uri) async {
   final path = await pathForUri(uri);
-  final analysisSession = (await analysisContext).currentSession;
+  final analysisContext = (await analysisContextCollection).contexts.single;
+  final analysisSession = analysisContext.currentSession;
   final parseResult = analysisSession.getParsedUnit(path);
   return (parseResult as ParsedUnitResult).unit;
 }
