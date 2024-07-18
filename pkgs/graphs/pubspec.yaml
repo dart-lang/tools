@@ -1,6 +1,6 @@
 name: graphs
-version: 2.3.2-wip
-description: Graph algorithms that operate on graphs in any representation
+version: 2.3.2
+description: Graph algorithms that operate on graphs in any representation.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/graphs
 
 environment:
