@@ -96,8 +96,8 @@ SourceEdit _addToBlockMap(
 }
 
 /// Performs the string operation on [yamlEdit] to achieve the effect of adding
-/// the [key]:[newValue] pair when reparsed, bearing in mind that this is a flow
-/// map.
+/// the [keyNode]:[newValue] pair when reparsed, bearing in mind that this is a
+/// flow map.
 SourceEdit _addToFlowMap(
     YamlEditor yamlEdit, YamlMap map, YamlNode keyNode, YamlNode newValue) {
   final keyString = yamlEncodeFlow(keyNode);

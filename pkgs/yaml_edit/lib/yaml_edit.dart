@@ -20,7 +20,7 @@
 /// ```
 ///
 /// [1]: https://yaml.org/
-library yaml_edit;
+library;
 
 export 'src/editor.dart';
 export 'src/errors.dart' show AliasException;

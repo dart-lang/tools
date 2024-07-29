@@ -12,6 +12,8 @@
   ([#41](https://github.com/dart-lang/yaml_edit/issues/41)). Resolves
   ([[#86](https://github.com/dart-lang/yaml_edit/issues/86)]).
 
+- Require Dart 3.1
+
 ## 2.2.1
 
 - Require Dart 3.0

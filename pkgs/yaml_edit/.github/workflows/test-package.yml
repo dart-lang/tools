@@ -47,7 +47,7 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: ['3.0', stable, dev]
+        sdk: ['3.1', stable, dev]
         platform: [vm, chrome]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
