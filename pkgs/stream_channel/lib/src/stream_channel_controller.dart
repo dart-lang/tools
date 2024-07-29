@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// @docImport 'isolate_channel.dart';
+library;
+
 import 'dart:async';
 
 import '../stream_channel.dart';
@@ -11,7 +14,7 @@ import '../stream_channel.dart';
 /// This exposes two connected [StreamChannel]s, [local] and [foreign]. The
 /// user's code should use [local] to emit and receive events. Then [foreign]
 /// can be returned for others to use. For example, here's a simplified version
-/// of the implementation of [new IsolateChannel]:
+/// of the implementation of [IsolateChannel.new]:
 ///
 /// ```dart
 /// StreamChannel isolateChannel(ReceivePort receivePort, SendPort sendPort) {
