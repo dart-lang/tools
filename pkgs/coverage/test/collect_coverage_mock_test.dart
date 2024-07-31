@@ -116,36 +116,39 @@ void main() {
 
     test('Collect coverage, report lines', () async {
       final service = _mockService(3, 51);
-      when(service.getSourceReport('isolate', ['Coverage'],
-              forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [12],
-                      misses: [47],
-                    ),
-                  ),
-                  _range(
-                    1,
-                    SourceReportCoverage(
-                      hits: [95],
-                      misses: [52],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                  ScriptRef(
-                    uri: 'package:bar/bar.dart',
-                    id: 'bar',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [95],
+                  misses: [52],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
 
       final jsonResult = await collect(Uri(), false, false, false, null,
           serviceOverrideForTesting: service);
@@ -171,25 +174,28 @@ void main() {
               ),
             ],
           ));
-      when(service.getSourceReport('isolate', ['Coverage'],
-              scriptId: 'foo', forceCompile: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [15],
-                      misses: [32],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        scriptId: 'foo',
+        forceCompile: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [15],
+                  misses: [32],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+            ],
+          ));
       when(service.getObject('isolate', 'foo'))
           .thenAnswer((_) async => _script([
                 [12, 15, 7],
@@ -207,27 +213,29 @@ void main() {
 
     test('Collect coverage, scoped output, library filters', () async {
       final service = _mockService(3, 57);
-      when(service.getSourceReport('isolate', ['Coverage'],
-              forceCompile: true,
-              reportLines: true,
-              libraryFilters: ['package:foo/']))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [12],
-                      misses: [47],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+        libraryFilters: ['package:foo/'],
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+            ],
+          ));
 
       final jsonResult = await collect(Uri(), false, false, false, {'foo'},
           serviceOverrideForTesting: service);
@@ -243,55 +251,61 @@ void main() {
         'isolateGroupA': ['isolate1', 'isolate2'],
         'isolateGroupB': ['isolate3'],
       });
-      when(service.getSourceReport('isolate1', ['Coverage'],
-              forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [12],
-                      misses: [47],
-                    ),
-                  ),
-                  _range(
-                    1,
-                    SourceReportCoverage(
-                      hits: [95],
-                      misses: [52],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                  ScriptRef(
-                    uri: 'package:bar/bar.dart',
-                    id: 'bar',
-                  ),
-                ],
-              ));
-      when(service.getSourceReport('isolate3', ['Coverage'],
-              forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [34],
-                      misses: [61],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:baz/baz.dart',
-                    id: 'baz',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate1',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [95],
+                  misses: [52],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
+      when(service.getSourceReport(
+        'isolate3',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [34],
+                  misses: [61],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:baz/baz.dart',
+                id: 'baz',
+              ),
+            ],
+          ));
 
       final jsonResult = await collect(Uri(), false, false, false, null,
           serviceOverrideForTesting: service);
@@ -313,55 +327,61 @@ void main() {
         'isolateGroupA': ['isolate1', 'isolate2'],
         'isolateGroupB': ['isolate3'],
       });
-      when(service.getSourceReport('isolate1', ['Coverage'],
-              forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [12],
-                      misses: [47],
-                    ),
-                  ),
-                  _range(
-                    1,
-                    SourceReportCoverage(
-                      hits: [95],
-                      misses: [52],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                  ScriptRef(
-                    uri: 'package:bar/bar.dart',
-                    id: 'bar',
-                  ),
-                ],
-              ));
-      when(service.getSourceReport('isolate3', ['Coverage'],
-              forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [34],
-                      misses: [61],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:baz/baz.dart',
-                    id: 'baz',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate1',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [95],
+                  misses: [52],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
+      when(service.getSourceReport(
+        'isolate3',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [34],
+                  misses: [61],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:baz/baz.dart',
+                id: 'baz',
+              ),
+            ],
+          ));
 
       final jsonResult = await collect(Uri(), false, false, false, null,
           serviceOverrideForTesting: service);
@@ -409,28 +429,36 @@ void main() {
               ),
             ],
           ));
-      when(service.getSourceReport('isolate', ['Coverage'],
-              scriptId: 'foo', forceCompile: true, reportLines: true))
-          .thenThrow(FakeSentinelException());
-      when(service.getSourceReport('isolate', ['Coverage'],
-              scriptId: 'bar', forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [95],
-                      misses: [52],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:bar/bar.dart',
-                    id: 'bar',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        scriptId: 'foo',
+        forceCompile: true,
+        reportLines: true,
+      )).thenThrow(FakeSentinelException());
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        scriptId: 'bar',
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [95],
+                  misses: [52],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
 
       final jsonResult = await collect(
           Uri(), false, false, false, {'foo', 'bar'},
@@ -460,36 +488,39 @@ void main() {
       // Expect that getSourceReport's librariesAlreadyCompiled param is not set
       // when coverableLineCache is non-null but the service version is too old.
       final service = _mockService(4, 12);
-      when(service.getSourceReport('isolate', ['Coverage'],
-              forceCompile: true, reportLines: true))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [12],
-                      misses: [47],
-                    ),
-                  ),
-                  _range(
-                    1,
-                    SourceReportCoverage(
-                      hits: [95],
-                      misses: [52],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                  ScriptRef(
-                    uri: 'package:bar/bar.dart',
-                    id: 'bar',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [95],
+                  misses: [52],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
 
       final coverableLineCache = <String, Set<int>>{};
       final jsonResult = await collect(Uri(), false, false, false, null,
@@ -507,39 +538,40 @@ void main() {
       // Expect that on the first getSourceReport call, librariesAlreadyCompiled
       // is empty.
       final service = _mockService(4, 13);
-      when(
-              service.getSourceReport('isolate', ['Coverage'],
-                  forceCompile: true,
-                  reportLines: true,
-                  librariesAlreadyCompiled: []))
-          .thenAnswer((_) async => SourceReport(
-                ranges: [
-                  _range(
-                    0,
-                    SourceReportCoverage(
-                      hits: [12],
-                      misses: [47],
-                    ),
-                  ),
-                  _range(
-                    1,
-                    SourceReportCoverage(
-                      hits: [95],
-                      misses: [52],
-                    ),
-                  ),
-                ],
-                scripts: [
-                  ScriptRef(
-                    uri: 'package:foo/foo.dart',
-                    id: 'foo',
-                  ),
-                  ScriptRef(
-                    uri: 'package:bar/bar.dart',
-                    id: 'bar',
-                  ),
-                ],
-              ));
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+        librariesAlreadyCompiled: [],
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [95],
+                  misses: [52],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
 
       final coverableLineCache = <String, Set<int>>{};
       final jsonResult = await collect(Uri(), false, false, false, null,
@@ -563,14 +595,16 @@ void main() {
       // seen. The response won't contain any misses for these libraries,
       // because they won't be force compiled. We'll also return a 3rd library,
       // which will contain misses, as it hasn't been compiled yet.
-      when(
-          service.getSourceReport('isolate', ['Coverage'],
-              forceCompile: true,
-              reportLines: true,
-              librariesAlreadyCompiled: [
-                'package:foo/foo.dart',
-                'package:bar/bar.dart'
-              ])).thenAnswer((_) async => SourceReport(
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+        librariesAlreadyCompiled: [
+          'package:foo/foo.dart',
+          'package:bar/bar.dart'
+        ],
+      )).thenAnswer((_) async => SourceReport(
             ranges: [
               _range(
                 0,
@@ -627,6 +661,55 @@ void main() {
         'package:bar/bar.dart': {95, 52},
         'package:baz/baz.dart': {36, 81},
       });
+    });
+
+    test(
+        'Collect coverage, scoped output, library filters, '
+        'handles SourceReports that contain unfiltered ranges', () async {
+      // Regression test for https://github.com/dart-lang/coverage/issues/495
+      final service = _mockService(3, 57);
+      when(service.getSourceReport(
+        'isolate',
+        ['Coverage'],
+        forceCompile: true,
+        reportLines: true,
+        libraryFilters: ['package:foo/'],
+      )).thenAnswer((_) async => SourceReport(
+            ranges: [
+              _range(
+                0,
+                SourceReportCoverage(
+                  hits: [12],
+                  misses: [47],
+                ),
+              ),
+              _range(
+                1,
+                SourceReportCoverage(
+                  hits: [86],
+                  misses: [91],
+                ),
+              ),
+            ],
+            scripts: [
+              ScriptRef(
+                uri: 'package:foo/foo.dart',
+                id: 'foo',
+              ),
+              ScriptRef(
+                uri: 'package:bar/bar.dart',
+                id: 'bar',
+              ),
+            ],
+          ));
+
+      final jsonResult = await collect(Uri(), false, false, false, {'foo'},
+          serviceOverrideForTesting: service);
+      final result = await HitMap.parseJson(
+          jsonResult['coverage'] as List<Map<String, dynamic>>);
+
+      expect(result.length, 1);
+      expect(result['package:foo/foo.dart']?.lineHits, {12: 1, 47: 0});
     });
   });
 }

@@ -178,11 +178,8 @@ Future<Map<String, dynamic>> _getAllCoverage(
         continue;
       }
       for (final script in scripts.scripts!) {
-        final uri = Uri.parse(script.uri!);
-        if (uri.scheme != 'package') continue;
-        final scope = uri.path.split('/').first;
         // Skip scripts which should not be included in the report.
-        if (!scopedOutput.contains(scope)) continue;
+        if (!scopedOutput.includesScript(script.uri)) continue;
         late final SourceReport scriptReport;
         try {
           scriptReport = await service.getSourceReport(
@@ -203,7 +200,8 @@ Future<Map<String, dynamic>> _getAllCoverage(
             includeDart,
             functionCoverage,
             reportLines,
-            coverableLineCache);
+            coverableLineCache,
+            scopedOutput);
         allCoverage.addAll(coverage);
       }
     } else {
@@ -229,7 +227,8 @@ Future<Map<String, dynamic>> _getAllCoverage(
           includeDart,
           functionCoverage,
           reportLines,
-          coverableLineCache);
+          coverableLineCache,
+          scopedOutput);
       allCoverage.addAll(coverage);
     }
   }
@@ -312,7 +311,8 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     bool includeDart,
     bool functionCoverage,
     bool reportLines,
-    Map<String, Set<int>>? coverableLineCache) async {
+    Map<String, Set<int>>? coverableLineCache,
+    Set<String> scopedOutput) async {
   final hitMaps = <Uri, HitMap>{};
   final scripts = <ScriptRef, Script>{};
   final libraries = <LibraryRef>{};
@@ -362,8 +362,14 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
 
   for (var range in report.ranges!) {
     final scriptRef = report.scripts![range.scriptIndex!];
-    final scriptUriString = scriptRef.uri!;
-    final scriptUri = Uri.parse(scriptUriString);
+    final scriptUriString = scriptRef.uri;
+    if (!scopedOutput.includesScript(scriptUriString)) {
+      // Sometimes a range's script can be different to the function's script
+      // (eg mixins), so we have to re-check the scope filter.
+      // See https://github.com/dart-lang/coverage/issues/495
+      continue;
+    }
+    final scriptUri = Uri.parse(scriptUriString!);
 
     // If we have a coverableLineCache, use it in the same way we use
     // SourceReportCoverage.misses: to add zeros to the coverage result for all
@@ -496,4 +502,20 @@ class StdoutLog extends Log {
 
   @override
   void severe(String message) => print(message);
+}
+
+extension _ScopedOutput on Set<String> {
+  bool includesScript(String? scriptUriString) {
+    if (scriptUriString == null) return false;
+
+    // If the set is empty, it means the user didn't specify a --scope-output
+    // flag, so allow everything.
+    if (isEmpty) return true;
+
+    final scriptUri = Uri.parse(scriptUriString);
+    if (scriptUri.scheme != 'package') return false;
+
+    final scope = scriptUri.pathSegments.first;
+    return contains(scope);
+  }
 }
