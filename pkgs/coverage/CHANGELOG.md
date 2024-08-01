@@ -1,4 +1,4 @@
-## 1.8.1-wip
+## 1.9.0
 
 - Require Dart ^3.4
 - Fix bug where some ranges were able to bypass the `--scope-output` filters.
