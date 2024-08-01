@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
 import 'hitmap.dart';
@@ -76,8 +77,12 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     Resolver resolver, {
     String? basePath,
     List<String>? reportOn,
+    Set<Glob>? ignoreGlobs,
   }) {
-    final pathFilter = _getPathFilter(reportOn);
+    final pathFilter = _getPathFilter(
+      reportOn: reportOn,
+      ignoreGlobs: ignoreGlobs,
+    );
     final buf = StringBuffer();
     for (final entry in entries) {
       final v = entry.value;
@@ -136,10 +141,14 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     Resolver resolver,
     Loader loader, {
     List<String>? reportOn,
+    Set<Glob>? ignoreGlobs,
     bool reportFuncs = false,
     bool reportBranches = false,
   }) async {
-    final pathFilter = _getPathFilter(reportOn);
+    final pathFilter = _getPathFilter(
+      reportOn: reportOn,
+      ignoreGlobs: ignoreGlobs,
+    );
     final buf = StringBuffer();
     for (final entry in entries) {
       final v = entry.value;
@@ -192,10 +201,23 @@ const _prefix = '       ';
 
 typedef _PathFilter = bool Function(String path);
 
-_PathFilter _getPathFilter(List<String>? reportOn) {
-  if (reportOn == null) return (String path) => true;
+_PathFilter _getPathFilter({List<String>? reportOn, Set<Glob>? ignoreGlobs}) {
+  if (reportOn == null && ignoreGlobs == null) return (String path) => true;
 
-  final absolutePaths = reportOn.map(p.canonicalize).toList();
-  return (String path) =>
-      absolutePaths.any((item) => p.canonicalize(path).startsWith(item));
+  final absolutePaths = reportOn?.map(p.canonicalize).toList();
+
+  return (String path) {
+    final canonicalizedPath = p.canonicalize(path);
+
+    if (absolutePaths != null &&
+        !absolutePaths.any(canonicalizedPath.startsWith)) {
+      return false;
+    }
+    if (ignoreGlobs != null &&
+        ignoreGlobs.any((glob) => glob.matches(canonicalizedPath))) {
+      return false;
+    }
+
+    return true;
+  };
 }
