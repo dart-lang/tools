@@ -12,12 +12,19 @@ import 'package:coverage/src/util.dart';
 
 import 'test_app_isolate.dart';
 
+part 'test_app.g.dart';
+
 Future<void> main() async {
   for (var i = 0; i < 10; i++) {
     for (var j = 0; j < 10; j++) {
       final sum = usedMethod(i, j);
       if (sum != (i + j)) {
         throw 'bad method!';
+      }
+
+      final multiplication = usedGeneratedMethod(i, j);
+      if (multiplication != i * j) {
+        throw 'bad generated method!';
       }
     }
   }
