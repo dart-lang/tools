@@ -4,7 +4,7 @@
 
 /// Utility methods requiring dart:io and used by more than one library in the
 /// package.
-library package_config.util_io;
+library;
 
 import 'dart:io';
 import 'dart:typed_data';

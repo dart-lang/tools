@@ -10,7 +10,7 @@
 /// {@canonicalFor package_config.Package}
 /// {@canonicalFor package_config.PackageConfig}
 /// {@canonicalFor errors.PackageConfigError}
-library package_config.package_config_types;
+library;
 
 export 'src/errors.dart' show PackageConfigError;
 export 'src/package_config.dart'

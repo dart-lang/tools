@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Utility methods used by more than one library in the package.
-library package_config.util;
+library;
 
 import 'errors.dart';
 

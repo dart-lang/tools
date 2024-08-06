@@ -7,7 +7,7 @@
 ///
 /// This package provides functionality to find, read and write package
 /// configurations in the [specified format](https://github.com/dart-lang/language/blob/master/accepted/future-releases/language-versioning/package-config-file-v2.md).
-library package_config.package_config;
+library;
 
 import 'dart:io' show Directory, File;
 import 'dart:typed_data' show Uint8List;

@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-library package_config.discovery_test;
+library;
 
 import 'package:package_config/package_config.dart';
 import 'package:test/test.dart';
