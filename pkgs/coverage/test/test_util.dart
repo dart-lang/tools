@@ -41,7 +41,7 @@ bool platformVersionCheck(int minMajor, int minMinor) {
   return major > minMajor || (major == minMajor && minor >= minMinor);
 }
 
-/// Returns a mapping of <URL: <function_name: hit_count>> from [sources].
+/// Returns a mapping of (URL: (function_name: hit_count)) from [sources].
 Map<String, Map<String, int>> functionInfoFromSources(
   Map<String, List<Map<dynamic, dynamic>>> sources,
 ) {
