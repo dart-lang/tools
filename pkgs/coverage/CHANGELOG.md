@@ -1,3 +1,7 @@
+## 1.9.1-wip
+
+- Remove outdated VM service version checks.
+
 ## 1.9.0
 
 - Require Dart ^3.4

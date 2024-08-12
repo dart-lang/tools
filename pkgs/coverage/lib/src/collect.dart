@@ -109,12 +109,6 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
   }
 }
 
-bool _versionCheck(Version version, int minMajor, int minMinor) {
-  final major = version.major ?? 0;
-  final minor = version.minor ?? 0;
-  return major > minMajor || (major == minMajor && minor >= minMinor);
-}
-
 Future<Map<String, dynamic>> _getAllCoverage(
     VmService service,
     bool includeDart,
@@ -126,111 +120,51 @@ Future<Map<String, dynamic>> _getAllCoverage(
   scopedOutput ??= <String>{};
   final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
-  final version = await service.getVersion();
-  final reportLines = _versionCheck(version, 3, 51);
-  final branchCoverageSupported = _versionCheck(version, 3, 56);
-  final libraryFilters = _versionCheck(version, 3, 57);
-  final fastIsoGroups = _versionCheck(version, 3, 61);
-  final lineCacheSupported = _versionCheck(version, 4, 13);
-
-  if (branchCoverage && !branchCoverageSupported) {
-    branchCoverage = false;
-    stderr.writeln('Branch coverage was requested, but is not supported'
-        ' by the VM version. Try updating to a newer version of Dart');
-  }
 
   final sourceReportKinds = [
     SourceReportKind.kCoverage,
     if (branchCoverage) SourceReportKind.kBranchCoverage,
   ];
 
-  final librariesAlreadyCompiled =
-      lineCacheSupported ? coverableLineCache?.keys.toList() : null;
+  final librariesAlreadyCompiled = coverableLineCache?.keys.toList();
 
   // Program counters are shared between isolates in the same group. So we need
   // to make sure we're only gathering coverage data for one isolate in each
   // group, otherwise we'll double count the hits.
-  final isolateOwnerGroup = <String, String>{};
   final coveredIsolateGroups = <String>{};
-  if (!fastIsoGroups) {
-    for (var isolateGroupRef in vm.isolateGroups!) {
-      final isolateGroup = await service.getIsolateGroup(isolateGroupRef.id!);
-      for (var isolateRef in isolateGroup.isolates!) {
-        isolateOwnerGroup[isolateRef.id!] = isolateGroupRef.id!;
-      }
-    }
-  }
 
   for (var isolateRef in vm.isolates!) {
     if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
-    final isolateGroupId = fastIsoGroups
-        ? isolateRef.isolateGroupId
-        : isolateOwnerGroup[isolateRef.id];
+    final isolateGroupId = isolateRef.isolateGroupId;
     if (isolateGroupId != null) {
       if (coveredIsolateGroups.contains(isolateGroupId)) continue;
       coveredIsolateGroups.add(isolateGroupId);
     }
-    if (scopedOutput.isNotEmpty && !libraryFilters) {
-      late final ScriptList scripts;
-      try {
-        scripts = await service.getScripts(isolateRef.id!);
-      } on SentinelException {
-        continue;
-      }
-      for (final script in scripts.scripts!) {
-        // Skip scripts which should not be included in the report.
-        if (!scopedOutput.includesScript(script.uri)) continue;
-        late final SourceReport scriptReport;
-        try {
-          scriptReport = await service.getSourceReport(
-            isolateRef.id!,
-            sourceReportKinds,
-            forceCompile: true,
-            scriptId: script.id,
-            reportLines: reportLines ? true : null,
-            librariesAlreadyCompiled: librariesAlreadyCompiled,
-          );
-        } on SentinelException {
-          continue;
-        }
-        final coverage = await _processSourceReport(
-            service,
-            isolateRef,
-            scriptReport,
-            includeDart,
-            functionCoverage,
-            reportLines,
-            coverableLineCache,
-            scopedOutput);
-        allCoverage.addAll(coverage);
-      }
-    } else {
-      late final SourceReport isolateReport;
-      try {
-        isolateReport = await service.getSourceReport(
-          isolateRef.id!,
-          sourceReportKinds,
-          forceCompile: true,
-          reportLines: reportLines ? true : null,
-          libraryFilters: scopedOutput.isNotEmpty && libraryFilters
-              ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
-              : null,
-          librariesAlreadyCompiled: librariesAlreadyCompiled,
-        );
-      } on SentinelException {
-        continue;
-      }
-      final coverage = await _processSourceReport(
-          service,
-          isolateRef,
-          isolateReport,
-          includeDart,
-          functionCoverage,
-          reportLines,
-          coverableLineCache,
-          scopedOutput);
-      allCoverage.addAll(coverage);
+
+    late final SourceReport isolateReport;
+    try {
+      isolateReport = await service.getSourceReport(
+        isolateRef.id!,
+        sourceReportKinds,
+        forceCompile: true,
+        reportLines: true,
+        libraryFilters: scopedOutput.isNotEmpty
+            ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
+            : null,
+        librariesAlreadyCompiled: librariesAlreadyCompiled,
+      );
+    } on SentinelException {
+      continue;
     }
+    final coverage = await _processSourceReport(
+        service,
+        isolateRef,
+        isolateReport,
+        includeDart,
+        functionCoverage,
+        coverableLineCache,
+        scopedOutput);
+    allCoverage.addAll(coverage);
   }
   return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
 }
@@ -310,13 +244,12 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     SourceReport report,
     bool includeDart,
     bool functionCoverage,
-    bool reportLines,
     Map<String, Set<int>>? coverableLineCache,
     Set<String> scopedOutput) async {
   final hitMaps = <Uri, HitMap>{};
   final scripts = <ScriptRef, Script>{};
   final libraries = <LibraryRef>{};
-  final needScripts = functionCoverage || !reportLines;
+  final needScripts = functionCoverage;
 
   Future<Script?> getScript(ScriptRef? scriptRef) async {
     if (scriptRef == null) {
@@ -425,15 +358,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
 
     void forEachLine(List<int>? tokenPositions, void Function(int line) body) {
       if (tokenPositions == null) return;
-      for (final pos in tokenPositions) {
-        final line = reportLines ? pos : _getLineFromTokenPos(script!, pos);
-        if (line == null) {
-          if (_debugTokenPositions) {
-            stderr.write(
-                'tokenPos $pos has no line mapping for script $scriptUri');
-          }
-          continue;
-        }
+      for (final line in tokenPositions) {
         body(line);
       }
     }
