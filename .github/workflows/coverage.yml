@@ -3,9 +3,15 @@ name: Dart CI
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/coverage.yml'
+      - 'pkgs/coverage/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/coverage.yml'
+      - 'pkgs/coverage/**'
   schedule:
     - cron: "0 0 * * 0"
 
@@ -17,6 +23,9 @@ jobs:
   # against Dart dev.
   analyze:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
     strategy:
       fail-fast: false
       matrix:
@@ -42,6 +51,9 @@ jobs:
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
     strategy:
       fail-fast: false
       matrix:
@@ -67,6 +79,9 @@ jobs:
   coverage:
     needs: test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672

@@ -1,7 +1,7 @@
 name: coverage
 version: 1.9.0
 description: Coverage data manipulation and formatting
-repository: https://github.com/dart-lang/coverage
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/coverage
 
 environment:
   sdk: ^3.4.0
