@@ -1,6 +1,7 @@
 ## 6.1.3-wip
 
 - Require Dart 3.4.
+- Add license header.
 
 ## 6.1.2
 

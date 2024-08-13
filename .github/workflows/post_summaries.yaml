@@ -6,6 +6,7 @@ on:
   workflow_run:
     workflows: 
       - Publish
+      - Health
     types:
       - completed
 
