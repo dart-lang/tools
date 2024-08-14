@@ -1,5 +1,7 @@
 ## 2.3.3-wip
 
+- Add an example usage to the README.
+
 ## 2.3.2
 
 - Require Dart 3.4
