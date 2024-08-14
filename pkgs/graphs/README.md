@@ -5,38 +5,53 @@
 Graph algorithms that do not specify a particular approach for representing a
 Graph.
 
-Functions in this package will take arguments that provide the mechanism for
-traversing the graph. For example two common approaches for representing a
-graph:
+Each algorithm is a top level function which takes callback arguments that
+provide the mechanism for traversing the graph. For example two common
+approaches for representing a graph:
 
 ```dart
-class Graph {
-  Map<Node, List<Node>> nodes;
-}
-class Node {
-  // Interesting data
+class AdjacencyListGraph<T> {
+  Map<T, List<T>> nodes;
+  // ...
 }
 ```
 
 ```dart
-class Graph {
-  Node root;
+class TreeGraph<T> {
+  Node<T> root;
+  // ...
 }
-class Node {
-  List<Node> edges;
-  // Interesting data
+class Node<T> {
+  List<Node<T>> edges;
+  T value;
 }
 ```
 
-Any representation can be adapted to the needs of the algorithm:
+Any representation can be adapted to the callback arguments.
 
-- Some algorithms need to associate data with each node in the graph. If the
-  node type `T` does not correctly or efficiently implement `hashCode` or `==`,
-  you may provide optional `equals` and/or `hashCode` functions are parameters.
-- Algorithms which need to traverse the graph take a `edges` function which provides the reachable nodes.
-  - `(node) => graph[node]`
-  - `(node) => node.edges`
+- Algorithms which need to traverse the graph take an `edges` callback which
+  provides the immediate neighbors of a given node.
+- Algorithms which need to associate unique data with each node in the graph
+  allow passing `equals` and/or `hashCode` callbacks if the unique data type
+  does not correctly or efficiently implement `operator==` or `get hashCode`.
 
 
-Graphs that are resolved asynchronously will have similar functions which
-return `FutureOr`.
+Algorithms that support graphs which are resolved asynchronously will have
+similar callbacks which return `FutureOr`.
+
+```dart
+import 'package:graphs/graphs.dart';
+
+void sendMessage() {
+  final network = AdjacencyListGraph();
+  // ...
+  final route = shortestPath(
+      sender, receiver, (node) => network.nodes[node] ?? const []);
+}
+
+void resolveBuildOrder() {
+  final dependencies = TreeGraph();
+  // ...
+  final buildOrder = topologicalSort([dependencies.root], (node) => node.edges);
+}
+```
