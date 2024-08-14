@@ -6,6 +6,7 @@ analyzer:
     strict-raw-types: true
   errors:
     sort_pub_dependencies: ignore
+    # https://github.com/dart-lang/sdk/issues/56465
     unintended_html_in_doc_comment: ignore
 
 linter:
