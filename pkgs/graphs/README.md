@@ -6,7 +6,7 @@ Graph algorithms that do not specify a particular approach for representing a
 Graph.
 
 Each algorithm is a top level function which takes callback arguments that
-provide the mechanism for traversing the graph. For example two common
+provide the mechanism for traversing the graph. For example, two common
 approaches for representing a graph:
 
 ```dart
