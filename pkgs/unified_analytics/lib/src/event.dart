@@ -400,7 +400,7 @@ final class Event {
     int? rowCount,
     int? inspectorTreeControllerId,
 
-    //DeepLinkScreenMetrics
+    // DeepLinkScreenMetrics
     String? androidAppId,
     String? iosBundleId,
   })  : eventName = DashEvent.devtoolsEvent,
