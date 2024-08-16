@@ -399,6 +399,10 @@ final class Event {
     int? rootSetCount,
     int? rowCount,
     int? inspectorTreeControllerId,
+
+    //DeepLinkScreenMetrics
+    String? androidAppId,
+    String? iosBundleId,
   })  : eventName = DashEvent.devtoolsEvent,
         eventData = {
           'eventCategory': eventCategory,
@@ -446,6 +450,9 @@ final class Event {
           if (rowCount != null) 'rowCount': rowCount,
           if (inspectorTreeControllerId != null)
             'inspectorTreeControllerId': inspectorTreeControllerId,
+          // DeepLinkScreenMetrics
+          if (androidAppId != null) 'androidAppId': androidAppId,
+          if (iosBundleId != null) 'iosBundleId': iosBundleId,
         };
 
   /// Event that contains the results for a specific doctor validator.
