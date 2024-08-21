@@ -1,7 +1,7 @@
 name: source_map_stack_trace
 version: 2.1.2-wip
 description: A package for applying source maps to stack traces.
-repository: https://github.com/dart-lang/source_map_stack_trace
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/source_map_stack_trace
 
 environment:
   sdk: ^3.3.0
