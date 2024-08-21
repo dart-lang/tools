@@ -1,6 +1,7 @@
-## 2.0.3-wip
+## 2.0.3
 
 * Require `package:http` v1.0.0
+* Move to `dart-lang/tools`.
 
 ## 2.0.2
 
