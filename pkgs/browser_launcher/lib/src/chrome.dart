@@ -114,6 +114,10 @@ class Chrome {
       '--disable-default-apps',
       '--disable-translate',
       '--start-maximized',
+      // When running on MacOS, Chrome may open system dialogs requesting
+      // credentials. This uses a mock keychain to avoid that dialog from
+      // blocking.
+      '--use-mock-keychain',
     ];
     if (headless) {
       args.add('--headless');
