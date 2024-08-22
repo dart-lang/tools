@@ -1,9 +1,10 @@
-## 1.1.2-wip
+## 1.1.2
 
 - Require Dart 3.4
 - Log errors from chrome
 - Allow tests to detect headless-only environment (for CI).
 - Add extra flags that may help disable additional throttling in background tabs
+- Add `--use-mock-keychain` flag to avoid blocking dialog on MacOS.
 
 ## 1.1.1
 
