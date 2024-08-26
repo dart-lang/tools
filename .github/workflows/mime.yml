@@ -5,13 +5,22 @@ on:
     # “At 00:00 (UTC) on Sunday.”
     - cron: '0 0 * * 0'
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/mime.yml'
+      - 'pkgs/mime/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/mime.yml'
+      - 'pkgs/mime/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/mime/
 
     strategy:
       matrix:

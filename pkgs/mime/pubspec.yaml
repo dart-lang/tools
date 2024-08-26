@@ -3,7 +3,7 @@ version: 1.0.6-wip
 description: >-
   Utilities for handling media (MIME) types, including determining a type from
   a file extension and file contents.
-repository: https://github.com/dart-lang/mime
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/mime
 topics:
  - magic-numbers
  - mime
