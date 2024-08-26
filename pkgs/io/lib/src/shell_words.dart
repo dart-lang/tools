@@ -124,7 +124,6 @@ List<String> shellSplit(String command) {
       default:
         hasToken = true;
         token.writeCharCode(next);
-        break;
     }
   }
 
