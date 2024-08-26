@@ -83,7 +83,7 @@ void analyze(List<StyleSheet> styleSheets,
 
 /// Parse the [input] CSS stylesheet into a tree.
 ///
-/// The [input] can be a [String], or [List<int>] of bytes and returns a
+/// The [input] can be a [String], or [List]`<int>` of bytes and returns a
 /// [StyleSheet] AST. The optional [errors] list will collect any error
 /// encountered.
 StyleSheet parse(
@@ -100,7 +100,7 @@ StyleSheet parse(
 }
 
 /// Parse the [input] CSS selector into a tree. The [input] can be a [String],
-/// or [List<int>] of bytes and returns a [StyleSheet] AST.  The optional
+/// or [List]`<int>` of bytes and returns a [StyleSheet] AST.  The optional
 /// [errors] list will contain each error/warning as a [Message].
 // TODO(jmesserly): should rename "parseSelector" and return Selector
 StyleSheet selector(Object input, {List<Message>? errors}) {
@@ -1332,7 +1332,7 @@ class _Parser {
 
   /// Same as [processSelector] but reports an error for each combinator.
   ///
-  /// This is a quick fix for parsing <compound-selectors> until the parser
+  /// This is a quick fix for parsing `<compound-selectors>` until the parser
   /// supports Selector Level 4 grammar:
   /// https://drafts.csswg.org/selectors-4/#typedef-compound-selector
   Selector? processCompoundSelector() {

@@ -505,7 +505,7 @@ void testWildcard() {
   expect('foobar', simpleSelector1.name);
 }
 
-/// Test List<int> as input to parser.
+// Test List<int> as input to parser.
 void testArrayOfChars() {
   var errors = <Message>[];
   var input = '<![CDATA[.foo { '
