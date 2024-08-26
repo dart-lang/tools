@@ -1,6 +1,7 @@
-## 1.0.6-wip
+## 1.0.6
 
 * Add `topics` section to `pubspec.yaml`.
+* Move to `dart-lang/tools` monorepo.
 
 ## 1.0.5
 
