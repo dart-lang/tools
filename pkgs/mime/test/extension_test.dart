@@ -6,30 +6,28 @@ import 'package:mime/mime.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('global-lookup-mime-type', () {
-    test('valid-mime-type', () {
-      expect(extensionFromMime('text/x-dart'), equals('dart'));
-      expect(extensionFromMime('text/javascript'), equals('js'));
-      expect(extensionFromMime('application/java-archive'), equals('jar'));
-      expect(extensionFromMime('application/json'), equals('json'));
-      expect(extensionFromMime('application/pdf'), equals('pdf'));
-      expect(extensionFromMime('application/vnd.ms-excel'), equals('xls'));
-      expect(extensionFromMime('application/xhtml+xml'), equals('xht'));
-      expect(extensionFromMime('image/jpeg'), equals('jpg'));
-      expect(extensionFromMime('image/png'), equals('png'));
-      expect(extensionFromMime('text/css'), equals('css'));
-      expect(extensionFromMime('text/html'), equals('htm'));
-      expect(extensionFromMime('text/plain'), equals('txt'));
-      expect(extensionFromMime('text/x-c'), equals('c'));
-    });
+  test('valid-mime-type', () {
+    expect(extensionFromMime('text/x-dart'), equals('dart'));
+    expect(extensionFromMime('text/javascript'), equals('js'));
+    expect(extensionFromMime('application/java-archive'), equals('jar'));
+    expect(extensionFromMime('application/json'), equals('json'));
+    expect(extensionFromMime('application/pdf'), equals('pdf'));
+    expect(extensionFromMime('application/vnd.ms-excel'), equals('xls'));
+    expect(extensionFromMime('application/xhtml+xml'), equals('xht'));
+    expect(extensionFromMime('image/jpeg'), equals('jpg'));
+    expect(extensionFromMime('image/png'), equals('png'));
+    expect(extensionFromMime('text/css'), equals('css'));
+    expect(extensionFromMime('text/html'), equals('htm'));
+    expect(extensionFromMime('text/plain'), equals('txt'));
+    expect(extensionFromMime('text/x-c'), equals('c'));
+  });
 
-    test('invalid-mime-type', () {
-      expect(extensionFromMime('invalid-mime-type'), isNull);
-      expect(extensionFromMime('invalid/mime/type'), isNull);
-    });
+  test('invalid-mime-type', () {
+    expect(extensionFromMime('invalid-mime-type'), isNull);
+    expect(extensionFromMime('invalid/mime/type'), isNull);
+  });
 
-    test('unknown-mime-type', () {
-      expect(extensionFromMime('application/to-be-invented'), isNull);
-    });
+  test('unknown-mime-type', () {
+    expect(extensionFromMime('application/to-be-invented'), isNull);
   });
 }
