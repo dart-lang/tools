@@ -14,22 +14,21 @@ import 'default_extension_map.dart';
 /// Used by [extensionFromMime].
 final Map<String, String> _defaultMimeTypeMap = {
   for (var entry in defaultExtensionMap.entries) entry.value: entry.key,
-}..addAll({
-    'application/vnd.ms-excel': 'xls',
-    'application/vnd.ms-powerpoint': 'ppt',
-    'image/jpeg': 'jpg',
-    'image/tiff': 'tif',
-    'image/svg+xml': 'svg',
-    'text/calendar': 'ics',
-    'text/javascript': 'js',
-    'text/plain': 'txt',
-    'text/sgml': 'sgml',
-    'text/x-pascal': 'pas',
-    'video/mp4': 'mp4',
-    'video/mpeg': 'mpg',
-    'video/quicktime': 'mov',
-    'video/x-matroska': 'mkv',
-  });
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'image/jpeg': 'jpg',
+  'image/tiff': 'tif',
+  'image/svg+xml': 'svg',
+  'text/calendar': 'ics',
+  'text/javascript': 'js',
+  'text/plain': 'txt',
+  'text/sgml': 'sgml',
+  'text/x-pascal': 'pas',
+  'video/mp4': 'mp4',
+  'video/mpeg': 'mpg',
+  'video/quicktime': 'mov',
+  'video/x-matroska': 'mkv',
+};
 
 /// The default file extension for a given MIME type.
 ///
