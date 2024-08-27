@@ -1,3 +1,7 @@
+## 1.0.7-wip
+
+* Update `extensionFromMime` to return a default extension when a MIME type maps to multiple extensions.
+
 ## 1.0.6
 
 * Add `topics` section to `pubspec.yaml`.
