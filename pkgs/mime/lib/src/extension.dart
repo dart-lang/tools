@@ -4,8 +4,14 @@
 
 import 'default_extension_map.dart';
 
-/// Reverse map of [defaultExtensionMap] with overrides for common extensions
-/// since different extensions may map to the same MIME type.
+/// Default extension for recognized MIME types.
+///
+/// Is the inverse of [defaultExtensionMap], and where that
+/// map has multiple extensions which map to the same
+/// MIME type, this map maps that MIME type to a *default*
+/// extension.
+///
+/// Used by [extensionFromMime].
 final Map<String, String> _defaultMimeTypeMap = {
   for (var entry in defaultExtensionMap.entries) entry.value: entry.key,
 }..addAll({
@@ -25,12 +31,13 @@ final Map<String, String> _defaultMimeTypeMap = {
     'video/x-matroska': 'mkv',
   });
 
-/// The file extension for a given MIME type.
+/// The default file extension for a given MIME type.
 ///
-/// If there are multiple extensions for [mimeType], return preferred extension
-/// if defined in [_defaultMimeTypeMap], otherwise an extension chosen by the
-/// library.
+/// If [mimeType] has multiple associated extensions,
+/// the returned string is one of those, chosen as the default
+/// extension for that MIME type.
 ///
-/// If no extension is found, `null` is returned.
+/// Returns `null` if [mimeType] is not a recognized and
+/// supported MIME type.
 String? extensionFromMime(String mimeType) =>
     _defaultMimeTypeMap[mimeType.toLowerCase()];

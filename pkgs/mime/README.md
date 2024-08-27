@@ -64,7 +64,7 @@ The top level function `extensionFromMime` can be used to determine the
 file extension of a given MIME type.
 
 ```dart
-print(extensionFromMime('text/html'));  // Will print html
-print(extensionFromMime('image/jpeg'));  // Will print jpg
-print(extensionFromMime('application/pdf'));  // Will print pdf
+print(extensionFromMime('text/html'));  // Prints "html".
+print(extensionFromMime('image/jpeg'));  // Prints "jpg".
+print(extensionFromMime('application/pdf'));  // Prints "pdf".
 ```
