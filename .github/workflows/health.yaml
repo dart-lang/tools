@@ -7,5 +7,8 @@ on:
 jobs:
   health:
     uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
+    with:
+      ignore_coverage: "**.mock.dart,**.g.dart"
+      ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart"
     permissions:
       pull-requests: write
