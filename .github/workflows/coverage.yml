@@ -96,4 +96,4 @@ jobs:
         uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: coverage/lcov.info
+          path-to-lcov: pkgs/coverage/coverage/lcov.info
