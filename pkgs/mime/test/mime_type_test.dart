@@ -317,5 +317,4 @@ void main() {
 
     expect(initialMagicNumbersMaxLength, actualMaxBytes);
   });
-
 }
