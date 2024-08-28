@@ -1,6 +1,7 @@
-## 1.9.1-wip
+## 1.9.1
 
 - Remove outdated VM service version checks.
+- Move to `dart-lang/tools`.
 
 ## 1.9.0
 
