@@ -15,12 +15,13 @@ don't naturally belong to other topic monorepos (like
 | Package | Description | Version |
 | --- | --- | --- |
 | [cli_config](pkgs/cli_config/) | A library to take config values from configuration files, CLI arguments, and environment variables. | [![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
+| [coverage](pkgs/coverage/) | Coverage data manipulation and formatting. | [![pub package](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage) |
 | [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
 | [graphs](pkgs/graphs/) | Graph algorithms that operate on graphs in any representation | [![pub package](https://img.shields.io/pub/v/graphs.svg)](https://pub.dev/packages/graphs) |
-| [unified_analytics](pkgs/unified_analytics/) | A package for logging analytics for all Dart and Flutter related tooling to Google Analytics. | [![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics) |
-| [source_map_stack_trace](pkgs/source_map_stack_trace/) | A package for applying source maps to stack traces. | [![pub package](https://img.shields.io/pub/v/source_map_stack_trace.svg)](https://pub.dev/packages/source_map_stack_trace) |
-| [oauth2](pkgs/oauth2/) | A client library for authenticatingand making requests via OAuth2. | [![pub package](https://img.shields.io/pub/v/oauth2.svg)](https://pub.dev/packages/oauth2) |
 | [mime](pkgs/mime/) | Utilities for handling media (MIME) types. | [![pub package](https://img.shields.io/pub/v/mime.svg)](https://pub.dev/packages/mime) |
+| [oauth2](pkgs/oauth2/) | A client library for authenticatingand making requests via OAuth2. | [![pub package](https://img.shields.io/pub/v/oauth2.svg)](https://pub.dev/packages/oauth2) |
+| [source_map_stack_trace](pkgs/source_map_stack_trace/) | A package for applying source maps to stack traces. | [![pub package](https://img.shields.io/pub/v/source_map_stack_trace.svg)](https://pub.dev/packages/source_map_stack_trace) |
+| [unified_analytics](pkgs/unified_analytics/) | A package for logging analytics for all Dart and Flutter related tooling to Google Analytics. | [![pub package](https://img.shields.io/pub/v/unified_analytics.svg)](https://pub.dev/packages/unified_analytics) |
 
 ## Publishing automation
 
