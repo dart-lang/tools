@@ -1,5 +1,6 @@
-## 1.0.7-wip
+## 2.0.0-wip
 
+* **[Breaking]** `extensionFromMime(String mimeType, {String? orElse})` has been removed. Use `extensionFromMime(String mimeType) ?? orElse` instead.
 * Update `extensionFromMime` to return a default extension when a MIME type maps to multiple extensions.
 
 ## 1.0.6
