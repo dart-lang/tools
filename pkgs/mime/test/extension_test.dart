@@ -13,11 +13,11 @@ void main() {
     expect(extensionFromMime('application/json'), equals('json'));
     expect(extensionFromMime('application/pdf'), equals('pdf'));
     expect(extensionFromMime('application/vnd.ms-excel'), equals('xls'));
-    expect(extensionFromMime('application/xhtml+xml'), equals('xht'));
+    expect(extensionFromMime('application/xhtml+xml'), equals('xhtml'));
     expect(extensionFromMime('image/jpeg'), equals('jpg'));
     expect(extensionFromMime('image/png'), equals('png'));
     expect(extensionFromMime('text/css'), equals('css'));
-    expect(extensionFromMime('text/html'), equals('htm'));
+    expect(extensionFromMime('text/html'), equals('html'));
     expect(extensionFromMime('text/plain'), equals('txt'));
     expect(extensionFromMime('text/x-c'), equals('c'));
   });
