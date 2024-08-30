@@ -1,3 +1,7 @@
+## 1.9.2
+
+- Fix repository link in pubspec.
+
 ## 1.9.1
 
 - Remove outdated VM service version checks.
