@@ -378,6 +378,7 @@ final class Event {
     String? isExternalBuild,
     String? isEmbedded,
     String? ideLaunchedFeature,
+    String? isWasm,
 
     // PerformanceScreenMetrics
     int? uiDurationMicros,
@@ -419,6 +420,7 @@ final class Event {
           if (isEmbedded != null) 'isEmbedded': isEmbedded,
           if (ideLaunchedFeature != null)
             'ideLaunchedFeature': ideLaunchedFeature,
+          if (isWasm != null) 'isWasm': isWasm,
 
           // PerformanceScreenMetrics
           if (uiDurationMicros != null) 'uiDurationMicros': uiDurationMicros,

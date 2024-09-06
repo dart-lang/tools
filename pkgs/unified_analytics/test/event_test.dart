@@ -570,6 +570,7 @@ void main() {
           isExternalBuild: 'isExternalBuild',
           isEmbedded: 'isEmbedded',
           ideLaunchedFeature: 'ideLaunchedFeature',
+          isWasm: 'true',
           uiDurationMicros: 123,
           rasterDurationMicros: 123,
           shaderCompilationDurationMicros: 123,
@@ -603,6 +604,8 @@ void main() {
     expect(constructedEvent.eventData['isEmbedded'], 'isEmbedded');
     expect(
         constructedEvent.eventData['ideLaunchedFeature'], 'ideLaunchedFeature');
+    expect(constructedEvent.eventData['isWasm'], 'true');
+
     expect(constructedEvent.eventData['uiDurationMicros'], 123);
     expect(constructedEvent.eventData['rasterDurationMicros'], 123);
     expect(constructedEvent.eventData['shaderCompilationDurationMicros'], 123);
