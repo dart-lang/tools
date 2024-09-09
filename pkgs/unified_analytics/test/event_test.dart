@@ -429,14 +429,19 @@ void main() {
   });
 
   test('Event.exception constructed', () {
-    Event generateEvent() => Event.exception(exception: 'exception');
+    Event generateEvent() => Event.exception(
+          exception: 'exception',
+          data: {'foo': 'bar', 'baz': 1},
+        );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.exception);
     expect(constructedEvent.eventData['exception'], 'exception');
-    expect(constructedEvent.eventData.length, 1);
+    expect(constructedEvent.eventData['foo'], 'bar');
+    expect(constructedEvent.eventData['baz'], 1);
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.timing constructed', () {
