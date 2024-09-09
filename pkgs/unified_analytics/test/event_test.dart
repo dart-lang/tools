@@ -618,7 +618,7 @@ void main() {
     expect(constructedEvent.eventData['rootSetCount'], 123);
     expect(constructedEvent.eventData['rowCount'], 123);
     expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
-    expect(constructedEvent.eventData.length, 27);
+    expect(constructedEvent.eventData.length, 28);
   });
 
   test('Confirm all constructors were checked', () {
