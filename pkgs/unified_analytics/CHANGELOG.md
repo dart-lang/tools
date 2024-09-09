@@ -1,4 +1,4 @@
-## 6.1.3-wip
+## 6.1.3
 
 - Require Dart 3.4.
 - Added `isWasm` parameter to `Event.devtoolsEvent` constructor.
