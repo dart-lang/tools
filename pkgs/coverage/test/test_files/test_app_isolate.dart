@@ -38,6 +38,9 @@ Future<String> fooAsync(int x) async {
 void isolateTask(List threeThings) {
   sleep(const Duration(milliseconds: 500));
 
+  // Regression test for https://github.com/dart-lang/tools/issues/520.
+  Isolate.run(() => print('Another isolate'), debugName: 'Grandchild');
+
   fooSync(answer);
   fooAsync(answer).then((_) {
     final port = threeThings.first as SendPort;

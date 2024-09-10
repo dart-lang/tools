@@ -1,3 +1,7 @@
+## 1.9.3-wip
+
+- Fix bug where tests involving multiple isolates never finish (#520).
+
 ## 1.9.2
 
 - Fix repository link in pubspec.

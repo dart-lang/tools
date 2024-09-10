@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:vm_service/vm_service.dart';
+
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
@@ -178,4 +180,179 @@ Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
     }
   });
   return serviceUriCompleter.future;
+}
+
+Future<List<IsolateRef>> getAllIsolates(VmService service) async =>
+    (await service.getVM()).isolates!;
+
+/// Buffers VM service isolate [Event]s until [flush] is called.
+///
+/// [flush] passes each buffered event to the handler function. After that, any
+/// further events are immediately passed to the handler. [flush] returns a
+/// future that completes when all the events in the queue have been handled (as
+/// well as any events that arrive while flush is in progress).
+class IsolateEventBuffer {
+  final Future<void> Function(Event event) _handler;
+  final _buffer = Queue<Event>();
+  var _flushed = true;
+
+  ServiceEventBuffer(this._handler);
+
+  Future<void> add(Event event) async {
+    if (_flushed) {
+      await _handler(event);
+    } else {
+      _buffer.add(event);
+    }
+  }
+
+  Future<void> flush() async {
+    while (_buffer.isNotEmpty) {
+      final event = _buffer.removeFirst();
+      await _handler(event);
+    }
+    _flushed = true;
+  }
+}
+
+class _GroupState {
+  // IDs of the isolates running in this group.
+  final _running = <String>{};
+
+  // IDs of the isolates paused just before exiting in this group.
+  final _paused = <String>{};
+
+  // IDs of the isolates that have exited in this group.
+  final _exited = <String>{};
+
+  bool noRunningIsolates => _running.isEmpty;
+  bool noIsolates => _running.isEmpty && _paused.isEmpty;
+
+  bool start(String id) {
+    if (_pause.contains(id) || _exited.contains(id)) return false;
+    _running.add(id);
+    return true;
+  }
+
+  bool pause(String id) {
+    if (_exited.contains(id)) return false;
+    _running.remove(id);
+    _paused.add(id);
+    return true;
+  }
+
+  void exit(String id) {
+    _paused.remove(id);
+    _running.remove(id);
+    _exited.add(id);
+  }
+}
+
+/// Calls onIsolatePaused whenever an isolate reaches the pause-on-exit state,
+/// and passes a flag stating whether that isolate is the last one in the group.
+class IsolatePausedListener {
+  final VmService _service;
+  final Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup)
+        _onIsolatePaused;
+  final _allExitedCompleter = Completer<void>();
+  final _isolateGroups = <String, _GroupState>{};
+
+  IsolatePausedListener(this.service, this.onIsolatePaused);
+
+  /// Starts listening and returns a future that completes when all isolates
+  /// have exited.
+  Future<void> listenUntilAllExited() async {
+    // NOTE: Why is this class so complicated?
+    //  - We only receive start/pause/exit events that arrive after we've
+    //    subscribed (using _service.streamListen below).
+    //  - So after we subscribe, we have to backfill any isolates that are
+    //    already started/paused by looking at the current isolates.
+    //  - But since that backfill is an async process, we may get isolate events
+    //    arriving during that process.
+    //  - So we buffer all the received events until the backfill is complete.
+    //  - That means we can receive duplicate add/pause events: one from the
+    //    backfill, and one from a real event that arrived during the backfill.
+    //  - So the _onStart/_onPause/_onExit methods need to be robust to
+    //    duplicate events (and out-of-order events to some extent, as the
+    //    backfill's [add, pause] events and the real [add, pause, exit] events
+    //    can be interleaved).
+    final eventBuffer = IsolateEventBuffer((Event event) {
+      switch(event.kind) {
+        case EventKind.kIsolateStart:
+          return _onStart(event.isolate!);
+        case EventKind.kPauseExit:
+          return _onPause(event.isolate!);
+        case EventKind.kIsolateExit:
+          return _onExit(event.isolate!);
+      }
+    });
+
+    // Listen for isolate open/close events.
+    _service.onIsolateEvent.listen(eventBuffer.add);
+    await _service.streamListen(EventStreams.kIsolate);
+
+    // Listen for isolate paused events.
+    _service.onDebugEvent.listen(eventBuffer.add);
+    await _service.streamListen(EventStreams.kDebug);
+
+    // Backfill. Add/pause isolates that existed before we subscribed.
+    final isolates = await getAllIsolates(_service);
+    for (final isolateRef in isolates) {
+      _onStart(isolateRef);
+      final isolate = await _service.getIsolate(isolateRef.id!);
+      if (isolate.pauseEvent!.kind == EventKind.kPauseExit) {
+        await _onPause(isolateRef);
+      }
+    }
+
+    // Flush the buffered stream events, and the start processing them as they
+    // arrive.
+    await eventBuffer.flush();
+
+    // If the user forgot to pass --pause-isolates-on-exit, there's a chance
+    // that all the isolates exited before we subscribed to the exit event. To
+    // make sure we're not waiting on allExited forever, bail if isolateGroups
+    // is empty at this point.
+    if (isolateGroups.isEmpty) return;
+
+    await _allExitedCompleter.future;
+  }
+
+  void _onStart(IsolateRef isolateRef) {
+    print("Start event for ${isolateRef.name}");
+    final group = (isolateGroups[isolateRef.isolateGroupId!] ??= _GroupState());
+    group.add(isolateRef.id!);
+  }
+
+  Future<void> _onPause(IsolateRef isolateRef) async {
+    print("Pause event for ${isolateRef.name}");
+    final String groupId = isolateRef.isolateGroupId!;
+    final group = isolateGroups[groupId];
+    if (group == null) {
+      // See NOTE in listenUntilAllExited.
+      return;
+    }
+
+    group.pause(isolateRef.id!);
+    await _onIsolatePaused(isolateRef, group.noRunningIsolates);
+    print("  DONE Pause event for ${isolateRef.name}");
+  }
+
+  void _onExit(IsolateRef isolateRef) {
+    print("Exit event for ${isolateRef.name}");
+    final String groupId = isolateRef.isolateGroupId!;
+    final group = isolateGroups[groupId];
+    if (group == null) {
+      // Like the pause event, if the group is null it's due to a race condition
+      // with
+      return;
+    }
+    group.exit(isolateRef.id!);
+    if (group.noIsolates) {
+      isolateGroups.remove(groupId);
+    }
+    if (isolateGroups.isEmpty && !_allExitedCompleter.isCompleted()) {
+      _allExitedCompleter.complete();
+    }
+  }
 }

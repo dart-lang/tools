@@ -25,8 +25,8 @@ const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 /// If [resume] is true, all isolates will be resumed once coverage collection
 /// is complete.
 ///
-/// If [waitPaused] is true, collection will not begin until all isolates are
-/// in the paused state.
+/// If [waitPaused] is true, collection will not begin for an isolate until it
+/// is in the paused state.
 ///
 /// If [includeDart] is true, code coverage for core `dart:*` libraries will be
 /// collected.
@@ -93,12 +93,21 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
   }
 
   try {
-    if (waitPaused) {
-      await _waitIsolatesPaused(service, timeout: timeout);
-    }
-
-    return await _getAllCoverage(service, includeDart, functionCoverage,
-        branchCoverage, scopedOutput, isolateIds, coverableLineCache);
+    final job = _CollectionJob(
+        service,
+        includeDart,
+        functionCoverage,
+        [
+          SourceReportKind.kCoverage,
+          if (branchCoverage) SourceReportKind.kBranchCoverage,
+        ],
+        scopedOutput ?? <String>{},
+        isolateIds,
+        coverableLineCache);
+    return <String, dynamic>{
+      'type': 'CodeCoverage',
+      'coverage': await job.collectAll(waitPaused, resume),
+    };
   } finally {
     if (resume) {
       await _resumeIsolates(service);
@@ -109,64 +118,98 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
   }
 }
 
-Future<Map<String, dynamic>> _getAllCoverage(
-    VmService service,
-    bool includeDart,
-    bool functionCoverage,
-    bool branchCoverage,
-    Set<String>? scopedOutput,
-    Set<String>? isolateIds,
-    Map<String, Set<int>>? coverableLineCache) async {
-  scopedOutput ??= <String>{};
-  final vm = await service.getVM();
-  final allCoverage = <Map<String, dynamic>>[];
+class _CollectionJob {
+  // Inputs.
+  final VmService _service;
+  final bool _includeDart;
+  final bool _functionCoverage;
+  final List<String> _sourceReportKinds;
+  final Set<String> _scopedOutput;
+  final Set<String>? _isolateIds;
+  final Map<String, Set<int>>? _coverableLineCache;
 
-  final sourceReportKinds = [
-    SourceReportKind.kCoverage,
-    if (branchCoverage) SourceReportKind.kBranchCoverage,
-  ];
+  // State.
+  final List<String>? _librariesAlreadyCompiled;
+  final _coveredIsolateGroups = <String>{};
+  final _coveredIsolates = <String>{};
 
-  final librariesAlreadyCompiled = coverableLineCache?.keys.toList();
+  // Output.
+  final _allCoverage = <Map<String, dynamic>>[];
 
-  // Program counters are shared between isolates in the same group. So we need
-  // to make sure we're only gathering coverage data for one isolate in each
-  // group, otherwise we'll double count the hits.
-  final coveredIsolateGroups = <String>{};
+  _CollectionJob(
+      this._service,
+      this._includeDart,
+      this._functionCoverage,
+      this._sourceReportKinds,
+      this._scopedOutput,
+      this._isolateIds,
+      this._coverableLineCache)
+      : _librariesAlreadyCompiled = _coverableLineCache?.keys.toList() {}
 
-  for (var isolateRef in vm.isolates!) {
-    if (isolateIds != null && !isolateIds.contains(isolateRef.id)) continue;
+  Future<List<Map<String, dynamic>>> collectAll(
+      bool waitPaused, bool resume) async {
+    if (waitPaused) {
+      await _collectPausedIsolatesUntilAllExit();
+      print("!!! EXITING !!!");
+    } else {
+      for (final isolateRef in await getAllIsolates(_service)) {
+        await _collectOne(isolateRef);
+      }
+    }
+    return _allCoverage;
+  }
+
+  Future<void> _collectPausedIsolatesUntilAllExit() {
+    return IsolatePausedListener(_service,
+        (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
+      if (isLastIsolateInGroup) {
+        print("  Collecting for ${isolateRef.name}");
+        await _collectOne(isolateRef);
+        print("    DONE collecting for ${isolateRef.name}");
+      }
+      print("  Resuming ${isolateRef.name}");
+      await _service.resume(isolateRef.id!);
+      print("    DONE  Resuming ${isolateRef.name}");
+    }).listenUntilAllExited();
+  }
+
+  Future<void> _collectOne(IsolateRef isolateRef) async {
+    if (!(_isolateIds?.contains(isolateRef.id) ?? true)) return;
+
+    // _coveredIsolateGroups is only used for the !waitPaused flow The
+    // waitPaused flow only ever calls _collectOne once per isolate group.
     final isolateGroupId = isolateRef.isolateGroupId;
     if (isolateGroupId != null) {
-      if (coveredIsolateGroups.contains(isolateGroupId)) continue;
-      coveredIsolateGroups.add(isolateGroupId);
+      if (_coveredIsolateGroups.contains(isolateGroupId)) return;
+      _coveredIsolateGroups.add(isolateGroupId);
     }
 
     late final SourceReport isolateReport;
     try {
-      isolateReport = await service.getSourceReport(
+      isolateReport = await _service.getSourceReport(
         isolateRef.id!,
-        sourceReportKinds,
+        _sourceReportKinds,
         forceCompile: true,
         reportLines: true,
-        libraryFilters: scopedOutput.isNotEmpty
-            ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
+        libraryFilters: _scopedOutput.isNotEmpty
+            ? List.from(_scopedOutput.map((filter) => 'package:$filter/'))
             : null,
-        librariesAlreadyCompiled: librariesAlreadyCompiled,
+        librariesAlreadyCompiled: _librariesAlreadyCompiled,
       );
     } on SentinelException {
-      continue;
+      return;
     }
+
     final coverage = await _processSourceReport(
-        service,
+        _service,
         isolateRef,
         isolateReport,
-        includeDart,
-        functionCoverage,
-        coverableLineCache,
-        scopedOutput);
-    allCoverage.addAll(coverage);
+        _includeDart,
+        _functionCoverage,
+        _coverableLineCache,
+        _scopedOutput);
+    _allCoverage.addAll(coverage);
   }
-  return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
 Future _resumeIsolates(VmService service) async {
@@ -188,29 +231,6 @@ Future _resumeIsolates(VmService service) async {
   } catch (_) {
     // Ignore resume isolate failures
   }
-}
-
-Future _waitIsolatesPaused(VmService service, {Duration? timeout}) async {
-  final pauseEvents = <String>{
-    EventKind.kPauseStart,
-    EventKind.kPauseException,
-    EventKind.kPauseExit,
-    EventKind.kPauseInterrupted,
-    EventKind.kPauseBreakpoint
-  };
-
-  Future allPaused() async {
-    final vm = await service.getVM();
-    if (vm.isolates!.isEmpty) throw StateError('No isolates.');
-    for (var isolateRef in vm.isolates!) {
-      final isolate = await service.getIsolate(isolateRef.id!);
-      if (!pauseEvents.contains(isolate.pauseEvent!.kind)) {
-        throw StateError('Unpaused isolates remaining.');
-      }
-    }
-  }
-
-  return retry(allPaused, _retryInterval, timeout: timeout);
 }
 
 /// Returns the line number to which the specified token position maps.
@@ -278,6 +298,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
       return;
     }
     final funcName = await _getFuncName(service, isolateRef, func);
+    // TODO(liama): Is this still necessary, or is location.line valid?
     final tokenPos = location.tokenPos!;
     final line = _getLineFromTokenPos(script, tokenPos);
     if (line == null) {
