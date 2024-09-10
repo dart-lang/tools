@@ -429,14 +429,19 @@ void main() {
   });
 
   test('Event.exception constructed', () {
-    Event generateEvent() => Event.exception(exception: 'exception');
+    Event generateEvent() => Event.exception(
+          exception: 'exception',
+          data: {'foo': 'bar', 'baz': 1},
+        );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.exception);
     expect(constructedEvent.eventData['exception'], 'exception');
-    expect(constructedEvent.eventData.length, 1);
+    expect(constructedEvent.eventData['foo'], 'bar');
+    expect(constructedEvent.eventData['baz'], 1);
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.timing constructed', () {
@@ -570,6 +575,7 @@ void main() {
           isExternalBuild: 'isExternalBuild',
           isEmbedded: 'isEmbedded',
           ideLaunchedFeature: 'ideLaunchedFeature',
+          isWasm: 'true',
           uiDurationMicros: 123,
           rasterDurationMicros: 123,
           shaderCompilationDurationMicros: 123,
@@ -603,6 +609,8 @@ void main() {
     expect(constructedEvent.eventData['isEmbedded'], 'isEmbedded');
     expect(
         constructedEvent.eventData['ideLaunchedFeature'], 'ideLaunchedFeature');
+    expect(constructedEvent.eventData['isWasm'], 'true');
+
     expect(constructedEvent.eventData['uiDurationMicros'], 123);
     expect(constructedEvent.eventData['rasterDurationMicros'], 123);
     expect(constructedEvent.eventData['shaderCompilationDurationMicros'], 123);
@@ -615,7 +623,7 @@ void main() {
     expect(constructedEvent.eventData['rootSetCount'], 123);
     expect(constructedEvent.eventData['rowCount'], 123);
     expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
-    expect(constructedEvent.eventData.length, 27);
+    expect(constructedEvent.eventData.length, 28);
   });
 
   test('Confirm all constructors were checked', () {

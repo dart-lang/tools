@@ -378,6 +378,7 @@ final class Event {
     String? isExternalBuild,
     String? isEmbedded,
     String? ideLaunchedFeature,
+    String? isWasm,
 
     // PerformanceScreenMetrics
     int? uiDurationMicros,
@@ -419,6 +420,7 @@ final class Event {
           if (isEmbedded != null) 'isEmbedded': isEmbedded,
           if (ideLaunchedFeature != null)
             'ideLaunchedFeature': ideLaunchedFeature,
+          if (isWasm != null) 'isWasm': isWasm,
 
           // PerformanceScreenMetrics
           if (uiDurationMicros != null) 'uiDurationMicros': uiDurationMicros,
@@ -480,9 +482,15 @@ final class Event {
   /// exception that we want to log.
   ///
   /// [exception] - string representation of the exception that occured.
-  Event.exception({required String exception})
-      : eventName = DashEvent.exception,
-        eventData = {'exception': exception};
+  /// [data] - optional structured data to include with the exception event.
+  Event.exception({
+    required String exception,
+    Map<String, Object?> data = const <String, Object?>{},
+  })  : eventName = DashEvent.exception,
+        eventData = {
+          'exception': exception,
+          ...data,
+        };
 
   /// Event that is emitted from the flutter tool when a build invocation
   /// has been run by the user.
