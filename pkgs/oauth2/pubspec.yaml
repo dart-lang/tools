@@ -1,5 +1,5 @@
 name: oauth2
-version: 2.0.3
+version: 2.0.4-wip
 description: >-
   A client library for authenticating with a remote service via OAuth2 on
   behalf of a user, and making authorized HTTP requests with the user's
@@ -7,7 +7,7 @@ description: >-
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/oauth2
   
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.4.0
 
 dependencies:
   collection: ^1.15.0
