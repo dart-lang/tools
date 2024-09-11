@@ -60,8 +60,8 @@ final class Extension {
   ///  * [bool] (`true` or `false`),
   ///  * [String],
   ///  * [num] ([int] or [double]),
-  ///  * [List<Object?>], and,
-  ///  * [Map<String, Object?>].
+  ///  * `List<Object?>`, and,
+  ///  * `Map<String, Object?>`.
   final Map<String, Object?> config;
 
   Extension._({

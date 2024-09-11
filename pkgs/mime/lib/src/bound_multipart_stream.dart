@@ -348,7 +348,6 @@ class BoundMultipartStream {
         default:
           // Should be unreachable.
           assert(false);
-          break;
       }
 
       // Move to the next byte.

@@ -1,3 +1,7 @@
+## 2.0.4-wip
+
+* Require Dart 3.4
+
 ## 2.0.3
 
 * Require `package:http` v1.0.0

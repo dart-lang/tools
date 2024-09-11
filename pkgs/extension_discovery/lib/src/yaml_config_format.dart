@@ -38,8 +38,8 @@ import 'package:yaml/yaml.dart'
 ///  * [bool] (`true` or `false`),
 ///  * [String],
 ///  * [num] ([int] or [double]),
-///  * [List<Object?>], and,
-///  * [Map<String, Object?>].
+///  * `List<Object?>`, and,
+///  * `Map<String, Object?>`.
 Map<String, Object?> parseYamlFromConfigFile(String yamlString) {
   final visited = <YamlNode>{};
   Object? toPlainType(YamlNode n) {

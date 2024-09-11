@@ -82,7 +82,7 @@ class Config {
 
   /// Constructs a config by parsing the three sources.
   ///
-  /// If provided, [commandLineDefines] must be a list of '<key>=<value>'.
+  /// If provided, [commandLineDefines] must be a list of `<key>=<value>`.
   ///
   /// If provided, [workingDirectory] is used to resolves paths inside
   /// [commandLineDefines].
@@ -120,7 +120,7 @@ class Config {
 
   /// Constructs a config by parsing the three sources.
   ///
-  /// If provided, [commandLineDefines] must be a list of '<key>=<value>'.
+  /// If provided, [commandLineDefines] must be a list of `<key>=<value>`.
   ///
   /// If provided, [workingDirectory] is used to resolves paths inside
   /// [commandLineDefines].
