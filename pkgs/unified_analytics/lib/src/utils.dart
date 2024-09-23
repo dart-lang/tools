@@ -7,8 +7,8 @@ import 'dart:io' as io;
 import 'dart:math' show Random;
 
 import 'package:clock/clock.dart';
+import 'package:convert/convert.dart';
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import 'enums.dart';
@@ -21,7 +21,7 @@ import 'user_property.dart';
 /// yyyy-MM-dd (2023-01-09)
 /// ```
 String get dateStamp {
-  return DateFormat('yyyy-MM-dd').format(clock.now());
+  return FixedDateTimeFormatter('YYYY-MM-DD').encode(clock.now());
 }
 
 /// Reads in a directory and returns `true` if write permissions are enabled.

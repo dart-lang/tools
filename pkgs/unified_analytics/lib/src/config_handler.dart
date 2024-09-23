@@ -5,8 +5,8 @@
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:convert/convert.dart';
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import 'constants.dart';
@@ -226,7 +226,7 @@ class ToolInfo {
   @override
   String toString() {
     return json.encode(<String, Object?>{
-      'lastRun': DateFormat('yyyy-MM-dd').format(lastRun),
+      'lastRun': FixedDateTimeFormatter('YYYY-MM-DD').encode(lastRun),
       'versionNumber': versionNumber,
     });
   }
