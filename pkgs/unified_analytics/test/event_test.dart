@@ -626,7 +626,7 @@ void main() {
     expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
     expect(constructedEvent.eventData['androidAppId'], 'androidAppId');
     expect(constructedEvent.eventData['iosBundleId'], 'iosBundleId');
-    expect(constructedEvent.eventData.length, 29);
+    expect(constructedEvent.eventData.length, 30);
   });
 
   test('Confirm all constructors were checked', () {
