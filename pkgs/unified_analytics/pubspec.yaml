@@ -2,9 +2,11 @@ name: unified_analytics
 description: >-
   A package for logging analytics for all Dart and Flutter related tooling
   to Google Analytics.
+# LINT.IfChange
 # When updating this, keep the version consistent with the changelog and the
 # value in lib/src/constants.dart.
-version: 6.1.3
+version: 6.1.4-wip
+# LINT.ThenChange(lib/src/constants.dart)
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/unified_analytics
 
 environment:
@@ -12,9 +14,9 @@ environment:
 
 dependencies:
   clock: ^1.1.1
+  convert: ^3.1.1
   file: '>=6.1.4 <8.0.0'
   http: '>=0.13.5 <2.0.0'
-  intl: '>=0.18.0 <0.20.0'
   meta: ^1.9.0
   path: ^1.8.0
 

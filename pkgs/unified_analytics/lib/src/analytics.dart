@@ -8,7 +8,6 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:http/http.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
@@ -436,10 +435,6 @@ class AnalyticsImpl implements Analytics {
             kLogFileName,
           )),
         ) {
-    // Initialize date formatting for `package:intl` within constructor
-    // so clients using this package won't need to
-    initializeDateFormatting();
-
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
     // on the first run
