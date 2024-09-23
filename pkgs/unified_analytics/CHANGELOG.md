@@ -1,3 +1,7 @@
+## 6.1.4-wip
+
+- Fix formatting and remove dependency on `package:intl`.
+
 ## 6.1.3
 
 - Require Dart 3.4.
