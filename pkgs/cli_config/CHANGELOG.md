@@ -1,3 +1,7 @@
+## 0.2.1-wip
+
+- Require Dart 3.4.
+
 ## 0.2.0
 
 - **Breaking Change** Rename `Config.fromArgs` to `Config.fromArguments`.
