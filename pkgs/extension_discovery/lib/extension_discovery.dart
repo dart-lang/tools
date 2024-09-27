@@ -101,7 +101,7 @@ final class Extension {
 /// ### Caching results
 ///
 /// When [useCache] is `true` then the detected extensions will be cached
-/// in `.dart_tool/extension_discovery/<targetPackage>.yaml`.
+/// in `.dart_tool/extension_discovery/<targetPackage>.json`.
 /// This function will compare modification timestamps of
 /// `.dart_tool/package_config.json` with the cache file, before reusing cached
 /// results.
