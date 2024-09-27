@@ -14,7 +14,7 @@ import 'src/package_config.dart';
 import 'src/registry.dart';
 import 'src/yaml_config_format.dart';
 
-export 'src/package_config.dart' show PackageConfigException;
+export 'src/package_config.dart' show PackageConfigException, findPackageConfig;
 
 /// Information about an extension for target package.
 final class Extension {
@@ -101,7 +101,7 @@ final class Extension {
 /// ### Caching results
 ///
 /// When [useCache] is `true` then the detected extensions will be cached
-/// in `.dart_tool/extension_discovery/<targetPackage>.yaml`.
+/// in `.dart_tool/extension_discovery/<targetPackage>.json`.
 /// This function will compare modification timestamps of
 /// `.dart_tool/package_config.json` with the cache file, before reusing cached
 /// results.
