@@ -347,4 +347,60 @@ writtenAsYaml: true
       );
     }
   });
+
+  test('finds extensions in a workspace with `packageDir`', () async {
+    final pkgLibDir = await Isolate.resolvePackageUri(
+      Uri.parse('package:extension_discovery/'),
+    );
+    final pkgDir = pkgLibDir!.resolve('..');
+
+    await d.dir('workspace', [
+      d.pubspec({
+        'name': '_',
+        'environment': {'sdk': '^3.5.0'},
+        'workspace': ['myapp/'],
+      }),
+      d.dir('myapp', [
+        d.pubspec({
+          'name': 'myapp',
+          'dependencies': {
+            'extension_discovery': {'path': pkgDir.toFilePath()},
+            'foo': {'path': '../../foo'},
+          },
+          'environment': {'sdk': '^3.5.0'},
+          'resolution': 'workspace'
+        })
+      ])
+    ]).create();
+
+    await d.dir('foo', [
+      d.pubspec({
+        'name': 'foo',
+        'environment': {'sdk': '^3.0.0'},
+      }),
+      // It has a config.yaml for myapp
+      d.dir('extension/myapp', [
+        d.json('config.yaml', {'fromFoo': true}),
+      ]),
+    ]).create();
+
+    // Get dependencies
+    await d.dartPubGet(d.path('workspace'));
+    final [extension] = await findExtensions(
+      'myapp',
+      packageRootDir: d.fileUri('workspace/myapp'),
+    );
+    expect(extension.config, {'fromFoo': true});
+    expect(extension.package, 'foo');
+    expect(extension.rootUri, d.fileUri('foo/'));
+    expect(extension.packageUri, Uri.parse('lib/'));
+
+    // Check that there is a myapp.json cache file
+    await d
+        .file(
+          'workspace/.dart_tool/extension_discovery/myapp.json',
+          isNotEmpty,
+        )
+        .validate();
+  });
 }

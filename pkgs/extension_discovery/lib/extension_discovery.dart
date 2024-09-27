@@ -78,9 +78,14 @@ final class Extension {
 /// ## Locating `.dart_tool/package_config.json`
 ///
 /// This method requires the location of the [packageConfig], unless the current
-/// isolate has been setup for package resolution.
-/// Notably, Dart programs compiled for AOT cannot find their own
-/// `package_config.json`.
+/// isolate has been setup for package resolution. Notably, Dart programs
+/// compiled for AOT cannot find their own `package_config.json`.
+///
+/// Alternatively a [packageRootDir] can be provided. That is a file uri the the
+/// directory containing the `pubspec.yaml` of [targetPackage]. In that case the
+/// package_config will be searched by looking in all parent directories.
+///
+/// It is an error to specify both [packageRootDir] and [packageConfig].
 ///
 /// If operating on a project that isn't the current project, for example, if
 /// you are developing a tool that users are globally activating and then
@@ -100,17 +105,15 @@ final class Extension {
 ///
 /// ### Caching results
 ///
-/// When [useCache] is `true` then the detected extensions will be cached
-/// in `.dart_tool/extension_discovery/<targetPackage>.yaml`.
-/// This function will compare modification timestamps of
-/// `.dart_tool/package_config.json` with the cache file, before reusing cached
-/// results.
-/// This function will also treat relative path-dependencies as mutable
-/// packages, and check such packages for extensions every time [findExtensions]
-/// is called. Notably, it'll compare the modification time of the
-/// `extension/<targetPackage>/config.yaml` file, to ensure that it's older than
-/// the extension cache file. Otherwise, it'll reload the extension
-/// configuration.
+/// When [useCache] is `true` then the detected extensions will be cached in
+/// `.dart_tool/extension_discovery/<targetPackage>.yaml`. This function will
+/// compare modification timestamps of `.dart_tool/package_config.json` with the
+/// cache file, before reusing cached results. This function will also treat
+/// relative path-dependencies as mutable packages, and check such packages for
+/// extensions every time [findExtensions] is called. Notably, it'll compare the
+/// modification time of the `extension/<targetPackage>/config.yaml` file, to
+/// ensure that it's older than the extension cache file. Otherwise, it'll
+/// reload the extension configuration.
 ///
 /// ## Exceptions
 ///
@@ -128,8 +131,18 @@ Future<List<Extension>> findExtensions(
   String targetPackage, {
   bool useCache = true,
   Uri? packageConfig,
+  Uri? packageRootDir,
 }) async {
+  if (packageRootDir != null) {
+    if (packageConfig != null) {
+      throw ArgumentError(
+        'Specify only one of `packageConfig` and `packageRootDir`.',
+      );
+    }
+    packageConfig = _findPackageConfig(packageRootDir);
+  }
   packageConfig ??= await Isolate.packageConfig;
+
   if (packageConfig == null) {
     throw UnsupportedError(
       'packageConfigUri must be provided, if not running in JIT mode',
@@ -154,6 +167,22 @@ Future<List<Extension>> findExtensions(
     useCache: useCache,
     packageConfigUri: packageConfigUri,
   );
+}
+
+Uri? _findPackageConfig(Uri packageDir) {
+  if (!packageDir.path.endsWith('/')) {
+    packageDir = packageDir.replace(path: '${packageDir.path}/');
+  }
+  while (true) {
+    final packageConfigCandidate =
+        packageDir.resolve('.dart_tool/package_config.json');
+    if (File.fromUri(packageConfigCandidate).existsSync()) {
+      return packageConfigCandidate;
+    }
+    final next = packageDir.resolve('..');
+    if (next == packageDir) return null;
+    packageDir = next;
+  }
 }
 
 /// Find extensions with normalized arguments.

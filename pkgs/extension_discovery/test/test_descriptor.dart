@@ -53,4 +53,4 @@ Future<String> dart([
 }
 
 Future<String> dartPubGet(String folder) async =>
-    await dart('pub', 'get', '-C', d.path('myapp'));
+    await dart('pub', 'get', '-C', folder);
