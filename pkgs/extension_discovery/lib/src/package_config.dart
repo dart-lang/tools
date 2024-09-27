@@ -25,8 +25,12 @@ Uri? findPackageConfig(Uri packageDir) {
   while (true) {
     final packageConfigCandidate =
         packageDir.resolve('.dart_tool/package_config.json');
-    if (File.fromUri(packageConfigCandidate).existsSync()) {
-      return packageConfigCandidate;
+    try {
+      if (File.fromUri(packageConfigCandidate).existsSync()) {
+        return packageConfigCandidate;
+      }
+    } on IOException {
+      return null; // if we get a permission error, etc, we return null
     }
     final next = packageDir.resolve('..');
     if (next == packageDir) return null;
