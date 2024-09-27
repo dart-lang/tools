@@ -1,4 +1,4 @@
-## 2.0.1-wip
+## 2.1.0
 
 - Require Dart 3.4.
 - Update to the latest version of `package:dart_flutter_team_lints`.
