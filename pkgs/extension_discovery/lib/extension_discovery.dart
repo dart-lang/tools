@@ -14,7 +14,7 @@ import 'src/package_config.dart';
 import 'src/registry.dart';
 import 'src/yaml_config_format.dart';
 
-export 'src/package_config.dart' show PackageConfigException;
+export 'src/package_config.dart' show PackageConfigException, findPackageConfig;
 
 /// Information about an extension for target package.
 final class Extension {

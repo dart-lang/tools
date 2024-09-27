@@ -8,6 +8,32 @@ import 'expect_json.dart';
 typedef PackageConfigEntry = ({String name, Uri rootUri, Uri packageUri});
 typedef PackageConfig = List<PackageConfigEntry>;
 
+/// Searches in [packageDir] and all directories above for a
+/// `.dart_tool/package_config.json` file. Returns the Uri of that file if
+/// found.
+///
+/// Returns `null` if no file was found.
+Uri? findPackageConfig(Uri packageDir) {
+  if (!packageDir.isScheme('file')) {
+    throw ArgumentError(
+      'Expected [packageDir] to be a file URI, got $packageDir',
+    );
+  }
+  if (!packageDir.path.endsWith('/')) {
+    packageDir = packageDir.replace(path: '${packageDir.path}/');
+  }
+  while (true) {
+    final packageConfigCandidate =
+        packageDir.resolve('.dart_tool/package_config.json');
+    if (File.fromUri(packageConfigCandidate).existsSync()) {
+      return packageConfigCandidate;
+    }
+    final next = packageDir.resolve('..');
+    if (next == packageDir) return null;
+    packageDir = next;
+  }
+}
+
 /// Load list of packages and associated URIs from the
 /// `.dart_tool/package_config.json` file in [packageConfigFile].
 Future<PackageConfig> loadPackageConfig(

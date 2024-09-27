@@ -2,6 +2,8 @@
 
 - Require Dart 3.4.
 - Update to the latest version of `package:dart_flutter_team_lints`.
+- Add `findPackageConfig()` allowing for automatic discovery of the
+  packageConfig based on a package directory.
 
 ## 2.0.0
 

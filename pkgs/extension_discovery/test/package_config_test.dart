@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:math';
 
 import 'package:extension_discovery/src/package_config.dart';
 import 'package:test/test.dart';
@@ -157,6 +158,36 @@ void main() {
     expect(
       loadPackageConfig(packageConfigFile),
       throwsA(isA<PackageConfigException>()),
+    );
+  });
+
+  test('`findPackageConfig()`', () async {
+    await d.dir('workspace', [
+      d.dir('.dart_tool', [
+        d.file('package_config.json'),
+      ]),
+      d.dir('myapp', [])
+    ]).create();
+
+    expect(
+      findPackageConfig(d.fileUri('workspace')),
+      d.fileUri('workspace/.dart_tool/package_config.json'),
+    );
+    expect(
+      findPackageConfig(d.fileUri('workspace/')),
+      d.fileUri('workspace/.dart_tool/package_config.json'),
+    );
+    expect(
+      findPackageConfig(d.fileUri('workspace/myapp')),
+      d.fileUri('workspace/.dart_tool/package_config.json'),
+    );
+    expect(
+      findPackageConfig(d.fileUri('.')),
+      isNull,
+    );
+    expect(
+      findPackageConfig(d.fileUri('foo')),
+      isNull,
     );
   });
 }
