@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert' show jsonDecode, jsonEncode;
-import 'dart:math';
 
 import 'package:extension_discovery/src/package_config.dart';
 import 'package:test/test.dart';
