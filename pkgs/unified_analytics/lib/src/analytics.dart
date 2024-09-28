@@ -9,7 +9,6 @@ import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:http/http.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as p;
 
 import 'asserts.dart';
 import 'config_handler.dart';
@@ -78,7 +77,7 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
-    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+    final firstRun = runInitialization(homeDirectory: homeDirectory);
 
     return AnalyticsImpl(
       tool: tool,
@@ -91,11 +90,9 @@ abstract class Analytics {
       fs: fs,
       gaClient: gaClient,
       surveyHandler: SurveyHandler(
-        dismissedSurveyFile: fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kDismissedSurveyFileName,
-        )),
+        dismissedSurveyFile: homeDirectory
+            .childDirectory(kDartToolDirectoryName)
+            .childFile(kDismissedSurveyFileName),
       ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
@@ -157,7 +154,7 @@ abstract class Analytics {
       apiSecret: kTestApiSecret,
     );
 
-    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+    final firstRun = runInitialization(homeDirectory: homeDirectory);
 
     return AnalyticsImpl(
       tool: tool,
@@ -170,11 +167,9 @@ abstract class Analytics {
       fs: fs,
       gaClient: gaClient,
       surveyHandler: SurveyHandler(
-        dismissedSurveyFile: fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kDismissedSurveyFileName,
-        )),
+        dismissedSurveyFile: homeDirectory
+            .childDirectory(kDartToolDirectoryName)
+            .childFile(kDismissedSurveyFileName),
       ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
@@ -307,7 +302,7 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     bool enableAsserts = true,
   }) {
-    final firstRun = runInitialization(homeDirectory: homeDirectory, fs: fs);
+    final firstRun = runInitialization(homeDirectory: homeDirectory);
 
     return FakeAnalytics._(
       tool: tool,
@@ -320,11 +315,9 @@ abstract class Analytics {
       fs: fs,
       surveyHandler: surveyHandler ??
           FakeSurveyHandler.fromList(
-            dismissedSurveyFile: fs.file(p.join(
-              homeDirectory.path,
-              kDartToolDirectoryName,
-              kDismissedSurveyFileName,
-            )),
+            dismissedSurveyFile: homeDirectory
+                .childDirectory(kDartToolDirectoryName)
+                .childFile(kDismissedSurveyFileName),
             initializedSurveys: [],
           ),
       gaClient: gaClient ?? const FakeGAClient(),
@@ -395,17 +388,13 @@ class AnalyticsImpl implements Analytics {
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
         _enableAsserts = enableAsserts,
-        _clientIdFile = fs.file(p.join(
-          homeDirectory.path,
-          kDartToolDirectoryName,
-          kClientIdFileName,
-        )),
+        _clientIdFile = homeDirectory
+            .childDirectory(kDartToolDirectoryName)
+            .childFile(kClientIdFileName),
         _userProperty = UserProperty(
-          sessionFile: fs.file(p.join(
-            homeDirectory.path,
-            kDartToolDirectoryName,
-            kSessionFileName,
-          )),
+          sessionFile: homeDirectory
+              .childDirectory(kDartToolDirectoryName)
+              .childFile(kSessionFileName),
           flutterChannel: flutterChannel,
           host: platform.label,
           flutterVersion: flutterVersion,
@@ -420,20 +409,15 @@ class AnalyticsImpl implements Analytics {
           enabledFeatures: enabledFeatures,
         ),
         _configHandler = ConfigHandler(
-          fs: fs,
           homeDirectory: homeDirectory,
-          configFile: fs.file(p.join(
-            homeDirectory.path,
-            kDartToolDirectoryName,
-            kConfigFileName,
-          )),
+          configFile: homeDirectory
+              .childDirectory(kDartToolDirectoryName)
+              .childFile(kConfigFileName),
         ),
         _logHandler = LogHandler(
-          logFile: fs.file(p.join(
-            homeDirectory.path,
-            kDartToolDirectoryName,
-            kLogFileName,
-          )),
+          logFile: homeDirectory
+              .childDirectory(kDartToolDirectoryName)
+              .childFile(kLogFileName),
         ) {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent

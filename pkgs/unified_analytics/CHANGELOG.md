@@ -1,6 +1,7 @@
 ## 6.1.4-wip
 
 - Fix formatting and remove dependency on `package:intl`.
+- Remove direct usage of `package:path` in favor of `package:file`.
 
 ## 6.1.3
 

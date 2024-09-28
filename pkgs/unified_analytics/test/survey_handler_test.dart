@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
@@ -274,20 +273,16 @@ void main() {
       // Write the client ID file out so that we don't get
       // a randomly assigned id for this test generated within
       // the analytics constructor
-      clientIdFile = fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kClientIdFileName,
-      ));
+      clientIdFile = homeDirectory
+          .childDirectory(kDartToolDirectoryName)
+          .childFile(kClientIdFileName);
       clientIdFile.createSync(recursive: true);
       clientIdFile.writeAsStringSync('string1');
 
       // Assign the json file that will hold the persisted surveys
-      dismissedSurveyFile = fs.file(p.join(
-        homeDirectory.path,
-        kDartToolDirectoryName,
-        kDismissedSurveyFileName,
-      ));
+      dismissedSurveyFile = homeDirectory
+          .childDirectory(kDartToolDirectoryName)
+          .childFile(kDismissedSurveyFileName);
 
       // Setup two tools to be onboarded with this package so
       // that we can simulate two different tools interacting with
