@@ -5,7 +5,6 @@
 import 'dart:mirrors';
 
 import 'package:test/test.dart';
-
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -631,7 +630,9 @@ void main() {
     for (final declaration in reflectClass(Event).declarations.keys) {
       // Count public constructors but omit private constructors
       if (declaration.toString().contains('Event.') &&
-          !declaration.toString().contains('Event._')) constructorCount++;
+          !declaration.toString().contains('Event._')) {
+        constructorCount++;
+      }
     }
 
     // Change this integer below if your PR either adds or removes
