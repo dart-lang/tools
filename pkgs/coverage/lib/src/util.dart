@@ -184,7 +184,7 @@ Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
 }
 
 Future<List<IsolateRef>> getAllIsolates(VmService service) async =>
-    (await service.getVM()).isolates!;
+    (await service.getVM()).isolates ?? [];
 
 /// Buffers VM service isolate [Event]s until [flush] is called.
 ///

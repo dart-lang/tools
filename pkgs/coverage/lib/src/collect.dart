@@ -98,7 +98,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
         includeDart,
         functionCoverage,
         branchCoverage,
-        scopedOutput,
+        scopedOutput ?? <String>{},
         isolateIds,
         coverableLineCache,
         waitPaused);
@@ -117,112 +117,78 @@ Future<Map<String, dynamic>> _getAllCoverage(
     bool includeDart,
     bool functionCoverage,
     bool branchCoverage,
-    Set<String>? scopedOutput,
+    Set<String> scopedOutput,
     Set<String>? isolateIds,
     Map<String, Set<int>>? coverableLineCache,
     bool waitPaused) async {
-  final job = _CollectionJob(
-      service,
-      includeDart,
-      functionCoverage,
-      [
-        SourceReportKind.kCoverage,
-        if (branchCoverage) SourceReportKind.kBranchCoverage,
-      ],
-      scopedOutput ?? <String>{},
-      isolateIds,
-      coverableLineCache);
-  return <String, dynamic>{
-    'type': 'CodeCoverage',
-    'coverage': await job.collectAll(waitPaused),
-  };
-}
+  final vm = await service.getVM();
+  final allCoverage = <Map<String, dynamic>>[];
 
-class _CollectionJob {
-  // Inputs.
-  final VmService _service;
-  final bool _includeDart;
-  final bool _functionCoverage;
-  final List<String> _sourceReportKinds;
-  final Set<String> _scopedOutput;
-  final Set<String>? _isolateIds;
-  final Map<String, Set<int>>? _coverableLineCache;
+  final sourceReportKinds = [
+    SourceReportKind.kCoverage,
+    if (branchCoverage) SourceReportKind.kBranchCoverage,
+  ];
 
-  // State.
-  final List<String>? _librariesAlreadyCompiled;
-  final _coveredIsolateGroups = <String>{};
-  final _coveredIsolates = <String>{};
+  final librariesAlreadyCompiled = coverableLineCache?.keys.toList();
 
-  // Output.
-  final _allCoverage = <Map<String, dynamic>>[];
+  // Program counters are shared between isolates in the same group. So we need
+  // to make sure we're only gathering coverage data for one isolate in each
+  // group, otherwise we'll double count the hits.
+  final coveredIsolateGroups = <String>{};
 
-  _CollectionJob(
-      this._service,
-      this._includeDart,
-      this._functionCoverage,
-      this._sourceReportKinds,
-      this._scopedOutput,
-      this._isolateIds,
-      this._coverableLineCache)
-      : _librariesAlreadyCompiled = _coverableLineCache?.keys.toList() {}
+  Future<void> collectIsolate(IsolateRef isolateRef) async {
+    if (!(isolateIds?.contains(isolateRef.id) ?? true)) return;
 
-  Future<List<Map<String, dynamic>>> collectAll(bool waitPaused) async {
-    if (waitPaused) {
-      await _collectPausedIsolatesUntilAllExit();
-    } else {
-      for (final isolateRef in await getAllIsolates(_service)) {
-        await _collectOne(isolateRef);
-      }
-    }
-    return _allCoverage;
-  }
-
-  Future<void> _collectPausedIsolatesUntilAllExit() async {
-    await IsolatePausedListener(_service,
-        (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
-      if (isLastIsolateInGroup) {
-        await _collectOne(isolateRef);
-      }
-    }).listenUntilAllExited();
-  }
-
-  Future<void> _collectOne(IsolateRef isolateRef) async {
-    if (!(_isolateIds?.contains(isolateRef.id) ?? true)) return;
-
-    // _coveredIsolateGroups is only relevant for the !waitPaused flow. The
-    // waitPaused flow only ever calls _collectOne once per isolate group.
+    // coveredIsolateGroups is only relevant for the !waitPaused flow. The
+    // waitPaused flow achieves the same once-per-group behavior using the
+    // isLastIsolateInGroup flag.
     final isolateGroupId = isolateRef.isolateGroupId;
     if (isolateGroupId != null) {
-      if (_coveredIsolateGroups.contains(isolateGroupId)) return;
-      _coveredIsolateGroups.add(isolateGroupId);
+      if (coveredIsolateGroups.contains(isolateGroupId)) return;
+      coveredIsolateGroups.add(isolateGroupId);
     }
 
     late final SourceReport isolateReport;
     try {
-      isolateReport = await _service.getSourceReport(
+      isolateReport = await service.getSourceReport(
         isolateRef.id!,
-        _sourceReportKinds,
+        sourceReportKinds,
         forceCompile: true,
         reportLines: true,
-        libraryFilters: _scopedOutput.isNotEmpty
-            ? List.from(_scopedOutput.map((filter) => 'package:$filter/'))
+        libraryFilters: scopedOutput.isNotEmpty
+            ? List.from(scopedOutput.map((filter) => 'package:$filter/'))
             : null,
-        librariesAlreadyCompiled: _librariesAlreadyCompiled,
+        librariesAlreadyCompiled: librariesAlreadyCompiled,
       );
     } on SentinelException {
       return;
     }
 
     final coverage = await _processSourceReport(
-        _service,
+        service,
         isolateRef,
         isolateReport,
-        _includeDart,
-        _functionCoverage,
-        _coverableLineCache,
-        _scopedOutput);
-    _allCoverage.addAll(coverage);
+        includeDart,
+        functionCoverage,
+        coverableLineCache,
+        scopedOutput);
+    allCoverage.addAll(coverage);
   }
+
+  if (waitPaused) {
+    await IsolatePausedListener(service,
+        (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
+      if (isLastIsolateInGroup) {
+        await collectIsolate(isolateRef);
+      }
+    }).listenUntilAllExited();
+  } else {
+    for (final isolateRef in await getAllIsolates(service)) {
+      await collectIsolate(isolateRef);
+    }
+  }
+
+  return <String, dynamic>{'type': 'CodeCoverage', 'coverage': allCoverage};
 }
 
 Future _resumeIsolates(VmService service) async {
@@ -333,7 +299,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     if (!scopedOutput.includesScript(scriptUriString)) {
       // Sometimes a range's script can be different to the function's script
       // (eg mixins), so we have to re-check the scope filter.
-      // See https://github.com/dart-lang/coverage/issues/495
+      // See https://github.com/dart-lang/tools/issues/530
       continue;
     }
     final scriptUri = Uri.parse(scriptUriString!);
@@ -342,7 +308,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     // SourceReportCoverage.misses: to add zeros to the coverage result for all
     // the lines that don't have a hit. Afterwards, add all the lines that were
     // hit or missed to the cache, so that the next coverage collection won't
-    // need to compile this libarry.
+    // need to compile this library.
     final coverableLines =
         coverableLineCache?.putIfAbsent(scriptUriString, () => <int>{});
 
