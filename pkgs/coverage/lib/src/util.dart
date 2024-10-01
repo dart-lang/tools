@@ -326,17 +326,11 @@ class IsolatePausedListener {
 
     // Resume the main isolate.
     if (_mainIsolate != null) {
-      print("      Resuming main isolate");
       await _service.resume(_mainIsolate!.id!);
     }
   }
 
   void _onStart(IsolateRef isolateRef) {
-    print("Start event for ${isolateRef.name}");
-    print("                ${isolateRef.id}");
-    print("                ${isolateRef.number}");
-    print("                ${isolateRef.isSystemIsolate}");
-    print("                ${isolateRef.isolateGroupId}");
     final groupId = isolateRef.isolateGroupId!;
     final group = (_isolateGroups[groupId] ??= IsolateGroupState());
     group.start(isolateRef.id!);
@@ -345,7 +339,6 @@ class IsolatePausedListener {
 
   Future<void> _onPause(IsolateRef isolateRef) async {
     if (_allExitedCompleter.isCompleted) return;
-    print("Pause event for ${isolateRef.name}");
     final String groupId = isolateRef.isolateGroupId!;
     final group = _isolateGroups[groupId];
     if (group == null) {
@@ -358,33 +351,36 @@ class IsolatePausedListener {
       try {
         await _onIsolatePaused(isolateRef, group.noRunningIsolates);
       } finally {
-        print("    DONE Pause finally for ${isolateRef.name}");
         await _maybeResumeIsolate(isolateRef);
         --_numAwaitedPauseCallbacks;
         _maybeFinish();
       }
     }
-    print("  DONE Pause event for ${isolateRef.name}");
   }
 
   static bool _isMainIsolate(IsolateRef isolateRef) {
+    // HACK: This should pretty reliably detect the main isolate, but it's not
+    // foolproof and relies on unstable features. The Dart standalone embedder
+    // and Flutter both call the main isolate "main", and they both also list
+    // this isolate first when querying isolates from the VM service. So
+    // selecting the first isolate named "main" combines these conditions and
+    // should be reliable enough for now, while we wait for a better test.
+    // TODO(https://github.com/dart-lang/sdk/issues/56732): Switch to more
+    // reliable test when it's available.
     return isolateRef.name == 'main';
   }
 
   Future<void> _maybeResumeIsolate(IsolateRef isolateRef) async {
-    if (_mainIsolate == null && _isMainIsolate(isolateRef)) {
-      print("      Deferring main isolate resumption");
+    if (_mainIsolate == null && await _isMainIsolate(isolateRef)) {
       _mainIsolate = isolateRef;
       // Pretend the main isolate has exited.
       _onExit(isolateRef);
     } else {
-      print("      Resuming isolate: ${isolateRef.name}");
       await _service.resume(isolateRef.id!);
     }
   }
 
   void _onExit(IsolateRef isolateRef) {
-    print("Exit event for ${isolateRef.name}");
     final String groupId = isolateRef.isolateGroupId!;
     final group = _isolateGroups[groupId];
     if (group == null) {
@@ -399,10 +395,8 @@ class IsolatePausedListener {
   }
 
   void _maybeFinish() {
-    print("MAYBE FINISH: ${_allExitedCompleter.isCompleted} ${_isolateGroups.isEmpty} ${_numAwaitedPauseCallbacks}");
     if (_allExitedCompleter.isCompleted) return;
     if (_started && _numAwaitedPauseCallbacks == 0 && _isolateGroups.isEmpty) {
-      print("  >>> FINISH <<<");
       _allExitedCompleter.complete();
     }
   }
