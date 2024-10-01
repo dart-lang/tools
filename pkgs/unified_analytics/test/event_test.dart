@@ -5,7 +5,6 @@
 import 'dart:mirrors';
 
 import 'package:test/test.dart';
-
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
@@ -429,14 +428,19 @@ void main() {
   });
 
   test('Event.exception constructed', () {
-    Event generateEvent() => Event.exception(exception: 'exception');
+    Event generateEvent() => Event.exception(
+          exception: 'exception',
+          data: {'foo': 'bar', 'baz': 1},
+        );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.exception);
     expect(constructedEvent.eventData['exception'], 'exception');
-    expect(constructedEvent.eventData.length, 1);
+    expect(constructedEvent.eventData['foo'], 'bar');
+    expect(constructedEvent.eventData['baz'], 1);
+    expect(constructedEvent.eventData.length, 3);
   });
 
   test('Event.timing constructed', () {
@@ -570,6 +574,7 @@ void main() {
           isExternalBuild: 'isExternalBuild',
           isEmbedded: 'isEmbedded',
           ideLaunchedFeature: 'ideLaunchedFeature',
+          isWasm: 'true',
           uiDurationMicros: 123,
           rasterDurationMicros: 123,
           shaderCompilationDurationMicros: 123,
@@ -603,6 +608,8 @@ void main() {
     expect(constructedEvent.eventData['isEmbedded'], 'isEmbedded');
     expect(
         constructedEvent.eventData['ideLaunchedFeature'], 'ideLaunchedFeature');
+    expect(constructedEvent.eventData['isWasm'], 'true');
+
     expect(constructedEvent.eventData['uiDurationMicros'], 123);
     expect(constructedEvent.eventData['rasterDurationMicros'], 123);
     expect(constructedEvent.eventData['shaderCompilationDurationMicros'], 123);
@@ -615,7 +622,7 @@ void main() {
     expect(constructedEvent.eventData['rootSetCount'], 123);
     expect(constructedEvent.eventData['rowCount'], 123);
     expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
-    expect(constructedEvent.eventData.length, 27);
+    expect(constructedEvent.eventData.length, 28);
   });
 
   test('Confirm all constructors were checked', () {
@@ -623,7 +630,9 @@ void main() {
     for (final declaration in reflectClass(Event).declarations.keys) {
       // Count public constructors but omit private constructors
       if (declaration.toString().contains('Event.') &&
-          !declaration.toString().contains('Event._')) constructorCount++;
+          !declaration.toString().contains('Event._')) {
+        constructorCount++;
+      }
     }
 
     // Change this integer below if your PR either adds or removes

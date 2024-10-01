@@ -7,9 +7,8 @@ import 'dart:io' as io;
 import 'dart:math' show Random;
 
 import 'package:clock/clock.dart';
+import 'package:convert/convert.dart';
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
-import 'package:path/path.dart' as p;
 
 import 'enums.dart';
 import 'event.dart';
@@ -21,7 +20,7 @@ import 'user_property.dart';
 /// yyyy-MM-dd (2023-01-09)
 /// ```
 String get dateStamp {
-  return DateFormat('yyyy-MM-dd').format(clock.now());
+  return FixedDateTimeFormatter('YYYY-MM-DD').encode(clock.now());
 }
 
 /// Reads in a directory and returns `true` if write permissions are enabled.
@@ -146,30 +145,32 @@ Directory? getHomeDirectory(FileSystem fs) {
 ///   }
 /// }
 /// ```
-bool legacyOptOut({required FileSystem fs, required Directory home}) {
+bool legacyOptOut({required Directory homeDirectory}) {
   // List of Maps for each of the config file, `key` refers to the
   // key in the json file that indicates if the user has been opted
   // out or not
   final legacyConfigFiles = [
-    {
-      'tool': DashTool.dartTool,
-      'file': fs.file(p.join(home.path, '.dart', 'dartdev.json')),
-      'key': 'enabled',
-    },
-    {
-      'tool': DashTool.flutterTool,
-      'file': fs.file(p.join(home.path, '.flutter')),
-      'key': 'enabled',
-    },
-    {
-      'tool': DashTool.devtools,
-      'file': fs.file(p.join(home.path, '.flutter-devtools', '.devtools')),
-      'key': 'analyticsEnabled',
-    },
+    (
+      tool: DashTool.dartTool,
+      file: homeDirectory.childDirectory('.dart').childFile('dartdev.json'),
+      key: 'enabled',
+    ),
+    (
+      tool: DashTool.flutterTool,
+      file: homeDirectory.childFile('.flutter'),
+      key: 'enabled',
+    ),
+    (
+      tool: DashTool.devtools,
+      file: homeDirectory
+          .childDirectory('.flutter-devtools')
+          .childFile('.devtools'),
+      key: 'analyticsEnabled',
+    ),
   ];
   for (final legacyConfigObj in legacyConfigFiles) {
-    final legacyFile = legacyConfigObj['file']! as File;
-    final lookupKey = legacyConfigObj['key']! as String;
+    final legacyFile = legacyConfigObj.file;
+    final lookupKey = legacyConfigObj.key;
 
     if (legacyFile.existsSync()) {
       try {

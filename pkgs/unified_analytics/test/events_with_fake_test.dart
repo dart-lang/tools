@@ -5,7 +5,6 @@
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'package:unified_analytics/src/constants.dart';
@@ -52,11 +51,9 @@ void main() {
   setUp(() async {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
-    dismissedSurveyFile = fs.file(p.join(
-      homeDirectory.path,
-      kDartToolDirectoryName,
-      kDismissedSurveyFileName,
-    ));
+    dismissedSurveyFile = homeDirectory
+        .childDirectory(kDartToolDirectoryName)
+        .childFile(kDismissedSurveyFileName);
 
     final initialAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
