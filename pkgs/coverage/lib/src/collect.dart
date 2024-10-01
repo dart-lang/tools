@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:vm_service/vm_service.dart';
 
 import 'hitmap.dart';
+import 'isolate_paused_listener.dart';
 import 'util.dart';
 
 const _retryInterval = Duration(milliseconds: 200);
@@ -98,7 +99,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
         includeDart,
         functionCoverage,
         branchCoverage,
-        scopedOutput ?? <String>{},
+        scopedOutput,
         isolateIds,
         coverableLineCache,
         waitPaused);
@@ -121,7 +122,6 @@ Future<Map<String, dynamic>> _getAllCoverage(
     Set<String>? isolateIds,
     Map<String, Set<int>>? coverableLineCache,
     bool waitPaused) async {
-  final vm = await service.getVM();
   final allCoverage = <Map<String, dynamic>>[];
 
   final sourceReportKinds = [
@@ -181,7 +181,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
       if (isLastIsolateInGroup) {
         await collectIsolate(isolateRef);
       }
-    }).listenUntilAllExited();
+    }).waitUntilAllExited();
   } else {
     for (final isolateRef in await getAllIsolates(service)) {
       await collectIsolate(isolateRef);

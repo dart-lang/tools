@@ -39,11 +39,11 @@ void isolateTask(List threeThings) async {
   sleep(const Duration(milliseconds: 500));
 
   fooSync(answer);
-  fooAsync(answer).then((_) {
+  unawaited(fooAsync(answer).then((_) {
     final port = threeThings.first as SendPort;
     final sum = (threeThings[1] as int) + (threeThings[2] as int);
     port.send(sum);
-  });
+  }));
 
   final bar = BarClass(123);
   bar.baz();

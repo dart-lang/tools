@@ -42,8 +42,8 @@ class _FakeSuccess_1 extends _i1.SmartFake implements _i2.Success {
         );
 }
 
-class _FakeIdZone_2 extends _i1.SmartFake implements _i2.IdZone {
-  _FakeIdZone_2(
+class _FakeResponse_2 extends _i1.SmartFake implements _i2.Response {
+  _FakeResponse_2(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -52,19 +52,9 @@ class _FakeIdZone_2 extends _i1.SmartFake implements _i2.IdZone {
         );
 }
 
-class _FakeResponse_3 extends _i1.SmartFake implements _i2.Response {
-  _FakeResponse_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeAllocationProfile_4 extends _i1.SmartFake
+class _FakeAllocationProfile_3 extends _i1.SmartFake
     implements _i2.AllocationProfile {
-  _FakeAllocationProfile_4(
+  _FakeAllocationProfile_3(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -73,8 +63,8 @@ class _FakeAllocationProfile_4 extends _i1.SmartFake
         );
 }
 
-class _FakeCpuSamples_5 extends _i1.SmartFake implements _i2.CpuSamples {
-  _FakeCpuSamples_5(
+class _FakeCpuSamples_4 extends _i1.SmartFake implements _i2.CpuSamples {
+  _FakeCpuSamples_4(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -83,8 +73,8 @@ class _FakeCpuSamples_5 extends _i1.SmartFake implements _i2.CpuSamples {
         );
 }
 
-class _FakeClassList_6 extends _i1.SmartFake implements _i2.ClassList {
-  _FakeClassList_6(
+class _FakeClassList_5 extends _i1.SmartFake implements _i2.ClassList {
+  _FakeClassList_5(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -93,8 +83,8 @@ class _FakeClassList_6 extends _i1.SmartFake implements _i2.ClassList {
         );
 }
 
-class _FakeFlagList_7 extends _i1.SmartFake implements _i2.FlagList {
-  _FakeFlagList_7(
+class _FakeFlagList_6 extends _i1.SmartFake implements _i2.FlagList {
+  _FakeFlagList_6(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -103,9 +93,9 @@ class _FakeFlagList_7 extends _i1.SmartFake implements _i2.FlagList {
         );
 }
 
-class _FakeInboundReferences_8 extends _i1.SmartFake
+class _FakeInboundReferences_7 extends _i1.SmartFake
     implements _i2.InboundReferences {
-  _FakeInboundReferences_8(
+  _FakeInboundReferences_7(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -114,8 +104,8 @@ class _FakeInboundReferences_8 extends _i1.SmartFake
         );
 }
 
-class _FakeInstanceSet_9 extends _i1.SmartFake implements _i2.InstanceSet {
-  _FakeInstanceSet_9(
+class _FakeInstanceSet_8 extends _i1.SmartFake implements _i2.InstanceSet {
+  _FakeInstanceSet_8(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -124,8 +114,8 @@ class _FakeInstanceSet_9 extends _i1.SmartFake implements _i2.InstanceSet {
         );
 }
 
-class _FakeInstanceRef_10 extends _i1.SmartFake implements _i2.InstanceRef {
-  _FakeInstanceRef_10(
+class _FakeInstanceRef_9 extends _i1.SmartFake implements _i2.InstanceRef {
+  _FakeInstanceRef_9(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -134,8 +124,8 @@ class _FakeInstanceRef_10 extends _i1.SmartFake implements _i2.InstanceRef {
         );
 }
 
-class _FakeIsolate_11 extends _i1.SmartFake implements _i2.Isolate {
-  _FakeIsolate_11(
+class _FakeIsolate_10 extends _i1.SmartFake implements _i2.Isolate {
+  _FakeIsolate_10(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -144,8 +134,8 @@ class _FakeIsolate_11 extends _i1.SmartFake implements _i2.Isolate {
         );
 }
 
-class _FakeIsolateGroup_12 extends _i1.SmartFake implements _i2.IsolateGroup {
-  _FakeIsolateGroup_12(
+class _FakeIsolateGroup_11 extends _i1.SmartFake implements _i2.IsolateGroup {
+  _FakeIsolateGroup_11(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -154,8 +144,8 @@ class _FakeIsolateGroup_12 extends _i1.SmartFake implements _i2.IsolateGroup {
         );
 }
 
-class _FakeEvent_13 extends _i1.SmartFake implements _i2.Event {
-  _FakeEvent_13(
+class _FakeEvent_12 extends _i1.SmartFake implements _i2.Event {
+  _FakeEvent_12(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -164,8 +154,8 @@ class _FakeEvent_13 extends _i1.SmartFake implements _i2.Event {
         );
 }
 
-class _FakeMemoryUsage_14 extends _i1.SmartFake implements _i2.MemoryUsage {
-  _FakeMemoryUsage_14(
+class _FakeMemoryUsage_13 extends _i1.SmartFake implements _i2.MemoryUsage {
+  _FakeMemoryUsage_13(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -174,8 +164,8 @@ class _FakeMemoryUsage_14 extends _i1.SmartFake implements _i2.MemoryUsage {
         );
 }
 
-class _FakeScriptList_15 extends _i1.SmartFake implements _i2.ScriptList {
-  _FakeScriptList_15(
+class _FakeScriptList_14 extends _i1.SmartFake implements _i2.ScriptList {
+  _FakeScriptList_14(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -184,8 +174,8 @@ class _FakeScriptList_15 extends _i1.SmartFake implements _i2.ScriptList {
         );
 }
 
-class _FakeObj_16 extends _i1.SmartFake implements _i2.Obj {
-  _FakeObj_16(
+class _FakeObj_15 extends _i1.SmartFake implements _i2.Obj {
+  _FakeObj_15(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -194,9 +184,9 @@ class _FakeObj_16 extends _i1.SmartFake implements _i2.Obj {
         );
 }
 
-class _FakePerfettoCpuSamples_17 extends _i1.SmartFake
+class _FakePerfettoCpuSamples_16 extends _i1.SmartFake
     implements _i2.PerfettoCpuSamples {
-  _FakePerfettoCpuSamples_17(
+  _FakePerfettoCpuSamples_16(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -205,9 +195,9 @@ class _FakePerfettoCpuSamples_17 extends _i1.SmartFake
         );
 }
 
-class _FakePerfettoTimeline_18 extends _i1.SmartFake
+class _FakePerfettoTimeline_17 extends _i1.SmartFake
     implements _i2.PerfettoTimeline {
-  _FakePerfettoTimeline_18(
+  _FakePerfettoTimeline_17(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -216,8 +206,8 @@ class _FakePerfettoTimeline_18 extends _i1.SmartFake
         );
 }
 
-class _FakePortList_19 extends _i1.SmartFake implements _i2.PortList {
-  _FakePortList_19(
+class _FakePortList_18 extends _i1.SmartFake implements _i2.PortList {
+  _FakePortList_18(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -226,8 +216,8 @@ class _FakePortList_19 extends _i1.SmartFake implements _i2.PortList {
         );
 }
 
-class _FakeRetainingPath_20 extends _i1.SmartFake implements _i2.RetainingPath {
-  _FakeRetainingPath_20(
+class _FakeRetainingPath_19 extends _i1.SmartFake implements _i2.RetainingPath {
+  _FakeRetainingPath_19(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -236,9 +226,9 @@ class _FakeRetainingPath_20 extends _i1.SmartFake implements _i2.RetainingPath {
         );
 }
 
-class _FakeProcessMemoryUsage_21 extends _i1.SmartFake
+class _FakeProcessMemoryUsage_20 extends _i1.SmartFake
     implements _i2.ProcessMemoryUsage {
-  _FakeProcessMemoryUsage_21(
+  _FakeProcessMemoryUsage_20(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -247,8 +237,8 @@ class _FakeProcessMemoryUsage_21 extends _i1.SmartFake
         );
 }
 
-class _FakeStack_22 extends _i1.SmartFake implements _i2.Stack {
-  _FakeStack_22(
+class _FakeStack_21 extends _i1.SmartFake implements _i2.Stack {
+  _FakeStack_21(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -257,8 +247,8 @@ class _FakeStack_22 extends _i1.SmartFake implements _i2.Stack {
         );
 }
 
-class _FakeProtocolList_23 extends _i1.SmartFake implements _i2.ProtocolList {
-  _FakeProtocolList_23(
+class _FakeProtocolList_22 extends _i1.SmartFake implements _i2.ProtocolList {
+  _FakeProtocolList_22(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -267,8 +257,8 @@ class _FakeProtocolList_23 extends _i1.SmartFake implements _i2.ProtocolList {
         );
 }
 
-class _FakeSourceReport_24 extends _i1.SmartFake implements _i2.SourceReport {
-  _FakeSourceReport_24(
+class _FakeSourceReport_23 extends _i1.SmartFake implements _i2.SourceReport {
+  _FakeSourceReport_23(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -277,8 +267,8 @@ class _FakeSourceReport_24 extends _i1.SmartFake implements _i2.SourceReport {
         );
 }
 
-class _FakeVersion_25 extends _i1.SmartFake implements _i2.Version {
-  _FakeVersion_25(
+class _FakeVersion_24 extends _i1.SmartFake implements _i2.Version {
+  _FakeVersion_24(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -287,8 +277,8 @@ class _FakeVersion_25 extends _i1.SmartFake implements _i2.Version {
         );
 }
 
-class _FakeVM_26 extends _i1.SmartFake implements _i2.VM {
-  _FakeVM_26(
+class _FakeVM_25 extends _i1.SmartFake implements _i2.VM {
+  _FakeVM_25(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -297,8 +287,8 @@ class _FakeVM_26 extends _i1.SmartFake implements _i2.VM {
         );
 }
 
-class _FakeTimeline_27 extends _i1.SmartFake implements _i2.Timeline {
-  _FakeTimeline_27(
+class _FakeTimeline_26 extends _i1.SmartFake implements _i2.Timeline {
+  _FakeTimeline_26(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -307,8 +297,8 @@ class _FakeTimeline_27 extends _i1.SmartFake implements _i2.Timeline {
         );
 }
 
-class _FakeTimelineFlags_28 extends _i1.SmartFake implements _i2.TimelineFlags {
-  _FakeTimelineFlags_28(
+class _FakeTimelineFlags_27 extends _i1.SmartFake implements _i2.TimelineFlags {
+  _FakeTimelineFlags_27(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -317,8 +307,8 @@ class _FakeTimelineFlags_28 extends _i1.SmartFake implements _i2.TimelineFlags {
         );
 }
 
-class _FakeTimestamp_29 extends _i1.SmartFake implements _i2.Timestamp {
-  _FakeTimestamp_29(
+class _FakeTimestamp_28 extends _i1.SmartFake implements _i2.Timestamp {
+  _FakeTimestamp_28(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -327,8 +317,8 @@ class _FakeTimestamp_29 extends _i1.SmartFake implements _i2.Timestamp {
         );
 }
 
-class _FakeUriList_30 extends _i1.SmartFake implements _i2.UriList {
-  _FakeUriList_30(
+class _FakeUriList_29 extends _i1.SmartFake implements _i2.UriList {
+  _FakeUriList_29(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -337,8 +327,8 @@ class _FakeUriList_30 extends _i1.SmartFake implements _i2.UriList {
         );
 }
 
-class _FakeReloadReport_31 extends _i1.SmartFake implements _i2.ReloadReport {
-  _FakeReloadReport_31(
+class _FakeReloadReport_30 extends _i1.SmartFake implements _i2.ReloadReport {
+  _FakeReloadReport_30(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -347,8 +337,8 @@ class _FakeReloadReport_31 extends _i1.SmartFake implements _i2.ReloadReport {
         );
 }
 
-class _FakeFuture_32<T1> extends _i1.SmartFake implements _i3.Future<T1> {
-  _FakeFuture_32(
+class _FakeFuture_31<T1> extends _i1.SmartFake implements _i3.Future<T1> {
+  _FakeFuture_31(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -583,94 +573,12 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
       ) as _i3.Future<_i2.Success>);
 
   @override
-  _i3.Future<_i2.IdZone> createIdZone(
-    String? isolateId,
-    String? backingBufferKind,
-    String? idAssignmentPolicy, {
-    int? capacity,
-  }) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #createIdZone,
-          [
-            isolateId,
-            backingBufferKind,
-            idAssignmentPolicy,
-          ],
-          {#capacity: capacity},
-        ),
-        returnValue: _i3.Future<_i2.IdZone>.value(_FakeIdZone_2(
-          this,
-          Invocation.method(
-            #createIdZone,
-            [
-              isolateId,
-              backingBufferKind,
-              idAssignmentPolicy,
-            ],
-            {#capacity: capacity},
-          ),
-        )),
-      ) as _i3.Future<_i2.IdZone>);
-
-  @override
-  _i3.Future<_i2.Success> deleteIdZone(
-    String? isolateId,
-    String? idZoneId,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #deleteIdZone,
-          [
-            isolateId,
-            idZoneId,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #deleteIdZone,
-            [
-              isolateId,
-              idZoneId,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
-
-  @override
-  _i3.Future<_i2.Success> invalidateIdZone(
-    String? isolateId,
-    String? idZoneId,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #invalidateIdZone,
-          [
-            isolateId,
-            idZoneId,
-          ],
-        ),
-        returnValue: _i3.Future<_i2.Success>.value(_FakeSuccess_1(
-          this,
-          Invocation.method(
-            #invalidateIdZone,
-            [
-              isolateId,
-              idZoneId,
-            ],
-          ),
-        )),
-      ) as _i3.Future<_i2.Success>);
-
-  @override
   _i3.Future<_i2.Response> invoke(
     String? isolateId,
     String? targetId,
     String? selector,
     List<String>? argumentIds, {
     bool? disableBreakpoints,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -681,12 +589,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             selector,
             argumentIds,
           ],
-          {
-            #disableBreakpoints: disableBreakpoints,
-            #idZoneId: idZoneId,
-          },
+          {#disableBreakpoints: disableBreakpoints},
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
+        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_2(
           this,
           Invocation.method(
             #invoke,
@@ -696,10 +601,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
               selector,
               argumentIds,
             ],
-            {
-              #disableBreakpoints: disableBreakpoints,
-              #idZoneId: idZoneId,
-            },
+            {#disableBreakpoints: disableBreakpoints},
           ),
         )),
       ) as _i3.Future<_i2.Response>);
@@ -711,7 +613,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? expression, {
     Map<String, String>? scope,
     bool? disableBreakpoints,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -724,10 +625,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           {
             #scope: scope,
             #disableBreakpoints: disableBreakpoints,
-            #idZoneId: idZoneId,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
+        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_2(
           this,
           Invocation.method(
             #evaluate,
@@ -739,7 +639,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             {
               #scope: scope,
               #disableBreakpoints: disableBreakpoints,
-              #idZoneId: idZoneId,
             },
           ),
         )),
@@ -752,7 +651,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? expression, {
     Map<String, String>? scope,
     bool? disableBreakpoints,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -765,10 +663,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           {
             #scope: scope,
             #disableBreakpoints: disableBreakpoints,
-            #idZoneId: idZoneId,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
+        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_2(
           this,
           Invocation.method(
             #evaluateInFrame,
@@ -780,7 +677,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             {
               #scope: scope,
               #disableBreakpoints: disableBreakpoints,
-              #idZoneId: idZoneId,
             },
           ),
         )),
@@ -802,7 +698,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           },
         ),
         returnValue:
-            _i3.Future<_i2.AllocationProfile>.value(_FakeAllocationProfile_4(
+            _i3.Future<_i2.AllocationProfile>.value(_FakeAllocationProfile_3(
           this,
           Invocation.method(
             #getAllocationProfile,
@@ -832,7 +728,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             #classId: classId,
           },
         ),
-        returnValue: _i3.Future<_i2.CpuSamples>.value(_FakeCpuSamples_5(
+        returnValue: _i3.Future<_i2.CpuSamples>.value(_FakeCpuSamples_4(
           this,
           Invocation.method(
             #getAllocationTraces,
@@ -853,7 +749,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getClassList,
           [isolateId],
         ),
-        returnValue: _i3.Future<_i2.ClassList>.value(_FakeClassList_6(
+        returnValue: _i3.Future<_i2.ClassList>.value(_FakeClassList_5(
           this,
           Invocation.method(
             #getClassList,
@@ -877,7 +773,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             timeExtentMicros,
           ],
         ),
-        returnValue: _i3.Future<_i2.CpuSamples>.value(_FakeCpuSamples_5(
+        returnValue: _i3.Future<_i2.CpuSamples>.value(_FakeCpuSamples_4(
           this,
           Invocation.method(
             #getCpuSamples,
@@ -896,7 +792,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getFlagList,
           [],
         ),
-        returnValue: _i3.Future<_i2.FlagList>.value(_FakeFlagList_7(
+        returnValue: _i3.Future<_i2.FlagList>.value(_FakeFlagList_6(
           this,
           Invocation.method(
             #getFlagList,
@@ -909,9 +805,8 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
   _i3.Future<_i2.InboundReferences> getInboundReferences(
     String? isolateId,
     String? targetId,
-    int? limit, {
-    String? idZoneId,
-  }) =>
+    int? limit,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #getInboundReferences,
@@ -920,10 +815,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             targetId,
             limit,
           ],
-          {#idZoneId: idZoneId},
         ),
         returnValue:
-            _i3.Future<_i2.InboundReferences>.value(_FakeInboundReferences_8(
+            _i3.Future<_i2.InboundReferences>.value(_FakeInboundReferences_7(
           this,
           Invocation.method(
             #getInboundReferences,
@@ -932,7 +826,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
               targetId,
               limit,
             ],
-            {#idZoneId: idZoneId},
           ),
         )),
       ) as _i3.Future<_i2.InboundReferences>);
@@ -944,7 +837,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     int? limit, {
     bool? includeSubclasses,
     bool? includeImplementers,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -957,10 +849,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           {
             #includeSubclasses: includeSubclasses,
             #includeImplementers: includeImplementers,
-            #idZoneId: idZoneId,
           },
         ),
-        returnValue: _i3.Future<_i2.InstanceSet>.value(_FakeInstanceSet_9(
+        returnValue: _i3.Future<_i2.InstanceSet>.value(_FakeInstanceSet_8(
           this,
           Invocation.method(
             #getInstances,
@@ -972,7 +863,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             {
               #includeSubclasses: includeSubclasses,
               #includeImplementers: includeImplementers,
-              #idZoneId: idZoneId,
             },
           ),
         )),
@@ -984,7 +874,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? objectId, {
     bool? includeSubclasses,
     bool? includeImplementers,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -996,10 +885,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           {
             #includeSubclasses: includeSubclasses,
             #includeImplementers: includeImplementers,
-            #idZoneId: idZoneId,
           },
         ),
-        returnValue: _i3.Future<_i2.InstanceRef>.value(_FakeInstanceRef_10(
+        returnValue: _i3.Future<_i2.InstanceRef>.value(_FakeInstanceRef_9(
           this,
           Invocation.method(
             #getInstancesAsList,
@@ -1010,7 +898,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             {
               #includeSubclasses: includeSubclasses,
               #includeImplementers: includeImplementers,
-              #idZoneId: idZoneId,
             },
           ),
         )),
@@ -1022,7 +909,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getIsolate,
           [isolateId],
         ),
-        returnValue: _i3.Future<_i2.Isolate>.value(_FakeIsolate_11(
+        returnValue: _i3.Future<_i2.Isolate>.value(_FakeIsolate_10(
           this,
           Invocation.method(
             #getIsolate,
@@ -1038,7 +925,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getIsolateGroup,
           [isolateGroupId],
         ),
-        returnValue: _i3.Future<_i2.IsolateGroup>.value(_FakeIsolateGroup_12(
+        returnValue: _i3.Future<_i2.IsolateGroup>.value(_FakeIsolateGroup_11(
           this,
           Invocation.method(
             #getIsolateGroup,
@@ -1054,7 +941,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getIsolatePauseEvent,
           [isolateId],
         ),
-        returnValue: _i3.Future<_i2.Event>.value(_FakeEvent_13(
+        returnValue: _i3.Future<_i2.Event>.value(_FakeEvent_12(
           this,
           Invocation.method(
             #getIsolatePauseEvent,
@@ -1070,7 +957,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getMemoryUsage,
           [isolateId],
         ),
-        returnValue: _i3.Future<_i2.MemoryUsage>.value(_FakeMemoryUsage_14(
+        returnValue: _i3.Future<_i2.MemoryUsage>.value(_FakeMemoryUsage_13(
           this,
           Invocation.method(
             #getMemoryUsage,
@@ -1087,7 +974,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getIsolateGroupMemoryUsage,
           [isolateGroupId],
         ),
-        returnValue: _i3.Future<_i2.MemoryUsage>.value(_FakeMemoryUsage_14(
+        returnValue: _i3.Future<_i2.MemoryUsage>.value(_FakeMemoryUsage_13(
           this,
           Invocation.method(
             #getIsolateGroupMemoryUsage,
@@ -1103,7 +990,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getScripts,
           [isolateId],
         ),
-        returnValue: _i3.Future<_i2.ScriptList>.value(_FakeScriptList_15(
+        returnValue: _i3.Future<_i2.ScriptList>.value(_FakeScriptList_14(
           this,
           Invocation.method(
             #getScripts,
@@ -1118,7 +1005,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
     String? objectId, {
     int? offset,
     int? count,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1130,10 +1016,9 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           {
             #offset: offset,
             #count: count,
-            #idZoneId: idZoneId,
           },
         ),
-        returnValue: _i3.Future<_i2.Obj>.value(_FakeObj_16(
+        returnValue: _i3.Future<_i2.Obj>.value(_FakeObj_15(
           this,
           Invocation.method(
             #getObject,
@@ -1144,7 +1029,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             {
               #offset: offset,
               #count: count,
-              #idZoneId: idZoneId,
             },
           ),
         )),
@@ -1166,7 +1050,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           },
         ),
         returnValue:
-            _i3.Future<_i2.PerfettoCpuSamples>.value(_FakePerfettoCpuSamples_17(
+            _i3.Future<_i2.PerfettoCpuSamples>.value(_FakePerfettoCpuSamples_16(
           this,
           Invocation.method(
             #getPerfettoCpuSamples,
@@ -1194,7 +1078,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           },
         ),
         returnValue:
-            _i3.Future<_i2.PerfettoTimeline>.value(_FakePerfettoTimeline_18(
+            _i3.Future<_i2.PerfettoTimeline>.value(_FakePerfettoTimeline_17(
           this,
           Invocation.method(
             #getPerfettoVMTimeline,
@@ -1213,7 +1097,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getPorts,
           [isolateId],
         ),
-        returnValue: _i3.Future<_i2.PortList>.value(_FakePortList_19(
+        returnValue: _i3.Future<_i2.PortList>.value(_FakePortList_18(
           this,
           Invocation.method(
             #getPorts,
@@ -1226,9 +1110,8 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
   _i3.Future<_i2.RetainingPath> getRetainingPath(
     String? isolateId,
     String? targetId,
-    int? limit, {
-    String? idZoneId,
-  }) =>
+    int? limit,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #getRetainingPath,
@@ -1237,9 +1120,8 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             targetId,
             limit,
           ],
-          {#idZoneId: idZoneId},
         ),
-        returnValue: _i3.Future<_i2.RetainingPath>.value(_FakeRetainingPath_20(
+        returnValue: _i3.Future<_i2.RetainingPath>.value(_FakeRetainingPath_19(
           this,
           Invocation.method(
             #getRetainingPath,
@@ -1248,7 +1130,6 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
               targetId,
               limit,
             ],
-            {#idZoneId: idZoneId},
           ),
         )),
       ) as _i3.Future<_i2.RetainingPath>);
@@ -1261,7 +1142,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           [],
         ),
         returnValue:
-            _i3.Future<_i2.ProcessMemoryUsage>.value(_FakeProcessMemoryUsage_21(
+            _i3.Future<_i2.ProcessMemoryUsage>.value(_FakeProcessMemoryUsage_20(
           this,
           Invocation.method(
             #getProcessMemoryUsage,
@@ -1274,26 +1155,19 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
   _i3.Future<_i2.Stack> getStack(
     String? isolateId, {
     int? limit,
-    String? idZoneId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
           #getStack,
           [isolateId],
-          {
-            #limit: limit,
-            #idZoneId: idZoneId,
-          },
+          {#limit: limit},
         ),
-        returnValue: _i3.Future<_i2.Stack>.value(_FakeStack_22(
+        returnValue: _i3.Future<_i2.Stack>.value(_FakeStack_21(
           this,
           Invocation.method(
             #getStack,
             [isolateId],
-            {
-              #limit: limit,
-              #idZoneId: idZoneId,
-            },
+            {#limit: limit},
           ),
         )),
       ) as _i3.Future<_i2.Stack>);
@@ -1304,7 +1178,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getSupportedProtocols,
           [],
         ),
-        returnValue: _i3.Future<_i2.ProtocolList>.value(_FakeProtocolList_23(
+        returnValue: _i3.Future<_i2.ProtocolList>.value(_FakeProtocolList_22(
           this,
           Invocation.method(
             #getSupportedProtocols,
@@ -1342,7 +1216,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             #librariesAlreadyCompiled: librariesAlreadyCompiled,
           },
         ),
-        returnValue: _i3.Future<_i2.SourceReport>.value(_FakeSourceReport_24(
+        returnValue: _i3.Future<_i2.SourceReport>.value(_FakeSourceReport_23(
           this,
           Invocation.method(
             #getSourceReport,
@@ -1369,7 +1243,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getVersion,
           [],
         ),
-        returnValue: _i3.Future<_i2.Version>.value(_FakeVersion_25(
+        returnValue: _i3.Future<_i2.Version>.value(_FakeVersion_24(
           this,
           Invocation.method(
             #getVersion,
@@ -1384,7 +1258,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getVM,
           [],
         ),
-        returnValue: _i3.Future<_i2.VM>.value(_FakeVM_26(
+        returnValue: _i3.Future<_i2.VM>.value(_FakeVM_25(
           this,
           Invocation.method(
             #getVM,
@@ -1407,7 +1281,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             #timeExtentMicros: timeExtentMicros,
           },
         ),
-        returnValue: _i3.Future<_i2.Timeline>.value(_FakeTimeline_27(
+        returnValue: _i3.Future<_i2.Timeline>.value(_FakeTimeline_26(
           this,
           Invocation.method(
             #getVMTimeline,
@@ -1426,7 +1300,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getVMTimelineFlags,
           [],
         ),
-        returnValue: _i3.Future<_i2.TimelineFlags>.value(_FakeTimelineFlags_28(
+        returnValue: _i3.Future<_i2.TimelineFlags>.value(_FakeTimelineFlags_27(
           this,
           Invocation.method(
             #getVMTimelineFlags,
@@ -1441,7 +1315,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           #getVMTimelineMicros,
           [],
         ),
-        returnValue: _i3.Future<_i2.Timestamp>.value(_FakeTimestamp_29(
+        returnValue: _i3.Future<_i2.Timestamp>.value(_FakeTimestamp_28(
           this,
           Invocation.method(
             #getVMTimelineMicros,
@@ -1495,7 +1369,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
           ],
           {#local: local},
         ),
-        returnValue: _i3.Future<_i2.UriList>.value(_FakeUriList_30(
+        returnValue: _i3.Future<_i2.UriList>.value(_FakeUriList_29(
           this,
           Invocation.method(
             #lookupResolvedPackageUris,
@@ -1521,7 +1395,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             uris,
           ],
         ),
-        returnValue: _i3.Future<_i2.UriList>.value(_FakeUriList_30(
+        returnValue: _i3.Future<_i2.UriList>.value(_FakeUriList_29(
           this,
           Invocation.method(
             #lookupPackageUris,
@@ -1577,7 +1451,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             #packagesUri: packagesUri,
           },
         ),
-        returnValue: _i3.Future<_i2.ReloadReport>.value(_FakeReloadReport_31(
+        returnValue: _i3.Future<_i2.ReloadReport>.value(_FakeReloadReport_30(
           this,
           Invocation.method(
             #reloadSources,
@@ -1755,7 +1629,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             value,
           ],
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
+        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_2(
           this,
           Invocation.method(
             #setFlag,
@@ -1940,7 +1814,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             #args: args,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
+        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_2(
           this,
           Invocation.method(
             #callMethod,
@@ -1968,7 +1842,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
             #args: args,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_3(
+        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_2(
           this,
           Invocation.method(
             #callServiceExtension,
@@ -2017,7 +1891,7 @@ class MockVmService extends _i1.Mock implements _i2.VmService {
               ),
               (T v) => _i3.Future<T>.value(v),
             ) ??
-            _FakeFuture_32<T>(
+            _FakeFuture_31<T>(
               this,
               Invocation.method(
                 #wrapFuture,
