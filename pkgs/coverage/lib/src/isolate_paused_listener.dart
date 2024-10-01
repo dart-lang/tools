@@ -19,7 +19,6 @@ class IsolatePausedListener {
   final Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup)
       _onIsolatePaused;
   final _allExitedCompleter = Completer<void>();
-  int _numAwaitedPauseCallbacks = 0;
   IsolateRef? _mainIsolate;
 
   @visibleForTesting
@@ -102,13 +101,10 @@ class IsolatePausedListener {
     }
 
     if (group.pause(isolateRef.id!)) {
-      ++_numAwaitedPauseCallbacks;
       try {
         await _onIsolatePaused(isolateRef, group.noRunningIsolates);
       } finally {
         await _maybeResumeIsolate(isolateRef);
-        --_numAwaitedPauseCallbacks;
-        _maybeFinish();
       }
     }
   }
@@ -151,7 +147,7 @@ class IsolatePausedListener {
 
   void _maybeFinish() {
     if (_allExitedCompleter.isCompleted) return;
-    if (_numAwaitedPauseCallbacks == 0 && isolateGroups.isEmpty) {
+    if (isolateGroups.isEmpty) {
       _allExitedCompleter.complete();
     }
   }
