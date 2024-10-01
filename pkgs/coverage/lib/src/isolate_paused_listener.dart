@@ -28,8 +28,8 @@ class IsolatePausedListener {
   /// have exited.
   Future<void> waitUntilAllExited() async {
     // NOTE: Why is this class so complicated?
-    //  - We only receive start/pause/exit events that arrive after we've
-    //    subscribed (using _service.streamListen below).
+    //  - We only receive start/pause events that arrive after we've subscribed,
+    //    using _service.streamListen below.
     //  - So after we subscribe, we have to backfill any isolates that are
     //    already started/paused by looking at the current isolates.
     //  - But since that backfill is an async process, we may get isolate events
@@ -37,10 +37,9 @@ class IsolatePausedListener {
     //  - So we buffer all the received events until the backfill is complete.
     //  - That means we can receive duplicate add/pause events: one from the
     //    backfill, and one from a real event that arrived during the backfill.
-    //  - So the _onStart/_onPause/_onExit methods need to be robust to
-    //    duplicate events (and out-of-order events to some extent, as the
-    //    backfill's [add, pause] events and the real [add, pause, exit] events
-    //    can be interleaved).
+    //  - So the _onStart/_onPause methods need to be robust to duplicate events
+    //    (and out-of-order events to some extent, as the backfill's events and
+    //    the real] events can be interleaved).
     //  - Finally, we resume each isolate after the its pause callback is done.
     //    But we need to delay resuming the main isolate until everything else
     //    is finished, because the VM shuts down once the main isolate exits.
@@ -50,8 +49,6 @@ class IsolatePausedListener {
           return _onStart(event.isolate!);
         case EventKind.kPauseExit:
           return _onPause(event.isolate!);
-        case EventKind.kIsolateExit:
-          return _onExit(event.isolate!);
       }
     });
 
@@ -85,26 +82,24 @@ class IsolatePausedListener {
     }
   }
 
+  IsolateGroupState _getGroup(IsolateRef isolateRef) =>
+      isolateGroups[isolateRef.isolateGroupId!] ??= IsolateGroupState();
+
   void _onStart(IsolateRef isolateRef) {
-    final groupId = isolateRef.isolateGroupId!;
-    final group = isolateGroups[groupId] ??= IsolateGroupState();
-    group.start(isolateRef.id!);
+    if (_allExitedCompleter.isCompleted) return;
+    _getGroup(isolateRef).start(isolateRef.id!);
   }
 
   Future<void> _onPause(IsolateRef isolateRef) async {
     if (_allExitedCompleter.isCompleted) return;
-    final groupId = isolateRef.isolateGroupId!;
-    final group = isolateGroups[groupId];
-    if (group == null) {
-      // See NOTE in waitUntilAllExited.
-      return;
-    }
-
+    final group = _getGroup(isolateRef);
     if (group.pause(isolateRef.id!)) {
       try {
         await _onIsolatePaused(isolateRef, group.noRunningIsolates);
       } finally {
         await _maybeResumeIsolate(isolateRef);
+        group.exit(isolateRef.id!);
+        _maybeFinish();
       }
     }
   }
@@ -124,30 +119,14 @@ class IsolatePausedListener {
   Future<void> _maybeResumeIsolate(IsolateRef isolateRef) async {
     if (_mainIsolate == null && _isMainIsolate(isolateRef)) {
       _mainIsolate = isolateRef;
-      // Pretend the main isolate has exited.
-      _onExit(isolateRef);
     } else {
       await _service.resume(isolateRef.id!);
     }
   }
 
-  void _onExit(IsolateRef isolateRef) {
-    final groupId = isolateRef.isolateGroupId!;
-    final group = isolateGroups[groupId];
-    if (group == null) {
-      // See NOTE in waitUntilAllExited.
-      return;
-    }
-    group.exit(isolateRef.id!);
-    if (group.noIsolates) {
-      isolateGroups.remove(groupId);
-    }
-    _maybeFinish();
-  }
-
   void _maybeFinish() {
     if (_allExitedCompleter.isCompleted) return;
-    if (isolateGroups.isEmpty) {
+    if (isolateGroups.values.every((group) => group.noIsolates)) {
       _allExitedCompleter.complete();
     }
   }
