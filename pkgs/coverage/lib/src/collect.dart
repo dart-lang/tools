@@ -93,21 +93,15 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
   }
 
   try {
-    final job = _CollectionJob(
+    return await _getAllCoverage(
         service,
         includeDart,
         functionCoverage,
-        [
-          SourceReportKind.kCoverage,
-          if (branchCoverage) SourceReportKind.kBranchCoverage,
-        ],
-        scopedOutput ?? <String>{},
+        branchCoverage,
+        scopedOutput,
         isolateIds,
-        coverableLineCache);
-    return <String, dynamic>{
-      'type': 'CodeCoverage',
-      'coverage': await job.collectAll(waitPaused),
-    };
+        coverableLineCache,
+        waitPaused);
   } finally {
     if (resume && !waitPaused) {
       await _resumeIsolates(service);
@@ -116,6 +110,32 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     // ignore: await_only_futures
     await service.dispose();
   }
+}
+
+Future<Map<String, dynamic>> _getAllCoverage(
+    VmService service,
+    bool includeDart,
+    bool functionCoverage,
+    bool branchCoverage,
+    Set<String>? scopedOutput,
+    Set<String>? isolateIds,
+    Map<String, Set<int>>? coverableLineCache,
+    bool waitPaused) async {
+  final job = _CollectionJob(
+      service,
+      includeDart,
+      functionCoverage,
+      [
+        SourceReportKind.kCoverage,
+        if (branchCoverage) SourceReportKind.kBranchCoverage,
+      ],
+      scopedOutput ?? <String>{},
+      isolateIds,
+      coverableLineCache);
+  return <String, dynamic>{
+    'type': 'CodeCoverage',
+    'coverage': await job.collectAll(waitPaused),
+  };
 }
 
 class _CollectionJob {
@@ -146,8 +166,7 @@ class _CollectionJob {
       this._coverableLineCache)
       : _librariesAlreadyCompiled = _coverableLineCache?.keys.toList() {}
 
-  Future<List<Map<String, dynamic>>> collectAll(
-      bool waitPaused) async {
+  Future<List<Map<String, dynamic>>> collectAll(bool waitPaused) async {
     if (waitPaused) {
       await _collectPausedIsolatesUntilAllExit();
     } else {

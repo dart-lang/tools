@@ -259,13 +259,12 @@ class IsolateGroupState {
 class IsolatePausedListener {
   final VmService _service;
   final Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup)
-        _onIsolatePaused;
+      _onIsolatePaused;
   final _allExitedCompleter = Completer<void>();
   final _isolateGroups = <String, IsolateGroupState>{};
   bool _started = false;
   int _numAwaitedPauseCallbacks = 0;
   IsolateRef? _mainIsolate;
-
 
   IsolatePausedListener(this._service, this._onIsolatePaused);
 
@@ -290,7 +289,7 @@ class IsolatePausedListener {
     //    But we need to delay resuming the main isolate until everything else
     //    is finished, because the VM shuts down once the main isolate exits.
     final eventBuffer = IsolateEventBuffer((Event event) async {
-      switch(event.kind) {
+      switch (event.kind) {
         case EventKind.kIsolateStart:
           return _onStart(event.isolate!);
         case EventKind.kPauseExit:
