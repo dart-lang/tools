@@ -2,7 +2,7 @@
 
 - Fix formatting and remove dependency on `package:intl`.
 - Remove direct usage of `package:path` in favor of `package:file`.
-- Add more parameters (androidAppId and iosBundleId) in devtools events.
+- Added `androidAppId` and `iosBundleId` to the `Event.devtoolsEvent` constructor.
 
 ## 6.1.3
 
