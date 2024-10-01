@@ -264,6 +264,7 @@ class IsolatePausedListener {
   final _isolateGroups = <String, IsolateGroupState>{};
   bool _started = false;
   int _numAwaitedPauseCallbacks = 0;
+  IsolateRef? _mainIsolate;
 
 
   IsolatePausedListener(this._service, this._onIsolatePaused);
@@ -285,6 +286,9 @@ class IsolatePausedListener {
     //    duplicate events (and out-of-order events to some extent, as the
     //    backfill's [add, pause] events and the real [add, pause, exit] events
     //    can be interleaved).
+    //  - Finally, we resume each isolate after the its pause callback is done.
+    //    But we need to delay resuming the main isolate until everything else
+    //    is finished, because the VM shuts down once the main isolate exits.
     final eventBuffer = IsolateEventBuffer((Event event) async {
       switch(event.kind) {
         case EventKind.kIsolateStart:
@@ -319,6 +323,12 @@ class IsolatePausedListener {
     await eventBuffer.flush();
 
     await _allExitedCompleter.future;
+
+    // Resume the main isolate.
+    if (_mainIsolate != null) {
+      print("      Resuming main isolate");
+      await _service.resume(_mainIsolate!.id!);
+    }
   }
 
   void _onStart(IsolateRef isolateRef) {
@@ -349,11 +359,28 @@ class IsolatePausedListener {
         await _onIsolatePaused(isolateRef, group.noRunningIsolates);
       } finally {
         print("    DONE Pause finally for ${isolateRef.name}");
+        await _maybeResumeIsolate(isolateRef);
         --_numAwaitedPauseCallbacks;
         _maybeFinish();
       }
     }
     print("  DONE Pause event for ${isolateRef.name}");
+  }
+
+  static bool _isMainIsolate(IsolateRef isolateRef) {
+    return isolateRef.name == 'main';
+  }
+
+  Future<void> _maybeResumeIsolate(IsolateRef isolateRef) async {
+    if (_mainIsolate == null && _isMainIsolate(isolateRef)) {
+      print("      Deferring main isolate resumption");
+      _mainIsolate = isolateRef;
+      // Pretend the main isolate has exited.
+      _onExit(isolateRef);
+    } else {
+      print("      Resuming isolate: ${isolateRef.name}");
+      await _service.resume(isolateRef.id!);
+    }
   }
 
   void _onExit(IsolateRef isolateRef) {

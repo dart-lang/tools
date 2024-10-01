@@ -163,27 +163,14 @@ class _CollectionJob {
   }
 
   Future<void> _collectPausedIsolatesUntilAllExit() async {
-    IsolateRef? mainIsolateRef;
     await IsolatePausedListener(_service,
         (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
-      try {
-        if (isLastIsolateInGroup) {
-          print("  Collecting for ${isolateRef.name}");
-          await _collectOne(isolateRef);
-          print("    DONE collecting for ${isolateRef.name}");
-        }
-      } finally {
-        print("  Resuming ${isolateRef.name}");
-        // if (isolateRef.name != 'main') {
-        if (true) {
-          await _service.resume(isolateRef.id!);
-        } else {
-          mainIsolateRef = isolateRef;
-        }
-        print("    DONE  Resuming ${isolateRef.name}");
+      if (isLastIsolateInGroup) {
+        print("  Collecting for ${isolateRef.name}");
+        await _collectOne(isolateRef);
+        print("    DONE collecting for ${isolateRef.name}");
       }
     }).listenUntilAllExited();
-    if (mainIsolateRef != null) await _service.resume(mainIsolateRef!.id!);
   }
 
   Future<void> _collectOne(IsolateRef isolateRef) async {
