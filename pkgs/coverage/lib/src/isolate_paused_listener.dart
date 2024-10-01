@@ -33,8 +33,11 @@ class IsolatePausedListener {
     //  - So after we subscribe, we have to backfill any isolates that are
     //    already started/paused by looking at the current isolates.
     //  - But since that backfill is an async process, we may get isolate events
-    //    arriving during that process.
-    //  - So we buffer all the received events until the backfill is complete.
+    //    arriving during that process. Eg, a lone pause event received before
+    //    the backfill would complete the _allExitedCompleter before any other
+    //    isolate groups have been seen.
+    //  - The simplest and most robust way of solving this issue is to buffer
+    //    all the received events until the backfill is complete.
     //  - That means we can receive duplicate add/pause events: one from the
     //    backfill, and one from a real event that arrived during the backfill.
     //  - So the _onStart/_onPause methods need to be robust to duplicate events
@@ -61,8 +64,7 @@ class IsolatePausedListener {
     await _service.streamListen(EventStreams.kDebug);
 
     // Backfill. Add/pause isolates that existed before we subscribed.
-    final isolates = await getAllIsolates(_service);
-    for (final isolateRef in isolates) {
+    for (final isolateRef in await getAllIsolates(_service)) {
       _onStart(isolateRef);
       final isolate = await _service.getIsolate(isolateRef.id!);
       if (isolate.pauseEvent!.kind == EventKind.kPauseExit) {
