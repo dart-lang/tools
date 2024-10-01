@@ -35,11 +35,8 @@ Future<String> fooAsync(int x) async {
 /// The number of covered lines is tested and expected to be 4.
 ///
 /// If you modify this method, you may have to update the tests!
-void isolateTask(List threeThings) {
+void isolateTask(List threeThings) async {
   sleep(const Duration(milliseconds: 500));
-
-  // Regression test for https://github.com/dart-lang/tools/issues/520.
-  Isolate.run(() => print('Another isolate'), debugName: 'Grandchild');
 
   fooSync(answer);
   fooAsync(answer).then((_) {
@@ -69,5 +66,8 @@ void isolateTask(List threeThings) {
   print('9'); // coverage:ignore-start
   print('10');
   print('11'); // coverage:ignore-line
+
+  // Regression test for https://github.com/dart-lang/tools/issues/520.
+  await Isolate.run(() => print('Isolate.run'), debugName: 'Grandchild');
   // coverage:ignore-end
 }

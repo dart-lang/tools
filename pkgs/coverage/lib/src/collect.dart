@@ -77,8 +77,9 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
         final socket = await WebSocket.connect('$uri', compression: options);
         final controller = StreamController<String>();
         socket.listen((data) => controller.add(data as String), onDone: () {
-          controller.close();
-          service.dispose();
+          // controller.close();
+    print(">>> Disposing VM service 0");
+          // service.dispose();
         });
         service = VmService(controller.stream, socket.add,
             log: StdoutLog(), disposeHandler: socket.close);
@@ -86,6 +87,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
       } on TimeoutException {
         // The signature changed in vm_service version 6.0.0.
         // ignore: await_only_futures
+    print(">>> Disposing VM service 1");
         await service.dispose();
         rethrow;
       }
@@ -106,14 +108,15 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
         coverableLineCache);
     return <String, dynamic>{
       'type': 'CodeCoverage',
-      'coverage': await job.collectAll(waitPaused, resume),
+      'coverage': await job.collectAll(waitPaused),
     };
   } finally {
-    if (resume) {
+    if (resume && !waitPaused) {
       await _resumeIsolates(service);
     }
     // The signature changed in vm_service version 6.0.0.
     // ignore: await_only_futures
+    print(">>> Disposing VM service 2");
     await service.dispose();
   }
 }
@@ -147,7 +150,7 @@ class _CollectionJob {
       : _librariesAlreadyCompiled = _coverableLineCache?.keys.toList() {}
 
   Future<List<Map<String, dynamic>>> collectAll(
-      bool waitPaused, bool resume) async {
+      bool waitPaused) async {
     if (waitPaused) {
       await _collectPausedIsolatesUntilAllExit();
       print("!!! EXITING !!!");
@@ -159,33 +162,49 @@ class _CollectionJob {
     return _allCoverage;
   }
 
-  Future<void> _collectPausedIsolatesUntilAllExit() {
-    return IsolatePausedListener(_service,
+  Future<void> _collectPausedIsolatesUntilAllExit() async {
+    IsolateRef? mainIsolateRef;
+    await IsolatePausedListener(_service,
         (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
-      if (isLastIsolateInGroup) {
-        print("  Collecting for ${isolateRef.name}");
-        await _collectOne(isolateRef);
-        print("    DONE collecting for ${isolateRef.name}");
+      try {
+        if (isLastIsolateInGroup) {
+          print("  Collecting for ${isolateRef.name}");
+          await _collectOne(isolateRef);
+          print("    DONE collecting for ${isolateRef.name}");
+        }
+      } finally {
+        print("  Resuming ${isolateRef.name}");
+        // if (isolateRef.name != 'main') {
+        if (true) {
+          await _service.resume(isolateRef.id!);
+        } else {
+          mainIsolateRef = isolateRef;
+        }
+        print("    DONE  Resuming ${isolateRef.name}");
       }
-      print("  Resuming ${isolateRef.name}");
-      await _service.resume(isolateRef.id!);
-      print("    DONE  Resuming ${isolateRef.name}");
     }).listenUntilAllExited();
+    if (mainIsolateRef != null) await _service.resume(mainIsolateRef!.id!);
   }
 
   Future<void> _collectOne(IsolateRef isolateRef) async {
+    print("           _collectOne0");
     if (!(_isolateIds?.contains(isolateRef.id) ?? true)) return;
 
-    // _coveredIsolateGroups is only used for the !waitPaused flow The
+    // _coveredIsolateGroups is only relevant for the !waitPaused flow. The
     // waitPaused flow only ever calls _collectOne once per isolate group.
+    print("           _collectOne1");
     final isolateGroupId = isolateRef.isolateGroupId;
     if (isolateGroupId != null) {
+      print("           _collectOne2");
       if (_coveredIsolateGroups.contains(isolateGroupId)) return;
+      print("           _collectOne3");
       _coveredIsolateGroups.add(isolateGroupId);
     }
+    print("           _collectOne4");
 
     late final SourceReport isolateReport;
     try {
+      print("           _collectOne5");
       isolateReport = await _service.getSourceReport(
         isolateRef.id!,
         _sourceReportKinds,
@@ -196,10 +215,16 @@ class _CollectionJob {
             : null,
         librariesAlreadyCompiled: _librariesAlreadyCompiled,
       );
+      print("           _collectOne6");
     } on SentinelException {
+      print("           _collectOne7");
       return;
+    } catch (e) {
+      print("           _collectOne6b");
+      print(e);
     }
 
+print("           _collectOne8");
     final coverage = await _processSourceReport(
         _service,
         isolateRef,
@@ -208,6 +233,7 @@ class _CollectionJob {
         _functionCoverage,
         _coverableLineCache,
         _scopedOutput);
+    print("           _collectOne9");
     _allCoverage.addAll(coverage);
   }
 }

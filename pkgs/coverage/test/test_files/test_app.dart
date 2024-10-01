@@ -30,6 +30,7 @@ Future<void> main() async {
   }
 
   final port = ReceivePort();
+  // final exitPort = ReceivePort();
 
   final isolate =
       await Isolate.spawn(isolateTask, [port.sendPort, 1, 2], paused: true);
@@ -47,6 +48,7 @@ Future<void> main() async {
 
   final result = await retry(() async => 42, const Duration(seconds: 1)) as int;
   print(result);
+  // await exitPort.first;
 }
 
 int usedMethod(int a, int b) {

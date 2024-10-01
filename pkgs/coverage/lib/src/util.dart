@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -196,7 +197,7 @@ class IsolateEventBuffer {
   final _buffer = Queue<Event>();
   var _flushed = true;
 
-  ServiceEventBuffer(this._handler);
+  IsolateEventBuffer(this._handler);
 
   Future<void> add(Event event) async {
     if (_flushed) {
@@ -215,7 +216,12 @@ class IsolateEventBuffer {
   }
 }
 
-class _GroupState {
+/// Keeps track of isolates in an isolate group.
+///
+/// Isolates are expected to go through either [start] -> [pause] -> [exit] or
+/// simply [start] -> [exit]. [start] and [pause] return false if that sequence
+/// is violated.
+class IsolateGroupState {
   // IDs of the isolates running in this group.
   final _running = <String>{};
 
@@ -225,11 +231,11 @@ class _GroupState {
   // IDs of the isolates that have exited in this group.
   final _exited = <String>{};
 
-  bool noRunningIsolates => _running.isEmpty;
-  bool noIsolates => _running.isEmpty && _paused.isEmpty;
+  bool get noRunningIsolates => _running.isEmpty;
+  bool get noIsolates => _running.isEmpty && _paused.isEmpty;
 
   bool start(String id) {
-    if (_pause.contains(id) || _exited.contains(id)) return false;
+    if (_paused.contains(id) || _exited.contains(id)) return false;
     _running.add(id);
     return true;
   }
@@ -255,9 +261,12 @@ class IsolatePausedListener {
   final Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup)
         _onIsolatePaused;
   final _allExitedCompleter = Completer<void>();
-  final _isolateGroups = <String, _GroupState>{};
+  final _isolateGroups = <String, IsolateGroupState>{};
+  bool _started = false;
+  int _numAwaitedPauseCallbacks = 0;
 
-  IsolatePausedListener(this.service, this.onIsolatePaused);
+
+  IsolatePausedListener(this._service, this._onIsolatePaused);
 
   /// Starts listening and returns a future that completes when all isolates
   /// have exited.
@@ -276,7 +285,7 @@ class IsolatePausedListener {
     //    duplicate events (and out-of-order events to some extent, as the
     //    backfill's [add, pause] events and the real [add, pause, exit] events
     //    can be interleaved).
-    final eventBuffer = IsolateEventBuffer((Event event) {
+    final eventBuffer = IsolateEventBuffer((Event event) async {
       switch(event.kind) {
         case EventKind.kIsolateStart:
           return _onStart(event.isolate!);
@@ -309,49 +318,64 @@ class IsolatePausedListener {
     // arrive.
     await eventBuffer.flush();
 
-    // If the user forgot to pass --pause-isolates-on-exit, there's a chance
-    // that all the isolates exited before we subscribed to the exit event. To
-    // make sure we're not waiting on allExited forever, bail if isolateGroups
-    // is empty at this point.
-    if (isolateGroups.isEmpty) return;
-
     await _allExitedCompleter.future;
   }
 
   void _onStart(IsolateRef isolateRef) {
     print("Start event for ${isolateRef.name}");
-    final group = (isolateGroups[isolateRef.isolateGroupId!] ??= _GroupState());
-    group.add(isolateRef.id!);
+    print("                ${isolateRef.id}");
+    print("                ${isolateRef.number}");
+    print("                ${isolateRef.isSystemIsolate}");
+    print("                ${isolateRef.isolateGroupId}");
+    final groupId = isolateRef.isolateGroupId!;
+    final group = (_isolateGroups[groupId] ??= IsolateGroupState());
+    group.start(isolateRef.id!);
+    _started = true;
   }
 
   Future<void> _onPause(IsolateRef isolateRef) async {
+    if (_allExitedCompleter.isCompleted) return;
     print("Pause event for ${isolateRef.name}");
     final String groupId = isolateRef.isolateGroupId!;
-    final group = isolateGroups[groupId];
+    final group = _isolateGroups[groupId];
     if (group == null) {
       // See NOTE in listenUntilAllExited.
       return;
     }
 
-    group.pause(isolateRef.id!);
-    await _onIsolatePaused(isolateRef, group.noRunningIsolates);
+    if (group.pause(isolateRef.id!)) {
+      ++_numAwaitedPauseCallbacks;
+      try {
+        await _onIsolatePaused(isolateRef, group.noRunningIsolates);
+      } finally {
+        print("    DONE Pause finally for ${isolateRef.name}");
+        --_numAwaitedPauseCallbacks;
+        _maybeFinish();
+      }
+    }
     print("  DONE Pause event for ${isolateRef.name}");
   }
 
   void _onExit(IsolateRef isolateRef) {
     print("Exit event for ${isolateRef.name}");
     final String groupId = isolateRef.isolateGroupId!;
-    final group = isolateGroups[groupId];
+    final group = _isolateGroups[groupId];
     if (group == null) {
-      // Like the pause event, if the group is null it's due to a race condition
-      // with
+      // See NOTE in listenUntilAllExited.
       return;
     }
     group.exit(isolateRef.id!);
     if (group.noIsolates) {
-      isolateGroups.remove(groupId);
+      _isolateGroups.remove(groupId);
     }
-    if (isolateGroups.isEmpty && !_allExitedCompleter.isCompleted()) {
+    _maybeFinish();
+  }
+
+  void _maybeFinish() {
+    print("MAYBE FINISH: ${_allExitedCompleter.isCompleted} ${_isolateGroups.isEmpty} ${_numAwaitedPauseCallbacks}");
+    if (_allExitedCompleter.isCompleted) return;
+    if (_started && _numAwaitedPauseCallbacks == 0 && _isolateGroups.isEmpty) {
+      print("  >>> FINISH <<<");
       _allExitedCompleter.complete();
     }
   }
