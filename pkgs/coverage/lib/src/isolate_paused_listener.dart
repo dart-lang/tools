@@ -95,6 +95,8 @@ class IsolatePausedListener {
 ///    an [onIsolateStarted] call for the same isolate.
 ///  - Not every [onIsolateExited] call will be preceeded by a [onIsolatePaused]
 ///    call, but a [onIsolatePaused] will never follow a [onIsolateExited].
+///  - [onIsolateExited] will always run after [onIsolatePaused] completes, even
+///    if an exit event arrives while [onIsolatePaused] is being awaited.
 ///  - Each callback will only be called once per isolate.
 Future<void> listenToIsolateLifecycleEvents(
     VmService service,
@@ -106,17 +108,21 @@ Future<void> listenToIsolateLifecycleEvents(
     if (started.add(isolateRef.id!)) onIsolateStarted(isolateRef);
   }
 
-  final paused = <String>{};
+  final paused = <String, Future<void>>{};
   Future<void> onPause(IsolateRef isolateRef) async {
     onStart(isolateRef);
-    if (paused.add(isolateRef.id!)) await onIsolatePaused(isolateRef);
+    await (paused[isolateRef.id!] ??= onIsolatePaused(isolateRef));
   }
 
   final exited = <String>{};
-  void onExit(IsolateRef isolateRef) {
+  Future<void> onExit(IsolateRef isolateRef) async {
     onStart(isolateRef);
-    paused.add(isolateRef.id!);
-    if (exited.add(isolateRef.id!)) onIsolateExited(isolateRef);
+    if (exited.add(isolateRef.id!)) {
+      // Wait for in-progress pause callbacks. Otherwise prevent future pause
+      // callbacks from running.
+      await (paused[isolateRef.id!] ??= Future<void>.value());
+      onIsolateExited(isolateRef);
+    }
   }
 
   final eventBuffer = IsolateEventBuffer((Event event) async {
@@ -126,7 +132,7 @@ Future<void> listenToIsolateLifecycleEvents(
       case EventKind.kPauseExit:
         return await onPause(event.isolate!);
       case EventKind.kIsolateExit:
-        return onExit(event.isolate!);
+        return await onExit(event.isolate!);
     }
   });
 
@@ -142,7 +148,7 @@ Future<void> listenToIsolateLifecycleEvents(
   for (final isolateRef in await getAllIsolates(service)) {
     onStart(isolateRef);
     final isolate = await service.getIsolate(isolateRef.id!);
-    if (isolate.pauseEvent!.kind == EventKind.kPauseExit) {
+    if (isolate.pauseEvent?.kind == EventKind.kPauseExit) {
       await onPause(isolateRef);
     }
   }
@@ -192,7 +198,7 @@ class IsolateEventBuffer {
 
   final Future<void> Function(Event event) _handler;
   final _buffer = Queue<Event>();
-  var _flushed = true;
+  var _flushed = false;
 
   Future<void> add(Event event) async {
     if (_flushed) {
