@@ -1,7 +1,8 @@
-## 6.1.4-wip
+## 6.1.4
 
 - Fix formatting and remove dependency on `package:intl`.
 - Remove direct usage of `package:path` in favor of `package:file`.
+- Added `androidAppId` and `iosBundleId` to the `Event.devtoolsEvent` constructor.
 
 ## 6.1.3
 

@@ -587,6 +587,8 @@ void main() {
           rootSetCount: 123,
           rowCount: 123,
           inspectorTreeControllerId: 123,
+          androidAppId: 'androidAppId',
+          iosBundleId: 'iosBundleId',
         );
 
     final constructedEvent = generateEvent();
@@ -622,7 +624,9 @@ void main() {
     expect(constructedEvent.eventData['rootSetCount'], 123);
     expect(constructedEvent.eventData['rowCount'], 123);
     expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
-    expect(constructedEvent.eventData.length, 28);
+    expect(constructedEvent.eventData['androidAppId'], 'androidAppId');
+    expect(constructedEvent.eventData['iosBundleId'], 'iosBundleId');
+    expect(constructedEvent.eventData.length, 30);
   });
 
   test('Confirm all constructors were checked', () {
