@@ -112,7 +112,7 @@ void checkHitmap(Map<String, HitMap> hitMap) {
     38: 1,
     39: 1,
     41: 1,
-    42: 3,
+    42: 4,
     43: 1,
     44: 3,
     45: 1,
