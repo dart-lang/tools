@@ -8,6 +8,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/cli_config/**'
 
+'package:coverage':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/coverage/**'
+
 'package:extension_discovery':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/extension_discovery/**'
@@ -15,6 +19,18 @@
 'package:graphs':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/graphs/**'
+
+'package:mime':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/mime/**'
+
+'package:oauth2':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/oauth2/**'
+
+'package:source_map_stack_trace':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
 
 'package:unified_analytics':
   - changed-files:
