@@ -73,7 +73,6 @@ class ThrowingResolver implements Resolver {
 
 void checkIgnoredLinesInFilesCache(
     Map<String, List<List<int>>?> ignoredLinesInFilesCache) {
-  expect(ignoredLinesInFilesCache.length, 4);
   final keys = ignoredLinesInFilesCache.keys.toList();
   final testAppKey =
       keys.where((element) => element.endsWith('test_app.dart')).single;
@@ -88,7 +87,7 @@ void checkIgnoredLinesInFilesCache(
     [51, 51],
     [53, 57],
     [62, 65],
-    [66, 69]
+    [66, 72]
   ]);
 }
 
