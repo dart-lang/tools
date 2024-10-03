@@ -10,14 +10,19 @@ import 'package:vm_service/vm_service.dart';
 
 import 'util.dart';
 
+typedef SyncIsolateCallback = void Function(IsolateRef isolate);
+typedef AsyncIsolateCallback = Future<void> Function(IsolateRef isolate);
+typedef AsyncIsolatePausedCallback = Future<void> Function(
+    IsolateRef isolate, bool isLastIsolateInGroup);
+typedef AsyncVmServiceEventCallback = Future<void> Function(Event event);
+
 /// Calls onIsolatePaused whenever an isolate reaches the pause-on-exit state,
 /// and passes a flag stating whether that isolate is the last one in the group.
 class IsolatePausedListener {
   IsolatePausedListener(this._service, this._onIsolatePaused);
 
   final VmService _service;
-  final Future<void> Function(IsolateRef isolate, bool isLastIsolateInGroup)
-      _onIsolatePaused;
+  final AsyncIsolatePausedCallback _onIsolatePaused;
   final _allExitedCompleter = Completer<void>();
   IsolateRef? _mainIsolate;
 
@@ -100,9 +105,9 @@ class IsolatePausedListener {
 ///  - Each callback will only be called once per isolate.
 Future<void> listenToIsolateLifecycleEvents(
     VmService service,
-    void Function(IsolateRef isolate) onIsolateStarted,
-    Future<void> Function(IsolateRef isolate) onIsolatePaused,
-    void Function(IsolateRef isolate) onIsolateExited) async {
+    SyncIsolateCallback onIsolateStarted,
+    AsyncIsolateCallback onIsolatePaused,
+    SyncIsolateCallback onIsolateExited) async {
   final started = <String>{};
   void onStart(IsolateRef isolateRef) {
     if (started.add(isolateRef.id!)) onIsolateStarted(isolateRef);
@@ -196,7 +201,7 @@ class IsolateGroupState {
 class IsolateEventBuffer {
   IsolateEventBuffer(this._handler);
 
-  final Future<void> Function(Event event) _handler;
+  final AsyncVmServiceEventCallback _handler;
   final _buffer = Queue<Event>();
   var _flushed = false;
 
