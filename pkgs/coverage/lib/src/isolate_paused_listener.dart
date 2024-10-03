@@ -15,67 +15,100 @@ typedef AsyncIsolateCallback = Future<void> Function(IsolateRef isolate);
 typedef AsyncIsolatePausedCallback = Future<void> Function(
     IsolateRef isolate, bool isLastIsolateInGroup);
 typedef AsyncVmServiceEventCallback = Future<void> Function(Event event);
+typedef SyncErrorLogger = void Function(String message);
 
 /// Calls onIsolatePaused whenever an isolate reaches the pause-on-exit state,
 /// and passes a flag stating whether that isolate is the last one in the group.
 class IsolatePausedListener {
-  IsolatePausedListener(this._service, this._onIsolatePaused);
+  IsolatePausedListener(this._service, this._onIsolatePaused, this._log);
 
   final VmService _service;
   final AsyncIsolatePausedCallback _onIsolatePaused;
-  final _allExitedCompleter = Completer<void>();
-  IsolateRef? _mainIsolate;
+  final SyncErrorLogger _log;
 
-  @visibleForTesting
-  final isolateGroups = <String, IsolateGroupState>{};
+  final _isolateGroups = <String, IsolateGroupState>{};
+
+  int _numNonMainIsolates = 0;
+  final _allNonMainIsolatesExited = Completer<void>();
+  bool _finished = false;
+
+  IsolateRef? _mainIsolate;
+  final _mainIsolatePaused = Completer<bool>();
 
   /// Starts listening and returns a future that completes when all isolates
   /// have exited.
   Future<void> waitUntilAllExited() async {
     await listenToIsolateLifecycleEvents(_service, _onStart, _onPause, _onExit);
 
-    await _allExitedCompleter.future;
+    await _allNonMainIsolatesExited.future;
 
     // Resume the main isolate.
-    if (_mainIsolate != null) {
-      await _service.resume(_mainIsolate!.id!);
+    try {
+      if (_mainIsolate != null) {
+        if (await _mainIsolatePaused.future) {
+          await _runCallbackAndResume(_mainIsolate!, true);
+        }
+      }
+    } finally {
+      _finished = true;
     }
   }
 
   IsolateGroupState _getGroup(IsolateRef isolateRef) =>
-      isolateGroups[isolateRef.isolateGroupId!] ??= IsolateGroupState();
+      _isolateGroups[isolateRef.isolateGroupId!] ??= IsolateGroupState();
 
   void _onStart(IsolateRef isolateRef) {
-    if (_allExitedCompleter.isCompleted) return;
-    _getGroup(isolateRef).start(isolateRef.id!);
-  }
-
-  Future<void> _onPause(IsolateRef isolateRef) async {
-    if (_allExitedCompleter.isCompleted) return;
+    if (_finished) return;
     final group = _getGroup(isolateRef);
-    group.pause(isolateRef.id!);
-    try {
-      await _onIsolatePaused(isolateRef, group.noRunningIsolates);
-    } finally {
-      await _maybeResumeIsolate(isolateRef);
+    group.start(isolateRef.id!);
+    if (_mainIsolate == null && _isMainIsolate(isolateRef)) {
+      _mainIsolate = isolateRef;
+    } else {
+      ++_numNonMainIsolates;
     }
   }
 
-  Future<void> _maybeResumeIsolate(IsolateRef isolateRef) async {
-    if (_mainIsolate == null && _isMainIsolate(isolateRef)) {
-      _mainIsolate = isolateRef;
-      // Pretend this isolate has exited so _allExitedCompleter can complete.
-      _onExit(isolateRef);
+  Future<void> _onPause(IsolateRef isolateRef) async {
+    if (_finished) return;
+    final group = _getGroup(isolateRef);
+    group.pause(isolateRef.id!);
+    if (isolateRef.id! == _mainIsolate?.id) {
+      _mainIsolatePaused.complete(true);
     } else {
+      await _runCallbackAndResume(isolateRef, group.noRunningIsolates);
+    }
+  }
+
+  Future<void> _runCallbackAndResume(
+      IsolateRef isolateRef, bool isLastIsolateInGroup) async {
+    if (isLastIsolateInGroup) {
+      _getGroup(isolateRef).collected = true;
+    }
+    try {
+      await _onIsolatePaused(isolateRef, isLastIsolateInGroup);
+    } finally {
       await _service.resume(isolateRef.id!);
     }
   }
 
   void _onExit(IsolateRef isolateRef) {
-    if (_allExitedCompleter.isCompleted) return;
-    _getGroup(isolateRef).exit(isolateRef.id!);
-    if (isolateGroups.values.every((group) => group.noLiveIsolates)) {
-      _allExitedCompleter.complete();
+    if (_finished) return;
+    final group = _getGroup(isolateRef);
+    group.exit(isolateRef.id!);
+    if (group.noLiveIsolates && !group.collected) {
+      _log('ERROR: An isolate exited without pausing, causing '
+          'coverage data to be lost for group ${isolateRef.isolateGroupId!}.');
+    }
+    if (isolateRef.id! == _mainIsolate?.id) {
+      if (!_mainIsolatePaused.isCompleted) {
+        // Main isolate exited without pausing.
+        _mainIsolatePaused.complete(false);
+      }
+    } else {
+      --_numNonMainIsolates;
+      if (_numNonMainIsolates == 0 && !_allNonMainIsolatesExited.isCompleted) {
+        _allNonMainIsolatesExited.complete();
+      }
     }
   }
 
@@ -115,18 +148,24 @@ Future<void> listenToIsolateLifecycleEvents(
 
   final paused = <String, Future<void>>{};
   Future<void> onPause(IsolateRef isolateRef) async {
-    onStart(isolateRef);
-    await (paused[isolateRef.id!] ??= onIsolatePaused(isolateRef));
+    try {
+      onStart(isolateRef);
+    } finally {
+      await (paused[isolateRef.id!] ??= onIsolatePaused(isolateRef));
+    }
   }
 
   final exited = <String>{};
   Future<void> onExit(IsolateRef isolateRef) async {
     onStart(isolateRef);
     if (exited.add(isolateRef.id!)) {
-      // Wait for in-progress pause callbacks. Otherwise prevent future pause
-      // callbacks from running.
-      await (paused[isolateRef.id!] ??= Future<void>.value());
-      onIsolateExited(isolateRef);
+      try {
+        // Wait for in-progress pause callbacks, and prevent future pause
+        // callbacks from running.
+        await (paused[isolateRef.id!] ??= Future<void>.value());
+      } finally {
+        onIsolateExited(isolateRef);
+      }
     }
   }
 
@@ -173,6 +212,8 @@ class IsolateGroupState {
   @visibleForTesting
   final paused = <String>{};
 
+  bool collected = false;
+
   bool get noRunningIsolates => running.isEmpty;
   bool get noLiveIsolates => running.isEmpty && paused.isEmpty;
 
@@ -190,6 +231,9 @@ class IsolateGroupState {
     running.remove(id);
     paused.remove(id);
   }
+
+  @override
+  String toString() => '{running: $running, paused: $paused}';
 }
 
 /// Buffers VM service isolate [Event]s until [flush] is called.

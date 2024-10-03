@@ -181,7 +181,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
       if (isLastIsolateInGroup) {
         await collectIsolate(isolateRef);
       }
-    }).waitUntilAllExited();
+    }, stderr.writeln).waitUntilAllExited();
   } else {
     for (final isolateRef in await getAllIsolates(service)) {
       await collectIsolate(isolateRef);
