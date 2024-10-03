@@ -177,11 +177,12 @@ Future<Map<String, dynamic>> _getAllCoverage(
 
   if (waitPaused) {
     await IsolatePausedListener(service,
-        (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
+            (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
       if (isLastIsolateInGroup) {
         await collectIsolate(isolateRef);
       }
-    }, stderr.writeln).waitUntilAllExited();
+    }, stderr.writeln)
+        .waitUntilAllExited();
   } else {
     for (final isolateRef in await getAllIsolates(service)) {
       await collectIsolate(isolateRef);
