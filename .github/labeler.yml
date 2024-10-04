@@ -16,6 +16,14 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/extension_discovery/**'
 
+'package:file':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/file/**'
+
+'package:file_testing':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/file_testing/**'
+
 'package:graphs':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/graphs/**'

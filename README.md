@@ -17,6 +17,8 @@ don't naturally belong to other topic monorepos (like
 | [cli_config](pkgs/cli_config/) | A library to take config values from configuration files, CLI arguments, and environment variables. | [![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
 | [coverage](pkgs/coverage/) | Coverage data manipulation and formatting. | [![pub package](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage) |
 | [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
+| [file](pkgs/file/) | A pluggable, mockable file system abstraction for Dart. | [![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file) |
+| [file_testing](pkgs/file_testing/) | Testing utilities for package:file (published but unlisted). | [![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing) |
 | [graphs](pkgs/graphs/) | Graph algorithms that operate on graphs in any representation | [![pub package](https://img.shields.io/pub/v/graphs.svg)](https://pub.dev/packages/graphs) |
 | [mime](pkgs/mime/) | Utilities for handling media (MIME) types. | [![pub package](https://img.shields.io/pub/v/mime.svg)](https://pub.dev/packages/mime) |
 | [oauth2](pkgs/oauth2/) | A client library for authenticatingand making requests via OAuth2. | [![pub package](https://img.shields.io/pub/v/oauth2.svg)](https://pub.dev/packages/oauth2) |
