@@ -627,8 +627,8 @@ void main() {
       startEvent('A', '1', 'main');
       startEvent('B', '1', 'main'); // Second isolate named main, ignored.
       pauseEvent('B', '1', 'main');
-      pauseEvent('A', '1', 'main');
       startEvent('C', '2', 'main'); // Third isolate named main, ignored.
+      pauseEvent('A', '1', 'main');
       startEvent('D', '2');
       pauseEvent('C', '2');
       exitEvent('C', '2');
@@ -664,6 +664,18 @@ void main() {
         'Resume B',
         'ERROR: An isolate exited without pausing, causing coverage data to '
             'be lost for group 1.',
+      ]);
+    });
+
+    test('main isolate is the only isolate', () async {
+      startEvent('A', '1', 'main');
+      pauseEvent('A', '1', 'main');
+
+      await endTest();
+
+      expect(received, [
+        'Pause A. Last in group 1? Yes',
+        'Resume A',
       ]);
     });
 

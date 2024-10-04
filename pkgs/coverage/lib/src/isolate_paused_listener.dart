@@ -74,6 +74,10 @@ class IsolatePausedListener {
     group.pause(isolateRef.id!);
     if (isolateRef.id! == _mainIsolate?.id) {
       _mainIsolatePaused.complete(true);
+
+      // If the main isolate is the only isolate, then _allNonMainIsolatesExited
+      // will never be completed. So check that case here.
+      _checkCompleted();
     } else {
       await _runCallbackAndResume(isolateRef, group.noRunningIsolates);
     }
@@ -106,9 +110,13 @@ class IsolatePausedListener {
       }
     } else {
       --_numNonMainIsolates;
-      if (_numNonMainIsolates == 0 && !_allNonMainIsolatesExited.isCompleted) {
-        _allNonMainIsolatesExited.complete();
-      }
+      _checkCompleted();
+    }
+  }
+
+  void _checkCompleted() {
+    if (_numNonMainIsolates == 0 && !_allNonMainIsolatesExited.isCompleted) {
+      _allNonMainIsolatesExited.complete();
     }
   }
 
