@@ -32,15 +32,15 @@ jobs:
           sdk: dev
 
       - name: Install ${{ matrix.package }} dependencies
-        working-directory: packages/${{ matrix.package }}
+        working-directory: pkgs/${{ matrix.package }}
         run: dart pub get
 
       - name: Verify formatting in ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
+        working-directory: pkgs/${{ matrix.package }}
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze package ${{ matrix.package }} source
-        working-directory: packages/${{ matrix.package }}
+        working-directory: pkgs/${{ matrix.package }}
         run: dart analyze --fatal-infos
 
   test:
@@ -58,9 +58,9 @@ jobs:
           sdk: ${{ matrix.sdk }}
 
       - name: Install ${{ matrix.package }} dependencies
-        working-directory: packages/${{ matrix.package }}
+        working-directory: pkgs/${{ matrix.package }}
         run: dart pub get
 
       - name: Run ${{ matrix.package }} Tests
-        working-directory: packages/${{ matrix.package }}
+        working-directory: pkgs/${{ matrix.package }}
         run: dart pub run test -j1
