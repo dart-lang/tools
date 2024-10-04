@@ -10,7 +10,7 @@ dependencies:
   args: ^2.0.0
   glob: ^2.1.2
   logging: ^1.0.0
-  meta: ^1.16.0
+  meta: ^1.0.2
   package_config: ^2.0.0
   path: ^1.8.0
   source_maps: ^0.10.10
