@@ -1,6 +1,7 @@
-## 3.0.1-wip
+## 3.0.1
 
-* Require Dart 3.0 or later.
+* Update the pubspec repository field to reflect the new package repository.
+* Require Dart 3.0.
 
 ## 3.0.0
 

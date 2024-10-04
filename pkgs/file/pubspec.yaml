@@ -1,5 +1,5 @@
 name: file
-version: 7.0.1-wip
+version: 7.0.1
 description:
   A pluggable, mockable file system abstraction for Dart. Supports local file
   system access, as well as in-memory file systems, record-replay file systems,
@@ -7,7 +7,7 @@ description:
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/file
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ^3.0.0
 
 dependencies:
   meta: ^1.9.1
