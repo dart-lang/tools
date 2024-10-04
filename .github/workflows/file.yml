@@ -1,0 +1,59 @@
+name: Dart
+
+on:
+  schedule:
+    # “At 00:00 (UTC) on Sunday.”
+    - cron: '0 0 * * 0'
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions: read-all
+
+jobs:
+  correctness:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [file, file_testing]
+
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: dev
+
+      - name: Install ${{ matrix.package }} dependencies
+        working-directory: packages/${{ matrix.package }}
+        run: dart pub get
+
+      - name: Verify formatting in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze package ${{ matrix.package }} source
+        working-directory: packages/${{ matrix.package }}
+        run: dart analyze --fatal-infos
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        package: [file]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [stable, dev]
+
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: ${{ matrix.sdk }}
+
+      - name: Install ${{ matrix.package }} dependencies
+        working-directory: packages/${{ matrix.package }}
+        run: dart pub get
+
+      - name: Run ${{ matrix.package }} Tests
+        working-directory: packages/${{ matrix.package }}
+        run: dart pub run test -j1
