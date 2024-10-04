@@ -1,3 +1,4 @@
+[![package:file](https://github.com/dart-lang/tools/actions/workflows/file.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/file.yml)
 [![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file)
 [![package publisher](https://img.shields.io/pub/publisher/file.svg)](https://pub.dev/packages/file/publisher)
 

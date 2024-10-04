@@ -1,15 +1,22 @@
-name: Dart
+name: package:file
+permissions: read-all
 
 on:
-  schedule:
-    # “At 00:00 (UTC) on Sunday.”
-    - cron: '0 0 * * 0'
+  # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/file.yml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
   pull_request:
-    branches: [ master ]
-
-permissions: read-all
+    branches: [ main ]
+    paths:
+      - '.github/workflows/file.yml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
+  schedule:
+    - cron: "0 0 * * 0"
 
 jobs:
   correctness:

@@ -1,7 +1,7 @@
 name: file_testing
 version: 3.0.1-wip
 description: Testing utilities for package:file.
-repository: https://github.com/google/file.dart/tree/master/packages/file_testing
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/file_testing
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
