@@ -76,10 +76,14 @@ bool isBlockNode(YamlNode node) {
 
   if (node is YamlList &&
       (node.style == CollectionStyle.BLOCK ||
-          node.style == CollectionStyle.ANY)) return true;
+          node.style == CollectionStyle.ANY)) {
+    return true;
+  }
   if (node is YamlMap &&
       (node.style == CollectionStyle.BLOCK ||
-          node.style == CollectionStyle.ANY)) return true;
+          node.style == CollectionStyle.ANY)) {
+    return true;
+  }
 
   return false;
 }
