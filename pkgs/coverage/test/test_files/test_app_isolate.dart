@@ -35,15 +35,15 @@ Future<String> fooAsync(int x) async {
 /// The number of covered lines is tested and expected to be 4.
 ///
 /// If you modify this method, you may have to update the tests!
-void isolateTask(List threeThings) {
+void isolateTask(List threeThings) async {
   sleep(const Duration(milliseconds: 500));
 
   fooSync(answer);
-  fooAsync(answer).then((_) {
+  unawaited(fooAsync(answer).then((_) {
     final port = threeThings.first as SendPort;
     final sum = (threeThings[1] as int) + (threeThings[2] as int);
     port.send(sum);
-  });
+  }));
 
   final bar = BarClass(123);
   bar.baz();
@@ -66,5 +66,8 @@ void isolateTask(List threeThings) {
   print('9'); // coverage:ignore-start
   print('10');
   print('11'); // coverage:ignore-line
+
+  // Regression test for https://github.com/dart-lang/tools/issues/520.
+  await Isolate.run(() => print('Isolate.run'), debugName: 'Grandchild');
   // coverage:ignore-end
 }

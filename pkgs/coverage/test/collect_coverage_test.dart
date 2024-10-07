@@ -132,7 +132,7 @@ void main() {
       38: 1,
       39: 1,
       41: 1,
-      42: 3,
+      42: 4,
       43: 1,
       44: 3,
       45: 1,
@@ -149,7 +149,8 @@ void main() {
       64: 1,
       66: 1,
       67: 1,
-      68: 1
+      68: 1,
+      71: 3,
     };
     expect(isolateFile?.lineHits, expectedHits);
     expect(isolateFile?.funcHits, {11: 1, 19: 1, 23: 1, 28: 1, 38: 1});
@@ -162,63 +163,20 @@ void main() {
     });
     expect(
       isolateFile?.branchHits,
-      {11: 1, 12: 1, 15: 0, 19: 1, 23: 1, 28: 1, 29: 1, 32: 0, 38: 1, 42: 1},
+      {
+        11: 1,
+        12: 1,
+        15: 0,
+        19: 1,
+        23: 1,
+        28: 1,
+        29: 1,
+        32: 0,
+        38: 1,
+        42: 1,
+        71: 1,
+      },
     );
-  });
-
-  test('HitMap.parseJson, old VM without branch coverage', () async {
-    final resultString = await _collectCoverage(true, true);
-    final jsonResult = json.decode(resultString) as Map<String, dynamic>;
-    final coverage = jsonResult['coverage'] as List;
-    final hitMap = await HitMap.parseJson(
-      coverage.cast<Map<String, dynamic>>(),
-    );
-    expect(hitMap, contains(_sampleAppFileUri));
-
-    final isolateFile = hitMap[_isolateLibFileUri];
-    final expectedHits = {
-      11: 1,
-      12: 1,
-      13: 1,
-      15: 0,
-      19: 1,
-      23: 1,
-      24: 2,
-      28: 1,
-      29: 1,
-      30: 1,
-      32: 0,
-      38: 1,
-      39: 1,
-      41: 1,
-      42: 3,
-      43: 1,
-      44: 3,
-      45: 1,
-      48: 1,
-      49: 1,
-      51: 1,
-      54: 1,
-      55: 1,
-      56: 1,
-      59: 1,
-      60: 1,
-      62: 1,
-      63: 1,
-      64: 1,
-      66: 1,
-      67: 1,
-      68: 1
-    };
-    expect(isolateFile?.lineHits, expectedHits);
-    expect(isolateFile?.funcHits, {11: 1, 19: 1, 23: 1, 28: 1, 38: 1});
-    expect(isolateFile?.funcNames, {
-      11: 'fooSync',
-      19: 'BarClass.BarClass',
-      23: 'BarClass.baz',
-      28: 'fooAsync',
-      38: 'isolateTask'
-    });
   });
 
   test('parseCoverage', () async {

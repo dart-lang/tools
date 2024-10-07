@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:vm_service/vm_service.dart';
+
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
 /// the result on successful completion.
@@ -179,3 +181,6 @@ Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
   });
   return serviceUriCompleter.future;
 }
+
+Future<List<IsolateRef>> getAllIsolates(VmService service) async =>
+    (await service.getVM()).isolates ?? [];

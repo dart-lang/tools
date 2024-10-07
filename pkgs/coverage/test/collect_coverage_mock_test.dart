@@ -367,7 +367,7 @@ void main() {
     test(
         'Collect coverage, scoped output, '
         'handles SourceReports that contain unfiltered ranges', () async {
-      // Regression test for https://github.com/dart-lang/coverage/issues/495
+      // Regression test for https://github.com/dart-lang/tools/issues/530
       final service = _mockService(4, 13);
       when(service.getSourceReport(
         'isolate',
