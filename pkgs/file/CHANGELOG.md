@@ -1,8 +1,11 @@
-## 7.0.1-wip
+## 7.0.1
+
+* Update the pubspec repository field to reflect the new package repository.
 
 ## 7.0.0
 
 * Dart 3 fixes for class modifiers.
+* Require Dart 3.0.
 * `MemoryFileSystem` now treats empty paths as non-existent.
 * Fix `FileSystem.isLink`/`FileSystem.isLinkSync` to not follow symbolic links.
 * Make the return type of `MemoryFile.openRead` and `_ChrootFile.openRead` again

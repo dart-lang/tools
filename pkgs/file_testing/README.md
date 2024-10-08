@@ -1,4 +1,5 @@
 [![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing)
+[![package publisher](https://img.shields.io/pub/publisher/file_testing.svg)](https://pub.dev/packages/file_testing/publisher)
 
 Testing utilities intended to work with `package:file`.
 
