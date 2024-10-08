@@ -1,3 +1,7 @@
+## 3.0.2
+
+* Require Dart 3.1.
+
 ## 3.0.1
 
 * Update the pubspec repository field to reflect the new package repository.
