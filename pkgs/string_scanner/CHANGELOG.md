@@ -1,3 +1,11 @@
+## 1.4.0
+
+* Fix `LineScanner`'s handling of `\r\n`'s to preventing errors scanning
+  zero-length matches when between CR and LF. CR is treated as a new line only
+  if not immediately followed by a LF.
+* Fix `LineScanner`'s updating of `column` when setting `position` if the
+  current position is not `0`.
+
 ## 1.3.0
 
 * Require Dart 3.1.0
