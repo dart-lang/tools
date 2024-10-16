@@ -1,4 +1,4 @@
-## 1.10.0-wip
+## 1.10.0
 
 - Fix bug where tests involving multiple isolates never finish (#520).
 
