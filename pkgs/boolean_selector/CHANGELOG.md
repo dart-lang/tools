@@ -1,6 +1,7 @@
-## 2.1.2-wip
+## 2.1.2
 
 * Increase the SDK minimum to `3.1.0`.
+* Move to `dart-lang/tools` monorepo.
 
 ## 2.1.1
 

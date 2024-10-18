@@ -1,4 +1,4 @@
-[![Dart](https://github.com/dart-lang/boolean_selector/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/boolean_selector/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/boolean_selector.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/boolean_selector.yaml)
 [![Pub Package](https://img.shields.io/pub/v/boolean_selector.svg)](https://pub.dev/packages/boolean_selector)
 [![package publisher](https://img.shields.io/pub/publisher/boolean_selector.svg)](https://pub.dev/packages/boolean_selector/publisher)
 
