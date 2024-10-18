@@ -4,6 +4,10 @@
   - changed-files:
       - any-glob-to-any-file: '.github/**'
 
+'package:boolean_selector':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/boolean_selector/**'
+
 'package:cli_config':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/cli_config/**'
