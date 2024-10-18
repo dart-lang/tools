@@ -3,7 +3,7 @@ version: 2.1.2-wip
 description: >-
   A flexible syntax for boolean expressions, based on a simplified version of
   Dart's expression syntax.
-repository: https://github.com/dart-lang/boolean_selector
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/boolean_selector
 
 environment:
   sdk: ^3.1.0
