@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/json_rpc_2/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/json_rpc_2/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/json_rpc_2.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/json_rpc_2.yaml)
 [![pub package](https://img.shields.io/pub/v/json_rpc_2.svg)](https://pub.dev/packages/json_rpc_2)
 [![package publisher](https://img.shields.io/pub/publisher/json_rpc_2.svg)](https://pub.dev/packages/json_rpc_2/publisher)
 

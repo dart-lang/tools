@@ -1,6 +1,7 @@
-## 3.0.3-wip
+## 3.0.3
 
 * Require Dart 3.4
+* Move to `dart-lang/tools` monorepo.
 
 ## 3.0.2
 

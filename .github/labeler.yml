@@ -32,6 +32,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/graphs/**'
 
+'package:json_rpc_2':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
+
 'package:mime':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/mime/**'

@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:json_rpc_2
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/json_rpc_2.yml'
+      - 'pkgs/json_rpc_2/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/json_rpc_2.yml'
+      - 'pkgs/json_rpc_2/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/json_rpc_2/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
