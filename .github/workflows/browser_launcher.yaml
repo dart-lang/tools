@@ -1,17 +1,27 @@
-name: Dart
+name: package:browser_launcher
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/browser_launcher.yml'
+      - 'pkgs/browser_launcher/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/browser_launcher.yml'
+      - 'pkgs/browser_launcher/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
   DISPLAY: ':99'
+
+defaults:
+  run:
+    working-directory: pkgs/browser_launcher/
 
 jobs:
   test:

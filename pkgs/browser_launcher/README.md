@@ -1,4 +1,4 @@
-[![Dart](https://github.com/dart-lang/browser_launcher/workflows/Dart/badge.svg)](https://github.com/dart-lang/browser_launcher/actions?query=workflow%3ADart+branch%3Amaster)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/browser_launcher.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/browser_launcher.yaml)
 [![pub package](https://img.shields.io/pub/v/browser_launcher.svg)](https://pub.dev/packages/browser_launcher)
 [![package publisher](https://img.shields.io/pub/publisher/browser_launcher.svg)](https://pub.dev/packages/browser_launcher/publisher)
 
