@@ -4,6 +4,10 @@
   - changed-files:
       - any-glob-to-any-file: '.github/**'
 
+'package:bazel_worker':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/bazel_worker/**'
+
 'package:boolean_selector':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/boolean_selector/**'

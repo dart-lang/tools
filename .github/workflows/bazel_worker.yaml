@@ -1,17 +1,27 @@
-name: Dart CI
+name: package:bazel_worker
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/bazel_worker.yml'
+      - 'pkgs/bazel_worker/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/bazel_worker.yml'
+      - 'pkgs/bazel_worker/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
 
+
+defaults:
+  run:
+    working-directory: pkgs/bazel_worker/
 jobs:
   # Run the test script against the latest dev build.
   test:

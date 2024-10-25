@@ -63,4 +63,4 @@ the helpers can be used.
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: https://github.com/dart-lang/bazel_worker/issues
+[tracker]: https://github.com/dart-lang/tools/issues
