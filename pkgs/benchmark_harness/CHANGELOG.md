@@ -1,4 +1,6 @@
-## 2.3.1-wip
+## 2.3.1
+
+- Move to `dart-lang/tools` monorepo.
 
 ## 2.3.0
 

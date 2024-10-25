@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/benchmark_harness/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/benchmark_harness/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/benchmark_harness.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/benchmark_harness.yaml)
 [![pub package](https://img.shields.io/pub/v/benchmark_harness.svg)](https://pub.dev/packages/benchmark_harness)
 [![package publisher](https://img.shields.io/pub/publisher/benchmark_harness.svg)](https://pub.dev/packages/benchmark_harness/publisher)
 
@@ -114,14 +114,3 @@ Template(RunTime): 0.1568472448997197 us.
 This is the average amount of time it takes to run `run()` 10 times for
 `BenchmarkBase` and once for `AsyncBenchmarkBase`.
 > µs is an abbreviation for microseconds.
-
-### Contributions
-
-This package is carefully curated by the Dart team to exact specifications.
-Please open an issue with any proposed changes before submitting a pull
-request.
-
-## Publishing automation
-
-For information about our publishing automation and release process, see
-https://github.com/dart-lang/ecosystem/wiki/Publishing-automation.

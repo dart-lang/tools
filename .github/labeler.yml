@@ -4,6 +4,10 @@
   - changed-files:
       - any-glob-to-any-file: '.github/**'
 
+'package:benchmark_harness':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/benchmark_harness/**'
+
 'package:boolean_selector':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/boolean_selector/**'
