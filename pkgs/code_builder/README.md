@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/code_builder/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/code_builder/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/code_builder.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/code_builder.yaml)
 [![Pub package](https://img.shields.io/pub/v/code_builder.svg)](https://pub.dev/packages/code_builder)
 [![package publisher](https://img.shields.io/pub/publisher/code_builder.svg)](https://pub.dev/packages/code_builder/publisher)
 [![Gitter chat](https://badges.gitter.im/dart-lang/build.svg)](https://gitter.im/dart-lang/build)
@@ -79,7 +79,7 @@ _i2.Other doOther() {}
 
 ## Contributing
 
-- Read and help us document common patterns over [at the wiki][wiki].
+- Read and help us document common patterns over [in the docs][docs].
 - Is there a _bug_ in the code? [File an issue][issue].
 
 If a feature is missing (the Dart language is always evolving) or you'd like an
@@ -94,9 +94,8 @@ will be on a best-effort basis.
 > $ dart run dart_style:format -w .
 > ```
 
-[wiki]: https://github.com/dart-lang/code_builder/wiki
-[issue]: https://github.com/dart-lang/code_builder/issues
-[pull]: https://github.com/dart-lang/code_builder/pulls
+[issue]: https://github.com/dart-lang/tools/issues
+[pull]: https://github.com/dart-lang/tools/pulls
 
 ### Updating generated (`.g.dart`) files
 

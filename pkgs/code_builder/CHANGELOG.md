@@ -1,7 +1,8 @@
-## 4.10.1-wip
+## 4.10.1
 
 * Require Dart `^3.5.0`
 * Upgrade to `dart_style` 2.3.7.
+* Move to `dart-lang/tools` monorepo.
 
 ## 4.10.0
 
