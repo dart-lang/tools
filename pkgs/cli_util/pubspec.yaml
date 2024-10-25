@@ -1,7 +1,7 @@
 name: cli_util
 version: 0.4.2-wip
 description: A library to help in building Dart command-line apps.
-repository: https://github.com/dart-lang/cli_util
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/cli_util
 
 environment:
   sdk: ^3.4.0
