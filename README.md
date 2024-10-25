@@ -17,6 +17,7 @@ don't naturally belong to other topic monorepos (like
 | [boolean_selector](pkgs/boolean_selector/) | A flexible syntax for boolean expressions, based on a simplified version of Dart's expression syntax. | [![pub package](https://img.shields.io/pub/v/boolean_selector.svg)](https://pub.dev/packages/boolean_selector) |
 | [cli_config](pkgs/cli_config/) | A library to take config values from configuration files, CLI arguments, and environment variables. | [![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
 | [coverage](pkgs/coverage/) | Coverage data manipulation and formatting. | [![pub package](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage) |
+| [csslib](pkgs/csslib/) | A library for parsing and analyzing CSS (Cascading Style Sheets). | [![pub package](https://img.shields.io/pub/v/csslib.svg)](https://pub.dev/packages/csslib) |
 | [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
 | [file](pkgs/file/) | A pluggable, mockable file system abstraction for Dart. | [![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file) |
 | [file_testing](pkgs/file_testing/) | Testing utilities for package:file (published but unlisted). | [![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing) |
