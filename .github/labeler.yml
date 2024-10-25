@@ -32,6 +32,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/graphs/**'
 
+'package:html':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/html/**'
+
 'package:mime':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/mime/**'

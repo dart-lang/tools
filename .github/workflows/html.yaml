@@ -1,12 +1,27 @@
-name: Dart CI
+name: package:html
 
 on:
+  # Run on PRs and pushes to the default branch.
   push:
-    branches: [main]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/html.yml'
+      - 'pkgs/html/**'
   pull_request:
-    branches: [main]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/html.yml'
+      - 'pkgs/html/**'
   schedule:
     - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/html/
 
 jobs:
   analyze:
