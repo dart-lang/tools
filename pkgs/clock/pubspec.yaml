@@ -1,5 +1,5 @@
 name: clock
-version: 1.1.2-wip
+version: 1.1.2
 description: A fakeable wrapper for dart:core clock APIs.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/clock
 

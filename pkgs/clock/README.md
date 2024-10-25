@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/clock/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/clock/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/clock.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/clock.yaml)
 [![pub package](https://img.shields.io/pub/v/clock.svg)](https://pub.dev/packages/clock)
 [![package publisher](https://img.shields.io/pub/publisher/clock.svg)](https://pub.dev/packages/clock/publisher)
 

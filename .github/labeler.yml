@@ -12,6 +12,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/cli_config/**'
 
+'package:clock':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/clock/**'
+
 'package:coverage':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/coverage/**'

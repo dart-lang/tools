@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:clock
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/clock.yml'
+      - 'pkgs/clock/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/clock.yml'
+      - 'pkgs/clock/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/clock/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
