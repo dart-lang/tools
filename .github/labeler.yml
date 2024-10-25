@@ -12,6 +12,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/cli_config/**'
 
+'package:cli_util':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/cli_util/**'
+
 'package:coverage':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/coverage/**'

@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/cli_util/actions/workflows/build.yaml/badge.svg)](https://github.com/dart-lang/cli_util/actions/workflows/build.yaml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/cli_util.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/cli_util.yaml)
 [![Pub](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dev/packages/cli_util)
 [![package publisher](https://img.shields.io/pub/publisher/cli_util.svg)](https://pub.dev/packages/cli_util/publisher)
 
@@ -65,4 +65,4 @@ void main(List<String> args) async {
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: https://github.com/dart-lang/cli_util/issues
+[tracker]: https://github.com/dart-lang/tools/issues

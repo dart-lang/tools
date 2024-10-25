@@ -1,6 +1,7 @@
-## 0.4.2-wip
+## 0.4.2
 
 - Add `sdkPath` getter, deprecate `getSdkPath` function.
+* Move to `dart-lang/tools` monorepo.
   
 ## 0.4.1
 

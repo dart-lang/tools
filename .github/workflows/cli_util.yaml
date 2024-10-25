@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:cli_util
 
 on:
-  schedule:
-    # “At 00:00 (UTC) on Sunday.”
-    - cron: '0 0 * * 0'
-  pull_request:
-    branches: [ master ]
+  # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/cli_util.yml'
+      - 'pkgs/cli_util/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/cli_util.yml'
+      - 'pkgs/cli_util/**'
+  schedule:
+    - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/cli_util/
 
 jobs:
   analyze:
