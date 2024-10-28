@@ -36,7 +36,6 @@ jobs:
           sdk: ${{ matrix.sdk }}
 
       - run: dart pub get
-        id: install
 
       - run: dart format --output=none --set-exit-if-changed .
       - run: dart analyze --fatal-infos
