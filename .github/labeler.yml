@@ -8,6 +8,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/boolean_selector/**'
 
+'package:browser_launcher':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/browser_launcher/**'
+
 'package:cli_config':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/cli_config/**'
