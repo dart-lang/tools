@@ -11,5 +11,4 @@ linter:
     - cancel_subscriptions
     - literal_only_boolean_expressions
     - no_adjacent_strings_in_list
-    - package_api_docs
     - unnecessary_await_in_return
