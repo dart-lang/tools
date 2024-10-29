@@ -22,6 +22,7 @@ env:
 defaults:
   run:
     working-directory: pkgs/bazel_worker/
+
 jobs:
   # Run the test script against the latest dev build.
   test:
