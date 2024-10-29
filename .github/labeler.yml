@@ -24,6 +24,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/coverage/**'
 
+'package:csslib':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/csslib/**'
+
 'package:extension_discovery':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/extension_discovery/**'
