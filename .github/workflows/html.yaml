@@ -1,0 +1,61 @@
+name: package:html
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/html.yml'
+      - 'pkgs/html/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/html.yml'
+      - 'pkgs/html/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/html/
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: dev
+      - id: install
+        run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+        if: steps.install.outcome == 'success'
+      - run: dart analyze --fatal-infos
+        if: steps.install.outcome == 'success'
+
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        sdk: [3.2, stable, dev]
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        run: dart pub get
+      - run: dart test --platform vm
+        if: steps.install.outcome == 'success'
+      - run: dart test --platform chrome
+        if: steps.install.outcome == 'success'
