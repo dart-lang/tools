@@ -21,6 +21,7 @@ don't naturally belong to other topic monorepos (like
 | [cli_config](pkgs/cli_config/) | A library to take config values from configuration files, CLI arguments, and environment variables. | [![pub package](https://img.shields.io/pub/v/cli_config.svg)](https://pub.dev/packages/cli_config) |
 | [cli_util](pkgs/cli_util/) | A library to help in building Dart command-line apps. | [![pub package](https://img.shields.io/pub/v/cli_util.svg)](https://pub.dev/packages/cli_util) |
 | [clock](pkgs/clock/) | A fakeable wrapper for dart:core clock APIs. | [![pub package](https://img.shields.io/pub/v/clock.svg)](https://pub.dev/packages/clock) |
+| [code_builder](pkgs/code_builder/) | A fluent, builder-based library for generating valid Dart code. | [![pub package](https://img.shields.io/pub/v/code_builder.svg)](https://pub.dev/packages/code_builder) |
 | [coverage](pkgs/coverage/) | Coverage data manipulation and formatting. | [![pub package](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage) |
 | [csslib](pkgs/csslib/) | A library for parsing and analyzing CSS (Cascading Style Sheets). | [![pub package](https://img.shields.io/pub/v/csslib.svg)](https://pub.dev/packages/csslib) |
 | [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |

@@ -32,6 +32,10 @@
   - changed-files:
       - any-glob-to-any-file: 'pkgs/clock/**'
 
+'package:code_builder':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/code_builder/**'
+
 'package:coverage':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/coverage/**'
