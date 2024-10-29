@@ -4,17 +4,45 @@
   - changed-files:
       - any-glob-to-any-file: '.github/**'
 
+'package:bazel_worker':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/bazel_worker/**'
+
+'package:benchmark_harness':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/benchmark_harness/**'
+
 'package:boolean_selector':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/boolean_selector/**'
+
+'package:browser_launcher':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/browser_launcher/**'
 
 'package:cli_config':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/cli_config/**'
 
+'package:cli_util':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/cli_util/**'
+
+'package:clock':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/clock/**'
+
+'package:code_builder':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/code_builder/**'
+
 'package:coverage':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/coverage/**'
+
+'package:csslib':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/csslib/**'
 
 'package:extension_discovery':
   - changed-files:
@@ -35,6 +63,10 @@
 'package:html':
   - changed-files:
       - any-glob-to-any-file: 'pkgs/html/**'
+
+'package:json_rpc_2':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
 
 'package:mime':
   - changed-files:

@@ -1,0 +1,41 @@
+name: package:bazel_worker
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/bazel_worker.yml'
+      - 'pkgs/bazel_worker/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/bazel_worker.yml'
+      - 'pkgs/bazel_worker/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/bazel_worker/
+
+jobs:
+  # Run the test script against the latest dev build.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [3.1.0, dev]
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: ${{ matrix.sdk }}
+      - run: "dart format --output=none --set-exit-if-changed ."
+      - name: Test
+        run: ./tool/travis.sh
