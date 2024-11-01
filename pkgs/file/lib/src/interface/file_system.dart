@@ -24,17 +24,17 @@ abstract class FileSystem {
 
   /// Returns a reference to a [Directory] at [path].
   ///
-  /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
+  /// [path] can be either a [String], a [Uri], or a [FileSystemEntity].
   Directory directory(dynamic path);
 
   /// Returns a reference to a [File] at [path].
   ///
-  /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
+  /// [path] can be either a [String], a [Uri], or a [FileSystemEntity].
   File file(dynamic path);
 
   /// Returns a reference to a [Link] at [path].
   ///
-  /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
+  /// [path] can be either a [String], a [Uri], or a [FileSystemEntity].
   Link link(dynamic path);
 
   /// An object for manipulating paths in this file system.
