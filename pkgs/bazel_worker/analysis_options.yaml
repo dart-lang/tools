@@ -7,7 +7,3 @@ analyzer:
   errors:
     # For the generated file
     lines_longer_than_80_chars: ignore
-
-linter:
-  rules:
-    - package_api_docs

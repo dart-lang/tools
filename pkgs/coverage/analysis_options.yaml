@@ -14,7 +14,6 @@ linter:
     - cancel_subscriptions
     - comment_references
     - literal_only_boolean_expressions
-    - package_api_docs
     - prefer_final_locals
     - sort_constructors_first
     - sort_unnamed_constructors_first
