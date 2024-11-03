@@ -60,6 +60,8 @@ abstract class Analytics {
       return const NoOpAnalytics();
     }
 
+    final (dataDirectory, configDirectory) = getToolDirectories(fs)!;
+
     // Resolve the OS using dart:io
     final DevicePlatform platform;
     if (io.Platform.operatingSystem == 'linux') {
@@ -77,11 +79,17 @@ abstract class Analytics {
       apiSecret: kGoogleAnalyticsApiSecret,
     );
 
-    final firstRun = runInitialization(homeDirectory: homeDirectory);
+    final firstRun = runInitialization(
+      homeDirectory: homeDirectory,
+      configDirectory: configDirectory,
+      dataDirectory: dataDirectory,
+    );
 
     return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -90,9 +98,7 @@ abstract class Analytics {
       fs: fs,
       gaClient: gaClient,
       surveyHandler: SurveyHandler(
-        dismissedSurveyFile: homeDirectory
-            .childDirectory(kDartToolDirectoryName)
-            .childFile(kDismissedSurveyFileName),
+        dismissedSurveyFile: dataDirectory.childFile(kDismissedSurveyFileName),
       ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
@@ -133,6 +139,8 @@ abstract class Analytics {
       throw Exception('Permissions error on the home directory!');
     }
 
+    final (configDirectory, dataDirectory) = getToolDirectories(fs)!;
+
     // Resolve the OS using dart:io
     final DevicePlatform platform;
     if (io.Platform.operatingSystem == 'linux') {
@@ -154,11 +162,17 @@ abstract class Analytics {
       apiSecret: kTestApiSecret,
     );
 
-    final firstRun = runInitialization(homeDirectory: homeDirectory);
+    final firstRun = runInitialization(
+      homeDirectory: homeDirectory,
+      configDirectory: configDirectory,
+      dataDirectory: dataDirectory,
+    );
 
     return AnalyticsImpl(
       tool: tool,
       homeDirectory: homeDirectory,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       flutterVersion: flutterVersion,
       dartVersion: dartVersion,
@@ -167,9 +181,7 @@ abstract class Analytics {
       fs: fs,
       gaClient: gaClient,
       surveyHandler: SurveyHandler(
-        dismissedSurveyFile: homeDirectory
-            .childDirectory(kDartToolDirectoryName)
-            .childFile(kDismissedSurveyFileName),
+        dismissedSurveyFile: dataDirectory.childFile(kDismissedSurveyFileName),
       ),
       enableAsserts: enableAsserts,
       clientIde: clientIde,
@@ -289,6 +301,8 @@ abstract class Analytics {
   static FakeAnalytics fake({
     required DashTool tool,
     required Directory homeDirectory,
+    required Directory configDirectory,
+    required Directory dataDirectory,
     required String dartVersion,
     required MemoryFileSystem fs,
     String? flutterChannel,
@@ -302,11 +316,17 @@ abstract class Analytics {
     String toolsMessage = kToolsMessage,
     bool enableAsserts = true,
   }) {
-    final firstRun = runInitialization(homeDirectory: homeDirectory);
+    final firstRun = runInitialization(
+      homeDirectory: homeDirectory,
+      configDirectory: configDirectory,
+      dataDirectory: dataDirectory,
+    );
 
     return FakeAnalytics._(
       tool: tool,
       homeDirectory: homeDirectory,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       flutterVersion: flutterVersion,
@@ -315,9 +335,8 @@ abstract class Analytics {
       fs: fs,
       surveyHandler: surveyHandler ??
           FakeSurveyHandler.fromList(
-            dismissedSurveyFile: homeDirectory
-                .childDirectory(kDartToolDirectoryName)
-                .childFile(kDismissedSurveyFileName),
+            dismissedSurveyFile:
+                dataDirectory.childFile(kDismissedSurveyFileName),
             initializedSurveys: [],
           ),
       gaClient: gaClient ?? const FakeGAClient(),
@@ -373,6 +392,8 @@ class AnalyticsImpl implements Analytics {
   AnalyticsImpl({
     required this.tool,
     required Directory homeDirectory,
+    required Directory dataDirectory,
+    required Directory configDirectory,
     required String? flutterChannel,
     required String? flutterVersion,
     required String? clientIde,
@@ -388,13 +409,9 @@ class AnalyticsImpl implements Analytics {
   })  : _gaClient = gaClient,
         _surveyHandler = surveyHandler,
         _enableAsserts = enableAsserts,
-        _clientIdFile = homeDirectory
-            .childDirectory(kDartToolDirectoryName)
-            .childFile(kClientIdFileName),
+        _clientIdFile = dataDirectory.childFile(kClientIdFileName),
         _userProperty = UserProperty(
-          sessionFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kSessionFileName),
+          sessionFile: dataDirectory.childFile(kSessionFileName),
           flutterChannel: flutterChannel,
           host: platform.label,
           flutterVersion: flutterVersion,
@@ -410,14 +427,10 @@ class AnalyticsImpl implements Analytics {
         ),
         _configHandler = ConfigHandler(
           homeDirectory: homeDirectory,
-          configFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kConfigFileName),
+          configFile: configDirectory.childFile(kConfigFileName),
         ),
         _logHandler = LogHandler(
-          logFile: homeDirectory
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kLogFileName),
+          logFile: dataDirectory.childFile(kLogFileName),
         ) {
     // This initializer class will let the instance know
     // if it was the first run; if it is, nothing will be sent
@@ -747,6 +760,8 @@ class FakeAnalytics extends AnalyticsImpl {
   FakeAnalytics._({
     required super.tool,
     required super.homeDirectory,
+    required super.dataDirectory,
+    required super.configDirectory,
     required super.dartVersion,
     required super.platform,
     required super.fs,

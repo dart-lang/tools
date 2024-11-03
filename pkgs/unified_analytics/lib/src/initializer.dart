@@ -73,14 +73,14 @@ DateTime createSessionFile({required File sessionFile}) {
 /// - Dismissed survey JSON file
 bool runInitialization({
   required Directory homeDirectory,
+  required Directory configDirectory,
+  required Directory dataDirectory,
 }) {
   var firstRun = false;
-  final dartToolDirectory =
-      homeDirectory.childDirectory(kDartToolDirectoryName);
 
   // When the config file doesn't exist, initialize it with the default tools
   // and the current date.
-  final configFile = dartToolDirectory.childFile(kConfigFileName);
+  final configFile = configDirectory.childFile(kConfigFileName);
   if (!configFile.existsSync()) {
     firstRun = true;
     createConfigFile(
@@ -90,26 +90,25 @@ bool runInitialization({
   }
 
   // Begin initialization checks for the client id.
-  final clientFile = dartToolDirectory.childFile(kClientIdFileName);
+  final clientFile = dataDirectory.childFile(kClientIdFileName);
   if (!clientFile.existsSync()) {
     createClientIdFile(clientIdFile: clientFile);
   }
 
   // Begin initialization checks for the session file.
-  final sessionFile = dartToolDirectory.childFile(kSessionFileName);
+  final sessionFile = dataDirectory.childFile(kSessionFileName);
   if (!sessionFile.existsSync()) {
     createSessionFile(sessionFile: sessionFile);
   }
 
   // Begin initialization checks for the log file to persist events locally.
-  final logFile = dartToolDirectory.childFile(kLogFileName);
+  final logFile = dataDirectory.childFile(kLogFileName);
   if (!logFile.existsSync()) {
     createLogFile(logFile: logFile);
   }
 
   // Begin initialization checks for the dismissed survey file.
-  final dismissedSurveyFile =
-      dartToolDirectory.childFile(kDismissedSurveyFileName);
+  final dismissedSurveyFile = dataDirectory.childFile(kDismissedSurveyFileName);
   if (!dismissedSurveyFile.existsSync()) {
     createDismissedSurveyFile(dismissedSurveyFile: dismissedSurveyFile);
   }

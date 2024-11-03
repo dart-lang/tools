@@ -15,7 +15,8 @@ import 'package:unified_analytics/unified_analytics.dart';
 void main() {
   late MemoryFileSystem fs;
   late Directory home;
-  late Directory dartToolDirectory;
+  late Directory dataDirectory;
+  late Directory configDirectory;
   late File clientIdFile;
   late File sessionFile;
   late File configFile;
@@ -40,27 +41,22 @@ void main() {
         io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
-    dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
+    (dataDirectory, configDirectory) = getToolDirectories(fs)!;
 
-    // The 3 files that should have been generated
-    clientIdFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kClientIdFileName);
-    sessionFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
-    configFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kConfigFileName);
-    logFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
-    dismissedSurveyFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kDismissedSurveyFileName);
+    // The 5 files that should have been generated
+    clientIdFile = dataDirectory.childFile(kClientIdFileName);
+    sessionFile = dataDirectory.childFile(kSessionFileName);
+    configFile = configDirectory.childFile(kConfigFileName);
+    logFile = dataDirectory.childFile(kLogFileName);
+    dismissedSurveyFile = dataDirectory.childFile(kDismissedSurveyFileName);
   });
 
   test('Confirm workflow for first run', () {
     final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -96,6 +92,8 @@ void main() {
     final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -111,6 +109,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -128,6 +128,8 @@ void main() {
     final thirdAnalytics = Analytics.fake(
       tool: secondTool, // Different tool
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -146,6 +148,8 @@ void main() {
     final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -157,7 +161,9 @@ void main() {
 
     // Host of assertions to ensure all required artifacts
     // are created
-    expect(dartToolDirectory.existsSync(), true,
+    expect(dataDirectory.existsSync(), true,
+        reason: 'The directory should have been created');
+    expect(configDirectory.existsSync(), true,
         reason: 'The directory should have been created');
     expect(clientIdFile.existsSync(), true,
         reason: 'The $kClientIdFileName file was not found');
@@ -170,10 +176,14 @@ void main() {
     expect(dismissedSurveyFile.existsSync(), true,
         reason: 'The $dismissedSurveyFile file was not found');
     expect(
-      dartToolDirectory.listSync().length,
-      equals(5),
-      reason: 'There should only be 5 files in the $kDartToolDirectoryName '
-          'directory',
+      dataDirectory.listSync().length,
+      equals(4),
+      reason: 'There should only be 4 files in the data directory',
+    );
+    expect(
+      configDirectory.listSync().length,
+      equals(1),
+      reason: 'There should only be 1 file in the config directory',
     );
     expect(configFile.readAsStringSync(), kConfigString);
 
@@ -201,6 +211,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -232,6 +244,8 @@ void main() {
     final thirdAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -261,6 +275,8 @@ void main() {
     final fourthAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1, // Incrementing version
       toolsMessage: toolsMessage,
@@ -285,6 +301,8 @@ void main() {
     final firstAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -299,6 +317,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -315,6 +335,8 @@ void main() {
     final thirdAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -332,6 +354,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: firstVersion,
       toolsMessage: toolsMessage,
@@ -354,6 +378,8 @@ void main() {
     final thirdAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: secondVersion,
       toolsMessage: toolsMessage,

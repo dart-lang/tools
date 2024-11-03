@@ -10,6 +10,7 @@ import 'package:clock/clock.dart';
 import 'package:convert/convert.dart';
 import 'package:file/file.dart';
 
+import 'constants.dart';
 import 'enums.dart';
 import 'event.dart';
 import 'survey_handler.dart';
@@ -106,6 +107,40 @@ Directory? getHomeDirectory(FileSystem fs) {
   if (home == null) return null;
 
   return fs.directory(home);
+}
+
+/// When using Linux, use the XDG Base Directory Specification to determine
+/// the location of the config and data directories. If the tool directory
+/// exists at the old location, use it as a fallback.
+(Directory data, Directory config)? getToolDirectories(FileSystem fs) {
+  final home = getHomeDirectory(fs);
+  if (home == null) return null;
+
+  final oldConfigDirectory = home.childDirectory('.dart-tool');
+
+  if (!io.Platform.isLinux) {
+    return (oldConfigDirectory, oldConfigDirectory);
+  }
+
+  final xdgDataHome =
+      io.Platform.environment['XDG_DATA_HOME'] ?? '~/.local/share';
+  final dataDirectory =
+      fs.directory(xdgDataHome).childDirectory(kDartToolDirectoryName);
+
+  final xdgConfigHome =
+      io.Platform.environment['XDG_CONFIG_HOME'] ?? '~/.config';
+  final configDirectory =
+      fs.directory(xdgConfigHome).childDirectory(kDartToolDirectoryName);
+
+  if (dataDirectory.existsSync() && configDirectory.existsSync()) {
+    return (dataDirectory, configDirectory);
+  }
+
+  if (oldConfigDirectory.existsSync()) {
+    return (oldConfigDirectory, oldConfigDirectory);
+  }
+
+  return (dataDirectory, configDirectory);
 }
 
 /// Returns `true` if user has opted out of legacy analytics in

@@ -57,7 +57,7 @@ const String kContextualSurveyUrl =
 
 /// Name of the directory where all of the files necessary for this package
 /// will be located.
-const String kDartToolDirectoryName = '.dart-tool';
+const String kDartToolDirectoryName = 'dart-tool';
 
 /// The default time to wait before closing the http connection to allow for
 /// pending events to be sent.
