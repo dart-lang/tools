@@ -31,7 +31,7 @@ jobs:
       matrix:
         sdk: [dev]
     steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
           sdk: ${{ matrix.sdk }}
@@ -65,7 +65,7 @@ jobs:
           - os: windows-latest
             sdk: 3.4
     steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
           sdk: ${{ matrix.sdk }}
@@ -83,7 +83,7 @@ jobs:
       run:
         working-directory: pkgs/coverage/
     steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
           sdk: dev
@@ -93,7 +93,7 @@ jobs:
       - name: Collect and report coverage
         run: dart run bin/test_with_coverage.dart --port=9292
       - name: Upload coverage
-        uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
+        uses: coverallsapp/github-action@cfd0633edbd2411b532b808ba7a8b5e04f76d2c8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: pkgs/coverage/coverage/lcov.info
