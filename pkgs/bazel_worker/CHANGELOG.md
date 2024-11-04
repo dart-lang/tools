@@ -1,3 +1,7 @@
+## 1.1.3-wip
+
+* Require Dart SDK `^3.4.0`.
+
 ## 1.1.2
 
 * Require Dart SDK `^3.1.0`.
