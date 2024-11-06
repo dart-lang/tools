@@ -9,6 +9,7 @@ import 'package:file/memory.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 /// This example code is intended to only be used as guidance for
@@ -22,6 +23,8 @@ void main() async {
   late final MemoryFileSystem fs;
   late final Analytics analytics;
   late final Directory home;
+  late final Directory dataDirectory;
+  late final Directory configDirectory;
   // We need to initialize with a fake clock since the surveys have
   // a period of time they are valid for
   await withClock(Clock.fixed(DateTime(2023, 3, 3, 12, 0)), () async {
@@ -30,6 +33,7 @@ void main() async {
     fs = MemoryFileSystem(style: FileSystemStyle.posix);
     home = fs.directory('home');
     home.createSync();
+    (dataDirectory, configDirectory) = getToolDirectories(fs)!;
 
     // The purpose of `initialAnalytics` is so that the tool is able to
     // send events after its first run; this instance won't be used below
@@ -38,6 +42,8 @@ void main() async {
     final initialAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       dartVersion: 'dartVersion',
       fs: fs,
       platform: DevicePlatform.macos,
@@ -49,13 +55,14 @@ void main() async {
     analytics = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
         surveyHandler: FakeSurveyHandler.fromList(
-          dismissedSurveyFile: home
-              .childDirectory(kDartToolDirectoryName)
-              .childFile(kDismissedSurveyFileName),
+          dismissedSurveyFile:
+              dataDirectory.childFile(kDismissedSurveyFileName),
           initializedSurveys: [
             Survey(
               uniqueId: 'uniqueId',
@@ -113,9 +120,7 @@ void main() async {
   analytics.surveyShown(survey);
 
   // Get the file where this is persisted to show it getting updated
-  final persistedSurveyFile = home
-      .childDirectory(kDartToolDirectoryName)
-      .childFile(kDismissedSurveyFileName);
+  final persistedSurveyFile = dataDirectory.childFile(kDismissedSurveyFileName);
   print('The contents of the json file '
       'after invoking `analytics.surveyShown(survey);`');
   print('${persistedSurveyFile.readAsStringSync()}\n');

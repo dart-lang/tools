@@ -10,6 +10,7 @@ import 'package:test/test.dart';
 import 'package:unified_analytics/src/constants.dart';
 import 'package:unified_analytics/src/enums.dart';
 import 'package:unified_analytics/src/survey_handler.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -19,6 +20,8 @@ void main() {
   late FakeAnalytics fakeAnalytics;
   late MemoryFileSystem fs;
   late Directory homeDirectory;
+  late Directory dataDirectory;
+  late Directory configDirectory;
   late File dismissedSurveyFile;
 
   /// Survey to load into the fake instance to fetch
@@ -51,13 +54,14 @@ void main() {
   setUp(() async {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
-    dismissedSurveyFile = homeDirectory
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kDismissedSurveyFileName);
+    (dataDirectory, configDirectory) = getToolDirectories(fs)!;
+    dismissedSurveyFile = dataDirectory.childFile(kDismissedSurveyFileName);
 
     final initialAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       dartVersion: 'dartVersion',
       toolsMessageVersion: 1,
       fs: fs,
@@ -72,6 +76,8 @@ void main() {
       fakeAnalytics = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         dartVersion: 'dartVersion',
         platform: DevicePlatform.macos,
         fs: fs,

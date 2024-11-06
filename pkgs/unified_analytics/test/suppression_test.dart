@@ -8,11 +8,14 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/utils.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   late MemoryFileSystem fs;
   late Directory home;
+  late Directory dataDirectory;
+  late Directory configDirectory;
   late Analytics initializationAnalytics;
   late Analytics analytics;
 
@@ -33,12 +36,15 @@ void main() {
         io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
+    (dataDirectory, configDirectory) = getToolDirectories(fs)!;
 
     // This is the first analytics instance that will be used to demonstrate
     // that events will not be sent with the first run of analytics
     initializationAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -57,6 +63,8 @@ void main() {
     analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -91,6 +99,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,

@@ -1,3 +1,7 @@
+## 6.2.0
+
+- Use XDG directories on Linux.
+
 ## 6.1.4
 
 - Fix formatting and remove dependency on `package:intl`.

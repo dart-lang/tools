@@ -262,6 +262,8 @@ void main() {
   group('Testing with FakeSurveyHandler', () {
     late Analytics analytics;
     late Directory homeDirectory;
+    late Directory dataDirectory;
+    late Directory configDirectory;
     late MemoryFileSystem fs;
     late File clientIdFile;
     late File dismissedSurveyFile;
@@ -269,20 +271,17 @@ void main() {
     setUp(() {
       fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
       homeDirectory = fs.directory('home');
+      (dataDirectory, configDirectory) = getToolDirectories(fs)!;
 
       // Write the client ID file out so that we don't get
       // a randomly assigned id for this test generated within
       // the analytics constructor
-      clientIdFile = homeDirectory
-          .childDirectory(kDartToolDirectoryName)
-          .childFile(kClientIdFileName);
+      clientIdFile = dataDirectory.childFile(kClientIdFileName);
       clientIdFile.createSync(recursive: true);
       clientIdFile.writeAsStringSync('string1');
 
       // Assign the json file that will hold the persisted surveys
-      dismissedSurveyFile = homeDirectory
-          .childDirectory(kDartToolDirectoryName)
-          .childFile(kDismissedSurveyFileName);
+      dismissedSurveyFile = dataDirectory.childFile(kDismissedSurveyFileName);
 
       // Setup two tools to be onboarded with this package so
       // that we can simulate two different tools interacting with
@@ -293,6 +292,8 @@ void main() {
       final initialAnalyticsFlutter = Analytics.fake(
         tool: DashTool.flutterTool,
         homeDirectory: homeDirectory,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
@@ -300,6 +301,8 @@ void main() {
       final initialAnalyticsDart = Analytics.fake(
         tool: DashTool.dartTool,
         homeDirectory: homeDirectory,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         dartVersion: 'dartVersion',
         fs: fs,
         platform: DevicePlatform.macos,
@@ -313,6 +316,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -364,6 +369,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -404,6 +411,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -447,6 +456,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -547,6 +558,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -609,6 +622,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -690,6 +705,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -764,6 +781,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -807,6 +826,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -852,6 +873,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -879,6 +902,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -898,6 +923,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -942,6 +969,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -968,6 +997,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1014,6 +1045,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1044,6 +1077,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1090,6 +1125,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1117,6 +1154,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1139,6 +1178,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,
@@ -1184,6 +1225,8 @@ void main() {
         analytics = Analytics.fake(
           tool: DashTool.flutterTool,
           homeDirectory: homeDirectory,
+          dataDirectory: dataDirectory,
+          configDirectory: configDirectory,
           dartVersion: 'dartVersion',
           fs: fs,
           platform: DevicePlatform.macos,

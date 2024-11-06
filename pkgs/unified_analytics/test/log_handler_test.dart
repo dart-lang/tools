@@ -18,6 +18,8 @@ import 'package:unified_analytics/unified_analytics.dart';
 void main() {
   late FakeAnalytics analytics;
   late Directory homeDirectory;
+  late Directory dataDirectory;
+  late Directory configDirectory;
   late MemoryFileSystem fs;
   late File logFile;
 
@@ -26,14 +28,15 @@ void main() {
   setUp(() {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
     homeDirectory = fs.directory('home');
-    logFile = homeDirectory
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kLogFileName);
+    (dataDirectory, configDirectory) = getToolDirectories(fs)!;
+    logFile = dataDirectory.childFile(kLogFileName);
 
     // Create the initialization analytics instance to onboard the tool
     final initializationAnalytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       dartVersion: 'dartVersion',
       fs: fs,
       platform: DevicePlatform.macos,
@@ -45,6 +48,8 @@ void main() {
     analytics = Analytics.fake(
       tool: DashTool.flutterTool,
       homeDirectory: homeDirectory,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       dartVersion: 'dartVersion',
       fs: fs,
       platform: DevicePlatform.macos,

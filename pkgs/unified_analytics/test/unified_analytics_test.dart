@@ -21,7 +21,8 @@ import 'package:yaml/yaml.dart';
 void main() {
   late MemoryFileSystem fs;
   late Directory home;
-  late Directory dartToolDirectory;
+  late Directory dataDirectory;
+  late Directory configDirectory;
   late Analytics initializationAnalytics;
   late FakeAnalytics analytics;
   late File clientIdFile;
@@ -49,13 +50,15 @@ void main() {
         io.Platform.isWindows ? FileSystemStyle.windows : FileSystemStyle.posix;
     fs = MemoryFileSystem.test(style: fsStyle);
     home = fs.directory(homeDirName);
-    dartToolDirectory = home.childDirectory(kDartToolDirectoryName);
+    (dataDirectory, configDirectory) = getToolDirectories(fs)!;
 
     // This is the first analytics instance that will be used to demonstrate
     // that events will not be sent with the first run of analytics
     initializationAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -76,6 +79,8 @@ void main() {
     analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -88,22 +93,17 @@ void main() {
     analytics.clientShowedMessage();
 
     // The 5 files that should have been generated
-    clientIdFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kClientIdFileName);
-    sessionFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kSessionFileName);
-    configFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kConfigFileName);
-    logFile =
-        home.childDirectory(kDartToolDirectoryName).childFile(kLogFileName);
-    dismissedSurveyFile = home
-        .childDirectory(kDartToolDirectoryName)
-        .childFile(kDismissedSurveyFileName);
+    clientIdFile = dataDirectory.childFile(kClientIdFileName);
+    sessionFile = dataDirectory.childFile(kSessionFileName);
+    configFile = configDirectory.childFile(kConfigFileName);
+    logFile = dataDirectory.childFile(kLogFileName);
+    dismissedSurveyFile = dataDirectory.childFile(kDismissedSurveyFileName);
   });
 
   test('Initializer properly sets up on first run', () {
-    expect(dartToolDirectory.existsSync(), true,
+    expect(dataDirectory.existsSync(), true,
+        reason: 'The directory should have been created');
+    expect(configDirectory.existsSync(), true,
         reason: 'The directory should have been created');
     expect(clientIdFile.existsSync(), true,
         reason: 'The $kClientIdFileName file was not found');
@@ -115,9 +115,16 @@ void main() {
         reason: 'The $kLogFileName file was not found');
     expect(dismissedSurveyFile.existsSync(), true,
         reason: 'The $dismissedSurveyFile file was not found');
-    expect(dartToolDirectory.listSync().length, equals(5),
-        reason:
-            'There should only be 5 files in the $kDartToolDirectoryName directory');
+    expect(
+      dataDirectory.listSync().length,
+      equals(4),
+      reason: 'There should only be 4 files in the data directory',
+    );
+    expect(
+      configDirectory.listSync().length,
+      equals(1),
+      reason: 'There should only be 1 file in the config directory',
+    );
     expect(configFile.readAsLinesSync().length,
         kConfigString.split('\n').length + 1,
         reason: 'The number of lines should equal lines in constant value + 1 '
@@ -162,6 +169,8 @@ void main() {
     analytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -224,6 +233,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: 'ey-test-channel',
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -315,6 +326,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -357,6 +370,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: 'ey-test-channel',
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -379,6 +394,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: 'ey-test-channel',
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -431,6 +448,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: 'ey-test-channel',
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
@@ -460,6 +479,8 @@ void main() {
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1,
       toolsMessage: toolsMessage,
@@ -585,6 +606,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     final secondAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1,
       toolsMessage: toolsMessage,
@@ -608,6 +631,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     final thirdAnalytics = Analytics.fake(
       tool: initialTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: flutterChannel,
       toolsMessageVersion: toolsMessageVersion + 1,
       toolsMessage: toolsMessage,
@@ -664,10 +689,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'The session id stays the same when duration'
       ' is less than the constraint', () {
     // For this test, we will need control clock time so we will delete
-    // the [dartToolDirectory] and all of its contents and reconstruct a
+    // the [dataDirectory] and all of its contents and reconstruct a
     // new [Analytics] instance at a specific time
-    dartToolDirectory.deleteSync(recursive: true);
-    expect(dartToolDirectory.existsSync(), false,
+    dataDirectory.deleteSync(recursive: true);
+    expect(dataDirectory.existsSync(), false,
         reason: 'The directory should have been cleared');
 
     // Define the initial time to start
@@ -679,6 +704,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -706,6 +733,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final thirdAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -733,10 +762,10 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
 
   test('The session id is refreshed once event is sent after duration', () {
     // For this test, we will need control clock time so we will delete
-    // the [dartToolDirectory] and all of its contents and reconstruct a
+    // the [dataDirectory] and all of its contents and reconstruct a
     // new [Analytics] instance at a specific time
-    dartToolDirectory.deleteSync(recursive: true);
-    expect(dartToolDirectory.existsSync(), false,
+    dataDirectory.deleteSync(recursive: true);
+    expect(dataDirectory.existsSync(), false,
         reason: 'The directory should have been cleared');
 
     // Define the initial time to start
@@ -748,6 +777,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -779,6 +810,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       final thirdAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -928,6 +961,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         flutterChannel: flutterChannel,
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -1033,6 +1068,8 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       secondAnalytics = Analytics.fake(
         tool: secondTool,
         homeDirectory: home,
+        dataDirectory: dataDirectory,
+        configDirectory: configDirectory,
         // flutterChannel: flutterChannel,  THIS NEEDS TO REMAIN REMOVED
         toolsMessageVersion: toolsMessageVersion,
         toolsMessage: toolsMessage,
@@ -1182,6 +1219,8 @@ Privacy Policy (https://policies.google.com/privacy).
     final secondAnalytics = Analytics.fake(
       tool: secondTool,
       homeDirectory: home,
+      dataDirectory: dataDirectory,
+      configDirectory: configDirectory,
       flutterChannel: 'ey-test-channel',
       toolsMessageVersion: toolsMessageVersion,
       toolsMessage: toolsMessage,
