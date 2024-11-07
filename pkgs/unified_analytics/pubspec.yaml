@@ -8,6 +8,7 @@ description: >-
 version: 6.1.4
 # LINT.ThenChange(lib/src/constants.dart)
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/unified_analytics
+issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aunified_analytics
 
 environment:
   sdk: ^3.4.0
