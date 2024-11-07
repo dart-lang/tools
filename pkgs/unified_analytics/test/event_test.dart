@@ -430,7 +430,7 @@ void main() {
   test('Event.exception constructed', () {
     Event generateEvent() => Event.exception(
           exception: 'exception',
-          data: {'foo': 'bar', 'baz': 1},
+          data: {'foo': 'bar', 'baz': 1, 'shouldBeRemoved': null},
         );
 
     final constructedEvent = generateEvent();
