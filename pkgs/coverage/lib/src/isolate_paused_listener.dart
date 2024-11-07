@@ -46,7 +46,8 @@ class IsolatePausedListener {
     try {
       if (_mainIsolate != null) {
         if (await _mainIsolatePaused.future) {
-          await _runCallbackAndResume(_mainIsolate!, true);
+          await _runCallbackAndResume(
+              _mainIsolate!, !_getGroup(_mainIsolate!).collected);
         }
       }
     } finally {
@@ -114,8 +115,13 @@ class IsolatePausedListener {
     }
   }
 
+  bool get _mainRunning =>
+      _mainIsolate != null && !_mainIsolatePaused.isCompleted;
+
   void _checkCompleted() {
-    if (_numNonMainIsolates == 0 && !_allNonMainIsolatesExited.isCompleted) {
+    if (_numNonMainIsolates == 0 &&
+        !_mainRunning &&
+        !_allNonMainIsolatesExited.isCompleted) {
       _allNonMainIsolatesExited.complete();
     }
   }
