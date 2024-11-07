@@ -2,84 +2,84 @@
 
 'type-infra':
   - changed-files:
-      - any-glob-to-any-file: '.github/**'
+    - any-glob-to-any-file: '.github/**'
 
 'package:bazel_worker':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/bazel_worker/**'
+    - any-glob-to-any-file: 'pkgs/bazel_worker/**'
 
 'package:benchmark_harness':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/benchmark_harness/**'
+    - any-glob-to-any-file: 'pkgs/benchmark_harness/**'
 
 'package:boolean_selector':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/boolean_selector/**'
+    - any-glob-to-any-file: 'pkgs/boolean_selector/**'
 
 'package:browser_launcher':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/browser_launcher/**'
+    - any-glob-to-any-file: 'pkgs/browser_launcher/**'
 
 'package:cli_config':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/cli_config/**'
+    - any-glob-to-any-file: 'pkgs/cli_config/**'
 
 'package:cli_util':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/cli_util/**'
+    - any-glob-to-any-file: 'pkgs/cli_util/**'
 
 'package:clock':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/clock/**'
+    - any-glob-to-any-file: 'pkgs/clock/**'
 
 'package:code_builder':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/code_builder/**'
+    - any-glob-to-any-file: 'pkgs/code_builder/**'
 
 'package:coverage':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/coverage/**'
+    - any-glob-to-any-file: 'pkgs/coverage/**'
 
 'package:csslib':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/csslib/**'
+    - any-glob-to-any-file: 'pkgs/csslib/**'
 
 'package:extension_discovery':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/extension_discovery/**'
+    - any-glob-to-any-file: 'pkgs/extension_discovery/**'
 
 'package:file':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/file/**'
+    - any-glob-to-any-file: 'pkgs/file/**'
 
 'package:file_testing':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/file_testing/**'
+    - any-glob-to-any-file: 'pkgs/file_testing/**'
 
 'package:graphs':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/graphs/**'
+    - any-glob-to-any-file: 'pkgs/graphs/**'
 
 'package:html':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/html/**'
+    - any-glob-to-any-file: 'pkgs/html/**'
 
 'package:json_rpc_2':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
+    - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
 
 'package:mime':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/mime/**'
+    - any-glob-to-any-file: 'pkgs/mime/**'
 
 'package:oauth2':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/oauth2/**'
+    - any-glob-to-any-file: 'pkgs/oauth2/**'
 
 'package:source_map_stack_trace':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
+    - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
 
 'package:unified_analytics':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/unified_analytics/**'
+    - any-glob-to-any-file: 'pkgs/unified_analytics/**'

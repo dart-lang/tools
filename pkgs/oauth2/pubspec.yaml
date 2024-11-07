@@ -5,6 +5,7 @@ description: >-
   behalf of a user, and making authorized HTTP requests with the user's
   OAuth2 credentials.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/oauth2
+issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aoauth2
   
 environment:
   sdk: ^3.4.0
