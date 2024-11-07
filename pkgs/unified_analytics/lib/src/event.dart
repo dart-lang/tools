@@ -399,6 +399,7 @@ final class Event {
     int? rootSetCount,
     int? rowCount,
     int? inspectorTreeControllerId,
+    bool? isV2Inspector,
 
     // DeepLinkScreenMetrics
     String? androidAppId,
@@ -450,6 +451,7 @@ final class Event {
           if (rowCount != null) 'rowCount': rowCount,
           if (inspectorTreeControllerId != null)
             'inspectorTreeControllerId': inspectorTreeControllerId,
+          if (isV2Inspector != null) 'isV2Inspector': isV2Inspector,
           // DeepLinkScreenMetrics
           if (androidAppId != null) 'androidAppId': androidAppId,
           if (iosBundleId != null) 'iosBundleId': iosBundleId,

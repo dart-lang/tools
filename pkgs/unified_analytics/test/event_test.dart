@@ -587,6 +587,7 @@ void main() {
           rootSetCount: 123,
           rowCount: 123,
           inspectorTreeControllerId: 123,
+          isV2Inspector: true,
           androidAppId: 'androidAppId',
           iosBundleId: 'iosBundleId',
         );
@@ -624,6 +625,7 @@ void main() {
     expect(constructedEvent.eventData['rootSetCount'], 123);
     expect(constructedEvent.eventData['rowCount'], 123);
     expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
+    expect(constructedEvent.eventData['isV2Inspector'], true);
     expect(constructedEvent.eventData['androidAppId'], 'androidAppId');
     expect(constructedEvent.eventData['iosBundleId'], 'iosBundleId');
     expect(constructedEvent.eventData.length, 30);
