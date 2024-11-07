@@ -1,3 +1,6 @@
+## 6.1.6-wip
+- Added `isV2Inspector` to the `Event.devtoolsEvent` constructor.
+
 ## 6.1.5
 - Remove any `data` entries with a null value in the `Event.exception` constructor.
 
