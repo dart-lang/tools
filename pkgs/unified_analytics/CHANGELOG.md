@@ -1,3 +1,6 @@
+## 6.1.5
+- Remove any `data` entries with a null value in the `Event.exception` constructor.
+
 ## 6.1.4
 
 - Fix formatting and remove dependency on `package:intl`.
