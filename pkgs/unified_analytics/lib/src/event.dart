@@ -455,7 +455,7 @@ final class Event {
   })  : eventName = DashEvent.exception,
         eventData = {
           'exception': exception,
-          ...data,
+          ...data..removeWhere((key, value) => value == null),
         };
 
   /// Event that is emitted from the flutter tool when a build invocation
