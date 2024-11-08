@@ -6,6 +6,7 @@ import 'dart:mirrors';
 
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/event.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -576,11 +577,14 @@ void main() {
           isEmbedded: 'isEmbedded',
           ideLaunchedFeature: 'ideLaunchedFeature',
           isWasm: 'true',
-          additionalMetrics: {
-            'someMetric': 100,
-            'otherMetric': false,
-            'shouldBeRemoved': null,
-          },
+          additionalMetrics: _TestMetrics(
+            stringField: 'test',
+            // Since this value is null, it should not be included in the event
+            // JSON below.
+            nullableField: null,
+            intField: 100,
+            boolField: false,
+          ),
         );
 
     final constructedEvent = generateEvent();
@@ -606,9 +610,11 @@ void main() {
       'ideLaunchedFeature',
     );
     expect(constructedEvent.eventData['isWasm'], 'true');
-    expect(constructedEvent.eventData['someMetric'], 100);
-    expect(constructedEvent.eventData['otherMetric'], false);
-    expect(constructedEvent.eventData.length, 19);
+    expect(constructedEvent.eventData['stringField'], 'test');
+    expect(constructedEvent.eventData['intField'], 100);
+    expect(constructedEvent.eventData['boolField'], false);
+    expect(constructedEvent.eventData.containsKey('nullableField'), false);
+    expect(constructedEvent.eventData.length, 20);
   });
 
   test('Confirm all constructors were checked', () {
@@ -681,4 +687,26 @@ void main() {
     final eventConstructed = Event.fromJson(eventJson);
     expect(eventConstructed, isNull);
   });
+}
+
+class _TestMetrics extends CustomMetrics {
+  _TestMetrics({
+    required this.stringField,
+    required this.nullableField,
+    required this.intField,
+    required this.boolField,
+  });
+
+  final String stringField;
+  final String? nullableField;
+  final int intField;
+  final bool boolField;
+
+  @override
+  Map<String, Object?> toMap() => {
+        'stringField': stringField,
+        'nullableField': nullableField,
+        'intField': intField,
+        'boolField': boolField,
+      };
 }

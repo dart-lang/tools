@@ -358,10 +358,10 @@ final class Event {
 
   /// Event that is sent from DevTools for various different actions as
   /// indicated by the [eventCategory].
-  /// 
+  ///
   /// The optional parameters in the parameter list contain metadata that is
   /// sent with each event, when available.
-  /// 
+  ///
   /// [additionalMetrics] may contain any additional data for the event being
   /// sent. This often looks like metrics that are unique to the event or to a
   /// specific screen.
@@ -387,7 +387,7 @@ final class Event {
     String? isEmbedded,
     String? ideLaunchedFeature,
     String? isWasm,
-    Map<String, Object?> additionalMetrics = const {},
+    CustomMetrics? additionalMetrics,
   })  : eventName = DashEvent.devtoolsEvent,
         eventData = {
           'screen': screen,
@@ -411,7 +411,9 @@ final class Event {
           if (ideLaunchedFeature != null)
             'ideLaunchedFeature': ideLaunchedFeature,
           if (isWasm != null) 'isWasm': isWasm,
-          ...additionalMetrics..removeWhere((key, value) => value == null),
+          if (additionalMetrics != null)
+            ...additionalMetrics.toMap()
+              ..removeWhere((key, value) => value == null),
         };
 
   /// Event that contains the results for a specific doctor validator.
@@ -845,4 +847,16 @@ final class Event {
       return null;
     }
   }
+}
+
+/// A base class for custom metrics that will be defined by a unified_analytics
+/// client.
+///
+/// This base type can be used as a parameter in any event constructor that
+/// allows custom metrics to be added by a unified_analytics client.
+abstract class CustomMetrics {
+  /// Converts the custom metrics data to a [Map] object.
+  /// 
+  /// This must be a JSON encodable [Map].
+  Map<String, Object?> toMap();
 }
