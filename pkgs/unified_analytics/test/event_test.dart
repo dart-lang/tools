@@ -689,7 +689,7 @@ void main() {
   });
 }
 
-class _TestMetrics extends CustomMetrics {
+final class _TestMetrics extends CustomMetrics {
   _TestMetrics({
     required this.stringField,
     required this.nullableField,

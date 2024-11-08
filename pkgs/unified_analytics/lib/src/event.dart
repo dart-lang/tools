@@ -854,7 +854,7 @@ final class Event {
 ///
 /// This base type can be used as a parameter in any event constructor that
 /// allows custom metrics to be added by a unified_analytics client.
-abstract class CustomMetrics {
+abstract base class CustomMetrics {
   /// Converts the custom metrics data to a [Map] object.
   /// 
   /// This must be a JSON encodable [Map].
