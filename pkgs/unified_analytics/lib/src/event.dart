@@ -411,9 +411,7 @@ final class Event {
           if (ideLaunchedFeature != null)
             'ideLaunchedFeature': ideLaunchedFeature,
           if (isWasm != null) 'isWasm': isWasm,
-          if (additionalMetrics != null)
-            ...additionalMetrics.toMap()
-              ..removeWhere((key, value) => value == null),
+          if (additionalMetrics != null) ...additionalMetrics.toMap(),
         };
 
   /// Event that contains the results for a specific doctor validator.
@@ -856,7 +854,7 @@ final class Event {
 /// allows custom metrics to be added by a unified_analytics client.
 abstract base class CustomMetrics {
   /// Converts the custom metrics data to a [Map] object.
-  /// 
+  ///
   /// This must be a JSON encodable [Map].
-  Map<String, Object?> toMap();
+  Map<String, Object> toMap();
 }

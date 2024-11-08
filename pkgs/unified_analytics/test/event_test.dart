@@ -579,9 +579,6 @@ void main() {
           isWasm: 'true',
           additionalMetrics: _TestMetrics(
             stringField: 'test',
-            // Since this value is null, it should not be included in the event
-            // JSON below.
-            nullableField: null,
             intField: 100,
             boolField: false,
           ),
@@ -692,20 +689,17 @@ void main() {
 final class _TestMetrics extends CustomMetrics {
   _TestMetrics({
     required this.stringField,
-    required this.nullableField,
     required this.intField,
     required this.boolField,
   });
 
   final String stringField;
-  final String? nullableField;
   final int intField;
   final bool boolField;
 
   @override
-  Map<String, Object?> toMap() => {
+  Map<String, Object> toMap() => {
         'stringField': stringField,
-        'nullableField': nullableField,
         'intField': intField,
         'boolField': boolField,
       };
