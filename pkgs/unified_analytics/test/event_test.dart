@@ -6,6 +6,7 @@ import 'dart:mirrors';
 
 import 'package:test/test.dart';
 import 'package:unified_analytics/src/enums.dart';
+import 'package:unified_analytics/src/event.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
@@ -559,6 +560,7 @@ void main() {
 
   test('Event.devtoolsEvent constructed', () {
     Event generateEvent() => Event.devtoolsEvent(
+          screen: 'screen',
           eventCategory: 'eventCategory',
           label: 'label',
           value: 1,
@@ -575,25 +577,17 @@ void main() {
           isEmbedded: 'isEmbedded',
           ideLaunchedFeature: 'ideLaunchedFeature',
           isWasm: 'true',
-          uiDurationMicros: 123,
-          rasterDurationMicros: 123,
-          shaderCompilationDurationMicros: 123,
-          traceEventCount: 123,
-          cpuSampleCount: 123,
-          cpuStackDepth: 123,
-          heapDiffObjectsBefore: 123,
-          heapDiffObjectsAfter: 123,
-          heapObjectsTotal: 123,
-          rootSetCount: 123,
-          rowCount: 123,
-          inspectorTreeControllerId: 123,
-          androidAppId: 'androidAppId',
-          iosBundleId: 'iosBundleId',
+          additionalMetrics: _TestMetrics(
+            stringField: 'test',
+            intField: 100,
+            boolField: false,
+          ),
         );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventData['screen'], 'screen');
     expect(constructedEvent.eventData['eventCategory'], 'eventCategory');
     expect(constructedEvent.eventData['label'], 'label');
     expect(constructedEvent.eventData['value'], 1);
@@ -609,24 +603,15 @@ void main() {
     expect(constructedEvent.eventData['isExternalBuild'], 'isExternalBuild');
     expect(constructedEvent.eventData['isEmbedded'], 'isEmbedded');
     expect(
-        constructedEvent.eventData['ideLaunchedFeature'], 'ideLaunchedFeature');
+      constructedEvent.eventData['ideLaunchedFeature'],
+      'ideLaunchedFeature',
+    );
     expect(constructedEvent.eventData['isWasm'], 'true');
-
-    expect(constructedEvent.eventData['uiDurationMicros'], 123);
-    expect(constructedEvent.eventData['rasterDurationMicros'], 123);
-    expect(constructedEvent.eventData['shaderCompilationDurationMicros'], 123);
-    expect(constructedEvent.eventData['traceEventCount'], 123);
-    expect(constructedEvent.eventData['cpuSampleCount'], 123);
-    expect(constructedEvent.eventData['cpuStackDepth'], 123);
-    expect(constructedEvent.eventData['heapDiffObjectsBefore'], 123);
-    expect(constructedEvent.eventData['heapDiffObjectsAfter'], 123);
-    expect(constructedEvent.eventData['heapObjectsTotal'], 123);
-    expect(constructedEvent.eventData['rootSetCount'], 123);
-    expect(constructedEvent.eventData['rowCount'], 123);
-    expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
-    expect(constructedEvent.eventData['androidAppId'], 'androidAppId');
-    expect(constructedEvent.eventData['iosBundleId'], 'iosBundleId');
-    expect(constructedEvent.eventData.length, 30);
+    expect(constructedEvent.eventData['stringField'], 'test');
+    expect(constructedEvent.eventData['intField'], 100);
+    expect(constructedEvent.eventData['boolField'], false);
+    expect(constructedEvent.eventData.containsKey('nullableField'), false);
+    expect(constructedEvent.eventData.length, 20);
   });
 
   test('Confirm all constructors were checked', () {
@@ -699,4 +684,23 @@ void main() {
     final eventConstructed = Event.fromJson(eventJson);
     expect(eventConstructed, isNull);
   });
+}
+
+final class _TestMetrics extends CustomMetrics {
+  _TestMetrics({
+    required this.stringField,
+    required this.intField,
+    required this.boolField,
+  });
+
+  final String stringField;
+  final int intField;
+  final bool boolField;
+
+  @override
+  Map<String, Object> toMap() => {
+        'stringField': stringField,
+        'intField': intField,
+        'boolField': boolField,
+      };
 }

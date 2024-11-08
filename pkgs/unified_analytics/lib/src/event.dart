@@ -356,9 +356,17 @@ final class Event {
           if (exitCode != null) 'exitCode': exitCode,
         };
 
-  /// Event that is sent from devtools for various different actions as
+  /// Event that is sent from DevTools for various different actions as
   /// indicated by the [eventCategory].
+  ///
+  /// The optional parameters in the parameter list contain metadata that is
+  /// sent with each event, when available.
+  ///
+  /// [additionalMetrics] may contain any additional data for the event being
+  /// sent. This often looks like metrics that are unique to the event or to a
+  /// specific screen.
   Event.devtoolsEvent({
+    required String screen,
     required String eventCategory,
     required String label,
     required int value,
@@ -379,32 +387,10 @@ final class Event {
     String? isEmbedded,
     String? ideLaunchedFeature,
     String? isWasm,
-
-    // PerformanceScreenMetrics
-    int? uiDurationMicros,
-    int? rasterDurationMicros,
-    int? shaderCompilationDurationMicros,
-    int? traceEventCount,
-
-    // ProfilerScreenMetrics
-    int? cpuSampleCount,
-    int? cpuStackDepth,
-
-    // MemoryScreenMetrics
-    int? heapDiffObjectsBefore,
-    int? heapDiffObjectsAfter,
-    int? heapObjectsTotal,
-
-    // InspectorScreenMetrics
-    int? rootSetCount,
-    int? rowCount,
-    int? inspectorTreeControllerId,
-
-    // DeepLinkScreenMetrics
-    String? androidAppId,
-    String? iosBundleId,
+    CustomMetrics? additionalMetrics,
   })  : eventName = DashEvent.devtoolsEvent,
         eventData = {
+          'screen': screen,
           'eventCategory': eventCategory,
           'label': label,
           'value': value,
@@ -425,34 +411,7 @@ final class Event {
           if (ideLaunchedFeature != null)
             'ideLaunchedFeature': ideLaunchedFeature,
           if (isWasm != null) 'isWasm': isWasm,
-
-          // PerformanceScreenMetrics
-          if (uiDurationMicros != null) 'uiDurationMicros': uiDurationMicros,
-          if (rasterDurationMicros != null)
-            'rasterDurationMicros': rasterDurationMicros,
-          if (shaderCompilationDurationMicros != null)
-            'shaderCompilationDurationMicros': shaderCompilationDurationMicros,
-          if (traceEventCount != null) 'traceEventCount': traceEventCount,
-
-          // ProfilerScreenMetrics
-          if (cpuSampleCount != null) 'cpuSampleCount': cpuSampleCount,
-          if (cpuStackDepth != null) 'cpuStackDepth': cpuStackDepth,
-
-          // MemoryScreenMetrics
-          if (heapDiffObjectsBefore != null)
-            'heapDiffObjectsBefore': heapDiffObjectsBefore,
-          if (heapDiffObjectsAfter != null)
-            'heapDiffObjectsAfter': heapDiffObjectsAfter,
-          if (heapObjectsTotal != null) 'heapObjectsTotal': heapObjectsTotal,
-
-          // InspectorScreenMetrics
-          if (rootSetCount != null) 'rootSetCount': rootSetCount,
-          if (rowCount != null) 'rowCount': rowCount,
-          if (inspectorTreeControllerId != null)
-            'inspectorTreeControllerId': inspectorTreeControllerId,
-          // DeepLinkScreenMetrics
-          if (androidAppId != null) 'androidAppId': androidAppId,
-          if (iosBundleId != null) 'iosBundleId': iosBundleId,
+          if (additionalMetrics != null) ...additionalMetrics.toMap(),
         };
 
   /// Event that contains the results for a specific doctor validator.
@@ -886,4 +845,16 @@ final class Event {
       return null;
     }
   }
+}
+
+/// A base class for custom metrics that will be defined by a unified_analytics
+/// client.
+///
+/// This base type can be used as a parameter in any event constructor that
+/// allows custom metrics to be added by a unified_analytics client.
+abstract base class CustomMetrics {
+  /// Converts the custom metrics data to a [Map] object.
+  ///
+  /// This must be a JSON encodable [Map].
+  Map<String, Object> toMap();
 }

@@ -1,3 +1,12 @@
+## 7.0.0
+- Added a required parameter `screen` to the `Event.devtoolsEvent` constructor.
+- Added an optional parameter `additionalMetrics` to the `Event.devtoolsEvent` constructor.
+- Added `CustomMetrics` class for unified_analytics clients to define custom event metrics.
+- Removed parameters `uiDurationMicros`, `rasterDurationMicros`, `shaderCompilationDurationMicros`,
+`traceEventCount`, `cpuSampleCount`, `cpuStackDepth`, `heapDiffObjectsBefore`, `heapDiffObjectsAfter`,
+`heapObjectsTotal`, `rootSetCount`, `rowCount`, `inspectorTreeControllerId`, `androidAppId`, `iosBundleId`
+from the `Event.devtoolsEvent` constructor.
+
 ## 6.1.5
 - Remove any `data` entries with a null value in the `Event.exception` constructor.
 
