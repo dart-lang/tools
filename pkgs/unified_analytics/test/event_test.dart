@@ -559,6 +559,7 @@ void main() {
 
   test('Event.devtoolsEvent constructed', () {
     Event generateEvent() => Event.devtoolsEvent(
+          screen: 'screen',
           eventCategory: 'eventCategory',
           label: 'label',
           value: 1,
@@ -575,25 +576,17 @@ void main() {
           isEmbedded: 'isEmbedded',
           ideLaunchedFeature: 'ideLaunchedFeature',
           isWasm: 'true',
-          uiDurationMicros: 123,
-          rasterDurationMicros: 123,
-          shaderCompilationDurationMicros: 123,
-          traceEventCount: 123,
-          cpuSampleCount: 123,
-          cpuStackDepth: 123,
-          heapDiffObjectsBefore: 123,
-          heapDiffObjectsAfter: 123,
-          heapObjectsTotal: 123,
-          rootSetCount: 123,
-          rowCount: 123,
-          inspectorTreeControllerId: 123,
-          androidAppId: 'androidAppId',
-          iosBundleId: 'iosBundleId',
+          additionalMetrics: {
+            'someMetric': 100,
+            'otherMetric': false,
+            'shouldBeRemoved': null,
+          },
         );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventData['screen'], 'screen');
     expect(constructedEvent.eventData['eventCategory'], 'eventCategory');
     expect(constructedEvent.eventData['label'], 'label');
     expect(constructedEvent.eventData['value'], 1);
@@ -609,24 +602,13 @@ void main() {
     expect(constructedEvent.eventData['isExternalBuild'], 'isExternalBuild');
     expect(constructedEvent.eventData['isEmbedded'], 'isEmbedded');
     expect(
-        constructedEvent.eventData['ideLaunchedFeature'], 'ideLaunchedFeature');
+      constructedEvent.eventData['ideLaunchedFeature'],
+      'ideLaunchedFeature',
+    );
     expect(constructedEvent.eventData['isWasm'], 'true');
-
-    expect(constructedEvent.eventData['uiDurationMicros'], 123);
-    expect(constructedEvent.eventData['rasterDurationMicros'], 123);
-    expect(constructedEvent.eventData['shaderCompilationDurationMicros'], 123);
-    expect(constructedEvent.eventData['traceEventCount'], 123);
-    expect(constructedEvent.eventData['cpuSampleCount'], 123);
-    expect(constructedEvent.eventData['cpuStackDepth'], 123);
-    expect(constructedEvent.eventData['heapDiffObjectsBefore'], 123);
-    expect(constructedEvent.eventData['heapDiffObjectsAfter'], 123);
-    expect(constructedEvent.eventData['heapObjectsTotal'], 123);
-    expect(constructedEvent.eventData['rootSetCount'], 123);
-    expect(constructedEvent.eventData['rowCount'], 123);
-    expect(constructedEvent.eventData['inspectorTreeControllerId'], 123);
-    expect(constructedEvent.eventData['androidAppId'], 'androidAppId');
-    expect(constructedEvent.eventData['iosBundleId'], 'iosBundleId');
-    expect(constructedEvent.eventData.length, 30);
+    expect(constructedEvent.eventData['someMetric'], 100);
+    expect(constructedEvent.eventData['otherMetric'], false);
+    expect(constructedEvent.eventData.length, 19);
   });
 
   test('Confirm all constructors were checked', () {
