@@ -1,6 +1,13 @@
+## 1.11.0
+
+- Fix a [bug](https://github.com/dart-lang/tools/issues/685) where the tool
+  would occasionally try to resume an isolate after the VM service had been
+  disposed.
+
 ## 1.10.0
 
-- Fix bug where tests involving multiple isolates never finish (#520).
+- Fix a [bug](https://github.com/dart-lang/tools/issues/520) where tests
+  involving multiple isolates never finish.
 
 ## 1.9.2
 

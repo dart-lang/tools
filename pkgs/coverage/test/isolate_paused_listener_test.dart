@@ -700,6 +700,68 @@ void main() {
       ]);
     });
 
+    test(
+        'all other isolates exit before main isolate pauses, then main '
+        'starts another isolate, then pauses before they exit', () async {
+      startEvent('A', '1', 'main');
+      startEvent('B', '1');
+      pauseEvent('B', '1');
+      exitEvent('B', '1');
+
+      await Future<void>.delayed(Duration.zero);
+
+      startEvent('C', '1');
+      pauseEvent('C', '1');
+      pauseEvent('A', '1', 'main');
+      exitEvent('C', '1');
+
+      await Future<void>.delayed(Duration.zero);
+
+      exitEvent('A', '1', 'main');
+
+      await endTest();
+
+      expect(received, [
+        'Pause B. Last in group 1? No',
+        'Resume B',
+        'Pause C. Last in group 1? No',
+        'Resume C',
+        'Pause A. Last in group 1? Yes',
+        'Resume A',
+      ]);
+    });
+
+    test(
+        'all other isolates exit before main isolate pauses, then main '
+        'starts another isolate, then pauses before they pause', () async {
+      startEvent('A', '1', 'main');
+      startEvent('B', '1');
+      pauseEvent('B', '1');
+      exitEvent('B', '1');
+
+      await Future<void>.delayed(Duration.zero);
+
+      startEvent('C', '1');
+      pauseEvent('A', '1', 'main');
+      pauseEvent('C', '1');
+      exitEvent('C', '1');
+
+      await Future<void>.delayed(Duration.zero);
+
+      exitEvent('A', '1', 'main');
+
+      await endTest();
+
+      expect(received, [
+        'Pause B. Last in group 1? No',
+        'Resume B',
+        'Pause C. Last in group 1? Yes',
+        'Resume C',
+        'Pause A. Last in group 1? No',
+        'Resume A',
+      ]);
+    });
+
     test('group reopened', () async {
       // If an isolate is reported in a group after the group as believed to be
       // closed, reopen the group. This double counts some coverage, but at
