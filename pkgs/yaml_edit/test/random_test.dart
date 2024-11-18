@@ -17,8 +17,7 @@ import 'test_utils.dart';
 /// inputs (boolean, null, strings, or numbers) to modify the YAML and assert
 /// that the change produced was expected.
 void main() {
-  const seed = 0;
-  final generator = _Generator(seed: seed);
+  final generator = _Generator(maxDepth: 5);
 
   const roundsOfTesting = 40;
   const modificationsPerRound = 1000;
@@ -66,7 +65,7 @@ class _Generator {
   final int maxDepth;
 
   // ignore: unused_element
-  _Generator({int? seed, this.maxDepth = 5}) : r = Random(seed ?? 42);
+  _Generator({int seed = 0, required this.maxDepth}) : r = Random(seed);
 
   int nextInt([int max = maxInt]) => r.nextInt(max);
 
