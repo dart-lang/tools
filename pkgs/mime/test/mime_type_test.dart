@@ -54,6 +54,10 @@ void main() {
       _expectMimeType('file.markdown', 'text/markdown');
       _expectMimeType('file.heif', 'image/heif');
       _expectMimeType('file.heic', 'image/heic');
+      _expectMimeType(
+        'file.gsheet',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
     });
 
     test('unknown-mime-type', () {
