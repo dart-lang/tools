@@ -1,3 +1,6 @@
+## 6.1.6
+- Fixed `UnsupportedError` thrown when Event.exception is called without providing a value for `args`.
+
 ## 6.1.5
 - Remove any `data` entries with a null value in the `Event.exception` constructor.
 
