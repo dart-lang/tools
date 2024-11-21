@@ -1,3 +1,27 @@
+## 7.0.0
+- Added a required parameter `screen` to the `Event.devtoolsEvent` constructor.
+- Added an optional parameter `additionalMetrics` to the `Event.devtoolsEvent` constructor.
+- Added `CustomMetrics` class for unified_analytics clients to define custom event metrics.
+- Removed parameters `uiDurationMicros`, `rasterDurationMicros`, `shaderCompilationDurationMicros`,
+`traceEventCount`, `cpuSampleCount`, `cpuStackDepth`, `heapDiffObjectsBefore`, `heapDiffObjectsAfter`,
+`heapObjectsTotal`, `rootSetCount`, `rowCount`, `inspectorTreeControllerId`, `androidAppId`, `iosBundleId`
+from the `Event.devtoolsEvent` constructor.
+
+## 6.1.5
+- Remove any `data` entries with a null value in the `Event.exception` constructor.
+
+## 6.1.4
+
+- Fix formatting and remove dependency on `package:intl`.
+- Remove direct usage of `package:path` in favor of `package:file`.
+- Added `androidAppId` and `iosBundleId` to the `Event.devtoolsEvent` constructor.
+
+## 6.1.3
+
+- Require Dart 3.4.
+- Added `isWasm` parameter to the `Event.devtoolsEvent` constructor.
+- Added an optional parameter `data` to the `Event.exception` constructor.
+
 ## 6.1.2
 
 - Avoid opening large telemetry log files to prevent out of memory errors.

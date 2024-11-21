@@ -1,0 +1,46 @@
+name: package:browser_launcher
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/browser_launcher.yml'
+      - 'pkgs/browser_launcher/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/browser_launcher.yml'
+      - 'pkgs/browser_launcher/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+  DISPLAY: ':99'
+
+defaults:
+  run:
+    working-directory: pkgs/browser_launcher/
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk: [3.4, dev]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: ${{ matrix.sdk }}
+
+      - run: dart pub get
+
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-infos
+
+      - name: Run Xvfb 
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - run: dart test

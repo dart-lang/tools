@@ -1,0 +1,99 @@
+name: Dart CI
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/coverage.yml'
+      - 'pkgs/coverage/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/coverage.yml'
+      - 'pkgs/coverage/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+jobs:
+  # Check code formatting and static analysis on a single OS (linux)
+  # against Dart dev.
+  analyze:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+      - name: Analyze code
+        run: dart analyze --fatal-infos
+        if: always() && steps.install.outcome == 'success'
+
+  # Run tests on a matrix consisting of two dimensions:
+  # 1. OS: ubuntu-latest, macos-latest, windows-latest
+  # 2. release channel: dev
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [3.4, dev]
+        exclude:
+          # VM service times out on windows before Dart 3.5
+          # https://github.com/dart-lang/coverage/issues/490
+          - os: windows-latest
+            sdk: 3.4
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run VM tests
+        run: dart test --platform vm
+        if: always() && steps.install.outcome == 'success'
+
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+        with:
+          sdk: dev
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Collect and report coverage
+        run: dart run bin/test_with_coverage.dart --port=9292
+      - name: Upload coverage
+        uses: coverallsapp/github-action@cfd0633edbd2411b532b808ba7a8b5e04f76d2c8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: pkgs/coverage/coverage/lcov.info

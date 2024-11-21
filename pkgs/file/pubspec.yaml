@@ -1,0 +1,17 @@
+name: file
+version: 7.0.1
+description: A pluggable, mockable file system abstraction for Dart.
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/file
+issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Afile
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  meta: ^1.9.1
+  path: ^1.8.3
+
+dev_dependencies:
+  file_testing: ^3.0.0
+  lints: ^2.0.1
+  test: ^1.23.1

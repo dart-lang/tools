@@ -8,4 +8,4 @@ dependencies:
     path: ../hello_world_german
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.4.0

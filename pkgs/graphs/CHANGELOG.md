@@ -1,6 +1,10 @@
-## 2.3.2-wip
+## 2.3.3-wip
 
-- Require Dart 3.0
+- Add an example usage to the README.
+
+## 2.3.2
+
+- Require Dart 3.4
 - Update to the latest version of `package:dart_flutter_team_lints`.
 
 ## 2.3.1

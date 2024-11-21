@@ -159,4 +159,34 @@ void main() {
       throwsA(isA<PackageConfigException>()),
     );
   });
+
+  test('`findPackageConfig()`', () async {
+    await d.dir('workspace', [
+      d.dir('.dart_tool', [
+        d.file('package_config.json'),
+      ]),
+      d.dir('myapp', [])
+    ]).create();
+
+    expect(
+      findPackageConfig(d.fileUri('workspace')),
+      d.fileUri('workspace/.dart_tool/package_config.json'),
+    );
+    expect(
+      findPackageConfig(d.fileUri('workspace/')),
+      d.fileUri('workspace/.dart_tool/package_config.json'),
+    );
+    expect(
+      findPackageConfig(d.fileUri('workspace/myapp')),
+      d.fileUri('workspace/.dart_tool/package_config.json'),
+    );
+    expect(
+      findPackageConfig(d.fileUri('.')),
+      isNull,
+    );
+    expect(
+      findPackageConfig(d.fileUri('foo')),
+      isNull,
+    );
+  });
 }

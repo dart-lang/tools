@@ -6,6 +6,8 @@ analyzer:
     strict-raw-types: true
   errors:
     sort_pub_dependencies: ignore
+    # https://github.com/dart-lang/sdk/issues/56465
+    unintended_html_in_doc_comment: ignore
 
 linter:
   rules:
@@ -22,7 +24,6 @@ linter:
     - missing_whitespace_between_adjacent_strings
     - no_adjacent_strings_in_list
     - no_runtimeType_toString
-    - package_api_docs
     - prefer_const_declarations
     - prefer_expression_function_bodies
     - prefer_final_locals
