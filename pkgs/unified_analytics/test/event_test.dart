@@ -444,6 +444,14 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
+  test('Event.exception constructor works when no data is provided', () {
+    Event generateEvent() => Event.exception(
+          exception: 'exception',
+        );
+
+    expect(generateEvent, returnsNormally);
+  });
+
   test('Event.timing constructed', () {
     Event generateEvent() => Event.timing(
           workflow: 'workflow',
