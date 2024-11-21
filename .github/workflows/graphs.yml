@@ -3,7 +3,7 @@ name: package:graphs
 permissions: read-all
 
 on:
-  # Run CI on all PRs and on pushes to the main branch.
+  # Run CI on all PRs (against any branch) and on pushes to the main branch.
   pull_request:
     paths:
       - '.github/workflows/graphs.yml'
