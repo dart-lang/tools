@@ -1,3 +1,6 @@
+## 7.0.1
+- Fixed `UnsupportedError` thrown when Event.exception is called without providing a value for `args`.
+
 ## 7.0.0
 - Added a required parameter `screen` to the `Event.devtoolsEvent` constructor.
 - Added an optional parameter `additionalMetrics` to the `Event.devtoolsEvent` constructor.
