@@ -139,7 +139,7 @@ class Clock {
     var year = time.year - (months + 12 - time.month) ~/ 12;
     var day = clampDayOfMonth(year: year, month: month, day: time.day);
     return DateTime(year, month, day, time.hour, time.minute, time.second,
-        time.millisecond);
+        time.millisecond, time.microsecond);
   }
 
   /// Return the point in time [months] from now on the same date.
@@ -152,7 +152,7 @@ class Clock {
     var year = time.year + (months + time.month - 1) ~/ 12;
     var day = clampDayOfMonth(year: year, month: month, day: time.day);
     return DateTime(year, month, day, time.hour, time.minute, time.second,
-        time.millisecond);
+        time.millisecond, time.microsecond);
   }
 
   /// Return the point in time [years] ago on the same date.
@@ -164,7 +164,7 @@ class Clock {
     var year = time.year - years;
     var day = clampDayOfMonth(year: year, month: time.month, day: time.day);
     return DateTime(year, time.month, day, time.hour, time.minute, time.second,
-        time.millisecond);
+        time.millisecond, time.microsecond);
   }
 
   /// Return the point in time [years] from now on the same date.
