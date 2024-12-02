@@ -207,4 +207,22 @@ void main() {
     expect(clock.yearsFromNow(30), date(2043, 1, 1));
     expect(clock.yearsFromNow(1000), date(3013, 1, 1));
   });
+
+  group('micros', () {
+    test('should keep micros for monthsAgo', () {
+      expect(Clock.fixed(DateTime(2024, 2, 1, 0, 0, 0, 0, 123)).monthsAgo(1),
+          Clock.fixed(DateTime(2024, 1, 1, 0, 0, 0, 0, 123)).now());
+    });
+
+    test('should keep micros for monthsFromNow', () {
+      expect(
+          Clock.fixed(DateTime(2024, 2, 1, 0, 0, 0, 0, 123)).monthsFromNow(1),
+          Clock.fixed(DateTime(2024, 3, 1, 0, 0, 0, 0, 123)).now());
+    });
+
+    test('should keep micros for yearsAgo', () {
+      expect(Clock.fixed(DateTime(2024, 2, 1, 0, 0, 0, 0, 123)).yearsAgo(1),
+          Clock.fixed(DateTime(2023, 2, 1, 0, 0, 0, 0, 123)).now());
+    });
+  });
 }

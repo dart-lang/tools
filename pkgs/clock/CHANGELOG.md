@@ -1,3 +1,7 @@
+## 1.1.3-wip
+
+* Keep microseconds when using `monthsAgo`, `monthsFromNow` and `yearsAgo`
+
 ## 1.1.2
 
 * Require Dart 3.4
