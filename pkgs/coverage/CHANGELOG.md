@@ -1,3 +1,7 @@
+## 1.11.1
+
+- Update `package:vm_service` constraints to '>=12.0.0 <16.0.0'.
+
 ## 1.11.0
 
 - Fix a [bug](https://github.com/dart-lang/tools/issues/685) where the tool
