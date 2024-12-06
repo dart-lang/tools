@@ -68,6 +68,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
 
+'package:language_version':
+  - changed-files:
+      - any-glob-to-any-file: 'pkgs/language_version/**'
+
 'package:mime':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/mime/**'
