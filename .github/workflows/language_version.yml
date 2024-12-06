@@ -1,0 +1,79 @@
+name: package:language_version
+permissions: read-all
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/language_version.yml"
+      - "pkgs/language_version/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/language_version.yml"
+      - "pkgs/language_version/**"
+  schedule:
+    - cron: "0 0 * * 0" # weekly
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/language_version
+    strategy:
+      matrix:
+        sdk: [stable, dev] # {pkgs.versions}
+        include:
+          - sdk: stable
+            run-tests: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
+        with:
+          sdk: ${{matrix.sdk}}
+
+      - run: dart pub get
+
+      - run: dart analyze --fatal-infos
+
+      - run: dart format --output=none --set-exit-if-changed .
+        if: ${{matrix.run-tests}}
+
+      - run: dart test
+        if: ${{matrix.run-tests}}
+
+      - name: Install coverage
+        run: dart pub global activate coverage
+        if: ${{ matrix.sdk == 'stable' }}
+      - name: Collect coverage
+        run: dart pub global run coverage:test_with_coverage
+        if: ${{ matrix.sdk == 'stable' }}
+      - name: Upload coverage
+        uses: coverallsapp/github-action@cfd0633edbd2411b532b808ba7a8b5e04f76d2c8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: language_version_linux
+          path-to-lcov: ./pkgs/language_version/coverage/lcov.info
+        if: ${{ matrix.sdk == 'stable' }}
+
+  build_windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: pkgs/language_version
+    strategy:
+      matrix:
+        sdk: [stable, dev] # {pkgs.versions}
+        include:
+          - sdk: stable
+            run-tests: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
+        with:
+          sdk: ${{matrix.sdk}}
+
+      - run: dart pub get
+
+      - run: dart test
+        if: ${{matrix.run-tests}}
