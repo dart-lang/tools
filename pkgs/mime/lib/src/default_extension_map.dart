@@ -297,6 +297,7 @@ const Map<String, String> defaultExtensionMap = <String, String>{
   'grv': 'application/vnd.groove-injector',
   'grxml': 'application/srgs+xml',
   'gsf': 'application/x-font-ghostscript',
+  'gsheet': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'gtar': 'application/x-gtar',
   'gtm': 'application/vnd.groove-tool-message',
   'gtw': 'model/vnd.gtw',
