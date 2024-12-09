@@ -2,7 +2,7 @@ name: io
 description: >-
   Utilities for the Dart VM Runtime including support for ANSI colors, file
   copying, and standard exit code values.
-version: 1.0.5-wip
+version: 1.0.5
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/io
 
 environment:

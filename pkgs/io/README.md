@@ -1,4 +1,4 @@
-[![ci](https://github.com/dart-lang/io/workflows/ci/badge.svg?branch=master)](https://github.com/dart-lang/io/actions?query=branch%3Amaster)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/io.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/io.yaml)
 [![pub package](https://img.shields.io/pub/v/io.svg)](https://pub.dev/packages/io)
 [![package publisher](https://img.shields.io/pub/publisher/io.svg)](https://pub.dev/packages/io/publisher)
 
