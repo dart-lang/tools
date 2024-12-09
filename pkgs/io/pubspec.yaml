@@ -3,7 +3,7 @@ description: >-
   Utilities for the Dart VM Runtime including support for ANSI colors, file
   copying, and standard exit code values.
 version: 1.0.5-wip
-repository: https://github.com/dart-lang/io
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/io
 
 environment:
   sdk: ^3.4.0
