@@ -64,6 +64,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/html/**'
 
+'package:io':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/io/**'
+
 'package:json_rpc_2':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
