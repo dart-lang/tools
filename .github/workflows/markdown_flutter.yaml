@@ -1,17 +1,29 @@
 # Run a smoke test against package:flutter_markdown.
 
-name: flutter_markdown
+name: markdown_flutter
 
 on:
-  schedule:
-    # “At 00:00 (UTC) on Sunday.”
-    - cron: '0 0 * * 0'
+  # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown.yaml'
+      - 'pkgs/markdown/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown.yaml'
+      - 'pkgs/markdown/**'
+  schedule:
+    - cron: "0 0 * * 0"
 
-permissions: read-all
+env:
+  PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/markdown/
 
 jobs:
   smoke-test:
@@ -21,8 +33,8 @@ jobs:
       - name: clone dart-lang/markdown
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          repository: dart-lang/markdown
-          path: markdown
+          repository: dart-lang/tools
+          path: tools_repo
 
       - name: clone flutter/packages
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -44,7 +56,7 @@ jobs:
         run: |
           echo "dependency_overrides:"        > pubspec_overrides.yaml
           echo "  markdown:"                 >> pubspec_overrides.yaml
-          echo "    path: ../../../markdown" >> pubspec_overrides.yaml
+          echo "    path: ../../../tools_repo/pkgs/markdown" >> pubspec_overrides.yaml
 
       - name: flutter pub get
         working-directory: flutter_packages/packages/flutter_markdown

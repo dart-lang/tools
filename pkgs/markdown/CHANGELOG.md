@@ -1,3 +1,7 @@
+## 7.2.4
+
+* Move to `dart-lang/tools` monorepo.
+
 ## 7.2.3
 
 * Fix an issue with checkbox list items separated with blank lines (#602).
