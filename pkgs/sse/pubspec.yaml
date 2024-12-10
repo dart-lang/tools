@@ -1,5 +1,5 @@
 name: sse
-version: 4.1.7-wip
+version: 4.1.7
 description: >-
   Provides client and server functionality for setting up bi-directional
   communication through Server Sent Events (SSE) and corresponding POST

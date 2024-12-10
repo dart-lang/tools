@@ -1,4 +1,6 @@
-## 4.1.7-wip
+## 4.1.7
+
+- Move to `dart-lang/tools` monorepo.
 
 ## 4.1.6
 
