@@ -7,12 +7,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/markdown.yaml'
+      - '.github/workflows/markdown_flutter.yaml'
       - 'pkgs/markdown/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/markdown.yaml'
+      - '.github/workflows/markdown_flutter.yaml'
       - 'pkgs/markdown/**'
   schedule:
     - cron: "0 0 * * 0"
@@ -20,17 +20,12 @@ on:
 env:
   PUB_ENVIRONMENT: bot.github
 
-
-defaults:
-  run:
-    working-directory: pkgs/markdown/
-
 jobs:
   smoke-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: clone dart-lang/markdown
+      - name: clone dart-lang/tools
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: dart-lang/tools
@@ -46,7 +41,7 @@ jobs:
       - name: install the flutter sdk
         uses: subosito/flutter-action@74af56c5ed2697ba4621264652728e8d217e53d3
         with:
-          channel: 'beta'
+          channel: beta
       
       - name: flutter --version
         run: flutter --version
