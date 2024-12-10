@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/source_span/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/source_span/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/source_span.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/source_span.yaml)
 [![pub package](https://img.shields.io/pub/v/source_span.svg)](https://pub.dev/packages/source_span)
 [![package publisher](https://img.shields.io/pub/publisher/source_span.svg)](https://pub.dev/packages/source_span/publisher)
 
