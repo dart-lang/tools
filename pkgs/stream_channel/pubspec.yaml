@@ -3,7 +3,7 @@ version: 2.1.3-wip
 description: >-
   An abstraction for two-way communication channels based on the Dart Stream
   class.
-repository: https://github.com/dart-lang/stream_channel
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/stream_channel
 
 environment:
   sdk: ^3.3.0
