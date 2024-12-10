@@ -1,4 +1,4 @@
-## 2.1.1-wip
+## 2.1.1
 
 - Require Dart 3.4
 - Move to `dart-lang/tools` monorepo.
