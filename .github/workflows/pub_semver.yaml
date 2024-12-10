@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:pub_semver
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/pub_semver.yaml'
+      - 'pkgs/pub_semver/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/pub_semver.yaml'
+      - 'pkgs/pub_semver/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/pub_semver/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)

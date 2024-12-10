@@ -1,5 +1,5 @@
-[![Dart CI](https://github.com/dart-lang/pub_semver/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/pub_semver/actions/workflows/test-package.yml)
-[![Pub](https://img.shields.io/pub/v/pub_semver.svg)](https://pub.dev/packages/pub_semver)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/pub_semver.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/pub_semver.yaml)
+[![pub package](https://img.shields.io/pub/v/pub_semver.svg)](https://pub.dev/packages/pub_semver)
 [![package publisher](https://img.shields.io/pub/publisher/pub_semver.svg)](https://pub.dev/packages/pub_semver/publisher)
 
 Handles version numbers and version constraints in the same way that [pub][]
