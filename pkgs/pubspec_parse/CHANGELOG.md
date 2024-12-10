@@ -1,6 +1,7 @@
 ## 1.3.1-wip
 
 - Require Dart 3.2
+- Set `Pubspec.environment` to non-nullable.
 - Remove deprecated package_api_docs rule
 
 ## 1.3.0
