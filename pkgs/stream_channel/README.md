@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/stream_channel/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/stream_channel/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/stream_channel.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/stream_channel.yaml)
 [![pub package](https://img.shields.io/pub/v/stream_channel.svg)](https://pub.dev/packages/stream_channel)
 [![package publisher](https://img.shields.io/pub/publisher/stream_channel.svg)](https://pub.dev/packages/stream_channel/publisher)
 
