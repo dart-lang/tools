@@ -3,7 +3,7 @@ version: 2.1.5-wip
 description: >-
  Versions and version constraints implementing pub's versioning policy. This
  is very similar to vanilla semver, with a few corner cases.
-repository: https://github.com/dart-lang/pub_semver
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/pub_semver
 topics:
  - dart-pub
  - semver
