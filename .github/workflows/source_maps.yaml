@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:source_maps
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/source_maps.yaml'
+      - 'pkgs/source_maps/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/source_maps.yaml'
+      - 'pkgs/source_maps/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/source_maps/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
