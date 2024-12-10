@@ -1,5 +1,5 @@
 name: pool
-version: 1.5.2-wip
+version: 1.5.2
 description: >-
   Manage a finite pool of resources.
   Useful for controlling concurrent file system or network requests.
