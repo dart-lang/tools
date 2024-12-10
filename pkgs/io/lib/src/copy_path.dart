@@ -23,14 +23,17 @@ bool _doNothing(String from, String to) {
 /// * Existing files are over-written, if any.
 /// * If [to] is within [from], throws [ArgumentError] (an infinite operation).
 /// * If [from] and [to] are canonically the same, no operation occurs.
+/// * If [followLinks] is `true`, then working links are reported as
+///   directories or files, and links to directories are recursed into.
 ///
 /// Returns a future that completes when complete.
-Future<void> copyPath(String from, String to) async {
+Future<void> copyPath(String from, String to, {bool followLinks = true}) async {
   if (_doNothing(from, to)) {
     return;
   }
   await Directory(to).create(recursive: true);
-  await for (final file in Directory(from).list(recursive: true)) {
+  await for (final file
+      in Directory(from).list(recursive: true, followLinks: followLinks)) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
       await Directory(copyTo).create(recursive: true);
@@ -49,14 +52,17 @@ Future<void> copyPath(String from, String to) async {
 /// * Existing files are over-written, if any.
 /// * If [to] is within [from], throws [ArgumentError] (an infinite operation).
 /// * If [from] and [to] are canonically the same, no operation occurs.
+/// * If [followLinks] is `true`, then working links are reported as
+///   directories or files, and links to directories are recursed into.
 ///
 /// This action is performed synchronously (blocking I/O).
-void copyPathSync(String from, String to) {
+void copyPathSync(String from, String to, {bool followLinks = true}) {
   if (_doNothing(from, to)) {
     return;
   }
   Directory(to).createSync(recursive: true);
-  for (final file in Directory(from).listSync(recursive: true)) {
+  for (final file
+      in Directory(from).listSync(recursive: true, followLinks: followLinks)) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
       Directory(copyTo).createSync(recursive: true);
