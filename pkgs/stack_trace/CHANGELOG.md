@@ -1,3 +1,7 @@
+## 1.12.1
+
+* Move to `dart-lang/tools` monorepo.
+
 ## 1.12.0
 
 * Added support for parsing Wasm frames of Chrome (V8), Firefox, Safari.

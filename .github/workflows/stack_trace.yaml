@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:stack_trace
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/stack_trace.yaml'
+      - 'pkgs/stack_trace/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/stack_trace.yaml'
+      - 'pkgs/stack_trace/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/stack_trace/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)

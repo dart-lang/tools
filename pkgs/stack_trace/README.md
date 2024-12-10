@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/stack_trace/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/stack_trace/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/stack_trace.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/stack_trace.yaml)
 [![pub package](https://img.shields.io/pub/v/stack_trace.svg)](https://pub.dev/packages/stack_trace)
 [![package publisher](https://img.shields.io/pub/publisher/stack_trace.svg)](https://pub.dev/packages/stack_trace/publisher)
 
