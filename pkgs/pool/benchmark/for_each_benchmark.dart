@@ -1,4 +1,4 @@
-// Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
+// Copyright (c) 2024, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -23,20 +23,18 @@ void main(List<String> args) async {
         lastLog == null ||
         now.difference(lastLog!) > const Duration(seconds: 1)) {
       lastLog = now;
-      print(
-        [
-          now.difference(start),
-          i.toString().padLeft(10),
-          fastestIteration.toString().padLeft(7),
-          fastest!.inMicroseconds.toString().padLeft(9),
-        ].join('   '),
-      );
+      print([
+        now.difference(start),
+        i.toString().padLeft(10),
+        fastestIteration.toString().padLeft(7),
+        fastest!.inMicroseconds.toString().padLeft(9)
+      ].join('   '));
     }
   }
 
   print(['Elapsed       ', 'Iterations', 'Fastest', 'Time (us)'].join('   '));
 
-  for (; ; i++) {
+  for (;; i++) {
     watch.reset();
 
     var sum = await pool
