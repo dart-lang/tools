@@ -9,6 +9,6 @@ jobs:
     uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
     with:
       ignore_coverage: "**.mock.dart,**.g.dart"
-      ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/"
+      ignore_license: "**.mock.dart,**.g.dart,**.mocks.dart,pkgs/markdown/**"
     permissions:
       pull-requests: write
