@@ -80,6 +80,14 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/oauth2/**'
 
+'package:package_config':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/package_config/**'
+
+'package:pool':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pool/**'
+
 'package:pub_semver':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/pub_semver/**'
