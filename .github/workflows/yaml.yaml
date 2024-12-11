@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:yaml
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/yaml.yaml'
+      - 'pkgs/yaml/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/yaml.yaml'
+      - 'pkgs/yaml/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/yaml/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
