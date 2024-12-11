@@ -90,14 +90,7 @@ Dependency? _fromJson(Object? data, String name) {
   return null;
 }
 
-abstract class Dependency {
-  Dependency._();
-
-  String get _info;
-
-  @override
-  String toString() => '$runtimeType: $_info';
-}
+sealed class Dependency {}
 
 @JsonSerializable()
 class SdkDependency extends Dependency {
@@ -106,11 +99,7 @@ class SdkDependency extends Dependency {
   final VersionConstraint version;
 
   SdkDependency(this.sdk, {VersionConstraint? version})
-      : version = version ?? VersionConstraint.any,
-        super._();
-
-  @override
-  String get _info => sdk;
+      : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -118,6 +107,9 @@ class SdkDependency extends Dependency {
 
   @override
   int get hashCode => Object.hash(sdk, version);
+
+  @override
+  String toString() => 'SdkDependency: $sdk';
 }
 
 @JsonSerializable()
@@ -127,7 +119,7 @@ class GitDependency extends Dependency {
   final String? ref;
   final String? path;
 
-  GitDependency(this.url, {this.ref, this.path}) : super._();
+  GitDependency(this.url, {this.ref, this.path});
 
   factory GitDependency.fromData(Object? data) {
     if (data is String) {
@@ -142,9 +134,6 @@ class GitDependency extends Dependency {
   }
 
   @override
-  String get _info => 'url@$url';
-
-  @override
   bool operator ==(Object other) =>
       other is GitDependency &&
       other.url == url &&
@@ -153,6 +142,9 @@ class GitDependency extends Dependency {
 
   @override
   int get hashCode => Object.hash(url, ref, path);
+
+  @override
+  String toString() => 'GitDependency: url@$url';
 }
 
 Uri? parseGitUriOrNull(String? value) =>
@@ -194,7 +186,7 @@ Uri? _tryParseScpUri(String value) {
 class PathDependency extends Dependency {
   final String path;
 
-  PathDependency(this.path) : super._();
+  PathDependency(this.path);
 
   factory PathDependency.fromData(Object? data) {
     if (data is String) {
@@ -204,14 +196,14 @@ class PathDependency extends Dependency {
   }
 
   @override
-  String get _info => 'path@$path';
-
-  @override
   bool operator ==(Object other) =>
       other is PathDependency && other.path == path;
 
   @override
   int get hashCode => path.hashCode;
+
+  @override
+  String toString() => 'PathDependency: path@$path';
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -223,11 +215,7 @@ class HostedDependency extends Dependency {
   final HostedDetails? hosted;
 
   HostedDependency({VersionConstraint? version, this.hosted})
-      : version = version ?? VersionConstraint.any,
-        super._();
-
-  @override
-  String get _info => version.toString();
+      : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -237,6 +225,9 @@ class HostedDependency extends Dependency {
 
   @override
   int get hashCode => Object.hash(version, hosted);
+
+  @override
+  String toString() => 'HostedDependency: $version';
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
