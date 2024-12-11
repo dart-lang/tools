@@ -3,7 +3,7 @@ version: 1.0.2-wip
 description: >-
   A simple package for tracking the performance of synchronous and asynchronous
   actions.
-repository: https://github.com/dart-lang/timing
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/timing
 
 environment:
   sdk: ^3.4.0
