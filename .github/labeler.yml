@@ -88,6 +88,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/pool/**'
 
+'package:pub_semver':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pub_semver/**'
+
 'package:source_map_stack_trace':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
