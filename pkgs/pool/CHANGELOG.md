@@ -1,4 +1,4 @@
-## 1.5.2
+## 2.0.0
 
 * Require Dart 3.4.
 * Move to `dart-lang/tools` monorepo.
