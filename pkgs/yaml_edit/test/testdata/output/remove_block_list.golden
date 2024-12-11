@@ -1,0 +1,36 @@
+ - true
+ - test:
+ - foo: true
+   bar:
+ - baz:
+ - nested:
+     foo:
+---
+ - true
+ - {}
+ - foo: true
+   bar:
+ - baz:
+ - nested:
+     foo:
+---
+ - true
+ - {}
+ - foo: true
+ - baz:
+ - nested:
+     foo:
+---
+ - true
+ - {}
+ - foo: true
+ - {}
+ - nested:
+     foo:
+---
+ - true
+ - {}
+ - foo: true
+ - {}
+ - nested:
+     {}

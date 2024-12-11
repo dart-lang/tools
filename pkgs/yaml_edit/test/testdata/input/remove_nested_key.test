@@ -1,0 +1,9 @@
+REMOVE NESTED KEY FROM MAP
+---
+A: true
+B:
+  foo: true
+  bar: true
+---
+- [remove, [B, foo]]
+- [remove, [B, bar]]

@@ -1,0 +1,6 @@
+REMOVE KEY FROM MAP
+---
+foo: true
+bar: false
+---
+- [remove, [bar]]
