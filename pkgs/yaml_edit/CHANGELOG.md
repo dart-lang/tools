@@ -1,4 +1,4 @@
-## 2.2.2-wip
+## 2.2.2
 
 - Suppress warnings previously printed to `stdout` when parsing YAML internally.
 - Fix error thrown when inserting duplicate keys to different maps in the same
@@ -13,6 +13,8 @@
   ([[#86](https://github.com/dart-lang/yaml_edit/issues/86)]).
 
 - Require Dart 3.1
+
+- Move to `dart-lang/tools` monorepo.
 
 ## 2.2.1
 
