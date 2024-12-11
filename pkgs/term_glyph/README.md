@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/term_glyph/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/term_glyph/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/term_glyph.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/term_glyph.yaml)
 [![pub package](https://img.shields.io/pub/v/term_glyph.svg)](https://pub.dev/packages/term_glyph)
 [![package publisher](https://img.shields.io/pub/publisher/term_glyph.svg)](https://pub.dev/packages/term_glyph/publisher)
 

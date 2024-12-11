@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:term_glyph
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/term_glyph.yaml'
+      - 'pkgs/term_glyph/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/term_glyph.yaml'
+      - 'pkgs/term_glyph/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/term_glyph/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)

@@ -108,6 +108,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/sse/**'
 
+'package:term_glyph':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/term_glyph/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'
