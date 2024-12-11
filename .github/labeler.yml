@@ -108,6 +108,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/sse/**'
 
+'package:stream_transform':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/stream_transform/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'

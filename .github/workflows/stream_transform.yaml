@@ -1,17 +1,17 @@
-name: package:clock
+name: package:stream_transform
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/clock.yaml'
-      - 'pkgs/clock/**'
+      - '.github/workflows/stream_transform.yaml'
+      - 'pkgs/stream_transform/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/clock.yaml'
-      - 'pkgs/clock/**'
+      - '.github/workflows/stream_transform.yaml'
+      - 'pkgs/stream_transform/**'
   schedule:
     - cron: "0 0 * * 0"
 
@@ -21,7 +21,7 @@ env:
 
 defaults:
   run:
-    working-directory: pkgs/clock/
+    working-directory: pkgs/stream_transform/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
@@ -58,7 +58,8 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: [3.4, dev]
+        # Bump SDK for Legacy tests when changing min SDK.
+        sdk: [3.1, dev]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
@@ -67,9 +68,6 @@ jobs:
       - id: install
         name: Install dependencies
         run: dart pub get
-      - name: Run VM tests
-        run: dart test --platform vm
-        if: always() && steps.install.outcome == 'success'
-      - name: Run Chrome tests
-        run: dart test --platform chrome
+      - name: Run tests
+        run: dart test -p chrome,vm --test-randomize-ordering-seed=random
         if: always() && steps.install.outcome == 'success'
