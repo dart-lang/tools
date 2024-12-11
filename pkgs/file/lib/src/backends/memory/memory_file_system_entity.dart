@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/file.dart';
-import 'package:file/src/common.dart' as common;
-import 'package:file/src/io.dart' as io;
 import 'package:meta/meta.dart';
 
+import '../../../file.dart';
+import '../../common.dart' as common;
+import '../../io.dart' as io;
 import 'common.dart';
 import 'memory_directory.dart';
 import 'node.dart';
@@ -60,7 +60,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// The type of the node is not guaranteed to match [expectedType].
   @protected
   Node get backing {
-    Node? node = fileSystem.findNode(path);
+    var node = fileSystem.findNode(path);
     checkExists(node, () => path);
     return node!;
   }
@@ -71,7 +71,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// doesn't match, this will throw a [io.FileSystemException].
   @protected
   Node get resolvedBacking {
-    Node node = backing;
+    var node = backing;
     node = utils.isLink(node)
         ? utils.resolveLinks(node as LinkNode, () => path)
         : node;
@@ -107,14 +107,14 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
     if (path.isEmpty) {
       throw common.noSuchFileOrDirectory(path);
     }
-    List<String> ledger = <String>[];
+    var ledger = <String>[];
     if (isAbsolute) {
       ledger.add(fileSystem.style.drive);
     }
-    Node? node = fileSystem.findNode(path,
+    var node = fileSystem.findNode(path,
         pathWithSymlinks: ledger, followTailLink: true);
     checkExists(node, () => path);
-    String resolved = ledger.join(fileSystem.path.separator);
+    var resolved = ledger.join(fileSystem.path.separator);
     if (resolved == fileSystem.style.drive) {
       resolved = fileSystem.style.root;
     } else if (!fileSystem.path.isAbsolute(resolved)) {
@@ -151,7 +151,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
 
   @override
   FileSystemEntity get absolute {
-    String absolutePath = path;
+    var absolutePath = path;
     if (!fileSystem.path.isAbsolute(absolutePath)) {
       absolutePath = fileSystem.path.join(fileSystem.cwd, absolutePath);
     }
@@ -242,7 +242,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
     bool followTailLink = false,
     utils.TypeChecker? checkType,
   }) {
-    Node node = backing;
+    var node = backing;
     (checkType ?? defaultCheckType)(node);
     fileSystem.findNode(
       newPath,
@@ -256,7 +256,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
         if (currentSegment == finalSegment) {
           if (child != null) {
             if (followTailLink) {
-              FileSystemEntityType childType = child.stat.type;
+              var childType = child.stat.type;
               if (childType != FileSystemEntityType.notFound) {
                 utils.checkType(expectedType, child.stat.type, () => newPath);
               }
@@ -289,7 +289,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
     utils.TypeChecker? checkType,
   }) {
     fileSystem.opHandle(path, FileSystemOp.delete);
-    Node node = backing;
+    var node = backing;
     if (!recursive) {
       if (node is DirectoryNode && node.children.isNotEmpty) {
         throw common.directoryNotEmpty(path);

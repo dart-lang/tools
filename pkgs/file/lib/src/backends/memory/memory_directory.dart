@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/file.dart';
-import 'package:file/src/common.dart' as common;
-import 'package:file/src/io.dart' as io;
 import 'package:meta/meta.dart';
 
+import '../../../file.dart';
+import '../../common.dart' as common;
+import '../../io.dart' as io;
 import 'common.dart';
 import 'memory_file.dart';
 import 'memory_file_system_entity.dart';
@@ -25,8 +25,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
     with common.DirectoryAddOnsMixin
     implements Directory {
   /// Instantiates a new [MemoryDirectory].
-  MemoryDirectory(NodeBasedFileSystem fileSystem, String path)
-      : super(fileSystem, path);
+  MemoryDirectory(super.fileSystem, super.path);
 
   @override
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.directory;
@@ -52,7 +51,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
   @override
   void createSync({bool recursive = false}) {
     fileSystem.opHandle(path, FileSystemOp.create);
-    Node? node = internalCreateSync(
+    var node = internalCreateSync(
       followTailLink: true,
       visitLinks: true,
       createChild: (DirectoryNode parent, bool isFinalSegment) {
@@ -75,19 +74,19 @@ class MemoryDirectory extends MemoryFileSystemEntity
   @override
   Directory createTempSync([String? prefix]) {
     prefix = '${prefix ?? ''}rand';
-    String fullPath = fileSystem.path.join(path, prefix);
-    String dirname = fileSystem.path.dirname(fullPath);
-    String basename = fileSystem.path.basename(fullPath);
-    DirectoryNode? node = fileSystem.findNode(dirname) as DirectoryNode?;
+    var fullPath = fileSystem.path.join(path, prefix);
+    var dirname = fileSystem.path.dirname(fullPath);
+    var basename = fileSystem.path.basename(fullPath);
+    var node = fileSystem.findNode(dirname) as DirectoryNode?;
     checkExists(node, () => dirname);
     utils.checkIsDir(node!, () => dirname);
-    int tempCounter = _systemTempCounter[fileSystem] ?? 0;
+    var tempCounter = _systemTempCounter[fileSystem] ?? 0;
     String name() => '$basename$tempCounter';
     while (node.children.containsKey(name())) {
       tempCounter++;
     }
     _systemTempCounter[fileSystem] = tempCounter;
-    DirectoryNode tempDir = DirectoryNode(node);
+    var tempDir = DirectoryNode(node);
     node.children[name()] = tempDir;
     return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()))
       ..createSync();
@@ -128,9 +127,9 @@ class MemoryDirectory extends MemoryFileSystemEntity
     bool recursive = false,
     bool followLinks = true,
   }) {
-    DirectoryNode node = backing as DirectoryNode;
-    List<FileSystemEntity> listing = <FileSystemEntity>[];
-    List<_PendingListTask> tasks = <_PendingListTask>[
+    var node = backing as DirectoryNode;
+    var listing = <FileSystemEntity>[];
+    var tasks = <_PendingListTask>[
       _PendingListTask(
         node,
         path.endsWith(fileSystem.path.separator)
@@ -140,14 +139,14 @@ class MemoryDirectory extends MemoryFileSystemEntity
       ),
     ];
     while (tasks.isNotEmpty) {
-      _PendingListTask task = tasks.removeLast();
+      var task = tasks.removeLast();
       task.dir.children.forEach((String name, Node child) {
-        Set<LinkNode> breadcrumbs = Set<LinkNode>.from(task.breadcrumbs);
-        String childPath = fileSystem.path.join(task.path, name);
+        var breadcrumbs = Set<LinkNode>.from(task.breadcrumbs);
+        var childPath = fileSystem.path.join(task.path, name);
         while (followLinks &&
             utils.isLink(child) &&
             breadcrumbs.add(child as LinkNode)) {
-          Node? referent = child.referentOrNull;
+          var referent = child.referentOrNull;
           if (referent != null) {
             child = referent;
           }

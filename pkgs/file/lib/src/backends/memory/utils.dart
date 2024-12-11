@@ -2,20 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/file.dart';
-import 'package:file/src/common.dart' as common;
-import 'package:file/src/io.dart' as io;
-
+import '../../../file.dart';
+import '../../common.dart' as common;
+import '../../io.dart' as io;
 import 'common.dart';
 import 'node.dart';
 
-/// Checks if `node.type` returns [io.FileSystemEntityType.FILE].
+/// Checks if `node.type` returns [io.FileSystemEntityType.file].
 bool isFile(Node? node) => node?.type == io.FileSystemEntityType.file;
 
-/// Checks if `node.type` returns [io.FileSystemEntityType.DIRECTORY].
+/// Checks if `node.type` returns [io.FileSystemEntityType.directory].
 bool isDirectory(Node? node) => node?.type == io.FileSystemEntityType.directory;
 
-/// Checks if `node.type` returns [io.FileSystemEntityType.LINK].
+/// Checks if `node.type` returns [io.FileSystemEntityType.link].
 bool isLink(Node? node) => node?.type == io.FileSystemEntityType.link;
 
 /// Validator function that is expected to throw a [FileSystemException] if
@@ -86,7 +85,7 @@ Node resolveLinks(
       tailVisitor,
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
-  Set<LinkNode> breadcrumbs = <LinkNode>{};
+  var breadcrumbs = <LinkNode>{};
 
   Node node = link;
   while (isLink(node)) {

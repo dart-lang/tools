@@ -5,8 +5,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:file/src/io.dart' as io;
-import 'package:file/file.dart';
+import '../../file.dart';
+import '../io.dart' as io;
 
 /// A file that forwards all methods and properties to a delegate.
 mixin ForwardingFile

@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:io' as io;
 
 import 'package:file/chroot.dart';
@@ -17,14 +19,15 @@ import 'common_tests.dart';
 void main() {
   group('ChrootFileSystem', () {
     ChrootFileSystem createMemoryBackedChrootFileSystem() {
-      MemoryFileSystem fs = MemoryFileSystem();
+      var fs = MemoryFileSystem();
       fs.directory('/tmp').createSync();
       return ChrootFileSystem(fs, '/tmp');
     }
 
     // TODO(jamesderlin): Make ChrootFile.openSync return a delegating
     // RandomAccessFile that uses the chroot'd path.
-    List<String> skipCommon = <String>[
+    var skipCommon = <String>[
+      // ignore: lines_longer_than_80_chars
       'File > open > .* > RandomAccessFile > read > openReadHandleDoesNotChange',
       'File > open > .* > RandomAccessFile > openWriteHandleDoesNotChange',
     ];
@@ -137,6 +140,7 @@ void main() {
           test('referencesRootEntityForJailbreakPath', () {
             mem.file('/foo').createSync();
             dynamic f = fs.file('../foo');
+            // ignore: avoid_dynamic_calls
             expect(f.delegate.path, '/tmp/foo');
           });
         });
@@ -151,7 +155,7 @@ void main() {
 
         group('copy', () {
           test('copiesToRootDirectoryIfDestinationIsJailbreakPath', () {
-            File f = fs.file('/foo')..createSync();
+            var f = fs.file('/foo')..createSync();
             f.copySync('../bar');
             expect(mem.file('/bar'), isNot(exists));
             expect(mem.file('/tmp/bar'), exists);
