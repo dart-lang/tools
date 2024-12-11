@@ -2,7 +2,7 @@ name: yaml_edit
 version: 2.2.2-wip
 description: >-
   A library for YAML manipulation with comment and whitespace preservation.
-repository: https://github.com/dart-lang/yaml_edit
+repository: https://github.com/dart-lang/tools/tree/main/pkgs/yaml_edit
 
 issue_tracker: https://github.com/dart-lang/yaml_edit/issues
 
