@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Utilities that shouldn't be in this package.
-library source_maps.utils;
+library;
 
 /// Find the first entry in a sorted [list] that matches a monotonic predicate.
 /// Given a result `n`, that all items before `n` will not match, `n` matches,

@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Contains a code printer that generates code by recording the source maps.
-library source_maps.printer;
+library;
 
 import 'package:source_span/source_span.dart';
 
