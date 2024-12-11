@@ -42,8 +42,8 @@ TypeMatcher<FileSystemEntity> hasPath(dynamic path) =>
 /// [osErrorCode] may be an `int`, a predicate function, or a [Matcher]. If it
 /// is an `int`, it will be wrapped in an equality matcher.
 Matcher isFileSystemException([dynamic osErrorCode]) =>
-    const TypeMatcher<FileSystemException>().having(
-        (e) => e.osError, 'orError', _fileExceptionWrapMatcher(osErrorCode));
+    const TypeMatcher<FileSystemException>().having((e) => e.osError?.errorCode,
+        'osError.errorCode', _fileExceptionWrapMatcher(osErrorCode));
 
 /// Returns a matcher that successfully matches against a future or function
 /// that throws a [FileSystemException].
