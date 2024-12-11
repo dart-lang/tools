@@ -96,6 +96,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
 
+'package:source_maps':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/source_maps/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'
