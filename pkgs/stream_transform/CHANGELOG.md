@@ -1,9 +1,10 @@
-## 2.1.1-wip
+## 2.1.1
 
 - Require Dart 3.1 or greater
 - Forward errors from the `trigger` future through to the result stream in
   `takeUntil`. Previously an error would have not closed the stream, and instead
   raised as an unhandled async error.
+- Move to `dart-lang/tools` monorepo.
 
 ## 2.1.0
 

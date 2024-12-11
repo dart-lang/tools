@@ -1,5 +1,5 @@
-[![Dart CI](https://github.com/dart-lang/stream_transform/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/stream_transform/actions/workflows/test-package.yml)
-[![Pub package](https://img.shields.io/pub/v/stream_transform.svg)](https://pub.dev/packages/stream_transform)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/stream_transform.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/stream_transform.yaml)
+[![pub package](https://img.shields.io/pub/v/stream_transform.svg)](https://pub.dev/packages/stream_transform)
 [![package publisher](https://img.shields.io/pub/publisher/stream_transform.svg)](https://pub.dev/packages/stream_transform/publisher)
 
 Extension methods on `Stream` adding common transform operators.
