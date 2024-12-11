@@ -104,6 +104,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_span/**'
 
+'package:sse':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/sse/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'
