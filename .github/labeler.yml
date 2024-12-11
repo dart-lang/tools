@@ -108,6 +108,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/sse/**'
 
+'package:timing':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/timing/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'

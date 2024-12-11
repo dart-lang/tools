@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/timing/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/timing/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/timing.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/timing.yaml)
 [![pub package](https://img.shields.io/pub/v/timing.svg)](https://pub.dev/packages/timing)
 [![package publisher](https://img.shields.io/pub/publisher/timing.svg)](https://pub.dev/packages/timing/publisher)
 
