@@ -100,6 +100,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_maps/**'
 
+'package:source_span':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/source_span/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'
