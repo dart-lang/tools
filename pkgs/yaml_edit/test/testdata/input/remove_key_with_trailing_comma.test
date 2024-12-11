@@ -1,0 +1,6 @@
+REMOVE KEY FROM MAP WITH TRAILING COMMA
+---
+foo: true
+bar: false # remove this comment
+---
+- [remove, [bar]]
