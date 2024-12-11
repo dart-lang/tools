@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/watcher/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/watcher/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/watcher.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/watcher.yaml)
 [![pub package](https://img.shields.io/pub/v/watcher.svg)](https://pub.dev/packages/watcher)
 [![package publisher](https://img.shields.io/pub/publisher/watcher.svg)](https://pub.dev/packages/watcher/publisher)
 

@@ -111,3 +111,7 @@
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'
+
+'package:watcher':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/watcher/**'

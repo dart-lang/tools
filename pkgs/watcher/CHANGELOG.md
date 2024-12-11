@@ -1,7 +1,8 @@
-## 1.1.1-wip
+## 1.1.1
 
 - Ensure `PollingFileWatcher.ready` completes for files that do not exist.
 - Require Dart SDK `^3.1.0`
+- Move to `dart-lang/tools` monorepo.
 
 ## 1.1.0
 
