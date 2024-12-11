@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/string_scanner/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/string_scanner/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/string_scanner.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/string_scanner.yaml)
 [![pub package](https://img.shields.io/pub/v/string_scanner.svg)](https://pub.dev/packages/string_scanner)
 [![package publisher](https://img.shields.io/pub/publisher/string_scanner.svg)](https://pub.dev/packages/string_scanner/publisher)
 

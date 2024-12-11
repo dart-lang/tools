@@ -1,16 +1,27 @@
-name: Dart CI
+name: package:string_scanner
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/string_scanner.yml'
+      - 'pkgs/string_scanner/**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths:
+      - '.github/workflows/string_scanner.yml'
+      - 'pkgs/string_scanner/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+
+defaults:
+  run:
+    working-directory: pkgs/string_scanner/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
