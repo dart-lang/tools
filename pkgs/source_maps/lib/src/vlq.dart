@@ -10,7 +10,7 @@
 /// represented by using the least significant bit of the value as the sign bit.
 ///
 /// For more details see the source map [version 3 documentation](https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit?usp=sharing).
-library source_maps.src.vlq;
+library;
 
 import 'dart:math';
 
