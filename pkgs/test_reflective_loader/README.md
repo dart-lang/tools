@@ -1,5 +1,6 @@
-[![Build Status](https://github.com/dart-lang/test_reflective_loader/workflows/Dart/badge.svg)](https://github.com/dart-lang/test_reflective_loader/actions)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/test_reflective_loader.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/test_reflective_loader.yaml)
 [![pub package](https://img.shields.io/pub/v/test_reflective_loader.svg)](https://pub.dev/packages/test_reflective_loader)
+[![package publisher](https://img.shields.io/pub/publisher/test_reflective_loader.svg)](https://pub.dev/packages/test_reflective_loader/publisher)
 
 Support for discovering tests and test suites using reflection.
 
@@ -24,4 +25,4 @@ executed after the returned `Future` completes.
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: https://github.com/dart-lang/test_reflective_loader/issues
+[tracker]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Atest_reflective_loader

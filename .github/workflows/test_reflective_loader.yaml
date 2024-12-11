@@ -1,16 +1,26 @@
-name: Dart
+name: package:test_reflective_loader
 
 on:
-  pull_request:
+  # Run on PRs and pushes to the default branch.
   push:
-    branches:
-      - master
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test_reflective_loader.yaml'
+      - 'pkgs/test_reflective_loader/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test_reflective_loader.yaml'
+      - 'pkgs/test_reflective_loader/**'
   schedule:
-    # “At 00:00 (UTC) on Sunday.”
-    - cron: '0 0 * * 0'
+    - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+defaults:
+  run:
+    working-directory: pkgs/test_reflective_loader/
 
 jobs:
   build:
