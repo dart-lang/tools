@@ -84,6 +84,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/package_config/**'
 
+'package:pool':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pool/**'
+
 'package:source_map_stack_trace':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
