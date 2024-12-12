@@ -71,7 +71,7 @@ void expectFileSystemException(dynamic osErrorCode, void Function() callback) {
 
 /// Matcher that successfully matches against a [FileSystemEntity] that
 /// exists ([FileSystemEntity.existsSync] returns true).
-final TypeMatcher exists =
+final TypeMatcher<FileSystemEntity> exists =
     isFileSystemEntity.having((e) => e.existsSync(), 'existsSync', true);
 
 Matcher? _fileExceptionWrapMatcher(dynamic osErrorCode) =>
