@@ -4,7 +4,7 @@
 
 import 'package:path/path.dart' as p;
 
-import '../../../file.dart';
+import '../../interface.dart';
 
 /// Class that represents the path style that a memory file system should
 /// adopt.

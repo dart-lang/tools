@@ -4,7 +4,7 @@
 
 import 'dart:typed_data';
 
-import '../../../file.dart';
+import '../../interface.dart';
 import '../../io.dart' as io;
 import 'clock.dart';
 import 'common.dart';

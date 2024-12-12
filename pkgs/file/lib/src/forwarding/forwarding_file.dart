@@ -5,7 +5,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../../file.dart';
+import '../forwarding.dart';
+import '../interface.dart';
 import '../io.dart' as io;
 
 /// A file that forwards all methods and properties to a delegate.

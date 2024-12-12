@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:math' as math show min;
 import 'dart:typed_data';
 
-import '../../../memory.dart' show MemoryFileSystem;
 import '../../common.dart' as common;
 import '../../io.dart' as io;
 import '../memory.dart' show MemoryFileSystem;

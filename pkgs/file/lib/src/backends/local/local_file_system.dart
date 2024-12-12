@@ -4,7 +4,7 @@
 
 import 'package:path/path.dart' as p;
 
-import '../../../file.dart';
+import '../../interface.dart';
 import '../../io.dart' as io;
 import 'local_directory.dart';
 import 'local_file.dart';

@@ -9,8 +9,8 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
-import '../../../file.dart';
 import '../../common.dart' as common;
+import '../../interface.dart';
 import '../../io.dart' as io;
 import 'common.dart';
 import 'memory_file_system_entity.dart';

@@ -7,8 +7,9 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
-import '../../file.dart';
 import '../common.dart' as common;
+import '../forwarding.dart';
+import '../interface.dart';
 import '../io.dart' as io;
 
 part 'chroot/chroot_directory.dart';

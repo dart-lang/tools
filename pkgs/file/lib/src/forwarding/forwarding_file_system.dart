@@ -5,7 +5,7 @@
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-import '../../file.dart';
+import '../interface.dart';
 import '../io.dart' as io;
 
 /// A file system that forwards all methods and properties to a delegate.

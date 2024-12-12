@@ -2,7 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import '../../file.dart';
+import '../forwarding.dart';
+import '../interface.dart';
 import '../io.dart' as io;
 
 /// A directory that forwards all methods and properties to a delegate.
