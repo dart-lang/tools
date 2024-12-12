@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Contains the top-level function to parse source maps version 3.
-library source_maps.parser;
+library;
 
 import 'dart:convert';
 

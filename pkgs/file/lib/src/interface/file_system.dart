@@ -6,7 +6,6 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import '../io.dart' as io;
-
 import 'directory.dart';
 import 'file.dart';
 import 'file_system_entity.dart';
@@ -99,9 +98,9 @@ abstract class FileSystem {
   bool get isWatchSupported;
 
   /// Finds the type of file system object that a [path] points to. Returns
-  /// a Future<FileSystemEntityType> that completes with the result.
+  /// a `Future<FileSystemEntityType>` that completes with the result.
   ///
-  /// [io.FileSystemEntityType.LINK] will only be returned if [followLinks] is
+  /// [io.FileSystemEntityType.link] will only be returned if [followLinks] is
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
@@ -111,37 +110,38 @@ abstract class FileSystem {
   /// Syncronously finds the type of file system object that a [path] points
   /// to. Returns a [io.FileSystemEntityType].
   ///
-  /// [io.FileSystemEntityType.LINK] will only be returned if [followLinks] is
+  /// [io.FileSystemEntityType.link] will only be returned if [followLinks] is
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
   /// then [io.FileSystemEntityType.notFound] is returned.
   io.FileSystemEntityType typeSync(String path, {bool followLinks = true});
 
-  /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.FILE].
+  /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.file].
   Future<bool> isFile(String path) async =>
       await type(path) == io.FileSystemEntityType.file;
 
   /// Synchronously checks if [`type(path)`](type) returns
-  /// [io.FileSystemEntityType.FILE].
+  /// [io.FileSystemEntityType.file].
   bool isFileSync(String path) =>
       typeSync(path) == io.FileSystemEntityType.file;
 
-  /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.DIRECTORY].
+  /// Checks if [`type(path)`](type) returns
+  /// [io.FileSystemEntityType.directory].
   Future<bool> isDirectory(String path) async =>
       await type(path) == io.FileSystemEntityType.directory;
 
   /// Synchronously checks if [`type(path)`](type) returns
-  /// [io.FileSystemEntityType.DIRECTORY].
+  /// [io.FileSystemEntityType.directory].
   bool isDirectorySync(String path) =>
       typeSync(path) == io.FileSystemEntityType.directory;
 
-  /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.LINK].
+  /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.link].
   Future<bool> isLink(String path) async =>
       await type(path, followLinks: false) == io.FileSystemEntityType.link;
 
   /// Synchronously checks if [`type(path)`](type) returns
-  /// [io.FileSystemEntityType.LINK].
+  /// [io.FileSystemEntityType.link].
   bool isLinkSync(String path) =>
       typeSync(path, followLinks: false) == io.FileSystemEntityType.link;
 

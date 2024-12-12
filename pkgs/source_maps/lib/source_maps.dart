@@ -24,7 +24,7 @@
 /// var mapping = parse(json);
 /// mapping.spanFor(outputSpan1.line, outputSpan1.column)
 /// ```
-library source_maps;
+library;
 
 import 'package:source_span/source_span.dart';
 

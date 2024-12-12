@@ -7,26 +7,25 @@ import 'dart:convert';
 import 'dart:math' as math show min;
 import 'dart:typed_data';
 
-import 'package:file/file.dart';
-import 'package:file/src/backends/memory/operations.dart';
-import 'package:file/src/common.dart' as common;
-import 'package:file/src/io.dart' as io;
 import 'package:meta/meta.dart';
 
+import '../../common.dart' as common;
+import '../../interface.dart';
+import '../../io.dart' as io;
 import 'common.dart';
 import 'memory_file_system_entity.dart';
 import 'memory_random_access_file.dart';
 import 'node.dart';
+import 'operations.dart';
 import 'utils.dart' as utils;
 
 /// Internal implementation of [File].
 class MemoryFile extends MemoryFileSystemEntity implements File {
   /// Instantiates a new [MemoryFile].
-  const MemoryFile(NodeBasedFileSystem fileSystem, String path)
-      : super(fileSystem, path);
+  const MemoryFile(super.fileSystem, super.path);
 
   FileNode get _resolvedBackingOrCreate {
-    Node? node = backingOrNull;
+    var node = backingOrNull;
     if (node == null) {
       node = _doCreate();
     } else {
@@ -61,7 +60,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   }
 
   Node? _doCreate({bool recursive = false}) {
-    Node? node = internalCreateSync(
+    var node = internalCreateSync(
       followTailLink: true,
       createChild: (DirectoryNode parent, bool isFinalSegment) {
         if (isFinalSegment) {
@@ -88,7 +87,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
         newPath,
         followTailLink: true,
         checkType: (Node node) {
-          FileSystemEntityType actualType = node.stat.type;
+          var actualType = node.stat.type;
           if (actualType != expectedType) {
             throw actualType == FileSystemEntityType.notFound
                 ? common.noSuchFileOrDirectory(path)
@@ -103,7 +102,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   File copySync(String newPath) {
     fileSystem.opHandle(path, FileSystemOp.copy);
-    FileNode sourceNode = resolvedBacking as FileNode;
+    var sourceNode = resolvedBacking as FileNode;
     fileSystem.findNode(
       newPath,
       segmentVisitor: (
@@ -116,7 +115,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
         if (currentSegment == finalSegment) {
           if (child != null) {
             if (utils.isLink(child)) {
-              List<String> ledger = <String>[];
+              var ledger = <String>[];
               child = utils.resolveLinks(child as LinkNode, () => newPath,
                   ledger: ledger);
               checkExists(child, () => newPath);
@@ -127,7 +126,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
             utils.checkType(expectedType, child.type, () => newPath);
             parent.children.remove(childName);
           }
-          FileNode newNode = FileNode(parent);
+          var newNode = FileNode(parent);
           newNode.copyFrom(sourceNode);
           parent.children[childName] = newNode;
         }
@@ -158,7 +157,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   void setLastAccessedSync(DateTime time) {
-    FileNode node = resolvedBacking as FileNode;
+    var node = resolvedBacking as FileNode;
     node.accessed = time.millisecondsSinceEpoch;
   }
 
@@ -174,7 +173,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   void setLastModifiedSync(DateTime time) {
-    FileNode node = resolvedBacking as FileNode;
+    var node = resolvedBacking as FileNode;
     node.modified = time.millisecondsSinceEpoch;
   }
 
@@ -199,8 +198,8 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   Stream<List<int>> openRead([int? start, int? end]) {
     fileSystem.opHandle(path, FileSystemOp.open);
     try {
-      FileNode node = resolvedBacking as FileNode;
-      Uint8List content = node.content;
+      var node = resolvedBacking as FileNode;
+      var content = node.content;
       if (start != null) {
         content = end == null
             ? content.sublist(start)
@@ -253,13 +252,13 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   List<String> readAsLinesSync({Encoding encoding = utf8}) {
-    String str = readAsStringSync(encoding: encoding);
+    var str = readAsStringSync(encoding: encoding);
 
     if (str.isEmpty) {
       return <String>[];
     }
 
-    final List<String> lines = str.split('\n');
+    final lines = str.split('\n');
     if (str.endsWith('\n')) {
       // A final newline should not create an additional line.
       lines.removeLast();
@@ -287,7 +286,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     if (!utils.isWriteMode(mode)) {
       throw common.badFileDescriptor(path);
     }
-    FileNode node = _resolvedBackingOrCreate;
+    var node = _resolvedBackingOrCreate;
     _truncateIfNecessary(node, mode);
     fileSystem.opHandle(path, FileSystemOp.write);
     node.write(bytes);
@@ -349,7 +348,7 @@ class _FileSink implements io.IOSink {
       deferredException = e;
     }
 
-    Future<FileNode> future = Future<FileNode>.microtask(() {
+    var future = Future<FileNode>.microtask(() {
       if (deferredException != null) {
         throw deferredException;
       }
@@ -387,7 +386,7 @@ class _FileSink implements io.IOSink {
 
   @override
   void writeAll(Iterable<dynamic> objects, [String separator = '']) {
-    bool firstIter = true;
+    var firstIter = true;
     for (dynamic obj in objects) {
       if (!firstIter) {
         write(separator);
@@ -418,7 +417,7 @@ class _FileSink implements io.IOSink {
     _streamCompleter = Completer<void>();
 
     stream.listen(
-      (List<int> data) => _addData(data),
+      _addData,
       cancelOnError: true,
       onError: (Object error, StackTrace stackTrace) {
         _streamCompleter!.completeError(error, stackTrace);
@@ -445,8 +444,7 @@ class _FileSink implements io.IOSink {
       _isClosed = true;
       _pendingWrites.then(
         (_) => _completer.complete(),
-        onError: (Object error, StackTrace stackTrace) =>
-            _completer.completeError(error, stackTrace),
+        onError: _completer.completeError,
       );
     }
     return _completer.future;

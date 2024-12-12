@@ -6,7 +6,7 @@
 ///
 /// [TextEditTransaction] supports making a series of changes to a text buffer.
 /// [guessIndent] helps to guess the appropriate indentiation for the new code.
-library source_maps.refactor;
+library;
 
 import 'package:source_span/source_span.dart';
 

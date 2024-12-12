@@ -1,3 +1,8 @@
+## 3.1.0-wip
+
+* Changed the type of several matchers to `TypeMatcher` which allows cascading
+  their usage with `.having` and similar. 
+
 ## 3.0.2
 
 * Require Dart 3.1.
