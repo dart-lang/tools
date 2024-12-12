@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: comment_references
+
 /// A file system operation used by the [MemoryFileSytem] to allow
 /// tests to insert errors for certain operations.
 ///
@@ -64,23 +66,15 @@ class FileSystemOp {
 
   @override
   String toString() {
-    switch (_value) {
-      case 0:
-        return 'FileSystemOp.read';
-      case 1:
-        return 'FileSystemOp.write';
-      case 2:
-        return 'FileSystemOp.delete';
-      case 3:
-        return 'FileSystemOp.create';
-      case 4:
-        return 'FileSystemOp.open';
-      case 5:
-        return 'FileSystemOp.copy';
-      case 6:
-        return 'FileSystemOp.exists';
-      default:
-        throw StateError('Invalid FileSytemOp type: $this');
-    }
+    return switch (_value) {
+      0 => 'FileSystemOp.read',
+      1 => 'FileSystemOp.write',
+      2 => 'FileSystemOp.delete',
+      3 => 'FileSystemOp.create',
+      4 => 'FileSystemOp.open',
+      5 => 'FileSystemOp.copy',
+      6 => 'FileSystemOp.exists',
+      _ => throw StateError('Invalid FileSytemOp type: $this')
+    };
   }
 }

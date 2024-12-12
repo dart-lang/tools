@@ -4,13 +4,12 @@
 
 import 'dart:typed_data';
 
-import 'package:file/file.dart';
-import 'package:file/src/backends/memory/operations.dart';
-import 'package:file/src/io.dart' as io;
-
+import '../../interface.dart';
+import '../../io.dart' as io;
 import 'clock.dart';
 import 'common.dart';
 import 'memory_file_stat.dart';
+import 'operations.dart';
 import 'style.dart';
 
 /// Visitor callback for use with [NodeBasedFileSystem.findNode].
@@ -115,7 +114,7 @@ abstract class Node {
 
   /// Reparents this node to live in the specified directory.
   set parent(DirectoryNode parent) {
-    DirectoryNode ancestor = parent;
+    var ancestor = parent;
     while (!ancestor.isRoot) {
       if (ancestor == this) {
         throw const io.FileSystemException(
@@ -149,8 +148,8 @@ abstract class Node {
 /// you call [stat] on them).
 abstract class RealNode extends Node {
   /// Constructs a new [RealNode] as a child of the specified [parent].
-  RealNode(DirectoryNode? parent) : super(parent) {
-    int now = clock.now.millisecondsSinceEpoch;
+  RealNode(super.parent) {
+    var now = clock.now.millisecondsSinceEpoch;
     changed = now;
     modified = now;
     accessed = now;
@@ -195,7 +194,7 @@ abstract class RealNode extends Node {
 /// Class that represents the backing for an in-memory directory.
 class DirectoryNode extends RealNode {
   /// Constructs a new [DirectoryNode] as a child of the specified [parent].
-  DirectoryNode(DirectoryNode? parent) : super(parent);
+  DirectoryNode(super.parent);
 
   /// Child nodes, indexed by their basename.
   final Map<String, Node> children = <String, Node>{};
@@ -237,7 +236,7 @@ class RootNode extends DirectoryNode {
 /// Class that represents the backing for an in-memory regular file.
 class FileNode extends RealNode {
   /// Constructs a new [FileNode] as a child of the specified [parent].
-  FileNode(DirectoryNode parent) : super(parent);
+  FileNode(DirectoryNode super.parent);
 
   /// File contents in bytes.
   Uint8List get content => _content;
@@ -251,7 +250,7 @@ class FileNode extends RealNode {
 
   /// Appends the specified bytes to the end of this node's [content].
   void write(List<int> bytes) {
-    Uint8List existing = _content;
+    var existing = _content;
     _content = Uint8List(existing.length + bytes.length);
     _content.setRange(0, existing.length, existing);
     _content.setRange(existing.length, _content.length, bytes);
@@ -286,9 +285,7 @@ class FileNode extends RealNode {
 class LinkNode extends Node {
   /// Constructs a new [LinkNode] as a child of the specified [parent] and
   /// linking to the specified [target] path.
-  LinkNode(DirectoryNode parent, this.target)
-      : assert(target.isNotEmpty),
-        super(parent);
+  LinkNode(DirectoryNode super.parent, this.target) : assert(target.isNotEmpty);
 
   /// The path to which this link points.
   String target;
@@ -309,7 +306,7 @@ class LinkNode extends Node {
     Node? Function(DirectoryNode parent, String childName, Node? child)?
         tailVisitor,
   }) {
-    Node? referent = fs.findNode(
+    var referent = fs.findNode(
       target,
       reference: this,
       segmentVisitor: (
@@ -349,7 +346,7 @@ class LinkNode extends Node {
     }
     _reentrant = true;
     try {
-      Node? node = referentOrNull;
+      var node = referentOrNull;
       return node == null ? MemoryFileStat.notFound : node.stat;
     } finally {
       _reentrant = false;

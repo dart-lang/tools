@@ -8,9 +8,9 @@ import 'utils.dart';
 
 void main() {
   test('floorAndCeilProduceExactSecondDateTime', () {
-    DateTime time = DateTime.fromMicrosecondsSinceEpoch(1001);
-    DateTime lower = floor(time);
-    DateTime upper = ceil(time);
+    var time = DateTime.fromMicrosecondsSinceEpoch(1001);
+    var lower = floor(time);
+    var upper = ceil(time);
     expect(lower.millisecond, 0);
     expect(upper.millisecond, 0);
     expect(lower.microsecond, 0);
@@ -18,26 +18,26 @@ void main() {
   });
 
   test('floorAndCeilWorkWithNow', () {
-    DateTime time = DateTime.now();
-    int lower = time.difference(floor(time)).inMicroseconds;
-    int upper = ceil(time).difference(time).inMicroseconds;
+    var time = DateTime.now();
+    var lower = time.difference(floor(time)).inMicroseconds;
+    var upper = ceil(time).difference(time).inMicroseconds;
     expect(lower, lessThan(1000000));
     expect(upper, lessThanOrEqualTo(1000000));
   });
 
   test('floorAndCeilWorkWithExactSecondDateTime', () {
-    DateTime time = DateTime.parse('1999-12-31 23:59:59');
-    DateTime lower = floor(time);
-    DateTime upper = ceil(time);
+    var time = DateTime.parse('1999-12-31 23:59:59');
+    var lower = floor(time);
+    var upper = ceil(time);
     expect(lower, time);
     expect(upper, time);
   });
 
   test('floorAndCeilWorkWithInexactSecondDateTime', () {
-    DateTime time = DateTime.parse('1999-12-31 23:59:59.500');
-    DateTime lower = floor(time);
-    DateTime upper = ceil(time);
-    Duration difference = upper.difference(lower);
+    var time = DateTime.parse('1999-12-31 23:59:59.500');
+    var lower = floor(time);
+    var upper = ceil(time);
+    var difference = upper.difference(lower);
     expect(difference.inMicroseconds, 1000000);
   });
 }
