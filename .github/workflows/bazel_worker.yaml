@@ -36,6 +36,7 @@ jobs:
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
         with:
           sdk: ${{ matrix.sdk }}
+      - run: dart pub get
       - run: "dart format --output=none --set-exit-if-changed ."
         if: ${{ matrix.sdk == dev }}
       - name: Test
