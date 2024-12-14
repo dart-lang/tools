@@ -37,5 +37,6 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
       - run: "dart format --output=none --set-exit-if-changed ."
+        if: ${{ matrix.sdk == dev }}
       - name: Test
         run: ./tool/travis.sh
