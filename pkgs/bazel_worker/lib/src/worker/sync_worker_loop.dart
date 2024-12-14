@@ -15,7 +15,7 @@ abstract class SyncWorkerLoop implements WorkerLoop {
   final SyncWorkerConnection connection;
 
   SyncWorkerLoop({SyncWorkerConnection? connection})
-    : connection = connection ?? StdSyncWorkerConnection();
+      : connection = connection ?? StdSyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
   @override

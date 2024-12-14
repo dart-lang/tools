@@ -41,15 +41,15 @@ class AsyncMessageGrouper implements MessageGrouper {
   int _messagePos = 0;
 
   AsyncMessageGrouper(Stream<List<int>> inputStream)
-    : _inputQueue = StreamQueue(inputStream);
+      : _inputQueue = StreamQueue(inputStream);
 
   /// Returns the next full message that is received, or null if none are left.
   @override
   Future<List<int>?> get next async {
     try {
       // Loop while there is data in the input buffer or the input stream.
-      while (_inputBufferPos != _inputBuffer.length ||
-          await _inputQueue.hasNext) {
+      while (
+          _inputBufferPos != _inputBuffer.length || await _inputQueue.hasNext) {
         // If the input buffer is empty fill it from the input stream.
         if (_inputBufferPos == _inputBuffer.length) {
           _inputBuffer = await _inputQueue.next;

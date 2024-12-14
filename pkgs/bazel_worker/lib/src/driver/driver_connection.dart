@@ -37,13 +37,13 @@ class StdDriverConnection implements DriverConnection {
   StdDriverConnection({
     Stream<List<int>>? inputStream,
     StreamSink<List<int>>? outputStream,
-  }) : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
-       _outputStream = outputStream ?? stdout;
+  })  : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
+        _outputStream = outputStream ?? stdout;
 
   factory StdDriverConnection.forWorker(Process worker) => StdDriverConnection(
-    inputStream: worker.stdout,
-    outputStream: worker.stdin,
-  );
+        inputStream: worker.stdout,
+        outputStream: worker.stdin,
+      );
 
   /// Note: This will attempts to recover from invalid proto messages by parsing
   /// them as strings. This is a common error case for workers (they print a

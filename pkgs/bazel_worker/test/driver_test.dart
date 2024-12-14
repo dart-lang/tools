@@ -271,16 +271,15 @@ class MockWorker implements Process {
   /// a [MockWorkerLoop] if no factory is provided.
   MockWorker({WorkerLoop Function(MockWorker)? workerLoopFactory}) {
     liveWorkers.add(this);
-    var workerLoop =
-        workerLoopFactory != null
-            ? workerLoopFactory(this)
-            : MockWorkerLoop(
-              responseQueue,
-              connection: StdAsyncWorkerConnection(
-                inputStream: _stdinController.stream,
-                outputStream: _stdoutController.sink,
-              ),
-            );
+    var workerLoop = workerLoopFactory != null
+        ? workerLoopFactory(this)
+        : MockWorkerLoop(
+            responseQueue,
+            connection: StdAsyncWorkerConnection(
+              inputStream: _stdinController.stream,
+              outputStream: _stdoutController.sink,
+            ),
+          );
     workerLoop.run();
   }
 

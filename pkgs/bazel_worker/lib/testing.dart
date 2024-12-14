@@ -130,7 +130,7 @@ class TestSyncWorkerConnection extends StdSyncWorkerConnection
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestSyncWorkerConnection(Stdin stdinStream, Stdout stdoutStream)
-    : super(stdinStream: stdinStream, stdoutStream: stdoutStream);
+      : super(stdinStream: stdinStream, stdoutStream: stdoutStream);
 
   @override
   void writeResponse(WorkResponse response) {
@@ -148,7 +148,7 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   final String? printMessage;
 
   TestSyncWorkerLoop(SyncWorkerConnection connection, {this.printMessage})
-    : super(connection: connection);
+      : super(connection: connection);
 
   @override
   WorkResponse performRequest(WorkRequest request) {
@@ -193,7 +193,7 @@ class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   final String? printMessage;
 
   TestAsyncWorkerLoop(AsyncWorkerConnection connection, {this.printMessage})
-    : super(connection: connection);
+      : super(connection: connection);
 
   @override
   Future<WorkResponse> performRequest(WorkRequest request) async {
