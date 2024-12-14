@@ -15,7 +15,7 @@ abstract class SyncWorkerLoop implements WorkerLoop {
   final SyncWorkerConnection connection;
 
   SyncWorkerLoop({SyncWorkerConnection? connection})
-      : connection = connection ?? StdSyncWorkerConnection();
+    : connection = connection ?? StdSyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
   @override
@@ -30,19 +30,20 @@ abstract class SyncWorkerLoop implements WorkerLoop {
         var request = connection.readRequest();
         if (request == null) break;
         var printMessages = StringBuffer();
-        response = runZoned(() => performRequest(request), zoneSpecification:
-            ZoneSpecification(print: (self, parent, zone, message) {
-          printMessages.writeln();
-          printMessages.write(message);
-        }));
+        response = runZoned(
+          () => performRequest(request),
+          zoneSpecification: ZoneSpecification(
+            print: (self, parent, zone, message) {
+              printMessages.writeln();
+              printMessages.write(message);
+            },
+          ),
+        );
         if (printMessages.isNotEmpty) {
           response.output = '${response.output}$printMessages';
         }
       } catch (e, s) {
-        response = WorkResponse(
-          exitCode: EXIT_CODE_ERROR,
-          output: '$e\n$s',
-        );
+        response = WorkResponse(exitCode: EXIT_CODE_ERROR, output: '$e\n$s');
       }
 
       connection.writeResponse(response);

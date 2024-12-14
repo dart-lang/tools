@@ -41,15 +41,15 @@ class AsyncMessageGrouper implements MessageGrouper {
   int _messagePos = 0;
 
   AsyncMessageGrouper(Stream<List<int>> inputStream)
-      : _inputQueue = StreamQueue(inputStream);
+    : _inputQueue = StreamQueue(inputStream);
 
   /// Returns the next full message that is received, or null if none are left.
   @override
   Future<List<int>?> get next async {
     try {
       // Loop while there is data in the input buffer or the input stream.
-      while (
-          _inputBufferPos != _inputBuffer.length || await _inputQueue.hasNext) {
+      while (_inputBufferPos != _inputBuffer.length ||
+          await _inputQueue.hasNext) {
         // If the input buffer is empty fill it from the input stream.
         if (_inputBufferPos == _inputBuffer.length) {
           _inputBuffer = await _inputQueue.next;
@@ -86,13 +86,18 @@ class AsyncMessageGrouper implements MessageGrouper {
             // Copy as much as possible from the input buffer. Limit is the
             // smaller of the remaining length to fill in the message and the
             // remaining length in the buffer.
-            var lengthToCopy = min(_message.length - _messagePos,
-                _inputBuffer.length - _inputBufferPos);
+            var lengthToCopy = min(
+              _message.length - _messagePos,
+              _inputBuffer.length - _inputBufferPos,
+            );
             _message.setRange(
-                _messagePos,
-                _messagePos + lengthToCopy,
-                _inputBuffer.sublist(
-                    _inputBufferPos, _inputBufferPos + lengthToCopy));
+              _messagePos,
+              _messagePos + lengthToCopy,
+              _inputBuffer.sublist(
+                _inputBufferPos,
+                _inputBufferPos + lengthToCopy,
+              ),
+            );
             _messagePos += lengthToCopy;
             _inputBufferPos += lengthToCopy;
 

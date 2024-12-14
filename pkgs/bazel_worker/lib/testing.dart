@@ -72,10 +72,18 @@ class TestStdinAsync implements TestStdin {
   }
 
   @override
-  StreamSubscription<Uint8List> listen(void Function(Uint8List bytes)? onData,
-      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
-    return _controller.stream.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  StreamSubscription<Uint8List> listen(
+    void Function(Uint8List bytes)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return _controller.stream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
   }
 
   @override
@@ -122,7 +130,7 @@ class TestSyncWorkerConnection extends StdSyncWorkerConnection
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestSyncWorkerConnection(Stdin stdinStream, Stdout stdoutStream)
-      : super(stdinStream: stdinStream, stdoutStream: stdoutStream);
+    : super(stdinStream: stdinStream, stdoutStream: stdoutStream);
 
   @override
   void writeResponse(WorkResponse response) {
@@ -140,7 +148,7 @@ class TestSyncWorkerLoop extends SyncWorkerLoop implements TestWorkerLoop {
   final String? printMessage;
 
   TestSyncWorkerLoop(SyncWorkerConnection connection, {this.printMessage})
-      : super(connection: connection);
+    : super(connection: connection);
 
   @override
   WorkResponse performRequest(WorkRequest request) {
@@ -165,8 +173,9 @@ class TestAsyncWorkerConnection extends StdAsyncWorkerConnection
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestAsyncWorkerConnection(
-      Stream<List<int>> inputStream, StreamSink<List<int>> outputStream)
-      : super(inputStream: inputStream, outputStream: outputStream);
+    Stream<List<int>> inputStream,
+    StreamSink<List<int>> outputStream,
+  ) : super(inputStream: inputStream, outputStream: outputStream);
 
   @override
   void writeResponse(WorkResponse response) {
@@ -184,7 +193,7 @@ class TestAsyncWorkerLoop extends AsyncWorkerLoop implements TestWorkerLoop {
   final String? printMessage;
 
   TestAsyncWorkerLoop(AsyncWorkerConnection connection, {this.printMessage})
-      : super(connection: connection);
+    : super(connection: connection);
 
   @override
   Future<WorkResponse> performRequest(WorkRequest request) async {

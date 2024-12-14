@@ -29,13 +29,16 @@ abstract class AsyncWorkerConnection implements WorkerConnection {
   /// Creates a [StdAsyncWorkerConnection] with the specified [inputStream]
   /// and [outputStream], unless [sendPort] is specified, in which case
   /// creates a [SendPortAsyncWorkerConnection].
-  factory AsyncWorkerConnection(
-          {Stream<List<int>>? inputStream,
-          StreamSink<List<int>>? outputStream,
-          SendPort? sendPort}) =>
+  factory AsyncWorkerConnection({
+    Stream<List<int>>? inputStream,
+    StreamSink<List<int>>? outputStream,
+    SendPort? sendPort,
+  }) =>
       sendPort == null
           ? StdAsyncWorkerConnection(
-              inputStream: inputStream, outputStream: outputStream)
+            inputStream: inputStream,
+            outputStream: outputStream,
+          )
           : SendPortAsyncWorkerConnection(sendPort);
 
   @override
@@ -53,10 +56,11 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
   final AsyncMessageGrouper _messageGrouper;
   final StreamSink<List<int>> _outputStream;
 
-  StdAsyncWorkerConnection(
-      {Stream<List<int>>? inputStream, StreamSink<List<int>>? outputStream})
-      : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
-        _outputStream = outputStream ?? stdout;
+  StdAsyncWorkerConnection({
+    Stream<List<int>>? inputStream,
+    StreamSink<List<int>>? outputStream,
+  }) : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
+       _outputStream = outputStream ?? stdout;
 
   @override
   Future<WorkRequest?> readRequest() async {
@@ -85,7 +89,7 @@ class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
   }
 
   SendPortAsyncWorkerConnection._(this.receivePort, this.sendPort)
-      : receivePortIterator = StreamIterator(receivePort.cast());
+    : receivePortIterator = StreamIterator(receivePort.cast());
 
   @override
   Future<WorkRequest?> readRequest() async {
@@ -106,8 +110,8 @@ class StdSyncWorkerConnection implements SyncWorkerConnection {
   final Stdout _stdoutStream;
 
   StdSyncWorkerConnection({Stdin? stdinStream, Stdout? stdoutStream})
-      : _messageGrouper = SyncMessageGrouper(stdinStream ?? stdin),
-        _stdoutStream = stdoutStream ?? stdout;
+    : _messageGrouper = SyncMessageGrouper(stdinStream ?? stdin),
+      _stdoutStream = stdoutStream ?? stdout;
 
   @override
   WorkRequest? readRequest() {

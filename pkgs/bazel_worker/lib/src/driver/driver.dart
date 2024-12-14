@@ -44,11 +44,14 @@ class BazelWorkerDriver {
   /// Factory method that spawns a worker process.
   final SpawnWorker _spawnWorker;
 
-  BazelWorkerDriver(this._spawnWorker,
-      {int? maxIdleWorkers, int? maxWorkers, int? maxRetries})
-      : _maxIdleWorkers = maxIdleWorkers ?? 4,
-        _maxWorkers = maxWorkers ?? 4,
-        _maxRetries = maxRetries ?? 4;
+  BazelWorkerDriver(
+    this._spawnWorker, {
+    int? maxIdleWorkers,
+    int? maxWorkers,
+    int? maxRetries,
+  }) : _maxIdleWorkers = maxIdleWorkers ?? 4,
+       _maxWorkers = maxWorkers ?? 4,
+       _maxRetries = maxRetries ?? 4;
 
   /// Waits for an available worker, and then sends [WorkRequest] to it.
   ///
@@ -56,8 +59,10 @@ class BazelWorkerDriver {
   /// [request] has been actually sent to the worker. This allows the caller
   /// to determine when actual work is being done versus just waiting for an
   /// available worker.
-  Future<WorkResponse> doWork(WorkRequest request,
-      {void Function(Future<WorkResponse?>)? trackWork}) {
+  Future<WorkResponse> doWork(
+    WorkRequest request, {
+    void Function(Future<WorkResponse?>)? trackWork,
+  }) {
     var attempt = _WorkAttempt(request, trackWork: trackWork);
     _workQueue.add(attempt);
     _runWorkQueue();
@@ -69,9 +74,11 @@ class BazelWorkerDriver {
     for (var worker in _readyWorkers.toList()) {
       _killWorker(worker);
     }
-    await Future.wait(_spawningWorkers.map((worker) async {
-      _killWorker(await worker);
-    }));
+    await Future.wait(
+      _spawningWorkers.map((worker) async {
+        _killWorker(await worker);
+      }),
+    );
   }
 
   /// Runs as many items in [_workQueue] as possible given the number of
@@ -88,8 +95,10 @@ class BazelWorkerDriver {
     if (_workQueue.isEmpty) return;
     if (_numWorkers == _maxWorkers && _idleWorkers.isEmpty) return;
     if (_numWorkers > _maxWorkers) {
-      throw StateError('Internal error, created to many workers. Please '
-          'file a bug at https://github.com/dart-lang/bazel_worker/issues/new');
+      throw StateError(
+        'Internal error, created to many workers. Please '
+        'file a bug at https://github.com/dart-lang/bazel_worker/issues/new',
+      );
     }
 
     // At this point we definitely want to run a task, we just need to decide
@@ -102,29 +111,31 @@ class BazelWorkerDriver {
       // work queue.
       var futureWorker = _spawnWorker();
       _spawningWorkers.add(futureWorker);
-      futureWorker.then((worker) {
-        _spawningWorkers.remove(futureWorker);
-        _readyWorkers.add(worker);
-        var connection = StdDriverConnection.forWorker(worker);
-        _workerConnections[worker] = connection;
-        _runWorker(worker, attempt);
+      futureWorker
+          .then((worker) {
+            _spawningWorkers.remove(futureWorker);
+            _readyWorkers.add(worker);
+            var connection = StdDriverConnection.forWorker(worker);
+            _workerConnections[worker] = connection;
+            _runWorker(worker, attempt);
 
-        // When the worker exits we should retry running the work queue in case
-        // there is more work to be done. This is primarily just a defensive
-        // thing but is cheap to do.
-        //
-        // We don't use `exitCode` because it is null for detached processes (
-        // which is common for workers).
-        connection.done.then((_) {
-          _idleWorkers.remove(worker);
-          _readyWorkers.remove(worker);
-          _runWorkQueue();
-        });
-      }).onError<Object>((e, s) {
-        _spawningWorkers.remove(futureWorker);
-        if (attempt.responseCompleter.isCompleted) return;
-        attempt.responseCompleter.completeError(e, s);
-      });
+            // When the worker exits we should retry running the work queue in case
+            // there is more work to be done. This is primarily just a defensive
+            // thing but is cheap to do.
+            //
+            // We don't use `exitCode` because it is null for detached processes (
+            // which is common for workers).
+            connection.done.then((_) {
+              _idleWorkers.remove(worker);
+              _readyWorkers.remove(worker);
+              _runWorkQueue();
+            });
+          })
+          .onError<Object>((e, s) {
+            _spawningWorkers.remove(futureWorker);
+            if (attempt.responseCompleter.isCompleted) return;
+            attempt.responseCompleter.completeError(e, s);
+          });
     }
     // Recursively calls itself until one of the bail out conditions are met.
     _runWorkQueue();
@@ -137,48 +148,51 @@ class BazelWorkerDriver {
   void _runWorker(Process worker, _WorkAttempt attempt) {
     var rescheduled = false;
 
-    runZonedGuarded(() async {
-      var connection = _workerConnections[worker]!;
+    runZonedGuarded(
+      () async {
+        var connection = _workerConnections[worker]!;
 
-      connection.writeRequest(attempt.request);
-      var responseFuture = connection.readResponse();
-      if (attempt.trackWork != null) {
-        attempt.trackWork!(responseFuture);
-      }
-      var response = await responseFuture;
+        connection.writeRequest(attempt.request);
+        var responseFuture = connection.readResponse();
+        if (attempt.trackWork != null) {
+          attempt.trackWork!(responseFuture);
+        }
+        var response = await responseFuture;
 
-      // It is possible for us to complete with an error response due to an
-      // unhandled async error before we get here.
-      if (!attempt.responseCompleter.isCompleted) {
-        if (response.exitCode == EXIT_CODE_BROKEN_PIPE) {
+        // It is possible for us to complete with an error response due to an
+        // unhandled async error before we get here.
+        if (!attempt.responseCompleter.isCompleted) {
+          if (response.exitCode == EXIT_CODE_BROKEN_PIPE) {
+            rescheduled = _tryReschedule(attempt);
+            if (rescheduled) return;
+            stderr.writeln('Failed to run request ${attempt.request}');
+            response = WorkResponse(
+              exitCode: EXIT_CODE_ERROR,
+              output:
+                  'Invalid response from worker, this probably means it wrote '
+                  'invalid output or died.',
+            );
+          }
+          attempt.responseCompleter.complete(response);
+          _cleanUp(worker);
+        }
+      },
+      (e, s) {
+        // Note that we don't need to do additional cleanup here on failures. If
+        // the worker dies that is already handled in a generic fashion, we just
+        // need to make sure we complete with a valid response.
+        if (!attempt.responseCompleter.isCompleted) {
           rescheduled = _tryReschedule(attempt);
           if (rescheduled) return;
-          stderr.writeln('Failed to run request ${attempt.request}');
-          response = WorkResponse(
+          var response = WorkResponse(
             exitCode: EXIT_CODE_ERROR,
-            output:
-                'Invalid response from worker, this probably means it wrote '
-                'invalid output or died.',
+            output: 'Error running worker:\n$e\n$s',
           );
+          attempt.responseCompleter.complete(response);
+          _cleanUp(worker);
         }
-        attempt.responseCompleter.complete(response);
-        _cleanUp(worker);
-      }
-    }, (e, s) {
-      // Note that we don't need to do additional cleanup here on failures. If
-      // the worker dies that is already handled in a generic fashion, we just
-      // need to make sure we complete with a valid response.
-      if (!attempt.responseCompleter.isCompleted) {
-        rescheduled = _tryReschedule(attempt);
-        if (rescheduled) return;
-        var response = WorkResponse(
-          exitCode: EXIT_CODE_ERROR,
-          output: 'Error running worker:\n$e\n$s',
-        );
-        attempt.responseCompleter.complete(response);
-        _cleanUp(worker);
-      }
-    });
+      },
+    );
   }
 
   /// Performs post-work cleanup for [worker].
