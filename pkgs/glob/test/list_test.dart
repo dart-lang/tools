@@ -320,9 +320,9 @@ void main() {
 typedef ListFn = FutureOr<List<String>> Function(String glob,
     {bool recursive, bool followLinks, bool? caseSensitive});
 
-/// Runs [callback] in two groups with two values of [listFn]: one that uses
+/// Runs [callback] in two groups with two values of [ListFn]: one that uses
 /// `Glob.list`, one that uses `Glob.listSync`.
-void syncAndAsync(FutureOr Function(ListFn) callback) {
+void syncAndAsync(FutureOr<void> Function(ListFn) callback) {
   group('async', () {
     callback((pattern, {recursive = false, followLinks = true, caseSensitive}) {
       var glob =
