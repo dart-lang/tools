@@ -1,0 +1,258 @@
+A: true
+B: {foo:  }
+C: {
+  foo:,bar:true
+}
+D: {
+  foo:
+  ,bar:true
+}
+E: {
+  foo: # comment
+  ,bar:true
+}
+F: {
+  # comment
+  foo:
+  ,bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {
+  foo:,bar:true
+}
+D: {
+  foo:
+  ,bar:true
+}
+E: {
+  foo: # comment
+  ,bar:true
+}
+F: {
+  # comment
+  foo:
+  ,bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {
+  foo:
+  ,bar:true
+}
+E: {
+  foo: # comment
+  ,bar:true
+}
+F: {
+  # comment
+  foo:
+  ,bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {
+  foo: # comment
+  ,bar:true
+}
+F: {
+  # comment
+  foo:
+  ,bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {bar:true
+}
+F: {
+  # comment
+  foo:
+  ,bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {bar:true
+}
+F: {bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {bar:true
+}
+F: {bar:true
+}
+G: {bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {bar:true
+}
+F: {bar:true
+}
+G: {bar:true
+}
+H: {
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {bar:true
+}
+F: {bar:true
+}
+G: {bar:true
+}
+H: {
+  bar:true
+}
+I: {
+  bar: true}
+J: {  foo   :  }
+---
+A: true
+B: {}
+C: {bar:true
+}
+D: {bar:true
+}
+E: {bar:true
+}
+F: {bar:true
+}
+G: {bar:true
+}
+H: {
+  bar:true
+}
+I: {
+  bar: true}
+J: {}

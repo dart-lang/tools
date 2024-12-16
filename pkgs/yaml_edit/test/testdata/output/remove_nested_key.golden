@@ -1,0 +1,12 @@
+A: true
+B:
+  foo: true
+  bar: true
+---
+A: true
+B:
+  bar: true
+---
+A: true
+B:
+  {}
