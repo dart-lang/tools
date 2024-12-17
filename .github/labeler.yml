@@ -108,6 +108,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/sse/**'
 
+'package:term_glyph':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/term_glyph/**'
+
 'package:test_reflective_loader':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/test_reflective_loader/**'
