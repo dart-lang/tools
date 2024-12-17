@@ -108,6 +108,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/sse/**'
 
+'package:stream_transform':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/stream_transform/**'
+
 'package:term_glyph':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/term_glyph/**'
