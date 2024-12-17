@@ -5,11 +5,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:file/src/io.dart' as io;
 import 'package:meta/meta.dart';
 
-/// A [RandomAccessFile] implementation that forwards all methods and properties
-/// to a delegate.
+import '../io.dart' as io;
+
+/// A [io.RandomAccessFile] implementation that forwards all methods and
+/// properties to a delegate.
 mixin ForwardingRandomAccessFile implements io.RandomAccessFile {
   /// The entity to which this entity will forward all methods and properties.
   @protected

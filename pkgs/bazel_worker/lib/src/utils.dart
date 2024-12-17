@@ -13,8 +13,9 @@ List<int> protoToDelimitedBuffer(GeneratedMessage message) {
   var delimiterBuffer = CodedBufferWriter();
   delimiterBuffer.writeInt32NoTag(messageBuffer.lengthInBytes);
 
-  var result =
-      Uint8List(messageBuffer.lengthInBytes + delimiterBuffer.lengthInBytes);
+  var result = Uint8List(
+    messageBuffer.lengthInBytes + delimiterBuffer.lengthInBytes,
+  );
 
   delimiterBuffer.writeTo(result);
   messageBuffer.writeTo(result, delimiterBuffer.lengthInBytes);

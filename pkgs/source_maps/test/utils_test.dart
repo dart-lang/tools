@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Tests for the binary search utility algorithm.
-library test.utils_test;
+library;
 
 import 'package:source_maps/src/utils.dart';
 import 'package:test/test.dart';
