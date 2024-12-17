@@ -11,36 +11,45 @@ import 'package:test/test.dart';
 
 void main() {
   group('SyncWorkerLoop', () {
-    runTests(TestStdinSync.new, TestSyncWorkerConnection.new,
-        TestSyncWorkerLoop.new);
+    runTests(
+      TestStdinSync.new,
+      TestSyncWorkerConnection.new,
+      TestSyncWorkerLoop.new,
+    );
   });
 
   group('AsyncWorkerLoop', () {
-    runTests(TestStdinAsync.new, TestAsyncWorkerConnection.new,
-        TestAsyncWorkerLoop.new);
+    runTests(
+      TestStdinAsync.new,
+      TestAsyncWorkerConnection.new,
+      TestAsyncWorkerLoop.new,
+    );
   });
 
   group('SyncWorkerLoopWithPrint', () {
     runTests(
-        TestStdinSync.new,
-        TestSyncWorkerConnection.new,
-        (TestSyncWorkerConnection connection) =>
-            TestSyncWorkerLoop(connection, printMessage: 'Goodbye!'));
+      TestStdinSync.new,
+      TestSyncWorkerConnection.new,
+      (TestSyncWorkerConnection connection) =>
+          TestSyncWorkerLoop(connection, printMessage: 'Goodbye!'),
+    );
   });
 
   group('AsyncWorkerLoopWithPrint', () {
     runTests(
-        TestStdinAsync.new,
-        TestAsyncWorkerConnection.new,
-        (TestAsyncWorkerConnection connection) =>
-            TestAsyncWorkerLoop(connection, printMessage: 'Goodbye!'));
+      TestStdinAsync.new,
+      TestAsyncWorkerConnection.new,
+      (TestAsyncWorkerConnection connection) =>
+          TestAsyncWorkerLoop(connection, printMessage: 'Goodbye!'),
+    );
   });
 }
 
 void runTests<T extends TestWorkerConnection>(
-    TestStdin Function() stdinFactory,
-    T Function(Stdin, Stdout) workerConnectionFactory,
-    TestWorkerLoop Function(T) workerLoopFactory) {
+  TestStdin Function() stdinFactory,
+  T Function(Stdin, Stdout) workerConnectionFactory,
+  TestWorkerLoop Function(T) workerLoopFactory,
+) {
   late TestStdin stdinStream;
   late TestStdoutStream stdoutStream;
   late T connection;
@@ -63,19 +72,29 @@ void runTests<T extends TestWorkerConnection>(
 
     // Make sure `print` never gets called in the parent zone.
     var printMessages = <String>[];
-    await runZoned(() => workerLoop.run(), zoneSpecification:
-        ZoneSpecification(print: (self, parent, zone, message) {
-      printMessages.add(message);
-    }));
-    expect(printMessages, isEmpty,
-        reason: 'The worker loop should hide all print calls from the parent '
-            'zone.');
+    await runZoned(
+      () => workerLoop.run(),
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, message) {
+          printMessages.add(message);
+        },
+      ),
+    );
+    expect(
+      printMessages,
+      isEmpty,
+      reason: 'The worker loop should hide all print calls from the parent '
+          'zone.',
+    );
 
     expect(connection.responses, hasLength(1));
     expect(connection.responses[0], response);
     if (workerLoop.printMessage != null) {
-      expect(response.output, endsWith(workerLoop.printMessage!),
-          reason: 'Print messages should get appended to the response output.');
+      expect(
+        response.output,
+        endsWith(workerLoop.printMessage!),
+        reason: 'Print messages should get appended to the response output.',
+      );
     }
 
     // Check that a serialized version was written to std out.

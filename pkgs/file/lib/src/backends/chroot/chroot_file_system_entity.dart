@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.chroot;
+part of '../chroot.dart';
 
 abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
     D extends io.FileSystemEntity> extends ForwardingFileSystemEntity<T, D> {
@@ -103,7 +103,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Future<T> delete({bool recursive = false}) async {
-    String path = fileSystem._resolve(this.path,
+    var path = fileSystem._resolve(this.path,
         followLinks: false, notFound: _NotFoundBehavior.throwError);
 
     String real(String path) => fileSystem._real(path, resolve: false);
@@ -114,7 +114,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
       if (expectedType == FileSystemEntityType.link) {
         await fileSystem.delegate.link(real(path)).delete();
       } else {
-        String resolvedPath = fileSystem._resolve(p.basename(path),
+        var resolvedPath = fileSystem._resolve(p.basename(path),
             from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && await type(resolvedPath) != expectedType) {
           throw expectedType == FileSystemEntityType.file
@@ -132,7 +132,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   void deleteSync({bool recursive = false}) {
-    String path = fileSystem._resolve(this.path,
+    var path = fileSystem._resolve(this.path,
         followLinks: false, notFound: _NotFoundBehavior.throwError);
 
     String real(String path) => fileSystem._real(path, resolve: false);
@@ -143,7 +143,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
       if (expectedType == FileSystemEntityType.link) {
         fileSystem.delegate.link(real(path)).deleteSync();
       } else {
-        String resolvedPath = fileSystem._resolve(p.basename(path),
+        var resolvedPath = fileSystem._resolve(p.basename(path),
             from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && type(resolvedPath) != expectedType) {
           throw expectedType == FileSystemEntityType.file
