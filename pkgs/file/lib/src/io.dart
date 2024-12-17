@@ -8,6 +8,8 @@
 /// the `file` package. The `file` package re-exports these interfaces (or in
 /// some cases, implementations of these interfaces by the same name), so this
 /// file need not be exposes publicly and exists for internal use only.
+library;
+
 export 'dart:io'
     show
         Directory,

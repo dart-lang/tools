@@ -2,7 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: lines_longer_than_80_chars
+
 @TestOn('vm')
+library;
+
 import 'dart:io' as io;
 
 import 'package:file/local.dart';
@@ -33,7 +37,7 @@ void main() {
     setUpAll(() {
       if (io.Platform.isWindows) {
         // TODO(tvolkert): Remove once all more serious test failures are fixed
-        // https://github.com/google/file.dart/issues/56
+        // https://github.com/dart-lang/tools/issues/618
         ignoreOsErrorCodes = true;
       }
     });
@@ -42,7 +46,7 @@ void main() {
       ignoreOsErrorCodes = false;
     });
 
-    Map<String, List<String>> skipOnPlatform = <String, List<String>>{
+    var skipOnPlatform = <String, List<String>>{
       'windows': <String>[
         'FileSystem > currentDirectory > throwsIfHasNonExistentPathInComplexChain',
         'FileSystem > currentDirectory > resolvesLinksIfEncountered',

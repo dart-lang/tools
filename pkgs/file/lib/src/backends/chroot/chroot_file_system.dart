@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.chroot;
+part of '../chroot.dart';
 
 const String _thisDir = '.';
 const String _parentDir = '..';
@@ -107,7 +107,7 @@ class ChrootFileSystem extends FileSystem {
     }
 
     value = _resolve(value, notFound: _NotFoundBehavior.throwError);
-    String realPath = _real(value, resolve: false);
+    var realPath = _real(value, resolve: false);
     switch (delegate.typeSync(realPath, followLinks: false)) {
       case FileSystemEntityType.directory:
         break;
@@ -117,7 +117,7 @@ class ChrootFileSystem extends FileSystem {
         throw common.notADirectory(path as String);
     }
     assert(() {
-      p.Context ctx = delegate.path;
+      var ctx = delegate.path;
       return ctx.isAbsolute(value) && value == ctx.canonicalize(value);
     }());
     _cwd = value;
@@ -201,7 +201,7 @@ class ChrootFileSystem extends FileSystem {
       throw _ChrootJailException();
     }
     // TODO(tvolkert): See if _context.relative() works here
-    String result = realPath.substring(root.length);
+    var result = realPath.substring(root.length);
     if (result.isEmpty) {
       result = _localRoot;
     }
@@ -263,8 +263,8 @@ class ChrootFileSystem extends FileSystem {
       throw common.noSuchFileOrDirectory(path);
     }
 
-    p.Context ctx = this.path;
-    String root = _localRoot;
+    var ctx = this.path;
+    var root = _localRoot;
     List<String> parts, ledger;
     if (ctx.isAbsolute(path)) {
       parts = ctx.split(path).sublist(1);
@@ -277,9 +277,9 @@ class ChrootFileSystem extends FileSystem {
     }
 
     String getCurrentPath() => root + ctx.joinAll(ledger);
-    Set<String> breadcrumbs = <String>{};
+    var breadcrumbs = <String>{};
     while (parts.isNotEmpty) {
-      String segment = parts.removeAt(0);
+      var segment = parts.removeAt(0);
       if (segment == _thisDir) {
         continue;
       } else if (segment == _parentDir) {
@@ -290,8 +290,8 @@ class ChrootFileSystem extends FileSystem {
       }
 
       ledger.add(segment);
-      String currentPath = getCurrentPath();
-      String realPath = _real(currentPath, resolve: false);
+      var currentPath = getCurrentPath();
+      var realPath = _real(currentPath, resolve: false);
 
       switch (delegate.typeSync(realPath, followLinks: false)) {
         case FileSystemEntityType.directory:
@@ -333,7 +333,7 @@ class ChrootFileSystem extends FileSystem {
           if (!breadcrumbs.add(currentPath)) {
             throw common.tooManyLevelsOfSymbolicLinks(path);
           }
-          String target = delegate.link(realPath).targetSync();
+          var target = delegate.link(realPath).targetSync();
           if (ctx.isAbsolute(target)) {
             ledger.clear();
             parts.insertAll(0, ctx.split(target).sublist(1));

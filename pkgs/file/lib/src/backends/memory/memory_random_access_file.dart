@@ -6,10 +6,11 @@ import 'dart:convert';
 import 'dart:math' as math show min;
 import 'dart:typed_data';
 
-import 'package:file/src/common.dart' as common;
-import 'package:file/src/io.dart' as io;
-
+import '../../common.dart' as common;
+import '../../io.dart' as io;
+import '../memory.dart' show MemoryFileSystem;
 import 'memory_file.dart';
+import 'memory_file_system.dart' show MemoryFileSystem;
 import 'node.dart';
 import 'utils.dart' as utils;
 
@@ -106,8 +107,8 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   /// Wraps a synchronous function to make it appear asynchronous.
   ///
   /// [_asyncOperationPending], [_checkAsync], and [_asyncWrapper] are used to
-  /// mimic [RandomAccessFile]'s enforcement that only one asynchronous
-  /// operation is pending for a [RandomAccessFile] instance.  Since
+  /// mimic [io.RandomAccessFile]'s enforcement that only one asynchronous
+  /// operation is pending for a [io.RandomAccessFile] instance.  Since
   /// [MemoryFileSystem]-based classes are likely to be used in tests, fidelity
   /// is important to catch errors that might occur in production.
   ///
@@ -211,7 +212,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
     _checkReadable('read');
     // TODO(jamesderlin): Check for integer overflow.
     final int end = math.min(_position + bytes, lengthSync());
-    final Uint8List copy = _node.content.sublist(_position, end);
+    final copy = _node.content.sublist(_position, end);
     _position = end;
     return copy;
   }
@@ -243,7 +244,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
 
     end = RangeError.checkValidRange(start, end, buffer.length);
 
-    final int length = lengthSync();
+    final length = lengthSync();
     int i;
     for (i = start; i < end && _position < length; i += 1, _position += 1) {
       buffer[i] = _node.content[_position];
@@ -288,7 +289,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
           'truncate failed', path, common.invalidArgument(path).osError);
     }
 
-    final int oldLength = lengthSync();
+    final oldLength = lengthSync();
     if (length < oldLength) {
       _node.truncate(length);
 
@@ -329,7 +330,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
     // [Uint8List] will truncate values to 8-bits automatically, so we don't
     // need to check [value].
 
-    int length = lengthSync();
+    var length = lengthSync();
     if (_position >= length) {
       // If [_position] is out of bounds, [RandomAccessFile] zero-fills the
       // file.
@@ -363,8 +364,8 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
 
     end = RangeError.checkValidRange(start, end, buffer.length);
 
-    final int writeByteCount = end - start;
-    final int endPosition = _position + writeByteCount;
+    final writeByteCount = end - start;
+    final endPosition = _position + writeByteCount;
 
     if (endPosition > lengthSync()) {
       truncateSync(endPosition);

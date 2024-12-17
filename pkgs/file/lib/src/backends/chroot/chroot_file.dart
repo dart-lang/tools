@@ -2,20 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.chroot;
+part of '../chroot.dart';
 
 typedef _SetupCallback = dynamic Function();
 
 class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     with ForwardingFile {
-  _ChrootFile(ChrootFileSystem fs, String path) : super(fs, path);
+  _ChrootFile(super.fs, super.path);
 
   factory _ChrootFile.wrapped(
     ChrootFileSystem fs,
     io.File delegate, {
     bool relative = false,
   }) {
-    String localPath = fs._local(delegate.path, relative: relative);
+    var localPath = fs._local(delegate.path, relative: relative);
     return _ChrootFile(fs, localPath);
   }
 
@@ -126,7 +126,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   Future<File> create({bool recursive = false, bool exclusive = false}) async {
-    String path = fileSystem._resolve(
+    var path = fileSystem._resolve(
       this.path,
       followLinks: false,
       notFound: recursive ? _NotFoundBehavior.mkdir : _NotFoundBehavior.allow,
@@ -158,7 +158,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   void createSync({bool recursive = false, bool exclusive = false}) {
-    String path = fileSystem._resolve(
+    var path = fileSystem._resolve(
       this.path,
       followLinks: false,
       notFound: recursive ? _NotFoundBehavior.mkdir : _NotFoundBehavior.allow,

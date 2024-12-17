@@ -11,4 +11,3 @@ linter:
   rules:
     - avoid_private_typedef_functions
     - avoid_redundant_argument_values
-    - use_super_parameters
