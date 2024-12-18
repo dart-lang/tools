@@ -1,0 +1,66 @@
+# Run a smoke test against package:flutter_markdown.
+
+name: package:markdown: flutter
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown_flutter.yaml'
+      - 'pkgs/markdown/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown_flutter.yaml'
+      - 'pkgs/markdown/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: clone dart-lang/tools
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: dart-lang/tools
+          path: tools_repo
+
+      - name: clone flutter/packages
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: flutter/packages
+          path: flutter_packages
+
+      # Install the Flutter SDK using the subosito/flutter-action GitHub action.
+      - name: install the flutter sdk
+        uses: subosito/flutter-action@74af56c5ed2697ba4621264652728e8d217e53d3
+        with:
+          channel: beta
+      
+      - name: flutter --version
+        run: flutter --version
+
+      - name: create pubspec_overrides.yaml
+        working-directory: flutter_packages/packages/flutter_markdown
+        run: |
+          echo "dependency_overrides:"        > pubspec_overrides.yaml
+          echo "  markdown:"                 >> pubspec_overrides.yaml
+          echo "    path: ../../../tools_repo/pkgs/markdown" >> pubspec_overrides.yaml
+
+      - name: flutter pub get
+        working-directory: flutter_packages/packages/flutter_markdown
+        run: flutter pub get
+  
+      - name: flutter analyze package:flutter_markdown
+        working-directory: flutter_packages/packages/flutter_markdown
+        run: flutter analyze
+
+      - name: flutter test package:flutter_markdown
+        working-directory: flutter_packages/packages/flutter_markdown
+        run: flutter test
