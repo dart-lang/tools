@@ -1,6 +1,6 @@
 # Run a smoke test against package:flutter_markdown.
 
-name: markdown_flutter
+name: package:markdown: flutter
 
 on:
   # Run on PRs and pushes to the default branch.
