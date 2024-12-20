@@ -72,10 +72,18 @@ class TestStdinAsync implements TestStdin {
   }
 
   @override
-  StreamSubscription<Uint8List> listen(void Function(Uint8List bytes)? onData,
-      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
-    return _controller.stream.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  StreamSubscription<Uint8List> listen(
+    void Function(Uint8List bytes)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return _controller.stream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
   }
 
   @override
@@ -165,8 +173,9 @@ class TestAsyncWorkerConnection extends StdAsyncWorkerConnection
   final List<WorkResponse> responses = <WorkResponse>[];
 
   TestAsyncWorkerConnection(
-      Stream<List<int>> inputStream, StreamSink<List<int>> outputStream)
-      : super(inputStream: inputStream, outputStream: outputStream);
+    Stream<List<int>> inputStream,
+    StreamSink<List<int>> outputStream,
+  ) : super(inputStream: inputStream, outputStream: outputStream);
 
   @override
   void writeResponse(WorkResponse response) {

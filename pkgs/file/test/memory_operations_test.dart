@@ -2,22 +2,21 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('Read operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.read) {
         contexts.add(context);
         operations.add(operation);
       }
     });
-    final File file = fs.file('test')..createSync();
+    final file = fs.file('test')..createSync();
 
     await file.readAsBytes();
     file.readAsBytesSync();
@@ -34,16 +33,16 @@ void main() {
   });
 
   test('Write operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.write) {
         contexts.add(context);
         operations.add(operation);
       }
     });
-    final File file = fs.file('test')..createSync();
+    final file = fs.file('test')..createSync();
 
     await file.writeAsBytes(<int>[]);
     file.writeAsBytesSync(<int>[]);
@@ -60,18 +59,18 @@ void main() {
   });
 
   test('Delete operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.delete) {
         contexts.add(context);
         operations.add(operation);
       }
     });
-    final File file = fs.file('test')..createSync();
-    final Directory directory = fs.directory('testDir')..createSync();
-    final Link link = fs.link('testLink')..createSync('foo');
+    final file = fs.file('test')..createSync();
+    final directory = fs.directory('testDir')..createSync();
+    final link = fs.link('testLink')..createSync('foo');
 
     await file.delete();
     file.createSync();
@@ -98,9 +97,9 @@ void main() {
   });
 
   test('Create operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.create) {
         contexts.add(context);
@@ -139,16 +138,16 @@ void main() {
   });
 
   test('Open operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.open) {
         contexts.add(context);
         operations.add(operation);
       }
     });
-    final File file = fs.file('test')..createSync();
+    final file = fs.file('test')..createSync();
 
     await file.open();
     file.openSync();
@@ -165,16 +164,16 @@ void main() {
   });
 
   test('Copy operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.copy) {
         contexts.add(context);
         operations.add(operation);
       }
     });
-    final File file = fs.file('test')..createSync();
+    final file = fs.file('test')..createSync();
 
     await file.copy('A');
     file.copySync('B');
@@ -187,9 +186,9 @@ void main() {
   });
 
   test('Exists operations invoke opHandle', () async {
-    List<String> contexts = <String>[];
-    List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(
+    var contexts = <String>[];
+    var operations = <FileSystemOp>[];
+    var fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
       if (operation == FileSystemOp.exists) {
         contexts.add(context);

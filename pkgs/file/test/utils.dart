@@ -25,7 +25,7 @@ DateTime floor([DateTime? time]) {
 /// If [time] is not specified, it will default to the current time.
 DateTime ceil([DateTime? time]) {
   time ??= DateTime.now();
-  int microseconds = (1000 * time.millisecond) + time.microsecond;
+  var microseconds = (1000 * time.millisecond) + time.microsecond;
   return (microseconds == 0)
       ? time
       // Add just enough milliseconds and microseconds to reach the next second.
@@ -78,7 +78,7 @@ abstract class _CompareDateTime extends Matcher {
     bool verbose,
   ) {
     if (item is DateTime) {
-      Duration diff = item.difference(_time).abs();
+      var diff = item.difference(_time).abs();
       return description.add('is $mismatchAdjective $_time by $diff');
     } else {
       return description.add('is not a DateTime');

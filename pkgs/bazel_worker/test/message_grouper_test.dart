@@ -18,8 +18,10 @@ void main() {
   });
 }
 
-void runTests(TestStdin Function() stdinFactory,
-    MessageGrouper Function(Stdin) messageGrouperFactory) {
+void runTests(
+  TestStdin Function() stdinFactory,
+  MessageGrouper Function(Stdin) messageGrouperFactory,
+) {
   late MessageGrouper messageGrouper;
 
   late TestStdin stdinStream;
@@ -52,16 +54,12 @@ void runTests(TestStdin Function() stdinFactory,
   });
 
   test('Short message', () async {
-    await check([
-      5,
-      10,
-      20,
-      30,
-      40,
-      50
-    ], [
-      [10, 20, 30, 40, 50]
-    ]);
+    await check(
+      [5, 10, 20, 30, 40, 50],
+      [
+        [10, 20, 30, 40, 50],
+      ],
+    );
   });
 
   test('Message with 2-byte length', () async {
@@ -79,57 +77,44 @@ void runTests(TestStdin Function() stdinFactory,
   });
 
   test('Multiple messages', () async {
-    await check([
-      2,
-      10,
-      20,
-      2,
-      30,
-      40
-    ], [
-      [10, 20],
-      [30, 40]
-    ]);
+    await check(
+      [2, 10, 20, 2, 30, 40],
+      [
+        [10, 20],
+        [30, 40],
+      ],
+    );
   });
 
   test('Empty message at start', () async {
-    await check([
-      0,
-      2,
-      10,
-      20
-    ], [
-      [],
-      [10, 20]
-    ]);
+    await check(
+      [0, 2, 10, 20],
+      [
+        [],
+        [10, 20],
+      ],
+    );
   });
 
   test('Empty message at end', () async {
-    await check([
-      2,
-      10,
-      20,
-      0
-    ], [
-      [10, 20],
-      []
-    ]);
+    await check(
+      [2, 10, 20, 0],
+      [
+        [10, 20],
+        [],
+      ],
+    );
   });
 
   test('Empty message in the middle', () async {
-    await check([
-      2,
-      10,
-      20,
-      0,
-      2,
-      30,
-      40
-    ], [
-      [10, 20],
-      [],
-      [30, 40]
-    ]);
+    await check(
+      [2, 10, 20, 0, 2, 30, 40],
+      [
+        [10, 20],
+        [],
+        [30, 40],
+      ],
+    );
   });
 
   test('Handles the case when stdin gives an error instead of EOF', () async {

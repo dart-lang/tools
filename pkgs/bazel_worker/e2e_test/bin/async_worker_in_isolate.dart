@@ -17,7 +17,10 @@ import 'package:e2e_test/forwards_to_isolate_async_worker.dart';
 Future main(List<String> args, [SendPort? message]) async {
   var receivePort = ReceivePort();
   await Isolate.spawnUri(
-      Uri.file('async_worker.dart'), [], receivePort.sendPort);
+    Uri.file('async_worker.dart'),
+    [],
+    receivePort.sendPort,
+  );
 
   var worker = await ForwardsToIsolateAsyncWorker.create(receivePort);
   await worker.run();

@@ -3,4 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A file system that provides a view into _another_ `FileSystem` via a path.
+library;
+
 export 'src/backends/chroot.dart';

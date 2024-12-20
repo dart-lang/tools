@@ -12,10 +12,7 @@ Future<void> main() async {
     var path = 'blaze-bin/some/path/to/a/file/that/is/an/input/$i';
     workRequest
       ..arguments.add('--input=$path')
-      ..inputs.add(Input(
-        path: '',
-        digest: List.filled(70, 0x11),
-      ));
+      ..inputs.add(Input(path: '', digest: List.filled(70, 0x11)));
   }
 
   // Serialize it.
@@ -24,14 +21,20 @@ Future<void> main() async {
   print('Request has $length requestBytes.');
 
   // Add the length in front base 128 encoded as in the worker protocol.
-  requestBytes =
-      Uint8List.fromList(requestBytes.toList()..insertAll(0, _varInt(length)));
+  requestBytes = Uint8List.fromList(
+    requestBytes.toList()..insertAll(0, _varInt(length)),
+  );
 
   // Split into 10000 byte chunks.
   var lists = <Uint8List>[];
   for (var i = 0; i < requestBytes.length; i += 10000) {
-    lists.add(Uint8List.sublistView(
-        requestBytes, i, min(i + 10000, requestBytes.length)));
+    lists.add(
+      Uint8List.sublistView(
+        requestBytes,
+        i,
+        min(i + 10000, requestBytes.length),
+      ),
+    );
   }
 
   // Time `AsyncMessageGrouper` and deserialization.
