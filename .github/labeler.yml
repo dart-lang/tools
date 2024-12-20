@@ -80,14 +80,62 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/oauth2/**'
 
+'package:package_config':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/package_config/**'
+
+'package:pool':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pool/**'
+
+'package:pub_semver':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pub_semver/**'
+
+'package:pubspec_parse':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pubspec_parse/**'
+
 'package:source_map_stack_trace':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'
+
+'package:source_maps':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/source_maps/**'
+
+'package:source_span':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/source_span/**'
+
+'package:sse':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/sse/**'
 
 'package:stack_trace':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/stack_trace/**'
 
+'package:stream_transform':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/stream_transform/**'
+
+'package:term_glyph':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/term_glyph/**'
+
+'package:test_reflective_loader':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/test_reflective_loader/**'
+
+'package:timing':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/timing/**'
+
 'package:unified_analytics':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/unified_analytics/**'
+
+'package:watcher':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/watcher/**'

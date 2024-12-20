@@ -5,12 +5,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/clock.yml'
+      - '.github/workflows/clock.yaml'
       - 'pkgs/clock/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/clock.yml'
+      - '.github/workflows/clock.yaml'
       - 'pkgs/clock/**'
   schedule:
     - cron: "0 0 * * 0"

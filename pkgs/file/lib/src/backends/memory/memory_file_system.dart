@@ -2,11 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/file.dart';
-import 'package:file/src/backends/memory/operations.dart';
-import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 
+import '../../interface.dart';
+import '../../io.dart' as io;
 import 'clock.dart';
 import 'common.dart';
 import 'memory_directory.dart';
@@ -14,6 +13,7 @@ import 'memory_file.dart';
 import 'memory_file_stat.dart';
 import 'memory_link.dart';
 import 'node.dart';
+import 'operations.dart';
 import 'style.dart';
 import 'utils.dart' as utils;
 
@@ -91,7 +91,7 @@ class _MemoryFileSystem extends FileSystem
   p.Context _context;
 
   @override
-  final Function(String context, FileSystemOp operation) opHandle;
+  final void Function(String context, FileSystemOp operation) opHandle;
 
   @override
   final Clock clock;
@@ -141,7 +141,7 @@ class _MemoryFileSystem extends FileSystem
     }
 
     value = directory(value).resolveSymbolicLinksSync();
-    Node? node = findNode(value);
+    var node = findNode(value);
     checkExists(node, () => value);
     utils.checkIsDir(node!, () => value);
     assert(_context.isAbsolute(value));
@@ -166,9 +166,9 @@ class _MemoryFileSystem extends FileSystem
 
   @override
   bool identicalSync(String path1, String path2) {
-    Node? node1 = findNode(path1);
+    var node1 = findNode(path1);
     checkExists(node1, () => path1);
-    Node? node2 = findNode(path2);
+    var node2 = findNode(path2);
     checkExists(node2, () => path2);
     return node1 != null && node1 == node2;
   }
@@ -220,14 +220,13 @@ class _MemoryFileSystem extends FileSystem
       reference ??= _current;
     }
 
-    List<String> parts = path.split(style.separator)
-      ..removeWhere(utils.isEmpty);
-    DirectoryNode? directory = reference?.directory;
+    var parts = path.split(style.separator)..removeWhere(utils.isEmpty);
+    var directory = reference?.directory;
     Node? child = directory;
 
-    int finalSegment = parts.length - 1;
-    for (int i = 0; i <= finalSegment; i++) {
-      String basename = parts[i];
+    var finalSegment = parts.length - 1;
+    for (var i = 0; i <= finalSegment; i++) {
+      var basename = parts[i];
       assert(basename.isNotEmpty);
 
       switch (basename) {
