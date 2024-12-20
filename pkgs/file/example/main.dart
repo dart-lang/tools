@@ -7,8 +7,8 @@ import 'package:file/memory.dart';
 
 Future<void> main() async {
   final FileSystem fs = MemoryFileSystem();
-  final Directory tmp = await fs.systemTempDirectory.createTemp('example_');
-  final File outputFile = tmp.childFile('output');
+  final tmp = await fs.systemTempDirectory.createTemp('example_');
+  final outputFile = tmp.childFile('output');
   await outputFile.writeAsString('Hello world!');
   print(outputFile.readAsStringSync());
 }

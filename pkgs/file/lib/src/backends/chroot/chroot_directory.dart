@@ -2,18 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.chroot;
+part of '../chroot.dart';
 
 class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     with ForwardingDirectory<Directory>, common.DirectoryAddOnsMixin {
-  _ChrootDirectory(ChrootFileSystem fs, String path) : super(fs, path);
+  _ChrootDirectory(super.fs, super.path);
 
   factory _ChrootDirectory.wrapped(
     ChrootFileSystem fs,
     Directory delegate, {
     bool relative = false,
   }) {
-    String localPath = fs._local(delegate.path, relative: relative);
+    var localPath = fs._local(delegate.path, relative: relative);
     return _ChrootDirectory(fs, localPath);
   }
 
@@ -32,7 +32,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
       if (await fileSystem.type(path) != expectedType) {
         throw common.notADirectory(path);
       }
-      FileSystemEntityType type = await fileSystem.type(newPath);
+      var type = await fileSystem.type(newPath);
       if (type != FileSystemEntityType.notFound) {
         if (type != expectedType) {
           throw common.notADirectory(newPath);
@@ -44,7 +44,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
           throw common.directoryNotEmpty(newPath);
         }
       }
-      String target = await fileSystem.link(path).target();
+      var target = await fileSystem.link(path).target();
       await fileSystem.link(path).delete();
       await fileSystem.link(newPath).create(target);
       return fileSystem.directory(newPath);
@@ -60,7 +60,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
       if (fileSystem.typeSync(path) != expectedType) {
         throw common.notADirectory(path);
       }
-      FileSystemEntityType type = fileSystem.typeSync(newPath);
+      var type = fileSystem.typeSync(newPath);
       if (type != FileSystemEntityType.notFound) {
         if (type != expectedType) {
           throw common.notADirectory(newPath);
@@ -72,7 +72,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
           throw common.directoryNotEmpty(newPath);
         }
       }
-      String target = fileSystem.link(path).targetSync();
+      var target = fileSystem.link(path).targetSync();
       fileSystem.link(path).deleteSync();
       fileSystem.link(newPath).createSync(target);
       return fileSystem.directory(newPath);
@@ -97,17 +97,15 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   @override
   Future<Directory> create({bool recursive = false}) async {
     if (_isLink) {
-      switch (await fileSystem.type(path)) {
-        case FileSystemEntityType.notFound:
-          throw common.noSuchFileOrDirectory(path);
-        case FileSystemEntityType.file:
-          throw common.fileExists(path);
-        case FileSystemEntityType.directory:
+      return switch (await fileSystem.type(path)) {
+        FileSystemEntityType.notFound =>
+          throw common.noSuchFileOrDirectory(path),
+        FileSystemEntityType.file => throw common.fileExists(path),
+        FileSystemEntityType.directory =>
           // Nothing to do.
-          return this;
-        default:
-          throw AssertionError();
-      }
+          this,
+        _ => throw AssertionError()
+      };
     } else {
       return wrap(await delegate.create(recursive: recursive));
     }
@@ -137,8 +135,8 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     bool recursive = false,
     bool followLinks = true,
   }) {
-    Directory delegate = this.delegate as Directory;
-    String dirname = delegate.path;
+    var delegate = this.delegate as Directory;
+    var dirname = delegate.path;
     return delegate
         .list(recursive: recursive, followLinks: followLinks)
         .map((io.FileSystemEntity entity) => _denormalize(entity, dirname));
@@ -149,8 +147,8 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     bool recursive = false,
     bool followLinks = true,
   }) {
-    Directory delegate = this.delegate as Directory;
-    String dirname = delegate.path;
+    var delegate = this.delegate as Directory;
+    var dirname = delegate.path;
     return delegate
         .listSync(recursive: recursive, followLinks: followLinks)
         .map((io.FileSystemEntity entity) => _denormalize(entity, dirname))
@@ -158,9 +156,9 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   }
 
   FileSystemEntity _denormalize(io.FileSystemEntity entity, String dirname) {
-    p.Context ctx = fileSystem.path;
-    String relativePart = ctx.relative(entity.path, from: dirname);
-    String entityPath = ctx.join(path, relativePart);
+    var ctx = fileSystem.path;
+    var relativePart = ctx.relative(entity.path, from: dirname);
+    var entityPath = ctx.join(path, relativePart);
     if (entity is io.File) {
       return _ChrootFile(fileSystem, entityPath);
     } else if (entity is io.Directory) {

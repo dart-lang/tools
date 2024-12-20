@@ -1,6 +1,1 @@
-include: package:lints/recommended.yaml
-
-analyzer:
-  errors:
-    # Allow having TODOs in the code
-    todo: ignore
+include: package:dart_flutter_team_lints/analysis_options.yaml
