@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Contains a builder object useful for creating source maps programatically.
-library source_maps.builder;
+library;
 
 // TODO(sigmund): add a builder for multi-section mappings.
 

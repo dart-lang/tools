@@ -66,8 +66,7 @@ void main() {
   });
 
   test('MemoryFileSystem.test', () {
-    final MemoryFileSystem fs =
-        MemoryFileSystem.test(); // creates root directory
+    final fs = MemoryFileSystem.test(); // creates root directory
     fs.file('/test1.txt').createSync(); // creates file
     fs.file('/test2.txt').createSync(); // creates file
     expect(fs.directory('/').statSync().modified, DateTime(2000, 1, 1, 0, 1));
@@ -95,10 +94,10 @@ void main() {
   });
 
   test('MemoryFile.openSync returns a MemoryRandomAccessFile', () async {
-    final MemoryFileSystem fs = MemoryFileSystem.test();
+    final fs = MemoryFileSystem.test();
     final io.File file = fs.file('/test1')..createSync();
 
-    io.RandomAccessFile raf = file.openSync();
+    var raf = file.openSync();
     try {
       expect(raf, isA<MemoryRandomAccessFile>());
     } finally {
@@ -114,7 +113,7 @@ void main() {
   });
 
   test('MemoryFileSystem.systemTempDirectory test', () {
-    final MemoryFileSystem fs = MemoryFileSystem.test();
+    final fs = MemoryFileSystem.test();
 
     final io.Directory fooA = fs.systemTempDirectory.createTempSync('foo');
     final io.Directory fooB = fs.systemTempDirectory.createTempSync('foo');
@@ -122,7 +121,7 @@ void main() {
     expect(fooA.path, '/.tmp_rand0/foorand0');
     expect(fooB.path, '/.tmp_rand0/foorand1');
 
-    final MemoryFileSystem secondFs = MemoryFileSystem.test();
+    final secondFs = MemoryFileSystem.test();
 
     final io.Directory fooAA =
         secondFs.systemTempDirectory.createTempSync('foo');
@@ -136,16 +135,16 @@ void main() {
 
   test('Failed UTF8 decoding in MemoryFileSystem throws a FileSystemException',
       () {
-    final MemoryFileSystem fileSystem = MemoryFileSystem.test();
-    final File file = fileSystem.file('foo')
+    final fileSystem = MemoryFileSystem.test();
+    final file = fileSystem.file('foo')
       ..writeAsBytesSync(<int>[0xFFFE]); // Invalid UTF8
 
     expect(file.readAsStringSync, throwsA(isA<FileSystemException>()));
   });
 
   test('Creating a temporary directory actually creates the directory', () {
-    final MemoryFileSystem fileSystem = MemoryFileSystem.test();
-    final Directory tempDir = fileSystem.currentDirectory.createTempSync('foo');
+    final fileSystem = MemoryFileSystem.test();
+    final tempDir = fileSystem.currentDirectory.createTempSync('foo');
 
     expect(tempDir.existsSync(), true);
   });

@@ -23,27 +23,37 @@ void main() {
       await _doRequests(count: 1);
     });
 
-    test('can run multiple batches of requests through multiple workers',
-        () async {
-      var maxWorkers = 4;
-      var maxIdleWorkers = 2;
-      driver = BazelWorkerDriver(MockWorker.spawn,
-          maxWorkers: maxWorkers, maxIdleWorkers: maxIdleWorkers);
-      for (var i = 0; i < 10; i++) {
-        await _doRequests(driver: driver);
-        expect(MockWorker.liveWorkers.length, maxIdleWorkers);
-        // No workers should be killed while there is ongoing work, but they
-        // should be cleaned up once there isn't any more work to do.
-        expect(MockWorker.deadWorkers.length,
-            (maxWorkers - maxIdleWorkers) * (i + 1));
-      }
-    });
+    test(
+      'can run multiple batches of requests through multiple workers',
+      () async {
+        var maxWorkers = 4;
+        var maxIdleWorkers = 2;
+        driver = BazelWorkerDriver(
+          MockWorker.spawn,
+          maxWorkers: maxWorkers,
+          maxIdleWorkers: maxIdleWorkers,
+        );
+        for (var i = 0; i < 10; i++) {
+          await _doRequests(driver: driver);
+          expect(MockWorker.liveWorkers.length, maxIdleWorkers);
+          // No workers should be killed while there is ongoing work, but they
+          // should be cleaned up once there isn't any more work to do.
+          expect(
+            MockWorker.deadWorkers.length,
+            (maxWorkers - maxIdleWorkers) * (i + 1),
+          );
+        }
+      },
+    );
 
     test('can run multiple requests through one worker', () async {
       var maxWorkers = 1;
       var maxIdleWorkers = 1;
-      driver = BazelWorkerDriver(MockWorker.spawn,
-          maxWorkers: maxWorkers, maxIdleWorkers: maxIdleWorkers);
+      driver = BazelWorkerDriver(
+        MockWorker.spawn,
+        maxWorkers: maxWorkers,
+        maxIdleWorkers: maxIdleWorkers,
+      );
       for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
         expect(MockWorker.liveWorkers.length, 1);
@@ -52,8 +62,11 @@ void main() {
     });
 
     test('can run one request through multiple workers', () async {
-      driver =
-          BazelWorkerDriver(MockWorker.spawn, maxWorkers: 4, maxIdleWorkers: 4);
+      driver = BazelWorkerDriver(
+        MockWorker.spawn,
+        maxWorkers: 4,
+        maxIdleWorkers: 4,
+      );
       for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver, count: 1);
         expect(MockWorker.liveWorkers.length, 1);
@@ -63,8 +76,11 @@ void main() {
 
     test('can run with maxIdleWorkers == 0', () async {
       var maxWorkers = 4;
-      driver = BazelWorkerDriver(MockWorker.spawn,
-          maxWorkers: maxWorkers, maxIdleWorkers: 0);
+      driver = BazelWorkerDriver(
+        MockWorker.spawn,
+        maxWorkers: maxWorkers,
+        maxIdleWorkers: 0,
+      );
       for (var i = 0; i < 10; i++) {
         await _doRequests(driver: driver);
         expect(MockWorker.liveWorkers.length, 0);
@@ -77,14 +93,15 @@ void main() {
       driver = BazelWorkerDriver(MockWorker.spawn, maxWorkers: maxWorkers);
       var tracking = <Future>[];
       await _doRequests(
-          driver: driver,
-          count: 10,
-          trackWork: (Future response) {
-            // We should never be tracking more than `maxWorkers` jobs at a time.
-            expect(tracking.length, lessThan(maxWorkers));
-            tracking.add(response);
-            response.then((_) => tracking.remove(response));
-          });
+        driver: driver,
+        count: 10,
+        trackWork: (Future response) {
+          // We should never be tracking more than `maxWorkers` jobs at a time.
+          expect(tracking.length, lessThan(maxWorkers));
+          tracking.add(response);
+          response.then((_) => tracking.remove(response));
+        },
+      );
     });
 
     group('failing workers', () {
@@ -93,27 +110,39 @@ void main() {
       void createDriver({int maxRetries = 2, int numBadWorkers = 2}) {
         var numSpawned = 0;
         driver = BazelWorkerDriver(
-            () async => MockWorker(workerLoopFactory: (MockWorker worker) {
-                  var connection = StdAsyncWorkerConnection(
-                      inputStream: worker._stdinController.stream,
-                      outputStream: worker._stdoutController.sink);
-                  if (numSpawned < numBadWorkers) {
-                    numSpawned++;
-                    return ThrowingMockWorkerLoop(
-                        worker, MockWorker.responseQueue, connection);
-                  } else {
-                    return MockWorkerLoop(MockWorker.responseQueue,
-                        connection: connection);
-                  }
-                }),
-            maxRetries: maxRetries);
+          () async => MockWorker(
+            workerLoopFactory: (MockWorker worker) {
+              var connection = StdAsyncWorkerConnection(
+                inputStream: worker._stdinController.stream,
+                outputStream: worker._stdoutController.sink,
+              );
+              if (numSpawned < numBadWorkers) {
+                numSpawned++;
+                return ThrowingMockWorkerLoop(
+                  worker,
+                  MockWorker.responseQueue,
+                  connection,
+                );
+              } else {
+                return MockWorkerLoop(
+                  MockWorker.responseQueue,
+                  connection: connection,
+                );
+              }
+            },
+          ),
+          maxRetries: maxRetries,
+        );
       }
 
       test('should retry up to maxRetries times', () async {
         createDriver();
         var expectedResponse = WorkResponse();
-        MockWorker.responseQueue.addAll(
-            [disconnectedResponse, disconnectedResponse, expectedResponse]);
+        MockWorker.responseQueue.addAll([
+          disconnectedResponse,
+          disconnectedResponse,
+          expectedResponse,
+        ]);
         var actualResponse = await driver!.doWork(WorkRequest());
         // The first 2 null responses are thrown away, and we should get the
         // third one.
@@ -125,23 +154,29 @@ void main() {
 
       test('should fail if it exceeds maxRetries failures', () async {
         createDriver(maxRetries: 2, numBadWorkers: 3);
-        MockWorker.responseQueue.addAll(
-            [disconnectedResponse, disconnectedResponse, WorkResponse()]);
+        MockWorker.responseQueue.addAll([
+          disconnectedResponse,
+          disconnectedResponse,
+          WorkResponse(),
+        ]);
         var actualResponse = await driver!.doWork(WorkRequest());
         // Should actually get a bad response.
         expect(actualResponse.exitCode, 15);
         expect(
-            actualResponse.output,
-            'Invalid response from worker, this probably means it wrote '
-            'invalid output or died.');
+          actualResponse.output,
+          'Invalid response from worker, this probably means it wrote '
+          'invalid output or died.',
+        );
 
         expect(MockWorker.deadWorkers.length, 3);
       });
     });
 
     test('handles spawnWorker failures', () async {
-      driver = BazelWorkerDriver(() async => throw StateError('oh no!'),
-          maxRetries: 0);
+      driver = BazelWorkerDriver(
+        () async => throw StateError('oh no!'),
+        maxRetries: 0,
+      );
       expect(driver!.doWork(WorkRequest()), throwsA(isA<StateError>()));
     });
 
@@ -156,10 +191,11 @@ void main() {
 
 /// Runs [count] of fake work requests through [driver], and asserts that they
 /// all completed.
-Future _doRequests(
-    {BazelWorkerDriver? driver,
-    int count = 100,
-    void Function(Future<WorkResponse?>)? trackWork}) async {
+Future _doRequests({
+  BazelWorkerDriver? driver,
+  int count = 100,
+  void Function(Future<WorkResponse?>)? trackWork,
+}) async {
   // If we create a driver, we need to make sure and terminate it.
   var terminateDriver = driver == null;
   driver ??= BazelWorkerDriver(MockWorker.spawn);
@@ -167,7 +203,8 @@ Future _doRequests(
   var responses = List.generate(count, (_) => WorkResponse());
   MockWorker.responseQueue.addAll(responses);
   var actualResponses = await Future.wait(
-      requests.map((request) => driver!.doWork(request, trackWork: trackWork)));
+    requests.map((request) => driver!.doWork(request, trackWork: trackWork)),
+  );
   expect(actualResponses, unorderedEquals(responses));
   if (terminateDriver) await driver.terminateWorkers();
 }
@@ -191,9 +228,11 @@ class MockWorkerLoop extends AsyncWorkerLoop {
 class ThrowingMockWorkerLoop extends MockWorkerLoop {
   final MockWorker _mockWorker;
 
-  ThrowingMockWorkerLoop(this._mockWorker, Queue<WorkResponse> responseQueue,
-      AsyncWorkerConnection connection)
-      : super(responseQueue, connection: connection);
+  ThrowingMockWorkerLoop(
+    this._mockWorker,
+    Queue<WorkResponse> responseQueue,
+    AsyncWorkerConnection connection,
+  ) : super(responseQueue, connection: connection);
 
   /// Run the worker loop. The returned [Future] doesn't complete until
   /// [connection#readRequest] returns `null`.
@@ -234,10 +273,13 @@ class MockWorker implements Process {
     liveWorkers.add(this);
     var workerLoop = workerLoopFactory != null
         ? workerLoopFactory(this)
-        : MockWorkerLoop(responseQueue,
+        : MockWorkerLoop(
+            responseQueue,
             connection: StdAsyncWorkerConnection(
-                inputStream: _stdinController.stream,
-                outputStream: _stdoutController.sink));
+              inputStream: _stdinController.stream,
+              outputStream: _stdoutController.sink,
+            ),
+          );
     workerLoop.run();
   }
 
@@ -260,8 +302,10 @@ class MockWorker implements Process {
   int get pid => throw UnsupportedError('Not needed.');
 
   @override
-  bool kill(
-      [ProcessSignal processSignal = ProcessSignal.sigterm, int exitCode = 0]) {
+  bool kill([
+    ProcessSignal processSignal = ProcessSignal.sigterm,
+    int exitCode = 0,
+  ]) {
     if (_killed) return false;
     () async {
       await _stdoutController.close();

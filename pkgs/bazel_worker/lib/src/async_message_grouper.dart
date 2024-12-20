@@ -86,13 +86,18 @@ class AsyncMessageGrouper implements MessageGrouper {
             // Copy as much as possible from the input buffer. Limit is the
             // smaller of the remaining length to fill in the message and the
             // remaining length in the buffer.
-            var lengthToCopy = min(_message.length - _messagePos,
-                _inputBuffer.length - _inputBufferPos);
+            var lengthToCopy = min(
+              _message.length - _messagePos,
+              _inputBuffer.length - _inputBufferPos,
+            );
             _message.setRange(
-                _messagePos,
-                _messagePos + lengthToCopy,
-                _inputBuffer.sublist(
-                    _inputBufferPos, _inputBufferPos + lengthToCopy));
+              _messagePos,
+              _messagePos + lengthToCopy,
+              _inputBuffer.sublist(
+                _inputBufferPos,
+                _inputBufferPos + lengthToCopy,
+              ),
+            );
             _messagePos += lengthToCopy;
             _inputBufferPos += lengthToCopy;
 

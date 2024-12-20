@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/src/io.dart' as io;
+import '../../io.dart' as io;
 
 /// Internal implementation of [io.FileStat].
 class MemoryFileStat implements io.FileStat {
@@ -47,8 +47,8 @@ class MemoryFileStat implements io.FileStat {
 
   @override
   String modeString() {
-    int permissions = mode & 0xFFF;
-    List<String> codes = const <String>[
+    var permissions = mode & 0xFFF;
+    var codes = const <String>[
       '---',
       '--x',
       '-w-',
@@ -58,7 +58,7 @@ class MemoryFileStat implements io.FileStat {
       'rw-',
       'rwx',
     ];
-    List<String> result = <String>[];
+    var result = <String>[];
     result
       ..add(codes[(permissions >> 6) & 0x7])
       ..add(codes[(permissions >> 3) & 0x7])

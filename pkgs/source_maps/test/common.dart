@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Common input/output used by builder, parser and end2end tests
-library test.common;
+library;
 
 import 'package:source_maps/source_maps.dart';
 import 'package:source_span/source_span.dart';
