@@ -143,3 +143,7 @@
 'package:watcher':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/watcher/**'
+
+'package:yaml':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/yaml/**'
