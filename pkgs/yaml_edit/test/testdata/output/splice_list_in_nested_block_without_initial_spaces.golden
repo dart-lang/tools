@@ -1,0 +1,50 @@
+key:
+- - bar1
+  - bar2
+- - foo
+- - baz
+---
+key:
+- - pre-bar1
+  - bar1
+  - bar2
+- - foo
+- - baz
+---
+key:
+- - pre-bar1
+  - bar1
+  - post-bar2
+  - bar2
+- - foo
+- - baz
+---
+key:
+- - pre-bar1
+  - bar1
+  - post-bar2
+  - bar2
+- - foo
+- - baz
+  - post-baz
+---
+key:
+- - pre-bar1
+  - bar1
+  - post-bar2
+  - bar2
+- - foo
+- - pre-baz
+  - baz
+  - post-baz
+---
+key:
+- - pre-bar1
+  - bar1
+  - post-bar2
+  - bar2
+- - pre-foo
+  - foo
+- - pre-baz
+  - baz
+  - post-baz

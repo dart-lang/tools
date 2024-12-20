@@ -1,0 +1,13 @@
+SPLICE LIST IN A NESTED BLOCK LIST WITHOUT INITIAL SPACES
+---
+key:
+- - bar1
+  - bar2
+- - foo
+- - baz
+---
+ - [splice, [key, 0], 0, 0, ['pre-bar1']]
+ - [splice, [key, 0], 2, 0, ['post-bar2']]
+ - [splice, [key, 2], 1, 0, ['post-baz']]
+ - [splice, [key, 2], 0, 0, ['pre-baz']]
+ - [splice, [key, 1], 0, 0, ['pre-foo']]

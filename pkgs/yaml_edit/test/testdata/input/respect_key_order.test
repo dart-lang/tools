@@ -1,0 +1,6 @@
+RESPECTS THE KEY ORDER
+---
+A: first
+C: third
+---
+- [update, [B], second]

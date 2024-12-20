@@ -1,0 +1,14 @@
+REMOVE FROM LIST IN BLOCK MODE
+---
+ - true
+ - test:
+ - foo: true
+   bar:
+ - baz:
+ - nested:
+     foo:
+---
+ - [remove, [1, 'test']]
+ - [remove, [2, 'bar']]
+ - [remove, [3, 'baz']]
+ - [remove, [4, 'nested', 'foo']]

@@ -147,3 +147,7 @@
 'package:yaml':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/yaml/**'
+
+'package:yaml_edit':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/yaml_edit/**'
