@@ -1,5 +1,5 @@
 name: pubspec_parse
-version: 1.4.0-wip
+version: 1.4.0
 description: >-
   Simple package for parsing pubspec.yaml files with a type-safe API and rich
   error reporting.

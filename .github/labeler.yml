@@ -92,6 +92,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/pub_semver/**'
 
+'package:pubspec_parse':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/pubspec_parse/**'
+
 'package:source_map_stack_trace':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/source_map_stack_trace/**'

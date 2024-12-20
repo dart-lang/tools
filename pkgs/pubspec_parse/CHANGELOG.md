@@ -1,9 +1,10 @@
-## 1.4.0-wip
+## 1.4.0
 
 - Require Dart 3.2
 - Seal the `Dependency` class.
 - Set `Pubspec.environment` to non-nullable.
 - Remove deprecated package_api_docs rule
+- Move to `dart-lang/tools` monorepo.
 
 ## 1.3.0
 
