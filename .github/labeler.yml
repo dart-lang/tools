@@ -112,6 +112,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/sse/**'
 
+'package:stack_trace':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/stack_trace/**'
+
 'package:stream_transform':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/stream_transform/**'
