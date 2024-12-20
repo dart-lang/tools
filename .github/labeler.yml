@@ -116,6 +116,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/stack_trace/**'
 
+'package:stream_channel':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/stream_channel/**'
+
 'package:stream_transform':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/stream_transform/**'
