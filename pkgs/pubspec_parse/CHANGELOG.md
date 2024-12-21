@@ -1,3 +1,8 @@
+## 1.4.1-wip
+
+- Require Dart 3.6
+- Update depnedencies.
+
 ## 1.4.0
 
 - Require Dart 3.2
