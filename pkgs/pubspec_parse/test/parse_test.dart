@@ -32,31 +32,41 @@ void main() {
     expect(value.repository, isNull);
     expect(value.issueTracker, isNull);
     expect(value.screenshots, isEmpty);
+    expect(value.workspace, isNull);
+    expect(value.resolution, isNull);
   });
 
   test('all fields set', () async {
     final version = Version.parse('1.2.3');
-    final sdkConstraint = VersionConstraint.parse('>=2.12.0 <3.0.0');
-    final value = await parse({
-      'name': 'sample',
-      'version': version.toString(),
-      'publish_to': 'none',
-      'author': 'name@example.com',
-      'environment': {'sdk': sdkConstraint.toString()},
-      'description': 'description',
-      'homepage': 'homepage',
-      'documentation': 'documentation',
-      'repository': 'https://github.com/example/repo',
-      'issue_tracker': 'https://github.com/example/repo/issues',
-      'funding': [
-        'https://patreon.com/example',
-      ],
-      'topics': ['widget', 'button'],
-      'ignored_advisories': ['111', '222'],
-      'screenshots': [
-        {'description': 'my screenshot', 'path': 'path/to/screenshot'},
-      ],
-    });
+    final sdkConstraint = VersionConstraint.parse('>=3.6.0 <4.0.0');
+    final value = await parse(
+      {
+        'name': 'sample',
+        'version': version.toString(),
+        'publish_to': 'none',
+        'author': 'name@example.com',
+        'environment': {'sdk': sdkConstraint.toString()},
+        'description': 'description',
+        'homepage': 'homepage',
+        'documentation': 'documentation',
+        'repository': 'https://github.com/example/repo',
+        'issue_tracker': 'https://github.com/example/repo/issues',
+        'funding': [
+          'https://patreon.com/example',
+        ],
+        'topics': ['widget', 'button'],
+        'ignored_advisories': ['111', '222'],
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+        ],
+        'workspace': [
+          'pkg1',
+          'pkg2',
+        ],
+        'resolution': 'workspace',
+      },
+      skipTryPub: true,
+    );
     expect(value.name, 'sample');
     expect(value.version, version);
     expect(value.publishTo, 'none');
@@ -86,6 +96,10 @@ void main() {
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
+    expect(value.workspace, hasLength(2));
+    expect(value.workspace!.first, 'pkg1');
+    expect(value.workspace!.last, 'pkg2');
+    expect(value.resolution, 'workspace');
   });
 
   test('environment values can be null', () async {
@@ -709,6 +723,42 @@ line 1, column 1: Not a map
           lenient: true,
         ),
         throwsException,
+      );
+    });
+  });
+
+  group('workspaces', () {
+    test('workspace key must be a list', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'workspace': 42,
+        },
+        'Unsupported value for "workspace". type \'int\' is not a subtype of type \'List<dynamic>?\' in type cast',
+        skipTryPub: true,
+      );
+    });
+
+    test('workspace key must be a list of strings', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'workspace': [42],
+        },
+        'Unsupported value for "workspace". type \'int\' is not a subtype of type \'String\' in type cast',
+        skipTryPub: true,
+      );
+    });
+
+    test('resolution key must be a string', () {
+      expectParseThrowsContaining(
+        {
+          'name': 'sample',
+          'environment': {'sdk': '^3.6.0'},
+          'resolution': 42,
+        },
+        'Unsupported value for "resolution". type \'int\' is not a subtype of type \'String?\' in type cast',
+        skipTryPub: true,
       );
     });
   });

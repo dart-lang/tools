@@ -93,6 +93,12 @@ class Pubspec {
   /// and other settings.
   final Map<String, dynamic>? flutter;
 
+  /// If this package is a Pub Workspace, this field lists the sub-packages.
+  final List<String>? workspace;
+
+  /// Specifies how to resolve dependencies with the surrounding Pub Workspace.
+  final String? resolution;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -117,6 +123,8 @@ class Pubspec {
     this.screenshots,
     this.documentation,
     this.description,
+    this.workspace,
+    this.resolution,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,
