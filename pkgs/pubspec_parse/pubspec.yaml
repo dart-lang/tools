@@ -9,7 +9,7 @@ topics:
 - dart-pub
 
 environment:
-  sdk: ^3.2.0
+  sdk: ^3.6.0
 
 dependencies:
   checked_yaml: ^2.0.1
