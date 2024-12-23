@@ -39,31 +39,34 @@ void main() {
   test('all fields set', () async {
     final version = Version.parse('1.2.3');
     final sdkConstraint = VersionConstraint.parse('>=3.6.0 <4.0.0');
-    final value = await parse({
-      'name': 'sample',
-      'version': version.toString(),
-      'publish_to': 'none',
-      'author': 'name@example.com',
-      'environment': {'sdk': sdkConstraint.toString()},
-      'description': 'description',
-      'homepage': 'homepage',
-      'documentation': 'documentation',
-      'repository': 'https://github.com/example/repo',
-      'issue_tracker': 'https://github.com/example/repo/issues',
-      'funding': [
-        'https://patreon.com/example',
-      ],
-      'topics': ['widget', 'button'],
-      'ignored_advisories': ['111', '222'],
-      'screenshots': [
-        {'description': 'my screenshot', 'path': 'path/to/screenshot'},
-      ],
-      'workspace': [
-        'pkg1',
-        'pkg2',
-      ],
-      'resolution': 'workspace',
-    }, skipTryPub: true);
+    final value = await parse(
+      {
+        'name': 'sample',
+        'version': version.toString(),
+        'publish_to': 'none',
+        'author': 'name@example.com',
+        'environment': {'sdk': sdkConstraint.toString()},
+        'description': 'description',
+        'homepage': 'homepage',
+        'documentation': 'documentation',
+        'repository': 'https://github.com/example/repo',
+        'issue_tracker': 'https://github.com/example/repo/issues',
+        'funding': [
+          'https://patreon.com/example',
+        ],
+        'topics': ['widget', 'button'],
+        'ignored_advisories': ['111', '222'],
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+        ],
+        'workspace': [
+          'pkg1',
+          'pkg2',
+        ],
+        'resolution': 'workspace',
+      },
+      skipTryPub: true,
+    );
     expect(value.name, 'sample');
     expect(value.version, version);
     expect(value.publishTo, 'none');
