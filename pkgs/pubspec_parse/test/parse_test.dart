@@ -63,7 +63,7 @@ void main() {
         'pkg2',
       ],
       'resolution': 'workspace',
-    });
+    }, skipTryPub: true);
     expect(value.name, 'sample');
     expect(value.version, version);
     expect(value.publishTo, 'none');
