@@ -1,0 +1,11 @@
+TEST FOR ISSUE #55 -- https://github.com/dart-lang/yaml_edit/issues/55
+---
+name: sample
+version: 0.1.0
+environment:
+  sdk: ^3.0.0
+dependencies:
+dev_dependencies:
+  retry:
+---
+ - [remove, ['dev_dependencies', 'retry']]

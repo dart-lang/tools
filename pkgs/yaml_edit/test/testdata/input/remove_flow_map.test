@@ -1,0 +1,44 @@
+REMOVE FROM MAP IN FLOW MODE
+---
+A: true
+B: {foo:  }
+C: {
+  foo:,bar:true
+}
+D: {
+  foo:
+  ,bar:true
+}
+E: {
+  foo: # comment
+  ,bar:true
+}
+F: {
+  # comment
+  foo:
+  ,bar:true
+}
+G: {
+  # comment
+  foo:
+  # comment
+  ,bar:true
+}
+H: {
+  foo: # comment
+  ,
+  bar:true
+}
+I: {
+  bar: true, foo: }
+J: {  foo   :  }
+---
+- [remove, [B, foo]]
+- [remove, [C, foo]]
+- [remove, [D, foo]]
+- [remove, [E, foo]]
+- [remove, [F, foo]]
+- [remove, [G, foo]]
+- [remove, [H, foo]]
+- [remove, [I, foo]]
+- [remove, [J, foo]]
