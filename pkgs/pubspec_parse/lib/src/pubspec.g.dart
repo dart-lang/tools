@@ -38,6 +38,8 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
               (v) => (v as List<dynamic>?)?.map((e) => e as String).toList()),
           screenshots: $checkedConvert(
               'screenshots', (v) => parseScreenshots(v as List?)),
+          falseSecrets: $checkedConvert('false_secrets',
+              (v) => (v as List<dynamic>?)?.map((e) => e as String).toList()),
           documentation: $checkedConvert('documentation', (v) => v as String?),
           description: $checkedConvert('description', (v) => v as String?),
           dependencies:
@@ -58,6 +60,7 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
         'publishTo': 'publish_to',
         'issueTracker': 'issue_tracker',
         'ignoredAdvisories': 'ignored_advisories',
+        'falseSecrets': 'false_secrets',
         'devDependencies': 'dev_dependencies',
         'dependencyOverrides': 'dependency_overrides'
       },
