@@ -5,7 +5,12 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 // ignore_for_file: lines_longer_than_80_chars
 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:pubspec_parse/src/pubspec.dart';
 import 'package:test/test.dart';
 
 import 'test_utils.dart';
@@ -32,6 +37,10 @@ void main() {
     expect(value.repository, isNull);
     expect(value.issueTracker, isNull);
     expect(value.screenshots, isEmpty);
+    expect(value.funding, isNull);
+    expect(value.topics, isNull);
+    expect(value.ignoredAdvisories, isNull);
+    expect(value.falseSecrets, isNull);
   });
 
   test('all fields set', () async {
@@ -55,6 +64,10 @@ void main() {
       'ignored_advisories': ['111', '222'],
       'screenshots': [
         {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+      ],
+      'false_secrets': [
+        '/lib/src/hardcoded_api_key.dart',
+        '/test/localhost_certificates/*.pem',
       ],
     });
     expect(value.name, 'sample');
@@ -86,6 +99,80 @@ void main() {
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
+    expect(value.falseSecrets, hasLength(2));
+    expect(value.falseSecrets!.first, '/lib/src/hardcoded_api_key.dart');
+    expect(value.falseSecrets!.last, '/test/localhost_certificates/*.pem');
+  });
+
+  // Test from test/fixtures/sample_pubspec.yaml
+  test('sample pubspec', () async {
+    final yamlString =
+        await File(p.join('test', 'fixtures', 'sample_pubspec.yaml'))
+            .readAsString();
+
+    final value = Pubspec.parse(yamlString);
+
+    expect(value.name, 'sample');
+    expect(value.version, Version.parse('1.2.3'));
+    expect(value.publishTo, 'none');
+    expect(value.description, 'description');
+    expect(value.homepage, 'homepage');
+    expect(value.author, 'name@example.com');
+    expect(value.authors, ['name@example.com']);
+    expect(
+      value.environment,
+      {'sdk': VersionConstraint.parse('>=2.12.0 <3.0.0')},
+    );
+    expect(value.documentation, 'documentation');
+    expect(value.dependencies, isEmpty);
+    expect(value.devDependencies, isEmpty);
+    expect(value.dependencyOverrides, isEmpty);
+    expect(value.repository, Uri.parse('https://github.com/example/repo'));
+    expect(
+      value.issueTracker,
+      Uri.parse('https://github.com/example/repo/issues'),
+    );
+    expect(value.funding, hasLength(1));
+    expect(value.funding!.single.toString(), 'https://patreon.com/example');
+    expect(value.topics, hasLength(2));
+    expect(value.topics!.first, 'widget');
+    expect(value.topics!.last, 'button');
+    expect(value.ignoredAdvisories, hasLength(2));
+    expect(value.ignoredAdvisories!.first, '111');
+    expect(value.ignoredAdvisories!.last, '222');
+    expect(value.screenshots, hasLength(1));
+    expect(value.screenshots!.first.description, 'my screenshot');
+    expect(value.screenshots!.first.path, 'path/to/screenshot');
+    expect(value.falseSecrets, hasLength(2));
+    expect(value.falseSecrets!.first, '/lib/src/hardcoded_api_key.dart');
+    expect(value.falseSecrets!.last, '/test/localhost_certificates/*.pem');
+  });
+
+  // This is done to use as an example to see if there are any
+  // parsing errors with the flutter favorites packages
+  test('can parse flutter_favorite pubspecs', () async {
+    final jsonString = await File(
+      p.join('test', 'fixtures', 'flutter_favorite_pubspecs.json'),
+    ).readAsString();
+
+    List<Map<String, dynamic>> favoritesJson;
+    try {
+      favoritesJson =
+          (jsonDecode(jsonString) as List).cast<Map<String, dynamic>>();
+    } catch (e) {
+      fail('Failed to parse JSON: $e');
+    }
+
+    for (var favoriteJson in favoritesJson) {
+      try {
+        Pubspec.fromJson(favoriteJson);
+      } catch (e) {
+        final name = favoriteJson['name'];
+        fail('Failed to parse pubspec for package "$name" \n$e');
+      }
+    }
+
+    expect(favoritesJson.length, 73, reason: 'Unexpected number of pubspecs');
   });
 
   test('environment values can be null', () async {

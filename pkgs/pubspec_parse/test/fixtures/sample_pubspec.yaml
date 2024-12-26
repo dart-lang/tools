@@ -1,0 +1,25 @@
+name: sample
+version: 1.2.3
+publish_to: none
+author: name@example.com
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+description: description
+homepage: homepage
+documentation: documentation
+repository: https://github.com/example/repo
+issue_tracker: https://github.com/example/repo/issues
+funding:
+  - https://patreon.com/example
+topics:
+  - widget
+  - button
+ignored_advisories:
+  - '111'
+  - '222'
+screenshots:
+  - description: my screenshot
+    path: path/to/screenshot
+false_secrets:
+  - /lib/src/hardcoded_api_key.dart
+  - /test/localhost_certificates/*.pem

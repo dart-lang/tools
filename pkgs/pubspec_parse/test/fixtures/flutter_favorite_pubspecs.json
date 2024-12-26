@@ -1,0 +1,2128 @@
+[
+  {
+    "name": "shared_preferences",
+    "description": "Flutter plugin for reading and writing simple key-value pairs. Wraps NSUserDefaults on iOS and SharedPreferences on Android.",
+    "repository": "https://github.com/flutter/packages/tree/main/packages/shared_preferences/shared_preferences",
+    "issue_tracker": "https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+shared_preferences%22",
+    "version": "2.3.2",
+    "environment": { "sdk": "^3.4.0", "flutter": ">=3.22.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": { "default_package": "shared_preferences_android" },
+          "ios": { "default_package": "shared_preferences_foundation" },
+          "linux": { "default_package": "shared_preferences_linux" },
+          "macos": { "default_package": "shared_preferences_foundation" },
+          "web": { "default_package": "shared_preferences_web" },
+          "windows": { "default_package": "shared_preferences_windows" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "shared_preferences_android": "^2.3.0",
+      "shared_preferences_foundation": "^2.5.0",
+      "shared_preferences_linux": "^2.4.0",
+      "shared_preferences_platform_interface": "^2.4.0",
+      "shared_preferences_web": "^2.4.0",
+      "shared_preferences_windows": "^2.4.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "integration_test": { "sdk": "flutter" }
+    },
+    "topics": ["persistence", "shared-preferences", "storage"]
+  },
+  {
+    "name": "provider",
+    "description": "A wrapper around InheritedWidget to make them easier to use and more reusable.",
+    "version": "6.1.2",
+    "repository": "https://github.com/rrousselGit/provider",
+    "issue_tracker": "https://github.com/rrousselGit/provider/issues",
+    "environment": { "sdk": ">=2.12.0 <4.0.0", "flutter": ">=1.16.0" },
+    "dependencies": {
+      "collection": "^1.15.0",
+      "flutter": { "sdk": "flutter" },
+      "nested": "^1.0.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "leak_tracker": "any",
+      "mockito": "^5.0.0",
+      "test": "^1.15.5"
+    }
+  },
+  {
+    "name": "geolocator",
+    "description": "Geolocation plugin for Flutter. This plugin provides a cross-platform (iOS, Android) API for generic location (GPS etc.) functions.",
+    "repository": "https://github.com/baseflow/flutter-geolocator/tree/main/geolocator",
+    "issue_tracker": "https://github.com/baseflow/flutter-geolocator/issues?q=is%3Aissue+is%3Aopen",
+    "version": "13.0.1",
+    "environment": { "sdk": ">=2.15.0 <4.0.0", "flutter": ">=2.8.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": { "default_package": "geolocator_android" },
+          "ios": { "default_package": "geolocator_apple" },
+          "macos": { "default_package": "geolocator_apple" },
+          "web": { "default_package": "geolocator_web" },
+          "windows": { "default_package": "geolocator_windows" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "geolocator_platform_interface": "^4.2.3",
+      "geolocator_android": "^4.6.0",
+      "geolocator_apple": "^2.3.7",
+      "geolocator_web": "^4.1.1",
+      "geolocator_windows": "^0.2.3"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": ">=3.0.1 <5.0.0",
+      "mockito": "^5.0.0-nullsafety.7",
+      "plugin_platform_interface": "^2.1.8"
+    }
+  },
+  {
+    "name": "flutter_bloc",
+    "description": "Flutter Widgets that make it easy to implement the BLoC (Business Logic Component) design pattern. Built to be used with the bloc state management package.",
+    "version": "8.1.6",
+    "repository": "https://github.com/felangel/bloc/tree/master/packages/flutter_bloc",
+    "issue_tracker": "https://github.com/felangel/bloc/issues",
+    "homepage": "https://bloclibrary.dev",
+    "documentation": "https://bloclibrary.dev/getting-started",
+    "topics": ["bloc", "state-management"],
+    "environment": { "sdk": ">=2.12.0 <4.0.0" },
+    "dependencies": {
+      "bloc": "^8.1.1",
+      "flutter": { "sdk": "flutter" },
+      "provider": "^6.0.0"
+    },
+    "dev_dependencies": { "flutter_test": { "sdk": "flutter" } },
+    "screenshots": [
+      {
+        "description": "The flutter bloc package logo.",
+        "path": "screenshots/logo.png"
+      }
+    ]
+  },
+  {
+    "name": "path_provider",
+    "description": "Flutter plugin for getting commonly used locations on host platform file systems, such as the temp and app data directories.",
+    "repository": "https://github.com/flutter/packages/tree/main/packages/path_provider/path_provider",
+    "issue_tracker": "https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+path_provider%22",
+    "version": "2.1.4",
+    "environment": { "sdk": "^3.2.0", "flutter": ">=3.16.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": { "default_package": "path_provider_android" },
+          "ios": { "default_package": "path_provider_foundation" },
+          "linux": { "default_package": "path_provider_linux" },
+          "macos": { "default_package": "path_provider_foundation" },
+          "windows": { "default_package": "path_provider_windows" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "path_provider_android": "^2.2.0",
+      "path_provider_foundation": "^2.3.2",
+      "path_provider_linux": "^2.2.0",
+      "path_provider_platform_interface": "^2.1.0",
+      "path_provider_windows": "^2.2.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "integration_test": { "sdk": "flutter" },
+      "plugin_platform_interface": "^2.1.7",
+      "test": "^1.16.0"
+    },
+    "topics": ["files", "path-provider", "paths"]
+  },
+  {
+    "name": "flutter_native_splash",
+    "description": "Customize Flutter's default white native splash screen with background color and splash image. Supports dark mode, full screen, and more.",
+    "version": "2.4.1",
+    "repository": "https://github.com/jonbhanson/flutter_native_splash",
+    "issue_tracker": "https://github.com/jonbhanson/flutter_native_splash/issues",
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=2.5.0" },
+    "dependencies": {
+      "args": "^2.5.0",
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "html": "^0.15.4",
+      "image": "^4.2.0",
+      "meta": "^1.12.0",
+      "path": "^1.9.0",
+      "universal_io": "^2.2.2",
+      "xml": "^6.5.0",
+      "yaml": "^3.1.2",
+      "ansicolor": "^2.0.2"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": "^4.0.0"
+    },
+    "screenshots": [
+      {
+        "description": "Examples of the splash screen on iOS.",
+        "path": "splash_demo.webp"
+      },
+      {
+        "description": "Examples of the splash screen on iOS in dark mode.",
+        "path": "splash_demo_dark.webp"
+      }
+    ],
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "net.jonhanson.flutter_native_splash",
+            "pluginClass": "FlutterNativeSplashPlugin"
+          },
+          "ios": { "pluginClass": "FlutterNativeSplashPlugin" },
+          "web": {
+            "pluginClass": "FlutterNativeSplashWeb",
+            "fileName": "flutter_native_splash_web.dart"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "font_awesome_flutter",
+    "description": "The Font Awesome Icon pack available as Flutter Icons. Provides 2000 additional icons to use in your apps.",
+    "maintainer": "Michael Spiss (@michaelspiss)",
+    "repository": "https://github.com/fluttercommunity/font_awesome_flutter",
+    "issue_tracker": "https://github.com/fluttercommunity/font_awesome_flutter/issues",
+    "version": "10.7.0",
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": {
+      "recase": "^4.1.0",
+      "args": "^2.4.1",
+      "flutter_test": { "sdk": "flutter" },
+      "version": "^3.0.2",
+      "ansicolor": "^2.0.1",
+      "flutter_lints": "^2.0.1",
+      "pub_semver": "^2.1.4"
+    },
+    "flutter": {
+      "fonts": [
+        {
+          "family": "FontAwesomeBrands",
+          "fonts": [{ "asset": "lib/fonts/fa-brands-400.ttf", "weight": 400 }]
+        },
+        {
+          "family": "FontAwesomeRegular",
+          "fonts": [{ "asset": "lib/fonts/fa-regular-400.ttf", "weight": 400 }]
+        },
+        {
+          "family": "FontAwesomeSolid",
+          "fonts": [{ "asset": "lib/fonts/fa-solid-900.ttf", "weight": 900 }]
+        }
+      ]
+    }
+  },
+  {
+    "name": "share_plus",
+    "description": "Flutter plugin for sharing content via the platform share UI, using the ACTION_SEND intent on Android and UIActivityViewController on iOS.",
+    "version": "10.0.2",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/share_plus/share_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/share_plus",
+    "topics": ["share", "utils"],
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.share",
+            "pluginClass": "SharePlusPlugin"
+          },
+          "ios": { "pluginClass": "FPPSharePlusPlugin" },
+          "linux": { "dartPluginClass": "SharePlusLinuxPlugin" },
+          "macos": { "pluginClass": "SharePlusMacosPlugin" },
+          "web": {
+            "pluginClass": "SharePlusWebPlugin",
+            "fileName": "src/share_plus_web.dart"
+          },
+          "windows": {
+            "dartPluginClass": "SharePlusWindowsPlugin",
+            "pluginClass": "SharePlusWindowsPluginCApi"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "cross_file": "^0.3.4+2",
+      "meta": "^1.8.0",
+      "mime": "^1.0.4",
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "share_plus_platform_interface": "^5.0.0",
+      "file": ">=6.1.4 <8.0.0",
+      "url_launcher_web": "^2.3.2",
+      "url_launcher_windows": "^3.1.2",
+      "url_launcher_linux": "^3.1.1",
+      "url_launcher_platform_interface": "^2.3.2",
+      "ffi": "^2.1.2",
+      "web": "^1.0.0",
+      "win32": ">=4.0.0 <6.0.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": ">=2.0.1 <4.0.0"
+    },
+    "environment": { "sdk": ">=3.3.0 <4.0.0", "flutter": ">=3.19.0" }
+  },
+  {
+    "name": "connectivity_plus",
+    "description": "Flutter plugin for discovering the state of the network (WiFi & mobile/cellular) connectivity on Android and iOS.",
+    "version": "6.0.5",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/connectivity_plus/connectivity_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/connectivity_plus",
+    "topics": ["connectivity", "utils"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.7.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.connectivity",
+            "pluginClass": "ConnectivityPlugin"
+          },
+          "ios": {
+            "pluginClass": "ConnectivityPlusPlugin",
+            "sharedDarwinSource": true
+          },
+          "linux": { "dartPluginClass": "ConnectivityPlusLinuxPlugin" },
+          "macos": {
+            "pluginClass": "ConnectivityPlusPlugin",
+            "sharedDarwinSource": true
+          },
+          "web": {
+            "pluginClass": "ConnectivityPlusWebPlugin",
+            "fileName": "src/connectivity_plus_web.dart"
+          },
+          "windows": { "pluginClass": "ConnectivityPlusWindowsPlugin" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "connectivity_plus_platform_interface": "^2.0.1",
+      "web": ">=0.5.0 <2.0.0",
+      "meta": "^1.8.0",
+      "nm": "^0.5.0",
+      "collection": "^1.18.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "build_runner": "^2.3.3",
+      "dbus": "^0.7.8",
+      "flutter_lints": "^4.0.0",
+      "mockito": "^5.4.0",
+      "plugin_platform_interface": "^2.1.5",
+      "test": "^1.22.0"
+    }
+  },
+  {
+    "name": "package_info_plus",
+    "description": "Flutter plugin for querying information about the application package, such as CFBundleVersion on iOS or versionCode on Android.",
+    "version": "8.0.2",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/package_info_plus/package_info_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/package_info_plus",
+    "topics": ["information", "identifier", "utils"],
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.packageinfo",
+            "pluginClass": "PackageInfoPlugin"
+          },
+          "ios": { "pluginClass": "FPPPackageInfoPlusPlugin" },
+          "linux": { "dartPluginClass": "PackageInfoPlusLinuxPlugin" },
+          "macos": { "pluginClass": "FPPPackageInfoPlusPlugin" },
+          "web": {
+            "pluginClass": "PackageInfoPlusWebPlugin",
+            "fileName": "src/package_info_plus_web.dart"
+          },
+          "windows": { "dartPluginClass": "PackageInfoPlusWindowsPlugin" }
+        }
+      }
+    },
+    "dependencies": {
+      "ffi": "^2.0.1",
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "http": ">=0.13.5 <2.0.0",
+      "meta": "^1.8.0",
+      "path": "^1.8.2",
+      "package_info_plus_platform_interface": "^3.0.1",
+      "web": ">=0.5.0 <2.0.0",
+      "win32": ">=4.0.0 <6.0.0",
+      "clock": "^1.1.1"
+    },
+    "dev_dependencies": {
+      "flutter_lints": ">=2.0.1 <4.0.0",
+      "flutter_test": { "sdk": "flutter" },
+      "test": "^1.22.0"
+    },
+    "environment": { "sdk": ">=3.3.0 <4.0.0", "flutter": ">=3.19.0" }
+  },
+  {
+    "name": "location",
+    "description": "Cross-platform plugin for easy access to device's location in real-time.",
+    "version": "7.0.0",
+    "homepage": "https://docs.page/Lyokone/flutterlocation",
+    "repository": "https://github.com/Lyokone/flutterlocation",
+    "issue_tracker": "https://github.com/Lyokone/flutterlocation/issues",
+    "environment": { "sdk": ">=3.4.0 <4.0.0", "flutter": ">=3.22.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "com.lyokone.location",
+            "pluginClass": "LocationPlugin"
+          },
+          "ios": { "pluginClass": "LocationPlugin" },
+          "macos": { "pluginClass": "LocationPlugin" },
+          "web": { "default_package": "location_web" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "location_platform_interface": "^5.0.0",
+      "location_web": "^5.0.3"
+    },
+    "dev_dependencies": {
+      "async": "^2.11.0",
+      "build_runner": "^2.4.11",
+      "flutter_test": { "sdk": "flutter" },
+      "leancode_lint": "^13.0.0",
+      "mockito": "^5.4.4"
+    }
+  },
+  {
+    "name": "sqflite",
+    "repository": "https://github.com/tekartik/sqflite/tree/master/sqflite",
+    "issue_tracker": "https://github.com/tekartik/sqflite/issues",
+    "description": "Flutter plugin for SQLite, a self-contained, high-reliability, embedded, SQL database engine.",
+    "version": "2.3.3+2",
+    "platforms": { "android": null, "ios": null, "macos": null },
+    "topics": ["sql", "database"],
+    "funding": ["https://github.com/sponsors/alextekartik"],
+    "environment": { "sdk": "^3.5.0", "flutter": ">=3.7.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "com.tekartik.sqflite",
+            "pluginClass": "SqflitePlugin",
+            "dartPluginClass": "SqflitePlugin"
+          },
+          "ios": {
+            "pluginClass": "SqflitePlugin",
+            "dartPluginClass": "SqflitePlugin",
+            "sharedDarwinSource": true
+          },
+          "macos": {
+            "pluginClass": "SqflitePlugin",
+            "dartPluginClass": "SqflitePlugin",
+            "sharedDarwinSource": true
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "sqflite_common": ">=2.5.0-1 <4.0.0",
+      "path": ">=1.8.0 <3.0.0"
+    },
+    "dev_dependencies": {
+      "flutter_lints": ">=1.0.0",
+      "process_run": ">=0.12.0",
+      "http": ">=0.13.0",
+      "flutter_test": { "sdk": "flutter" },
+      "test_api": ">=0.2.19",
+      "pub_semver": ">=2.0.0"
+    }
+  },
+  {
+    "name": "flutter_animate",
+    "description": "Add beautiful animated effects & builders in Flutter, via an easy, customizable, unified API.",
+    "version": "4.5.0",
+    "repository": "https://github.com/gskinner/flutter_animate",
+    "issue_tracker": "https://github.com/gskinner/flutter_animate/issues",
+    "topics": ["animation", "ui", "effects", "widgets", "widget"],
+    "environment": { "sdk": ">=2.17.0 <4.0.0", "flutter": ">=2.0.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_shaders": "^0.1.2"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": "^2.0.0"
+    },
+    "flutter": null
+  },
+  {
+    "name": "sign_in_with_apple",
+    "description": "Flutter bridge to initiate Sign in with Apple (on iOS, macOS, and Android). Includes support for keychain entries as well as signing in with an Apple ID.",
+    "version": "6.1.3",
+    "homepage": "https://github.com/aboutyou/dart_packages/tree/master/packages/sign_in_with_apple",
+    "repository": "https://github.com/aboutyou/dart_packages",
+    "environment": { "sdk": "^3.3.0", "flutter": ">=3.19.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.3.0",
+      "sign_in_with_apple_platform_interface": "^1.1.0",
+      "sign_in_with_apple_web": "^2.1.0"
+    },
+    "dev_dependencies": {
+      "flutter_lints": "^3.0.1",
+      "flutter_test": { "sdk": "flutter" }
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "com.aboutyou.dart_packages.sign_in_with_apple",
+            "pluginClass": "SignInWithApplePlugin"
+          },
+          "ios": { "pluginClass": "SignInWithApplePlugin" },
+          "macos": { "pluginClass": "SignInWithApplePlugin" },
+          "web": { "default_package": "sign_in_with_apple_web" }
+        }
+      }
+    }
+  },
+  {
+    "name": "just_audio",
+    "description": "A feature-rich audio player for Flutter. Loop, clip and concatenate any sound from any source (asset/file/URL/stream) in a variety of audio formats with gapless playback.",
+    "version": "0.9.40",
+    "repository": "https://github.com/ryanheise/just_audio/tree/minor/just_audio",
+    "issue_tracker": "https://github.com/ryanheise/just_audio/issues",
+    "topics": ["audio", "sound", "player", "background"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=3.10.0" },
+    "dependencies": {
+      "just_audio_platform_interface": "^4.3.0",
+      "just_audio_web": "^0.4.11",
+      "audio_session": "^0.1.14",
+      "rxdart": ">=0.26.0 <0.29.0",
+      "path": "^1.8.0",
+      "path_provider": "^2.0.0",
+      "async": "^2.5.0",
+      "uuid": ">=3.0.1 <5.0.0",
+      "crypto": "^3.0.0",
+      "meta": "^1.3.0",
+      "flutter": { "sdk": "flutter" }
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0",
+      "plugin_platform_interface": "^2.0.0",
+      "flutter_lints": "^2.0.1"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "com.ryanheise.just_audio",
+            "pluginClass": "JustAudioPlugin"
+          },
+          "ios": { "pluginClass": "JustAudioPlugin" },
+          "macos": { "pluginClass": "JustAudioPlugin" },
+          "web": { "default_package": "just_audio_web" }
+        }
+      }
+    }
+  },
+  {
+    "name": "bloc",
+    "description": "A predictable state management library that helps implement the BLoC (Business Logic Component) design pattern.",
+    "version": "8.1.4",
+    "repository": "https://github.com/felangel/bloc/tree/master/packages/bloc",
+    "issue_tracker": "https://github.com/felangel/bloc/issues",
+    "homepage": "https://github.com/felangel/bloc",
+    "documentation": "https://bloclibrary.dev",
+    "topics": ["bloc", "state-management"],
+    "environment": { "sdk": ">=2.12.0 <4.0.0" },
+    "dependencies": { "meta": "^1.3.0" },
+    "dev_dependencies": {
+      "mocktail": "^1.0.0",
+      "stream_transform": "^2.0.0",
+      "test": "^1.18.2"
+    },
+    "screenshots": [
+      {
+        "description": "The bloc package logo.",
+        "path": "screenshots/logo.png"
+      }
+    ]
+  },
+  {
+    "name": "freezed",
+    "description": "Code generation for immutable classes that has a simple syntax/API without compromising on the features.\n",
+    "version": "2.5.7",
+    "repository": "https://github.com/rrousselGit/freezed",
+    "issue_tracker": "https://github.com/rrousselGit/freezed/issues",
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dependencies": {
+      "analyzer": ">=6.5.0 <7.0.0",
+      "build": "^2.3.1",
+      "build_config": "^1.1.0",
+      "collection": "^1.15.0",
+      "meta": "^1.9.1",
+      "source_gen": "^1.4.0",
+      "freezed_annotation": "^2.4.4",
+      "json_annotation": "^4.8.0",
+      "dart_style": "^2.3.6"
+    },
+    "dev_dependencies": {
+      "json_serializable": "^6.3.2",
+      "build_test": "^2.1.5",
+      "build_runner": "^2.3.3",
+      "test": "^1.21.0",
+      "matcher": "^0.12.14",
+      "source_gen_test": "^1.0.6",
+      "expect_error": "^1.0.5"
+    }
+  },
+  {
+    "name": "built_value",
+    "version": "8.9.2",
+    "description": "Value types with builders, Dart classes as enums, and serialization. This library is the runtime dependency.\n",
+    "repository": "https://github.com/google/built_value.dart/tree/master/built_value",
+    "topics": ["built-value"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dependencies": {
+      "built_collection": "^5.0.0",
+      "collection": "^1.15.0",
+      "fixnum": "^1.0.0",
+      "meta": "^1.3.0"
+    },
+    "dev_dependencies": { "pedantic": "^1.4.0", "test": "^1.16.0" }
+  },
+  {
+    "name": "toggle_switch",
+    "description": "Toggle Switch - A simple toggle switch widget. It can be fully customized with desired icons, width, colors, text, corner radius etc. It also maintains selection state.",
+    "version": "2.3.0",
+    "homepage": "https://github.com/PramodJoshi/toggle_switch",
+    "environment": { "sdk": ">=2.12.0 <4.0.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": { "flutter_test": { "sdk": "flutter" } },
+    "funding": ["https://buymeacoffee.com/pramodjoshi"],
+    "screenshots": [
+      {
+        "description": "This screenshot shows different examples of Toggle Switch widget.",
+        "path": "screenshots/screenshot1.png"
+      },
+      {
+        "description": "This screenshot shows different examples of Toggle Switch widget.",
+        "path": "screenshots/screenshot2.png"
+      },
+      {
+        "description": "This screenshot shows different examples of Toggle Switch widget.",
+        "path": "screenshots/screenshot3.png"
+      }
+    ],
+    "topics": ["ui", "toggle", "switch", "toggle-switch", "widget"],
+    "flutter": null
+  },
+  {
+    "name": "drift",
+    "description": "Drift is a reactive library to store relational data in Dart and Flutter applications.",
+    "version": "2.20.3",
+    "repository": "https://github.com/simolus3/drift",
+    "homepage": "https://drift.simonbinder.eu/",
+    "issue_tracker": "https://github.com/simolus3/drift/issues",
+    "topics": ["drift", "database"],
+    "funding": ["https://github.com/sponsors/simolus3"],
+    "environment": { "sdk": ">=3.3.0 <4.0.0" },
+    "dependencies": {
+      "async": "^2.5.0",
+      "convert": "^3.0.0",
+      "collection": "^1.15.0",
+      "meta": "^1.3.0",
+      "stream_channel": "^2.1.0",
+      "sqlite3": "^2.4.3",
+      "path": "^1.8.0",
+      "stack_trace": "^1.11.1",
+      "web": "^1.0.0"
+    },
+    "dev_dependencies": {
+      "archive": "^3.3.1",
+      "analyzer": "^6.4.1",
+      "build_test": "^2.0.0",
+      "build_runner_core": "^7.0.0",
+      "build_verify": "^3.1.0",
+      "build_web_compilers": "^4.0.3",
+      "drift_dev": "any",
+      "drift_testcases": {
+        "path": "../extras/integration_tests/drift_testcases"
+      },
+      "http": "^1.2.1",
+      "lints": "^4.0.0",
+      "uuid": "^4.4.0",
+      "build_runner": "^2.0.0",
+      "test": "^1.17.0",
+      "mockito": "^5.4.3",
+      "shelf": "^1.3.0",
+      "test_descriptor": "^2.0.1",
+      "vm_service": "^14.0.0",
+      "rxdart": "^0.28.0",
+      "build_daemon": "^4.0.2"
+    }
+  },
+  {
+    "name": "mobx",
+    "version": "2.3.3+2",
+    "description": "MobX is a library for reactively managing the state of your applications. Use the power of observables, actions, and reactions to supercharge your Dart and Flutter apps.",
+    "repository": "https://github.com/mobxjs/mobx.dart",
+    "issue_tracker": "https://github.com/mobxjs/mobx.dart/issues",
+    "homepage": "https://mobx.netlify.app",
+    "topics": ["reactive-programming", "state-management"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dependencies": { "meta": "^1.3.0", "collection": "^1.15.0" },
+    "dev_dependencies": {
+      "build_runner": "^2.0.6",
+      "coverage": "^1.0.1",
+      "fake_async": "^1.2.0",
+      "lints": "^3.0.0",
+      "mocktail": "^1.0.3",
+      "test": "^1.17.0"
+    }
+  },
+  {
+    "name": "flutter_mobx",
+    "description": "Flutter integration for MobX. It provides a set of Observer widgets that automatically rebuild when the tracked observables change.",
+    "version": "2.2.1+1",
+    "repository": "https://github.com/mobxjs/mobx.dart",
+    "issue_tracker": "https://github.com/mobxjs/mobx.dart/issues",
+    "homepage": "https://mobx.netlify.app",
+    "topics": ["reactive-programming", "state-management", "ui"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=3.0.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "mobx": "^2.3.2",
+      "provider": "^6.0.0"
+    },
+    "dev_dependencies": {
+      "build_runner": "^2.0.6",
+      "flutter_lints": "^3.0.1",
+      "flutter_test": { "sdk": "flutter" },
+      "mocktail": "^1.0.3"
+    }
+  },
+  {
+    "name": "network_info_plus",
+    "description": "Flutter plugin for discovering information (e.g. WiFi details) of the network.",
+    "version": "6.0.1",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/network_info_plus/network_info_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/network_info_plus",
+    "topics": ["network", "information", "utils"],
+    "environment": { "sdk": ">=2.18.0 <4.0.0", "flutter": ">=3.3.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.network_info",
+            "pluginClass": "NetworkInfoPlusPlugin"
+          },
+          "ios": { "pluginClass": "FPPNetworkInfoPlusPlugin" },
+          "linux": { "dartPluginClass": "NetworkInfoPlusLinuxPlugin" },
+          "macos": { "pluginClass": "NetworkInfoPlusPlugin" },
+          "windows": { "dartPluginClass": "NetworkInfoPlusWindowsPlugin" },
+          "web": {
+            "pluginClass": "NetworkInfoPlusWebPlugin",
+            "fileName": "src/network_info_plus_web.dart"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "collection": "^1.17.0",
+      "nm": "^0.5.0",
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "meta": "^1.8.0",
+      "network_info_plus_platform_interface": "^2.0.1",
+      "win32": "^5.4.0",
+      "ffi": "^2.0.1"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.4.0",
+      "plugin_platform_interface": "^2.1.4",
+      "flutter_lints": ">=2.0.1 <4.0.0"
+    }
+  },
+  {
+    "name": "convex_bottom_bar",
+    "description": "A Flutter package which implements a ConvexAppBar to show a convex tab in the bottom bar. Theming supported.",
+    "version": "3.2.0",
+    "homepage": "https://github.com/hacktons/convex_bottom_bar",
+    "environment": { "sdk": ">=2.12.0 <3.0.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "pedantic": "^1.10.0-nullsafety.3"
+    },
+    "flutter": null
+  },
+  {
+    "name": "sensors_plus",
+    "description": "Flutter plugin for accessing accelerometer, gyroscope, and magnetometer sensors.",
+    "version": "6.0.1",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/sensors_plus/sensors_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/sensors_plus",
+    "topics": ["sensor", "sensors", "utils"],
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.sensors",
+            "pluginClass": "SensorsPlugin"
+          },
+          "ios": { "pluginClass": "FPPSensorsPlusPlugin" },
+          "web": {
+            "pluginClass": "WebSensorsPlugin",
+            "fileName": "src/sensors_plus_web.dart"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "sensors_plus_platform_interface": "^2.0.0"
+    },
+    "dev_dependencies": {
+      "test": "^1.22.0",
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": ">=2.0.1 <4.0.0"
+    },
+    "environment": { "sdk": ">=3.3.0 <4.0.0", "flutter": ">=3.19.0" }
+  },
+  {
+    "name": "flame",
+    "description": "A minimalist Flutter game engine, provides a nice set of somewhat independent modules you can choose from.",
+    "version": "1.19.0",
+    "homepage": "https://github.com/flame-engine/flame",
+    "funding": [
+      "https://opencollective.com/blue-fire",
+      "https://github.com/sponsors/bluefireteam",
+      "https://patreon.com/bluefireoss"
+    ],
+    "topics": ["flame", "game-engine", "games", "animations"],
+    "environment": { "sdk": ">=3.4.0 <4.0.0", "flutter": ">=3.22.0" },
+    "dependencies": {
+      "collection": "^1.18.0",
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.12.0",
+      "ordered_set": "^6.0.0",
+      "vector_math": "^2.1.4"
+    },
+    "dev_dependencies": {
+      "canvas_test": "^0.2.0",
+      "dartdoc": "^8.0.8",
+      "flame_lint": "^1.2.1",
+      "flame_test": "^1.17.0",
+      "flutter_test": { "sdk": "flutter" },
+      "mocktail": "^1.0.3",
+      "test": "any"
+    },
+    "screenshots": [
+      { "description": "The Flame logo.", "path": "screenshots/logo.png" }
+    ]
+  },
+  {
+    "name": "win32",
+    "description": "Access common Win32 APIs directly from Dart using FFI — no C required!\n",
+    "version": "5.5.4",
+    "homepage": "https://win32.pub",
+    "repository": "https://github.com/halildurmus/win32",
+    "issue_tracker": "https://github.com/halildurmus/win32/issues",
+    "documentation": "https://win32.pub/docs",
+    "funding": ["https://github.com/sponsors/halildurmus"],
+    "screenshots": [
+      {
+        "description": "Task Manager App screenshot",
+        "path": "screenshots/task_manager.png"
+      },
+      {
+        "description": "DartNote App screenshot",
+        "path": "screenshots/dartnote.png"
+      },
+      {
+        "description": "Tetris Game screenshot",
+        "path": "screenshots/tetris.png"
+      },
+      {
+        "description": "Snake Game screenshot",
+        "path": "screenshots/snake.png"
+      }
+    ],
+    "topics": ["win32", "windows", "ffi"],
+    "environment": { "sdk": "^3.4.0" },
+    "platforms": { "windows": null },
+    "dependencies": { "ffi": "^2.1.2" },
+    "dev_dependencies": {
+      "args": "^2.5.0",
+      "lints": "^4.0.0",
+      "path": "^1.9.0",
+      "test": "^1.25.8"
+    }
+  },
+  {
+    "name": "android_intent_plus",
+    "description": "Flutter plugin for launching Android Intents. Not supported on iOS.",
+    "version": "5.1.0",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/android_intent_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/android_intent_plus",
+    "topics": ["android", "intent", "utils"],
+    "environment": { "sdk": ">=2.18.0 <4.0.0", "flutter": ">=3.3.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.androidintent",
+            "pluginClass": "AndroidIntentPlugin"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "platform": "^3.1.0",
+      "meta": "^1.8.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "test": "^1.12.0",
+      "mockito": "^5.4.0",
+      "flutter_lints": "^4.0.0"
+    }
+  },
+  {
+    "name": "riverpod",
+    "description": "A reactive caching and data-binding framework. Riverpod makes working with asynchronous code a breeze.\n",
+    "version": "2.5.1",
+    "homepage": "https://riverpod.dev",
+    "repository": "https://github.com/rrousselGit/riverpod",
+    "issue_tracker": "https://github.com/rrousselGit/riverpod/issues",
+    "funding": ["https://github.com/sponsors/rrousselGit/"],
+    "environment": { "sdk": ">=2.17.0 <4.0.0" },
+    "dependencies": {
+      "collection": "^1.18.0",
+      "meta": "^1.9.0",
+      "stack_trace": "^1.10.0",
+      "state_notifier": ">=0.7.2 <2.0.0"
+    },
+    "dev_dependencies": {
+      "analyzer": ">=5.12.0 <7.0.0",
+      "expect_error": "^1.0.0",
+      "mockito": "^5.0.0",
+      "test": "^1.16.0",
+      "trotter": "^2.0.0-dev.1"
+    }
+  },
+  {
+    "name": "battery_plus",
+    "description": "Flutter plugin for accessing information about the battery state(full, charging, discharging).",
+    "version": "6.0.3",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/battery_plus/battery_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/battery_plus",
+    "topics": ["battery", "utils"],
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.battery",
+            "pluginClass": "BatteryPlusPlugin"
+          },
+          "ios": { "pluginClass": "FPPBatteryPlusPlugin" },
+          "linux": { "dartPluginClass": "BatteryPlusLinuxPlugin" },
+          "macos": { "pluginClass": "BatteryPlusMacosPlugin" },
+          "web": {
+            "pluginClass": "BatteryPlusWebPlugin",
+            "fileName": "src/battery_plus_web.dart"
+          },
+          "windows": { "pluginClass": "BatteryPlusWindowsPlugin" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "battery_plus_platform_interface": "^2.0.1",
+      "meta": "^1.8.0",
+      "upower": "^0.7.0",
+      "web": "^1.0.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "async": "^2.10.0",
+      "flutter_lints": "^4.0.0",
+      "mockito": "^5.4.0",
+      "plugin_platform_interface": "^2.1.4"
+    },
+    "environment": { "sdk": ">=3.3.0 <4.0.0", "flutter": ">=3.19.0" }
+  },
+  {
+    "name": "characters",
+    "version": "1.3.0",
+    "description": "String replacement with operations that are Unicode/grapheme cluster aware.",
+    "repository": "https://github.com/dart-lang/characters",
+    "environment": { "sdk": ">=2.12.0 <4.0.0" },
+    "dev_dependencies": { "lints": "^1.0.0", "test": "^1.16.0" }
+  },
+  {
+    "name": "chopper",
+    "description": "Chopper is an http client generator using source_gen, inspired by Retrofit",
+    "version": "8.0.3",
+    "documentation": "https://hadrien-lejard.gitbook.io/chopper",
+    "repository": "https://github.com/lejard-h/chopper",
+    "environment": { "sdk": "^3.0.0" },
+    "dependencies": {
+      "equatable": "^2.0.5",
+      "http": "^1.1.0",
+      "logging": "^1.2.0",
+      "meta": "^1.9.1",
+      "qs_dart": "^1.2.4"
+    },
+    "dev_dependencies": {
+      "build_runner": "^2.4.9",
+      "build_test": "^2.2.2",
+      "build_verify": "^3.1.0",
+      "collection": "^1.18.0",
+      "coverage": "^1.8.0",
+      "data_fixture_dart": "^2.2.0",
+      "faker": "^2.1.0",
+      "http_parser": "^4.0.2",
+      "lints": ">=4.0.0 <6.0.0",
+      "test": "^1.25.5",
+      "transparent_image": "^2.0.1",
+      "chopper_generator": "^8.0.2"
+    },
+    "topics": ["api", "client", "http", "rest"]
+  },
+  {
+    "name": "fluent_ui",
+    "description": "Implements Windows UI in Flutter. Based on the official documentation",
+    "version": "4.9.1",
+    "homepage": "https://bdlukaa.github.io/fluent_ui/#/",
+    "repository": "https://github.com/bdlukaa/fluent_ui",
+    "issue_tracker": "https://github.com/bdlukaa/fluent_ui/issues",
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=3.19.0" },
+    "topics": ["windows", "desktop", "ui", "widgets"],
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_localizations": { "sdk": "flutter" },
+      "intl": ">=0.19.0 <= 1.0.0",
+      "scroll_pos": ">=0.5.0 < 1.0.0",
+      "recase": "^4.1.0",
+      "math_expressions": "^2.4.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": "^4.0.0",
+      "intl_utils": "^2.8.3"
+    },
+    "flutter": {
+      "generate": true,
+      "uses-material-design": true,
+      "assets": ["assets/AcrylicNoise.png"],
+      "fonts": [
+        {
+          "family": "FluentIcons",
+          "fonts": [{ "asset": "fonts/FluentIcons.ttf" }]
+        }
+      ]
+    }
+  },
+  {
+    "name": "flutter_redux",
+    "description": "A set of utility Widgets that Provide and Connect to a Redux Store",
+    "version": "0.10.0",
+    "homepage": "https://github.com/brianegan/flutter_redux",
+    "environment": { "sdk": ">=2.12.0 <3.0.0" },
+    "dependencies": {
+      "redux": ">=5.0.0 <6.0.0",
+      "flutter": { "sdk": "flutter" }
+    },
+    "dev_dependencies": {
+      "pedantic": "^1.10.0",
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0"
+    }
+  },
+  {
+    "name": "android_alarm_manager_plus",
+    "description": "Flutter plugin for accessing the Android AlarmManager service, and running Dart code in the background when alarms fire.",
+    "version": "4.0.4",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/android_alarm_manager_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/android_alarm_manager_plus",
+    "topics": ["android", "alarm", "utils"],
+    "environment": { "sdk": ">=2.18.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": "^4.0.0"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.androidalarmmanager",
+            "pluginClass": "AndroidAlarmManagerPlugin"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "flutter_rust_bridge",
+    "description": "High-level memory-safe binding generator for Flutter/Dart <-> Rust",
+    "version": "2.4.0",
+    "repository": "https://github.com/fzyzcjy/flutter_rust_bridge",
+    "environment": { "sdk": ">=3.4.0 <4.0.0" },
+    "dependencies": {
+      "args": "^2.3.1",
+      "async": "^2.11.0",
+      "build_cli_annotations": "^2.1.0",
+      "meta": "^1.3.0",
+      "path": "^1.8.1",
+      "web": ">=0.5.0 <2.0.0"
+    },
+    "dev_dependencies": {
+      "build_cli": "^2.2.0",
+      "build_runner": "^2.2.0",
+      "ffigen": "^11.0.0",
+      "flutter_lints": "^3.0.1",
+      "test": "^1.16.8",
+      "mocktail": "^1.0.1"
+    }
+  },
+  {
+    "name": "msix",
+    "description": "A command-line tool that create Msix installer from your flutter windows-build files.",
+    "version": "3.16.8",
+    "maintainer": "Yehuda Kremer (yehudakremer@gmail.com)",
+    "homepage": "https://github.com/YehudaKremer/msix",
+    "issue_tracker": "https://github.com/YehudaKremer/msix/issues",
+    "topics": ["windows", "tool"],
+    "screenshots": [
+      {
+        "description": "A command-line tool that create Msix installer from your flutter windows-build files.",
+        "path": "doc/screenshot.png"
+      }
+    ],
+    "platforms": { "windows": null },
+    "environment": { "sdk": ">=2.19.0 <4.0.0" },
+    "dependencies": {
+      "args": "^2.3.0",
+      "yaml": "^3.1.0",
+      "path": "^1.8.0",
+      "package_config": "^2.1.0",
+      "get_it": "^7.2.0",
+      "image": "^4.0.9",
+      "pub_semver": "^2.1.0",
+      "console": "^4.1.0",
+      "cli_util": "^0.4.0"
+    },
+    "dev_dependencies": { "test": "^1.23.0", "flutter_lints": "^2.0.0" }
+  },
+  {
+    "name": "googleapis",
+    "version": "13.2.0",
+    "description": "Auto-generated client libraries for accessing Google APIs described through the API discovery service.",
+    "repository": "https://github.com/google/googleapis.dart/tree/master/generated/googleapis",
+    "environment": { "sdk": "^3.4.0" },
+    "dependencies": { "_discoveryapis_commons": "^1.0.0", "http": "^1.0.0" },
+    "dev_dependencies": {
+      "dart_flutter_team_lints": "^3.0.0",
+      "googleapis_auth": "^1.0.0",
+      "test": "^1.16.0"
+    }
+  },
+  {
+    "name": "url_launcher",
+    "description": "Flutter plugin for launching a URL. Supports web, phone, SMS, and email schemes.",
+    "repository": "https://github.com/flutter/packages/tree/main/packages/url_launcher/url_launcher",
+    "issue_tracker": "https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+url_launcher%22",
+    "version": "6.3.0",
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.16.0" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": { "default_package": "url_launcher_android" },
+          "ios": { "default_package": "url_launcher_ios" },
+          "linux": { "default_package": "url_launcher_linux" },
+          "macos": { "default_package": "url_launcher_macos" },
+          "web": { "default_package": "url_launcher_web" },
+          "windows": { "default_package": "url_launcher_windows" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "url_launcher_android": "^6.3.0",
+      "url_launcher_ios": "^6.2.4",
+      "url_launcher_linux": "^3.1.0",
+      "url_launcher_macos": "^3.1.0",
+      "url_launcher_platform_interface": "^2.3.0",
+      "url_launcher_web": "^2.2.0",
+      "url_launcher_windows": "^3.1.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "5.4.4",
+      "plugin_platform_interface": "^2.1.7",
+      "test": "^1.16.3"
+    },
+    "topics": ["links", "os-integration", "url-launcher", "urls"]
+  },
+  {
+    "name": "google_fonts",
+    "description": "A Flutter package to use fonts from fonts.google.com. Supports HTTP fetching, caching, and asset bundling.",
+    "version": "6.2.1",
+    "repository": "https://github.com/material-foundation/flutter-packages/tree/main/packages/google_fonts",
+    "issue_tracker": "https://github.com/material-foundation/flutter-packages/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+google_fonts%22",
+    "screenshots": [
+      {
+        "description": "Google Fonts and Flutter logos.",
+        "path": "screenshots/logo_mashup.png"
+      },
+      {
+        "description": "Using hot reload to change the font family.",
+        "path": "screenshots/hot_reload.gif"
+      }
+    ],
+    "environment": { "sdk": ">=2.14.0 <4.0.0", "flutter": ">=3.19.2" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "http": "^1.0.0",
+      "path_provider": "^2.0.0",
+      "crypto": "^3.0.0"
+    },
+    "dev_dependencies": {
+      "cider": ">=0.1.3 <0.3.0",
+      "flutter_lints": ">=2.0.1 <4.0.0",
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0",
+      "mustache_template": "^2.0.0",
+      "path_provider_platform_interface": "^2.0.1",
+      "plugin_platform_interface": "^2.0.2",
+      "protobuf": ">=2.0.1 <4.0.0",
+      "test": "^1.19.5"
+    }
+  },
+  {
+    "name": "firebase_auth",
+    "description": "Flutter plugin for Firebase Auth, enabling authentication using passwords, phone numbers and identity providers like Google, Facebook and Twitter.",
+    "homepage": "https://firebase.google.com/docs/auth",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/firebase_auth/firebase_auth",
+    "version": "5.3.1",
+    "topics": ["firebase", "authentication", "identity", "sign-in", "sign-up"],
+    "false_secrets": ["example/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.16.0" },
+    "dependencies": {
+      "firebase_auth_platform_interface": "^7.4.7",
+      "firebase_auth_web": "^5.13.2",
+      "firebase_core": "^3.6.0",
+      "firebase_core_platform_interface": "^5.3.0",
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.8.0"
+    },
+    "dev_dependencies": {
+      "async": "^2.5.0",
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0",
+      "plugin_platform_interface": "^2.1.3"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.auth",
+            "pluginClass": "FlutterFirebaseAuthPlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseAuthPlugin" },
+          "macos": { "pluginClass": "FLTFirebaseAuthPlugin" },
+          "web": { "default_package": "firebase_auth_web" },
+          "windows": { "pluginClass": "FirebaseAuthPluginCApi" }
+        }
+      }
+    }
+  },
+  {
+    "name": "flutter_svg",
+    "description": "An SVG rendering and widget library for Flutter, which allows painting and displaying Scalable Vector Graphics 1.1 files.",
+    "repository": "https://github.com/dnfield/flutter_svg/tree/master/packages/flutter_svg",
+    "issue_tracker": "https://github.com/dnfield/flutter_svg/issues",
+    "version": "2.0.10+1",
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "http": "^1.0.0",
+      "vector_graphics": "^1.1.11",
+      "vector_graphics_codec": "^1.1.11",
+      "vector_graphics_compiler": "^1.1.11"
+    },
+    "dev_dependencies": { "flutter_test": { "sdk": "flutter" } },
+    "environment": { "sdk": ">=2.19.0-0 <4.0.0", "flutter": ">=3.7.0-0" }
+  },
+  {
+    "name": "firebase_messaging",
+    "description": "Flutter plugin for Firebase Cloud Messaging, a cross-platform messaging solution that lets you reliably deliver messages on Android and iOS.",
+    "homepage": "https://firebase.google.com/docs/cloud-messaging",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/firebase_messaging/firebase_messaging",
+    "version": "15.1.3",
+    "topics": ["firebase", "messaging", "notifications"],
+    "false_secrets": ["example/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": {
+      "firebase_core": "^3.6.0",
+      "firebase_core_platform_interface": "^5.3.0",
+      "firebase_messaging_platform_interface": "^4.5.46",
+      "firebase_messaging_web": "^3.9.2",
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.8.0"
+    },
+    "dev_dependencies": {
+      "async": "^2.5.0",
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0",
+      "plugin_platform_interface": "^2.1.3"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.messaging",
+            "pluginClass": "FlutterFirebaseMessagingPlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseMessagingPlugin" },
+          "macos": { "pluginClass": "FLTFirebaseMessagingPlugin" },
+          "web": { "default_package": "firebase_messaging_web" }
+        }
+      }
+    }
+  },
+  {
+    "name": "firebase_core",
+    "description": "Flutter plugin for Firebase Core, enabling connecting to multiple Firebase apps.",
+    "homepage": "https://firebase.google.com/docs/flutter/setup",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/firebase_core/firebase_core",
+    "version": "3.6.0",
+    "topics": ["firebase", "core"],
+    "false_secrets": ["example/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": {
+      "firebase_core_platform_interface": "^5.3.0",
+      "firebase_core_web": "^2.18.1",
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.8.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0",
+      "plugin_platform_interface": "^2.1.3"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.core",
+            "pluginClass": "FlutterFirebaseCorePlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseCorePlugin" },
+          "macos": { "pluginClass": "FLTFirebaseCorePlugin" },
+          "web": { "default_package": "firebase_core_web" },
+          "windows": { "pluginClass": "FirebaseCorePluginCApi" }
+        }
+      }
+    },
+    "firebase": {
+      "google_services_gradle_plugin_version": "4.3.10",
+      "crashlytics_gradle_plugin_version": "2.8.1",
+      "performance_gradle_plugin_version": "1.4.1"
+    }
+  },
+  {
+    "name": "go_router",
+    "description": "A declarative router for Flutter based on Navigation 2 supporting deep linking, data-driven routes and more",
+    "version": "14.2.8",
+    "repository": "https://github.com/flutter/packages/tree/main/packages/go_router",
+    "issue_tracker": "https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+go_router%22",
+    "environment": { "sdk": "^3.3.0", "flutter": ">=3.19.0" },
+    "dependencies": {
+      "collection": "^1.15.0",
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "logging": "^1.0.0",
+      "meta": "^1.7.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "io": "^1.0.4",
+      "path": "^1.8.2"
+    },
+    "topics": ["deep-linking", "go-router", "navigation"]
+  },
+  {
+    "name": "cloud_firestore",
+    "description": "Flutter plugin for Cloud Firestore, a cloud-hosted, noSQL database with live synchronization and offline support on Android and iOS.",
+    "homepage": "https://firebase.google.com/docs/firestore",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/cloud_firestore/cloud_firestore",
+    "version": "5.4.3",
+    "topics": ["firebase", "firestore", "realtime", "database"],
+    "false_secrets": ["example/**", "dartpad/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": {
+      "cloud_firestore_platform_interface": "^6.4.3",
+      "cloud_firestore_web": "^4.3.2",
+      "collection": "^1.0.0",
+      "firebase_core": "^3.6.0",
+      "firebase_core_platform_interface": "^5.3.0",
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.8.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.0"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.firestore",
+            "pluginClass": "FlutterFirebaseFirestorePlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseFirestorePlugin" },
+          "macos": { "pluginClass": "FLTFirebaseFirestorePlugin" },
+          "web": { "default_package": "cloud_firestore_web" },
+          "windows": { "pluginClass": "CloudFirestorePluginCApi" }
+        }
+      }
+    }
+  },
+  {
+    "name": "auto_size_text",
+    "description": "Flutter widget that automatically resizes text to fit perfectly within its bounds.",
+    "version": "3.0.0",
+    "homepage": "https://github.com/leisim/auto_size_text",
+    "environment": { "sdk": ">=2.12.0 <3.0.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "pedantic": ">=1.11.1 <3.0.0"
+    }
+  },
+  {
+    "name": "video_player",
+    "description": "Flutter plugin for displaying inline video with other Flutter widgets on Android, iOS, and web.",
+    "repository": "https://github.com/flutter/packages/tree/main/packages/video_player/video_player",
+    "issue_tracker": "https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+video_player%22",
+    "version": "2.9.1",
+    "environment": { "sdk": "^3.2.3", "flutter": ">=3.16.6" },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": { "default_package": "video_player_android" },
+          "ios": { "default_package": "video_player_avfoundation" },
+          "macos": { "default_package": "video_player_avfoundation" },
+          "web": { "default_package": "video_player_web" }
+        }
+      }
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "html": "^0.15.0",
+      "video_player_android": "^2.3.5",
+      "video_player_avfoundation": "^2.5.6",
+      "video_player_platform_interface": "^6.2.0",
+      "video_player_web": "^2.1.0"
+    },
+    "dev_dependencies": { "flutter_test": { "sdk": "flutter" } },
+    "topics": ["video", "video-player"]
+  },
+  {
+    "name": "device_info_plus",
+    "description": "Flutter plugin providing detailed information about the device (make, model, etc.), and Android or iOS version the app is running on.",
+    "version": "10.1.2",
+    "homepage": "https://github.com/fluttercommunity/plus_plugins",
+    "repository": "https://github.com/fluttercommunity/plus_plugins/tree/main/packages/device_info_plus/device_info_plus",
+    "issue_tracker": "https://github.com/fluttercommunity/plus_plugins/labels/device_info_plus",
+    "topics": ["device", "information", "utils"],
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "dev.fluttercommunity.plus.device_info",
+            "pluginClass": "DeviceInfoPlusPlugin"
+          },
+          "ios": { "pluginClass": "FPPDeviceInfoPlusPlugin" },
+          "linux": { "dartPluginClass": "DeviceInfoPlusLinuxPlugin" },
+          "web": {
+            "pluginClass": "DeviceInfoPlusWebPlugin",
+            "fileName": "src/device_info_plus_web.dart"
+          },
+          "macos": { "pluginClass": "DeviceInfoPlusMacosPlugin" },
+          "windows": { "dartPluginClass": "DeviceInfoPlusWindowsPlugin" }
+        }
+      }
+    },
+    "dependencies": {
+      "device_info_plus_platform_interface": "^7.0.1",
+      "ffi": "^2.0.1",
+      "file": ">=6.1.4 <8.0.0",
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "meta": "^1.8.0",
+      "web": ">=0.5.0 <2.0.0",
+      "win32": ">=4.0.0 <6.0.0",
+      "win32_registry": "^1.1.0"
+    },
+    "dev_dependencies": {
+      "flutter_lints": ">=2.0.1 <4.0.0",
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.4.0",
+      "test": "^1.22.0"
+    },
+    "environment": { "sdk": ">=3.3.0 <4.0.0", "flutter": ">=3.3.0" }
+  },
+  {
+    "name": "flutter_slidable",
+    "description": "A Flutter implementation of slidable list item with directional slide actions that can be dismissed.",
+    "version": "3.1.1",
+    "homepage": "https://github.com/letsar/flutter_slidable",
+    "environment": { "sdk": ">=2.17.0 <4.0.0", "flutter": ">=3.7.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mocktail": "^0.3.0",
+      "collection": null
+    },
+    "flutter": null
+  },
+  {
+    "name": "firebase_storage",
+    "description": "Flutter plugin for Firebase Cloud Storage, a powerful, simple, and cost-effective object storage service for Android and iOS.",
+    "homepage": "https://firebase.google.com/docs/storage/flutter/start",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/firebase_storage/firebase_storage",
+    "version": "12.3.2",
+    "topics": ["firebase", "storage", "upload", "download", "files"],
+    "false_secrets": ["example/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": {
+      "firebase_core": "^3.6.0",
+      "firebase_core_platform_interface": "^5.3.0",
+      "firebase_storage_platform_interface": "^5.1.31",
+      "firebase_storage_web": "^3.10.2",
+      "flutter": { "sdk": "flutter" }
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "http": "^1.0.0",
+      "mockito": "^5.0.0",
+      "plugin_platform_interface": "^2.1.3"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.storage",
+            "pluginClass": "FlutterFirebaseStoragePlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseStoragePlugin" },
+          "macos": { "pluginClass": "FLTFirebaseStoragePlugin" },
+          "web": { "default_package": "firebase_storage_web" },
+          "windows": { "pluginClass": "FirebaseStoragePluginCApi" }
+        }
+      }
+    }
+  },
+  {
+    "name": "firebase_crashlytics",
+    "description": "Flutter plugin for Firebase Crashlytics. It reports uncaught errors to the Firebase console.",
+    "version": "4.1.3",
+    "homepage": "https://firebase.google.com/docs/crashlytics",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/firebase_crashlytics/firebase_crashlytics",
+    "topics": ["firebase", "crashlytics", "errors", "crashes"],
+    "false_secrets": ["example/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": {
+      "firebase_core": "^3.6.0",
+      "firebase_core_platform_interface": "^5.3.0",
+      "firebase_crashlytics_platform_interface": "^3.6.44",
+      "flutter": { "sdk": "flutter" },
+      "stack_trace": "^1.10.0"
+    },
+    "dev_dependencies": { "flutter_test": { "sdk": "flutter" } },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.crashlytics",
+            "pluginClass": "FlutterFirebaseCrashlyticsPlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseCrashlyticsPlugin" },
+          "macos": { "pluginClass": "FLTFirebaseCrashlyticsPlugin" }
+        }
+      }
+    }
+  },
+  {
+    "name": "animated_text_kit",
+    "description": "A flutter package project which contains a collection of cool and beautiful text animations.",
+    "version": "4.2.2",
+    "homepage": "https://github.com/aagarwal1012/Animated-Text-Kit/",
+    "maintainer": "Ayush Agarwal (@aagarwal1012)",
+    "dependencies": { "flutter": { "sdk": "flutter" }, "characters": "^1.1.0" },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "pedantic": "^1.11.0"
+    },
+    "flutter": null,
+    "environment": { "sdk": ">=2.17.0 <3.0.0", "flutter": ">=1.22.0" }
+  },
+  {
+    "name": "infinite_scroll_pagination",
+    "description": "Lazily load and display pages of items as the user scrolls down your screen.",
+    "version": "4.0.0",
+    "homepage": "https://github.com/EdsonBueno/infinite_scroll_pagination",
+    "environment": { "sdk": ">=2.14.0 <3.0.0", "flutter": ">=1.22.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_staggered_grid_view": "^0.7.0",
+      "sliver_tools": "^0.2.12"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.0.9",
+      "test": "^1.16.5"
+    }
+  },
+  {
+    "name": "json_serializable",
+    "version": "6.8.0",
+    "description": "Automatically generate code for converting to and from JSON by annotating Dart classes.",
+    "repository": "https://github.com/google/json_serializable.dart/tree/master/json_serializable",
+    "environment": { "sdk": "^3.0.0" },
+    "topics": ["json", "build-runner", "json-serializable", "codegen"],
+    "dependencies": {
+      "analyzer": ">=5.12.0 <7.0.0",
+      "async": "^2.8.0",
+      "build": "^2.0.0",
+      "build_config": ">=0.4.4 <2.0.0",
+      "collection": "^1.14.0",
+      "json_annotation": ">=4.9.0 <4.10.0",
+      "meta": "^1.3.0",
+      "path": "^1.8.0",
+      "pub_semver": "^2.0.0",
+      "pubspec_parse": "^1.0.0",
+      "source_gen": "^1.3.2",
+      "source_helper": "^1.3.0"
+    },
+    "dev_dependencies": {
+      "_json_serial_shared_test": { "path": "../shared_test" },
+      "build_runner": "^2.0.0",
+      "build_verify": "^3.0.0",
+      "dart_flutter_team_lints": "^2.0.0",
+      "dart_style": "^2.0.0",
+      "logging": "^1.0.0",
+      "source_gen_test": "^1.0.0",
+      "test": "^1.16.0",
+      "test_descriptor": "^2.0.0",
+      "test_process": "^2.0.0",
+      "yaml": "^3.0.0"
+    }
+  },
+  {
+    "name": "cloud_functions",
+    "description": "A Flutter plugin allowing you to use Firebase Cloud Functions.",
+    "version": "5.1.3",
+    "homepage": "https://firebase.google.com/docs/functions",
+    "repository": "https://github.com/firebase/flutterfire/tree/main/packages/cloud_functions/cloud_functions",
+    "topics": ["firebase", "cloud", "functions", "scalable"],
+    "false_secrets": ["example/**"],
+    "environment": { "sdk": ">=3.2.0 <4.0.0", "flutter": ">=3.3.0" },
+    "dependencies": {
+      "cloud_functions_platform_interface": "^5.5.37",
+      "cloud_functions_web": "^4.10.2",
+      "firebase_core": "^3.6.0",
+      "firebase_core_platform_interface": "^5.3.0",
+      "flutter": { "sdk": "flutter" }
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "plugin_platform_interface": "^2.1.3"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "io.flutter.plugins.firebase.functions",
+            "pluginClass": "FlutterFirebaseFunctionsPlugin"
+          },
+          "ios": { "pluginClass": "FLTFirebaseFunctionsPlugin" },
+          "macos": { "pluginClass": "FLTFirebaseFunctionsPlugin" },
+          "web": { "default_package": "cloud_functions_web" }
+        }
+      }
+    }
+  },
+  {
+    "name": "fpdart",
+    "description": "Functional programming in Dart and Flutter. All the main functional programming types and patterns fully documented, tested, and with examples.\n",
+    "version": "1.1.0",
+    "homepage": "https://www.sandromaglione.com/",
+    "repository": "https://github.com/SandroMaglione/fpdart",
+    "author": "Maglione Sandro <lass.maglio@gmail.com>",
+    "documentation": "https://www.sandromaglione.com/course/fpdart-functional-programming-dart-and-flutter",
+    "issue_tracker": "https://github.com/SandroMaglione/fpdart/issues",
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dev_dependencies": {
+      "lints": "^2.0.1",
+      "test": "^1.23.1",
+      "glados": "^1.1.6",
+      "collection": "^1.17.2"
+    },
+    "screenshots": [
+      {
+        "description": "Basic usage of fpdart Option, Either, TaskEither types.",
+        "path": "example/screenshot_fpdart.png"
+      }
+    ]
+  },
+  {
+    "name": "fluentui_system_icons",
+    "description": "Fluent UI System Icons are a collection of familiar, friendly and modern icons from Microsoft.",
+    "version": "1.1.258",
+    "homepage": "https://github.com/microsoft/fluentui-system-icons/tree/main",
+    "environment": { "sdk": ">=2.12.0 <3.0.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "flutter": {
+      "fonts": [
+        {
+          "family": "FluentSystemIcons-Regular",
+          "fonts": [
+            {
+              "asset": "packages/fluentui_system_icons/fonts/FluentSystemIcons-Regular.ttf"
+            }
+          ]
+        },
+        {
+          "family": "FluentSystemIcons-Filled",
+          "fonts": [
+            {
+              "asset": "packages/fluentui_system_icons/fonts/FluentSystemIcons-Filled.ttf"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "bottom_navy_bar",
+    "description": "A beautiful and animated bottom navigation. The navigation bar uses your current theme, but you are free to customize it.",
+    "version": "6.1.0",
+    "homepage": "https://github.com/pedromassango/bottom_navy_bar",
+    "environment": { "sdk": ">=2.17.0-0 <3.0.0" },
+    "dependencies": { "flutter": { "sdk": "flutter" } },
+    "dev_dependencies": { "flutter_test": { "sdk": "flutter" } }
+  },
+  {
+    "name": "built_collection",
+    "version": "5.1.1",
+    "description": "Immutable collections based on the SDK collections. Each SDK collection class is split into a new immutable collection class and a corresponding mutable builder class.\n",
+    "homepage": "https://github.com/google/built_collection.dart",
+    "environment": { "sdk": ">=2.12.0-0 <3.0.0" },
+    "dev_dependencies": { "pedantic": "^1.4.0", "test": "^1.16.0-nullsafety" }
+  },
+  {
+    "name": "feedback",
+    "description": "A Flutter package for getting better feedback. It allows the user to give interactive feedback directly in the app.",
+    "version": "3.1.0",
+    "homepage": "https://uekoetter.dev/",
+    "repository": "https://github.com/ueman/feedback",
+    "issue_tracker": "https://github.com/ueman/feedback/issues",
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=3.10.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_localizations": { "sdk": "flutter" }
+    },
+    "dev_dependencies": {
+      "flutter_lints": "^3.0.0",
+      "flutter_test": { "sdk": "flutter" }
+    }
+  },
+  {
+    "name": "beamer",
+    "description": "A routing package built on top of Router and Navigator's pages API, supporting arbitrary nested navigation, guards and more.",
+    "version": "1.6.2",
+    "homepage": "https://beamer.dev",
+    "repository": "https://github.com/slovnicki/beamer/tree/master/package",
+    "issue_tracker": "https://github.com/slovnicki/beamer/issues",
+    "topics": ["beamer", "router", "navigator"],
+    "funding": ["https://github.com/sponsors/slovnicki"],
+    "environment": { "sdk": ">=2.12.0 <4.0.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" }
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "lints": "^2.0.0",
+      "mocktail": "^0.3.0"
+    }
+  },
+  {
+    "name": "mobx_codegen",
+    "description": "Code generator for MobX that adds support for annotating your code with @observable, @computed, @action and also creating Store classes.",
+    "version": "2.6.1",
+    "repository": "https://github.com/mobxjs/mobx.dart",
+    "issue_tracker": "https://github.com/mobxjs/mobx.dart/issues",
+    "homepage": "https://mobx.netlify.app",
+    "topics": ["reactive-programming", "state-management", "codegen"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dependencies": {
+      "analyzer": ">=5.12.0 <7.0.0",
+      "build": "^2.2.1",
+      "build_resolvers": "^2.0.6",
+      "meta": "^1.3.0",
+      "mobx": "^2.3.0",
+      "path": "^1.8.0",
+      "source_gen": "^1.2.1"
+    },
+    "dev_dependencies": {
+      "build_runner": "^2.1.7",
+      "build_test": "^2.1.5",
+      "coverage": "^1.0.4",
+      "lints": "^2.0.0",
+      "logging": "^1.0.2",
+      "mocktail": "^1.0.0",
+      "test": "^1.20.1"
+    }
+  },
+  {
+    "name": "flutter_local_notifications",
+    "description": "A cross platform plugin for displaying and scheduling local notifications for Flutter applications with the ability to customise for each platform.",
+    "version": "17.2.3",
+    "homepage": "https://github.com/MaikuB/flutter_local_notifications/tree/master/flutter_local_notifications",
+    "issue_tracker": "https://github.com/MaikuB/flutter_local_notifications/issues",
+    "dependencies": {
+      "clock": "^1.1.0",
+      "flutter": { "sdk": "flutter" },
+      "flutter_local_notifications_linux": "^4.0.1",
+      "flutter_local_notifications_platform_interface": "^7.2.0",
+      "timezone": "^0.9.0"
+    },
+    "dev_dependencies": {
+      "flutter_driver": { "sdk": "flutter" },
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.3.2",
+      "plugin_platform_interface": "^2.0.0"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "package": "com.dexterous.flutterlocalnotifications",
+            "pluginClass": "FlutterLocalNotificationsPlugin"
+          },
+          "ios": { "pluginClass": "FlutterLocalNotificationsPlugin" },
+          "macos": { "pluginClass": "FlutterLocalNotificationsPlugin" },
+          "linux": { "default_package": "flutter_local_notifications_linux" }
+        }
+      }
+    },
+    "environment": { "sdk": ">=2.17.0 <4.0.0", "flutter": ">=3.0.0" }
+  },
+  {
+    "name": "rxdart",
+    "version": "0.28.0",
+    "description": "RxDart is an implementation of the popular ReactiveX api for asynchronous programming, leveraging the native Dart Streams api.\n",
+    "repository": "https://github.com/ReactiveX/rxdart",
+    "topics": [
+      "rxdart",
+      "reactive-programming",
+      "streams",
+      "observables",
+      "rx"
+    ],
+    "environment": { "sdk": ">=2.12.0 <4.0.0" },
+    "dev_dependencies": {
+      "lints": "^1.0.1",
+      "stack_trace": "^1.10.0",
+      "test": "^1.17.12"
+    },
+    "screenshots": [
+      {
+        "description": "The RxDart package logo.",
+        "path": "screenshots/logo.png"
+      }
+    ]
+  },
+  {
+    "name": "macos_ui",
+    "description": "Flutter widgets and themes implementing the current macOS design language.",
+    "version": "2.0.9",
+    "homepage": "https://macosui.dev",
+    "repository": "https://github.com/GroovinChip/macos_ui",
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=3.10.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "macos_window_utils": "^1.2.0",
+      "gradient_borders": "^1.0.0",
+      "appkit_ui_element_colors": "^1.0.0",
+      "equatable": "^2.0.5"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "flutter_lints": "^2.0.2",
+      "mocktail": "^0.3.0"
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "macos": {
+            "package": "dev.macosui.macos_ui",
+            "pluginClass": "MacOSUiPlugin"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "redux",
+    "maintainer": "John Ryan (@johnpryan)",
+    "description": "Redux is a predictable state container for Dart and Flutter apps",
+    "homepage": "https://github.com/fluttercommunity/redux.dart",
+    "version": "5.0.0",
+    "environment": { "sdk": ">=2.12.0-0 <3.0.0" },
+    "dev_dependencies": { "test": "^1.16.3", "pedantic": "^1.10.0" }
+  },
+  {
+    "name": "intl",
+    "version": "0.19.0",
+    "description": "Contains code to deal with internationalized/localized messages, date and number formatting and parsing, bi-directional text, and other internationalization issues.",
+    "repository": "https://github.com/dart-lang/i18n/tree/main/pkgs/intl",
+    "environment": { "sdk": "^3.0.0" },
+    "dependencies": { "clock": "^1.1.0", "meta": "^1.0.2", "path": "^1.8.0" },
+    "dev_dependencies": {
+      "benchmark_harness": "^2.2.0",
+      "ffi": "^1.0.0",
+      "fixnum": "^1.0.0",
+      "js": "^0.6.3",
+      "lints": ">=1.0.0 <3.0.0",
+      "test": "^1.16.0"
+    }
+  },
+  {
+    "name": "sentry_flutter",
+    "version": "8.9.0",
+    "description": "Sentry SDK for Flutter. This package aims to support different Flutter targets by relying on the many platforms supported by Sentry with native SDKs.",
+    "homepage": "https://docs.sentry.io/platforms/flutter/",
+    "repository": "https://github.com/getsentry/sentry-dart",
+    "issue_tracker": "https://github.com/getsentry/sentry-dart/issues",
+    "documentation": "https://docs.sentry.io/platforms/flutter/",
+    "environment": { "sdk": ">=2.17.0 <4.0.0", "flutter": ">=3.0.0" },
+    "platforms": {
+      "android": null,
+      "ios": null,
+      "macos": null,
+      "linux": null,
+      "windows": null,
+      "web": null
+    },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "sentry": "8.9.0",
+      "package_info_plus": ">=1.0.0",
+      "meta": "^1.3.0",
+      "ffi": "^2.0.0",
+      "file": ">=6.1.4"
+    },
+    "dev_dependencies": {
+      "build_runner": "^2.4.2",
+      "flutter_test": { "sdk": "flutter" },
+      "mockito": "^5.1.0",
+      "yaml": "^3.1.0",
+      "flutter_lints": "^4.0.0",
+      "collection": "^1.16.0",
+      "remove_from_coverage": "^2.0.0",
+      "flutter_localizations": { "sdk": "flutter" }
+    },
+    "flutter": {
+      "plugin": {
+        "platforms": {
+          "android": {
+            "pluginClass": "SentryFlutterPlugin",
+            "package": "io.sentry.flutter"
+          },
+          "ios": { "pluginClass": "SentryFlutterPlugin" },
+          "macos": { "pluginClass": "SentryFlutterPlugin" },
+          "web": {
+            "pluginClass": "SentryFlutterWeb",
+            "fileName": "sentry_flutter_web.dart"
+          },
+          "linux": { "pluginClass": "SentryFlutterPlugin" },
+          "windows": { "ffiPlugin": true }
+        }
+      }
+    }
+  },
+  {
+    "name": "flex_color_scheme",
+    "description": "A Flutter package to use and make beautiful Material design based themes.",
+    "version": "7.3.1",
+    "homepage": "https://docs.flexcolorscheme.com",
+    "repository": "https://github.com/rydmike/flex_color_scheme",
+    "issue_tracker": "https://github.com/rydmike/flex_color_scheme/issues",
+    "documentation": "https://docs.flexcolorscheme.com",
+    "screenshots": [
+      {
+        "description": "Example of FlexColorScheme light theme colors in Themes Playground theme simulator",
+        "path": "example/screenshots/fcs_colors_light.png"
+      },
+      {
+        "description": "Example of FlexColorScheme dark theme colors in Themes Playground theme simulator",
+        "path": "example/screenshots/fcs_colors_dark.png"
+      },
+      {
+        "description": "FlexColorScheme light theme applied to a mock login screen in Themes Playground",
+        "path": "example/screenshots/fcs_login_light.png"
+      },
+      {
+        "description": "FlexColorScheme dark theme applied to a mock login screen in Themes Playground",
+        "path": "example/screenshots/fcs_login_dark.png"
+      },
+      {
+        "description": "FlexColorScheme light theme applied to a mock shop app in Themes Playground",
+        "path": "example/screenshots/fcs_shop_light.png"
+      },
+      {
+        "description": "FlexColorScheme dark theme applied to a mock shop app in Themes Playground",
+        "path": "example/screenshots/fcs_shop_dark.png"
+      },
+      {
+        "description": "A FlexColorScheme pink light theme applied on the Flutter M3 demo app in Themes Playground",
+        "path": "example/screenshots/fcs_pad_light.png"
+      },
+      {
+        "description": "A FlexColorScheme pink dark theme applied on the Flutter M3 demo app in Themes Playground",
+        "path": "example/screenshots/fcs_pad_dark.png"
+      },
+      {
+        "description": "A FlexColorScheme blue light theme applied on the Flutter M3 demo app in Themes Playground",
+        "path": "example/screenshots/fcs_big_pad_light.png"
+      },
+      {
+        "description": "A FlexColorScheme blue dark theme applied on the Flutter M3 demo app in Themes Playground",
+        "path": "example/screenshots/fcs_big_pad_dark.png"
+      }
+    ],
+    "topics": ["theme", "colorscheme", "material3", "color", "materialdesign"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0", "flutter": ">=3.13.0" },
+    "dependencies": {
+      "flex_seed_scheme": "^1.4.0",
+      "flutter": { "sdk": "flutter" },
+      "meta": "^1.8.0"
+    },
+    "dev_dependencies": {
+      "flutter_test": { "sdk": "flutter" },
+      "google_fonts": "^5.1.0",
+      "test": null
+    }
+  },
+  {
+    "name": "sentry",
+    "version": "8.9.0",
+    "description": "A crash reporting library for Dart that sends crash reports to Sentry.io. This library supports Dart VM and Web. For Flutter consider sentry_flutter instead.\n",
+    "homepage": "https://docs.sentry.io/platforms/dart/",
+    "repository": "https://github.com/getsentry/sentry-dart",
+    "issue_tracker": "https://github.com/getsentry/sentry-dart/issues",
+    "documentation": "https://docs.sentry.io/platforms/dart/",
+    "environment": { "sdk": ">=2.17.0 <4.0.0" },
+    "platforms": {
+      "android": null,
+      "ios": null,
+      "macos": null,
+      "linux": null,
+      "windows": null,
+      "web": null
+    },
+    "dependencies": {
+      "http": ">=0.13.0 <2.0.0",
+      "meta": "^1.3.0",
+      "stack_trace": "^1.10.0",
+      "uuid": ">=3.0.0 <5.0.0"
+    },
+    "dev_dependencies": {
+      "build_runner": "^2.3.0",
+      "mockito": "^5.1.0",
+      "lints": ">=2.0.0 <5.0.0",
+      "test": "^1.21.1",
+      "yaml": "^3.1.0",
+      "collection": "^1.16.0",
+      "coverage": "^1.3.0",
+      "intl": ">=0.17.0 <1.0.0",
+      "version": "^3.0.2"
+    }
+  },
+  {
+    "name": "routemaster",
+    "description": "Easy-to-use Navigator 2.0 router for web, mobile and desktop. URL-based routing, simple navigation of tabs and nested routes.",
+    "version": "1.0.1",
+    "homepage": "https://github.com/tomgilder/routemaster",
+    "environment": { "sdk": ">=2.12.0 <3.0.0", "flutter": ">=1.17.0" },
+    "dependencies": {
+      "flutter": { "sdk": "flutter" },
+      "flutter_web_plugins": { "sdk": "flutter" },
+      "path": "^1.8.0",
+      "collection": "^1.15.0"
+    },
+    "dev_dependencies": {
+      "flutter_lints": "^1.0.4",
+      "flutter_test": { "sdk": "flutter" }
+    }
+  },
+  {
+    "name": "built_value_generator",
+    "version": "8.9.2",
+    "description": "Value types with builders, Dart classes as enums, and serialization. This library is the dev dependency.\n",
+    "repository": "https://github.com/google/built_value.dart/tree/master/built_value_generator",
+    "topics": ["built-value", "codegen", "build-runner"],
+    "environment": { "sdk": ">=3.0.0 <4.0.0" },
+    "dependencies": {
+      "analyzer": ">=5.2.0 <7.0.0",
+      "build": ">=1.0.0 <3.0.0",
+      "build_config": ">=0.3.1 <2.0.0",
+      "built_collection": "^5.0.0",
+      "built_value": ">=8.1.0 <8.10.0",
+      "collection": "^1.15.0",
+      "source_gen": ">=0.9.0 <2.0.0"
+    },
+    "dev_dependencies": {
+      "build_test": ">=1.2.0 <3.0.0",
+      "build_runner": ">=1.0.0 <3.0.0",
+      "pedantic": "^1.4.0",
+      "test": "^1.0.0"
+    }
+  }
+]
