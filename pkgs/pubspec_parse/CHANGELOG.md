@@ -1,3 +1,7 @@
+## 1.5.0-wip
+
+- Add `Pubspec.workspace` and `Pubspec.resolution` fields.
+
 ## 1.4.0
 
 - Require Dart 3.2
@@ -31,7 +35,7 @@
 - Added support for `screenshots` field.
 - Update `HostedDetails` to reflect how `hosted` dependencies are parsed in
   Dart 2.15:
-   - Add `HostedDetails.declaredName` as the (optional) `name` property in a 
+   - Add `HostedDetails.declaredName` as the (optional) `name` property in a
      `hosted` block.
    - `HostedDetails.name` now falls back to the name of the dependency if no
       name is declared in the block.
