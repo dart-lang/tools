@@ -1,3 +1,7 @@
+## 1.4.1
+
+- Added support for `executables` field.
+
 ## 1.4.0
 
 - Require Dart 3.2
