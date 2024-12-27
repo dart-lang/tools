@@ -93,6 +93,10 @@ class Pubspec {
   /// and other settings.
   final Map<String, dynamic>? flutter;
 
+  /// Optional field to specify executables
+  @JsonKey(fromJson: _executablesMap)
+  final Map<String, String?> executables;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
@@ -121,12 +125,14 @@ class Pubspec {
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,
     this.flutter,
+    Map<String, String?>? executables,
   })  :
         // ignore: deprecated_member_use_from_same_package
         authors = _normalizeAuthors(author, authors),
         environment = environment ?? const {},
         dependencies = dependencies ?? const {},
         devDependencies = devDependencies ?? const {},
+        executables = executables ?? const {},
         dependencyOverrides = dependencyOverrides ?? const {} {
     if (name.isEmpty) {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
@@ -222,5 +228,29 @@ Map<String, VersionConstraint?> _environmentMap(Map? source) =>
       }
 
       return MapEntry(key, constraint);
+    }) ??
+    {};
+
+Map<String, String?> _executablesMap(Map? source) =>
+    source?.map((k, value) {
+      final key = k as String;
+      if (value == null) {
+        return MapEntry(key, null);
+      } else if (value is String) {
+        // Validate that the value is a valid file path.
+        try {
+          Uri.file(value);
+        } catch (e) {
+          throw CheckedFromJsonException(source, key, 'Pubspec', e.toString());
+        }
+        return MapEntry(key, value);
+      } else {
+        throw CheckedFromJsonException(
+          source,
+          key,
+          'String',
+          '`$value` is not a String.',
+        );
+      }
     }) ??
     {};
