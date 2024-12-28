@@ -34,6 +34,7 @@ void main() {
     expect(value.screenshots, isEmpty);
     expect(value.workspace, isNull);
     expect(value.resolution, isNull);
+    expect(value.executables, isEmpty);
   });
 
   test('all fields set', () async {
