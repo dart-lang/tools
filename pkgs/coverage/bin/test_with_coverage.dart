@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:coverage/src/coverage_options.dart';
 import 'package:coverage/src/util.dart'
     show StandardOutExtension, extractVMServiceUri;
 import 'package:package_config/package_config.dart';
@@ -50,41 +51,48 @@ void _watchExitSignal(ProcessSignal signal) {
   });
 }
 
-ArgParser _createArgParser() => ArgParser()
-  ..addOption(
-    'package',
-    help: 'Root directory of the package to test.',
-    defaultsTo: '.',
-  )
-  ..addOption(
-    'package-name',
-    help: 'Name of the package to test. '
-        'Deduced from --package if not provided.',
-  )
-  ..addOption('port', help: 'VM service port.', defaultsTo: '8181')
-  ..addOption(
-    'out',
-    abbr: 'o',
-    help: 'Output directory. Defaults to <package-dir>/coverage.',
-  )
-  ..addOption('test', help: 'Test script to run.', defaultsTo: 'test')
-  ..addFlag(
-    'function-coverage',
-    abbr: 'f',
-    defaultsTo: false,
-    help: 'Collect function coverage info.',
-  )
-  ..addFlag(
-    'branch-coverage',
-    abbr: 'b',
-    defaultsTo: false,
-    help: 'Collect branch coverage info.',
-  )
-  ..addMultiOption('scope-output',
-      help: 'restrict coverage results so that only scripts that start with '
-          'the provided package path are considered. Defaults to the name of '
-          'the package under test.')
-  ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
+ArgParser _createArgParser(TestWithCoverageOptions defaultOptions) =>
+    ArgParser()
+      ..addOption(
+        'package',
+        help: 'Root directory of the package to test.',
+        defaultsTo: defaultOptions.packageDir,
+      )
+      ..addOption(
+        'package-name',
+        help: 'Name of the package to test. '
+            'Deduced from --package if not provided.',
+        defaultsTo: defaultOptions.packageName,
+      )
+      ..addOption('port',
+          help: 'VM service port.', defaultsTo: defaultOptions.port)
+      ..addOption(
+        'out',
+        defaultsTo: defaultOptions.outDir,
+        abbr: 'o',
+        help: 'Output directory. Defaults to <package-dir>/coverage.',
+      )
+      ..addOption('test',
+          help: 'Test script to run.', defaultsTo: defaultOptions.testScript)
+      ..addFlag(
+        'function-coverage',
+        abbr: 'f',
+        defaultsTo: defaultOptions.functionCoverage,
+        help: 'Collect function coverage info.',
+      )
+      ..addFlag(
+        'branch-coverage',
+        abbr: 'b',
+        defaultsTo: defaultOptions.branchCoverage,
+        help: 'Collect branch coverage info.',
+      )
+      ..addMultiOption('scope-output',
+          defaultsTo: defaultOptions.scopeOutput,
+          help:
+              'restrict coverage results so that only scripts that start with '
+              'the provided package path are considered. Defaults to the name of '
+              'the package under test.')
+      ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
   Flags(
@@ -110,8 +118,9 @@ class Flags {
   final List<String> rest;
 }
 
-Future<Flags> _parseArgs(List<String> arguments) async {
-  final parser = _createArgParser();
+Future<Flags> _parseArgs(
+    List<String> arguments, TestWithCoverageOptions defaultOptions) async {
+  final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
 
   void printUsage() {
@@ -166,7 +175,10 @@ ${parser.usage}
 }
 
 Future<void> main(List<String> arguments) async {
-  final flags = await _parseArgs(arguments);
+  final defaultOptions =
+      CoverageOptionsProvider().coverageOptions.testWithCoverage;
+  final flags = await _parseArgs(arguments, defaultOptions);
+
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
 
