@@ -13,7 +13,7 @@ void main() {
   // Remove comments and empty lines.
   data.removeWhere((row) => row.length < 3);
 
-  Directory('lib/src/generated').createSync(recursive: true);
+  Directory(_generatedDir).createSync(recursive: true);
 
   _writeGlyphSetInterface(data);
   _writeGlyphSet(data, ascii: false);
@@ -22,16 +22,18 @@ void main() {
 
   final result = Process.runSync(Platform.resolvedExecutable, [
     'format',
-    '.',
+    _generatedDir,
   ]);
   print(result.stderr);
   exit(result.exitCode);
 }
 
+const _generatedDir = 'lib/src/generated';
+
 /// Writes `lib/src/generated/glyph_set.dart`.
 void _writeGlyphSetInterface(List<List<dynamic>> data) {
   final file =
-      File('lib/src/generated/glyph_set.dart').openSync(mode: FileMode.write);
+      File('$_generatedDir/glyph_set.dart').openSync(mode: FileMode.write);
   file.writeStringSync(_header);
   file.writeStringSync(r'''
 
@@ -82,7 +84,7 @@ void _writeGlyphSetInterface(List<List<dynamic>> data) {
 /// the Unicode glyph set.
 void _writeGlyphSet(List<List<dynamic>> data, {required bool ascii}) {
   final file =
-      File('lib/src/generated/${ascii ? "ascii" : "unicode"}_glyph_set.dart')
+      File('$_generatedDir/${ascii ? "ascii" : "unicode"}_glyph_set.dart')
           .openSync(mode: FileMode.write);
 
   final className = '${ascii ? "Ascii" : "Unicode"}GlyphSet';
@@ -117,7 +119,7 @@ void _writeGlyphSet(List<List<dynamic>> data, {required bool ascii}) {
 /// Writes `lib/src/generated/top_level.dart`.
 void _writeTopLevel(List<List<dynamic>> data) {
   final file =
-      File('lib/src/generated/top_level.dart').openSync(mode: FileMode.write);
+      File('$_generatedDir/top_level.dart').openSync(mode: FileMode.write);
 
   file.writeStringSync('''
     $_header
