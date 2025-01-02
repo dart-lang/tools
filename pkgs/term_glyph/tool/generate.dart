@@ -20,7 +20,7 @@ void main() {
   _writeGlyphSet(data, ascii: true);
   _writeTopLevel(data);
 
-  final result = Process.runSync('dart', [
+  final result = Process.runSync(Platform.resolvedExecutable, [
     'format',
     '.',
   ]);
