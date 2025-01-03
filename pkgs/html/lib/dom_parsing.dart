@@ -43,7 +43,14 @@ class TreeVisitor {
   void visitText(Text node) => visitNodeFallback(node);
 
   // TODO(jmesserly): visit attributes.
-  void visitElement(Element node) => visitNodeFallback(node);
+  void visitElement(Element node) {
+    if (node.localName == 'br') {
+      visitText(Text('\n'));
+      return;
+    }
+
+    visitNodeFallback(node);
+  }
 
   void visitComment(Comment node) => visitNodeFallback(node);
 
