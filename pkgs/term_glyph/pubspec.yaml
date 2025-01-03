@@ -1,5 +1,5 @@
 name: term_glyph
-version: 1.2.2
+version: 1.2.3-wip
 description: Useful Unicode glyphs and ASCII substitutes.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/term_glyph
 
@@ -9,5 +9,4 @@ environment:
 dev_dependencies:
   csv: ^6.0.0
   dart_flutter_team_lints: ^3.0.0
-  dart_style: ^2.0.0
   test: ^1.16.6
