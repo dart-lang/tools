@@ -1,0 +1,39 @@
+defaults:
+  collect_coverage:
+    uri: "http://127.0.0.1:8181/"
+    out: "coverage.json"
+    connect-timeout: 30
+    scope-output: ["lib/"]
+    resume-isolates: false
+    include-dart: false
+    function-coverage: true
+    branch-coverage: false
+    wait-paused: true
+
+  format_coverage:
+    base-directory: "."
+    bazel-workspace: null
+    in: "coverage.json"
+    out: "lcov.info"
+    package: "."
+    report-on: ["lib/", "bin/"]
+    ignore-files: ["test/"]
+    sdk-root: '.'
+    workers: 2
+    check-ignore: false
+    bazel: false
+    verbose: true
+    lcov: true
+    pretty-print: false
+    pretty-print-func: false
+    pretty-print-branch: false
+
+  test_with_coverage:
+    package: "."
+    package-name: "My Dart Package"
+    out: "test_coverage.json"
+    port: 8181
+    test: "test"
+    scope-output: ["lib/src/"]
+    function-coverage: true
+    branch-coverage: false

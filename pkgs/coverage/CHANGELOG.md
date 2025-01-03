@@ -1,3 +1,7 @@
+## 1.11.2
+
+- Introduced support for specifying coverage flags through a YAML file.
+
 ## 1.11.1
 
 - Update `package:vm_service` constraints to '>=12.0.0 <16.0.0'.

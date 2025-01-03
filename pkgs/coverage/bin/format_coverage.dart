@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/coverage_options.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
@@ -51,7 +52,9 @@ class Environment {
 }
 
 Future<void> main(List<String> arguments) async {
-  final env = parseArgs(arguments);
+  final defaultOptions =
+      CoverageOptionsProvider().coverageOptions.formatCoverage;
+  final env = parseArgs(arguments, defaultOptions);
 
   final files = filesToProcess(env.input);
   if (env.verbose) {
@@ -129,54 +132,86 @@ Future<void> main(List<String> arguments) async {
 
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
-Environment parseArgs(List<String> arguments) {
+Environment parseArgs(
+    List<String> arguments, FormatCoverageOptions defaultOptions) {
   final parser = ArgParser();
 
   parser
-    ..addOption('sdk-root', abbr: 's', help: 'path to the SDK root')
-    ..addOption('packages', help: '[DEPRECATED] path to the package spec file')
+    ..addOption(
+      'sdk-root',
+      abbr: 's',
+      help: 'path to the SDK root',
+      defaultsTo: defaultOptions.sdkRoot,
+    )
+    ..addOption(
+      'packages',
+      help: '[DEPRECATED] path to the package spec file',
+    )
     ..addOption('package',
-        help: 'root directory of the package', defaultsTo: '.')
-    ..addOption('in', abbr: 'i', help: 'input(s): may be file or directory')
+        help: 'root directory of the package',
+        defaultsTo: defaultOptions.packagePath)
+    ..addOption('in',
+        abbr: 'i',
+        help: 'input(s): may be file or directory',
+        defaultsTo: defaultOptions.input)
     ..addOption('out',
-        abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
+        abbr: 'o',
+        defaultsTo: defaultOptions.output,
+        help: 'output: may be file or stdout')
     ..addMultiOption('report-on',
-        help: 'which directories or files to report coverage on')
-    ..addOption('workers',
-        abbr: 'j', defaultsTo: '1', help: 'number of workers')
+        help: 'which directories or files to report coverage on',
+        defaultsTo: defaultOptions.reportOn)
+    ..addOption(
+      'workers',
+      abbr: 'j',
+      defaultsTo: defaultOptions.workers.toString(),
+      help: 'number of workers',
+    )
     ..addOption('bazel-workspace',
-        defaultsTo: '', help: 'Bazel workspace directory')
+        defaultsTo: defaultOptions.bazelWorkspace,
+        help: 'Bazel workspace directory')
     ..addOption('base-directory',
         abbr: 'b',
+        defaultsTo: defaultOptions.baseDirectory,
         help: 'the base directory relative to which source paths are output')
     ..addFlag('bazel',
-        defaultsTo: false, help: 'use Bazel-style path resolution')
+        defaultsTo: defaultOptions.bazel,
+        help: 'use Bazel-style path resolution')
     ..addFlag('pretty-print',
         abbr: 'r',
+        defaultsTo: defaultOptions.prettyPrint,
         negatable: false,
         help: 'convert line coverage data to pretty print format')
     ..addFlag('pretty-print-func',
         abbr: 'f',
+        defaultsTo: defaultOptions.prettyPrintFunc,
         negatable: false,
         help: 'convert function coverage data to pretty print format')
     ..addFlag('pretty-print-branch',
         negatable: false,
+        defaultsTo: defaultOptions.prettyPrintBranch,
         help: 'convert branch coverage data to pretty print format')
     ..addFlag('lcov',
         abbr: 'l',
+        defaultsTo: defaultOptions.lcov,
         negatable: false,
         help: 'convert coverage data to lcov format')
-    ..addFlag('verbose', abbr: 'v', negatable: false, help: 'verbose output')
+    ..addFlag('verbose',
+        abbr: 'v',
+        defaultsTo: defaultOptions.verbose,
+        negatable: false,
+        help: 'verbose output')
     ..addFlag(
       'check-ignore',
       abbr: 'c',
+      defaultsTo: defaultOptions.checkIgnore,
       negatable: false,
       help: 'check for coverage ignore comments.'
           ' Not supported in web coverage.',
     )
     ..addMultiOption(
       'ignore-files',
-      defaultsTo: [],
+      defaultsTo: defaultOptions.ignoreFiles,
       help: 'Ignore files by glob patterns',
     )
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');

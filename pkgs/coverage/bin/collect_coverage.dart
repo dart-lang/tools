@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/src/collect.dart';
+import 'package:coverage/src/coverage_options.dart';
 import 'package:logging/logging.dart';
 import 'package:stack_trace/stack_trace.dart';
 
@@ -17,7 +18,9 @@ Future<void> main(List<String> arguments) async {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  final options = _parseArgs(arguments);
+  final defaultOptions =
+      CoverageOptionsProvider().coverageOptions.collectCoverage;
+  final options = _parseArgs(arguments, defaultOptions);
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
         options.waitPaused, options.includeDart, options.scopedOutput,
@@ -58,37 +61,45 @@ class Options {
   final Set<String> scopedOutput;
 }
 
-Options _parseArgs(List<String> arguments) {
+Options _parseArgs(
+    List<String> arguments, CollectCoverageOptions defaultOptions) {
   final parser = ArgParser()
     ..addOption('host',
-        abbr: 'H',
-        help: 'remote VM host. DEPRECATED: use --uri',
-        defaultsTo: '127.0.0.1')
+        abbr: 'H', help: 'remote VM host. DEPRECATED: use --uri')
     ..addOption('port',
-        abbr: 'p',
-        help: 'remote VM port. DEPRECATED: use --uri',
-        defaultsTo: '8181')
+        abbr: 'p', help: 'remote VM port. DEPRECATED: use --uri')
     ..addOption('uri', abbr: 'u', help: 'VM observatory service URI')
     ..addOption('out',
-        abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
+        abbr: 'o',
+        defaultsTo: defaultOptions.out,
+        help: 'output: may be file or stdout')
     ..addOption('connect-timeout',
-        abbr: 't', help: 'connect timeout in seconds')
+        defaultsTo: defaultOptions.connectTimeout?.toString(),
+        abbr: 't',
+        help: 'connect timeout in seconds')
     ..addMultiOption('scope-output',
+        defaultsTo: defaultOptions.scopeOutput,
         help: 'restrict coverage results so that only scripts that start with '
             'the provided package path are considered')
     ..addFlag('wait-paused',
         abbr: 'w',
-        defaultsTo: false,
+        defaultsTo: defaultOptions.waitPaused,
         help: 'wait for all isolates to be paused before collecting coverage')
     ..addFlag('resume-isolates',
-        abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
+        abbr: 'r',
+        defaultsTo: defaultOptions.resumeIsolates,
+        help: 'resume all isolates on exit')
     ..addFlag('include-dart',
-        abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
+        abbr: 'd',
+        defaultsTo: defaultOptions.includeDart,
+        help: 'include "dart:" libraries')
     ..addFlag('function-coverage',
-        abbr: 'f', defaultsTo: false, help: 'Collect function coverage info')
+        abbr: 'f',
+        defaultsTo: defaultOptions.functionCoverage,
+        help: 'Collect function coverage info')
     ..addFlag('branch-coverage',
         abbr: 'b',
-        defaultsTo: false,
+        defaultsTo: defaultOptions.branchCoverage,
         help: 'Collect branch coverage info (Dart VM must also be run with '
             '--branch-coverage for this to work)')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
@@ -112,13 +123,17 @@ Options _parseArgs(List<String> arguments) {
   }
 
   Uri serviceUri;
-  if (args['uri'] == null) {
+  if (args['uri'] == null && (args['host'] != null || args['port'] != null)) {
     // TODO(cbracken) eliminate --host and --port support when VM defaults to
     // requiring an auth token. Estimated for Dart SDK 1.22.
-    serviceUri = Uri.parse('http://${args['host']}:${args['port']}/');
+
+    final host = args['host'] ?? defaultOptions.host;
+    final port = args['port'] ?? defaultOptions.port;
+
+    serviceUri = Uri.parse('http://$host:$port/');
   } else {
     try {
-      serviceUri = Uri.parse(args['uri'] as String);
+      serviceUri = Uri.parse((args['uri'] ?? defaultOptions.uri) as String);
     } on FormatException {
       fail('Invalid service URI specified: ${args['uri']}');
     }
