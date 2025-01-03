@@ -34,6 +34,7 @@ void main() {
     expect(value.screenshots, isEmpty);
     expect(value.workspace, isNull);
     expect(value.resolution, isNull);
+    expect(value.executables, isEmpty);
   });
 
   test('all fields set', () async {
@@ -64,6 +65,10 @@ void main() {
           'pkg2',
         ],
         'resolution': 'workspace',
+        'executables': {
+          'my_script': 'bin/my_script.dart',
+          'my_script2': 'bin/my_script2.dart',
+        },
       },
       skipTryPub: true,
     );
@@ -96,6 +101,11 @@ void main() {
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
+    expect(value.executables, hasLength(2));
+    expect(value.executables.keys, contains('my_script'));
+    expect(value.executables.keys, contains('my_script2'));
+    expect(value.executables['my_script'], 'bin/my_script.dart');
+    expect(value.executables['my_script2'], 'bin/my_script2.dart');
     expect(value.workspace, hasLength(2));
     expect(value.workspace!.first, 'pkg1');
     expect(value.workspace!.last, 'pkg2');
@@ -219,6 +229,58 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
         'flutter': {'key': 'value'},
       });
       expect(value.flutter, {'key': 'value'});
+    });
+  });
+
+  group('executables', () {
+    test('one executable', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'executables': {'my_script': 'bin/my_script.dart'},
+      });
+      expect(value.executables, hasLength(1));
+      expect(value.executables.keys, contains('my_script'));
+      expect(value.executables['my_script'], 'bin/my_script.dart');
+    });
+
+    test('many executables', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'executables': {
+          'my_script': 'bin/my_script.dart',
+          'my_script2': 'bin/my_script2.dart',
+        },
+      });
+      expect(value.executables, hasLength(2));
+      expect(value.executables.keys, contains('my_script'));
+      expect(value.executables.keys, contains('my_script2'));
+      expect(value.executables['my_script'], 'bin/my_script.dart');
+      expect(value.executables['my_script2'], 'bin/my_script2.dart');
+    });
+
+    test('invalid value', () async {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'executables': {
+            'script': 32,
+          },
+        },
+        'Unsupported value for "script". `32` is not a String.',
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid executable - lenient', () async {
+      final value = await parse(
+        {
+          ...defaultPubspec,
+          'executables': 'Invalid value',
+        },
+        lenient: true,
+      );
+      expect(value.name, 'sample');
+      expect(value.executables, isEmpty);
     });
   });
 

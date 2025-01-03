@@ -54,6 +54,8 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
               (v) => (v as Map?)?.map(
                     (k, e) => MapEntry(k as String, e),
                   )),
+          executables:
+              $checkedConvert('executables', (v) => _executablesMap(v as Map?)),
         );
         return val;
       },
