@@ -1,7 +1,6 @@
 ## 1.5.0-wip
 
-- Add `Pubspec.workspace` and `Pubspec.resolution` fields.
-- Added support for `executables` field.
+- Added fields to `Pubspec`: `executables`, `resolution`, `workspace`.
 
 ## 1.4.0
 
