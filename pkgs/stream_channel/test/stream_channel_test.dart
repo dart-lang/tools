@@ -135,4 +135,46 @@ void main() {
     changed.sink.add(10);
     changed.sink.close();
   });
+
+  group('StreamChannelMixin', () {
+    test('can be used as a mixin', () async {
+      var channel = StreamChannelMixinAsMixin<int>();
+      expect(channel.stream, emitsInOrder([1, 2, 3]));
+      channel.sink
+        ..add(1)
+        ..add(2)
+        ..add(3);
+      await channel.controller.close();
+    });
+
+    test('can be extended', () async {
+      var channel = StreamChannelMixinAsSuperclass<int>();
+      expect(channel.stream, emitsInOrder([1, 2, 3]));
+      channel.sink
+        ..add(1)
+        ..add(2)
+        ..add(3);
+      await channel.controller.close();
+    });
+  });
+}
+
+class StreamChannelMixinAsMixin<T> with StreamChannelMixin<T> {
+  final controller = StreamController<T>();
+
+  @override
+  StreamSink<T> get sink => controller.sink;
+
+  @override
+  Stream<T> get stream => controller.stream;
+}
+
+class StreamChannelMixinAsSuperclass<T> extends StreamChannelMixin<T> {
+  final controller = StreamController<T>();
+
+  @override
+  StreamSink<T> get sink => controller.sink;
+
+  @override
+  Stream<T> get stream => controller.stream;
 }

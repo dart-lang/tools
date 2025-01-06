@@ -1,3 +1,7 @@
+## 2.1.4
+
+* Fix `StreamChannelMixin` so that it can be used as a mixin again.
+
 ## 2.1.3
 
 * Require Dart 3.3

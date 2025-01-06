@@ -148,7 +148,7 @@ class _StreamChannel<T> extends StreamChannelMixin<T> {
 
 /// A mixin that implements the instance methods of [StreamChannel] in terms of
 /// [stream] and [sink].
-abstract class StreamChannelMixin<T> implements StreamChannel<T> {
+abstract mixin class StreamChannelMixin<T> implements StreamChannel<T> {
   @override
   void pipe(StreamChannel<T> other) {
     stream.pipe(other.sink);
