@@ -5,7 +5,6 @@
 import 'package:stream_transform/stream_transform.dart';
 import 'package:web/web.dart';
 
-
 void main() {
   var firstInput = document.querySelector('#first_input') as HTMLInputElement;
   var secondInput = document.querySelector('#second_input') as HTMLInputElement;
