@@ -1,0 +1,18 @@
+out: 'custom_coverage.json'
+scope-output: 
+  - 'lib'
+  - 'test'
+resume-isolates: true
+function-coverage: false
+include-dart: true
+connect-timeout: 20
+lcov: false
+verbose: false
+base-directory: 'src'
+ignore-files: 
+  - 'example'
+report-on: 
+  - 'lib'
+pretty-print: true
+pretty-print-func: false
+package-name: 'Custom Dart Package'

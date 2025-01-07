@@ -93,13 +93,13 @@ extension ListTestExtension on List {
       );
 }
 
-CollectCoverageOptions parseArgsCollectCoverage(
-    List<String> arguments, CollectCoverageOptions defaultOptions) {
+CoverageOptions parseArgsCollectCoverage(
+    List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
     ..addOption('host', abbr: 'H')
     ..addOption('port', abbr: 'p')
     ..addOption('uri', abbr: 'u')
-    ..addOption('out', abbr: 'o', defaultsTo: defaultOptions.out)
+    ..addOption('out', abbr: 'o', defaultsTo: defaultOptions.output)
     ..addOption('connect-timeout',
         abbr: 't', defaultsTo: defaultOptions.connectTimeout?.toString())
     ..addMultiOption('scope-output', defaultsTo: defaultOptions.scopeOutput)
@@ -115,31 +115,40 @@ CollectCoverageOptions parseArgsCollectCoverage(
 
   final args = parser.parse(arguments);
 
-  String serviceUri;
-  if (args['uri'] == null && (args['host'] != null || args['port'] != null)) {
-    final host = args['host'] ?? defaultOptions.host;
-    final port = args['port'] ?? defaultOptions.port;
-
-    serviceUri = 'http://$host:$port/';
-  } else {
-    serviceUri = (args['uri'] ?? defaultOptions.uri) as String;
-  }
-
-  return CollectCoverageOptions(
-    uri: serviceUri,
-    out: args['out'] as String,
-    connectTimeout: int.tryParse(args['connect-timeout'] as String? ?? ''),
+  return CoverageOptions(
+    output: args['out'] as String,
+    connectTimeout: args['connect-timeout'] == null
+        ? defaultOptions.connectTimeout
+        : int.parse(args['connect-timeout'] as String),
     scopeOutput: args['scope-output'] as List<String>,
     waitPaused: args['wait-paused'] as bool,
     resumeIsolates: args['resume-isolates'] as bool,
     includeDart: args['include-dart'] as bool,
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
+    bazel: defaultOptions.bazel,
+    bazelWorkspace: defaultOptions.bazelWorkspace,
+    baseDirectory: defaultOptions.baseDirectory,
+    checkIgnore: defaultOptions.checkIgnore,
+    ignoreFiles: defaultOptions.ignoreFiles,
+    input: defaultOptions.input,
+    lcov: defaultOptions.lcov,
+    packagePath: defaultOptions.packagePath,
+    packageName: defaultOptions.packageName,
+    prettyPrint: defaultOptions.prettyPrint,
+    prettyPrintBranch: defaultOptions.prettyPrintBranch,
+    prettyPrintFunc: defaultOptions.prettyPrintFunc,
+    reportOn: defaultOptions.reportOn,
+    sdkRoot: defaultOptions.sdkRoot,
+    testScript: defaultOptions.testScript,
+    verbose: defaultOptions.verbose,
+    workers: defaultOptions.workers,
+
   );
 }
 
-FormatCoverageOptions parseArgsFormatCoverage(
-    List<String> arguments, FormatCoverageOptions defaultOptions) {
+CoverageOptions parseArgsFormatCoverage(
+    List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
     ..addOption('sdk-root', abbr: 's', defaultsTo: defaultOptions.sdkRoot)
     ..addOption('packages')
@@ -174,7 +183,7 @@ FormatCoverageOptions parseArgsFormatCoverage(
 
   if (args['in'] == null) throw ArgumentError('Missing required argument: in');
 
-  return FormatCoverageOptions(
+  return CoverageOptions(
     baseDirectory: args['base-directory'] as String?,
     bazel: args['bazel'] as bool,
     bazelWorkspace: args['bazel-workspace'] as String,
@@ -193,24 +202,33 @@ FormatCoverageOptions parseArgsFormatCoverage(
     sdkRoot: args['sdk-root'] as String?,
     verbose: args['verbose'] as bool,
     workers: int.parse(args['workers'] as String),
+    branchCoverage: defaultOptions.branchCoverage,
+    functionCoverage: defaultOptions.functionCoverage,
+    connectTimeout: defaultOptions.connectTimeout,
+    includeDart: defaultOptions.includeDart,
+    packageName: defaultOptions.packageName,
+    resumeIsolates: defaultOptions.resumeIsolates,
+    scopeOutput: defaultOptions.scopeOutput,
+    waitPaused: defaultOptions.waitPaused,
+    testScript: defaultOptions.testScript,
   );
 }
 
-Future<TestWithCoverageOptions> parseArgsTestWithCoverage(
-    List<String> arguments, TestWithCoverageOptions defaultOptions) async {
+Future<CoverageOptions> parseArgsTestWithCoverage(
+    List<String> arguments, CoverageOptions defaultOptions) async {
   final parser = ArgParser()
     ..addOption(
       'package',
-      defaultsTo: defaultOptions.packageDir,
+      defaultsTo: defaultOptions.packagePath,
     )
     ..addOption(
       'package-name',
       defaultsTo: defaultOptions.packageName,
     )
-    ..addOption('port', defaultsTo: defaultOptions.port)
+    ..addOption('port')
     ..addOption(
       'out',
-      defaultsTo: defaultOptions.outDir,
+      defaultsTo: defaultOptions.output,
       abbr: 'o',
     )
     ..addOption('test', defaultsTo: defaultOptions.testScript)
@@ -234,21 +252,39 @@ Future<TestWithCoverageOptions> parseArgsTestWithCoverage(
     ArgumentError('Invalid package directory: $packageDir');
   }
 
-  final packageName = (args['package-name'] as String?) ??
+  final packageName =
+      args['package-name'] ??
       await _packageNameFromConfig(packageDir);
   if (packageName == null) {
     ArgumentError('Could not determine package name');
   }
 
-  return TestWithCoverageOptions(
-    packageDir: packageDir,
-    packageName: packageName,
-    outDir: (args['out'] as String?) ?? 'coverage',
-    port: args['port'] as String,
+  return CoverageOptions(
+    packagePath: packageDir,
+    packageName: packageName as String,
+    output: (args['out'] as String?) ?? 'coverage',
     testScript: args['test'] as String,
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
     scopeOutput: args['scope-output'] as List<String>,
+    bazel: defaultOptions.bazel,
+    bazelWorkspace: defaultOptions.bazelWorkspace,
+    baseDirectory: defaultOptions.baseDirectory,
+    checkIgnore: defaultOptions.checkIgnore,
+    connectTimeout: defaultOptions.connectTimeout,
+    ignoreFiles: defaultOptions.ignoreFiles,
+    includeDart: defaultOptions.includeDart,
+    input: defaultOptions.input,
+    lcov: defaultOptions.lcov,
+    prettyPrint: defaultOptions.prettyPrint,
+    prettyPrintBranch: defaultOptions.prettyPrintBranch,
+    prettyPrintFunc: defaultOptions.prettyPrintFunc,
+    reportOn: defaultOptions.reportOn,
+    resumeIsolates: defaultOptions.resumeIsolates,
+    sdkRoot: defaultOptions.sdkRoot,
+    verbose: defaultOptions.verbose,
+    waitPaused: defaultOptions.waitPaused,
+    workers: defaultOptions.workers,
   );
 }
 
