@@ -1,4 +1,4 @@
-## 1.5.0-wip
+## 1.5.0
 
 - Add `Pubspec.workspace` and `Pubspec.resolution` fields.
 - Added support for `executables` field.

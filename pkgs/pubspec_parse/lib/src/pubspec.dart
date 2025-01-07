@@ -245,12 +245,6 @@ Map<String, String?> _executablesMap(Map? source) =>
       if (value == null) {
         return MapEntry(key, null);
       } else if (value is String) {
-        // Validate that the value is a valid file path.
-        try {
-          Uri.file(value);
-        } catch (e) {
-          throw CheckedFromJsonException(source, key, 'Pubspec', e.toString());
-        }
         return MapEntry(key, value);
       } else {
         throw CheckedFromJsonException(
