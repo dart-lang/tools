@@ -52,8 +52,7 @@ class Environment {
 }
 
 Future<void> main(List<String> arguments) async {
-  final defaultOptions =
-      CoverageOptionsProvider().coverageOptions.formatCoverage;
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
   final env = parseArgs(arguments, defaultOptions);
 
   final files = filesToProcess(env.input);
@@ -132,8 +131,7 @@ Future<void> main(List<String> arguments) async {
 
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
-Environment parseArgs(
-    List<String> arguments, FormatCoverageOptions defaultOptions) {
+Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser();
 
   parser

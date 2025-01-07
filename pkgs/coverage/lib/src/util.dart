@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:vm_service/vm_service.dart';
-import 'package:yaml/yaml.dart';
 
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
@@ -185,35 +184,3 @@ Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
 
 Future<List<IsolateRef>> getAllIsolates(VmService service) async =>
     (await service.getVM()).isolates ?? [];
-
-abstract class YamlUtils {
-  /// Safely extracts a boolean value from YAML.
-  static bool? getBool(YamlMap yaml, String key) => switch (yaml[key]) {
-        final YamlScalar scalar => scalar.value as bool?,
-        final bool value => value,
-        _ => null,
-      };
-
-  /// Safely extracts a list of strings from YAML.
-  static List<String> getStringList(YamlMap yaml, String key) {
-    final value = yaml[key];
-    if (value is YamlList) {
-      return value.cast<String>();
-    }
-    return const [];
-  }
-
-  /// Safely extracts a string value from YAML.
-  static String? getString(YamlMap yaml, String key) => switch (yaml[key]) {
-        final YamlScalar scalar => scalar.value?.toString(),
-        final String value => value,
-        _ => null,
-      };
-
-  /// Safely extracts an integer value from YAML.
-  static int? getInt(YamlMap yaml, String key) => switch (yaml[key]) {
-        final YamlScalar scalar => scalar.value as int?,
-        final int value => value,
-        _ => null,
-      };
-}

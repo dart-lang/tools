@@ -18,8 +18,7 @@ Future<void> main(List<String> arguments) async {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  final defaultOptions =
-      CoverageOptionsProvider().coverageOptions.collectCoverage;
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
   final options = _parseArgs(arguments, defaultOptions);
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
@@ -61,17 +60,20 @@ class Options {
   final Set<String> scopedOutput;
 }
 
-Options _parseArgs(
-    List<String> arguments, CollectCoverageOptions defaultOptions) {
+Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
     ..addOption('host',
-        abbr: 'H', help: 'remote VM host. DEPRECATED: use --uri')
+        abbr: 'H',
+        help: 'remote VM host. DEPRECATED: use --uri',
+        defaultsTo: '127.0.0.1')
     ..addOption('port',
-        abbr: 'p', help: 'remote VM port. DEPRECATED: use --uri')
+        abbr: 'p',
+        help: 'remote VM port. DEPRECATED: use --uri',
+        defaultsTo: '8181')
     ..addOption('uri', abbr: 'u', help: 'VM observatory service URI')
     ..addOption('out',
         abbr: 'o',
-        defaultsTo: defaultOptions.out,
+        defaultsTo: defaultOptions.output,
         help: 'output: may be file or stdout')
     ..addOption('connect-timeout',
         defaultsTo: defaultOptions.connectTimeout?.toString(),
@@ -123,17 +125,13 @@ Options _parseArgs(
   }
 
   Uri serviceUri;
-  if (args['uri'] == null && (args['host'] != null || args['port'] != null)) {
+  if (args['uri'] == null) {
     // TODO(cbracken) eliminate --host and --port support when VM defaults to
     // requiring an auth token. Estimated for Dart SDK 1.22.
-
-    final host = args['host'] ?? defaultOptions.host;
-    final port = args['port'] ?? defaultOptions.port;
-
-    serviceUri = Uri.parse('http://$host:$port/');
+    serviceUri = Uri.parse('http://${args['host']}:${args['port']}/');
   } else {
     try {
-      serviceUri = Uri.parse((args['uri'] ?? defaultOptions.uri) as String);
+      serviceUri = Uri.parse(args['uri'] as String);
     } on FormatException {
       fail('Invalid service URI specified: ${args['uri']}');
     }

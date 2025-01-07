@@ -51,48 +51,45 @@ void _watchExitSignal(ProcessSignal signal) {
   });
 }
 
-ArgParser _createArgParser(TestWithCoverageOptions defaultOptions) =>
-    ArgParser()
-      ..addOption(
-        'package',
-        help: 'Root directory of the package to test.',
-        defaultsTo: defaultOptions.packageDir,
-      )
-      ..addOption(
-        'package-name',
-        help: 'Name of the package to test. '
-            'Deduced from --package if not provided.',
-        defaultsTo: defaultOptions.packageName,
-      )
-      ..addOption('port',
-          help: 'VM service port.', defaultsTo: defaultOptions.port)
-      ..addOption(
-        'out',
-        defaultsTo: defaultOptions.outDir,
-        abbr: 'o',
-        help: 'Output directory. Defaults to <package-dir>/coverage.',
-      )
-      ..addOption('test',
-          help: 'Test script to run.', defaultsTo: defaultOptions.testScript)
-      ..addFlag(
-        'function-coverage',
-        abbr: 'f',
-        defaultsTo: defaultOptions.functionCoverage,
-        help: 'Collect function coverage info.',
-      )
-      ..addFlag(
-        'branch-coverage',
-        abbr: 'b',
-        defaultsTo: defaultOptions.branchCoverage,
-        help: 'Collect branch coverage info.',
-      )
-      ..addMultiOption('scope-output',
-          defaultsTo: defaultOptions.scopeOutput,
-          help:
-              'restrict coverage results so that only scripts that start with '
-              'the provided package path are considered. Defaults to the name of '
-              'the package under test.')
-      ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
+ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
+  ..addOption(
+    'package',
+    help: 'Root directory of the package to test.',
+    defaultsTo: defaultOptions.packageName,
+  )
+  ..addOption(
+    'package-name',
+    help: 'Name of the package to test. '
+        'Deduced from --package if not provided.',
+    defaultsTo: defaultOptions.packageName,
+  )
+  ..addOption('port', help: 'VM service port.')
+  ..addOption(
+    'out',
+    defaultsTo: defaultOptions.output,
+    abbr: 'o',
+    help: 'Output directory. Defaults to <package-dir>/coverage.',
+  )
+  ..addOption('test',
+      help: 'Test script to run.', defaultsTo: defaultOptions.testScript)
+  ..addFlag(
+    'function-coverage',
+    abbr: 'f',
+    defaultsTo: defaultOptions.functionCoverage,
+    help: 'Collect function coverage info.',
+  )
+  ..addFlag(
+    'branch-coverage',
+    abbr: 'b',
+    defaultsTo: defaultOptions.branchCoverage,
+    help: 'Collect branch coverage info.',
+  )
+  ..addMultiOption('scope-output',
+      defaultsTo: defaultOptions.scopeOutput,
+      help: 'restrict coverage results so that only scripts that start with '
+          'the provided package path are considered. Defaults to the name of '
+          'the package under test.')
+  ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
   Flags(
@@ -119,7 +116,7 @@ class Flags {
 }
 
 Future<Flags> _parseArgs(
-    List<String> arguments, TestWithCoverageOptions defaultOptions) async {
+    List<String> arguments, CoverageOptions defaultOptions) async {
   final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
 
@@ -175,9 +172,20 @@ ${parser.usage}
 }
 
 Future<void> main(List<String> arguments) async {
-  final defaultOptions =
-      CoverageOptionsProvider().coverageOptions.testWithCoverage;
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
   final flags = await _parseArgs(arguments, defaultOptions);
+
+  print('Flags: ');
+  print('  packageDir: ${flags.packageDir}');
+  print('  packageName: ${flags.packageName}');
+  print('  outDir: ${flags.outDir}');
+  print('  port: ${flags.port}');
+  print('  testScript: ${flags.testScript}');
+  print('  functionCoverage: ${flags.functionCoverage}');
+  print('  branchCoverage: ${flags.branchCoverage}');
+  print('  scopeOutput: ${flags.scopeOutput}');
+  print('  rest: ${flags.rest}');
+  print('');
 
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
