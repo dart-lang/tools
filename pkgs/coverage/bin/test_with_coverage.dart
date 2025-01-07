@@ -63,7 +63,7 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
         'Deduced from --package if not provided.',
     defaultsTo: defaultOptions.packageName,
   )
-  ..addOption('port', help: 'VM service port.')
+  ..addOption('port', help: 'VM service port.', defaultsTo: '8181')
   ..addOption(
     'out',
     defaultsTo: defaultOptions.output,
