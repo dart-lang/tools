@@ -13,7 +13,6 @@ void main() {
     test('collect coverage', () {
       final collectedCoverage = parseArgsCollectCoverage([], defaults);
 
-      expect(collectedCoverage.output, defaults.output);
       expect(collectedCoverage.scopeOutput, defaults.scopeOutput);
       expect(collectedCoverage.resumeIsolates, defaults.resumeIsolates);
       expect(collectedCoverage.waitPaused, defaults.waitPaused);
@@ -21,47 +20,26 @@ void main() {
       expect(collectedCoverage.branchCoverage, defaults.branchCoverage);
       expect(collectedCoverage.connectTimeout, defaults.connectTimeout);
       expect(collectedCoverage.includeDart, defaults.includeDart);
-      expect(collectedCoverage.baseDirectory, defaults.baseDirectory);
-      expect(collectedCoverage.bazel, defaults.bazel);
-      expect(collectedCoverage.bazelWorkspace, defaults.bazelWorkspace);
-      expect(collectedCoverage.checkIgnore, defaults.checkIgnore);
-      expect(collectedCoverage.ignoreFiles, defaults.ignoreFiles);
-      expect(collectedCoverage.input, defaults.input);
-      expect(collectedCoverage.lcov, defaults.lcov);
-      expect(collectedCoverage.packagePath, defaults.packagePath);
-      expect(collectedCoverage.prettyPrint, defaults.prettyPrint);
-      expect(collectedCoverage.prettyPrintFunc, defaults.prettyPrintFunc);
-      expect(collectedCoverage.prettyPrintBranch, defaults.prettyPrintBranch);
-      expect(collectedCoverage.reportOn, defaults.reportOn);
-      expect(collectedCoverage.sdkRoot, defaults.sdkRoot);
-      expect(collectedCoverage.verbose, defaults.verbose);
-      expect(collectedCoverage.workers, defaults.workers);
+      expect(collectedCoverage.output, defaults.output);
     });
 
     test('format coverage', () {
       final formattedCoverage =
           parseArgsFormatCoverage(defaultInputArgs, defaults);
 
-      expect(formattedCoverage.output, defaults.output);
-      expect(formattedCoverage.scopeOutput, defaults.scopeOutput);
-      expect(formattedCoverage.resumeIsolates, defaults.resumeIsolates);
-      expect(formattedCoverage.waitPaused, defaults.waitPaused);
-      expect(formattedCoverage.functionCoverage, defaults.functionCoverage);
-      expect(formattedCoverage.branchCoverage, defaults.branchCoverage);
-      expect(formattedCoverage.connectTimeout, defaults.connectTimeout);
-      expect(formattedCoverage.includeDart, defaults.includeDart);
       expect(formattedCoverage.baseDirectory, defaults.baseDirectory);
       expect(formattedCoverage.bazel, defaults.bazel);
       expect(formattedCoverage.bazelWorkspace, defaults.bazelWorkspace);
       expect(formattedCoverage.checkIgnore, defaults.checkIgnore);
-      expect(formattedCoverage.ignoreFiles, defaults.ignoreFiles);
       expect(formattedCoverage.input, 'coverage.json');
       expect(formattedCoverage.lcov, defaults.lcov);
+      expect(formattedCoverage.output, defaults.output);
       expect(formattedCoverage.packagePath, defaults.packagePath);
       expect(formattedCoverage.prettyPrint, defaults.prettyPrint);
       expect(formattedCoverage.prettyPrintFunc, defaults.prettyPrintFunc);
       expect(formattedCoverage.prettyPrintBranch, defaults.prettyPrintBranch);
       expect(formattedCoverage.reportOn, defaults.reportOn);
+      expect(formattedCoverage.ignoreFiles, defaults.ignoreFiles);
       expect(formattedCoverage.sdkRoot, defaults.sdkRoot);
       expect(formattedCoverage.verbose, defaults.verbose);
       expect(formattedCoverage.workers, defaults.workers);
@@ -70,29 +48,13 @@ void main() {
     test('test with coverage', () async {
       final testCoverage = await parseArgsTestWithCoverage([], defaults);
 
+      expect(testCoverage.packagePath, getPackageDir(defaults.packagePath));
+      expect(testCoverage.packageName, 'coverage');
       expect(testCoverage.output, defaults.output);
-      expect(testCoverage.scopeOutput, defaults.scopeOutput);
-      expect(testCoverage.resumeIsolates, defaults.resumeIsolates);
-      expect(testCoverage.waitPaused, defaults.waitPaused);
+      expect(testCoverage.testScript, defaults.testScript);
       expect(testCoverage.functionCoverage, defaults.functionCoverage);
       expect(testCoverage.branchCoverage, defaults.branchCoverage);
-      expect(testCoverage.connectTimeout, defaults.connectTimeout);
-      expect(testCoverage.includeDart, defaults.includeDart);
-      expect(testCoverage.baseDirectory, defaults.baseDirectory);
-      expect(testCoverage.bazel, defaults.bazel);
-      expect(testCoverage.bazelWorkspace, defaults.bazelWorkspace);
-      expect(testCoverage.checkIgnore, defaults.checkIgnore);
-      expect(testCoverage.ignoreFiles, defaults.ignoreFiles);
-      expect(testCoverage.input, defaults.input);
-      expect(testCoverage.lcov, defaults.lcov);
-      expect(testCoverage.packagePath, getPackageDir(defaults.packagePath));
-      expect(testCoverage.prettyPrint, defaults.prettyPrint);
-      expect(testCoverage.prettyPrintFunc, defaults.prettyPrintFunc);
-      expect(testCoverage.prettyPrintBranch, defaults.prettyPrintBranch);
-      expect(testCoverage.reportOn, defaults.reportOn);
-      expect(testCoverage.sdkRoot, defaults.sdkRoot);
-      expect(testCoverage.verbose, defaults.verbose);
-      expect(testCoverage.workers, defaults.workers);
+      expect(testCoverage.scopeOutput, defaults.scopeOutput);
     });
   });
 
@@ -223,9 +185,8 @@ void main() {
 
     // Parse arguments with command line args
     final collectedCoverage = parseArgsCollectCoverage([
-      '--uri=http://localhost:8181/',
       '--out=coverage.json',
-      '--scope-output=lib/',
+      '--scope-output=lib',
       '--connect-timeout=10',
       '--resume-isolates',
       '--no-wait-paused',
@@ -235,22 +196,21 @@ void main() {
     final formattedCoverage = parseArgsFormatCoverage([
       '--in=data.json',
       '--out=out_test.info',
-      '--report-on=src/',
-      '--report-on=src2/',
-      '--ignore-files=bin/',
+      '--report-on=src',
+      '--report-on=src2',
+      '--ignore-files=bin',
       '--workers=4',
     ], configuredOptions);
     final testCoverage = await parseArgsTestWithCoverage([
       '--package-name=test',
       '--out=test_coverage.json',
-      '--port=2589',
       '--test=test_test.dart',
       '--function-coverage',
     ], configuredOptions);
 
     // Verify collect coverage command line args
     expect(collectedCoverage.output, 'coverage.json');
-    expect(collectedCoverage.scopeOutput, ['lib/']);
+    expect(collectedCoverage.scopeOutput, ['lib']);
     expect(collectedCoverage.resumeIsolates, isTrue);
     expect(collectedCoverage.waitPaused, isFalse);
     expect(collectedCoverage.functionCoverage, isFalse);
@@ -260,8 +220,8 @@ void main() {
     // Verify format coverage command line args
     expect(formattedCoverage.input, 'data.json');
     expect(formattedCoverage.output, 'out_test.info');
-    expect(formattedCoverage.reportOn, ['src/', 'src2/']);
-    expect(formattedCoverage.ignoreFiles, ['bin/']);
+    expect(formattedCoverage.reportOn, ['src', 'src2']);
+    expect(formattedCoverage.ignoreFiles, ['bin']);
     expect(formattedCoverage.workers, 4);
 
     // Verify test with coverage command line args

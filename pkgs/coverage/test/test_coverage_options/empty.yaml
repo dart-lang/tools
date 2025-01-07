@@ -1,4 +1,0 @@
-defaults:
-  collect_coverage:
-  format_coverage:
-  run_and_collect:
