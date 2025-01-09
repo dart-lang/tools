@@ -103,10 +103,8 @@ CoverageOptions parseArgsCollectCoverage(
     ..addOption('connect-timeout',
         abbr: 't', defaultsTo: defaultOptions.connectTimeout?.toString())
     ..addMultiOption('scope-output', defaultsTo: defaultOptions.scopeOutput)
-    ..addFlag('wait-paused', abbr: 'w', defaultsTo: defaultOptions.waitPaused)
     ..addFlag('resume-isolates',
         abbr: 'r', defaultsTo: defaultOptions.resumeIsolates)
-    ..addFlag('include-dart', abbr: 'd', defaultsTo: defaultOptions.includeDart)
     ..addFlag('function-coverage',
         abbr: 'f', defaultsTo: defaultOptions.functionCoverage)
     ..addFlag('branch-coverage',
@@ -121,36 +119,26 @@ CoverageOptions parseArgsCollectCoverage(
         ? defaultOptions.connectTimeout
         : int.parse(args['connect-timeout'] as String),
     scopeOutput: args['scope-output'] as List<String>,
-    waitPaused: args['wait-paused'] as bool,
     resumeIsolates: args['resume-isolates'] as bool,
-    includeDart: args['include-dart'] as bool,
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
-    bazel: defaultOptions.bazel,
-    bazelWorkspace: defaultOptions.bazelWorkspace,
     baseDirectory: defaultOptions.baseDirectory,
-    checkIgnore: defaultOptions.checkIgnore,
     ignoreFiles: defaultOptions.ignoreFiles,
     input: defaultOptions.input,
     lcov: defaultOptions.lcov,
     packagePath: defaultOptions.packagePath,
     packageName: defaultOptions.packageName,
     prettyPrint: defaultOptions.prettyPrint,
-    prettyPrintBranch: defaultOptions.prettyPrintBranch,
-    prettyPrintFunc: defaultOptions.prettyPrintFunc,
     reportOn: defaultOptions.reportOn,
-    sdkRoot: defaultOptions.sdkRoot,
     testScript: defaultOptions.testScript,
     verbose: defaultOptions.verbose,
     workers: defaultOptions.workers,
-
   );
 }
 
 CoverageOptions parseArgsFormatCoverage(
     List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
-    ..addOption('sdk-root', abbr: 's', defaultsTo: defaultOptions.sdkRoot)
     ..addOption('packages')
     ..addOption('package', defaultsTo: defaultOptions.packagePath)
     ..addOption('in', abbr: 'i', defaultsTo: defaultOptions.input)
@@ -158,24 +146,14 @@ CoverageOptions parseArgsFormatCoverage(
     ..addMultiOption('report-on', defaultsTo: defaultOptions.reportOn)
     ..addOption('workers',
         abbr: 'j', defaultsTo: defaultOptions.workers.toString())
-    ..addOption('bazel-workspace', defaultsTo: defaultOptions.bazelWorkspace)
     ..addOption('base-directory',
         abbr: 'b', defaultsTo: defaultOptions.baseDirectory)
-    ..addFlag('bazel',
-        defaultsTo: defaultOptions.bazel,
-        help: 'use Bazel-style path resolution')
     ..addFlag('pretty-print',
         abbr: 'r', defaultsTo: defaultOptions.prettyPrint, negatable: false)
-    ..addFlag('pretty-print-func',
-        abbr: 'f', defaultsTo: defaultOptions.prettyPrintFunc, negatable: false)
-    ..addFlag('pretty-print-branch',
-        negatable: false, defaultsTo: defaultOptions.prettyPrintBranch)
     ..addFlag('lcov',
         abbr: 'l', defaultsTo: defaultOptions.lcov, negatable: false)
     ..addFlag('verbose',
         abbr: 'v', defaultsTo: defaultOptions.verbose, negatable: false)
-    ..addFlag('check-ignore',
-        abbr: 'c', defaultsTo: defaultOptions.checkIgnore, negatable: false)
     ..addMultiOption('ignore-files', defaultsTo: defaultOptions.ignoreFiles)
     ..addFlag('help', abbr: 'h', negatable: false);
 
@@ -185,31 +163,23 @@ CoverageOptions parseArgsFormatCoverage(
 
   return CoverageOptions(
     baseDirectory: args['base-directory'] as String?,
-    bazel: args['bazel'] as bool,
-    bazelWorkspace: args['bazel-workspace'] as String,
-    checkIgnore: args['check-ignore'] as bool,
     input: args['in'] as String,
     lcov: args['lcov'] as bool,
     output: args['out'] as String,
     packagePath: args['package'] as String,
     prettyPrint: args['lcov'] as bool ? false : args['pretty-print'] as bool,
-    prettyPrintFunc: args['pretty-print-func'] as bool,
-    prettyPrintBranch: args['pretty-print-branch'] as bool,
     reportOn: (args['report-on'] as List<String>).isNotEmpty
         ? args['report-on'] as List<String>
         : null,
     ignoreFiles: args['ignore-files'] as List<String>,
-    sdkRoot: args['sdk-root'] as String?,
     verbose: args['verbose'] as bool,
     workers: int.parse(args['workers'] as String),
     branchCoverage: defaultOptions.branchCoverage,
     functionCoverage: defaultOptions.functionCoverage,
     connectTimeout: defaultOptions.connectTimeout,
-    includeDart: defaultOptions.includeDart,
     packageName: defaultOptions.packageName,
     resumeIsolates: defaultOptions.resumeIsolates,
     scopeOutput: defaultOptions.scopeOutput,
-    waitPaused: defaultOptions.waitPaused,
     testScript: defaultOptions.testScript,
   );
 }
@@ -253,8 +223,7 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
   }
 
   final packageName =
-      args['package-name'] ??
-      await _packageNameFromConfig(packageDir);
+      args['package-name'] ?? await _packageNameFromConfig(packageDir);
   if (packageName == null) {
     ArgumentError('Could not determine package name');
   }
@@ -267,23 +236,15 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
     scopeOutput: args['scope-output'] as List<String>,
-    bazel: defaultOptions.bazel,
-    bazelWorkspace: defaultOptions.bazelWorkspace,
     baseDirectory: defaultOptions.baseDirectory,
-    checkIgnore: defaultOptions.checkIgnore,
     connectTimeout: defaultOptions.connectTimeout,
     ignoreFiles: defaultOptions.ignoreFiles,
-    includeDart: defaultOptions.includeDart,
     input: defaultOptions.input,
     lcov: defaultOptions.lcov,
     prettyPrint: defaultOptions.prettyPrint,
-    prettyPrintBranch: defaultOptions.prettyPrintBranch,
-    prettyPrintFunc: defaultOptions.prettyPrintFunc,
     reportOn: defaultOptions.reportOn,
     resumeIsolates: defaultOptions.resumeIsolates,
-    sdkRoot: defaultOptions.sdkRoot,
     verbose: defaultOptions.verbose,
-    waitPaused: defaultOptions.waitPaused,
     workers: defaultOptions.workers,
   );
 }

@@ -1,20 +1,15 @@
 scope-output:
   - 'lib'
   - 'tools'
-include-dart: false
 branch-coverage: false
-wait-paused: false
 connect-timeout: 15
 
-bazel: true
-check-ignore: true
 in: 'custom_coverage.json'
 out: 'custom_lcov.info'
 package: '.'
 report-on:
   - 'src'
   - 'scripts'
-sdk-root: './dart-sdk'
 
 test: 'custom_test'
 function-coverage: true

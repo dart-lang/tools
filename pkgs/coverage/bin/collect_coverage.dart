@@ -85,16 +85,12 @@ Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
             'the provided package path are considered')
     ..addFlag('wait-paused',
         abbr: 'w',
-        defaultsTo: defaultOptions.waitPaused,
+        defaultsTo: false,
         help: 'wait for all isolates to be paused before collecting coverage')
     ..addFlag('resume-isolates',
-        abbr: 'r',
-        defaultsTo: defaultOptions.resumeIsolates,
-        help: 'resume all isolates on exit')
+        abbr: 'r', defaultsTo: false, help: 'resume all isolates on exit')
     ..addFlag('include-dart',
-        abbr: 'd',
-        defaultsTo: defaultOptions.includeDart,
-        help: 'include "dart:" libraries')
+        abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
     ..addFlag('function-coverage',
         abbr: 'f',
         defaultsTo: defaultOptions.functionCoverage,

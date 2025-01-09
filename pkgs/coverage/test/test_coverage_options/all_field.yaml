@@ -1,25 +1,16 @@
 out: "coverage"
 connect-timeout: 30
 scope-output: ["lib", "src"]
-resume-isolates: false
-include-dart: false
 function-coverage: true
 branch-coverage: false
-wait-paused: true
 base-directory: "."
-bazel: false
-bazel-workspace: null
 in: "coverage.json"
 package: "."
 package-name: "My Dart Package"
 report-on: ["lib", "bin"]
 ignore-files: ["test"]
-sdk-root: "."
 workers: 2
-check-ignore: false
 verbose: true
 lcov: true
 pretty-print: false
-pretty-print-func: false
-pretty-print-branch: false
 test: "test"

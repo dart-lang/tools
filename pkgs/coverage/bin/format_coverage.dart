@@ -139,7 +139,6 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       'sdk-root',
       abbr: 's',
       help: 'path to the SDK root',
-      defaultsTo: defaultOptions.sdkRoot,
     )
     ..addOption(
       'packages',
@@ -166,15 +165,13 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       help: 'number of workers',
     )
     ..addOption('bazel-workspace',
-        defaultsTo: defaultOptions.bazelWorkspace,
-        help: 'Bazel workspace directory')
+        defaultsTo: '', help: 'Bazel workspace directory')
     ..addOption('base-directory',
         abbr: 'b',
         defaultsTo: defaultOptions.baseDirectory,
         help: 'the base directory relative to which source paths are output')
     ..addFlag('bazel',
-        defaultsTo: defaultOptions.bazel,
-        help: 'use Bazel-style path resolution')
+        defaultsTo: false, help: 'use Bazel-style path resolution')
     ..addFlag('pretty-print',
         abbr: 'r',
         defaultsTo: defaultOptions.prettyPrint,
@@ -182,12 +179,10 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
         help: 'convert line coverage data to pretty print format')
     ..addFlag('pretty-print-func',
         abbr: 'f',
-        defaultsTo: defaultOptions.prettyPrintFunc,
         negatable: false,
         help: 'convert function coverage data to pretty print format')
     ..addFlag('pretty-print-branch',
         negatable: false,
-        defaultsTo: defaultOptions.prettyPrintBranch,
         help: 'convert branch coverage data to pretty print format')
     ..addFlag('lcov',
         abbr: 'l',
@@ -202,7 +197,6 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     ..addFlag(
       'check-ignore',
       abbr: 'c',
-      defaultsTo: defaultOptions.checkIgnore,
       negatable: false,
       help: 'check for coverage ignore comments.'
           ' Not supported in web coverage.',
