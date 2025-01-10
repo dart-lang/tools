@@ -128,7 +128,7 @@ because different options exist for each platform.
 For Flutter apps, there's two popular approaches:
 
 1.  Launch a browser using [url_launcher][] and listen for a redirect using
-    [uni_links][].
+    [app_links][].
 
     ```dart
       if (await canLaunch(authorizationUrl.toString())) {
@@ -136,7 +136,8 @@ For Flutter apps, there's two popular approaches:
 
       // ------- 8< -------
 
-      final linksStream = getLinksStream().listen((Uri uri) async {
+      final appLinks = AppLinks();
+      final linksStream = appLinks.uriLinkStream.listen((Uri uri) async {
        if (uri.toString().startsWith(redirectUrl)) {
          responseUrl = uri;
        }
@@ -159,6 +160,46 @@ For Flutter apps, there's two popular approaches:
         },
         // ------- 8< -------
       );
+    ```
+
+
+1.  To handle redirect on Flutter Web you would need to add an html file to the web folder with some  
+additional JS code to handle the redirect back to the app (in this example the code will be saved 
+and passed through localStorage).
+
+    ```html
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8" />
+            <title>OAuth Callback</title>
+        </head>
+        <body>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+        
+            // Store them in localStorage (or sessionStorage).
+            if (code) {
+              localStorage.setItem('oauth_code', code);
+            }
+            
+            // Redirect back to app
+            window.location.replace('/#/');
+        </script>
+        </body>
+        </html>
+    ```
+
+    After redirect to the application the code can be extracted and processed using the dart.html 
+    package
+
+    ```dart
+       import 'dart:html' as html;
+       ...
+       if(html.window.localStorage.containsKey('oauth_code')
+          code = html.window.localStorage.remove('oauth_code')
+       ...
     ```
 
 For Dart apps, the best approach depends on the available options for accessing
@@ -255,6 +296,6 @@ File('~/.myapp/credentials.json').writeAsString(client.credentials.toJson());
 [resourceOwnerPasswordGrantDocs]: https://oauth.net/2/grant-types/password/
 [resourceOwnerPasswordGrantMethod]: https://pub.dev/documentation/oauth2/latest/oauth2/resourceOwnerPasswordGrant.html
 [resourceOwnerPasswordGrantSection]: #resource-owner-password-grant
-[uni_links]: https://pub.dev/packages/uni_links
+[app_links]: https://pub.dev/packages/app_links
 [url_launcher]: https://pub.dev/packages/url_launcher
 [webview_flutter]: https://pub.dev/packages/webview_flutter
