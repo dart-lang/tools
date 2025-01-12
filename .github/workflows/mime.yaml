@@ -7,12 +7,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/mime.yml'
+      - '.github/workflows/mime.yaml'
       - 'pkgs/mime/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/mime.yml'
+      - '.github/workflows/mime.yaml'
       - 'pkgs/mime/**'
 
 jobs:

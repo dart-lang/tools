@@ -6,12 +6,12 @@ on:
   # Run CI on all PRs (against any branch) and on pushes to the main branch.
   pull_request:
     paths:
-      - '.github/workflows/graphs.yml'
+      - '.github/workflows/graphs.yaml'
       - 'pkgs/graphs/**'
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/graphs.yml'
+      - '.github/workflows/graphs.yaml'
       - 'pkgs/graphs/**'
   schedule:
     - cron: '0 0 * * 0' # weekly

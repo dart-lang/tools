@@ -1,17 +1,17 @@
-name: package:source_map_stack_trace
+name: package:coverage
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/source_map_stack_trace.yml'
-      - 'pkgs/source_map_stack_trace/**'
+      - '.github/workflows/coverage.yaml'
+      - 'pkgs/coverage/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/source_map_stack_trace.yml'
-      - 'pkgs/source_map_stack_trace/**'
+      - '.github/workflows/coverage.yaml'
+      - 'pkgs/coverage/**'
   schedule:
     - cron: "0 0 * * 0"
 
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: pkgs/source_map_stack_trace/
+        working-directory: pkgs/coverage/
     strategy:
       fail-fast: false
       matrix:
@@ -46,20 +46,24 @@ jobs:
         if: always() && steps.install.outcome == 'success'
 
   # Run tests on a matrix consisting of two dimensions:
-  # 1. OS: ubuntu-latest, (macos-latest, windows-latest)
+  # 1. OS: ubuntu-latest, macos-latest, windows-latest
   # 2. release channel: dev
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: pkgs/source_map_stack_trace/
+        working-directory: pkgs/coverage/
     strategy:
       fail-fast: false
       matrix:
-        # Add macos-latest and/or windows-latest if relevant for this package.
-        os: [ubuntu-latest]
-        sdk: [3.3, dev]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [3.4, dev]
+        exclude:
+          # VM service times out on windows before Dart 3.5
+          # https://github.com/dart-lang/coverage/issues/490
+          - os: windows-latest
+            sdk: 3.4
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
@@ -71,6 +75,25 @@ jobs:
       - name: Run VM tests
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
-      - name: Run Chrome tests
-        run: dart test --platform chrome
-        if: always() && steps.install.outcome == 'success'
+
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/coverage/
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
+        with:
+          sdk: dev
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Collect and report coverage
+        run: dart run bin/test_with_coverage.dart --port=9292
+      - name: Upload coverage
+        uses: coverallsapp/github-action@cfd0633edbd2411b532b808ba7a8b5e04f76d2c8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: pkgs/coverage/coverage/lcov.info

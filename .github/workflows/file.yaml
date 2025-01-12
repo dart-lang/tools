@@ -1,61 +1,54 @@
-name: package:html
+name: package:file
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/html.yaml'
-      - 'pkgs/html/**'
+      - '.github/workflows/file.yaml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/html.yaml'
-      - 'pkgs/html/**'
+      - '.github/workflows/file.yaml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
   schedule:
     - cron: "0 0 * * 0"
 
-env:
-  PUB_ENVIRONMENT: bot.github
-
-
 defaults:
   run:
-    working-directory: pkgs/html/
+    working-directory: pkgs/file/
 
 jobs:
-  analyze:
+  correctness:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
+
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
         with:
           sdk: dev
-      - id: install
-        run: dart pub get
+
+      - run: dart pub get
       - run: dart format --output=none --set-exit-if-changed .
-        if: steps.install.outcome == 'success'
       - run: dart analyze --fatal-infos
-        if: steps.install.outcome == 'success'
 
   test:
-    needs: analyze
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        sdk: [3.2, stable, dev]
+        package: [file]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [stable, dev]
+
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
         with:
           sdk: ${{ matrix.sdk }}
-      - id: install
-        run: dart pub get
-      - run: dart test --platform vm
-        if: steps.install.outcome == 'success'
-      - run: dart test --platform chrome
-        if: steps.install.outcome == 'success'
+
+      - run: dart pub get
+      - run: dart pub run test -j1

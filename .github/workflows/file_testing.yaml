@@ -1,4 +1,4 @@
-name: package:file
+name: package:file_testing
 permissions: read-all
 
 on:
@@ -6,42 +6,34 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/file.yml'
+      - '.github/workflows/file_testing.yaml'
       - 'pkgs/file/**'
       - 'pkgs/file_testing/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/file.yml'
+      - '.github/workflows/file_testing.yaml'
       - 'pkgs/file/**'
       - 'pkgs/file_testing/**'
   schedule:
     - cron: "0 0 * * 0"
 
+defaults:
+  run:
+    working-directory: pkgs/file_testing/
+
 jobs:
   correctness:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package: [file, file_testing]
-
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
         with:
           sdk: dev
 
-      - name: Install ${{ matrix.package }} dependencies
-        working-directory: pkgs/${{ matrix.package }}
-        run: dart pub get
-
-      - name: Verify formatting in ${{ matrix.package }}
-        working-directory: pkgs/${{ matrix.package }}
-        run: dart format --output=none --set-exit-if-changed .
-
-      - name: Analyze package ${{ matrix.package }} source
-        working-directory: pkgs/${{ matrix.package }}
-        run: dart analyze --fatal-infos
+      - run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-infos
 
   test:
     runs-on: ${{ matrix.os }}
@@ -57,10 +49,6 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
 
-      - name: Install ${{ matrix.package }} dependencies
-        working-directory: pkgs/${{ matrix.package }}
-        run: dart pub get
+      - run: dart pub get
 
-      - name: Run ${{ matrix.package }} Tests
-        working-directory: pkgs/${{ matrix.package }}
-        run: dart pub run test -j1
+      - run: dart pub run test -j1

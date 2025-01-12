@@ -5,12 +5,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/browser_launcher.yml'
+      - '.github/workflows/browser_launcher.yaml'
       - 'pkgs/browser_launcher/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/browser_launcher.yml'
+      - '.github/workflows/browser_launcher.yaml'
       - 'pkgs/browser_launcher/**'
   schedule:
     - cron: "0 0 * * 0"
