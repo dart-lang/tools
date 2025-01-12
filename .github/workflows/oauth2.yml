@@ -1,4 +1,4 @@
-name: Dart CI
+name: package:oauth2
 
 on:
   # Run on PRs and pushes to the default branch.

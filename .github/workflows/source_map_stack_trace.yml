@@ -1,4 +1,4 @@
-name: Dart CI
+name: package:source_map_stack_trace
 
 on:
   # Run on PRs and pushes to the default branch.

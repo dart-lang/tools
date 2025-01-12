@@ -1,4 +1,4 @@
-name: Dart CI
+name: package:mime
 
 on:
   schedule:
