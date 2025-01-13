@@ -1,12 +1,22 @@
 # Run against all markdown files in latest version of packages on pub.dev to
 # see if any can provoke a crash
 
-name: package:markdown: crash tests
+name: "package:markdown: crash tests"
 
 on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown_crash_test.yaml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown_crash_test.yaml'
   schedule:
     # “At 00:00 (UTC) on Sunday.”
     - cron: '0 0 * * 0'
+  workflow_dispatch:
     
 defaults:
   run:
