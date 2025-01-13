@@ -1,7 +1,7 @@
 # Run against all markdown files in latest version of packages on pub.dev to
 # see if any can provoke a crash
 
-name: package:markdown: crash tests
+name: "package:markdown: crash tests"
 
 on:
   schedule:
