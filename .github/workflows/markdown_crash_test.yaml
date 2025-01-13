@@ -4,9 +4,19 @@
 name: "package:markdown: crash tests"
 
 on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown_crash_test.yaml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/markdown_crash_test.yaml'
   schedule:
     # “At 00:00 (UTC) on Sunday.”
     - cron: '0 0 * * 0'
+  workflow_dispatch:
     
 defaults:
   run:
