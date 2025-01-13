@@ -4,12 +4,12 @@ permissions: read-all
 on:
   pull_request:
     paths:
-      - '.github/workflows/unified_analytics.yml'
+      - '.github/workflows/extension_discovery.yaml'
       - 'pkgs/extension_discovery/**'
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/extension_discovery.yml'
+      - '.github/workflows/extension_discovery.yaml'
       - 'pkgs/extension_discovery/**'
   schedule:
     - cron: '0 0 * * 0' # weekly

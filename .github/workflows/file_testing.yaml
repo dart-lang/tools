@@ -1,46 +1,36 @@
-name: package:browser_launcher
+name: package:file_testing
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/browser_launcher.yaml'
-      - 'pkgs/browser_launcher/**'
+      - '.github/workflows/file_testing.yaml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/browser_launcher.yaml'
-      - 'pkgs/browser_launcher/**'
+      - '.github/workflows/file_testing.yaml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
   schedule:
     - cron: "0 0 * * 0"
 
-env:
-  PUB_ENVIRONMENT: bot.github
-  DISPLAY: ':99'
-
 defaults:
   run:
-    working-directory: pkgs/browser_launcher/
+    working-directory: pkgs/file_testing/
 
 jobs:
-  test:
+  correctness:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        sdk: [3.4, dev]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
         with:
-          sdk: ${{ matrix.sdk }}
+          sdk: dev
 
       - run: dart pub get
-
       - run: dart format --output=none --set-exit-if-changed .
       - run: dart analyze --fatal-infos
-
-      - name: Run Xvfb 
-        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
-      - run: dart test

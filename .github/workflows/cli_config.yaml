@@ -14,12 +14,13 @@ on:
   schedule:
     - cron: "0 0 * * 0" # weekly
 
+defaults:
+  run:
+    working-directory: pkgs/cli_config/
+
 jobs:
   build_linux:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pkgs/cli_config
     strategy:
       matrix:
         sdk: [stable, dev] # {pkgs.versions}
@@ -58,9 +59,6 @@ jobs:
 
   build_windows:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: pkgs/cli_config
     strategy:
       matrix:
         sdk: [stable, dev] # {pkgs.versions}

@@ -5,12 +5,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/json_rpc_2.yml'
+      - '.github/workflows/json_rpc_2.yaml'
       - 'pkgs/json_rpc_2/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/json_rpc_2.yml'
+      - '.github/workflows/json_rpc_2.yaml'
       - 'pkgs/json_rpc_2/**'
   schedule:
     - cron: "0 0 * * 0"
