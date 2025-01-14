@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Add a `followLinks` argument to `copyPath` and `copyPathSync`.
+
 ## 1.0.5
 
 * Require Dart 3.4.
