@@ -50,11 +50,11 @@ Future<void> main(List<String> args) async {
     final pkgName = entry.key;
     final name = '[$pkgName](pkgs/$pkgName/)';
 
-    // [![issues](https://img.shields.io/badge/issues-4774bc)][bazel_worker]
+    // [![issues](https://img.shields.io/badge/issues-4774bc)][bazel_worker_issues]
     // [![pub package](https://img.shields.io/pub/v/bazel_worker.svg)](https://pub.dev/packages/bazel_worker) |
 
     final issues =
-        '[![issues](https://img.shields.io/badge/issues-4774bc)][$pkgName]';
+        '[![issues](https://img.shields.io/badge/issues-4774bc)][${pkgName}_issues]';
     final version =
         '[![pub package](https://img.shields.io/pub/v/$pkgName.svg)](https://pub.dev/packages/$pkgName)';
 
