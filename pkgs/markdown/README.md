@@ -5,8 +5,7 @@
 A portable Markdown library written in Dart. It can parse Markdown into
 HTML on both the client and server.
 
-Play with it at
-[dart-lang.github.io/markdown](https://dart-lang.github.io/markdown).
+Play with it at [dart-lang.github.io/tools](https://dart-lang.github.io/tools).
 
 ### Usage
 

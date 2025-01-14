@@ -3,18 +3,13 @@
 name: "package:markdown: playground"
 
 on:
-  # Run on PRs and pushes to the default branch.
+  # Run on pushes to the default branch.
   push:
     branches: [ main ]
     paths:
       - '.github/workflows/markdown_playground.yaml'
       - 'pkgs/markdown/**'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '.github/workflows/markdown_playground.yaml'
-      - 'pkgs/markdown/**'
-    
+
 defaults:
   run:
     working-directory: pkgs/markdown/
@@ -26,25 +21,31 @@ jobs:
       pages: write
       id-token: write
     runs-on: ubuntu-latest
-    needs: jekyll-build
     environment:
       name: github-pages
       url: ${{steps.deployment.outputs.page_url}}
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
       
       - name: Install dependencies
         run: dart pub get
 
       - name: Build markdown playground
-        run: dart compile js -o example/app.dart.js --minify --no-frequency-based-minification --no-source-maps example/app.dart
+        run: >
+          dart compile js -o example/app.dart.js
+          --minify --no-frequency-based-minification --no-source-maps
+          example/app.dart
 
-      - name: Deploy artifact
+      - name: setup pages
+        uses: actions/configure-pages@v5
+
+      - name: upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pkgs/markdown/example
+
+      - name: deploy to github pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-todo: split into 'build' and 'deploy'
-
