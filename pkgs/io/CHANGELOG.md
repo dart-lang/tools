@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.0-wip
 
 * Add a `followLinks` argument to `copyPath` and `copyPathSync`.
 
