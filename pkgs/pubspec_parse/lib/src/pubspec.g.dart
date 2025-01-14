@@ -40,6 +40,9 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
               'screenshots', (v) => parseScreenshots(v as List?)),
           documentation: $checkedConvert('documentation', (v) => v as String?),
           description: $checkedConvert('description', (v) => v as String?),
+          workspace: $checkedConvert('workspace',
+              (v) => (v as List<dynamic>?)?.map((e) => e as String).toList()),
+          resolution: $checkedConvert('resolution', (v) => v as String?),
           dependencies:
               $checkedConvert('dependencies', (v) => parseDeps(v as Map?)),
           devDependencies:
@@ -51,6 +54,8 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
               (v) => (v as Map?)?.map(
                     (k, e) => MapEntry(k as String, e),
                   )),
+          executables:
+              $checkedConvert('executables', (v) => _executablesMap(v as Map?)),
         );
         return val;
       },

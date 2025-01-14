@@ -2,13 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:html';
-
 import 'package:stream_transform/stream_transform.dart';
+import 'package:web/web.dart';
 
 void main() {
-  var firstInput = document.querySelector('#first_input') as InputElement;
-  var secondInput = document.querySelector('#second_input') as InputElement;
+  var firstInput = document.querySelector('#first_input') as HTMLInputElement;
+  var secondInput = document.querySelector('#second_input') as HTMLInputElement;
   var output = document.querySelector('#output')!;
 
   _inputValues(firstInput)
@@ -21,6 +20,6 @@ void main() {
   });
 }
 
-Stream<String?> _inputValues(InputElement element) => element.onKeyUp
+Stream<String?> _inputValues(HTMLInputElement element) => element.onKeyUp
     .debounce(const Duration(milliseconds: 100))
     .map((_) => element.value);
