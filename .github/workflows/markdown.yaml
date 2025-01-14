@@ -18,11 +18,9 @@ on:
 env:
   PUB_ENVIRONMENT: bot.github
 
-
 defaults:
   run:
     working-directory: pkgs/markdown/
-
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
