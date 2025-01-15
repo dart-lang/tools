@@ -9,6 +9,13 @@ on:
     paths:
       - '.github/workflows/deploy_pages.yaml'
       - 'pkgs/markdown/**'
+  # TODO(devoncarew): remove! used for testing the deploy PR
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/deploy_pages.yaml'
+      - 'pkgs/markdown/**'
+  # TODO(devoncarew): remove! used for testing the deploy PR
 
 jobs:
   deploy:
@@ -34,7 +41,7 @@ jobs:
           dart compile js -o example/app.dart.js
           --minify --no-frequency-based-minification --no-source-maps
           example/app.dart
-        working-directory: pkgs/markdown/example
+        working-directory: pkgs/markdown
 
       # Create the _site directory.
       - run: mkdir _site
