@@ -3,3 +3,7 @@
 .pub
 pubspec.lock
 doc/
+
+example/app.dart.js
+example/app.dart.js.deps
+example/app.dart.js.map

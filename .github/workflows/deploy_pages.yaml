@@ -1,0 +1,53 @@
+# Publish the GitHub Pages site for this repo.
+
+name: "Deploy Pages"
+
+on:
+  # Run on pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/deploy_pages.yaml'
+      - 'pkgs/markdown/**'
+
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
+      
+      # Build the markdown playground.
+      - name: "markdown: pub get"
+        run: dart pub get
+        working-directory: pkgs/markdown
+      - name: "markdown: build playground"
+        run: >
+          dart compile js -o example/app.dart.js
+          --minify --no-frequency-based-minification --no-source-maps
+          example/app.dart
+        working-directory: pkgs/markdown/example
+
+      # Create the _site directory.
+      - run: mkdir _site
+      - run: cp -r pkgs/markdown/example _site/markdown
+      - run: rm _site/markdown/*.dart
+
+      # Deploy to GitHub Pages.
+      - name: setup pages
+        uses: actions/configure-pages@v5
+      - name: upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@v4
