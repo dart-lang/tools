@@ -34,7 +34,7 @@ jobs:
           dart compile js -o example/app.dart.js
           --minify --no-frequency-based-minification --no-source-maps
           example/app.dart
-        working-directory: pkgs/markdown/example
+        working-directory: pkgs/markdown
 
       # Create the _site directory.
       - run: mkdir _site
