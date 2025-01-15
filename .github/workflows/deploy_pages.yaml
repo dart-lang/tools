@@ -9,13 +9,6 @@ on:
     paths:
       - '.github/workflows/deploy_pages.yaml'
       - 'pkgs/markdown/**'
-  # TODO(devoncarew): remove! used for testing the deploy PR
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '.github/workflows/deploy_pages.yaml'
-      - 'pkgs/markdown/**'
-  # TODO(devoncarew): remove! used for testing the deploy PR
 
 jobs:
   deploy:
