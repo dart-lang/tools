@@ -30,7 +30,8 @@ Future<void> copyPath(String from, String to) async {
     return;
   }
   await Directory(to).create(recursive: true);
-  await for (final file in Directory(from).list(recursive: true)) {
+  await for (final file
+      in Directory(from).list(recursive: true, followLinks: false)) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
       await Directory(copyTo).create(recursive: true);
@@ -56,7 +57,8 @@ void copyPathSync(String from, String to) {
     return;
   }
   Directory(to).createSync(recursive: true);
-  for (final file in Directory(from).listSync(recursive: true)) {
+  for (final file
+      in Directory(from).listSync(recursive: true, followLinks: false)) {
     final copyTo = p.join(to, p.relative(file.path, from: from));
     if (file is Directory) {
       Directory(copyTo).createSync(recursive: true);

@@ -1,3 +1,8 @@
+## 1.1.0
+
+* Copy links as links instead of deeply copying the content for all links in
+  `copyPath` and `copyPathSync`.
+
 ## 1.0.5
 
 * Require Dart 3.4.
