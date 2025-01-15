@@ -1,9 +1,4 @@
+# https://dart.dev/tools/pub/private-files
 .dart_tool
-.packages
-.pub
+build
 pubspec.lock
-doc/
-
-example/app.dart.js
-example/app.dart.js.deps
-example/app.dart.js.map

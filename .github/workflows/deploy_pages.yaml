@@ -26,28 +26,17 @@ jobs:
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
       
       # Build the markdown playground.
-      - name: "markdown: pub get"
-        run: dart pub get
-        working-directory: pkgs/markdown
-      - name: "markdown: build playground"
-        run: >
-          dart compile js -o example/app.dart.js
-          --minify --no-frequency-based-minification --no-source-maps
-          example/app.dart
+      - working-directory: pkgs/markdown
+      - run: dart run build_runner build -o example:build --release
         working-directory: pkgs/markdown
 
       # Create the _site directory.
       - run: mkdir _site
-      - run: cp -r pkgs/markdown/example _site/markdown
-      - run: rm _site/markdown/*.dart
+      - run: cp -r pkgs/markdown/build _site/markdown
 
       # Deploy to GitHub Pages.
-      - name: setup pages
-        uses: actions/configure-pages@v5
-      - name: upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-      - name: deploy to github pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
