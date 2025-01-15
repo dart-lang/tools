@@ -26,7 +26,8 @@ jobs:
       - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
       
       # Build the markdown playground.
-      - working-directory: pkgs/markdown
+      - run: dart pub get
+        working-directory: pkgs/markdown
       - run: dart run build_runner build -o example:build --release
         working-directory: pkgs/markdown
 
