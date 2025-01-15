@@ -28,7 +28,7 @@ jobs:
       # Build the markdown playground.
       - run: dart pub get
         working-directory: pkgs/markdown
-      - run: dart run build_runner build -o example:build --release
+      - run: dart run build_runner build -o example:build --release --delete-conflicting-outputs --verbose
         working-directory: pkgs/markdown
 
       # Create the _site directory.
