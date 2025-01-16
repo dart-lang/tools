@@ -82,6 +82,9 @@ void main() {
       expect(await expectedDir.exists(), isTrue);
       expect(await expectedFile.exists(), isTrue);
 
+      expect(await expectedFile.readAsString(), 'original content',
+          reason: 'The file behind the link was copied with invalid content');
+      
       await expectedFile.writeAsString('new content');
       final originalFile =
           File(p.join(d.sandbox, _parentDir, linkSource, linkContent));
@@ -98,6 +101,9 @@ void main() {
       expect(await expectedDir.exists(), isTrue);
       expect(await expectedFile.exists(), isTrue);
 
+      expect(await expectedFile.readAsString(), 'original content',
+          reason: 'The file behind the link was copied with invalid content');
+      
       await expectedFile.writeAsString('new content');
       final originalFile =
           File(p.join(d.sandbox, _parentDir, linkSource, linkContent));
