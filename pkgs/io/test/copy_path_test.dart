@@ -51,7 +51,7 @@ void main() {
 
     test('are shallow copied with deepCopyLinks: false in copyPath', () async {
       await copyPath(
-          followLinks: false,
+          deepCopyLinks: false,
           p.join(d.sandbox, _parentDir),
           p.join(d.sandbox, _copyDir));
 
@@ -63,7 +63,7 @@ void main() {
     test('are shallow copied with deepCopyLinks: false in copyPathAsync',
         () async {
       copyPathSync(
-          followLinks: false,
+          deepCopyLinks: false,
           p.join(d.sandbox, _parentDir),
           p.join(d.sandbox, _copyDir));
 

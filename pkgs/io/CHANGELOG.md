@@ -1,6 +1,6 @@
 ## 1.1.0-wip
 
-* Add a `followLinks` argument to `copyPath` and `copyPathSync`.
+* Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
 
 ## 1.0.5
 
