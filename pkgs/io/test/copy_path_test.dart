@@ -89,7 +89,7 @@ void main() {
           reason: 'The file behind the link should not change');
     });
 
-    test('are deep copied by default in copyPathAsync', () async {
+    test('are deep copied by default in copyPathSync', () async {
       copyPathSync(p.join(d.sandbox, _parentDir), p.join(d.sandbox, _copyDir));
 
       final expectedDir = Directory(p.join(d.sandbox, _copyDir, linkSource));
