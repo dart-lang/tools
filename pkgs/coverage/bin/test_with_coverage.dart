@@ -55,7 +55,7 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'package',
     help: 'Root directory of the package to test.',
-    defaultsTo: defaultOptions.packageName,
+    defaultsTo: defaultOptions.packagePath,
   )
   ..addOption(
     'package-name',

@@ -147,34 +147,31 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     ..addOption('package',
         help: 'root directory of the package',
         defaultsTo: defaultOptions.packagePath)
-    ..addOption('in',
-        abbr: 'i',
-        help: 'input(s): may be file or directory',
-        defaultsTo: defaultOptions.input)
-    ..addOption('out',
-        abbr: 'o',
-        defaultsTo: defaultOptions.output,
-        help: 'output: may be file or stdout')
-    ..addMultiOption('report-on',
-        help: 'which directories or files to report coverage on',
-        defaultsTo: defaultOptions.reportOn)
+    ..addOption(
+      'in',
+      abbr: 'i',
+      help: 'input(s): may be file or directory',
+    )
+    ..addOption('out', abbr: 'o', help: 'output: may be file or stdout')
+    ..addMultiOption(
+      'report-on',
+      help: 'which directories or files to report coverage on',
+    )
     ..addOption(
       'workers',
       abbr: 'j',
-      defaultsTo: defaultOptions.workers.toString(),
+      defaultsTo: '1',
       help: 'number of workers',
     )
     ..addOption('bazel-workspace',
         defaultsTo: '', help: 'Bazel workspace directory')
     ..addOption('base-directory',
         abbr: 'b',
-        defaultsTo: defaultOptions.baseDirectory,
         help: 'the base directory relative to which source paths are output')
     ..addFlag('bazel',
         defaultsTo: false, help: 'use Bazel-style path resolution')
     ..addFlag('pretty-print',
         abbr: 'r',
-        defaultsTo: defaultOptions.prettyPrint,
         negatable: false,
         help: 'convert line coverage data to pretty print format')
     ..addFlag('pretty-print-func',
@@ -186,14 +183,9 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
         help: 'convert branch coverage data to pretty print format')
     ..addFlag('lcov',
         abbr: 'l',
-        defaultsTo: defaultOptions.lcov,
         negatable: false,
         help: 'convert coverage data to lcov format')
-    ..addFlag('verbose',
-        abbr: 'v',
-        defaultsTo: defaultOptions.verbose,
-        negatable: false,
-        help: 'verbose output')
+    ..addFlag('verbose', abbr: 'v', negatable: false, help: 'verbose output')
     ..addFlag(
       'check-ignore',
       abbr: 'c',
@@ -203,7 +195,7 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     )
     ..addMultiOption(
       'ignore-files',
-      defaultsTo: defaultOptions.ignoreFiles,
+      defaultsTo: [],
       help: 'Ignore files by glob patterns',
     )
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
@@ -247,19 +239,26 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     fail('Package spec "${args["package"]}" not found, or not a directory.');
   }
 
-  if (args['in'] == null) fail('No input files given.');
-  final input = p.absolute(p.normalize(args['in'] as String));
+  if (args['in'] == null && defaultOptions.output == null) {
+    fail('No input files given.');
+  }
+  final inputPath =
+      args['in'] as String? ?? '${defaultOptions.output}/coverage.json';
+  final input = p.absolute(p.normalize(inputPath));
   if (!FileSystemEntity.isDirectorySync(input) &&
       !FileSystemEntity.isFileSync(input)) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
   }
 
   IOSink output;
-  if (args['out'] == 'stdout') {
+  final outPath = args['out'] as String?;
+  if (outPath == 'stdout' ||
+      (outPath == null && defaultOptions.output == null)) {
     output = stdout;
   } else {
-    final outpath = p.absolute(p.normalize(args['out'] as String));
-    final outfile = File(outpath)..createSync(recursive: true);
+    final outFilePath = p
+        .absolute(p.normalize(outPath ?? '${defaultOptions.output}/lcov.info'));
+    final outfile = File(outFilePath)..createSync(recursive: true);
     output = outfile.openWrite();
   }
 

@@ -1,4 +1,4 @@
-## 1.11.2
+## 1.12.0
 
 - Introduced support for specifying coverage flags through a YAML file.
 

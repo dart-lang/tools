@@ -10,6 +10,7 @@ import 'package:args/args.dart';
 import 'package:coverage/src/collect.dart';
 import 'package:coverage/src/coverage_options.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
 Future<void> main(List<String> arguments) async {
@@ -71,14 +72,9 @@ Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
         help: 'remote VM port. DEPRECATED: use --uri',
         defaultsTo: '8181')
     ..addOption('uri', abbr: 'u', help: 'VM observatory service URI')
-    ..addOption('out',
-        abbr: 'o',
-        defaultsTo: defaultOptions.output,
-        help: 'output: may be file or stdout')
+    ..addOption('out', abbr: 'o', help: 'output: may be file or stdout')
     ..addOption('connect-timeout',
-        defaultsTo: defaultOptions.connectTimeout?.toString(),
-        abbr: 't',
-        help: 'connect timeout in seconds')
+        abbr: 't', help: 'connect timeout in seconds')
     ..addMultiOption('scope-output',
         defaultsTo: defaultOptions.scopeOutput,
         help: 'restrict coverage results so that only scripts that start with '
@@ -135,12 +131,17 @@ Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
 
   final scopedOutput = args['scope-output'] as List<String>;
   IOSink out;
-  if (args['out'] == 'stdout') {
+  final outPath = args['out'] as String?;
+  if (outPath == 'stdout' ||
+      (outPath == null && defaultOptions.output == null)) {
     out = stdout;
   } else {
-    final outfile = File(args['out'] as String)..createSync(recursive: true);
-    out = outfile.openWrite();
+    final outFilePath = p.absolute(
+        p.normalize(outPath ?? '${defaultOptions.output}/coverage.json'));
+    final outFile = File(outFilePath)..createSync(recursive: true);
+    out = outFile.openWrite();
   }
+
   final timeout = (args['connect-timeout'] == null)
       ? null
       : Duration(seconds: int.parse(args['connect-timeout'] as String));
