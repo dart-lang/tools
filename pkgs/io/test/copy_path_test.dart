@@ -5,6 +5,8 @@
 @TestOn('vm')
 library;
 
+import 'dart:io';
+
 import 'package:io/io.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -32,6 +34,76 @@ void main() {
       ),
       throwsArgumentError,
     );
+  });
+
+  group('links', () {
+    const linkTarget = 'link_target';
+    const linkSource = 'link_source';
+    const linkContent = 'link_content.txt';
+    late String targetPath;
+    setUp(() async {
+      await _create();
+      await d
+          .dir(linkTarget, [d.file(linkContent, 'original content')]).create();
+      targetPath = p.join(d.sandbox, linkTarget);
+      await Link(p.join(d.sandbox, _parentDir, linkSource)).create(targetPath);
+    });
+
+    test('are shallow copied with deepCopyLinks: false in copyPath', () async {
+      await copyPath(
+          followLinks: false,
+          p.join(d.sandbox, _parentDir),
+          p.join(d.sandbox, _copyDir));
+
+      final expectedLink = Link(p.join(d.sandbox, _copyDir, linkSource));
+      expect(await expectedLink.exists(), isTrue);
+      expect(await expectedLink.target(), targetPath);
+    });
+
+    test('are shallow copied with deepCopyLinks: false in copyPathAsync',
+        () async {
+      copyPathSync(
+          followLinks: false,
+          p.join(d.sandbox, _parentDir),
+          p.join(d.sandbox, _copyDir));
+
+      final expectedLink = Link(p.join(d.sandbox, _copyDir, linkSource));
+      expect(await expectedLink.exists(), isTrue);
+      expect(await expectedLink.target(), targetPath);
+    });
+
+    test('are deep copied by default in copyPath', () async {
+      await copyPath(
+          p.join(d.sandbox, _parentDir), p.join(d.sandbox, _copyDir));
+
+      final expectedDir = Directory(p.join(d.sandbox, _copyDir, linkSource));
+      final expectedFile =
+          File(p.join(d.sandbox, _copyDir, linkSource, linkContent));
+      expect(await expectedDir.exists(), isTrue);
+      expect(await expectedFile.exists(), isTrue);
+
+      await expectedFile.writeAsString('new content');
+      final originalFile =
+          File(p.join(d.sandbox, _parentDir, linkSource, linkContent));
+      expect(await originalFile.readAsString(), 'original content',
+          reason: 'The file behind the link should not change');
+    });
+
+    test('are deep copied by default in copyPathAsync', () async {
+      copyPathSync(p.join(d.sandbox, _parentDir), p.join(d.sandbox, _copyDir));
+
+      final expectedDir = Directory(p.join(d.sandbox, _copyDir, linkSource));
+      final expectedFile =
+          File(p.join(d.sandbox, _copyDir, linkSource, linkContent));
+      expect(await expectedDir.exists(), isTrue);
+      expect(await expectedFile.exists(), isTrue);
+
+      await expectedFile.writeAsString('new content');
+      final originalFile =
+          File(p.join(d.sandbox, _parentDir, linkSource, linkContent));
+      expect(await originalFile.readAsString(), 'original content',
+          reason: 'The file behind the link should not change');
+    });
   });
 }
 
