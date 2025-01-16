@@ -60,7 +60,7 @@ void main() {
       expect(await expectedLink.target(), targetPath);
     });
 
-    test('are shallow copied with deepCopyLinks: false in copyPathAsync',
+    test('are shallow copied with deepCopyLinks: false in copyPathSync',
         () async {
       copyPathSync(
           deepCopyLinks: false,
