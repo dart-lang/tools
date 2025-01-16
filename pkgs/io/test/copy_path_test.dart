@@ -13,13 +13,13 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 void main() {
   test('should copy a directory (async)', () async {
     await _create();
-    await copyPath(p.join(d.sandbox, 'parent'), p.join(d.sandbox, 'copy'));
+    await copyPath(p.join(d.sandbox, _parentDir), p.join(d.sandbox, _copyDir));
     await _validate();
   });
 
   test('should copy a directory (sync)', () async {
     await _create();
-    copyPathSync(p.join(d.sandbox, 'parent'), p.join(d.sandbox, 'copy'));
+    copyPathSync(p.join(d.sandbox, _parentDir), p.join(d.sandbox, _copyDir));
     await _validate();
   });
 
@@ -27,19 +27,22 @@ void main() {
     await _create();
     expect(
       copyPath(
-        p.join(d.sandbox, 'parent'),
-        p.join(d.sandbox, 'parent', 'child'),
+        p.join(d.sandbox, _parentDir),
+        p.join(d.sandbox, _parentDir, 'child'),
       ),
       throwsArgumentError,
     );
   });
 }
 
-d.DirectoryDescriptor _struct() => d.dir('parent', [
+const _parentDir = 'parent';
+const _copyDir = 'copy';
+
+d.DirectoryDescriptor _struct(String dirName) => d.dir(dirName, [
       d.dir('child', [
         d.file('foo.txt'),
       ]),
     ]);
 
-Future<void> _create() => _struct().create();
-Future<void> _validate() => _struct().validate();
+Future<void> _create() => _struct(_parentDir).create();
+Future<void> _validate() => _struct(_copyDir).validate();

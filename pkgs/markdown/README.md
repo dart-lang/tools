@@ -2,11 +2,11 @@
 [![pub package](https://img.shields.io/pub/v/markdown.svg)](https://pub.dev/packages/markdown)
 [![package publisher](https://img.shields.io/pub/publisher/markdown.svg)](https://pub.dev/packages/markdown/publisher)
 
-A portable Markdown library written in Dart. It can parse Markdown into
-HTML on both the client and server.
+A portable Markdown library written in Dart. It can parse Markdown into HTML on
+both the client and server.
 
 Play with it at
-[dart-lang.github.io/markdown](https://dart-lang.github.io/markdown).
+[dart-lang.github.io/tools/markdown](https://dart-lang.github.io/tools/markdown).
 
 ### Usage
 

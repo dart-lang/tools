@@ -50,17 +50,27 @@ Future<void> main(List<String> args) async {
     final pkgName = entry.key;
     final name = '[$pkgName](pkgs/$pkgName/)';
 
-    /*
-     [![package issues](https://img.shields.io/badge/package:bazel_worker-4774bc)](https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abazel_worker)
-     [![pub package](https://img.shields.io/pub/v/bazel_worker.svg)](https://pub.dev/packages/bazel_worker) |
-
-     */
+    // [![issues](https://img.shields.io/badge/issues-4774bc)][bazel_worker_issues]
+    // [![pub package](https://img.shields.io/pub/v/bazel_worker.svg)](https://pub.dev/packages/bazel_worker) |
 
     final issues =
-        '[![package issues](https://img.shields.io/badge/package:$pkgName-4774bc)](https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3A$pkgName)';
+        '[![issues](https://img.shields.io/badge/issues-4774bc)][${pkgName}_issues]';
     final version =
         '[![pub package](https://img.shields.io/pub/v/$pkgName.svg)](https://pub.dev/packages/$pkgName)';
 
     print(['', name, entry.value, issues, version, ''].join(' | ').trim());
   }
+
+  print('');
+
+  for (var entry in descriptions.entries) {
+    final pkgName = entry.key;
+
+    // [bazel_worker_issues]: https://github.com/dart-lang/core/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abazel_worker
+
+    print('[${pkgName}_issues]: '
+        'https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3A$pkgName');
+  }
+
+  print('');
 }

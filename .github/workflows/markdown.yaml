@@ -18,11 +18,9 @@ on:
 env:
   PUB_ENVIRONMENT: bot.github
 
-
 defaults:
   run:
     working-directory: pkgs/markdown/
-
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
@@ -47,6 +45,21 @@ jobs:
       - name: Analyze code
         run: dart analyze --fatal-infos
         if: always() && steps.install.outcome == 'success'
+
+  # Ensure the markdown playground builds.
+  build-playground:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [stable]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
+        with:
+          sdk: ${{ matrix.sdk }}
+      - run: dart pub get
+      - run: dart compile js -o example/app.dart.js example/app.dart
 
   # Run tests on a matrix consisting of two dimensions:
   # 1. OS: ubuntu-latest, (macos-latest, windows-latest)
