@@ -1,16 +1,7 @@
 out: "coverage"
-connect-timeout: 30
 scope-output: ["lib", "src"]
 function-coverage: true
 branch-coverage: false
-base-directory: "."
-in: "coverage.json"
 package: "."
 package-name: "My Dart Package"
-report-on: ["lib", "bin"]
-ignore-files: ["test"]
-workers: 2
-verbose: true
-lcov: true
-pretty-print: false
 test: "test"

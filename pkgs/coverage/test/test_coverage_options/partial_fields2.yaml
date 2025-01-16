@@ -2,14 +2,7 @@ scope-output:
   - 'lib'
   - 'tools'
 branch-coverage: false
-connect-timeout: 15
-
-in: 'custom_coverage.json'
-out: 'custom_lcov.info'
+out: 'custom_lcov'
 package: '.'
-report-on:
-  - 'src'
-  - 'scripts'
-
 test: 'custom_test'
 function-coverage: true

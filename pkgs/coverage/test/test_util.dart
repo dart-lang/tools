@@ -96,89 +96,56 @@ extension ListTestExtension on List {
 CoverageOptions parseArgsCollectCoverage(
     List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
-    ..addOption('host', abbr: 'H')
-    ..addOption('port', abbr: 'p')
-    ..addOption('uri', abbr: 'u')
-    ..addOption('out', abbr: 'o', defaultsTo: defaultOptions.output)
-    ..addOption('connect-timeout',
-        abbr: 't', defaultsTo: defaultOptions.connectTimeout?.toString())
+    ..addOption('out', abbr: 'o')
     ..addMultiOption('scope-output', defaultsTo: defaultOptions.scopeOutput)
-    ..addFlag('resume-isolates',
-        abbr: 'r', defaultsTo: defaultOptions.resumeIsolates)
     ..addFlag('function-coverage',
         abbr: 'f', defaultsTo: defaultOptions.functionCoverage)
     ..addFlag('branch-coverage',
-        abbr: 'b', defaultsTo: defaultOptions.branchCoverage)
-    ..addFlag('help', abbr: 'h', negatable: false);
+        abbr: 'b', defaultsTo: defaultOptions.branchCoverage);
 
   final args = parser.parse(arguments);
 
+  String out;
+  final outPath = args['out'] as String?;
+  if (outPath == null && defaultOptions.output == null) {
+    out = 'stdout';
+  } else {
+    out = outPath ?? '${defaultOptions.output}/coverage.json';
+  }
+
   return CoverageOptions(
-    output: args['out'] as String,
-    connectTimeout: args['connect-timeout'] == null
-        ? defaultOptions.connectTimeout
-        : int.parse(args['connect-timeout'] as String),
+    output: out,
     scopeOutput: args['scope-output'] as List<String>,
-    resumeIsolates: args['resume-isolates'] as bool,
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
-    baseDirectory: defaultOptions.baseDirectory,
-    ignoreFiles: defaultOptions.ignoreFiles,
-    input: defaultOptions.input,
-    lcov: defaultOptions.lcov,
     packagePath: defaultOptions.packagePath,
     packageName: defaultOptions.packageName,
-    prettyPrint: defaultOptions.prettyPrint,
-    reportOn: defaultOptions.reportOn,
     testScript: defaultOptions.testScript,
-    verbose: defaultOptions.verbose,
-    workers: defaultOptions.workers,
   );
 }
 
 CoverageOptions parseArgsFormatCoverage(
     List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
-    ..addOption('packages')
     ..addOption('package', defaultsTo: defaultOptions.packagePath)
-    ..addOption('in', abbr: 'i', defaultsTo: defaultOptions.input)
-    ..addOption('out', abbr: 'o', defaultsTo: defaultOptions.output)
-    ..addMultiOption('report-on', defaultsTo: defaultOptions.reportOn)
-    ..addOption('workers',
-        abbr: 'j', defaultsTo: defaultOptions.workers.toString())
-    ..addOption('base-directory',
-        abbr: 'b', defaultsTo: defaultOptions.baseDirectory)
-    ..addFlag('pretty-print',
-        abbr: 'r', defaultsTo: defaultOptions.prettyPrint, negatable: false)
-    ..addFlag('lcov',
-        abbr: 'l', defaultsTo: defaultOptions.lcov, negatable: false)
-    ..addFlag('verbose',
-        abbr: 'v', defaultsTo: defaultOptions.verbose, negatable: false)
-    ..addMultiOption('ignore-files', defaultsTo: defaultOptions.ignoreFiles)
-    ..addFlag('help', abbr: 'h', negatable: false);
+    ..addOption('out', abbr: 'o');
 
   final args = parser.parse(arguments);
 
-  if (args['in'] == null) throw ArgumentError('Missing required argument: in');
+  String out;
+  final outPath = args['out'] as String?;
+  if (outPath == null && defaultOptions.output == null) {
+    out = 'stdout';
+  } else {
+    out = outPath ?? '${defaultOptions.output}/lcov.info';
+  }
 
   return CoverageOptions(
-    baseDirectory: args['base-directory'] as String?,
-    input: args['in'] as String,
-    lcov: args['lcov'] as bool,
-    output: args['out'] as String,
+    output: out,
     packagePath: args['package'] as String,
-    prettyPrint: args['lcov'] as bool ? false : args['pretty-print'] as bool,
-    reportOn: (args['report-on'] as List<String>).isNotEmpty
-        ? args['report-on'] as List<String>
-        : null,
-    ignoreFiles: args['ignore-files'] as List<String>,
-    verbose: args['verbose'] as bool,
-    workers: int.parse(args['workers'] as String),
     branchCoverage: defaultOptions.branchCoverage,
     functionCoverage: defaultOptions.functionCoverage,
-    connectTimeout: defaultOptions.connectTimeout,
     packageName: defaultOptions.packageName,
-    resumeIsolates: defaultOptions.resumeIsolates,
     scopeOutput: defaultOptions.scopeOutput,
     testScript: defaultOptions.testScript,
   );
@@ -195,7 +162,6 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
       'package-name',
       defaultsTo: defaultOptions.packageName,
     )
-    ..addOption('port')
     ..addOption(
       'out',
       defaultsTo: defaultOptions.output,
@@ -212,8 +178,7 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
       abbr: 'b',
       defaultsTo: defaultOptions.branchCoverage,
     )
-    ..addMultiOption('scope-output', defaultsTo: defaultOptions.scopeOutput)
-    ..addFlag('help', abbr: 'h', negatable: false);
+    ..addMultiOption('scope-output', defaultsTo: defaultOptions.scopeOutput);
 
   final args = parser.parse(arguments);
 
@@ -236,16 +201,6 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
     scopeOutput: args['scope-output'] as List<String>,
-    baseDirectory: defaultOptions.baseDirectory,
-    connectTimeout: defaultOptions.connectTimeout,
-    ignoreFiles: defaultOptions.ignoreFiles,
-    input: defaultOptions.input,
-    lcov: defaultOptions.lcov,
-    prettyPrint: defaultOptions.prettyPrint,
-    reportOn: defaultOptions.reportOn,
-    resumeIsolates: defaultOptions.resumeIsolates,
-    verbose: defaultOptions.verbose,
-    workers: defaultOptions.workers,
   );
 }
 

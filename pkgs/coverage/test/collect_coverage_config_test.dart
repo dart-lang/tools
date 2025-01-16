@@ -4,8 +4,6 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  final defaultInputArgs = <String>['--in=coverage.json'];
-
   group('defaults when no yaml or command-line args provided', () {
     // Setup
     final defaults = CoverageOptionsProvider.defaultOptions;
@@ -14,27 +12,17 @@ void main() {
       final collectedCoverage = parseArgsCollectCoverage([], defaults);
 
       expect(collectedCoverage.scopeOutput, defaults.scopeOutput);
-      expect(collectedCoverage.resumeIsolates, defaults.resumeIsolates);
       expect(collectedCoverage.functionCoverage, defaults.functionCoverage);
       expect(collectedCoverage.branchCoverage, defaults.branchCoverage);
-      expect(collectedCoverage.connectTimeout, defaults.connectTimeout);
-      expect(collectedCoverage.output, defaults.output);
+      expect(collectedCoverage.output, 'stdout');
     });
 
     test('format coverage', () {
       final formattedCoverage =
-          parseArgsFormatCoverage(defaultInputArgs, defaults);
+          parseArgsFormatCoverage([], defaults);
 
-      expect(formattedCoverage.baseDirectory, defaults.baseDirectory);
-      expect(formattedCoverage.input, 'coverage.json');
-      expect(formattedCoverage.lcov, defaults.lcov);
-      expect(formattedCoverage.output, defaults.output);
+      expect(formattedCoverage.output, 'stdout');
       expect(formattedCoverage.packagePath, defaults.packagePath);
-      expect(formattedCoverage.prettyPrint, defaults.prettyPrint);
-      expect(formattedCoverage.reportOn, defaults.reportOn);
-      expect(formattedCoverage.ignoreFiles, defaults.ignoreFiles);
-      expect(formattedCoverage.verbose, defaults.verbose);
-      expect(formattedCoverage.workers, defaults.workers);
     });
 
     test('test with coverage', () async {
@@ -42,7 +30,7 @@ void main() {
 
       expect(testCoverage.packagePath, getPackageDir(defaults.packagePath));
       expect(testCoverage.packageName, 'coverage');
-      expect(testCoverage.output, defaults.output);
+      expect(testCoverage.output, 'coverage');
       expect(testCoverage.testScript, defaults.testScript);
       expect(testCoverage.functionCoverage, defaults.functionCoverage);
       expect(testCoverage.branchCoverage, defaults.branchCoverage);
@@ -58,28 +46,18 @@ void main() {
     // Parse arguments with empty command line args
     final collectedCoverage = parseArgsCollectCoverage([], configuredOptions);
     final formattedCoverage =
-        parseArgsFormatCoverage(defaultInputArgs, configuredOptions);
+        parseArgsFormatCoverage([], configuredOptions);
     final testCoverage = await parseArgsTestWithCoverage([], configuredOptions);
 
     // Verify collect coverage yaml values
     expect(collectedCoverage.scopeOutput, ['lib', 'src']);
-    expect(collectedCoverage.resumeIsolates, isFalse);
     expect(collectedCoverage.functionCoverage, isTrue);
     expect(collectedCoverage.branchCoverage, isFalse);
-    expect(collectedCoverage.connectTimeout, 30);
-    expect(collectedCoverage.output, 'coverage');
+    expect(collectedCoverage.output, 'coverage/coverage.json');
 
     // Verify format coverage yaml values
-    expect(formattedCoverage.baseDirectory, '.');
-    expect(formattedCoverage.input, 'coverage.json');
-    expect(formattedCoverage.lcov, isTrue);
-    expect(formattedCoverage.output, 'coverage');
+    expect(formattedCoverage.output, 'coverage/lcov.info');
     expect(formattedCoverage.packagePath, '.');
-    expect(formattedCoverage.prettyPrint, isFalse);
-    expect(formattedCoverage.reportOn, ['lib', 'bin']);
-    expect(formattedCoverage.ignoreFiles, ['test']);
-    expect(formattedCoverage.verbose, isTrue);
-    expect(formattedCoverage.workers, 2);
 
     // Verify test with coverage yaml values
     expect(testCoverage.packagePath, getPackageDir('.'));
@@ -99,26 +77,14 @@ void main() {
 
       // Parse arguments with empty command line args
       final collectedCoverage = parseArgsCollectCoverage([], configuredOptions);
-      final formattedCoverage =
-          parseArgsFormatCoverage(defaultInputArgs, configuredOptions);
       final testCoverage =
           await parseArgsTestWithCoverage([], configuredOptions);
+      final formattedCoverage = parseArgsFormatCoverage([], configuredOptions);
 
-      // Verify collect coverage yaml values
-      expect(collectedCoverage.output, 'custom_coverage.json');
+      expect(collectedCoverage.output, 'custom_coverage/coverage.json');
       expect(collectedCoverage.scopeOutput, ['lib', 'test']);
       expect(collectedCoverage.functionCoverage, isFalse);
-      expect(collectedCoverage.connectTimeout, 20);
-
-      // Verify format coverage yaml values
-      expect(formattedCoverage.lcov, isFalse);
-      expect(formattedCoverage.verbose, isFalse);
-      expect(formattedCoverage.baseDirectory, 'src');
-      expect(formattedCoverage.ignoreFiles, ['example']);
-      expect(formattedCoverage.reportOn, ['lib']);
-      expect(formattedCoverage.prettyPrint, isTrue);
-
-      // Verify test with coverage yaml values
+      expect(formattedCoverage.output, 'custom_coverage/lcov.info');
       expect(testCoverage.packageName, 'Custom Dart Package');
       expect(testCoverage.scopeOutput, ['lib', 'test']);
     });
@@ -137,18 +103,16 @@ void main() {
       // Verify collect coverage yaml values
       expect(collectedCoverage.scopeOutput, ['lib', 'tools']);
       expect(collectedCoverage.branchCoverage, isFalse);
-      expect(collectedCoverage.connectTimeout, 15);
       expect(collectedCoverage.functionCoverage, isTrue);
+      expect(collectedCoverage.output, 'custom_lcov/coverage.json');
 
       // Verify format coverage yaml values
-      expect(formattedCoverage.input, 'custom_coverage.json');
-      expect(formattedCoverage.output, 'custom_lcov.info');
+      expect(formattedCoverage.output, 'custom_lcov/lcov.info');
       expect(formattedCoverage.packagePath, '.');
-      expect(formattedCoverage.reportOn, ['src', 'scripts']);
 
       // Verify test with coverage yaml values
       expect(testCoverage.packageName, 'coverage');
-      expect(testCoverage.output, 'custom_lcov.info');
+      expect(testCoverage.output, 'custom_lcov');
       expect(testCoverage.testScript, 'custom_test');
       expect(testCoverage.functionCoverage, isTrue);
     });
@@ -163,17 +127,12 @@ void main() {
     final collectedCoverage = parseArgsCollectCoverage([
       '--out=coverage.json',
       '--scope-output=lib',
-      '--connect-timeout=10',
       '--no-function-coverage',
       '--branch-coverage',
     ], configuredOptions);
     final formattedCoverage = parseArgsFormatCoverage([
-      '--in=data.json',
       '--out=out_test.info',
-      '--report-on=src',
-      '--report-on=src2',
-      '--ignore-files=bin',
-      '--workers=4',
+      '--package=code_builder',
     ], configuredOptions);
     final testCoverage = await parseArgsTestWithCoverage([
       '--package-name=test',
@@ -187,14 +146,10 @@ void main() {
     expect(collectedCoverage.scopeOutput, ['lib']);
     expect(collectedCoverage.functionCoverage, isFalse);
     expect(collectedCoverage.branchCoverage, isTrue);
-    expect(collectedCoverage.connectTimeout, 10);
 
     // Verify format coverage command line args
-    expect(formattedCoverage.input, 'data.json');
     expect(formattedCoverage.output, 'out_test.info');
-    expect(formattedCoverage.reportOn, ['src', 'src2']);
-    expect(formattedCoverage.ignoreFiles, ['bin']);
-    expect(formattedCoverage.workers, 4);
+    expect(formattedCoverage.packagePath, 'code_builder');
 
     // Verify test with coverage command line args
     expect(testCoverage.packageName, 'test');
@@ -211,33 +166,23 @@ void main() {
     // Parse arguments with empty command line args
     final collectedCoverage = parseArgsCollectCoverage([], configuredOptions);
     final formattedCoverage =
-        parseArgsFormatCoverage(defaultInputArgs, configuredOptions);
+        parseArgsFormatCoverage([], configuredOptions);
     final testCoverage = await parseArgsTestWithCoverage([], configuredOptions);
 
     // Verify collect coverage defaults
     expect(collectedCoverage.scopeOutput, isEmpty);
-    expect(collectedCoverage.resumeIsolates, isFalse);
     expect(collectedCoverage.functionCoverage, isFalse);
     expect(collectedCoverage.branchCoverage, isFalse);
-    expect(collectedCoverage.connectTimeout, isNull);
     expect(collectedCoverage.output, 'stdout');
 
     // Verify format coverage defaults
-    expect(formattedCoverage.baseDirectory, '.');
-    expect(formattedCoverage.input, 'coverage.json');
-    expect(formattedCoverage.lcov, isFalse);
     expect(formattedCoverage.output, 'stdout');
     expect(formattedCoverage.packagePath, '.');
-    expect(formattedCoverage.prettyPrint, isFalse);
-    expect(formattedCoverage.reportOn, isNull);
-    expect(formattedCoverage.ignoreFiles, isEmpty);
-    expect(formattedCoverage.verbose, isFalse);
-    expect(formattedCoverage.workers, 1);
 
     // Verify test with coverage defaults
     expect(testCoverage.packagePath, getPackageDir('.'));
     expect(testCoverage.packageName, 'coverage');
-    expect(testCoverage.output, 'stdout');
+    expect(testCoverage.output, 'coverage');
     expect(testCoverage.testScript, 'test');
     expect(testCoverage.functionCoverage, isFalse);
     expect(testCoverage.branchCoverage, isFalse);

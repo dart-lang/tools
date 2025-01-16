@@ -1,14 +1,5 @@
-out: 'custom_coverage.json'
+out: 'custom_coverage'
 scope-output: 
   - 'lib'
   - 'test'
-connect-timeout: 20
-lcov: false
-verbose: false
-base-directory: 'src'
-ignore-files: 
-  - 'example'
-report-on: 
-  - 'lib'
-pretty-print: true
 package-name: 'Custom Dart Package'
