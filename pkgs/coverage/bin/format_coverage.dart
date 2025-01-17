@@ -146,7 +146,7 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     )
     ..addOption('package',
         help: 'root directory of the package',
-        defaultsTo: defaultOptions.packagePath)
+        defaultsTo: defaultOptions.packageDirectory)
     ..addOption(
       'in',
       abbr: 'i',
@@ -239,11 +239,11 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     fail('Package spec "${args["package"]}" not found, or not a directory.');
   }
 
-  if (args['in'] == null && defaultOptions.output == null) {
+  if (args['in'] == null && defaultOptions.outputDirectory == null) {
     fail('No input files given.');
   }
-  final inputPath =
-      args['in'] as String? ?? '${defaultOptions.output}/coverage.json';
+  final inputPath = args['in'] as String? ??
+      '${defaultOptions.outputDirectory}/coverage.json';
   final input = p.absolute(p.normalize(inputPath));
   if (!FileSystemEntity.isDirectorySync(input) &&
       !FileSystemEntity.isFileSync(input)) {
@@ -253,11 +253,11 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   IOSink output;
   final outPath = args['out'] as String?;
   if (outPath == 'stdout' ||
-      (outPath == null && defaultOptions.output == null)) {
+      (outPath == null && defaultOptions.outputDirectory == null)) {
     output = stdout;
   } else {
     final outFilePath = p
-        .absolute(p.normalize(outPath ?? '${defaultOptions.output}/lcov.info'));
+        .canonicalize(outPath ?? '${defaultOptions.outputDirectory}/lcov.info');
     final outfile = File(outFilePath)..createSync(recursive: true);
     output = outfile.openWrite();
   }

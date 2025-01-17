@@ -1,7 +1,7 @@
-out: "coverage"
+output-directory: "coverage"
 scope-output: ["lib", "src"]
 function-coverage: true
 branch-coverage: false
-package: "."
+package-directory: "../code_builder"
 package-name: "My Dart Package"
-test: "test"
+test_script: "test1"

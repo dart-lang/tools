@@ -107,18 +107,18 @@ CoverageOptions parseArgsCollectCoverage(
 
   String out;
   final outPath = args['out'] as String?;
-  if (outPath == null && defaultOptions.output == null) {
+  if (outPath == null && defaultOptions.outputDirectory == null) {
     out = 'stdout';
   } else {
-    out = outPath ?? '${defaultOptions.output}/coverage.json';
+    out = outPath ?? p.join(defaultOptions.outputDirectory!, 'coverage.json');
   }
 
   return CoverageOptions(
-    output: out,
+    outputDirectory: out,
     scopeOutput: args['scope-output'] as List<String>,
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
-    packagePath: defaultOptions.packagePath,
+    packageDirectory: defaultOptions.packageDirectory,
     packageName: defaultOptions.packageName,
     testScript: defaultOptions.testScript,
   );
@@ -127,22 +127,22 @@ CoverageOptions parseArgsCollectCoverage(
 CoverageOptions parseArgsFormatCoverage(
     List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
-    ..addOption('package', defaultsTo: defaultOptions.packagePath)
+    ..addOption('package', defaultsTo: defaultOptions.packageDirectory)
     ..addOption('out', abbr: 'o');
 
   final args = parser.parse(arguments);
 
   String out;
   final outPath = args['out'] as String?;
-  if (outPath == null && defaultOptions.output == null) {
+  if (outPath == null && defaultOptions.outputDirectory == null) {
     out = 'stdout';
   } else {
-    out = outPath ?? '${defaultOptions.output}/lcov.info';
+    out = outPath ?? p.join(defaultOptions.outputDirectory!, 'lcov.info');
   }
 
   return CoverageOptions(
-    output: out,
-    packagePath: args['package'] as String,
+    outputDirectory: out,
+    packageDirectory: args['package'] as String,
     branchCoverage: defaultOptions.branchCoverage,
     functionCoverage: defaultOptions.functionCoverage,
     packageName: defaultOptions.packageName,
@@ -156,7 +156,7 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
   final parser = ArgParser()
     ..addOption(
       'package',
-      defaultsTo: defaultOptions.packagePath,
+      defaultsTo: defaultOptions.packageDirectory,
     )
     ..addOption(
       'package-name',
@@ -164,7 +164,7 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
     )
     ..addOption(
       'out',
-      defaultsTo: defaultOptions.output,
+      defaultsTo: defaultOptions.outputDirectory,
       abbr: 'o',
     )
     ..addOption('test', defaultsTo: defaultOptions.testScript)
@@ -194,9 +194,9 @@ Future<CoverageOptions> parseArgsTestWithCoverage(
   }
 
   return CoverageOptions(
-    packagePath: packageDir,
+    packageDirectory: packageDir,
     packageName: packageName as String,
-    output: (args['out'] as String?) ?? 'coverage',
+    outputDirectory: (args['out'] as String?) ?? 'coverage',
     testScript: args['test'] as String,
     functionCoverage: args['function-coverage'] as bool,
     branchCoverage: args['branch-coverage'] as bool,
@@ -209,6 +209,6 @@ Future<String?> _packageNameFromConfig(String packageDir) async {
   return config?.packageOf(Uri.directory(packageDir))?.name;
 }
 
-String getPackageDir(final String package) {
+String getAbsolutePath(final String package) {
   return p.canonicalize(package);
 }

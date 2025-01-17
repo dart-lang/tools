@@ -1,4 +1,4 @@
-## 1.12.0
+## 1.12.0-wip
 
 - Introduced support for specifying coverage flags through a YAML file.
 

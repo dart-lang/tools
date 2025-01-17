@@ -55,7 +55,7 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'package',
     help: 'Root directory of the package to test.',
-    defaultsTo: defaultOptions.packagePath,
+    defaultsTo: defaultOptions.packageDirectory,
   )
   ..addOption(
     'package-name',
@@ -66,7 +66,7 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption('port', help: 'VM service port.', defaultsTo: '8181')
   ..addOption(
     'out',
-    defaultsTo: defaultOptions.output,
+    defaultsTo: defaultOptions.outputDirectory,
     abbr: 'o',
     help: 'Output directory. Defaults to <package-dir>/coverage.',
   )
@@ -174,19 +174,6 @@ ${parser.usage}
 Future<void> main(List<String> arguments) async {
   final defaultOptions = CoverageOptionsProvider().coverageOptions;
   final flags = await _parseArgs(arguments, defaultOptions);
-
-  print('Flags: ');
-  print('  packageDir: ${flags.packageDir}');
-  print('  packageName: ${flags.packageName}');
-  print('  outDir: ${flags.outDir}');
-  print('  port: ${flags.port}');
-  print('  testScript: ${flags.testScript}');
-  print('  functionCoverage: ${flags.functionCoverage}');
-  print('  branchCoverage: ${flags.branchCoverage}');
-  print('  scopeOutput: ${flags.scopeOutput}');
-  print('  rest: ${flags.rest}');
-  print('');
-
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
 

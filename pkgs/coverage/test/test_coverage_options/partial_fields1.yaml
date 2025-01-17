@@ -1,4 +1,4 @@
-out: 'custom_coverage'
+output-directory: 'custom_coverage'
 scope-output: 
   - 'lib'
   - 'test'

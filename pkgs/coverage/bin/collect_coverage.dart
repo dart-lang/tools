@@ -133,11 +133,11 @@ Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   IOSink out;
   final outPath = args['out'] as String?;
   if (outPath == 'stdout' ||
-      (outPath == null && defaultOptions.output == null)) {
+      (outPath == null && defaultOptions.outputDirectory == null)) {
     out = stdout;
   } else {
-    final outFilePath = p.absolute(
-        p.normalize(outPath ?? '${defaultOptions.output}/coverage.json'));
+    final outFilePath = p.canonicalize(
+        outPath ?? '${defaultOptions.outputDirectory}/coverage.json');
     final outFile = File(outFilePath)..createSync(recursive: true);
     out = outFile.openWrite();
   }
