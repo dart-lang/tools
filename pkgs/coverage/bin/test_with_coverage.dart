@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:coverage/src/coverage_options.dart';
 import 'package:coverage/src/util.dart'
     show StandardOutExtension, extractVMServiceUri;
 import 'package:package_config/package_config.dart';
@@ -50,37 +51,41 @@ void _watchExitSignal(ProcessSignal signal) {
   });
 }
 
-ArgParser _createArgParser() => ArgParser()
+ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'package',
     help: 'Root directory of the package to test.',
-    defaultsTo: '.',
+    defaultsTo: defaultOptions.packageDirectory,
   )
   ..addOption(
     'package-name',
     help: 'Name of the package to test. '
         'Deduced from --package if not provided.',
+    defaultsTo: defaultOptions.packageName,
   )
   ..addOption('port', help: 'VM service port.', defaultsTo: '8181')
   ..addOption(
     'out',
+    defaultsTo: defaultOptions.outputDirectory,
     abbr: 'o',
     help: 'Output directory. Defaults to <package-dir>/coverage.',
   )
-  ..addOption('test', help: 'Test script to run.', defaultsTo: 'test')
+  ..addOption('test',
+      help: 'Test script to run.', defaultsTo: defaultOptions.testScript)
   ..addFlag(
     'function-coverage',
     abbr: 'f',
-    defaultsTo: false,
+    defaultsTo: defaultOptions.functionCoverage,
     help: 'Collect function coverage info.',
   )
   ..addFlag(
     'branch-coverage',
     abbr: 'b',
-    defaultsTo: false,
+    defaultsTo: defaultOptions.branchCoverage,
     help: 'Collect branch coverage info.',
   )
   ..addMultiOption('scope-output',
+      defaultsTo: defaultOptions.scopeOutput,
       help: 'restrict coverage results so that only scripts that start with '
           'the provided package path are considered. Defaults to the name of '
           'the package under test.')
@@ -110,8 +115,9 @@ class Flags {
   final List<String> rest;
 }
 
-Future<Flags> _parseArgs(List<String> arguments) async {
-  final parser = _createArgParser();
+Future<Flags> _parseArgs(
+    List<String> arguments, CoverageOptions defaultOptions) async {
+  final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
 
   void printUsage() {
@@ -166,7 +172,8 @@ ${parser.usage}
 }
 
 Future<void> main(List<String> arguments) async {
-  final flags = await _parseArgs(arguments);
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
+  final flags = await _parseArgs(arguments, defaultOptions);
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
 

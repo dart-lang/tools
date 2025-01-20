@@ -8,7 +8,9 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/src/collect.dart';
+import 'package:coverage/src/coverage_options.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
 Future<void> main(List<String> arguments) async {
@@ -17,7 +19,8 @@ Future<void> main(List<String> arguments) async {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  final options = _parseArgs(arguments);
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
+  final options = _parseArgs(arguments, defaultOptions);
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
         options.waitPaused, options.includeDart, options.scopedOutput,
@@ -58,7 +61,7 @@ class Options {
   final Set<String> scopedOutput;
 }
 
-Options _parseArgs(List<String> arguments) {
+Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
     ..addOption('host',
         abbr: 'H',
@@ -69,11 +72,11 @@ Options _parseArgs(List<String> arguments) {
         help: 'remote VM port. DEPRECATED: use --uri',
         defaultsTo: '8181')
     ..addOption('uri', abbr: 'u', help: 'VM observatory service URI')
-    ..addOption('out',
-        abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
+    ..addOption('out', abbr: 'o', help: 'output: may be file or stdout')
     ..addOption('connect-timeout',
         abbr: 't', help: 'connect timeout in seconds')
     ..addMultiOption('scope-output',
+        defaultsTo: defaultOptions.scopeOutput,
         help: 'restrict coverage results so that only scripts that start with '
             'the provided package path are considered')
     ..addFlag('wait-paused',
@@ -85,10 +88,12 @@ Options _parseArgs(List<String> arguments) {
     ..addFlag('include-dart',
         abbr: 'd', defaultsTo: false, help: 'include "dart:" libraries')
     ..addFlag('function-coverage',
-        abbr: 'f', defaultsTo: false, help: 'Collect function coverage info')
+        abbr: 'f',
+        defaultsTo: defaultOptions.functionCoverage,
+        help: 'Collect function coverage info')
     ..addFlag('branch-coverage',
         abbr: 'b',
-        defaultsTo: false,
+        defaultsTo: defaultOptions.branchCoverage,
         help: 'Collect branch coverage info (Dart VM must also be run with '
             '--branch-coverage for this to work)')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
@@ -126,12 +131,17 @@ Options _parseArgs(List<String> arguments) {
 
   final scopedOutput = args['scope-output'] as List<String>;
   IOSink out;
-  if (args['out'] == 'stdout') {
+  final outPath = args['out'] as String?;
+  if (outPath == 'stdout' ||
+      (outPath == null && defaultOptions.outputDirectory == null)) {
     out = stdout;
   } else {
-    final outfile = File(args['out'] as String)..createSync(recursive: true);
-    out = outfile.openWrite();
+    final outFilePath = p.normalize(outPath ??
+        p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
+    final outFile = File(outFilePath)..createSync(recursive: true);
+    out = outFile.openWrite();
   }
+
   final timeout = (args['connect-timeout'] == null)
       ? null
       : Duration(seconds: int.parse(args['connect-timeout'] as String));
