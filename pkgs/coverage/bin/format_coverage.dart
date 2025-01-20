@@ -242,9 +242,8 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   if (args['in'] == null && defaultOptions.outputDirectory == null) {
     fail('No input files given.');
   }
-  final inputPath = args['in'] as String? ??
-      '${defaultOptions.outputDirectory}/coverage.json';
-  final input = p.absolute(p.normalize(inputPath));
+  final input = p.normalize((args['in'] as String?) ??
+      p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
   if (!FileSystemEntity.isDirectorySync(input) &&
       !FileSystemEntity.isFileSync(input)) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
@@ -256,8 +255,8 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       (outPath == null && defaultOptions.outputDirectory == null)) {
     output = stdout;
   } else {
-    final outFilePath = p
-        .canonicalize(outPath ?? '${defaultOptions.outputDirectory}/lcov.info');
+    final outFilePath = p.normalize(
+        outPath ?? p.absolute(defaultOptions.outputDirectory!, 'lcov.info'));
     final outfile = File(outFilePath)..createSync(recursive: true);
     output = outfile.openWrite();
   }

@@ -136,8 +136,8 @@ Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       (outPath == null && defaultOptions.outputDirectory == null)) {
     out = stdout;
   } else {
-    final outFilePath = p.canonicalize(
-        outPath ?? '${defaultOptions.outputDirectory}/coverage.json');
+    final outFilePath = p.normalize(outPath ??
+        p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
     final outFile = File(outFilePath)..createSync(recursive: true);
     out = outFile.openWrite();
   }

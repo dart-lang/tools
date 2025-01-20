@@ -14,19 +14,21 @@ class CoverageOptions {
   });
 
   factory CoverageOptions.fromConfig(
-      Config options, CoverageOptions defaultOptions, String optionsFilePath) {
+      Config options, CoverageOptions defaultOptions, String? optionsFilePath) {
     var outputDirectory = options.optionalString('output_directory') ??
         defaultOptions.outputDirectory;
     var packageDirectory = options.optionalString('package_directory') ??
         defaultOptions.packageDirectory;
 
-    if (outputDirectory != null && !path.isAbsolute(outputDirectory)) {
-      outputDirectory = path.canonicalize(
-          path.join(path.dirname(optionsFilePath), outputDirectory));
-    }
-    if (!path.isAbsolute(packageDirectory)) {
-      packageDirectory = path.canonicalize(
-          path.join(path.dirname(optionsFilePath), packageDirectory));
+    if (optionsFilePath != null) {
+      if (outputDirectory != null && !path.isAbsolute(outputDirectory)) {
+        outputDirectory = path.normalize(
+            path.absolute(path.dirname(optionsFilePath), outputDirectory));
+      }
+      if (!path.isAbsolute(packageDirectory)) {
+        packageDirectory = path.normalize(
+            path.absolute(path.dirname(optionsFilePath), packageDirectory));
+      }
     }
 
     return CoverageOptions(
@@ -74,18 +76,19 @@ class CoverageOptionsProvider {
   }
 
   late final CoverageOptions coverageOptions;
-  late final String optionsFilePath;
+  late final String? optionsFilePath;
   static const defaultFilePath = 'coverage_options.yaml';
 
   File? _getOptionsFile(String? filePath) {
     filePath ??= _findOptionsFilePath();
-    if (filePath == null) {
-      throw StateError('Could not find a pubspec.yaml file.');
+
+    optionsFilePath = filePath != null ? path.canonicalize(filePath) : null;
+
+    if (optionsFilePath == null) {
+      return null;
     }
 
-    optionsFilePath = path.canonicalize(filePath);
-
-    final file = File(optionsFilePath);
+    final file = File(optionsFilePath!);
     return file.existsSync() ? file : null;
   }
 
