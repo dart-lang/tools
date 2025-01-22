@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/glob.yaml'
-      - 'pkgs/grglobaphs/**'
+      - 'pkgs/glob/**'
   push:
     branches: [ main ]
     paths:
