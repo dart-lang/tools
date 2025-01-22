@@ -5,6 +5,7 @@ description: >-
   communication through Server Sent Events (SSE) and corresponding POST
   requests.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/sse
+issue_tracker: https://github.com/dart-lang/tools/labels/package%3Asse
 
 environment:
   sdk: ^3.3.0

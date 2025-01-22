@@ -1,9 +1,10 @@
 name: pool
 version: 1.5.2-wip
 description: >-
-  Manage a finite pool of resources.
-  Useful for controlling concurrent file system or network requests.
+  Manage a finite pool of resources. Useful for controlling concurrent file
+  system or network requests.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/pool
+issue_tracker: https://github.com/dart-lang/tools/labels/package%3Apool
 
 environment:
   sdk: ^3.4.0
