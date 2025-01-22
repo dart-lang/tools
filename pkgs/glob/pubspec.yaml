@@ -1,5 +1,5 @@
 name: glob
-version: 2.1.3-wip
+version: 2.1.3
 description: A library to perform Bash-style file and directory globbing.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/glob
 

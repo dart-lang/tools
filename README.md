@@ -27,6 +27,7 @@ don't naturally belong to other topic monorepos (like
 | [extension_discovery](pkgs/extension_discovery/) | A convention and utilities for package extension discovery. | [![issues](https://img.shields.io/badge/issues-4774bc)][extension_discovery_issues] | [![pub package](https://img.shields.io/pub/v/extension_discovery.svg)](https://pub.dev/packages/extension_discovery) |
 | [file](pkgs/file/) | A pluggable, mockable file system abstraction for Dart. | [![issues](https://img.shields.io/badge/issues-4774bc)][file_issues] | [![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file) |
 | [file_testing](pkgs/file_testing/) | Testing utilities for package:file. | [![issues](https://img.shields.io/badge/issues-4774bc)][file_testing_issues] | [![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing) |
+| [glob](pkgs/glob/) | A library to perform Bash-style file and directory globbing. | [![issues](https://img.shields.io/badge/issues-4774bc)][glob_issues] | [![pub package](https://img.shields.io/pub/v/glob.svg)](https://pub.dev/packages/glob) |
 | [graphs](pkgs/graphs/) | Graph algorithms that operate on graphs in any representation. | [![issues](https://img.shields.io/badge/issues-4774bc)][graphs_issues] | [![pub package](https://img.shields.io/pub/v/graphs.svg)](https://pub.dev/packages/graphs) |
 | [html](pkgs/html/) | APIs for parsing and manipulating HTML content outside the browser. | [![issues](https://img.shields.io/badge/issues-4774bc)][html_issues] | [![pub package](https://img.shields.io/pub/v/html.svg)](https://pub.dev/packages/html) |
 | [io](pkgs/io/) | Utilities for the Dart VM Runtime including support for ANSI colors, file copying, and standard exit code values. | [![issues](https://img.shields.io/badge/issues-4774bc)][io_issues] | [![pub package](https://img.shields.io/pub/v/io.svg)](https://pub.dev/packages/io) |
@@ -67,6 +68,7 @@ don't naturally belong to other topic monorepos (like
 [extension_discovery_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aextension_discovery
 [file_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Afile
 [file_testing_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Afile_testing
+[glob_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aglob
 [graphs_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Agraphs
 [html_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ahtml
 [io_issues]: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aio

@@ -56,6 +56,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/file_testing/**'
 
+'package:glob':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/glob/**'
+
 'package:graphs':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/graphs/**'
