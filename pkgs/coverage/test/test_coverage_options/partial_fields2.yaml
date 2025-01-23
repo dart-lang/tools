@@ -2,7 +2,7 @@ scope-output:
   - 'lib'
   - 'tools'
 branch-coverage: false
-output-directory: 'custom_lcov'
+output-directory: 'coverage/custom_lcov'
 package-directory: '.'
 test_script: 'custom_test'
 function-coverage: true

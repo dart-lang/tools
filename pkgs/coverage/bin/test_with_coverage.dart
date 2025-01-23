@@ -9,6 +9,7 @@ import 'package:args/args.dart';
 import 'package:coverage/src/coverage_options.dart';
 import 'package:coverage/src/util.dart'
     show StandardOutExtension, extractVMServiceUri;
+import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 
@@ -115,7 +116,8 @@ class Flags {
   final List<String> rest;
 }
 
-Future<Flags> _parseArgs(
+@visibleForTesting
+Future<Flags> parseArgs(
     List<String> arguments, CoverageOptions defaultOptions) async {
   final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
@@ -144,7 +146,7 @@ ${parser.usage}
     exit(0);
   }
 
-  final packageDir = path.canonicalize(args['package'] as String);
+  final packageDir = path.normalize(path.absolute(args['package'] as String));
   if (!FileSystemEntity.isDirectorySync(packageDir)) {
     fail('--package is not a valid directory.');
   }
@@ -173,7 +175,7 @@ ${parser.usage}
 
 Future<void> main(List<String> arguments) async {
   final defaultOptions = CoverageOptionsProvider().coverageOptions;
-  final flags = await _parseArgs(arguments, defaultOptions);
+  final flags = await parseArgs(arguments, defaultOptions);
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
 

@@ -63,11 +63,9 @@ class CoverageOptionsProvider {
     final file = _getOptionsFile(filePath);
     final fileContents = file?.readAsStringSync();
 
-    final isFileEmpty = fileContents?.isEmpty ?? false;
-
     // Pass null to fileContents if the file is empty
     final options = Config.fromConfigFileContents(
-      fileContents: isFileEmpty ? null : fileContents,
+      fileContents: fileContents,
       fileSourceUri: file?.uri,
     );
 
@@ -80,9 +78,10 @@ class CoverageOptionsProvider {
   static const defaultFilePath = 'coverage_options.yaml';
 
   File? _getOptionsFile(String? filePath) {
-    filePath ??= _findOptionsFilePath();
+    filePath ??= findOptionsFilePath();
 
-    optionsFilePath = filePath != null ? path.canonicalize(filePath) : null;
+    optionsFilePath =
+        filePath != null ? path.normalize(path.absolute(filePath)) : null;
 
     if (optionsFilePath == null) {
       return null;
@@ -92,13 +91,19 @@ class CoverageOptionsProvider {
     return file.existsSync() ? file : null;
   }
 
-  String? _findOptionsFilePath() {
-    var currentDir = Directory.current;
+  static String? findOptionsFilePath({Directory? directory}) {
+    var currentDir = directory ?? Directory.current;
 
     while (true) {
       final pubSpecFilePath = path.join(currentDir.path, 'pubspec.yaml');
       if (File(pubSpecFilePath).existsSync()) {
-        return path.join(currentDir.path, defaultFilePath);
+        final optionsFilePath = path.join(currentDir.path, defaultFilePath);
+
+        if (File(optionsFilePath).existsSync()) {
+          return optionsFilePath;
+        } else {
+          return null;
+        }
       }
       final parentDir = currentDir.parent;
       if (parentDir.path == currentDir.path) {

@@ -10,6 +10,7 @@ import 'package:args/args.dart';
 import 'package:coverage/src/collect.dart';
 import 'package:coverage/src/coverage_options.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 
@@ -20,15 +21,20 @@ Future<void> main(List<String> arguments) async {
   });
 
   final defaultOptions = CoverageOptionsProvider().coverageOptions;
-  final options = _parseArgs(arguments, defaultOptions);
+  final options = parseArgs(arguments, defaultOptions);
+
+  final out = options.out == null
+      ? stdout
+      : File(options.out!).openWrite(mode: FileMode.writeOnly);
+
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,
         options.waitPaused, options.includeDart, options.scopedOutput,
         timeout: options.timeout,
         functionCoverage: options.functionCoverage,
         branchCoverage: options.branchCoverage);
-    options.out.write(json.encode(coverage));
-    await options.out.close();
+    out.write(json.encode(coverage));
+    await out.close();
   }, onError: (dynamic error, Chain chain) {
     stderr.writeln(error);
     stderr.writeln(chain.terse);
@@ -51,7 +57,7 @@ class Options {
       this.scopedOutput);
 
   final Uri serviceUri;
-  final IOSink out;
+  final String? out;
   final Duration? timeout;
   final bool waitPaused;
   final bool resume;
@@ -61,7 +67,8 @@ class Options {
   final Set<String> scopedOutput;
 }
 
-Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
+@visibleForTesting
+Options parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser()
     ..addOption('host',
         abbr: 'H',
@@ -130,16 +137,16 @@ Options _parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   }
 
   final scopedOutput = args['scope-output'] as List<String>;
-  IOSink out;
+  String? out;
   final outPath = args['out'] as String?;
   if (outPath == 'stdout' ||
       (outPath == null && defaultOptions.outputDirectory == null)) {
-    out = stdout;
+    out = null;
   } else {
     final outFilePath = p.normalize(outPath ??
         p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
     final outFile = File(outFilePath)..createSync(recursive: true);
-    out = outFile.openWrite();
+    out = outFile.path;
   }
 
   final timeout = (args['connect-timeout'] == null)

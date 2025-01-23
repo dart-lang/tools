@@ -38,7 +38,7 @@ class Environment {
   bool checkIgnore;
   String input;
   bool lcov;
-  IOSink output;
+  String? output;
   String? packagesPath;
   String packagePath;
   bool prettyPrint;
@@ -106,8 +106,11 @@ Future<void> main(List<String> arguments) async {
         basePath: env.baseDirectory);
   }
 
-  env.output.write(output);
-  await env.output.flush();
+  final outputSink =
+      env.output == null ? stdout : File(env.output!).openWrite();
+
+  outputSink.write(output);
+  await outputSink.flush();
   if (env.verbose) {
     print('Done flushing output. Took ${clock.elapsedMilliseconds} ms.');
   }
@@ -126,7 +129,7 @@ Future<void> main(List<String> arguments) async {
       }
     }
   }
-  await env.output.close();
+  await outputSink.close();
 }
 
 /// Checks the validity of the provided arguments. Does not initialize actual
@@ -249,16 +252,16 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
   }
 
-  IOSink output;
+  String? output;
   final outPath = args['out'] as String?;
   if (outPath == 'stdout' ||
       (outPath == null && defaultOptions.outputDirectory == null)) {
-    output = stdout;
+    output = null;
   } else {
     final outFilePath = p.normalize(
         outPath ?? p.absolute(defaultOptions.outputDirectory!, 'lcov.info'));
     final outfile = File(outFilePath)..createSync(recursive: true);
-    output = outfile.openWrite();
+    output = outfile.path;
   }
 
   final reportOnRaw = args['report-on'] as List<String>;
