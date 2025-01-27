@@ -23,9 +23,7 @@ Future<void> main(List<String> arguments) async {
   final defaultOptions = CoverageOptionsProvider().coverageOptions;
   final options = parseArgs(arguments, defaultOptions);
 
-  final out = options.out == null
-      ? stdout
-      : File(options.out!).openWrite(mode: FileMode.writeOnly);
+  final out = options.out == null ? stdout : File(options.out!).openWrite();
 
   await Chain.capture(() async {
     final coverage = await collect(options.serviceUri, options.resume,

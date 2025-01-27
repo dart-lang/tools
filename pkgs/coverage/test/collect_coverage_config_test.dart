@@ -33,10 +33,11 @@ void main() {
     test('test with coverage', () async {
       final testCoverage = await test_with_coverage.parseArgs([], defaults);
 
-      expect(testCoverage.packageDir.toLowerCase(),
+      expect(path.canonicalize(testCoverage.packageDir),
           path.canonicalize(defaults.packageDirectory));
       expect(testCoverage.packageName, 'coverage');
-      expect(testCoverage.outDir.toLowerCase(), path.canonicalize('coverage'));
+      expect(path.canonicalize(testCoverage.outDir),
+          path.canonicalize('coverage'));
       expect(testCoverage.testScript, defaults.testScript);
       expect(testCoverage.functionCoverage, defaults.functionCoverage);
       expect(testCoverage.branchCoverage, defaults.branchCoverage);
@@ -60,24 +61,20 @@ void main() {
     expect(collectedCoverage.scopedOutput, ['lib', 'src']);
     expect(collectedCoverage.functionCoverage, isTrue);
     expect(collectedCoverage.branchCoverage, isFalse);
-    expect(collectedCoverage.out?.toLowerCase(),
+    expect(path.canonicalize(collectedCoverage.out!),
         path.canonicalize('test/test_coverage_options/coverage/coverage.json'));
 
     // Verify format coverage yaml values
-    expect(formattedCoverage.output?.toLowerCase(),
+    expect(path.canonicalize(formattedCoverage.output!),
         path.canonicalize('test/test_coverage_options/coverage/lcov.info'));
-    expect(
-        formattedCoverage.packagePath.toLowerCase(),
-        path.canonicalize(
-            path.join('test/test_coverage_options', '../test_files')));
+    expect(path.canonicalize(formattedCoverage.packagePath),
+        path.canonicalize('test/test_files'));
 
     // Verify test with coverage yaml values
-    expect(
-        testCoverage.packageDir.toLowerCase(),
-        path.canonicalize(
-            path.join('test/test_coverage_options', '../test_files')));
+    expect(path.canonicalize(testCoverage.packageDir),
+        path.canonicalize('test/test_files'));
     expect(testCoverage.packageName, 'My Dart Package');
-    expect(testCoverage.outDir.toLowerCase(),
+    expect(path.canonicalize(testCoverage.outDir),
         path.canonicalize('test/test_coverage_options/coverage'));
     expect(testCoverage.testScript, 'test1');
     expect(testCoverage.functionCoverage, isTrue);
@@ -100,13 +97,13 @@ void main() {
           format_coverage.parseArgs([], configuredOptions);
 
       expect(
-          collectedCoverage.out?.toLowerCase(),
+          path.canonicalize(collectedCoverage.out!),
           path.canonicalize(
               'test/test_coverage_options/coverage/custom_coverage/coverage.json'));
       expect(collectedCoverage.scopedOutput, ['lib', 'test']);
       expect(collectedCoverage.functionCoverage, isFalse);
       expect(
-          formattedCoverage.output?.toLowerCase(),
+          path.canonicalize(formattedCoverage.output!),
           path.canonicalize(
               'test/test_coverage_options/coverage/custom_coverage/lcov.info'));
       expect(testCoverage.packageName, 'Custom Dart Package');
@@ -131,21 +128,21 @@ void main() {
       expect(collectedCoverage.branchCoverage, isFalse);
       expect(collectedCoverage.functionCoverage, isTrue);
       expect(
-          collectedCoverage.out?.toLowerCase(),
+          path.canonicalize(collectedCoverage.out!),
           path.canonicalize(
               'test/test_coverage_options/coverage/custom_lcov/coverage.json'));
 
       // Verify format coverage yaml values
       expect(
-          formattedCoverage.output?.toLowerCase(),
+          path.canonicalize(formattedCoverage.output!),
           path.canonicalize(
               'test/test_coverage_options/coverage/custom_lcov/lcov.info'));
-      expect(formattedCoverage.packagePath.toLowerCase(),
+      expect(path.canonicalize(formattedCoverage.packagePath),
           path.canonicalize('test/test_coverage_options'));
 
       // Verify test with coverage yaml values
       expect(testCoverage.packageName, 'coverage');
-      expect(testCoverage.outDir.toLowerCase(),
+      expect(path.canonicalize(testCoverage.outDir),
           path.canonicalize('test/test_coverage_options/coverage/custom_lcov'));
       expect(testCoverage.testScript, 'custom_test');
       expect(testCoverage.functionCoverage, isTrue);
