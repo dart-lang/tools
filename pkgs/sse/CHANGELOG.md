@@ -1,5 +1,6 @@
 ## 4.1.7
 
+- Skipped failing test - [#2006](https://github.com/dart-lang/tools/issues/2006)
 - Move to `dart-lang/tools` monorepo.
 
 ## 4.1.6
