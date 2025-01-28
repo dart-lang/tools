@@ -1,3 +1,6 @@
+## 7.0.2
+- Send `enabled_features` as an event parameter in all events rather than as a user property.
+
 ## 7.0.1
 - Fixed `UnsupportedError` thrown when Event.exception is called without providing a value for `args`.
 
