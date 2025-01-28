@@ -569,7 +569,6 @@ final class Event {
           if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
         };
 
-  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
