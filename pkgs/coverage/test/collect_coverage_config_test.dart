@@ -61,12 +61,16 @@ void main() {
     expect(collectedCoverage.scopedOutput, ['lib', 'src']);
     expect(collectedCoverage.functionCoverage, isTrue);
     expect(collectedCoverage.branchCoverage, isFalse);
-    expect(path.canonicalize(collectedCoverage.out!),
-        path.canonicalize('test/test_coverage_options/coverage/coverage.json'));
+    expect(
+        path.canonicalize(collectedCoverage.out!),
+        path.canonicalize(
+            'test/test_coverage_options/coverage_data/coverage.json'));
 
     // Verify format coverage yaml values
-    expect(path.canonicalize(formattedCoverage.output!),
-        path.canonicalize('test/test_coverage_options/coverage/lcov.info'));
+    expect(
+        path.canonicalize(formattedCoverage.output!),
+        path.canonicalize(
+            'test/test_coverage_options/coverage_data/lcov.info'));
     expect(path.canonicalize(formattedCoverage.packagePath),
         path.canonicalize('test/test_files'));
 
@@ -75,7 +79,7 @@ void main() {
         path.canonicalize('test/test_files'));
     expect(testCoverage.packageName, 'My Dart Package');
     expect(path.canonicalize(testCoverage.outDir),
-        path.canonicalize('test/test_coverage_options/coverage'));
+        path.canonicalize('test/test_coverage_options/coverage_data'));
     expect(testCoverage.testScript, 'test1');
     expect(testCoverage.functionCoverage, isTrue);
     expect(testCoverage.branchCoverage, isFalse);
@@ -99,13 +103,13 @@ void main() {
       expect(
           path.canonicalize(collectedCoverage.out!),
           path.canonicalize(
-              'test/test_coverage_options/coverage/custom_coverage/coverage.json'));
+              'test/test_coverage_options/coverage_data/custom_coverage/coverage.json'));
       expect(collectedCoverage.scopedOutput, ['lib', 'test']);
       expect(collectedCoverage.functionCoverage, isFalse);
       expect(
           path.canonicalize(formattedCoverage.output!),
           path.canonicalize(
-              'test/test_coverage_options/coverage/custom_coverage/lcov.info'));
+              'test/test_coverage_options/coverage_data/custom_coverage/lcov.info'));
       expect(testCoverage.packageName, 'Custom Dart Package');
       expect(testCoverage.scopeOutput, ['lib', 'test']);
     });
@@ -130,20 +134,22 @@ void main() {
       expect(
           path.canonicalize(collectedCoverage.out!),
           path.canonicalize(
-              'test/test_coverage_options/coverage/custom_lcov/coverage.json'));
+              'test/test_coverage_options/coverage_data/custom_lcov/coverage.json'));
 
       // Verify format coverage yaml values
       expect(
           path.canonicalize(formattedCoverage.output!),
           path.canonicalize(
-              'test/test_coverage_options/coverage/custom_lcov/lcov.info'));
+              'test/test_coverage_options/coverage_data/custom_lcov/lcov.info'));
       expect(path.canonicalize(formattedCoverage.packagePath),
           path.canonicalize('test/test_coverage_options'));
 
       // Verify test with coverage yaml values
       expect(testCoverage.packageName, 'coverage');
-      expect(path.canonicalize(testCoverage.outDir),
-          path.canonicalize('test/test_coverage_options/coverage/custom_lcov'));
+      expect(
+          path.canonicalize(testCoverage.outDir),
+          path.canonicalize(
+              'test/test_coverage_options/coverage_data/custom_lcov'));
       expect(testCoverage.testScript, 'custom_test');
       expect(testCoverage.functionCoverage, isTrue);
     });
@@ -157,13 +163,13 @@ void main() {
 
       // Parse arguments with command line args
       final collectedCoverage = collect_coverage.parseArgs([
-        '--out=/test/test_coverage_options/coverage/coverage.json',
+        '--out=/test/test_coverage_options/coverage_data/coverage.json',
         '--scope-output=lib',
         '--no-function-coverage',
         '--branch-coverage',
       ], configuredOptions);
       final formattedCoverage = format_coverage.parseArgs([
-        '--out=/test/test_coverage_options/coverage/out_test.info',
+        '--out=/test/test_coverage_options/coverage_data/out_test.info',
         '--package=../code_builder',
       ], configuredOptions);
       final testCoverage = await test_with_coverage.parseArgs([
@@ -174,15 +180,19 @@ void main() {
       ], configuredOptions);
 
       // Verify collect coverage command line args
-      expect(collectedCoverage.out,
-          path.normalize('/test/test_coverage_options/coverage/coverage.json'));
+      expect(
+          collectedCoverage.out,
+          path.normalize(
+              '/test/test_coverage_options/coverage_data/coverage.json'));
       expect(collectedCoverage.scopedOutput, ['lib']);
       expect(collectedCoverage.functionCoverage, isFalse);
       expect(collectedCoverage.branchCoverage, isTrue);
 
       // Verify format coverage command line args
-      expect(formattedCoverage.output,
-          path.normalize('/test/test_coverage_options/coverage/out_test.info'));
+      expect(
+          formattedCoverage.output,
+          path.normalize(
+              '/test/test_coverage_options/coverage_data/out_test.info'));
       expect(formattedCoverage.packagePath, '../code_builder');
 
       // Verify test with coverage command line args
