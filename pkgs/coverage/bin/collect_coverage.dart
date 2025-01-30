@@ -143,7 +143,13 @@ Options parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   } else {
     final outFilePath = p.normalize(outPath ??
         p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
-    final outFile = File(outFilePath)..createSync(recursive: true);
+
+    final outFile = File(outFilePath);
+    if (!FileSystemEntity.isDirectorySync(outFilePath) &&
+        !FileSystemEntity.isFileSync(outFilePath)) {
+      outFile.createSync(recursive: true);
+    }
+
     out = outFile.path;
   }
 

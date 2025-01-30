@@ -260,7 +260,12 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   } else {
     final outFilePath = p.normalize(
         outPath ?? p.absolute(defaultOptions.outputDirectory!, 'lcov.info'));
-    final outfile = File(outFilePath)..createSync(recursive: true);
+
+    final outfile = File(outFilePath);
+    if (!FileSystemEntity.isDirectorySync(outFilePath) &&
+        !FileSystemEntity.isFileSync(outFilePath)) {
+      outfile.createSync(recursive: true);
+    }
     output = outfile.path;
   }
 
