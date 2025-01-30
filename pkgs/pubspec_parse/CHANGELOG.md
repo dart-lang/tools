@@ -1,3 +1,7 @@
+## 1.5.1
+
+- Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
+
 ## 1.5.0
 
 - Added fields to `Pubspec`: `executables`, `resolution`, `workspace`.
