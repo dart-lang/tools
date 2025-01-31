@@ -1,4 +1,4 @@
-## 1.5.1
+## 1.6.0-wip
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
 
