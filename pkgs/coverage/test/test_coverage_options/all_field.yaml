@@ -1,4 +1,4 @@
-output-directory: "coverage_data"
+output-directory: "../../var/coverage_data"
 scope-output: ["lib", "src"]
 function-coverage: true
 branch-coverage: false

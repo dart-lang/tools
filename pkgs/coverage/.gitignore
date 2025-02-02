@@ -16,4 +16,3 @@ build
 *~
 coverage/
 var/
-test/test_coverage_options/coverage_data
