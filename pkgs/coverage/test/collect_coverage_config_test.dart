@@ -149,13 +149,13 @@ void main() {
 
       // Parse arguments with command line args
       final collectedCoverage = collect_coverage.parseArgs([
-        '--out=/var/coverage_data/coverage.json',
+        '--out=var/coverage_data/coverage.json',
         '--scope-output=lib',
         '--no-function-coverage',
         '--branch-coverage',
       ], configuredOptions);
       final formattedCoverage = format_coverage.parseArgs([
-        '--out=/var/coverage_data/out_test.info',
+        '--out=var/coverage_data/out_test.info',
         '--package=../code_builder',
       ], configuredOptions);
       final testCoverage = await test_with_coverage.parseArgs([
@@ -167,14 +167,14 @@ void main() {
 
       // Verify collect coverage command line args
       expect(collectedCoverage.out,
-          path.normalize('/var/coverage_data/coverage.json'));
+          path.normalize('var/coverage_data/coverage.json'));
       expect(collectedCoverage.scopedOutput, ['lib']);
       expect(collectedCoverage.functionCoverage, isFalse);
       expect(collectedCoverage.branchCoverage, isTrue);
 
       // Verify format coverage command line args
       expect(formattedCoverage.output,
-          path.normalize('/var/coverage_data/out_test.info'));
+          path.normalize('var/coverage_data/out_test.info'));
       expect(formattedCoverage.packagePath, '../code_builder');
 
       // Verify test with coverage command line args
