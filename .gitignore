@@ -1,1 +1,4 @@
-*.DS_Store
+# https://dart.dev/tools/pub/private-files
+.dart_tool
+pubspec.lock
+_site/

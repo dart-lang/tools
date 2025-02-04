@@ -5,12 +5,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/csslib.yml'
+      - '.github/workflows/csslib.yaml'
       - 'pkgs/csslib/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/csslib.yml'
+      - '.github/workflows/csslib.yaml'
       - 'pkgs/csslib/**'
   schedule:
     - cron: "0 0 * * 0"

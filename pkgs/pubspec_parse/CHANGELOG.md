@@ -1,6 +1,8 @@
-## 1.5.0-wip
+## 1.5.0
 
-- Add `Pubspec.workspace` and `Pubspec.resolution` fields.
+- Added fields to `Pubspec`: `executables`, `resolution`, `workspace`.
+- Require Dart 3.6
+- Update dependencies.
 
 ## 1.4.0
 

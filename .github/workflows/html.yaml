@@ -5,12 +5,12 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/html.yml'
+      - '.github/workflows/html.yaml'
       - 'pkgs/html/**'
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/html.yml'
+      - '.github/workflows/html.yaml'
       - 'pkgs/html/**'
   schedule:
     - cron: "0 0 * * 0"

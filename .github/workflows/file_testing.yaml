@@ -1,0 +1,36 @@
+name: package:file_testing
+permissions: read-all
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/file_testing.yaml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/file_testing.yaml'
+      - 'pkgs/file/**'
+      - 'pkgs/file_testing/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+defaults:
+  run:
+    working-directory: pkgs/file_testing/
+
+jobs:
+  correctness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e630b99d28a3b71860378cafdc2a067c71107f94
+        with:
+          sdk: dev
+
+      - run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-infos
