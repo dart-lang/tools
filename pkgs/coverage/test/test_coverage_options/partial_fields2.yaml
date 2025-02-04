@@ -1,0 +1,8 @@
+scope-output:
+  - 'lib'
+  - 'tools'
+branch-coverage: false
+output-directory: '../../var/coverage_data/custom_lcov'
+package-directory: '.'
+test_script: 'custom_test'
+function-coverage: true
