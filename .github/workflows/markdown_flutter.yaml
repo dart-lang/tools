@@ -17,9 +17,6 @@ on:
   schedule:
     - cron: "0 0 * * 0"
 
-env:
-  PUB_ENVIRONMENT: bot.github
-
 jobs:
   smoke-test:
     runs-on: ubuntu-latest

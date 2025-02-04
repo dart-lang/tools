@@ -1,5 +1,4 @@
 name: package:glob
-
 permissions: read-all
 
 on:
