@@ -2,6 +2,7 @@
 # to see if any can provoke a crash.
 
 name: "package:markdown: crash tests"
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.

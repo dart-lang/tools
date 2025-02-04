@@ -1,6 +1,7 @@
 # Publish the GitHub Pages site for this repo.
 
 name: "Deploy Pages"
+permissions: read-all
 
 on:
   # Run on pushes to the default branch.

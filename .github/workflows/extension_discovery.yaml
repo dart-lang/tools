@@ -14,16 +14,17 @@ on:
   schedule:
     - cron: '0 0 * * 0' # weekly
 
+defaults:
+  run:
+    working-directory: pkgs/extension_discovery
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pkgs/extension_discovery
     strategy:
       fail-fast: false
       matrix:
-        sdk: [stable, dev] # {pkgs.versions}
+        sdk: [stable, dev]
         include:
           - sdk: stable
             check-formatting: true

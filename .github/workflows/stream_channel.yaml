@@ -1,4 +1,5 @@
 name: package:stream_channel
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -14,9 +15,6 @@ on:
       - 'pkgs/stream_channel/**'
   schedule:
     - cron: "0 0 * * 0"
-
-env:
-  PUB_ENVIRONMENT: bot.github
 
 defaults:
   run:

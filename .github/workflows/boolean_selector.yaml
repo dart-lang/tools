@@ -1,4 +1,5 @@
 name: package:boolean_selector
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -14,10 +15,6 @@ on:
       - 'pkgs/boolean_selector/**'
   schedule:
     - cron: "0 0 * * 0"
-
-env:
-  PUB_ENVIRONMENT: bot.github
-
 
 defaults:
   run:

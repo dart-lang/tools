@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        sdk: [stable, dev] # {pkgs.versions}
+        sdk: [stable, dev]
         include:
           - sdk: stable
             run-tests: true
@@ -61,7 +61,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        sdk: [stable, dev] # {pkgs.versions}
+        sdk: [stable, dev]
         include:
           - sdk: stable
             run-tests: true

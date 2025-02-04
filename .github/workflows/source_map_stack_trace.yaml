@@ -1,4 +1,5 @@
 name: package:source_map_stack_trace
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -15,17 +16,15 @@ on:
   schedule:
     - cron: "0 0 * * 0"
 
-env:
-  PUB_ENVIRONMENT: bot.github
+defaults:
+  run:
+    working-directory: pkgs/source_map_stack_trace/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
   # against Dart dev.
   analyze:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pkgs/source_map_stack_trace/
     strategy:
       fail-fast: false
       matrix:
@@ -51,9 +50,6 @@ jobs:
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: pkgs/source_map_stack_trace/
     strategy:
       fail-fast: false
       matrix:

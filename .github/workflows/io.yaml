@@ -1,4 +1,5 @@
 name: package:io
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -15,14 +16,9 @@ on:
   schedule:
     - cron: "0 0 * * 0"
 
-env:
-  PUB_ENVIRONMENT: bot.github
-
-
 defaults:
   run:
     working-directory: pkgs/io/
-
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)

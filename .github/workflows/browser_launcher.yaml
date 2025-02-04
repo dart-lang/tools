@@ -1,4 +1,5 @@
 name: package:browser_launcher
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -16,7 +17,6 @@ on:
     - cron: "0 0 * * 0"
 
 env:
-  PUB_ENVIRONMENT: bot.github
   DISPLAY: ':99'
 
 defaults:

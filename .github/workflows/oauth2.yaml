@@ -1,4 +1,5 @@
 name: package:oauth2
+permissions: read-all
 
 on:
   # Run on PRs and pushes to the default branch.
@@ -15,17 +16,15 @@ on:
   schedule:
     - cron: "0 0 * * 0"
 
-env:
-  PUB_ENVIRONMENT: bot.github
+defaults:
+  run:
+    working-directory: pkgs/oauth2/
 
 jobs:
   # Check code formatting and lints against Dart dev, check analyzer warnings
   # against the oldest supported SDK.
   analyze:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pkgs/oauth2/
     strategy:
       fail-fast: false
       matrix:
@@ -54,9 +53,6 @@ jobs:
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: pkgs/oauth2/
     strategy:
       fail-fast: false
       matrix:
