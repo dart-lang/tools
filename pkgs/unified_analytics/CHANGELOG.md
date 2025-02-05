@@ -1,3 +1,6 @@
+## 7.0.3
+- Added `Event.flutterInjectDarwinPlugins` event for plugins injected into an iOS/macOS project.
+
 ## 7.0.2
 - Send `enabled_features` as an event parameter in all events rather than as a user property.
 
