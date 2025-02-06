@@ -1,5 +1,4 @@
 name: package:graphs
-
 permissions: read-all
 
 on:
