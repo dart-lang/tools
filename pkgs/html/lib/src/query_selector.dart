@@ -220,7 +220,7 @@ class SelectorEvaluator extends Visitor {
           final literal = exprs[0] as LiteralTerm;
           final parent = _element!.parentNode;
           return parent != null &&
-              (literal.value as num) > 0 &&
+              (literal.value is num && literal.value as num > 0) &&
               parent.nodes.indexOf(_element) == literal.value;
         }
         break;
