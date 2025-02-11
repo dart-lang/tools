@@ -400,3 +400,20 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
   @override
   String toString();
 }
+
+/// Relational operators for [LanguageVersion] that match
+/// the behavior specified by [LanguageVersion.compareTo].
+// TODO(v3): Consider declaring on LanguageVersion class.
+extension LanguageVersionRelationalOperators on LanguageVersion {
+  /// If this language version is less than [other].
+  bool operator <(LanguageVersion other) => compareTo(other) < 0;
+
+  /// If this language version is greater than [other].
+  bool operator >(LanguageVersion other) => compareTo(other) > 0;
+
+  /// If this language version is less than or equal to [other].
+  bool operator <=(LanguageVersion other) => compareTo(other) <= 0;
+
+  /// If this language version is greater than or equal to [other].
+  bool operator >=(LanguageVersion other) => compareTo(other) >= 0;
+}

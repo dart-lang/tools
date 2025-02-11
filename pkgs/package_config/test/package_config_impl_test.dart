@@ -57,6 +57,68 @@ void main() {
     failParse('WhiteSpace 2', '1 .1');
     failParse('WhiteSpace 3', '1. 1');
     failParse('WhiteSpace 4', '1.1 ');
+
+    test('compareTo valid', () {
+      var version = LanguageVersion(3, 5);
+      var sameVersion = LanguageVersion(3, 5);
+      var sameMajorLowerMinorVersion = LanguageVersion(3, 4);
+      var lowerMajorSameMinorVersion = LanguageVersion(2, 5);
+      var sameMajorGreaterMinorVersion = LanguageVersion(3, 6);
+      var greaterMajorSameMinorVersion = LanguageVersion(4, 5);
+
+      expect(version.compareTo(sameVersion), isZero);
+      expect(sameVersion.compareTo(version), isZero);
+
+      expect(version.compareTo(sameMajorLowerMinorVersion), isPositive);
+      expect(version.compareTo(lowerMajorSameMinorVersion), isPositive);
+
+      expect(version.compareTo(sameMajorGreaterMinorVersion), isNegative);
+      expect(version.compareTo(greaterMajorSameMinorVersion), isNegative);
+    });
+
+    test('compareTo invalid', () {
+      var validVersion = LanguageVersion(3, 5);
+      var invalidVersion = LanguageVersion.parse('', onError: (_) {});
+
+      expect(validVersion.compareTo(invalidVersion), isPositive);
+      expect(invalidVersion.compareTo(validVersion), isNegative);
+    });
+
+    test('relational valid', () {
+      var version = LanguageVersion(3, 5);
+      var sameVersion = LanguageVersion(3, 5);
+      var sameMajorLowerMinorVersion = LanguageVersion(3, 4);
+      var lowerMajorSameMinorVersion = LanguageVersion(2, 5);
+      var sameMajorGreaterMinorVersion = LanguageVersion(3, 6);
+      var greaterMajorSameMinorVersion = LanguageVersion(4, 5);
+
+      expect(version == sameVersion, isTrue);
+      expect(sameVersion == version, isTrue);
+
+      expect(version > sameVersion, isFalse);
+      expect(version > sameMajorLowerMinorVersion, isTrue);
+      expect(version > lowerMajorSameMinorVersion, isTrue);
+      expect(version > sameMajorGreaterMinorVersion, isFalse);
+      expect(version > greaterMajorSameMinorVersion, isFalse);
+
+      expect(version >= sameVersion, isTrue);
+      expect(version >= sameMajorLowerMinorVersion, isTrue);
+      expect(version >= lowerMajorSameMinorVersion, isTrue);
+      expect(version >= sameMajorGreaterMinorVersion, isFalse);
+      expect(version >= greaterMajorSameMinorVersion, isFalse);
+
+      expect(version < sameVersion, isFalse);
+      expect(version < sameMajorLowerMinorVersion, isFalse);
+      expect(version < lowerMajorSameMinorVersion, isFalse);
+      expect(version < sameMajorGreaterMinorVersion, isTrue);
+      expect(version < greaterMajorSameMinorVersion, isTrue);
+
+      expect(version <= sameVersion, isTrue);
+      expect(version <= sameMajorLowerMinorVersion, isFalse);
+      expect(version <= lowerMajorSameMinorVersion, isFalse);
+      expect(version <= sameMajorGreaterMinorVersion, isTrue);
+      expect(version <= greaterMajorSameMinorVersion, isTrue);
+    });
   });
 
   group('Package', () {
