@@ -20,11 +20,23 @@ void main() {
     });
 
     test('negative major', () {
-      expect(() => LanguageVersion(-1, 1), throwsArgumentError);
+      expect(
+          () => LanguageVersion(-1, 1),
+          throwsA(isA<RangeError>().having(
+            (e) => e.name,
+            'message',
+            contains('major'),
+          )));
     });
 
     test('negative minor', () {
-      expect(() => LanguageVersion(1, -1), throwsArgumentError);
+      expect(
+          () => LanguageVersion(1, -1),
+          throwsA(isA<RangeError>().having(
+            (e) => e.name,
+            'message',
+            contains('minor'),
+          )));
     });
 
     test('minimal parse', () {

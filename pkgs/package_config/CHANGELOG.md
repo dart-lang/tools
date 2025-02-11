@@ -1,3 +1,8 @@
+## 2.1.2-wip
+
+- Include correct parameter names in errors when validating
+  the `major` and `minor` versions in the `LanguageVersion.new` constructor.
+
 ## 2.1.1
 
 - Require Dart 3.4
