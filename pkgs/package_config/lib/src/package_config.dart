@@ -405,15 +405,27 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
 /// the behavior specified by [LanguageVersion.compareTo].
 // TODO(v3): Consider declaring on LanguageVersion class.
 extension LanguageVersionRelationalOperators on LanguageVersion {
-  /// If this language version is less than [other].
+  /// Whether this language version is less than [other].
+  ///
+  /// For details on how language versions are compared,
+  /// see [LanguageVersion.compareTo].
   bool operator <(LanguageVersion other) => compareTo(other) < 0;
 
-  /// If this language version is greater than [other].
+  /// Whether this language version is greater than [other].
+  ///
+  /// For details on how language versions are compared,
+  /// see [LanguageVersion.compareTo].
   bool operator >(LanguageVersion other) => compareTo(other) > 0;
 
-  /// If this language version is less than or equal to [other].
+  /// Whether this language version is less than or equal to [other].
+  ///
+  /// For details on how language versions are compared,
+  /// see [LanguageVersion.compareTo].
   bool operator <=(LanguageVersion other) => compareTo(other) <= 0;
 
-  /// If this language version is greater than or equal to [other].
+  /// Whether this language version is greater than or equal to [other].
+  ///
+  /// For details on how language versions are compared,
+  /// see [LanguageVersion.compareTo].
   bool operator >=(LanguageVersion other) => compareTo(other) >= 0;
 }
