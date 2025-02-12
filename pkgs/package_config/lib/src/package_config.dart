@@ -401,31 +401,82 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
   String toString();
 }
 
-/// Relational operators for [LanguageVersion] that match
-/// the behavior specified by [LanguageVersion.compareTo].
+/// Relational operators for [LanguageVersion] that
+/// compare versions with [LanguageVersion.compareTo].
+///
+/// An [InvalidLanguageVersion] is not less or greater than other versions
+/// and is only equal to itself.
 // TODO(v3): Consider declaring on LanguageVersion class.
 extension LanguageVersionRelationalOperators on LanguageVersion {
   /// Whether this language version is less than [other].
   ///
-  /// For details on how language versions are compared,
-  /// see [LanguageVersion.compareTo].
-  bool operator <(LanguageVersion other) => compareTo(other) < 0;
+  /// If either version is an [InvalidLanguageVersion], returns `false`.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator <(LanguageVersion other) {
+    // Account for invalid language versions which aren't
+    // greater or less than any other version.
+    if (this is InvalidLanguageVersion || other is InvalidLanguageVersion) {
+      return false;
+    }
+
+    return compareTo(other) < 0;
+  }
 
   /// Whether this language version is greater than [other].
   ///
-  /// For details on how language versions are compared,
-  /// see [LanguageVersion.compareTo].
-  bool operator >(LanguageVersion other) => compareTo(other) > 0;
+  /// If either version is an [InvalidLanguageVersion], returns `false`.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator >(LanguageVersion other) {
+    // Account for invalid language versions which aren't
+    // greater or less than any other version.
+    if (this is InvalidLanguageVersion || other is InvalidLanguageVersion) {
+      return false;
+    }
+
+    return compareTo(other) > 0;
+  }
 
   /// Whether this language version is less than or equal to [other].
   ///
-  /// For details on how language versions are compared,
-  /// see [LanguageVersion.compareTo].
-  bool operator <=(LanguageVersion other) => compareTo(other) <= 0;
+  /// If either version is an [InvalidLanguageVersion],
+  /// returns whether they are the same object.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator <=(LanguageVersion other) {
+    // Account for invalid language versions only being equal to themselves.
+    if (identical(this, other)) {
+      return true;
+    }
+
+    if (this is InvalidLanguageVersion || other is InvalidLanguageVersion) {
+      return false;
+    }
+
+    return compareTo(other) <= 0;
+  }
 
   /// Whether this language version is greater than or equal to [other].
   ///
-  /// For details on how language versions are compared,
-  /// see [LanguageVersion.compareTo].
-  bool operator >=(LanguageVersion other) => compareTo(other) >= 0;
+  /// If either version is an [InvalidLanguageVersion],
+  /// returns whether they are the same object.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator >=(LanguageVersion other) {
+    // Account for invalid language versions only being equal to themselves.
+    if (identical(this, other)) {
+      return true;
+    }
+
+    if (this is InvalidLanguageVersion || other is InvalidLanguageVersion) {
+      return false;
+    }
+
+    return compareTo(other) >= 0;
+  }
 }

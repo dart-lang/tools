@@ -119,6 +119,36 @@ void main() {
       expect(version <= sameMajorGreaterMinorVersion, isTrue);
       expect(version <= greaterMajorSameMinorVersion, isTrue);
     });
+
+    test('relational invalid', () {
+      var validVersion = LanguageVersion(3, 5);
+      var invalidVersion = LanguageVersion.parse('', onError: (_) {});
+      var differentInvalidVersion = LanguageVersion.parse('-', onError: (_) {});
+
+      expect(validVersion == invalidVersion, false);
+      expect(invalidVersion == invalidVersion, true);
+      expect(invalidVersion == differentInvalidVersion, false);
+
+      expect(validVersion > invalidVersion, false);
+      expect(invalidVersion > validVersion, false);
+      expect(invalidVersion > invalidVersion, false);
+      expect(invalidVersion > differentInvalidVersion, false);
+
+      expect(validVersion >= invalidVersion, false);
+      expect(invalidVersion >= validVersion, false);
+      expect(invalidVersion >= invalidVersion, true);
+      expect(invalidVersion >= differentInvalidVersion, false);
+
+      expect(validVersion < invalidVersion, false);
+      expect(invalidVersion < validVersion, false);
+      expect(invalidVersion < invalidVersion, false);
+      expect(invalidVersion < differentInvalidVersion, false);
+
+      expect(validVersion <= invalidVersion, false);
+      expect(invalidVersion <= validVersion, false);
+      expect(invalidVersion <= invalidVersion, true);
+      expect(invalidVersion <= differentInvalidVersion, false);
+    });
   });
 
   group('Package', () {
