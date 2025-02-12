@@ -1,5 +1,8 @@
 ## 2.2.0-wip
 
+- Add relational operators to `LanguageVersion` with extension methods
+  exported under `LanguageVersionRelationalOperators`.
+
 ## 2.1.1
 
 - Require Dart 3.4

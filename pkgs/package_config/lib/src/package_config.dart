@@ -349,7 +349,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// Two language versions are considered equal if they have the
   /// same major and minor version numbers.
   ///
-  /// A language version is greater then another if the former's major version
+  /// A language version is greater than another if the former's major version
   /// is greater than the latter's major version, or if they have
   /// the same major version and the former's minor version is greater than
   /// the latter's.
