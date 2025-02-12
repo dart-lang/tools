@@ -95,18 +95,6 @@ void main() {
       expect(version == sameVersion, isTrue);
       expect(sameVersion == version, isTrue);
 
-      expect(version > sameVersion, isFalse);
-      expect(version > sameMajorLowerMinorVersion, isTrue);
-      expect(version > lowerMajorSameMinorVersion, isTrue);
-      expect(version > sameMajorGreaterMinorVersion, isFalse);
-      expect(version > greaterMajorSameMinorVersion, isFalse);
-
-      expect(version >= sameVersion, isTrue);
-      expect(version >= sameMajorLowerMinorVersion, isTrue);
-      expect(version >= lowerMajorSameMinorVersion, isTrue);
-      expect(version >= sameMajorGreaterMinorVersion, isFalse);
-      expect(version >= greaterMajorSameMinorVersion, isFalse);
-
       expect(version < sameVersion, isFalse);
       expect(version < sameMajorLowerMinorVersion, isFalse);
       expect(version < lowerMajorSameMinorVersion, isFalse);
@@ -118,6 +106,18 @@ void main() {
       expect(version <= lowerMajorSameMinorVersion, isFalse);
       expect(version <= sameMajorGreaterMinorVersion, isTrue);
       expect(version <= greaterMajorSameMinorVersion, isTrue);
+
+      expect(version > sameVersion, isFalse);
+      expect(version > sameMajorLowerMinorVersion, isTrue);
+      expect(version > lowerMajorSameMinorVersion, isTrue);
+      expect(version > sameMajorGreaterMinorVersion, isFalse);
+      expect(version > greaterMajorSameMinorVersion, isFalse);
+
+      expect(version >= sameVersion, isTrue);
+      expect(version >= sameMajorLowerMinorVersion, isTrue);
+      expect(version >= lowerMajorSameMinorVersion, isTrue);
+      expect(version >= sameMajorGreaterMinorVersion, isFalse);
+      expect(version >= greaterMajorSameMinorVersion, isFalse);
     });
 
     test('relational invalid', () {
@@ -129,16 +129,6 @@ void main() {
       expect(invalidVersion == invalidVersion, true);
       expect(invalidVersion == differentInvalidVersion, false);
 
-      expect(validVersion > invalidVersion, false);
-      expect(invalidVersion > validVersion, false);
-      expect(invalidVersion > invalidVersion, false);
-      expect(invalidVersion > differentInvalidVersion, false);
-
-      expect(validVersion >= invalidVersion, false);
-      expect(invalidVersion >= validVersion, false);
-      expect(invalidVersion >= invalidVersion, true);
-      expect(invalidVersion >= differentInvalidVersion, false);
-
       expect(validVersion < invalidVersion, false);
       expect(invalidVersion < validVersion, false);
       expect(invalidVersion < invalidVersion, false);
@@ -148,6 +138,16 @@ void main() {
       expect(invalidVersion <= validVersion, false);
       expect(invalidVersion <= invalidVersion, true);
       expect(invalidVersion <= differentInvalidVersion, false);
+
+      expect(validVersion > invalidVersion, false);
+      expect(invalidVersion > validVersion, false);
+      expect(invalidVersion > invalidVersion, false);
+      expect(invalidVersion > differentInvalidVersion, false);
+
+      expect(validVersion >= invalidVersion, false);
+      expect(invalidVersion >= validVersion, false);
+      expect(invalidVersion >= invalidVersion, true);
+      expect(invalidVersion >= differentInvalidVersion, false);
     });
   });
 

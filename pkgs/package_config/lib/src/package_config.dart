@@ -424,22 +424,6 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     return compareTo(other) < 0;
   }
 
-  /// Whether this language version is greater than [other].
-  ///
-  /// If either version is an [InvalidLanguageVersion], returns `false`.
-  ///
-  /// For details on how valid language versions are compared,
-  /// check out [LanguageVersion.compareTo].
-  bool operator >(LanguageVersion other) {
-    // Account for invalid language versions which aren't
-    // greater or less than any other version.
-    if (this is InvalidLanguageVersion || other is InvalidLanguageVersion) {
-      return false;
-    }
-
-    return compareTo(other) > 0;
-  }
-
   /// Whether this language version is less than or equal to [other].
   ///
   /// If either version is an [InvalidLanguageVersion],
@@ -458,6 +442,22 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     }
 
     return compareTo(other) <= 0;
+  }
+
+  /// Whether this language version is greater than [other].
+  ///
+  /// If either version is an [InvalidLanguageVersion], returns `false`.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator >(LanguageVersion other) {
+    // Account for invalid language versions which aren't
+    // greater or less than any other version.
+    if (this is InvalidLanguageVersion || other is InvalidLanguageVersion) {
+      return false;
+    }
+
+    return compareTo(other) > 0;
   }
 
   /// Whether this language version is greater than or equal to [other].
