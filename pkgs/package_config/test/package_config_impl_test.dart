@@ -60,14 +60,17 @@ void main() {
 
     test('compareTo valid', () {
       var version = LanguageVersion(3, 5);
-      var sameVersion = LanguageVersion(3, 5);
+      var identicalVersion = version;
+      var sameMajorSameMinorVersion = LanguageVersion(3, 5);
       var sameMajorLowerMinorVersion = LanguageVersion(3, 4);
       var lowerMajorSameMinorVersion = LanguageVersion(2, 5);
       var sameMajorGreaterMinorVersion = LanguageVersion(3, 6);
       var greaterMajorSameMinorVersion = LanguageVersion(4, 5);
 
-      expect(version.compareTo(sameVersion), 0);
-      expect(sameVersion.compareTo(version), 0);
+      expect(version.compareTo(identicalVersion), 0);
+      expect(version.compareTo(sameMajorSameMinorVersion), 0);
+      expect(identicalVersion.compareTo(version), 0);
+      expect(sameMajorSameMinorVersion.compareTo(version), 0);
 
       expect(version.compareTo(sameMajorLowerMinorVersion), isPositive);
       expect(version.compareTo(lowerMajorSameMinorVersion), isPositive);
@@ -86,34 +89,41 @@ void main() {
 
     test('relational valid', () {
       var version = LanguageVersion(3, 5);
-      var sameVersion = LanguageVersion(3, 5);
+      var identicalVersion = version;
+      var sameMajorSameMinorVersion = LanguageVersion(3, 5);
       var sameMajorLowerMinorVersion = LanguageVersion(3, 4);
       var lowerMajorSameMinorVersion = LanguageVersion(2, 5);
       var sameMajorGreaterMinorVersion = LanguageVersion(3, 6);
       var greaterMajorSameMinorVersion = LanguageVersion(4, 5);
 
-      expect(version == sameVersion, true);
-      expect(sameVersion == version, true);
+      expect(version == identicalVersion, true);
+      expect(version == sameMajorSameMinorVersion, true);
+      expect(identicalVersion == version, true);
+      expect(sameMajorSameMinorVersion == version, true);
 
-      expect(version < sameVersion, false);
+      expect(version < identicalVersion, false);
+      expect(version < sameMajorSameMinorVersion, false);
       expect(version < sameMajorLowerMinorVersion, false);
       expect(version < lowerMajorSameMinorVersion, false);
       expect(version < sameMajorGreaterMinorVersion, true);
       expect(version < greaterMajorSameMinorVersion, true);
 
-      expect(version <= sameVersion, true);
+      expect(version <= identicalVersion, true);
+      expect(version <= sameMajorSameMinorVersion, true);
       expect(version <= sameMajorLowerMinorVersion, false);
       expect(version <= lowerMajorSameMinorVersion, false);
       expect(version <= sameMajorGreaterMinorVersion, true);
       expect(version <= greaterMajorSameMinorVersion, true);
 
-      expect(version > sameVersion, false);
+      expect(version > identicalVersion, false);
+      expect(version > sameMajorSameMinorVersion, false);
       expect(version > sameMajorLowerMinorVersion, true);
       expect(version > lowerMajorSameMinorVersion, true);
       expect(version > sameMajorGreaterMinorVersion, false);
       expect(version > greaterMajorSameMinorVersion, false);
 
-      expect(version >= sameVersion, true);
+      expect(version >= identicalVersion, true);
+      expect(version >= sameMajorSameMinorVersion, true);
       expect(version >= sameMajorLowerMinorVersion, true);
       expect(version >= lowerMajorSameMinorVersion, true);
       expect(version >= sameMajorGreaterMinorVersion, false);
@@ -123,30 +133,32 @@ void main() {
     test('relational invalid', () {
       var validVersion = LanguageVersion(3, 5);
       var invalidVersion = LanguageVersion.parse('', onError: (_) {});
+      var identicalInvalidVersion = invalidVersion;
       var differentInvalidVersion = LanguageVersion.parse('-', onError: (_) {});
 
       expect(validVersion == invalidVersion, false);
-      expect(invalidVersion == invalidVersion, true);
+      expect(invalidVersion == validVersion, false);
+      expect(invalidVersion == identicalInvalidVersion, true);
       expect(invalidVersion == differentInvalidVersion, false);
 
       expect(validVersion < invalidVersion, false);
       expect(invalidVersion < validVersion, false);
-      expect(invalidVersion < invalidVersion, false);
+      expect(invalidVersion < identicalInvalidVersion, false);
       expect(invalidVersion < differentInvalidVersion, false);
 
       expect(validVersion <= invalidVersion, false);
       expect(invalidVersion <= validVersion, false);
-      expect(invalidVersion <= invalidVersion, true);
+      expect(invalidVersion <= identicalInvalidVersion, true);
       expect(invalidVersion <= differentInvalidVersion, false);
 
       expect(validVersion > invalidVersion, false);
       expect(invalidVersion > validVersion, false);
-      expect(invalidVersion > invalidVersion, false);
+      expect(invalidVersion > identicalInvalidVersion, false);
       expect(invalidVersion > differentInvalidVersion, false);
 
       expect(validVersion >= invalidVersion, false);
       expect(invalidVersion >= validVersion, false);
-      expect(invalidVersion >= invalidVersion, true);
+      expect(invalidVersion >= identicalInvalidVersion, true);
       expect(invalidVersion >= differentInvalidVersion, false);
     });
   });
