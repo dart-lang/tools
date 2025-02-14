@@ -60,16 +60,14 @@ void main() {
 
     test('compareTo valid', () {
       var version = LanguageVersion(3, 5);
-      var identicalVersion = version;
       var sameMajorSameMinorVersion = LanguageVersion(3, 5);
       var sameMajorLowerMinorVersion = LanguageVersion(3, 4);
       var lowerMajorSameMinorVersion = LanguageVersion(2, 5);
       var sameMajorGreaterMinorVersion = LanguageVersion(3, 6);
       var greaterMajorSameMinorVersion = LanguageVersion(4, 5);
 
-      expect(version.compareTo(identicalVersion), 0);
+      expect(version.compareTo(version), 0);
       expect(version.compareTo(sameMajorSameMinorVersion), 0);
-      expect(identicalVersion.compareTo(version), 0);
       expect(sameMajorSameMinorVersion.compareTo(version), 0);
 
       expect(version.compareTo(sameMajorLowerMinorVersion), isPositive);
@@ -128,12 +126,11 @@ void main() {
 
       var validVersion = LanguageVersion(3, 5);
       var invalidVersion = LanguageVersion.parse('', onError: (_) {});
-      var identicalInvalidVersion = invalidVersion;
       var differentInvalidVersion = LanguageVersion.parse('-', onError: (_) {});
 
       testComparisonsWithInvalid(validVersion, invalidVersion);
       testComparisonsWithInvalid(invalidVersion, validVersion);
-      testComparisonsWithInvalid(invalidVersion, identicalInvalidVersion);
+      testComparisonsWithInvalid(invalidVersion, invalidVersion);
       testComparisonsWithInvalid(invalidVersion, differentInvalidVersion);
     });
   });
