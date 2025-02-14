@@ -402,7 +402,7 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
 }
 
 /// Relational operators for [LanguageVersion] that
-/// compare versions with [LanguageVersion.compareTo].
+/// compare valid versions with [LanguageVersion.compareTo].
 ///
 /// An [InvalidLanguageVersion] is not less or greater than other versions
 /// and is only equal to itself.
@@ -410,7 +410,8 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
 extension LanguageVersionRelationalOperators on LanguageVersion {
   /// Whether this language version is less than [other].
   ///
-  /// If either version is an [InvalidLanguageVersion], returns `false`.
+  /// An [InvalidLanguageVersion] is never less than or greater than
+  /// any other language version.
   ///
   /// For details on how valid language versions are compared,
   /// check out [LanguageVersion.compareTo].
@@ -426,8 +427,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
 
   /// Whether this language version is less than or equal to [other].
   ///
-  /// If either version is an [InvalidLanguageVersion],
-  /// returns whether they are the same object.
+  /// An [InvalidLanguageVersion] is never less than or greater than
+  /// any other language version. It is equal only to itself.
   ///
   /// For details on how valid language versions are compared,
   /// check out [LanguageVersion.compareTo].
@@ -446,7 +447,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
 
   /// Whether this language version is greater than [other].
   ///
-  /// If either version is an [InvalidLanguageVersion], returns `false`.
+  /// An [InvalidLanguageVersion] is never less than or greater than
+  /// any other language version.
   ///
   /// For details on how valid language versions are compared,
   /// check out [LanguageVersion.compareTo].
@@ -462,8 +464,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
 
   /// Whether this language version is greater than or equal to [other].
   ///
-  /// If either version is an [InvalidLanguageVersion],
-  /// returns whether they are the same object.
+  /// An [InvalidLanguageVersion] is never less than or greater than
+  /// any other language version. It is equal only to itself.
   ///
   /// For details on how valid language versions are compared,
   /// check out [LanguageVersion.compareTo].
