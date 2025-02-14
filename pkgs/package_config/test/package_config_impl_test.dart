@@ -60,21 +60,21 @@ void main() {
 
     test('compareTo valid', () {
       var version = LanguageVersion(3, 5);
-      var sameMajorSameMinorVersion = LanguageVersion(3, 5);
-      var sameMajorLowerMinorVersion = LanguageVersion(3, 4);
-      var lowerMajorSameMinorVersion = LanguageVersion(2, 5);
-      var sameMajorGreaterMinorVersion = LanguageVersion(3, 6);
-      var greaterMajorSameMinorVersion = LanguageVersion(4, 5);
 
-      expect(version.compareTo(version), 0);
-      expect(version.compareTo(sameMajorSameMinorVersion), 0);
-      expect(sameMajorSameMinorVersion.compareTo(version), 0);
-
-      expect(version.compareTo(sameMajorLowerMinorVersion), isPositive);
-      expect(version.compareTo(lowerMajorSameMinorVersion), isPositive);
-
-      expect(version.compareTo(sameMajorGreaterMinorVersion), isNegative);
-      expect(version.compareTo(greaterMajorSameMinorVersion), isNegative);
+      for (var (otherVersion, matcher) in [
+        (version, isZero), // Identical.
+        (LanguageVersion(3, 5), isZero), // Same major, same minor.
+        (LanguageVersion(3, 4), isPositive), // Same major, lower minor.
+        (LanguageVersion(3, 6), isNegative), // Same major, greater minor.
+        (LanguageVersion(2, 5), isPositive), // Lower major, same minor.
+        (LanguageVersion(2, 4), isPositive), // Lower major, lower minor.
+        (LanguageVersion(2, 6), isPositive), // Lower major, greater minor.
+        (LanguageVersion(4, 5), isNegative), // Greater major, same minor.
+        (LanguageVersion(4, 4), isNegative), // Greater major, lower minor.
+        (LanguageVersion(4, 6), isNegative), // Greater major, greater minor.
+      ]) {
+        expect(version.compareTo(otherVersion), matcher);
+      }
     });
 
     test('compareTo invalid', () {
