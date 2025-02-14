@@ -86,9 +86,10 @@ void main() {
     });
 
     test('relational valid', () {
-      var version = LanguageVersion(3, 5);
-
-      void testComparisons(LanguageVersion otherVersion) {
+      /// Test that the relational comparisons between two valid versions
+      /// match the results of `compareTo`.
+      void testComparisons(
+          LanguageVersion version, LanguageVersion otherVersion) {
         expect(version == otherVersion, version.compareTo(otherVersion) == 0);
 
         expect(version < otherVersion, version.compareTo(otherVersion) < 0);
@@ -98,16 +99,19 @@ void main() {
         expect(version >= otherVersion, version.compareTo(otherVersion) >= 0);
       }
 
-      // Check that relational operator implementations match
-      // the results of compareTo for valid versions.
-      [
-        version, // Identical.
-        LanguageVersion(3, 5), // Same major, same minor.
-        LanguageVersion(3, 4), // Same major, lower minor.
-        LanguageVersion(2, 5), // Lower major, same minor.
-        LanguageVersion(3, 6), // Same major, greater minor.
-        LanguageVersion(4, 5), // Great major, same minor.
-      ].forEach(testComparisons);
+      var version = LanguageVersion(3, 5);
+
+      // Check relational comparisons of a version to itself.
+      testComparisons(version, version);
+
+      // Check relational comparisons of a version to versions with all
+      // possible combinations of minor and major versions that are
+      // the same, lower, and greater.
+      for (final major in [2, 3, 4]) {
+        for (final minor in [4, 5, 6]) {
+          testComparisons(version, LanguageVersion(major, minor));
+        }
+      }
     });
 
     test('relational invalid', () {
