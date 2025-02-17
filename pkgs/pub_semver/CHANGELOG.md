@@ -1,3 +1,8 @@
+## 2.2.0-wip
+
+- Clarify the `preRelease` and `build` properties of `Version`
+  return unmodifiable lists.
+
 ## 2.1.5
 
 - Require Dart `3.4.0`.
