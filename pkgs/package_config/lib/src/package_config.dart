@@ -301,9 +301,15 @@ abstract class Package {
 abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// The maximal value allowed by [major] and [minor] values;
   static const int maxValue = 0x7FFFFFFF;
+
+  /// Constructs a [LanguageVersion] with the specified
+  /// [major] and [minor] version numbers.
+  ///
+  /// Both [major] and [minor] must be greater than or equal to 0
+  /// and less than or equal to [maxValue].
   factory LanguageVersion(int major, int minor) {
     RangeError.checkValueInInterval(major, 0, maxValue, 'major');
-    RangeError.checkValueInInterval(minor, 0, maxValue, 'major');
+    RangeError.checkValueInInterval(minor, 0, maxValue, 'minor');
     return SimpleLanguageVersion(major, minor, null);
   }
 
