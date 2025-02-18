@@ -406,7 +406,6 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
 ///
 /// An [InvalidLanguageVersion] is not less or greater than other versions
 /// and is only equal to itself.
-// TODO(v3): Consider declaring on LanguageVersion class.
 extension LanguageVersionRelationalOperators on LanguageVersion {
   /// Whether this language version is less than [other].
   ///
