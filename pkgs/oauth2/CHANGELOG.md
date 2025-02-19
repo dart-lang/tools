@@ -1,3 +1,7 @@
+## 2.0.5
+
+* Updated README
+
 ## 2.0.4-wip
 
 * Require Dart 3.4
