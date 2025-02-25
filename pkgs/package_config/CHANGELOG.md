@@ -1,4 +1,7 @@
-## 2.1.2-wip
+## 2.2.0-wip
+
+- Add relational operators to `LanguageVersion` with extension methods
+  exported under `LanguageVersionRelationalOperators`.
 
 - Include correct parameter names in errors when validating
   the `major` and `minor` versions in the `LanguageVersion.new` constructor.
