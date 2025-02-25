@@ -1,3 +1,8 @@
+## 2.2.0-wip
+
+- Remove dependency on `package:meta`.
+- Mark `Version` class as `final` instead of with `@sealed`.
+
 ## 2.1.5
 
 - Require Dart `3.4.0`.

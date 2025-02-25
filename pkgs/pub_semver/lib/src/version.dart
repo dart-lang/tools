@@ -5,7 +5,6 @@
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show sealed;
 
 import 'patterns.dart';
 import 'version_constraint.dart';
@@ -15,8 +14,7 @@ import 'version_range.dart';
 const _equality = IterableEquality<Object>();
 
 /// A parsed semantic version number.
-@sealed
-class Version implements VersionConstraint, VersionRange {
+final class Version implements VersionConstraint, VersionRange {
   /// No released version: i.e. "0.0.0".
   static Version get none => Version(0, 0, 0);
 
