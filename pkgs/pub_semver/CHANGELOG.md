@@ -1,7 +1,10 @@
-## 2.2.0-wip
+## 2.1.6
 
-- Clarify the `preRelease` and `build` properties of `Version`
-  return unmodifiable lists.
+- Clarify that the lists returned by
+  the `preRelease` and `build` properties of `Version` and
+  the `ranges` property of `VersionUnion` should not be modified.
+- Note that `VersionConstraint.any` and `VersionConstraint.empty` static fields
+  shouldn't be reassigned and will be made `final` in a future release.
 
 ## 2.1.5
 
