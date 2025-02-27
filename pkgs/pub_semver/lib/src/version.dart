@@ -71,7 +71,7 @@ class Version implements VersionConstraint, VersionRange {
   /// string or a non-negative integer. It may also be empty, indicating that
   /// this version has no pre-release identifier.
   ///
-  /// **Note:**The returned list shouldn't be modified.
+  /// **Note:** The returned list shouldn't be modified.
   final List<Object> preRelease;
 
   /// The build identifier: "foo" in "1.2.3+foo".
