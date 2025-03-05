@@ -10,7 +10,7 @@
 library;
 
 export 'src/extension.dart';
-export 'src/default_extension.dart';
+export 'src/default_extension_map.dart';
 export 'src/mime_multipart_transformer.dart';
 export 'src/mime_shared.dart';
 export 'src/mime_type.dart';
