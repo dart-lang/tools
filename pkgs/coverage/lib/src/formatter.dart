@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: unnecessary_this
+
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
@@ -78,12 +80,19 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     String? basePath,
     List<String>? reportOn,
     Set<Glob>? ignoreGlobs,
+    bool Function(String path)? includeUncovered,
   }) {
     final pathFilter = _getPathFilter(
       reportOn: reportOn,
       ignoreGlobs: ignoreGlobs,
     );
     final buf = StringBuffer();
+
+    // Get all Dart files in the project
+    final allDartFiles = resolver.listAllDartFiles().toSet();
+    final coveredFiles = this.keys.toSet();
+    final uncoveredFiles = allDartFiles.difference(coveredFiles);
+
     for (final entry in entries) {
       final v = entry.value;
       final lineHits = v.lineHits;
@@ -91,13 +100,7 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       final funcNames = v.funcNames;
       final branchHits = v.branchHits;
       var source = resolver.resolve(entry.key);
-      if (source == null) {
-        continue;
-      }
-
-      if (!pathFilter(source)) {
-        continue;
-      }
+      if (source == null || !pathFilter(source)) continue;
 
       if (basePath != null) {
         source = p.relative(source, from: basePath);
@@ -129,6 +132,21 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       buf.write('end_of_record\n');
     }
 
+    // Add uncovered files if allowed
+    for (final file in uncoveredFiles) {
+      if (includeUncovered != null && !includeUncovered(file)) continue;
+      var source = resolver.resolve(file);
+      if (source == null || !pathFilter(source)) continue;
+      if (basePath != null) {
+        source = p.relative(source, from: basePath);
+      }
+
+      buf.write('SF:$source\n');
+      buf.write('LF:0\n');
+      buf.write('LH:0\n');
+      buf.write('end_of_record\n');
+    }
+
     return buf.toString();
   }
 
@@ -144,12 +162,19 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     Set<Glob>? ignoreGlobs,
     bool reportFuncs = false,
     bool reportBranches = false,
+    bool Function(String path)? includeUncovered,
   }) async {
     final pathFilter = _getPathFilter(
       reportOn: reportOn,
       ignoreGlobs: ignoreGlobs,
     );
     final buf = StringBuffer();
+
+    // Get all Dart files in the project
+    final allDartFiles = resolver.listAllDartFiles().toSet();
+    final coveredFiles = this.keys.toSet();
+    final uncoveredFiles = allDartFiles.difference(coveredFiles);
+
     for (final entry in entries) {
       final v = entry.value;
       if (reportFuncs && v.funcHits == null) {
@@ -171,18 +196,10 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
               ? v.branchHits!
               : v.lineHits;
       final source = resolver.resolve(entry.key);
-      if (source == null) {
-        continue;
-      }
-
-      if (!pathFilter(source)) {
-        continue;
-      }
+      if (source == null || !pathFilter(source)) continue;
 
       final lines = await loader.load(source);
-      if (lines == null) {
-        continue;
-      }
+      if (lines == null) continue;
       buf.writeln(source);
       for (var line = 1; line <= lines.length; line++) {
         var prefix = _prefix;
@@ -190,6 +207,20 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
           prefix = hits[line].toString().padLeft(_prefix.length);
         }
         buf.writeln('$prefix|${lines[line - 1]}');
+      }
+    }
+
+    // Add uncovered files if allowed
+    for (final file in uncoveredFiles) {
+      if (includeUncovered != null && !includeUncovered(file)) continue;
+      final source = resolver.resolve(file);
+      if (source == null || !pathFilter(source)) continue;
+
+      final lines = await loader.load(source);
+      if (lines == null) continue;
+      buf.writeln(source);
+      for (final line in lines) {
+        buf.writeln('       |$line');
       }
     }
 
@@ -221,3 +252,4 @@ _PathFilter _getPathFilter({List<String>? reportOn, Set<Glob>? ignoreGlobs}) {
     return true;
   };
 }
+
