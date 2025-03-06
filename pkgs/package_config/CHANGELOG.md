@@ -1,4 +1,4 @@
-## 3.0.0
+## 3.0.0-wip
 
 - Removes support for the `.packages` file.
   The Dart SDK no longer supports that file, and no new `.packages` files
