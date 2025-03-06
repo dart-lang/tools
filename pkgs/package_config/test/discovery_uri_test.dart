@@ -66,17 +66,6 @@ void main() {
       validatePackagesFile(config, directory);
     });
 
-    // Finds .packages if no package_config.json.
-    loaderTest('.packages', {
-      '.packages': packagesFile,
-      'script.dart': 'main(){}',
-      'packages': {'shouldNotBeFound': <String, dynamic>{}}
-    }, (directory, loader) async {
-      var config = (await findPackageConfigUri(directory, loader: loader))!;
-      expect(config.version, 1); // Found .packages file.
-      validatePackagesFile(config, directory);
-    });
-
     // Finds package_config.json in super-directory.
     loaderTest('package_config.json recursive', {
       '.packages': packagesFile,
@@ -93,15 +82,15 @@ void main() {
       validatePackagesFile(config, directory);
     });
 
-    // Finds .packages in super-directory.
-    loaderTest('.packages recursive', {
+    // Does not find a .packages file.
+    loaderTest('Not .packages', {
       '.packages': packagesFile,
-      'subdir': {'script.dart': 'main(){}'}
+      'script.dart': 'main(){}',
+      'packages': {'shouldNotBeFound': <String, dynamic>{}}
     }, (directory, loader) async {
-      var config = (await findPackageConfigUri(directory.resolve('subdir/'),
-          loader: loader))!;
-      expect(config.version, 1);
-      validatePackagesFile(config, directory);
+      var config =
+          await findPackageConfigUri(recurse: false, directory, loader: loader);
+      expect(config, null);
     });
 
     // Does not find a packages/ directory, and returns null if nothing found.
@@ -112,65 +101,6 @@ void main() {
     }, (Uri directory, loader) async {
       var config = await findPackageConfigUri(directory, loader: loader);
       expect(config, null);
-    });
-
-    loaderTest('invalid .packages', {
-      '.packages': 'not a .packages file',
-    }, (Uri directory, loader) {
-      expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(isA<FormatException>()));
-    });
-
-    loaderTest('invalid .packages as JSON', {
-      '.packages': packageConfigFile,
-    }, (Uri directory, loader) {
-      expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(isA<FormatException>()));
-    });
-
-    loaderTest('invalid .packages', {
-      '.dart_tool': {
-        'package_config.json': 'not a JSON file',
-      }
-    }, (Uri directory, loader) {
-      expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(isA<FormatException>()));
-    });
-
-    loaderTest('invalid .packages as INI', {
-      '.dart_tool': {
-        'package_config.json': packagesFile,
-      }
-    }, (Uri directory, loader) {
-      expect(() => findPackageConfigUri(directory, loader: loader),
-          throwsA(isA<FormatException>()));
-    });
-
-    // Does not find .packages if no package_config.json and minVersion > 1.
-    loaderTest('.packages ignored', {
-      '.packages': packagesFile,
-      'script.dart': 'main(){}'
-    }, (directory, loader) async {
-      var config =
-          await findPackageConfigUri(directory, minVersion: 2, loader: loader);
-      expect(config, null);
-    });
-
-    // Finds package_config.json in super-directory, with .packages in
-    // subdir and minVersion > 1.
-    loaderTest('package_config.json recursive ignores .packages', {
-      '.dart_tool': {
-        'package_config.json': packageConfigFile,
-      },
-      'subdir': {
-        '.packages': packagesFile,
-        'script.dart': 'main(){}',
-      }
-    }, (directory, loader) async {
-      var config = (await findPackageConfigUri(directory.resolve('subdir/'),
-          minVersion: 2, loader: loader))!;
-      expect(config.version, 2);
-      validatePackagesFile(config, directory);
     });
   });
 
@@ -191,10 +121,13 @@ void main() {
       });
       loaderTest('indirectly through .packages', files,
           (Uri directory, loader) async {
+        // Is no longer supported.
         var file = directory.resolve('.packages');
-        var config = await loadPackageConfigUri(file, loader: loader);
-        expect(config.version, 2);
-        validatePackagesFile(config, directory);
+        var hadError = false;
+        await loadPackageConfigUri(file, loader: loader, onError: (_) {
+          hadError = true;
+        });
+        expect(hadError, true);
       });
     });
 
@@ -218,24 +151,6 @@ void main() {
       var file = directory.resolve('subdir/.packages');
       var config = await loadPackageConfigUri(file, loader: loader);
       expect(config.version, 2);
-      validatePackagesFile(config, directory);
-    });
-
-    loaderTest('.packages', {
-      '.packages': packagesFile,
-    }, (Uri directory, loader) async {
-      var file = directory.resolve('.packages');
-      var config = await loadPackageConfigUri(file, loader: loader);
-      expect(config.version, 1);
-      validatePackagesFile(config, directory);
-    });
-
-    loaderTest('.packages non-default name', {
-      'pheldagriff': packagesFile,
-    }, (Uri directory, loader) async {
-      var file = directory.resolve('pheldagriff');
-      var config = await loadPackageConfigUri(file, loader: loader);
-      expect(config.version, 1);
       validatePackagesFile(config, directory);
     });
 
@@ -280,7 +195,7 @@ void main() {
       expect(hadError, true);
     });
 
-    // Don't look for package_config.json if original file not named .packages.
+    // Don't look for package_config.json if original name or file are bad.
     loaderTest('specified file syntax error with alternative', {
       'anyname': 'syntax error',
       '.dart_tool': {
