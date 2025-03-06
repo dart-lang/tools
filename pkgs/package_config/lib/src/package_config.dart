@@ -301,9 +301,15 @@ abstract class Package {
 abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// The maximal value allowed by [major] and [minor] values;
   static const int maxValue = 0x7FFFFFFF;
+
+  /// Constructs a [LanguageVersion] with the specified
+  /// [major] and [minor] version numbers.
+  ///
+  /// Both [major] and [minor] must be greater than or equal to 0
+  /// and less than or equal to [maxValue].
   factory LanguageVersion(int major, int minor) {
     RangeError.checkValueInInterval(major, 0, maxValue, 'major');
-    RangeError.checkValueInInterval(minor, 0, maxValue, 'major');
+    RangeError.checkValueInInterval(minor, 0, maxValue, 'minor');
     return SimpleLanguageVersion(major, minor, null);
   }
 
@@ -349,7 +355,7 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// Two language versions are considered equal if they have the
   /// same major and minor version numbers.
   ///
-  /// A language version is greater then another if the former's major version
+  /// A language version is greater than another if the former's major version
   /// is greater than the latter's major version, or if they have
   /// the same major version and the former's minor version is greater than
   /// the latter's.
@@ -399,4 +405,91 @@ abstract class InvalidLanguageVersion implements LanguageVersion {
   /// The original invalid version string.
   @override
   String toString();
+}
+
+/// Relational operators for [LanguageVersion] that
+/// compare valid versions with [LanguageVersion.compareTo].
+///
+/// If either operand is an [InvalidLanguageVersion], a [StateError] is thrown.
+/// Versions should be verified as valid after parsing and before using them.
+extension LanguageVersionRelationalOperators on LanguageVersion {
+  /// Whether this language version is less than [other].
+  ///
+  /// If either version being compared is an [InvalidLanguageVersion],
+  /// a [StateError] is thrown. Verify versions are valid before comparing them.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator <(LanguageVersion other) {
+    // Throw an error if comparing as or with an invalid language version.
+    if (this is InvalidLanguageVersion) {
+      _throwThisInvalid();
+    } else if (other is InvalidLanguageVersion) {
+      _throwOtherInvalid();
+    }
+
+    return compareTo(other) < 0;
+  }
+
+  /// Whether this language version is less than or equal to [other].
+  ///
+  /// If either version being compared is an [InvalidLanguageVersion],
+  /// a [StateError] is thrown. Verify versions are valid before comparing them.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator <=(LanguageVersion other) {
+    // Throw an error if comparing as or with an invalid language version.
+    if (this is InvalidLanguageVersion) {
+      _throwThisInvalid();
+    } else if (other is InvalidLanguageVersion) {
+      _throwOtherInvalid();
+    }
+
+    return compareTo(other) <= 0;
+  }
+
+  /// Whether this language version is greater than [other].
+  ///
+  /// If either version being compared is an [InvalidLanguageVersion],
+  /// a [StateError] is thrown. Verify versions are valid before comparing them.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator >(LanguageVersion other) {
+    // Throw an error if comparing as or with an invalid language version.
+    if (this is InvalidLanguageVersion) {
+      _throwThisInvalid();
+    } else if (other is InvalidLanguageVersion) {
+      _throwOtherInvalid();
+    }
+
+    return compareTo(other) > 0;
+  }
+
+  /// Whether this language version is greater than or equal to [other].
+  ///
+  /// If either version being compared is an [InvalidLanguageVersion],
+  /// a [StateError] is thrown. Verify versions are valid before comparing them.
+  ///
+  /// For details on how valid language versions are compared,
+  /// check out [LanguageVersion.compareTo].
+  bool operator >=(LanguageVersion other) {
+    // Throw an error if comparing as or with an invalid language version.
+    if (this is InvalidLanguageVersion) {
+      _throwThisInvalid();
+    } else if (other is InvalidLanguageVersion) {
+      _throwOtherInvalid();
+    }
+
+    return compareTo(other) >= 0;
+  }
+
+  static Never _throwThisInvalid() => throw StateError(
+      'Can\'t compare an invalid language version to another language version. '
+      'Verify language versions are valid after parsing.');
+
+  static Never _throwOtherInvalid() => throw StateError(
+      'Can\'t compare a language version to an invalid language version. '
+      'Verify language versions are valid after parsing.');
 }
