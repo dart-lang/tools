@@ -1,10 +1,24 @@
-## 2.2.0-wip
+## 3.0.0
 
-- Add relational operators to `LanguageVersion` with extension methods
-  exported under `LanguageVersionRelationalOperators`.
+- Removes support for the `.packages` file.
+  The Dart SDK no longer supports that file, and no new `.packages` files
+  will be generated.
 
-- Include correct parameter names in errors when validating
-  the `major` and `minor` versions in the `LanguageVersion.new` constructor.
+- **Breaking change**
+  Simplifies API that no longer needs to support two separate files.
+  - Renamed `readAnyConfigFile` to `readConfigFile`, and removed
+    the `preferNewest` parameter.
+  - Same for `readAnyConfigFileUri` which becomes `readConfigFileUri`.
+
+  Also makes `PackageConfig`, `Package` and `LanguageVersion` final classes.
+
+- Adds `PackageConfig.minVersion` to complement `.maxVersion`.
+  Currently both are `2`.
+
+- Adds relational operators to `LanguageVersion`.
+
+- Includes correct parameter names in errors when validating
+  the `major` and `minor` versions in the `LanguageVersion()` constructor.
 
 ## 2.1.1
 
