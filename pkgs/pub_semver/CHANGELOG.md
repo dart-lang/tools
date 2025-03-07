@@ -1,5 +1,7 @@
-## 2.1.6
+## 2.2.0
 
+- Remove dependency on `package:meta`.
+- Mark `Version` class as `final` instead of with `@sealed`.
 - Clarify that the lists returned by
   the `preRelease` and `build` properties of `Version` and
   the `ranges` property of `VersionUnion` should not be modified.
