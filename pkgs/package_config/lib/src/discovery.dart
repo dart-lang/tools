@@ -6,14 +6,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'errors.dart';
-import 'package_config_impl.dart';
+import 'package_config.dart';
 import 'package_config_io.dart';
 import 'package_config_json.dart';
-import 'packages_file.dart' as packages_file;
 import 'util_io.dart' show defaultLoader, pathJoin;
 
 final Uri packageConfigJsonPath = Uri(path: '.dart_tool/package_config.json');
-final Uri dotPackagesPath = Uri(path: '.packages');
 final Uri currentPath = Uri(path: '.');
 final Uri parentPath = Uri(path: '..');
 
@@ -24,16 +22,13 @@ final Uri parentPath = Uri(path: '..');
 /// and stopping when something is found.
 ///
 /// * Check if a `.dart_tool/package_config.json` file exists in the directory.
-/// * Check if a `.packages` file exists in the directory
-///   (if `minVersion <= 1`).
-/// * Repeat these checks for the parent directories until reaching the
+/// * Repeat this check for the parent directories until reaching the
 ///   root directory if [recursive] is true.
 ///
-/// If any of these tests succeed, a `PackageConfig` class is returned.
+/// If any such a test succeeds, a `PackageConfig` class is returned.
 /// Returns `null` if no configuration was found. If a configuration
 /// is needed, then the caller can supply [PackageConfig.empty].
 ///
-/// If [minVersion] is greater than 1, `.packages` files are ignored.
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
 Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
@@ -44,7 +39,6 @@ Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
     return null;
   }
   do {
-    // Check for $cwd/.packages
     var packageConfig =
         await findPackageConfigInDirectory(directory, minVersion, onError);
     if (packageConfig != null) return packageConfig;
@@ -87,13 +81,6 @@ Future<PackageConfig?> findPackageConfigUri(
       var config = parsePackageConfigBytes(bytes, file, onError);
       if (config.version >= minVersion) return config;
     }
-    if (minVersion <= 1) {
-      file = location.resolveUri(dotPackagesPath);
-      bytes = await loader(file);
-      if (bytes != null) {
-        return packages_file.parse(bytes, file, onError);
-      }
-    }
     if (!recursive) break;
     var parent = location.resolveUri(parentPath);
     if (parent == location) break;
@@ -102,7 +89,7 @@ Future<PackageConfig?> findPackageConfigUri(
   return null;
 }
 
-/// Finds a `.packages` or `.dart_tool/package_config.json` file in [directory].
+/// Finds a `.dart_tool/package_config.json` file in [directory].
 ///
 /// Loads the file, if it is there, and returns the resulting [PackageConfig].
 /// Returns `null` if the file isn't there.
@@ -113,7 +100,6 @@ Future<PackageConfig?> findPackageConfigUri(
 /// a best-effort attempt is made to return a package configuration.
 /// This may be the empty package configuration.
 ///
-/// If [minVersion] is greater than 1, `.packages` files are ignored.
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
 Future<PackageConfig?> findPackageConfigInDirectory(Directory directory,
@@ -124,12 +110,6 @@ Future<PackageConfig?> findPackageConfigInDirectory(Directory directory,
     if (config.version < minVersion) return null;
     return config;
   }
-  if (minVersion <= 1) {
-    packageConfigFile = await checkForDotPackagesFile(directory);
-    if (packageConfigFile != null) {
-      return await readDotPackagesFile(packageConfigFile, onError);
-    }
-  }
   return null;
 }
 
@@ -137,12 +117,6 @@ Future<File?> checkForPackageConfigJsonFile(Directory directory) async {
   assert(directory.isAbsolute);
   var file =
       File(pathJoin(directory.path, '.dart_tool', 'package_config.json'));
-  if (await file.exists()) return file;
-  return null;
-}
-
-Future<File?> checkForDotPackagesFile(Directory directory) async {
-  var file = File(pathJoin(directory.path, '.packages'));
   if (await file.exists()) return file;
   return null;
 }
