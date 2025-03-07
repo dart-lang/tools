@@ -42,8 +42,9 @@ const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 /// If [scopedOutput] is non-empty, coverage will be restricted so that only
 /// scripts that start with any of the provided paths are considered.
 ///
-/// If [isolateIds] is set, the coverage gathering will be restricted to only
-/// those VM isolates.
+/// If [isolateIds] is set, coverage gathering **will not be restricted** to
+/// only those VM isolates. Instead, coverage will be collected for **all isolates
+/// in the same isolate group** as the provided isolate(s). 
 ///
 /// If [coverableLineCache] is set, the collector will avoid recompiling
 /// libraries it has already seen (see VmService.getSourceReport's
