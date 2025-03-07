@@ -125,10 +125,17 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       buf.write('LF:${lineHits.length}\n');
       buf.write('LH:${lineHits.values.where((v) => v > 0).length}\n');
       if (branchHits != null) {
-        for (final k in branchHits.keys.toList()..sort()) {
-          buf.write('BRDA:$k,0,0,${branchHits[k]}\n');
-        }
-      }
+  for (final line in branchHits.keys.toList()..sort()) {
+    final taken = branchHits[line] ?? 0; // The execution count for this branch
+
+    // If we don't have block & branch IDs, default them to 0
+    const blockId = 0;
+    const branchId = 0;
+
+    buf.write('BRDA:$line,$blockId,$branchId,$taken\n');
+  }
+}
+
       buf.write('end_of_record\n');
     }
 
