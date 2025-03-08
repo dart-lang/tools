@@ -1,3 +1,7 @@
+## 0.15.5+1
+
+- Fix a bug in DOM parsing where `<br>` tags does not create a new line when html is converted to text.
+
 ## 0.15.5
 
 - Require Dart `3.2`.
