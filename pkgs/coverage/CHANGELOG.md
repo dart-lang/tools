@@ -1,3 +1,10 @@
+## Unreleased
+- Fixed incorrect `BRDA` syntax in LCOV files to align with LCOV standards.
+- Improved handling of uncovered branches in coverage reports.
+- Refactored `formatLcov` for better readability.
+- Updated test cases to verify proper LCOV output.
+
+
 ## 1.12.0-wip
 
 - Introduced support for specifying coverage flags through a YAML file.
