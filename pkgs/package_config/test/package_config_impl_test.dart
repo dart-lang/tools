@@ -21,22 +21,20 @@ void main() {
 
     test('negative major', () {
       expect(
-          () => LanguageVersion(-1, 1),
-          throwsA(isA<RangeError>().having(
-            (e) => e.name,
-            'message',
-            contains('major'),
-          )));
+        () => LanguageVersion(-1, 1),
+        throwsA(
+          isA<RangeError>().having((e) => e.name, 'message', contains('major')),
+        ),
+      );
     });
 
     test('negative minor', () {
       expect(
-          () => LanguageVersion(1, -1),
-          throwsA(isA<RangeError>().having(
-            (e) => e.name,
-            'message',
-            contains('minor'),
-          )));
+        () => LanguageVersion(1, -1),
+        throwsA(
+          isA<RangeError>().having((e) => e.name, 'message', contains('minor')),
+        ),
+      );
     });
 
     test('minimal parse', () {
@@ -47,13 +45,18 @@ void main() {
 
     void failParse(String name, String input) {
       test('$name - error', () {
-        expect(() => LanguageVersion.parse(input),
-            throwsA(isA<PackageConfigError>()));
+        expect(
+          () => LanguageVersion.parse(input),
+          throwsA(isA<PackageConfigError>()),
+        );
         expect(() => LanguageVersion.parse(input), throwsFormatException);
         var failed = false;
-        var actual = LanguageVersion.parse(input, onError: (_) {
-          failed = true;
-        });
+        var actual = LanguageVersion.parse(
+          input,
+          onError: (_) {
+            failed = true;
+          },
+        );
         expect(failed, true);
         expect(actual, isA<LanguageVersion>());
       });
@@ -101,7 +104,9 @@ void main() {
       /// Test that the relational comparisons between two valid versions
       /// match the results of `compareTo`.
       void testComparisons(
-          LanguageVersion version, LanguageVersion otherVersion) {
+        LanguageVersion version,
+        LanguageVersion otherVersion,
+      ) {
         expect(version == otherVersion, version.compareTo(otherVersion) == 0);
 
         expect(version < otherVersion, version.compareTo(otherVersion) < 0);
@@ -164,11 +169,14 @@ void main() {
     test('absolute package root', () {
       var version = LanguageVersion(1, 1);
       var absolute = root.resolve('foo/bar/');
-      var package = Package('name', root,
-          packageUriRoot: absolute,
-          relativeRoot: false,
-          languageVersion: version,
-          extraData: unique);
+      var package = Package(
+        'name',
+        root,
+        packageUriRoot: absolute,
+        relativeRoot: false,
+        languageVersion: version,
+        extraData: unique,
+      );
       expect(package.name, 'name');
       expect(package.root, root);
       expect(package.packageUriRoot, absolute);
@@ -180,8 +188,13 @@ void main() {
     test('relative package root', () {
       var relative = Uri.parse('foo/bar/');
       var absolute = root.resolveUri(relative);
-      var package = Package('name', root,
-          packageUriRoot: relative, relativeRoot: true, extraData: unique);
+      var package = Package(
+        'name',
+        root,
+        packageUriRoot: relative,
+        relativeRoot: true,
+        extraData: unique,
+      );
       expect(package.name, 'name');
       expect(package.root, root);
       expect(package.packageUriRoot, absolute);
@@ -198,22 +211,30 @@ void main() {
 
     test('Invalid root, not absolute', () {
       expect(
-          () => Package('name', Uri.parse('/foo/')), throwsPackageConfigError);
+        () => Package('name', Uri.parse('/foo/')),
+        throwsPackageConfigError,
+      );
     });
 
     test('Invalid root, not ending in slash', () {
-      expect(() => Package('name', Uri.parse('file:///foo')),
-          throwsPackageConfigError);
+      expect(
+        () => Package('name', Uri.parse('file:///foo')),
+        throwsPackageConfigError,
+      );
     });
 
     test('invalid package root, not ending in slash', () {
-      expect(() => Package('name', root, packageUriRoot: Uri.parse('foo')),
-          throwsPackageConfigError);
+      expect(
+        () => Package('name', root, packageUriRoot: Uri.parse('foo')),
+        throwsPackageConfigError,
+      );
     });
 
     test('invalid package root, not inside root', () {
-      expect(() => Package('name', root, packageUriRoot: Uri.parse('../baz/')),
-          throwsPackageConfigError);
+      expect(
+        () => Package('name', root, packageUriRoot: Uri.parse('../baz/')),
+        throwsPackageConfigError,
+      );
     });
   });
 
@@ -238,19 +259,26 @@ void main() {
     });
   });
   test('writeString', () {
-    var config = PackageConfig([
-      Package('foo', Uri.parse('file:///pkg/foo/'),
+    var config = PackageConfig(
+      [
+        Package(
+          'foo',
+          Uri.parse('file:///pkg/foo/'),
           packageUriRoot: Uri.parse('file:///pkg/foo/lib/'),
           relativeRoot: false,
           languageVersion: LanguageVersion(2, 4),
-          extraData: {'foo': 'foo!'}),
-      Package('bar', Uri.parse('file:///pkg/bar/'),
+          extraData: {'foo': 'foo!'},
+        ),
+        Package(
+          'bar',
+          Uri.parse('file:///pkg/bar/'),
           packageUriRoot: Uri.parse('file:///pkg/bar/lib/'),
           relativeRoot: true,
-          extraData: {'bar': 'bar!'}),
-    ], extraData: {
-      'extra': 'data'
-    });
+          extraData: {'bar': 'bar!'},
+        ),
+      ],
+      extraData: {'extra': 'data'},
+    );
     var buffer = StringBuffer();
     PackageConfig.writeString(config, buffer, Uri.parse('file:///pkg/'));
     var text = buffer.toString();
@@ -265,12 +293,7 @@ void main() {
           'languageVersion': '2.4',
           'foo': 'foo!',
         },
-        {
-          'name': 'bar',
-          'rootUri': 'bar/',
-          'packageUri': 'lib/',
-          'bar': 'bar!',
-        },
+        {'name': 'bar', 'rootUri': 'bar/', 'packageUri': 'lib/', 'bar': 'bar!'},
       ]),
       'extra': 'data',
     });

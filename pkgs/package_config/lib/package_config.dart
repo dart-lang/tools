@@ -28,15 +28,18 @@ export 'package_config_types.dart';
 /// The returned package configuration is a *best effort* attempt to create
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
-Future<PackageConfig> loadPackageConfig(File file,
-        {void Function(Object error)? onError}) =>
-    readConfigFile(file, onError ?? throwError);
+Future<PackageConfig> loadPackageConfig(
+  File file, {
+  void Function(Object error)? onError,
+}) => readConfigFile(file, onError ?? throwError);
 
 /// @nodoc
 @Deprecated('use loadPackageConfig instead')
-Future<PackageConfig> loadAnyPackageConfig(File file,
-        {bool preferNewest = true, void Function(Object error)? onError}) =>
-    loadPackageConfig(file, onError: onError);
+Future<PackageConfig> loadAnyPackageConfig(
+  File file, {
+  bool preferNewest = true,
+  void Function(Object error)? onError,
+}) => loadPackageConfig(file, onError: onError);
 
 /// Reads a specific package configuration URI.
 ///
@@ -66,16 +69,19 @@ Future<PackageConfig> loadAnyPackageConfig(File file,
 /// The returned package configuration is a *best effort* attempt to create
 /// a valid configuration from the invalid configuration file.
 /// If no [onError] is provided, errors are thrown immediately.
-Future<PackageConfig> loadPackageConfigUri(Uri file,
-        {Future<Uint8List?> Function(Uri uri)? loader,
-        void Function(Object error)? onError}) =>
-    readConfigFileUri(file, loader, onError ?? throwError);
+Future<PackageConfig> loadPackageConfigUri(
+  Uri file, {
+  Future<Uint8List?> Function(Uri uri)? loader,
+  void Function(Object error)? onError,
+}) => readConfigFileUri(file, loader, onError ?? throwError);
 
 /// @nodoc
 @Deprecated('use loadPackageConfigUri instead')
-Future<PackageConfig> loadAnyPackageConfigUri(Uri uri,
-        {bool preferNewest = true, void Function(Object error)? onError}) =>
-    loadPackageConfigUri(uri, onError: onError);
+Future<PackageConfig> loadAnyPackageConfigUri(
+  Uri uri, {
+  bool preferNewest = true,
+  void Function(Object error)? onError,
+}) => loadPackageConfigUri(uri, onError: onError);
 
 /// Finds a package configuration relative to [directory].
 ///
@@ -99,16 +105,25 @@ Future<PackageConfig> loadAnyPackageConfigUri(Uri uri,
 /// any lower-version configuration files are ignored in the search.
 ///
 /// Returns `null` if no configuration file is found.
-Future<PackageConfig?> findPackageConfig(Directory directory,
-    {bool recurse = true,
-    void Function(Object error)? onError,
-    int minVersion = 1}) {
+Future<PackageConfig?> findPackageConfig(
+  Directory directory, {
+  bool recurse = true,
+  void Function(Object error)? onError,
+  int minVersion = 1,
+}) {
   if (minVersion > PackageConfig.maxVersion) {
-    throw ArgumentError.value(minVersion, 'minVersion',
-        'Maximum known version is ${PackageConfig.maxVersion}');
+    throw ArgumentError.value(
+      minVersion,
+      'minVersion',
+      'Maximum known version is ${PackageConfig.maxVersion}',
+    );
   }
   return discover.findPackageConfig(
-      directory, minVersion, recurse, onError ?? throwError);
+    directory,
+    minVersion,
+    recurse,
+    onError ?? throwError,
+  );
 }
 
 /// Finds a package configuration relative to [location].
@@ -153,17 +168,27 @@ Future<PackageConfig?> findPackageConfig(Directory directory,
 /// any lower-version configuration files are ignored in the search.
 ///
 /// Returns `null` if no configuration file is found.
-Future<PackageConfig?> findPackageConfigUri(Uri location,
-    {bool recurse = true,
-    int minVersion = 1,
-    Future<Uint8List?> Function(Uri uri)? loader,
-    void Function(Object error)? onError}) {
+Future<PackageConfig?> findPackageConfigUri(
+  Uri location, {
+  bool recurse = true,
+  int minVersion = 1,
+  Future<Uint8List?> Function(Uri uri)? loader,
+  void Function(Object error)? onError,
+}) {
   if (minVersion > PackageConfig.maxVersion) {
-    throw ArgumentError.value(minVersion, 'minVersion',
-        'Maximum known version is ${PackageConfig.maxVersion}');
+    throw ArgumentError.value(
+      minVersion,
+      'minVersion',
+      'Maximum known version is ${PackageConfig.maxVersion}',
+    );
   }
   return discover.findPackageConfigUri(
-      location, minVersion, loader, onError ?? throwError, recurse);
+    location,
+    minVersion,
+    loader,
+    onError ?? throwError,
+    recurse,
+  );
 }
 
 /// Writes a package configuration to the provided directory.
@@ -175,5 +200,6 @@ Future<PackageConfig?> findPackageConfigUri(Uri location,
 /// A comment is generated if `[PackageConfig.extraData]` contains a
 /// `"generator"` entry.
 Future<void> savePackageConfig(
-        PackageConfig configuration, Directory directory) =>
-    writePackageConfigJsonFile(configuration, directory);
+  PackageConfig configuration,
+  Directory directory,
+) => writePackageConfigJsonFile(configuration, directory);

@@ -75,9 +75,11 @@ abstract class PackageConfig {
   /// despite the error. The input must still be valid JSON.
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseBytes(Uint8List bytes, Uri baseUri,
-          {void Function(Object error)? onError}) =>
-      parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
+  static PackageConfig parseBytes(
+    Uint8List bytes,
+    Uri baseUri, {
+    void Function(Object error)? onError,
+  }) => parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
 
   /// Parses a package configuration file.
   ///
@@ -95,9 +97,11 @@ abstract class PackageConfig {
   /// despite the error. The input must still be valid JSON.
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseString(String configuration, Uri baseUri,
-          {void Function(Object error)? onError}) =>
-      parsePackageConfigString(configuration, baseUri, onError ?? throwError);
+  static PackageConfig parseString(
+    String configuration,
+    Uri baseUri, {
+    void Function(Object error)? onError,
+  }) => parsePackageConfigString(configuration, baseUri, onError ?? throwError);
 
   /// Parses the JSON data of a package configuration file.
   ///
@@ -116,16 +120,21 @@ abstract class PackageConfig {
   /// despite the error. The input must still be valid JSON.
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseJson(Object? jsonData, Uri baseUri,
-          {void Function(Object error)? onError}) =>
-      parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
+  static PackageConfig parseJson(
+    Object? jsonData,
+    Uri baseUri, {
+    void Function(Object error)? onError,
+  }) => parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
 
   /// Writes a configuration file for this configuration on [output].
   ///
   /// If [baseUri] is provided, URI references in the generated file
   /// will be made relative to [baseUri] where possible.
-  static void writeBytes(PackageConfig configuration, Sink<Uint8List> output,
-      [Uri? baseUri]) {
+  static void writeBytes(
+    PackageConfig configuration,
+    Sink<Uint8List> output, [
+    Uri? baseUri,
+  ]) {
     writePackageConfigJsonUtf8(configuration, baseUri, output);
   }
 
@@ -133,8 +142,11 @@ abstract class PackageConfig {
   ///
   /// If [baseUri] is provided, URI references in the generated file
   /// will be made relative to [baseUri] where possible.
-  static void writeString(PackageConfig configuration, StringSink output,
-      [Uri? baseUri]) {
+  static void writeString(
+    PackageConfig configuration,
+    StringSink output, [
+    Uri? baseUri,
+  ]) {
     writePackageConfigJsonString(configuration, baseUri, output);
   }
 
@@ -142,9 +154,10 @@ abstract class PackageConfig {
   ///
   /// If [baseUri] is provided, URI references in the generated data
   /// will be made relative to [baseUri] where possible.
-  static Map<String, Object?> toJson(PackageConfig configuration,
-          [Uri? baseUri]) =>
-      packageConfigToJson(configuration, baseUri);
+  static Map<String, Object?> toJson(
+    PackageConfig configuration, [
+    Uri? baseUri,
+  ]) => packageConfigToJson(configuration, baseUri);
 
   /// The configuration version number.
   ///
@@ -238,13 +251,23 @@ abstract class Package {
   ///
   /// If [extraData] is supplied, it will be available as the
   /// [Package.extraData] of the created package.
-  factory Package(String name, Uri root,
-          {Uri? packageUriRoot,
-          LanguageVersion? languageVersion,
-          Object? extraData,
-          bool relativeRoot = true}) =>
-      SimplePackage.validate(name, root, packageUriRoot, languageVersion,
-          extraData, relativeRoot, throwError)!;
+  factory Package(
+    String name,
+    Uri root, {
+    Uri? packageUriRoot,
+    LanguageVersion? languageVersion,
+    Object? extraData,
+    bool relativeRoot = true,
+  }) =>
+      SimplePackage.validate(
+        name,
+        root,
+        packageUriRoot,
+        languageVersion,
+        extraData,
+        relativeRoot,
+        throwError,
+      )!;
 
   /// The package-name of the package.
   String get name;
@@ -338,9 +361,10 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// If [onError] is not supplied, it defaults to throwing the exception.
   /// If the call does not throw, then an [InvalidLanguageVersion] is returned
   /// containing the original [source].
-  static LanguageVersion parse(String source,
-          {void Function(Object error)? onError}) =>
-      parseLanguageVersion(source, onError ?? throwError);
+  static LanguageVersion parse(
+    String source, {
+    void Function(Object error)? onError,
+  }) => parseLanguageVersion(source, onError ?? throwError);
 
   /// The major language version.
   ///
@@ -481,12 +505,17 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     return compareTo(other) >= 0;
   }
 
-  static Never _throwThisInvalid() => throw UnsupportedError(
-      'Can\'t compare an invalid language version to another language version. '
-      'Verify language versions are valid before use.');
-  static Never _throwOtherInvalid() => throw UnsupportedError(
-      'Can\'t compare a language version to an invalid language version. '
-      'Verify language versions are valid before use.');
+  static Never _throwThisInvalid() =>
+      throw UnsupportedError(
+        'Can\'t compare an invalid language version to another '
+        'language version. '
+        'Verify language versions are valid before use.',
+      );
+  static Never _throwOtherInvalid() =>
+      throw UnsupportedError(
+        'Can\'t compare a language version to an invalid language version. '
+        'Verify language versions are valid before use.',
+      );
 }
 
 // --------------------------------------------------------------------
@@ -505,18 +534,27 @@ class SimplePackageConfig implements PackageConfig {
   @override
   final Object? extraData;
 
-  factory SimplePackageConfig(int version, Iterable<Package> packages,
-      [Object? extraData, void Function(Object error)? onError]) {
+  factory SimplePackageConfig(
+    int version,
+    Iterable<Package> packages, [
+    Object? extraData,
+    void Function(Object error)? onError,
+  ]) {
     onError ??= throwError;
     var validVersion = _validateVersion(version, onError);
     var sortedPackages = [...packages]..sort(_compareRoot);
     var packageTree = _validatePackages(packages, sortedPackages, onError);
-    return SimplePackageConfig._(validVersion, packageTree,
-        {for (var p in packageTree.allPackages) p.name: p}, extraData);
+    return SimplePackageConfig._(validVersion, packageTree, {
+      for (var p in packageTree.allPackages) p.name: p,
+    }, extraData);
   }
 
   SimplePackageConfig._(
-      this.version, this._packageTree, this._packages, this.extraData);
+    this.version,
+    this._packageTree,
+    this._packages,
+    this.extraData,
+  );
 
   /// Creates empty configuration.
   ///
@@ -526,23 +564,33 @@ class SimplePackageConfig implements PackageConfig {
   /// The version number is [PackageConfig.maxVersion] to avoid
   /// minimum-version filters discarding the configuration.
   const SimplePackageConfig.empty()
-      : version = PackageConfig.maxVersion,
-        _packageTree = const EmptyPackageTree(),
-        _packages = const <String, Package>{},
-        extraData = null;
+    : version = PackageConfig.maxVersion,
+      _packageTree = const EmptyPackageTree(),
+      _packages = const <String, Package>{},
+      extraData = null;
 
   static int _validateVersion(
-      int version, void Function(Object error) onError) {
+    int version,
+    void Function(Object error) onError,
+  ) {
     if (version < 0 || version > PackageConfig.maxVersion) {
-      onError(PackageConfigArgumentError(version, 'version',
-          'Must be in the range 1 to ${PackageConfig.maxVersion}'));
+      onError(
+        PackageConfigArgumentError(
+          version,
+          'version',
+          'Must be in the range 1 to ${PackageConfig.maxVersion}',
+        ),
+      );
       return 2; // The minimal version supporting a SimplePackageConfig.
     }
     return version;
   }
 
-  static PackageTree _validatePackages(Iterable<Package> originalPackages,
-      List<Package> packages, void Function(Object error) onError) {
+  static PackageTree _validatePackages(
+    Iterable<Package> originalPackages,
+    List<Package> packages,
+    void Function(Object error) onError,
+  ) {
     var packageNames = <String>{};
     var tree = TriePackageTree();
     for (var originalPackage in packages) {
@@ -550,27 +598,39 @@ class SimplePackageConfig implements PackageConfig {
       if (originalPackage is! SimplePackage) {
         // SimplePackage validates these properties.
         newPackage = SimplePackage.validate(
-            originalPackage.name,
-            originalPackage.root,
-            originalPackage.packageUriRoot,
-            originalPackage.languageVersion,
-            originalPackage.extraData,
-            originalPackage.relativeRoot, (error) {
-          if (error is PackageConfigArgumentError) {
-            onError(PackageConfigArgumentError(packages, 'packages',
-                'Package ${newPackage!.name}: ${error.message}'));
-          } else {
-            onError(error);
-          }
-        });
+          originalPackage.name,
+          originalPackage.root,
+          originalPackage.packageUriRoot,
+          originalPackage.languageVersion,
+          originalPackage.extraData,
+          originalPackage.relativeRoot,
+          (error) {
+            if (error is PackageConfigArgumentError) {
+              onError(
+                PackageConfigArgumentError(
+                  packages,
+                  'packages',
+                  'Package ${newPackage!.name}: ${error.message}',
+                ),
+              );
+            } else {
+              onError(error);
+            }
+          },
+        );
         if (newPackage == null) continue;
       } else {
         newPackage = originalPackage;
       }
       var name = newPackage.name;
       if (packageNames.contains(name)) {
-        onError(PackageConfigArgumentError(
-            name, 'packages', "Duplicate package name '$name'"));
+        onError(
+          PackageConfigArgumentError(
+            name,
+            'packages',
+            "Duplicate package name '$name'",
+          ),
+        );
         continue;
       }
       packageNames.add(name);
@@ -580,16 +640,20 @@ class SimplePackageConfig implements PackageConfig {
           var existingPackage = error.existingPackage;
           switch (error.conflictType) {
             case ConflictType.sameRoots:
-              onError(PackageConfigArgumentError(
+              onError(
+                PackageConfigArgumentError(
                   originalPackages,
                   'packages',
                   'Packages ${newPackage!.name} and ${existingPackage.name} '
-                      'have the same root directory: ${newPackage.root}.\n'));
+                      'have the same root directory: ${newPackage.root}.\n',
+                ),
+              );
               break;
             case ConflictType.interleaving:
               // The new package is inside the package URI root of the existing
               // package.
-              onError(PackageConfigArgumentError(
+              onError(
+                PackageConfigArgumentError(
                   originalPackages,
                   'packages',
                   'Package ${newPackage!.name} is inside the root of '
@@ -598,17 +662,22 @@ class SimplePackageConfig implements PackageConfig {
                       '${newPackage.name}.\n'
                       '${existingPackage.name} package root: '
                       '${existingPackage.packageUriRoot}\n'
-                      '${newPackage.name} root: ${newPackage.root}\n'));
+                      '${newPackage.name} root: ${newPackage.root}\n',
+                ),
+              );
               break;
             case ConflictType.insidePackageRoot:
-              onError(PackageConfigArgumentError(
+              onError(
+                PackageConfigArgumentError(
                   originalPackages,
                   'packages',
                   'Package ${newPackage!.name} is inside the package root of '
                       'package ${existingPackage.name}.\n'
                       '${existingPackage.name} package root: '
                       '${existingPackage.packageUriRoot}\n'
-                      '${newPackage.name} root: ${newPackage.root}\n'));
+                      '${newPackage.name} root: ${newPackage.root}\n',
+                ),
+              );
               break;
           }
         } else {
@@ -633,18 +702,25 @@ class SimplePackageConfig implements PackageConfig {
   Uri? resolve(Uri packageUri) {
     var packageName = checkValidPackageUri(packageUri, 'packageUri');
     return _packages[packageName]?.packageUriRoot.resolveUri(
-        Uri(path: packageUri.path.substring(packageName.length + 1)));
+      Uri(path: packageUri.path.substring(packageName.length + 1)),
+    );
   }
 
   @override
   Uri? toPackageUri(Uri nonPackageUri) {
     if (nonPackageUri.isScheme('package')) {
       throw PackageConfigArgumentError(
-          nonPackageUri, 'nonPackageUri', 'Must not be a package URI');
+        nonPackageUri,
+        'nonPackageUri',
+        'Must not be a package URI',
+      );
     }
     if (nonPackageUri.hasQuery || nonPackageUri.hasFragment) {
-      throw PackageConfigArgumentError(nonPackageUri, 'nonPackageUri',
-          'Must not have query or fragment part');
+      throw PackageConfigArgumentError(
+        nonPackageUri,
+        'nonPackageUri',
+        'Must not have query or fragment part',
+      );
     }
     // Find package that file belongs to.
     var package = _packageTree.packageOf(nonPackageUri);
@@ -676,8 +752,14 @@ class SimplePackage implements Package {
   @override
   final bool relativeRoot;
 
-  SimplePackage._(this.name, this.root, this.packageUriRoot,
-      this.languageVersion, this.extraData, this.relativeRoot);
+  SimplePackage._(
+    this.name,
+    this.root,
+    this.packageUriRoot,
+    this.languageVersion,
+    this.extraData,
+    this.relativeRoot,
+  );
 
   /// Creates a [SimplePackage] with the provided content.
   ///
@@ -695,30 +777,44 @@ class SimplePackage implements Package {
   /// Returns `null` if the input is invalid and an approximately valid package
   /// cannot be salvaged from the input.
   static SimplePackage? validate(
-      String name,
-      Uri root,
-      Uri? packageUriRoot,
-      LanguageVersion? languageVersion,
-      Object? extraData,
-      bool relativeRoot,
-      void Function(Object error) onError) {
+    String name,
+    Uri root,
+    Uri? packageUriRoot,
+    LanguageVersion? languageVersion,
+    Object? extraData,
+    bool relativeRoot,
+    void Function(Object error) onError,
+  ) {
     var fatalError = false;
     var invalidIndex = checkPackageName(name);
     if (invalidIndex >= 0) {
-      onError(PackageConfigFormatException(
-          'Not a valid package name', name, invalidIndex));
+      onError(
+        PackageConfigFormatException(
+          'Not a valid package name',
+          name,
+          invalidIndex,
+        ),
+      );
       fatalError = true;
     }
     if (root.isScheme('package')) {
-      onError(PackageConfigArgumentError(
-          '$root', 'root', 'Must not be a package URI'));
+      onError(
+        PackageConfigArgumentError(
+          '$root',
+          'root',
+          'Must not be a package URI',
+        ),
+      );
       fatalError = true;
     } else if (!isAbsoluteDirectoryUri(root)) {
-      onError(PackageConfigArgumentError(
+      onError(
+        PackageConfigArgumentError(
           '$root',
           'root',
           'In package $name: Not an absolute URI with no query or fragment '
-              'with a path ending in /'));
+              'with a path ending in /',
+        ),
+      );
       // Try to recover. If the URI has a scheme,
       // then ensure that the path ends with `/`.
       if (!root.hasScheme) {
@@ -732,21 +828,35 @@ class SimplePackage implements Package {
     } else if (!fatalError) {
       packageUriRoot = root.resolveUri(packageUriRoot);
       if (!isAbsoluteDirectoryUri(packageUriRoot)) {
-        onError(PackageConfigArgumentError(
+        onError(
+          PackageConfigArgumentError(
             packageUriRoot,
             'packageUriRoot',
             'In package $name: Not an absolute URI with no query or fragment '
-                'with a path ending in /'));
+                'with a path ending in /',
+          ),
+        );
         packageUriRoot = root;
       } else if (!isUriPrefix(root, packageUriRoot)) {
-        onError(PackageConfigArgumentError(packageUriRoot, 'packageUriRoot',
-            'The package URI root is not below the package root'));
+        onError(
+          PackageConfigArgumentError(
+            packageUriRoot,
+            'packageUriRoot',
+            'The package URI root is not below the package root',
+          ),
+        );
         packageUriRoot = root;
       }
     }
     if (fatalError) return null;
     return SimplePackage._(
-        name, root, packageUriRoot, languageVersion, extraData, relativeRoot);
+      name,
+      root,
+      packageUriRoot,
+      languageVersion,
+      extraData,
+      relativeRoot,
+    );
   }
 }
 
@@ -757,7 +867,9 @@ class SimplePackage implements Package {
 /// Reports a format exception on [onError] if not, or if the numbers
 /// are too large (at most 32-bit signed integers).
 LanguageVersion parseLanguageVersion(
-    String? source, void Function(Object error) onError) {
+  String? source,
+  void Function(Object error) onError,
+) {
   var index = 0;
   // Reads a positive decimal numeral. Returns the value of the numeral,
   // or a negative number in case of an error.
@@ -785,7 +897,8 @@ LanguageVersion parseLanguageVersion(
       value = value * 10 + digit;
       if (value > maxValue) {
         onError(
-            PackageConfigFormatException('Number too large', source, start));
+          PackageConfigFormatException('Number too large', source, start),
+        );
         return -1;
       }
       index++;
@@ -794,8 +907,9 @@ LanguageVersion parseLanguageVersion(
       digit = char ^ 0x30;
     } while (digit <= 9);
     if (firstDigit == 0 && index > start + 1) {
-      onError(PackageConfigFormatException(
-          'Leading zero not allowed', source, start));
+      onError(
+        PackageConfigFormatException('Leading zero not allowed', source, start),
+      );
     }
     return value;
   }
@@ -814,8 +928,13 @@ LanguageVersion parseLanguageVersion(
     return SimpleInvalidLanguageVersion(source);
   }
   if (index != source.length) {
-    onError(PackageConfigFormatException(
-        'Unexpected trailing character', source, index));
+    onError(
+      PackageConfigFormatException(
+        'Unexpected trailing character',
+        source,
+        index,
+      ),
+    );
     return SimpleInvalidLanguageVersion(source);
   }
   return SimpleLanguageVersion(major, minor, source);
@@ -903,24 +1022,40 @@ class TriePackageTree implements PackageTree {
     }
   }
 
-  bool _checkConflict(_PackageTrieNode node, SimplePackage newPackage,
-      void Function(Object error) onError) {
+  bool _checkConflict(
+    _PackageTrieNode node,
+    SimplePackage newPackage,
+    void Function(Object error) onError,
+  ) {
     var existingPackage = node.package;
     if (existingPackage != null) {
       // Trying to add package that is inside the existing package.
       // 1) If it's an exact match it's not allowed (i.e. the roots can't be
       //    the same).
       if (newPackage.root.path.length == existingPackage.root.path.length) {
-        onError(ConflictException(
-            newPackage, existingPackage, ConflictType.sameRoots));
+        onError(
+          ConflictException(
+            newPackage,
+            existingPackage,
+            ConflictType.sameRoots,
+          ),
+        );
         return true;
       }
       // 2) The existing package has a packageUriRoot thats inside the
       //    root of the new package.
-      if (_beginsWith(0, newPackage.root.toString(),
-          existingPackage.packageUriRoot.toString())) {
-        onError(ConflictException(
-            newPackage, existingPackage, ConflictType.interleaving));
+      if (_beginsWith(
+        0,
+        newPackage.root.toString(),
+        existingPackage.packageUriRoot.toString(),
+      )) {
+        onError(
+          ConflictException(
+            newPackage,
+            existingPackage,
+            ConflictType.interleaving,
+          ),
+        );
         return true;
       }
 
@@ -928,10 +1063,18 @@ class TriePackageTree implements PackageTree {
       // it though.
       // 3) The new package is inside the packageUriRoot of existing package.
       if (_disallowPackagesInsidePackageUriRoot) {
-        if (_beginsWith(0, existingPackage.packageUriRoot.toString(),
-            newPackage.root.toString())) {
-          onError(ConflictException(
-              newPackage, existingPackage, ConflictType.insidePackageRoot));
+        if (_beginsWith(
+          0,
+          existingPackage.packageUriRoot.toString(),
+          newPackage.root.toString(),
+        )) {
+          onError(
+            ConflictException(
+              newPackage,
+              existingPackage,
+              ConflictType.insidePackageRoot,
+            ),
+          );
           return true;
         }
       }
@@ -969,7 +1112,10 @@ class TriePackageTree implements PackageTree {
   }
 
   bool _isMatch(
-      String path, _PackageTrieNode node, List<SimplePackage> potential) {
+    String path,
+    _PackageTrieNode node,
+    List<SimplePackage> potential,
+  ) {
     var currentPackage = node.package;
     if (currentPackage != null) {
       var currentPackageRootLength = currentPackage.root.toString().length;

@@ -27,7 +27,9 @@ const packageConfigFileName = 'package_config.json';
 ///
 /// The file must exist and be a normal file.
 Future<PackageConfig> readConfigFile(
-    File file, void Function(Object error) onError) async {
+  File file,
+  void Function(Object error) onError,
+) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
@@ -40,12 +42,16 @@ Future<PackageConfig> readConfigFile(
 
 /// Like [readConfigFile] but uses a URI and an optional loader.
 Future<PackageConfig> readConfigFileUri(
-    Uri file,
-    Future<Uint8List?> Function(Uri uri)? loader,
-    void Function(Object error) onError) async {
+  Uri file,
+  Future<Uint8List?> Function(Uri uri)? loader,
+  void Function(Object error) onError,
+) async {
   if (file.isScheme('package')) {
     throw PackageConfigArgumentError(
-        file, 'file', 'Must not be a package: URI');
+      file,
+      'file',
+      'Must not be a package: URI',
+    );
   }
   if (loader == null) {
     if (file.isScheme('file')) {
@@ -62,15 +68,22 @@ Future<PackageConfig> readConfigFileUri(
     return const SimplePackageConfig.empty();
   }
   if (bytes == null) {
-    onError(PackageConfigArgumentError(
-        file.toString(), 'file', 'File cannot be read'));
+    onError(
+      PackageConfigArgumentError(
+        file.toString(),
+        'file',
+        'File cannot be read',
+      ),
+    );
     return const SimplePackageConfig.empty();
   }
   return parsePackageConfigBytes(bytes, file, onError);
 }
 
 Future<PackageConfig> readPackageConfigJsonFile(
-    File file, void Function(Object error) onError) async {
+  File file,
+  void Function(Object error) onError,
+) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
@@ -82,7 +95,9 @@ Future<PackageConfig> readPackageConfigJsonFile(
 }
 
 Future<void> writePackageConfigJsonFile(
-    PackageConfig config, Directory targetDirectory) async {
+  PackageConfig config,
+  Directory targetDirectory,
+) async {
   // Write .dart_tool/package_config.json first.
   var dartToolDir = Directory(pathJoin(targetDirectory.path, dartToolDirName));
   await dartToolDir.create(recursive: true);

@@ -48,20 +48,29 @@ void main() {
         }
         ''';
       var config = parsePackageConfigBytes(
-          // ignore: unnecessary_cast
-          utf8.encode(packageConfigFile) as Uint8List,
-          Uri.parse('file:///tmp/.dart_tool/file.dart'),
-          throwError);
+        // ignore: unnecessary_cast
+        utf8.encode(packageConfigFile) as Uint8List,
+        Uri.parse('file:///tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
-      expect({for (var p in config.packages) p.name},
-          {'foo', 'bar', 'baz', 'noslash'});
+      expect(
+        {for (var p in config.packages) p.name},
+        {'foo', 'bar', 'baz', 'noslash'},
+      );
 
-      expect(config.resolve(pkg('foo', 'foo.dart')),
-          Uri.parse('file:///foo/lib/foo.dart'));
-      expect(config.resolve(pkg('bar', 'bar.dart')),
-          Uri.parse('file:///bar/lib/bar.dart'));
-      expect(config.resolve(pkg('baz', 'baz.dart')),
-          Uri.parse('file:///tmp/lib/baz.dart'));
+      expect(
+        config.resolve(pkg('foo', 'foo.dart')),
+        Uri.parse('file:///foo/lib/foo.dart'),
+      );
+      expect(
+        config.resolve(pkg('bar', 'bar.dart')),
+        Uri.parse('file:///bar/lib/bar.dart'),
+      );
+      expect(
+        config.resolve(pkg('baz', 'baz.dart')),
+        Uri.parse('file:///tmp/lib/baz.dart'),
+      );
 
       var foo = config['foo']!;
       expect(foo, isNotNull);
@@ -96,7 +105,7 @@ void main() {
 
       expect(config.extraData, {
         'generator': 'pub',
-        'other': [42]
+        'other': [42],
       });
     });
 
@@ -129,22 +138,29 @@ void main() {
         }
         ''';
       var config = parsePackageConfigBytes(
-          // ignore: unnecessary_cast
-          utf8.encode(packageConfigFile) as Uint8List,
-          Uri.parse('file:///tmp/.dart_tool/file.dart'),
-          throwError);
+        // ignore: unnecessary_cast
+        utf8.encode(packageConfigFile) as Uint8List,
+        Uri.parse('file:///tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
       expect({for (var p in config.packages) p.name}, {'foo', 'bar', 'baz'});
 
-      expect(config.resolve(pkg('foo', 'foo.dart')),
-          Uri.parse('file:///foo/lib/foo.dart'));
-      expect(config.resolve(pkg('bar', 'bar.dart')),
-          Uri.parse('file:///bar/lib/bar.dart'));
-      expect(config.resolve(pkg('baz', 'baz.dart')),
-          Uri.parse('file:///tmp/lib/baz.dart'));
+      expect(
+        config.resolve(pkg('foo', 'foo.dart')),
+        Uri.parse('file:///foo/lib/foo.dart'),
+      );
+      expect(
+        config.resolve(pkg('bar', 'bar.dart')),
+        Uri.parse('file:///bar/lib/bar.dart'),
+      );
+      expect(
+        config.resolve(pkg('baz', 'baz.dart')),
+        Uri.parse('file:///tmp/lib/baz.dart'),
+      );
       expect(config.extraData, {
         'generator': 'pub',
-        'other': [42]
+        'other': [42],
       });
     });
 
@@ -156,10 +172,11 @@ void main() {
     var root = '"rootUri":"/foo/"';
     test('minimal', () {
       var config = parsePackageConfigBytes(
-          // ignore: unnecessary_cast
-          utf8.encode('{$cfg,$pkgs}') as Uint8List,
-          Uri.parse('file:///tmp/.dart_tool/file.dart'),
-          throwError);
+        // ignore: unnecessary_cast
+        utf8.encode('{$cfg,$pkgs}') as Uint8List,
+        Uri.parse('file:///tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
       expect(config.packages, isEmpty);
     });
@@ -167,108 +184,161 @@ void main() {
       // A package must have a name and a rootUri, the remaining properties
       // are optional.
       var config = parsePackageConfigBytes(
-          // ignore: unnecessary_cast
-          utf8.encode('{$cfg,"packages":[{$name,$root}]}') as Uint8List,
-          Uri.parse('file:///tmp/.dart_tool/file.dart'),
-          throwError);
+        // ignore: unnecessary_cast
+        utf8.encode('{$cfg,"packages":[{$name,$root}]}') as Uint8List,
+        Uri.parse('file:///tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
       expect(config.packages.first.name, 'foo');
     });
 
     test('nested packages', () {
-      var configBytes = utf8.encode(json.encode({
-        'configVersion': 2,
-        'packages': [
-          {'name': 'foo', 'rootUri': '/foo/', 'packageUri': 'lib/'},
-          {'name': 'bar', 'rootUri': '/foo/bar/', 'packageUri': 'lib/'},
-          {'name': 'baz', 'rootUri': '/foo/bar/baz/', 'packageUri': 'lib/'},
-          {'name': 'qux', 'rootUri': '/foo/qux/', 'packageUri': 'lib/'},
-        ]
-      }));
+      var configBytes = utf8.encode(
+        json.encode({
+          'configVersion': 2,
+          'packages': [
+            {'name': 'foo', 'rootUri': '/foo/', 'packageUri': 'lib/'},
+            {'name': 'bar', 'rootUri': '/foo/bar/', 'packageUri': 'lib/'},
+            {'name': 'baz', 'rootUri': '/foo/bar/baz/', 'packageUri': 'lib/'},
+            {'name': 'qux', 'rootUri': '/foo/qux/', 'packageUri': 'lib/'},
+          ],
+        }),
+      );
       // ignore: unnecessary_cast
-      var config = parsePackageConfigBytes(configBytes as Uint8List,
-          Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError);
+      var config = parsePackageConfigBytes(
+        configBytes as Uint8List,
+        Uri.parse('file:///tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
-      expect(config.packageOf(Uri.parse('file:///foo/lala/lala.dart'))!.name,
-          'foo');
-      expect(config.packageOf(Uri.parse('file:///foo/bar/lala.dart'))!.name,
-          'bar');
-      expect(config.packageOf(Uri.parse('file:///foo/bar/baz/lala.dart'))!.name,
-          'baz');
-      expect(config.packageOf(Uri.parse('file:///foo/qux/lala.dart'))!.name,
-          'qux');
-      expect(config.toPackageUri(Uri.parse('file:///foo/lib/diz')),
-          Uri.parse('package:foo/diz'));
-      expect(config.toPackageUri(Uri.parse('file:///foo/bar/lib/diz')),
-          Uri.parse('package:bar/diz'));
-      expect(config.toPackageUri(Uri.parse('file:///foo/bar/baz/lib/diz')),
-          Uri.parse('package:baz/diz'));
-      expect(config.toPackageUri(Uri.parse('file:///foo/qux/lib/diz')),
-          Uri.parse('package:qux/diz'));
+      expect(
+        config.packageOf(Uri.parse('file:///foo/lala/lala.dart'))!.name,
+        'foo',
+      );
+      expect(
+        config.packageOf(Uri.parse('file:///foo/bar/lala.dart'))!.name,
+        'bar',
+      );
+      expect(
+        config.packageOf(Uri.parse('file:///foo/bar/baz/lala.dart'))!.name,
+        'baz',
+      );
+      expect(
+        config.packageOf(Uri.parse('file:///foo/qux/lala.dart'))!.name,
+        'qux',
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///foo/lib/diz')),
+        Uri.parse('package:foo/diz'),
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///foo/bar/lib/diz')),
+        Uri.parse('package:bar/diz'),
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///foo/bar/baz/lib/diz')),
+        Uri.parse('package:baz/diz'),
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///foo/qux/lib/diz')),
+        Uri.parse('package:qux/diz'),
+      );
     });
 
     test('nested packages 2', () {
-      var configBytes = utf8.encode(json.encode({
-        'configVersion': 2,
-        'packages': [
-          {'name': 'foo', 'rootUri': '/', 'packageUri': 'lib/'},
-          {'name': 'bar', 'rootUri': '/bar/', 'packageUri': 'lib/'},
-          {'name': 'baz', 'rootUri': '/bar/baz/', 'packageUri': 'lib/'},
-          {'name': 'qux', 'rootUri': '/qux/', 'packageUri': 'lib/'},
-        ]
-      }));
+      var configBytes = utf8.encode(
+        json.encode({
+          'configVersion': 2,
+          'packages': [
+            {'name': 'foo', 'rootUri': '/', 'packageUri': 'lib/'},
+            {'name': 'bar', 'rootUri': '/bar/', 'packageUri': 'lib/'},
+            {'name': 'baz', 'rootUri': '/bar/baz/', 'packageUri': 'lib/'},
+            {'name': 'qux', 'rootUri': '/qux/', 'packageUri': 'lib/'},
+          ],
+        }),
+      );
       // ignore: unnecessary_cast
-      var config = parsePackageConfigBytes(configBytes as Uint8List,
-          Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError);
+      var config = parsePackageConfigBytes(
+        configBytes as Uint8List,
+        Uri.parse('file:///tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
       expect(
-          config.packageOf(Uri.parse('file:///lala/lala.dart'))!.name, 'foo');
+        config.packageOf(Uri.parse('file:///lala/lala.dart'))!.name,
+        'foo',
+      );
       expect(config.packageOf(Uri.parse('file:///bar/lala.dart'))!.name, 'bar');
-      expect(config.packageOf(Uri.parse('file:///bar/baz/lala.dart'))!.name,
-          'baz');
+      expect(
+        config.packageOf(Uri.parse('file:///bar/baz/lala.dart'))!.name,
+        'baz',
+      );
       expect(config.packageOf(Uri.parse('file:///qux/lala.dart'))!.name, 'qux');
-      expect(config.toPackageUri(Uri.parse('file:///lib/diz')),
-          Uri.parse('package:foo/diz'));
-      expect(config.toPackageUri(Uri.parse('file:///bar/lib/diz')),
-          Uri.parse('package:bar/diz'));
-      expect(config.toPackageUri(Uri.parse('file:///bar/baz/lib/diz')),
-          Uri.parse('package:baz/diz'));
-      expect(config.toPackageUri(Uri.parse('file:///qux/lib/diz')),
-          Uri.parse('package:qux/diz'));
+      expect(
+        config.toPackageUri(Uri.parse('file:///lib/diz')),
+        Uri.parse('package:foo/diz'),
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///bar/lib/diz')),
+        Uri.parse('package:bar/diz'),
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///bar/baz/lib/diz')),
+        Uri.parse('package:baz/diz'),
+      );
+      expect(
+        config.toPackageUri(Uri.parse('file:///qux/lib/diz')),
+        Uri.parse('package:qux/diz'),
+      );
     });
 
     test('packageOf is case sensitive on windows', () {
-      var configBytes = utf8.encode(json.encode({
-        'configVersion': 2,
-        'packages': [
-          {'name': 'foo', 'rootUri': 'file:///C:/Foo/', 'packageUri': 'lib/'},
-        ]
-      }));
+      var configBytes = utf8.encode(
+        json.encode({
+          'configVersion': 2,
+          'packages': [
+            {'name': 'foo', 'rootUri': 'file:///C:/Foo/', 'packageUri': 'lib/'},
+          ],
+        }),
+      );
       var config = parsePackageConfigBytes(
-          // ignore: unnecessary_cast
-          configBytes as Uint8List,
-          Uri.parse('file:///C:/tmp/.dart_tool/file.dart'),
-          throwError);
+        // ignore: unnecessary_cast
+        configBytes as Uint8List,
+        Uri.parse('file:///C:/tmp/.dart_tool/file.dart'),
+        throwError,
+      );
       expect(config.version, 2);
       expect(
-          config.packageOf(Uri.parse('file:///C:/foo/lala/lala.dart')), null);
-      expect(config.packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart'))!.name,
-          'foo');
+        config.packageOf(Uri.parse('file:///C:/foo/lala/lala.dart')),
+        null,
+      );
+      expect(
+        config.packageOf(Uri.parse('file:///C:/Foo/lala/lala.dart'))!.name,
+        'foo',
+      );
     });
 
     group('invalid', () {
       void testThrows(String name, String source) {
         test(name, () {
           expect(
-              // ignore: unnecessary_cast
-              () => parsePackageConfigBytes(utf8.encode(source) as Uint8List,
-                  Uri.parse('file:///tmp/.dart_tool/file.dart'), throwError),
-              throwsA(isA<FormatException>()));
+            // ignore: unnecessary_cast
+            () => parsePackageConfigBytes(
+              utf8.encode(source) as Uint8List,
+              Uri.parse('file:///tmp/.dart_tool/file.dart'),
+              throwError,
+            ),
+            throwsA(isA<FormatException>()),
+          );
         });
       }
 
       void testThrowsContains(
-          String name, String source, String containsString) {
+        String name,
+        String source,
+        String containsString,
+      ) {
         test(name, () {
           Object? exception;
           try {
@@ -315,11 +385,17 @@ void main() {
           testThrows('one-dot', '{$cfg,"packages":[{"name":".",$root}]}');
           testThrows('two-dot', '{$cfg,"packages":[{"name":"..",$root}]}');
           testThrows(
-              "invalid char '\\'", '{$cfg,"packages":[{"name":"\\",$root}]}');
+            "invalid char '\\'",
+            '{$cfg,"packages":[{"name":"\\",$root}]}',
+          );
           testThrows(
-              "invalid char ':'", '{$cfg,"packages":[{"name":":",$root}]}');
+            "invalid char ':'",
+            '{$cfg,"packages":[{"name":":",$root}]}',
+          );
           testThrows(
-              "invalid char ' '", '{$cfg,"packages":[{"name":" ",$root}]}');
+            "invalid char ' '",
+            '{$cfg,"packages":[{"name":" ",$root}]}',
+          );
         });
 
         testThrows('no root', '{$cfg,"packages":[{$name}]}');
@@ -329,92 +405,142 @@ void main() {
           testThrows('object', '{$cfg,"packages":[{$name,"rootUri":{}}]}');
           testThrows('fragment', '{$cfg,"packages":[{$name,"rootUri":"x/#"}]}');
           testThrows('query', '{$cfg,"packages":[{$name,"rootUri":"x/?"}]}');
-          testThrows('package-URI',
-              '{$cfg,"packages":[{$name,"rootUri":"package:x/x/"}]}');
+          testThrows(
+            'package-URI',
+            '{$cfg,"packages":[{$name,"rootUri":"package:x/x/"}]}',
+          );
         });
         group('package-URI root:', () {
           testThrows(
-              'null', '{$cfg,"packages":[{$name,$root,"packageUri":null}]}');
+            'null',
+            '{$cfg,"packages":[{$name,$root,"packageUri":null}]}',
+          );
           testThrows('num', '{$cfg,"packages":[{$name,$root,"packageUri":1}]}');
           testThrows(
-              'object', '{$cfg,"packages":[{$name,$root,"packageUri":{}}]}');
-          testThrows('fragment',
-              '{$cfg,"packages":[{$name,$root,"packageUri":"x/#"}]}');
+            'object',
+            '{$cfg,"packages":[{$name,$root,"packageUri":{}}]}',
+          );
           testThrows(
-              'query', '{$cfg,"packages":[{$name,$root,"packageUri":"x/?"}]}');
-          testThrows('package: URI',
-              '{$cfg,"packages":[{$name,$root,"packageUri":"package:x/x/"}]}');
-          testThrows('not inside root',
-              '{$cfg,"packages":[{$name,$root,"packageUri":"../other/"}]}');
+            'fragment',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"x/#"}]}',
+          );
+          testThrows(
+            'query',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"x/?"}]}',
+          );
+          testThrows(
+            'package: URI',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"package:x/x/"}]}',
+          );
+          testThrows(
+            'not inside root',
+            '{$cfg,"packages":[{$name,$root,"packageUri":"../other/"}]}',
+          );
         });
         group('language version', () {
-          testThrows('null',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":null}]}');
           testThrows(
-              'num', '{$cfg,"packages":[{$name,$root,"languageVersion":1}]}');
-          testThrows('object',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":{}}]}');
-          testThrows('empty',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":""}]}');
-          testThrows('non number.number',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"x.1"}]}');
-          testThrows('number.non number',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"1.x"}]}');
-          testThrows('non number',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"x"}]}');
-          testThrows('one number',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"1"}]}');
-          testThrows('three numbers',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"1.2.3"}]}');
-          testThrows('leading zero first',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"01.1"}]}');
-          testThrows('leading zero second',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"1.01"}]}');
-          testThrows('trailing-',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"1.1-1"}]}');
-          testThrows('trailing+',
-              '{$cfg,"packages":[{$name,$root,"languageVersion":"1.1+1"}]}');
+            'null',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":null}]}',
+          );
+          testThrows(
+            'num',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":1}]}',
+          );
+          testThrows(
+            'object',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":{}}]}',
+          );
+          testThrows(
+            'empty',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":""}]}',
+          );
+          testThrows(
+            'non number.number',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"x.1"}]}',
+          );
+          testThrows(
+            'number.non number',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"1.x"}]}',
+          );
+          testThrows(
+            'non number',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"x"}]}',
+          );
+          testThrows(
+            'one number',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"1"}]}',
+          );
+          testThrows(
+            'three numbers',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"1.2.3"}]}',
+          );
+          testThrows(
+            'leading zero first',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"01.1"}]}',
+          );
+          testThrows(
+            'leading zero second',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"1.01"}]}',
+          );
+          testThrows(
+            'trailing-',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"1.1-1"}]}',
+          );
+          testThrows(
+            'trailing+',
+            '{$cfg,"packages":[{$name,$root,"languageVersion":"1.1+1"}]}',
+          );
         });
       });
-      testThrows('duplicate package name',
-          '{$cfg,"packages":[{$name,$root},{$name,"rootUri":"/other/"}]}');
+      testThrows(
+        'duplicate package name',
+        '{$cfg,"packages":[{$name,$root},{$name,"rootUri":"/other/"}]}',
+      );
       testThrowsContains(
-          // The roots of foo and bar are the same.
-          'same roots',
-          '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}',
-          'the same root directory');
+        // The roots of foo and bar are the same.
+        'same roots',
+        '{$cfg,"packages":[{$name,$root},{"name":"bar",$root}]}',
+        'the same root directory',
+      );
       testThrowsContains(
-          // The roots of foo and bar are the same.
-          'same roots 2',
-          '{$cfg,"packages":[{$name,"rootUri":"/"},{"name":"bar","rootUri":"/"}]}',
-          'the same root directory');
+        // The roots of foo and bar are the same.
+        'same roots 2',
+        '{$cfg,"packages":[{$name,"rootUri":"/"},{"name":"bar","rootUri":"/"}]}',
+        'the same root directory',
+      );
       testThrowsContains(
-          // The root of bar is inside the root of foo,
-          // but the package root of foo is inside the root of bar.
-          'between root and lib',
-          '{$cfg,"packages":['
-              '{"name":"foo","rootUri":"/foo/","packageUri":"bar/lib/"},'
-              '{"name":"bar","rootUri":"/foo/bar/","packageUri":"baz/lib"}]}',
-          'package root of foo is inside the root of bar');
+        // The root of bar is inside the root of foo,
+        // but the package root of foo is inside the root of bar.
+        'between root and lib',
+        '{$cfg,"packages":['
+            '{"name":"foo","rootUri":"/foo/","packageUri":"bar/lib/"},'
+            '{"name":"bar","rootUri":"/foo/bar/","packageUri":"baz/lib"}]}',
+        'package root of foo is inside the root of bar',
+      );
 
       // This shouldn't be allowed, but for internal reasons it is.
       test('package inside package root', () {
         var config = parsePackageConfigBytes(
-            // ignore: unnecessary_cast
-            utf8.encode(
-              '{$cfg,"packages":['
-              '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
-              '{"name":"bar","rootUri":"/foo/lib/bar/","packageUri":"lib"}]}',
-            ) as Uint8List,
-            Uri.parse('file:///tmp/.dart_tool/file.dart'),
-            throwError);
+          // ignore: unnecessary_cast
+          utf8.encode(
+                '{$cfg,"packages":['
+                '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
+                '{"name":"bar","rootUri":"/foo/lib/bar/","packageUri":"lib"}]}',
+              )
+              as Uint8List,
+          Uri.parse('file:///tmp/.dart_tool/file.dart'),
+          throwError,
+        );
         expect(
-            config
-                .packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart'))!
-                .name,
-            'foo'); // why not bar?
-        expect(config.toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz')),
-            Uri.parse('package:foo/bar/lib/diz')); // why not package:bar/diz?
+          config
+              .packageOf(Uri.parse('file:///foo/lib/bar/lib/lala.dart'))!
+              .name,
+          'foo',
+        ); // why not bar?
+        expect(
+          config.toPackageUri(Uri.parse('file:///foo/lib/bar/lib/diz')),
+          Uri.parse('package:foo/bar/lib/diz'),
+        ); // why not package:bar/diz?
       });
     });
   });
@@ -434,10 +560,16 @@ void main() {
             var expectedPackage = expected[name]!;
             expect(expectedPackage, isNotNull);
             expect(package.root, expectedPackage.root, reason: 'root');
-            expect(package.packageUriRoot, expectedPackage.packageUriRoot,
-                reason: 'package root');
-            expect(package.languageVersion, expectedPackage.languageVersion,
-                reason: 'languageVersion');
+            expect(
+              package.packageUriRoot,
+              expectedPackage.packageUriRoot,
+              reason: 'package root',
+            );
+            expect(
+              package.languageVersion,
+              expectedPackage.languageVersion,
+              reason: 'languageVersion',
+            );
           });
         }
       });
@@ -455,34 +587,58 @@ void main() {
     ''';
     var baseUri = Uri.parse('file:///start/');
     var config = PackageConfig([
-      Package('foo', Uri.parse('file:///start/foo/'),
-          packageUriRoot: Uri.parse('file:///start/foo/bar/'),
-          languageVersion: LanguageVersion(1, 2))
+      Package(
+        'foo',
+        Uri.parse('file:///start/foo/'),
+        packageUriRoot: Uri.parse('file:///start/foo/bar/'),
+        languageVersion: LanguageVersion(1, 2),
+      ),
     ]);
     testConfig(
-        'string', PackageConfig.parseString(configText, baseUri), config);
+      'string',
+      PackageConfig.parseString(configText, baseUri),
+      config,
+    );
     testConfig(
-        'bytes',
-        PackageConfig.parseBytes(
-            Uint8List.fromList(configText.codeUnits), baseUri),
-        config);
-    testConfig('json', PackageConfig.parseJson(jsonDecode(configText), baseUri),
-        config);
+      'bytes',
+      PackageConfig.parseBytes(
+        Uint8List.fromList(configText.codeUnits),
+        baseUri,
+      ),
+      config,
+    );
+    testConfig(
+      'json',
+      PackageConfig.parseJson(jsonDecode(configText), baseUri),
+      config,
+    );
 
     baseUri = Uri.parse('file:///start2/');
     config = PackageConfig([
-      Package('foo', Uri.parse('file:///start2/foo/'),
-          packageUriRoot: Uri.parse('file:///start2/foo/bar/'),
-          languageVersion: LanguageVersion(1, 2))
+      Package(
+        'foo',
+        Uri.parse('file:///start2/foo/'),
+        packageUriRoot: Uri.parse('file:///start2/foo/bar/'),
+        languageVersion: LanguageVersion(1, 2),
+      ),
     ]);
     testConfig(
-        'string2', PackageConfig.parseString(configText, baseUri), config);
+      'string2',
+      PackageConfig.parseString(configText, baseUri),
+      config,
+    );
     testConfig(
-        'bytes2',
-        PackageConfig.parseBytes(
-            Uint8List.fromList(configText.codeUnits), baseUri),
-        config);
-    testConfig('json2',
-        PackageConfig.parseJson(jsonDecode(configText), baseUri), config);
+      'bytes2',
+      PackageConfig.parseBytes(
+        Uint8List.fromList(configText.codeUnits),
+        baseUri,
+      ),
+      config,
+    );
+    testConfig(
+      'json2',
+      PackageConfig.parseJson(jsonDecode(configText), baseUri),
+      config,
+    );
   });
 }
