@@ -948,7 +948,7 @@ class SimpleLanguageVersion implements LanguageVersion {
   final int minor;
 
   /// A cache for `toString`, pre-filled with source if created by parsing.
-  /// 
+  ///
   /// Also used by [SimpleInvalidLanguageVersion] for its invalid source
   /// or a suitably invalid `toString` value.
   String? _source;
