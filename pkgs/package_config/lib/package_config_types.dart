@@ -17,5 +17,6 @@ export 'src/package_config.dart'
     show
         InvalidLanguageVersion,
         LanguageVersion,
+        LanguageVersionRelationalOperators,
         Package,
         PackageConfig;

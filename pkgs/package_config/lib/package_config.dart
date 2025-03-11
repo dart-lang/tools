@@ -41,7 +41,7 @@ Future<PackageConfig> loadAnyPackageConfig(File file,
 /// Reads a specific package configuration URI.
 ///
 /// The file of the URI must exist, be readable,
-/// and be  a valid `package_config.json` file.
+/// and be a valid `package_config.json` file.
 ///
 /// If [loader] is provided, URIs are loaded using that function.
 /// The future returned by the loader must complete with a [Uint8List]
@@ -54,7 +54,7 @@ Future<PackageConfig> loadAnyPackageConfig(File file,
 /// As such, it may throw any error that [loader] throws.
 ///
 /// If no [loader] is supplied, a default loader is used which
-/// only accepts `file:`,  `http:` and `https:` URIs,
+/// only accepts `file:`, `http:` and `https:` URIs,
 /// and which uses the platform file system and HTTP requests to
 /// fetch file content. The default loader never throws because
 /// of an I/O issue, as long as the location URIs are valid.

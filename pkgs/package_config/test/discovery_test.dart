@@ -98,7 +98,7 @@ void main() {
     // Does not find a packages/ directory, and returns null if nothing found.
     fileTest('package directory packages not supported', {
       'packages': {
-        'foo': <String, dynamic>{},
+        'foo': <String, Object?>{},
       }
     }, (Directory directory) async {
       var config = await findPackageConfig(directory);

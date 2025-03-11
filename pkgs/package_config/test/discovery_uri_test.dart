@@ -56,7 +56,7 @@ void main() {
     loaderTest('package_config.json', {
       '.packages': 'invalid .packages file',
       'script.dart': 'main(){}',
-      'packages': {'shouldNotBeFound': <String, dynamic>{}},
+      'packages': {'shouldNotBeFound': <String, Object?>{}},
       '.dart_tool': {
         'package_config.json': packageConfigFile,
       }
@@ -86,7 +86,7 @@ void main() {
     loaderTest('Not .packages', {
       '.packages': packagesFile,
       'script.dart': 'main(){}',
-      'packages': {'shouldNotBeFound': <String, dynamic>{}}
+      'packages': {'shouldNotBeFound': <String, Object?>{}}
     }, (directory, loader) async {
       var config =
           await findPackageConfigUri(recurse: false, directory, loader: loader);
@@ -96,7 +96,7 @@ void main() {
     // Does not find a packages/ directory, and returns null if nothing found.
     loaderTest('package directory packages not supported', {
       'packages': {
-        'foo': <String, dynamic>{},
+        'foo': <String, Object?>{},
       }
     }, (Uri directory, loader) async {
       var config = await findPackageConfigUri(directory, loader: loader);

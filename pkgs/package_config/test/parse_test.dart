@@ -270,7 +270,7 @@ void main() {
       void testThrowsContains(
           String name, String source, String containsString) {
         test(name, () {
-          dynamic exception;
+          Object? exception;
           try {
             parsePackageConfigBytes(
               // ignore: unnecessary_cast
