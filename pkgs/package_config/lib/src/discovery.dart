@@ -123,7 +123,7 @@ Future<PackageConfig?> findPackageConfigInDirectory(
 ) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {
-    var config = await readPackageConfigJsonFile(packageConfigFile, onError);
+    var config = await readConfigFile(packageConfigFile, onError);
     if (config.version < minVersion) return null;
     return config;
   }

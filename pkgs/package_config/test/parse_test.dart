@@ -48,8 +48,7 @@ void main() {
         }
         ''';
       var config = parsePackageConfigBytes(
-        // ignore: unnecessary_cast
-        utf8.encode(packageConfigFile) as Uint8List,
+        utf8.encode(packageConfigFile),
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -138,8 +137,7 @@ void main() {
         }
         ''';
       var config = parsePackageConfigBytes(
-        // ignore: unnecessary_cast
-        utf8.encode(packageConfigFile) as Uint8List,
+        utf8.encode(packageConfigFile),
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -172,8 +170,7 @@ void main() {
     var root = '"rootUri":"/foo/"';
     test('minimal', () {
       var config = parsePackageConfigBytes(
-        // ignore: unnecessary_cast
-        utf8.encode('{$cfg,$pkgs}') as Uint8List,
+        utf8.encode('{$cfg,$pkgs}'),
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -184,8 +181,7 @@ void main() {
       // A package must have a name and a rootUri, the remaining properties
       // are optional.
       var config = parsePackageConfigBytes(
-        // ignore: unnecessary_cast
-        utf8.encode('{$cfg,"packages":[{$name,$root}]}') as Uint8List,
+        utf8.encode('{$cfg,"packages":[{$name,$root}]}'),
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -205,9 +201,8 @@ void main() {
           ],
         }),
       );
-      // ignore: unnecessary_cast
       var config = parsePackageConfigBytes(
-        configBytes as Uint8List,
+        configBytes,
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -258,9 +253,8 @@ void main() {
           ],
         }),
       );
-      // ignore: unnecessary_cast
       var config = parsePackageConfigBytes(
-        configBytes as Uint8List,
+        configBytes,
         Uri.parse('file:///tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -303,8 +297,7 @@ void main() {
         }),
       );
       var config = parsePackageConfigBytes(
-        // ignore: unnecessary_cast
-        configBytes as Uint8List,
+        configBytes,
         Uri.parse('file:///C:/tmp/.dart_tool/file.dart'),
         throwError,
       );
@@ -323,9 +316,8 @@ void main() {
       void testThrows(String name, String source) {
         test(name, () {
           expect(
-            // ignore: unnecessary_cast
             () => parsePackageConfigBytes(
-              utf8.encode(source) as Uint8List,
+              utf8.encode(source),
               Uri.parse('file:///tmp/.dart_tool/file.dart'),
               throwError,
             ),
@@ -343,8 +335,7 @@ void main() {
           Object? exception;
           try {
             parsePackageConfigBytes(
-              // ignore: unnecessary_cast
-              utf8.encode(source) as Uint8List,
+              utf8.encode(source),
               Uri.parse('file:///tmp/.dart_tool/file.dart'),
               throwError,
             );
@@ -521,13 +512,11 @@ void main() {
       // This shouldn't be allowed, but for internal reasons it is.
       test('package inside package root', () {
         var config = parsePackageConfigBytes(
-          // ignore: unnecessary_cast
           utf8.encode(
-                '{$cfg,"packages":['
-                '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
-                '{"name":"bar","rootUri":"/foo/lib/bar/","packageUri":"lib"}]}',
-              )
-              as Uint8List,
+            '{$cfg,"packages":['
+            '{"name":"foo","rootUri":"/foo/","packageUri":"lib/"},'
+            '{"name":"bar","rootUri":"/foo/lib/bar/","packageUri":"lib"}]}',
+          ),
           Uri.parse('file:///tmp/.dart_tool/file.dart'),
           throwError,
         );

@@ -162,7 +162,7 @@ PackageConfig parsePackageConfigJson(
     }
 
     LanguageVersion? version;
-    if (languageVersion != null) {
+    if (languageVersion case var languageVersion?) {
       version = parseLanguageVersion(languageVersion, onError);
     } else if (hasVersion) {
       version = SimpleInvalidLanguageVersion('invalid');

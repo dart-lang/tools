@@ -338,11 +338,11 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   ///
   /// Both [major] and [minor] must be greater than or equal to 0
   /// and less than or equal to [maxValue].
-  factory LanguageVersion(int major, int minor) {
-    RangeError.checkValueInInterval(major, 0, maxValue, 'major');
-    RangeError.checkValueInInterval(minor, 0, maxValue, 'minor');
-    return SimpleLanguageVersion(major, minor, null);
-  }
+  factory LanguageVersion(int major, int minor) => SimpleLanguageVersion(
+    RangeError.checkValueInInterval(major, 0, maxValue, 'major'),
+    RangeError.checkValueInInterval(minor, 0, maxValue, 'minor'),
+    null,
+  );
 
   /// Parses a language version string.
   ///
@@ -420,8 +420,8 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
 ///
 /// Stored in a [Package] when the original language version string
 /// was invalid and a `onError` handler was passed to the parser
-/// which did not throw on an error.
-/// The caller which provided the `onError` handler which was called
+/// which did not throw for that error.
+/// The caller which provided the non-throwing `onError` handler
 /// should be prepared to encounter invalid values.
 @sealed
 abstract class InvalidLanguageVersion implements LanguageVersion {
@@ -460,8 +460,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
   /// check out [LanguageVersion.compareTo].
   bool operator <(LanguageVersion other) {
     // Throw an error if comparing an invalid language version.
-    if (this is InvalidLanguageVersion) _throwThisInvalid();
-    if (other is InvalidLanguageVersion) _throwOtherInvalid();
+    if (major < 0) _throwThisInvalid();
+    if (other.major < 0) _throwOtherInvalid();
     return compareTo(other) < 0;
   }
 
@@ -473,8 +473,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
   /// check out [LanguageVersion.compareTo].
   bool operator <=(LanguageVersion other) {
     // Throw an error if comparing an invalid language version.
-    if (this is InvalidLanguageVersion) _throwThisInvalid();
-    if (other is InvalidLanguageVersion) _throwOtherInvalid();
+    if (major < 0) _throwThisInvalid();
+    if (other.major < 0) _throwOtherInvalid();
     return compareTo(other) <= 0;
   }
 
@@ -486,8 +486,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
   /// check out [LanguageVersion.compareTo].
   bool operator >(LanguageVersion other) {
     // Throw an error if comparing an invalid language version.
-    if (this is InvalidLanguageVersion) _throwThisInvalid();
-    if (other is InvalidLanguageVersion) _throwOtherInvalid();
+    if (major < 0) _throwThisInvalid();
+    if (other.major < 0) _throwOtherInvalid();
     return compareTo(other) > 0;
   }
 
@@ -500,8 +500,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
   /// check out [LanguageVersion.compareTo].
   bool operator >=(LanguageVersion other) {
     // Throw an error if comparing an invalid language version.
-    if (this is InvalidLanguageVersion) _throwThisInvalid();
-    if (other is InvalidLanguageVersion) _throwOtherInvalid();
+    if (major < 0) _throwThisInvalid();
+    if (other.major < 0) _throwOtherInvalid();
     return compareTo(other) >= 0;
   }
 
@@ -864,10 +864,10 @@ class SimplePackage implements Package {
 ///
 /// The format is (as RegExp) `^(0|[1-9]\d+)\.(0|[1-9]\d+)$`.
 ///
-/// Reports a format exception on [onError] if not, or if the numbers
-/// are too large (at most 32-bit signed integers).
+/// Reports a format exception by calling [onError] if the format isn't correct,
+/// or if the numbers are too large (at most 32-bit signed integers).
 LanguageVersion parseLanguageVersion(
-  String? source,
+  String source,
   void Function(Object error) onError,
 ) {
   var index = 0;
@@ -879,7 +879,7 @@ LanguageVersion parseLanguageVersion(
   // It is a recoverable error if the numeral starts with leading zeros.
   int readNumeral() {
     const maxValue = 0x7FFFFFFF;
-    if (index == source!.length) {
+    if (index == source.length) {
       onError(PackageConfigFormatException('Missing number', source, index));
       return -1;
     }
@@ -918,7 +918,7 @@ LanguageVersion parseLanguageVersion(
   if (major < 0) {
     return SimpleInvalidLanguageVersion(source);
   }
-  if (index == source!.length || source.codeUnitAt(index) != $dot) {
+  if (index == source.length || source.codeUnitAt(index) != $dot) {
     onError(PackageConfigFormatException("Missing '.'", source, index));
     return SimpleInvalidLanguageVersion(source);
   }
@@ -941,22 +941,18 @@ LanguageVersion parseLanguageVersion(
 }
 
 @sealed
-abstract class _SimpleLanguageVersionBase implements LanguageVersion {
-  @override
-  int compareTo(LanguageVersion other) {
-    var result = major - other.major;
-    if (result != 0) return result;
-    return minor - other.minor;
-  }
-}
-
-@sealed
-class SimpleLanguageVersion extends _SimpleLanguageVersionBase {
+class SimpleLanguageVersion implements LanguageVersion {
   @override
   final int major;
   @override
   final int minor;
+
+  /// A cache for `toString`, pre-filled with source if created by parsing.
+  /// 
+  /// Also used by [SimpleInvalidLanguageVersion] for its invalid source
+  /// or a suitably invalid `toString` value.
   String? _source;
+
   SimpleLanguageVersion(this.major, this.minor, this._source);
 
   @override
@@ -968,20 +964,24 @@ class SimpleLanguageVersion extends _SimpleLanguageVersionBase {
 
   @override
   String toString() => _source ??= '$major.$minor';
+
+  @override
+  int compareTo(LanguageVersion other) {
+    var result = major - other.major;
+    if (result != 0) return result;
+    return minor - other.minor;
+  }
 }
 
 @sealed
-class SimpleInvalidLanguageVersion extends _SimpleLanguageVersionBase
+class SimpleInvalidLanguageVersion extends SimpleLanguageVersion
     implements InvalidLanguageVersion {
-  final String? _source;
-  SimpleInvalidLanguageVersion(this._source);
-  @override
-  int get major => -1;
-  @override
-  int get minor => -1;
+  SimpleInvalidLanguageVersion(String source) : super(-1, -1, source);
 
   @override
-  String toString() => _source!;
+  int get hashCode => identityHashCode(this);
+  @override
+  bool operator ==(Object other) => identical(this, other);
 }
 
 abstract class PackageTree {

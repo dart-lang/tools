@@ -33,8 +33,8 @@ Future<PackageConfig> readConfigFile(
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
-  } catch (e) {
-    onError(e);
+  } catch (error) {
+    onError(error);
     return const SimplePackageConfig.empty();
   }
   return parsePackageConfigBytes(bytes, file.uri, onError);
@@ -78,20 +78,6 @@ Future<PackageConfig> readConfigFileUri(
     return const SimplePackageConfig.empty();
   }
   return parsePackageConfigBytes(bytes, file, onError);
-}
-
-Future<PackageConfig> readPackageConfigJsonFile(
-  File file,
-  void Function(Object error) onError,
-) async {
-  Uint8List bytes;
-  try {
-    bytes = await file.readAsBytes();
-  } catch (error) {
-    onError(error);
-    return const SimplePackageConfig.empty();
-  }
-  return parsePackageConfigBytes(bytes, file.uri, onError);
 }
 
 Future<void> writePackageConfigJsonFile(
