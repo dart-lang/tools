@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-const Map<String, String> defaultExtensionMap = <String, String>{
+final Map<String, String> defaultExtensionMap = <String, String>{
   '123': 'application/vnd.lotus-1-2-3',
   '3dml': 'text/vnd.in3d.3dml',
   '3ds': 'image/x-3ds',
