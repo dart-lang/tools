@@ -283,8 +283,15 @@ abstract class Node {
     final tokenizer = HtmlTokenizer(sourceSpan!.text,
         generateSpans: true, attributeSpans: true);
 
-    tokenizer.moveNext();
-    final token = tokenizer.current as StartTagToken;
+    // Find the start token in the tokenized source. This is needed because
+    // the tokenizer may introduce non-fatal (but unexpected here)
+    // `ParseErrorToken`s.
+    Token token;
+    do {
+      tokenizer.moveNext();
+      token = tokenizer.current;
+    } while (token.kind != TokenKind.startTag);
+    token as StartTagToken;
 
     if (token.attributeSpans == null) return; // no attributes
 
