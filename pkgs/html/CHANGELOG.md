@@ -1,4 +1,4 @@
-## 0.15.6
+## 0.15.5+1
 
 - Support "ambiguous ampersand" in attribute values.
 
