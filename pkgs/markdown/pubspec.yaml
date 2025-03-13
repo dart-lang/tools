@@ -12,7 +12,7 @@ executables:
   markdown:
 
 environment:
-  sdk: ^3.2.0
+  sdk: ^3.4.0
 
 dependencies:
   args: ^2.0.0
