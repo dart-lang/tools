@@ -52,5 +52,3 @@ void main(List<String> args) {
   contents = '$prefix\n$buf\n$suffix';
   file.writeAsStringSync(contents);
 }
-
-String min(String str, [int width = 12]) => str.padRight(width);
