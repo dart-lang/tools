@@ -313,7 +313,6 @@ class HtmlTokenizer implements Iterator<Token> {
 
       // Try to find the longest entity the string will match to take care
       // of &noti for instance.
-
       int entityLen;
       for (entityLen = charStack.length - 1; entityLen > 1; entityLen--) {
         final possibleEntityName = charStack.sublist(0, entityLen).join();
@@ -340,7 +339,11 @@ class HtmlTokenizer implements Iterator<Token> {
           output = '$output${slice(charStack, entityLen).join()}';
         }
       } else {
-        _addToken(ParseErrorToken('expected-named-entity'));
+        if (!fromAttribute) {
+          // Only emit this error token when we're consuming this NOT as part of an attribute.
+          // See: https://html.spec.whatwg.org/multipage/parsing.html#ambiguous-ampersand-state
+          _addToken(ParseErrorToken('expected-named-entity'));
+        }
         stream.unget(charStack.removeLast());
         output = '&${charStack.join()}';
       }
