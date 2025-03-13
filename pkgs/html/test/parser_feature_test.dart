@@ -148,7 +148,7 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     expect(elem.attributeSpans!['extends'], null);
   });
 
-  test('attribute spans if value contains & (non-fatal ParseErrorTokens)', () {
+  test('attribute spans if value contains & (ambiguous ampersand)', () {
     final expectedUrl = 'foo?key=value&key2=value2';
     final text = '<script src="$expectedUrl"></script>';
 
