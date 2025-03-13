@@ -2,6 +2,7 @@
 
 * Update the README link to the markdown playground
   (https://dart-lang.github.io/tools).
+* Update `package:web` API references in the example.
 
 ## 7.3.0
 
