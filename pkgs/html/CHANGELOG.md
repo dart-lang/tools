@@ -1,3 +1,7 @@
+## 0.15.6
+
+- Support "ambiguous ampersand" in attribute values.
+
 ## 0.15.5
 
 - Require Dart `3.2`.
