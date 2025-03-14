@@ -69,9 +69,11 @@ abstract class PackageConfig {
   /// despite the error. The input must still be valid JSON.
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseBytes(Uint8List bytes, Uri baseUri,
-          {void Function(Object error)? onError}) =>
-      parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
+  static PackageConfig parseBytes(
+    Uint8List bytes,
+    Uri baseUri, {
+    void Function(Object error)? onError,
+  }) => parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
 
   /// Parses a package configuration file.
   ///
@@ -89,9 +91,11 @@ abstract class PackageConfig {
   /// despite the error. The input must still be valid JSON.
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseString(String configuration, Uri baseUri,
-          {void Function(Object error)? onError}) =>
-      parsePackageConfigString(configuration, baseUri, onError ?? throwError);
+  static PackageConfig parseString(
+    String configuration,
+    Uri baseUri, {
+    void Function(Object error)? onError,
+  }) => parsePackageConfigString(configuration, baseUri, onError ?? throwError);
 
   /// Parses the JSON data of a package configuration file.
   ///
@@ -110,16 +114,21 @@ abstract class PackageConfig {
   /// despite the error. The input must still be valid JSON.
   /// The result may be [PackageConfig.empty] if there is no way to
   /// extract useful information from the bytes.
-  static PackageConfig parseJson(Object? jsonData, Uri baseUri,
-          {void Function(Object error)? onError}) =>
-      parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
+  static PackageConfig parseJson(
+    Object? jsonData,
+    Uri baseUri, {
+    void Function(Object error)? onError,
+  }) => parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
 
   /// Writes a configuration file for this configuration on [output].
   ///
   /// If [baseUri] is provided, URI references in the generated file
   /// will be made relative to [baseUri] where possible.
-  static void writeBytes(PackageConfig configuration, Sink<Uint8List> output,
-      [Uri? baseUri]) {
+  static void writeBytes(
+    PackageConfig configuration,
+    Sink<Uint8List> output, [
+    Uri? baseUri,
+  ]) {
     writePackageConfigJsonUtf8(configuration, baseUri, output);
   }
 
@@ -127,8 +136,11 @@ abstract class PackageConfig {
   ///
   /// If [baseUri] is provided, URI references in the generated file
   /// will be made relative to [baseUri] where possible.
-  static void writeString(PackageConfig configuration, StringSink output,
-      [Uri? baseUri]) {
+  static void writeString(
+    PackageConfig configuration,
+    StringSink output, [
+    Uri? baseUri,
+  ]) {
     writePackageConfigJsonString(configuration, baseUri, output);
   }
 
@@ -136,9 +148,10 @@ abstract class PackageConfig {
   ///
   /// If [baseUri] is provided, URI references in the generated data
   /// will be made relative to [baseUri] where possible.
-  static Map<String, Object?> toJson(PackageConfig configuration,
-          [Uri? baseUri]) =>
-      packageConfigToJson(configuration, baseUri);
+  static Map<String, Object?> toJson(
+    PackageConfig configuration, [
+    Uri? baseUri,
+  ]) => packageConfigToJson(configuration, baseUri);
 
   /// The configuration version number.
   ///
@@ -231,13 +244,23 @@ abstract class Package {
   ///
   /// If [extraData] is supplied, it will be available as the
   /// [Package.extraData] of the created package.
-  factory Package(String name, Uri root,
-          {Uri? packageUriRoot,
-          LanguageVersion? languageVersion,
-          Object? extraData,
-          bool relativeRoot = true}) =>
-      SimplePackage.validate(name, root, packageUriRoot, languageVersion,
-          extraData, relativeRoot, throwError)!;
+  factory Package(
+    String name,
+    Uri root, {
+    Uri? packageUriRoot,
+    LanguageVersion? languageVersion,
+    Object? extraData,
+    bool relativeRoot = true,
+  }) =>
+      SimplePackage.validate(
+        name,
+        root,
+        packageUriRoot,
+        languageVersion,
+        extraData,
+        relativeRoot,
+        throwError,
+      )!;
 
   /// The package-name of the package.
   String get name;
@@ -330,9 +353,10 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   /// If [onError] is not supplied, it defaults to throwing the exception.
   /// If the call does not throw, then an [InvalidLanguageVersion] is returned
   /// containing the original [source].
-  static LanguageVersion parse(String source,
-          {void Function(Object error)? onError}) =>
-      parseLanguageVersion(source, onError ?? throwError);
+  static LanguageVersion parse(
+    String source, {
+    void Function(Object error)? onError,
+  }) => parseLanguageVersion(source, onError ?? throwError);
 
   /// The major language version.
   ///
@@ -485,11 +509,15 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     return compareTo(other) >= 0;
   }
 
-  static Never _throwThisInvalid() => throw StateError(
-      'Can\'t compare an invalid language version to another language version. '
-      'Verify language versions are valid after parsing.');
+  static Never _throwThisInvalid() =>
+      throw StateError(
+        'Can\'t compare an invalid language version to another language version. '
+        'Verify language versions are valid after parsing.',
+      );
 
-  static Never _throwOtherInvalid() => throw StateError(
-      'Can\'t compare a language version to an invalid language version. '
-      'Verify language versions are valid after parsing.');
+  static Never _throwOtherInvalid() =>
+      throw StateError(
+        'Can\'t compare a language version to an invalid language version. '
+        'Verify language versions are valid after parsing.',
+      );
 }

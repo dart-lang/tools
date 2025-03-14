@@ -43,10 +43,14 @@ const packagesFileName = '.packages';
 ///
 /// The file must exist and be a normal file.
 Future<PackageConfig> readAnyConfigFile(
-    File file, bool preferNewest, void Function(Object error) onError) async {
+  File file,
+  bool preferNewest,
+  void Function(Object error) onError,
+) async {
   if (preferNewest && fileName(file.path) == packagesFileName) {
     var alternateFile = File(
-        pathJoin(dirName(file.path), dartToolDirName, packageConfigFileName));
+      pathJoin(dirName(file.path), dartToolDirName, packageConfigFileName),
+    );
     if (alternateFile.existsSync()) {
       return await readPackageConfigJsonFile(alternateFile, onError);
     }
@@ -63,13 +67,17 @@ Future<PackageConfig> readAnyConfigFile(
 
 /// Like [readAnyConfigFile] but uses a URI and an optional loader.
 Future<PackageConfig> readAnyConfigFileUri(
-    Uri file,
-    Future<Uint8List?> Function(Uri uri)? loader,
-    void Function(Object error) onError,
-    bool preferNewest) async {
+  Uri file,
+  Future<Uint8List?> Function(Uri uri)? loader,
+  void Function(Object error) onError,
+  bool preferNewest,
+) async {
   if (file.isScheme('package')) {
     throw PackageConfigArgumentError(
-        file, 'file', 'Must not be a package: URI');
+      file,
+      'file',
+      'Must not be a package: URI',
+    );
   }
   if (loader == null) {
     if (file.isScheme('file')) {
@@ -98,8 +106,13 @@ Future<PackageConfig> readAnyConfigFileUri(
     return const SimplePackageConfig.empty();
   }
   if (bytes == null) {
-    onError(PackageConfigArgumentError(
-        file.toString(), 'file', 'File cannot be read'));
+    onError(
+      PackageConfigArgumentError(
+        file.toString(),
+        'file',
+        'File cannot be read',
+      ),
+    );
     return const SimplePackageConfig.empty();
   }
   return parseAnyConfigFile(bytes, file, onError);
@@ -110,7 +123,10 @@ Future<PackageConfig> readAnyConfigFileUri(
 /// Assumes it's a JSON file if the first non-whitespace character
 /// is `{`, otherwise assumes it's a `.packages` file.
 PackageConfig parseAnyConfigFile(
-    Uint8List bytes, Uri file, void Function(Object error) onError) {
+  Uint8List bytes,
+  Uri file,
+  void Function(Object error) onError,
+) {
   var firstChar = firstNonWhitespaceChar(bytes);
   if (firstChar != $lbrace) {
     // Definitely not a JSON object, probably a .packages.
@@ -120,7 +136,9 @@ PackageConfig parseAnyConfigFile(
 }
 
 Future<PackageConfig> readPackageConfigJsonFile(
-    File file, void Function(Object error) onError) async {
+  File file,
+  void Function(Object error) onError,
+) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
@@ -132,7 +150,9 @@ Future<PackageConfig> readPackageConfigJsonFile(
 }
 
 Future<PackageConfig> readDotPackagesFile(
-    File file, void Function(Object error) onError) async {
+  File file,
+  void Function(Object error) onError,
+) async {
   Uint8List bytes;
   try {
     bytes = await file.readAsBytes();
@@ -144,7 +164,9 @@ Future<PackageConfig> readDotPackagesFile(
 }
 
 Future<void> writePackageConfigJsonFile(
-    PackageConfig config, Directory targetDirectory) async {
+  PackageConfig config,
+  Directory targetDirectory,
+) async {
   // Write .dart_tool/package_config.json first.
   var dartToolDir = Directory(pathJoin(targetDirectory.path, dartToolDirName));
   await dartToolDir.create(recursive: true);
