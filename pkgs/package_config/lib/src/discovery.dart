@@ -36,8 +36,12 @@ final Uri parentPath = Uri(path: '..');
 /// If [minVersion] is greater than 1, `.packages` files are ignored.
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
-Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
-    int minVersion, bool recursive, void Function(Object error) onError) async {
+Future<PackageConfig?> findPackageConfig(
+  Directory baseDirectory,
+  int minVersion,
+  bool recursive,
+  void Function(Object error) onError,
+) async {
   var directory = baseDirectory;
   if (!directory.isAbsolute) directory = directory.absolute;
   if (!await directory.exists()) {
@@ -45,8 +49,11 @@ Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
   }
   do {
     // Check for $cwd/.packages
-    var packageConfig =
-        await findPackageConfigInDirectory(directory, minVersion, onError);
+    var packageConfig = await findPackageConfigInDirectory(
+      directory,
+      minVersion,
+      onError,
+    );
     if (packageConfig != null) return packageConfig;
     if (!recursive) break;
     // Check in parent directories.
@@ -59,23 +66,30 @@ Future<PackageConfig?> findPackageConfig(Directory baseDirectory,
 
 /// Similar to [findPackageConfig] but based on a URI.
 Future<PackageConfig?> findPackageConfigUri(
-    Uri location,
-    int minVersion,
-    Future<Uint8List?> Function(Uri uri)? loader,
-    void Function(Object error) onError,
-    bool recursive) async {
+  Uri location,
+  int minVersion,
+  Future<Uint8List?> Function(Uri uri)? loader,
+  void Function(Object error) onError,
+  bool recursive,
+) async {
   if (location.isScheme('package')) {
-    onError(PackageConfigArgumentError(
-        location, 'location', 'Must not be a package: URI'));
+    onError(
+      PackageConfigArgumentError(
+        location,
+        'location',
+        'Must not be a package: URI',
+      ),
+    );
     return null;
   }
   if (loader == null) {
     if (location.isScheme('file')) {
       return findPackageConfig(
-          Directory.fromUri(location.resolveUri(currentPath)),
-          minVersion,
-          recursive,
-          onError);
+        Directory.fromUri(location.resolveUri(currentPath)),
+        minVersion,
+        recursive,
+        onError,
+      );
     }
     loader = defaultLoader;
   }
@@ -116,8 +130,11 @@ Future<PackageConfig?> findPackageConfigUri(
 /// If [minVersion] is greater than 1, `.packages` files are ignored.
 /// If [minVersion] is greater than the version read from the
 /// `package_config.json` file, it too is ignored.
-Future<PackageConfig?> findPackageConfigInDirectory(Directory directory,
-    int minVersion, void Function(Object error) onError) async {
+Future<PackageConfig?> findPackageConfigInDirectory(
+  Directory directory,
+  int minVersion,
+  void Function(Object error) onError,
+) async {
   var packageConfigFile = await checkForPackageConfigJsonFile(directory);
   if (packageConfigFile != null) {
     var config = await readPackageConfigJsonFile(packageConfigFile, onError);
@@ -135,8 +152,9 @@ Future<PackageConfig?> findPackageConfigInDirectory(Directory directory,
 
 Future<File?> checkForPackageConfigJsonFile(Directory directory) async {
   assert(directory.isAbsolute);
-  var file =
-      File(pathJoin(directory.path, '.dart_tool', 'package_config.json'));
+  var file = File(
+    pathJoin(directory.path, '.dart_tool', 'package_config.json'),
+  );
   if (await file.exists()) return file;
   return null;
 }

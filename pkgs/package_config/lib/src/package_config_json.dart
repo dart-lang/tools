@@ -23,7 +23,7 @@ const List<String> _packageNames = [
   _nameKey,
   _rootUriKey,
   _packageUriKey,
-  _languageVersionKey
+  _languageVersionKey,
 ];
 
 const String _generatedKey = 'generated';
@@ -33,7 +33,10 @@ const String _generatorVersionKey = 'generatorVersion';
 final _jsonUtf8Decoder = json.fuse(utf8).decoder;
 
 PackageConfig parsePackageConfigBytes(
-    Uint8List bytes, Uri file, void Function(Object error) onError) {
+  Uint8List bytes,
+  Uri file,
+  void Function(Object error) onError,
+) {
   // TODO(lrn): Make this simpler. Maybe parse directly from bytes.
   Object? jsonObject;
   try {
@@ -46,7 +49,10 @@ PackageConfig parsePackageConfigBytes(
 }
 
 PackageConfig parsePackageConfigString(
-    String source, Uri file, void Function(Object error) onError) {
+  String source,
+  Uri file,
+  void Function(Object error) onError,
+) {
   Object? jsonObject;
   try {
     jsonObject = jsonDecode(source);
@@ -78,10 +84,16 @@ PackageConfig parsePackageConfigString(
 /// The [baseLocation] is used as base URI to resolve the "rootUri"
 /// URI reference string.
 PackageConfig parsePackageConfigJson(
-    Object? json, Uri baseLocation, void Function(Object error) onError) {
+  Object? json,
+  Uri baseLocation,
+  void Function(Object error) onError,
+) {
   if (!baseLocation.hasScheme || baseLocation.isScheme('package')) {
-    throw PackageConfigArgumentError(baseLocation.toString(), 'baseLocation',
-        'Must be an absolute non-package: URI');
+    throw PackageConfigArgumentError(
+      baseLocation.toString(),
+      'baseLocation',
+      'Must be an absolute non-package: URI',
+    );
   }
 
   if (!baseLocation.path.endsWith('/')) {
@@ -162,16 +174,25 @@ PackageConfig parsePackageConfigJson(
     }
 
     return SimplePackage.validate(
-        name!, root, packageRoot, version, extraData, relativeRoot, (error) {
-      if (error is ArgumentError) {
-        onError(
-          PackageConfigFormatException(
-              error.message.toString(), error.invalidValue),
-        );
-      } else {
-        onError(error);
-      }
-    });
+      name!,
+      root,
+      packageRoot,
+      version,
+      extraData,
+      relativeRoot,
+      (error) {
+        if (error is ArgumentError) {
+          onError(
+            PackageConfigFormatException(
+              error.message.toString(),
+              error.invalidValue,
+            ),
+          );
+        } else {
+          onError(error);
+        }
+      },
+    );
   }
 
   var map = checkType<Map<String, Object?>>(json, 'value');
@@ -188,8 +209,10 @@ PackageConfig parsePackageConfigJson(
         var packageArray = checkType<List<Object?>>(value, _packagesKey) ?? [];
         var packages = <Package>[];
         for (var package in packageArray) {
-          var packageMap =
-              checkType<Map<String, Object?>>(package, 'package entry');
+          var packageMap = checkType<Map<String, Object?>>(
+            package,
+            'package entry',
+          );
           if (packageMap != null) {
             var entry = parsePackage(packageMap);
             if (entry != null) {
@@ -216,7 +239,9 @@ PackageConfig parsePackageConfigJson(
     if (error is ArgumentError) {
       onError(
         PackageConfigFormatException(
-            error.message.toString(), error.invalidValue),
+          error.message.toString(),
+          error.invalidValue,
+        ),
       );
     } else {
       onError(error);
@@ -227,14 +252,20 @@ PackageConfig parsePackageConfigJson(
 final _jsonUtf8Encoder = JsonUtf8Encoder('  ');
 
 void writePackageConfigJsonUtf8(
-    PackageConfig config, Uri? baseUri, Sink<List<int>> output) {
+  PackageConfig config,
+  Uri? baseUri,
+  Sink<List<int>> output,
+) {
   // Can be optimized.
   var data = packageConfigToJson(config, baseUri);
   output.add(_jsonUtf8Encoder.convert(data) as Uint8List);
 }
 
 void writePackageConfigJsonString(
-    PackageConfig config, Uri? baseUri, StringSink output) {
+  PackageConfig config,
+  Uri? baseUri,
+  StringSink output,
+) {
   // Can be optimized.
   var data = packageConfigToJson(config, baseUri);
   output.write(const JsonEncoder.withIndent('  ').convert(data));
@@ -248,19 +279,21 @@ Map<String, Object?> packageConfigToJson(PackageConfig config, Uri? baseUri) =>
         for (var package in config.packages)
           <String, Object?>{
             _nameKey: package.name,
-            _rootUriKey: trailingSlash((package.relativeRoot
-                    ? relativizeUri(package.root, baseUri)
-                    : package.root)
-                .toString()),
+            _rootUriKey: trailingSlash(
+              (package.relativeRoot
+                      ? relativizeUri(package.root, baseUri)
+                      : package.root)
+                  .toString(),
+            ),
             if (package.root != package.packageUriRoot)
               _packageUriKey: trailingSlash(
-                  relativizeUri(package.packageUriRoot, package.root)
-                      .toString()),
+                relativizeUri(package.packageUriRoot, package.root).toString(),
+              ),
             if (package.languageVersion != null &&
                 package.languageVersion is! InvalidLanguageVersion)
               _languageVersionKey: package.languageVersion.toString(),
             ...?_extractExtraData(package.extraData, _packageNames),
-          }
+          },
       ],
     };
 
@@ -273,7 +306,8 @@ void writeDotPackages(PackageConfig config, Uri baseUri, StringSink output) {
     if (generator is String) {
       var generated = extraData[_generatedKey];
       var generatorVersion = extraData[_generatorVersionKey];
-      comment = 'Generated by $generator'
+      comment =
+          'Generated by $generator'
           "${generatorVersion is String ? " $generatorVersion" : ""}"
           "${generated is String ? " on $generated" : ""}.";
     }
@@ -286,14 +320,16 @@ void writeDotPackages(PackageConfig config, Uri baseUri, StringSink output) {
 /// If the value contains any of the [reservedNames] for the current context,
 /// entries with that name in the extra data are dropped.
 Map<String, Object?>? _extractExtraData(
-    Object? data, Iterable<String> reservedNames) {
+  Object? data,
+  Iterable<String> reservedNames,
+) {
   if (data is Map<String, Object?>) {
     if (data.isEmpty) return null;
     for (var name in reservedNames) {
       if (data.containsKey(name)) {
         var filteredData = {
           for (var key in data.keys)
-            if (!reservedNames.contains(key)) key: data[key]
+            if (!reservedNames.contains(key)) key: data[key],
         };
         if (filteredData.isEmpty) return null;
         for (var value in filteredData.values) {

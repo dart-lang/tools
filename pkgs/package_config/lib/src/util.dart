@@ -52,12 +52,18 @@ String checkValidPackageUri(Uri packageUri, String name) {
   }
   if (packageUri.hasAuthority) {
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package URIs must not have a host part');
+      packageUri,
+      name,
+      'Package URIs must not have a host part',
+    );
   }
   if (packageUri.hasQuery) {
     // A query makes no sense if resolved to a file: URI.
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package URIs must not have a query part');
+      packageUri,
+      name,
+      'Package URIs must not have a query part',
+    );
   }
   if (packageUri.hasFragment) {
     // We could leave the fragment after the URL when resolving,
@@ -65,27 +71,42 @@ String checkValidPackageUri(Uri packageUri, String name) {
     // "package:foo/foo.dart#2" were considered different libraries.
     // Keep the syntax open in case we ever get multiple libraries in one file.
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package URIs must not have a fragment part');
+      packageUri,
+      name,
+      'Package URIs must not have a fragment part',
+    );
   }
   if (packageUri.path.startsWith('/')) {
     throw PackageConfigArgumentError(
-        packageUri, name, "Package URIs must not start with a '/'");
+      packageUri,
+      name,
+      "Package URIs must not start with a '/'",
+    );
   }
   var firstSlash = packageUri.path.indexOf('/');
   if (firstSlash == -1) {
-    throw PackageConfigArgumentError(packageUri, name,
-        "Package URIs must start with the package name followed by a '/'");
+    throw PackageConfigArgumentError(
+      packageUri,
+      name,
+      "Package URIs must start with the package name followed by a '/'",
+    );
   }
   var packageName = packageUri.path.substring(0, firstSlash);
   var badIndex = checkPackageName(packageName);
   if (badIndex >= 0) {
     if (packageName.isEmpty) {
       throw PackageConfigArgumentError(
-          packageUri, name, 'Package names mus be non-empty');
+        packageUri,
+        name,
+        'Package names mus be non-empty',
+      );
     }
     if (badIndex == packageName.length) {
-      throw PackageConfigArgumentError(packageUri, name,
-          "Package names must contain at least one non-'.' character");
+      throw PackageConfigArgumentError(
+        packageUri,
+        name,
+        "Package names must contain at least one non-'.' character",
+      );
     }
     assert(badIndex < packageName.length);
     var badCharCode = packageName.codeUnitAt(badIndex);
@@ -95,7 +116,10 @@ String checkValidPackageUri(Uri packageUri, String name) {
       badChar = "'${packageName[badIndex]}' ($badChar)";
     }
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package names must not contain $badChar');
+      packageUri,
+      name,
+      'Package names must not contain $badChar',
+    );
   }
   return packageName;
 }
@@ -173,11 +197,12 @@ Uri? relativizeUri(Uri? uri, Uri? baseUri) {
   assert(baseUri.isAbsolute);
   if (uri!.hasQuery || uri.hasFragment) {
     uri = Uri(
-        scheme: uri.scheme,
-        userInfo: uri.hasAuthority ? uri.userInfo : null,
-        host: uri.hasAuthority ? uri.host : null,
-        port: uri.hasAuthority ? uri.port : null,
-        path: uri.path);
+      scheme: uri.scheme,
+      userInfo: uri.hasAuthority ? uri.userInfo : null,
+      host: uri.hasAuthority ? uri.host : null,
+      port: uri.hasAuthority ? uri.port : null,
+      path: uri.path,
+    );
   }
 
   // Already relative. We assume the caller knows what they are doing.

@@ -13,20 +13,25 @@ abstract class PackageConfigError {
 class PackageConfigArgumentError extends ArgumentError
     implements PackageConfigError {
   PackageConfigArgumentError(
-      Object? super.value, String super.name, String super.message)
-      : super.value();
+    Object? super.value,
+    String super.name,
+    String super.message,
+  ) : super.value();
 
   PackageConfigArgumentError.from(ArgumentError error)
-      : super.value(error.invalidValue, error.name, error.message);
+    : super.value(error.invalidValue, error.name, error.message);
 }
 
 class PackageConfigFormatException extends FormatException
     implements PackageConfigError {
-  PackageConfigFormatException(super.message, Object? super.source,
-      [super.offset]);
+  PackageConfigFormatException(
+    super.message,
+    Object? super.source, [
+    super.offset,
+  ]);
 
   PackageConfigFormatException.from(FormatException exception)
-      : super(exception.message, exception.source, exception.offset);
+    : super(exception.message, exception.source, exception.offset);
 }
 
 /// The default `onError` handler.
