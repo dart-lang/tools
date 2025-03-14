@@ -1,4 +1,6 @@
-## Supported MIME types and file extensions
+## MIME types
+
+Supported media types and file extensions.
 
 <!-- start table -->
 
