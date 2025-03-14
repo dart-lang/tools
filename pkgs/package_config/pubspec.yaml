@@ -1,5 +1,5 @@
 name: package_config
-version: 2.2.0
+version: 2.3.0-wip
 description: Support for reading and writing Dart Package Configuration files.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/package_config
 issue_tracker: https://github.com/dart-lang/tools/labels/package%3Apackage_config
