@@ -2,32 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'default_extension_map.dart';
-import 'magic_number.dart';
-
-final MimeTypeResolver _globalResolver = MimeTypeResolver();
-
-/// The maximum number of bytes needed, to match all default magic-numbers.
-int get defaultMagicNumbersMaxLength => _globalResolver.magicNumbersMaxLength;
-
-/// Extract the extension from [path] and use that for MIME-type lookup, using
-/// the default extension map.
-///
-/// If no matching MIME-type was found, `null` is returned.
-///
-/// If [headerBytes] is present, a match for known magic-numbers will be
-/// performed first. This allows the correct mime-type to be found, even though
-/// a file have been saved using the wrong file-name extension. If less than
-/// [defaultMagicNumbersMaxLength] bytes was provided, some magic-numbers won't
-/// be matched against.
-String? lookupMimeType(String path, {List<int>? headerBytes}) =>
-    _globalResolver.lookup(path, headerBytes: headerBytes);
+import 'magic_numbers.dart';
+import 'mime_tables.g.dart' show extensionToMime, mimeToExtensions;
 
 /// MIME-type resolver class, used to customize the lookup of mime-types.
 class MimeTypeResolver {
-  final Map<String, String> _extensionMap = {};
+  final Map<String, String> _extensionToMime = {};
   final List<MagicNumber> _magicNumbers = [];
   final bool _useDefault;
+
   int _magicNumbersMaxLength;
 
   /// Create a new empty [MimeTypeResolver].
@@ -44,6 +27,11 @@ class MimeTypeResolver {
   /// performing [lookup] with headerBytes present.
   int get magicNumbersMaxLength => _magicNumbersMaxLength;
 
+  @Deprecated('See MimeTypeResolver.lookupMimeType')
+  String? lookup(String path, {List<int>? headerBytes}) {
+    return lookupMimeType(path, headerBytes: headerBytes);
+  }
+
   /// Extract the extension from [path] and use that for MIME-type lookup.
   ///
   /// If no matching MIME-type was found, `null` is returned.
@@ -53,7 +41,7 @@ class MimeTypeResolver {
   /// though a file have been saved using the wrong file-name extension. If less
   /// than [magicNumbersMaxLength] bytes was provided, some magic-numbers won't
   /// be matched against.
-  String? lookup(String path, {List<int>? headerBytes}) {
+  String? lookupMimeType(String path, {List<int>? headerBytes}) {
     String? result;
     if (headerBytes != null) {
       result = _matchMagic(headerBytes, _magicNumbers);
@@ -64,19 +52,39 @@ class MimeTypeResolver {
       }
     }
     final ext = _ext(path);
-    result = _extensionMap[ext];
+    result = _extensionToMime[ext];
     if (result != null) return result;
     if (_useDefault) {
-      result = defaultExtensionMap[ext];
+      result = extensionToMime[ext];
       if (result != null) return result;
     }
+    return null;
+  }
+
+  /// The default file extension for a given MIME type.
+  ///
+  /// If [mimeType] has multiple associated extensions, the returned string is
+  /// one of those, chosen as the default extension for that MIME type.
+  ///
+  /// Returns `null` if [mimeType] is not a recognized and supported MIME type.
+  String? extensionFromMime(String mimeType) {
+    if (_useDefault) {
+      return mimeToExtensions[mimeType.toLowerCase()]?.first;
+    }
+
+    for (final entry in _extensionToMime.entries) {
+      if (entry.value == mimeType) {
+        return entry.key;
+      }
+    }
+
     return null;
   }
 
   /// Add a new MIME-type mapping to the [MimeTypeResolver]. If the [extension]
   /// is already present in the [MimeTypeResolver], it'll be overwritten.
   void addExtension(String extension, String mimeType) {
-    _extensionMap[extension] = mimeType;
+    _extensionToMime[extension] = mimeType;
   }
 
   /// Add a new magic-number mapping to the [MimeTypeResolver].

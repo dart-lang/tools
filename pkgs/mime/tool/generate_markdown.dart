@@ -2,20 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Script to update the `../doc/media_types.md` file from
-/// [defaultExtensionMap].
+/// Script to update the `../doc/media_types.md` file.
 library;
 
 import 'dart:io';
 
 import 'package:mime/mime.dart';
-import 'package:mime/src/default_extension_map.dart' show defaultExtensionMap;
+import 'package:mime/src/mime_tables.g.dart' show extensionToMime;
 
 void main() {
   // Find all the mime types and extensions.
   final mimeToExts = <String, List<String>>{};
 
-  for (final entry in defaultExtensionMap.entries) {
+  for (final entry in extensionToMime.entries) {
     final ext = entry.key;
     final mime = entry.value;
 
@@ -37,8 +36,8 @@ void main() {
   final buf = StringBuffer(prefix);
   buf.writeln();
   buf.write('''
-| MIME type | Default | Additional |
-| --- | --- | --- |
+| MIME type | Default | Additional extensions |
+| :--- | :--- | :--- |
 ''');
 
   for (final mime in mimeTypes) {
