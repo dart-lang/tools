@@ -515,7 +515,8 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
   }
 
   static Never _throwThisInvalid() => throw StateError(
-        'Can\'t compare an invalid language version to another language version. '
+        'Can\'t compare an invalid language version '
+        'to another language version. '
         'Verify language versions are valid after parsing.',
       );
 
