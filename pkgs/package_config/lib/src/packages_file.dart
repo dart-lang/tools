@@ -30,10 +30,18 @@ final LanguageVersion _languageVersion = LanguageVersion(2, 7);
 /// [Package.packageUriRoot] is the same as its [Package.root]
 /// and it has no [Package.languageVersion].
 PackageConfig parse(
-    List<int> source, Uri baseLocation, void Function(Object error) onError) {
+  List<int> source,
+  Uri baseLocation,
+  void Function(Object error) onError,
+) {
   if (baseLocation.isScheme('package')) {
-    onError(PackageConfigArgumentError(
-        baseLocation, 'baseLocation', 'Must not be a package: URI'));
+    onError(
+      PackageConfigArgumentError(
+        baseLocation,
+        'baseLocation',
+        'Must not be a package: URI',
+      ),
+    );
     return PackageConfig.empty;
   }
   var index = 0;
@@ -49,8 +57,9 @@ PackageConfig parse(
       continue;
     }
     if (char == $colon) {
-      onError(PackageConfigFormatException(
-          'Missing package name', source, index - 1));
+      onError(
+        PackageConfigFormatException('Missing package name', source, index - 1),
+      );
       ignoreLine = true; // Ignore if package name is invalid.
     } else {
       ignoreLine = char == $hash; // Ignore if comment.
@@ -73,23 +82,39 @@ PackageConfig parse(
     if (ignoreLine) continue;
     if (separatorIndex < 0) {
       onError(
-          PackageConfigFormatException("No ':' on line", source, index - 1));
+        PackageConfigFormatException("No ':' on line", source, index - 1),
+      );
       continue;
     }
     var packageName = String.fromCharCodes(source, start, separatorIndex);
     var invalidIndex = checkPackageName(packageName);
     if (invalidIndex >= 0) {
-      onError(PackageConfigFormatException(
-          'Not a valid package name', source, start + invalidIndex));
+      onError(
+        PackageConfigFormatException(
+          'Not a valid package name',
+          source,
+          start + invalidIndex,
+        ),
+      );
       continue;
     }
     if (queryStart >= 0) {
-      onError(PackageConfigFormatException(
-          'Location URI must not have query', source, queryStart));
+      onError(
+        PackageConfigFormatException(
+          'Location URI must not have query',
+          source,
+          queryStart,
+        ),
+      );
       end = queryStart;
     } else if (fragmentStart >= 0) {
-      onError(PackageConfigFormatException(
-          'Location URI must not have fragment', source, fragmentStart));
+      onError(
+        PackageConfigFormatException(
+          'Location URI must not have fragment',
+          source,
+          fragmentStart,
+        ),
+      );
       end = fragmentStart;
     }
     var packageValue = String.fromCharCodes(source, separatorIndex + 1, end);
@@ -103,8 +128,13 @@ PackageConfig parse(
     var relativeRoot = !hasAbsolutePath(packageLocation);
     packageLocation = baseLocation.resolveUri(packageLocation);
     if (packageLocation.isScheme('package')) {
-      onError(PackageConfigFormatException(
-          'Package URI as location for package', source, separatorIndex + 1));
+      onError(
+        PackageConfigFormatException(
+          'Package URI as location for package',
+          source,
+          separatorIndex + 1,
+        ),
+      );
       continue;
     }
     var path = packageLocation.path;
@@ -113,24 +143,39 @@ PackageConfig parse(
       packageLocation = packageLocation.replace(path: path);
     }
     if (packageNames.contains(packageName)) {
-      onError(PackageConfigFormatException(
-          'Same package name occurred more than once', source, start));
+      onError(
+        PackageConfigFormatException(
+          'Same package name occurred more than once',
+          source,
+          start,
+        ),
+      );
       continue;
     }
     var rootUri = packageLocation;
     if (path.endsWith('/lib/')) {
       // Assume default Pub package layout. Include package itself in root.
-      rootUri =
-          packageLocation.replace(path: path.substring(0, path.length - 4));
+      rootUri = packageLocation.replace(
+        path: path.substring(0, path.length - 4),
+      );
     }
-    var package = SimplePackage.validate(packageName, rootUri, packageLocation,
-        _languageVersion, null, relativeRoot, (error) {
-      if (error is ArgumentError) {
-        onError(PackageConfigFormatException(error.message.toString(), source));
-      } else {
-        onError(error);
-      }
-    });
+    var package = SimplePackage.validate(
+      packageName,
+      rootUri,
+      packageLocation,
+      _languageVersion,
+      null,
+      relativeRoot,
+      (error) {
+        if (error is ArgumentError) {
+          onError(
+            PackageConfigFormatException(error.message.toString(), source),
+          );
+        } else {
+          onError(error);
+        }
+      },
+    );
     if (package != null) {
       packages.add(package);
       packageNames.add(packageName);
@@ -148,8 +193,12 @@ PackageConfig parse(
 ///
 /// If [baseUri] is provided, package locations will be made relative
 /// to the base URI, if possible, before writing.
-void write(StringSink output, PackageConfig config,
-    {Uri? baseUri, String? comment}) {
+void write(
+  StringSink output,
+  PackageConfig config, {
+  Uri? baseUri,
+  String? comment,
+}) {
   if (baseUri != null && !baseUri.isAbsolute) {
     throw PackageConfigArgumentError(baseUri, 'baseUri', 'Must be absolute');
   }
@@ -172,11 +221,17 @@ void write(StringSink output, PackageConfig config,
     // Validate packageName.
     if (!isValidPackageName(packageName)) {
       throw PackageConfigArgumentError(
-          config, 'config', '"$packageName" is not a valid package name');
+        config,
+        'config',
+        '"$packageName" is not a valid package name',
+      );
     }
     if (uri.scheme == 'package') {
       throw PackageConfigArgumentError(
-          config, 'config', 'Package location must not be a package URI: $uri');
+        config,
+        'config',
+        'Package location must not be a package URI: $uri',
+      );
     }
     output.write(packageName);
     output.write(':');

@@ -48,8 +48,10 @@ void bench(final int size, final bool doPrint) {
   final lookup = stopwatch.elapsedMilliseconds;
 
   if (doPrint) {
-    print('Read file with $size packages in $read ms, '
-        'looked up all packages in $lookup ms');
+    print(
+      'Read file with $size packages in $read ms, '
+      'looked up all packages in $lookup ms',
+    );
   }
 }
 
