@@ -45,7 +45,8 @@ Future<PackageConfig> loadPackageConfig(
   File file, {
   bool preferNewest = true,
   void Function(Object error)? onError,
-}) => readAnyConfigFile(file, preferNewest, onError ?? throwError);
+}) =>
+    readAnyConfigFile(file, preferNewest, onError ?? throwError);
 
 /// Reads a specific package configuration URI.
 ///
@@ -93,7 +94,8 @@ Future<PackageConfig> loadPackageConfigUri(
   Future<Uint8List?> Function(Uri uri)? loader,
   bool preferNewest = true,
   void Function(Object error)? onError,
-}) => readAnyConfigFileUri(file, loader, onError ?? throwError, preferNewest);
+}) =>
+    readAnyConfigFileUri(file, loader, onError ?? throwError, preferNewest);
 
 /// Finds a package configuration relative to [directory].
 ///
@@ -219,4 +221,5 @@ Future<PackageConfig?> findPackageConfigUri(
 Future<void> savePackageConfig(
   PackageConfig configuration,
   Directory directory,
-) => writePackageConfigJsonFile(configuration, directory);
+) =>
+    writePackageConfigJsonFile(configuration, directory);

@@ -19,7 +19,7 @@ class PackageConfigArgumentError extends ArgumentError
   ) : super.value();
 
   PackageConfigArgumentError.from(ArgumentError error)
-    : super.value(error.invalidValue, error.name, error.message);
+      : super.value(error.invalidValue, error.name, error.message);
 }
 
 class PackageConfigFormatException extends FormatException
@@ -31,7 +31,7 @@ class PackageConfigFormatException extends FormatException
   ]);
 
   PackageConfigFormatException.from(FormatException exception)
-    : super(exception.message, exception.source, exception.offset);
+      : super(exception.message, exception.source, exception.offset);
 }
 
 /// The default `onError` handler.

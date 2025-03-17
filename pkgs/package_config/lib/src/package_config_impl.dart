@@ -30,9 +30,13 @@ class SimplePackageConfig implements PackageConfig {
     var validVersion = _validateVersion(version, onError);
     var sortedPackages = [...packages]..sort(_compareRoot);
     var packageTree = _validatePackages(packages, sortedPackages, onError);
-    return SimplePackageConfig._(validVersion, packageTree, {
-      for (var p in packageTree.allPackages) p.name: p,
-    }, extraData);
+    return SimplePackageConfig._(
+        validVersion,
+        packageTree,
+        {
+          for (var p in packageTree.allPackages) p.name: p,
+        },
+        extraData);
   }
 
   SimplePackageConfig._(
@@ -50,10 +54,10 @@ class SimplePackageConfig implements PackageConfig {
   /// The version number is [PackageConfig.maxVersion] to avoid
   /// minimum-version filters discarding the configuration.
   const SimplePackageConfig.empty()
-    : version = PackageConfig.maxVersion,
-      _packageTree = const EmptyPackageTree(),
-      _packages = const <String, Package>{},
-      extraData = null;
+      : version = PackageConfig.maxVersion,
+        _packageTree = const EmptyPackageTree(),
+        _packages = const <String, Package>{},
+        extraData = null;
 
   static int _validateVersion(
     int version,
@@ -188,8 +192,8 @@ class SimplePackageConfig implements PackageConfig {
   Uri? resolve(Uri packageUri) {
     var packageName = checkValidPackageUri(packageUri, 'packageUri');
     return _packages[packageName]?.packageUriRoot.resolveUri(
-      Uri(path: packageUri.path.substring(packageName.length + 1)),
-    );
+          Uri(path: packageUri.path.substring(packageName.length + 1)),
+        );
   }
 
   @override
