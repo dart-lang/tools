@@ -73,7 +73,8 @@ abstract class PackageConfig {
     Uint8List bytes,
     Uri baseUri, {
     void Function(Object error)? onError,
-  }) => parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
+  }) =>
+      parsePackageConfigBytes(bytes, baseUri, onError ?? throwError);
 
   /// Parses a package configuration file.
   ///
@@ -95,7 +96,8 @@ abstract class PackageConfig {
     String configuration,
     Uri baseUri, {
     void Function(Object error)? onError,
-  }) => parsePackageConfigString(configuration, baseUri, onError ?? throwError);
+  }) =>
+      parsePackageConfigString(configuration, baseUri, onError ?? throwError);
 
   /// Parses the JSON data of a package configuration file.
   ///
@@ -118,7 +120,8 @@ abstract class PackageConfig {
     Object? jsonData,
     Uri baseUri, {
     void Function(Object error)? onError,
-  }) => parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
+  }) =>
+      parsePackageConfigJson(jsonData, baseUri, onError ?? throwError);
 
   /// Writes a configuration file for this configuration on [output].
   ///
@@ -151,7 +154,8 @@ abstract class PackageConfig {
   static Map<String, Object?> toJson(
     PackageConfig configuration, [
     Uri? baseUri,
-  ]) => packageConfigToJson(configuration, baseUri);
+  ]) =>
+      packageConfigToJson(configuration, baseUri);
 
   /// The configuration version number.
   ///
@@ -356,7 +360,8 @@ abstract class LanguageVersion implements Comparable<LanguageVersion> {
   static LanguageVersion parse(
     String source, {
     void Function(Object error)? onError,
-  }) => parseLanguageVersion(source, onError ?? throwError);
+  }) =>
+      parseLanguageVersion(source, onError ?? throwError);
 
   /// The major language version.
   ///
@@ -509,14 +514,12 @@ extension LanguageVersionRelationalOperators on LanguageVersion {
     return compareTo(other) >= 0;
   }
 
-  static Never _throwThisInvalid() =>
-      throw StateError(
+  static Never _throwThisInvalid() => throw StateError(
         'Can\'t compare an invalid language version to another language version. '
         'Verify language versions are valid after parsing.',
       );
 
-  static Never _throwOtherInvalid() =>
-      throw StateError(
+  static Never _throwOtherInvalid() => throw StateError(
         'Can\'t compare a language version to an invalid language version. '
         'Verify language versions are valid after parsing.',
       );
