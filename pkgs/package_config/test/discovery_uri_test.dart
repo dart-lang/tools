@@ -99,10 +99,11 @@ void main() {
         'subdir': {'script.dart': 'main(){}'},
       },
       (directory, loader) async {
-        var config = (await findPackageConfigUri(
-          directory.resolve('subdir/'),
-          loader: loader,
-        ))!;
+        var config =
+            (await findPackageConfigUri(
+              directory.resolve('subdir/'),
+              loader: loader,
+            ))!;
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       },
@@ -116,10 +117,11 @@ void main() {
         'subdir': {'script.dart': 'main(){}'},
       },
       (directory, loader) async {
-        var config = (await findPackageConfigUri(
-          directory.resolve('subdir/'),
-          loader: loader,
-        ))!;
+        var config =
+            (await findPackageConfigUri(
+              directory.resolve('subdir/'),
+              loader: loader,
+            ))!;
         expect(config.version, 1);
         validatePackagesFile(config, directory);
       },
@@ -206,11 +208,12 @@ void main() {
         'subdir': {'.packages': packagesFile, 'script.dart': 'main(){}'},
       },
       (directory, loader) async {
-        var config = (await findPackageConfigUri(
-          directory.resolve('subdir/'),
-          minVersion: 2,
-          loader: loader,
-        ))!;
+        var config =
+            (await findPackageConfigUri(
+              directory.resolve('subdir/'),
+              minVersion: 2,
+              loader: loader,
+            ))!;
         expect(config.version, 2);
         validatePackagesFile(config, directory);
       },
