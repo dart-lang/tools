@@ -21,6 +21,7 @@ void main() {
     expect(extensionFromMime('text/html'), equals('html'));
     expect(extensionFromMime('text/plain'), equals('txt'));
     expect(extensionFromMime('text/x-c'), equals('c'));
+    expect(extensionFromMime('audio/mpeg'), equals('mp3'));
   });
 
   test('invalid-mime-type', () {
