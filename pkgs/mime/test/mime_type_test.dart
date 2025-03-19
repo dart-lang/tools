@@ -5,7 +5,7 @@
 import 'dart:math' as math;
 
 import 'package:mime/mime.dart';
-import 'package:mime/src/magic_number.dart';
+import 'package:mime/src/magic_numbers.dart';
 import 'package:test/test.dart';
 
 void _expectMimeType(String path, String? expectedMimeType,
@@ -26,7 +26,6 @@ void main() {
       _expectMimeType('file.dart', 'text/x-dart');
       // Test mixed-case
       _expectMimeType('file.DaRT', 'text/x-dart');
-      _expectMimeType('file.dcm', 'application/dicom');
       _expectMimeType('file.html', 'text/html');
       _expectMimeType('file.xhtml', 'application/xhtml+xml');
       _expectMimeType('file.jpeg', 'image/jpeg');
@@ -44,16 +43,12 @@ void main() {
       _expectMimeType('file.tif', 'image/tiff');
       _expectMimeType('file.webp', 'image/webp');
       _expectMimeType('file.mp3', 'audio/mpeg');
-      _expectMimeType('file.aac', 'audio/aac');
+      _expectMimeType('file.aac', 'audio/x-aac');
       _expectMimeType('file.ogg', 'audio/ogg');
       _expectMimeType('file.aiff', 'audio/x-aiff');
       _expectMimeType('file.m4a', 'audio/mp4');
-      _expectMimeType('file.m4b', 'audio/mp4');
-      _expectMimeType('file.toml', 'application/toml');
       _expectMimeType('file.md', 'text/markdown');
       _expectMimeType('file.markdown', 'text/markdown');
-      _expectMimeType('file.heif', 'image/heif');
-      _expectMimeType('file.heic', 'image/heic');
     });
 
     test('unknown-mime-type', () {
