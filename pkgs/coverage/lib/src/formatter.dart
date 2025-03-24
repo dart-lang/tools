@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 // ignore_for_file: unnecessary_this
+import 'dart:io';
 
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
@@ -81,6 +82,7 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     List<String>? reportOn,
     Set<Glob>? ignoreGlobs,
     bool Function(String path)? includeUncovered,
+    double? failUnderThreshold,
   }) {
     final pathFilter = _getPathFilter(
       reportOn: reportOn,
@@ -124,17 +126,34 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       }
       buf.write('LF:${lineHits.length}\n');
       buf.write('LH:${lineHits.values.where((v) => v > 0).length}\n');
+
+      final totalLines = lineHits.length;
+      final coveredLines = lineHits.values.where((v) => v > 0).length;
+      final coveragePercentage = totalLines == 0 ? 0.0 : (coveredLines / totalLines) * 100;
+
+      buf.write('LF:$totalLines\n');
+      buf.write('LH:$coveredLines\n');
+      buf.write('Coverage: ${coveragePercentage.toStringAsFixed(2)}%\n'); // Show coverage in report
+      print('Coverage percentage: $coveragePercentage');
+      
+      // Fail-under check: Exit with error if coverage is below threshold
+      if (failUnderThreshold != null && coveragePercentage < failUnderThreshold) {
+        print('Coverage is below the required threshold ($failUnderThreshold%). Failing...');
+        exit(1);
+      }
+
       if (branchHits != null) {
-  for (final line in branchHits.keys.toList()..sort()) {
-    final taken = branchHits[line] ?? 0; // The execution count for this branch
+        for (final line in branchHits.keys.toList()..sort()) {
+          final taken =
+              branchHits[line] ?? 0; // The execution count for this branch
 
-    // If we don't have block & branch IDs, default them to 0
-    const blockId = 0;
-    const branchId = 0;
+          // If we don't have block & branch IDs, default them to 0
+          const blockId = 0;
+          const branchId = 0;
 
-    buf.write('BRDA:$line,$blockId,$branchId,$taken\n');
-  }
-}
+          buf.write('BRDA:$line,$blockId,$branchId,$taken\n');
+        }
+      }
 
       buf.write('end_of_record\n');
     }
@@ -259,4 +278,3 @@ _PathFilter _getPathFilter({List<String>? reportOn, Set<Glob>? ignoreGlobs}) {
     return true;
   };
 }
-
