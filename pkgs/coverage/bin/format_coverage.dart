@@ -10,6 +10,8 @@ import 'package:coverage/src/coverage_options.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
+double coveragePercentage = 0.0;
+
 /// [Environment] stores gathered arguments information.
 class Environment {
   Environment({
@@ -30,7 +32,9 @@ class Environment {
     required this.sdkRoot,
     required this.verbose,
     required this.workers,
+    required this.failUnderThreshold,
   });
+  final int? failUnderThreshold;
 
   String? baseDirectory;
   bool bazel;
@@ -51,10 +55,24 @@ class Environment {
   int workers;
 }
 
+  // Compute overall coverage percentage
+  void calculateCoverage(Map<String, HitMap> hitmap) {
+    var totalLines = 0;
+    var coveredLines = 0;
+
+    for (var entry in hitmap.values) {
+      totalLines += entry.lineHits.length;
+      coveredLines += entry.lineHits.values.where((v) => v > 0).length;
+    }
+
+    coveragePercentage = totalLines == 0 ? 0.0 : (coveredLines / totalLines) * 100;
+    print('Overall Coverage: ${coveragePercentage.toStringAsFixed(2)}%');
+  }
+
 Future<void> main(List<String> arguments) async {
   final defaultOptions = CoverageOptionsProvider().coverageOptions;
   final env = parseArgs(arguments, defaultOptions);
-
+  
   final files = filesToProcess(env.input);
   if (env.verbose) {
     print('Environment:');
@@ -75,6 +93,7 @@ Future<void> main(List<String> arguments) async {
     packagesPath: env.packagesPath,
     packagePath: env.packagePath,
   );
+  calculateCoverage(hitmap);
 
   // All workers are done. Process the data.
   if (env.verbose) {
@@ -138,6 +157,11 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser();
 
   parser
+    ..addOption(
+    'fail-under',
+    help: 'Fails execution if coverage percentage is below the specified threshold.',
+    defaultsTo: null,
+    )
     ..addOption(
       'sdk-root',
       abbr: 's',
@@ -209,11 +233,31 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     print('Usage: dart format_coverage.dart [OPTION...]\n');
     print(parser.usage);
   }
-
+  
   Never fail(String msg) {
-    print('\n$msg\n');
-    printUsage();
-    exit(1);
+  print('\n$msg\n');
+  printUsage();
+  exit(1);
+  }
+
+ // Fail-Under.
+  final failUnder = args['fail-under']?.toString();
+  var failUnderThreshold = int.tryParse(args['fail-under']?.toString() ?? '');
+
+ if (failUnder != null) {
+   failUnderThreshold = int.tryParse(failUnder);
+   print('Parsed failUnderThreshold: $failUnderThreshold');
+   if (failUnderThreshold == null || failUnderThreshold < 0 || failUnderThreshold > 100) {
+     fail('Invalid value for --fail-under. It must be a number between 0 and 100.');
+   }
+  }
+
+ // fail-under check.
+ if (failUnderThreshold != null && coveragePercentage < failUnderThreshold) {
+   print(
+      'Coverage check failed! Coverage (${coveragePercentage.toStringAsFixed(2)}%) '
+      'is below the required threshold ($failUnderThreshold%).');
+    exit(1); // Fail the CI/CD pipeline
   }
 
   if (args['help'] as bool) {
@@ -325,7 +369,9 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       ignoreFiles: ignoredGlobs,
       sdkRoot: sdkRoot,
       verbose: verbose,
-      workers: workers);
+      workers: workers,
+      failUnderThreshold: failUnderThreshold,);
+      
 }
 
 /// Given an absolute path absPath, this function returns a [List] of files
