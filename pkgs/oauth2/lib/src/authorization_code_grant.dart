@@ -182,31 +182,26 @@ class AuthorizationCodeGrant {
   /// query parameters provided to the redirect URL.
   ///
   /// It is a [StateError] to call this more than once.
+
   Uri getAuthorizationUrl(Uri redirect,
-      {Iterable<String>? scopes, String? state}) {
+      {Iterable<String>? scopes, String? state, OAuthPrompt? prompt}) {
     if (_state != _State.initial) {
       throw StateError('The authorization URL has already been generated.');
     }
     _state = _State.awaitingResponse;
 
-    var scopeList = scopes?.toList() ?? <String>[];
-    var codeChallenge = base64Url
-        .encode(sha256.convert(ascii.encode(_codeVerifier)).bytes)
-        .replaceAll('=', '');
-
-    _redirectEndpoint = redirect;
-    _scopes = scopeList;
-    _stateString = state;
     var parameters = {
       'response_type': 'code',
       'client_id': identifier,
       'redirect_uri': redirect.toString(),
-      'code_challenge': codeChallenge,
-      'code_challenge_method': 'S256'
+      'code_challenge': base64Url
+          .encode(sha256.convert(ascii.encode(_codeVerifier)).bytes)
+          .replaceAll('=', ''),
+      'code_challenge_method': 'S256',
+      if (state != null) 'state': state,
+      if (scopes?.isNotEmpty ?? false) 'scope': scopes!.join(_delimiter),
+      if (prompt != null) 'prompt': prompt.value,
     };
-
-    if (state != null) parameters['state'] = state;
-    if (scopeList.isNotEmpty) parameters['scope'] = scopeList.join(_delimiter);
 
     return addQueryParameters(authorizationEndpoint, parameters);
   }
@@ -368,4 +363,20 @@ class _State {
 
   @override
   String toString() => _name;
+}
+
+enum OAuthPrompt {
+  // Forces user reauthentication
+  login('login'),
+  // Forces user to reapprove permissions
+  consent('consent'),
+  // Prompts user to select an account
+  selectAccount('select_account'),
+  // Silent authentication (fails if interaction needed)
+  none('none'),
+  // Forces multi-factor authentication (if supported)
+  mfaRequired('mfa');
+
+  final String value;
+  const OAuthPrompt(this.value);
 }
