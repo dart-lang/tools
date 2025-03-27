@@ -622,7 +622,7 @@ final class Event {
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
-  /// [count] - the number of contexts in which the lint was enabled.
+  /// [count] - the number of options files in which the lint was enabled.
   ///
   /// [name] - the name of the lint.
   Event.lintUsageCount({
