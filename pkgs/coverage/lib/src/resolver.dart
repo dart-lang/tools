@@ -21,6 +21,19 @@ class Resolver {
       Map<String, Uri>? packages})
       : _packages = packages;
 
+  /// Returns a list of all Dart files in the project.
+  List<String> listAllDartFiles({String directoryPath = '.'}) {
+    final dir = Directory(directoryPath);
+    if (!dir.existsSync()) return [];
+
+    return dir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'))
+        .map((file) => file.path)
+        .toList();
+  }
+
   static Future<Resolver> create({
     String? packagesPath,
     String? packagePath,
