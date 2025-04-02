@@ -1,4 +1,5 @@
 .github/                        @dart-ecosystem-admins
+README.md                       @dart-ecosystem-admins
 pkgs/bazel_worker               @dart-bat #create
 pkgs/benchmark_harness          @dart-vm #create
 pkgs/boolean_selector           @dart-ecosystem-admins #assign
