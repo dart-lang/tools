@@ -23,7 +23,7 @@ pkgs/graphs                     @natebosch
 pkgs/html                       @HosseinYousefi
 pkgs/io                         @dart-lang/dart-bat
 pkgs/json_rpc_2                 @dart-lang/dart-ecosystem-team
-pkgs/markdown                   @dart-lang/analyzer-team
+pkgs/markdown                   @dart-lang/dart-model-team @dart-lang/dash-developer-services
 pkgs/mime                       @lrhn
 pkgs/oauth2                     @dart-lang/dart-pub-team
 pkgs/package_config             @dart-lang/dart-ecosystem-team
