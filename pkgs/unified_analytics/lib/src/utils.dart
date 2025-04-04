@@ -76,17 +76,13 @@ Map<String, Object?> generateRequestBody({
   required DashEvent eventName,
   required Map<String, Object?> eventData,
   required UserProperty userProperty,
-  required String? enabledFeatures,
 }) =>
     <String, Object?>{
       'client_id': clientId,
       'events': <Map<String, Object?>>[
         <String, Object?>{
           'name': eventName.label,
-          'params': {
-            ...eventData,
-            if (enabledFeatures != null) 'enabled_features': enabledFeatures,
-          },
+          'params': eventData,
         }
       ],
       'user_properties': userProperty.preparePayload()
