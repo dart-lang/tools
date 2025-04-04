@@ -117,3 +117,12 @@ Privacy Policy (https://policies.google.com/privacy).
 /// If the message below is altered, the version should be incremented so that
 /// users can be prompted with the updated messaging.
 const int kToolsMessageVersion = 1;
+
+/// Constants for Dash tools
+
+/// DevTools:
+const String devtoolsEventLabel = 'devtools_event';
+
+const String propertyEditorId = 'propertyEditorSidebar';
+
+const String propertyEditorLogStatsName = 'property_editor';
