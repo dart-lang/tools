@@ -8,27 +8,15 @@ import 'enums.dart';
 
 final class Event {
   final DashEvent eventName;
-  late final Map<String, Object?> eventData;
-
-  Event._({required this.eventName, required this.eventData}) {
-    if (eventData.containsKey('enabled_features')) {
-      throw ArgumentError.value(
-        eventData,
-        'eventData',
-        'The enabled_features key is reserved and cannot '
-            "be used as part of an event's data.",
-      );
-    }
-  }
+  final Map<String, Object?> eventData;
 
   /// Event that is emitted whenever a user has opted in
   /// or out of the analytics collection.
   ///
   /// [status] - boolean value where `true` indicates user is opting in.
   Event.analyticsCollectionEnabled({required bool status})
-      : this._(
-            eventName: DashEvent.analyticsCollectionEnabled,
-            eventData: {'status': status});
+      : eventName = DashEvent.analyticsCollectionEnabled,
+        eventData = {'status': status};
 
   /// Event that is emitted when an error occurs within
   /// `package:unified_analytics`, tools that are using this package
@@ -47,14 +35,12 @@ final class Event {
     required String workflow,
     required String error,
     String? description,
-  }) : this._(
-          eventName: DashEvent.analyticsException,
-          eventData: {
-            'workflow': workflow,
-            'error': error,
-            if (description != null) 'description': description,
-          },
-        );
+  })  : eventName = DashEvent.analyticsException,
+        eventData = {
+          'workflow': workflow,
+          'error': error,
+          if (description != null) 'description': description,
+        };
 
   /// This is for various workflows within the flutter tool related
   /// to iOS and macOS workflows.
@@ -68,14 +54,12 @@ final class Event {
     required String workflow,
     required String parameter,
     String? result,
-  }) : this._(
-          eventName: DashEvent.appleUsageEvent,
-          eventData: {
-            'workflow': workflow,
-            'parameter': parameter,
-            if (result != null) 'result': result,
-          },
-        );
+  })  : eventName = DashEvent.appleUsageEvent,
+        eventData = {
+          'workflow': workflow,
+          'parameter': parameter,
+          if (result != null) 'result': result,
+        };
 
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of notification from the
@@ -94,14 +78,12 @@ final class Event {
     required String duration,
     required String latency,
     required String method,
-  }) : this._(
-          eventName: DashEvent.clientNotification,
-          eventData: {
-            'duration': duration,
-            'latency': latency,
-            'method': method,
-          },
-        );
+  })  : eventName = DashEvent.clientNotification,
+        eventData = {
+          'duration': duration,
+          'latency': latency,
+          'method': method,
+        };
 
   /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of request from the client.
@@ -156,21 +138,19 @@ final class Event {
     String? included,
     String? openWorkspacePaths,
     String? removed,
-  }) : this._(
-          eventName: DashEvent.clientRequest,
-          eventData: {
-            if (added != null) 'added': added,
-            'duration': duration,
-            if (excluded != null) 'excluded': excluded,
-            if (files != null) 'files': files,
-            if (included != null) 'included': included,
-            'latency': latency,
-            'method': method,
-            if (openWorkspacePaths != null)
-              'openWorkspacePaths': openWorkspacePaths,
-            if (removed != null) 'removed': removed,
-          },
-        );
+  })  : eventName = DashEvent.clientRequest,
+        eventData = {
+          if (added != null) 'added': added,
+          'duration': duration,
+          if (excluded != null) 'excluded': excluded,
+          if (files != null) 'files': files,
+          if (included != null) 'included': included,
+          'latency': latency,
+          'method': method,
+          if (openWorkspacePaths != null)
+            'openWorkspacePaths': openWorkspacePaths,
+          if (removed != null) 'removed': removed,
+        };
 
   /// An event that reports when the code size measurement is run
   /// via `--analyze-size`.
@@ -178,12 +158,10 @@ final class Event {
   /// [platform] - string identifier for which platform was run "ios", "apk",
   ///   "aab", etc.
   Event.codeSizeAnalysis({required String platform})
-      : this._(
-          eventName: DashEvent.codeSizeAnalysis,
-          eventData: {
-            'platform': platform,
-          },
-        );
+      : eventName = DashEvent.codeSizeAnalysis,
+        eventData = {
+          'platform': platform,
+        };
 
   /// Event that is emitted periodically to report the number of times a given
   /// command has been executed.
@@ -194,13 +172,11 @@ final class Event {
   Event.commandExecuted({
     required int count,
     required String name,
-  }) : this._(
-          eventName: DashEvent.commandExecuted,
-          eventData: {
-            'count': count,
-            'name': name,
-          },
-        );
+  })  : eventName = DashEvent.commandExecuted,
+        eventData = {
+          'count': count,
+          'name': name,
+        };
 
   /// Event to capture usage values for different flutter commands.
   ///
@@ -252,59 +228,52 @@ final class Event {
     bool? runEnableImpeller,
     String? runIOSInterfaceType,
     bool? runIsTest,
-  }) : this._(
-          eventName: DashEvent.commandUsageValues,
-          eventData: {
-            'workflow': workflow,
-            'commandHasTerminal': commandHasTerminal,
-            if (buildBundleTargetPlatform != null)
-              'buildBundleTargetPlatform': buildBundleTargetPlatform,
-            if (buildBundleIsModule != null)
-              'buildBundleIsModule': buildBundleIsModule,
-            if (buildAarProjectType != null)
-              'buildAarProjectType': buildAarProjectType,
-            if (buildAarTargetPlatform != null)
-              'buildAarTargetPlatform': buildAarTargetPlatform,
-            if (buildApkTargetPlatform != null)
-              'buildApkTargetPlatform': buildApkTargetPlatform,
-            if (buildApkBuildMode != null)
-              'buildApkBuildMode': buildApkBuildMode,
-            if (buildApkSplitPerAbi != null)
-              'buildApkSplitPerAbi': buildApkSplitPerAbi,
-            if (buildAppBundleTargetPlatform != null)
-              'buildAppBundleTargetPlatform': buildAppBundleTargetPlatform,
-            if (buildAppBundleBuildMode != null)
-              'buildAppBundleBuildMode': buildAppBundleBuildMode,
-            if (createProjectType != null)
-              'createProjectType': createProjectType,
-            if (createAndroidLanguage != null)
-              'createAndroidLanguage': createAndroidLanguage,
-            if (createIosLanguage != null)
-              'createIosLanguage': createIosLanguage,
-            if (packagesNumberPlugins != null)
-              'packagesNumberPlugins': packagesNumberPlugins,
-            if (packagesProjectModule != null)
-              'packagesProjectModule': packagesProjectModule,
-            if (packagesAndroidEmbeddingVersion != null)
-              'packagesAndroidEmbeddingVersion':
-                  packagesAndroidEmbeddingVersion,
-            if (runIsEmulator != null) 'runIsEmulator': runIsEmulator,
-            if (runTargetName != null) 'runTargetName': runTargetName,
-            if (runTargetOsVersion != null)
-              'runTargetOsVersion': runTargetOsVersion,
-            if (runModeName != null) 'runModeName': runModeName,
-            if (runProjectModule != null) 'runProjectModule': runProjectModule,
-            if (runProjectHostLanguage != null)
-              'runProjectHostLanguage': runProjectHostLanguage,
-            if (runAndroidEmbeddingVersion != null)
-              'runAndroidEmbeddingVersion': runAndroidEmbeddingVersion,
-            if (runEnableImpeller != null)
-              'runEnableImpeller': runEnableImpeller,
-            if (runIOSInterfaceType != null)
-              'runIOSInterfaceType': runIOSInterfaceType,
-            if (runIsTest != null) 'runIsTest': runIsTest,
-          },
-        );
+  })  : eventName = DashEvent.commandUsageValues,
+        eventData = {
+          'workflow': workflow,
+          'commandHasTerminal': commandHasTerminal,
+          if (buildBundleTargetPlatform != null)
+            'buildBundleTargetPlatform': buildBundleTargetPlatform,
+          if (buildBundleIsModule != null)
+            'buildBundleIsModule': buildBundleIsModule,
+          if (buildAarProjectType != null)
+            'buildAarProjectType': buildAarProjectType,
+          if (buildAarTargetPlatform != null)
+            'buildAarTargetPlatform': buildAarTargetPlatform,
+          if (buildApkTargetPlatform != null)
+            'buildApkTargetPlatform': buildApkTargetPlatform,
+          if (buildApkBuildMode != null) 'buildApkBuildMode': buildApkBuildMode,
+          if (buildApkSplitPerAbi != null)
+            'buildApkSplitPerAbi': buildApkSplitPerAbi,
+          if (buildAppBundleTargetPlatform != null)
+            'buildAppBundleTargetPlatform': buildAppBundleTargetPlatform,
+          if (buildAppBundleBuildMode != null)
+            'buildAppBundleBuildMode': buildAppBundleBuildMode,
+          if (createProjectType != null) 'createProjectType': createProjectType,
+          if (createAndroidLanguage != null)
+            'createAndroidLanguage': createAndroidLanguage,
+          if (createIosLanguage != null) 'createIosLanguage': createIosLanguage,
+          if (packagesNumberPlugins != null)
+            'packagesNumberPlugins': packagesNumberPlugins,
+          if (packagesProjectModule != null)
+            'packagesProjectModule': packagesProjectModule,
+          if (packagesAndroidEmbeddingVersion != null)
+            'packagesAndroidEmbeddingVersion': packagesAndroidEmbeddingVersion,
+          if (runIsEmulator != null) 'runIsEmulator': runIsEmulator,
+          if (runTargetName != null) 'runTargetName': runTargetName,
+          if (runTargetOsVersion != null)
+            'runTargetOsVersion': runTargetOsVersion,
+          if (runModeName != null) 'runModeName': runModeName,
+          if (runProjectModule != null) 'runProjectModule': runProjectModule,
+          if (runProjectHostLanguage != null)
+            'runProjectHostLanguage': runProjectHostLanguage,
+          if (runAndroidEmbeddingVersion != null)
+            'runAndroidEmbeddingVersion': runAndroidEmbeddingVersion,
+          if (runEnableImpeller != null) 'runEnableImpeller': runEnableImpeller,
+          if (runIOSInterfaceType != null)
+            'runIOSInterfaceType': runIOSInterfaceType,
+          if (runIsTest != null) 'runIsTest': runIsTest,
+        };
 
   /// Event that is emitted on shutdown to report the structure of the analysis
   /// contexts created immediately after startup.
@@ -353,22 +322,20 @@ final class Event {
     required int transitiveFileLineCount,
     required int transitiveFileUniqueCount,
     required int transitiveFileUniqueLineCount,
-  }) : this._(
-          eventName: DashEvent.contextStructure,
-          eventData: {
-            'contextsFromBothFiles': contextsFromBothFiles,
-            'contextsFromOptionsFiles': contextsFromOptionsFiles,
-            'contextsFromPackagesFiles': contextsFromPackagesFiles,
-            'contextsWithoutFiles': contextsWithoutFiles,
-            'immediateFileCount': immediateFileCount,
-            'immediateFileLineCount': immediateFileLineCount,
-            'numberOfContexts': numberOfContexts,
-            'transitiveFileCount': transitiveFileCount,
-            'transitiveFileLineCount': transitiveFileLineCount,
-            'transitiveFileUniqueCount': transitiveFileUniqueCount,
-            'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
-          },
-        );
+  })  : eventName = DashEvent.contextStructure,
+        eventData = {
+          'contextsFromBothFiles': contextsFromBothFiles,
+          'contextsFromOptionsFiles': contextsFromOptionsFiles,
+          'contextsFromPackagesFiles': contextsFromPackagesFiles,
+          'contextsWithoutFiles': contextsWithoutFiles,
+          'immediateFileCount': immediateFileCount,
+          'immediateFileLineCount': immediateFileLineCount,
+          'numberOfContexts': numberOfContexts,
+          'transitiveFileCount': transitiveFileCount,
+          'transitiveFileLineCount': transitiveFileLineCount,
+          'transitiveFileUniqueCount': transitiveFileUniqueCount,
+          'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
+        };
 
   /// Event that is emitted when a Dart CLI command has been executed.
   ///
@@ -382,14 +349,12 @@ final class Event {
     required String name,
     required String enabledExperiments,
     int? exitCode,
-  }) : this._(
-          eventName: DashEvent.dartCliCommandExecuted,
-          eventData: {
-            'name': name,
-            'enabledExperiments': enabledExperiments,
-            if (exitCode != null) 'exitCode': exitCode,
-          },
-        );
+  })  : eventName = DashEvent.dartCliCommandExecuted,
+        eventData = {
+          'name': name,
+          'enabledExperiments': enabledExperiments,
+          if (exitCode != null) 'exitCode': exitCode,
+        };
 
   /// Event that is sent from DevTools for various different actions as
   /// indicated by the [eventCategory].
@@ -423,33 +388,31 @@ final class Event {
     String? ideLaunchedFeature,
     String? isWasm,
     CustomMetrics? additionalMetrics,
-  }) : this._(
-          eventName: DashEvent.devtoolsEvent,
-          eventData: {
-            'screen': screen,
-            'eventCategory': eventCategory,
-            'label': label,
-            'value': value,
+  })  : eventName = DashEvent.devtoolsEvent,
+        eventData = {
+          'screen': screen,
+          'eventCategory': eventCategory,
+          'label': label,
+          'value': value,
 
-            'userInitiatedInteraction': userInitiatedInteraction,
+          'userInitiatedInteraction': userInitiatedInteraction,
 
-            // Optional parameters
-            if (g3Username != null) 'g3Username': g3Username,
-            if (userApp != null) 'userApp': userApp,
-            if (userBuild != null) 'userBuild': userBuild,
-            if (userPlatform != null) 'userPlatform': userPlatform,
-            if (devtoolsPlatform != null) 'devtoolsPlatform': devtoolsPlatform,
-            if (devtoolsChrome != null) 'devtoolsChrome': devtoolsChrome,
-            if (devtoolsVersion != null) 'devtoolsVersion': devtoolsVersion,
-            if (ideLaunched != null) 'ideLaunched': ideLaunched,
-            if (isExternalBuild != null) 'isExternalBuild': isExternalBuild,
-            if (isEmbedded != null) 'isEmbedded': isEmbedded,
-            if (ideLaunchedFeature != null)
-              'ideLaunchedFeature': ideLaunchedFeature,
-            if (isWasm != null) 'isWasm': isWasm,
-            if (additionalMetrics != null) ...additionalMetrics.toMap(),
-          },
-        );
+          // Optional parameters
+          if (g3Username != null) 'g3Username': g3Username,
+          if (userApp != null) 'userApp': userApp,
+          if (userBuild != null) 'userBuild': userBuild,
+          if (userPlatform != null) 'userPlatform': userPlatform,
+          if (devtoolsPlatform != null) 'devtoolsPlatform': devtoolsPlatform,
+          if (devtoolsChrome != null) 'devtoolsChrome': devtoolsChrome,
+          if (devtoolsVersion != null) 'devtoolsVersion': devtoolsVersion,
+          if (ideLaunched != null) 'ideLaunched': ideLaunched,
+          if (isExternalBuild != null) 'isExternalBuild': isExternalBuild,
+          if (isEmbedded != null) 'isEmbedded': isEmbedded,
+          if (ideLaunchedFeature != null)
+            'ideLaunchedFeature': ideLaunchedFeature,
+          if (isWasm != null) 'isWasm': isWasm,
+          if (additionalMetrics != null) ...additionalMetrics.toMap(),
+        };
 
   /// Event that contains the results for a specific doctor validator.
   ///
@@ -472,16 +435,14 @@ final class Event {
     required bool partOfGroupedValidator,
     required int doctorInvocationId,
     String? statusInfo,
-  }) : this._(
-          eventName: DashEvent.doctorValidatorResult,
-          eventData: {
-            'validatorName': validatorName,
-            'result': result,
-            'partOfGroupedValidator': partOfGroupedValidator,
-            'doctorInvocationId': doctorInvocationId,
-            if (statusInfo != null) 'statusInfo': statusInfo,
-          },
-        );
+  })  : eventName = DashEvent.doctorValidatorResult,
+        eventData = {
+          'validatorName': validatorName,
+          'result': result,
+          'partOfGroupedValidator': partOfGroupedValidator,
+          'doctorInvocationId': doctorInvocationId,
+          if (statusInfo != null) 'statusInfo': statusInfo,
+        };
 
   /// Generic event for all dash tools to use when encountering an
   /// exception that we want to log.
@@ -491,13 +452,11 @@ final class Event {
   Event.exception({
     required String exception,
     Map<String, Object?> data = const <String, Object?>{},
-  }) : this._(
-          eventName: DashEvent.exception,
-          eventData: {
-            'exception': exception,
-            ...Map.from(data)..removeWhere((key, value) => value == null),
-          },
-        );
+  })  : eventName = DashEvent.exception,
+        eventData = {
+          'exception': exception,
+          ...Map.from(data)..removeWhere((key, value) => value == null),
+        };
 
   /// Event that is emitted from the flutter tool when a build invocation
   /// has been run by the user.
@@ -520,16 +479,14 @@ final class Event {
     String? command,
     String? settings,
     String? error,
-  }) : this._(
-          eventName: DashEvent.flutterBuildInfo,
-          eventData: {
-            'label': label,
-            'buildType': buildType,
-            if (command != null) 'command': command,
-            if (settings != null) 'settings': settings,
-            if (error != null) 'error': error,
-          },
-        );
+  })  : eventName = DashEvent.flutterBuildInfo,
+        eventData = {
+          'label': label,
+          'buildType': buildType,
+          if (command != null) 'command': command,
+          if (settings != null) 'settings': settings,
+          if (error != null) 'error': error,
+        };
 
   /// Provides information about which flutter command was run
   /// and whether it was successful.
@@ -547,23 +504,19 @@ final class Event {
     required String result,
     required bool commandHasTerminal,
     int? maxRss,
-  }) : this._(
-          eventName: DashEvent.flutterCommandResult,
-          eventData: {
-            'commandPath': commandPath,
-            'result': result,
-            'commandHasTerminal': commandHasTerminal,
-            if (maxRss != null) 'maxRss': maxRss,
-          },
-        );
+  })  : eventName = DashEvent.flutterCommandResult,
+        eventData = {
+          'commandPath': commandPath,
+          'result': result,
+          'commandHasTerminal': commandHasTerminal,
+          if (maxRss != null) 'maxRss': maxRss,
+        };
 
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})
-      : this._(
-          eventName: DashEvent.hotReloadTime,
-          eventData: {'timeMs': timeMs},
-        );
+      : eventName = DashEvent.hotReloadTime,
+        eventData = {'timeMs': timeMs};
 
   /// Events to be sent for the Flutter Hot Runner.
   Event.hotRunnerInfo({
@@ -586,39 +539,37 @@ final class Event {
     int? scannedSourcesCount,
     int? reassembleTimeInMs,
     int? reloadVMTimeInMs,
-  }) : this._(
-          eventName: DashEvent.hotRunnerInfo,
-          eventData: {
-            'label': label,
-            'targetPlatform': targetPlatform,
-            'sdkName': sdkName,
-            'emulator': emulator,
-            'fullRestart': fullRestart,
-            if (reason != null) 'reason': reason,
-            if (finalLibraryCount != null)
-              'finalLibraryCount': finalLibraryCount,
-            if (syncedLibraryCount != null)
-              'syncedLibraryCount': syncedLibraryCount,
-            if (syncedClassesCount != null)
-              'syncedClassesCount': syncedClassesCount,
-            if (syncedProceduresCount != null)
-              'syncedProceduresCount': syncedProceduresCount,
-            if (syncedBytes != null) 'syncedBytes': syncedBytes,
-            if (invalidatedSourcesCount != null)
-              'invalidatedSourcesCount': invalidatedSourcesCount,
-            if (transferTimeInMs != null) 'transferTimeInMs': transferTimeInMs,
-            if (overallTimeInMs != null) 'overallTimeInMs': overallTimeInMs,
-            if (compileTimeInMs != null) 'compileTimeInMs': compileTimeInMs,
-            if (findInvalidatedTimeInMs != null)
-              'findInvalidatedTimeInMs': findInvalidatedTimeInMs,
-            if (scannedSourcesCount != null)
-              'scannedSourcesCount': scannedSourcesCount,
-            if (reassembleTimeInMs != null)
-              'reassembleTimeInMs': reassembleTimeInMs,
-            if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
-          },
-        );
+  })  : eventName = DashEvent.hotRunnerInfo,
+        eventData = {
+          'label': label,
+          'targetPlatform': targetPlatform,
+          'sdkName': sdkName,
+          'emulator': emulator,
+          'fullRestart': fullRestart,
+          if (reason != null) 'reason': reason,
+          if (finalLibraryCount != null) 'finalLibraryCount': finalLibraryCount,
+          if (syncedLibraryCount != null)
+            'syncedLibraryCount': syncedLibraryCount,
+          if (syncedClassesCount != null)
+            'syncedClassesCount': syncedClassesCount,
+          if (syncedProceduresCount != null)
+            'syncedProceduresCount': syncedProceduresCount,
+          if (syncedBytes != null) 'syncedBytes': syncedBytes,
+          if (invalidatedSourcesCount != null)
+            'invalidatedSourcesCount': invalidatedSourcesCount,
+          if (transferTimeInMs != null) 'transferTimeInMs': transferTimeInMs,
+          if (overallTimeInMs != null) 'overallTimeInMs': overallTimeInMs,
+          if (compileTimeInMs != null) 'compileTimeInMs': compileTimeInMs,
+          if (findInvalidatedTimeInMs != null)
+            'findInvalidatedTimeInMs': findInvalidatedTimeInMs,
+          if (scannedSourcesCount != null)
+            'scannedSourcesCount': scannedSourcesCount,
+          if (reassembleTimeInMs != null)
+            'reassembleTimeInMs': reassembleTimeInMs,
+          if (reloadVMTimeInMs != null) 'reloadVMTimeInMs': reloadVMTimeInMs,
+        };
 
+  // TODO: eliasyishak, add better dartdocs to explain each param
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
@@ -628,13 +579,11 @@ final class Event {
   Event.lintUsageCount({
     required int count,
     required String name,
-  }) : this._(
-          eventName: DashEvent.lintUsageCount,
-          eventData: {
-            'count': count,
-            'name': name,
-          },
-        );
+  })  : eventName = DashEvent.lintUsageCount,
+        eventData = {
+          'count': count,
+          'name': name,
+        };
 
   /// Event that is emitted periodically to report the amount of memory being
   /// used.
@@ -653,14 +602,12 @@ final class Event {
     required int rss,
     int? periodSec,
     double? mbPerSec,
-  }) : this._(
-          eventName: DashEvent.memoryInfo,
-          eventData: {
-            'rss': rss,
-            if (periodSec != null) 'periodSec': periodSec,
-            if (mbPerSec != null) 'mbPerSec': mbPerSec
-          },
-        );
+  })  : eventName = DashEvent.memoryInfo,
+        eventData = {
+          'rss': rss,
+          if (periodSec != null) 'periodSec': periodSec,
+          if (mbPerSec != null) 'mbPerSec': mbPerSec
+        };
 
   /// Event that is emitted periodically to report the performance of plugins
   /// when handling requests.
@@ -676,14 +623,12 @@ final class Event {
     required String duration,
     required String method,
     required String pluginId,
-  }) : this._(
-          eventName: DashEvent.pluginRequest,
-          eventData: {
-            'duration': duration,
-            'method': method,
-            'pluginId': pluginId,
-          },
-        );
+  })  : eventName = DashEvent.pluginRequest,
+        eventData = {
+          'duration': duration,
+          'method': method,
+          'pluginId': pluginId,
+        };
 
   /// Event that is emitted periodically to report the frequency with which a
   /// given plugin has been used.
@@ -699,14 +644,12 @@ final class Event {
     required int count,
     required String enabled,
     required String pluginId,
-  }) : this._(
-          eventName: DashEvent.pluginUse,
-          eventData: {
-            'count': count,
-            'enabled': enabled,
-            'pluginId': pluginId,
-          },
-        );
+  })  : eventName = DashEvent.pluginUse,
+        eventData = {
+          'count': count,
+          'enabled': enabled,
+          'pluginId': pluginId,
+        };
 
   /// Event that is emitted when `pub get` is run.
   ///
@@ -720,14 +663,12 @@ final class Event {
     required String packageName,
     required String version,
     required String dependencyType,
-  }) : this._(
-          eventName: DashEvent.pubGet,
-          eventData: {
-            'packageName': packageName,
-            'version': version,
-            'dependencyType': dependencyType,
-          },
-        );
+  })  : eventName = DashEvent.pubGet,
+        eventData = {
+          'packageName': packageName,
+          'version': version,
+          'dependencyType': dependencyType,
+        };
 
   /// Event that is emitted on shutdown to report information about the whole
   /// session for which the analysis server was running.
@@ -751,16 +692,14 @@ final class Event {
     required int duration,
     required String flags,
     required String parameters,
-  }) : this._(
-          eventName: DashEvent.serverSession,
-          eventData: {
-            'clientId': clientId,
-            'clientVersion': clientVersion,
-            'duration': duration,
-            'flags': flags,
-            'parameters': parameters,
-          },
-        );
+  })  : eventName = DashEvent.serverSession,
+        eventData = {
+          'clientId': clientId,
+          'clientVersion': clientVersion,
+          'duration': duration,
+          'flags': flags,
+          'parameters': parameters,
+        };
 
   /// Event that is emitted periodically to report the number of times the
   /// severity of a diagnostic was changed in the analysis options file.
@@ -772,13 +711,11 @@ final class Event {
   Event.severityAdjustment({
     required String diagnostic,
     required String adjustments,
-  }) : this._(
-          eventName: DashEvent.severityAdjustment,
-          eventData: {
-            'diagnostic': diagnostic,
-            'adjustments': adjustments,
-          },
-        );
+  })  : eventName = DashEvent.severityAdjustment,
+        eventData = {
+          'diagnostic': diagnostic,
+          'adjustments': adjustments,
+        };
 
   /// Event that is emitted by `package:unified_analytics` when
   /// the user takes action when prompted with a survey.
@@ -790,13 +727,11 @@ final class Event {
   Event.surveyAction({
     required String surveyId,
     required String status,
-  }) : this._(
-          eventName: DashEvent.surveyAction,
-          eventData: {
-            'surveyId': surveyId,
-            'status': status,
-          },
-        );
+  })  : eventName = DashEvent.surveyAction,
+        eventData = {
+          'surveyId': surveyId,
+          'status': status,
+        };
 
   /// Event that is emitted by `package:unified_analytics` when the
   /// user has been shown a survey.
@@ -804,12 +739,10 @@ final class Event {
   /// [surveyId] - the unique id for a given survey.
   Event.surveyShown({
     required String surveyId,
-  }) : this._(
-          eventName: DashEvent.surveyShown,
-          eventData: {
-            'surveyId': surveyId,
-          },
-        );
+  })  : eventName = DashEvent.surveyShown,
+        eventData = {
+          'surveyId': surveyId,
+        };
 
   /// Event that records how long a given process takes to complete.
   ///
@@ -830,15 +763,17 @@ final class Event {
     required String variableName,
     required int elapsedMilliseconds,
     String? label,
-  }) : this._(
-          eventName: DashEvent.timing,
-          eventData: {
-            'workflow': workflow,
-            'variableName': variableName,
-            'elapsedMilliseconds': elapsedMilliseconds,
-            if (label != null) 'label': label,
-          },
-        );
+  })  : eventName = DashEvent.timing,
+        eventData = {
+          'workflow': workflow,
+          'variableName': variableName,
+          'elapsedMilliseconds': elapsedMilliseconds,
+          if (label != null) 'label': label,
+        };
+
+  /// Private constructor to be used when deserializing JSON into an instance
+  /// of [Event].
+  Event._({required this.eventName, required this.eventData});
 
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));

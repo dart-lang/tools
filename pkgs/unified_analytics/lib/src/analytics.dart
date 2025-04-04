@@ -339,7 +339,6 @@ class AnalyticsImpl implements Analytics {
   final File _clientIdFile;
   final UserProperty _userProperty;
   final LogHandler _logHandler;
-  final String? _enabledFeatures;
 
   /// Tells the client if they need to show a message to the
   /// user; this will return true if it is the first time the
@@ -407,8 +406,8 @@ class AnalyticsImpl implements Analytics {
               truncateStringToLength(io.Platform.operatingSystemVersion, 36),
           locale: io.Platform.localeName,
           clientIde: clientIde,
+          enabledFeatures: enabledFeatures,
         ),
-        _enabledFeatures = enabledFeatures,
         _configHandler = ConfigHandler(
           homeDirectory: homeDirectory,
           configFile: homeDirectory
@@ -614,7 +613,6 @@ class AnalyticsImpl implements Analytics {
       eventName: event.eventName,
       eventData: event.eventData,
       userProperty: _userProperty,
-      enabledFeatures: _enabledFeatures,
     );
 
     if (_enableAsserts) checkBody(body);
@@ -656,7 +654,6 @@ class AnalyticsImpl implements Analytics {
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
         userProperty: _userProperty,
-        enabledFeatures: _enabledFeatures,
       );
 
       _logHandler.save(data: body);
@@ -667,7 +664,6 @@ class AnalyticsImpl implements Analytics {
         clientId: clientId,
         eventName: collectionEvent.eventName,
         eventData: collectionEvent.eventData,
-        enabledFeatures: _enabledFeatures,
         userProperty: _userProperty,
       );
 
@@ -778,7 +774,6 @@ class FakeAnalytics extends AnalyticsImpl {
       eventName: event.eventName,
       eventData: event.eventData,
       userProperty: _userProperty,
-      enabledFeatures: _enabledFeatures,
     );
 
     if (_enableAsserts) checkBody(body);
