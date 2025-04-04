@@ -1,3 +1,6 @@
+## 7.0.2
+- Allow `LogStatsFile` to contain more granular event types (specifically `property_editor` events).
+
 ## 7.0.1
 - Fixed `UnsupportedError` thrown when Event.exception is called without providing a value for `args`.
 
