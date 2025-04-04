@@ -42,8 +42,10 @@ const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 /// If [scopedOutput] is non-empty, coverage will be restricted so that only
 /// scripts that start with any of the provided paths are considered.
 ///
-/// If [isolateIds] is set, the coverage gathering will be restricted to only
-/// those VM isolates.
+/// If [isolateIds] is set, coverage gathering **will not be restricted** to
+/// only those VM isolates. Instead, coverage will be collected for 
+/// **all isolates
+/// in the same isolate group** as the provided isolate(s).
 ///
 /// If [coverableLineCache] is set, the collector will avoid recompiling
 /// libraries it has already seen (see VmService.getSourceReport's
@@ -56,11 +58,12 @@ const _debugTokenPositions = bool.fromEnvironment('DEBUG_COVERAGE');
 Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     bool waitPaused, bool includeDart, Set<String>? scopedOutput,
     {Set<String>? isolateIds,
-    Duration? timeout,
-    bool functionCoverage = false,
-    bool branchCoverage = false,
-    Map<String, Set<int>>? coverableLineCache,
-    VmService? serviceOverrideForTesting}) async {
+     Duration? timeout,
+     bool functionCoverage = false,
+     bool branchCoverage = false,
+     Map<String, Set<int>>? coverableLineCache,
+     VmService? serviceOverrideForTesting,
+      bool Function(String)? filter}) async { // Correct function type
   scopedOutput ??= <String>{};
 
   late VmService service;
@@ -94,7 +97,7 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
   }
 
   try {
-    return await _getAllCoverage(
+    final coverageData = await _getAllCoverage(
         service,
         includeDart,
         functionCoverage,
@@ -103,6 +106,13 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
         isolateIds,
         coverableLineCache,
         waitPaused);
+
+    // Apply filtering if a filter function is provided
+    if (filter != null) {
+      coverageData.removeWhere((key, value) => !filter(key));
+    }
+
+    return coverageData;
   } finally {
     if (resume && !waitPaused) {
       await _resumeIsolates(service);
@@ -112,6 +122,8 @@ Future<Map<String, dynamic>> collect(Uri serviceUri, bool resume,
     await service.dispose();
   }
 }
+
+
 
 Future<Map<String, dynamic>> _getAllCoverage(
     VmService service,
