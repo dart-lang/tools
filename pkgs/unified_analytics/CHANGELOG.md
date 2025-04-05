@@ -1,3 +1,6 @@
+## 7.0.3
+- Added `Event.flutterInjectDarwinPlugins` event for plugins injected into an iOS/macOS project.
+
 ## 7.0.2
 - Allow `LogStatsFile` to contain more granular event types (specifically `property_editor` events).
 
