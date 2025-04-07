@@ -13,6 +13,11 @@ const String _validPackageNameCharacters =
     r"                                 !  $ &'()*+,-. 0123456789 ; =  "
     r'@ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz   ~ ';
 
+/// Tests whether something is a valid Dart package name.
+bool isValidPackageName(String string) {
+  return checkPackageName(string) < 0;
+}
+
 /// Check if a string is a valid package name.
 ///
 /// Valid package names contain only characters in [_validPackageNameCharacters]
@@ -143,7 +148,20 @@ bool isUriPrefix(Uri prefix, Uri path) {
   return path.toString().startsWith(prefix.toString());
 }
 
-/// Appends a trailing `/` if the [path] ends in a non-`/` character.
+/// Finds the first non-JSON-whitespace character in a file.
+///
+/// Used to heuristically detect whether a file is a JSON file or an .ini file.
+int firstNonWhitespaceChar(List<int> bytes) {
+  for (var i = 0; i < bytes.length; i++) {
+    var char = bytes[i];
+    if (char != 0x20 && char != 0x09 && char != 0x0a && char != 0x0d) {
+      return char;
+    }
+  }
+  return -1;
+}
+
+/// Appends a trailing `/` if the path doesn't end with one.
 String trailingSlash(String path) {
   if (path.isEmpty || path.endsWith('/')) return path;
   return '$path/';
@@ -235,8 +253,26 @@ Uri? relativizeUri(Uri? uri, Uri? baseUri) {
 }
 
 // Character constants used by this package.
+/// "Line feed" control character.
+const int $lf = 0x0a;
+
+/// "Carriage return" control character.
+const int $cr = 0x0d;
+
 /// Space character.
 const int $space = 0x20;
 
+/// Character `#`.
+const int $hash = 0x23;
+
 /// Character `.`.
 const int $dot = 0x2e;
+
+/// Character `:`.
+const int $colon = 0x3a;
+
+/// Character `?`.
+const int $question = 0x3f;
+
+/// Character `{`.
+const int $lbrace = 0x7b;
