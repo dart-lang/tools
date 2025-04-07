@@ -43,14 +43,14 @@ void main() async {
       var lastStatus = DateTime(0);
       void status(String Function() message) {
         if (DateTime.now().difference(lastStatus) >
-            const Duration(seconds: 30)) {
+            const Duration(seconds: 5)) {
           lastStatus = DateTime.now();
           print(message());
         }
       }
 
       final c = http.RetryClient(http.Client());
-      Future<dynamic> getJson(String url) async {
+      Future<Map<String, dynamic>?> getJson(String url) async {
         final u = Uri.tryParse(url);
         if (u == null) {
           return null;
@@ -58,7 +58,7 @@ void main() async {
         try {
           final data = await c.read(u);
           try {
-            return jsonDecode(data);
+            return jsonDecode(data) as Map<String, dynamic>;
           } on FormatException {
             return null;
           }
@@ -70,7 +70,7 @@ void main() async {
       }
 
       final packages =
-          ((await getJson('https://pub.dev/api/package-names'))['packages']
+          ((await getJson('https://pub.dev/api/package-names'))!['packages']
                   as List)
               .cast<String>();
       //.take(3).toList(); // useful when testing
@@ -84,7 +84,7 @@ void main() async {
           final response = await getJson(
             'https://pub.dev/api/packages/$package',
           );
-          final entry = response['latest'] as Map?;
+          final entry = response?['latest'] as Map?;
           if (entry != null) {
             packageVersions.add(PackageVersion(
               package: package,
