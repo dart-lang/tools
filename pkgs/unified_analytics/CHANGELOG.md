@@ -1,4 +1,4 @@
-## 7.0.3
+## 8.0.0
 - Send `enabled_features` as an event parameter in all events rather than as a user property.
 
 ## 7.0.2
