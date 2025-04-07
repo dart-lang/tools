@@ -138,11 +138,11 @@ void main() {
       ) {
         expect(version == otherVersion, identical(version, otherVersion));
 
-        expect(() => version < otherVersion, throwsA(isA<StateError>()));
-        expect(() => version <= otherVersion, throwsA(isA<StateError>()));
+        expect(() => version < otherVersion, throwsA(isA<UnsupportedError>()));
+        expect(() => version <= otherVersion, throwsA(isA<UnsupportedError>()));
 
-        expect(() => version > otherVersion, throwsA(isA<StateError>()));
-        expect(() => version >= otherVersion, throwsA(isA<StateError>()));
+        expect(() => version > otherVersion, throwsA(isA<UnsupportedError>()));
+        expect(() => version >= otherVersion, throwsA(isA<UnsupportedError>()));
       }
 
       var validVersion = LanguageVersion(3, 5);
