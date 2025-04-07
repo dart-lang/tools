@@ -21,7 +21,6 @@ class UserProperty {
   final String hostOsVersion;
   final String locale;
   final String? clientIde;
-  final String? enabledFeatures;
 
   final File sessionFile;
 
@@ -43,7 +42,6 @@ class UserProperty {
     required this.hostOsVersion,
     required this.locale,
     required this.clientIde,
-    required this.enabledFeatures,
     required this.sessionFile,
   });
 
@@ -157,6 +155,5 @@ class UserProperty {
         'host_os_version': hostOsVersion,
         'locale': locale,
         'client_ide': clientIde,
-        'enabled_features': enabledFeatures,
       };
 }
