@@ -21,5 +21,6 @@ The primary libraries of this package are
     Just the `PackageConfig` class and other types needed to use
     package configurations. This library does not depend on `dart:io`.
 
-The package no longer contains backwards compatible functionality to
-work with `.packages` files.
+The package includes deprecated backwards compatible functionality to
+work with the `.packages` file. This functionality will not be maintained,
+and will be removed in a future version of this package.
