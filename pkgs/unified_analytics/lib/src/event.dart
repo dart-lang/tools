@@ -566,8 +566,8 @@ final class Event {
   ///
   /// [isModule] - whether the project is an add-to-app Flutter module.
   ///
-  /// [swiftPackageManagerUsed] - if Swift Package Manager can be used for the
-  /// project's plugins.
+  /// [swiftPackageManagerUsable] - if `true`, Swift Package Manager can be used
+  /// for the project's plugins if any are Swift Package Manager compatible.
   ///
   /// [swiftPackageManagerFeatureEnabled] - if the Swift Package Manager feature
   /// flag is on. If false, Swift Package Manager is off for all projects on
@@ -578,7 +578,7 @@ final class Event {
   /// Manager for a single project.
   ///
   /// [projectHasSwiftPackageManagerIntegration] - if the Xcode project has
-  /// Swift Package Manager integration. If false, the project needs to be
+  /// Swift Package Manager integration. If `false`, the project needs to be
   /// migrated.
   ///
   /// [pluginCount] - the total number of plugins for this project. A plugin
@@ -597,7 +597,7 @@ final class Event {
   Event.flutterInjectDarwinPlugins({
     required String platform,
     required bool isModule,
-    required bool swiftPackageManagerUsed,
+    required bool swiftPackageManagerUsable,
     required bool swiftPackageManagerFeatureEnabled,
     required bool projectDisabledSwiftPackageManager,
     required bool projectHasSwiftPackageManagerIntegration,
@@ -609,7 +609,7 @@ final class Event {
           eventData: {
             'platform': platform,
             'isModule': isModule,
-            'swiftPackageManagerUsed': swiftPackageManagerUsed,
+            'swiftPackageManagerUsable': swiftPackageManagerUsable,
             'swiftPackageManagerFeatureEnabled':
                 swiftPackageManagerFeatureEnabled,
             'projectDisabledSwiftPackageManager':

@@ -404,7 +404,7 @@ void main() {
     Event generateEvent() => Event.flutterInjectDarwinPlugins(
           platform: 'ios',
           isModule: true,
-          swiftPackageManagerUsed: true,
+          swiftPackageManagerUsable: true,
           swiftPackageManagerFeatureEnabled: true,
           projectDisabledSwiftPackageManager: false,
           projectHasSwiftPackageManagerIntegration: true,
@@ -419,7 +419,7 @@ void main() {
     expect(constructedEvent.eventName, DashEvent.flutterInjectDarwinPlugins);
     expect(constructedEvent.eventData['platform'], 'ios');
     expect(constructedEvent.eventData['isModule'], isTrue);
-    expect(constructedEvent.eventData['swiftPackageManagerUsed'], isTrue);
+    expect(constructedEvent.eventData['swiftPackageManagerUsable'], isTrue);
     expect(constructedEvent.eventData['swiftPackageManagerFeatureEnabled'],
         isTrue);
     expect(constructedEvent.eventData['projectDisabledSwiftPackageManager'],
