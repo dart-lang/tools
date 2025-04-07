@@ -420,9 +420,13 @@ void main() {
     expect(constructedEvent.eventData['platform'], 'ios');
     expect(constructedEvent.eventData['isModule'], isTrue);
     expect(constructedEvent.eventData['swiftPackageManagerUsed'], isTrue);
-    expect(constructedEvent.eventData['swiftPackageManagerFeatureEnabled'], isTrue);
-    expect(constructedEvent.eventData['projectDisabledSwiftPackageManager'], isFalse);
-    expect(constructedEvent.eventData['projectHasSwiftPackageManagerIntegration'], isTrue);
+    expect(constructedEvent.eventData['swiftPackageManagerFeatureEnabled'],
+        isTrue);
+    expect(constructedEvent.eventData['projectDisabledSwiftPackageManager'],
+        isFalse);
+    expect(
+        constructedEvent.eventData['projectHasSwiftPackageManagerIntegration'],
+        isTrue);
     expect(constructedEvent.eventData['pluginCount'], 123);
     expect(constructedEvent.eventData['swiftPackageCount'], 456);
     expect(constructedEvent.eventData['podCount'], 678);
