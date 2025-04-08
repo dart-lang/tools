@@ -1,3 +1,6 @@
+## 8.0.1
+- Added `Event.flutterInjectDarwinPlugins` event for plugins injected into an iOS/macOS project.
+
 ## 8.0.0
 - Send `enabled_features` as an event parameter in all events rather than as a user property.
 

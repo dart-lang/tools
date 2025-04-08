@@ -557,6 +557,71 @@ final class Event {
           },
         );
 
+  /// Provides information about the plugins injected into an iOS or macOS
+  /// project.
+  ///
+  /// This event is not sent if a project has no plugins.
+  ///
+  /// [platform] - The project's platform. Either 'ios' or 'macos'.
+  ///
+  /// [isModule] - whether the project is an add-to-app Flutter module.
+  ///
+  /// [swiftPackageManagerUsable] - if `true`, Swift Package Manager can be used
+  /// for the project's plugins if any are Swift Package Manager compatible.
+  ///
+  /// [swiftPackageManagerFeatureEnabled] - if the Swift Package Manager feature
+  /// flag is on. If false, Swift Package Manager is off for all projects on
+  /// the development machine.
+  ///
+  /// [projectDisabledSwiftPackageManager] - if the project's .pubspec has
+  /// `disable-swift-package-manager: true`. This turns off Swift Package
+  /// Manager for a single project.
+  ///
+  /// [projectHasSwiftPackageManagerIntegration] - if the Xcode project has
+  /// Swift Package Manager integration. If `false`, the project needs to be
+  /// migrated.
+  ///
+  /// [pluginCount] - the total number of plugins for this project. A plugin
+  /// can be compatible with both Swift Package Manager and CocoaPods. Plugins
+  /// compatible with both will be counted in both [swiftPackageCount] and
+  /// [podCount]. Swift Package Manager was used to inject all plugins if
+  /// [pluginCount] is equal to [swiftPackageCount].
+  ///
+  /// [swiftPackageCount] - the number of plugins compatible with Swift Package
+  /// Manager. This is less than or equal to [pluginCount]. If
+  /// [swiftPackageCount] is less than [pluginCount], the project uses CocoaPods
+  /// to inject plugins.
+  ///
+  /// [podCount] - the number of plugins compatible with CocoaPods. This is less
+  /// than or equal to [podCount].
+  Event.flutterInjectDarwinPlugins({
+    required String platform,
+    required bool isModule,
+    required bool swiftPackageManagerUsable,
+    required bool swiftPackageManagerFeatureEnabled,
+    required bool projectDisabledSwiftPackageManager,
+    required bool projectHasSwiftPackageManagerIntegration,
+    required int pluginCount,
+    required int swiftPackageCount,
+    required int podCount,
+  }) : this._(
+          eventName: DashEvent.flutterInjectDarwinPlugins,
+          eventData: {
+            'platform': platform,
+            'isModule': isModule,
+            'swiftPackageManagerUsable': swiftPackageManagerUsable,
+            'swiftPackageManagerFeatureEnabled':
+                swiftPackageManagerFeatureEnabled,
+            'projectDisabledSwiftPackageManager':
+                projectDisabledSwiftPackageManager,
+            'projectHasSwiftPackageManagerIntegration':
+                projectHasSwiftPackageManagerIntegration,
+            'pluginCount': pluginCount,
+            'swiftPackageCount': swiftPackageCount,
+            'podCount': podCount,
+          },
+        );
+
   // TODO: eliasyishak, remove this or replace once we have a generic
   //  timing event that can be used by potentially more than one DashTool
   Event.hotReloadTime({required int timeMs})
