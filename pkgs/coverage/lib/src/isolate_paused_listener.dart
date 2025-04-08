@@ -4,11 +4,14 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:vm_service/vm_service.dart';
 
 import 'util.dart';
+
+final logfile = File('log_${DateTime.timestamp().millisecondsSinceEpoch}.txt').openWrite();
 
 typedef SyncIsolateCallback = void Function(IsolateRef isolate);
 typedef AsyncIsolateCallback = Future<void> Function(IsolateRef isolate);
@@ -28,30 +31,47 @@ class IsolatePausedListener {
 
   final _isolateGroups = <String, IsolateGroupState>{};
 
-  int _numNonMainIsolates = 0;
-  final _allNonMainIsolatesExited = Completer<void>();
-  bool _finished = false;
+  int _numIsolates = 0;
+  bool _finishedListening = false;
 
   IsolateRef? _mainIsolate;
-  final _mainIsolatePaused = Completer<bool>();
+  bool _hasMainIsolate = false;
+
+  // Completes when either:
+  // - there is a main isolate, and it is paused or exited
+  // - there is no main isolate, and all isolates have exited
+  final _mainIsolatePausedOrAllIsolatesExited = Completer<void>();
 
   /// Starts listening and returns a future that completes when all isolates
   /// have exited.
   Future<void> waitUntilAllExited() async {
     await listenToIsolateLifecycleEvents(_service, _onStart, _onPause, _onExit);
 
-    await _allNonMainIsolatesExited.future;
+    logfile.writeln("_mainIsolatePausedOrAllIsolatesExited BEFORE");
+    await _mainIsolatePausedOrAllIsolatesExited.future;
+    logfile.writeln("_mainIsolatePausedOrAllIsolatesExited AFTER");
+    _finishedListening = true;
 
-    // Resume the main isolate.
-    try {
-      if (_mainIsolate != null) {
-        if (await _mainIsolatePaused.future) {
-          await _runCallbackAndResume(
-              _mainIsolate!, !_getGroup(_mainIsolate!).collected);
+    // Collect all remaining uncollected groups.
+    logfile.writeln("Creating collection tasks");
+    final collectionTasks = <Future<void>>[];
+    for (final group in _isolateGroups.values) {
+      if (!group.collected) {
+        group.collected = true;
+        final iso = group.paused.firstOrNull ?? group.running.firstOrNull;
+        if (iso != null) {
+          collectionTasks.add(_onIsolatePaused(iso, true));
         }
       }
-    } finally {
-      _finished = true;
+    }
+    logfile.writeln("Awaiting collection tasks");
+    await Future.wait(collectionTasks);
+    logfile.writeln("Collection tasks done");
+
+    // Resume the main isolate.
+    if (_mainIsolate != null) {
+      logfile.writeln("        Resuming1: ${_mainIsolate}");
+      await _service.resume(_mainIsolate!.id!);
     }
   }
 
@@ -59,70 +79,55 @@ class IsolatePausedListener {
       _isolateGroups[isolateRef.isolateGroupId!] ??= IsolateGroupState();
 
   void _onStart(IsolateRef isolateRef) {
-    if (_finished) return;
+    logfile.writeln("    _onStart: $isolateRef");
+    if (_finishedListening) return;
     final group = _getGroup(isolateRef);
-    group.start(isolateRef.id!);
-    if (_mainIsolate == null && _isMainIsolate(isolateRef)) {
+    group.start(isolateRef);
+    ++_numIsolates;
+    if (!_hasMainIsolate && _isMainIsolate(isolateRef)) {
       _mainIsolate = isolateRef;
-    } else {
-      ++_numNonMainIsolates;
+      _hasMainIsolate = true;
     }
   }
 
   Future<void> _onPause(IsolateRef isolateRef) async {
-    if (_finished) return;
+    logfile.writeln("    _onPause: $isolateRef");
+    if (_finishedListening) return;
     final group = _getGroup(isolateRef);
-    group.pause(isolateRef.id!);
+    group.pause(isolateRef);
     if (isolateRef.id! == _mainIsolate?.id) {
-      _mainIsolatePaused.complete(true);
-
-      // If the main isolate is the only isolate, then _allNonMainIsolatesExited
-      // will never be completed. So check that case here.
-      _checkCompleted();
+      _mainIsolatePausedOrAllIsolatesExited.safeComplete();
     } else {
-      await _runCallbackAndResume(isolateRef, group.noRunningIsolates);
-    }
-  }
-
-  Future<void> _runCallbackAndResume(
-      IsolateRef isolateRef, bool isLastIsolateInGroup) async {
-    if (isLastIsolateInGroup) {
-      _getGroup(isolateRef).collected = true;
-    }
-    try {
-      await _onIsolatePaused(isolateRef, isLastIsolateInGroup);
-    } finally {
-      await _service.resume(isolateRef.id!);
+      final isLastIsolateInGroup = group.noRunningIsolates;
+      if (isLastIsolateInGroup) {
+        _getGroup(isolateRef).collected = true;
+      }
+      try {
+        await _onIsolatePaused(isolateRef, isLastIsolateInGroup);
+      } finally {
+        logfile.writeln("        Resuming2: ${isolateRef}");
+        group.exit(isolateRef);
+        await _service.resume(isolateRef.id!);
+      }
     }
   }
 
   void _onExit(IsolateRef isolateRef) {
-    if (_finished) return;
+    logfile.writeln("    _onExit: $isolateRef");
+    if (_finishedListening) return;
     final group = _getGroup(isolateRef);
-    group.exit(isolateRef.id!);
+    group.exit(isolateRef);
+    --_numIsolates;
     if (group.noLiveIsolates && !group.collected) {
       _log('ERROR: An isolate exited without pausing, causing '
           'coverage data to be lost for group ${isolateRef.isolateGroupId!}.');
     }
     if (isolateRef.id! == _mainIsolate?.id) {
-      if (!_mainIsolatePaused.isCompleted) {
-        // Main isolate exited without pausing.
-        _mainIsolatePaused.complete(false);
-      }
-    } else {
-      --_numNonMainIsolates;
-      _checkCompleted();
-    }
-  }
-
-  bool get _mainRunning =>
-      _mainIsolate != null && !_mainIsolatePaused.isCompleted;
-
-  void _checkCompleted() {
-    if (_numNonMainIsolates == 0 &&
-        !_mainRunning &&
-        !_allNonMainIsolatesExited.isCompleted) {
-      _allNonMainIsolatesExited.complete();
+      // Main isolate exited without pausing.
+      _mainIsolate = null;
+      _mainIsolatePausedOrAllIsolatesExited.safeComplete();
+    } else if (!_hasMainIsolate && _numIsolates == 0) {
+      _mainIsolatePausedOrAllIsolatesExited.safeComplete();
     }
   }
 
@@ -136,6 +141,12 @@ class IsolatePausedListener {
     // TODO(https://github.com/dart-lang/sdk/issues/56732): Switch to more
     // reliable test when it's available.
     return isolateRef.name == 'main';
+  }
+}
+
+extension on Completer {
+  void safeComplete() {
+    if (!isCompleted) complete();
   }
 }
 
@@ -220,30 +231,30 @@ Future<void> listenToIsolateLifecycleEvents(
 class IsolateGroupState {
   // IDs of the isolates running in this group.
   @visibleForTesting
-  final running = <String>{};
+  final running = <IsolateRef>{};
 
   // IDs of the isolates paused just before exiting in this group.
   @visibleForTesting
-  final paused = <String>{};
+  final paused = <IsolateRef>{};
 
   bool collected = false;
 
   bool get noRunningIsolates => running.isEmpty;
   bool get noLiveIsolates => running.isEmpty && paused.isEmpty;
 
-  void start(String id) {
-    paused.remove(id);
-    running.add(id);
+  void start(IsolateRef iso) {
+    paused.remove(iso);
+    running.add(iso);
   }
 
-  void pause(String id) {
-    running.remove(id);
-    paused.add(id);
+  void pause(IsolateRef iso) {
+    running.remove(iso);
+    paused.add(iso);
   }
 
-  void exit(String id) {
-    running.remove(id);
-    paused.remove(id);
+  void exit(IsolateRef iso) {
+    running.remove(iso);
+    paused.remove(iso);
   }
 
   @override
