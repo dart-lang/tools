@@ -1,5 +1,24 @@
 ## 2.3.0-wip
 
+- Removes support for the `.packages` file.
+  The Dart SDK no longer supports that file, and no new `.packages` files
+  will be generated.
+  Since the SDK requirement for this package is above 3.0.0,
+  no supporting SDK can use or generate `.packages`.
+
+- Simplifies API that no longer needs to support two separate files.
+  - Renamed `readAnyConfigFile` to `readConfigFile`, and removed
+    the `preferNewest` parameter.
+  - Same for `readAnyConfigFileUri` which becomes `readConfigFileUri`.
+  - Old functions still exists as deprecated, forwarding to the new
+    functions without the `preferNewest` argument.
+
+  Also makes `PackageConfig`, `Package` and `LanguageVersion` `@sealed` classes,
+  in preparation for making them `final` in a future update.
+
+- Adds `PackageConfig.minVersion` to complement `.maxVersion`.
+  Currently both are `2`.
+
 ## 2.2.0
 
 - Add relational operators to `LanguageVersion` with extension methods
