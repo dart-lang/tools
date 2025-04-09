@@ -40,7 +40,7 @@ void isolateTask(List threeThings) async {
 
   fooSync(answer);
   unawaited(fooAsync(answer).then((_) {
-    final keepAlive = RawReceivePort()..keepIsolateAlive = true;
+    RawReceivePort().keepIsolateAlive = true;
     final port = threeThings.first as SendPort;
     final sum = (threeThings[1] as int) + (threeThings[2] as int);
     port.send(sum);

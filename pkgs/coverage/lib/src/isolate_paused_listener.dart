@@ -4,7 +4,6 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:vm_service/vm_service.dart';
