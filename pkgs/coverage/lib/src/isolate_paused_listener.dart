@@ -11,8 +11,6 @@ import 'package:vm_service/vm_service.dart';
 
 import 'util.dart';
 
-final logfile = File('log_${DateTime.timestamp().millisecondsSinceEpoch}.txt').openWrite();
-
 typedef SyncIsolateCallback = void Function(IsolateRef isolate);
 typedef AsyncIsolateCallback = Future<void> Function(IsolateRef isolate);
 typedef AsyncIsolatePausedCallback = Future<void> Function(
@@ -47,13 +45,10 @@ class IsolatePausedListener {
   Future<void> waitUntilAllExited() async {
     await listenToIsolateLifecycleEvents(_service, _onStart, _onPause, _onExit);
 
-    logfile.writeln("_mainIsolatePausedOrAllIsolatesExited BEFORE");
     await _mainIsolatePausedOrAllIsolatesExited.future;
-    logfile.writeln("_mainIsolatePausedOrAllIsolatesExited AFTER");
     _finishedListening = true;
 
     // Collect all remaining uncollected groups.
-    logfile.writeln("Creating collection tasks");
     final collectionTasks = <Future<void>>[];
     for (final group in _isolateGroups.values) {
       if (!group.collected) {
@@ -64,13 +59,10 @@ class IsolatePausedListener {
         }
       }
     }
-    logfile.writeln("Awaiting collection tasks");
     await Future.wait(collectionTasks);
-    logfile.writeln("Collection tasks done");
 
     // Resume the main isolate.
     if (_mainIsolate != null) {
-      logfile.writeln("        Resuming1: ${_mainIsolate}");
       await _service.resume(_mainIsolate!.id!);
     }
   }
@@ -79,7 +71,6 @@ class IsolatePausedListener {
       _isolateGroups[isolateRef.isolateGroupId!] ??= IsolateGroupState();
 
   void _onStart(IsolateRef isolateRef) {
-    logfile.writeln("    _onStart: $isolateRef");
     if (_finishedListening) return;
     final group = _getGroup(isolateRef);
     group.start(isolateRef);
@@ -91,7 +82,6 @@ class IsolatePausedListener {
   }
 
   Future<void> _onPause(IsolateRef isolateRef) async {
-    logfile.writeln("    _onPause: $isolateRef");
     if (_finishedListening) return;
     final group = _getGroup(isolateRef);
     group.pause(isolateRef);
@@ -105,7 +95,6 @@ class IsolatePausedListener {
       try {
         await _onIsolatePaused(isolateRef, isLastIsolateInGroup);
       } finally {
-        logfile.writeln("        Resuming2: ${isolateRef}");
         group.exit(isolateRef);
         await _service.resume(isolateRef.id!);
       }
@@ -113,7 +102,6 @@ class IsolatePausedListener {
   }
 
   void _onExit(IsolateRef isolateRef) {
-    logfile.writeln("    _onExit: $isolateRef");
     if (_finishedListening) return;
     final group = _getGroup(isolateRef);
     group.exit(isolateRef);

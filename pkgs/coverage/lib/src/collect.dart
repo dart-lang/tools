@@ -179,10 +179,9 @@ Future<Map<String, dynamic>> _getAllCoverage(
     await IsolatePausedListener(service,
             (IsolateRef isolateRef, bool isLastIsolateInGroup) async {
       if (isLastIsolateInGroup) {
-        logfile.writeln("    Collecting $isolateRef");
         await collectIsolate(isolateRef);
       }
-    }, logfile.writeln)
+    }, stderr.writeln)
         .waitUntilAllExited();
   } else {
     for (final isolateRef in await getAllIsolates(service)) {
@@ -203,7 +202,6 @@ Future _resumeIsolates(VmService service) async {
     futures.add(Future.sync(() async {
       final isolate = await service.getIsolate(isolateRef.id!);
       if (isolate.pauseEvent!.kind != EventKind.kResume) {
-        logfile.writeln("        Resuming0: ${isolateRef}");
         await service.resume(isolateRef.id!);
       }
     }));

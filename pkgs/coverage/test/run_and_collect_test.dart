@@ -84,7 +84,10 @@ void checkIgnoredLinesInFilesCache(
   expect(ignoredLinesInFilesCache[packageUtilKey], isEmpty);
   expect(ignoredLinesInFilesCache[testAppKey], null /* means whole file */);
   expect(ignoredLinesInFilesCache[testAppIsolateKey], [
-    [52, 52], [54, 58], [63, 66], [67, 73]
+    [52, 52],
+    [54, 58],
+    [63, 66],
+    [67, 73]
   ]);
 }
 
