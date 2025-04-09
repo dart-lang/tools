@@ -69,6 +69,10 @@ class ThrowingResolver implements Resolver {
 
   @override
   String? get sdkRoot => throw UnimplementedError();
+
+  @override
+  List<String> listAllDartFiles({String directoryPath = '.'}) =>
+      throw UnimplementedError();
 }
 
 void checkIgnoredLinesInFilesCache(
