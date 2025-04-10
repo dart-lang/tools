@@ -1,3 +1,7 @@
+## 4.1.8
+
+- Simplify the format of client ID strings.
+
 ## 4.1.7
 
 - Move to `dart-lang/tools` monorepo.
