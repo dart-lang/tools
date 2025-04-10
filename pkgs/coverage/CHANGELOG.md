@@ -1,4 +1,4 @@
-## 1.12.0-wip
+## 1.12.0
 
 - Introduced support for specifying coverage flags through a YAML file.
 - Fix a [bug](https://github.com/dart-lang/tools/issues/2049) where coverage
