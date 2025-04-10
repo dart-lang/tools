@@ -11,7 +11,7 @@ import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web/web.dart';
 
-import '../src/util/uuid.dart';
+import '../src/util/id.dart';
 
 /// Limit for the number of concurrent outgoing requests.
 ///
@@ -21,7 +21,7 @@ import '../src/util/uuid.dart';
 /// Note Chrome's limit is 6000. So this gives us plenty of headroom.
 final _requestPool = Pool(1000);
 
-/// A client for bi-directional sse communication.
+/// A client for bi-directional SSE communication.
 ///
 /// The client can send any JSON-encodable messages to the server by adding
 /// them to the [sink] and listen to messages from the server on the [stream].
