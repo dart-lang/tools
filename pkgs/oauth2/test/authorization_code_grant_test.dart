@@ -100,6 +100,25 @@ void main() {
           ]));
     });
 
+    test('builds the correct URL with prompt parameter', () {
+      var authorizationUrl = grant.getAuthorizationUrl(
+        redirectUrl,
+        prompt: oauth2.OAuthPrompt.login,
+      );
+
+      expect(
+        authorizationUrl.toString(),
+        allOf([
+          startsWith('https://example.com/authorization?response_type=code'),
+          contains('&client_id=identifier'),
+          contains('&redirect_uri=http%3A%2F%2Fexample.com%2Fredirect'),
+          matches(r'&code_challenge=[A-Za-z0-9\+\/\-\_]{43}'),
+          contains('&code_challenge_method=S256'),
+          contains('&prompt=login'),
+        ]),
+      );
+    });
+
     test('builds the correct URL with state', () {
       var authorizationUrl =
           grant.getAuthorizationUrl(redirectUrl, state: 'state');
