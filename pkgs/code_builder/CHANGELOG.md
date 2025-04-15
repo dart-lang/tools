@@ -1,4 +1,4 @@
-## 4.10.2
+## 4.10.2-wip
 
 * Upgrade `dart_style` and `source_gen` to remove `package:macros` dependency.
 * Require Dart `^3.6.0` due to the upgrades.
