@@ -218,10 +218,17 @@ class SelectorEvaluator extends Visitor {
         final exprs = node.expression.expressions;
         if (exprs.length == 1 && exprs[0] is LiteralTerm) {
           final literal = exprs[0] as LiteralTerm;
+
+          if (literal.value is! num) {
+            // non numeric values (e.g. `nth-child(even)`) are not supported
+            return false;
+          }
+
+          final numericLiteral = literal.value as num;
           final parent = _element!.parentNode;
           return parent != null &&
-              (literal.value as num) > 0 &&
-              parent.nodes.indexOf(_element) == literal.value;
+              numericLiteral > 0 &&
+              parent.nodes.indexOf(_element) == numericLiteral;
         }
         break;
 
