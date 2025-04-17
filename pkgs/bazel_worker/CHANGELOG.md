@@ -1,6 +1,7 @@
-## 1.1.3-wip
+## 1.1.3
 
 * Require Dart SDK `^3.4.0`.
+* Widen `package:protobuf` constraint to allow 4.0.0.
 
 ## 1.1.2
 

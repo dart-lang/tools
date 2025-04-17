@@ -22,6 +22,16 @@ void main() {
   late File logFile;
 
   final testEvent = Event.hotReloadTime(timeMs: 10);
+  final propertyEditorEvent = Event.devtoolsEvent(
+      label: devtoolsEventLabel,
+      screen: propertyEditorId,
+      eventCategory: 'test',
+      value: 1);
+  final devToolsEvent = Event.devtoolsEvent(
+      label: devtoolsEventLabel,
+      screen: 'inspector',
+      eventCategory: 'test',
+      value: 1);
 
   setUp(() {
     fs = MemoryFileSystem.test(style: FileSystemStyle.posix);
@@ -69,6 +79,26 @@ void main() {
     expect(analytics.logFileStats(), isNotNull);
     expect(logFile.readAsLinesSync().length, countOfEventsToSend);
     expect(analytics.logFileStats()!.recordCount, countOfEventsToSend);
+  });
+
+  test('LogFileStats handles granular events', () async {
+    final countOfPropertyEditorEventsToSend = 5;
+    final countOfDevToolsEventsToSend = 10;
+
+    for (var i = 0; i < countOfPropertyEditorEventsToSend; i++) {
+      analytics.send(propertyEditorEvent);
+    }
+    for (var i = 0; i < countOfDevToolsEventsToSend; i++) {
+      analytics.send(devToolsEvent);
+    }
+
+    expect(analytics.logFileStats(), isNotNull);
+    expect(logFile.readAsLinesSync().length,
+        countOfPropertyEditorEventsToSend + countOfDevToolsEventsToSend);
+    expect(analytics.logFileStats()!.eventCount['property_editor'],
+        countOfPropertyEditorEventsToSend);
+    expect(analytics.logFileStats()!.eventCount['devtools_event'],
+        countOfDevToolsEventsToSend);
   });
 
   test('The only record in the log file is malformed', () async {

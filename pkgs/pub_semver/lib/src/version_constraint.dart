@@ -16,9 +16,15 @@ import 'version_union.dart';
 /// version.
 abstract class VersionConstraint {
   /// A [VersionConstraint] that allows all versions.
+  ///
+  /// **Note:** This property shouldn't be reassigned.
+  /// It will be made `final` in a future release.
   static VersionConstraint any = VersionRange();
 
   /// A [VersionConstraint] that allows no versions -- the empty set.
+  ///
+  /// **Note:** This property shouldn't be reassigned.
+  /// It will be made `final` in a future release.
   static VersionConstraint empty = const _EmptyVersion();
 
   /// Parses a version constraint.
