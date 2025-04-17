@@ -1,0 +1,68 @@
+name: package:package_config
+permissions: read-all
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/package_config.yaml'
+      - 'pkgs/package_config/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/package_config.yaml'
+      - 'pkgs/package_config/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+defaults:
+  run:
+    working-directory: pkgs/package_config/
+
+jobs:
+  # Check code formatting and static analysis on a single OS (linux)
+  # against Dart dev.
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+      - name: Analyze code
+        run: dart analyze --fatal-infos
+        if: always() && steps.install.outcome == 'success'
+
+  # Run tests on a matrix consisting of two dimensions:
+  # 1. OS: ubuntu-latest, (macos-latest, windows-latest)
+  # 2. release channel: dev
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        sdk: [3.7, dev]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run tests
+        run: dart test -p chrome,vm
+        if: always() && steps.install.outcome == 'success'

@@ -9,14 +9,9 @@ analyzer:
 
 linter:
   rules:
-    - always_declare_return_types
     - avoid_slow_async_io
     - cancel_subscriptions
-    - comment_references
     - literal_only_boolean_expressions
     - prefer_final_locals
     - sort_constructors_first
     - sort_unnamed_constructors_first
-    - test_types_in_equals
-    - throw_in_finally
-    - type_annotate_public_apis

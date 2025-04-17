@@ -1,0 +1,41 @@
+name: package:test_reflective_loader
+permissions: read-all
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test_reflective_loader.yaml'
+      - 'pkgs/test_reflective_loader/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test_reflective_loader.yaml'
+      - 'pkgs/test_reflective_loader/**'
+  schedule:
+    - cron: "0 0 * * 0"
+
+defaults:
+  run:
+    working-directory: pkgs/test_reflective_loader/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dev, 3.1]
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
+        with:
+          sdk: ${{ matrix.sdk }}
+          
+      - run: dart pub get
+      - name: dart format
+        run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-infos
+      - run: dart test

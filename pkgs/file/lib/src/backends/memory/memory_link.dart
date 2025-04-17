@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:file/file.dart';
-import 'package:file/src/common.dart' as common;
-import 'package:file/src/io.dart' as io;
 import 'package:meta/meta.dart';
 
+import '../../common.dart' as common;
+import '../../interface.dart';
+import '../../io.dart' as io;
 import 'memory_file_system_entity.dart';
 import 'node.dart';
 import 'operations.dart';
@@ -15,8 +15,7 @@ import 'utils.dart' as utils;
 /// Internal implementation of [Link].
 class MemoryLink extends MemoryFileSystemEntity implements Link {
   /// Instantiates a new [MemoryLink].
-  const MemoryLink(NodeBasedFileSystem fileSystem, String path)
-      : super(fileSystem, path);
+  const MemoryLink(super.fileSystem, super.path);
 
   @override
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.link;
@@ -50,7 +49,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
 
   @override
   void createSync(String target, {bool recursive = false}) {
-    bool preexisting = true;
+    var preexisting = true;
     fileSystem.opHandle(path, FileSystemOp.create);
     internalCreateSync(
         createChild: (DirectoryNode parent, bool isFinalSegment) {
@@ -76,7 +75,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
 
   @override
   void updateSync(String target) {
-    Node node = backing;
+    var node = backing;
     utils.checkType(expectedType, node.type, () => path);
     (node as LinkNode).target = target;
   }
@@ -93,7 +92,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
 
   @override
   String targetSync() {
-    Node node = backing;
+    var node = backing;
     if (node.type != expectedType) {
       // Note: this may change; https://github.com/dart-lang/sdk/issues/28204
       throw common.noSuchFileOrDirectory(path);
