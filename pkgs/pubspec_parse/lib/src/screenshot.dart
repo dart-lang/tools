@@ -63,3 +63,11 @@ List<Screenshot> parseScreenshots(List? input) {
   }
   return res;
 }
+
+List<Map<String, String>> serializeScreenshots(List<Screenshot>? input) =>
+    input
+        ?.map(
+          (e) => <String, String>{'description': e.description, 'path': e.path},
+        )
+        .toList() ??
+    [];
