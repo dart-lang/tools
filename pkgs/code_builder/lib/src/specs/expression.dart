@@ -581,7 +581,7 @@ abstract mixin class ExpressionEmitter
       if (expression.name case final name? when name.isNotEmpty) {
         out
           ..write('.')
-          ..write(expression.name);
+          ..write(name);
       }
       if (expression.typeArguments.isNotEmpty) {
         out.write('<');
