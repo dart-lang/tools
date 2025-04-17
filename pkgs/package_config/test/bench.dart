@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:package_config/src/errors.dart';
 import 'package:package_config/src/package_config_json.dart';
@@ -31,8 +30,7 @@ void bench(final int size, final bool doPrint) {
   sb.writeln('}');
   var stopwatch = Stopwatch()..start();
   var config = parsePackageConfigBytes(
-    // ignore: unnecessary_cast
-    utf8.encode(sb.toString()) as Uint8List,
+    utf8.encode(sb.toString()),
     Uri.parse('file:///tmp/.dart_tool/file.dart'),
     throwError,
   );
@@ -48,8 +46,10 @@ void bench(final int size, final bool doPrint) {
   final lookup = stopwatch.elapsedMilliseconds;
 
   if (doPrint) {
-    print('Read file with $size packages in $read ms, '
-        'looked up all packages in $lookup ms');
+    print(
+      'Read file with $size packages in $read ms, '
+      'looked up all packages in $lookup ms',
+    );
   }
 }
 

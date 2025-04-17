@@ -28,6 +28,10 @@
 "input":"<z ====>",
 "output":["ParseError", "ParseError", "ParseError", ["StartTag", "z", {"=": "=="}]]},
 
+{"description":"Ambiguous ampersand in attribute value",
+"input":"<tag attr=\"foo?a=b&c=d\">",
+"output":[["StartTag", "tag", {"attr": "foo?a=b&c=d"}]]},
+
 {"description":"Allowed \" after ampersand in attribute value",
 "input":"<z z=\"&\">",
 "output":[["StartTag", "z", {"z": "&"}]]},

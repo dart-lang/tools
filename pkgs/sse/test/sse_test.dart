@@ -171,7 +171,7 @@ void main() {
 
       await webdriver.get('chrome://version/');
       expect(handler.numberOfClients, 0);
-    });
+    }, skip: 'https://github.com/dart-lang/tools/issues/2006');
   });
 
   group('SSE with server keep-alive', () {

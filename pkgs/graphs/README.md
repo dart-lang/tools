@@ -1,4 +1,4 @@
-[![CI](https://github.com/dart-lang/tools/actions/workflows/graphs.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/graphs.yml)
+[![CI](https://github.com/dart-lang/tools/actions/workflows/graphs.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/graphs.yaml)
 [![pub package](https://img.shields.io/pub/v/graphs.svg)](https://pub.dev/packages/graphs)
 [![package publisher](https://img.shields.io/pub/publisher/graphs.svg)](https://pub.dev/packages/graphs/publisher)
 

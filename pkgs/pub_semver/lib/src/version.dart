@@ -5,7 +5,6 @@
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show sealed;
 
 import 'patterns.dart';
 import 'version_constraint.dart';
@@ -15,8 +14,7 @@ import 'version_range.dart';
 const _equality = IterableEquality<Object>();
 
 /// A parsed semantic version number.
-@sealed
-class Version implements VersionConstraint, VersionRange {
+final class Version implements VersionConstraint, VersionRange {
   /// No released version: i.e. "0.0.0".
   static Version get none => Version(0, 0, 0);
 
@@ -70,6 +68,8 @@ class Version implements VersionConstraint, VersionRange {
   /// This is split into a list of components, each of which may be either a
   /// string or a non-negative integer. It may also be empty, indicating that
   /// this version has no pre-release identifier.
+  ///
+  /// **Note:** The returned list shouldn't be modified.
   final List<Object> preRelease;
 
   /// The build identifier: "foo" in "1.2.3+foo".
@@ -77,6 +77,8 @@ class Version implements VersionConstraint, VersionRange {
   /// This is split into a list of components, each of which may be either a
   /// string or a non-negative integer. It may also be empty, indicating that
   /// this version has no build identifier.
+  ///
+  /// **Note:** The returned list shouldn't be modified.
   final List<Object> build;
 
   /// The original string representation of the version number.
@@ -96,8 +98,10 @@ class Version implements VersionConstraint, VersionRange {
 
   Version._(this.major, this.minor, this.patch, String? preRelease,
       String? build, this._text)
-      : preRelease = preRelease == null ? <Object>[] : _splitParts(preRelease),
-        build = build == null ? [] : _splitParts(build) {
+      : preRelease = preRelease == null || preRelease.isEmpty
+            ? []
+            : _splitParts(preRelease),
+        build = build == null || build.isEmpty ? [] : _splitParts(build) {
     if (major < 0) throw ArgumentError('Major version must be non-negative.');
     if (minor < 0) throw ArgumentError('Minor version must be non-negative.');
     if (patch < 0) throw ArgumentError('Patch version must be non-negative.');

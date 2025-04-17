@@ -129,73 +129,78 @@ void main() {
     expect(group.noRunningIsolates, isTrue);
     expect(group.noLiveIsolates, isTrue);
 
-    group.start('a');
-    expect(group.running, unorderedEquals(['a']));
+    group.start(IsolateRef(id: 'a'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['a']));
     expect(group.paused, isEmpty);
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.start('a');
-    expect(group.running, unorderedEquals(['a']));
+    group.start(IsolateRef(id: 'a'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['a']));
     expect(group.paused, isEmpty);
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.start('b');
-    expect(group.running, unorderedEquals(['a', 'b']));
+    group.start(IsolateRef(id: 'b'));
+    expect(group.running.map((iso) => iso.id).toList(),
+        unorderedEquals(['a', 'b']));
     expect(group.paused, isEmpty);
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.pause('a');
-    expect(group.running, unorderedEquals(['b']));
-    expect(group.paused, unorderedEquals(['a']));
+    group.pause(IsolateRef(id: 'a'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
+    expect(group.paused.map((iso) => iso.id).toList(), unorderedEquals(['a']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.pause('a');
-    expect(group.running, unorderedEquals(['b']));
-    expect(group.paused, unorderedEquals(['a']));
+    group.pause(IsolateRef(id: 'a'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
+    expect(group.paused.map((iso) => iso.id).toList(), unorderedEquals(['a']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.pause('c');
-    expect(group.running, unorderedEquals(['b']));
-    expect(group.paused, unorderedEquals(['a', 'c']));
+    group.pause(IsolateRef(id: 'c'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
+    expect(group.paused.map((iso) => iso.id).toList(),
+        unorderedEquals(['a', 'c']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.start('c');
-    expect(group.running, unorderedEquals(['b', 'c']));
-    expect(group.paused, unorderedEquals(['a']));
+    group.start(IsolateRef(id: 'c'));
+    expect(group.running.map((iso) => iso.id).toList(),
+        unorderedEquals(['b', 'c']));
+    expect(group.paused.map((iso) => iso.id).toList(), unorderedEquals(['a']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.pause('c');
-    expect(group.running, unorderedEquals(['b']));
-    expect(group.paused, unorderedEquals(['a', 'c']));
+    group.pause(IsolateRef(id: 'c'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
+    expect(group.paused.map((iso) => iso.id).toList(),
+        unorderedEquals(['a', 'c']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.exit('a');
-    expect(group.running, unorderedEquals(['b']));
-    expect(group.paused, unorderedEquals(['c']));
+    group.exit(IsolateRef(id: 'a'));
+    expect(group.running.map((iso) => iso.id).toList(), unorderedEquals(['b']));
+    expect(group.paused.map((iso) => iso.id).toList(), unorderedEquals(['c']));
     expect(group.noRunningIsolates, isFalse);
     expect(group.noLiveIsolates, isFalse);
 
-    group.pause('b');
+    group.pause(IsolateRef(id: 'b'));
     expect(group.running, isEmpty);
-    expect(group.paused, unorderedEquals(['b', 'c']));
+    expect(group.paused.map((iso) => iso.id).toList(),
+        unorderedEquals(['b', 'c']));
     expect(group.noRunningIsolates, isTrue);
     expect(group.noLiveIsolates, isFalse);
 
-    group.exit('b');
+    group.exit(IsolateRef(id: 'b'));
     expect(group.running, isEmpty);
-    expect(group.paused, unorderedEquals(['c']));
+    expect(group.paused.map((iso) => iso.id).toList(), unorderedEquals(['c']));
     expect(group.noRunningIsolates, isTrue);
     expect(group.noLiveIsolates, isFalse);
 
-    group.exit('c');
+    group.exit(IsolateRef(id: 'c'));
     expect(group.running, isEmpty);
     expect(group.paused, isEmpty);
     expect(group.noRunningIsolates, isTrue);
@@ -528,7 +533,7 @@ void main() {
         service,
         (iso, isLastIsolateInGroup) async {
           expect(stopped, isFalse);
-          received.add('Pause ${iso.id}. Last in group ${iso.isolateGroupId}? '
+          received.add('Pause ${iso.id}. Collect group ${iso.isolateGroupId}? '
               '${isLastIsolateInGroup ? 'Yes' : 'No'}');
         },
         (message) => received.add(message),
@@ -572,23 +577,23 @@ void main() {
       exitEvent('Z', '9');
 
       expect(received, [
-        'Pause A. Last in group 1? No',
+        'Pause A. Collect group 1? No',
         'Resume A',
-        'Pause B. Last in group 1? No',
+        'Pause B. Collect group 1? No',
         'Resume B',
-        'Pause C. Last in group 1? Yes',
+        'Pause C. Collect group 1? Yes',
         'Resume C',
-        'Pause F. Last in group 2? No',
+        'Pause F. Collect group 2? No',
         'Resume F',
-        'Pause E. Last in group 2? No',
+        'Pause E. Collect group 2? No',
         'Resume E',
-        'Pause I. Last in group 3? No',
+        'Pause I. Collect group 3? No',
         'Resume I',
-        'Pause H. Last in group 3? No',
+        'Pause H. Collect group 3? No',
         'Resume H',
-        'Pause D. Last in group 2? Yes',
+        'Pause D. Collect group 2? Yes',
         'Resume D',
-        'Pause G. Last in group 3? Yes',
+        'Pause G. Collect group 3? Yes',
         'Resume G',
       ]);
     });
@@ -614,16 +619,16 @@ void main() {
       // B was paused correctly and was the last to exit isolate 1, so isolate 1
       // was collected ok.
       expect(received, [
-        'Pause B. Last in group 1? Yes',
+        'Pause B. Collect group 1? Yes',
         'Resume B',
-        'Pause D. Last in group 2? No',
+        'Pause D. Collect group 2? No',
         'Resume D',
         'ERROR: An isolate exited without pausing, causing coverage data to '
             'be lost for group 2.',
       ]);
     });
 
-    test('main isolate resumed last', () async {
+    test('subsequent main isolates are ignored', () async {
       startEvent('A', '1', 'main');
       startEvent('B', '1', 'main'); // Second isolate named main, ignored.
       pauseEvent('B', '1', 'main');
@@ -639,14 +644,49 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause B. Last in group 1? No',
+        'Pause B. Collect group 1? No',
         'Resume B',
-        'Pause C. Last in group 2? No',
-        'Resume C',
-        'Pause D. Last in group 2? Yes',
-        'Resume D',
-        'Pause A. Last in group 1? Yes',
+        'Pause A. Collect group 1? Yes',
+        'Pause C. Collect group 2? Yes',
         'Resume A',
+      ]);
+    });
+
+    test('all groups collected as soon as main isolate paused', () async {
+      startEvent('B', '1');
+      startEvent('E', '2');
+      startEvent('D', '2');
+      startEvent('F', '2');
+      pauseEvent('F', '2');
+      startEvent('C', '2');
+      startEvent('A', '1');
+      pauseEvent('B', '1');
+      pauseEvent('E', '2');
+      startEvent('G', '3');
+      pauseEvent('D', '2');
+      startEvent('H', '3');
+      exitEvent('F', '2');
+      startEvent('I', '3');
+      exitEvent('I', '3');
+
+      startEvent('M', '1', 'main');
+      pauseEvent('M', '1', 'main');
+
+      await endTest();
+
+      expect(received, [
+        'Pause F. Collect group 2? No',
+        'Resume F',
+        'Pause B. Collect group 1? No',
+        'Resume B',
+        'Pause E. Collect group 2? No',
+        'Resume E',
+        'Pause D. Collect group 2? No',
+        'Resume D',
+        'Pause M. Collect group 1? Yes',
+        'Pause C. Collect group 2? Yes',
+        'Pause G. Collect group 3? Yes',
+        'Resume M',
       ]);
     });
 
@@ -660,7 +700,7 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause B. Last in group 1? No',
+        'Pause B. Collect group 1? No',
         'Resume B',
         'ERROR: An isolate exited without pausing, causing coverage data to '
             'be lost for group 1.',
@@ -674,7 +714,7 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause A. Last in group 1? Yes',
+        'Pause A. Collect group 1? Yes',
         'Resume A',
       ]);
     });
@@ -693,9 +733,9 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause B. Last in group 1? No',
+        'Pause B. Collect group 1? No',
         'Resume B',
-        'Pause A. Last in group 1? Yes',
+        'Pause A. Collect group 1? Yes',
         'Resume A',
       ]);
     });
@@ -722,11 +762,11 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause B. Last in group 1? No',
+        'Pause B. Collect group 1? No',
         'Resume B',
-        'Pause C. Last in group 1? No',
+        'Pause C. Collect group 1? No',
         'Resume C',
-        'Pause A. Last in group 1? Yes',
+        'Pause A. Collect group 1? Yes',
         'Resume A',
       ]);
     });
@@ -753,11 +793,9 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause B. Last in group 1? No',
+        'Pause B. Collect group 1? No',
         'Resume B',
-        'Pause C. Last in group 1? Yes',
-        'Resume C',
-        'Pause A. Last in group 1? No',
+        'Pause A. Collect group 1? Yes',
         'Resume A',
       ]);
     });
@@ -795,19 +833,19 @@ void main() {
       await endTest();
 
       expect(received, [
-        'Pause Z. Last in group 9? Yes',
+        'Pause Z. Collect group 9? Yes',
         'Resume Z',
-        'Pause A. Last in group 1? No',
+        'Pause A. Collect group 1? No',
         'Resume A',
-        'Pause B. Last in group 1? Yes',
+        'Pause B. Collect group 1? Yes',
         'Resume B',
-        'Pause E. Last in group 2? No',
+        'Pause E. Collect group 2? No',
         'Resume E',
-        'Pause D. Last in group 2? Yes',
+        'Pause D. Collect group 2? Yes',
         'Resume D',
-        'Pause F. Last in group 2? Yes',
+        'Pause F. Collect group 2? Yes',
         'Resume F',
-        'Pause C. Last in group 1? Yes',
+        'Pause C. Collect group 1? Yes',
         'Resume C',
       ]);
     });

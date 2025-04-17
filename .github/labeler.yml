@@ -56,6 +56,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/file_testing/**'
 
+'package:glob':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/glob/**'
+
 'package:graphs':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/graphs/**'
@@ -71,6 +75,10 @@
 'package:json_rpc_2':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/json_rpc_2/**'
+
+'package:markdown':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/markdown/**'
 
 'package:mime':
   - changed-files:

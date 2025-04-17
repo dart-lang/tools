@@ -23,6 +23,8 @@ class VersionUnion implements VersionConstraint {
   /// * Its contents are disjoint and non-adjacent. In other words, for any two
   ///   constraints next to each other in the list, there's some version between
   ///   those constraints that they don't match.
+  ///
+  /// **Note:** The returned list shouldn't be modified.
   final List<VersionRange> ranges;
 
   @override

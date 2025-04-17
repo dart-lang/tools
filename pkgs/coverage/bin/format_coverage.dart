@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
+import 'package:coverage/src/coverage_options.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
@@ -37,7 +38,7 @@ class Environment {
   bool checkIgnore;
   String input;
   bool lcov;
-  IOSink output;
+  String? output;
   String? packagesPath;
   String packagePath;
   bool prettyPrint;
@@ -51,7 +52,8 @@ class Environment {
 }
 
 Future<void> main(List<String> arguments) async {
-  final env = parseArgs(arguments);
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
+  final env = parseArgs(arguments, defaultOptions);
 
   final files = filesToProcess(env.input);
   if (env.verbose) {
@@ -104,8 +106,11 @@ Future<void> main(List<String> arguments) async {
         basePath: env.baseDirectory);
   }
 
-  env.output.write(output);
-  await env.output.flush();
+  final outputSink =
+      env.output == null ? stdout : File(env.output!).openWrite();
+
+  outputSink.write(output);
+  await outputSink.flush();
   if (env.verbose) {
     print('Done flushing output. Took ${clock.elapsedMilliseconds} ms.');
   }
@@ -124,26 +129,43 @@ Future<void> main(List<String> arguments) async {
       }
     }
   }
-  await env.output.close();
+  await outputSink.close();
 }
 
 /// Checks the validity of the provided arguments. Does not initialize actual
 /// processing.
-Environment parseArgs(List<String> arguments) {
+Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final parser = ArgParser();
 
   parser
-    ..addOption('sdk-root', abbr: 's', help: 'path to the SDK root')
-    ..addOption('packages', help: '[DEPRECATED] path to the package spec file')
+    ..addOption(
+      'sdk-root',
+      abbr: 's',
+      help: 'path to the SDK root',
+    )
+    ..addOption(
+      'packages',
+      help: '[DEPRECATED] path to the package spec file',
+    )
     ..addOption('package',
-        help: 'root directory of the package', defaultsTo: '.')
-    ..addOption('in', abbr: 'i', help: 'input(s): may be file or directory')
-    ..addOption('out',
-        abbr: 'o', defaultsTo: 'stdout', help: 'output: may be file or stdout')
-    ..addMultiOption('report-on',
-        help: 'which directories or files to report coverage on')
-    ..addOption('workers',
-        abbr: 'j', defaultsTo: '1', help: 'number of workers')
+        help: 'root directory of the package',
+        defaultsTo: defaultOptions.packageDirectory)
+    ..addOption(
+      'in',
+      abbr: 'i',
+      help: 'input(s): may be file or directory',
+    )
+    ..addOption('out', abbr: 'o', help: 'output: may be file or stdout')
+    ..addMultiOption(
+      'report-on',
+      help: 'which directories or files to report coverage on',
+    )
+    ..addOption(
+      'workers',
+      abbr: 'j',
+      defaultsTo: '1',
+      help: 'number of workers',
+    )
     ..addOption('bazel-workspace',
         defaultsTo: '', help: 'Bazel workspace directory')
     ..addOption('base-directory',
@@ -220,20 +242,31 @@ Environment parseArgs(List<String> arguments) {
     fail('Package spec "${args["package"]}" not found, or not a directory.');
   }
 
-  if (args['in'] == null) fail('No input files given.');
-  final input = p.absolute(p.normalize(args['in'] as String));
+  if (args['in'] == null && defaultOptions.outputDirectory == null) {
+    fail('No input files given.');
+  }
+  final input = p.normalize((args['in'] as String?) ??
+      p.absolute(defaultOptions.outputDirectory!, 'coverage.json'));
   if (!FileSystemEntity.isDirectorySync(input) &&
       !FileSystemEntity.isFileSync(input)) {
     fail('Provided input "${args["in"]}" is neither a directory nor a file.');
   }
 
-  IOSink output;
-  if (args['out'] == 'stdout') {
-    output = stdout;
+  String? output;
+  final outPath = args['out'] as String?;
+  if (outPath == 'stdout' ||
+      (outPath == null && defaultOptions.outputDirectory == null)) {
+    output = null;
   } else {
-    final outpath = p.absolute(p.normalize(args['out'] as String));
-    final outfile = File(outpath)..createSync(recursive: true);
-    output = outfile.openWrite();
+    final outFilePath = p.normalize(
+        outPath ?? p.absolute(defaultOptions.outputDirectory!, 'lcov.info'));
+
+    final outfile = File(outFilePath);
+    if (!FileSystemEntity.isDirectorySync(outFilePath) &&
+        !FileSystemEntity.isFileSync(outFilePath)) {
+      outfile.createSync(recursive: true);
+    }
+    output = outfile.path;
   }
 
   final reportOnRaw = args['report-on'] as List<String>;

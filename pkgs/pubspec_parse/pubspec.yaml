@@ -4,9 +4,10 @@ description: >-
   Simple package for parsing pubspec.yaml files with a type-safe API and rich
   error reporting.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/pubspec_parse
+issue_tracker: https://github.com/dart-lang/tools/labels/package%3Apubspec_parse
 
 topics:
-- dart-pub
+  - dart-pub
 
 environment:
   sdk: ^3.6.0

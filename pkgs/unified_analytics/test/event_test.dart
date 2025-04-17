@@ -400,6 +400,39 @@ void main() {
     expect(constructedEvent.eventData.length, 4);
   });
 
+  test('Event.flutterInjectDarwinPlugins constructed', () {
+    Event generateEvent() => Event.flutterInjectDarwinPlugins(
+          platform: 'ios',
+          isModule: true,
+          swiftPackageManagerUsable: true,
+          swiftPackageManagerFeatureEnabled: true,
+          projectDisabledSwiftPackageManager: false,
+          projectHasSwiftPackageManagerIntegration: true,
+          pluginCount: 123,
+          swiftPackageCount: 456,
+          podCount: 678,
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.flutterInjectDarwinPlugins);
+    expect(constructedEvent.eventData['platform'], 'ios');
+    expect(constructedEvent.eventData['isModule'], isTrue);
+    expect(constructedEvent.eventData['swiftPackageManagerUsable'], isTrue);
+    expect(constructedEvent.eventData['swiftPackageManagerFeatureEnabled'],
+        isTrue);
+    expect(constructedEvent.eventData['projectDisabledSwiftPackageManager'],
+        isFalse);
+    expect(
+        constructedEvent.eventData['projectHasSwiftPackageManagerIntegration'],
+        isTrue);
+    expect(constructedEvent.eventData['pluginCount'], 123);
+    expect(constructedEvent.eventData['swiftPackageCount'], 456);
+    expect(constructedEvent.eventData['podCount'], 678);
+    expect(constructedEvent.eventData.length, 9);
+  });
+
   test('Event.codeSizeAnalysis constructed', () {
     Event generateEvent() => Event.codeSizeAnalysis(platform: 'platform');
 
@@ -634,7 +667,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 27;
+    final eventsAccountedForInTests = 28;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

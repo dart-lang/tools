@@ -11,7 +11,7 @@ import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web/web.dart';
 
-import '../src/util/uuid.dart';
+import '../src/util/id.dart';
 
 /// Limit for the number of concurrent outgoing requests.
 ///
@@ -21,7 +21,7 @@ import '../src/util/uuid.dart';
 /// Note Chrome's limit is 6000. So this gives us plenty of headroom.
 final _requestPool = Pool(1000);
 
-/// A client for bi-directional sse communication.
+/// A client for bi-directional SSE communication.
 ///
 /// The client can send any JSON-encodable messages to the server by adding
 /// them to the [sink] and listen to messages from the server on the [stream].
@@ -48,9 +48,8 @@ class SseClient extends StreamChannelMixin<String?> {
   /// incoming bi-directional SSE connections. [debugKey] is an optional key
   /// that can be used to identify the SSE connection.
   SseClient(String serverUrl, {String? debugKey})
-      : _clientId = debugKey == null
-            ? generateUuidV4()
-            : '$debugKey-${generateUuidV4()}' {
+      : _clientId =
+            debugKey == null ? generateId() : '$debugKey-${generateId()}' {
     _serverUrl = '$serverUrl?sseClientId=$_clientId';
     _eventSource =
         EventSource(_serverUrl, EventSourceInit(withCredentials: true));

@@ -397,7 +397,10 @@ class LogItem {
     // a map for the one event in the value
     final eventProp =
         (record['events']! as List<Object?>).first as Map<String, Object?>;
-    final eventName = eventProp['name'] as String;
+    final eventName = _logItemEventName(
+      eventProp['name'] as String,
+      event: eventProp,
+    );
 
     // Parse the data out of the `user_properties` value
     final userProps = record['user_properties'] as Map<String, Object?>;
@@ -461,4 +464,29 @@ class LogItem {
       clientIde: clientIde,
     );
   }
+}
+
+/// Logic for creating a more granular event name for the [LogItem].
+String _logItemEventName(
+  String eventName, {
+  required Map<String, Object?> event,
+}) {
+  switch (eventName) {
+    case devtoolsEventLabel:
+      return _granularDevToolsEventName(eventName, event: event);
+    default:
+      return eventName;
+  }
+}
+
+String _granularDevToolsEventName(
+  String eventName, {
+  required Map<String, Object?> event,
+}) {
+  final params = event['params'] as Map<String, Object?>;
+  final screen = params['screen'];
+  if (screen is String && screen == propertyEditorId) {
+    return propertyEditorLogStatsName;
+  }
+  return eventName;
 }

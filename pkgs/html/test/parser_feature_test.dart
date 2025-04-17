@@ -148,6 +148,18 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     expect(elem.attributeSpans!['extends'], null);
   });
 
+  test('attribute spans if value contains & (ambiguous ampersand)', () {
+    final expectedUrl = 'foo?key=value&key2=value2';
+    final text = '<script src="$expectedUrl"></script>';
+
+    final doc = parse(text, generateSpans: true);
+    final elem = doc.querySelector('script')!;
+    final span = elem.attributeValueSpans!['src']!;
+
+    expect(span.start.offset, text.indexOf('foo'));
+    expect(span.text, expectedUrl);
+  });
+
   test('void element innerHTML', () {
     var doc = parse('<div></div>');
     expect(doc.body!.innerHtml, '<div></div>');

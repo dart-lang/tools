@@ -2,6 +2,7 @@ name: source_maps
 version: 0.10.14-wip
 description: A library to programmatically manipulate source map files.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/source_maps
+issue_tracker: https://github.com/dart-lang/tools/labels/package%3Asource_maps
 
 environment:
   sdk: ^3.3.0

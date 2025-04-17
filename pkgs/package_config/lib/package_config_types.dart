@@ -14,4 +14,9 @@ library;
 
 export 'src/errors.dart' show PackageConfigError;
 export 'src/package_config.dart'
-    show InvalidLanguageVersion, LanguageVersion, Package, PackageConfig;
+    show
+        InvalidLanguageVersion,
+        LanguageVersion,
+        LanguageVersionRelationalOperators,
+        Package,
+        PackageConfig;
