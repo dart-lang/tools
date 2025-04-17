@@ -40,10 +40,10 @@ final extensionSets = {
 };
 
 void main() {
-  versionSpan.text = 'v${md.version}';
+  versionSpan.textContent = 'v${md.version}';
   markdownInput.onKeyUp.listen(_renderMarkdown);
 
-  final savedMarkdown = window.localStorage['markdown'];
+  final savedMarkdown = window.localStorage.getItem('markdown');
 
   if (savedMarkdown != null &&
       savedMarkdown.isNotEmpty &&
@@ -57,7 +57,7 @@ void main() {
 
   // GitHub is the default extension set.
   gfmRadio.attributes.getNamedItem('checked')?.value = '';
-  gfmRadio.querySelector('.glyph')!.text = 'radio_button_checked';
+  gfmRadio.querySelector('.glyph')!.textContent = 'radio_button_checked';
   extensionSet = extensionSets[gfmRadio.id];
   _renderMarkdown();
 
@@ -82,7 +82,7 @@ void _renderMarkdown([Event? event]) {
 
   if (event != null) {
     // Not simulated typing. Store it.
-    window.localStorage['markdown'] = markdown;
+    window.localStorage.setItem('markdown', markdown);
   }
 }
 
@@ -110,19 +110,21 @@ void _switchFlavor(Event e) {
   if (target.attributes.getNamedItem('checked') == null) {
     if (basicRadio != target) {
       basicRadio.attributes.safeRemove('checked');
-      basicRadio.querySelector('.glyph')!.text = 'radio_button_unchecked';
+      basicRadio.querySelector('.glyph')!.textContent =
+          'radio_button_unchecked';
     }
     if (commonmarkRadio != target) {
       commonmarkRadio.attributes.safeRemove('checked');
-      commonmarkRadio.querySelector('.glyph')!.text = 'radio_button_unchecked';
+      commonmarkRadio.querySelector('.glyph')!.textContent =
+          'radio_button_unchecked';
     }
     if (gfmRadio != target) {
       gfmRadio.attributes.safeRemove('checked');
-      gfmRadio.querySelector('.glyph')!.text = 'radio_button_unchecked';
+      gfmRadio.querySelector('.glyph')!.textContent = 'radio_button_unchecked';
     }
 
     target.attributes.getNamedItem('checked')?.value = '';
-    target.querySelector('.glyph')!.text = 'radio_button_checked';
+    target.querySelector('.glyph')!.textContent = 'radio_button_checked';
     extensionSet = extensionSets[target.id];
     _renderMarkdown();
   }

@@ -1,0 +1,47 @@
+# Below are suggested reviewers for PRs to packages in this repository.
+#
+# These are suggestions; it is fine to have your changes reviewed by someone
+# else.
+
+.github/                        @dart-lang/dart-ecosystem-team
+README.md                       @dart-lang/dart-ecosystem-team
+pkgs/bazel_worker               @dart-lang/dart-bat
+pkgs/benchmark_harness          @dart-lang/dart-native-runtime-team
+pkgs/boolean_selector           @dart-lang/dart-ecosystem-team
+pkgs/browser_launcher           @dart-lang/dart-ecosystem-team
+pkgs/cli_config                 @dcharkes
+pkgs/cli_util                   @devoncarew
+pkgs/clock                      @dart-lang/dart-ecosystem-team
+pkgs/code_builder               @dart-lang/dart-ecosystem-team
+pkgs/coverage                   @liamappelbe @dart-lang/dart-native-runtime-team
+pkgs/csslib                     @dart-lang/dart-ecosystem-team #formerly @leonsenft
+pkgs/extension_discovery        @dart-lang/dart-ecosystem-team #tbd
+pkgs/file                       @dart-lang/dart-ecosystem-team
+pkgs/file_testing               @dart-lang/dart-ecosystem-team
+pkgs/glob                       @dart-lang/dart-ecosystem-team
+pkgs/graphs                     @natebosch
+pkgs/html                       @HosseinYousefi
+pkgs/io                         @dart-lang/dart-bat
+pkgs/json_rpc_2                 @dart-lang/dart-ecosystem-team
+pkgs/markdown                   @dart-lang/dart-model-team @dart-lang/dash-developer-services
+pkgs/mime                       @lrhn
+pkgs/oauth2                     @dart-lang/dart-pub-team
+pkgs/package_config             @dart-lang/dart-ecosystem-team
+pkgs/pool                       @dart-lang/dart-ecosystem-team
+pkgs/pub_semver                 @dart-lang/dart-pub-team
+pkgs/pubspec_parse              @dart-lang/dart-bat
+pkgs/source_maps                @dart-lang/dart-ecosystem-team
+pkgs/source_map_stack_trace     @dart-lang/dart-ecosystem-team
+pkgs/source_span                @dart-lang/dart-ecosystem-team
+pkgs/sse                        @dart-lang/dash-developer-services
+pkgs/stack_trace                @dart-lang/dart-ecosystem-team
+pkgs/stream_channel             @natebosch
+pkgs/stream_transform           @natebosch
+pkgs/string_scanner             @dart-lang/dart-ecosystem-team
+pkgs/term_glyph                 @dart-lang/dart-bat
+pkgs/test_reflective_loader     @scheglov
+pkgs/timing                     @dart-lang/dart-bat
+pkgs/unified_analytics          @bkonyi @dart-lang/dash-developer-services
+pkgs/watcher                    @dart-lang/dart-ecosystem-team
+pkgs/yaml                       @dart-lang/dart-pub-team
+pkgs/yaml_edit                  @dart-lang/dart-pub-team

@@ -1,3 +1,10 @@
+## 1.12.0
+
+- Introduced support for specifying coverage flags through a YAML file.
+- Fix a [bug](https://github.com/dart-lang/tools/issues/2049) where coverage
+  collection could hang forever if the package under test used background
+  isolates that were never shut down.
+
 ## 1.11.1
 
 - Update `package:vm_service` constraints to '>=12.0.0 <16.0.0'.
