@@ -9,6 +9,19 @@ import 'package:path/path.dart' as p;
 
 /// [Resolver] resolves imports with respect to a given environment.
 class Resolver {
+  /// Returns a list of all Dart files in the project.
+  List<String> listAllDartFiles({String directoryPath = '.'}) {
+    final dir = Directory(directoryPath);
+    if (!dir.existsSync()) return [];
+
+    return dir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'))
+        .map((file) => file.path)
+        .toList();
+  }
+
   @Deprecated('Use Resolver.create')
   Resolver({this.packagesPath, this.sdkRoot})
       : _packages = packagesPath != null ? _parsePackages(packagesPath) : null,
