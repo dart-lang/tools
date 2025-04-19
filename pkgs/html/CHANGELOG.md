@@ -1,3 +1,8 @@
+# 0.15.6
+
+- Performance improvements.
+- No longer generate any error spans if generateSpans is false.
+
 ## 0.15.5+1
 
 - Support "ambiguous ampersand" in attribute values.
