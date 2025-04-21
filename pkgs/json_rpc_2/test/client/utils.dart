@@ -20,10 +20,10 @@ class ClientController {
   /// The client.
   late final json_rpc.Client client;
 
-  ClientController({Object Function()? generateId}) {
+  ClientController({Object Function()? idGenerator}) {
     client = json_rpc.Client(
         StreamChannel(_responseController.stream, _requestController.sink),
-        generateId: generateId);
+        idGenerator: idGenerator);
     client.listen();
   }
 

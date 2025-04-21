@@ -19,7 +19,7 @@ class Client {
   final StreamChannel<dynamic> _channel;
 
   /// A function to generate the next request id.
-  Object Function() _generateId;
+  Object Function() _idGenerator;
 
   /// The current batch of requests to be sent together.
   ///
@@ -52,13 +52,13 @@ class Client {
   /// Note that the client won't begin listening to [channel] until
   /// [Client.listen] is called.
   ///
-  /// If [generateId] is passed, it will be called to generate an ID for each
+  /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
-  Client(StreamChannel<String> channel, {Object Function()? generateId})
+  Client(StreamChannel<String> channel, {Object Function()? idGenerator})
       : this.withoutJson(
             jsonDocument.bind(channel).transformStream(ignoreFormatExceptions),
-            generateId: generateId);
+            idGenerator: idGenerator);
 
   /// Creates a [Client] that communicates using decoded messages over
   /// [_channel].
@@ -69,11 +69,11 @@ class Client {
   /// Note that the client won't begin listening to [_channel] until
   /// [Client.listen] is called.
   ///
-  /// If [generateId] is passed, it will be called to generate an ID for each
+  /// If [_idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
-  Client.withoutJson(this._channel, {Object Function()? generateId})
-      : _generateId = generateId ?? _incrementingIdGenerator {
+  Client.withoutJson(this._channel, {Object Function()? idGenerator})
+      : _idGenerator = idGenerator ?? _createIncrementingIdGenerator {
     done.whenComplete(() {
       for (var request in _pendingRequests.values) {
         request.completer.completeError(StateError(
@@ -127,7 +127,7 @@ class Client {
   /// Throws a [StateError] if the client is closed while the request is in
   /// flight, or if the client is closed when this method is called.
   Future<Object?> sendRequest(String method, [Object? parameters]) {
-    var id = _generateId();
+    var id = _idGenerator();
     _send(method, parameters, id);
 
     var completer = Completer<Object?>.sync();
@@ -255,8 +255,10 @@ class _Request {
   _Request(this.method, this.completer, this.chain);
 }
 
-/// The default ID generator, returns an auto incrementing integer.
-int Function() get _incrementingIdGenerator {
+/// The default ID generator, uses an auto incrementing integer.
+///
+/// Each call returns a new function which starts back a `0`.
+int Function() _createIncrementingIdGenerator() {
   var nextId = 0;
   return () => nextId++;
 }

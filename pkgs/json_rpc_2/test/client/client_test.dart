@@ -208,7 +208,7 @@ void main() {
 
   test('with custom String ids', () {
     var id = 0;
-    controller = ClientController(generateId: () => 'ID-${id++}');
+    controller = ClientController(idGenerator: () => 'ID-${id++}');
     controller.expectRequest((request) {
       expect(
           request,
@@ -228,7 +228,7 @@ void main() {
 
   test('String ids are not parsed as ints', () {
     var id = 0;
-    controller = ClientController(generateId: () => '${id++}');
+    controller = ClientController(idGenerator: () => '${id++}');
     controller.expectRequest((request) {
       expect(
           request,

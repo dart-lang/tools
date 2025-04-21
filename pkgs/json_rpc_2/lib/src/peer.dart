@@ -60,19 +60,19 @@ class Peer implements Client, Server {
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
   ///
-  /// If [generateId] is passed, it will be called to generate an ID for each
+  /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`.  The value returned must
   /// be either an `int` or `String`.
   Peer(
     StreamChannel<String> channel, {
     ErrorCallback? onUnhandledError,
     bool strictProtocolChecks = true,
-    Object Function()? generateId,
+    Object Function()? idGenerator,
   }) : this.withoutJson(
             jsonDocument.bind(channel).transform(respondToFormatExceptions),
             onUnhandledError: onUnhandledError,
             strictProtocolChecks: strictProtocolChecks,
-            generateId: generateId);
+            idGenerator: idGenerator);
 
   /// Creates a [Peer] that communicates using decoded messages over [_channel].
   ///
@@ -90,13 +90,13 @@ class Peer implements Client, Server {
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
   ///
-  /// If [generateId] is passed, it will be called to generate an ID for each
+  /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
   Peer.withoutJson(this._channel,
       {ErrorCallback? onUnhandledError,
       bool strictProtocolChecks = true,
-      Object Function()? generateId}) {
+      Object Function()? idGenerator}) {
     _server = Server.withoutJson(
         StreamChannel(_serverIncomingForwarder.stream, _channel.sink),
         onUnhandledError: onUnhandledError,
@@ -106,7 +106,7 @@ class Peer implements Client, Server {
           _clientIncomingForwarder.stream,
           _channel.sink,
         ),
-        generateId: generateId);
+        idGenerator: idGenerator);
   }
 
   // Client methods.
