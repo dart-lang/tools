@@ -59,12 +59,20 @@ class Peer implements Client, Server {
   /// some requests which are not conformant with the JSON-RPC 2.0
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
-  Peer(StreamChannel<String> channel,
-      {ErrorCallback? onUnhandledError, bool strictProtocolChecks = true})
-      : this.withoutJson(
+  ///
+  /// If [idGenerator] is passed, it will be called to generate an ID for each
+  /// request. Defaults to an auto-incrementing `int`.  The value returned must
+  /// be either an `int` or `String`.
+  Peer(
+    StreamChannel<String> channel, {
+    ErrorCallback? onUnhandledError,
+    bool strictProtocolChecks = true,
+    Object Function()? idGenerator,
+  }) : this.withoutJson(
             jsonDocument.bind(channel).transform(respondToFormatExceptions),
             onUnhandledError: onUnhandledError,
-            strictProtocolChecks: strictProtocolChecks);
+            strictProtocolChecks: strictProtocolChecks,
+            idGenerator: idGenerator);
 
   /// Creates a [Peer] that communicates using decoded messages over [_channel].
   ///
@@ -81,14 +89,24 @@ class Peer implements Client, Server {
   /// some requests which are not conformant with the JSON-RPC 2.0
   /// specification. In particular, requests missing the `jsonrpc` parameter
   /// will be accepted.
+  ///
+  /// If [idGenerator] is passed, it will be called to generate an ID for each
+  /// request. Defaults to an auto-incrementing `int`. The value returned must
+  /// be either an `int` or `String`.
   Peer.withoutJson(this._channel,
-      {ErrorCallback? onUnhandledError, bool strictProtocolChecks = true}) {
+      {ErrorCallback? onUnhandledError,
+      bool strictProtocolChecks = true,
+      Object Function()? idGenerator}) {
     _server = Server.withoutJson(
         StreamChannel(_serverIncomingForwarder.stream, _channel.sink),
         onUnhandledError: onUnhandledError,
         strictProtocolChecks: strictProtocolChecks);
     _client = Client.withoutJson(
-        StreamChannel(_clientIncomingForwarder.stream, _channel.sink));
+        StreamChannel(
+          _clientIncomingForwarder.stream,
+          _channel.sink,
+        ),
+        idGenerator: idGenerator);
   }
 
   // Client methods.
