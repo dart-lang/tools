@@ -73,7 +73,7 @@ class Client {
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
   Client.withoutJson(this._channel, {Object Function()? idGenerator})
-      : _idGenerator = idGenerator ?? _createIncrementingIdGenerator {
+      : _idGenerator = idGenerator ?? _createIncrementingIdGenerator() {
     done.whenComplete(() {
       for (var request in _pendingRequests.values) {
         request.completer.completeError(StateError(
