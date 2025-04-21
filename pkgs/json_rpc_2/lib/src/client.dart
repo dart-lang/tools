@@ -18,8 +18,8 @@ import 'utils.dart';
 class Client {
   final StreamChannel<dynamic> _channel;
 
-  /// The next request id.
-  var _id = 0;
+  /// A function to generate the next request id.
+  Object Function() _idGenerator;
 
   /// The current batch of requests to be sent together.
   ///
@@ -27,7 +27,9 @@ class Client {
   List<Map<String, dynamic>>? _batch;
 
   /// The map of request ids to pending requests.
-  final _pendingRequests = <int, _Request>{};
+  ///
+  /// Keys must be of type `int` or `String`.
+  final _pendingRequests = <Object, _Request>{};
 
   final _done = Completer<void>();
 
@@ -49,9 +51,14 @@ class Client {
   ///
   /// Note that the client won't begin listening to [channel] until
   /// [Client.listen] is called.
-  Client(StreamChannel<String> channel)
+  ///
+  /// If [idGenerator] is passed, it will be called to generate an ID for each
+  /// request. Defaults to an auto-incrementing `int`. The value returned must
+  /// be either an `int` or `String`.
+  Client(StreamChannel<String> channel, {Object Function()? idGenerator})
       : this.withoutJson(
-            jsonDocument.bind(channel).transformStream(ignoreFormatExceptions));
+            jsonDocument.bind(channel).transformStream(ignoreFormatExceptions),
+            idGenerator: idGenerator);
 
   /// Creates a [Client] that communicates using decoded messages over
   /// [_channel].
@@ -61,7 +68,12 @@ class Client {
   ///
   /// Note that the client won't begin listening to [_channel] until
   /// [Client.listen] is called.
-  Client.withoutJson(this._channel) {
+  ///
+  /// If [_idGenerator] is passed, it will be called to generate an ID for each
+  /// request. Defaults to an auto-incrementing `int`. The value returned must
+  /// be either an `int` or `String`.
+  Client.withoutJson(this._channel, {Object Function()? idGenerator})
+      : _idGenerator = idGenerator ?? _createIncrementingIdGenerator() {
     done.whenComplete(() {
       for (var request in _pendingRequests.values) {
         request.completer.completeError(StateError(
@@ -115,7 +127,7 @@ class Client {
   /// Throws a [StateError] if the client is closed while the request is in
   /// flight, or if the client is closed when this method is called.
   Future<Object?> sendRequest(String method, [Object? parameters]) {
-    var id = _id++;
+    var id = _idGenerator();
     _send(method, parameters, id);
 
     var completer = Completer<Object?>.sync();
@@ -142,7 +154,7 @@ class Client {
   ///
   /// Sends a request to invoke [method] with [parameters]. If [id] is given,
   /// the request uses that id.
-  void _send(String method, Object? parameters, [int? id]) {
+  void _send(String method, Object? parameters, [Object? id]) {
     if (parameters is Iterable) parameters = parameters.toList();
     if (parameters is! Map && parameters is! List && parameters != null) {
       throw ArgumentError('Only maps and lists may be used as JSON-RPC '
@@ -201,7 +213,6 @@ class Client {
     if (!_isResponseValid(response_)) return;
     final response = response_ as Map;
     var id = response['id'];
-    id = (id is String) ? int.parse(id) : id;
     var request = _pendingRequests.remove(id)!;
     if (response.containsKey('result')) {
       request.completer.complete(response['result']);
@@ -218,7 +229,6 @@ class Client {
     if (response is! Map) return false;
     if (response['jsonrpc'] != '2.0') return false;
     var id = response['id'];
-    id = (id is String) ? int.parse(id) : id;
     if (!_pendingRequests.containsKey(id)) return false;
     if (response.containsKey('result')) return true;
 
@@ -243,4 +253,12 @@ class _Request {
   final Chain chain;
 
   _Request(this.method, this.completer, this.chain);
+}
+
+/// The default ID generator, uses an auto incrementing integer.
+///
+/// Each call returns a new function which starts back a `0`.
+int Function() _createIncrementingIdGenerator() {
+  var nextId = 0;
+  return () => nextId++;
 }
