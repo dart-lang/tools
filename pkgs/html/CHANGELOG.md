@@ -1,3 +1,7 @@
+## 0.15.6-wip
+
+- Fixed a TypeError in nth-child with non numeric value (e.g. `nth-child(even)`)
+
 ## 0.15.5+1
 
 - Support "ambiguous ampersand" in attribute values.
