@@ -5,78 +5,75 @@
 /// Exit code constants.
 ///
 /// [Source](https://www.freebsd.org/cgi/man.cgi?query=sysexits).
-class ExitCode {
+enum ExitCode {
   /// Command completed successfully.
-  static const success = ExitCode._(0, 'success');
+  success(0),
 
   /// Command was used incorrectly.
   ///
   /// This may occur if the wrong number of arguments was used, a bad flag, or
   /// bad syntax in a parameter.
-  static const usage = ExitCode._(64, 'usage');
+  usage(64),
 
   /// Input data was used incorrectly.
   ///
   /// This should occur only for user data (not system files).
-  static const data = ExitCode._(65, 'data');
+  data(65),
 
   /// An input file (not a system file) did not exist or was not readable.
-  static const noInput = ExitCode._(66, 'noInput');
+  noInput(66),
 
   /// User specified did not exist.
-  static const noUser = ExitCode._(67, 'noUser');
+  noUser(67),
 
   /// Host specified did not exist.
-  static const noHost = ExitCode._(68, 'noHost');
+  noHost(68),
 
   /// A service is unavailable.
   ///
   /// This may occur if a support program or file does not exist. This may also
   /// be used as a catch-all error when something you wanted to do does not
   /// work, but you do not know why.
-  static const unavailable = ExitCode._(69, 'unavailable');
+  unavailable(69),
 
   /// An internal software error has been detected.
   ///
   /// This should be limited to non-operating system related errors as possible.
-  static const software = ExitCode._(70, 'software');
+  software(70),
 
   /// An operating system error has been detected.
   ///
   /// This intended to be used for such thing as `cannot fork` or `cannot pipe`.
-  static const osError = ExitCode._(71, 'osError');
+  osError(71),
 
   /// Some system file (e.g. `/etc/passwd`) does not exist or could not be read.
-  static const osFile = ExitCode._(72, 'osFile');
+  osFile(72),
 
   /// A (user specified) output file cannot be created.
-  static const cantCreate = ExitCode._(73, 'cantCreate');
+  cantCreate(73),
 
   /// An error occurred doing I/O on some file.
-  static const ioError = ExitCode._(74, 'ioError');
+  ioError(74),
 
   /// Temporary failure, indicating something is not really an error.
   ///
   /// In some cases, this can be re-attempted and will succeed later.
-  static const tempFail = ExitCode._(75, 'tempFail');
+  tempFail(75),
 
   /// You did not have sufficient permissions to perform the operation.
   ///
   /// This is not intended for file system problems, which should use [noInput]
   /// or [cantCreate], but rather for higher-level permissions.
-  static const noPerm = ExitCode._(77, 'noPerm');
+  noPerm(77),
 
   /// Something was found in an unconfigured or misconfigured state.
-  static const config = ExitCode._(78, 'config');
+  config(78);
 
   /// Exit code value.
   final int code;
 
-  /// Name of the exit code.
-  final String _name;
-
-  const ExitCode._(this.code, this._name);
+  const ExitCode(this.code);
 
   @override
-  String toString() => '$_name: $code';
+  String toString() => '$name: $code';
 }
