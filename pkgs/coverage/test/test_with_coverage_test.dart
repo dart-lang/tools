@@ -122,6 +122,34 @@ dependency_overrides:
       ['pub', 'global', 'run', 'coverage:test_with_coverage'],
     );
   });
+
+  test(
+      'dart run bin/test_with_coverage.dart --fail-under succeeds when coverage meets threshold',
+      () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-f',
+      '--fail-under=50', // This should pass as coverage=100% when all tests run
+      '--port',
+      '${_port++}',
+    ]);
+    await process.shouldExit(0);
+  });
+
+  test(
+      'dart run bin/test_with_coverage.dart --fail-under fails when coverage is below threshold',
+      () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '--fail-under=90', // This should throw an exit(1) as coverage =50% when
+      '--', // only the `sum` test is run
+      '-N',
+      'sum',
+    ]);
+    await process.shouldExit(1);
+  });
 }
 
 Future<TestProcess> _run(List<String> args) => TestProcess.start(
