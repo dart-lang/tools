@@ -221,9 +221,14 @@ class HtmlInputStream {
   /// EOF when EOF is reached.
   String? char() {
     if (_offset >= _chars.length) return eof;
-    return _isSurrogatePair(_chars, _offset)
-        ? String.fromCharCodes([_chars[_offset++], _chars[_offset++]])
-        : String.fromCharCode(_chars[_offset++]);
+    final firstCharCode = _chars[_offset++];
+    if (firstCharCode < 256) {
+      return asciiCharacters[firstCharCode];
+    }
+    if (_isSurrogatePair(_chars, _offset - 1)) {
+      return String.fromCharCodes([firstCharCode, _chars[_offset++]]);
+    }
+    return String.fromCharCode(firstCharCode);
   }
 
   int? peekCodeUnit() {
@@ -233,9 +238,14 @@ class HtmlInputStream {
 
   String? peekChar() {
     if (_offset >= _chars.length) return eof;
-    return _isSurrogatePair(_chars, _offset)
-        ? String.fromCharCodes([_chars[_offset], _chars[_offset + 1]])
-        : String.fromCharCode(_chars[_offset]);
+    final charCode = _chars[_offset];
+    if (charCode < 256) {
+      return asciiCharacters[charCode];
+    }
+    if (_isSurrogatePair(_chars, _offset)) {
+      return String.fromCharCodes([charCode, _chars[_offset + 1]]);
+    }
+    return String.fromCharCode(charCode);
   }
 
   // Whether the current and next chars indicate a surrogate pair.
