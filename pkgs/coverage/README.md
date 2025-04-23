@@ -1,7 +1,7 @@
 Coverage provides coverage data collection, manipulation, and formatting for
 Dart.
 
-[![Build Status](https://github.com/dart-lang/tools/actions/workflows/coverage.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/coverage.yml)
+[![Build Status](https://github.com/dart-lang/tools/actions/workflows/coverage.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/coverage.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/dart-lang/tools/badge.svg?branch=main)](https://coveralls.io/github/dart-lang/tools?branch=main)
 [![Pub](https://img.shields.io/pub/v/coverage.svg)](https://pub.dev/packages/coverage)
 
