@@ -101,7 +101,7 @@ class HtmlInputStream {
       var c = rawChars[i];
       if (skipNewline) {
         skipNewline = false;
-        if (c == Charcode.kLineFeed) {
+        if (c == Charcode.lineFeed) {
           deletedChars++;
           continue;
         }
@@ -121,9 +121,9 @@ class HtmlInputStream {
       }
       wasSurrogatePair = isSurrogatePair;
 
-      if (c == Charcode.kCarriageReturn) {
+      if (c == Charcode.carriageReturn) {
         skipNewline = true;
-        c = Charcode.kLineFeed;
+        c = Charcode.lineFeed;
       }
 
       _chars[i - deletedChars] = c;
@@ -311,8 +311,8 @@ class HtmlInputStream {
     final start = _offset;
     int? c;
     while ((c = peekCodeUnit()) != null &&
-        ((c! >= Charcode.kUpperA && c <= Charcode.kUpperZ) ||
-                (c >= Charcode.kLowerA && c <= Charcode.kLowerZ)) ==
+        ((c! >= Charcode.upperA && c <= Charcode.upperZ) ||
+                (c >= Charcode.lowerA && c <= Charcode.lowerZ)) ==
             opposite) {
       _offset += 1;
     }
@@ -320,11 +320,11 @@ class HtmlInputStream {
   }
 
   static bool _isSpaceCharacter(int c) =>
-      c == Charcode.kSpace ||
-      c == Charcode.kLineFeed ||
-      c == Charcode.kCarriageReturn ||
-      c == Charcode.kTab ||
-      c == Charcode.kFormFeed;
+      c == Charcode.space ||
+      c == Charcode.lineFeed ||
+      c == Charcode.carriageReturn ||
+      c == Charcode.tab ||
+      c == Charcode.formFeed;
 
   String charsUntilSpace([bool opposite = false]) {
     final start = _offset;

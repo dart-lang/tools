@@ -408,7 +408,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // any <!-- or --> sequences
     } else {
       final chars = stream.charsUntil3(
-          Charcode.kAmpersand, Charcode.kLessThan, Charcode.kNull);
+          Charcode.ampersand, Charcode.lessThan, Charcode.nul);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -438,7 +438,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // emitted separately.
       _addToken(SpaceCharactersToken('$data${stream.charsUntilSpace(true)}'));
     } else {
-      final chars = stream.charsUntil2(Charcode.kAmpersand, Charcode.kLessThan);
+      final chars = stream.charsUntil2(Charcode.ampersand, Charcode.lessThan);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -461,7 +461,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // Tokenization ends.
       return false;
     } else {
-      final chars = stream.charsUntil2(Charcode.kLessThan, Charcode.kNull);
+      final chars = stream.charsUntil2(Charcode.lessThan, Charcode.nul);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -478,7 +478,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // Tokenization ends.
       return false;
     } else {
-      final chars = stream.charsUntil2(Charcode.kLessThan, Charcode.kNull);
+      final chars = stream.charsUntil2(Charcode.lessThan, Charcode.nul);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -493,7 +493,7 @@ class HtmlTokenizer implements Iterator<Token> {
       _addToken(ParseErrorToken('invalid-codepoint'));
       _addToken(CharactersToken('\uFFFD'));
     } else {
-      _addToken(CharactersToken('$data${stream.charsUntil1(Charcode.kNull)}'));
+      _addToken(CharactersToken('$data${stream.charsUntil1(Charcode.nul)}'));
     }
     return true;
   }
@@ -766,8 +766,8 @@ class HtmlTokenizer implements Iterator<Token> {
     } else if (data == eof) {
       state = dataState;
     } else {
-      final chars = stream.charsUntil3(
-          Charcode.kLessThan, Charcode.kHyphen, Charcode.kNull);
+      final chars =
+          stream.charsUntil3(Charcode.lessThan, Charcode.hyphen, Charcode.nul);
       _addToken(CharactersToken('$data$chars'));
     }
     return true;
@@ -1165,8 +1165,8 @@ class HtmlTokenizer implements Iterator<Token> {
       state = dataState;
     } else {
       _attributeValue.write(data);
-      _attributeValue.write(
-          stream.charsUntil2(Charcode.kDoubleQuote, Charcode.kAmpersand));
+      _attributeValue
+          .write(stream.charsUntil2(Charcode.doubleQuote, Charcode.ampersand));
     }
     return true;
   }
@@ -1188,8 +1188,8 @@ class HtmlTokenizer implements Iterator<Token> {
       state = dataState;
     } else {
       _attributeValue.write(data);
-      _attributeValue.write(
-          stream.charsUntil2(Charcode.kSingleQuote, Charcode.kAmpersand));
+      _attributeValue
+          .write(stream.charsUntil2(Charcode.singleQuote, Charcode.ampersand));
     }
     return true;
   }
@@ -1218,13 +1218,13 @@ class HtmlTokenizer implements Iterator<Token> {
     } else {
       _attributeValue.write(data);
       _attributeValue.write(stream.charsUntil(const {
-        Charcode.kAmpersand,
-        Charcode.kGreaterThan,
-        Charcode.kDoubleQuote,
-        Charcode.kSingleQuote,
-        Charcode.kEquals,
-        Charcode.kLessThan,
-        Charcode.kGraveAccent,
+        Charcode.ampersand,
+        Charcode.greaterThan,
+        Charcode.doubleQuote,
+        Charcode.singleQuote,
+        Charcode.equals,
+        Charcode.lessThan,
+        Charcode.graveAccent,
         ...spaceCharacters
       }));
     }
@@ -1272,7 +1272,7 @@ class HtmlTokenizer implements Iterator<Token> {
     // Make a new comment token and give it as value all the characters
     // until the first > or EOF (charsUntil checks for EOF automatically)
     // and emit it.
-    var data = stream.charsUntil1(Charcode.kGreaterThan);
+    var data = stream.charsUntil1(Charcode.greaterThan);
     data = data.replaceAll('\u0000', '\uFFFD');
     _addToken(CommentToken(data));
 
@@ -1393,7 +1393,7 @@ class HtmlTokenizer implements Iterator<Token> {
     } else {
       currentStringToken
           .add(data!)
-          .add(stream.charsUntil2(Charcode.kHyphen, Charcode.kNull));
+          .add(stream.charsUntil2(Charcode.hyphen, Charcode.nul));
     }
     return true;
   }

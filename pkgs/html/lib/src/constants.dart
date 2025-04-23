@@ -394,67 +394,67 @@ const mathmlTextIntegrationPointElements = {
 };
 
 abstract final class Charcode {
-  static const int kNull = 0x00;
+  static const int nul = 0x00;
 
   /// '\t'
-  static const int kTab = 0x09;
+  static const int tab = 0x09;
 
   /// '\n'
-  static const int kLineFeed = 0x0A;
-  static const int kFormFeed = 0x0C;
+  static const int lineFeed = 0x0A;
+  static const int formFeed = 0x0C;
 
   /// '\r'
-  static const int kCarriageReturn = 0x0D;
+  static const int carriageReturn = 0x0D;
 
   /// ' '
-  static const int kSpace = 0x20;
+  static const int space = 0x20;
 
   /// '"'
-  static const int kDoubleQuote = 0x22;
+  static const int doubleQuote = 0x22;
 
   /// '&'
-  static const int kAmpersand = 0x26;
+  static const int ampersand = 0x26;
 
   /// "'"
-  static const int kSingleQuote = 0x27;
+  static const int singleQuote = 0x27;
 
   /// '-'
-  static const int kHyphen = 0x2D;
+  static const int hyphen = 0x2D;
 
   /// 0
-  static const int kZero = 0x30;
+  static const int zero = 0x30;
 
   /// '<'
-  static const int kLessThan = 0x3C;
+  static const int lessThan = 0x3C;
 
   /// '='
-  static const int kEquals = 0x3D;
+  static const int equals = 0x3D;
 
   /// '>'
-  static const int kGreaterThan = 0x3E;
+  static const int greaterThan = 0x3E;
 
   /// A
-  static const int kUpperA = 0x41;
+  static const int upperA = 0x41;
 
   /// Z
-  static const int kUpperZ = 0x5A;
+  static const int upperZ = 0x5A;
 
   /// '`'
-  static const int kGraveAccent = 0x60;
+  static const int graveAccent = 0x60;
 
   /// a
-  static const int kLowerA = 0x61;
+  static const int lowerA = 0x61;
 
   /// z
-  static const int kLowerZ = 0x7A;
+  static const int lowerZ = 0x7A;
 }
 
 const spaceCharacters = {
-  Charcode.kSpace,
-  Charcode.kLineFeed,
-  Charcode.kCarriageReturn,
-  Charcode.kTab,
-  Charcode.kFormFeed
+  Charcode.space,
+  Charcode.lineFeed,
+  Charcode.carriageReturn,
+  Charcode.tab,
+  Charcode.formFeed
 };
 
 bool isWhitespace(String? char) {
@@ -464,11 +464,11 @@ bool isWhitespace(String? char) {
 
 bool isWhitespaceCC(int charCode) {
   switch (charCode) {
-    case Charcode.kTab:
-    case Charcode.kLineFeed:
-    case Charcode.kFormFeed:
-    case Charcode.kCarriageReturn:
-    case Charcode.kSpace:
+    case Charcode.tab:
+    case Charcode.lineFeed:
+    case Charcode.formFeed:
+    case Charcode.carriageReturn:
+    case Charcode.space:
       return true;
   }
   return false;
@@ -482,14 +482,14 @@ bool isLetterOrDigit(String? char) => isLetter(char) || isDigit(char);
 bool isLetter(String? char) {
   if (char == null) return false;
   final cc = char.codeUnitAt(0);
-  return cc >= Charcode.kLowerA && cc <= Charcode.kLowerZ ||
-      cc >= Charcode.kUpperA && cc <= Charcode.kUpperZ;
+  return cc >= Charcode.lowerA && cc <= Charcode.lowerZ ||
+      cc >= Charcode.upperA && cc <= Charcode.upperZ;
 }
 
 bool isDigit(String? char) {
   if (char == null) return false;
   final cc = char.codeUnitAt(0);
-  return cc >= Charcode.kZero && cc < Charcode.kZero + 10;
+  return cc >= Charcode.zero && cc < Charcode.zero + 10;
 }
 
 bool isHexDigit(String? char) {
@@ -534,10 +534,10 @@ extension AsciiUpperToLower on String {
   }
 
   static bool _isUpperCaseCode(int c) =>
-      c >= Charcode.kUpperA && c <= Charcode.kUpperZ;
+      c >= Charcode.upperA && c <= Charcode.upperZ;
 
   static int _asciiToLower(int c) =>
-      _isUpperCaseCode(c) ? c + Charcode.kLowerA - Charcode.kUpperA : c;
+      _isUpperCaseCode(c) ? c + Charcode.lowerA - Charcode.upperA : c;
 }
 
 // Heading elements need to be ordered
