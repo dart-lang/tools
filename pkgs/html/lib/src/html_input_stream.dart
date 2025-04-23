@@ -304,6 +304,23 @@ class HtmlInputStream {
     return String.fromCharCodes(_chars.sublist(start, _offset));
   }
 
+  static bool _isSpaceCharacter(int c) =>
+      c == Charcode.kSpace ||
+      c == Charcode.kLineFeed ||
+      c == Charcode.kCarriageReturn ||
+      c == Charcode.kTab ||
+      c == Charcode.kFormFeed;
+
+  String charsUntilSpace([bool opposite = false]) {
+    final start = _offset;
+    int? c;
+    while ((c = peekCodeUnit()) != null && _isSpaceCharacter(c!) == opposite) {
+      _offset += 1;
+    }
+
+    return String.fromCharCodes(_chars.sublist(start, _offset));
+  }
+
   void unget(String? ch) {
     // Only one character is allowed to be ungotten at once - it must
     // be consumed again before any further call to unget

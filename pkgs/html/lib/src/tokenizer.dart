@@ -402,8 +402,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // Directly after emitting a token you switch back to the "data
       // state". At that point spaceCharacters are important so they are
       // emitted separately.
-      _addToken(SpaceCharactersToken(
-          '$data${stream.charsUntil(spaceCharacters, true)}'));
+      _addToken(SpaceCharactersToken('$data${stream.charsUntilSpace(true)}'));
       // No need to update lastFourChars here, since the first space will
       // have already been appended to lastFourChars and will have broken
       // any <!-- or --> sequences
@@ -437,8 +436,7 @@ class HtmlTokenizer implements Iterator<Token> {
       // Directly after emitting a token you switch back to the "data
       // state". At that point spaceCharacters are important so they are
       // emitted separately.
-      _addToken(SpaceCharactersToken(
-          '$data${stream.charsUntil(spaceCharacters, true)}'));
+      _addToken(SpaceCharactersToken('$data${stream.charsUntilSpace(true)}'));
     } else {
       final chars = stream.charsUntil2(Charcode.kAmpersand, Charcode.kLessThan);
       _addToken(CharactersToken('$data$chars'));
@@ -994,7 +992,7 @@ class HtmlTokenizer implements Iterator<Token> {
   bool beforeAttributeNameState() {
     final data = stream.char();
     if (isWhitespace(data)) {
-      stream.charsUntil(spaceCharacters, true);
+      stream.charsUntilSpace(true);
     } else if (data != null && isLetter(data)) {
       _addAttribute(data);
       state = attributeNameState;
@@ -1083,7 +1081,7 @@ class HtmlTokenizer implements Iterator<Token> {
   bool afterAttributeNameState() {
     final data = stream.char();
     if (isWhitespace(data)) {
-      stream.charsUntil(spaceCharacters, true);
+      stream.charsUntilSpace(true);
     } else if (data == '=') {
       state = beforeAttributeValueState;
     } else if (data == '>') {
@@ -1114,7 +1112,7 @@ class HtmlTokenizer implements Iterator<Token> {
   bool beforeAttributeValueState() {
     final data = stream.char();
     if (isWhitespace(data)) {
-      stream.charsUntil(spaceCharacters, true);
+      stream.charsUntilSpace(true);
     } else if (data == '"') {
       _markAttributeValueStart(0);
       state = attributeValueDoubleQuotedState;
