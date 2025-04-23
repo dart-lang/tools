@@ -94,7 +94,10 @@ class HtmlInputStream {
     var skipNewline = false;
     var wasSurrogatePair = false;
     var deletedChars = 0;
-    for (var i = 0; i < rawChars.length; i++) {
+
+    /// CodeUnits.length is not free
+    final charsLength = rawChars.length;
+    for (var i = 0; i < charsLength; i++) {
       var c = rawChars[i];
       if (skipNewline) {
         skipNewline = false;
@@ -104,7 +107,8 @@ class HtmlInputStream {
         }
       }
 
-      final isSurrogatePair = _isSurrogatePair(rawChars, i);
+      final isSurrogatePair =
+          i + 1 < charsLength && _isLeadSurrogate(c) && _isTrailSurrogate(rawChars[i + 1]);
       if (!isSurrogatePair && !wasSurrogatePair) {
         if (_invalidUnicode(c)) {
           errors.add('invalid-codepoint');
