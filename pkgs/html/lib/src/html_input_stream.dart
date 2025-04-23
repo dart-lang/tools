@@ -107,8 +107,9 @@ class HtmlInputStream {
         }
       }
 
-      final isSurrogatePair =
-          i + 1 < charsLength && _isLeadSurrogate(c) && _isTrailSurrogate(rawChars[i + 1]);
+      final isSurrogatePair = _isLeadSurrogate(c) &&
+          i + 1 < charsLength &&
+          _isTrailSurrogate(rawChars[i + 1]);
       if (!isSurrogatePair && !wasSurrogatePair) {
         if (_invalidUnicode(c)) {
           errors.add('invalid-codepoint');
