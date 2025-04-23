@@ -527,16 +527,17 @@ extension AsciiUpperToLower on String {
   ///
   /// Unlike [String.toLowerCase] does not touch non-ASCII characters.
   String toAsciiLowerCase() {
-    if (codeUnits.any((c) => c >= Charcode.kUpperA && c <= Charcode.kUpperZ)) {
+    if (codeUnits.any(_isUpperCaseCode)) {
       return String.fromCharCodes(codeUnits.map(_asciiToLower));
     }
     return this;
   }
 
+  static bool _isUpperCaseCode(int c) =>
+      c >= Charcode.kUpperA && c <= Charcode.kUpperZ;
+
   static int _asciiToLower(int c) =>
-      (c >= Charcode.kUpperA && c <= Charcode.kUpperZ)
-          ? c + Charcode.kLowerA - Charcode.kUpperA
-          : c;
+      _isUpperCaseCode(c) ? c + Charcode.kLowerA - Charcode.kUpperA : c;
 }
 
 // Heading elements need to be ordered
