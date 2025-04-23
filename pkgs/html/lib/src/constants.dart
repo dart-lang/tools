@@ -526,8 +526,12 @@ extension AsciiUpperToLower on String {
   /// Converts ASCII characters to lowercase.
   ///
   /// Unlike [String.toLowerCase] does not touch non-ASCII characters.
-  String toAsciiLowerCase() =>
-      String.fromCharCodes(codeUnits.map(_asciiToLower));
+  String toAsciiLowerCase() {
+    if (codeUnits.any((c) => c >= Charcode.kUpperA && c <= Charcode.kUpperZ)) {
+      return String.fromCharCodes(codeUnits.map(_asciiToLower));
+    }
+    return this;
+  }
 
   static int _asciiToLower(int c) =>
       (c >= Charcode.kUpperA && c <= Charcode.kUpperZ)
