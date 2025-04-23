@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('calculateCoveragePercentage', () {
-    test('calculates correct percentage with default precision', () {
+    test('calculates correct percentage', () {
       final hitmap = {
         'file1.dart': HitMap({
           1: 1, // covered
@@ -26,36 +26,10 @@ void main() {
       final result = calculateCoveragePercentage(hitmap);
 
       // 4 covered lines out of 7 total lines = 57.14%
-      // With default precision (0), this rounds to 57%
-      expect(result.percentage, equals(57));
+      expect(result.percentage.toStringAsFixed(2), equals('57.14'));
       expect(result.coveredLines, equals(4));
       expect(result.totalLines, equals(7));
     });
-
-    test('calculates correct percentage with custom precision', () {
-      final hitmap = {
-        'file1.dart': HitMap({
-          1: 1, // covered
-          2: 1, // covered
-          3: 0, // not covered
-          4: 1, // covered
-        }),
-        'file2.dart': HitMap({
-          1: 1, // covered
-          2: 0, // not covered
-          3: 0, // not covered
-        }),
-      };
-
-      final result = calculateCoveragePercentage(hitmap, precision: 2);
-
-      // 4 covered lines out of 7 total lines = 57.14%
-      // With precision 2, this rounds to 57.14%
-      expect(result.percentage, equals(57.14));
-      expect(result.coveredLines, equals(4));
-      expect(result.totalLines, equals(7));
-    });
-
     test('handles empty hitmap', () {
       final hitmap = <String, HitMap>{};
 

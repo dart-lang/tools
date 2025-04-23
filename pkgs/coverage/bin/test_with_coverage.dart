@@ -89,11 +89,6 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
     'fail-under',
     help: 'Fail if coverage is less than the given percentage (0-100)',
   )
-  ..addOption(
-    'precision',
-    help: 'Number of decimal places to use when reporting coverage percentage',
-    defaultsTo: '0',
-  )
   ..addMultiOption('scope-output',
       defaultsTo: defaultOptions.scopeOutput,
       help: 'restrict coverage results so that only scripts that start with '
@@ -111,8 +106,7 @@ class Flags {
     this.functionCoverage,
     this.branchCoverage,
     this.scopeOutput,
-    this.failUnder,
-    this.precision, {
+    this.failUnder, {
     required this.rest,
   });
 
@@ -124,8 +118,7 @@ class Flags {
   final bool functionCoverage;
   final bool branchCoverage;
   final List<String> scopeOutput;
-  final double? failUnder;
-  final int precision;
+  final String? failUnder;
   final List<String> rest;
 }
 
@@ -173,29 +166,6 @@ ${parser.usage}
     );
   }
 
-  double? failUnder;
-  final failUnderStr = args['fail-under'] as String?;
-  if (failUnderStr != null) {
-    try {
-      failUnder = double.parse(failUnderStr);
-      if (failUnder < 0 || failUnder > 100) {
-        fail('--fail-under must be a percentage between 0 and 100');
-      }
-    } catch (e) {
-      fail('Invalid --fail-under value: $e');
-    }
-  }
-
-  int precision;
-  try {
-    precision = int.parse(args['precision'] as String);
-    if (precision < 0) {
-      fail('--precision must be a non-negative integer');
-    }
-  } catch (e) {
-    fail('Invalid --precision value: $e');
-  }
-
   return Flags(
     packageDir,
     packageName,
@@ -205,8 +175,7 @@ ${parser.usage}
     args['function-coverage'] as bool,
     args['branch-coverage'] as bool,
     args['scope-output'] as List<String>,
-    failUnder,
-    precision,
+    args['fail-under'] as String?,
     rest: args.rest,
   );
 }
@@ -272,7 +241,6 @@ Future<void> main(List<String> arguments) async {
     '-o',
     outLcov,
     if (flags.failUnder != null) '--fail-under=${flags.failUnder}',
-    '--precision=${flags.precision}',
   ]);
   exit(0);
 }

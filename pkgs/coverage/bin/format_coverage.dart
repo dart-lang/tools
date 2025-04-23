@@ -32,7 +32,6 @@ class Environment {
     required this.verbose,
     required this.workers,
     required this.failUnder,
-    required this.precision,
   });
 
   String? baseDirectory;
@@ -53,7 +52,6 @@ class Environment {
   bool verbose;
   int workers;
   double? failUnder;
-  int precision;
 }
 
 Future<void> main(List<String> arguments) async {
@@ -141,20 +139,19 @@ Future<void> main(List<String> arguments) async {
     // Calculate the overall coverage percentage using the utility function
     final result = calculateCoveragePercentage(
       hitmap,
-      precision: env.precision,
     );
 
     if (env.verbose) {
-      print('Coverage: ${result.percentage}% '
+      print('Coverage: ${result.percentage.toStringAsFixed(2)}% '
           '(${result.coveredLines} of ${result.totalLines} lines)');
     }
 
     if (result.percentage < env.failUnder!) {
-      print('Error: Coverage ${result.percentage}% '
+      print('Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
           'is less than required ${env.failUnder}%');
       exit(1);
     } else if (env.verbose) {
-      print('Coverage ${result.percentage}% '
+      print('Coverage ${result.percentage.toStringAsFixed(2)}% '
           'meets or exceeds the required ${env.failUnder}%');
     }
   }
@@ -174,12 +171,6 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     ..addOption(
       'fail-under',
       help: 'Fail if coverage is less than the given percentage (0-100)',
-    )
-    ..addOption(
-      'precision',
-      help:
-          'Number of decimal places to use when reporting coverage percentage',
-      defaultsTo: '0',
     )
     ..addOption(
       'packages',
@@ -360,36 +351,26 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
     }
   }
 
-  int precision;
-  try {
-    precision = int.parse(args['precision'] as String);
-    if (precision < 0) {
-      fail('--precision must be a non-negative integer');
-    }
-  } catch (e) {
-    fail('Invalid --precision value: $e');
-  }
-
   return Environment(
-      baseDirectory: baseDirectory,
-      bazel: bazel,
-      bazelWorkspace: bazelWorkspace,
-      checkIgnore: checkIgnore,
-      input: input,
-      lcov: lcov,
-      output: output,
-      packagesPath: packagesPath,
-      packagePath: packagePath,
-      prettyPrint: prettyPrint,
-      prettyPrintFunc: prettyPrintFunc,
-      prettyPrintBranch: prettyPrintBranch,
-      reportOn: reportOn,
-      ignoreFiles: ignoredGlobs,
-      sdkRoot: sdkRoot,
-      verbose: verbose,
-      workers: workers,
-      failUnder: failUnder,
-      precision: precision);
+    baseDirectory: baseDirectory,
+    bazel: bazel,
+    bazelWorkspace: bazelWorkspace,
+    checkIgnore: checkIgnore,
+    input: input,
+    lcov: lcov,
+    output: output,
+    packagesPath: packagesPath,
+    packagePath: packagePath,
+    prettyPrint: prettyPrint,
+    prettyPrintFunc: prettyPrintFunc,
+    prettyPrintBranch: prettyPrintBranch,
+    reportOn: reportOn,
+    ignoreFiles: ignoredGlobs,
+    sdkRoot: sdkRoot,
+    verbose: verbose,
+    workers: workers,
+    failUnder: failUnder,
+  );
 }
 
 /// Given an absolute path absPath, this function returns a [List] of files
