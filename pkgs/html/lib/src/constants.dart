@@ -258,7 +258,7 @@ class Namespaces {
   }
 }
 
-const List<(String, String)> scopingElements = [
+const scopingElements = {
   (Namespaces.html, 'applet'),
   (Namespaces.html, 'caption'),
   (Namespaces.html, 'html'),
@@ -276,9 +276,9 @@ const List<(String, String)> scopingElements = [
   (Namespaces.svg, 'foreignObject'),
   (Namespaces.svg, 'desc'),
   (Namespaces.svg, 'title')
-];
+};
 
-const formattingElements = [
+const formattingElements = {
   (Namespaces.html, 'a'),
   (Namespaces.html, 'b'),
   (Namespaces.html, 'big'),
@@ -293,9 +293,9 @@ const formattingElements = [
   (Namespaces.html, 'strong'),
   (Namespaces.html, 'tt'),
   (Namespaces.html, '')
-];
+};
 
-const specialElements = [
+const specialElements = {
   (Namespaces.html, 'address'),
   (Namespaces.html, 'applet'),
   (Namespaces.html, 'area'),
@@ -376,22 +376,22 @@ const specialElements = [
   (Namespaces.html, 'wbr'),
   (Namespaces.html, 'xmp'),
   (Namespaces.svg, 'foreignObject')
-];
+};
 
-const htmlIntegrationPointElements = [
+const htmlIntegrationPointElements = {
   (Namespaces.mathml, 'annotaion-xml'),
   (Namespaces.svg, 'foreignObject'),
   (Namespaces.svg, 'desc'),
   (Namespaces.svg, 'title')
-];
+};
 
-const mathmlTextIntegrationPointElements = [
+const mathmlTextIntegrationPointElements = {
   (Namespaces.mathml, 'mi'),
   (Namespaces.mathml, 'mo'),
   (Namespaces.mathml, 'mn'),
   (Namespaces.mathml, 'ms'),
   (Namespaces.mathml, 'mtext')
-];
+};
 
 abstract final class Charcode {
   static const int kNull = 0x00;
@@ -474,13 +474,7 @@ bool isWhitespaceCC(int charCode) {
   return false;
 }
 
-const List<String> tableInsertModeElements = [
-  'table',
-  'tbody',
-  'tfoot',
-  'thead',
-  'tr'
-];
+const tableInsertModeElements = {'table', 'tbody', 'tfoot', 'thead', 'tr'};
 
 bool isLetterOrDigit(String? char) => isLetter(char) || isDigit(char);
 
@@ -542,11 +536,12 @@ extension AsciiUpperToLower on String {
 }
 
 // Heading elements need to be ordered
-const headingElements = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+const headingElementsList = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+const headingElements = {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'};
 
-const cdataElements = ['title', 'textarea'];
+const cdataElements = {'title', 'textarea'};
 
-const rcdataElements = [
+const rcdataElements = {
   'style',
   'script',
   'xmp',
@@ -554,7 +549,7 @@ const rcdataElements = [
   'noembed',
   'noframes',
   'noscript'
-];
+};
 
 // entitiesWindows1252 has to be _ordered_ and needs to have an index. It
 // therefore can't be a frozenset.
