@@ -292,6 +292,18 @@ class HtmlInputStream {
     return String.fromCharCodes(_chars.sublist(start, _offset));
   }
 
+  String charsUntilAsciiLetter([bool opposite = false]) {
+    final start = _offset;
+    int? c;
+    while ((c = peekCodeUnit()) != null &&
+        ((c! >= Charcode.kUpperA && c <= Charcode.kUpperZ) ||
+                (c >= Charcode.kLowerA && c <= Charcode.kLowerZ)) ==
+            opposite) {
+      _offset += 1;
+    }
+    return String.fromCharCodes(_chars.sublist(start, _offset));
+  }
+
   void unget(String? ch) {
     // Only one character is allowed to be ungotten at once - it must
     // be consumed again before any further call to unget

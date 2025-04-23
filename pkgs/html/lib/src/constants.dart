@@ -421,6 +421,9 @@ abstract final class Charcode {
   /// '-'
   static const int kHyphen = 0x2D;
 
+  /// 0
+  static const int kZero = 0x30;
+
   /// '<'
   static const int kLessThan = 0x3C;
 
@@ -430,8 +433,20 @@ abstract final class Charcode {
   /// '>'
   static const int kGreaterThan = 0x3E;
 
+  /// A
+  static const int kUpperA = 0x41;
+
+  /// Z
+  static const int kUpperZ = 0x5A;
+
   /// '`'
   static const int kGraveAccent = 0x60;
+
+  /// a
+  static const int kLowerA = 0x61;
+
+  /// z
+  static const int kLowerZ = 0x7A;
 }
 
 const spaceCharacters = {
@@ -467,82 +482,20 @@ const List<String> tableInsertModeElements = [
   'tr'
 ];
 
-// TODO(jmesserly): remove these in favor of the test functions
-const asciiLetters = {
-  0x41,
-  0x42,
-  0x43,
-  0x44,
-  0x45,
-  0x46,
-  0x47,
-  0x48,
-  0x49,
-  0x4A,
-  0x4B,
-  0x4C,
-  0x4D,
-  0x4E,
-  0x4F,
-  0x50,
-  0x51,
-  0x52,
-  0x53,
-  0x54,
-  0x55,
-  0x56,
-  0x57,
-  0x58,
-  0x59,
-  0x5A,
-  0x61,
-  0x62,
-  0x63,
-  0x64,
-  0x65,
-  0x66,
-  0x67,
-  0x68,
-  0x69,
-  0x6A,
-  0x6B,
-  0x6C,
-  0x6D,
-  0x6E,
-  0x6F,
-  0x70,
-  0x71,
-  0x72,
-  0x73,
-  0x74,
-  0x75,
-  0x76,
-  0x77,
-  0x78,
-  0x79,
-  0x7A,
-};
-
-const _zeroCode = 48;
-const _lowerACode = 97;
-const _lowerZCode = 122;
-const _upperACode = 65;
-const _upperZCode = 90;
-
 bool isLetterOrDigit(String? char) => isLetter(char) || isDigit(char);
 
 // Note: this is intentially ASCII only
 bool isLetter(String? char) {
   if (char == null) return false;
   final cc = char.codeUnitAt(0);
-  return cc >= _lowerACode && cc <= _lowerZCode ||
-      cc >= _upperACode && cc <= _upperZCode;
+  return cc >= Charcode.kLowerA && cc <= Charcode.kLowerZ ||
+      cc >= Charcode.kUpperA && cc <= Charcode.kUpperZ;
 }
 
 bool isDigit(String? char) {
   if (char == null) return false;
   final cc = char.codeUnitAt(0);
-  return cc >= _zeroCode && cc < _zeroCode + 10;
+  return cc >= Charcode.kZero && cc < Charcode.kZero + 10;
 }
 
 bool isHexDigit(String? char) {
@@ -582,9 +535,10 @@ extension AsciiUpperToLower on String {
   String toAsciiLowerCase() =>
       String.fromCharCodes(codeUnits.map(_asciiToLower));
 
-  static int _asciiToLower(int c) => (c >= _upperACode && c <= _upperZCode)
-      ? c + _lowerACode - _upperACode
-      : c;
+  static int _asciiToLower(int c) =>
+      (c >= Charcode.kUpperA && c <= Charcode.kUpperZ)
+          ? c + Charcode.kLowerA - Charcode.kUpperA
+          : c;
 }
 
 // Heading elements need to be ordered

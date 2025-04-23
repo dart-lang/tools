@@ -1028,7 +1028,7 @@ class HtmlTokenizer implements Iterator<Token> {
       state = beforeAttributeValueState;
     } else if (isLetter(data)) {
       _attributeName.write(data);
-      _attributeName.write(stream.charsUntil(asciiLetters, true));
+      _attributeName.write(stream.charsUntilAsciiLetter(true));
       leavingThisState = false;
     } else if (data == '>') {
       // XXX If we emit here the attributes are converted to a dict
