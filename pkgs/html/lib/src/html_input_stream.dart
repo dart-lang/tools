@@ -238,14 +238,14 @@ class HtmlInputStream {
 
   String? peekChar() {
     if (_offset >= _chars.length) return eof;
-    final charCode = _chars[_offset];
-    if (charCode < 256) {
-      return asciiCharacters[charCode];
+    final firstCharCode = _chars[_offset];
+    if (firstCharCode < 256) {
+      return asciiCharacters[firstCharCode];
     }
     if (_isSurrogatePair(_chars, _offset)) {
-      return String.fromCharCodes([charCode, _chars[_offset + 1]]);
+      return String.fromCharCodes([firstCharCode, _chars[_offset + 1]]);
     }
-    return String.fromCharCode(charCode);
+    return String.fromCharCode(firstCharCode);
   }
 
   // Whether the current and next chars indicate a surrogate pair.
