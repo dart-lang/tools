@@ -144,7 +144,9 @@ dependency_overrides:
       'run',
       _testWithCoveragePath,
       '--fail-under=90', // This should throw an exit(1) as coverage =50% when
-      '--', // only the `sum` test is run
+      '--port', // only the `sum` test is run
+      '${_port++}',
+      '--',
       '-N',
       'sum',
     ]);
