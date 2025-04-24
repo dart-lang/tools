@@ -86,6 +86,7 @@ dependency_overrides:
       {
         'product': 1,
         'sum': 1,
+        'evaluateScore': 1,
       },
     );
   });
@@ -104,6 +105,7 @@ dependency_overrides:
       {
         'product': 0,
         'sum': 1,
+        'evaluateScore': 0,
       },
       reason: 'only `sum` tests should be run',
     );
@@ -129,26 +131,50 @@ dependency_overrides:
     final process = await _run([
       'run',
       _testWithCoveragePath,
-      '-f',
-      '--fail-under=50', // This should pass as coverage=100% when all tests run
+      '--fail-under=100', // This should pass as coverage=100% when all tests run
       '--port',
       '${_port++}',
     ]);
     await process.shouldExit(0);
   });
-
   test(
       'dart run bin/test_with_coverage.dart --fail-under fails when coverage is below threshold',
       () async {
     final process = await _run([
       'run',
       _testWithCoveragePath,
-      '--fail-under=90', // This should throw an exit(1) as coverage =50% when
-      '--port', // only the `sum` test is run
-      '${_port++}',
+      '--fail-under=90', // This should throw an exit(1) as coverage =27.27% when
+      '--port', // only the `sum` test is run i.e. out of 11 lines only 3 lines
+      '${_port++}', //i.e. [5,7,8]will have hits>0
       '--',
       '-N',
       'sum',
+    ]);
+    await process.shouldExit(1);
+  });
+  test(
+      'dart run bin/test_with_coverage.dart -b --fail-under succeeds when coverage meets threshold',
+      () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-b',
+      '--fail-under=95', // This should pass as total lines+branches covered=20
+      '--port', // and total lines (11)+branches covered(10)=21 => percentage_covered=95.23
+      '${_port++}',
+    ]);
+    await process.shouldExit(0);
+  });
+  test(
+      'dart run bin/test_with_coverage.dart -b --fail-under fails when coverage is below threshold',
+      () async {
+    final process = await _run([
+      'run',
+      _testWithCoveragePath,
+      '-b',
+      '--fail-under=96', // This should throw an exit(1) as percentage_covered=95.24 approx
+      '--port',
+      '${_port++}',
     ]);
     await process.shouldExit(1);
   });
