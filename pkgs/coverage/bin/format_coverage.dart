@@ -148,11 +148,11 @@ Future<void> main(List<String> arguments) async {
 
     if (result.percentage < env.failUnder!) {
       print('Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
-          'is less than required ${env.failUnder}%');
+          'is less than required ${env.failUnder!.toStringAsFixed(2)}%');
       exit(1);
     } else if (env.verbose) {
       print('Coverage ${result.percentage.toStringAsFixed(2)}% '
-          'meets or exceeds the required ${env.failUnder}%');
+          'meets or exceeds the required ${env.failUnder!.toStringAsFixed(2)}%');
     }
   }
 }

@@ -14,16 +14,14 @@ CoverageResult calculateCoveragePercentage(Map<String, HitMap> hitmap) {
   var totalLines = 0;
   var coveredLines = 0;
   for (final entry in hitmap.entries) {
-    var coveredBranches = 0;
     final lineHits = entry.value.lineHits;
     final branchHits = entry.value.branchHits;
     totalLines += lineHits.length;
     if (branchHits != null) {
-      coveredBranches += branchHits.values.where((v) => v > 0).length;
       totalLines += branchHits.length;
+      coveredLines += branchHits.values.where((v) => v > 0).length;
     }
-    coveredLines +=
-        lineHits.values.where((v) => v > 0).length + coveredBranches;
+    coveredLines += lineHits.values.where((v) => v > 0).length;
   }
   final coveragePercentage =
       totalLines > 0 ? coveredLines * 100 / totalLines : 0.0;

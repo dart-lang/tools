@@ -71,5 +71,21 @@ void main() {
       expect(result.coveredLines, equals(3));
       expect(result.totalLines, equals(3));
     });
+    test('includes branch hits in coverage percentage', () {
+      // 2 lines (1 covered) + 3 branches (2 covered) = 5 total, 3 covered
+      final hitmap = {
+        'file.dart': HitMap(
+          {1: 1, 2: 0}, // lineHits
+          null,
+          null,
+          {10: 1, 11: 0, 12: 2}, // branchHits
+        ),
+      };
+      final result = calculateCoveragePercentage(hitmap);
+
+      expect(result.totalLines, equals(5));
+      expect(result.coveredLines, equals(3));
+      expect(result.percentage.toStringAsFixed(2), equals('60.00'));
+    });
   });
 }

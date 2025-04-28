@@ -1,4 +1,4 @@
-## 1.13.0
+## 1.13.0-wip
 
 - Introduced support for minimum coverage thresholds using --fail-under flag in
   format_coverage..
