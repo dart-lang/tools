@@ -111,31 +111,31 @@ class TreeBuilder {
     // with that name.
     final exactNode = target is Node;
 
-    var listElements1 = scopingElements;
-    var listElements2 = const <(String, String)>[];
+    var setElements1 = scopingElements;
+    var setElements2 = const <(String, String)>{};
     var invert = false;
     if (variant != null) {
       switch (variant) {
         case 'button':
-          listElements2 = const [(Namespaces.html, 'button')];
+          setElements2 = const {(Namespaces.html, 'button')};
           break;
         case 'list':
-          listElements2 = const [
+          setElements2 = const {
             (Namespaces.html, 'ol'),
             (Namespaces.html, 'ul')
-          ];
+          };
           break;
         case 'table':
-          listElements1 = const [
+          setElements1 = const {
             (Namespaces.html, 'html'),
             (Namespaces.html, 'table')
-          ];
+          };
           break;
         case 'select':
-          listElements1 = const [
+          setElements1 = const {
             (Namespaces.html, 'optgroup'),
             (Namespaces.html, 'option')
-          ];
+          };
           invert = true;
           break;
         default:
@@ -148,8 +148,8 @@ class TreeBuilder {
           exactNode && node == target) {
         return true;
       } else if (invert !=
-          (listElements1.contains(getElementNameTuple(node)) ||
-              listElements2.contains(getElementNameTuple(node)))) {
+          (setElements1.contains(getElementNameTuple(node)) ||
+              setElements2.contains(getElementNameTuple(node)))) {
         return false;
       }
     }
