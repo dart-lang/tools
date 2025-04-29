@@ -126,9 +126,9 @@ dependency_overrides:
   });
 
   test(
-      'dart run bin/test_with_coverage.dart --fail-under succeeds when coverage meets threshold',
-      () async {
-    // This should pass as coverage=100% when all tests run
+      'dart run bin/test_with_coverage.dart --fail-under succeeds'
+      'when coverage meets threshold', () async {
+    // This should pass as coverage=100% when all tests run.
     final process = await _run([
       'run',
       _testWithCoveragePath,
@@ -139,11 +139,10 @@ dependency_overrides:
     await process.shouldExit(0);
   });
   test(
-      'dart run bin/test_with_coverage.dart --fail-under fails when coverage is below threshold',
-      () async {
-    /* This should throw an exit(1) as coverage =27.27% when
-     only the `sum` test is run i.e. out of 11 lines only 3 lines
-    i.e. [5,7,8]will have hits>0 */
+      'dart run bin/test_with_coverage.dart --fail-under fails'
+      'when coverage is below threshold', () async {
+    // This should throw an exit(1) as coverage =27.27% when only the `sum` test
+    // is run i.e. out of 11 lines only 3 lines i.e. [5,7,8]will have hits>0.
     final process = await _run([
       'run',
       _testWithCoveragePath,
@@ -157,10 +156,10 @@ dependency_overrides:
     await process.shouldExit(1);
   });
   test(
-      'dart run bin/test_with_coverage.dart -b --fail-under succeeds when coverage meets threshold',
-      () async {
-    /* This should pass as total lines+branches covered=20
-     and total lines (11)+branches covered(10)=21 => percentage_covered=95.23 */
+      'dart run bin/test_with_coverage.dart -b --fail-under succeeds'
+      'when coverage meets threshold', () async {
+    // This should pass as total lines+branches covered=20 and total lines(11)+
+    // branches covered(10)=21 => percentage_covered=95.23.
     final process = await _run([
       'run',
       _testWithCoveragePath,
@@ -172,9 +171,9 @@ dependency_overrides:
     await process.shouldExit(0);
   });
   test(
-      'dart run bin/test_with_coverage.dart -b --fail-under fails when coverage is below threshold',
-      () async {
-    // This should throw an exit(1) as percentage_covered=95.23
+      'dart run bin/test_with_coverage.dart -b --fail-under fails'
+      'when coverage is below threshold', () async {
+    // This should throw an exit(1) as percentage_covered=95.23 .
     final process = await _run([
       'run',
       _testWithCoveragePath,

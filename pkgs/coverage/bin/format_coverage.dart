@@ -134,9 +134,10 @@ Future<void> main(List<String> arguments) async {
   }
   await outputSink.close();
 
-  // Check coverage against the fail-under threshold if specified
-  if (env.failUnder != null) {
-    // Calculate the overall coverage percentage using the utility function
+  // Check coverage against the fail-under threshold if specified.
+  final failUnder = env.failUnder;
+  if (failUnder != null) {
+    // Calculate the overall coverage percentage using the utility function.
     final result = calculateCoveragePercentage(
       hitmap,
     );
@@ -148,11 +149,11 @@ Future<void> main(List<String> arguments) async {
 
     if (result.percentage < env.failUnder!) {
       print('Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
-          'is less than required ${env.failUnder!.toStringAsFixed(2)}%');
+          'is less than required ${failUnder.toStringAsFixed(2)}%');
       exit(1);
     } else if (env.verbose) {
-      print('Coverage ${result.percentage.toStringAsFixed(2)}% '
-          'meets or exceeds the required ${env.failUnder!.toStringAsFixed(2)}%');
+      print('Coverage ${result.percentage.toStringAsFixed(2)}% meets or exceeds'
+          'the required ${failUnder.toStringAsFixed(2)}%');
     }
   }
 }

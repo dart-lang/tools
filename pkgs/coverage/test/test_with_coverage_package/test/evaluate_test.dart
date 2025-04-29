@@ -2,8 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import '../lib/validate_lib.dart';
 import 'package:test/test.dart';
+
+// ignore: avoid_relative_lib_imports
+import '../lib/validate_lib.dart';
 
 void main() {
   group('evaluateScore', () {
