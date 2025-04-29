@@ -1,3 +1,8 @@
+## 1.13.0-wip
+
+- Introduced support for minimum coverage thresholds using --fail-under flag in
+  format_coverage.
+  
 ## 1.12.0
 
 - Introduced support for specifying coverage flags through a YAML file.

@@ -17,3 +17,17 @@ int product(Iterable<int> values) {
   }
   return val;
 }
+
+String evaluateScore(int score) {
+  if (score < 0) {
+    return 'Invalid';
+  } else if (score < 50) {
+    return 'Fail';
+  } else if (score < 70) {
+    return 'Pass';
+  } else if (score <= 100) {
+    return 'Excellent';
+  } else {
+    return 'Overflow';
+  }
+}
