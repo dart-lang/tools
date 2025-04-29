@@ -485,6 +485,7 @@ void main() {
     late Future<void> allIsolatesExited;
 
     late List<String> received;
+    Future<void> Function(String)? delayTheOnPauseCallback;
     late bool stopped;
 
     void startEvent(String id, String groupId, [String? name]) =>
@@ -522,6 +523,7 @@ void main() {
       when(service.getVM()).thenAnswer((_) async => VM());
 
       received = <String>[];
+      delayTheOnPauseCallback = null;
       when(service.resume(any)).thenAnswer((invocation) async {
         final id = invocation.positionalArguments[0];
         received.add('Resume $id');
@@ -535,6 +537,10 @@ void main() {
           expect(stopped, isFalse);
           received.add('Pause ${iso.id}. Collect group ${iso.isolateGroupId}? '
               '${isLastIsolateInGroup ? 'Yes' : 'No'}');
+          if (delayTheOnPauseCallback != null) {
+            await delayTheOnPauseCallback!(iso.id!);
+            received.add('Pause done ${iso.id}');
+          }
         },
         (message) => received.add(message),
       ).waitUntilAllExited();
@@ -847,6 +853,40 @@ void main() {
         'Resume F',
         'Pause C. Collect group 1? Yes',
         'Resume C',
+      ]);
+    });
+
+    test('main isolate paused during other isolate pause callback', () async {
+      final delayingB = Completer<void>();
+      delayTheOnPauseCallback = (String isoId) async {
+        if (isoId == 'B') await delayingB.future;
+      };
+
+      startEvent('A', '1', 'main');
+      startEvent('B', '2');
+      pauseEvent('B', '2');
+      pauseEvent('A', '1', 'main');
+
+      while (received.length < 4) {
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      expect(received, [
+        'Pause B. Collect group 2? Yes',
+        'Pause A. Collect group 1? Yes',
+        'Pause done A',
+        'Resume A',
+      ]);
+
+      delayingB.complete();
+      await endTest();
+      expect(received, [
+        'Pause B. Collect group 2? Yes',
+        'Pause A. Collect group 1? Yes',
+        'Pause done A',
+        'Resume A',
+        'Pause done B',
+        // Don't try to resume B, because the VM service is already shut down.
       ]);
     });
   });

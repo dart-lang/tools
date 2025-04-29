@@ -89,13 +89,15 @@ class IsolatePausedListener {
     } else {
       final isLastIsolateInGroup = group.noRunningIsolates;
       if (isLastIsolateInGroup) {
-        _getGroup(isolateRef).collected = true;
+        group.collected = true;
       }
       try {
         await _onIsolatePaused(isolateRef, isLastIsolateInGroup);
       } finally {
         group.exit(isolateRef);
-        await _service.resume(isolateRef.id!);
+        if (!_finishedListening) {
+          await _service.resume(isolateRef.id!);
+        }
       }
     }
   }
