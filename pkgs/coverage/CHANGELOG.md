@@ -1,8 +1,10 @@
-## 1.12.1
+## 1.13.0
 
+- Introduced support for minimum coverage thresholds using --fail-under flag in
+  format_coverage.
 - Fix a bug where we attempt to resume an isolate after the VM service has been
   shut down.
-
+  
 ## 1.12.0
 
 - Introduced support for specifying coverage flags through a YAML file.

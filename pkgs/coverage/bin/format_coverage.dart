@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:coverage/coverage.dart';
 import 'package:coverage/src/coverage_options.dart';
+import 'package:coverage/src/coverage_percentage.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
@@ -30,6 +31,7 @@ class Environment {
     required this.sdkRoot,
     required this.verbose,
     required this.workers,
+    required this.failUnder,
   });
 
   String? baseDirectory;
@@ -49,6 +51,7 @@ class Environment {
   String? sdkRoot;
   bool verbose;
   int workers;
+  double? failUnder;
 }
 
 Future<void> main(List<String> arguments) async {
@@ -130,6 +133,29 @@ Future<void> main(List<String> arguments) async {
     }
   }
   await outputSink.close();
+
+  // Check coverage against the fail-under threshold if specified.
+  final failUnder = env.failUnder;
+  if (failUnder != null) {
+    // Calculate the overall coverage percentage using the utility function.
+    final result = calculateCoveragePercentage(
+      hitmap,
+    );
+
+    if (env.verbose) {
+      print('Coverage: ${result.percentage.toStringAsFixed(2)}% '
+          '(${result.coveredLines} of ${result.totalLines} lines)');
+    }
+
+    if (result.percentage < failUnder) {
+      print('Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
+          'is less than required ${failUnder.toStringAsFixed(2)}%');
+      exit(1);
+    } else if (env.verbose) {
+      print('Coverage ${result.percentage.toStringAsFixed(2)}% meets or exceeds'
+          'the required ${failUnder.toStringAsFixed(2)}%');
+    }
+  }
 }
 
 /// Checks the validity of the provided arguments. Does not initialize actual
@@ -142,6 +168,10 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       'sdk-root',
       abbr: 's',
       help: 'path to the SDK root',
+    )
+    ..addOption(
+      'fail-under',
+      help: 'Fail if coverage is less than the given percentage (0-100)',
     )
     ..addOption(
       'packages',
@@ -308,24 +338,40 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final checkIgnore = args['check-ignore'] as bool;
   final ignoredGlobs = args['ignore-files'] as List<String>;
   final verbose = args['verbose'] as bool;
+
+  double? failUnder;
+  final failUnderStr = args['fail-under'] as String?;
+  if (failUnderStr != null) {
+    try {
+      failUnder = double.parse(failUnderStr);
+      if (failUnder < 0 || failUnder > 100) {
+        fail('--fail-under must be a percentage between 0 and 100');
+      }
+    } catch (e) {
+      fail('Invalid --fail-under value: $e');
+    }
+  }
+
   return Environment(
-      baseDirectory: baseDirectory,
-      bazel: bazel,
-      bazelWorkspace: bazelWorkspace,
-      checkIgnore: checkIgnore,
-      input: input,
-      lcov: lcov,
-      output: output,
-      packagesPath: packagesPath,
-      packagePath: packagePath,
-      prettyPrint: prettyPrint,
-      prettyPrintFunc: prettyPrintFunc,
-      prettyPrintBranch: prettyPrintBranch,
-      reportOn: reportOn,
-      ignoreFiles: ignoredGlobs,
-      sdkRoot: sdkRoot,
-      verbose: verbose,
-      workers: workers);
+    baseDirectory: baseDirectory,
+    bazel: bazel,
+    bazelWorkspace: bazelWorkspace,
+    checkIgnore: checkIgnore,
+    input: input,
+    lcov: lcov,
+    output: output,
+    packagesPath: packagesPath,
+    packagePath: packagePath,
+    prettyPrint: prettyPrint,
+    prettyPrintFunc: prettyPrintFunc,
+    prettyPrintBranch: prettyPrintBranch,
+    reportOn: reportOn,
+    ignoreFiles: ignoredGlobs,
+    sdkRoot: sdkRoot,
+    verbose: verbose,
+    workers: workers,
+    failUnder: failUnder,
+  );
 }
 
 /// Given an absolute path absPath, this function returns a [List] of files
