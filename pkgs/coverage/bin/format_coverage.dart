@@ -147,7 +147,7 @@ Future<void> main(List<String> arguments) async {
           '(${result.coveredLines} of ${result.totalLines} lines)');
     }
 
-    if (result.percentage < env.failUnder!) {
+    if (result.percentage < failUnder) {
       print('Error: Coverage ${result.percentage.toStringAsFixed(2)}% '
           'is less than required ${failUnder.toStringAsFixed(2)}%');
       exit(1);
