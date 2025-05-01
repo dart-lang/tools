@@ -867,7 +867,7 @@ void main() {
       pauseEvent('B', '2');
       pauseEvent('A', '1', 'main');
 
-      while (received.length < 4) {
+      while (received.length < 3) {
         await Future<void>.delayed(Duration.zero);
       }
 
@@ -875,7 +875,6 @@ void main() {
         'Pause B. Collect group 2? Yes',
         'Pause A. Collect group 1? Yes',
         'Pause done A',
-        'Resume A',
       ]);
 
       delayingB.complete();
@@ -884,8 +883,9 @@ void main() {
         'Pause B. Collect group 2? Yes',
         'Pause A. Collect group 1? Yes',
         'Pause done A',
-        'Resume A',
         'Pause done B',
+        // A waits for B's pause callback to complete before resuming.
+        'Resume A',
         // Don't try to resume B, because the VM service is already shut down.
       ]);
     });
