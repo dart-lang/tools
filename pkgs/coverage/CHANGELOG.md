@@ -1,3 +1,8 @@
+## 1.13.1
+
+- Fix a bug where the VM service can be shut down while some coverage
+  collections are still happening.
+
 ## 1.13.0
 
 - Introduced support for minimum coverage thresholds using --fail-under flag in
