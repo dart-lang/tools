@@ -27,6 +27,7 @@ class IsolatePausedListener {
   final SyncErrorLogger _log;
 
   final _isolateGroups = <String, IsolateGroupState>{};
+  final _oldCollectionTasks = <Future<void>>{};
 
   int _numIsolates = 0;
   bool _finishedListening = false;
@@ -48,7 +49,7 @@ class IsolatePausedListener {
     _finishedListening = true;
 
     // Collect all remaining uncollected groups.
-    final collectionTasks = <Future<void>>[];
+    final collectionTasks = _oldCollectionTasks.toList();
     for (final group in _isolateGroups.values) {
       if (!group.collected) {
         group.collected = true;
@@ -91,9 +92,13 @@ class IsolatePausedListener {
       if (isLastIsolateInGroup) {
         group.collected = true;
       }
+      Future<void>? collectionTask;
       try {
-        await _onIsolatePaused(isolateRef, isLastIsolateInGroup);
+        collectionTask = _onIsolatePaused(isolateRef, isLastIsolateInGroup);
+        _oldCollectionTasks.add(collectionTask);
+        await collectionTask;
       } finally {
+        _oldCollectionTasks.remove(collectionTask);
         group.exit(isolateRef);
         if (!_finishedListening) {
           await _service.resume(isolateRef.id!);
