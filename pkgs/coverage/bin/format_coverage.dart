@@ -30,6 +30,7 @@ class Environment {
     required this.sdkRoot,
     required this.verbose,
     required this.workers,
+    required this.includeUncovered,
   });
 
   String? baseDirectory;
@@ -49,6 +50,7 @@ class Environment {
   String? sdkRoot;
   bool verbose;
   int workers;
+  bool includeUncovered;
 }
 
 Future<void> main(List<String> arguments) async {
@@ -97,13 +99,15 @@ Future<void> main(List<String> arguments) async {
         reportOn: env.reportOn,
         ignoreGlobs: ignoreGlobs,
         reportFuncs: env.prettyPrintFunc,
-        reportBranches: env.prettyPrintBranch);
+        reportBranches: env.prettyPrintBranch,
+        includeUncovered: (String path) => env.includeUncovered);
   } else {
     assert(env.lcov);
     output = hitmap.formatLcov(resolver,
         reportOn: env.reportOn,
         ignoreGlobs: ignoreGlobs,
-        basePath: env.baseDirectory);
+        basePath: env.baseDirectory,
+        includeUncovered: (String path) => env.includeUncovered);
   }
 
   final outputSink =
@@ -196,6 +200,8 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       help: 'check for coverage ignore comments.'
           ' Not supported in web coverage.',
     )
+    ..addFlag('include-uncovered',
+        negatable: false, help: 'Include uncovered Dart files in the output')
     ..addMultiOption(
       'ignore-files',
       defaultsTo: [],
@@ -308,6 +314,9 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
   final checkIgnore = args['check-ignore'] as bool;
   final ignoredGlobs = args['ignore-files'] as List<String>;
   final verbose = args['verbose'] as bool;
+  final includeUncovered = args['include-uncovered'] as bool;
+  print('includeUncovered: $includeUncovered');
+
   return Environment(
       baseDirectory: baseDirectory,
       bazel: bazel,
@@ -325,7 +334,8 @@ Environment parseArgs(List<String> arguments, CoverageOptions defaultOptions) {
       ignoreFiles: ignoredGlobs,
       sdkRoot: sdkRoot,
       verbose: verbose,
-      workers: workers);
+      workers: workers,
+      includeUncovered: includeUncovered);
 }
 
 /// Given an absolute path absPath, this function returns a [List] of files

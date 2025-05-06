@@ -2,8 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 
 import 'hitmap.dart';
 import 'resolver.dart';
@@ -78,11 +80,13 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     String? basePath,
     List<String>? reportOn,
     Set<Glob>? ignoreGlobs,
+    bool Function(String path)? includeUncovered,
   }) {
     final pathFilter = _getPathFilter(
       reportOn: reportOn,
       ignoreGlobs: ignoreGlobs,
     );
+
     final buf = StringBuffer();
     for (final entry in entries) {
       final v = entry.value;
@@ -129,6 +133,65 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       buf.write('end_of_record\n');
     }
 
+    if (includeUncovered != null) {
+      // Step 1: Identify all Dart files
+      final allFiles = _findAllDartFiles(reportOn: reportOn);
+      print('detected files: $allFiles');
+
+      // Step 2: Identify covered files
+      final coveredFiles = Map.fromEntries(entries
+          .where((entry) => entry.value.lineHits.values.any((hit) => hit > 0)));
+
+      // check if the file is covered or no.
+      final packageName = getPackageName();
+
+      final uncoveredFiles = <String>[];
+      for (final file in allFiles) {
+        final pkgUri = toPackageUri(file, packageName);
+        if (!coveredFiles.containsKey(pkgUri)) {
+          uncoveredFiles.add(file);
+        }
+      }
+
+      print('Uncovered Dart files:');
+      for (final file in uncoveredFiles) {
+        print(file);
+      }
+
+      //formatlcov for including uncovered.
+      final uncoveredBuf = StringBuffer();
+
+      for (final file in uncoveredFiles) {
+        if (!pathFilter(file)) continue;
+
+        final lines = File(file).readAsLinesSync();
+        var displayPath = file;
+        if (basePath != null) {
+          displayPath = p.relative(file, from: basePath);
+        }
+        displayPath =
+            displayPath.replaceAll('\\', '/'); // For Windows compatibility
+
+        uncoveredBuf.writeln('SF:$displayPath');
+
+        var lineNumber = 1;
+        var realLines = 0;
+        for (final line in lines) {
+          final trimmed = line.trim();
+          if (trimmed.isNotEmpty && !trimmed.startsWith('//')) {
+            uncoveredBuf.writeln('DA:$lineNumber,0');
+            realLines++;
+          }
+          lineNumber++;
+        }
+
+        uncoveredBuf.writeln('LF:$realLines');
+        uncoveredBuf.writeln('LH:0');
+        uncoveredBuf.writeln('end_of_record');
+      }
+
+      buf.write(uncoveredBuf.toString());
+    }
     return buf.toString();
   }
 
@@ -141,9 +204,11 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     Resolver resolver,
     Loader loader, {
     List<String>? reportOn,
+    String? basePath,
     Set<Glob>? ignoreGlobs,
     bool reportFuncs = false,
     bool reportBranches = false,
+    bool Function(String path)? includeUncovered,
   }) async {
     final pathFilter = _getPathFilter(
       reportOn: reportOn,
@@ -193,7 +258,97 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
       }
     }
 
+    if (includeUncovered != null) {
+      // Step 1: Identify all Dart files
+      final allFiles = _findAllDartFiles(reportOn: reportOn);
+      print('detected files: $allFiles');
+
+      // Step 2: Identify covered files
+      final coveredFiles = Map.fromEntries(entries
+          .where((entry) => entry.value.lineHits.values.any((hit) => hit > 0)));
+
+      // check if the file is covered or no.
+      final packageName = getPackageName();
+
+      final uncoveredFiles = <String>[];
+      for (final file in allFiles) {
+        final pkgUri = toPackageUri(file, packageName);
+        if (!coveredFiles.containsKey(pkgUri)) {
+          uncoveredFiles.add(file);
+        }
+      }
+
+      print('Uncovered Dart files:');
+      for (final file in uncoveredFiles) {
+        print(file);
+      }
+
+      //formatlcov for including uncovered.
+      final uncoveredBuf = StringBuffer();
+
+      for (final file in uncoveredFiles) {
+        if (!pathFilter(file)) continue;
+
+        final lines = File(file).readAsLinesSync();
+        var displayPath = file;
+        if (basePath != null) {
+          displayPath = p.relative(file, from: basePath);
+        }
+        displayPath =
+            displayPath.replaceAll('\\', '/'); // For Windows compatibility
+
+        uncoveredBuf.writeln('SF:$displayPath');
+
+        var lineNumber = 1;
+        var realLines = 0;
+        for (final line in lines) {
+          final trimmed = line.trim();
+          if (trimmed.isNotEmpty && !trimmed.startsWith('//')) {
+            uncoveredBuf.writeln('DA:$lineNumber,0');
+            realLines++;
+          }
+          lineNumber++;
+        }
+
+        uncoveredBuf.writeln('LF:$realLines');
+        uncoveredBuf.writeln('LH:0');
+        uncoveredBuf.writeln('end_of_record');
+      }
+
+      buf.write(uncoveredBuf.toString());
+    }
+
     return buf.toString();
+  }
+
+  List<String> _findAllDartFiles({List<String>? reportOn}) {
+    final files = <String>[];
+    final roots = reportOn ?? ['lib/src'];
+    for (final root in roots) {
+      final dir = Directory(root);
+      if (!dir.existsSync()) continue;
+      final dartFiles = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.dart'));
+      files.addAll(dartFiles.map((f) => f.path));
+    }
+    return files;
+  }
+
+  String getPackageName() {
+    final pubspecFile = File('pubspec.yaml');
+    final doc = loadYaml(pubspecFile.readAsStringSync());
+    return doc['name'] as String;
+  }
+
+  String toPackageUri(String filePath, String packageName) {
+    if (filePath.startsWith('lib${Platform.pathSeparator}')) {
+      final relativePath = p.relative(filePath, from: 'lib');
+      return 'package:$packageName/$relativePath'.replaceAll('\\', '/');
+    }
+    return filePath.replaceAll(
+        '\\', '/'); // fallback (or handle `src/`, etc. if needed)
   }
 }
 
