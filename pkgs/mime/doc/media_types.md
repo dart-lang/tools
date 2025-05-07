@@ -4,8 +4,8 @@ Supported media types and file extensions.
 
 <!-- start table -->
 
-| MIME type | Default | Additional |
-| --- | --- | --- |
+| MIME type | Default | Additional extensions |
+| :--- | :--- | :--- |
 | `application/andrew-inset` | `ez` | |
 | `application/applixware` | `aw` | |
 | `application/atom+xml` | `atom` | |
@@ -19,7 +19,6 @@ Supported media types and file extensions.
 | `application/cdmi-queue` | `cdmiq` | |
 | `application/cu-seeme` | `cu` | |
 | `application/davmount+xml` | `davmount` | |
-| `application/dicom` | `dcm` | |
 | `application/docbook+xml` | `dbk` | |
 | `application/dssc+der` | `dssc` | |
 | `application/dssc+xml` | `xdssc` | |
@@ -32,7 +31,7 @@ Supported media types and file extensions.
 | `application/gpx+xml` | `gpx` | |
 | `application/gxf` | `gxf` | |
 | `application/hyperstudio` | `stk` | |
-| `application/inkml+xml` | `inkml` | `ink` |
+| `application/inkml+xml` | `ink` | `inkml` |
 | `application/ipfix` | `ipfix` | |
 | `application/java-archive` | `jar` | |
 | `application/java-serialized-object` | `ser` | |
@@ -43,10 +42,9 @@ Supported media types and file extensions.
 | `application/mac-binhex40` | `hqx` | |
 | `application/mac-compactpro` | `cpt` | |
 | `application/mads+xml` | `mads` | |
-| `application/manifest+json` | `webmanifest` | |
 | `application/marc` | `mrc` | |
 | `application/marcxml+xml` | `mrcx` | |
-| `application/mathematica` | `nb` | `ma`, `mb` |
+| `application/mathematica` | `ma` | `mb`, `nb` |
 | `application/mathml+xml` | `mathml` | |
 | `application/mbox` | `mbox` | |
 | `application/mediaservercontrol+xml` | `mscml` | |
@@ -54,21 +52,21 @@ Supported media types and file extensions.
 | `application/metalink4+xml` | `meta4` | |
 | `application/mets+xml` | `mets` | |
 | `application/mods+xml` | `mods` | |
-| `application/mp21` | `mp21` | `m21` |
+| `application/mp21` | `m21` | `mp21` |
 | `application/mp4` | `mp4s` | |
 | `application/msword` | `doc` | `dot` |
 | `application/mxf` | `mxf` | |
-| `application/octet-stream` | `so` | `bin`, `bpk`, `deploy`, `dist`, `distz`, `dms`, `dump`, `elc`, `lrf`, `mar`, `pkg` |
+| `application/octet-stream` | `bin` | `bpk`, `deploy`, `dist`, `distz`, `dms`, `dump`, `elc`, `lrf`, `mar`, `pkg`, `so` |
 | `application/oda` | `oda` | |
 | `application/oebps-package+xml` | `opf` | |
 | `application/ogg` | `ogx` | |
 | `application/omdoc+xml` | `omdoc` | |
-| `application/onenote` | `onetoc2` | `onepkg`, `onetmp`, `onetoc` |
+| `application/onenote` | `onetoc` | `onepkg`, `onetmp`, `onetoc2` |
 | `application/oxps` | `oxps` | |
 | `application/patch-ops-error+xml` | `xer` | |
 | `application/pdf` | `pdf` | |
 | `application/pgp-encrypted` | `pgp` | |
-| `application/pgp-signature` | `sig` | `asc` |
+| `application/pgp-signature` | `asc` | `sig` |
 | `application/pics-rules` | `prf` | |
 | `application/pkcs10` | `p10` | |
 | `application/pkcs7-mime` | `p7m` | `p7c` |
@@ -80,7 +78,7 @@ Supported media types and file extensions.
 | `application/pkix-pkipath` | `pkipath` | |
 | `application/pkixcmp` | `pki` | |
 | `application/pls+xml` | `pls` | |
-| `application/postscript` | `ps` | `ai`, `eps` |
+| `application/postscript` | `ai` | `eps`, `ps` |
 | `application/prs.cww` | `cww` | |
 | `application/pskc+xml` | `pskcxml` | |
 | `application/rdf+xml` | `rdf` | |
@@ -104,7 +102,7 @@ Supported media types and file extensions.
 | `application/set-payment-initiation` | `setpay` | |
 | `application/set-registration-initiation` | `setreg` | |
 | `application/shf+xml` | `shf` | |
-| `application/smil+xml` | `smil` | `smi` |
+| `application/smil+xml` | `smi` | `smil` |
 | `application/sparql-query` | `rq` | |
 | `application/sparql-results+xml` | `srx` | |
 | `application/srgs` | `gram` | |
@@ -112,10 +110,9 @@ Supported media types and file extensions.
 | `application/sru+xml` | `sru` | |
 | `application/ssdl+xml` | `ssdl` | |
 | `application/ssml+xml` | `ssml` | |
-| `application/tei+xml` | `teicorpus` | `tei` |
+| `application/tei+xml` | `tei` | `teicorpus` |
 | `application/thraud+xml` | `tfi` | |
 | `application/timestamped-data` | `tsd` | |
-| `application/toml` | `toml` | |
 | `application/vnd.3gpp.pic-bw-large` | `plb` | |
 | `application/vnd.3gpp.pic-bw-small` | `psb` | |
 | `application/vnd.3gpp.pic-bw-var` | `pvb` | |
@@ -127,7 +124,7 @@ Supported media types and file extensions.
 | `application/vnd.acucorp` | `atc` | `acutc` |
 | `application/vnd.adobe.air-application-installer-package+zip` | `air` | |
 | `application/vnd.adobe.formscentral.fcdt` | `fcdt` | |
-| `application/vnd.adobe.fxp` | `fxpl` | `fxp` |
+| `application/vnd.adobe.fxp` | `fxp` | `fxpl` |
 | `application/vnd.adobe.xdp+xml` | `xdp` | |
 | `application/vnd.adobe.xfdf` | `xfdf` | |
 | `application/vnd.ahead.space` | `ahead` | |
@@ -153,7 +150,7 @@ Supported media types and file extensions.
 | `application/vnd.cinderella` | `cdy` | |
 | `application/vnd.claymore` | `cla` | |
 | `application/vnd.cloanto.rp9` | `rp9` | |
-| `application/vnd.clonk.c4group` | `c4u` | `c4d`, `c4f`, `c4g`, `c4p` |
+| `application/vnd.clonk.c4group` | `c4g` | `c4d`, `c4f`, `c4p`, `c4u` |
 | `application/vnd.cluetrust.cartomobile-config` | `c11amc` | |
 | `application/vnd.cluetrust.cartomobile-config-pkg` | `c11amz` | |
 | `application/vnd.commonspace` | `csp` | |
@@ -170,8 +167,8 @@ Supported media types and file extensions.
 | `application/vnd.curl.car` | `car` | |
 | `application/vnd.curl.pcurl` | `pcurl` | |
 | `application/vnd.data-vision.rdz` | `rdz` | |
-| `application/vnd.dece.data` | `uvvf` | `uvd`, `uvf`, `uvvd` |
-| `application/vnd.dece.ttml+xml` | `uvvt` | `uvt` |
+| `application/vnd.dece.data` | `uvf` | `uvd`, `uvvd`, `uvvf` |
+| `application/vnd.dece.ttml+xml` | `uvt` | `uvvt` |
 | `application/vnd.dece.unspecified` | `uvx` | `uvvx` |
 | `application/vnd.dece.zip` | `uvz` | `uvvz` |
 | `application/vnd.denovo.fcselayout-link` | `fe_launch` | |
@@ -190,7 +187,7 @@ Supported media types and file extensions.
 | `application/vnd.epson.quickanime` | `qam` | |
 | `application/vnd.epson.salt` | `slt` | |
 | `application/vnd.epson.ssf` | `ssf` | |
-| `application/vnd.eszigno3+xml` | `et3` | `es3` |
+| `application/vnd.eszigno3+xml` | `es3` | `et3` |
 | `application/vnd.ezpix-album` | `ez2` | |
 | `application/vnd.ezpix-package` | `ez3` | |
 | `application/vnd.fdf` | `fdf` | |
@@ -198,7 +195,7 @@ Supported media types and file extensions.
 | `application/vnd.fdsn.seed` | `seed` | `dataless` |
 | `application/vnd.flographit` | `gph` | |
 | `application/vnd.fluxtime.clip` | `ftc` | |
-| `application/vnd.framemaker` | `maker` | `book`, `fm`, `frame` |
+| `application/vnd.framemaker` | `fm` | `book`, `frame`, `maker` |
 | `application/vnd.frogans.fnc` | `fnc` | |
 | `application/vnd.frogans.ltf` | `ltf` | |
 | `application/vnd.fsc.weblaunch` | `fsc` | |
@@ -213,15 +210,16 @@ Supported media types and file extensions.
 | `application/vnd.fuzzysheet` | `fzs` | |
 | `application/vnd.genomatix.tuxedo` | `txd` | |
 | `application/vnd.geogebra.file` | `ggb` | |
+| `application/vnd.geogebra.slides` | `ggs` | |
 | `application/vnd.geogebra.tool` | `ggt` | |
-| `application/vnd.geometry-explorer` | `gre` | `gex` |
+| `application/vnd.geometry-explorer` | `gex` | `gre` |
 | `application/vnd.geonext` | `gxt` | |
 | `application/vnd.geoplan` | `g2w` | |
 | `application/vnd.geospace` | `g3w` | |
 | `application/vnd.gmx` | `gmx` | |
 | `application/vnd.google-earth.kml+xml` | `kml` | |
 | `application/vnd.google-earth.kmz` | `kmz` | |
-| `application/vnd.grafeq` | `gqs` | `gqf` |
+| `application/vnd.grafeq` | `gqf` | `gqs` |
 | `application/vnd.groove-account` | `gac` | |
 | `application/vnd.groove-help` | `ghf` | |
 | `application/vnd.groove-identity-message` | `gim` | |
@@ -241,15 +239,15 @@ Supported media types and file extensions.
 | `application/vnd.hp-pclxl` | `pclxl` | |
 | `application/vnd.hydrostatix.sof-data` | `sfd-hdstx` | |
 | `application/vnd.ibm.minipay` | `mpy` | |
-| `application/vnd.ibm.modcap` | `listafp` | `afp`, `list3820` |
+| `application/vnd.ibm.modcap` | `afp` | `list3820`, `listafp` |
 | `application/vnd.ibm.rights-management` | `irm` | |
 | `application/vnd.ibm.secure-container` | `sc` | |
-| `application/vnd.iccprofile` | `icm` | `icc` |
+| `application/vnd.iccprofile` | `icc` | `icm` |
 | `application/vnd.igloader` | `igl` | |
 | `application/vnd.immervision-ivp` | `ivp` | |
 | `application/vnd.immervision-ivu` | `ivu` | |
 | `application/vnd.insors.igm` | `igm` | |
-| `application/vnd.intercon.formnet` | `xpx` | `xpw` |
+| `application/vnd.intercon.formnet` | `xpw` | `xpx` |
 | `application/vnd.intergeo` | `i2g` | |
 | `application/vnd.intu.qbo` | `qbo` | |
 | `application/vnd.intu.qfx` | `qfx` | |
@@ -267,13 +265,13 @@ Supported media types and file extensions.
 | `application/vnd.kde.kformula` | `kfo` | |
 | `application/vnd.kde.kivio` | `flw` | |
 | `application/vnd.kde.kontour` | `kon` | |
-| `application/vnd.kde.kpresenter` | `kpt` | `kpr` |
+| `application/vnd.kde.kpresenter` | `kpr` | `kpt` |
 | `application/vnd.kde.kspread` | `ksp` | |
-| `application/vnd.kde.kword` | `kwt` | `kwd` |
+| `application/vnd.kde.kword` | `kwd` | `kwt` |
 | `application/vnd.kenameaapp` | `htke` | |
 | `application/vnd.kidspiration` | `kia` | |
-| `application/vnd.kinar` | `knp` | `kne` |
-| `application/vnd.koan` | `skt` | `skd`, `skm`, `skp` |
+| `application/vnd.kinar` | `kne` | `knp` |
+| `application/vnd.koan` | `skp` | `skd`, `skm`, `skt` |
 | `application/vnd.kodak-descriptor` | `sse` | |
 | `application/vnd.las.las+xml` | `lasxml` | |
 | `application/vnd.llamagraphics.life-balance.desktop` | `lbd` | |
@@ -324,7 +322,7 @@ Supported media types and file extensions.
 | `application/vnd.ms-powerpoint.slide.macroenabled.12` | `sldm` | |
 | `application/vnd.ms-powerpoint.slideshow.macroenabled.12` | `ppsm` | |
 | `application/vnd.ms-powerpoint.template.macroenabled.12` | `potm` | |
-| `application/vnd.ms-project` | `mpt` | `mpp` |
+| `application/vnd.ms-project` | `mpp` | `mpt` |
 | `application/vnd.ms-word.document.macroenabled.12` | `docm` | |
 | `application/vnd.ms-word.template.macroenabled.12` | `dotm` | |
 | `application/vnd.ms-works` | `wps` | `wcm`, `wdb`, `wks` |
@@ -377,7 +375,7 @@ Supported media types and file extensions.
 | `application/vnd.osgeo.mapguide.package` | `mgp` | |
 | `application/vnd.osgi.dp` | `dp` | |
 | `application/vnd.osgi.subsystem` | `esa` | |
-| `application/vnd.palm` | `pqa` | `oprc`, `pdb` |
+| `application/vnd.palm` | `pdb` | `oprc`, `pqa` |
 | `application/vnd.pawaafile` | `paw` | |
 | `application/vnd.pg.format` | `str` | |
 | `application/vnd.pg.osasli` | `ei6` | |
@@ -389,7 +387,7 @@ Supported media types and file extensions.
 | `application/vnd.proteus.magazine` | `mgz` | |
 | `application/vnd.publishare-delta-tree` | `qps` | |
 | `application/vnd.pvi.ptid1` | `ptid` | |
-| `application/vnd.quark.quarkxpress` | `qxt` | `qwd`, `qwt`, `qxb`, `qxd`, `qxl` |
+| `application/vnd.quark.quarkxpress` | `qxd` | `qwd`, `qwt`, `qxb`, `qxl`, `qxt` |
 | `application/vnd.realvnc.bed` | `bed` | |
 | `application/vnd.recordare.musicxml` | `mxl` | |
 | `application/vnd.recordare.musicxml+xml` | `musicxml` | |
@@ -407,7 +405,7 @@ Supported media types and file extensions.
 | `application/vnd.shana.informed.formtemplate` | `itp` | |
 | `application/vnd.shana.informed.interchange` | `iif` | |
 | `application/vnd.shana.informed.package` | `ipk` | |
-| `application/vnd.simtech-mindmapper` | `twds` | `twd` |
+| `application/vnd.simtech-mindmapper` | `twd` | `twds` |
 | `application/vnd.smaf` | `mmf` | |
 | `application/vnd.smart.teacher` | `teacher` | |
 | `application/vnd.solent.sdkm+xml` | `sdkm` | `sdkd` |
@@ -417,7 +415,7 @@ Supported media types and file extensions.
 | `application/vnd.stardivision.draw` | `sda` | |
 | `application/vnd.stardivision.impress` | `sdd` | |
 | `application/vnd.stardivision.math` | `smf` | |
-| `application/vnd.stardivision.writer` | `vor` | `sdw` |
+| `application/vnd.stardivision.writer` | `sdw` | `vor` |
 | `application/vnd.stardivision.writer-global` | `sgl` | |
 | `application/vnd.stepmania.package` | `smzip` | |
 | `application/vnd.stepmania.stepchart` | `sm` | |
@@ -431,9 +429,9 @@ Supported media types and file extensions.
 | `application/vnd.sun.xml.writer` | `sxw` | |
 | `application/vnd.sun.xml.writer.global` | `sxg` | |
 | `application/vnd.sun.xml.writer.template` | `stw` | |
-| `application/vnd.sus-calendar` | `susp` | `sus` |
+| `application/vnd.sus-calendar` | `sus` | `susp` |
 | `application/vnd.svd` | `svd` | |
-| `application/vnd.symbian.install` | `sisx` | `sis` |
+| `application/vnd.symbian.install` | `sis` | `sisx` |
 | `application/vnd.syncml+xml` | `xsm` | |
 | `application/vnd.syncml.dm+wbxml` | `bdm` | |
 | `application/vnd.syncml.dm+xml` | `xdm` | |
@@ -443,13 +441,13 @@ Supported media types and file extensions.
 | `application/vnd.trid.tpt` | `tpt` | |
 | `application/vnd.triscape.mxs` | `mxs` | |
 | `application/vnd.trueapp` | `tra` | |
-| `application/vnd.ufdl` | `ufdl` | `ufd` |
+| `application/vnd.ufdl` | `ufd` | `ufdl` |
 | `application/vnd.uiq.theme` | `utz` | |
 | `application/vnd.umajin` | `umj` | |
 | `application/vnd.unity` | `unityweb` | |
 | `application/vnd.uoml+xml` | `uoml` | |
 | `application/vnd.vcx` | `vcx` | |
-| `application/vnd.visio` | `vsw` | `vsd`, `vss`, `vst` |
+| `application/vnd.visio` | `vsd` | `vss`, `vst`, `vsw` |
 | `application/vnd.visionary` | `vis` | |
 | `application/vnd.vsf` | `vsf` | |
 | `application/vnd.wap.wbxml` | `wbxml` | |
@@ -470,7 +468,7 @@ Supported media types and file extensions.
 | `application/vnd.yamaha.smaf-audio` | `saf` | |
 | `application/vnd.yamaha.smaf-phrase` | `spf` | |
 | `application/vnd.yellowriver-custom-menu` | `cmp` | |
-| `application/vnd.zul` | `zirz` | `zir` |
+| `application/vnd.zul` | `zir` | `zirz` |
 | `application/vnd.zzazz.deck+xml` | `zaz` | |
 | `application/voicexml+xml` | `vxml` | |
 | `application/wasm` | `wasm` | |
@@ -482,15 +480,15 @@ Supported media types and file extensions.
 | `application/x-abiword` | `abw` | |
 | `application/x-ace-compressed` | `ace` | |
 | `application/x-apple-diskimage` | `dmg` | |
-| `application/x-authorware-bin` | `x32` | `aab`, `u32`, `vox` |
+| `application/x-authorware-bin` | `aab` | `u32`, `vox`, `x32` |
 | `application/x-authorware-map` | `aam` | |
 | `application/x-authorware-seg` | `aas` | |
 | `application/x-bcpio` | `bcpio` | |
 | `application/x-bittorrent` | `torrent` | |
-| `application/x-blorb` | `blorb` | `blb` |
+| `application/x-blorb` | `blb` | `blorb` |
 | `application/x-bzip` | `bz` | |
 | `application/x-bzip2` | `bz2` | `boz` |
-| `application/x-cbr` | `cbz` | `cb7`, `cba`, `cbr`, `cbt` |
+| `application/x-cbr` | `cbr` | `cb7`, `cba`, `cbt`, `cbz` |
 | `application/x-cdlink` | `vcd` | |
 | `application/x-cfs-compressed` | `cfs` | |
 | `application/x-chat` | `chat` | |
@@ -500,7 +498,7 @@ Supported media types and file extensions.
 | `application/x-csh` | `csh` | |
 | `application/x-debian-package` | `deb` | `udeb` |
 | `application/x-dgc-compressed` | `dgc` | |
-| `application/x-director` | `w3d` | `cct`, `cst`, `cxt`, `dcr`, `dir`, `dxr`, `fgd`, `swa` |
+| `application/x-director` | `dir` | `cct`, `cst`, `cxt`, `dcr`, `dxr`, `fgd`, `swa`, `w3d` |
 | `application/x-doom` | `wad` | |
 | `application/x-dtbncx+xml` | `ncx` | |
 | `application/x-dtbook+xml` | `dtb` | |
@@ -511,12 +509,9 @@ Supported media types and file extensions.
 | `application/x-font-bdf` | `bdf` | |
 | `application/x-font-ghostscript` | `gsf` | |
 | `application/x-font-linux-psf` | `psf` | |
-| `application/x-font-otf` | `otf` | |
 | `application/x-font-pcf` | `pcf` | |
 | `application/x-font-snf` | `snf` | |
-| `application/x-font-ttf` | `ttf` | `ttc` |
-| `application/x-font-type1` | `pfm` | `afm`, `pfa`, `pfb` |
-| `application/x-font-woff` | `woff` | |
+| `application/x-font-type1` | `pfa` | `afm`, `pfb`, `pfm` |
 | `application/x-freearc` | `arc` | |
 | `application/x-futuresplash` | `spl` | |
 | `application/x-gca-compressed` | `gca` | |
@@ -535,15 +530,14 @@ Supported media types and file extensions.
 | `application/x-ms-application` | `application` | |
 | `application/x-ms-shortcut` | `lnk` | |
 | `application/x-ms-wmd` | `wmd` | |
-| `application/x-ms-wmz` | `wmz` | |
 | `application/x-ms-xbap` | `xbap` | |
 | `application/x-msaccess` | `mdb` | |
 | `application/x-msbinder` | `obd` | |
 | `application/x-mscardfile` | `crd` | |
 | `application/x-msclip` | `clp` | |
-| `application/x-msdownload` | `msi` | `bat`, `com`, `dll`, `exe` |
+| `application/x-msdownload` | `exe` | `bat`, `com`, `dll`, `msi` |
 | `application/x-msmediaview` | `mvb` | `m13`, `m14` |
-| `application/x-msmetafile` | `wmf` | `emf`, `emz` |
+| `application/x-msmetafile` | `wmf` | `emf`, `emz`, `wmz` |
 | `application/x-msmoney` | `mny` | |
 | `application/x-mspublisher` | `pub` | |
 | `application/x-msschedule` | `scd` | |
@@ -551,8 +545,8 @@ Supported media types and file extensions.
 | `application/x-mswrite` | `wri` | |
 | `application/x-netcdf` | `nc` | `cdf` |
 | `application/x-nzb` | `nzb` | |
-| `application/x-pkcs12` | `pfx` | `p12` |
-| `application/x-pkcs7-certificates` | `spc` | `p7b` |
+| `application/x-pkcs12` | `p12` | `pfx` |
+| `application/x-pkcs7-certificates` | `p7b` | `spc` |
 | `application/x-pkcs7-certreqresp` | `p7r` | |
 | `application/x-rar-compressed` | `rar` | |
 | `application/x-research-info-systems` | `ris` | |
@@ -581,7 +575,7 @@ Supported media types and file extensions.
 | `application/x-xliff+xml` | `xlf` | |
 | `application/x-xpinstall` | `xpi` | |
 | `application/x-xz` | `xz` | |
-| `application/x-zmachine` | `z8` | `z1`, `z2`, `z3`, `z4`, `z5`, `z6`, `z7` |
+| `application/x-zmachine` | `z1` | `z2`, `z3`, `z4`, `z5`, `z6`, `z7`, `z8` |
 | `application/xaml+xml` | `xaml` | |
 | `application/xcap-diff+xml` | `xdf` | |
 | `application/xenc+xml` | `xenc` | |
@@ -592,20 +586,19 @@ Supported media types and file extensions.
 | `application/xproc+xml` | `xpl` | |
 | `application/xslt+xml` | `xslt` | |
 | `application/xspf+xml` | `xspf` | |
-| `application/xv+xml` | `xvml` | `mxml`, `xhvml`, `xvm` |
+| `application/xv+xml` | `mxml` | `xhvml`, `xvm`, `xvml` |
 | `application/yang` | `yang` | |
 | `application/yin+xml` | `yin` | |
 | `application/zip` | `zip` | |
-| `audio/aac` | `aac` | |
 | `audio/adpcm` | `adp` | |
-| `audio/basic` | `snd` | `au` |
+| `audio/basic` | `au` | `snd` |
 | `audio/midi` | `mid` | `kar`, `midi`, `rmi` |
-| `audio/mp4` | `m4a` | `m4b`, `mp4a` |
+| `audio/mp4` | `m4a` | `mp4a` |
 | `audio/mpeg` | `mpga` | `m2a`, `m3a`, `mp2`, `mp2a`, `mp3` |
-| `audio/ogg` | `ogg` | `oga`, `spx` |
+| `audio/ogg` | `oga` | `ogg`, `opus`, `spx` |
 | `audio/s3m` | `s3m` | |
 | `audio/silk` | `sil` | |
-| `audio/vnd.dece.audio` | `uvva` | `uva` |
+| `audio/vnd.dece.audio` | `uva` | `uvva` |
 | `audio/vnd.digital-winds` | `eol` | |
 | `audio/vnd.dra` | `dra` | |
 | `audio/vnd.dts` | `dts` | |
@@ -617,6 +610,7 @@ Supported media types and file extensions.
 | `audio/vnd.nuera.ecelp9600` | `ecelp9600` | |
 | `audio/vnd.rip` | `rip` | |
 | `audio/webm` | `weba` | |
+| `audio/x-aac` | `aac` | |
 | `audio/x-aiff` | `aif` | `aifc`, `aiff` |
 | `audio/x-caf` | `caf` | |
 | `audio/x-flac` | `flac` | |
@@ -634,24 +628,27 @@ Supported media types and file extensions.
 | `chemical/x-cml` | `cml` | |
 | `chemical/x-csml` | `csml` | |
 | `chemical/x-xyz` | `xyz` | |
+| `font/collection` | `ttc` | |
+| `font/otf` | `otf` | |
+| `font/ttf` | `ttf` | |
+| `font/woff` | `woff` | |
 | `font/woff2` | `woff2` | |
 | `image/avif` | `avif` | |
 | `image/bmp` | `bmp` | |
 | `image/cgm` | `cgm` | |
 | `image/g3fax` | `g3` | |
 | `image/gif` | `gif` | |
-| `image/heic` | `heic` | |
-| `image/heif` | `heif` | |
 | `image/ief` | `ief` | |
-| `image/jpeg` | `jpg` | `jpe`, `jpeg` |
+| `image/jpeg` | `jpeg` | `jpe`, `jpg` |
+| `image/jxl` | `jxl` | |
 | `image/ktx` | `ktx` | |
 | `image/png` | `png` | |
 | `image/prs.btif` | `btif` | |
 | `image/sgi` | `sgi` | |
 | `image/svg+xml` | `svg` | `svgz` |
-| `image/tiff` | `tif` | `tiff` |
+| `image/tiff` | `tiff` | `tif` |
 | `image/vnd.adobe.photoshop` | `psd` | |
-| `image/vnd.dece.graphic` | `uvvi` | `uvg`, `uvi`, `uvvg` |
+| `image/vnd.dece.graphic` | `uvi` | `uvg`, `uvvg`, `uvvi` |
 | `image/vnd.djvu` | `djvu` | `djv` |
 | `image/vnd.dwg` | `dwg` | |
 | `image/vnd.dxf` | `dxf` | |
@@ -669,7 +666,7 @@ Supported media types and file extensions.
 | `image/x-3ds` | `3ds` | |
 | `image/x-cmu-raster` | `ras` | |
 | `image/x-cmx` | `cmx` | |
-| `image/x-freehand` | `fhc` | `fh`, `fh4`, `fh5`, `fh7` |
+| `image/x-freehand` | `fh` | `fh4`, `fh5`, `fh7`, `fhc` |
 | `image/x-icon` | `ico` | |
 | `image/x-mrsid-image` | `sid` | |
 | `image/x-pcx` | `pcx` | |
@@ -683,21 +680,18 @@ Supported media types and file extensions.
 | `image/x-xbitmap` | `xbm` | |
 | `image/x-xpixmap` | `xpm` | |
 | `image/x-xwindowdump` | `xwd` | |
-| `message/rfc822` | `mime` | `eml` |
-| `model/gltf+json` | `gltf` | |
-| `model/gltf-binary` | `glb` | |
+| `message/rfc822` | `eml` | `mime` |
 | `model/iges` | `igs` | `iges` |
-| `model/mesh` | `silo` | `mesh`, `msh` |
+| `model/mesh` | `msh` | `mesh`, `silo` |
 | `model/vnd.collada+xml` | `dae` | |
 | `model/vnd.dwf` | `dwf` | |
 | `model/vnd.gdl` | `gdl` | |
 | `model/vnd.gtw` | `gtw` | |
-| `model/vnd.mts` | `mts` | |
 | `model/vnd.vtu` | `vtu` | |
-| `model/vrml` | `vrml` | `wrl` |
-| `model/x3d+binary` | `x3dbz` | `x3db` |
-| `model/x3d+vrml` | `x3dvz` | `x3dv` |
-| `model/x3d+xml` | `x3dz` | `x3d` |
+| `model/vrml` | `wrl` | `vrml` |
+| `model/x3d+binary` | `x3db` | `x3dbz` |
+| `model/x3d+vrml` | `x3dv` | `x3dvz` |
+| `model/x3d+xml` | `x3d` | `x3dz` |
 | `text/cache-manifest` | `appcache` | |
 | `text/calendar` | `ics` | `ifb` |
 | `text/css` | `css` | |
@@ -711,9 +705,9 @@ Supported media types and file extensions.
 | `text/richtext` | `rtx` | |
 | `text/sgml` | `sgml` | `sgm` |
 | `text/tab-separated-values` | `tsv` | |
-| `text/troff` | `tr` | `man`, `me`, `ms`, `roff`, `t` |
+| `text/troff` | `t` | `man`, `me`, `ms`, `roff`, `tr` |
 | `text/turtle` | `ttl` | |
-| `text/uri-list` | `urls` | `uri`, `uris` |
+| `text/uri-list` | `uri` | `uris`, `urls` |
 | `text/vcard` | `vcard` | |
 | `text/vnd.curl` | `curl` | |
 | `text/vnd.curl.dcurl` | `dcurl` | |
@@ -728,14 +722,14 @@ Supported media types and file extensions.
 | `text/vnd.sun.j2me.app-descriptor` | `jad` | |
 | `text/vnd.wap.wml` | `wml` | |
 | `text/vnd.wap.wmlscript` | `wmls` | |
-| `text/x-asm` | `asm` | `s` |
+| `text/x-asm` | `s` | `asm` |
 | `text/x-c` | `c` | `cc`, `cpp`, `cxx`, `dic`, `h`, `hh` |
 | `text/x-dart` | `dart` | |
-| `text/x-fortran` | `for` | `f`, `f77`, `f90` |
+| `text/x-fortran` | `f` | `f77`, `f90`, `for` |
 | `text/x-java-source` | `java` | |
 | `text/x-nfo` | `nfo` | |
 | `text/x-opml` | `opml` | |
-| `text/x-pascal` | `pas` | `p` |
+| `text/x-pascal` | `p` | `pas` |
 | `text/x-setext` | `etx` | |
 | `text/x-sfv` | `sfv` | |
 | `text/x-uuencode` | `uu` | |
@@ -748,21 +742,22 @@ Supported media types and file extensions.
 | `video/h264` | `h264` | |
 | `video/jpeg` | `jpgv` | |
 | `video/jpm` | `jpm` | `jpgm` |
-| `video/mj2` | `mjp2` | `mj2` |
+| `video/mj2` | `mj2` | `mjp2` |
+| `video/mp2t` | `ts` | `m2t`, `m2ts`, `mts` |
 | `video/mp4` | `mp4` | `mp4v`, `mpg4` |
-| `video/mpeg` | `mpg` | `m1v`, `m2v`, `mpe`, `mpeg` |
+| `video/mpeg` | `mpeg` | `m1v`, `m2v`, `mpe`, `mpg` |
 | `video/ogg` | `ogv` | |
-| `video/quicktime` | `mov` | `qt` |
-| `video/vnd.dece.hd` | `uvvh` | `uvh` |
-| `video/vnd.dece.mobile` | `uvvm` | `uvm` |
-| `video/vnd.dece.pd` | `uvvp` | `uvp` |
-| `video/vnd.dece.sd` | `uvvs` | `uvs` |
-| `video/vnd.dece.video` | `uvvv` | `uvv` |
+| `video/quicktime` | `qt` | `mov` |
+| `video/vnd.dece.hd` | `uvh` | `uvvh` |
+| `video/vnd.dece.mobile` | `uvm` | `uvvm` |
+| `video/vnd.dece.pd` | `uvp` | `uvvp` |
+| `video/vnd.dece.sd` | `uvs` | `uvvs` |
+| `video/vnd.dece.video` | `uvv` | `uvvv` |
 | `video/vnd.dvb.file` | `dvb` | |
 | `video/vnd.fvt` | `fvt` | |
 | `video/vnd.mpegurl` | `mxu` | `m4u` |
 | `video/vnd.ms-playready.media.pyv` | `pyv` | |
-| `video/vnd.uvvu.mp4` | `uvvu` | `uvu` |
+| `video/vnd.uvvu.mp4` | `uvu` | `uvvu` |
 | `video/vnd.vivo` | `viv` | |
 | `video/webm` | `webm` | |
 | `video/x-f4v` | `f4v` | |
@@ -771,7 +766,7 @@ Supported media types and file extensions.
 | `video/x-m4v` | `m4v` | |
 | `video/x-matroska` | `mkv` | `mk3d`, `mks` |
 | `video/x-mng` | `mng` | |
-| `video/x-ms-asf` | `asx` | `asf` |
+| `video/x-ms-asf` | `asf` | `asx` |
 | `video/x-ms-vob` | `vob` | |
 | `video/x-ms-wm` | `wm` | |
 | `video/x-ms-wmv` | `wmv` | |
