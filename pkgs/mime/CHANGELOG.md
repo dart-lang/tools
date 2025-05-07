@@ -1,3 +1,7 @@
+## 2.0.1
+* `extensionFromMime(String mimeType)` returns `mp3` instead of `mpga` for mime type `audio/mpeg`.
+* `extensionFromMime(String mimeType)` Add default lookup for all mime type.
+
 ## 2.0.0
 
 * **[Breaking]** `extensionFromMime(String mimeType)` returns `null` instead of `mimeType` for an unknown mime type.
