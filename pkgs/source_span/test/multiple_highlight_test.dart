@@ -44,6 +44,22 @@ gibble bibble bop
   '"""));
   });
 
+  test('highlights non contiguous spans', () {
+    expect(
+        file.span(17, 21).highlightMultiple(
+            'one', {file.span(60, 66): 'two', file.span(4, 7): 'three'}),
+        equals("""
+    ,
+1   | foo bar baz
+    |     === three
+2   | whiz bang boom
+    |      ^^^^ one
+... |
+5   | argle bargle boo
+    |       ====== two
+    '"""));
+  });
+
   test('highlights spans on the same line', () {
     expect(
         file.span(17, 21).highlightMultiple(
