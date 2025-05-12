@@ -1,3 +1,10 @@
+## 4.0.0
+
+* Add custom ID generator option to clients, which allows for `String` ids.
+* **Breaking**: When `String` ids are present in a response, we no longer
+  automatically try to parse them as integers. This behavior was never a part
+  of the spec, and is not compatible with allowing custom ID generators.
+
 ## 3.0.3
 
 * Require Dart 3.4

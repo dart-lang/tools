@@ -1,0 +1,7 @@
+output-directory: "../../var/coverage_data"
+scope-output: ["lib", "src"]
+function-coverage: true
+branch-coverage: false
+package-directory: "../test_files"
+package-name: "My Dart Package"
+test_script: "test1"

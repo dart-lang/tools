@@ -16,7 +16,7 @@ void main() {
       .tap((v) {
     print('Saw: $v');
   }).forEach((v) {
-    output.text = v;
+    output.textContent = v;
   });
 }
 

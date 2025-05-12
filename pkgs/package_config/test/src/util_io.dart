@@ -13,8 +13,11 @@ import 'package:test/test.dart';
 /// it's a subdirectory, otherwise it's a file and the value is the content
 /// as a string.
 /// Introduces a group to hold the [setUp]/[tearDown] logic.
-void fileTest(String name, Map<String, Object> description,
-    void Function(Directory directory) fileTest) {
+void fileTest(
+  String name,
+  Map<String, Object> description,
+  void Function(Directory directory) fileTest,
+) {
   group('file-test', () {
     var tempDir = Directory.systemTemp.createTempSync('pkgcfgtest');
     setUp(() {

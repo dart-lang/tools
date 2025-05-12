@@ -1,0 +1,77 @@
+name: package:cli_config
+permissions: read-all
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cli_config.yml"
+      - "pkgs/cli_config/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cli_config.yml"
+      - "pkgs/cli_config/**"
+  schedule:
+    - cron: "0 0 * * 0" # weekly
+
+defaults:
+  run:
+    working-directory: pkgs/cli_config/
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk: [stable, dev]
+        include:
+          - sdk: stable
+            run-tests: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
+        with:
+          sdk: ${{matrix.sdk}}
+
+      - run: dart pub get
+
+      - run: dart analyze --fatal-infos
+
+      - run: dart format --output=none --set-exit-if-changed .
+        if: ${{matrix.run-tests}}
+
+      - run: dart test
+        if: ${{matrix.run-tests}}
+
+      - name: Install coverage
+        run: dart pub global activate coverage
+        if: ${{ matrix.sdk == 'stable' }}
+      - name: Collect coverage
+        run: dart pub global run coverage:test_with_coverage
+        if: ${{ matrix.sdk == 'stable' }}
+      - name: Upload coverage
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: cli_config_linux
+          path-to-lcov: ./pkgs/cli_config/coverage/lcov.info
+        if: ${{ matrix.sdk == 'stable' }}
+
+  build_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        sdk: [stable, dev]
+        include:
+          - sdk: stable
+            run-tests: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
+        with:
+          sdk: ${{matrix.sdk}}
+
+      - run: dart pub get
+
+      - run: dart test
+        if: ${{matrix.run-tests}}

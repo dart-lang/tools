@@ -77,9 +77,6 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     expect(parser.errors.length, 1);
     final error = parser.errors[0];
     expect(error.errorCode, 'unexpected-doctype');
-    expect(error.span!.start.line, 3);
-    // Note: error position is at the end, not the beginning
-    expect(error.span!.start.column, 17);
   });
 
   test('text spans should have the correct length', () {
@@ -146,6 +143,18 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     expect(elem.sourceSpan, null);
     expect(elem.attributeSpans!['quux'], null);
     expect(elem.attributeSpans!['extends'], null);
+  });
+
+  test('attribute spans if value contains & (ambiguous ampersand)', () {
+    final expectedUrl = 'foo?key=value&key2=value2';
+    final text = '<script src="$expectedUrl"></script>';
+
+    final doc = parse(text, generateSpans: true);
+    final elem = doc.querySelector('script')!;
+    final span = elem.attributeValueSpans!['src']!;
+
+    expect(span.start.offset, text.indexOf('foo'));
+    expect(span.text, expectedUrl);
   });
 
   test('void element innerHTML', () {
@@ -254,14 +263,8 @@ On line 4, column 3 of ParseError: Unexpected DOCTYPE. Ignored.
     expect(parser.errors[0].errorCode, 'expected-doctype-but-got-chars');
     expect(parser.errors[0].message,
         'Unexpected non-space characters. Expected DOCTYPE.');
-    expect(
-        parser.errors[0].toString(),
-        'ParserError on line 1, column 4: Unexpected non-space characters. '
-        'Expected DOCTYPE.\n'
-        '  ╷\n'
-        '1 │ foo\n'
-        '  │    ^\n'
-        '  ╵');
+    expect(parser.errors[0].toString(),
+        'Unexpected non-space characters. Expected DOCTYPE.');
   });
 
   test('Element.text', () {

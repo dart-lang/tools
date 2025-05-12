@@ -1,0 +1,5 @@
+output-directory: '../../var/coverage_data/custom_coverage'
+scope-output: 
+  - 'lib'
+  - 'test'
+package-name: 'Custom Dart Package'

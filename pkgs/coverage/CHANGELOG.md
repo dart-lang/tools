@@ -1,3 +1,22 @@
+## 1.13.1
+
+- Fix a bug where the VM service can be shut down while some coverage
+  collections are still happening.
+
+## 1.13.0
+
+- Introduced support for minimum coverage thresholds using --fail-under flag in
+  format_coverage.
+- Fix a bug where we attempt to resume an isolate after the VM service has been
+  shut down.
+  
+## 1.12.0
+
+- Introduced support for specifying coverage flags through a YAML file.
+- Fix a [bug](https://github.com/dart-lang/tools/issues/2049) where coverage
+  collection could hang forever if the package under test used background
+  isolates that were never shut down.
+
 ## 1.11.1
 
 - Update `package:vm_service` constraints to '>=12.0.0 <16.0.0'.
