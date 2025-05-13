@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:mirrors';
 
-import 'package:test/scaffolding.dart';
+import 'package:test/scaffolding.dart' as test_package show TestLocation;
 import 'package:test/test.dart' as test_package;
 
 /// A marker annotation used to annotate test methods which are expected to fail
@@ -308,14 +308,14 @@ class _AssertFailingTest {
 class _Group {
   final bool isSolo;
   final String name;
-  final TestLocation? location;
+  final test_package.TestLocation? location;
   final List<_Test> tests = <_Test>[];
 
   _Group(this.isSolo, this.name, this.location);
 
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
-  void addSkippedTest(String name, TestLocation? location) {
+  void addSkippedTest(String name, test_package.TestLocation? location) {
     var fullName = _combineNames(this.name, name);
     tests.add(_Test.skipped(isSolo, fullName, location));
   }
@@ -347,7 +347,7 @@ class _Test {
   final String name;
   final _TestFunction function;
   final test_package.Timeout? timeout;
-  final TestLocation? location;
+  final test_package.TestLocation? location;
 
   final bool isSkipped;
 
@@ -361,9 +361,10 @@ class _Test {
 }
 
 extension on DeclarationMirror {
-  TestLocation? get testLocation {
+  test_package.TestLocation? get testLocation {
     if (location case var location?) {
-      return TestLocation(location.sourceUri, location.line, location.column);
+      return test_package.TestLocation(
+          location.sourceUri, location.line, location.column);
     } else {
       return null;
     }
