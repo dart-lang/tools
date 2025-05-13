@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:mirrors';
 
+import 'package:test/scaffolding.dart';
 import 'package:test/test.dart' as test_package;
 
 /// A marker annotation used to annotate test methods which are expected to fail
@@ -87,7 +88,8 @@ void defineReflectiveTests(Type type) {
   {
     var isSolo = _hasAnnotationInstance(classMirror, soloTest);
     var className = MirrorSystem.getName(classMirror.simpleName);
-    group = _Group(isSolo, _combineNames(_currentSuiteName, className));
+    group = _Group(isSolo, _combineNames(_currentSuiteName, className),
+        classMirror.testLocation);
     _currentGroups.add(group);
   }
 
@@ -104,7 +106,7 @@ void defineReflectiveTests(Type type) {
     // test_
     if (memberName.startsWith('test_')) {
       if (_hasSkippedTestAnnotation(memberMirror)) {
-        group.addSkippedTest(memberName);
+        group.addSkippedTest(memberName, memberMirror.testLocation);
       } else {
         group.addTest(isSolo, memberName, memberMirror, () {
           if (_hasFailingTestAnnotation(memberMirror) ||
@@ -137,7 +139,7 @@ void defineReflectiveTests(Type type) {
     }
     // skip_test_
     if (memberName.startsWith('skip_test_')) {
-      group.addSkippedTest(memberName);
+      group.addSkippedTest(memberName, memberMirror.testLocation);
     }
   });
 
@@ -154,7 +156,9 @@ void _addTestsIfTopLevelSuite() {
           for (var test in group.tests) {
             if (allTests || test.isSolo) {
               test_package.test(test.name, test.function,
-                  timeout: test.timeout, skip: test.isSkipped);
+                  timeout: test.timeout,
+                  skip: test.isSkipped,
+                  location: test.location);
             }
           }
         }
@@ -304,15 +308,16 @@ class _AssertFailingTest {
 class _Group {
   final bool isSolo;
   final String name;
+  final TestLocation? location;
   final List<_Test> tests = <_Test>[];
 
-  _Group(this.isSolo, this.name);
+  _Group(this.isSolo, this.name, this.location);
 
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
-  void addSkippedTest(String name) {
+  void addSkippedTest(String name, TestLocation? location) {
     var fullName = _combineNames(this.name, name);
-    tests.add(_Test.skipped(isSolo, fullName));
+    tests.add(_Test.skipped(isSolo, fullName, location));
   }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
@@ -320,7 +325,8 @@ class _Group {
     var fullName = _combineNames(this.name, name);
     var timeout =
         _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
-    tests.add(_Test(isSolo, fullName, function, timeout?._timeout));
+    tests.add(_Test(isSolo, fullName, function, timeout?._timeout,
+        memberMirror.testLocation));
   }
 }
 
@@ -341,14 +347,25 @@ class _Test {
   final String name;
   final _TestFunction function;
   final test_package.Timeout? timeout;
+  final TestLocation? location;
 
   final bool isSkipped;
 
-  _Test(this.isSolo, this.name, this.function, this.timeout)
+  _Test(this.isSolo, this.name, this.function, this.timeout, this.location)
       : isSkipped = false;
 
-  _Test.skipped(this.isSolo, this.name)
+  _Test.skipped(this.isSolo, this.name, this.location)
       : isSkipped = true,
         function = (() {}),
         timeout = null;
+}
+
+extension on DeclarationMirror {
+  TestLocation? get testLocation {
+    if (location case var location?) {
+      return TestLocation(location.sourceUri, location.line, location.column);
+    } else {
+      return null;
+    }
+  }
 }
