@@ -1,18 +1,24 @@
 import 'dart:io';
 
 // TODO: cleanup temp directories
+// TODO: allow flags
+// TODO: default flags for JS and Wasm ?
 
 Future<void> main(List<String> args) async {
-  final mode = args[0];
+  final modeVal = args[0];
   final target = args[1];
 
-  await switch (mode) {
-    'aot' => _aot(target),
-    'jit' => _jit(target),
-    'js' => _js(target),
-    'wasm' => _wasm(target),
-    _ => throw UnimplementedError('Unsupported mode: $mode'),
-  };
+  final modes = modeVal.split(',').toSet();
+
+  for (var mode in modes) {
+    await switch (mode) {
+      'aot' => _aot(target),
+      'jit' => _jit(target),
+      'js' => _js(target),
+      'wasm' => _wasm(target),
+      _ => throw UnimplementedError('Unsupported mode: $mode'),
+    };
+  }
 }
 
 Future<void> _aot(String target) async {
@@ -52,8 +58,8 @@ Future<void> _wasm(String target) async {
     outFile,
   ]);
 
-  final jsFile = File.fromUri(tempDirectory.uri.resolve('out.js'));
-  jsFile.writeAsStringSync(_jsStuff);
+  final jsFile = File.fromUri(tempDirectory.uri.resolve('$_outputFileRoot.js'));
+  jsFile.writeAsStringSync(_wasmInvokeScript);
 
   await _runProc('node', [jsFile.path]);
 }
@@ -67,7 +73,7 @@ Directory _tempDirectory() => Directory.systemTemp
 
 String _outputFile(String ext, {Directory? dir}) {
   dir ??= _tempDirectory();
-  return dir.uri.resolve('out.$ext').toFilePath();
+  return dir.uri.resolve('$_outputFileRoot.$ext').toFilePath();
 }
 
 Future<void> _runProc(String executable, List<String> args) async {
@@ -81,7 +87,9 @@ Future<void> _runProc(String executable, List<String> args) async {
   }
 }
 
-const _jsStuff = r'''
+const _outputFileRoot = 'out';
+
+const _wasmInvokeScript = '''
 import { readFile } from 'node:fs/promises'; // For async file reading
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -90,15 +98,14 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const dartModule = await import('./out.mjs');
-const {compile, invoke} = dartModule;
+const wasmFilePath = join(__dirname, '$_outputFileRoot.wasm');
+const wasmBytes = await readFile(wasmFilePath);
 
-const wasmFilePath = join(__dirname, 'out.wasm');
-const wasmBytes = await readFile(wasmFilePath); // This returns a Node.js Buffer, which is a Uint8Array.
+const mjsFilePath = join(__dirname, '$_outputFileRoot.mjs');
+const dartModule = await import(mjsFilePath);
+const {compile} = dartModule;
 
-let compiledApp = await compile(wasmBytes);
-
-let instantiatedApp = await compiledApp.instantiate({});
-
+const compiledApp = await compile(wasmBytes);
+const instantiatedApp = await compiledApp.instantiate({});
 await instantiatedApp.invokeMain();
 ''';
