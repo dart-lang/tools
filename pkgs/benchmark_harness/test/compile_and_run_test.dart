@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:benchmark_harness/src/compile_and_run.dart';
@@ -24,9 +27,15 @@ void main() {
   });
 
   for (var bench in RuntimeFlavor.values) {
-    test('$bench', () async {
-      await bench.func(testFilePath.toFilePath());
-    });
+    test(
+      '$bench',
+      skip: bench == RuntimeFlavor.wasm
+          ? 'WebAssembly broken on GitHub CI'
+          : null,
+      () async {
+        await bench.func(testFilePath.toFilePath());
+      },
+    );
   }
 }
 
