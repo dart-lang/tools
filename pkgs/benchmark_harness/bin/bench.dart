@@ -11,15 +11,24 @@ Future<void> main(List<String> args) async {
   final modes = modeVal.split(',').toSet();
 
   for (var mode in modes) {
-    await switch (mode) {
-      'aot' => _aot(target),
-      'jit' => _jit(target),
-      'js' => _js(target),
-      'wasm' => _wasm(target),
-      _ => throw UnimplementedError('Unsupported mode: $mode'),
-    };
+    final func = _benches[mode];
+
+    if (func == null) {
+      throw UnimplementedError(
+        'Unsupported mode: "$mode". Allowed: ${_benches.keys.join(', ')}',
+      );
+    }
+
+    await func(target);
   }
 }
+
+const _benches = {
+  'aot': _aot,
+  'jit': _jit,
+  'js': _js,
+  'wasm': _wasm,
+};
 
 Future<void> _aot(String target) async {
   final outFile = _outputFile('exe');
