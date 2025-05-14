@@ -16,3 +16,6 @@ dev_dependencies:
   dart_flutter_team_lints: ^3.0.0
   path: ^1.8.0
   test: ^1.16.0
+
+executables:
+  bench:
