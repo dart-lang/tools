@@ -4,10 +4,6 @@
 
 import 'package:benchmark_harness/src/compile_and_run.dart' show compileAndRun;
 
-// TODO: cleanup temp directories
-// TODO: allow flags
-// TODO: default flags for JS and Wasm ?
-
 Future<void> main(List<String> args) async {
   final modeVal = args[0];
   final target = args[1];
