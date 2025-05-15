@@ -25,9 +25,11 @@ enum RuntimeFlavor {
   final Future<void> Function(String) func;
 }
 
+enum Stage { compile, run }
+
 Future<void> _aot(String target) async {
   final outFile = _outputFile('exe');
-  await _runProc(Platform.executable, [
+  await _runProc(RuntimeFlavor.aot, Stage.compile, Platform.executable, [
     'compile',
     'exe',
     target,
@@ -35,12 +37,12 @@ Future<void> _aot(String target) async {
     outFile,
   ]);
 
-  await _runProc(outFile, []);
+  await _runProc(RuntimeFlavor.aot, Stage.run, outFile, []);
 }
 
 Future<void> _js(String target) async {
   final outFile = _outputFile('js');
-  await _runProc(Platform.executable, [
+  await _runProc(RuntimeFlavor.js, Stage.compile, Platform.executable, [
     'compile',
     'js',
     target,
@@ -48,13 +50,13 @@ Future<void> _js(String target) async {
     outFile,
   ]);
 
-  await _runProc('node', [outFile]);
+  await _runProc(RuntimeFlavor.js, Stage.run, 'node', [outFile]);
 }
 
 Future<void> _wasm(String target) async {
   final tempDirectory = _tempDirectory();
   final outFile = _outputFile('wasm', dir: tempDirectory);
-  await _runProc(Platform.executable, [
+  await _runProc(RuntimeFlavor.wasm, Stage.compile, Platform.executable, [
     'compile',
     'wasm',
     target,
@@ -65,11 +67,11 @@ Future<void> _wasm(String target) async {
   final jsFile = File.fromUri(tempDirectory.uri.resolve('$_outputFileRoot.js'));
   jsFile.writeAsStringSync(_wasmInvokeScript);
 
-  await _runProc('node', [jsFile.path]);
+  await _runProc(RuntimeFlavor.wasm, Stage.run, 'node', [jsFile.path]);
 }
 
 Future<void> _jit(String target) async {
-  await _runProc(Platform.executable, [target]);
+  await _runProc(RuntimeFlavor.jit, Stage.run, Platform.executable, [target]);
 }
 
 Directory _tempDirectory() => Directory.systemTemp
@@ -80,7 +82,13 @@ String _outputFile(String ext, {Directory? dir}) {
   return dir.uri.resolve('$_outputFileRoot.$ext').toFilePath();
 }
 
-Future<void> _runProc(String executable, List<String> args) async {
+Future<void> _runProc(RuntimeFlavor flavor, Stage headerMessage,
+    String executable, List<String> args) async {
+  print('''
+\n${flavor.name.toUpperCase()} - ${headerMessage.name.toUpperCase()}
+$executable ${args.join(' ')}
+''');
+
   final proc = await Process.start(executable, args,
       mode: ProcessStartMode.inheritStdio);
 
