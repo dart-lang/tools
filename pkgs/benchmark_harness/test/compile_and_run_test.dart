@@ -33,6 +33,7 @@ void main() {
   }
 }
 
+// Can remove this once the min tested SDK on GitHub is >= 3.7
 String? _skipWasm(RuntimeFlavor flavor) {
   if (flavor == RuntimeFlavor.wasm) {
     final versionBits = Platform.version.split('.');
