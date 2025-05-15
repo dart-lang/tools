@@ -29,8 +29,28 @@ void main() {
   for (var bench in RuntimeFlavor.values) {
     test('$bench', () async {
       await bench.func(testFilePath.toFilePath());
-    });
+    }, skip: _skipWasm(bench));
   }
+}
+
+String? _skipWasm(RuntimeFlavor flavor) {
+  if (flavor == RuntimeFlavor.wasm) {
+    final versionBits = Platform.version.split('.');
+    final versionValues = versionBits.take(2).map(int.parse).toList();
+
+    final major = versionValues[0];
+    final minor = versionValues[1];
+
+    return switch ((major, minor)) {
+      // If major is greater than 3, it's definitely >= 3.7
+      (int m, _) when m > 3 => null,
+      // If major is 3, check the minor version
+      (3, int n) when n >= 7 => null,
+      // All other cases (major < 3, or major is 3 but minor < 7)
+      _ => 'Required Dart >= 3.7',
+    };
+  }
+  return null;
 }
 
 const _testDartFile = '''
