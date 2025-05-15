@@ -27,15 +27,9 @@ void main() {
   });
 
   for (var bench in RuntimeFlavor.values) {
-    test(
-      '$bench',
-      skip: bench == RuntimeFlavor.wasm
-          ? 'WebAssembly broken on GitHub CI'
-          : null,
-      () async {
-        await bench.func(testFilePath.toFilePath());
-      },
-    );
+    test('$bench', () async {
+      await bench.func(testFilePath.toFilePath());
+    });
   }
 }
 
