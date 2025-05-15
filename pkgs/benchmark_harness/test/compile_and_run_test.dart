@@ -47,7 +47,7 @@ String? _skipWasm(RuntimeFlavor flavor) {
     // If major is 3, check the minor version
     (3, int n) when n >= 7 => null,
     // All other cases (major < 3, or major is 3 but minor < 7)
-    _ => 'Required Dart >= 3.7',
+    _ => 'Requires Dart >= 3.7',
   };
 }
 
