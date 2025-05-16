@@ -7,6 +7,7 @@ library;
 
 import 'dart:io';
 
+import 'package:benchmark_harness/src/bench.dart';
 import 'package:benchmark_harness/src/compile_and_run.dart';
 import 'package:test/test.dart';
 
@@ -28,7 +29,8 @@ void main() {
 
   for (var bench in RuntimeFlavor.values) {
     test('$bench', () async {
-      await bench.func(testFilePath.toFilePath());
+      await compileAndRun(
+          BenchOptions(flavor: {bench}, target: testFilePath.toFilePath()));
     }, skip: _skipWasm(bench));
   }
 }
