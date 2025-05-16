@@ -2,39 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:args/args.dart';
 
-import 'compile_and_run.dart';
-
-Future<void> bench(List<String> args) async {
-  final ArgResults results;
-  BenchOptions? options;
-
-  try {
-    results = _$parserForBenchOptions.parse(args);
-    options = _$parseBenchOptionsResult(results);
-    if (options.help) {
-      print(_$parserForBenchOptions.usage);
-      return;
-    }
-
-    await compileAndRun(options);
-  } on FormatException catch (e) {
-    print(e.message);
-    print(_$parserForBenchOptions.usage);
-    exitCode = 64;
-    return;
-  } on BenchException catch (e, stack) {
-    print(e.message);
-    if (options?.verbose ?? true) {
-      print(e);
-      print(stack);
-    }
-    exitCode = e.exitCode;
-  }
-}
+enum RuntimeFlavor { aot, jit, js, wasm }
 
 class BenchOptions {
   BenchOptions({
@@ -50,35 +20,35 @@ class BenchOptions {
     }
   }
 
-  final String target;
+  factory BenchOptions.fromArgs(List<String> args) {
+    final result = _parserForBenchOptions.parse(args);
 
-  final Set<RuntimeFlavor> flavor;
-
-  final bool help;
-  final bool verbose;
-}
-
-BenchOptions _$parseBenchOptionsResult(ArgResults result) => BenchOptions(
+    return BenchOptions(
       flavor:
           result.multiOption('flavor').map(RuntimeFlavor.values.byName).toSet(),
       target: result.option('target')!,
       help: result.flag('help'),
       verbose: result.flag('verbose'),
     );
+  }
 
-ArgParser _$populateBenchOptionsParser(ArgParser parser) => parser
-  ..addMultiOption(
-    'flavor',
-    abbr: 'f',
-    allowed: RuntimeFlavor.values.map((e) => e.name),
-  )
-  ..addOption('target', defaultsTo: 'benchmark/benchmark.dart')
-  ..addFlag('help', defaultsTo: false, negatable: false)
-  ..addFlag('verbose', defaultsTo: false, negatable: false);
+  final String target;
 
-final _$parserForBenchOptions = _$populateBenchOptionsParser(ArgParser());
+  final Set<RuntimeFlavor> flavor;
 
-BenchOptions parseBenchOptions(List<String> args) {
-  final result = _$parserForBenchOptions.parse(args);
-  return _$parseBenchOptionsResult(result);
+  final bool help;
+
+  final bool verbose;
+
+  static String get usage => _parserForBenchOptions.usage;
+
+  static final _parserForBenchOptions = ArgParser()
+    ..addMultiOption(
+      'flavors',
+      abbr: 'f',
+      allowed: RuntimeFlavor.values.map((e) => e.name),
+    )
+    ..addOption('target', defaultsTo: 'benchmark/benchmark.dart')
+    ..addFlag('help', defaultsTo: false, negatable: false)
+    ..addFlag('verbose', defaultsTo: false, negatable: false);
 }

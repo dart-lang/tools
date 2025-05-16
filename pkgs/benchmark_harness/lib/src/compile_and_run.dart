@@ -9,8 +9,6 @@ import 'bench.dart';
 // TODO: allow flags
 // TODO: default flags for JS and Wasm ?
 
-enum RuntimeFlavor { aot, jit, js, wasm }
-
 enum Stage { compile, run }
 
 Future<void> compileAndRun(BenchOptions options) => _Runner.run(options);
