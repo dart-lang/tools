@@ -33,7 +33,7 @@ class BenchException implements Exception {
 /// Base name for output files.
 const _outputFileRoot = 'out';
 
-/// Denote the "stage" of the compile/run step for Logging.
+/// Denote the "stage" of the compile/run step for logging.
 enum _Stage { compile, run }
 
 /// Base class for runtime-specific runners.

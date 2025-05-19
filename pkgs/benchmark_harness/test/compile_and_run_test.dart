@@ -27,23 +27,34 @@ void main() {
     tempDir.deleteSync(recursive: true);
   });
 
-  test('options parsing', () async {
-    final options = BenchOptions.fromArgs(
-      ['--flavor', 'aot,jit', '--target', testFilePath],
-    );
+  group('BenchOptions.fromArgs', () {
+    test('options parsing', () async {
+      final options = BenchOptions.fromArgs(
+        ['--flavor', 'aot,jit', '--target', testFilePath],
+      );
 
-    await expectLater(
-      () => compileAndRun(options),
-      prints(
-        stringContainsInOrder([
-          'AOT - COMPILE',
-          testFilePath,
-          'AOT - RUN',
-          'JIT - RUN',
-          testFilePath,
-        ]),
-      ),
-    );
+      await expectLater(
+        () => compileAndRun(options),
+        prints(
+          stringContainsInOrder([
+            'AOT - COMPILE',
+            testFilePath,
+            'AOT - RUN',
+            'JIT - RUN',
+            testFilePath,
+          ]),
+        ),
+      );
+    });
+
+    test('rest args not supported', () async {
+      expect(
+        () => BenchOptions.fromArgs(
+          ['--flavor', 'aot,jit', testFilePath],
+        ),
+        throwsFormatException,
+      );
+    });
   });
 
   for (var bench in RuntimeFlavor.values) {

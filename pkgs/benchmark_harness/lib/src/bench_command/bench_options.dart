@@ -35,6 +35,11 @@ class BenchOptions {
   factory BenchOptions.fromArgs(List<String> args) {
     final result = _parserForBenchOptions.parse(args);
 
+    if (result.rest.isNotEmpty) {
+      throw FormatException('All arguments must be provided via `--` options. '
+          'Not sure what to do with "${result.rest.join()}".');
+    }
+
     return BenchOptions(
       flavor:
           result.multiOption('flavor').map(RuntimeFlavor.values.byName).toSet(),
