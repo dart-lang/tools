@@ -4,8 +4,8 @@
 
 import 'dart:io';
 
-import 'package:benchmark_harness/src/bench.dart';
-import 'package:benchmark_harness/src/compile_and_run.dart';
+import 'package:benchmark_harness/src/bench_command/bench_options.dart';
+import 'package:benchmark_harness/src/bench_command/compile_and_run.dart';
 
 Future<void> main(List<String> args) async {
   BenchOptions? options;
