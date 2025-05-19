@@ -13,12 +13,12 @@ import 'package:test/test.dart';
 
 void main() {
   late final Directory tempDir;
-  late final Uri testFilePath;
+  late final String testFilePath;
 
   setUpAll(() {
     tempDir = Directory.systemTemp.createTempSync('benchtest_');
-    testFilePath = tempDir.uri.resolve('input.dart');
-    File.fromUri(testFilePath)
+    testFilePath = tempDir.uri.resolve('input.dart').toFilePath();
+    File(testFilePath)
       ..create()
       ..writeAsStringSync(_testDartFile);
   });
@@ -27,10 +27,42 @@ void main() {
     tempDir.deleteSync(recursive: true);
   });
 
+  test('options parsing', () async {
+    final options = BenchOptions.fromArgs(
+      ['--flavor', 'aot,jit', '--target', testFilePath],
+    );
+
+    await expectLater(
+      () => compileAndRun(options),
+      prints(
+        stringContainsInOrder([
+          'AOT - COMPILE',
+          testFilePath,
+          'AOT - RUN',
+          'JIT - RUN',
+          testFilePath,
+        ]),
+      ),
+    );
+  });
+
   for (var bench in RuntimeFlavor.values) {
     test('$bench', () async {
-      await compileAndRun(
-          BenchOptions(flavor: {bench}, target: testFilePath.toFilePath()));
+      await expectLater(
+        () =>
+            compileAndRun(BenchOptions(flavor: {bench}, target: testFilePath)),
+        prints(
+          stringContainsInOrder(
+            [
+              if (bench != RuntimeFlavor.jit) ...[
+                '${bench.name.toUpperCase()} - COMPILE',
+                testFilePath,
+              ],
+              '${bench.name.toUpperCase()} - RUN'
+            ],
+          ),
+        ),
+      );
     }, skip: _skipWasm(bench));
   }
 }

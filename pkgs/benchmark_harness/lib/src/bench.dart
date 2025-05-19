@@ -44,7 +44,7 @@ class BenchOptions {
 
   static final _parserForBenchOptions = ArgParser()
     ..addMultiOption(
-      'flavors',
+      'flavor',
       abbr: 'f',
       allowed: RuntimeFlavor.values.map((e) => e.name),
     )
