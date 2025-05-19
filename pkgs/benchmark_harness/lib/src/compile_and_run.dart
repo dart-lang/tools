@@ -9,7 +9,7 @@ import 'bench.dart';
 // TODO: allow flags
 // TODO: default flags for JS and Wasm ?
 
-enum Stage { compile, run }
+enum _Stage { compile, run }
 
 Future<void> compileAndRun(BenchOptions options) => _Runner.run(options);
 
@@ -63,7 +63,7 @@ class _Runner {
 
   Future<void> _aot() async {
     final outFile = _outputFile('exe');
-    await _runProc(Stage.compile, Platform.executable, [
+    await _runProc(_Stage.compile, Platform.executable, [
       'compile',
       'exe',
       _target,
@@ -71,12 +71,12 @@ class _Runner {
       outFile,
     ]);
 
-    await _runProc(Stage.run, outFile, []);
+    await _runProc(_Stage.run, outFile, []);
   }
 
   Future<void> _js() async {
     final outFile = _outputFile('js');
-    await _runProc(Stage.compile, Platform.executable, [
+    await _runProc(_Stage.compile, Platform.executable, [
       'compile',
       'js',
       _target,
@@ -84,12 +84,12 @@ class _Runner {
       outFile,
     ]);
 
-    await _runProc(Stage.run, 'node', [outFile]);
+    await _runProc(_Stage.run, 'node', [outFile]);
   }
 
   Future<void> _wasm() async {
     final outFile = _outputFile('wasm');
-    await _runProc(Stage.compile, Platform.executable, [
+    await _runProc(_Stage.compile, Platform.executable, [
       'compile',
       'wasm',
       _target,
@@ -101,15 +101,15 @@ class _Runner {
         File.fromUri(_tempDirectory.uri.resolve('$_outputFileRoot.js'));
     jsFile.writeAsStringSync(_wasmInvokeScript);
 
-    await _runProc(Stage.run, 'node', [jsFile.path]);
+    await _runProc(_Stage.run, 'node', [jsFile.path]);
   }
 
   Future<void> _jit() async {
-    await _runProc(Stage.run, Platform.executable, [_target]);
+    await _runProc(_Stage.run, Platform.executable, [_target]);
   }
 
   Future<void> _runProc(
-      Stage headerMessage, String executable, List<String> args) async {
+      _Stage headerMessage, String executable, List<String> args) async {
     print('''
 \n${_currentFlavor.name.toUpperCase()} - ${headerMessage.name.toUpperCase()}
 $executable ${args.join(' ')}
