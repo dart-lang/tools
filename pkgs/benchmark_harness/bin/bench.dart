@@ -13,6 +13,12 @@ Future<void> main(List<String> args) async {
   try {
     options = BenchOptions.fromArgs(args);
     if (options.help) {
+      print('''
+\nRuns a dart script in a number of runtimes.
+
+Meant to make it easy to run a benchmark executable across runtimes to validate
+performance impacts.
+''');
       print(BenchOptions.usage);
       return;
     }
@@ -21,8 +27,7 @@ Future<void> main(List<String> args) async {
   } on FormatException catch (e) {
     print(e.message);
     print(BenchOptions.usage);
-    exitCode = 64;
-    return;
+    exitCode = 64; // command line usage error
   } on BenchException catch (e, stack) {
     print(e.message);
     if (options?.verbose ?? true) {
