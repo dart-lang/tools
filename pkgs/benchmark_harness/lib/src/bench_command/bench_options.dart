@@ -7,8 +7,9 @@ import 'package:args/args.dart';
 enum RuntimeFlavor {
   aot(help: 'Compile and run as a native binary.'),
   jit(
-      help: 'Run as-is without compilation, '
-          'using the just-in-time (JIT) runtime.'),
+    help: 'Run as-is without compilation, '
+        'using the just-in-time (JIT) runtime.',
+  ),
   js(help: 'Compile to JavaScript and run on node.'),
   wasm(help: 'Compile to WebAssembly and run on node.');
 

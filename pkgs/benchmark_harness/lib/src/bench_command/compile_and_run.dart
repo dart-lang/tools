@@ -6,13 +6,18 @@ import 'dart:io';
 
 import 'bench_options.dart';
 
-// TODO: allow flags
-
-enum _Stage { compile, run }
+// TODO(kevmoo): allow the user to specify custom flags – for compile and/or run
 
 Future<void> compileAndRun(BenchOptions options) async {
+  if (!FileSystemEntity.isFileSync(options.target)) {
+    throw BenchException(
+      'The target Dart program `${options.target}` does not exist',
+      2, // standard bash code for file doesn't exist
+    );
+  }
+
   for (var mode in options.flavor) {
-    await _runner(mode)(target: options.target).run();
+    await _Runner(flavor: mode, target: options.target).run();
   }
 }
 
@@ -25,28 +30,33 @@ class BenchException implements Exception {
   String toString() => 'BenchException: $message ($exitCode)';
 }
 
-_Runner Function({required String target}) _runner(RuntimeFlavor flavor) =>
-    switch (flavor) {
+/// Base name for output files.
+const _outputFileRoot = 'out';
+
+/// Denote the "stage" of the compile/run step for Logging.
+enum _Stage { compile, run }
+
+/// Base class for runtime-specific runners.
+abstract class _Runner {
+  _Runner._({required this.target, required this.flavor})
+      : assert(FileSystemEntity.isFileSync(target), '$target is not a file');
+
+  factory _Runner({required RuntimeFlavor flavor, required String target}) {
+    return (switch (flavor) {
       RuntimeFlavor.jit => _JITRunner.new,
       RuntimeFlavor.aot => _AOTRunner.new,
       RuntimeFlavor.js => _JSRunner.new,
       RuntimeFlavor.wasm => _WasmRunner.new,
-    };
-
-abstract class _Runner {
-  _Runner({required this.target, required this.flavor}) {
-    if (!FileSystemEntity.isFileSync(target)) {
-      throw BenchException(
-        'The target Dart program `$target` does not exist',
-        2, // standard bash code for file doesn't exist
-      );
-    }
+    })(target: target);
   }
 
   final String target;
   final RuntimeFlavor flavor;
   late Directory _tempDirectory;
 
+  /// Executes the compile and run cycle.
+  ///
+  /// Takes care of creating and deleting the corresponding temp directory.
   Future<void> run() async {
     _tempDirectory = Directory.systemTemp
         .createTempSync('bench_${DateTime.now().millisecondsSinceEpoch}_');
@@ -57,12 +67,17 @@ abstract class _Runner {
     }
   }
 
+  /// Overridden in implementations to handle the compile and run cycle.
   Future<void> _runImpl();
 
+  /// Executes the specific [executable] with the provided [args].
+  ///
+  /// Also prints out a nice message before execution denoting the [flavor] and
+  /// the [stage].
   Future<void> _runProc(
-      _Stage headerMessage, String executable, List<String> args) async {
+      _Stage stage, String executable, List<String> args) async {
     print('''
-\n${flavor.name.toUpperCase()} - ${headerMessage.name.toUpperCase()}
+\n${flavor.name.toUpperCase()} - ${stage.name.toUpperCase()}
 $executable ${args.join(' ')}
 ''');
 
@@ -76,15 +91,12 @@ $executable ${args.join(' ')}
     }
   }
 
-  String _outputFile(String ext) {
-    return _tempDirectory.uri.resolve('$_outputFileRoot.$ext').toFilePath();
-  }
-
-  static const _outputFileRoot = 'out';
+  String _outputFile(String ext) =>
+      _tempDirectory.uri.resolve('$_outputFileRoot.$ext').toFilePath();
 }
 
 class _JITRunner extends _Runner {
-  _JITRunner({required super.target}) : super(flavor: RuntimeFlavor.jit);
+  _JITRunner({required super.target}) : super._(flavor: RuntimeFlavor.jit);
 
   @override
   Future<void> _runImpl() async {
@@ -93,7 +105,7 @@ class _JITRunner extends _Runner {
 }
 
 class _AOTRunner extends _Runner {
-  _AOTRunner({required super.target}) : super(flavor: RuntimeFlavor.aot);
+  _AOTRunner({required super.target}) : super._(flavor: RuntimeFlavor.aot);
 
   @override
   Future<void> _runImpl() async {
@@ -111,7 +123,7 @@ class _AOTRunner extends _Runner {
 }
 
 class _JSRunner extends _Runner {
-  _JSRunner({required super.target}) : super(flavor: RuntimeFlavor.js);
+  _JSRunner({required super.target}) : super._(flavor: RuntimeFlavor.js);
 
   @override
   Future<void> _runImpl() async {
@@ -130,7 +142,7 @@ class _JSRunner extends _Runner {
 }
 
 class _WasmRunner extends _Runner {
-  _WasmRunner({required super.target}) : super(flavor: RuntimeFlavor.wasm);
+  _WasmRunner({required super.target}) : super._(flavor: RuntimeFlavor.wasm);
 
   @override
   Future<void> _runImpl() async {
@@ -144,8 +156,8 @@ class _WasmRunner extends _Runner {
       outFile,
     ]);
 
-    final jsFile = File.fromUri(
-        _tempDirectory.uri.resolve('${_Runner._outputFileRoot}.js'));
+    final jsFile =
+        File.fromUri(_tempDirectory.uri.resolve('$_outputFileRoot.js'));
     jsFile.writeAsStringSync(_wasmInvokeScript);
 
     await _runProc(_Stage.run, 'node', [jsFile.path]);
@@ -160,10 +172,10 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const wasmFilePath = join(__dirname, '${_Runner._outputFileRoot}.wasm');
+const wasmFilePath = join(__dirname, '$_outputFileRoot.wasm');
 const wasmBytes = await readFile(wasmFilePath);
 
-const mjsFilePath = join(__dirname, '${_Runner._outputFileRoot}.mjs');
+const mjsFilePath = join(__dirname, '$_outputFileRoot.mjs');
 const dartModule = await import(mjsFilePath);
 const {compile} = dartModule;
 
