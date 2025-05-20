@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Tags(['slow'])
+@Tags(['integration'])
 library;
 
 import 'dart:async';
@@ -340,13 +340,10 @@ void main() {
 Future<Map<String, HitMap>> _getHitMap() async {
   expect(FileSystemEntity.isFileSync(_sampleAppPath), isTrue);
 
-  // select service port.
-  final port = await getOpenPort();
-
   // start sample app.
   final sampleAppArgs = [
     '--pause-isolates-on-exit',
-    '--enable-vm-service=$port',
+    '--enable-vm-service=0',
     '--branch-coverage',
     _sampleAppPath
   ];

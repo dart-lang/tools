@@ -59,25 +59,6 @@ Uri? extractVMServiceUri(String str) {
   return null;
 }
 
-/// Returns an open port by creating a temporary Socket
-Future<int> getOpenPort() async {
-  ServerSocket socket;
-
-  try {
-    socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  } catch (_) {
-    // try again v/ V6 only. Slight possibility that V4 is disabled
-    socket =
-        await ServerSocket.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
-  }
-
-  try {
-    return socket.port;
-  } finally {
-    await socket.close();
-  }
-}
-
 final muliLineIgnoreStart = RegExp(r'//\s*coverage:ignore-start[\w\d\s]*$');
 final muliLineIgnoreEnd = RegExp(r'//\s*coverage:ignore-end[\w\d\s]*$');
 final singleLineIgnore = RegExp(r'//\s*coverage:ignore-line[\w\d\s]*$');
