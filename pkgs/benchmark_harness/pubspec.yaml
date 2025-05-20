@@ -1,5 +1,5 @@
 name: benchmark_harness
-version: 2.3.1
+version: 2.3.2-wip
 description: The official Dart project benchmark harness.
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/benchmark_harness
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abenchmark_harness

@@ -2,8 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:math' as math;
-
+import 'measurement.dart';
 import 'score_emitter.dart';
 
 const int minimumMeasureDurationMillis = 2000;
@@ -60,54 +59,4 @@ class BenchmarkBase {
   void report() {
     emitter.emit(name, measure());
   }
-}
-
-/// Measures the score for this benchmark by executing it enough times
-/// to reach [minimumMillis].
-Measurement measureForImpl(void Function() f, int minimumMillis) {
-  final minimumMicros = minimumMillis * 1000;
-  // If running a long measurement permit some amount of measurement jitter
-  // to avoid discarding results that are almost good, but not quite there.
-  final allowedJitter =
-      minimumMillis < 1000 ? 0 : (minimumMicros * 0.1).floor();
-  var iter = 2;
-  var totalIterations = iter;
-  final watch = Stopwatch()..start();
-  while (true) {
-    watch.reset();
-    for (var i = 0; i < iter; i++) {
-      f();
-    }
-    final elapsed = watch.elapsedMicroseconds;
-    final measurement = Measurement(elapsed, iter, totalIterations);
-    if (measurement.elapsedMicros >= (minimumMicros - allowedJitter)) {
-      return measurement;
-    }
-
-    iter = measurement.estimateIterationsNeededToReach(
-        minimumMicros: minimumMicros);
-    totalIterations += iter;
-  }
-}
-
-class Measurement {
-  final int elapsedMicros;
-  final int iterations;
-  final int totalIterations;
-
-  Measurement(this.elapsedMicros, this.iterations, this.totalIterations);
-
-  double get score => elapsedMicros / iterations;
-
-  int estimateIterationsNeededToReach({required int minimumMicros}) {
-    final elapsed = roundDownToMillisecond(elapsedMicros);
-    return elapsed == 0
-        ? iterations * 1000
-        : (iterations * math.max(minimumMicros / elapsed, 1.5)).ceil();
-  }
-
-  static int roundDownToMillisecond(int micros) => (micros ~/ 1000) * 1000;
-
-  @override
-  String toString() => '$elapsedMicros in $iterations iterations';
 }
