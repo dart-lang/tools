@@ -78,11 +78,8 @@ Future<String> _collectCoverage() async {
   expect(FileSystemEntity.isFileSync(_funcCovApp), isTrue);
 
   // Run the sample app with the right flags.
-  final sampleProcess = await TestProcess.start(Platform.resolvedExecutable, [
-    '--enable-vm-service=0',
-    '--pause_isolates_on_exit',
-    _funcCovApp
-  ]);
+  final sampleProcess = await TestProcess.start(Platform.resolvedExecutable,
+      ['--enable-vm-service=0', '--pause_isolates_on_exit', _funcCovApp]);
 
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
 
