@@ -148,8 +148,8 @@ performance impacts.
 
     --target        The target script to compile and run.
                     (defaults to "benchmark/benchmark.dart")
-    --help          Print usage information and quit.
-    --verbose       Print the full stack trace if an exception is thrown.
+-h, --help          Print usage information and quit.
+-v, --verbose       Print the full stack trace if an exception is thrown.
 ```
 
 Example usage:

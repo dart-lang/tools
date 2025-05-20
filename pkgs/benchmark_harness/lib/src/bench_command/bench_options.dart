@@ -72,10 +72,11 @@ class BenchOptions {
     ..addFlag('help',
         defaultsTo: false,
         negatable: false,
-        help: 'Print usage information and quit.')
+        help: 'Print usage information and quit.',
+        abbr: 'h')
     ..addFlag('verbose',
         defaultsTo: false,
         negatable: false,
         help: 'Print the full stack trace if an exception is thrown.',
-        abbr: 'h');
+        abbr: 'v');
 }
