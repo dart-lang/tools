@@ -1,4 +1,6 @@
-## 2.3.2-wip
+## 2.4.0-wip
+
+- Added a `bench` command.
 
 ## 2.3.1
 
