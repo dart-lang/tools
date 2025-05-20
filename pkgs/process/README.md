@@ -1,4 +1,9 @@
-# Process
+[![pub package](https://img.shields.io/pub/v/process.svg)](https://pub.dev/packages/process)
+[![package publisher](https://img.shields.io/pub/publisher/process.svg)](https://pub.dev/packages/process/publisher)
+
+A pluggable, mockable process invocation abstraction for Dart.
+
+## What's this?
 
 A generic process invocation abstraction for Dart.
 
