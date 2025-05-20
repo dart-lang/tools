@@ -117,12 +117,19 @@ This is the average amount of time it takes to run `run()` 10 times for
 
 ## `bench` command
 
-A convenience command available in `package:benchamark_harness`.
+A convenience command available in `package:benchmark_harness`.
 
 If a package depends on `benchmark_harness`, invoke the command by running
 
 ```shell
 dart run benchmark_harness:bench
+```
+
+If not, you can use this command by activating it.
+
+```shell
+dart pub global activate benchmark_harness
+dart pub global run benchmark_harness:bench
 ```
 
 Output from `dart run benchmark_harness:bench --help`
