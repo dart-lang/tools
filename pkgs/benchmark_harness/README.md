@@ -114,3 +114,56 @@ Template(RunTime): 0.1568472448997197 us.
 This is the average amount of time it takes to run `run()` 10 times for
 `BenchmarkBase` and once for `AsyncBenchmarkBase`.
 > µs is an abbreviation for microseconds.
+
+## `bench` command
+
+A convenience command available in `package:benchmark_harness`.
+
+If a package depends on `benchmark_harness`, invoke the command by running
+
+```shell
+dart run benchmark_harness:bench
+```
+
+If not, you can use this command by activating it.
+
+```shell
+dart pub global activate benchmark_harness
+dart pub global run benchmark_harness:bench
+```
+
+Output from `dart run benchmark_harness:bench --help`
+
+```
+Runs a dart script in a number of runtimes.
+
+Meant to make it easy to run a benchmark executable across runtimes to validate
+performance impacts.
+
+-f, --flavor
+          [aot]     Compile and run as a native binary.
+          [jit]     Run as-is without compilation, using the just-in-time (JIT) runtime.
+          [js]      Compile to JavaScript and run on node.
+          [wasm]    Compile to WebAssembly and run on node.
+
+    --target        The target script to compile and run.
+                    (defaults to "benchmark/benchmark.dart")
+-h, --help          Print usage information and quit.
+-v, --verbose       Print the full stack trace if an exception is thrown.
+```
+
+Example usage:
+
+```shell
+dart run benchmark_harness:bench --flavor aot --target example/template.dart
+
+AOT - COMPILE
+/dart_installation/dart-sdk/bin/dart compile exe example/template.dart -o /temp_dir/bench_1747680526905_GtfAeM/out.exe
+
+Generated: /temp_dir/bench_1747680526905_GtfAeM/out.exe
+
+AOT - RUN
+/temp_dir/bench_1747680526905_GtfAeM/out.exe
+
+Template(RunTime): 0.005620051244379949 us.
+```
