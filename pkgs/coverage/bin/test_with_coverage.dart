@@ -7,10 +7,8 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:coverage/src/coverage_options.dart';
-import 'package:coverage/src/util.dart'
-    show StandardOutExtension, extractVMServiceUri;
+import 'package:coverage/src/util.dart';
 import 'package:meta/meta.dart';
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 
 import 'collect_coverage.dart' as collect_coverage;
@@ -38,11 +36,6 @@ Future<void> _dartRun(List<String> args,
   }
 }
 
-Future<String?> _packageNameFromConfig(String packageDir) async {
-  final config = await findPackageConfig(Directory(packageDir));
-  return config?.packageOf(Uri.directory(packageDir))?.name;
-}
-
 void _watchExitSignal(ProcessSignal signal) {
   signal.watch().listen((sig) {
     for (final process in _allProcesses) {
@@ -61,10 +54,10 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'package-name',
     help: 'Name of the package to test. '
-        'Deduced from --package if not provided.',
-    defaultsTo: defaultOptions.packageName,
+        'Deduced from --package if not provided. '
+        'DEPRECATED: use --scope-output',
   )
-  ..addOption('port', help: 'VM service port.', defaultsTo: '8181')
+  ..addOption('port', help: 'VM service port. Defaults to using any free port.')
   ..addOption(
     'out',
     defaultsTo: defaultOptions.outputDirectory,
@@ -93,13 +86,13 @@ ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
       defaultsTo: defaultOptions.scopeOutput,
       help: 'restrict coverage results so that only scripts that start with '
           'the provided package path are considered. Defaults to the name of '
-          'the package under test.')
+          'the current package (including all subpackages, if this is a '
+          'workspace).')
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
   Flags(
     this.packageDir,
-    this.packageName,
     this.outDir,
     this.port,
     this.testScript,
@@ -111,7 +104,6 @@ class Flags {
   });
 
   final String packageDir;
-  final String packageName;
   final String outDir;
   final String port;
   final String testScript;
@@ -157,20 +149,18 @@ ${parser.usage}
     fail('--package is not a valid directory.');
   }
 
-  final packageName = (args['package-name'] as String?) ??
-      await _packageNameFromConfig(packageDir);
-  if (packageName == null) {
+  final pubspecPath = getPubspecPath(packageDir);
+  if (!File(pubspecPath).existsSync()) {
     fail(
-      "Couldn't figure out package name from --package. Make sure this is a "
-      'package directory, or try passing --package-name explicitly.',
+      "Couldn't find $pubspecPath. Make sure this command is run in a "
+      'package directory, or pass --package to explicitly set the directory.',
     );
   }
 
   return Flags(
     packageDir,
-    packageName,
     (args['out'] as String?) ?? path.join(packageDir, 'coverage'),
-    args['port'] as String,
+    args['port'] as String? ?? '0',
     args['test'] as String,
     args['function-coverage'] as bool,
     args['branch-coverage'] as bool,
@@ -218,8 +208,9 @@ Future<void> main(List<String> arguments) async {
   );
   final serviceUri = await serviceUriCompleter.future;
 
-  final scopes =
-      flags.scopeOutput.isEmpty ? [flags.packageName] : flags.scopeOutput;
+  final scopes = flags.scopeOutput.isEmpty
+      ? getAllWorkspaceNames(flags.packageDir)
+      : flags.scopeOutput;
   await collect_coverage.main([
     '--wait-paused',
     '--resume-isolates',

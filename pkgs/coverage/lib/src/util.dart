@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:vm_service/vm_service.dart';
 
 // TODO(cbracken) make generic
@@ -184,3 +186,19 @@ Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
 
 Future<List<IsolateRef>> getAllIsolates(VmService service) async =>
     (await service.getVM()).isolates ?? [];
+
+String getPubspecPath(String root) => path.join(root, 'pubspec.yaml');
+
+List<String> getAllWorkspaceNames(String packageRoot) =>
+    _getAllWorkspaceNames(packageRoot, <String>[]);
+
+List<String> _getAllWorkspaceNames(String packageRoot, List<String> results) {
+  final pubspecPath = getPubspecPath(packageRoot);
+  final yaml = File(pubspecPath).readAsStringSync();
+  final pubspec = Pubspec.parse(yaml, sourceUrl: Uri.file(pubspecPath));
+  results.add(pubspec.name);
+  for (final workspace in pubspec.workspace ?? <String>[]) {
+    _getAllWorkspaceNames(path.join(packageRoot, workspace), results);
+  }
+  return results;
+}

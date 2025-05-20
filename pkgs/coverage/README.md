@@ -43,6 +43,26 @@ dart pub global run coverage:format_coverage --packages=.dart_tool/package_confi
 For more complicated use cases, where you want to control each of these stages,
 see the sections below.
 
+#### Workspaces
+
+package:coverage has partial support for
+[workspaces](https://dart.dev/tools/pub/workspaces). You can run
+`test_wth_coverage` from the root of the workspace to collect coverage for all
+the tests in all the subpackages, but you must specify the test directories to
+run.
+
+For example, in a workspace with subpackages `pkgs/foo` and `pkgs/bar`, you
+could run the following command from the root directory of the workspace:
+
+```
+dart run coverage:test_with_coverage -- pkgs/foo/test pkgs/bar/test
+```
+
+This would output coverage to ./coverage/ as normal.
+[Full support](https://github.com/dart-lang/tools/issues/2083) for workspaces
+will likely be added in a future version. This will mean you won't need to
+explicitly specify the test directories: `dart run coverage:test_with_coverage`
+
 #### Collecting coverage from the VM
 
 ```

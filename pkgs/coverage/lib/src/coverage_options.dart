@@ -9,7 +9,6 @@ class CoverageOptions {
     required this.functionCoverage,
     required this.branchCoverage,
     required this.packageDirectory,
-    this.packageName,
     required this.testScript,
   });
 
@@ -40,8 +39,6 @@ class CoverageOptions {
       branchCoverage: options.optionalBool('branch_coverage') ??
           defaultOptions.branchCoverage,
       packageDirectory: packageDirectory,
-      packageName:
-          options.optionalString('package_name') ?? defaultOptions.packageName,
       testScript:
           options.optionalString('test_script') ?? defaultOptions.testScript,
     );
@@ -52,7 +49,6 @@ class CoverageOptions {
   final bool functionCoverage;
   final bool branchCoverage;
   final String packageDirectory;
-  final String? packageName;
   final String testScript;
 }
 
@@ -119,7 +115,6 @@ class CoverageOptionsProvider {
     functionCoverage: false,
     branchCoverage: false,
     packageDirectory: '.',
-    packageName: null,
     testScript: 'test',
   );
 }

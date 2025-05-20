@@ -1,3 +1,7 @@
+// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'package:coverage/src/coverage_options.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
@@ -35,7 +39,6 @@ void main() {
 
       expect(path.canonicalize(testCoverage.packageDir),
           path.canonicalize(defaults.packageDirectory));
-      expect(testCoverage.packageName, 'coverage');
       expect(path.canonicalize(testCoverage.outDir),
           path.canonicalize('coverage'));
       expect(testCoverage.testScript, defaults.testScript);
@@ -73,7 +76,6 @@ void main() {
     // Verify test with coverage yaml values
     expect(path.canonicalize(testCoverage.packageDir),
         path.canonicalize('test/test_files'));
-    expect(testCoverage.packageName, 'My Dart Package');
     expect(path.canonicalize(testCoverage.outDir),
         path.canonicalize('var/coverage_data'));
     expect(testCoverage.testScript, 'test1');
@@ -102,7 +104,6 @@ void main() {
       expect(collectedCoverage.functionCoverage, isFalse);
       expect(path.canonicalize(formattedCoverage.output!),
           path.canonicalize('var/coverage_data/custom_coverage/lcov.info'));
-      expect(testCoverage.packageName, 'Custom Dart Package');
       expect(testCoverage.scopeOutput, ['lib', 'test']);
     });
 
@@ -133,7 +134,6 @@ void main() {
           path.canonicalize('test/test_coverage_options'));
 
       // Verify test with coverage yaml values
-      expect(testCoverage.packageName, 'coverage');
       expect(path.canonicalize(testCoverage.outDir),
           path.canonicalize('var/coverage_data/custom_lcov'));
       expect(testCoverage.testScript, 'custom_test');
@@ -178,7 +178,6 @@ void main() {
       expect(formattedCoverage.packagePath, '../code_builder');
 
       // Verify test with coverage command line args
-      expect(testCoverage.packageName, 'test');
       expect(testCoverage.outDir, 'test_coverage.json');
       expect(testCoverage.testScript, 'test_test.dart');
       expect(testCoverage.functionCoverage, isTrue);
@@ -218,7 +217,6 @@ void main() {
       expect(formattedCoverage.packagePath, '../cli_config');
 
       // Verify test with coverage command line args
-      expect(testCoverage.packageName, 'cli_config');
       expect(testCoverage.outDir, 'cli_config_coverage.json');
       expect(testCoverage.testScript, 'cli_config_test.dart');
       expect(testCoverage.functionCoverage, isTrue);

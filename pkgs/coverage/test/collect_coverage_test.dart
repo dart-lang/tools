@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @Retry(3)
+@Tags(['slow'])
 library;
 
 import 'dart:async';

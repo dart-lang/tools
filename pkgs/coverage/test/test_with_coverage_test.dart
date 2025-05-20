@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @Timeout(Duration(seconds: 60))
+@Tags(['slow'])
 library;
 
 import 'dart:convert';
