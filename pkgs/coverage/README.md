@@ -58,7 +58,11 @@ could run the following command from the root directory of the workspace:
 dart run coverage:test_with_coverage -- pkgs/foo/test pkgs/bar/test
 ```
 
-This would output coverage to ./coverage/ as normal.
+This would output coverage to ./coverage/ as normal. An important caveat is that
+the working directory of the tests will be the workspace's root directory. So
+this approach won't work if your tests assume that they are being run from the
+subpackage directory.
+
 [Full support](https://github.com/dart-lang/tools/issues/2083) for workspaces
 will likely be added in a future version. This will mean you won't need to
 explicitly specify the test directories: `dart run coverage:test_with_coverage`
