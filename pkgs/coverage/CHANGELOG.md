@@ -1,6 +1,6 @@
 ## 1.14.0-wip
 
-- Require Dart ^3.6
+- Require Dart ^3.6.0
 - Partial support for workspace packages in `test_wth_coverage`.
 - Deprecate `test_wth_coverage`'s `--package-name` flag, because it doesn't make
   sense for workspaces.

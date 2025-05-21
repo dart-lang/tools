@@ -264,17 +264,10 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     return scripts[scriptRef];
   }
 
-  HitMap getHitMap(Uri scriptUri) => hitMaps.putIfAbsent(scriptUri, () {
-        final hits = HitMap();
-        if (functionCoverage) {
-          hits.funcNames = <int, String>{};
-          hits.funcHits = <int, int>{};
-        }
-        if (branchCoverage) {
-          hits.branchHits = <int, int>{};
-        }
-        return hits;
-      });
+  HitMap getHitMap(Uri scriptUri) => hitMaps.putIfAbsent(
+      scriptUri,
+      () => HitMap.empty(
+          functionCoverage: functionCoverage, branchCoverage: branchCoverage));
 
   Future<void> processFunction(FuncRef funcRef) async {
     final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;

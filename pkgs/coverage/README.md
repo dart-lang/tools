@@ -47,7 +47,7 @@ see the sections below.
 
 package:coverage has partial support for
 [workspaces](https://dart.dev/tools/pub/workspaces). You can run
-`test_wth_coverage` from the root of the workspace to collect coverage for all
+`test_with_coverage` from the root of the workspace to collect coverage for all
 the tests in all the subpackages, but you must specify the test directories to
 run.
 

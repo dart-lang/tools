@@ -159,13 +159,13 @@ ${parser.usage}
 
   return Flags(
     packageDir,
-    (args['out'] as String?) ?? path.join(packageDir, 'coverage'),
-    args['port'] as String? ?? '0',
-    args['test'] as String,
-    args['function-coverage'] as bool,
-    args['branch-coverage'] as bool,
-    args['scope-output'] as List<String>,
-    args['fail-under'] as String?,
+    args.option('out') ?? path.join(packageDir, 'coverage'),
+    args.option('port') ?? '0',
+    args.option('test')!,
+    args.flag('function-coverage'),
+    args.flag('branch-coverage'),
+    args.multiOption('scope-output'),
+    args.option('fail-under'),
     rest: args.rest,
   );
 }
