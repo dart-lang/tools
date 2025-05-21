@@ -96,6 +96,10 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/pool/**'
 
+'package:procoess':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/procoess/**'
+
 'package:pub_semver':
   - changed-files:
     - any-glob-to-any-file: 'pkgs/pub_semver/**'
