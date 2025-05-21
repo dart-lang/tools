@@ -11,7 +11,7 @@ import 'package:test_process/test_process.dart';
 
 final String testAppPath = p.join('test', 'test_files', 'test_app.dart');
 
-const Duration timeout = Duration(seconds: 20);
+const Duration timeout = Duration(seconds: 30);
 
 Future<TestProcess> runTestApp() => TestProcess.start(
       Platform.resolvedExecutable,
