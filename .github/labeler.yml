@@ -96,9 +96,9 @@
   - changed-files:
     - any-glob-to-any-file: 'pkgs/pool/**'
 
-'package:procoess':
+'package:process':
   - changed-files:
-    - any-glob-to-any-file: 'pkgs/procoess/**'
+    - any-glob-to-any-file: 'pkgs/process/**'
 
 'package:pub_semver':
   - changed-files:

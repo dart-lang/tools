@@ -2,6 +2,7 @@
 
 * Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
 * Move the package into the `dart-lang/tools` repository.
+* Bumped min SDK dependency to 3.5.0.
 
 ## 5.0.3
 
