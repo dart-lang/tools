@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'benchmark_base.dart';
+import 'measurement.dart';
 import 'score_emitter.dart';
 
 class PerfBenchmarkBase extends BenchmarkBase {

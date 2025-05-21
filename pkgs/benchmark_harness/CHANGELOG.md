@@ -1,3 +1,7 @@
+## 2.4.0-wip
+
+- Added a `bench` command.
+
 ## 2.3.1
 
 - Move to `dart-lang/tools` monorepo.
