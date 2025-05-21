@@ -1,5 +1,6 @@
 ## 0.3.0
 
+- Require Dart `^3.2.0`.
 - Update to `package:test` 1.26.1.
 - Pass locations of groups/tests to `package:test` to improve locations reported
   in the JSON reporter that may be used for navigation in IDEs.
