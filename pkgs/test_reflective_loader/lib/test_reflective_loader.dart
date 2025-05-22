@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:mirrors';
 
-import 'package:test/scaffolding.dart' as test_package show TestLocation;
 import 'package:test/test.dart' as test_package;
 
 /// A marker annotation used to annotate test methods which are expected to fail
