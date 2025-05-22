@@ -1,4 +1,4 @@
-## 1.14.0-wip
+## 1.14.0
 
 - Require Dart ^3.6.0
 - Partial support for workspace packages in `test_wth_coverage`.

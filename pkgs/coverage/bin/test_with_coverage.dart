@@ -17,32 +17,36 @@ import 'format_coverage.dart' as format_coverage;
 final _allProcesses = <Process>[];
 
 Future<void> _dartRun(List<String> args,
-    {void Function(String)? onStdout, String? workingDir}) async {
-  final process = await Process.start(
-    Platform.executable,
-    args,
-    workingDirectory: workingDir,
-  );
+    {required void Function(String) onStdout,
+    required void Function(String) onStderr}) async {
+  final process = await Process.start(Platform.executable, args);
   _allProcesses.add(process);
-  final broadStdout = process.stdout.asBroadcastStream();
-  broadStdout.listen(stdout.add);
-  if (onStdout != null) {
-    broadStdout.lines().listen(onStdout);
+
+  void listen(
+      Stream<List<int>> stream, IOSink sink, void Function(String) onLine) {
+    final broadStream = stream.asBroadcastStream();
+    broadStream.listen(sink.add);
+    broadStream.lines().listen(onLine);
   }
-  process.stderr.listen(stderr.add);
+
+  listen(process.stdout, stdout, onStdout);
+  listen(process.stderr, stderr, onStderr);
+
   final result = await process.exitCode;
   if (result != 0) {
     throw ProcessException(Platform.executable, args, '', result);
   }
 }
 
+void _killSubprocessesAndExit(ProcessSignal signal) {
+  for (final process in _allProcesses) {
+    process.kill(signal);
+  }
+  exit(1);
+}
+
 void _watchExitSignal(ProcessSignal signal) {
-  signal.watch().listen((sig) {
-    for (final process in _allProcesses) {
-      process.kill(sig);
-    }
-    exit(1);
-  });
+  signal.watch().listen(_killSubprocessesAndExit);
 }
 
 ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
@@ -203,6 +207,11 @@ Future<void> main(List<String> arguments) async {
         if (uri != null) {
           serviceUriCompleter.complete(uri);
         }
+      }
+    },
+    onStderr: (line) {
+      if (!serviceUriCompleter.isCompleted) {
+        _killSubprocessesAndExit(ProcessSignal.sigkill);
       }
     },
   );
