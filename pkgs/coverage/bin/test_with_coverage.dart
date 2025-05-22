@@ -211,7 +211,9 @@ Future<void> main(List<String> arguments) async {
     },
     onStderr: (line) {
       if (!serviceUriCompleter.isCompleted) {
-        _killSubprocessesAndExit(ProcessSignal.sigkill);
+        if (line.contains('Could not start the VM service')) {
+          _killSubprocessesAndExit(ProcessSignal.sigkill);
+        }
       }
     },
   );
