@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Retry(3)
+@Tags(['integration'])
 library;
 
 import 'dart:async';
@@ -294,10 +294,8 @@ Future<String> _collectCoverage(
     bool functionCoverage, bool branchCoverage) async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
-  final openPort = await getOpenPort();
-
   // Run the sample app with the right flags.
-  final sampleProcess = await runTestApp(openPort);
+  final sampleProcess = await runTestApp();
 
   // Capture the VM service URI.
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
