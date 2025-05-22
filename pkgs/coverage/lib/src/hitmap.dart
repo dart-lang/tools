@@ -20,12 +20,12 @@ class HitMap {
 
   /// Constructs an empty hitmap, optionally with function and branch coverage
   /// tables.
-  HitMap.empty({bool functionCoverage = false, bool branchCoverage = false}) :
-      this(
-          null,
-          functionCoverage ? <int, int>{} : null,
-          functionCoverage ? <int, String>{} : null,
-          branchCoverage ? <int, int>{} : null);
+  HitMap.empty({bool functionCoverage = false, bool branchCoverage = false})
+      : this(
+            null,
+            functionCoverage ? <int, int>{} : null,
+            functionCoverage ? <int, String>{} : null,
+            branchCoverage ? <int, int>{} : null);
 
   /// Map from line to hit count for that line.
   final Map<int, int> lineHits;
