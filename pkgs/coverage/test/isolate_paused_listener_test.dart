@@ -487,6 +487,7 @@ void main() {
     late List<String> received;
     Future<void> Function(String)? delayTheOnPauseCallback;
     late bool stopped;
+    late Set<String> resumeFailures;
 
     void startEvent(String id, String groupId, [String? name]) =>
         allEvents.add(event(
@@ -524,9 +525,13 @@ void main() {
 
       received = <String>[];
       delayTheOnPauseCallback = null;
+      resumeFailures = <String>{};
       when(service.resume(any)).thenAnswer((invocation) async {
         final id = invocation.positionalArguments[0];
         received.add('Resume $id');
+        if (resumeFailures.contains(id)) {
+          throw RPCError('resume', -32000);
+        }
         return Success();
       });
 
@@ -888,6 +893,41 @@ void main() {
         'Resume A',
         // Don't try to resume B, because the VM service is already shut down.
       ]);
+    });
+
+    test('throw when resuming main isolate is ignored', () async {
+      resumeFailures = {'main'};
+
+      startEvent('main', '1');
+      startEvent('other', '2');
+      pauseEvent('other', '2');
+      exitEvent('other', '2');
+      pauseEvent('main', '1');
+      exitEvent('main', '1');
+
+      await endTest();
+
+      expect(received, [
+        'Pause other. Collect group 2? Yes',
+        'Resume other',
+        'Pause main. Collect group 1? Yes',
+        'Resume main',
+      ]);
+    });
+
+    test('throw when resuming other isolate is not ignored', () async {
+      resumeFailures = {'other'};
+
+      startEvent('main', '1');
+      startEvent('other', '2');
+      pauseEvent('other', '2');
+      exitEvent('other', '2');
+      pauseEvent('main', '1');
+      exitEvent('main', '1');
+
+      // TODO: Not sure how to write this test, since the RPCError is thrown in
+      // an async handler, and not propagated to this expectation.
+      // expect(() => endTest(), throwsA(isA<RPCError>()));
     });
   });
 }
