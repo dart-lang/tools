@@ -530,7 +530,7 @@ void main() {
         final id = invocation.positionalArguments[0];
         received.add('Resume $id');
         if (resumeFailures.contains(id)) {
-          throw RPCError('resume', -32000);
+          throw RPCError('resume', -32000, id);
         }
         return Success();
       });
