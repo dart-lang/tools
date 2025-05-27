@@ -65,7 +65,7 @@ class IsolatePausedListener {
     if (_mainIsolate != null) {
       try {
         await _service.resume(_mainIsolate!.id!);
-      } catch (RPCError) {
+      } on RPCError {
         // The VM Service has already shut down, so there's nothing left to do.
       }
     }
