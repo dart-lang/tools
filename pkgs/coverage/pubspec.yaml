@@ -1,5 +1,5 @@
 name: coverage
-version: 1.14.0
+version: 1.14.1-wip
 description: Coverage data manipulation and formatting
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/coverage
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Acoverage
@@ -15,10 +15,10 @@ dependencies:
   meta: ^1.0.2
   package_config: ^2.0.0
   path: ^1.8.0
-  pubspec_parse: ^1.5.0
   source_maps: ^0.10.10
   stack_trace: ^1.10.0
   vm_service: '>=12.0.0 <16.0.0'
+  yaml: ^3.1.3
 
 dev_dependencies:
   benchmark_harness: ^2.2.0
