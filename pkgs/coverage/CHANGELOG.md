@@ -1,3 +1,7 @@
+## 1.14.1-wip
+
+- Remove dependency on `package:pubspec_parse`.
+
 ## 1.14.0
 
 - Require Dart ^3.6.0
