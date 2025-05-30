@@ -1,5 +1,5 @@
 ## 2.0.1
-* Add `image/image/x-canon-cr2` mimeType lookup by extension.
+* Add `image/x-canon-cr2` mimeType lookup by extension.
 
 ## 2.0.0
 
