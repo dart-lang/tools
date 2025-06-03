@@ -28,6 +28,7 @@ pkgs/mime                       @lrhn
 pkgs/oauth2                     @dart-lang/dart-pub-team
 pkgs/package_config             @dart-lang/dart-ecosystem-team
 pkgs/pool                       @dart-lang/dart-ecosystem-team
+pkgs/process                    @dart-lang/dart-ecosystem-team
 pkgs/pub_semver                 @dart-lang/dart-pub-team
 pkgs/pubspec_parse              @dart-lang/dart-bat
 pkgs/source_maps                @dart-lang/dart-ecosystem-team

@@ -1,3 +1,15 @@
+## 1.14.1-wip
+
+- Remove dependency on `package:pubspec_parse`.
+
+## 1.14.0
+
+- Require Dart ^3.6.0
+- Partial support for workspace packages in `test_wth_coverage`.
+- Deprecate `test_wth_coverage`'s `--package-name` flag, because it doesn't make
+  sense for workspaces.
+- Change the default `--port` to 0, allowing the VM to choose a free port.
+
 ## 1.13.1
 
 - Fix a bug where the VM service can be shut down while some coverage
