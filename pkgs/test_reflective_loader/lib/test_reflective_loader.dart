@@ -150,7 +150,7 @@ void _addTestsIfTopLevelSuite([String? name]) {
       void runTestsImpl() {
         for (var group in _currentGroups) {
           if (allGroups || group.isSolo) {
-            test_package.group(group.name, () {
+            test_package.group(group.name, location: group.location, () {
               for (var test in group.tests) {
                 if (allTests || test.isSolo) {
                   test_package.test(test.name, test.function,
