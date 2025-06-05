@@ -27,7 +27,6 @@ const Object soloTest = _SoloTest();
 
 final List<_Group> _currentGroups = <_Group>[];
 int _currentSuiteLevel = 0;
-String _currentSuiteName = '';
 
 /// Is `true` the application is running in the checked mode.
 final bool _isCheckedMode = () {
@@ -43,17 +42,14 @@ final bool _isCheckedMode = () {
 /// add normal and "solo" tests, and also calls [defineReflectiveSuite] to
 /// create embedded suites.  If the current suite is the top-level one, perform
 /// check for "solo" groups and tests, and run all or only "solo" items.
-void defineReflectiveSuite(void Function() define, {String name = ''}) {
-  var groupName = _currentSuiteName;
+void defineReflectiveSuite(void Function() define, {String? name}) {
   _currentSuiteLevel++;
   try {
-    _currentSuiteName = _combineNames(_currentSuiteName, name);
     define();
   } finally {
-    _currentSuiteName = groupName;
     _currentSuiteLevel--;
   }
-  _addTestsIfTopLevelSuite();
+  _addTestsIfTopLevelSuite(name);
 }
 
 /// Runs test methods existing in the given [type].
@@ -87,8 +83,7 @@ void defineReflectiveTests(Type type) {
   {
     var isSolo = _hasAnnotationInstance(classMirror, soloTest);
     var className = MirrorSystem.getName(classMirror.simpleName);
-    group = _Group(isSolo, _combineNames(_currentSuiteName, className),
-        classMirror.testLocation);
+    group = _Group(isSolo, className, classMirror.testLocation);
     _currentGroups.add(group);
   }
 
@@ -147,20 +142,32 @@ void defineReflectiveTests(Type type) {
 }
 
 /// If the current suite is the top-level one, add tests to the `test` package.
-void _addTestsIfTopLevelSuite() {
+void _addTestsIfTopLevelSuite([String? name]) {
   if (_currentSuiteLevel == 0) {
     void runTests({required bool allGroups, required bool allTests}) {
-      for (var group in _currentGroups) {
-        if (allGroups || group.isSolo) {
-          for (var test in group.tests) {
-            if (allTests || test.isSolo) {
-              test_package.test(test.name, test.function,
-                  timeout: test.timeout,
-                  skip: test.isSkipped,
-                  location: test.location);
-            }
+      /// A helper to run the tests that may optionally be wrapped in a group
+      /// if defineReflectiveSuite was given an explicit name.
+      void runTestsImpl() {
+        for (var group in _currentGroups) {
+          if (allGroups || group.isSolo) {
+            test_package.group(group.name, () {
+              for (var test in group.tests) {
+                if (allTests || test.isSolo) {
+                  test_package.test(test.name, test.function,
+                      timeout: test.timeout,
+                      skip: test.isSkipped,
+                      location: test.location);
+                }
+              }
+            });
           }
         }
+      }
+
+      if (name != null) {
+        test_package.group(name, runTestsImpl);
+      } else {
+        runTestsImpl();
       }
     }
 
@@ -172,18 +179,6 @@ void _addTestsIfTopLevelSuite() {
       runTests(allGroups: true, allTests: true);
     }
     _currentGroups.clear();
-  }
-}
-
-/// Return the combination of the [base] and [addition] names.
-/// If any other two is `null`, then the other one is returned.
-String _combineNames(String base, String addition) {
-  if (base.isEmpty) {
-    return addition;
-  } else if (addition.isEmpty) {
-    return base;
-  } else {
-    return '$base | $addition';
   }
 }
 
@@ -315,17 +310,15 @@ class _Group {
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
   void addSkippedTest(String name, test_package.TestLocation? location) {
-    var fullName = _combineNames(this.name, name);
-    tests.add(_Test.skipped(isSolo, fullName, location));
+    tests.add(_Test.skipped(isSolo, name, location));
   }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
       _TestFunction function) {
-    var fullName = _combineNames(this.name, name);
     var timeout =
         _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
-    tests.add(_Test(isSolo, fullName, function, timeout?._timeout,
-        memberMirror.testLocation));
+    tests.add(_Test(
+        isSolo, name, function, timeout?._timeout, memberMirror.testLocation));
   }
 }
 
