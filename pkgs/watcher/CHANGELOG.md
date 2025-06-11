@@ -1,4 +1,4 @@
-## 1.1.2-wip
+## 1.1.2
 
 - Fix a bug on Windows where a file creation event could be reported twice when creating
   a file recursively in a non-existent directory.
