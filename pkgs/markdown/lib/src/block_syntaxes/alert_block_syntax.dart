@@ -29,7 +29,7 @@ class AlertBlockSyntax extends BlockSyntax {
   /// The definition of lazy continuation lines:
   /// https://spec.commonmark.org/0.30/#lazy-continuation-line
   static bool _lazyContinuation = false;
-  static final _contentLineRegExp = RegExp(r'>?\s?(.*)*');
+  static final _contentLineRegExp = RegExp(r'>?\s?(?:.*)*');
 
   @override
   List<Line> parseChildLines(BlockParser parser) {
@@ -40,10 +40,8 @@ class AlertBlockSyntax extends BlockSyntax {
     while (!parser.isDone) {
       final lineContent = parser.current.content.trimLeft();
       final strippedContent = lineContent.replaceFirst(RegExp(r'^>?\s*'), '');
-      final match = strippedContent.isEmpty && !lineContent.startsWith('>')
-          ? null
-          : _contentLineRegExp.firstMatch(strippedContent);
-      if (match != null) {
+      if ((strippedContent.isNotEmpty || lineContent.startsWith('>')) &&
+            _contentLineRegExp.hasMatch(strippedContent)) {
         childLines.add(Line(strippedContent));
         parser.advance();
         _lazyContinuation = false;
