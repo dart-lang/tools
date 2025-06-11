@@ -12,7 +12,7 @@ import 'initializer.dart';
 import 'utils.dart';
 
 /// The regex pattern used to parse the disable analytics line.
-const String telemetryFlagPattern = r'^reporting=([0|1]) *$';
+const String telemetryFlagPattern = r'^reporting=([01]) *$';
 
 /// The regex pattern used to parse the tools info
 /// from the configuration file.
@@ -102,8 +102,10 @@ class ConfigHandler {
     // Read in the config file contents and use a regex pattern to
     // match the line for the current tool (ie. flutter-tools=2023-01-05,1)
     final configString = configFile.readAsStringSync();
-    final pattern = '^($tool)=([0-9]{4}-[0-9]{2}-[0-9]{2}),([0-9]+)\$';
-
+    final pattern = 
+        r'^('
+        '$tool'
+        r')=(\d{4}-\d{2}-\d{2}),(\d+)$';
     final regex = RegExp(pattern, multiLine: true);
     final matches = regex.allMatches(configString);
 
@@ -146,9 +148,9 @@ class ConfigHandler {
     // Collect the tools logged in the configuration file
     toolRegex.allMatches(configString).forEach((RegExpMatch element) {
       // Extract the information relevant for the [ToolInfo] class
-      final tool = element.group(1) as String;
-      final lastRun = DateTime.parse(element.group(2) as String);
-      final versionNumber = int.parse(element.group(3) as String);
+      final tool = element[1]!;
+      final lastRun = DateTime.parse(element[2]!);
+      final versionNumber = int.parse(element[3]!);
 
       // Initialize an instance of the [ToolInfo] class to store
       // in the [parsedTools] map object
@@ -162,7 +164,7 @@ class ConfigHandler {
     // if multiple lines are found, the more conservative value will be used
     telemetryFlagRegex.allMatches(configString).forEach((RegExpMatch element) {
       // Conditional for recording telemetry as being disabled
-      if (element.group(1) == '0') {
+      if (element[1] == '0') {
         _telemetryEnabled = false;
       }
     });
