@@ -10,7 +10,7 @@ import 'utils.dart';
 
 /// A regular expression matching newlines. A newline is either a `\n`, a `\r\n`
 /// or a `\r` that is not immediately followed by a `\n`.
-final _newlineRegExp = RegExp(r'\n|\r\n|\r(?!\n)');
+final _newlineRegExp = RegExp(r'\n|\r\n?');
 
 /// A subclass of [StringScanner] that tracks line and column information.
 class LineScanner extends StringScanner {
