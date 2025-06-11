@@ -23,7 +23,7 @@ const String telemetryFlagPattern = r'^reporting=([0|1]) *$';
 /// devtools=2022-11-26,1
 /// ```
 const String toolPattern =
-    r'^([A-Za-z0-9]+[A-Za-z0-9_-]*)=([0-9]{4}-[0-9]{2}-[0-9]{2}),([0-9]+)$';
+    r'^([A-Za-z\d][A-Za-z\d_-]*)=(\d{4}-\d{2}-\d{2}),(\d+)$';
 
 class ConfigHandler {
   /// Regex pattern implementation for matching a line in the config file.
