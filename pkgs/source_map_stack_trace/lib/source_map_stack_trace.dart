@@ -81,7 +81,7 @@ String _prettifyMember(String member) {
       // Get rid of the noise that Firefox sometimes adds.
       .replaceAll(RegExp(r'/?<$'), '')
       // Get rid of arity indicators and named arguments.
-      .replaceAll(RegExp(r'\$\d+(\$[a-zA-Z_0-9]+)*$'), '')
+      .replaceAll(RegExp(r'\$\d+(?:\$[a-zA-Z_0-9]+)*$'), '')
       // Convert closures to <fn>.
       .replaceAllMapped(
           RegExp(r'(_+)closure\d*\.call$'),
@@ -96,9 +96,9 @@ String _prettifyMember(String member) {
       .replaceAll(RegExp(r'[a-zA-Z_0-9]+\$'), '')
       // Get rid of the static method prefix. The class name also exists in the
       // invocation, so we're not getting rid of any information.
-      .replaceAll(RegExp(r'^[a-zA-Z_0-9]+.(static|dart).'), '')
+      .replaceAll(RegExp(r'^[a-zA-Z_0-9]+.(?:static|dart).'), '')
       // Convert underscores after identifiers to dots. This runs the risk of
       // incorrectly converting members that contain underscores, but those are
       // contrary to the style guide anyway.
-      .replaceAllMapped(RegExp(r'([a-zA-Z0-9]+)_'), (match) => '${match[1]!}.');
+      .replaceAllMapped(RegExp(r'(?:[a-zA-Z0-9]+)(?=_)'), (match) => '${match[0]!}.');
 }
