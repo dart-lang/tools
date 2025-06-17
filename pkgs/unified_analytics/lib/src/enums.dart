@@ -55,6 +55,11 @@ enum DashEvent {
     description: 'Pub package resolution details',
     toolOwner: DashTool.dartTool,
   ),
+  dartMcpToolEvent(
+    label: 'dart_mcp_tool',
+    description: 'Information for a Dart MCP tool invocation',
+    toolOwner: DashTool.dartTool,
+  ),
 
   // Events for Flutter devtools
 

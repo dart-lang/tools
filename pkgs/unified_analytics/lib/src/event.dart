@@ -905,6 +905,31 @@ final class Event {
           },
         );
 
+  /// Event that is sent from the Dart MCP server when a tool is invoked.
+  ///
+  /// The [tool] is the name of the tool that was invoked.
+  ///
+  /// If [success] is `true`, it indicates the tool was successfully invoked,
+  /// specifically this corresponds to the `isError` field on the tool result.
+  ///
+  /// The [elapsedMilliseconds] is the total time from when the tool call was
+  /// received by the server, to when the response was initiated by the server.
+  /// This does not measure the total round trip time, just the time spent in
+  /// the servers own handling of requests. It includes time spent handling
+  /// any other asynchronous tasks as well.
+  Event.dartMcpTool({
+    required String tool,
+    required bool success,
+    required int elapsedMilliseconds,
+  }) : this._(
+          eventName: DashEvent.dartMcpToolEvent,
+          eventData: {
+            'tool': tool,
+            'success': success,
+            'elapsedMilliseconds': elapsedMilliseconds,
+          },
+        );
+
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
