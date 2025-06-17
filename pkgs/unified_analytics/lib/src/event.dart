@@ -919,7 +919,7 @@ final class Event {
     required String clientVersion,
     required String serverVersion,
     required String type,
-    required Map<String, Object?> eventData,
+    CustomMetrics? additionalData,
   }) : this._(
           eventName: DashEvent.dartMCPEvent,
           eventData: {
@@ -927,7 +927,7 @@ final class Event {
             'clientVersion': clientVersion,
             'serverVersion': serverVersion,
             'type': type,
-            'eventData': eventData,
+            ...?additionalData?.toMap(),
           },
         );
 
