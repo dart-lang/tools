@@ -909,6 +909,9 @@ final class Event {
   ///
   /// The [tool] is the name of the tool that was invoked.
   ///
+  /// The [client] is the name of the client, as given when it connected to the
+  /// MCP server, and [clientVersion] is the version of the client.
+  ///
   /// If [success] is `true`, it indicates the tool was successfully invoked,
   /// specifically this corresponds to the `isError` field on the tool result.
   ///
@@ -919,12 +922,16 @@ final class Event {
   /// any other asynchronous tasks as well.
   Event.dartMcpTool({
     required String tool,
+    required String client,
+    required String clientVersion,
     required bool success,
     required int elapsedMilliseconds,
   }) : this._(
           eventName: DashEvent.dartMcpToolEvent,
           eventData: {
             'tool': tool,
+            'client': client,
+            'clientVersion': clientVersion,
             'success': success,
             'elapsedMilliseconds': elapsedMilliseconds,
           },
