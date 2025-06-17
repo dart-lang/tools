@@ -921,7 +921,7 @@ final class Event {
     required String type,
     required Map<String, Object?> eventData,
   }) : this._(
-          eventName: DashEvent.dartMcpToolEvent,
+          eventName: DashEvent.dartMCPEvent,
           eventData: {
             'client': client,
             'clientVersion': clientVersion,

@@ -55,9 +55,9 @@ enum DashEvent {
     description: 'Pub package resolution details',
     toolOwner: DashTool.dartTool,
   ),
-  dartMcpToolEvent(
-    label: 'dart_mcp_tool',
-    description: 'Information for a Dart MCP tool invocation',
+  dartMCPEvent(
+    label: 'dart_mcp_server',
+    description: 'Information for a Dart MCP server event',
     toolOwner: DashTool.dartTool,
   ),
 
