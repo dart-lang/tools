@@ -184,7 +184,7 @@ class _WindowsDirectoryWatcher
           var stream = Directory(path).list(recursive: true);
           var subscription = stream.listen((entity) {
             if (entity is Directory) return;
-            if (_files.contains(path)) return;
+            if (_files.contains(entity.path)) return;
 
             _emitEvent(ChangeType.ADD, entity.path);
             _files.add(entity.path);

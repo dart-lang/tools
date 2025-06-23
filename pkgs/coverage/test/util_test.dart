@@ -355,4 +355,22 @@ void main() {
       ]);
     });
   });
+
+  test('getAllWorkspaceNames', () {
+    // Uses the workspace_names directory:
+    // workspace_names
+    // └── pkgs
+    //     ├── foo
+    //     │   └── foo_example  // Not part of foo's workspace.
+    //     └── bar
+    //         └── bar_example  // Part of bar's workspace.
+    expect(
+        getAllWorkspaceNames('test/workspace_names'),
+        unorderedEquals([
+          'workspace_names',
+          'foo',
+          'bar',
+          'bar_example',
+        ]));
+  });
 }

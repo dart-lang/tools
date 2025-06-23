@@ -170,6 +170,7 @@ Future<Map<String, dynamic>> _getAllCoverage(
         isolateReport,
         includeDart,
         functionCoverage,
+        branchCoverage,
         coverableLineCache,
         scopedOutput);
     allCoverage.addAll(coverage);
@@ -244,6 +245,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     SourceReport report,
     bool includeDart,
     bool functionCoverage,
+    bool branchCoverage,
     Map<String, Set<int>>? coverableLineCache,
     Set<String> scopedOutput) async {
   final hitMaps = <Uri, HitMap>{};
@@ -262,7 +264,10 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
     return scripts[scriptRef];
   }
 
-  HitMap getHitMap(Uri scriptUri) => hitMaps.putIfAbsent(scriptUri, HitMap.new);
+  HitMap getHitMap(Uri scriptUri) => hitMaps.putIfAbsent(
+      scriptUri,
+      () => HitMap.empty(
+          functionCoverage: functionCoverage, branchCoverage: branchCoverage));
 
   Future<void> processFunction(FuncRef funcRef) async {
     final func = await service.getObject(isolateRef.id!, funcRef.id!) as Func;
@@ -290,8 +295,7 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
       return;
     }
     final hits = getHitMap(Uri.parse(script.uri!));
-    hits.funcHits ??= <int, int>{};
-    (hits.funcNames ??= <int, String>{})[line] = funcName;
+    hits.funcNames![line] = funcName;
   }
 
   for (var range in report.ranges!) {
@@ -385,13 +389,12 @@ Future<List<Map<String, dynamic>>> _processSourceReport(
       hits.funcHits?.putIfAbsent(line, () => 0);
     });
 
-    final branchCoverage = range.branchCoverage;
-    if (branchCoverage != null) {
-      hits.branchHits ??= <int, int>{};
-      forEachLine(branchCoverage.hits, (line) {
+    final branches = range.branchCoverage;
+    if (branchCoverage && branches != null) {
+      forEachLine(branches.hits, (line) {
         hits.branchHits!.increment(line);
       });
-      forEachLine(branchCoverage.misses, (line) {
+      forEachLine(branches.misses, (line) {
         hits.branchHits!.putIfAbsent(line, () => 0);
       });
     }

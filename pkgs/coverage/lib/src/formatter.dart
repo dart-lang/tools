@@ -151,6 +151,20 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
     );
     final buf = StringBuffer();
     for (final entry in entries) {
+      final source = resolver.resolve(entry.key);
+      if (source == null) {
+        continue;
+      }
+
+      if (!pathFilter(source)) {
+        continue;
+      }
+
+      final lines = await loader.load(source);
+      if (lines == null) {
+        continue;
+      }
+
       final v = entry.value;
       if (reportFuncs && v.funcHits == null) {
         throw StateError(
@@ -165,24 +179,12 @@ extension FileHitMapsFormatter on Map<String, HitMap> {
             'missing branch coverage information. Did you run '
             'collect_coverage with the --branch-coverage flag?');
       }
+
       final hits = reportFuncs
           ? v.funcHits!
           : reportBranches
               ? v.branchHits!
               : v.lineHits;
-      final source = resolver.resolve(entry.key);
-      if (source == null) {
-        continue;
-      }
-
-      if (!pathFilter(source)) {
-        continue;
-      }
-
-      final lines = await loader.load(source);
-      if (lines == null) {
-        continue;
-      }
       buf.writeln(source);
       for (var line = 1; line <= lines.length; line++) {
         var prefix = _prefix;

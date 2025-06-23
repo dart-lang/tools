@@ -6,7 +6,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
 import 'package:vm_service/vm_service.dart';
+import 'package:yaml/yaml.dart';
 
 // TODO(cbracken) make generic
 /// Retries the specified function with the specified interval and returns
@@ -55,25 +57,6 @@ Uri? extractVMServiceUri(String str) {
     return Uri.parse(match[1]!);
   }
   return null;
-}
-
-/// Returns an open port by creating a temporary Socket
-Future<int> getOpenPort() async {
-  ServerSocket socket;
-
-  try {
-    socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  } catch (_) {
-    // try again v/ V6 only. Slight possibility that V4 is disabled
-    socket =
-        await ServerSocket.bind(InternetAddress.loopbackIPv6, 0, v6Only: true);
-  }
-
-  try {
-    return socket.port;
-  } finally {
-    await socket.close();
-  }
 }
 
 final muliLineIgnoreStart = RegExp(r'//\s*coverage:ignore-start[\w\d\s]*$');
@@ -184,3 +167,23 @@ Future<Uri> serviceUriFromProcess(Stream<String> procStdout) {
 
 Future<List<IsolateRef>> getAllIsolates(VmService service) async =>
     (await service.getVM()).isolates ?? [];
+
+String getPubspecPath(String root) => path.join(root, 'pubspec.yaml');
+
+List<String> getAllWorkspaceNames(String packageRoot) =>
+    _getAllWorkspaceNames(packageRoot, <String>[]);
+
+List<String> _getAllWorkspaceNames(String packageRoot, List<String> results) {
+  final pubspec = _loadPubspec(packageRoot);
+  results.add(pubspec['name'] as String);
+  for (final workspace in pubspec['workspace'] as YamlList? ?? []) {
+    _getAllWorkspaceNames(path.join(packageRoot, workspace as String), results);
+  }
+  return results;
+}
+
+YamlMap _loadPubspec(String packageRoot) {
+  final pubspecPath = getPubspecPath(packageRoot);
+  final yaml = File(pubspecPath).readAsStringSync();
+  return loadYaml(yaml, sourceUrl: Uri.file(pubspecPath)) as YamlMap;
+}

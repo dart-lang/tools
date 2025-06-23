@@ -483,10 +483,12 @@ void main() {
     late MockVmService service;
     late StreamController<Event> allEvents;
     late Future<void> allIsolatesExited;
+    Object? lastError;
 
     late List<String> received;
     Future<void> Function(String)? delayTheOnPauseCallback;
     late bool stopped;
+    late Set<String> resumeFailures;
 
     void startEvent(String id, String groupId, [String? name]) =>
         allEvents.add(event(
@@ -516,34 +518,48 @@ void main() {
     }
 
     setUp(() {
-      (service, allEvents) = createServiceAndEventStreams();
+      Zone.current.fork(
+        specification: ZoneSpecification(
+          handleUncaughtError: (Zone self, ZoneDelegate parent, Zone zone,
+              Object error, StackTrace stackTrace) {
+            lastError = error;
+          },
+        ),
+      ).runGuarded(() {
+        (service, allEvents) = createServiceAndEventStreams();
 
-      // Backfill was tested above, so this test does everything using events,
-      // for simplicity. No need to report any isolates.
-      when(service.getVM()).thenAnswer((_) async => VM());
+        // Backfill was tested above, so this test does everything using events,
+        // for simplicity. No need to report any isolates.
+        when(service.getVM()).thenAnswer((_) async => VM());
 
-      received = <String>[];
-      delayTheOnPauseCallback = null;
-      when(service.resume(any)).thenAnswer((invocation) async {
-        final id = invocation.positionalArguments[0];
-        received.add('Resume $id');
-        return Success();
-      });
-
-      stopped = false;
-      allIsolatesExited = IsolatePausedListener(
-        service,
-        (iso, isLastIsolateInGroup) async {
-          expect(stopped, isFalse);
-          received.add('Pause ${iso.id}. Collect group ${iso.isolateGroupId}? '
-              '${isLastIsolateInGroup ? 'Yes' : 'No'}');
-          if (delayTheOnPauseCallback != null) {
-            await delayTheOnPauseCallback!(iso.id!);
-            received.add('Pause done ${iso.id}');
+        received = <String>[];
+        delayTheOnPauseCallback = null;
+        resumeFailures = <String>{};
+        when(service.resume(any)).thenAnswer((invocation) async {
+          final id = invocation.positionalArguments[0];
+          received.add('Resume $id');
+          if (resumeFailures.contains(id)) {
+            throw RPCError('resume', -32000, id);
           }
-        },
-        (message) => received.add(message),
-      ).waitUntilAllExited();
+          return Success();
+        });
+
+        stopped = false;
+        allIsolatesExited = IsolatePausedListener(
+          service,
+          (iso, isLastIsolateInGroup) async {
+            expect(stopped, isFalse);
+            received
+                .add('Pause ${iso.id}. Collect group ${iso.isolateGroupId}? '
+                    '${isLastIsolateInGroup ? 'Yes' : 'No'}');
+            if (delayTheOnPauseCallback != null) {
+              await delayTheOnPauseCallback!(iso.id!);
+              received.add('Pause done ${iso.id}');
+            }
+          },
+          (message) => received.add(message),
+        ).waitUntilAllExited();
+      });
     });
 
     test('ordinary flows', () async {
@@ -888,6 +904,41 @@ void main() {
         'Resume A',
         // Don't try to resume B, because the VM service is already shut down.
       ]);
+    });
+
+    test('throw when resuming main isolate is ignored', () async {
+      resumeFailures = {'main'};
+
+      startEvent('main', '1');
+      startEvent('other', '2');
+      pauseEvent('other', '2');
+      exitEvent('other', '2');
+      pauseEvent('main', '1');
+      exitEvent('main', '1');
+
+      await endTest();
+      expect(lastError, isNull);
+
+      expect(received, [
+        'Pause other. Collect group 2? Yes',
+        'Resume other',
+        'Pause main. Collect group 1? Yes',
+        'Resume main',
+      ]);
+    });
+
+    test('throw when resuming other isolate is not ignored', () async {
+      resumeFailures = {'other'};
+
+      startEvent('main', '1');
+      startEvent('other', '2');
+      pauseEvent('other', '2');
+      exitEvent('other', '2');
+      pauseEvent('main', '1');
+      exitEvent('main', '1');
+
+      await endTest();
+      expect(lastError, isA<RPCError>());
     });
   });
 }

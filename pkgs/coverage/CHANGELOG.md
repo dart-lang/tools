@@ -1,3 +1,18 @@
+## 1.14.1
+
+- Remove dependency on `package:pubspec_parse`.
+- Silence a rare error that can occur when trying to resume the main isolate
+  because the VM service has already shut down. This was responsible for a ~0.1%
+  flakiness, and is safe to ignore.
+
+## 1.14.0
+
+- Require Dart ^3.6.0
+- Partial support for workspace packages in `test_wth_coverage`.
+- Deprecate `test_wth_coverage`'s `--package-name` flag, because it doesn't make
+  sense for workspaces.
+- Change the default `--port` to 0, allowing the VM to choose a free port.
+
 ## 1.13.1
 
 - Fix a bug where the VM service can be shut down while some coverage
