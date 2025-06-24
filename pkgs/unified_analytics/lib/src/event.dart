@@ -309,18 +309,6 @@ final class Event {
   /// Event that is emitted on shutdown to report the structure of the analysis
   /// contexts created immediately after startup.
   ///
-  /// [contextsFromBothFiles] - the number of contexts that were created because
-  ///     of both a package config and an analysis options file.
-  ///
-  /// [contextsFromOptionsFiles] - the number of contexts that were created
-  ///     because of an analysis options file.
-  ///
-  /// [contextsFromPackagesFiles] - the number of contexts that were created
-  ///     because of a package config file.
-  ///
-  /// [contextsWithoutFiles] - the number of contexts that were created because
-  ///     of the lack of either a package config or an analysis options file.
-  ///
   /// [immediateFileCount] - the number of files in one of the analysis
   ///     contexts.
   ///
@@ -341,11 +329,25 @@ final class Event {
   ///
   /// [transitiveFileUniqueLineCount] - the number of lines in the unique
   ///     transitive files.
+  ///
+  /// [libraryCycleLibraryCounts] - json encoded percentile values indicating
+  ///     the number of libraries in a single library cycle.
+  ///
+  /// [libraryCycleLineCounts] - json encoded percentile values indicating the
+  ///     number of lines of code in all of the files in a single library cycle.
+  ///
+  /// [contextsFromBothFiles] - the number of contexts that were created because
+  ///     of both a package config and an analysis options file.
+  ///
+  /// [contextsFromOptionsFiles] - the number of contexts that were created
+  ///     because of an analysis options file.
+  ///
+  /// [contextsFromPackagesFiles] - the number of contexts that were created
+  ///     because of a package config file.
+  ///
+  /// [contextsWithoutFiles] - the number of contexts that were created because
+  ///     of the lack of either a package config or an analysis options file.
   Event.contextStructure({
-    required int contextsFromBothFiles,
-    required int contextsFromOptionsFiles,
-    required int contextsFromPackagesFiles,
-    required int contextsWithoutFiles,
     required int immediateFileCount,
     required int immediateFileLineCount,
     required int numberOfContexts,
@@ -353,13 +355,15 @@ final class Event {
     required int transitiveFileLineCount,
     required int transitiveFileUniqueCount,
     required int transitiveFileUniqueLineCount,
+    String libraryCycleLibraryCounts = '',
+    String libraryCycleLineCounts = '',
+    int contextsFromBothFiles = 0,
+    int contextsFromOptionsFiles = 0,
+    int contextsFromPackagesFiles = 0,
+    int contextsWithoutFiles = 0,
   }) : this._(
           eventName: DashEvent.contextStructure,
           eventData: {
-            'contextsFromBothFiles': contextsFromBothFiles,
-            'contextsFromOptionsFiles': contextsFromOptionsFiles,
-            'contextsFromPackagesFiles': contextsFromPackagesFiles,
-            'contextsWithoutFiles': contextsWithoutFiles,
             'immediateFileCount': immediateFileCount,
             'immediateFileLineCount': immediateFileLineCount,
             'numberOfContexts': numberOfContexts,
@@ -367,6 +371,12 @@ final class Event {
             'transitiveFileLineCount': transitiveFileLineCount,
             'transitiveFileUniqueCount': transitiveFileUniqueCount,
             'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
+            'libraryCycleLibraryCounts': libraryCycleLibraryCounts,
+            'libraryCycleLineCounts': libraryCycleLineCounts,
+            'contextsFromBothFiles': contextsFromBothFiles,
+            'contextsFromOptionsFiles': contextsFromOptionsFiles,
+            'contextsFromPackagesFiles': contextsFromPackagesFiles,
+            'contextsWithoutFiles': contextsWithoutFiles,
           },
         );
 
