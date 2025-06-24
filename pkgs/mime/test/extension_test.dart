@@ -14,7 +14,7 @@ void main() {
     expect(extensionFromMime('application/pdf'), equals('pdf'));
     expect(extensionFromMime('application/vnd.ms-excel'), equals('xls'));
     expect(extensionFromMime('application/xhtml+xml'), equals('xhtml'));
-    expect(extensionFromMime('image/jpeg'), equals('jpg'));
+    expect(extensionFromMime('image/jpeg'), equals('jpeg'));
     expect(extensionFromMime('image/png'), equals('png'));
     expect(extensionFromMime('text/css'), equals('css'));
     expect(extensionFromMime('text/html'), equals('html'));
