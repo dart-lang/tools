@@ -655,6 +655,27 @@ void main() {
     expect(constructedEvent.eventData.length, 20);
   });
 
+  test('Event.dartMCPEvent constructed', () {
+    final event = Event.dartMCPEvent(
+        client: 'test client',
+        clientVersion: '1.0.0',
+        serverVersion: '1.1.0',
+        type: 'some_event',
+        additionalData:
+            _TestMetrics(boolField: true, stringField: 'hello', intField: 1));
+    expect(
+        event.eventData,
+        equals({
+          'client': 'test client',
+          'clientVersion': '1.0.0',
+          'serverVersion': '1.1.0',
+          'type': 'some_event',
+          'boolField': true,
+          'stringField': 'hello',
+          'intField': 1,
+        }));
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (final declaration in reflectClass(Event).declarations.keys) {
@@ -667,7 +688,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 28;
+    final eventsAccountedForInTests = 29;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

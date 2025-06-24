@@ -1,3 +1,6 @@
+## 8.0.2
+- Added `Event.dartMCPEvent` for events from the `dart mcp-server` command.
+
 ## 8.0.1
 - Added `Event.flutterInjectDarwinPlugins` event for plugins injected into an iOS/macOS project.
 
