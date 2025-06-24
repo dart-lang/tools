@@ -905,6 +905,32 @@ final class Event {
           },
         );
 
+  /// An event that is sent from the Dart MCP server.
+  ///
+  /// The [client] is the name of the client, as given when it connected to the
+  /// MCP server, and [clientVersion] is the version of the client.
+  ///
+  /// The [serverVersion] is the version of the Dart MCP server.
+  ///
+  /// The [type] identifies the kind of event this is, and [additionalData] is
+  /// the actual data for the event.
+  Event.dartMCPEvent({
+    required String client,
+    required String clientVersion,
+    required String serverVersion,
+    required String type,
+    CustomMetrics? additionalData,
+  }) : this._(
+          eventName: DashEvent.dartMCPEvent,
+          eventData: {
+            'client': client,
+            'clientVersion': clientVersion,
+            'serverVersion': serverVersion,
+            'type': type,
+            ...?additionalData?.toMap(),
+          },
+        );
+
   @override
   int get hashCode => Object.hash(eventName, jsonEncode(eventData));
 
