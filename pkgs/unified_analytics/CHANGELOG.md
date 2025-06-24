@@ -1,3 +1,7 @@
+## 8.0.3
+- Changed `Event.contextStructure` to make optional data that's no longer being
+  collected and to add data about the size of library cycles.
+
 ## 8.0.2
 - Added `Event.dartMCPEvent` for events from the `dart mcp-server` command.
 
