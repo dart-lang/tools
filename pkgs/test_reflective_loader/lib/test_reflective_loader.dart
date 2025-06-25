@@ -25,8 +25,12 @@ const Object skippedTest = SkippedTest();
 /// A marker annotation used to annotate "solo" groups and tests.
 const Object soloTest = _SoloTest();
 
-final List<_Group> _currentGroups = <_Group>[];
-int _currentSuiteLevel = 0;
+/// The current group stack of nested [defineReflectiveSuite] calls.
+List<_Group> _currentGroupStack = [];
+
+/// The root groups or tests created by [defineReflectiveSuite] or
+/// [defineReflectiveTests] calls.
+List<_GroupEntry> _rootGroupEntries = [];
 
 /// Is `true` the application is running in the checked mode.
 final bool _isCheckedMode = () {
@@ -43,13 +47,9 @@ final bool _isCheckedMode = () {
 /// create embedded suites.  If the current suite is the top-level one, perform
 /// check for "solo" groups and tests, and run all or only "solo" items.
 void defineReflectiveSuite(void Function() define, {String? name}) {
-  _currentSuiteLevel++;
-  try {
-    define();
-  } finally {
-    _currentSuiteLevel--;
-  }
-  _addTestsIfTopLevelSuite(name);
+  _addGroup(_Group(name), define);
+
+  _addTestsIfTopLevelSuite();
 }
 
 /// Runs test methods existing in the given [type].
@@ -79,107 +79,90 @@ void defineReflectiveTests(Type type) {
         'in order to be run by runReflectiveTests.');
   }
 
-  _Group group;
-  {
-    var isSolo = _hasAnnotationInstance(classMirror, soloTest);
-    var className = MirrorSystem.getName(classMirror.simpleName);
-    group = _Group(isSolo, className, classMirror.testLocation);
-    _currentGroups.add(group);
-  }
+  var isSolo = _hasAnnotationInstance(classMirror, soloTest);
+  var className = MirrorSystem.getName(classMirror.simpleName);
 
-  classMirror.instanceMembers
-      .forEach((Symbol symbol, MethodMirror memberMirror) {
-    // we need only methods
-    if (!memberMirror.isRegularMethod) {
-      return;
-    }
-    // prepare information about the method
-    var memberName = MirrorSystem.getName(symbol);
-    var isSolo = memberName.startsWith('solo_') ||
-        _hasAnnotationInstance(memberMirror, soloTest);
-    // test_
-    if (memberName.startsWith('test_')) {
-      if (_hasSkippedTestAnnotation(memberMirror)) {
-        group.addSkippedTest(memberName, memberMirror.testLocation);
-      } else {
-        group.addTest(isSolo, memberName, memberMirror, () {
-          if (_hasFailingTestAnnotation(memberMirror) ||
-              _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror)) {
-            return _runFailingTest(classMirror, symbol);
-          } else {
-            return _runTest(classMirror, symbol);
-          }
-        });
+  _addGroup(_Group(className, solo: isSolo, location: classMirror.testLocation),
+      () {
+    classMirror.instanceMembers
+        .forEach((Symbol symbol, MethodMirror memberMirror) {
+      // we need only methods
+      if (!memberMirror.isRegularMethod) {
+        return;
       }
-      return;
-    }
-    // solo_test_
-    if (memberName.startsWith('solo_test_')) {
-      group.addTest(true, memberName, memberMirror, () {
-        return _runTest(classMirror, symbol);
-      });
-    }
-    // fail_test_
-    if (memberName.startsWith('fail_')) {
-      group.addTest(isSolo, memberName, memberMirror, () {
-        return _runFailingTest(classMirror, symbol);
-      });
-    }
-    // solo_fail_test_
-    if (memberName.startsWith('solo_fail_')) {
-      group.addTest(true, memberName, memberMirror, () {
-        return _runFailingTest(classMirror, symbol);
-      });
-    }
-    // skip_test_
-    if (memberName.startsWith('skip_test_')) {
-      group.addSkippedTest(memberName, memberMirror.testLocation);
-    }
+      // prepare information about the method
+      var memberName = MirrorSystem.getName(symbol);
+      var isTest = memberName.startsWith(RegExp('(solo_|fail_|skip_)*test_'));
+      if (isTest) {
+        var isSolo = memberName.startsWith('solo_') ||
+            _hasAnnotationInstance(memberMirror, soloTest);
+        var isSkipped = memberName.startsWith('skip_') ||
+            _hasSkippedTestAnnotation(memberMirror);
+        var expectFail = memberName.startsWith('fail_') ||
+            memberName.startsWith('solo_fail_') ||
+            _hasFailingTestAnnotation(memberMirror) ||
+            _isCheckedMode && _hasAssertFailingTestAnnotation(memberMirror);
+        var timeout =
+            _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
+
+        _addTest(
+          _Test(
+              memberName,
+              timeout: timeout?._timeout,
+              location: memberMirror.testLocation,
+              solo: isSolo,
+              skip: isSkipped,
+              () => expectFail
+                  ? _runFailingTest(classMirror, symbol)
+                  : _runTest(classMirror, symbol)),
+        );
+      }
+    });
   });
 
-  // Support for the case of missing enclosing [defineReflectiveSuite].
   _addTestsIfTopLevelSuite();
 }
 
-/// If the current suite is the top-level one, add tests to the `test` package.
-void _addTestsIfTopLevelSuite([String? name]) {
-  if (_currentSuiteLevel == 0) {
-    void runTests({required bool allGroups, required bool allTests}) {
-      /// A helper to run the tests that may optionally be wrapped in a group
-      /// if defineReflectiveSuite was given an explicit name.
-      void runTestsImpl() {
-        for (var group in _currentGroups) {
-          if (allGroups || group.isSolo) {
-            test_package.group(group.name, location: group.location, () {
-              for (var test in group.tests) {
-                if (allTests || test.isSolo) {
-                  test_package.test(test.name, test.function,
-                      timeout: test.timeout,
-                      skip: test.isSkipped,
-                      location: test.location);
-                }
-              }
-            });
+/// If we're back at the top level ([_currentGroupStack] is empty), registers
+/// all known groups and tests by calling [test_package.group] and
+/// [test_package.test] appropriately.
+void _addTestsIfTopLevelSuite() {
+  if (_currentGroupStack.isNotEmpty) return;
+
+  void addGroupsAndTests(List<_GroupEntry> entries) {
+    for (var entry in entries) {
+      switch (entry) {
+        case _Group group:
+          // Only add groups if they have names, otherwise just add their
+          // children directly.
+          if (group.name != null) {
+            test_package.group(
+              group.name,
+              location: group.location,
+              // ignore: deprecated_member_use, invalid_use_of_do_not_submit_member
+              solo: group.solo,
+              () => addGroupsAndTests(group.children),
+            );
+          } else {
+            addGroupsAndTests(group.children);
           }
-        }
-      }
-
-      if (name != null) {
-        test_package.group(name, runTestsImpl);
-      } else {
-        runTestsImpl();
+          break;
+        case _Test test:
+          test_package.test(
+              test.name,
+              timeout: test.timeout,
+              location: test.location,
+              // ignore: deprecated_member_use, invalid_use_of_do_not_submit_member
+              solo: test.solo,
+              skip: test.skip,
+              test.function);
+          break;
       }
     }
-
-    if (_currentGroups.any((g) => g.hasSoloTest)) {
-      runTests(allGroups: true, allTests: false);
-    } else if (_currentGroups.any((g) => g.isSolo)) {
-      runTests(allGroups: false, allTests: true);
-    } else {
-      runTests(allGroups: true, allTests: true);
-    }
-    _currentGroups.clear();
   }
+
+  addGroupsAndTests(_rootGroupEntries);
+  _rootGroupEntries.clear();
 }
 
 Object? _getAnnotationInstance(DeclarationMirror declaration, Type type) {
@@ -219,6 +202,28 @@ Future<Object?> _invokeSymbolIfExists(
     invocationResult = closure.apply([]).reflectee;
   }
   return Future.value(invocationResult);
+}
+
+/// Adds a group to the current stack and executes [define] for child group
+/// or tests definitions.
+void _addGroup(_Group group, void Function() define) {
+  var parentCollection =
+      _currentGroupStack.lastOrNull?.children ?? _rootGroupEntries;
+  parentCollection.add(group);
+  _currentGroupStack.add(group);
+  try {
+    define();
+  } finally {
+    _currentGroupStack.removeLast();
+  }
+}
+
+/// Adds a test to the current group (or as a root test if there is no current
+/// group).
+void _addTest(_Test test) {
+  var parentCollection =
+      _currentGroupStack.lastOrNull?.children ?? _rootGroupEntries;
+  parentCollection.add(test);
 }
 
 /// Run a test that is expected to fail, and confirm that it fails.
@@ -262,8 +267,6 @@ Future<void> _runTest(ClassMirror classMirror, Symbol symbol) async {
   }
 }
 
-typedef _TestFunction = dynamic Function();
-
 /// A marker annotation used to annotate test methods which are expected to
 /// fail.
 class FailingTest {
@@ -298,30 +301,6 @@ class _AssertFailingTest {
   const _AssertFailingTest();
 }
 
-/// Information about a type based test group.
-class _Group {
-  final bool isSolo;
-  final String name;
-  final test_package.TestLocation? location;
-  final List<_Test> tests = <_Test>[];
-
-  _Group(this.isSolo, this.name, this.location);
-
-  bool get hasSoloTest => tests.any((test) => test.isSolo);
-
-  void addSkippedTest(String name, test_package.TestLocation? location) {
-    tests.add(_Test.skipped(isSolo, name, location));
-  }
-
-  void addTest(bool isSolo, String name, MethodMirror memberMirror,
-      _TestFunction function) {
-    var timeout =
-        _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
-    tests.add(_Test(
-        isSolo, name, function, timeout?._timeout, memberMirror.testLocation));
-  }
-}
-
 /// A marker annotation used to instruct dart2js to keep reflection information
 /// for the annotated classes.
 class _ReflectiveTest {
@@ -333,23 +312,45 @@ class _SoloTest {
   const _SoloTest();
 }
 
-/// Information about a test.
-class _Test {
-  final bool isSolo;
-  final String name;
-  final _TestFunction function;
-  final test_package.Timeout? timeout;
+abstract class _GroupEntry {
+  final String? name;
   final test_package.TestLocation? location;
+  final bool solo;
 
-  final bool isSkipped;
+  _GroupEntry(
+    this.name, {
+    this.location,
+    this.solo = false,
+  });
+}
 
-  _Test(this.isSolo, this.name, this.function, this.timeout, this.location)
-      : isSkipped = false;
+/// Information about a test group which could be from a call to
+/// [defineReflectiveSuite] with a `name`, or a test class itself.
+class _Group extends _GroupEntry {
+  final List<_GroupEntry> children = [];
 
-  _Test.skipped(this.isSolo, this.name, this.location)
-      : isSkipped = true,
-        function = (() {}),
-        timeout = null;
+  _Group(
+    super.name, {
+    super.location,
+    super.solo,
+  });
+}
+
+/// Information about a test created for a method of a class with
+/// [defineReflectiveTests].
+class _Test extends _GroupEntry {
+  final FutureOr<Object?>? Function() function;
+  final bool skip;
+  final test_package.Timeout? timeout;
+
+  _Test(
+    super.name,
+    this.function, {
+    required super.location,
+    required super.solo,
+    required this.skip,
+    required this.timeout,
+  });
 }
 
 extension on DeclarationMirror {
