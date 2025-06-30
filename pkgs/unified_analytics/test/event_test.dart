@@ -85,35 +85,35 @@ void main() {
 
   test('Event.contextStructure constructed', () {
     Event generateEvent() => Event.contextStructure(
-          contextsFromBothFiles: 1,
-          contextsFromOptionsFiles: 2,
-          contextsFromPackagesFiles: 3,
-          contextsWithoutFiles: 4,
-          immediateFileCount: 5,
-          immediateFileLineCount: 6,
-          numberOfContexts: 7,
-          transitiveFileCount: 8,
-          transitiveFileLineCount: 9,
-          transitiveFileUniqueCount: 10,
-          transitiveFileUniqueLineCount: 11,
+          immediateFileCount: 1,
+          immediateFileLineCount: 2,
+          numberOfContexts: 3,
+          transitiveFileCount: 4,
+          transitiveFileLineCount: 5,
+          transitiveFileUniqueCount: 6,
+          transitiveFileUniqueLineCount: 7,
+          libraryCycleLibraryCounts: 'a',
+          libraryCycleLineCounts: 'b',
         );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.contextStructure);
-    expect(constructedEvent.eventData['contextsFromBothFiles'], 1);
-    expect(constructedEvent.eventData['contextsFromOptionsFiles'], 2);
-    expect(constructedEvent.eventData['contextsFromPackagesFiles'], 3);
-    expect(constructedEvent.eventData['contextsWithoutFiles'], 4);
-    expect(constructedEvent.eventData['immediateFileCount'], 5);
-    expect(constructedEvent.eventData['immediateFileLineCount'], 6);
-    expect(constructedEvent.eventData['numberOfContexts'], 7);
-    expect(constructedEvent.eventData['transitiveFileCount'], 8);
-    expect(constructedEvent.eventData['transitiveFileLineCount'], 9);
-    expect(constructedEvent.eventData['transitiveFileUniqueCount'], 10);
-    expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 11);
-    expect(constructedEvent.eventData.length, 11);
+    expect(constructedEvent.eventData['immediateFileCount'], 1);
+    expect(constructedEvent.eventData['immediateFileLineCount'], 2);
+    expect(constructedEvent.eventData['numberOfContexts'], 3);
+    expect(constructedEvent.eventData['transitiveFileCount'], 4);
+    expect(constructedEvent.eventData['transitiveFileLineCount'], 5);
+    expect(constructedEvent.eventData['transitiveFileUniqueCount'], 6);
+    expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 7);
+    expect(constructedEvent.eventData['libraryCycleLibraryCounts'], 'a');
+    expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
+    expect(constructedEvent.eventData['contextsFromBothFiles'], 0);
+    expect(constructedEvent.eventData['contextsFromOptionsFiles'], 0);
+    expect(constructedEvent.eventData['contextsFromPackagesFiles'], 0);
+    expect(constructedEvent.eventData['contextsWithoutFiles'], 0);
+    expect(constructedEvent.eventData.length, 13);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
@@ -655,6 +655,27 @@ void main() {
     expect(constructedEvent.eventData.length, 20);
   });
 
+  test('Event.dartMCPEvent constructed', () {
+    final event = Event.dartMCPEvent(
+        client: 'test client',
+        clientVersion: '1.0.0',
+        serverVersion: '1.1.0',
+        type: 'some_event',
+        additionalData:
+            _TestMetrics(boolField: true, stringField: 'hello', intField: 1));
+    expect(
+        event.eventData,
+        equals({
+          'client': 'test client',
+          'clientVersion': '1.0.0',
+          'serverVersion': '1.1.0',
+          'type': 'some_event',
+          'boolField': true,
+          'stringField': 'hello',
+          'intField': 1,
+        }));
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (final declaration in reflectClass(Event).declarations.keys) {
@@ -667,7 +688,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 28;
+    final eventsAccountedForInTests = 29;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
