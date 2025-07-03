@@ -65,7 +65,7 @@ const namedTagDefinition =
     '<'
 
     // Tag name.
-    '[a-z][a-z0-9-]*'
+    '[a-zA-Z][a-zA-Z0-9-]*'
 
     // Attribute begins, see
     // https://spec.commonmark.org/0.30/#attribute.
@@ -73,7 +73,7 @@ const namedTagDefinition =
 
     // Attribute name, see
     // https://spec.commonmark.org/0.30/#attribute-name.
-    '[a-z_:][a-z0-9._:-]*'
+    '[a-zA-Z_:][a-zA-Z0-9._:-]*'
 
     //
     '(?:'
@@ -96,7 +96,7 @@ const namedTagDefinition =
 
     // Closing tag, see
     // https://spec.commonmark.org/0.30/#closing-tag.
-    r'</[a-z][a-z0-9-]*\s*>';
+    r'</[a-zA-Z][a-zA-Z0-9-]*\s*>';
 
 /// A pattern to match the start of an HTML block.
 ///

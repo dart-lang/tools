@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// These are RegExps, always use raw strings.
+// ignore_for_file: unnecessary_raw_strings
+
 import '../../markdown.dart';
 import '../charcode.dart';
 import '../patterns.dart';
@@ -22,23 +25,23 @@ class InlineHtmlSyntax extends TextSyntax {
 
       // HTML comment, see
       // https://spec.commonmark.org/0.30/#html-comment.
-      '<!--(?:(?:[^-<>]+-[^-<>]+)+|[^-<>]+)-->'
+      r'<!--(?!-?>)[^\-]*-(?:[^\-]+-)*?->'
       '|'
 
       // Processing-instruction, see
       // https://spec.commonmark.org/0.30/#processing-instruction
-      r'<\?.*?\?>'
+      r'<\?[^]*?\?>'
       '|'
 
       // Declaration, see
       // https://spec.commonmark.org/0.30/#declaration.
-      '(<![a-z]+.*?>)'
+      r'(<![a-zA-Z]+[^]*?>)'
       '|'
 
       // CDATA section, see
       // https://spec.commonmark.org/0.30/#cdata-section.
-      r'(<!\[CDATA\[.*?]]>)';
+      r'(<!\[CDATA\[[^]*?\]\]>)';
 
   InlineHtmlSyntax()
-      : super(_pattern, startCharacter: $lt, caseSensitive: false);
+      : super(_pattern, startCharacter: $lt, caseSensitive: true);
 }
