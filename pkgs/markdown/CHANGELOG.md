@@ -3,6 +3,7 @@
 * Update the README link to the markdown playground
   (https://dart-lang.github.io/tools).
 * Update `package:web` API references in the example.
+* Fix performance and correctness of HTML comment parser.
 * Require Dart `^3.4.0`.
 
 ## 7.3.0
