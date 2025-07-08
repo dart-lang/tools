@@ -233,7 +233,7 @@ void main() {
     });
 
     test(
-        'returns [[0,lines.length]] when the annotations are not '
+        'returns null when the annotations are not '
         'balanced but the whole file is ignored', () {
       for (final content in invalidSources) {
         final lines = content.split('\n');
@@ -242,7 +242,7 @@ void main() {
       }
     });
 
-    test('returns [[0,lines.length]] when the whole file is ignored', () {
+    test('returns null when the whole file is ignored', () {
       final lines = '''final str = ''; // coverage:ignore-start
       final str = ''; // coverage:ignore-end
       final str = ''; // coverage:ignore-file
