@@ -103,6 +103,11 @@ enum DashEvent {
     description: 'Provides information about flutter commands that ran',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterWasmDryRun(
+    label: 'wasm_dry_run',
+    description: 'Information for a dart2wasm dry run invoked from Flutter',
+    toolOwner: DashTool.flutterTool,
+  ),
   flutterInjectDarwinPlugins(
     label: 'flutter_inject_darwin_plugins',
     description: 'Information on plugins injected into an iOS/macOS project',
