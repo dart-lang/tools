@@ -59,16 +59,16 @@ Uri? extractVMServiceUri(String str) {
   return null;
 }
 
-final muliLineIgnoreStart = RegExp(r'//\s*coverage:ignore-start[\w\d\s]*$');
-final muliLineIgnoreEnd = RegExp(r'//\s*coverage:ignore-end[\w\d\s]*$');
+final multiLineIgnoreStart = RegExp(r'//\s*coverage:ignore-start[\w\d\s]*$');
+final multiLineIgnoreEnd = RegExp(r'//\s*coverage:ignore-end[\w\d\s]*$');
 final singleLineIgnore = RegExp(r'//\s*coverage:ignore-line[\w\d\s]*$');
 final ignoreFile = RegExp(r'//\s*coverage:ignore-file[\w\d\s]*$');
 
-/// Return list containing inclusive range of lines to be ignored by coverage.
+/// Return list containing inclusive ranges of lines to be ignored by coverage.
 /// If there is a error in balancing the statements it will throw a
 /// [FormatException],
 /// unless `coverage:ignore-file` is found.
-/// Return [0, lines.length] if the whole file is ignored.
+/// Return null if the whole file is ignored.
 ///
 /// ```
 /// 1.  final str = ''; // coverage:ignore-line
@@ -86,20 +86,17 @@ final ignoreFile = RegExp(r'//\s*coverage:ignore-file[\w\d\s]*$');
 /// ]
 /// ```
 ///
-List<List<int>> getIgnoredLines(String filePath, List<String>? lines) {
+/// The returned ranges are in sorted order, and never overlap.
+List<List<int>>? getIgnoredLines(String filePath, List<String>? lines) {
   final ignoredLines = <List<int>>[];
   if (lines == null) return ignoredLines;
-
-  final allLines = [
-    [0, lines.length]
-  ];
 
   FormatException? err;
   var i = 0;
   while (i < lines.length) {
-    if (lines[i].contains(ignoreFile)) return allLines;
+    if (lines[i].contains(ignoreFile)) return null;
 
-    if (lines[i].contains(muliLineIgnoreEnd)) {
+    if (lines[i].contains(multiLineIgnoreEnd)) {
       err ??= FormatException(
         'unmatched coverage:ignore-end found at $filePath:${i + 1}',
       );
@@ -107,13 +104,13 @@ List<List<int>> getIgnoredLines(String filePath, List<String>? lines) {
 
     if (lines[i].contains(singleLineIgnore)) ignoredLines.add([i + 1, i + 1]);
 
-    if (lines[i].contains(muliLineIgnoreStart)) {
+    if (lines[i].contains(multiLineIgnoreStart)) {
       final start = i;
       var isUnmatched = true;
       ++i;
       while (i < lines.length) {
-        if (lines[i].contains(ignoreFile)) return allLines;
-        if (lines[i].contains(muliLineIgnoreStart)) {
+        if (lines[i].contains(ignoreFile)) return null;
+        if (lines[i].contains(multiLineIgnoreStart)) {
           err ??= FormatException(
             'coverage:ignore-start found at $filePath:${i + 1}'
             ' before previous coverage:ignore-start ended',
@@ -121,7 +118,7 @@ List<List<int>> getIgnoredLines(String filePath, List<String>? lines) {
           break;
         }
 
-        if (lines[i].contains(muliLineIgnoreEnd)) {
+        if (lines[i].contains(multiLineIgnoreEnd)) {
           ignoredLines.add([start + 1, i + 1]);
           isUnmatched = false;
           break;
@@ -144,6 +141,26 @@ List<List<int>> getIgnoredLines(String filePath, List<String>? lines) {
   }
 
   throw err;
+}
+
+extension IgnoredLinesContains on List<List<int>> {
+  /// Returns whether this list of line ranges contains the given line.
+  bool ignoredContains(int line) {
+    if (length == 0 || this[0][0] > line) return false;
+
+    // Binary search for the range with the largest start value that is <= line.
+    var lo = 0;
+    var hi = length;
+    while (lo < hi - 1) {
+      final mid = lo + (hi - lo) ~/ 2;
+      if (this[mid][0] <= line) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return this[lo][1] >= line;
+  }
 }
 
 extension StandardOutExtension on Stream<List<int>> {

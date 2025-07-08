@@ -1,3 +1,9 @@
+## 1.15.0
+
+- Expose `filterIgnored` function, which filters the coverage data according to
+  `// coverage:ignore-...` comments. Previously this filtering functionality
+  was only available when loading coverage data from json using `parseJson` etc.
+
 ## 1.14.1
 
 - Remove dependency on `package:pubspec_parse`.
