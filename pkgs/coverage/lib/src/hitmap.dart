@@ -59,8 +59,6 @@ class HitMap {
     required Map<String, List<List<int>>?> ignoredLinesInFilesCache,
     required Resolver resolver,
   }) {
-    final loader = Loader();
-
     // Map of source file to map of line to hit count for that line.
     final globalHitMap = <String, HitMap>{};
 
@@ -69,66 +67,6 @@ class HitMap {
       if (source == null) {
         // Couldn't resolve import, so skip this entry.
         continue;
-      }
-
-      var ignoredLinesList = <List<int>>[];
-
-      if (checkIgnoredLines) {
-        if (ignoredLinesInFilesCache.containsKey(source)) {
-          final cacheHit = ignoredLinesInFilesCache[source];
-          if (cacheHit == null) {
-            // Null-entry indicates that the whole file was ignored.
-            continue;
-          }
-          ignoredLinesList = cacheHit;
-        } else {
-          final path = resolver.resolve(source);
-          if (path != null) {
-            final lines = loader.loadSync(path) ?? [];
-            ignoredLinesList = getIgnoredLines(path, lines);
-
-            // Ignore the whole file.
-            if (ignoredLinesList.length == 1 &&
-                ignoredLinesList[0][0] == 0 &&
-                ignoredLinesList[0][1] == lines.length) {
-              // Null-entry indicates that the whole file was ignored.
-              ignoredLinesInFilesCache[source] = null;
-              continue;
-            }
-            ignoredLinesInFilesCache[source] = ignoredLinesList;
-          } else {
-            // Couldn't resolve source. Allow cache to answer next time
-            // anyway.
-            ignoredLinesInFilesCache[source] = ignoredLinesList;
-          }
-        }
-      }
-
-      // Move to the first ignore range.
-      final ignoredLines = ignoredLinesList.iterator;
-      var hasCurrent = ignoredLines.moveNext();
-
-      bool shouldIgnoreLine(Iterator<List<int>> ignoredRanges, int line) {
-        if (!hasCurrent || ignoredRanges.current.isEmpty) {
-          return false;
-        }
-
-        if (line < ignoredRanges.current[0]) return false;
-
-        while (hasCurrent &&
-            ignoredRanges.current.isNotEmpty &&
-            ignoredRanges.current[1] < line) {
-          hasCurrent = ignoredRanges.moveNext();
-        }
-
-        if (hasCurrent &&
-            ignoredRanges.current.isNotEmpty &&
-            ignoredRanges.current[0] <= line &&
-            line <= ignoredRanges.current[1]) {
-          return true;
-        }
-
-        return false;
       }
 
       void addToMap(Map<int, int> map, int line, int count) {
@@ -147,8 +85,6 @@ class HitMap {
           final k = hits[i];
           if (k is int) {
             // Single line.
-            if (shouldIgnoreLine(ignoredLines, k)) continue;
-
             addToMap(hitMap, k, hits[i + 1] as int);
           } else if (k is String) {
             // Linerange. We expand line ranges to actual lines at this point.
@@ -156,8 +92,6 @@ class HitMap {
             final start = int.parse(k.substring(0, splitPos));
             final end = int.parse(k.substring(splitPos + 1));
             for (var j = start; j <= end; j++) {
-              if (shouldIgnoreLine(ignoredLines, j)) continue;
-
               addToMap(hitMap, j, hits[i + 1] as int);
             }
           } else {
@@ -185,7 +119,12 @@ class HitMap {
         fillHitMap(e['branchHits'] as List, sourceHitMap.branchHits!);
       }
     }
-    return globalHitMap;
+    return checkIgnoredLines
+        ? globalHitMap.filterIgnored(
+            ignoredLinesInFilesCache: ignoredLinesInFilesCache,
+            resolver: resolver,
+          )
+        : globalHitMap;
   }
 
   /// Creates a single hitmap from a raw json object.
@@ -267,6 +206,39 @@ extension FileHitMaps on Map<String, HitMap> {
         dest[line] = lineFileResult + count;
       }
     });
+  }
+
+  /// Filters out lines that are ignored by ignore comments.
+  Map<String, HitMap> filterIgnored({
+    required Map<String, List<List<int>>?> ignoredLinesInFilesCache,
+    required Resolver resolver,
+  }) {
+    final loader = Loader();
+    final newHitMaps = <String, HitMap>{};
+    for (final MapEntry(key: source, value: hitMap) in entries) {
+      final ignoredLinesList = ignoredLinesInFilesCache.putIfAbsent(source, () {
+        final path = resolver.resolve(source);
+        if (path == null) return <List<int>>[];
+        return getIgnoredLines(path, loader.loadSync(path));
+      });
+      // Null here means that the whole file is ignored.
+      if (ignoredLinesList == null) continue;
+
+      Map<int, int>? filterHits(Map<int, int>? hits) => hits == null
+          ? null
+          : {
+              for (final MapEntry(key: line, value: count) in hits.entries)
+                if (!ignoredLinesList.ignoredContains(line)) line: count,
+            };
+
+      newHitMaps[source] = HitMap(
+        filterHits(hitMap.lineHits),
+        filterHits(hitMap.funcHits),
+        hitMap.funcNames,
+        filterHits(hitMap.branchHits),
+      );
+    }
+    return newHitMaps;
   }
 }
 
