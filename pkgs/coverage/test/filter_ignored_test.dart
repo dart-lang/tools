@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:coverage/coverage.dart' show Resolver;
@@ -20,7 +19,7 @@ void main() {
       fileUri('nonexistent_file.dart'): HitMap(
         {1: 1, 2: 2, 3: 3},
         {1: 1, 2: 2, 3: 3},
-        {1: "abc", 2: "def"},
+        {1: 'abc', 2: 'def'},
         {1: 1, 2: 2, 3: 3},
       ),
       fileUri('another_nonexistent_file.dart'): HitMap(
@@ -29,14 +28,14 @@ void main() {
       fileUri('test/test_files/test_app.dart'): HitMap(
         {1: 1, 2: 2, 3: 3},
         {1: 1, 2: 2, 3: 3},
-        {1: "abc", 2: "def"},
+        {1: 'abc', 2: 'def'},
         {1: 1, 2: 2, 3: 3},
       ),
       fileUri('test/test_files/test_app_isolate.dart'): HitMap(
-        { for (var i = 50; i < 100; ++i) i: i },
-        { for (var i = 50; i < 100; ++i) i: i },
-        { for (var i = 50; i < 100; ++i) i: '$i' },
-        { for (var i = 50; i < 100; ++i) i: i },
+        {for (var i = 50; i < 100; ++i) i: i},
+        {for (var i = 50; i < 100; ++i) i: i},
+        {for (var i = 50; i < 100; ++i) i: '$i'},
+        {for (var i = 50; i < 100; ++i) i: i},
       ),
     };
 
@@ -65,24 +64,33 @@ void main() {
       fileUri('nonexistent_file.dart'): HitMap(
         {1: 1, 2: 2, 3: 3},
         {1: 1, 2: 2, 3: 3},
-        {1: "abc", 2: "def"},
+        {1: 'abc', 2: 'def'},
         {1: 1, 2: 2, 3: 3},
       ),
       fileUri('another_nonexistent_file.dart'): HitMap(
         {1: 1, 2: 2, 3: 3},
       ),
       fileUri('test/test_files/test_app_isolate.dart'): HitMap(
-        { for (var i = 50; i < 100; ++i) if (!ignores.contains(i)) i: i },
-        { for (var i = 50; i < 100; ++i) if (!ignores.contains(i)) i: i },
-        { for (var i = 50; i < 100; ++i) i: '$i' },
-        { for (var i = 50; i < 100; ++i) if (!ignores.contains(i)) i: i },
+        {
+          for (var i = 50; i < 100; ++i)
+            if (!ignores.contains(i)) i: i
+        },
+        {
+          for (var i = 50; i < 100; ++i)
+            if (!ignores.contains(i)) i: i
+        },
+        {for (var i = 50; i < 100; ++i) i: '$i'},
+        {
+          for (var i = 50; i < 100; ++i)
+            if (!ignores.contains(i)) i: i
+        },
       ),
     };
 
     final resolver = await Resolver.create(packagePath: '.');
 
-    final actual = hitmaps.filterIgnored(
-        ignoredLinesInFilesCache: {}, resolver: resolver);
+    final actual =
+        hitmaps.filterIgnored(ignoredLinesInFilesCache: {}, resolver: resolver);
 
     expect(actual.keys.toList(), expected.keys.toList());
     for (final source in expected.keys) {

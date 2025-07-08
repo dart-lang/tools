@@ -374,11 +374,11 @@ void main() {
   test('IgnoredLinesContains', () {
     (List<List<int>>, int) createRandomRanges(int len) {
       final ranges = <List<int>>[];
-      int line = 0;
+      var line = 0;
       final rand = Random();
       while (ranges.length < len) {
-        int start = (line += 1 + rand.nextInt(5));
-        int end = (line += rand.nextInt(5));
+        final start = line += 1 + rand.nextInt(5);
+        final end = line += rand.nextInt(5);
         ranges.add([start, end]);
       }
       return (ranges, line);
@@ -390,8 +390,8 @@ void main() {
     for (final len in [0, 1, 2, 3, 10, 100, 1000]) {
       final (ranges, end) = createRandomRanges(len);
       for (var line = 0; line < end + 3; ++line) {
-        expect(ranges.ignoredContains(line),
-            naiveIgnoredContains(ranges, line));
+        expect(
+            ranges.ignoredContains(line), naiveIgnoredContains(ranges, line));
       }
     }
   });
