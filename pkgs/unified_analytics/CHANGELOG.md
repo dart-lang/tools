@@ -1,3 +1,6 @@
+## 8.0.4
+- Changed `Event.flutterWasmDryRun` to track dart2wasm dry run metrics from Flutter.
+
 ## 8.0.3
 - Changed `Event.contextStructure` to make optional data that's no longer being
   collected and to add data about the size of library cycles.
