@@ -26,18 +26,12 @@ enum DashEvent {
     label: 'analytics_exception',
     description: 'Errors that are encountered within package:unified_analytics',
   ),
-  exception(
-    label: 'exception',
-    description: 'General errors to log',
-  ),
+  exception(label: 'exception', description: 'General errors to log'),
   surveyAction(
     label: 'survey_action',
     description: 'Actions taken by users when shown survey',
   ),
-  surveyShown(
-    label: 'survey_shown',
-    description: 'Survey shown to the user',
-  ),
+  surveyShown(label: 'survey_shown', description: 'Survey shown to the user'),
   timing(
     label: 'timing',
     description: 'Events for timing how long a process takes',
@@ -84,7 +78,8 @@ enum DashEvent {
   ),
   commandUsageValues(
     label: 'command_usage_values',
-    description: 'Contains command level custom dimensions from legacy '
+    description:
+        'Contains command level custom dimensions from legacy '
         'flutter analytics',
     toolOwner: DashTool.flutterTool,
   ),
@@ -146,10 +141,7 @@ enum DashEvent {
     label: 'lint_usage_count',
     description: 'Number of times a given lint is enabled',
   ),
-  memoryInfo(
-    label: 'memory_info',
-    description: 'Memory usage information',
-  ),
+  memoryInfo(label: 'memory_info', description: 'Memory usage information'),
   pluginRequest(
     label: 'plugin_request',
     description: 'Request responses from plugins',
@@ -165,8 +157,7 @@ enum DashEvent {
   severityAdjustment(
     label: 'severity_adjustment',
     description: 'Number of times diagnostic severity is changed',
-  ),
-  ;
+  );
 
   final String label;
   final String description;
@@ -191,18 +182,12 @@ enum DashTool {
     label: 'android-studio-plugins',
     description: 'Android Studio IDE plugins for Dart and Flutter',
   ),
-  dartTool(
-    label: 'dart-tool',
-    description: 'Dart CLI developer tool',
-  ),
+  dartTool(label: 'dart-tool', description: 'Dart CLI developer tool'),
   devtools(
     label: 'devtools',
     description: 'DevTools debugging and performance tools',
   ),
-  flutterTool(
-    label: 'flutter-tool',
-    description: 'Flutter CLI developer tool',
-  ),
+  flutterTool(label: 'flutter-tool', description: 'Flutter CLI developer tool'),
   intellijPlugins(
     label: 'intellij-plugins',
     description: 'IntelliJ IDE plugins for Dart and Flutter',
@@ -220,10 +205,7 @@ enum DashTool {
   /// grouping.
   final String description;
 
-  const DashTool({
-    required this.label,
-    required this.description,
-  });
+  const DashTool({required this.label, required this.description});
 
   /// This takes in the string label for a given [DashTool] and returns the
   /// enum for that string label.
@@ -231,9 +213,11 @@ enum DashTool {
     final tool = DashTool.values.where((t) => t.label == label).firstOrNull;
     if (tool != null) return tool;
 
-    throw Exception('The tool $label from the survey metadata file is not '
-        'a valid DashTool enum value\n'
-        'Valid labels for dash tools: ${validDashTools.join(', ')}');
+    throw Exception(
+      'The tool $label from the survey metadata file is not '
+      'a valid DashTool enum value\n'
+      'Valid labels for dash tools: ${validDashTools.join(', ')}',
+    );
   }
 }
 
@@ -241,8 +225,7 @@ enum DashTool {
 enum DevicePlatform {
   windows('Windows'),
   macos('macOS'),
-  linux('Linux'),
-  ;
+  linux('Linux');
 
   final String label;
   const DevicePlatform(this.label);
