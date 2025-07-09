@@ -1,3 +1,6 @@
+## 8.0.5
+- Fix `Event.flutterWasmDryRun` fields.
+
 ## 8.0.4
 - Changed `Event.flutterWasmDryRun` to track dart2wasm dry run metrics from Flutter.
 
