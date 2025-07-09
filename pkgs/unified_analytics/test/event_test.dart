@@ -429,10 +429,7 @@ void main() {
     expect(constructedEvent1.eventData.length, 2);
 
     Event generateEventFindings() => Event.flutterWasmDryRun(
-          result: 'success',
-          exitCode: 123,
-          findingsSummary: '1,2,3'
-        );
+        result: 'success', exitCode: 123, findingsSummary: '1,2,3');
 
     final constructedEvent2 = generateEventFindings();
 

@@ -572,13 +572,13 @@ final class Event {
     required int exitCode,
     String? findingsSummary,
   }) : this._(
-         eventName: DashEvent.flutterWasmDryRun,
-         eventData: {
-           'result': result,
-           'exitCode': result,
-           if (findingsSummary != null) 'findings': findingsSummary,
-         },
-       );
+          eventName: DashEvent.flutterWasmDryRun,
+          eventData: {
+            'result': result,
+            'exitCode': result,
+            if (findingsSummary != null) 'findings': findingsSummary,
+          },
+        );
 
   /// Provides information about the plugins injected into an iOS or macOS
   /// project.
