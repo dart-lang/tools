@@ -429,10 +429,7 @@ void main() {
     expect(constructedEvent1.eventData.length, 2);
 
     Event generateEventFindings() => Event.flutterWasmDryRun(
-          result: 'success',
-          exitCode: 123,
-          findingsSummary: '1,2,3'
-        );
+        result: 'success', exitCode: 123, findingsSummary: '1,2,3');
 
     final constructedEvent2 = generateEventFindings();
 
@@ -440,7 +437,7 @@ void main() {
     expect(constructedEvent2.eventName, DashEvent.flutterWasmDryRun);
     expect(constructedEvent2.eventData['result'], 'success');
     expect(constructedEvent2.eventData['exitCode'], 123);
-    expect(constructedEvent2.eventData['findingsSummary'], '1,2,3');
+    expect(constructedEvent2.eventData['findings'], '1,2,3');
     expect(constructedEvent2.eventData.length, 3);
   });
 
@@ -732,7 +729,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 29;
+    final eventsAccountedForInTests = 30;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
