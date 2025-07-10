@@ -15,7 +15,6 @@ A test file will typically have a `main` function that kicks off the test loader
 Here is a simple example:
 
 ```dart
-import 'dart:async';
 import 'package:test/test.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
