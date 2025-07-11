@@ -437,14 +437,14 @@ class DartEmitter extends Object
     for (var a in spec.annotations) {
       visitAnnotation(a, output);
     }
+    if (spec.external) {
+      output.write('external ');
+    }
     if (spec.static) {
       output.write('static ');
     }
     if (spec.late && _useNullSafetySyntax) {
       output.write('late ');
-    }
-    if (spec.external) {
-      output.write('external ');
     }
     switch (spec.modifier) {
       case FieldModifier.var$:

@@ -110,4 +110,34 @@ void main() {
       '''),
     );
   });
+
+  test('should create a late static field', () {
+    expect(
+      Field((b) => b
+        ..name = 'value'
+        ..static = true
+        ..late = true
+        ..type = refer('String')
+        ..annotations.addAll([refer('JS').call([])])),
+      equalsDart(r'''
+        @JS()
+        static late String value;
+      ''', DartEmitter(useNullSafetySyntax: true)),
+    );
+  });
+
+  test('should create an external static field', () {
+    expect(
+      Field((b) => b
+        ..name = 'value'
+        ..external = true
+        ..static = true
+        ..type = refer('double')
+        ..annotations.addAll([refer('JS').call([])])),
+      equalsDart(r'''
+        @JS()
+        external static double value;
+      '''),
+    );
+  });
 }
