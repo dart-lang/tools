@@ -9,7 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
-  final baseDirectories = BaseDirectories(tool: 'my_app');
+  final baseDirectories = BaseDirectories('my_app');
 
   test('returns a non-empty string', () {
     expect(baseDirectories.cacheHome(), isNotEmpty);
@@ -41,8 +41,8 @@ void main() {
 
   test('empty environment throws exception', () async {
     expect(
-      () => BaseDirectories(tool: 'dart', environment: <String, String>{})
-          .configHome(),
+      () =>
+          BaseDirectories('Dart', environment: <String, String>{}).configHome(),
       throwsA(isA<EnvironmentNotFoundException>()),
     );
   });
