@@ -12,12 +12,11 @@ void main() {
   final baseDirectories = BaseDirectories('my_app');
 
   test('returns a non-empty string', () {
-    expect(baseDirectories.cacheHome(), isNotEmpty);
-    expect(baseDirectories.configHome(), isNotEmpty);
-    expect(baseDirectories.configHome(plistFiles: true), isNotEmpty);
-    expect(baseDirectories.dataHome(), isNotEmpty);
-    expect(baseDirectories.runtimeHome(), isNotEmpty);
-    expect(baseDirectories.stateHome(), isNotEmpty);
+    expect(baseDirectories.cacheHome, isNotEmpty);
+    expect(baseDirectories.configHome, isNotEmpty);
+    expect(baseDirectories.dataHome, isNotEmpty);
+    expect(baseDirectories.runtimeHome, isNotEmpty);
+    expect(baseDirectories.stateHome, isNotEmpty);
   });
 
   test('has an ancestor folder that exists', () {
@@ -31,18 +30,16 @@ void main() {
       );
     }
 
-    expectAncestorExists(baseDirectories.cacheHome());
-    expectAncestorExists(baseDirectories.configHome());
-    expectAncestorExists(baseDirectories.configHome(plistFiles: true));
-    expectAncestorExists(baseDirectories.dataHome());
-    expectAncestorExists(baseDirectories.runtimeHome());
-    expectAncestorExists(baseDirectories.stateHome());
+    expectAncestorExists(baseDirectories.cacheHome);
+    expectAncestorExists(baseDirectories.configHome);
+    expectAncestorExists(baseDirectories.dataHome);
+    expectAncestorExists(baseDirectories.runtimeHome);
+    expectAncestorExists(baseDirectories.stateHome);
   });
 
   test('empty environment throws exception', () async {
     expect(
-      () =>
-          BaseDirectories('Dart', environment: <String, String>{}).configHome(),
+      () => BaseDirectories('Dart', environment: <String, String>{}).configHome,
       throwsA(isA<EnvironmentNotFoundException>()),
     );
   });

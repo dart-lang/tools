@@ -73,7 +73,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String cacheHome() => _cacheHome;
+  String get cacheHome => _cacheHome;
 
   late final _cacheHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.cache), tool);
@@ -86,20 +86,12 @@ final class BaseDirectories {
   /// This is a location appropriate for storing application specific
   /// configuration for the current user.
   ///
-  /// If [plistFiles] is set to `true` on a MacOS platform, the MacOS-specific
-  /// configuration directory, which must only contain `.plist` files, is
-  /// returned, otherwise a directory that allows non-`.plist` files is
-  /// returned. It's the tool's responsibility to only write `.plist` files when
-  /// those are required.
-  ///
   /// The directory location depends on the current [Platform.operatingSystem]
   /// and what file types are stored:
   /// - on **Windows**:
   ///   - `%APPDATA%\<tool>`
   /// - on **Mac OS**:
-  ///   - `$HOME/Library/Preferences/<tool>` (may only contain `.plist` files)
-  ///     if [plistFiles] is true, and
-  ///   - `$HOME/Library/Application Support/<tool>` otherwise.
+  ///   - `$HOME/Library/Application Support/<tool>`
   /// - on **Linux**:
   ///   - `$XDG_CONFIG_HOME/<tool>` if `$XDG_CONFIG_HOME` is defined, and
   ///   - `$HOME/.config/<tool>` otherwise.
@@ -111,12 +103,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String configHome({bool plistFiles = false}) {
-    if (Platform.isMacOS && !plistFiles) {
-      return dataHome();
-    }
-    return _configHome;
-  }
+  String get configHome => _configHome;
 
   late final _configHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.config), tool);
@@ -146,7 +133,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String dataHome() => _dataHome;
+  String get dataHome => _dataHome;
 
   late final _dataHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.data), tool);
@@ -176,7 +163,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String runtimeHome() => _runtimeHome;
+  String get runtimeHome => _runtimeHome;
 
   late final _runtimeHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.runtime), tool);
@@ -208,7 +195,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String stateHome() => _stateHome;
+  String get stateHome => _stateHome;
 
   late final _stateHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.state), tool);
@@ -237,8 +224,9 @@ final class BaseDirectories {
       };
 
   String _baseDirectoryMacOs(_XdgBaseDirectoryKind dir) => switch (dir) {
-        _XdgBaseDirectoryKind.config =>
-          path.join(_home, 'Library', 'Preferences'),
+        _XdgBaseDirectoryKind.config ||
+        // `$HOME/Library/Preferences/` may only contain `.plist` files, so use
+        // `Application Support` instead.
         _XdgBaseDirectoryKind.data ||
         _XdgBaseDirectoryKind.state =>
           path.join(_home, 'Library', 'Application Support'),
