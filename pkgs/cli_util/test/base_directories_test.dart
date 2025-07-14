@@ -20,7 +20,11 @@ void main() {
   });
 
   test('has an ancestor folder that exists', () {
-    void expectAncestorExists(String path) {
+    void expectAncestorExists(String? path) {
+      if (path == null) {
+        // runtimeHome may be undefined on Linux.
+        return;
+      }
       // We expect that first two segments of the path exist. This is really
       // just a dummy check that some part of the path exists.
       final ancestorPath = p.joinAll(p.split(path).take(2));

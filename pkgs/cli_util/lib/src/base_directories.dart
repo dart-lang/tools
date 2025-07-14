@@ -76,7 +76,7 @@ final class BaseDirectories {
   String get cacheHome => _cacheHome;
 
   late final _cacheHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.cache), tool);
+      path.join(_baseDirectory(_XdgBaseDirectoryKind.cache)!, tool);
 
   /// Path of the directory where the tool will place its configuration.
   ///
@@ -106,7 +106,7 @@ final class BaseDirectories {
   String get configHome => _configHome;
 
   late final _configHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.config), tool);
+      path.join(_baseDirectory(_XdgBaseDirectoryKind.config)!, tool);
 
   /// Path of the directory where the tool will place its user data.
   ///
@@ -136,7 +136,7 @@ final class BaseDirectories {
   String get dataHome => _dataHome;
 
   late final _dataHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.data), tool);
+      path.join(_baseDirectory(_XdgBaseDirectoryKind.data)!, tool);
 
   /// Path of the directory where the tool will place its runtime data.
   ///
@@ -146,6 +146,10 @@ final class BaseDirectories {
   /// This is a location appropriate for storing runtime data for the current
   /// session. For example: undo history.
   ///
+  /// This directory might be undefined on Linux, in such case a warning should
+  /// be printed a a suitable fallback (such as a temporary directory) should be
+  /// used.
+  ///
   /// The directory location depends on the current [Platform.operatingSystem]:
   /// - on **Windows**:
   ///   - `%LOCALAPPDATA%\<tool>`
@@ -153,7 +157,7 @@ final class BaseDirectories {
   ///   - `$HOME/Library/Caches/TemporaryItems/<tool>`
   /// - on **Linux**:
   ///   - `$XDG_RUNTIME_HOME/<tool>` if `$XDG_RUNTIME_HOME` is defined, and
-  ///   - `$HOME/.cache/<tool>` otherwise.
+  ///   - `null` otherwise.
   ///
   /// The directory won't be created, the method merely returns the recommended
   /// location.
@@ -163,10 +167,10 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String get runtimeHome => _runtimeHome;
+  String? get runtimeHome => _runtimeHome;
 
   late final _runtimeHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.runtime), tool);
+      _join(_baseDirectory(_XdgBaseDirectoryKind.runtime), tool);
 
   /// Path of the directory where the tool will place its state.
   ///
@@ -198,9 +202,9 @@ final class BaseDirectories {
   String get stateHome => _stateHome;
 
   late final _stateHome =
-      path.join(_baseDirectory(_XdgBaseDirectoryKind.state), tool);
+      path.join(_baseDirectory(_XdgBaseDirectoryKind.state)!, tool);
 
-  String _baseDirectory(_XdgBaseDirectoryKind directoryKind) {
+  String? _baseDirectory(_XdgBaseDirectoryKind directoryKind) {
     if (Platform.isWindows) {
       return _baseDirectoryWindows(directoryKind);
     }
@@ -236,14 +240,13 @@ final class BaseDirectories {
           path.join(_home, 'Library', 'Caches', 'TemporaryItems'),
       };
 
-  String _baseDirectoryLinux(_XdgBaseDirectoryKind dir) {
+  String? _baseDirectoryLinux(_XdgBaseDirectoryKind dir) {
     if (Platform.isLinux) {
       final xdgEnv = switch (dir) {
         _XdgBaseDirectoryKind.config => 'XDG_CONFIG_HOME',
         _XdgBaseDirectoryKind.data => 'XDG_DATA_HOME',
         _XdgBaseDirectoryKind.state => 'XDG_STATE_HOME',
         _XdgBaseDirectoryKind.cache => 'XDG_CACHE_HOME',
-        // Note, DIR instead of HOME.
         _XdgBaseDirectoryKind.runtime => 'XDG_RUNTIME_DIR',
       };
       final envVar = _environment[xdgEnv];
@@ -254,7 +257,8 @@ final class BaseDirectories {
 
     switch (dir) {
       case _XdgBaseDirectoryKind.runtime:
-      // Applications should print a fallback message ideally.
+        // Applications should chose a different directory and print a warning.
+        return null;
       case _XdgBaseDirectoryKind.cache:
         return path.join(_home, '.cache');
       case _XdgBaseDirectoryKind.config:
@@ -283,4 +287,11 @@ enum _XdgBaseDirectoryKind {
   // well defined of locations on Windows and MacOS.
   runtime,
   state,
+}
+
+String? _join(String? part1, String? part2) {
+  if (part1 == null || part2 == null) {
+    return null;
+  }
+  return path.join(part1, part2);
 }
