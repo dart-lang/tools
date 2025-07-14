@@ -112,7 +112,7 @@ final class BaseDirectories {
   /// operating system. For large data use [stateHome] instead.
   ///
   /// This is a location appropriate for storing application specific
-  /// data for the current user.
+  /// data for the current user. For example: documents created by the user.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
   /// - on **Windows**:
@@ -140,7 +140,7 @@ final class BaseDirectories {
   /// that needs to persist between sessions, use [stateHome] instead.
   ///
   /// This is a location appropriate for storing runtime data for the current
-  /// session.
+  /// session. For example: undo history.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
   /// - on **Windows**:
@@ -168,8 +168,9 @@ final class BaseDirectories {
   /// devices by the OS. For data that may be backed up and synchronized, use
   /// [dataHome] instead.
   ///
-  /// This is a location appropriate for storing application specific state for
-  /// the current user.
+  /// This is a location appropriate for storing data which is either not
+  /// important enougn, not small enough, or not portable enough to store in
+  /// [dataHome]. For example: logs and indices.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
   /// - on **Windows**:
