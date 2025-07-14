@@ -112,7 +112,7 @@ final class BaseDirectories {
   /// operating system. For large data use [stateHome] instead.
   ///
   /// This is a location appropriate for storing application specific
-  /// semi-permanent data for the current user.
+  /// data for the current user.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
   /// - on **Windows**:
