@@ -30,7 +30,7 @@ final class BaseDirectories {
   /// The name is used to provide a subdirectory inside the base directories.
   ///
   /// This should be a valid directory name on every operating system. The name
-  /// is typically a camel-cased. For example: `"MyApp"`.
+  /// is typically camel-cased. For example: `"MyApp"`.
   final String tool;
 
   /// The environment variables to use to determine the base directories.
@@ -49,7 +49,7 @@ final class BaseDirectories {
 
   /// Path of the directory where the tool will place its caches.
   ///
-  /// The cache may be purged by the operating system or use at any time.
+  /// The cache may be purged by the operating system or user at any time.
   /// Applications should be able to reconstruct any data stored here. If [tool]
   /// cannot handle data being purged, use [runtimeHome] or [dataHome] instead.
   ///
@@ -73,9 +73,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String get cacheHome => _cacheHome;
-
-  late final _cacheHome =
+  late final String cacheHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.cache)!, tool);
 
   /// Path of the directory where the tool will place its configuration.
@@ -103,9 +101,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String get configHome => _configHome;
-
-  late final _configHome =
+  late final String configHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.config)!, tool);
 
   /// Path of the directory where the tool will place its user data.
@@ -133,9 +129,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String get dataHome => _dataHome;
-
-  late final _dataHome =
+  late final String dataHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.data)!, tool);
 
   /// Path of the directory where the tool will place its runtime data.
@@ -147,8 +141,8 @@ final class BaseDirectories {
   /// session. For example: undo history.
   ///
   /// This directory might be undefined on Linux, in such case a warning should
-  /// be printed a a suitable fallback (such as a temporary directory) should be
-  /// used.
+  /// be printed and a suitable fallback (such as a temporary directory) should
+  /// be used.
   ///
   /// The directory location depends on the current [Platform.operatingSystem]:
   /// - on **Windows**:
@@ -167,9 +161,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String? get runtimeHome => _runtimeHome;
-
-  late final _runtimeHome =
+  late final String? runtimeHome =
       _join(_baseDirectory(_XdgBaseDirectoryKind.runtime), tool);
 
   /// Path of the directory where the tool will place its state.
@@ -199,9 +191,7 @@ final class BaseDirectories {
   ///
   /// Throws an [EnvironmentNotFoundException] if a necessary environment
   /// variable is undefined.
-  String get stateHome => _stateHome;
-
-  late final _stateHome =
+  late final String stateHome =
       path.join(_baseDirectory(_XdgBaseDirectoryKind.state)!, tool);
 
   String? _baseDirectory(_XdgBaseDirectoryKind directoryKind) {
