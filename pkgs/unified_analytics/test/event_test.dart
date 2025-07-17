@@ -400,6 +400,47 @@ void main() {
     expect(constructedEvent.eventData.length, 4);
   });
 
+  test('Event.flutterWasmDryRun constructed', () {
+    Event generateEventNoFindings() => Event.flutterWasmDryRun(
+          result: 'success',
+          exitCode: 123,
+        );
+
+    final constructedEvent1 = generateEventNoFindings();
+
+    expect(generateEventNoFindings, returnsNormally);
+    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
+    expect(constructedEvent1.eventData['result'], 'success');
+    expect(constructedEvent1.eventData['exitCode'], 123);
+    expect(constructedEvent1.eventData.length, 2);
+  });
+  test('Event.flutterWasmDryRun constructed', () {
+    Event generateEventNoFindings() => Event.flutterWasmDryRun(
+          result: 'success',
+          exitCode: 123,
+        );
+
+    final constructedEvent1 = generateEventNoFindings();
+
+    expect(generateEventNoFindings, returnsNormally);
+    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
+    expect(constructedEvent1.eventData['result'], 'success');
+    expect(constructedEvent1.eventData['exitCode'], 123);
+    expect(constructedEvent1.eventData.length, 2);
+
+    Event generateEventFindings() => Event.flutterWasmDryRun(
+        result: 'success', exitCode: 123, findingsSummary: '1,2,3');
+
+    final constructedEvent2 = generateEventFindings();
+
+    expect(generateEventFindings, returnsNormally);
+    expect(constructedEvent2.eventName, DashEvent.flutterWasmDryRun);
+    expect(constructedEvent2.eventData['result'], 'success');
+    expect(constructedEvent2.eventData['exitCode'], 123);
+    expect(constructedEvent2.eventData['findings'], '1,2,3');
+    expect(constructedEvent2.eventData.length, 3);
+  });
+
   test('Event.flutterInjectDarwinPlugins constructed', () {
     Event generateEvent() => Event.flutterInjectDarwinPlugins(
           platform: 'ios',
@@ -688,7 +729,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 29;
+    final eventsAccountedForInTests = 30;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

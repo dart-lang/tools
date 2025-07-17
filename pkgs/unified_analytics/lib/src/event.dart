@@ -567,6 +567,19 @@ final class Event {
           },
         );
 
+  Event.flutterWasmDryRun({
+    required String result,
+    required int exitCode,
+    String? findingsSummary,
+  }) : this._(
+          eventName: DashEvent.flutterWasmDryRun,
+          eventData: {
+            'result': result,
+            'exitCode': exitCode,
+            if (findingsSummary != null) 'findings': findingsSummary,
+          },
+        );
+
   /// Provides information about the plugins injected into an iOS or macOS
   /// project.
   ///
