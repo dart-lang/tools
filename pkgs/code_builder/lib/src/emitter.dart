@@ -1,4 +1,4 @@
-// Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -7,6 +7,7 @@ import 'base.dart';
 import 'specs/class.dart';
 import 'specs/code.dart';
 import 'specs/constructor.dart';
+import 'specs/control.dart';
 import 'specs/directive.dart';
 import 'specs/enum.dart';
 import 'specs/expression.dart';
@@ -51,7 +52,7 @@ StringSink visitAll<T>(
 }
 
 class DartEmitter extends Object
-    with CodeEmitter, ExpressionEmitter
+    with CodeEmitter, ExpressionEmitter, ControlBlockEmitter
     implements SpecVisitor<StringSink> {
   @override
   final Allocator allocator;

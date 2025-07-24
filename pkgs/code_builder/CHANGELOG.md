@@ -1,14 +1,22 @@
 ## 4.10.2-wip
 
 * Upgrade `dart_style` and `source_gen` to remove `package:macros` dependency.
+
 * Require Dart `^3.6.0` due to the upgrades.
+
 * Support `Expression.newInstanceNamed` with empty name
+
 * Fixed bug: Fields declared with `static` and `external` now produce code with correct order
+
 * Add more helpers on `Expression`:
   * Add `Expression.matchCase`
   * Add `Expression.yielded`
   * Add `Expression.yieldStarred`
-* Add support for control-flow expressions via `ControlExpression`
+
+* Support emitting control-flow loops
+  * Add `ForLoop` and `ForLoopBuilder` for traditional `for` loops.
+  * Add `ForInLoop` and `ForInLoopBuilder` for `for-in` and `await-for` loops.
+  * Add `WhileLoop` and `WhileLoopBuilder` for `while` and `do-while` loops.
 
 ## 4.10.1
 

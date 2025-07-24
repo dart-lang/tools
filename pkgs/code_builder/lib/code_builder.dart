@@ -10,6 +10,16 @@ export 'src/specs/class.dart' show Class, ClassBuilder, ClassModifier;
 export 'src/specs/code.dart'
     show Block, BlockBuilder, Code, ScopedCode, StaticCode, lazyCode;
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
+export 'src/specs/control.dart'
+    show
+        ControlBlockEmitter,
+        ControlBlockVisitor,
+        ForInLoop,
+        ForInLoopBuilder,
+        ForLoop,
+        ForLoopBuilder,
+        WhileLoop,
+        WhileLoopBuilder;
 export 'src/specs/directive.dart'
     show Directive, DirectiveBuilder, DirectiveType;
 export 'src/specs/enum.dart'
@@ -18,7 +28,6 @@ export 'src/specs/expression.dart'
     show
         BinaryExpression,
         CodeExpression,
-        ControlExpression,
         Expression,
         ExpressionEmitter,
         ExpressionVisitor,

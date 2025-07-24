@@ -773,10 +773,6 @@ abstract mixin class ExpressionEmitter
       [StringSink? output]) {
     output ??= StringBuffer();
 
-    if (expression.label case final String label) {
-      output.write('$label: ');
-    }
-
     output.write(expression.control);
 
     if (expression.body == null || expression.body!.isEmpty) {

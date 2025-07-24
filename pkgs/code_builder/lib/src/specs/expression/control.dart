@@ -1,4 +1,4 @@
-// Copyright (c) 20125, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -13,6 +13,7 @@ part of '../expression.dart';
 /// enclosed in parenthesis ([parenthesised]).
 ///
 /// {@category controlFlow}
+@internal
 class ControlExpression extends Expression {
   /// The control statement (e.g. `if`, `for`).
   final String control;
@@ -46,13 +47,8 @@ class ControlExpression extends Expression {
   /// If [body] is `null` or empty, [parenthesised] will have no effect.
   final bool parenthesised;
 
-  /// This expression's label.
-  ///
-  /// https://dart.dev/language/loops#labels
-  final String? label;
-
   const ControlExpression._(this.control,
-      {this.body, this.separator, this.parenthesised = true, this.label});
+      {this.body, this.separator, this.parenthesised = true});
 
   @override
   R accept<R>(covariant ExpressionVisitor<R> visitor, [R? context]) =>
@@ -232,13 +228,4 @@ class ControlExpression extends Expression {
   ///
 
   static const finallyStatement = ControlExpression._('finally');
-
-  /// Returns `label: {this}`
-  ///
-  /// https://dart.dev/language/loops#labels
-  ControlExpression labeled(String label) => ControlExpression._(control,
-      body: body,
-      label: label,
-      parenthesised: parenthesised,
-      separator: separator);
 }
