@@ -1,3 +1,5 @@
+# code_builder
+
 [![Build Status](https://github.com/dart-lang/tools/actions/workflows/code_builder.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/code_builder.yaml)
 [![Pub package](https://img.shields.io/pub/v/code_builder.svg)](https://pub.dev/packages/code_builder)
 [![package publisher](https://img.shields.io/pub/publisher/code_builder.svg)](https://pub.dev/packages/code_builder/publisher)
@@ -91,11 +93,12 @@ will be on a best-effort basis.
 > format this repository. You can run it simply from the command-line:
 >
 > ```sh
-> $ dart run dart_style:format -w .
+> dart run dart_style:format -w .
 > ```
 
 [issue]: https://github.com/dart-lang/tools/issues
 [pull]: https://github.com/dart-lang/tools/pulls
+[docs]: https://pub.dev/documentation/code_builder/latest/
 
 ### Updating generated (`.g.dart`) files
 
