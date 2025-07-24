@@ -260,7 +260,7 @@ void main() {
 
 ## 2.4.0
 
-* Add `equalTo`, `notEqualTo`, `greaterThan`, `lessThan`, `greateOrEqualTo`, and
+* Add `equalTo`, `notEqualTo`, `greaterThan`, `lessThan`, `greaterOrEqualTo`, and
   `lessOrEqualTo` to `Expression`.
 
 ## 2.3.0
@@ -709,7 +709,7 @@ Avoid creating symbols that can collide with the Dart language:
 * Add support for `switch` statements
 * Add support for a raw expression and statement
   * `new ExpressionBuilder.raw(...)`
-  * `new StatemnetBuilder.raw(...)`
+  * `new StatementBuilder.raw(...)`
 
 This should help cover any cases not covered with builders today.
 
