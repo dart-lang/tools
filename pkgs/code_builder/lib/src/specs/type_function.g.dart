@@ -23,7 +23,7 @@ class _$FunctionType extends FunctionType {
   final bool? isNullable;
 
   factory _$FunctionType([void Function(FunctionTypeBuilder)? updates]) =>
-      (new FunctionTypeBuilder()..update(updates)).build() as _$FunctionType;
+      (FunctionTypeBuilder()..update(updates)).build() as _$FunctionType;
 
   _$FunctionType._(
       {this.returnType,
@@ -33,25 +33,13 @@ class _$FunctionType extends FunctionType {
       required this.namedParameters,
       required this.namedRequiredParameters,
       this.isNullable})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(types, r'FunctionType', 'types');
-    BuiltValueNullFieldError.checkNotNull(
-        requiredParameters, r'FunctionType', 'requiredParameters');
-    BuiltValueNullFieldError.checkNotNull(
-        optionalParameters, r'FunctionType', 'optionalParameters');
-    BuiltValueNullFieldError.checkNotNull(
-        namedParameters, r'FunctionType', 'namedParameters');
-    BuiltValueNullFieldError.checkNotNull(
-        namedRequiredParameters, r'FunctionType', 'namedRequiredParameters');
-  }
-
+      : super._();
   @override
   FunctionType rebuild(void Function(FunctionTypeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$FunctionTypeBuilder toBuilder() =>
-      new _$FunctionTypeBuilder()..replace(this);
+  _$FunctionTypeBuilder toBuilder() => _$FunctionTypeBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -201,7 +189,6 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
 
   @override
   void replace(FunctionType other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$FunctionType;
   }
 
@@ -217,14 +204,15 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
     _$FunctionType _$result;
     try {
       _$result = _$v ??
-          new _$FunctionType._(
-              returnType: returnType,
-              types: types.build(),
-              requiredParameters: requiredParameters.build(),
-              optionalParameters: optionalParameters.build(),
-              namedParameters: namedParameters.build(),
-              namedRequiredParameters: namedRequiredParameters.build(),
-              isNullable: isNullable);
+          _$FunctionType._(
+            returnType: returnType,
+            types: types.build(),
+            requiredParameters: requiredParameters.build(),
+            optionalParameters: optionalParameters.build(),
+            namedParameters: namedParameters.build(),
+            namedRequiredParameters: namedRequiredParameters.build(),
+            isNullable: isNullable,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -239,7 +227,7 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
         _$failedField = 'namedRequiredParameters';
         namedRequiredParameters.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'FunctionType', _$failedField, e.toString());
       }
       rethrow;

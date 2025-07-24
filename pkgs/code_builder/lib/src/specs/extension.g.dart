@@ -23,7 +23,7 @@ class _$Extension extends Extension {
   final String? name;
 
   factory _$Extension([void Function(ExtensionBuilder)? updates]) =>
-      (new ExtensionBuilder()..update(updates)).build() as _$Extension;
+      (ExtensionBuilder()..update(updates)).build() as _$Extension;
 
   _$Extension._(
       {required this.annotations,
@@ -33,21 +33,13 @@ class _$Extension extends Extension {
       required this.methods,
       required this.fields,
       this.name})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Extension', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Extension', 'docs');
-    BuiltValueNullFieldError.checkNotNull(types, r'Extension', 'types');
-    BuiltValueNullFieldError.checkNotNull(methods, r'Extension', 'methods');
-    BuiltValueNullFieldError.checkNotNull(fields, r'Extension', 'fields');
-  }
-
+      : super._();
   @override
   Extension rebuild(void Function(ExtensionBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$ExtensionBuilder toBuilder() => new _$ExtensionBuilder()..replace(this);
+  _$ExtensionBuilder toBuilder() => _$ExtensionBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -196,7 +188,6 @@ class _$ExtensionBuilder extends ExtensionBuilder {
 
   @override
   void replace(Extension other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Extension;
   }
 
@@ -212,14 +203,15 @@ class _$ExtensionBuilder extends ExtensionBuilder {
     _$Extension _$result;
     try {
       _$result = _$v ??
-          new _$Extension._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              on: on,
-              types: types.build(),
-              methods: methods.build(),
-              fields: fields.build(),
-              name: name);
+          _$Extension._(
+            annotations: annotations.build(),
+            docs: docs.build(),
+            on: on,
+            types: types.build(),
+            methods: methods.build(),
+            fields: fields.build(),
+            name: name,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -235,7 +227,7 @@ class _$ExtensionBuilder extends ExtensionBuilder {
         _$failedField = 'fields';
         fields.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'Extension', _$failedField, e.toString());
       }
       rethrow;

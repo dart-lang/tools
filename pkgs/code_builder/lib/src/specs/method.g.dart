@@ -35,7 +35,7 @@ class _$Method extends Method {
   final Reference? returns;
 
   factory _$Method([void Function(MethodBuilder)? updates]) =>
-      (new MethodBuilder()..update(updates)).build() as _$Method;
+      (MethodBuilder()..update(updates)).build() as _$Method;
 
   _$Method._(
       {required this.annotations,
@@ -51,25 +51,13 @@ class _$Method extends Method {
       this.type,
       this.modifier,
       this.returns})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Method', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Method', 'docs');
-    BuiltValueNullFieldError.checkNotNull(types, r'Method', 'types');
-    BuiltValueNullFieldError.checkNotNull(
-        optionalParameters, r'Method', 'optionalParameters');
-    BuiltValueNullFieldError.checkNotNull(
-        requiredParameters, r'Method', 'requiredParameters');
-    BuiltValueNullFieldError.checkNotNull(external, r'Method', 'external');
-    BuiltValueNullFieldError.checkNotNull(static, r'Method', 'static');
-  }
-
+      : super._();
   @override
   Method rebuild(void Function(MethodBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$MethodBuilder toBuilder() => new _$MethodBuilder()..replace(this);
+  _$MethodBuilder toBuilder() => _$MethodBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -314,7 +302,6 @@ class _$MethodBuilder extends MethodBuilder {
 
   @override
   void replace(Method other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Method;
   }
 
@@ -330,22 +317,23 @@ class _$MethodBuilder extends MethodBuilder {
     _$Method _$result;
     try {
       _$result = _$v ??
-          new _$Method._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              types: types.build(),
-              optionalParameters: optionalParameters.build(),
-              requiredParameters: requiredParameters.build(),
-              body: body,
-              external: BuiltValueNullFieldError.checkNotNull(
-                  external, r'Method', 'external'),
-              lambda: lambda,
-              static: BuiltValueNullFieldError.checkNotNull(
-                  static, r'Method', 'static'),
-              name: name,
-              type: type,
-              modifier: modifier,
-              returns: returns);
+          _$Method._(
+            annotations: annotations.build(),
+            docs: docs.build(),
+            types: types.build(),
+            optionalParameters: optionalParameters.build(),
+            requiredParameters: requiredParameters.build(),
+            body: body,
+            external: BuiltValueNullFieldError.checkNotNull(
+                external, r'Method', 'external'),
+            lambda: lambda,
+            static: BuiltValueNullFieldError.checkNotNull(
+                static, r'Method', 'static'),
+            name: name,
+            type: type,
+            modifier: modifier,
+            returns: returns,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -360,7 +348,7 @@ class _$MethodBuilder extends MethodBuilder {
         _$failedField = 'requiredParameters';
         requiredParameters.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'Method', _$failedField, e.toString());
       }
       rethrow;
@@ -395,7 +383,7 @@ class _$Parameter extends Parameter {
   final bool covariant;
 
   factory _$Parameter([void Function(ParameterBuilder)? updates]) =>
-      (new ParameterBuilder()..update(updates)).build() as _$Parameter;
+      (ParameterBuilder()..update(updates)).build() as _$Parameter;
 
   _$Parameter._(
       {this.defaultTo,
@@ -409,25 +397,13 @@ class _$Parameter extends Parameter {
       this.type,
       required this.required,
       required this.covariant})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(name, r'Parameter', 'name');
-    BuiltValueNullFieldError.checkNotNull(named, r'Parameter', 'named');
-    BuiltValueNullFieldError.checkNotNull(toThis, r'Parameter', 'toThis');
-    BuiltValueNullFieldError.checkNotNull(toSuper, r'Parameter', 'toSuper');
-    BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Parameter', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Parameter', 'docs');
-    BuiltValueNullFieldError.checkNotNull(types, r'Parameter', 'types');
-    BuiltValueNullFieldError.checkNotNull(required, r'Parameter', 'required');
-    BuiltValueNullFieldError.checkNotNull(covariant, r'Parameter', 'covariant');
-  }
-
+      : super._();
   @override
   Parameter rebuild(void Function(ParameterBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$ParameterBuilder toBuilder() => new _$ParameterBuilder()..replace(this);
+  _$ParameterBuilder toBuilder() => _$ParameterBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -640,7 +616,6 @@ class _$ParameterBuilder extends ParameterBuilder {
 
   @override
   void replace(Parameter other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Parameter;
   }
 
@@ -656,24 +631,25 @@ class _$ParameterBuilder extends ParameterBuilder {
     _$Parameter _$result;
     try {
       _$result = _$v ??
-          new _$Parameter._(
-              defaultTo: defaultTo,
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'Parameter', 'name'),
-              named: BuiltValueNullFieldError.checkNotNull(
-                  named, r'Parameter', 'named'),
-              toThis: BuiltValueNullFieldError.checkNotNull(
-                  toThis, r'Parameter', 'toThis'),
-              toSuper: BuiltValueNullFieldError.checkNotNull(
-                  toSuper, r'Parameter', 'toSuper'),
-              annotations: annotations.build(),
-              docs: docs.build(),
-              types: types.build(),
-              type: type,
-              required: BuiltValueNullFieldError.checkNotNull(
-                  required, r'Parameter', 'required'),
-              covariant: BuiltValueNullFieldError.checkNotNull(
-                  covariant, r'Parameter', 'covariant'));
+          _$Parameter._(
+            defaultTo: defaultTo,
+            name: BuiltValueNullFieldError.checkNotNull(
+                name, r'Parameter', 'name'),
+            named: BuiltValueNullFieldError.checkNotNull(
+                named, r'Parameter', 'named'),
+            toThis: BuiltValueNullFieldError.checkNotNull(
+                toThis, r'Parameter', 'toThis'),
+            toSuper: BuiltValueNullFieldError.checkNotNull(
+                toSuper, r'Parameter', 'toSuper'),
+            annotations: annotations.build(),
+            docs: docs.build(),
+            types: types.build(),
+            type: type,
+            required: BuiltValueNullFieldError.checkNotNull(
+                required, r'Parameter', 'required'),
+            covariant: BuiltValueNullFieldError.checkNotNull(
+                covariant, r'Parameter', 'covariant'),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -684,7 +660,7 @@ class _$ParameterBuilder extends ParameterBuilder {
         _$failedField = 'types';
         types.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'Parameter', _$failedField, e.toString());
       }
       rethrow;

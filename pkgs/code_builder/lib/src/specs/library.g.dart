@@ -25,7 +25,7 @@ class _$Library extends Library {
   final String? name;
 
   factory _$Library([void Function(LibraryBuilder)? updates]) =>
-      (new LibraryBuilder()..update(updates)).build() as _$Library;
+      (LibraryBuilder()..update(updates)).build() as _$Library;
 
   _$Library._(
       {required this.annotations,
@@ -36,23 +36,13 @@ class _$Library extends Library {
       this.generatedByComment,
       required this.ignoreForFile,
       this.name})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Library', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Library', 'docs');
-    BuiltValueNullFieldError.checkNotNull(directives, r'Library', 'directives');
-    BuiltValueNullFieldError.checkNotNull(body, r'Library', 'body');
-    BuiltValueNullFieldError.checkNotNull(comments, r'Library', 'comments');
-    BuiltValueNullFieldError.checkNotNull(
-        ignoreForFile, r'Library', 'ignoreForFile');
-  }
-
+      : super._();
   @override
   Library rebuild(void Function(LibraryBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$LibraryBuilder toBuilder() => new _$LibraryBuilder()..replace(this);
+  _$LibraryBuilder toBuilder() => _$LibraryBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -217,7 +207,6 @@ class _$LibraryBuilder extends LibraryBuilder {
 
   @override
   void replace(Library other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Library;
   }
 
@@ -233,15 +222,16 @@ class _$LibraryBuilder extends LibraryBuilder {
     _$Library _$result;
     try {
       _$result = _$v ??
-          new _$Library._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              directives: directives.build(),
-              body: body.build(),
-              comments: comments.build(),
-              generatedByComment: generatedByComment,
-              ignoreForFile: ignoreForFile.build(),
-              name: name);
+          _$Library._(
+            annotations: annotations.build(),
+            docs: docs.build(),
+            directives: directives.build(),
+            body: body.build(),
+            comments: comments.build(),
+            generatedByComment: generatedByComment,
+            ignoreForFile: ignoreForFile.build(),
+            name: name,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -259,7 +249,7 @@ class _$LibraryBuilder extends LibraryBuilder {
         _$failedField = 'ignoreForFile';
         ignoreForFile.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'Library', _$failedField, e.toString());
       }
       rethrow;
