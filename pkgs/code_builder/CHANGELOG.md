@@ -4,6 +4,11 @@
 * Require Dart `^3.6.0` due to the upgrades.
 * Support `Expression.newInstanceNamed` with empty name
 * Fixed bug: Fields declared with `static` and `external` now produce code with correct order
+* Add more helpers on `Expression`:
+  * Add `Expression.matchCase`
+  * Add `Expression.yielded`
+  * Add `Expression.yieldStarred`
+* Add support for control-flow expressions via `ControlExpression`
 
 ## 4.10.1
 
@@ -156,7 +161,7 @@ void main() {
 ## 3.4.1
 
 * Fix confusing mismatch description from `equalsDart`.
-  https://github.com/dart-lang/code_builder/issues/293
+  <https://github.com/dart-lang/code_builder/issues/293>
 
 ## 3.4.0
 
@@ -208,7 +213,6 @@ void main() {
 
 * `Expression.asA` is now wrapped with parenthesis so that further calls may be
   made on it as an expression.
-
 
 ## 3.1.0
 
@@ -346,7 +350,7 @@ void main() {
 ```
 
 * Added `nullSafeProperty` to `Expression` to access properties with `?.`
-* Added `conditional` to `Expression` to use the ternary operator `? : `
+* Added `conditional` to `Expression` to use the ternary operator `? :`
 * Methods taking `positionalArguments` accept `Iterable<Expression>`
 * **BUG FIX**: Parameters can take a `FunctionType` as a `type`.
   `Reference.type` now returns a `Reference`. Note that this change is
@@ -572,7 +576,7 @@ final animal = new Class((b) => b
 ## 2.0.0-alpha
 
 * Complete re-write to not use `package:analyzer`.
-* Code generation now properly uses the _builder_ pattern (via `built_value`).
+* Code generation now properly uses the *builder* pattern (via `built_value`).
 * See examples and tests for details.
 
 ## 1.0.4
@@ -606,38 +610,38 @@ that the entire Dart language is buildable with our API, though.
 
 **Contributions are welcome.**
 
-- Exposed `uri` in `ImportBuilder`, `ExportBuilder`, and `Part[Of]Builder`.
+* Exposed `uri` in `ImportBuilder`, `ExportBuilder`, and `Part[Of]Builder`.
 
 ## 1.0.0-beta+7
 
-- Added `ExpressionBuilder#ternary`.
+* Added `ExpressionBuilder#ternary`.
 
 ## 1.0.0-beta+6
 
-- Added `TypeDefBuilder`.
-- Added `FunctionParameterBuilder`.
-- Added `asAbstract` to various `MethodBuilder` constructors.
+* Added `TypeDefBuilder`.
+* Added `FunctionParameterBuilder`.
+* Added `asAbstract` to various `MethodBuilder` constructors.
 
 ## 1.0.0-beta+5
 
-- Re-published the package without merge conflicts.
+* Re-published the package without merge conflicts.
 
 ## 1.0.0-beta+4
 
-- Renamed `PartBuilder` to `PartOfBuilder`.
-- Added a new class, `PartBuilder`, to represent `part '...dart'` directives.
-- Added the `HasAnnotations` interface to all library/part/directive builders.
-- Added `asFactory` and `asConst` to `ConstructorBuilder`.
-- Added `ConstructorBuilder.redirectTo` for a redirecting factory constructor.
-- Added a `name` getter to `ReferenceBuilder`.
-- Supplying an empty constructor name (`''`) is equivalent to `null` (default).
-- Automatically encodes string literals with multiple lines as `'''`.
-- Added `asThrow` to `ExpressionBuilder`.
-- Fixed a bug that prevented `FieldBuilder` from being used at the top-level.
+* Renamed `PartBuilder` to `PartOfBuilder`.
+* Added a new class, `PartBuilder`, to represent `part '...dart'` directives.
+* Added the `HasAnnotations` interface to all library/part/directive builders.
+* Added `asFactory` and `asConst` to `ConstructorBuilder`.
+* Added `ConstructorBuilder.redirectTo` for a redirecting factory constructor.
+* Added a `name` getter to `ReferenceBuilder`.
+* Supplying an empty constructor name (`''`) is equivalent to `null` (default).
+* Automatically encodes string literals with multiple lines as `'''`.
+* Added `asThrow` to `ExpressionBuilder`.
+* Fixed a bug that prevented `FieldBuilder` from being used at the top-level.
 
 ## 1.0.0-beta+3
 
-- Added support for `genericTypes` parameter for `ExpressionBuilder#invoke`:
+* Added support for `genericTypes` parameter for `ExpressionBuilder#invoke`:
 
 ```dart
 expect(
@@ -650,7 +654,7 @@ expect(
 );
 ```
 
-- Added a `castAs` method to `ExpressionBuilder`:
+* Added a `castAs` method to `ExpressionBuilder`:
 
 ```dart
 expect(
@@ -663,7 +667,7 @@ expect(
 
 ### BREAKING CHANGES
 
-- Removed `namedNewInstance` and `namedConstInstance`, replaced with `constructor: `:
+* Removed `namedNewInstance` and `namedConstInstance`, replaced with `constructor:`:
 
 ```dart
 expect(
@@ -674,7 +678,7 @@ expect(
 );
 ```
 
-- Renamed `named` parameter to `namedArguments`:
+* Renamed `named` parameter to `namedArguments`:
 
 ```dart
 expect(
@@ -696,25 +700,25 @@ expect(
 
 Avoid creating symbols that can collide with the Dart language:
 
-- `MethodModifier.async` -> `MethodModifier.asAsync`
-- `MethodModifier.asyncStar` -> `MethodModifier.asAsyncStar`
-- `MethodModifier.syncStar` -> `MethodModifier.asSyncStar`
+* `MethodModifier.async` -> `MethodModifier.asAsync`
+* `MethodModifier.asyncStar` -> `MethodModifier.asAsyncStar`
+* `MethodModifier.syncStar` -> `MethodModifier.asSyncStar`
 
 ## 1.0.0-beta+1
 
-- Add support for `switch` statements
-- Add support for a raw expression and statement
-  - `new ExpressionBuilder.raw(...)`
-  - `new StatemnetBuilder.raw(...)`
+* Add support for `switch` statements
+* Add support for a raw expression and statement
+  * `new ExpressionBuilder.raw(...)`
+  * `new StatemnetBuilder.raw(...)`
 
 This should help cover any cases not covered with builders today.
 
-- Allow referring to a `ClassBuilder` and `TypeBuilder` as an expression
-- Add support for accessing the index `[]` operator on an expression
+* Allow referring to a `ClassBuilder` and `TypeBuilder` as an expression
+* Add support for accessing the index `[]` operator on an expression
 
 ### BREAKING CHANGES
 
-- Changed `ExpressionBuilder.asAssign` to always take an `ExpressionBuilder` as
+* Changed `ExpressionBuilder.asAssign` to always take an `ExpressionBuilder` as
   target and removed the `value` property. Most changes are pretty simple, and
   involve just using `reference(...)`. For example:
 
@@ -726,26 +730,26 @@ literal(true).asAssign(reference('flag'))
 
 ## 1.0.0-beta
 
-- Add support for `async`, `sync`, `sync*` functions
-- Add support for expression `asAwait`, `asYield`, `asYieldStar`
-- Add `toExportBuilder` and `toImportBuilder` to types and references
-- Fix an import scoping bug in `return` statements and named constructor invocations.
-- Added constructor initializer support
-- Add `while` and `do {} while` loop support
-- Add `for` and `for-in` support
-- Added a `name` getter for `ParameterBuilder`
+* Add support for `async`, `sync`, `sync*` functions
+* Add support for expression `asAwait`, `asYield`, `asYieldStar`
+* Add `toExportBuilder` and `toImportBuilder` to types and references
+* Fix an import scoping bug in `return` statements and named constructor invocations.
+* Added constructor initializer support
+* Add `while` and `do {} while` loop support
+* Add `for` and `for-in` support
+* Added a `name` getter for `ParameterBuilder`
 
 ## 1.0.0-alpha+7
 
-- Make use of the new analyzer APIs in preparation for analyzer version 0.30.
+* Make use of the new analyzer APIs in preparation for analyzer version 0.30.
 
 ## 1.0.0-alpha+6
 
-- `MethodBuilder.closure` emits properly as a top-level function
+* `MethodBuilder.closure` emits properly as a top-level function
 
 ## 1.0.0-alpha+5
 
-- MethodBuilder with no statements will create an empty block instead of
+* MethodBuilder with no statements will create an empty block instead of
   a semicolon.
 
 ```dart
@@ -753,7 +757,7 @@ literal(true).asAssign(reference('flag'))
 method('main')
 ```
 
-- Fix lambdas and closures to not include a trailing semicolon when used
+* Fix lambdas and closures to not include a trailing semicolon when used
   as an expression.
 
 ```dart
@@ -763,13 +767,13 @@ method('main')
 
 ## 1.0.0-alpha+4
 
-- Add support for the latest `pkg/analyzer`.
+* Add support for the latest `pkg/analyzer`.
 
 ## 1.0.0-alpha+3
 
-- BREAKING CHANGE: Added generics support to `TypeBuilder`:
+* BREAKING CHANGE: Added generics support to `TypeBuilder`:
 
-`importFrom` becomes a _named_, not a positional argument, and the named
+`importFrom` becomes a *named*, not a positional argument, and the named
 argument `genericTypes` is added (`Iterable<TypeBuilder>`).
 
 ```dart
@@ -777,15 +781,15 @@ argument `genericTypes` is added (`Iterable<TypeBuilder>`).
 new TypeBuilder('List', genericTypes: [reference('String')])
 ```
 
-- Added generic support to `ReferenceBuilder`:
+* Added generic support to `ReferenceBuilder`:
 
 ```dart
 // List<String>
 reference('List').toTyped([reference('String')])
 ```
 
-- Fixed a bug where `ReferenceBuilder.buildAst` was not implemented
-- Added `and` and `or` methods to `ExpressionBuilder`:
+* Fixed a bug where `ReferenceBuilder.buildAst` was not implemented
+* Added `and` and `or` methods to `ExpressionBuilder`:
 
 ```dart
 // true || false
@@ -795,7 +799,7 @@ literal(true).or(literal(false));
 literal(true).and(literal(false));
 ```
 
-- Added support for creating closures - `MethodBuilder.closure`:
+* Added support for creating closures - `MethodBuilder.closure`:
 
 ```dart
 // () => true
@@ -807,21 +811,21 @@ new MethodBuilder.closure(
 
 ## 1.0.0-alpha+2
 
-- Added `returnVoid` to well, `return;`
-- Added support for top-level field assignments:
+* Added `returnVoid` to well, `return;`
+* Added support for top-level field assignments:
 
 ```dart
 new LibraryBuilder()..addMember(literal(false).asConst('foo'))
 ```
 
-- Added support for specifying a `target` when using `asAssign`:
+* Added support for specifying a `target` when using `asAssign`:
 
 ```dart
 // Outputs bank.bar = goldBar
 reference('goldBar').asAssign('bar', target: reference('bank'))
 ```
 
-- Added support for the cascade operator:
+* Added support for the cascade operator:
 
 ```dart
 // Outputs foo..doThis()..doThat()
@@ -831,7 +835,7 @@ reference('foo').cascade((c) => <ExpressionBuilder> [
 ]);
 ```
 
-- Added support for accessing a property
+* Added support for accessing a property
 
 ```dart
 // foo.bar
@@ -840,20 +844,20 @@ reference('foo').property('bar');
 
 ## 1.0.0-alpha+1
 
-- Slight updates to confusing documentation.
-- Added support for null-aware assignments.
-- Added `show` and `hide` support to `ImportBuilder`
-- Added `deferred` support to `ImportBuilder`
-- Added `ExportBuilder`
-- Added `list` and `map` literals that support generic types
+* Slight updates to confusing documentation.
+* Added support for null-aware assignments.
+* Added `show` and `hide` support to `ImportBuilder`
+* Added `deferred` support to `ImportBuilder`
+* Added `ExportBuilder`
+* Added `list` and `map` literals that support generic types
 
 ## 1.0.0-alpha
 
-- Large refactor that makes the library more feature complete.
+* Large refactor that makes the library more feature complete.
 
 ## 0.1.1
 
-- Add the concept of `Scope` and change `toAst` to support it
+* Add the concept of `Scope` and change `toAst` to support it
 
 Now your entire AST tree can be scoped and import directives
 automatically added to a `LibraryBuilder` for you if you use
@@ -861,4 +865,4 @@ automatically added to a `LibraryBuilder` for you if you use
 
 ## 0.1.0
 
-- Initial version
+* Initial version
