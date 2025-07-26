@@ -12,12 +12,14 @@ export 'src/specs/code.dart'
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
 export 'src/specs/control.dart'
     show
-        ControlBlockEmitter,
-        ControlBlockVisitor,
+        Condition,
+        ConditionBuilder,
         ForInLoop,
         ForInLoopBuilder,
         ForLoop,
         ForLoopBuilder,
+        IfTree,
+        IfTreeBuilder,
         WhileLoop,
         WhileLoopBuilder;
 export 'src/specs/directive.dart'
@@ -28,6 +30,7 @@ export 'src/specs/expression.dart'
     show
         BinaryExpression,
         CodeExpression,
+        ControlFlow,
         Expression,
         ExpressionEmitter,
         ExpressionVisitor,

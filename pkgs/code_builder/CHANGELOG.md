@@ -10,15 +10,29 @@
 
 * Fixed bug: Fields declared with `static` and `external` now produce code with correct order
 
-* Add more helpers on `Expression`:
-  * Add `Expression.matchCase`
-  * Add `Expression.yielded`
-  * Add `Expression.yieldStarred`
+* Add `ControlFlow` extension on `Expression` to support control-flow helper functions
+  * Add `Expression.yielded` (via ext.)
+  * Add `Expression.yieldStarred` (via ext.)
+  * Add `Expression.ifThen` (via ext.)
+  * Add `Expression.loopWhile` (via ext.)
+  * Add `Expression.loopDoWhile` (via ext.)
+  * Add `Expression.loopForIn` (via ext.)
+  * Add static helper functions to `ControlFlow`:
+    * Add `ControlFlow.breakVoid`
+    * Add `ControlFlow.breakLabel`
+    * Add `ControlFlow.continueVoid`
+    * Add `ControlFlow.continueLabel`
+    * Add `ControlFlow.returnVoid`
+    * Add `ControlFlow.ifCase`
 
 * Support emitting control-flow loops
   * Add `ForLoop` and `ForLoopBuilder` for traditional `for` loops.
   * Add `ForInLoop` and `ForInLoopBuilder` for `for-in` and `await-for` loops.
   * Add `WhileLoop` and `WhileLoopBuilder` for `while` and `do-while` loops.
+
+* Support emitting `if` statements and `if`/`else if`/`else` trees
+  * Add `Condition` and `ConditionBuilder` for single statements
+  * Add `IfTree` and `IfTreeBuilder` for conditional trees
 
 ## 4.10.1
 

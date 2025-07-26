@@ -960,10 +960,6 @@ void main() {
     );
   });
 
-  test('should emit a case match expression', () {
-    expect(refer('foo').matchCase(refer('bar')), equalsDart('foo case bar'));
-  });
-
   test('should emit a yielded expression', () {
     expect(refer('foo').yielded, equalsDart('yield foo'));
   });

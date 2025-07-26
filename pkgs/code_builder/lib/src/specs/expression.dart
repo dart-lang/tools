@@ -8,6 +8,7 @@ import '../base.dart';
 import '../emitter.dart';
 import '../visitors.dart';
 import 'code.dart';
+import 'control.dart';
 import 'method.dart';
 import 'reference.dart';
 import 'type_function.dart';
@@ -196,12 +197,6 @@ abstract class Expression implements Spec {
         'await',
       );
 
-  /// Returns `yield {this}`
-  Expression get yielded => BinaryExpression._(_empty, this, 'yield');
-
-  /// Returns `yield* {this}`
-  Expression get yieldStarred => BinaryExpression._(_empty, this, 'yield*');
-
   /// Returns the result of `++this`.
   Expression operatorUnaryPrefixIncrement() =>
       BinaryExpression._(_empty, expression, '++', addSpace: false);
@@ -315,15 +310,6 @@ abstract class Expression implements Spec {
         other,
         '??=',
       );
-
-  /// Returns `{this} case {pattern}`.
-  ///
-  /// For use in [if-case](https://dart.dev/language/branches#if-case)
-  /// statements.
-  ///
-  /// {@category controlFlow}
-  Expression matchCase(Expression pattern) =>
-      BinaryExpression._(this, pattern, 'case');
 
   /// Return `var {name} = {this}`.
   @Deprecated('Use `declareVar(name).assign(expression)`')
@@ -537,7 +523,6 @@ abstract class ExpressionVisitor<T> implements SpecVisitor<T> {
       [T? context]);
   T visitParenthesizedExpression(ParenthesizedExpression expression,
       [T? context]);
-  T visitControlExpression(ControlExpression expression, [T? context]);
 }
 
 /// Knowledge of how to write valid Dart code from [ExpressionVisitor].
@@ -765,63 +750,6 @@ abstract mixin class ExpressionEmitter
     output.write('(');
     expression.inner.accept(this, output);
     output.write(')');
-    return output;
-  }
-
-  @override
-  StringSink visitControlExpression(ControlExpression expression,
-      [StringSink? output]) {
-    output ??= StringBuffer();
-
-    output.write(expression.control);
-
-    if (expression.body == null || expression.body!.isEmpty) {
-      return output;
-    }
-
-    final body = expression.body!; // convenience
-
-    output.write(' ');
-    if (expression.parenthesised) {
-      output.write('(');
-    }
-
-    if (body.length == 1) {
-      body.first?.accept(this, output);
-      if (expression.parenthesised) {
-        output.write(')');
-      }
-
-      return output;
-    }
-
-    if (expression.separator == null) {
-      throw ArgumentError(
-          'A separator must be provided when body contains '
-              'multiple expressions.',
-          'separator');
-    }
-
-    final separator = expression.separator!; // convenience
-
-    for (var i = 0; i < body.length; i++) {
-      final expression = body[i];
-
-      if (i != 0 && expression != null) {
-        output.write(' ');
-      }
-
-      expression?.accept(this, output);
-
-      if (i == body.length - 1) continue; // no separator after last item
-
-      output.write(separator);
-    }
-
-    if (expression.parenthesised) {
-      output.write(')');
-    }
-
     return output;
   }
 

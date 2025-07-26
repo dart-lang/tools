@@ -420,4 +420,222 @@ class WhileLoopBuilder implements Builder<WhileLoop, WhileLoopBuilder> {
   }
 }
 
+class _$Condition extends Condition {
+  @override
+  final Expression? condition;
+  @override
+  final Block body;
+
+  factory _$Condition([void Function(ConditionBuilder)? updates]) =>
+      (ConditionBuilder()..update(updates)).build() as _$Condition;
+
+  _$Condition._({this.condition, required this.body}) : super._();
+  @override
+  Condition rebuild(void Function(ConditionBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$ConditionBuilder toBuilder() => _$ConditionBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is Condition &&
+        condition == other.condition &&
+        body == other.body;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, condition.hashCode);
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'Condition')
+          ..add('condition', condition)
+          ..add('body', body))
+        .toString();
+  }
+}
+
+class _$ConditionBuilder extends ConditionBuilder {
+  _$Condition? _$v;
+
+  @override
+  Expression? get condition {
+    _$this;
+    return super.condition;
+  }
+
+  @override
+  set condition(Expression? condition) {
+    _$this;
+    super.condition = condition;
+  }
+
+  @override
+  BlockBuilder get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(BlockBuilder body) {
+    _$this;
+    super.body = body;
+  }
+
+  _$ConditionBuilder() : super._();
+
+  ConditionBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.condition = $v.condition;
+      super.body = $v.body.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(Condition other) {
+    _$v = other as _$Condition;
+  }
+
+  @override
+  void update(void Function(ConditionBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  Condition build() => _build();
+
+  _$Condition _build() {
+    _$Condition _$result;
+    try {
+      _$result = _$v ??
+          _$Condition._(
+            condition: condition,
+            body: body.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'body';
+        body.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'Condition', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$IfTree extends IfTree {
+  @override
+  final BuiltList<Condition> blocks;
+
+  factory _$IfTree([void Function(IfTreeBuilder)? updates]) =>
+      (IfTreeBuilder()..update(updates)).build() as _$IfTree;
+
+  _$IfTree._({required this.blocks}) : super._();
+  @override
+  IfTree rebuild(void Function(IfTreeBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$IfTreeBuilder toBuilder() => _$IfTreeBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is IfTree && blocks == other.blocks;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, blocks.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'IfTree')..add('blocks', blocks))
+        .toString();
+  }
+}
+
+class _$IfTreeBuilder extends IfTreeBuilder {
+  _$IfTree? _$v;
+
+  @override
+  ListBuilder<Condition> get blocks {
+    _$this;
+    return super.blocks;
+  }
+
+  @override
+  set blocks(ListBuilder<Condition> blocks) {
+    _$this;
+    super.blocks = blocks;
+  }
+
+  _$IfTreeBuilder() : super._();
+
+  IfTreeBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.blocks = $v.blocks.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(IfTree other) {
+    _$v = other as _$IfTree;
+  }
+
+  @override
+  void update(void Function(IfTreeBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  IfTree build() => _build();
+
+  _$IfTree _build() {
+    IfTree._build(this);
+    _$IfTree _$result;
+    try {
+      _$result = _$v ??
+          _$IfTree._(
+            blocks: blocks.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'blocks';
+        blocks.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'IfTree', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

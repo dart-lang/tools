@@ -11,7 +11,7 @@ void main() {
   useDartfmt();
 
   group('for loop', () {
-    test('emits a full for loop with body', () {
+    test('should emit a full for loop with body', () {
       final loop = ForLoop((b) {
         b
           ..initialize = declareVar('i', type: refer('int')).assign(literal(0))
@@ -26,7 +26,7 @@ void main() {
       );
     });
 
-    test('emits a for loop with only init', () {
+    test('should emit a for loop with only init', () {
       final loop = ForLoop((b) {
         b.initialize = declareVar('i').assign(literal(1));
       });
@@ -34,7 +34,7 @@ void main() {
       expect(loop, equalsDart('for (var i = 1;;) {}'));
     });
 
-    test('emits a for loop with only condition', () {
+    test('should emit a for loop with only condition', () {
       final loop = ForLoop((b) {
         b.condition = refer('keepGoing');
       });
@@ -42,7 +42,7 @@ void main() {
       expect(loop, equalsDart('for (; keepGoing;) {}'));
     });
 
-    test('emits a for loop with only advance', () {
+    test('should emit a for loop with only advance', () {
       final loop = ForLoop((b) {
         b.advance = refer('i').operatorUnaryPostfixIncrement();
       });
@@ -50,7 +50,7 @@ void main() {
       expect(loop, equalsDart('for (;; i++) {}'));
     });
 
-    test('emits a for loop with label', () {
+    test('should emit a for loop with label', () {
       final loop = ForLoop((b) {
         b.label = 'outer';
       });
@@ -60,7 +60,7 @@ void main() {
   });
 
   group('for-in loop', () {
-    test('emits a basic for-in loop', () {
+    test('should emit a basic for-in loop', () {
       final loop = ForInLoop((b) {
         b
           ..variable = refer('item')
@@ -70,7 +70,7 @@ void main() {
       expect(loop, equalsDart('for (item in items) {}'));
     });
 
-    test('emits a labeled for-in loop', () {
+    test('should emit a labeled for-in loop', () {
       final loop = ForInLoop((b) {
         b
           ..label = 'each'
@@ -81,7 +81,7 @@ void main() {
       expect(loop, equalsDart('each: for (item in items) {}'));
     });
 
-    test('emits an async for-in loop', () {
+    test('should emit an async for-in loop', () {
       final loop = ForInLoop((b) {
         b
           ..async = true
@@ -94,7 +94,7 @@ void main() {
   });
 
   group('while loop', () {
-    test('emits a basic while loop', () {
+    test('should emit a basic while loop', () {
       final loop = WhileLoop((b) {
         b.condition = refer('running');
       });
@@ -102,7 +102,7 @@ void main() {
       expect(loop, equalsDart('while (running) {}'));
     });
 
-    test('emits a labeled while loop', () {
+    test('should emit a labeled while loop', () {
       final loop = WhileLoop((b) {
         b
           ..label = 'mainLoop'
@@ -112,7 +112,7 @@ void main() {
       expect(loop, equalsDart('mainLoop: while (true) {}'));
     });
 
-    test('emits a do-while loop', () {
+    test('should emit a do-while loop', () {
       final loop = WhileLoop((b) {
         b
           ..doWhile = true
@@ -126,6 +126,370 @@ void main() {
         loop,
         equalsDart('do {\n  process();\n} while (keepGoing);'),
       );
+    });
+
+    test('should emit a labeled do-while loop', () {
+      final loop = WhileLoop((b) {
+        b
+          ..doWhile = true
+          ..label = 'mainLoop'
+          ..condition = refer('keepGoing')
+          ..body.addExpression(
+            refer('process').call([]),
+          );
+      });
+
+      expect(
+        loop,
+        equalsDart('mainLoop: do {\n  process();\n} while (keepGoing);'),
+      );
+    });
+  });
+
+  group('condition', () {
+    test('should emit a basic if condition', () {
+      final condition = Condition((b) {
+        b
+          ..condition = refer('x').equalTo(literal(0))
+          ..body.addExpression(refer('print').call([literal('zero')]));
+      });
+
+      expect(
+        condition,
+        equalsDart('if (x == 0) {\n  print(\'zero\');\n}'),
+      );
+
+      expect(
+        condition.asTree,
+        equalsDart('if (x == 0) {\n  print(\'zero\');\n}'),
+      );
+    });
+
+    test('should emit a condition with null body', () {
+      final condition = Condition((b) {
+        b.condition = literal(true);
+      });
+
+      expect(
+        condition,
+        equalsDart('if (true) {}'),
+      );
+    });
+
+    test('should emit an else condition', () {
+      final original = Condition((b) {
+        b.body.addExpression(refer('print').call([literal('fallback')]));
+      });
+
+      final elseBlock = original.asElse;
+
+      expect(
+        elseBlock,
+        equalsDart('else {\n  print(\'fallback\');\n}'),
+      );
+    });
+
+    test('should emit an else-if condition', () {
+      final original = Condition((b) {
+        b
+          ..condition = refer('value').greaterThan(literal(10))
+          ..body.addExpression(refer('log').call([literal('big')]));
+      });
+
+      final elseIf = original.asElse;
+
+      expect(
+        elseIf,
+        equalsDart('else if (value > 10) {\n  log(\'big\');\n}'),
+      );
+    });
+
+    test('should throw if condition is null', () {
+      expect(
+        () => Condition((b) {}).accept(DartEmitter()),
+        throwsArgumentError,
+      );
+    });
+
+    test('should emit an if-case condition', () {
+      final condition = Condition((b) {
+        b.ifCase(
+          object: refer('value'),
+          pattern: refer('int'),
+        );
+        b.body.addExpression(refer('print').call([literal('int')]));
+      });
+
+      expect(
+        condition,
+        equalsDart('if (value case int) {\n  print(\'int\');\n}'),
+      );
+    });
+
+    test('should emit an if-case with guard clause', () {
+      final condition = Condition((b) {
+        b.ifCase(
+          object: refer('value'),
+          pattern: refer('int'),
+          guard: refer('value').greaterThan(literal(0)),
+        );
+        b.body.addExpression(refer('print').call([literal('positive')]));
+      });
+
+      expect(
+        condition,
+        equalsDart(
+            'if (value case int when value > 0) {\n  print(\'positive\');\n}'),
+      );
+    });
+  });
+
+  group('if tree', () {
+    test('should emit a single if block', () {
+      final tree = IfTree((b) {
+        b.add(Condition((b) {
+          b
+            ..condition = refer('x').equalTo(literal(1))
+            ..body.addExpression(refer('print').call([literal('one')]));
+        }));
+      });
+
+      expect(
+        tree,
+        equalsDart('if (x == 1) {\n  print(\'one\');\n}'),
+      );
+    });
+
+    test('should emit if-else if-else chain', () {
+      final tree = IfTree((b) {
+        b
+          ..add(Condition((b) {
+            b
+              ..condition = refer('x').equalTo(literal(1))
+              ..body.addExpression(refer('print').call([literal('one')]));
+          }))
+          ..add(Condition((b) {
+            b
+              ..condition = refer('x').equalTo(literal(2))
+              ..body.addExpression(refer('print').call([literal('two')]));
+          }))
+          ..orElse((body) {
+            body.addExpression(refer('print').call([literal('other')]));
+          });
+      });
+
+      expect(
+        tree,
+        equalsDart('''
+if (x == 1) {
+  print('one');
+} else if (x == 2) {
+  print('two');
+} else {
+  print('other');
+}'''),
+      );
+    });
+
+    test('should support IfTree.of constructor', () {
+      final tree = IfTree.of([
+        Condition((b) {
+          b
+            ..condition = refer('ready')
+            ..body.addExpression(refer('start').call([]));
+        }),
+        Condition((b) {
+          b.body.addExpression(refer('exit').call([]));
+        }),
+      ]);
+
+      expect(
+        tree,
+        equalsDart('''
+if (ready) {
+  start();
+} else {
+  exit();
+}'''),
+      );
+    });
+
+    test('should support withCondition', () {
+      final base = IfTree((b) {
+        b.add(Condition((b) {
+          b
+            ..condition = refer('a')
+            ..body.addExpression(refer('doA').call([]));
+        }));
+      });
+
+      final extended = base.withCondition(Condition((b) {
+        b
+          ..condition = refer('b')
+          ..body.addExpression(refer('doB').call([]));
+      }));
+
+      expect(
+        extended,
+        equalsDart('''
+if (a) {
+  doA();
+} else if (b) {
+  doB();
+}'''),
+      );
+    });
+
+    test('should support elseIf', () {
+      final tree = IfTree((b) {
+        b.add(Condition((b) {
+          b
+            ..condition = refer('loggedIn')
+            ..body.addExpression(refer('showDashboard').call([]));
+        }));
+      }).elseIf((b) {
+        b
+          ..condition = refer('isGuest')
+          ..body.addExpression(refer('showGuest').call([]));
+      });
+
+      expect(
+        tree,
+        equalsDart('''
+if (loggedIn) {
+  showDashboard();
+} else if (isGuest) {
+  showGuest();
+}'''),
+      );
+    });
+
+    test('should support orElse', () {
+      final tree = IfTree((b) {
+        b.add(Condition((b) {
+          b
+            ..condition = refer('ready')
+            ..body.addExpression(refer('start').call([]));
+        }));
+      }).orElse((body) {
+        body.addExpression(refer('log').call([literal('not ready')]));
+      });
+
+      expect(
+        tree,
+        equalsDart('''
+if (ready) {
+  start();
+} else {
+  log('not ready');
+}'''),
+      );
+    });
+
+    test('should support empty IfTree', () {
+      final tree = IfTree((b) {});
+      expect(tree.blocks, isEmpty);
+    });
+  });
+
+  group('if tree builder', () {
+    test('should support add', () {
+      final tree = IfTree((b) {
+        final condition = Condition((b) {
+          b
+            ..condition = refer('ok')
+            ..body.addExpression(refer('run').call([]));
+        });
+        b.add(condition);
+      });
+
+      expect(tree, equalsDart('if (ok) {\n  run();\n}'));
+    });
+
+    test('should support addAll', () {
+      final conditions = [
+        Condition((b) {
+          b
+            ..condition = refer('x > 0')
+            ..body.addExpression(refer('handlePositive').call([]));
+        }),
+        Condition((b) {
+          b.body.addExpression(refer('handleZeroOrNegative').call([]));
+        }),
+      ];
+
+      final tree = IfTree((b) {
+        b.addAll(conditions);
+      });
+
+      expect(
+        tree,
+        equalsDart('''
+if (x > 0) {
+  handlePositive();
+} else {
+  handleZeroOrNegative();
+}'''),
+      );
+    });
+
+    test('should support orElse', () {
+      final tree = IfTree((b) {
+        b
+          ..add(Condition((b) {
+            b
+              ..condition = refer('a')
+              ..body.addExpression(refer('doA').call([]));
+          }))
+          ..orElse((body) {
+            body.addExpression(refer('fallback').call([]));
+          });
+      });
+
+      expect(
+        tree,
+        equalsDart('''
+if (a) {
+  doA();
+} else {
+  fallback();
+}'''),
+      );
+    });
+
+    test('should support orElseThrow', () {
+      final tree = IfTree((b) {
+        b
+          ..add(Condition((b) {
+            b
+              ..condition = refer('valid')
+              ..body.addExpression(refer('process').call([]));
+          }))
+          ..orElseThrow(refer('UnsupportedError')
+              .newInstance([literal('Invalid input')]));
+      });
+
+      expect(
+        tree,
+        equalsDart('''
+if (valid) {
+  process();
+} else {
+  throw UnsupportedError('Invalid input');
+}'''),
+      );
+    });
+
+    test('should support ifThen', () {
+      final tree = IfTree((b) {
+        b.ifThen((cond) {
+          cond
+            ..condition = refer('ready')
+            ..body.addExpression(refer('init').call([]));
+        });
+      });
+
+      expect(tree, equalsDart('if (ready) {\n  init();\n}'));
     });
   });
 }

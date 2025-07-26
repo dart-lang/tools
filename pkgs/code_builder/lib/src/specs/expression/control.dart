@@ -4,8 +4,7 @@
 
 part of '../expression.dart';
 
-/// Represents a control expression, such as an `if` or `for`
-/// statement.
+/// Represents a control expression.
 ///
 /// The expression consists of the control statement ([control]),
 /// followed by the expression body (if provided), which consists of
@@ -47,47 +46,20 @@ class ControlExpression extends Expression {
   /// If [body] is `null` or empty, [parenthesised] will have no effect.
   final bool parenthesised;
 
-  const ControlExpression._(this.control,
+  @visibleForTesting
+  const ControlExpression(this.control,
       {this.body, this.separator, this.parenthesised = true});
 
   @override
-  R accept<R>(covariant ExpressionVisitor<R> visitor, [R? context]) =>
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
       visitor.visitControlExpression(this, context);
 
-  /// Returns an `if` statement.
-  ///
-  /// ```dart
-  /// if (condition)
-  /// ```
-  ///
-  /// https://dart.dev/language/branches#if
-  ///
-
   factory ControlExpression.ifStatement(Expression condition) =>
-      ControlExpression._('if', body: [condition]);
+      ControlExpression('if', body: [condition]);
 
-  /// An `else` statement
-  ///
-  /// ```dart
-  /// else
-  /// ```
-  ///
-  /// https://dart.dev/language/branches#if
-  ///
-
-  static const elseStatement = ControlExpression._('else');
-
-  /// Returns an `else if` statement
-  ///
-  /// ```dart
-  /// else if (condition)
-  /// ```
-  ///
-  /// https://dart.dev/language/branches#if
-  ///
-
-  factory ControlExpression.elseIfStatement(Expression condition) =>
-      ControlExpression._('else if', body: [condition]);
+  factory ControlExpression.elseStatement(Expression? condition) =>
+      ControlExpression('else',
+          body: condition != null ? [condition] : null, parenthesised: false);
 
   /// Returns a traditional `for` loop.
   ///
@@ -100,7 +72,7 @@ class ControlExpression extends Expression {
 
   factory ControlExpression.forLoop(
           Expression? initialize, Expression? condition, Expression? advance) =>
-      ControlExpression._('for',
+      ControlExpression('for',
           body: [initialize, condition, advance], separator: ';');
 
   /// Returns a `for-in` loop.
@@ -114,7 +86,7 @@ class ControlExpression extends Expression {
 
   factory ControlExpression.forInLoop(
           Expression identifier, Expression expression) =>
-      ControlExpression._('for',
+      ControlExpression('for',
           body: [identifier, expression], separator: ' in');
 
   /// Returns an asynchronous `for` loop.
@@ -128,7 +100,7 @@ class ControlExpression extends Expression {
 
   factory ControlExpression.awaitForLoop(
           Expression identifier, Expression expression) =>
-      ControlExpression._('await for',
+      ControlExpression('await for',
           body: [identifier, expression], separator: ' in');
 
   /// Returns a `while` loop.
@@ -141,7 +113,7 @@ class ControlExpression extends Expression {
   ///
 
   factory ControlExpression.whileLoop(Expression condition) =>
-      ControlExpression._('while', body: [condition]);
+      ControlExpression('while', body: [condition]);
 
   /// A `do` statement.
   ///
@@ -152,33 +124,7 @@ class ControlExpression extends Expression {
   /// https://dart.dev/language/loops#while-and-do-while
   ///
 
-  static const doStatement = ControlExpression._('do');
-
-  /// Returns a `break` statement.
-  ///
-  /// ```dart
-  /// break label
-  /// ```
-  ///
-  /// https://dart.dev/language/loops#break-and-continue
-  ///
-
-  factory ControlExpression.breakStatement([String? label]) =>
-      ControlExpression._('break',
-          body: [if (label != null) refer(label)], parenthesised: false);
-
-  /// Returns a `continue` statement.
-  ///
-  /// ```dart
-  /// continue label
-  /// ```
-  ///
-  /// https://dart.dev/language/loops#break-and-continue
-  ///
-
-  factory ControlExpression.continueStatement([String? label]) =>
-      ControlExpression._('continue',
-          body: [if (label != null) refer(label)], parenthesised: false);
+  static const doStatement = ControlExpression('do');
 
   /// A `try` statement.
   ///
@@ -189,7 +135,7 @@ class ControlExpression extends Expression {
   /// https://dart.dev/language/error-handling#catch
   ///
 
-  static const tryStatement = ControlExpression._('try');
+  static const tryStatement = ControlExpression('try');
 
   /// Returns a `catch` statement.
   ///
@@ -203,7 +149,7 @@ class ControlExpression extends Expression {
 
   factory ControlExpression.catchStatement(Expression error,
           [Expression? stacktrace]) =>
-      ControlExpression._('catch',
+      ControlExpression('catch',
           body: [error, if (stacktrace != null) stacktrace], separator: ',');
 
   /// Returns an `on` statement.
@@ -216,7 +162,7 @@ class ControlExpression extends Expression {
   ///
 
   factory ControlExpression.onStatement(Expression error) =>
-      ControlExpression._('on', body: [error], parenthesised: false);
+      ControlExpression('on', body: [error], parenthesised: false);
 
   /// A `finally` statement.
   ///
@@ -227,5 +173,151 @@ class ControlExpression extends Expression {
   /// https://dart.dev/language/error-handling#finally
   ///
 
-  static const finallyStatement = ControlExpression._('finally');
+  static const finallyStatement = ControlExpression('finally');
+}
+
+/// Provides control-flow utilities for [Expression].
+///
+/// {@category controlFlow}
+extension ControlFlow on Expression {
+  /// Returns `yield {this}`
+  Expression get yielded =>
+      BinaryExpression._(Expression._empty, this, 'yield');
+
+  /// Returns `yield* {this}`
+  Expression get yieldStarred =>
+      BinaryExpression._(Expression._empty, this, 'yield*');
+
+  /// Build a `while` loop from this expression.
+  ///
+  /// ```dart
+  /// while (this) {
+  ///   body
+  /// }
+  /// ```
+  WhileLoop loopWhile(void Function(BlockBuilder block) builder) =>
+      WhileLoop((loop) => loop
+        ..condition = this
+        ..body.update(builder));
+
+  /// Build a `do-while` loop from this expression.
+  ///
+  /// ```dart
+  /// do {
+  ///   body
+  /// } while (this);
+  /// ```
+  WhileLoop loopDoWhile(void Function(BlockBuilder block) builder) =>
+      WhileLoop((loop) => loop
+        ..doWhile = true
+        ..condition = this
+        ..body.update(builder));
+
+  /// Build a `for-in` loop from this expression in [object].
+  ///
+  /// ```dart
+  /// for (this in object) {
+  ///   body
+  /// }
+  /// ```
+  ForInLoop loopForIn(
+          Expression object, void Function(BlockBuilder block) builder) =>
+      ForInLoop((loop) => loop
+        ..object = object
+        ..variable = this
+        ..body.update(builder));
+
+  /// Build this expression into an `if` [Condition] and add it
+  /// to a new [IfTree].
+  ///
+  /// ```dart
+  /// if (this) {
+  ///   body
+  /// }
+  /// ```
+  ///
+  /// Chain [IfTree.elseIf] and [IfTree.orElse] to easily create a full
+  /// `if-elseif-else` tree:
+  /// ```dart
+  /// literal(1)
+  ///     .equalTo(literal(2))
+  ///     .ifThen(
+  ///         (body) => body.addExpression(
+  ///           refer('print').call([literal('Bad')]))
+  ///     ).elseIf(
+  ///       (block) => block
+  ///         ..condition = literal(2).equalTo(literal(2))
+  ///         ..body.addExpression(refer('print').call([literal('Good')])),
+  ///     ).orElse(
+  ///       (body) => body.addExpression(
+  ///         refer('print').call([literal('What?')])),
+  ///     );
+  /// ```
+  ///
+  /// Outputs:
+  /// ```dart
+  /// if (1 == 2) {
+  ///   print('Bad');
+  /// } else if (2 == 2) {
+  ///   print('Good');
+  /// } else {
+  ///   print('What?');
+  /// }
+  /// ```
+  IfTree ifThen(void Function(BlockBuilder body) builder) => Condition(
+        (block) => block
+          ..condition = this
+          ..body.update(builder),
+      ).asTree;
+
+  /// `return`
+  static const returnVoid = LiteralExpression._('return');
+
+  /// `break`
+  ///
+  /// For usage with a label, use [breakLabel].
+  static const breakVoid = LiteralExpression._('break');
+
+  /// `continue`
+  ///
+  /// For usage with a label, use [continueLabel].
+  static const continueVoid = LiteralExpression._('continue');
+
+  /// Returns a labeled `break` statement.
+  ///
+  /// ```dart
+  /// break label
+  /// ```
+  ///
+  /// For usage without a label, use [breakVoid].
+  static Expression breakLabel(String label) =>
+      BinaryExpression._(breakVoid, refer(label), '');
+
+  /// Returns a labeled `continue` statement.
+  ///
+  /// ```dart
+  /// continue label
+  /// ```
+  ///
+  /// For usage without a label, use [continueVoid].
+  static Expression continueLabel(String label) =>
+      BinaryExpression._(continueVoid, refer(label), '');
+
+  /// Returns a case match expression for an `if-case` statement,
+  /// matching [object] against [pattern] with optional guard clause [guard].
+  ///
+  /// ```dart
+  /// object case pattern
+  /// object case pattern when guard
+  /// ```
+  ///
+  /// See https://dart.dev/language/branches#if-case
+  static Expression ifCase(
+      {required Expression object,
+      required Expression pattern,
+      Expression? guard}) {
+    final first = BinaryExpression._(object, pattern, 'case');
+    if (guard == null) return first;
+    return BinaryExpression._(first, guard, 'when');
+  }
 }
