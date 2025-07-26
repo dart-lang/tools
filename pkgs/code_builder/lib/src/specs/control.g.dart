@@ -638,4 +638,278 @@ class _$IfTreeBuilder extends IfTreeBuilder {
   }
 }
 
+class _$CatchBlock extends CatchBlock {
+  @override
+  final Reference? type;
+  @override
+  final String exception;
+  @override
+  final String? stacktrace;
+  @override
+  final Block body;
+
+  factory _$CatchBlock([void Function(CatchBlockBuilder)? updates]) =>
+      (CatchBlockBuilder()..update(updates))._build();
+
+  _$CatchBlock._(
+      {this.type, required this.exception, this.stacktrace, required this.body})
+      : super._();
+  @override
+  CatchBlock rebuild(void Function(CatchBlockBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  CatchBlockBuilder toBuilder() => CatchBlockBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is CatchBlock &&
+        type == other.type &&
+        exception == other.exception &&
+        stacktrace == other.stacktrace &&
+        body == other.body;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, exception.hashCode);
+    _$hash = $jc(_$hash, stacktrace.hashCode);
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'CatchBlock')
+          ..add('type', type)
+          ..add('exception', exception)
+          ..add('stacktrace', stacktrace)
+          ..add('body', body))
+        .toString();
+  }
+}
+
+class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
+  _$CatchBlock? _$v;
+
+  Reference? _type;
+  Reference? get type => _$this._type;
+  set type(Reference? type) => _$this._type = type;
+
+  String? _exception;
+  String? get exception => _$this._exception;
+  set exception(String? exception) => _$this._exception = exception;
+
+  String? _stacktrace;
+  String? get stacktrace => _$this._stacktrace;
+  set stacktrace(String? stacktrace) => _$this._stacktrace = stacktrace;
+
+  BlockBuilder? _body;
+  BlockBuilder get body => _$this._body ??= BlockBuilder();
+  set body(BlockBuilder? body) => _$this._body = body;
+
+  CatchBlockBuilder() {
+    CatchBlock._initialize(this);
+  }
+
+  CatchBlockBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _type = $v.type;
+      _exception = $v.exception;
+      _stacktrace = $v.stacktrace;
+      _body = $v.body.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(CatchBlock other) {
+    _$v = other as _$CatchBlock;
+  }
+
+  @override
+  void update(void Function(CatchBlockBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  CatchBlock build() => _build();
+
+  _$CatchBlock _build() {
+    _$CatchBlock _$result;
+    try {
+      _$result = _$v ??
+          _$CatchBlock._(
+            type: type,
+            exception: BuiltValueNullFieldError.checkNotNull(
+                exception, r'CatchBlock', 'exception'),
+            stacktrace: stacktrace,
+            body: body.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'body';
+        body.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'CatchBlock', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$TryCatch extends TryCatch {
+  @override
+  final Block body;
+  @override
+  final BuiltList<CatchBlock> handlers;
+  @override
+  final Block? handleAll;
+
+  factory _$TryCatch([void Function(TryCatchBuilder)? updates]) =>
+      (TryCatchBuilder()..update(updates)).build() as _$TryCatch;
+
+  _$TryCatch._({required this.body, required this.handlers, this.handleAll})
+      : super._();
+  @override
+  TryCatch rebuild(void Function(TryCatchBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  _$TryCatchBuilder toBuilder() => _$TryCatchBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is TryCatch &&
+        body == other.body &&
+        handlers == other.handlers &&
+        handleAll == other.handleAll;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jc(_$hash, handlers.hashCode);
+    _$hash = $jc(_$hash, handleAll.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'TryCatch')
+          ..add('body', body)
+          ..add('handlers', handlers)
+          ..add('handleAll', handleAll))
+        .toString();
+  }
+}
+
+class _$TryCatchBuilder extends TryCatchBuilder {
+  _$TryCatch? _$v;
+
+  @override
+  BlockBuilder get body {
+    _$this;
+    return super.body;
+  }
+
+  @override
+  set body(BlockBuilder body) {
+    _$this;
+    super.body = body;
+  }
+
+  @override
+  ListBuilder<CatchBlock> get handlers {
+    _$this;
+    return super.handlers;
+  }
+
+  @override
+  set handlers(ListBuilder<CatchBlock> handlers) {
+    _$this;
+    super.handlers = handlers;
+  }
+
+  @override
+  BlockBuilder get handleAll {
+    _$this;
+    return super.handleAll ??= BlockBuilder();
+  }
+
+  @override
+  set handleAll(BlockBuilder? handleAll) {
+    _$this;
+    super.handleAll = handleAll;
+  }
+
+  _$TryCatchBuilder() : super._();
+
+  TryCatchBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      super.body = $v.body.toBuilder();
+      super.handlers = $v.handlers.toBuilder();
+      super.handleAll = $v.handleAll?.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(TryCatch other) {
+    _$v = other as _$TryCatch;
+  }
+
+  @override
+  void update(void Function(TryCatchBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  TryCatch build() => _build();
+
+  _$TryCatch _build() {
+    TryCatch._build(this);
+    _$TryCatch _$result;
+    try {
+      _$result = _$v ??
+          _$TryCatch._(
+            body: body.build(),
+            handlers: handlers.build(),
+            handleAll: super.handleAll?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'body';
+        body.build();
+        _$failedField = 'handlers';
+        handlers.build();
+        _$failedField = 'handleAll';
+        super.handleAll?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'TryCatch', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

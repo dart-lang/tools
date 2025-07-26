@@ -196,15 +196,15 @@ void main() {
       test(
         'should emit a catch statement with only error',
         () {
-          expect(ControlExpression.catchStatement(refer('e')),
-              equalsDart('catch (e)'));
+          expect(
+              ControlExpression.catchStatement('e'), equalsDart('catch (e)'));
         },
       );
 
       test(
         'should emit a catch statement with error and stacktrace',
         () {
-          expect(ControlExpression.catchStatement(refer('e'), refer('s')),
+          expect(ControlExpression.catchStatement('e', 's'),
               equalsDart('catch (e, s)'));
         },
       );
@@ -212,8 +212,10 @@ void main() {
       test(
         'should emit an on statement',
         () {
-          expect(ControlExpression.onStatement(refer('FormatException')),
-              equalsDart('on FormatException'));
+          expect(
+              ControlExpression.onStatement(refer('FormatException'),
+                  ControlExpression.catchStatement('e')),
+              equalsDart('on FormatException catch (e)'));
         },
       );
 
@@ -260,6 +262,13 @@ void main() {
         final expr = ControlFlow.continueLabel('loop2');
         expect(expr, equalsDart('continue loop2'));
       });
+
+      test(
+        'should emit a rethrow statement',
+        () {
+          expect(ControlFlow.rethrowVoid, equalsDart('rethrow'));
+        },
+      );
 
       test('should emit an if-case expression', () {
         final expr = ControlFlow.ifCase(

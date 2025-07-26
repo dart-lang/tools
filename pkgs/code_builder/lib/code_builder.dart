@@ -1,4 +1,4 @@
-// Copyright (c) 2025, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -12,6 +12,8 @@ export 'src/specs/code.dart'
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
 export 'src/specs/control.dart'
     show
+        CatchBlock,
+        CatchBlockBuilder,
         Condition,
         ConditionBuilder,
         ForInLoop,
@@ -20,6 +22,8 @@ export 'src/specs/control.dart'
         ForLoopBuilder,
         IfTree,
         IfTreeBuilder,
+        TryCatch,
+        TryCatchBuilder,
         WhileLoop,
         WhileLoopBuilder;
 export 'src/specs/directive.dart'

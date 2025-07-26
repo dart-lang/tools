@@ -492,4 +492,157 @@ if (valid) {
       expect(tree, equalsDart('if (ready) {\n  init();\n}'));
     });
   });
+
+  group('catch block', () {
+    test('should emit catch with default exception name', () {
+      final catchBlock = CatchBlock((b) => b..body.addExpression(literal(1)));
+      expect(catchBlock, equalsDart('catch (e) {\n  1;\n}'));
+    });
+
+    test('should emit catch with custom exception name', () {
+      final catchBlock = CatchBlock((b) => b
+        ..exception = 'err'
+        ..body.addExpression(literal(2)));
+      expect(catchBlock, equalsDart('catch (err) {\n  2;\n}'));
+    });
+
+    test('should emit catch with exception and stacktrace', () {
+      final catchBlock = CatchBlock((b) => b
+        ..exception = 'e'
+        ..stacktrace = 's'
+        ..body.addExpression(refer('log').call([refer('s')])));
+      expect(catchBlock, equalsDart('catch (e, s) {\n  log(s);\n}'));
+    });
+
+    test('should emit on-type catch block', () {
+      final catchBlock = CatchBlock((b) => b
+        ..type = refer('FormatException')
+        ..exception = 'e'
+        ..stacktrace = 's'
+        ..body.addExpression(refer('print').call([refer('e')])));
+      expect(
+        catchBlock,
+        equalsDart('on FormatException catch (e, s) {\n  print(e);\n}'),
+      );
+    });
+  });
+
+  group('try-catch', () {
+    test('should throw if no catch handlers are defined', () {
+      expect(() => TryCatch((b) => b.body.addExpression(literal(1))),
+          throwsArgumentError);
+    });
+
+    test('should emit try/catch block', () {
+      final block = TryCatch((b) {
+        b.body.addExpression(refer('mightFail').call([]));
+        b.addCatch(
+            (cb) => cb.body.addExpression(refer('handleError').call([])));
+      });
+
+      expect(
+        block,
+        equalsDart('''
+try {
+  mightFail();
+} catch (e) {
+  handleError();
+}'''),
+      );
+    });
+
+    test('should emit try/on-type/catch with finally', () {
+      final block = TryCatch((b) {
+        b.body.addExpression(refer('mightFail').call([]));
+        b
+          ..addCatch((cb) => cb
+            ..type = refer('HttpException')
+            ..exception = 'e'
+            ..stacktrace = 's'
+            ..body.addExpression(refer('print').call([refer('s')])))
+          ..addFinally((fb) => fb.addExpression(refer('cleanup').call([])));
+      });
+
+      expect(
+        block,
+        equalsDart('''
+try {
+  mightFail();
+} on HttpException catch (e, s) {
+  print(s);
+} finally {
+  cleanup();
+}'''),
+      );
+    });
+
+    test('should emit try with multiple catch clauses', () {
+      final block = TryCatch((b) {
+        b
+          ..body.addExpression(refer('foo').call([]))
+          ..addCatch((cb) => cb
+            ..type = refer('FormatException')
+            ..exception = 'e1'
+            ..body.addExpression(refer('handleFormat').call([])))
+          ..addCatch((cb) => cb
+            ..type = refer('SocketException')
+            ..exception = 'e2'
+            ..body.addExpression(refer('handleSocket').call([])))
+          ..addCatch(
+            (cb) => cb.body.addExpression(ControlFlow.rethrowVoid),
+          );
+      });
+
+      expect(
+        block,
+        equalsDart('''
+try {
+  foo();
+} on FormatException catch (e1) {
+  handleFormat();
+} on SocketException catch (e2) {
+  handleSocket();
+} catch (e) {
+  rethrow;
+}'''),
+      );
+    });
+  });
+
+  group('try-catch builder', () {
+    test('addCatch should append to handlers', () {
+      final builder = TryCatchBuilder();
+      builder.body.addExpression(literal(0));
+      builder.addCatch((cb) => cb.body.addExpression(literal(1)));
+
+      final result = builder.build();
+      expect(result.handlers, hasLength(1));
+      expect(result, equalsDart('''
+try {
+  0;
+} catch (e) {
+  1;
+}
+'''));
+    });
+
+    test('addFinally should update handleAll', () {
+      final builder = TryCatchBuilder()
+        ..body.addExpression(literal(0))
+        ..addCatch((cb) => cb.body.addExpression(literal(1)))
+        ..addFinally((fb) => fb.addExpression(refer('done')));
+
+      final result = builder.build();
+      expect(result.handleAll, isNotNull);
+      expect(result, equalsDart('''
+try {
+  0;
+} catch (e) {
+  1;
+} finally {
+  done;
+}
+'''));
+    });
+  });
 }

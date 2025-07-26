@@ -126,43 +126,18 @@ class ControlExpression extends Expression {
 
   static const doStatement = ControlExpression('do');
 
-  /// A `try` statement.
-  ///
-  /// ```dart
-  /// try
-  /// ```
-  ///
-  /// https://dart.dev/language/error-handling#catch
-  ///
-
   static const tryStatement = ControlExpression('try');
 
-  /// Returns a `catch` statement.
-  ///
-  /// ```dart
-  /// catch (error)
-  /// catch (error, stacktrace)
-  /// ```
-  ///
-  /// https://dart.dev/language/error-handling#catch
-  ///
-
-  factory ControlExpression.catchStatement(Expression error,
-          [Expression? stacktrace]) =>
+  factory ControlExpression.catchStatement(String error,
+          [String? stacktrace]) =>
       ControlExpression('catch',
-          body: [error, if (stacktrace != null) stacktrace], separator: ',');
+          body: [refer(error), if (stacktrace != null) refer(stacktrace)],
+          separator: ',');
 
-  /// Returns an `on` statement.
-  ///
-  /// ```dart
-  /// on error
-  /// ```
-  ///
-  /// https://dart.dev/language/error-handling#catch
-  ///
-
-  factory ControlExpression.onStatement(Expression error) =>
-      ControlExpression('on', body: [error], parenthesised: false);
+  factory ControlExpression.onStatement(
+          Reference type, ControlExpression statement) =>
+      ControlExpression('on',
+          body: [type, statement], parenthesised: false, separator: '');
 
   /// A `finally` statement.
   ///
@@ -282,6 +257,9 @@ extension ControlFlow on Expression {
   ///
   /// For usage with a label, use [continueLabel].
   static const continueVoid = LiteralExpression._('continue');
+
+  /// `rethrow`
+  static const rethrowVoid = LiteralExpression._('rethrow');
 
   /// Returns a labeled `break` statement.
   ///

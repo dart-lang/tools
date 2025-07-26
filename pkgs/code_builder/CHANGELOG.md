@@ -24,15 +24,20 @@
     * Add `ControlFlow.continueLabel`
     * Add `ControlFlow.returnVoid`
     * Add `ControlFlow.ifCase`
+    * Add `ControlFlow.rethrowVoid`
 
 * Support emitting control-flow loops
   * Add `ForLoop` and `ForLoopBuilder` for traditional `for` loops.
   * Add `ForInLoop` and `ForInLoopBuilder` for `for-in` and `await-for` loops.
   * Add `WhileLoop` and `WhileLoopBuilder` for `while` and `do-while` loops.
 
-* Support emitting `if` statements and `if`/`else if`/`else` trees
+* Support emitting `if` statements and `if`/`else if`/`else` trees.
   * Add `Condition` and `ConditionBuilder` for single statements
   * Add `IfTree` and `IfTreeBuilder` for conditional trees
+
+* Support emitting `try`/`catch`/`finally` blocks.
+  * Add `CatchBlock` and `CatchBlockBuilder` for catch clauses.
+  * Add `TryCatch` and `TryCatchBuilder` for try/catch blocks.
 
 ## 4.10.1
 
