@@ -1,5 +1,6 @@
 ## 2.0.1
 * Add `image/x-canon-cr2` mimeType lookup by extension and header bytes.
+* Fix `video/3gpp` detection by switching to broader magic number mask to identify all 3gp releases as `video/3gpp`.
 
 ## 2.0.0
 
