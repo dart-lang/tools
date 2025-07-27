@@ -149,6 +149,9 @@ class ControlExpression extends Expression {
   ///
 
   static const finallyStatement = ControlExpression('finally');
+
+  factory ControlExpression.switchStatement(Expression value) =>
+      ControlExpression('switch', body: [value]);
 }
 
 /// Provides control-flow utilities for [Expression].
@@ -260,6 +263,9 @@ extension ControlFlow on Expression {
 
   /// `rethrow`
   static const rethrowVoid = LiteralExpression._('rethrow');
+
+  /// Wildcard expression (`_`).
+  static const wildcard = LiteralExpression._('_');
 
   /// Returns a labeled `break` statement.
   ///

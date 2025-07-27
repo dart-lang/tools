@@ -12,6 +12,8 @@ export 'src/specs/code.dart'
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
 export 'src/specs/control.dart'
     show
+        Case,
+        CaseBuilder,
         CatchBlock,
         CatchBlockBuilder,
         Condition,
@@ -22,6 +24,8 @@ export 'src/specs/control.dart'
         ForLoopBuilder,
         IfTree,
         IfTreeBuilder,
+        SwitchStatement,
+        SwitchStatementBuilder,
         TryCatch,
         TryCatchBuilder,
         WhileLoop,

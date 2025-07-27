@@ -191,3 +191,201 @@ abstract class IfTreeBuilder implements Builder<IfTree, IfTreeBuilder> {
         },
       );
 }
+
+/// A `switch` case used in either a [SwitchStatement] or a [SwitchExpression].
+///
+/// The case type is determined by the generic parameter [T], which defines
+/// the type of [body] required.
+///
+/// For `switch` *statements*, [T] should be [Code] (e.g. a [Block]).
+/// Bodies may be multi-line, and may also be left `null` to use case
+/// fall-through. Additionally, labels are supported via [label].
+///
+/// ```dart
+/// case pattern:
+/// case pattern when guard:
+///   body;
+///
+/// label:
+/// case pattern:
+///   body;
+///   body;
+/// ```
+///
+/// For `switch` *expressions*, [T] must be a non-null [Expression].
+/// Fall-though is not supported in `switch` expressions, nor are labels.
+/// Attempting to use fall-through by leaving [body] null will throw an
+/// [ArgumentError], and setting [label] will have no effect.
+///
+/// ```dart
+/// pattern => body,
+/// pattern when guard => body,
+/// ```
+///
+/// {@category controlFlow}
+abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
+  Case._();
+
+  /// Build a new [Case].
+  factory Case([void Function(CaseBuilder<T>) updates]) = _$Case<T>;
+
+  /// Create a catch-all case, either `default` or wildcard (`_`).
+  ///
+  /// For [SwitchStatement], the `default` keyword will be used. [label] will be
+  /// respected, if provided. To force use of the wildcard expression
+  /// instead, use [Case.new] with [ControlFlow.wildcard] as the pattern.
+  ///
+  /// For [SwitchExpression], a wildcard case will be created, as `switch`
+  /// expressions don't support `default`. [label] will be ignored.
+  factory Case.any(T body, {String? label}) = DefaultCase._;
+
+  /// The pattern to match.
+  Expression get pattern;
+
+  /// The optional guard (`when`) clause.
+  Expression? get guard;
+
+  /// An optional label for this case.
+  ///
+  /// **NOTE:** Only `switch` *statements* ([SwitchStatement]) support labels.
+  /// Setting [label] with `switch` *expressions* ([SwitchExpression]) has no
+  /// effect; the label will be silently ignored.
+  String? get label;
+
+  /// Whether or not to use the `default` keyword
+  bool get _default => false;
+
+  /// The body of this case.
+  ///
+  /// May be left null when used in a [SwitchStatement] to use case
+  /// fall-through.
+  ///
+  /// May **not** be left null in a [SwitchExpression], as they do not support
+  /// fall-through. Will throw an [ArgumentError] if left unset.
+  //* T must be nullable, otherwise built_value will perform a check that it was
+  //* actually set, causing an error when left null to use fallthrough. Instead,
+  //* it is up to the buildable case implementations (see below) to validate
+  //* this value.
+  T? get body;
+}
+
+/// **INTERNAL**
+/// Case with `default` keyword
+@internal
+class DefaultCase<T> extends _$Case<T> {
+  DefaultCase._(T body, {super.label})
+      : super._(body: body, pattern: ControlFlow.wildcard);
+
+  @override
+  bool get _default => true;
+}
+
+/// **INTERNAL**
+/// Buildable case statement
+@internal
+class CaseStatement extends _$Case<Code?> implements Code {
+  final Case<Code?> item;
+
+  CaseStatement._(this.item)
+      : super._(
+            pattern: item.pattern,
+            body: item.body,
+            guard: item.guard,
+            label: item.label);
+
+  @override
+  bool get _default => item._default;
+
+  @override
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+      visitor.visitCaseStatement(this, context);
+}
+
+/// **INTERNAL**
+///
+/// Base class for `switch` types.
+///
+@internal
+@optionalTypeArgs
+abstract class Switch<T> implements Code, Spec {
+  /// The value being matched against.
+  ///
+  /// ```dart
+  /// switch (value) {
+  ///   ...
+  /// }
+  /// ```
+  Expression get value;
+
+  /// The cases in the `switch` body.
+  BuiltList<Case<T>> get cases;
+
+  // non-abstract so that built_value ignores it
+  /// Convert generic [Case] into an implementation-specific buildable
+  /// subtype.
+  Iterable<Code> get _cases =>
+      throw UnsupportedError('Must be implemented by subclasses');
+}
+
+/// **INTERNAL**
+///
+/// Base class for `switch` builders
+///
+@internal
+@optionalTypeArgs
+abstract class SwitchBuilder<T> {
+  /// The value being matched against.
+  ///
+  /// ```dart
+  /// switch (value) {
+  ///   ...
+  /// }
+  /// ```
+  Expression? value;
+
+  /// The cases in the `switch` body.
+  ListBuilder<Case<T>> cases = ListBuilder();
+}
+
+/// **INTERNAL**
+///
+/// A buildable switch class. [Switch] subtypes are converted into
+/// this by [ControlBlockVisitor.visitSwitch] in order to be built.
+///
+@internal
+@optionalTypeArgs
+class BuildableSwitch<T> with ControlBlock {
+  final Expression value;
+  final Iterable<Code> cases;
+
+  BuildableSwitch({required this.value, required this.cases});
+
+  @override
+  ControlExpression get _expression => ControlExpression.switchStatement(value);
+
+  @override
+  Block get body => Block.of(cases);
+}
+
+/// Common [accept] implementation for [Switch] subtypes
+mixin _SwitchImpl {
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+      // can't be `on Switch` because built_value classes can't extend
+      // anything but `Object`, and even though switch subtypes implement
+      // `Switch`, they must extend `Switch` instead in order to be allowed
+      // to use a mixin `on Switch`. as a workaround, we are casting this
+      // as a switch, which will always work because this mixin will only
+      // ever be used on switch subtypes (hence why it's private).
+      visitor.visitSwitch(this as Switch, context);
+}
+
+abstract class SwitchStatement
+    with _SwitchImpl
+    implements Switch<Code?>, Built<SwitchStatement, SwitchStatementBuilder> {
+  SwitchStatement._();
+  factory SwitchStatement([void Function(SwitchStatementBuilder) updates]) =
+      _$SwitchStatement;
+
+  @override
+  Iterable<Code> get _cases => cases.map(CaseStatement._);
+}

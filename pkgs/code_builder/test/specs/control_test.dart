@@ -645,4 +645,262 @@ try {
 '''));
     });
   });
+
+  group('switch statement', () {
+    test('should emit basic case with single statement body', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('x');
+        b.cases.add(Case((cb) {
+          cb
+            ..pattern = literal(1)
+            ..body = refer('print').call([literal('one')]).statement;
+        }));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (x) {
+  case 1:
+    print('one');
+}'''),
+      );
+    });
+
+    test('should emit multiline case', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('x');
+        b.cases.add(Case((cb) {
+          cb
+            ..pattern = literal(1)
+            ..body = Block.of([
+              refer('print').call([literal('one')]).statement,
+              refer('print').call([literal('two')]).statement,
+              ControlFlow.breakVoid.statement,
+            ]);
+        }));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (x) {
+  case 1:
+    print('one');
+    print('two');
+    break;
+}'''),
+      );
+    });
+
+    test('should emit multiple cases with separate bodies', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('val');
+        b.cases.addAll([
+          Case((cb) => cb
+            ..pattern = literal(1)
+            ..body = refer('print').call([literal('first')]).statement),
+          Case((cb) => cb
+            ..pattern = literal(2)
+            ..body = refer('print').call([literal('second')]).statement),
+        ]);
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (val) {
+  case 1:
+    print('first');
+  case 2:
+    print('second');
+}'''),
+      );
+    });
+
+    test('should emit fallthrough with null body', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('foo');
+        b.cases.addAll([
+          Case((cb) => cb
+            ..pattern = literal(0)
+            ..body = null),
+          Case((cb) => cb
+            ..pattern = literal(1)
+            ..body = refer('handleOne').call([]).statement),
+        ]);
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (foo) {
+  case 0:
+  case 1:
+    handleOne();
+}'''),
+      );
+    });
+
+    test('should emit case with guard clause', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('value');
+        b.cases.add(Case((cb) => cb
+          ..pattern = literal(5)
+          ..guard = refer('value').greaterThan(literal(2))
+          ..body = refer('print').call([literal('guarded')]).statement));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (value) {
+  case 5 when value > 2:
+    print('guarded');
+}'''),
+      );
+    });
+
+    test('should emit case with label and body', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('n');
+        b.cases.add(Case((cb) => cb
+          ..label = 'start'
+          ..pattern = literal(0)
+          ..body = refer('begin').call([]).statement));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (n) {
+  start:
+  case 0:
+    begin();
+}'''),
+      );
+    });
+
+    test('should emit labeled case fallthrough to another', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('step');
+        b.cases.addAll([
+          Case((cb) => cb
+            ..label = 'init'
+            ..pattern = literal('A')
+            ..body = null),
+          Case((cb) => cb
+            ..pattern = literal('B')
+            ..body = refer('continueProcess').call([]).statement),
+        ]);
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (step) {
+  init:
+  case 'A':
+  case 'B':
+    continueProcess();
+}'''),
+      );
+    });
+
+    test('should emit default case', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('cmd');
+        b.cases
+            .add(Case.any(refer('log').call([literal('default')]).statement));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (cmd) {
+  default:
+    log('default');
+}'''),
+      );
+    });
+
+    test('should emit labeled default case', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('cmd');
+        b.cases.add(Case.any(refer('log').call([literal('default')]).statement,
+            label: 'label'));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (cmd) {
+  label:
+  default:
+    log('default');
+}'''),
+      );
+    });
+
+    test('should emit wildcard case', () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('cmd');
+        b.cases.add(Case((cb) => cb
+          ..pattern = ControlFlow.wildcard
+          ..body = refer('log').call([literal('wildcard')]).statement));
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (cmd) {
+  case _:
+    log('wildcard');
+}'''),
+      );
+    });
+
+    test('should emit full mixed case block with guard, label, and default',
+        () {
+      final stmt = SwitchStatement((b) {
+        b.value = refer('x');
+        b.cases.addAll([
+          Case((cb) => cb..pattern = literal(-1)),
+          Case((cb) => cb
+            ..pattern = literal(0)
+            ..body = ControlFlow.continueLabel('other').statement),
+          Case((cb) => cb
+            ..pattern = literal(1)
+            ..guard = refer('x').equalTo(literal(1))
+            ..body = refer('handleOne').call([]).statement),
+          Case((cb) => cb
+            ..pattern = literal(2)
+            ..label = 'other'
+            ..body = Block.of([
+              refer('printWarning').call([]).statement,
+              refer('handleNotOne').call([]).statement,
+            ])),
+          Case.any(refer('defaultCase').call([]).statement),
+        ]);
+      });
+
+      expect(
+        stmt,
+        equalsDart('''
+switch (x) {
+  case -1:
+  case 0:
+    continue other;
+  case 1 when x == 1:
+    handleOne();
+  other:
+  case 2:
+    printWarning();
+    handleNotOne();
+  default:
+    defaultCase();
+}'''),
+      );
+    });
+  });
 }

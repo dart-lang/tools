@@ -28,6 +28,8 @@ abstract class ControlBlockVisitor<T>
   T visitWhileLoop(WhileLoop loop, [T? context]);
   T visitControlTree(ControlTree tree, [T? context]);
   T visitControlExpression(ControlExpression expression, [T? context]);
+  T visitSwitch(Switch statement, [T? context]);
+  T visitCaseStatement(CaseStatement statement, [T? context]);
 }
 
 /// Knowledge of how to write valid Dart code from [ControlBlockVisitor].
@@ -132,6 +134,45 @@ abstract mixin class ControlBlockEmitter
 
     if (expression.parenthesised) {
       output.write(')');
+    }
+
+    return output;
+  }
+
+  @override
+  StringSink visitSwitch(Switch statement, [StringSink? output]) {
+    output ??= StringBuffer();
+
+    final buildable =
+        BuildableSwitch(value: statement.value, cases: statement._cases);
+
+    return visitControlBlock(buildable, output);
+  }
+
+  @override
+  StringSink visitCaseStatement(CaseStatement statement, [StringSink? output]) {
+    output ??= StringBuffer();
+
+    if (statement.label case final String label) {
+      output.write('$label:\n');
+    }
+
+    if (statement._default) {
+      output.write('default:\n');
+    } else {
+      output.write('case ');
+      statement.pattern.accept(this, output);
+
+      if (statement.guard case final Expression guard) {
+        output.write(' when ');
+        guard.accept(this, output);
+      }
+
+      output.write(':\n');
+    }
+
+    if (statement.body case final Code body) {
+      body.accept(this, output);
     }
 
     return output;
