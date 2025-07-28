@@ -509,6 +509,27 @@ class ToCodeExpression implements Code {
   String toString() => code.toString();
 }
 
+extension on Iterable<dynamic> {
+  /// Get the length of the iterable counting any chained
+  /// [CollectionExpression]s as a single item.
+  int get adjustedLength {
+    var chain = false;
+    return where(
+      (element) {
+        if (element is! CollectionExpression) {
+          chain = false;
+          return true;
+        }
+
+        final skip = element.chain && chain;
+        chain = element.chainTarget;
+
+        return !skip;
+      },
+    ).length;
+  }
+}
+
 /// Knowledge of different types of expressions in Dart.
 ///
 /// **INTERNAL ONLY**.
@@ -652,7 +673,7 @@ abstract mixin class ExpressionEmitter
       visitAll<Object?>(expression.values, out, (value) {
         _acceptLiteral(value, out);
       });
-      if (expression.values.length > 1) {
+      if (expression.values.adjustedLength > 1) {
         out.write(', ');
       }
       return out..write(']');
@@ -676,7 +697,7 @@ abstract mixin class ExpressionEmitter
       visitAll<Object?>(expression.values, out, (value) {
         _acceptLiteral(value, out);
       });
-      if (expression.values.length > 1) {
+      if (expression.values.adjustedLength > 1) {
         out.write(', ');
       }
       return out..write('}');
@@ -710,7 +731,7 @@ abstract mixin class ExpressionEmitter
         }
         _acceptLiteral(value, out);
       });
-      if (expression.values.length > 1) {
+      if (expression.values.keys.adjustedLength > 1) {
         out.write(', ');
       }
       return out..write('}');

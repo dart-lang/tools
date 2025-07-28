@@ -6,34 +6,42 @@
 
 * Require Dart `^3.6.0` due to the upgrades.
 
-* Support `Expression.newInstanceNamed` with empty name
+* Support `Expression.newInstanceNamed` with empty name.
 
-* Fixed bug: Fields declared with `static` and `external` now produce code with correct order
+* Fixed bug: Fields declared with `static` and `external` now produce code with correct order.
 
-* Add `ControlFlow` extension on `Expression` to support control-flow helper functions
+* Add `ControlFlow` extension on `Expression` to support control-flow helper functions.
   * Add `Expression.yielded` (via ext.)
   * Add `Expression.yieldStarred` (via ext.)
   * Add `Expression.ifThen` (via ext.)
   * Add `Expression.loopWhile` (via ext.)
   * Add `Expression.loopDoWhile` (via ext.)
   * Add `Expression.loopForIn` (via ext.)
-  * Add static helper functions to `ControlFlow`:
-    * Add `ControlFlow.breakVoid`
-    * Add `ControlFlow.breakLabel`
-    * Add `ControlFlow.continueVoid`
-    * Add `ControlFlow.continueLabel`
-    * Add `ControlFlow.returnVoid`
-    * Add `ControlFlow.ifCase`
-    * Add `ControlFlow.rethrowVoid`
 
-* Support emitting control-flow loops
+* Add static keyword helper functions to `ControlFlow`.
+  * Add `ControlFlow.breakVoid`
+  * Add `ControlFlow.breakLabel`
+  * Add `ControlFlow.continueVoid`
+  * Add `ControlFlow.continueLabel`
+  * Add `ControlFlow.returnVoid`
+  * Add `ControlFlow.rethrowVoid`
+
+* Support emitting collection control-flow expressions via static methods on `ControlFlow`.
+  * Add `ControlFlow.collectionIf`
+  * Add `ControlFlow.collectionElse`
+  * Add `ControlFlow.collectionFor`
+  * Add `ControlFlow.collectionForIn`
+  * Add `ControlFlow.ifCase`
+  * Update literal collection visitors to support chaining.
+
+* Support emitting control-flow loops.
   * Add `ForLoop` and `ForLoopBuilder` for traditional `for` loops.
   * Add `ForInLoop` and `ForInLoopBuilder` for `for-in` and `await-for` loops.
   * Add `WhileLoop` and `WhileLoopBuilder` for `while` and `do-while` loops.
 
 * Support emitting `if` statements and `if`/`else if`/`else` trees.
-  * Add `Condition` and `ConditionBuilder` for single statements
-  * Add `IfTree` and `IfTreeBuilder` for conditional trees
+  * Add `Condition` and `ConditionBuilder` for single statements.
+  * Add `IfTree` and `IfTreeBuilder` for conditional trees.
 
 * Support emitting `try`/`catch`/`finally` blocks.
   * Add `CatchBlock` and `CatchBlockBuilder` for catch clauses.
@@ -43,6 +51,7 @@
   * Add `Case` and `CaseBuilder` for creating `switch` cases.
   * Add `SwitchExpression` and `SwitchExpressionBuilder` for `switch` expressions.
   * Add `SwitchStatement` and `SwitchStatementBuilder` for `switch` statements.
+  * Add `Expression.wildcard` static constant for wildcard (`_`) expressions.
 
 ## 4.10.1
 

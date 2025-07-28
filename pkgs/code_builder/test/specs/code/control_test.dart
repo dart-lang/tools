@@ -12,7 +12,7 @@ void main() {
   useDartfmt();
 
   group(
-    'ControlExpression',
+    'control expression',
     () {
       // general
 
@@ -237,7 +237,7 @@ void main() {
   );
 
   group(
-    'ControlFlow extension',
+    'expression control-flow',
     () {
       test('should emit a yield expression', () {
         final expr = refer('value').yielded;
@@ -295,76 +295,257 @@ void main() {
         expect(expr, equalsDart('value case int when value > 0'));
       });
 
-      test('should build a while loop with loopWhile', () {
-        final expr = refer('isRunning').loopWhile((b) {
-          b.addExpression(refer('tick').call([]));
+      test('should emit a collection-if expression', () {
+        final expr = ControlFlow.collectionIf(
+            condition: literalTrue, value: refer('value'));
+
+        expect(expr, equalsDart('if (true) value'));
+      });
+
+      test('should emit a collection-else expression', () {
+        final expr = ControlFlow.collectionElse(value: refer('value'));
+
+        expect(expr, equalsDart('else value'));
+      });
+
+      test('should emit a collection-else-if expression', () {
+        final expr = ControlFlow.collectionElse(
+            condition: literalTrue, value: refer('value'));
+
+        expect(expr, equalsDart('else if (true) value'));
+      });
+
+      test('should chain collection-if and else in list', () {
+        Expression expr(bool includeStatic) => literalList([
+              if (includeStatic) refer('always'),
+              ControlFlow.collectionIf(
+                  condition: literalTrue, value: refer('value')),
+              ControlFlow.collectionElse(value: refer('other')),
+              if (includeStatic) refer('here'),
+            ]);
+
+        expect(expr(false), equalsDart('[if (true) value else other]'));
+        expect(expr(true),
+            equalsDart('[always, if (true) value else other, here, ]'));
+      });
+
+      test('should chain collection-if and else in set', () {
+        Expression expr(bool includeStatic) => literalSet({
+              if (includeStatic) refer('always'),
+              ControlFlow.collectionIf(
+                  condition: literalTrue, value: refer('value')),
+              ControlFlow.collectionElse(
+                  condition: literalFalse, value: refer('thing')),
+              ControlFlow.collectionElse(value: refer('other')),
+              if (includeStatic) refer('here')
+            });
+
+        expect(expr(false),
+            equalsDart('{if (true) value else if (false) thing else other}'));
+
+        expect(expr(true), equalsDart('''
+{always, if (true) value else if (false) thing else other, here, }'''));
+      });
+
+      test('should chain collection-if and else in map', () {
+        Expression expr(bool includeStatic) => literalMap({
+              if (includeStatic) refer('always'): refer('here'),
+              ControlFlow.collectionIf(
+                  condition: literalTrue, value: refer('key')): refer('value'),
+              ControlFlow.collectionElse(
+                  condition: literalFalse,
+                  value: refer('key2')): refer('value2'),
+              ControlFlow.collectionElse(value: refer('key3')): refer('value3'),
+              if (includeStatic) refer('also'): refer('here')
+            });
+
+        expect(expr(false), equalsDart('''
+{if (true) key: value else if (false) key2: value2 else key3: value3}'''));
+
+        expect(expr(true), equalsDart('''
+{always: here,
+  if (true) key: value
+  else if (false) key2: value2 
+  else key3: value3,
+  also: here,
+}'''));
+      });
+
+      test('should emit a collection-for loop', () {
+        final expr = ControlFlow.collectionFor(
+          value: refer('i'),
+          initialize: declareVar('i').assign(literal(0)),
+          condition: refer('i').lessThan(literal(5)),
+          advance: refer('i').operatorUnaryPostfixIncrement(),
+        );
+
+        expect(expr, equalsDart('for (var i = 0; i < 5; i++) i'));
+      });
+
+      test('should emit a collection-for-in loop', () {
+        final expr = ControlFlow.collectionForIn(
+            value: refer('i'),
+            identifier: declareFinal('i'),
+            expression: refer('iterable'));
+
+        expect(expr, equalsDart('for (final i in iterable) i'));
+      });
+
+      test(
+        'should emit a list with nested collection-for/if',
+        () {
+          final expr = literalList([
+            ControlFlow.collectionForIn(
+                identifier: declareFinal('i'),
+                expression: refer('iterable'),
+                value: ControlFlow.collectionIf(
+                    condition: refer('i').property('something'),
+                    value: refer('i')))
+          ]);
+
+          expect(expr,
+              equalsDart('[for (final i in iterable) if (i.something) i]'));
+        },
+      );
+
+      test('should emit a set with nested for-in and if/else', () {
+        final expr = literalSet({
+          ControlFlow.collectionForIn(
+            identifier: declareFinal('x'),
+            expression: refer('items'),
+            value: ControlFlow.collectionIf(
+              condition: refer('x').property('valid'),
+              value: refer('x'),
+            ),
+          ),
+          ControlFlow.collectionElse(value: refer('fallback')),
         });
 
         expect(
           expr,
-          equalsDart('''
+          equalsDart('{for (final x in items) if (x.valid) x else fallback}'),
+        );
+      });
+
+      test(
+        'should emit a map wth nested for-in and if/else',
+        () {
+          final expr = literalMap({
+            ControlFlow.collectionForIn(
+                identifier: declareFinal('x'),
+                expression: refer('items'),
+                value: ControlFlow.collectionIf(
+                    condition: refer('x').property('valid'),
+                    value: refer('key'))): refer('x'),
+            ControlFlow.collectionElse(value: refer('key2')):
+                refer('fix').call([refer('x')])
+          });
+
+          expect(expr, equalsDart('''
+{for (final x in items) if (x.valid) key: x else key2: fix(x)}'''));
+        },
+      );
+
+      test('should not chain else if used after static value', () {
+        final expr = literalList([
+          refer('static'),
+          ControlFlow.collectionElse(value: refer('shouldNotChain')),
+        ]);
+
+        expect(
+          expr,
+          equalsDart('[static, else shouldNotChain, ]'),
+        );
+      });
+
+      test('should not chain for(in) if value is not chainable', () {
+        final expr = literalList([
+          ControlFlow.collectionForIn(
+              identifier: declareFinal('x'),
+              expression: refer('items'),
+              value: refer('x')),
+          ControlFlow.collectionElse(value: refer('shouldNotChain'))
+        ]);
+
+        expect(
+          expr,
+          equalsDart('[for (final x in items) x, else shouldNotChain, ]'),
+        );
+      });
+    },
+  );
+
+  group('expression loop helpers', () {
+    test('should build a while loop with loopWhile', () {
+      final expr = refer('isRunning').loopWhile((b) {
+        b.addExpression(refer('tick').call([]));
+      });
+
+      expect(
+        expr,
+        equalsDart('''
 while (isRunning) {
   tick();
 }'''),
-        );
+      );
+    });
+
+    test('should build a do-while loop with loopDoWhile', () {
+      final expr = refer('conditionMet').loopDoWhile((b) {
+        b.addExpression(refer('step').call([]));
       });
 
-      test('should build a do-while loop with loopDoWhile', () {
-        final expr = refer('conditionMet').loopDoWhile((b) {
-          b.addExpression(refer('step').call([]));
-        });
-
-        expect(
-          expr,
-          equalsDart('''
+      expect(
+        expr,
+        equalsDart('''
 do {
   step();
 } while (conditionMet);'''),
-        );
+      );
+    });
+
+    test('should build a for-in loop with loopForIn', () {
+      final expr = refer('item').loopForIn(refer('items'), (b) {
+        b.addExpression(refer('print').call([refer('item')]));
       });
 
-      test('should build a for-in loop with loopForIn', () {
-        final expr = refer('item').loopForIn(refer('items'), (b) {
-          b.addExpression(refer('print').call([refer('item')]));
-        });
-
-        expect(
-          expr,
-          equalsDart('''
+      expect(
+        expr,
+        equalsDart('''
 for (item in items) {
   print(item);
 }'''),
-        );
+      );
+    });
+
+    test('should build if statement with ifThen', () {
+      final tree = refer('isTrue').ifThen((b) {
+        b.addExpression(refer('execute').call([]));
       });
 
-      test('should build if statement with ifThen', () {
-        final tree = refer('isTrue').ifThen((b) {
-          b.addExpression(refer('execute').call([]));
-        });
-
-        expect(
-          tree,
-          equalsDart('''
+      expect(
+        tree,
+        equalsDart('''
 if (isTrue) {
   execute();
 }'''),
-        );
+      );
+    });
+
+    test('should support chaining', () {
+      final tree = literal(1).equalTo(literal(2)).ifThen((b) {
+        b.addExpression(refer('print').call([literal('Bad')]));
+      }).elseIf((b) {
+        b
+          ..condition = literal(2).equalTo(literal(2))
+          ..body.addExpression(refer('print').call([literal('Good')]));
+      }).orElse((b) {
+        b.addExpression(refer('print').call([literal('What?')]));
       });
 
-      test('should support chaining', () {
-        final tree = literal(1).equalTo(literal(2)).ifThen((b) {
-          b.addExpression(refer('print').call([literal('Bad')]));
-        }).elseIf((b) {
-          b
-            ..condition = literal(2).equalTo(literal(2))
-            ..body.addExpression(refer('print').call([literal('Good')]));
-        }).orElse((b) {
-          b.addExpression(refer('print').call([literal('What?')]));
-        });
-
-        expect(
-          tree,
-          equalsDart('''
+      expect(
+        tree,
+        equalsDart('''
 if (1 == 2) {
   print('Bad');
 } else if (2 == 2) {
@@ -372,8 +553,7 @@ if (1 == 2) {
 } else {
   print('What?');
 }'''),
-        );
-      });
-    },
-  );
+      );
+    });
+  });
 }

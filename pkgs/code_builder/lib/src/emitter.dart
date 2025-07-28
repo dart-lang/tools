@@ -42,12 +42,25 @@ StringSink visitAll<T>(
   if (elements.isEmpty) {
     return output;
   }
+
   final iterator = elements.iterator..moveNext();
-  visit(iterator.current);
+
+  var prev = iterator.current;
+  visit(prev);
+
   while (iterator.moveNext()) {
-    output.write(separator);
-    visit(iterator.current);
+    final curr = iterator.current;
+
+    final chain = prev is CollectionExpression &&
+        curr is CollectionExpression &&
+        prev.chainTarget &&
+        curr.chain;
+
+    output.write(chain ? ' ' : separator);
+    visit(curr);
+    prev = curr;
   }
+
   return output;
 }
 

@@ -457,29 +457,6 @@ if (a) {
       );
     });
 
-    test('should support orElseThrow', () {
-      final tree = IfTree((b) {
-        b
-          ..add(Condition((b) {
-            b
-              ..condition = refer('valid')
-              ..body.addExpression(refer('process').call([]));
-          }))
-          ..orElseThrow(refer('UnsupportedError')
-              .newInstance([literal('Invalid input')]));
-      });
-
-      expect(
-        tree,
-        equalsDart('''
-if (valid) {
-  process();
-} else {
-  throw UnsupportedError('Invalid input');
-}'''),
-      );
-    });
-
     test('should support ifThen', () {
       final tree = IfTree((b) {
         b.ifThen((cond) {

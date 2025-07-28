@@ -183,13 +183,6 @@ abstract class IfTreeBuilder implements Builder<IfTree, IfTreeBuilder> {
           builder(block.body);
         },
       ));
-
-  /// Shorthand to add an `else` statement that throws [expression].
-  void orElseThrow(Expression expression) => orElse(
-        (body) {
-          body.addExpression(expression.thrown);
-        },
-      );
 }
 
 /// A `switch` case used in either a [SwitchStatement] or a [SwitchExpression].

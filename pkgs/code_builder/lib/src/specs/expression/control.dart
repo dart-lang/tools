@@ -4,12 +4,9 @@
 
 part of '../expression.dart';
 
-/// Represents a control expression.
+/// **INTERNAL**
 ///
-/// The expression consists of the control statement ([control]),
-/// followed by the expression body (if provided), which consists of
-/// all expressions in [body] joined by [separator], optionally
-/// enclosed in parenthesis ([parenthesised]).
+/// Represents a control expression.
 ///
 /// {@category controlFlow}
 @internal
@@ -42,8 +39,6 @@ class ControlExpression extends Expression {
   final String? separator;
 
   /// Whether or not the body should be wrapped in parenthesis (default: `true`)
-  ///
-  /// If [body] is `null` or empty, [parenthesised] will have no effect.
   final bool parenthesised;
 
   @visibleForTesting
@@ -61,68 +56,23 @@ class ControlExpression extends Expression {
       ControlExpression('else',
           body: condition != null ? [condition] : null, parenthesised: false);
 
-  /// Returns a traditional `for` loop.
-  ///
-  /// ```dart
-  /// for (initialize; condition; advance)
-  /// ```
-  ///
-  /// https://dart.dev/language/loops#for-loops
-  ///
-
   factory ControlExpression.forLoop(
           Expression? initialize, Expression? condition, Expression? advance) =>
       ControlExpression('for',
           body: [initialize, condition, advance], separator: ';');
-
-  /// Returns a `for-in` loop.
-  ///
-  /// ```dart
-  /// for (identifier in expression)
-  /// ```
-  ///
-  /// https://dart.dev/language/loops#for-loops
-  ///
 
   factory ControlExpression.forInLoop(
           Expression identifier, Expression expression) =>
       ControlExpression('for',
           body: [identifier, expression], separator: ' in');
 
-  /// Returns an asynchronous `for` loop.
-  ///
-  /// ```dart
-  /// await for (identifier in expression)
-  /// ```
-  ///
-  /// https://dart.dev/language/async#handling-streams
-  ///
-
   factory ControlExpression.awaitForLoop(
           Expression identifier, Expression expression) =>
       ControlExpression('await for',
           body: [identifier, expression], separator: ' in');
 
-  /// Returns a `while` loop.
-  ///
-  /// ```dart
-  /// while (condition)
-  /// ```
-  ///
-  /// https://dart.dev/language/loops#while-and-do-while
-  ///
-
   factory ControlExpression.whileLoop(Expression condition) =>
       ControlExpression('while', body: [condition]);
-
-  /// A `do` statement.
-  ///
-  /// ```dart
-  /// do
-  /// ```
-  ///
-  /// https://dart.dev/language/loops#while-and-do-while
-  ///
 
   static const doStatement = ControlExpression('do');
 
@@ -139,19 +89,36 @@ class ControlExpression extends Expression {
       ControlExpression('on',
           body: [type, statement], parenthesised: false, separator: '');
 
-  /// A `finally` statement.
-  ///
-  /// ```dart
-  /// finally
-  /// ```
-  ///
-  /// https://dart.dev/language/error-handling#finally
-  ///
-
   static const finallyStatement = ControlExpression('finally');
 
   factory ControlExpression.switchStatement(Expression value) =>
       ControlExpression('switch', body: [value]);
+}
+
+/// **INTERNAL**
+///
+/// A collection control-flow expression
+///
+/// Supports chaining when used in collections via [chainTarget] and [chain].
+/// These fields have no effect when used outside of collections.
+///
+@internal
+class CollectionExpression extends BinaryExpression {
+  /// Whether the [CollectionExpression] that follows this in a collection
+  /// may chain with it. Chained expressions will not have a comma between
+  /// them.
+  final bool chainTarget;
+
+  /// Whether this [CollectionExpression] should try to chain with its
+  /// antecedent in collections.
+  final bool chain;
+
+  const CollectionExpression._({
+    required Expression control,
+    required Expression value,
+    this.chain = false,
+    this.chainTarget = false,
+  }) : super._(control, value, '');
 }
 
 /// Provides control-flow utilities for [Expression].
@@ -301,4 +268,128 @@ extension ControlFlow on Expression {
     if (guard == null) return first;
     return BinaryExpression._(first, guard, 'when');
   }
+
+  /// Returns a collection-`if` expression.
+  ///
+  /// ```dart
+  /// if (condition) value
+  /// ```
+  ///
+  /// {@template controlflow.collection.chaining.if}
+  /// [collectionIf] expressions followed by [collectionElse] expressions
+  /// in a [literal] list, set, or map will be chained together, e.g:
+  ///
+  /// ```dart
+  /// literalMap({
+  ///   ControlFlow.collectionIf(
+  ///       condition: literalTrue, value: refer('key')
+  ///   ): refer('value'),
+  ///   ControlFlow.collectionElse(
+  ///       condition: literalFalse,
+  ///       value: refer('key2')
+  ///   ): refer('value2'),
+  ///   ControlFlow.collectionElse(value: refer('key3')
+  ///   ): refer('value3'),
+  /// });
+  /// ```
+  /// Outputs:
+  /// ```dart
+  /// {
+  ///   if (true) key: value
+  ///   else if (false) key2: value2
+  ///   else key3: value3
+  /// }
+  /// ```
+  /// {@endtemplate}
+  static Expression collectionIf({
+    required Expression condition,
+    required Expression value,
+  }) =>
+      CollectionExpression._(
+          chainTarget: true,
+          control: ControlExpression.ifStatement(condition),
+          value: value);
+
+  /// Returns a collection-`else` expression.
+  ///
+  /// If [condition] is specified, returns a collection-`else if` expression.
+  ///
+  /// ```dart
+  /// else value
+  /// else if (condition) value
+  /// ```
+  ///
+  /// {@macro controlflow.collection.chaining.if}
+  static Expression collectionElse({
+    Expression? condition,
+    required Expression value,
+  }) =>
+      CollectionExpression._(
+          chain: true,
+          chainTarget: condition != null,
+          // only chainable if this is an else-if statement
+          control: ControlExpression.elseStatement(condition == null
+              ? null
+              : ControlExpression.ifStatement(condition)),
+          value: value);
+
+  /// Returns a collection-`for` expression.
+  ///
+  /// ```dart
+  /// for (initialize; condition; advance) value
+  /// ```
+  ///
+  /// {@template controlflow.collection.chaining.for}
+  /// If [value] is chainable (a [collectionIf], [collectionElse] with a
+  /// condition, or a collection-`for`/`for-in` containing one of those),
+  /// this will also be chainable. If this is followed by a collection-`else`
+  /// in a [literal] collection, they will be chained together.
+  ///
+  /// ```dart
+  /// literalMap({
+  ///   ControlFlow.collectionForIn(
+  ///       identifier: declareFinal('x'),
+  ///       expression: refer('items'),
+  ///       value: ControlFlow.collectionIf(
+  ///           condition: refer('x').property('valid'),
+  ///           value: refer('key')
+  ///   )): refer('x'),
+  ///   ControlFlow.collectionElse(value: refer('key2')
+  ///   ): refer('fix').call([refer('x')])
+  /// });
+  /// ```
+  /// Outputs:
+  /// ```dart
+  /// {
+  ///   for (final x in items) if (x.valid) key: x
+  ///   else key2: fix
+  /// }
+  /// ```
+  /// {@endtemplate}
+  static Expression collectionFor(
+          {Expression? initialize,
+          Expression? condition,
+          Expression? advance,
+          required Expression value}) =>
+      CollectionExpression._(
+          chainTarget: true,
+          control: ControlExpression.forLoop(initialize, condition, advance),
+          value: value);
+
+  /// Returns a collection-`for-in` expression
+  ///
+  /// ```dart
+  /// for (identifier in expression) value
+  /// ```
+  ///
+  /// {@macro controlflow.collection.chaining.for}
+  static Expression collectionForIn({
+    required Expression identifier,
+    required Expression expression,
+    required Expression value,
+  }) =>
+      CollectionExpression._(
+          chainTarget: value is CollectionExpression && value.chainTarget,
+          control: ControlExpression.forInLoop(identifier, expression),
+          value: value);
 }
