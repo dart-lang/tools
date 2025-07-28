@@ -438,6 +438,9 @@ abstract class Expression implements Spec {
 
   /// Returns this expression wrapped in parenthesis.
   ParenthesizedExpression get parenthesized => ParenthesizedExpression._(this);
+
+  /// Wildcard expression (`_`).
+  static const wildcard = LiteralExpression._('_');
 }
 
 /// Declare a const variable named [variableName].

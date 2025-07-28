@@ -846,7 +846,7 @@ switch (cmd) {
       final stmt = SwitchStatement((b) {
         b.value = refer('cmd');
         b.cases.add(Case((cb) => cb
-          ..pattern = ControlFlow.wildcard
+          ..pattern = Expression.wildcard
           ..body = refer('log').call([literal('wildcard')]).statement));
       });
 
@@ -902,5 +902,157 @@ switch (x) {
 }'''),
       );
     });
+  });
+
+  group('switch expression', () {
+    final matchValue = refer('value');
+
+    test('should generate a single-case switch expression', () {
+      final expr = SwitchExpression((b) => b
+        ..value = matchValue
+        ..cases.add(Case((b) => b
+          ..pattern = refer('1')
+          ..body = refer("'one'"))));
+
+      expect(
+        expr,
+        equalsDart('''
+          switch (value) {
+            1 => 'one',
+          }
+        '''),
+      );
+    });
+
+    test('should support guard expressions in cases', () {
+      final expr = SwitchExpression((b) => b
+        ..value = matchValue
+        ..cases.add(Case((b) => b
+          ..pattern = refer('x')
+          ..guard = refer('x > 5')
+          ..body = refer("'greater than 5'"))));
+
+      expect(
+        expr,
+        equalsDart('''
+          switch (value) {
+            x when x > 5 => 'greater than 5',
+          }
+        '''),
+      );
+    });
+
+    test('should ignore label in switch expressions', () {
+      final expr = SwitchExpression((b) => b
+        ..value = matchValue
+        ..cases.add(Case((b) => b
+          ..pattern = refer('2')
+          ..label = 'ignoredLabel'
+          ..body = refer("'two'"))));
+
+      expect(
+        expr,
+        equalsDart('''
+          switch (value) {
+            2 => 'two',
+          }
+        '''),
+      );
+    });
+
+    test('should generate wildcard case using Case.any', () {
+      final expr = SwitchExpression((b) => b
+        ..value = matchValue
+        ..cases.add(Case.any(refer("'default'"))));
+
+      expect(
+        expr,
+        equalsDart('''
+          switch (value) {
+            _ => 'default',
+          }
+        '''),
+      );
+    });
+
+    test('should throw if case body is null', () {
+      expect(
+        () => SwitchExpression((b) => b
+              ..value = matchValue
+              ..cases.add(Case((b) => b..pattern = refer('1'))))
+            .accept(DartEmitter()),
+        throwsArgumentError,
+      );
+    });
+
+    test('should generate multiple cases with mixed guards and default', () {
+      final expr = SwitchExpression((b) => b
+        ..value = matchValue
+        ..cases.addAll([
+          Case((b) => b
+            ..pattern = refer('1')
+            ..body = refer("'one'")),
+          Case((b) => b
+            ..pattern = refer('2')
+            ..guard = refer('checkTwo()')
+            ..body = refer("'two'")),
+          Case.any(refer("'fallback'")),
+        ]));
+
+      expect(
+        expr,
+        equalsDart('''
+          switch (value) {
+            1 => 'one',
+            2 when checkTwo() => 'two',
+            _ => 'fallback',
+          }
+        '''),
+      );
+    });
+
+    test(
+      'should work as an expression',
+      () {
+        final expr = SwitchExpression(
+          (b) => b
+            ..value = refer('otherValue')
+            ..cases.addAll([
+              Case((c) => c
+                ..pattern = refer('Enum').property('someType')
+                ..body = refer('someFunction').call([])),
+              Case((c) => c
+                ..pattern = refer('Enum').property('otherType')
+                ..body = refer('otherFunction').call([]))
+            ]),
+        );
+
+        final variable = declareFinal('variable').assign(expr);
+        final parenthesized = expr.parenthesized;
+        final operation = expr.operatorAdd(refer('otherResult'));
+
+        expect(
+            Block(
+              (b) => b
+                ..addExpression(variable)
+                ..addExpression(parenthesized)
+                ..addExpression(operation),
+            ),
+            equalsDart('''
+final variable = switch (otherValue) {
+  Enum.someType => someFunction(),
+  Enum.otherType => otherFunction(),
+};
+(switch (otherValue) {
+  Enum.someType => someFunction(),
+  Enum.otherType => otherFunction(),
+});
+switch (otherValue) {
+  Enum.someType => someFunction(),
+  Enum.otherType => otherFunction(),
+} + otherResult;
+'''));
+      },
+    );
   });
 }

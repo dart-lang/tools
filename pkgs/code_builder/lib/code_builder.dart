@@ -24,6 +24,8 @@ export 'src/specs/control.dart'
         ForLoopBuilder,
         IfTree,
         IfTreeBuilder,
+        SwitchExpression,
+        SwitchExpressionBuilder,
         SwitchStatement,
         SwitchStatementBuilder,
         TryCatch,

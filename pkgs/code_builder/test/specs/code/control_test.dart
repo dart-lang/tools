@@ -295,13 +295,6 @@ void main() {
         expect(expr, equalsDart('value case int when value > 0'));
       });
 
-      test(
-        'should emit a wildcard expression',
-        () {
-          expect(ControlFlow.wildcard, equalsDart('_'));
-        },
-      );
-
       test('should build a while loop with loopWhile', () {
         final expr = refer('isRunning').loopWhile((b) {
           b.addExpression(refer('tick').call([]));

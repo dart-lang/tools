@@ -29,7 +29,12 @@ abstract class ControlBlockVisitor<T>
   T visitControlTree(ControlTree tree, [T? context]);
   T visitControlExpression(ControlExpression expression, [T? context]);
   T visitSwitch(Switch statement, [T? context]);
-  T visitCaseStatement(CaseStatement statement, [T? context]);
+  // [context] is actually used, but the analyzer doesn't detect it.
+  // ignore: unused_element_parameter
+  T _visitCaseStatement(CaseStatement statement, [T? context]);
+  // [context] is actually used, but the analyzer doesn't detect it.
+  // ignore: unused_element_parameter
+  T _visitCaseExpression(CaseExpression expression, [T? context]);
 }
 
 /// Knowledge of how to write valid Dart code from [ControlBlockVisitor].
@@ -41,9 +46,11 @@ abstract mixin class ControlBlockEmitter
   StringSink visitControlBlock(ControlBlock block, [StringSink? output]) {
     output ??= StringBuffer();
     block._expression.accept(this, output);
-    output.write(' { ');
+    output.writeln(' {');
     block.body.accept(this, output);
+
     output.write(' }');
+
     return output;
   }
 
@@ -52,7 +59,7 @@ abstract mixin class ControlBlockEmitter
       [StringSink? output]) {
     output ??= StringBuffer();
     if (block.label != null) {
-      output.write('${block.label!}: ');
+      output.writeln('${block.label!}:');
     }
 
     return visitControlBlock(block, output);
@@ -67,6 +74,7 @@ abstract mixin class ControlBlockEmitter
 
     output.write(' ');
     loop._statement.statement.accept(this, output);
+    output.writeln();
     return output;
   }
 
@@ -150,15 +158,16 @@ abstract mixin class ControlBlockEmitter
   }
 
   @override
-  StringSink visitCaseStatement(CaseStatement statement, [StringSink? output]) {
+  StringSink _visitCaseStatement(CaseStatement statement,
+      [StringSink? output]) {
     output ??= StringBuffer();
 
     if (statement.label case final String label) {
-      output.write('$label:\n');
+      output.writeln('$label:');
     }
 
     if (statement._default) {
-      output.write('default:\n');
+      output.writeln('default:');
     } else {
       output.write('case ');
       statement.pattern.accept(this, output);
@@ -168,12 +177,32 @@ abstract mixin class ControlBlockEmitter
         guard.accept(this, output);
       }
 
-      output.write(':\n');
+      output.writeln(':');
     }
 
     if (statement.body case final Code body) {
       body.accept(this, output);
     }
+
+    return output;
+  }
+
+  @override
+  StringSink _visitCaseExpression(CaseExpression expression,
+      [StringSink? output]) {
+    output ??= StringBuffer();
+    expression.pattern.accept(this, output);
+
+    if (expression.guard case final Expression guard) {
+      output.write(' when ');
+      guard.accept(this, output);
+    }
+
+    output.write(' => ');
+    // body will never be null; CaseExpression ensures a value is
+    // provided when it is constructed
+    expression.body!.accept(this, output);
+    output.writeln(',');
 
     return output;
   }

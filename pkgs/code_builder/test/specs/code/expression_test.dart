@@ -967,4 +967,11 @@ void main() {
   test('should emit a yield starred expression', () {
     expect(refer('foo').yieldStarred, equalsDart('yield* foo'));
   });
+
+  test(
+    'should emit a wildcard expression',
+    () {
+      expect(Expression.wildcard, equalsDart('_'));
+    },
+  );
 }

@@ -264,9 +264,6 @@ extension ControlFlow on Expression {
   /// `rethrow`
   static const rethrowVoid = LiteralExpression._('rethrow');
 
-  /// Wildcard expression (`_`).
-  static const wildcard = LiteralExpression._('_');
-
   /// Returns a labeled `break` statement.
   ///
   /// ```dart

@@ -214,7 +214,7 @@ abstract class IfTreeBuilder implements Builder<IfTree, IfTreeBuilder> {
 ///
 /// For `switch` *expressions*, [T] must be a non-null [Expression].
 /// Fall-though is not supported in `switch` expressions, nor are labels.
-/// Attempting to use fall-through by leaving [body] null will throw an
+/// Attempting to use fall-through by leaving [body] `null` will throw an
 /// [ArgumentError], and setting [label] will have no effect.
 ///
 /// ```dart
@@ -233,7 +233,7 @@ abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
   ///
   /// For [SwitchStatement], the `default` keyword will be used. [label] will be
   /// respected, if provided. To force use of the wildcard expression
-  /// instead, use [Case.new] with [ControlFlow.wildcard] as the pattern.
+  /// instead, use [Case.new] with [Expression.wildcard] as the pattern.
   ///
   /// For [SwitchExpression], a wildcard case will be created, as `switch`
   /// expressions don't support `default`. [label] will be ignored.
@@ -274,7 +274,7 @@ abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
 @internal
 class DefaultCase<T> extends _$Case<T> {
   DefaultCase._(T body, {super.label})
-      : super._(body: body, pattern: ControlFlow.wildcard);
+      : super._(body: body, pattern: Expression.wildcard);
 
   @override
   bool get _default => true;
@@ -298,15 +298,36 @@ class CaseStatement extends _$Case<Code?> implements Code {
 
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
-      visitor.visitCaseStatement(this, context);
+      visitor._visitCaseStatement(this, context);
 }
 
 /// **INTERNAL**
-///
+/// Buildable case expression
+@internal
+class CaseExpression extends _$Case<Expression> implements Code {
+  // no need to store item, as _default functionality is not needed
+  // (case/switch expressions don't support the `default` keyword)
+
+  CaseExpression._(Case<Expression> item)
+      : super._(
+            pattern: item.pattern,
+            body: item.body ??
+                (throw ArgumentError(
+                    'Cases in `switch` expressions must provide '
+                        'a non-null body.',
+                    'body')),
+            guard: item.guard);
+
+  @override
+  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
+      visitor._visitCaseExpression(this, context);
+}
+
+/// **INTERNAL**
 /// Base class for `switch` types.
-///
 @internal
 @optionalTypeArgs
+@BuiltValue(instantiable: false)
 abstract class Switch<T> implements Code, Spec {
   /// The value being matched against.
   ///
@@ -328,9 +349,7 @@ abstract class Switch<T> implements Code, Spec {
 }
 
 /// **INTERNAL**
-///
 /// Base class for `switch` builders
-///
 @internal
 @optionalTypeArgs
 abstract class SwitchBuilder<T> {
@@ -367,25 +386,82 @@ class BuildableSwitch<T> with ControlBlock {
   Block get body => Block.of(cases);
 }
 
-/// Common [accept] implementation for [Switch] subtypes
-mixin _SwitchImpl {
-  R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
-      // can't be `on Switch` because built_value classes can't extend
-      // anything but `Object`, and even though switch subtypes implement
-      // `Switch`, they must extend `Switch` instead in order to be allowed
-      // to use a mixin `on Switch`. as a workaround, we are casting this
-      // as a switch, which will always work because this mixin will only
-      // ever be used on switch subtypes (hence why it's private).
-      visitor.visitSwitch(this as Switch, context);
-}
-
+/// Represents a `switch` statement.
+///
+/// `switch` *statements* are standalone `switch` blocks that
+/// use the `case` keyword and execute the case body when matched. Unlike
+/// `switch` *expressions*, they do not return any value. See
+/// https://dart.dev/language/branches#switch-statements.
+///
+/// ```dart
+/// switch (value) {
+///   case value:
+///   case otherValue:
+///     body;
+///
+///   case value when guard:
+///     body;
+///     continue label;
+///
+///   label:
+///   default:
+///     body;
+/// }
+/// ```
+/// [Case]s used in a [SwitchStatement] may leave their [Case.body] `null` in
+/// order to use case fall-through. They can also specify labels ([Case.label])
+/// and guard clauses ([Case.guard]).
+///
 abstract class SwitchStatement
-    with _SwitchImpl
     implements Switch<Code?>, Built<SwitchStatement, SwitchStatementBuilder> {
   SwitchStatement._();
+
+  /// Build a [SwitchStatement].
   factory SwitchStatement([void Function(SwitchStatementBuilder) updates]) =
       _$SwitchStatement;
 
   @override
   Iterable<Code> get _cases => cases.map(CaseStatement._);
+
+  @override
+  T accept<T>(covariant ControlBlockVisitor<T> visitor, [T? context]) =>
+      visitor.visitSwitch(this, context);
+}
+
+/// Represents a `switch` expression.
+///
+/// `switch` *expressions* are `switch` blocks that return the body of the
+/// matched case and use the arrow (`=>`) syntax. Unlike `switch` statements,
+/// they do not use the `case` keyword, and case bodies can only consist of
+/// a single expression. See
+/// https://dart.dev/language/branches#switch-expressions.
+///
+/// ```dart
+/// final variable = switch (value) {
+///   value => body,
+///   value when guard => body,
+///   _ => body,
+/// };
+/// ```
+///
+/// [Case]s used in a [SwitchExpression] must have a non-`null` body. They may
+/// contain guard clauses ([Case.guard]) but not labels ([Case.label]). If a
+/// label is specified, it will be ignored.
+///
+abstract class SwitchExpression extends Expression
+    implements
+        Switch<Expression>,
+        Built<SwitchExpression, SwitchExpressionBuilder> {
+  SwitchExpression._();
+
+  /// Build a [SwitchExpression].
+  factory SwitchExpression([void Function(SwitchExpressionBuilder) updates]) =
+      _$SwitchExpression;
+
+  @override
+  T accept<T>(covariant ControlBlockVisitor<T> visitor, [T? context]) =>
+      visitor.visitSwitch(this, context);
+
+  @override
+  Iterable<Code> get _cases => cases.map(CaseExpression._);
 }

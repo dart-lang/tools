@@ -1,4 +1,4 @@
-# Changelog
+<!-- markdownlint-disable MD041 -->
 
 ## 4.11.0-wip
 
@@ -38,6 +38,11 @@
 * Support emitting `try`/`catch`/`finally` blocks.
   * Add `CatchBlock` and `CatchBlockBuilder` for catch clauses.
   * Add `TryCatch` and `TryCatchBuilder` for try/catch blocks.
+
+* Support emitting `switch` statements and expressions.
+  * Add `Case` and `CaseBuilder` for creating `switch` cases.
+  * Add `SwitchExpression` and `SwitchExpressionBuilder` for `switch` expressions.
+  * Add `SwitchStatement` and `SwitchStatementBuilder` for `switch` statements.
 
 ## 4.10.1
 

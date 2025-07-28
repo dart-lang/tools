@@ -796,17 +796,19 @@ class _$SwitchStatement extends SwitchStatement {
 }
 
 class SwitchStatementBuilder
-    implements Builder<SwitchStatement, SwitchStatementBuilder> {
+    implements
+        Builder<SwitchStatement, SwitchStatementBuilder>,
+        SwitchBuilder<Code?> {
   _$SwitchStatement? _$v;
 
   Expression? _value;
   Expression? get value => _$this._value;
-  set value(Expression? value) => _$this._value = value;
+  set value(covariant Expression? value) => _$this._value = value;
 
   ListBuilder<Case<Code?>>? _cases;
   ListBuilder<Case<Code?>> get cases =>
       _$this._cases ??= ListBuilder<Case<Code?>>();
-  set cases(ListBuilder<Case<Code?>>? cases) => _$this._cases = cases;
+  set cases(covariant ListBuilder<Case<Code?>>? cases) => _$this._cases = cases;
 
   SwitchStatementBuilder();
 
@@ -821,7 +823,7 @@ class SwitchStatementBuilder
   }
 
   @override
-  void replace(SwitchStatement other) {
+  void replace(covariant SwitchStatement other) {
     _$v = other as _$SwitchStatement;
   }
 
@@ -850,6 +852,117 @@ class SwitchStatementBuilder
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'SwitchStatement', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$SwitchExpression extends SwitchExpression {
+  @override
+  final Expression value;
+  @override
+  final BuiltList<Case<Expression>> cases;
+
+  factory _$SwitchExpression(
+          [void Function(SwitchExpressionBuilder)? updates]) =>
+      (SwitchExpressionBuilder()..update(updates))._build();
+
+  _$SwitchExpression._({required this.value, required this.cases}) : super._();
+  @override
+  SwitchExpression rebuild(void Function(SwitchExpressionBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  SwitchExpressionBuilder toBuilder() =>
+      SwitchExpressionBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is SwitchExpression &&
+        value == other.value &&
+        cases == other.cases;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, value.hashCode);
+    _$hash = $jc(_$hash, cases.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'SwitchExpression')
+          ..add('value', value)
+          ..add('cases', cases))
+        .toString();
+  }
+}
+
+class SwitchExpressionBuilder
+    implements
+        Builder<SwitchExpression, SwitchExpressionBuilder>,
+        SwitchBuilder<Expression> {
+  _$SwitchExpression? _$v;
+
+  Expression? _value;
+  Expression? get value => _$this._value;
+  set value(covariant Expression? value) => _$this._value = value;
+
+  ListBuilder<Case<Expression>>? _cases;
+  ListBuilder<Case<Expression>> get cases =>
+      _$this._cases ??= ListBuilder<Case<Expression>>();
+  set cases(covariant ListBuilder<Case<Expression>>? cases) =>
+      _$this._cases = cases;
+
+  SwitchExpressionBuilder();
+
+  SwitchExpressionBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _value = $v.value;
+      _cases = $v.cases.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(covariant SwitchExpression other) {
+    _$v = other as _$SwitchExpression;
+  }
+
+  @override
+  void update(void Function(SwitchExpressionBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  SwitchExpression build() => _build();
+
+  _$SwitchExpression _build() {
+    _$SwitchExpression _$result;
+    try {
+      _$result = _$v ??
+          _$SwitchExpression._(
+            value: BuiltValueNullFieldError.checkNotNull(
+                value, r'SwitchExpression', 'value'),
+            cases: cases.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'cases';
+        cases.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'SwitchExpression', _$failedField, e.toString());
       }
       rethrow;
     }
