@@ -591,7 +591,18 @@ void main() {
       });
 
       test('with spaces and parenthesis in the command name', () async {
-        final dir = tmpDir.childDirectory('crazy P()ath');
+        final dir = tmpDir.childDirectory('the P()ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      });
+
+      test('with spaces inside parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('the P( )ath');
         final main = dir.childFile('main.dart')
           ..createSync(recursive: true)
           ..writeAsStringSync('''
