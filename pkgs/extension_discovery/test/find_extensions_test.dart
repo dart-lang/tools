@@ -346,5 +346,5 @@ writtenAsYaml: true
         isTrue,
       );
     }
-  });
+  }, skip: 'https://github.com/dart-lang/tools/issues/2134');
 }
