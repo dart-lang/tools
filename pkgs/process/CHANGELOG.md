@@ -1,6 +1,6 @@
 ## 5.0.5
 
-* Wrap commands with parenthesis in them with quotes.
+* Fix mixtures of parentheses and spaces in windows command paths.
 
 ## 5.0.4
 
