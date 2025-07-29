@@ -28,7 +28,9 @@ String sanitizeExecutablePath(String executable,
   if (!platform.isWindows) {
     return executable;
   }
-  if (executable.contains(' ') && !executable.contains('"')) {
+  if ((executable.contains(' ') ||
+          (executable.contains('(') || executable.contains(')'))) &&
+      !executable.contains('"')) {
     // Use quoted strings to indicate where the file name ends and the arguments begin;
     // otherwise, the file name is ambiguous.
     return '"$executable"';

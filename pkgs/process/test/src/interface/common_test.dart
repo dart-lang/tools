@@ -260,6 +260,36 @@ void main() {
             r'C:\"Program Files"\bla.exe');
       });
 
+      test('when path has parenthesis', () {
+        expect(
+            sanitizeExecutablePath(r'ProgramFiles(x86)\bla.exe',
+                platform: platform),
+            r'"ProgramFiles(x86)\bla.exe"');
+        expect(
+            sanitizeExecutablePath(r'"ProgramFiles(x86)\bla.exe"',
+                platform: platform),
+            r'"ProgramFiles(x86)\bla.exe"');
+        expect(
+            sanitizeExecutablePath(r'C:\"ProgramFiles(x86)"\bla.exe',
+                platform: platform),
+            r'C:\"ProgramFiles(x86)"\bla.exe');
+      });
+
+      test('when path has parenthesis and spaces', () {
+        expect(
+            sanitizeExecutablePath(r'Program Files (x86)\bla.exe',
+                platform: platform),
+            r'"Program Files (x86)\bla.exe"');
+        expect(
+            sanitizeExecutablePath(r'"Program Files (x86)\bla.exe"',
+                platform: platform),
+            r'"Program Files (x86)\bla.exe"');
+        expect(
+            sanitizeExecutablePath(r'C:\"Program Files (x86)"\bla.exe',
+                platform: platform),
+            r'C:\"Program Files (x86)"\bla.exe');
+      });
+
       test('with absolute path when currentDirectory getter throws', () {
         final FileSystem fsNoCwd = MemoryFileSystemNoCwd(fs);
         final String command = fs.path.join(dir3.path, 'bla.exe');
@@ -570,6 +600,31 @@ void main() {
                       '    ${tmpDir.path}/path3\n'
                       '    ${tmpDir.path}/path4\n'
                       '    ${tmpDir.path}/path5\n'))));
+    });
+
+    test('can execute files with spaces and parens', () async {
+      final crazyDir = tmpDir.childDirectory('crazy P()ath');
+      final crazyMain = crazyDir.childFile('main.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+      final crazyExe = crazyDir.childFile('main.exe');
+      final localProcessManager = LocalProcessManager();
+      expect(
+          localProcessManager.runSync([
+            io.Platform.resolvedExecutable,
+            'compile',
+            'exe',
+            crazyMain.path,
+            '-o',
+            crazyExe.path
+          ]).exitCode,
+          0);
+      final result = localProcessManager.runSync([crazyExe.path]);
+      expect(result.exitCode, 0);
+      expect(result.stdout, 'hello\n');
     });
   });
 }
