@@ -4,3 +4,4 @@
 .pub
 pubspec.lock
 doc/api
+coverage

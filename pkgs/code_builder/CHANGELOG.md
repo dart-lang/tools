@@ -1,5 +1,3 @@
-<!-- markdownlint-disable MD041 -->
-
 ## 4.11.0-wip
 
 * Upgrade `dart_style` and `source_gen` to remove `package:macros` dependency.
@@ -52,6 +50,8 @@
   * Add `SwitchExpression` and `SwitchExpressionBuilder` for `switch` expressions.
   * Add `SwitchStatement` and `SwitchStatementBuilder` for `switch` statements.
   * Add `Expression.wildcard` static constant for wildcard (`_`) expressions.
+
+* Simplify usage examples on the README.
 
 ## 4.10.1
 
