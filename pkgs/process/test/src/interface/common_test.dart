@@ -238,58 +238,6 @@ void main() {
                         '    C:\\.tmp_rand0\\dir2_rand0\n'))));
       });
 
-      test('when path has spaces', () {
-        expect(
-            sanitizeExecutablePath(r'Program Files\bla.exe',
-                platform: platform),
-            r'"Program Files\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'ProgramFiles\bla.exe', platform: platform),
-            r'ProgramFiles\bla.exe');
-        expect(
-            sanitizeExecutablePath(r'"Program Files\bla.exe"',
-                platform: platform),
-            r'"Program Files\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'"Program Files\bla.exe"',
-                platform: platform),
-            r'"Program Files\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'C:\"Program Files"\bla.exe',
-                platform: platform),
-            r'C:\"Program Files"\bla.exe');
-      });
-
-      test('when path has parenthesis', () {
-        expect(
-            sanitizeExecutablePath(r'ProgramFiles(x86)\bla.exe',
-                platform: platform),
-            r'"ProgramFiles(x86)\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'"ProgramFiles(x86)\bla.exe"',
-                platform: platform),
-            r'"ProgramFiles(x86)\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'C:\"ProgramFiles(x86)"\bla.exe',
-                platform: platform),
-            r'C:\"ProgramFiles(x86)"\bla.exe');
-      });
-
-      test('when path has parenthesis and spaces', () {
-        expect(
-            sanitizeExecutablePath(r'Program Files (x86)\bla.exe',
-                platform: platform),
-            r'"Program Files (x86)\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'"Program Files (x86)\bla.exe"',
-                platform: platform),
-            r'"Program Files (x86)\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'C:\"Program Files (x86)"\bla.exe',
-                platform: platform),
-            r'C:\"Program Files (x86)"\bla.exe');
-      });
-
       test('with absolute path when currentDirectory getter throws', () {
         final FileSystem fsNoCwd = MemoryFileSystemNoCwd(fs);
         final String command = fs.path.join(dir3.path, 'bla.exe');
@@ -407,13 +355,6 @@ void main() {
                         '  Search Path:\n'
                         '    /.tmp_rand0/dir1_rand0\n'
                         '    /.tmp_rand0/dir2_rand0\n'))));
-      });
-
-      test('when path has spaces', () {
-        expect(
-            sanitizeExecutablePath('/usr/local/bin/foo bar',
-                platform: platform),
-            '/usr/local/bin/foo bar');
       });
     });
   });
@@ -602,35 +543,63 @@ void main() {
                       '    ${tmpDir.path}/path5\n'))));
     });
 
-    test('can execute files with spaces and parens', () async {
-      final crazyDir = tmpDir.childDirectory('crazy P()ath');
-      final crazyMain = crazyDir.childFile('main.dart')
-        ..createSync(recursive: true)
-        ..writeAsStringSync('''
+    group('can actually execute files', () {
+      void testCompileAndExecute(File mainFile) {
+        final localProcessManager = LocalProcessManager();
+        final exePath = '${mainFile.path}.exe';
+        // Create an executable we can actually run.
+        expect(
+            localProcessManager.runSync([
+              io.Platform.resolvedExecutable,
+              'compile',
+              'exe',
+              mainFile.path,
+              '-o',
+              exePath
+            ]).exitCode,
+            0);
+
+        for (final runInShell in const [true, false]) {
+          final result =
+              localProcessManager.runSync([exePath], runInShell: runInShell);
+          expect(result.exitCode, 0,
+              reason: 'stdout: ${result.stdout}\nstderr: ${result.stderr}');
+          expect(result.stdout, contains('hello'));
+        }
+      }
+
+      test('with spaces in the command name', () {
+        final dir = tmpDir.childDirectory('the path');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
 void main() {
   print('hello');
 }''');
-      final crazyExe = crazyDir.childFile('main.exe');
-      final localProcessManager = LocalProcessManager();
-      // Create an executable we can actually run.
-      expect(
-          localProcessManager.runSync([
-            io.Platform.resolvedExecutable,
-            'compile',
-            'exe',
-            crazyMain.path,
-            '-o',
-            crazyExe.path
-          ]).exitCode,
-          0);
+        testCompileAndExecute(main);
+      });
 
-      for (final runInShell in const [true, false]) {
-        final result = localProcessManager
-            .runSync([crazyExe.path], runInShell: runInShell);
-        expect(result.exitCode, 0,
-            reason: 'stdout: ${result.stdout}\nstderr: ${result.stderr}');
-        expect(result.stdout, contains('hello'));
-      }
+      test('with parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('theP()ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      });
+
+      test('with spaces and parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('crazy P()ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      });
     });
   });
 }

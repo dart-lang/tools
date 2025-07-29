@@ -40,11 +40,11 @@ class LocalProcessManager implements ProcessManager {
   }) {
     try {
       return Process.start(
-        sanitizeExecutablePath(_getExecutable(
+        _getExecutable(
           command,
           workingDirectory,
           runInShell,
-        )),
+        ),
         _getArguments(command),
         workingDirectory: workingDirectory,
         environment: environment,
@@ -70,11 +70,11 @@ class LocalProcessManager implements ProcessManager {
   }) {
     try {
       return Process.run(
-        sanitizeExecutablePath(_getExecutable(
+        _getExecutable(
           command,
           workingDirectory,
           runInShell,
-        )),
+        ),
         _getArguments(command),
         workingDirectory: workingDirectory,
         environment: environment,
@@ -101,11 +101,11 @@ class LocalProcessManager implements ProcessManager {
   }) {
     try {
       return Process.runSync(
-        sanitizeExecutablePath(_getExecutable(
+        _getExecutable(
           command,
           workingDirectory,
           runInShell,
-        )),
+        ),
         _getArguments(command),
         workingDirectory: workingDirectory,
         environment: environment,
