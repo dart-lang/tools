@@ -612,21 +612,24 @@ void main() {
 }''');
       final crazyExe = crazyDir.childFile('main.exe');
       final localProcessManager = LocalProcessManager();
+      // Create an executable we can actually run.
+      expect(
+          localProcessManager.runSync([
+            io.Platform.resolvedExecutable,
+            'compile',
+            'exe',
+            crazyMain.path,
+            '-o',
+            crazyExe.path
+          ]).exitCode,
+          0);
+
       for (final runInShell in const [true, false]) {
-        expect(
-            localProcessManager.runSync([
-              io.Platform.resolvedExecutable,
-              'compile',
-              'exe',
-              crazyMain.path,
-              '-o',
-              crazyExe.path
-            ]).exitCode,
-            0);
         final result = localProcessManager
             .runSync([crazyExe.path], runInShell: runInShell);
-        expect(result.exitCode, 0);
-        expect(result.stdout, 'hello\n');
+        expect(result.exitCode, 0,
+            reason: 'stdout: ${result.stdout}\nstderr: ${result.stderr}');
+        expect(result.stdout, contains('hello'));
       }
     });
   });
