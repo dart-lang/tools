@@ -1,6 +1,6 @@
 name: process
 description: A pluggable, mockable process invocation abstraction for Dart.
-version: 5.0.4
+version: 5.0.5
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/process
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Aprocess
 

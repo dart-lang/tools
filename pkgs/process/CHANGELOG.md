@@ -1,3 +1,7 @@
+## 5.0.5
+
+* Wrap commands with parenthesis in them with quotes.
+
 ## 5.0.4
 
 * Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
