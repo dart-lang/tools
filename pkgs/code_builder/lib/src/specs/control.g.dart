@@ -975,7 +975,7 @@ class _$CatchBlock extends CatchBlock {
   @override
   final Reference? type;
   @override
-  final String exception;
+  final String? exception;
   @override
   final String? stacktrace;
   @override
@@ -985,7 +985,7 @@ class _$CatchBlock extends CatchBlock {
       (CatchBlockBuilder()..update(updates))._build();
 
   _$CatchBlock._(
-      {this.type, required this.exception, this.stacktrace, required this.body})
+      {this.type, this.exception, this.stacktrace, required this.body})
       : super._();
   @override
   CatchBlock rebuild(void Function(CatchBlockBuilder) updates) =>
@@ -1045,9 +1045,7 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
   BlockBuilder get body => _$this._body ??= BlockBuilder();
   set body(BlockBuilder? body) => _$this._body = body;
 
-  CatchBlockBuilder() {
-    CatchBlock._initialize(this);
-  }
+  CatchBlockBuilder();
 
   CatchBlockBuilder get _$this {
     final $v = _$v;
@@ -1080,8 +1078,7 @@ class CatchBlockBuilder implements Builder<CatchBlock, CatchBlockBuilder> {
       _$result = _$v ??
           _$CatchBlock._(
             type: type,
-            exception: BuiltValueNullFieldError.checkNotNull(
-                exception, r'CatchBlock', 'exception'),
+            exception: exception,
             stacktrace: stacktrace,
             body: body.build(),
           );

@@ -473,7 +473,7 @@ if (a) {
   group('catch block', () {
     test('should emit catch with default exception name', () {
       final catchBlock = CatchBlock((b) => b..body.addExpression(literal(1)));
-      expect(catchBlock, equalsDart('catch (e) {\n  1;\n}'));
+      expect(catchBlock, equalsDart('catch (_) {\n  1;\n}'));
     });
 
     test('should emit catch with custom exception name', () {
@@ -491,15 +491,24 @@ if (a) {
       expect(catchBlock, equalsDart('catch (e, s) {\n  log(s);\n}'));
     });
 
+    test('should emit an on block', () {
+      final catchBlock = CatchBlock((b) => b
+        ..type = refer('FormatException')
+        ..body.addExpression(refer('print').call([refer('e')])));
+      expect(
+        catchBlock,
+        equalsDart('on FormatException {\n  print(e);\n}'),
+      );
+    });
+
     test('should emit on-type catch block', () {
       final catchBlock = CatchBlock((b) => b
         ..type = refer('FormatException')
-        ..exception = 'e'
         ..stacktrace = 's'
         ..body.addExpression(refer('print').call([refer('e')])));
       expect(
         catchBlock,
-        equalsDart('on FormatException catch (e, s) {\n  print(e);\n}'),
+        equalsDart('on FormatException catch (_, s) {\n  print(e);\n}'),
       );
     });
   });
@@ -522,10 +531,28 @@ if (a) {
         equalsDart('''
 try {
   mightFail();
-} catch (e) {
+} catch (_) {
   handleError();
 }'''),
       );
+    });
+
+    test('should emit an on block', () {
+      final block = TryCatch((b) => b
+        ..body.addExpression(refer('mightFail').call([]))
+        ..addCatch(
+          (c) => c
+            ..type = refer('HttpException')
+            ..body.addExpression(ControlFlow.rethrowVoid),
+        ));
+
+      expect(block, equalsDart('''
+try {
+  mightFail();
+} on HttpException {
+  rethrow;
+}
+'''));
     });
 
     test('should emit try/on-type/catch with finally', () {
@@ -579,7 +606,7 @@ try {
   handleFormat();
 } on SocketException catch (e2) {
   handleSocket();
-} catch (e) {
+} catch (_) {
   rethrow;
 }'''),
       );
@@ -597,7 +624,7 @@ try {
       expect(result, equalsDart('''
 try {
   0;
-} catch (e) {
+} catch (_) {
   1;
 }
 '''));
@@ -614,7 +641,7 @@ try {
       expect(result, equalsDart('''
 try {
   0;
-} catch (e) {
+} catch (_) {
   1;
 } finally {
   done;

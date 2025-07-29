@@ -212,6 +212,14 @@ void main() {
       test(
         'should emit an on statement',
         () {
+          expect(ControlExpression.onStatement(refer('FormatException')),
+              equalsDart('on FormatException'));
+        },
+      );
+
+      test(
+        'should emit an on statement with catch',
+        () {
           expect(
               ControlExpression.onStatement(refer('FormatException'),
                   ControlExpression.catchStatement('e')),

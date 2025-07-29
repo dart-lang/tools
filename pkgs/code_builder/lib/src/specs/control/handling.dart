@@ -15,19 +15,29 @@ abstract class CatchBlock
 
   /// The optional type of exception to catch (`on` clause).
   ///
+  /// When [type] is set, leave [exception] and [stacktrace]
+  /// `null` to omit the `catch` statement.
+  ///
   /// ``` dart
+  /// on type
   /// on type catch (exception)
   /// on type catch (exception, stacktrace)
   /// ```
   Reference? get type;
 
-  /// The name of the exception parameter (default: `e`).
+  /// The optional name of the exception parameter.
+  ///
+  /// If a [type] is specified, leaving this and [stacktrace] null
+  /// will omit the `catch` statement entirely.
+  ///
+  /// If left `null` otherwise, a wildcard (`_`) will be used
+  /// as the exception name.
   ///
   /// ```dart
   /// catch (exception)
   /// catch (exception, stacktrace)
   /// ```
-  String get exception;
+  String? get exception;
 
   /// The optional name of the stacktrace parameter.
   ///
@@ -40,15 +50,19 @@ abstract class CatchBlock
   String? get stacktrace;
 
   ControlExpression get _catch =>
-      ControlExpression.catchStatement(exception, stacktrace);
+      ControlExpression.catchStatement(exception ?? '_', stacktrace);
 
   @override
-  ControlExpression get _expression =>
-      type == null ? _catch : ControlExpression.onStatement(type!, _catch);
+  ControlExpression get _expression {
+    if (type == null) return _catch;
 
-  /// Set the default value of [exception]
-  @BuiltValueHook(initializeBuilder: true)
-  static void _initialize(CatchBlockBuilder builder) => builder.exception = 'e';
+    // omit catch clause if exception and stacktrace are unspecified
+    if (exception == null && stacktrace == null) {
+      return ControlExpression.onStatement(type!);
+    }
+
+    return ControlExpression.onStatement(type!, _catch);
+  }
 }
 
 /// Represents a `try` or `finally` block.

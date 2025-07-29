@@ -84,10 +84,12 @@ class ControlExpression extends Expression {
           body: [refer(error), if (stacktrace != null) refer(stacktrace)],
           separator: ',');
 
-  factory ControlExpression.onStatement(
-          Reference type, ControlExpression statement) =>
+  factory ControlExpression.onStatement(Reference type,
+          [ControlExpression? statement]) =>
       ControlExpression('on',
-          body: [type, statement], parenthesised: false, separator: '');
+          body: [type, if (statement != null) statement],
+          parenthesised: false,
+          separator: '');
 
   static const finallyStatement = ControlExpression('finally');
 
