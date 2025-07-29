@@ -563,7 +563,7 @@ void main() {
           final result =
               localProcessManager.runSync([exePath], runInShell: runInShell);
           expect(result.exitCode, 0,
-              reason: 'stdout: ${result.stdout}\nstderr: ${result.stderr}');
+              reason: 'runInShell: $runInShell\nstdout: ${result.stdout}\nstderr: ${result.stderr}');
           expect(result.stdout, contains('hello'));
         }
       }
