@@ -483,7 +483,7 @@ void main() {
     },
   );
 
-  group('expression loop helpers', () {
+  group('expression helpers', () {
     test('should build a while loop with loopWhile', () {
       final expr = refer('isRunning').loopWhile((b) {
         b.addExpression(refer('tick').call([]));
@@ -537,6 +537,26 @@ for (item in items) {
 if (isTrue) {
   execute();
 }'''),
+      );
+    });
+
+    test('should support ifThenReturn', () {
+      final expr = refer('isTrue').ifThenReturn();
+
+      expect(
+        expr,
+        equalsDart('''
+if (isTrue) return'''),
+      );
+    });
+
+    test('should support ifThenReturn with value', () {
+      final expr = refer('isTrue').ifThenReturn(refer('value'));
+
+      expect(
+        expr,
+        equalsDart('''
+if (isTrue) return value'''),
       );
     });
 

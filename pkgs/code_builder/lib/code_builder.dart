@@ -12,18 +12,17 @@ export 'src/specs/code.dart'
 export 'src/specs/constructor.dart' show Constructor, ConstructorBuilder;
 export 'src/specs/control.dart'
     show
+        BranchBuilder,
         Case,
         CaseBuilder,
         CatchBlock,
         CatchBlockBuilder,
-        Condition,
-        ConditionBuilder,
+        Conditional,
+        ConditionalBuilder,
         ForInLoop,
         ForInLoopBuilder,
         ForLoop,
         ForLoopBuilder,
-        IfTree,
-        IfTreeBuilder,
         SwitchExpression,
         SwitchExpressionBuilder,
         SwitchStatement,

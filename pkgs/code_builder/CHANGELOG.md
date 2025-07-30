@@ -12,6 +12,7 @@
   * Add `Expression.yielded` (via ext.)
   * Add `Expression.yieldStarred` (via ext.)
   * Add `Expression.ifThen` (via ext.)
+  * Add `Expression.ifThenReturn` (via ext.)
   * Add `Expression.loopWhile` (via ext.)
   * Add `Expression.loopDoWhile` (via ext.)
   * Add `Expression.loopForIn` (via ext.)
@@ -38,8 +39,8 @@
   * Add `WhileLoop` and `WhileLoopBuilder` for `while` and `do-while` loops.
 
 * Support emitting `if` statements and `if`/`else if`/`else` trees.
-  * Add `Condition` and `ConditionBuilder` for single statements.
-  * Add `IfTree` and `IfTreeBuilder` for conditional trees.
+  * Add `Conditional` and `ConditionalBuilder` for conditional trees.
+  * Add `BranchBuilder` for builder `Conditional` branches.
 
 * Support emitting `try`/`catch`/`finally` blocks.
   * Add `CatchBlock` and `CatchBlockBuilder` for catch clauses.

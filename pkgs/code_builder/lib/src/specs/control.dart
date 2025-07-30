@@ -4,6 +4,7 @@
 
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import '../base.dart';
@@ -17,6 +18,7 @@ part '../mixins/control.dart';
 part './control/loops.dart';
 part './control/branches.dart';
 part './control/handling.dart';
+part './control/switch.dart';
 
 /// Knowledge of different types of control blocks.
 ///

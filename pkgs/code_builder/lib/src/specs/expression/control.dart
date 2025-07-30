@@ -174,8 +174,7 @@ extension ControlFlow on Expression {
         ..variable = this
         ..body.update(builder));
 
-  /// Build this expression into an `if` [Condition] and add it
-  /// to a new [IfTree].
+  /// Build this expression into a [Conditional]
   ///
   /// ```dart
   /// if (this) {
@@ -183,8 +182,9 @@ extension ControlFlow on Expression {
   /// }
   /// ```
   ///
-  /// Chain [IfTree.elseIf] and [IfTree.orElse] to easily create a full
-  /// `if-elseif-else` tree:
+  /// Chain [Conditional.elseIf] and [Conditional.orElse] to
+  /// easily create a full `if-elseif-else` tree:
+  ///
   /// ```dart
   /// literal(1)
   ///     .equalTo(literal(2))
@@ -211,11 +211,20 @@ extension ControlFlow on Expression {
   ///   print('What?');
   /// }
   /// ```
-  IfTree ifThen(void Function(BlockBuilder body) builder) => Condition(
-        (block) => block
-          ..condition = this
-          ..body.update(builder),
-      ).asTree;
+  Conditional ifThen(void Function(BlockBuilder body) builder) => Conditional(
+        (tree) => tree
+          ..add(
+            (branch) => branch
+              ..condition = this
+              ..body.update(builder),
+          ),
+      );
+
+  /// Returns `if (this) return value`
+  Expression ifThenReturn([Expression? value]) => BinaryExpression._(
+      ControlExpression.ifStatement(this),
+      value == null ? ControlFlow.returnVoid : value.returned,
+      '');
 
   /// `return`
   static const returnVoid = LiteralExpression._('return');
