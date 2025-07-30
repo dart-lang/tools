@@ -1,3 +1,10 @@
+## 0.4.0
+
+- Test classes and suites with `name`s are now registered with `package:test`s
+  `group()` function to produce a hierarchy of groups/tests rather than a flat
+  set of tests with concatenated names. This may improve the display of tests
+  in IDEs test explorers.
+
 ## 0.3.0
 
 - Require Dart `^3.5.0`.
