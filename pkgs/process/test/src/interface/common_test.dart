@@ -589,7 +589,10 @@ void main() {
   print('hello');
 }''');
         testCompileAndExecute(main);
-      });
+      },
+          skip: io.Platform.isWindows
+              ? 'https://github.com/dart-lang/tools/issues/2139'
+              : null);
 
       test('with spaces and parenthesis in the command name', () async {
         final dir = tmpDir.childDirectory('the P()ath');
