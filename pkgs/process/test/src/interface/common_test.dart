@@ -238,28 +238,6 @@ void main() {
                         '    C:\\.tmp_rand0\\dir2_rand0\n'))));
       });
 
-      test('when path has spaces', () {
-        expect(
-            sanitizeExecutablePath(r'Program Files\bla.exe',
-                platform: platform),
-            r'"Program Files\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'ProgramFiles\bla.exe', platform: platform),
-            r'ProgramFiles\bla.exe');
-        expect(
-            sanitizeExecutablePath(r'"Program Files\bla.exe"',
-                platform: platform),
-            r'"Program Files\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'"Program Files\bla.exe"',
-                platform: platform),
-            r'"Program Files\bla.exe"');
-        expect(
-            sanitizeExecutablePath(r'C:\"Program Files"\bla.exe',
-                platform: platform),
-            r'C:\"Program Files"\bla.exe');
-      });
-
       test('with absolute path when currentDirectory getter throws', () {
         final FileSystem fsNoCwd = MemoryFileSystemNoCwd(fs);
         final String command = fs.path.join(dir3.path, 'bla.exe');
@@ -377,13 +355,6 @@ void main() {
                         '  Search Path:\n'
                         '    /.tmp_rand0/dir1_rand0\n'
                         '    /.tmp_rand0/dir2_rand0\n'))));
-      });
-
-      test('when path has spaces', () {
-        expect(
-            sanitizeExecutablePath('/usr/local/bin/foo bar',
-                platform: platform),
-            '/usr/local/bin/foo bar');
       });
     });
   });
@@ -570,6 +541,80 @@ void main() {
                       '    ${tmpDir.path}/path3\n'
                       '    ${tmpDir.path}/path4\n'
                       '    ${tmpDir.path}/path5\n'))));
+    });
+
+    group('can actually execute files', () {
+      void testCompileAndExecute(File mainFile) {
+        final localProcessManager = LocalProcessManager();
+        final exePath = '${mainFile.path}.exe';
+        // Create an executable we can actually run.
+        expect(
+            localProcessManager.runSync([
+              io.Platform.resolvedExecutable,
+              'compile',
+              'exe',
+              mainFile.path,
+              '-o',
+              exePath
+            ]).exitCode,
+            0);
+
+        for (final runInShell in const [true, false]) {
+          final result =
+              localProcessManager.runSync([exePath], runInShell: runInShell);
+          expect(result.exitCode, 0,
+              reason: 'runInShell: $runInShell\nstdout: ${result.stdout}\n'
+                  'stderr: ${result.stderr}');
+          expect(result.stdout, contains('hello'));
+        }
+      }
+
+      test('with spaces in the command name', () {
+        final dir = tmpDir.childDirectory('the path');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      });
+
+      test('with parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('theP()ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      },
+          skip: io.Platform.isWindows
+              ? 'https://github.com/dart-lang/tools/issues/2139'
+              : null);
+
+      test('with spaces and parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('the P()ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      });
+
+      test('with spaces inside parenthesis in the command name', () async {
+        final dir = tmpDir.childDirectory('the P( )ath');
+        final main = dir.childFile('main.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+void main() {
+  print('hello');
+}''');
+        testCompileAndExecute(main);
+      });
     });
   });
 }
