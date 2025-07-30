@@ -33,7 +33,7 @@ class _$Constructor extends Constructor {
   final Reference? redirect;
 
   factory _$Constructor([void Function(ConstructorBuilder)? updates]) =>
-      (new ConstructorBuilder()..update(updates)).build() as _$Constructor;
+      (ConstructorBuilder()..update(updates)).build() as _$Constructor;
 
   _$Constructor._(
       {required this.annotations,
@@ -48,27 +48,13 @@ class _$Constructor extends Constructor {
       this.lambda,
       this.name,
       this.redirect})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Constructor', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Constructor', 'docs');
-    BuiltValueNullFieldError.checkNotNull(
-        optionalParameters, r'Constructor', 'optionalParameters');
-    BuiltValueNullFieldError.checkNotNull(
-        requiredParameters, r'Constructor', 'requiredParameters');
-    BuiltValueNullFieldError.checkNotNull(
-        initializers, r'Constructor', 'initializers');
-    BuiltValueNullFieldError.checkNotNull(external, r'Constructor', 'external');
-    BuiltValueNullFieldError.checkNotNull(constant, r'Constructor', 'constant');
-    BuiltValueNullFieldError.checkNotNull(factory, r'Constructor', 'factory');
-  }
-
+      : super._();
   @override
   Constructor rebuild(void Function(ConstructorBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$ConstructorBuilder toBuilder() => new _$ConstructorBuilder()..replace(this);
+  _$ConstructorBuilder toBuilder() => _$ConstructorBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -297,7 +283,6 @@ class _$ConstructorBuilder extends ConstructorBuilder {
 
   @override
   void replace(Constructor other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Constructor;
   }
 
@@ -313,22 +298,23 @@ class _$ConstructorBuilder extends ConstructorBuilder {
     _$Constructor _$result;
     try {
       _$result = _$v ??
-          new _$Constructor._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              optionalParameters: optionalParameters.build(),
-              requiredParameters: requiredParameters.build(),
-              initializers: initializers.build(),
-              body: body,
-              external: BuiltValueNullFieldError.checkNotNull(
-                  external, r'Constructor', 'external'),
-              constant: BuiltValueNullFieldError.checkNotNull(
-                  constant, r'Constructor', 'constant'),
-              factory: BuiltValueNullFieldError.checkNotNull(
-                  factory, r'Constructor', 'factory'),
-              lambda: lambda,
-              name: name,
-              redirect: redirect);
+          _$Constructor._(
+            annotations: annotations.build(),
+            docs: docs.build(),
+            optionalParameters: optionalParameters.build(),
+            requiredParameters: requiredParameters.build(),
+            initializers: initializers.build(),
+            body: body,
+            external: BuiltValueNullFieldError.checkNotNull(
+                external, r'Constructor', 'external'),
+            constant: BuiltValueNullFieldError.checkNotNull(
+                constant, r'Constructor', 'constant'),
+            factory: BuiltValueNullFieldError.checkNotNull(
+                factory, r'Constructor', 'factory'),
+            lambda: lambda,
+            name: name,
+            redirect: redirect,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -343,7 +329,7 @@ class _$ConstructorBuilder extends ConstructorBuilder {
         _$failedField = 'initializers';
         initializers.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'Constructor', _$failedField, e.toString());
       }
       rethrow;
