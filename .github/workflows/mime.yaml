@@ -45,6 +45,6 @@ jobs:
       - name: Run tests
         run: dart test
 
-      - name: "Re run 'dart tool/media_types.dart' to update doc/media_types.md"
-        run: dart tool/media_types.dart
+      - name: "Re run 'dart tool/generate_markdown.dart' to update doc/media_types.md"
+        run: dart tool/generate_markdown.dart
       - run: git diff --exit-code
