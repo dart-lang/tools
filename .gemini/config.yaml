@@ -1,0 +1,12 @@
+# See https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github#custom-configurations
+
+have_fun: false # We are serious people in the Dart team!
+code_review:
+  disable: false
+  comment_severity_threshold: MEDIUM
+  max_review_comments: 100
+  pull_request_opened:
+    help: true
+    summary: true
+    code_review: true
+ignore_patterns: []

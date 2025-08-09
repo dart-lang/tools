@@ -1,3 +1,7 @@
+## 5.0.5
+
+* Fix mixtures of parentheses and spaces in windows command paths.
+
 ## 5.0.4
 
 * Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
