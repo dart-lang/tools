@@ -601,7 +601,7 @@ Supported media types and file extensions.
 | `audio/basic` | `snd` | `au` |
 | `audio/midi` | `mid` | `kar`, `midi`, `rmi` |
 | `audio/mp4` | `m4a` | `m4b`, `mp4a` |
-| `audio/mpeg` | `mpga` | `m2a`, `m3a`, `mp2`, `mp2a`, `mp3` |
+| `audio/mpeg` | `mp3` | `m2a`, `m3a`, `mp2`, `mp2a`, `mpga` |
 | `audio/ogg` | `ogg` | `oga`, `spx` |
 | `audio/s3m` | `s3m` | |
 | `audio/silk` | `sil` | |
