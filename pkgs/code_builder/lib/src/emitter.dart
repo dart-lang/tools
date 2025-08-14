@@ -162,13 +162,7 @@ class DartEmitter extends Object
       visitField(f, out);
       out.writeln();
     }
-    for (var m in spec.methods) {
-      visitMethod(m, out);
-      if (_isLambdaMethod(m)) {
-        out.writeln(';');
-      }
-      out.writeln();
-    }
+    _visitMethods(spec.methods, out);
     out.writeln(' }');
     return out;
   }
@@ -201,13 +195,7 @@ class DartEmitter extends Object
       visitField(f, out);
       out.writeln();
     }
-    for (var m in spec.methods) {
-      visitMethod(m, out);
-      if (_isLambdaMethod(m)) {
-        out.writeln(';');
-      }
-      out.writeln();
-    }
+    _visitMethods(spec.methods, out);
     out.write('  }');
     return out;
   }
@@ -326,13 +314,7 @@ class DartEmitter extends Object
       visitField(f, out);
       out.writeln();
     }
-    for (var m in spec.methods) {
-      visitMethod(m, out);
-      if (_isLambdaMethod(m)) {
-        out.writeln(';');
-      }
-      out.writeln();
-    }
+    _visitMethods(spec.methods, out);
     out.writeln(' }');
     return out;
   }
@@ -372,13 +354,7 @@ class DartEmitter extends Object
       visitField(f, out);
       out.writeln();
     }
-    for (var m in spec.methods) {
-      visitMethod(m, out);
-      if (_isLambdaMethod(m)) {
-        out.writeln(';');
-      }
-      out.writeln();
-    }
+    _visitMethods(spec.methods, out);
     out.writeln('}');
     return out;
   }
@@ -800,6 +776,16 @@ class DartEmitter extends Object
     }
   }
 
+  void _visitMethods(Iterable<Method> methods, StringSink out) {
+    for (final m in methods) {
+      visitMethod(m, out);
+      if (_isLambdaMethod(m)) {
+        out.writeln(';');
+      }
+      out.writeln();
+    }
+  }
+
   @override
   StringSink visitReference(Reference spec, [StringSink? output]) =>
       (output ??= StringBuffer())..write(allocator.allocate(spec));
@@ -907,13 +893,7 @@ class DartEmitter extends Object
       visitField(f, out);
       out.writeln();
     }
-    for (var m in spec.methods) {
-      visitMethod(m, out);
-      if (_isLambdaMethod(m)) {
-        out.writeln(';');
-      }
-      out.writeln();
-    }
+    _visitMethods(spec.methods, out);
     out.writeln(' }');
     return out;
   }
