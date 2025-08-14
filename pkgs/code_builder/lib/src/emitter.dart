@@ -204,7 +204,7 @@ class DartEmitter extends Object
     for (var m in spec.methods) {
       visitMethod(m, out);
       if (_isLambdaMethod(m)) {
-        out.write(';');
+        out.writeln(';');
       }
       out.writeln();
     }
@@ -329,7 +329,7 @@ class DartEmitter extends Object
     for (var m in spec.methods) {
       visitMethod(m, out);
       if (_isLambdaMethod(m)) {
-        out.write(';');
+        out.writeln(';');
       }
       out.writeln();
     }
@@ -910,7 +910,7 @@ class DartEmitter extends Object
     for (var m in spec.methods) {
       visitMethod(m, out);
       if (_isLambdaMethod(m)) {
-        out.write(';');
+        out.writeln(';');
       }
       out.writeln();
     }
