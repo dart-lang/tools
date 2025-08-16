@@ -373,6 +373,7 @@ void main() {
       c;
 
       int get myInt => 123;
+
       Iterable<String> myStrings() sync* {
         yield 'a';
         yield 'b';
