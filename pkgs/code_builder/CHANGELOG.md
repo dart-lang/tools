@@ -1,9 +1,11 @@
 ## 4.10.2-wip
 
+* Support `Expression.newInstanceNamed` with empty name
+* Consistently add blank lines between `=>` in class-like definitions.
+* Fixed bug: Fields declared with `static` and `external` now produce code with
+  correct order
 * Upgrade `dart_style` and `source_gen` to remove `package:macros` dependency.
 * Require Dart `^3.6.0` due to the upgrades.
-* Support `Expression.newInstanceNamed` with empty name
-* Fixed bug: Fields declared with `static` and `external` now produce code with correct order
 
 ## 4.10.1
 
