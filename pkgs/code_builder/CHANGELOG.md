@@ -1,12 +1,6 @@
 ## 4.11.0-wip
 
-* Upgrade `dart_style` and `source_gen` to remove `package:macros` dependency.
-
-* Require Dart `^3.6.0` due to the upgrades.
-
-* Support `Expression.newInstanceNamed` with empty name.
-
-* Fixed bug: Fields declared with `static` and `external` now produce code with correct order.
+* Consistently add blank lines between `=>` in class-like definitions.
 
 * Add `ControlFlow` extension on `Expression` to support control-flow helper functions.
   * Add `Expression.yielded` (via ext.)
@@ -40,7 +34,7 @@
 
 * Support emitting `if` statements and `if`/`else if`/`else` trees.
   * Add `Conditional` and `ConditionalBuilder` for conditional trees.
-  * Add `BranchBuilder` for builder `Conditional` branches.
+  * Add `BranchBuilder` for building `Conditional` branches.
 
 * Support emitting `try`/`catch`/`finally` blocks.
   * Add `CatchBlock` and `CatchBlockBuilder` for catch clauses.
@@ -53,6 +47,14 @@
   * Add `Expression.wildcard` static constant for wildcard (`_`) expressions.
 
 * Simplify usage examples on the README.
+
+* Support `Expression.newInstanceNamed` with empty name.
+
+* Fixed bug: Fields declared with `static` and `external` now produce code with correct order.
+
+* Upgrade `dart_style` and `source_gen` to remove `package:macros` dependency.
+
+* Require Dart `^3.6.0` due to the upgrades.
 
 ## 4.10.1
 
