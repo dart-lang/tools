@@ -126,30 +126,34 @@ class _WindowsDirectoryWatcher
     // Check if [path] is already the root directory.
     if (FileSystemEntity.identicalSync(parent, path)) return;
     var parentStream = Directory(parent).watch(recursive: false);
-    _parentWatchSubscription = parentStream.listen((event) {
-      // Only look at events for 'directory'.
-      if (p.basename(event.path) != p.basename(absoluteDir)) return;
-      // Test if the directory is removed. FileSystemEntity.typeSync will
-      // return NOT_FOUND if it's unable to decide upon the type, including
-      // access denied issues, which may happen when the directory is deleted.
-      // FileSystemMoveEvent and FileSystemDeleteEvent events will always mean
-      // the directory is now gone.
-      if (event is FileSystemMoveEvent ||
-          event is FileSystemDeleteEvent ||
-          (FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound)) {
-        for (var path in _files.paths) {
-          _emitEvent(ChangeType.REMOVE, path);
+    _parentWatchSubscription = parentStream.listen(
+      (event) {
+        // Only look at events for 'directory'.
+        if (p.basename(event.path) != p.basename(absoluteDir)) return;
+        // Test if the directory is removed. FileSystemEntity.typeSync will
+        // return NOT_FOUND if it's unable to decide upon the type, including
+        // access denied issues, which may happen when the directory is deleted.
+        // FileSystemMoveEvent and FileSystemDeleteEvent events will always mean
+        // the directory is now gone.
+        if (event is FileSystemMoveEvent ||
+            event is FileSystemDeleteEvent ||
+            (FileSystemEntity.typeSync(path) ==
+                FileSystemEntityType.notFound)) {
+          for (var path in _files.paths) {
+            _emitEvent(ChangeType.REMOVE, path);
+          }
+          _files.clear();
+          close();
         }
-        _files.clear();
-        close();
-      }
-    }, onError: (error) {
-      // Ignore errors, simply close the stream. The user listens on
-      // [directory], and while it can fail to listen on the parent, we may
-      // still be able to listen on the path requested.
-      _parentWatchSubscription?.cancel();
-      _parentWatchSubscription = null;
-    });
+      },
+      onError: (error) {
+        // Ignore errors, simply close the stream. The user listens on
+        // [directory], and while it can fail to listen on the parent, we may
+        // still be able to listen on the path requested.
+        _parentWatchSubscription?.cancel();
+        _parentWatchSubscription = null;
+      },
+    );
   }
 
   void _onEvent(FileSystemEvent event) {
@@ -225,16 +229,18 @@ class _WindowsDirectoryWatcher
     // Events within directories that already have events are superfluous; the
     // directory's full contents will be examined anyway, so we ignore such
     // events. Emitting them could cause useless or out-of-order events.
-    var directories = unionAll(batch.map((event) {
-      if (!event.isDirectory) return <String>{};
-      if (event is FileSystemMoveEvent) {
-        var destination = event.destination;
-        if (destination != null) {
-          return {event.path, destination};
+    var directories = unionAll(
+      batch.map((event) {
+        if (!event.isDirectory) return <String>{};
+        if (event is FileSystemMoveEvent) {
+          var destination = event.destination;
+          if (destination != null) {
+            return {event.path, destination};
+          }
         }
-      }
-      return {event.path};
-    }));
+        return {event.path};
+      }),
+    );
 
     bool isInModifiedDirectory(String path) =>
         directories.any((dir) => path != dir && p.isWithin(dir, path));
@@ -285,9 +291,11 @@ class _WindowsDirectoryWatcher
       // REMOVE; otherwise there will also be a REMOVE or CREATE event
       // (respectively) that will be contradictory.
       if (event is FileSystemModifyEvent) continue;
-      assert(event is FileSystemCreateEvent ||
-          event is FileSystemDeleteEvent ||
-          event is FileSystemMoveEvent);
+      assert(
+        event is FileSystemCreateEvent ||
+            event is FileSystemDeleteEvent ||
+            event is FileSystemMoveEvent,
+      );
 
       // If we previously thought this was a MODIFY, we now consider it to be a
       // CREATE or REMOVE event. This is safe for the same reason as above.
@@ -297,9 +305,11 @@ class _WindowsDirectoryWatcher
       }
 
       // A CREATE event contradicts a REMOVE event and vice versa.
-      assert(type == FileSystemEvent.create ||
-          type == FileSystemEvent.delete ||
-          type == FileSystemEvent.move);
+      assert(
+        type == FileSystemEvent.create ||
+            type == FileSystemEvent.delete ||
+            type == FileSystemEvent.move,
+      );
       if (type != event.type) return null;
     }
 
@@ -383,21 +393,29 @@ class _WindowsDirectoryWatcher
   void _startWatch() {
     // Note: "watcher closed" exceptions do not get sent over the stream
     // returned by watch, and must be caught via a zone handler.
-    runZonedGuarded(() {
-      var innerStream = Directory(path).watch(recursive: true);
-      _watchSubscription = innerStream.listen(_onEvent,
-          onError: _eventsController.addError, onDone: _onDone);
-    }, (error, stackTrace) {
-      if (error is FileSystemException &&
-          error.message.startsWith('Directory watcher closed unexpectedly')) {
-        _watchSubscription?.cancel();
-        _eventsController.addError(error, stackTrace);
-        _startWatch();
-      } else {
-        // ignore: only_throw_errors
-        throw error;
-      }
-    });
+    runZonedGuarded(
+      () {
+        var innerStream = Directory(path).watch(recursive: true);
+        _watchSubscription = innerStream.listen(
+          _onEvent,
+          onError: _eventsController.addError,
+          onDone: _onDone,
+        );
+      },
+      (error, stackTrace) async {
+        if (error is FileSystemException &&
+            error.message.startsWith('Directory watcher closed unexpectedly')) {
+          unawaited(_watchSubscription?.cancel());
+          _eventsController.addError(error, stackTrace);
+          // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
+          await Future<void>.delayed(Duration.zero);
+          _startWatch();
+        } else {
+          // ignore: only_throw_errors
+          throw error;
+        }
+      },
+    );
   }
 
   /// Starts or restarts listing the watched directory to get an initial picture
@@ -413,8 +431,12 @@ class _WindowsDirectoryWatcher
       if (entity is! Directory) _files.add(entity.path);
     }
 
-    _initialListSubscription = stream.listen(handleEntity,
-        onError: _emitError, onDone: completer.complete, cancelOnError: true);
+    _initialListSubscription = stream.listen(
+      handleEntity,
+      onError: _emitError,
+      onDone: completer.complete,
+      cancelOnError: true,
+    );
     return completer.future;
   }
 
