@@ -1,4 +1,4 @@
-## 1.1.3
+## 1.1.3-wip
 
 - Improve handling of
   `FileSystemException: Directory watcher closed unexpectedly` on Windows. The
