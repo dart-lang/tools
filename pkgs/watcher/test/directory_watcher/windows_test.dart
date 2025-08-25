@@ -123,7 +123,7 @@ void main() {
         }
 
         // Events only happen when there is an async gap, wait for such a gap.
-        await pumpEventQueue();
+        await Future<void>.delayed(const Duration(milliseconds: 10));
 
         // If everything is going well, there should have been either one event
         // seen or one error seen.
@@ -134,7 +134,7 @@ void main() {
           for (var i = 0; i != 5; ++i) {
             await file.writeAsString('');
           }
-          await pumpEventQueue();
+          await Future<void>.delayed(const Duration(milliseconds: 10));
           fail(
             'On attempt ${times + 1}, watcher registered nothing. '
             'On retry, it registered: $errorsSeen error(s), $eventsSeen '

@@ -405,12 +405,12 @@ class _WindowsDirectoryWatcher
       (error, stackTrace) async {
         if (error is FileSystemException &&
             error.message.startsWith('Directory watcher closed unexpectedly')) {
-          unawaited(_watchSubscription?.cancel());
-          _eventsController.addError(error, stackTrace);
           // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
           // Give the VM time to reset state after the error. See the issue for
           // more discussion of the workaround.
+          await _watchSubscription?.cancel();
           await Future<void>.delayed(const Duration(milliseconds: 1));
+          _eventsController.addError(error, stackTrace);
           _startWatch();
         } else {
           // ignore: only_throw_errors
