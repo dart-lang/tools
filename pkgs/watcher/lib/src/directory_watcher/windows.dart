@@ -408,7 +408,9 @@ class _WindowsDirectoryWatcher
           unawaited(_watchSubscription?.cancel());
           _eventsController.addError(error, stackTrace);
           // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
-          await Future<void>.delayed(Duration.zero);
+          // Give the VM time to reset state after the error. See the issue for
+          // more discussion of the workaround.
+          await Future<void>.delayed(const Duration(milliseconds: 1));
           _startWatch();
         } else {
           // ignore: only_throw_errors
