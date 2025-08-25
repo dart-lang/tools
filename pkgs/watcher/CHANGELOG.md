@@ -1,10 +1,12 @@
-## 1.1.3-wip
+## 1.1.3
 
 - Improve handling of
   `FileSystemException: Directory watcher closed unexpectedly` on Windows. The
   watcher was already attempting to restart after this error and resume sending
   events. But, the restart would sometimes silently fail. Now, it is more
   reliable.
+- Improving handling of directories that are created then immediately deleted on
+  Windows. Previously, that could cause a `PathNotfoundException` to be thrown.
 
 ## 1.1.2
 

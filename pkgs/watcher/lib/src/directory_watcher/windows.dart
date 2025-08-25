@@ -198,7 +198,11 @@ class _WindowsDirectoryWatcher
           });
           subscription.onError((Object e, StackTrace stackTrace) {
             _listSubscriptions.remove(subscription);
-            _emitError(e, stackTrace);
+            // "Path not found" can be caused by creating then quickly removing
+            // a directory: continue without reporting an error.
+            if (e is! PathNotFoundException) {
+              _emitError(e, stackTrace);
+            }
           });
           _listSubscriptions.add(subscription);
         } else if (event is FileSystemModifyEvent) {
