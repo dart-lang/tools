@@ -66,6 +66,52 @@ void main() {
     },
   );
 
+  // Regression test for https://github.com/dart-lang/tools/issues/2152:
+  // watcher can throws if a directory is created then quickly deleted.
+  group('Transient directory', () {
+    late StreamSubscription<Object> subscription;
+    late Directory temp;
+    late Watcher watcher;
+    late int errorsSeen;
+
+    setUp(() async {
+      temp = Directory.systemTemp.createTempSync();
+      watcher = DirectoryWatcher(temp.path);
+      errorsSeen = 0;
+      subscription = watcher.events.listen(
+        (e) {},
+        onError: (Object e, _) {
+          print('Event stream error: $e');
+          ++errorsSeen;
+        },
+      );
+      await watcher.ready;
+    });
+
+    tearDown(() {
+      subscription.cancel();
+    });
+
+    test('does not break watching', () async {
+      // Iterate creating 10 directories and deleting 1-10 of them. This means
+      // the directories will exist for different lengths of times, exploring
+      // possible race conditions in directory handling.
+      for (var i = 0; i != 50; ++i) {
+        for (var j = 0; j != 10; ++j) {
+          File('${temp.path}\\$j\\file').createSync(recursive: true);
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+        for (var j = 0; j != i % 10 + 1; ++j) {
+          final d = Directory('${temp.path}\\$j');
+          d.deleteSync(recursive: true);
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+      }
+
+      expect(errorsSeen, 0);
+    });
+  });
+
   // The Windows native watcher has a buffer that gets exhausted if events are
   // not handled quickly enough. Then, it throws an error and stops watching.
   // The exhaustion is reliably triggered if enough events arrive during a sync
