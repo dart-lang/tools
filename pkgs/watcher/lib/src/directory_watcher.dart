@@ -12,6 +12,14 @@ import 'directory_watcher/windows.dart';
 
 /// Watches the contents of a directory and emits [WatchEvent]s when something
 /// in the directory has changed.
+///
+/// On Windows, the underlying SDK `Directory.watch` fails if too many events
+/// are received while Dart is busy, for example during a long-running
+/// synchronous operation. When this happens, some events are dropped.
+/// `DirectoryWatcher` restarts the watch and sends a `FileSystemException` with
+/// the message "Directory watcher closed unexpectedly" on the event stream. The
+/// code using the watcher needs to do additional work to account for the
+/// dropped events, for example by recomputing interesting files from scratch.
 abstract class DirectoryWatcher implements Watcher {
   /// The directory whose contents are being monitored.
   @Deprecated('Expires in 1.0.0. Use DirectoryWatcher.path instead.')
@@ -29,8 +37,10 @@ abstract class DirectoryWatcher implements Watcher {
   /// watchers.
   factory DirectoryWatcher(String directory, {Duration? pollingDelay}) {
     if (FileSystemEntity.isWatchSupported) {
-      var customWatcher =
-          createCustomDirectoryWatcher(directory, pollingDelay: pollingDelay);
+      var customWatcher = createCustomDirectoryWatcher(
+        directory,
+        pollingDelay: pollingDelay,
+      );
       if (customWatcher != null) return customWatcher;
       if (Platform.isLinux) return LinuxDirectoryWatcher(directory);
       if (Platform.isMacOS) return MacOSDirectoryWatcher(directory);
