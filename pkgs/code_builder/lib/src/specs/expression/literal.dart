@@ -80,7 +80,7 @@ LiteralListExpression literalConstList(List<Object?> values,
 
 /// Creates a literal set expression from [values].
 LiteralSetExpression literalSet(Iterable<Object?> values, [Reference? type]) =>
-    LiteralSetExpression._(false, values.toSet(), type);
+    LiteralSetExpression._(false, values, type);
 
 /// Creates a literal `const` set expression from [values].
 LiteralSetExpression literalConstSet(Set<Object?> values, [Reference? type]) =>
@@ -161,7 +161,7 @@ class LiteralListExpression extends Expression {
 class LiteralSetExpression extends Expression {
   @override
   final bool isConst;
-  final Set<Object?> values;
+  final Iterable<Object?> values;
   final Reference? type;
 
   const LiteralSetExpression._(this.isConst, this.values, this.type);
