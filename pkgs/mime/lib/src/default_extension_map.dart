@@ -131,6 +131,7 @@ const Map<String, String> defaultExtensionMap = <String, String>{
   'cpio': 'application/x-cpio',
   'cpp': 'text/x-c',
   'cpt': 'application/mac-compactpro',
+  'cr2': 'image/x-canon-cr2',
   'crd': 'application/x-mscardfile',
   'crl': 'application/pkix-crl',
   'crt': 'application/x-x509-ca-cert',
