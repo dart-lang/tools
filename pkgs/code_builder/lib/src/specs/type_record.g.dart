@@ -15,25 +15,19 @@ class _$RecordType extends RecordType {
   final bool? isNullable;
 
   factory _$RecordType([void Function(RecordTypeBuilder)? updates]) =>
-      (new RecordTypeBuilder()..update(updates)).build() as _$RecordType;
+      (RecordTypeBuilder()..update(updates)).build() as _$RecordType;
 
   _$RecordType._(
       {required this.positionalFieldTypes,
       required this.namedFieldTypes,
       this.isNullable})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        positionalFieldTypes, r'RecordType', 'positionalFieldTypes');
-    BuiltValueNullFieldError.checkNotNull(
-        namedFieldTypes, r'RecordType', 'namedFieldTypes');
-  }
-
+      : super._();
   @override
   RecordType rebuild(void Function(RecordTypeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$RecordTypeBuilder toBuilder() => new _$RecordTypeBuilder()..replace(this);
+  _$RecordTypeBuilder toBuilder() => _$RecordTypeBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -118,7 +112,6 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
 
   @override
   void replace(RecordType other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$RecordType;
   }
 
@@ -134,10 +127,11 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
     _$RecordType _$result;
     try {
       _$result = _$v ??
-          new _$RecordType._(
-              positionalFieldTypes: positionalFieldTypes.build(),
-              namedFieldTypes: namedFieldTypes.build(),
-              isNullable: isNullable);
+          _$RecordType._(
+            positionalFieldTypes: positionalFieldTypes.build(),
+            namedFieldTypes: namedFieldTypes.build(),
+            isNullable: isNullable,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -146,7 +140,7 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
         _$failedField = 'namedFieldTypes';
         namedFieldTypes.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
             r'RecordType', _$failedField, e.toString());
       }
       rethrow;

@@ -27,7 +27,7 @@ class _$Mixin extends Mixin {
   final String name;
 
   factory _$Mixin([void Function(MixinBuilder)? updates]) =>
-      (new MixinBuilder()..update(updates)).build() as _$Mixin;
+      (MixinBuilder()..update(updates)).build() as _$Mixin;
 
   _$Mixin._(
       {required this.base,
@@ -39,23 +39,13 @@ class _$Mixin extends Mixin {
       required this.methods,
       required this.fields,
       required this.name})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base');
-    BuiltValueNullFieldError.checkNotNull(annotations, r'Mixin', 'annotations');
-    BuiltValueNullFieldError.checkNotNull(docs, r'Mixin', 'docs');
-    BuiltValueNullFieldError.checkNotNull(implements, r'Mixin', 'implements');
-    BuiltValueNullFieldError.checkNotNull(types, r'Mixin', 'types');
-    BuiltValueNullFieldError.checkNotNull(methods, r'Mixin', 'methods');
-    BuiltValueNullFieldError.checkNotNull(fields, r'Mixin', 'fields');
-    BuiltValueNullFieldError.checkNotNull(name, r'Mixin', 'name');
-  }
-
+      : super._();
   @override
   Mixin rebuild(void Function(MixinBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  _$MixinBuilder toBuilder() => new _$MixinBuilder()..replace(this);
+  _$MixinBuilder toBuilder() => _$MixinBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -236,7 +226,6 @@ class _$MixinBuilder extends MixinBuilder {
 
   @override
   void replace(Mixin other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Mixin;
   }
 
@@ -252,18 +241,17 @@ class _$MixinBuilder extends MixinBuilder {
     _$Mixin _$result;
     try {
       _$result = _$v ??
-          new _$Mixin._(
-              base:
-                  BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base'),
-              annotations: annotations.build(),
-              docs: docs.build(),
-              on: on,
-              implements: implements.build(),
-              types: types.build(),
-              methods: methods.build(),
-              fields: fields.build(),
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'Mixin', 'name'));
+          _$Mixin._(
+            base: BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base'),
+            annotations: annotations.build(),
+            docs: docs.build(),
+            on: on,
+            implements: implements.build(),
+            types: types.build(),
+            methods: methods.build(),
+            fields: fields.build(),
+            name: BuiltValueNullFieldError.checkNotNull(name, r'Mixin', 'name'),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -281,8 +269,7 @@ class _$MixinBuilder extends MixinBuilder {
         _$failedField = 'fields';
         fields.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'Mixin', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(r'Mixin', _$failedField, e.toString());
       }
       rethrow;
     }
