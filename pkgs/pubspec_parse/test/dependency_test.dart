@@ -259,17 +259,20 @@ void _gitDependency() {
   });
 
   test('tag_pattern works, and does not ignore version', () async {
-    final dep = await _dependency<GitDependency>({
-      'git': {
-        'url': 'url',
-        'tag_pattern': 'v{{v}}',
+    final dep = await _dependency<GitDependency>(
+      {
+        'git': {
+          'url': 'url',
+          'tag_pattern': 'v{{version}}',
+        },
+        'version': '^1.2.3',
       },
-      'version': '^1.2.3',
-    });
+      languageVersion: '3.9',
+    );
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
-    expect(dep.tagPattern, 'v{{v}}');
+    expect(dep.tagPattern, 'v{{version}}');
     expect(dep.version.toString(), '^1.2.3');
     expect(dep.toString(), 'GitDependency: url@url');
   });
@@ -444,10 +447,11 @@ void _expectThrowsContaining(Object content, String errorText) {
 Future<T> _dependency<T extends Dependency>(
   Object? content, {
   bool skipTryPub = false,
+  String languageVersion = '2.12',
 }) async {
   final value = await parse(
     {
-      ...defaultPubspec,
+      ...defaultPubspec(languageVersion: languageVersion),
       'dependencies': {'dep': content},
     },
     skipTryPub: skipTryPub,

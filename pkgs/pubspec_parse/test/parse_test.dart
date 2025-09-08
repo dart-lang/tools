@@ -12,7 +12,7 @@ import 'test_utils.dart';
 
 void main() {
   test('minimal set values', () async {
-    final value = await parse(defaultPubspec);
+    final value = await parse(defaultPubspec());
     expect(value.name, 'sample');
     expect(value.version, isNull);
     expect(value.publishTo, isNull);
@@ -167,7 +167,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
     }.entries) {
       test('can be ${entry.key}', () async {
         final value = await parse({
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'publish_to': entry.value,
         });
         expect(value.publishTo, entry.value);
@@ -178,7 +178,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
   group('author, authors', () {
     test('one author', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'author': 'name@example.com',
       });
       expect(value.author, 'name@example.com');
@@ -187,7 +187,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
 
     test('one author, via authors', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'authors': ['name@example.com'],
       });
       expect(value.author, 'name@example.com');
@@ -196,7 +196,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
 
     test('many authors', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'authors': ['name@example.com', 'name2@example.com'],
       });
       expect(value.author, isNull);
@@ -205,7 +205,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
 
     test('author and authors', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'author': 'name@example.com',
         'authors': ['name2@example.com'],
       });
@@ -215,7 +215,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
 
     test('duplicate author values', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'author': 'name@example.com',
         'authors': ['name@example.com', 'name@example.com'],
       });
@@ -225,7 +225,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
 
     test('flutter', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'flutter': {'key': 'value'},
       });
       expect(value.flutter, {'key': 'value'});
@@ -235,7 +235,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
   group('executables', () {
     test('one executable', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'executables': {'my_script': 'bin/my_script.dart'},
       });
       expect(value.executables, hasLength(1));
@@ -245,7 +245,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
 
     test('many executables', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'executables': {
           'my_script': 'bin/my_script.dart',
           'my_script2': 'bin/my_script2.dart',
@@ -261,7 +261,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
     test('invalid value', () async {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'executables': {
             'script': 32,
           },
@@ -274,7 +274,7 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
     test('invalid executable - lenient', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'executables': 'Invalid value',
         },
         lenient: true,
@@ -407,7 +407,7 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
     test('bad repository url', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'repository': {'x': 'y'},
         },
         "Unsupported value for \"repository\". type 'YamlMap' is not a subtype of type 'String'",
@@ -431,7 +431,7 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
     test('not a list', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'funding': 1,
         },
         "Unsupported value for \"funding\". type 'int' is not a subtype of type 'List<dynamic>?'",
@@ -442,7 +442,7 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
     test('not an uri', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'funding': [1],
         },
         "Unsupported value for \"funding\". type 'int' is not a subtype of type 'String'",
@@ -453,7 +453,7 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
     test('not an uri', () {
       expectParseThrows(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'funding': ['ht tps://example.com/'],
         },
         r'''
@@ -472,7 +472,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('not a list', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'topics': 1,
         },
         "Unsupported value for \"topics\". type 'int' is not a subtype of type 'List<dynamic>?'",
@@ -483,7 +483,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('not a string', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'topics': [1],
         },
         "Unsupported value for \"topics\". type 'int' is not a subtype of type 'String'",
@@ -494,7 +494,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('invalid data - lenient', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'topics': [1],
         },
         skipTryPub: true,
@@ -509,7 +509,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('not a list', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'ignored_advisories': 1,
         },
         "Unsupported value for \"ignored_advisories\". type 'int' is not a subtype of type 'List<dynamic>?'",
@@ -520,7 +520,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('not a string', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'ignored_advisories': [1],
         },
         "Unsupported value for \"ignored_advisories\". type 'int' is not a subtype of type 'String'",
@@ -531,7 +531,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('invalid data - lenient', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'ignored_advisories': [1],
         },
         skipTryPub: true,
@@ -545,7 +545,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
   group('screenshots', () {
     test('one screenshot', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'screenshots': [
           {'description': 'my screenshot', 'path': 'path/to/screenshot'},
         ],
@@ -557,7 +557,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
 
     test('many screenshots', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'screenshots': [
           {'description': 'my screenshot', 'path': 'path/to/screenshot'},
           {
@@ -575,7 +575,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
 
     test('one screenshot plus invalid entries', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'screenshots': [
           42,
           {
@@ -593,7 +593,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
 
     test('invalid entries', () async {
       final value = await parse({
-        ...defaultPubspec,
+        ...defaultPubspec(),
         'screenshots': [
           42,
           'not a screenshot',
@@ -605,7 +605,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('missing key `dessription', () {
       expectParseThrows(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'screenshots': [
             {'path': 'my/path'},
           ],
@@ -624,7 +624,7 @@ line 7, column 3: Missing key "description". Missing required key `description`
     test('missing key `path`', () {
       expectParseThrows(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'screenshots': [
             {'description': 'my screenshot'},
           ],
@@ -643,7 +643,7 @@ line 7, column 3: Missing key "path". Missing required key `path`
     test('Value of description not a String`', () {
       expectParseThrows(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'screenshots': [
             {'description': 42},
           ],
@@ -663,7 +663,7 @@ line 8, column 19: Unsupported value for "description". `42` is not a String
     test('Value of path not a String`', () {
       expectParseThrows(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'screenshots': [
             {
               'description': '',
@@ -686,7 +686,7 @@ line 9, column 12: Unsupported value for "path". `42` is not a String
     test('invalid screenshot - lenient', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'screenshots': 'Invalid value',
         },
         lenient: true,
@@ -734,7 +734,7 @@ line 1, column 1: Not a map
     test('bad repository url', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'repository': {'x': 'y'},
         },
         lenient: true,
@@ -746,7 +746,7 @@ line 1, column 1: Not a map
     test('bad issue_tracker url', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'issue_tracker': {'x': 'y'},
         },
         lenient: true,
@@ -758,7 +758,7 @@ line 1, column 1: Not a map
     test('multiple bad values', () async {
       final value = await parse(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'repository': {'x': 'y'},
           'issue_tracker': {'x': 'y'},
         },
@@ -793,7 +793,7 @@ line 1, column 1: Not a map
     test('workspace key must be a list', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'workspace': 42,
         },
         'Unsupported value for "workspace". type \'int\' is not a subtype of type \'List<dynamic>?\' in type cast',
@@ -804,7 +804,7 @@ line 1, column 1: Not a map
     test('workspace key must be a list of strings', () {
       expectParseThrowsContaining(
         {
-          ...defaultPubspec,
+          ...defaultPubspec(),
           'workspace': [42],
         },
         'Unsupported value for "workspace". type \'int\' is not a subtype of type \'String\' in type cast',
