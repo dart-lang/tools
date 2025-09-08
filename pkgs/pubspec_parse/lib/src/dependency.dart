@@ -158,8 +158,8 @@ class GitDependency extends Dependency {
     final tagPattern = switch (gitData['tag_pattern']) {
       final String? s => s,
       _ => throw ArgumentError.value(
-          gitData['tagPattern'],
-          'tagPattern',
+          gitData['tag_pattern'],
+          'tag_pattern',
           'Must be a String.',
         ),
     };
