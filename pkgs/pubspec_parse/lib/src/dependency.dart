@@ -112,7 +112,6 @@ class SdkDependency extends Dependency {
   String toString() => 'SdkDependency: $sdk';
 }
 
-@JsonSerializable()
 class GitDependency extends Dependency {
   @JsonKey(fromJson: parseGitUri)
   final Uri url;
@@ -126,7 +125,11 @@ class GitDependency extends Dependency {
   factory GitDependency.fromJson(Map data) {
     final version = switch (data['version']) {
       final String? s => _constraintFromString(s),
-      _ => null,
+      _ => throw ArgumentError.value(
+          data['version'],
+          'version',
+          'if present must be a string.',
+        ),
     };
     final gitData = switch (data['git']) {
       final String s => {'url': s},
