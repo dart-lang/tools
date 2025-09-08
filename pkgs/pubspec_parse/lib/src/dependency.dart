@@ -75,7 +75,7 @@ Dependency? _fromJson(Object? data, String name) {
         final key = matchedKeys.single;
 
         return switch (key) {
-          'git' => GitDependency.fromData(data[key]),
+          'git' => GitDependency.fromJson(data),
           'path' => PathDependency.fromData(data[key]),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(data)
@@ -118,19 +118,56 @@ class GitDependency extends Dependency {
   final Uri url;
   final String? ref;
   final String? path;
+  final String? tagPattern;
+  final VersionConstraint? version;
 
-  GitDependency(this.url, {this.ref, this.path});
+  GitDependency(this.url, {this.ref, this.path, this.tagPattern, this.version});
 
-  factory GitDependency.fromData(Object? data) {
-    if (data is String) {
-      data = {'url': data};
-    }
+  factory GitDependency.fromJson(Map data) {
+    final version = switch (data['version']) {
+      final String? s => _constraintFromString(s),
+      _ => null,
+    };
+    final gitData = switch (data['git']) {
+      final String s => {'url': s},
+      final Map m => m,
+      _ => throw ArgumentError.value(
+          data['git'],
+          'git',
+          'Must be a string or map.',
+        ),
+    };
+    final url = switch (gitData['url']) {
+      final String s => parseGitUri(s),
+      _ =>
+        throw ArgumentError.value(gitData['url'], 'url', 'Must be a String.'),
+    };
+    final ref = switch (gitData['ref']) {
+      final String? s => s,
+      _ =>
+        throw ArgumentError.value(gitData['ref'], 'ref', 'Must be a String.'),
+    };
+    final path = switch (gitData['path']) {
+      final String? s => s,
+      _ =>
+        throw ArgumentError.value(gitData['path'], 'path', 'Must be a String.'),
+    };
+    final tagPattern = switch (gitData['tag_pattern']) {
+      final String? s => s,
+      _ => throw ArgumentError.value(
+          gitData['tagPattern'],
+          'tagPattern',
+          'Must be a String.',
+        ),
+    };
 
-    if (data is Map) {
-      return _$GitDependencyFromJson(data);
-    }
-
-    throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
+    return GitDependency(
+      url,
+      ref: ref,
+      path: path,
+      tagPattern: tagPattern,
+      version: version,
+    );
   }
 
   @override
