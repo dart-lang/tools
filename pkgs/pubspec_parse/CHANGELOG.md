@@ -1,3 +1,7 @@
+## 1.6.0
+
+- Supports 'tag_pattern's via `GitDependency.tagPattern`.
+
 ## 1.5.0
 
 - Added fields to `Pubspec`: `executables`, `resolution`, `workspace`.
