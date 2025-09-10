@@ -31,18 +31,18 @@ class _$Enum extends Enum {
   factory _$Enum([void Function(EnumBuilder)? updates]) =>
       (new EnumBuilder()..update(updates)).build() as _$Enum;
 
-  _$Enum._(
-      {required this.name,
-      required this.values,
-      required this.annotations,
-      required this.docs,
-      required this.implements,
-      required this.mixins,
-      required this.types,
-      required this.constructors,
-      required this.methods,
-      required this.fields})
-      : super._() {
+  _$Enum._({
+    required this.name,
+    required this.values,
+    required this.annotations,
+    required this.docs,
+    required this.implements,
+    required this.mixins,
+    required this.types,
+    required this.constructors,
+    required this.methods,
+    required this.fields,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(name, r'Enum', 'name');
     BuiltValueNullFieldError.checkNotNull(values, r'Enum', 'values');
     BuiltValueNullFieldError.checkNotNull(annotations, r'Enum', 'annotations');
@@ -51,7 +51,10 @@ class _$Enum extends Enum {
     BuiltValueNullFieldError.checkNotNull(mixins, r'Enum', 'mixins');
     BuiltValueNullFieldError.checkNotNull(types, r'Enum', 'types');
     BuiltValueNullFieldError.checkNotNull(
-        constructors, r'Enum', 'constructors');
+      constructors,
+      r'Enum',
+      'constructors',
+    );
     BuiltValueNullFieldError.checkNotNull(methods, r'Enum', 'methods');
     BuiltValueNullFieldError.checkNotNull(fields, r'Enum', 'fields');
   }
@@ -273,19 +276,20 @@ class _$EnumBuilder extends EnumBuilder {
   _$Enum _build() {
     _$Enum _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Enum._(
-              name:
-                  BuiltValueNullFieldError.checkNotNull(name, r'Enum', 'name'),
-              values: values.build(),
-              annotations: annotations.build(),
-              docs: docs.build(),
-              implements: implements.build(),
-              mixins: mixins.build(),
-              types: types.build(),
-              constructors: constructors.build(),
-              methods: methods.build(),
-              fields: fields.build());
+            name: BuiltValueNullFieldError.checkNotNull(name, r'Enum', 'name'),
+            values: values.build(),
+            annotations: annotations.build(),
+            docs: docs.build(),
+            implements: implements.build(),
+            mixins: mixins.build(),
+            types: types.build(),
+            constructors: constructors.build(),
+            methods: methods.build(),
+            fields: fields.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -309,7 +313,10 @@ class _$EnumBuilder extends EnumBuilder {
         fields.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Enum', _$failedField, e.toString());
+          r'Enum',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -337,23 +344,29 @@ class _$EnumValue extends EnumValue {
   factory _$EnumValue([void Function(EnumValueBuilder)? updates]) =>
       (new EnumValueBuilder()..update(updates)).build() as _$EnumValue;
 
-  _$EnumValue._(
-      {required this.name,
-      required this.annotations,
-      required this.docs,
-      this.constructorName,
-      required this.types,
-      required this.arguments,
-      required this.namedArguments})
-      : super._() {
+  _$EnumValue._({
+    required this.name,
+    required this.annotations,
+    required this.docs,
+    this.constructorName,
+    required this.types,
+    required this.arguments,
+    required this.namedArguments,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(name, r'EnumValue', 'name');
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'EnumValue', 'annotations');
+      annotations,
+      r'EnumValue',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(docs, r'EnumValue', 'docs');
     BuiltValueNullFieldError.checkNotNull(types, r'EnumValue', 'types');
     BuiltValueNullFieldError.checkNotNull(arguments, r'EnumValue', 'arguments');
     BuiltValueNullFieldError.checkNotNull(
-        namedArguments, r'EnumValue', 'namedArguments');
+      namedArguments,
+      r'EnumValue',
+      'namedArguments',
+    );
   }
 
   @override
@@ -525,16 +538,21 @@ class _$EnumValueBuilder extends EnumValueBuilder {
   _$EnumValue _build() {
     _$EnumValue _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$EnumValue._(
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'EnumValue', 'name'),
-              annotations: annotations.build(),
-              docs: docs.build(),
-              constructorName: constructorName,
-              types: types.build(),
-              arguments: arguments.build(),
-              namedArguments: namedArguments.build());
+            name: BuiltValueNullFieldError.checkNotNull(
+              name,
+              r'EnumValue',
+              'name',
+            ),
+            annotations: annotations.build(),
+            docs: docs.build(),
+            constructorName: constructorName,
+            types: types.build(),
+            arguments: arguments.build(),
+            namedArguments: namedArguments.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -551,7 +569,10 @@ class _$EnumValueBuilder extends EnumValueBuilder {
         namedArguments.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'EnumValue', _$failedField, e.toString());
+          r'EnumValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

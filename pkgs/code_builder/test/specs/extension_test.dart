@@ -12,9 +12,12 @@ void main() {
 
   test('should create an extension', () {
     expect(
-      Extension((b) => b
-        ..name = 'Foo'
-        ..on = TypeReference((b) => b.symbol = 'Bar')),
+      Extension(
+        (b) =>
+            b
+              ..name = 'Foo'
+              ..on = TypeReference((b) => b.symbol = 'Bar'),
+      ),
       equalsDart(r'''
         extension Foo on Bar {}
       '''),
@@ -33,14 +36,11 @@ void main() {
   test('should create an extension with documentation', () {
     expect(
       Extension(
-        (b) => b
-          ..name = 'Foo'
-          ..on = TypeReference((b) => b.symbol = 'Bar')
-          ..docs.addAll(
-            const [
-              '/// My favorite extension.',
-            ],
-          ),
+        (b) =>
+            b
+              ..name = 'Foo'
+              ..on = TypeReference((b) => b.symbol = 'Bar')
+              ..docs.addAll(const ['/// My favorite extension.']),
       ),
       equalsDart(r'''
         /// My favorite extension.
@@ -52,14 +52,16 @@ void main() {
   test('should create an extension with annotations', () {
     expect(
       Extension(
-        (b) => b
-          ..name = 'Foo'
-          ..on = TypeReference((b) => b.symbol = 'Bar')
-          ..annotations.addAll([
-            refer('deprecated'),
-            refer('Deprecated')
-                .call([literalString('This is an old extension')])
-          ]),
+        (b) =>
+            b
+              ..name = 'Foo'
+              ..on = TypeReference((b) => b.symbol = 'Bar')
+              ..annotations.addAll([
+                refer('deprecated'),
+                refer(
+                  'Deprecated',
+                ).call([literalString('This is an old extension')]),
+              ]),
       ),
       equalsDart(r'''
         @deprecated
@@ -71,10 +73,13 @@ void main() {
 
   test('should create an extension with a generic type', () {
     expect(
-      Extension((b) => b
-        ..name = 'Foo'
-        ..on = TypeReference((b) => b.symbol = 'Bar')
-        ..types.add(refer('T'))),
+      Extension(
+        (b) =>
+            b
+              ..name = 'Foo'
+              ..on = TypeReference((b) => b.symbol = 'Bar')
+              ..types.add(refer('T')),
+      ),
       equalsDart(r'''
         extension Foo<T> on Bar {}
       '''),
@@ -84,13 +89,11 @@ void main() {
   test('should create an extension with multiple generic types', () {
     expect(
       Extension(
-        (b) => b
-          ..name = 'Map'
-          ..on = TypeReference((b) => b.symbol = 'Bar')
-          ..types.addAll([
-            refer('K'),
-            refer('V'),
-          ]),
+        (b) =>
+            b
+              ..name = 'Map'
+              ..on = TypeReference((b) => b.symbol = 'Bar')
+              ..types.addAll([refer('K'), refer('V')]),
       ),
       equalsDart(r'''
         extension Map<K, V> on Bar {}
@@ -100,14 +103,25 @@ void main() {
 
   test('should create an extension with a bound generic type', () {
     expect(
-      Extension((b) => b
-        ..name = 'Foo'
-        ..on = TypeReference((b) => b.symbol = 'Bar')
-        ..types.add(TypeReference((b) => b
-          ..symbol = 'T'
-          ..bound = TypeReference((b) => b
-            ..symbol = 'Comparable'
-            ..types.add(refer('T').type))))),
+      Extension(
+        (b) =>
+            b
+              ..name = 'Foo'
+              ..on = TypeReference((b) => b.symbol = 'Bar')
+              ..types.add(
+                TypeReference(
+                  (b) =>
+                      b
+                        ..symbol = 'T'
+                        ..bound = TypeReference(
+                          (b) =>
+                              b
+                                ..symbol = 'Comparable'
+                                ..types.add(refer('T').type),
+                        ),
+                ),
+              ),
+      ),
       equalsDart(r'''
         extension Foo<T extends Comparable<T>> on Bar {}
       '''),
@@ -116,15 +130,21 @@ void main() {
 
   test('should create an extension with a method', () {
     expect(
-      Extension((b) => b
-        ..name = 'Foo'
-        ..on = TypeReference((b) => b.symbol = 'Bar')
-        ..methods.add(Method((b) => b
-          ..name = 'parseInt'
-          ..returns = refer('int')
-          ..body = Code.scope(
-            (a) => 'return int.parse(this);',
-          )))),
+      Extension(
+        (b) =>
+            b
+              ..name = 'Foo'
+              ..on = TypeReference((b) => b.symbol = 'Bar')
+              ..methods.add(
+                Method(
+                  (b) =>
+                      b
+                        ..name = 'parseInt'
+                        ..returns = refer('int')
+                        ..body = Code.scope((a) => 'return int.parse(this);'),
+                ),
+              ),
+      ),
       equalsDart(r'''
         extension Foo on Bar {
           int parseInt() {

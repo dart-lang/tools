@@ -27,24 +27,30 @@ class _$Library extends Library {
   factory _$Library([void Function(LibraryBuilder)? updates]) =>
       (new LibraryBuilder()..update(updates)).build() as _$Library;
 
-  _$Library._(
-      {required this.annotations,
-      required this.docs,
-      required this.directives,
-      required this.body,
-      required this.comments,
-      this.generatedByComment,
-      required this.ignoreForFile,
-      this.name})
-      : super._() {
+  _$Library._({
+    required this.annotations,
+    required this.docs,
+    required this.directives,
+    required this.body,
+    required this.comments,
+    this.generatedByComment,
+    required this.ignoreForFile,
+    this.name,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Library', 'annotations');
+      annotations,
+      r'Library',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(docs, r'Library', 'docs');
     BuiltValueNullFieldError.checkNotNull(directives, r'Library', 'directives');
     BuiltValueNullFieldError.checkNotNull(body, r'Library', 'body');
     BuiltValueNullFieldError.checkNotNull(comments, r'Library', 'comments');
     BuiltValueNullFieldError.checkNotNull(
-        ignoreForFile, r'Library', 'ignoreForFile');
+      ignoreForFile,
+      r'Library',
+      'ignoreForFile',
+    );
   }
 
   @override
@@ -232,16 +238,18 @@ class _$LibraryBuilder extends LibraryBuilder {
   _$Library _build() {
     _$Library _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Library._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              directives: directives.build(),
-              body: body.build(),
-              comments: comments.build(),
-              generatedByComment: generatedByComment,
-              ignoreForFile: ignoreForFile.build(),
-              name: name);
+            annotations: annotations.build(),
+            docs: docs.build(),
+            directives: directives.build(),
+            body: body.build(),
+            comments: comments.build(),
+            generatedByComment: generatedByComment,
+            ignoreForFile: ignoreForFile.build(),
+            name: name,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -260,7 +268,10 @@ class _$LibraryBuilder extends LibraryBuilder {
         ignoreForFile.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Library', _$failedField, e.toString());
+          r'Library',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

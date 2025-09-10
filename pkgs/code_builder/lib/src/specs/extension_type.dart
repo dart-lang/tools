@@ -57,10 +57,7 @@ abstract class ExtensionType extends Object
   BuiltList<Method> get methods;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitExtensionType(this, context);
 }
 
@@ -109,9 +106,9 @@ abstract class RepresentationDeclaration extends Object
     with HasAnnotations, HasDartDocs
     implements
         Built<RepresentationDeclaration, RepresentationDeclarationBuilder> {
-  factory RepresentationDeclaration(
-          [void Function(RepresentationDeclarationBuilder)? updates]) =
-      _$RepresentationDeclaration;
+  factory RepresentationDeclaration([
+    void Function(RepresentationDeclarationBuilder)? updates,
+  ]) = _$RepresentationDeclaration;
 
   RepresentationDeclaration._();
 

@@ -25,24 +25,36 @@ class _$FunctionType extends FunctionType {
   factory _$FunctionType([void Function(FunctionTypeBuilder)? updates]) =>
       (new FunctionTypeBuilder()..update(updates)).build() as _$FunctionType;
 
-  _$FunctionType._(
-      {this.returnType,
-      required this.types,
-      required this.requiredParameters,
-      required this.optionalParameters,
-      required this.namedParameters,
-      required this.namedRequiredParameters,
-      this.isNullable})
-      : super._() {
+  _$FunctionType._({
+    this.returnType,
+    required this.types,
+    required this.requiredParameters,
+    required this.optionalParameters,
+    required this.namedParameters,
+    required this.namedRequiredParameters,
+    this.isNullable,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(types, r'FunctionType', 'types');
     BuiltValueNullFieldError.checkNotNull(
-        requiredParameters, r'FunctionType', 'requiredParameters');
+      requiredParameters,
+      r'FunctionType',
+      'requiredParameters',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        optionalParameters, r'FunctionType', 'optionalParameters');
+      optionalParameters,
+      r'FunctionType',
+      'optionalParameters',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        namedParameters, r'FunctionType', 'namedParameters');
+      namedParameters,
+      r'FunctionType',
+      'namedParameters',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        namedRequiredParameters, r'FunctionType', 'namedRequiredParameters');
+      namedRequiredParameters,
+      r'FunctionType',
+      'namedRequiredParameters',
+    );
   }
 
   @override
@@ -165,7 +177,8 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
 
   @override
   set namedRequiredParameters(
-      MapBuilder<String, Reference> namedRequiredParameters) {
+    MapBuilder<String, Reference> namedRequiredParameters,
+  ) {
     _$this;
     super.namedRequiredParameters = namedRequiredParameters;
   }
@@ -216,15 +229,17 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
   _$FunctionType _build() {
     _$FunctionType _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$FunctionType._(
-              returnType: returnType,
-              types: types.build(),
-              requiredParameters: requiredParameters.build(),
-              optionalParameters: optionalParameters.build(),
-              namedParameters: namedParameters.build(),
-              namedRequiredParameters: namedRequiredParameters.build(),
-              isNullable: isNullable);
+            returnType: returnType,
+            types: types.build(),
+            requiredParameters: requiredParameters.build(),
+            optionalParameters: optionalParameters.build(),
+            namedParameters: namedParameters.build(),
+            namedRequiredParameters: namedRequiredParameters.build(),
+            isNullable: isNullable,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -240,7 +255,10 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
         namedRequiredParameters.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'FunctionType', _$failedField, e.toString());
+          r'FunctionType',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -28,9 +28,9 @@ class InvokeExpression extends Expression {
     this.positionalArguments,
     this.namedArguments,
     this.typeArguments,
-  )   : name = null,
-        type = null,
-        isConst = false;
+  ) : name = null,
+      type = null,
+      isConst = false;
 
   const InvokeExpression.newOf(
     this.target,
@@ -38,8 +38,8 @@ class InvokeExpression extends Expression {
     this.namedArguments = const {},
     this.typeArguments = const [],
     this.name,
-  ])  : type = InvokeExpressionType.newInstance,
-        isConst = false;
+  ]) : type = InvokeExpressionType.newInstance,
+       isConst = false;
 
   const InvokeExpression.constOf(
     this.target,
@@ -47,8 +47,8 @@ class InvokeExpression extends Expression {
     this.namedArguments = const {},
     this.typeArguments = const [],
     this.name,
-  ])  : type = InvokeExpressionType.constInstance,
-        isConst = true;
+  ]) : type = InvokeExpressionType.constInstance,
+       isConst = true;
 
   @override
   R accept<R>(ExpressionVisitor<R> visitor, [R? context]) =>
@@ -59,7 +59,4 @@ class InvokeExpression extends Expression {
       '${type ?? ''} $target($positionalArguments, $namedArguments)';
 }
 
-enum InvokeExpressionType {
-  newInstance,
-  constInstance,
-}
+enum InvokeExpressionType { newInstance, constInstance }

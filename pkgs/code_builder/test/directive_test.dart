@@ -12,27 +12,61 @@ void main() {
 
   final $LinkedHashMap = refer('LinkedHashMap', 'dart:collection');
 
-  final library = Library((b) => b
-    ..directives.add(Directive.export('../relative.dart'))
-    ..directives.add(Directive.export('package:foo/foo.dart'))
-    ..directives.add(Directive.part('lib.g.dart'))
-    ..body.add(Field((b) => b
-      ..name = 'relativeRef'
-      ..modifier = FieldModifier.final$
-      ..assignment =
-          refer('Relative', '../relative.dart').newInstance([]).code))
-    ..body.add(Field((b) => b
-      ..name = 'pkgRefFoo'
-      ..modifier = FieldModifier.final$
-      ..assignment = refer('Foo', 'package:foo/foo.dart').newInstance([]).code))
-    ..body.add(Field((b) => b
-      ..name = 'pkgRefBar'
-      ..modifier = FieldModifier.final$
-      ..assignment = refer('Bar', 'package:foo/bar.dart').newInstance([]).code))
-    ..body.add(Field((b) => b
-      ..name = 'collectionRef'
-      ..modifier = FieldModifier.final$
-      ..assignment = $LinkedHashMap.newInstance([]).code)));
+  final library = Library(
+    (b) =>
+        b
+          ..directives.add(Directive.export('../relative.dart'))
+          ..directives.add(Directive.export('package:foo/foo.dart'))
+          ..directives.add(Directive.part('lib.g.dart'))
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'relativeRef'
+                    ..modifier = FieldModifier.final$
+                    ..assignment =
+                        refer(
+                          'Relative',
+                          '../relative.dart',
+                        ).newInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'pkgRefFoo'
+                    ..modifier = FieldModifier.final$
+                    ..assignment =
+                        refer(
+                          'Foo',
+                          'package:foo/foo.dart',
+                        ).newInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'pkgRefBar'
+                    ..modifier = FieldModifier.final$
+                    ..assignment =
+                        refer(
+                          'Bar',
+                          'package:foo/bar.dart',
+                        ).newInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'collectionRef'
+                    ..modifier = FieldModifier.final$
+                    ..assignment = $LinkedHashMap.newInstance([]).code,
+            ),
+          ),
+  );
 
   test('should emit a source file with imports in defined order', () {
     expect(
@@ -57,7 +91,8 @@ void main() {
   test('should emit a source file with ordered', () {
     expect(
       library,
-      equalsDart(r'''
+      equalsDart(
+        r'''
           // ignore_for_file: no_leading_underscores_for_library_prefixes
           import 'dart:collection' as _i4;
 
@@ -75,7 +110,8 @@ void main() {
           final pkgRefFoo = _i2.Foo();
           final pkgRefBar = _i3.Bar();
           final collectionRef = _i4.LinkedHashMap();''',
-          DartEmitter.scoped(orderDirectives: true)),
+        DartEmitter.scoped(orderDirectives: true),
+      ),
     );
   });
 }

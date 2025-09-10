@@ -69,14 +69,16 @@ Expression literalSpread() => LiteralSpreadExpression._(false);
 Expression literalNullSafeSpread() => LiteralSpreadExpression._(true);
 
 /// Creates a literal list expression from [values].
-LiteralListExpression literalList(Iterable<Object?> values,
-        [Reference? type]) =>
-    LiteralListExpression._(false, values.toList(), type);
+LiteralListExpression literalList(
+  Iterable<Object?> values, [
+  Reference? type,
+]) => LiteralListExpression._(false, values.toList(), type);
 
 /// Creates a literal `const` list expression from [values].
-LiteralListExpression literalConstList(List<Object?> values,
-        [Reference? type]) =>
-    LiteralListExpression._(true, values, type);
+LiteralListExpression literalConstList(
+  List<Object?> values, [
+  Reference? type,
+]) => LiteralListExpression._(true, values, type);
 
 /// Creates a literal set expression from [values].
 LiteralSetExpression literalSet(Iterable<Object?> values, [Reference? type]) =>
@@ -91,28 +93,28 @@ LiteralMapExpression literalMap(
   Map<Object?, Object?> values, [
   Reference? keyType,
   Reference? valueType,
-]) =>
-    LiteralMapExpression._(false, values, keyType, valueType);
+]) => LiteralMapExpression._(false, values, keyType, valueType);
 
 /// Create a literal `const` map expression from [values].
 LiteralMapExpression literalConstMap(
   Map<Object?, Object?> values, [
   Reference? keyType,
   Reference? valueType,
-]) =>
-    LiteralMapExpression._(true, values, keyType, valueType);
+]) => LiteralMapExpression._(true, values, keyType, valueType);
 
 /// Create a literal record expression from [positionalFieldValues] and
 /// [namedFieldValues].
-LiteralRecordExpression literalRecord(List<Object?> positionalFieldValues,
-        Map<String, Object?> namedFieldValues) =>
-    LiteralRecordExpression._(false, positionalFieldValues, namedFieldValues);
+LiteralRecordExpression literalRecord(
+  List<Object?> positionalFieldValues,
+  Map<String, Object?> namedFieldValues,
+) => LiteralRecordExpression._(false, positionalFieldValues, namedFieldValues);
 
 /// Create a literal `const` record expression from [positionalFieldValues] and
 /// [namedFieldValues].
-LiteralRecordExpression literalConstRecord(List<Object?> positionalFieldValues,
-        Map<String, Object?> namedFieldValues) =>
-    LiteralRecordExpression._(true, positionalFieldValues, namedFieldValues);
+LiteralRecordExpression literalConstRecord(
+  List<Object?> positionalFieldValues,
+  Map<String, Object?> namedFieldValues,
+) => LiteralRecordExpression._(true, positionalFieldValues, namedFieldValues);
 
 /// Represents a literal value in Dart source code.
 ///
@@ -139,7 +141,7 @@ class LiteralExpression extends Expression {
 
 class LiteralSpreadExpression extends LiteralExpression {
   LiteralSpreadExpression._(bool nullAware)
-      : super._('...${nullAware ? '?' : ''}');
+    : super._('...${nullAware ? '?' : ''}');
 }
 
 class LiteralListExpression extends Expression {
@@ -203,7 +205,10 @@ class LiteralRecordExpression extends Expression {
   final Map<String, Object?> namedFieldValues;
 
   const LiteralRecordExpression._(
-      this.isConst, this.positionalFieldValues, this.namedFieldValues);
+    this.isConst,
+    this.positionalFieldValues,
+    this.namedFieldValues,
+  );
 
   @override
   R accept<R>(ExpressionVisitor<R> visitor, [R? context]) =>
@@ -211,8 +216,11 @@ class LiteralRecordExpression extends Expression {
 
   @override
   String toString() {
-    final allFields = positionalFieldValues.map((v) => v.toString()).followedBy(
-        namedFieldValues.entries.map((e) => '${e.key}: ${e.value}'));
+    final allFields = positionalFieldValues
+        .map((v) => v.toString())
+        .followedBy(
+          namedFieldValues.entries.map((e) => '${e.key}: ${e.value}'),
+        );
     return '(${allFields.join(', ')})';
   }
 }

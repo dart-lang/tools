@@ -80,10 +80,7 @@ abstract class Method extends Object
   Reference? get returns;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitMethod(this, context);
 
   /// This method as a closure.
@@ -148,16 +145,9 @@ abstract class MethodBuilder extends Object
   Reference? returns;
 }
 
-enum MethodType {
-  getter,
-  setter,
-}
+enum MethodType { getter, setter }
 
-enum MethodModifier {
-  async,
-  asyncStar,
-  syncStar,
-}
+enum MethodModifier { async, asyncStar, syncStar }
 
 abstract class Parameter extends Object
     with HasAnnotations, HasGenerics, HasDartDocs
