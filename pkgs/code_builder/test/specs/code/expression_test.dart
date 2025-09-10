@@ -668,8 +668,8 @@ void main() {
   });
 
   test('should emit an operator subtract call', () {
-    // ignore: deprecated_member_use_from_same_package
     expect(
+      // ignore: deprecated_member_use_from_same_package
       refer('foo').operatorSubstract(refer('foo2')),
       equalsDart('foo - foo2'),
     );
