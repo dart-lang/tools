@@ -33,34 +33,52 @@ class _$ExtensionType extends ExtensionType {
   factory _$ExtensionType([void Function(ExtensionTypeBuilder)? updates]) =>
       (new ExtensionTypeBuilder()..update(updates)).build() as _$ExtensionType;
 
-  _$ExtensionType._(
-      {required this.annotations,
-      required this.docs,
-      required this.constant,
-      required this.name,
-      required this.types,
-      required this.primaryConstructorName,
-      required this.representationDeclaration,
-      required this.implements,
-      required this.constructors,
-      required this.fields,
-      required this.methods})
-      : super._() {
+  _$ExtensionType._({
+    required this.annotations,
+    required this.docs,
+    required this.constant,
+    required this.name,
+    required this.types,
+    required this.primaryConstructorName,
+    required this.representationDeclaration,
+    required this.implements,
+    required this.constructors,
+    required this.fields,
+    required this.methods,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'ExtensionType', 'annotations');
+      annotations,
+      r'ExtensionType',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(docs, r'ExtensionType', 'docs');
     BuiltValueNullFieldError.checkNotNull(
-        constant, r'ExtensionType', 'constant');
+      constant,
+      r'ExtensionType',
+      'constant',
+    );
     BuiltValueNullFieldError.checkNotNull(name, r'ExtensionType', 'name');
     BuiltValueNullFieldError.checkNotNull(types, r'ExtensionType', 'types');
     BuiltValueNullFieldError.checkNotNull(
-        primaryConstructorName, r'ExtensionType', 'primaryConstructorName');
-    BuiltValueNullFieldError.checkNotNull(representationDeclaration,
-        r'ExtensionType', 'representationDeclaration');
+      primaryConstructorName,
+      r'ExtensionType',
+      'primaryConstructorName',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        implements, r'ExtensionType', 'implements');
+      representationDeclaration,
+      r'ExtensionType',
+      'representationDeclaration',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        constructors, r'ExtensionType', 'constructors');
+      implements,
+      r'ExtensionType',
+      'implements',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      constructors,
+      r'ExtensionType',
+      'constructors',
+    );
     BuiltValueNullFieldError.checkNotNull(fields, r'ExtensionType', 'fields');
     BuiltValueNullFieldError.checkNotNull(methods, r'ExtensionType', 'methods');
   }
@@ -209,7 +227,8 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
 
   @override
   set representationDeclaration(
-      RepresentationDeclaration? representationDeclaration) {
+    RepresentationDeclaration? representationDeclaration,
+  ) {
     _$this;
     super.representationDeclaration = representationDeclaration;
   }
@@ -300,27 +319,37 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
   _$ExtensionType _build() {
     _$ExtensionType _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$ExtensionType._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              constant: BuiltValueNullFieldError.checkNotNull(
-                  constant, r'ExtensionType', 'constant'),
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'ExtensionType', 'name'),
-              types: types.build(),
-              primaryConstructorName: BuiltValueNullFieldError.checkNotNull(
-                  primaryConstructorName,
-                  r'ExtensionType',
-                  'primaryConstructorName'),
-              representationDeclaration: BuiltValueNullFieldError.checkNotNull(
-                  representationDeclaration,
-                  r'ExtensionType',
-                  'representationDeclaration'),
-              implements: implements.build(),
-              constructors: constructors.build(),
-              fields: fields.build(),
-              methods: methods.build());
+            annotations: annotations.build(),
+            docs: docs.build(),
+            constant: BuiltValueNullFieldError.checkNotNull(
+              constant,
+              r'ExtensionType',
+              'constant',
+            ),
+            name: BuiltValueNullFieldError.checkNotNull(
+              name,
+              r'ExtensionType',
+              'name',
+            ),
+            types: types.build(),
+            primaryConstructorName: BuiltValueNullFieldError.checkNotNull(
+              primaryConstructorName,
+              r'ExtensionType',
+              'primaryConstructorName',
+            ),
+            representationDeclaration: BuiltValueNullFieldError.checkNotNull(
+              representationDeclaration,
+              r'ExtensionType',
+              'representationDeclaration',
+            ),
+            implements: implements.build(),
+            constructors: constructors.build(),
+            fields: fields.build(),
+            methods: methods.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -342,7 +371,10 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
         methods.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'ExtensionType', _$failedField, e.toString());
+          r'ExtensionType',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -361,31 +393,44 @@ class _$RepresentationDeclaration extends RepresentationDeclaration {
   @override
   final String name;
 
-  factory _$RepresentationDeclaration(
-          [void Function(RepresentationDeclarationBuilder)? updates]) =>
+  factory _$RepresentationDeclaration([
+    void Function(RepresentationDeclarationBuilder)? updates,
+  ]) =>
       (new RepresentationDeclarationBuilder()..update(updates)).build()
           as _$RepresentationDeclaration;
 
-  _$RepresentationDeclaration._(
-      {required this.annotations,
-      required this.docs,
-      required this.declaredRepresentationType,
-      required this.name})
-      : super._() {
+  _$RepresentationDeclaration._({
+    required this.annotations,
+    required this.docs,
+    required this.declaredRepresentationType,
+    required this.name,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'RepresentationDeclaration', 'annotations');
+      annotations,
+      r'RepresentationDeclaration',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        docs, r'RepresentationDeclaration', 'docs');
-    BuiltValueNullFieldError.checkNotNull(declaredRepresentationType,
-        r'RepresentationDeclaration', 'declaredRepresentationType');
+      docs,
+      r'RepresentationDeclaration',
+      'docs',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        name, r'RepresentationDeclaration', 'name');
+      declaredRepresentationType,
+      r'RepresentationDeclaration',
+      'declaredRepresentationType',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      name,
+      r'RepresentationDeclaration',
+      'name',
+    );
   }
 
   @override
   RepresentationDeclaration rebuild(
-          void Function(RepresentationDeclarationBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(RepresentationDeclarationBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   _$RepresentationDeclarationBuilder toBuilder() =>
@@ -506,16 +551,22 @@ class _$RepresentationDeclarationBuilder
   _$RepresentationDeclaration _build() {
     _$RepresentationDeclaration _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$RepresentationDeclaration._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              declaredRepresentationType: BuiltValueNullFieldError.checkNotNull(
-                  declaredRepresentationType,
-                  r'RepresentationDeclaration',
-                  'declaredRepresentationType'),
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'RepresentationDeclaration', 'name'));
+            annotations: annotations.build(),
+            docs: docs.build(),
+            declaredRepresentationType: BuiltValueNullFieldError.checkNotNull(
+              declaredRepresentationType,
+              r'RepresentationDeclaration',
+              'declaredRepresentationType',
+            ),
+            name: BuiltValueNullFieldError.checkNotNull(
+              name,
+              r'RepresentationDeclaration',
+              'name',
+            ),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -525,7 +576,10 @@ class _$RepresentationDeclarationBuilder
         docs.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'RepresentationDeclaration', _$failedField, e.toString());
+          r'RepresentationDeclaration',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

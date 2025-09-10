@@ -39,22 +39,22 @@ class _$Class extends Class {
   factory _$Class([void Function(ClassBuilder)? updates]) =>
       (new ClassBuilder()..update(updates)).build() as _$Class;
 
-  _$Class._(
-      {required this.abstract,
-      required this.sealed,
-      required this.mixin,
-      this.modifier,
-      required this.annotations,
-      required this.docs,
-      this.extend,
-      required this.implements,
-      required this.mixins,
-      required this.types,
-      required this.constructors,
-      required this.methods,
-      required this.fields,
-      required this.name})
-      : super._() {
+  _$Class._({
+    required this.abstract,
+    required this.sealed,
+    required this.mixin,
+    this.modifier,
+    required this.annotations,
+    required this.docs,
+    this.extend,
+    required this.implements,
+    required this.mixins,
+    required this.types,
+    required this.constructors,
+    required this.methods,
+    required this.fields,
+    required this.name,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(abstract, r'Class', 'abstract');
     BuiltValueNullFieldError.checkNotNull(sealed, r'Class', 'sealed');
     BuiltValueNullFieldError.checkNotNull(mixin, r'Class', 'mixin');
@@ -64,7 +64,10 @@ class _$Class extends Class {
     BuiltValueNullFieldError.checkNotNull(mixins, r'Class', 'mixins');
     BuiltValueNullFieldError.checkNotNull(types, r'Class', 'types');
     BuiltValueNullFieldError.checkNotNull(
-        constructors, r'Class', 'constructors');
+      constructors,
+      r'Class',
+      'constructors',
+    );
     BuiltValueNullFieldError.checkNotNull(methods, r'Class', 'methods');
     BuiltValueNullFieldError.checkNotNull(fields, r'Class', 'fields');
     BuiltValueNullFieldError.checkNotNull(name, r'Class', 'name');
@@ -351,26 +354,36 @@ class _$ClassBuilder extends ClassBuilder {
   _$Class _build() {
     _$Class _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Class._(
-              abstract: BuiltValueNullFieldError.checkNotNull(
-                  abstract, r'Class', 'abstract'),
-              sealed: BuiltValueNullFieldError.checkNotNull(
-                  sealed, r'Class', 'sealed'),
-              mixin: BuiltValueNullFieldError.checkNotNull(
-                  mixin, r'Class', 'mixin'),
-              modifier: modifier,
-              annotations: annotations.build(),
-              docs: docs.build(),
-              extend: extend,
-              implements: implements.build(),
-              mixins: mixins.build(),
-              types: types.build(),
-              constructors: constructors.build(),
-              methods: methods.build(),
-              fields: fields.build(),
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'Class', 'name'));
+            abstract: BuiltValueNullFieldError.checkNotNull(
+              abstract,
+              r'Class',
+              'abstract',
+            ),
+            sealed: BuiltValueNullFieldError.checkNotNull(
+              sealed,
+              r'Class',
+              'sealed',
+            ),
+            mixin: BuiltValueNullFieldError.checkNotNull(
+              mixin,
+              r'Class',
+              'mixin',
+            ),
+            modifier: modifier,
+            annotations: annotations.build(),
+            docs: docs.build(),
+            extend: extend,
+            implements: implements.build(),
+            mixins: mixins.build(),
+            types: types.build(),
+            constructors: constructors.build(),
+            methods: methods.build(),
+            fields: fields.build(),
+            name: BuiltValueNullFieldError.checkNotNull(name, r'Class', 'name'),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -393,7 +406,10 @@ class _$ClassBuilder extends ClassBuilder {
         fields.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Class', _$failedField, e.toString());
+          r'Class',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

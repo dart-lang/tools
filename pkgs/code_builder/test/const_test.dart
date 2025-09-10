@@ -16,47 +16,72 @@ void main() {
   });
 
   test('expression', () {
-    expect(constMap, equalsDart(r'''
-          const {'list': [], 'duration': Duration(), }'''));
+    expect(
+      constMap,
+      equalsDart(r'''
+          const {'list': [], 'duration': Duration(), }'''),
+    );
   });
 
   test('assignConst', () {
     expect(
       // ignore: deprecated_member_use_from_same_package
       constMap.assignConst('constField'),
-      equalsDart(r'''
+      equalsDart(
+        r'''
           const constField = {'list': [], 'duration': Duration(), }''',
-          DartEmitter.scoped()),
+        DartEmitter.scoped(),
+      ),
     );
   });
 
   test('assign to declared constant', () {
     expect(
       declareConst('constField').assign(constMap),
-      equalsDart(r'''
+      equalsDart(
+        r'''
           const constField = {'list': [], 'duration': Duration(), }''',
-          DartEmitter.scoped()),
+        DartEmitter.scoped(),
+      ),
     );
   });
 
   test('assign to declared non-constant', () {
     expect(
-        declareVar('varField').assign(constMap),
-        equalsDart(r'''
+      declareVar('varField').assign(constMap),
+      equalsDart(
+        r'''
           var varField = const {'list': [], 'duration': Duration(), }''',
-            DartEmitter.scoped()));
+        DartEmitter.scoped(),
+      ),
+    );
   });
 
-  final library = Library((b) => b
-    ..body.add(Field((b) => b
-      ..name = 'val1'
-      ..modifier = FieldModifier.constant
-      ..assignment = refer('ConstClass').constInstance([]).code))
-    ..body.add(Field((b) => b
-      ..name = 'val2'
-      ..modifier = FieldModifier.constant
-      ..assignment =
-          refer('ConstClass').constInstanceNamed('other', []).code)));
+  final library = Library(
+    (b) =>
+        b
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'val1'
+                    ..modifier = FieldModifier.constant
+                    ..assignment = refer('ConstClass').constInstance([]).code,
+            ),
+          )
+          ..body.add(
+            Field(
+              (b) =>
+                  b
+                    ..name = 'val2'
+                    ..modifier = FieldModifier.constant
+                    ..assignment =
+                        refer(
+                          'ConstClass',
+                        ).constInstanceNamed('other', []).code,
+            ),
+          ),
+  );
 
   test('should emit a source file with imports in defined order', () {
     expect(

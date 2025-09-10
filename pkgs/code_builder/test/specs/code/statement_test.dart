@@ -42,15 +42,18 @@ void main() {
 
   test('should emit a block of code with lazily invoked generators', () {
     expect(
-      Method((b) => b
-        ..name = 'main'
-        ..body = Block.of([
-          const Code('if ('),
-          lazyCode(() => refer('foo').code),
-          const Code(') {'),
-          refer('print')([literalTrue]).statement,
-          const Code('}'),
-        ])),
+      Method(
+        (b) =>
+            b
+              ..name = 'main'
+              ..body = Block.of([
+                const Code('if ('),
+                lazyCode(() => refer('foo').code),
+                const Code(') {'),
+                refer('print')([literalTrue]).statement,
+                const Code('}'),
+              ]),
+      ),
       equalsDart(r'''
         main() {
           if (foo) {

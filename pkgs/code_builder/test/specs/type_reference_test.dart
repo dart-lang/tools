@@ -12,9 +12,12 @@ void main() {
 
   test('should create a nullable type in a pre-Null Safety library', () {
     expect(
-      TypeReference((b) => b
-        ..symbol = 'Foo'
-        ..isNullable = true),
+      TypeReference(
+        (b) =>
+            b
+              ..symbol = 'Foo'
+              ..isNullable = true,
+      ),
       equalsDart(r'''
         Foo
       '''),
@@ -28,9 +31,12 @@ void main() {
 
     test('should create a nullable type', () {
       expect(
-        TypeReference((b) => b
-          ..symbol = 'Foo'
-          ..isNullable = true),
+        TypeReference(
+          (b) =>
+              b
+                ..symbol = 'Foo'
+                ..isNullable = true,
+        ),
         equalsDart(r'Foo?', emitter),
       );
     });
@@ -44,11 +50,19 @@ void main() {
 
     test('should create a type with nullable type arguments', () {
       expect(
-        TypeReference((b) => b
-          ..symbol = 'List'
-          ..types.add(TypeReference((b) => b
-            ..symbol = 'int'
-            ..isNullable = true))),
+        TypeReference(
+          (b) =>
+              b
+                ..symbol = 'List'
+                ..types.add(
+                  TypeReference(
+                    (b) =>
+                        b
+                          ..symbol = 'int'
+                          ..isNullable = true,
+                  ),
+                ),
+        ),
         equalsDart(r'List<int?>', emitter),
       );
     });

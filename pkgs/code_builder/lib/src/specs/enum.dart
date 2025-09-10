@@ -44,10 +44,7 @@ abstract class Enum extends Object
   BuiltList<Field> get fields;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitEnum(this, context);
 }
 

@@ -62,10 +62,7 @@ abstract class Class extends Object
   String get name;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitClass(this, context);
 }
 
@@ -75,10 +72,10 @@ enum ClassModifier {
   interface;
 
   String get name => switch (this) {
-        ClassModifier.base => 'base',
-        ClassModifier.final$ => 'final',
-        ClassModifier.interface => 'interface'
-      };
+    ClassModifier.base => 'base',
+    ClassModifier.final$ => 'final',
+    ClassModifier.interface => 'interface',
+  };
 }
 
 abstract class ClassBuilder extends Object

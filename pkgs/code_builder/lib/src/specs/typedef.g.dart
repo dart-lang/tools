@@ -21,17 +21,20 @@ class _$TypeDef extends TypeDef {
   factory _$TypeDef([void Function(TypeDefBuilder)? updates]) =>
       (new TypeDefBuilder()..update(updates)).build() as _$TypeDef;
 
-  _$TypeDef._(
-      {required this.name,
-      required this.definition,
-      required this.annotations,
-      required this.docs,
-      required this.types})
-      : super._() {
+  _$TypeDef._({
+    required this.name,
+    required this.definition,
+    required this.annotations,
+    required this.docs,
+    required this.types,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(name, r'TypeDef', 'name');
     BuiltValueNullFieldError.checkNotNull(definition, r'TypeDef', 'definition');
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'TypeDef', 'annotations');
+      annotations,
+      r'TypeDef',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(docs, r'TypeDef', 'docs');
     BuiltValueNullFieldError.checkNotNull(types, r'TypeDef', 'types');
   }
@@ -173,15 +176,23 @@ class _$TypeDefBuilder extends TypeDefBuilder {
   _$TypeDef _build() {
     _$TypeDef _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$TypeDef._(
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'TypeDef', 'name'),
-              definition: BuiltValueNullFieldError.checkNotNull(
-                  definition, r'TypeDef', 'definition'),
-              annotations: annotations.build(),
-              docs: docs.build(),
-              types: types.build());
+            name: BuiltValueNullFieldError.checkNotNull(
+              name,
+              r'TypeDef',
+              'name',
+            ),
+            definition: BuiltValueNullFieldError.checkNotNull(
+              definition,
+              r'TypeDef',
+              'definition',
+            ),
+            annotations: annotations.build(),
+            docs: docs.build(),
+            types: types.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -193,7 +204,10 @@ class _$TypeDefBuilder extends TypeDefBuilder {
         types.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'TypeDef', _$failedField, e.toString());
+          r'TypeDef',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
