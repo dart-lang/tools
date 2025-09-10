@@ -179,7 +179,6 @@ void main() {
 
   test('should emit a set of other literals and expressions', () {
     expect(
-      // ignore: prefer_collection_literals
       literalSet([
         <dynamic>[],
         // ignore: prefer_collection_literals
