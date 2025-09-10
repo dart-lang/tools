@@ -66,116 +66,69 @@ abstract class Expression implements Spec {
 
   /// Returns the result of `this` `as` [other].
   Expression asA(Expression other) =>
-      ParenthesizedExpression._(BinaryExpression._(
-        expression,
-        other,
-        'as',
-      ));
+      ParenthesizedExpression._(BinaryExpression._(expression, other, 'as'));
 
   /// Returns accessing the index operator (`[]`) on `this`.
   Expression index(Expression index) => BinaryExpression._(
-        expression,
-        CodeExpression(Block.of([
-          const Code('['),
-          index.code,
-          const Code(']'),
-        ])),
-        '',
-      );
+    expression,
+    CodeExpression(Block.of([const Code('['), index.code, const Code(']')])),
+    '',
+  );
 
   /// Returns the result of `this` `is` [other].
-  Expression isA(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        'is',
-      );
+  Expression isA(Expression other) =>
+      BinaryExpression._(expression, other, 'is');
 
   /// Returns the result of `this` `is!` [other].
-  Expression isNotA(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        'is!',
-      );
+  Expression isNotA(Expression other) =>
+      BinaryExpression._(expression, other, 'is!');
 
   /// Returns the result of `this` `==` [other].
-  Expression equalTo(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '==',
-      );
+  Expression equalTo(Expression other) =>
+      BinaryExpression._(expression, other, '==');
 
   /// Returns the result of `this` `!=` [other].
-  Expression notEqualTo(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '!=',
-      );
+  Expression notEqualTo(Expression other) =>
+      BinaryExpression._(expression, other, '!=');
 
   /// Returns the result of `this` `>` [other].
-  Expression greaterThan(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '>',
-      );
+  Expression greaterThan(Expression other) =>
+      BinaryExpression._(expression, other, '>');
 
   /// Returns the result of `this` `<` [other].
-  Expression lessThan(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '<',
-      );
+  Expression lessThan(Expression other) =>
+      BinaryExpression._(expression, other, '<');
 
   /// Returns the result of `this` `>=` [other].
-  Expression greaterOrEqualTo(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '>=',
-      );
+  Expression greaterOrEqualTo(Expression other) =>
+      BinaryExpression._(expression, other, '>=');
 
   /// Returns the result of `this` `<=` [other].
-  Expression lessOrEqualTo(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '<=',
-      );
+  Expression lessOrEqualTo(Expression other) =>
+      BinaryExpression._(expression, other, '<=');
 
   /// Returns the result of `this` `+` [other].
-  Expression operatorAdd(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '+',
-      );
+  Expression operatorAdd(Expression other) =>
+      BinaryExpression._(expression, other, '+');
 
   /// Returns the result of `this` `-` [other].
-  Expression operatorSubtract(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '-',
-      );
+  Expression operatorSubtract(Expression other) =>
+      BinaryExpression._(expression, other, '-');
 
   @Deprecated('Use `operatorSubtract` instead')
   Expression operatorSubstract(Expression other) => operatorSubtract(other);
 
   /// Returns the result of `this` `/` [other].
-  Expression operatorDivide(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '/',
-      );
+  Expression operatorDivide(Expression other) =>
+      BinaryExpression._(expression, other, '/');
 
   /// Returns the result of `this` `*` [other].
-  Expression operatorMultiply(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '*',
-      );
+  Expression operatorMultiply(Expression other) =>
+      BinaryExpression._(expression, other, '*');
 
   /// Returns the result of `this` `%` [other].
-  Expression operatorEuclideanModulo(Expression other) => BinaryExpression._(
-        expression,
-        other,
-        '%',
-      );
+  Expression operatorEuclideanModulo(Expression other) =>
+      BinaryExpression._(expression, other, '%');
 
   /// Returns the result of `this` `~/` [other].
   Expression operatorIntDivide(Expression other) =>
@@ -189,11 +142,7 @@ abstract class Expression implements Spec {
       );
 
   /// This expression preceded by `await`.
-  Expression get awaited => BinaryExpression._(
-        _empty,
-        this,
-        'await',
-      );
+  Expression get awaited => BinaryExpression._(_empty, this, 'await');
 
   /// Returns the result of `++this`.
   Expression operatorUnaryPrefixIncrement() =>
@@ -296,139 +245,118 @@ abstract class Expression implements Spec {
       BinaryExpression._(this, other, '|=');
 
   /// Return `{this} ?? {other}`.
-  Expression ifNullThen(Expression other) => BinaryExpression._(
-        this,
-        other,
-        '??',
-      );
+  Expression ifNullThen(Expression other) =>
+      BinaryExpression._(this, other, '??');
 
   /// Return `{this} ??= {other}`.
-  Expression assignNullAware(Expression other) => BinaryExpression._(
-        this,
-        other,
-        '??=',
-      );
+  Expression assignNullAware(Expression other) =>
+      BinaryExpression._(this, other, '??=');
 
   /// Return `var {name} = {this}`.
   @Deprecated('Use `declareVar(name).assign(expression)`')
   Expression assignVar(String name, [Reference? type]) => BinaryExpression._(
-        type == null
-            ? LiteralExpression._('var $name')
-            : BinaryExpression._(
-                type.expression,
-                LiteralExpression._(name),
-                '',
-              ),
-        this,
-        '=',
-      );
+    type == null
+        ? LiteralExpression._('var $name')
+        : BinaryExpression._(type.expression, LiteralExpression._(name), ''),
+    this,
+    '=',
+  );
 
   /// Return `final {name} = {this}`.
   @Deprecated('Use `declareFinal(name).assign(expression)`')
   Expression assignFinal(String name, [Reference? type]) => BinaryExpression._(
-        type == null
-            ? const LiteralExpression._('final')
-            : BinaryExpression._(
-                const LiteralExpression._('final'),
-                type.expression,
-                '',
-              ),
-        this,
-        '$name =',
-      );
+    type == null
+        ? const LiteralExpression._('final')
+        : BinaryExpression._(
+          const LiteralExpression._('final'),
+          type.expression,
+          '',
+        ),
+    this,
+    '$name =',
+  );
 
   /// Return `const {name} = {this}`.
   @Deprecated('Use `declareConst(name).assign(expression)`')
   Expression assignConst(String name, [Reference? type]) => BinaryExpression._(
-        type == null
-            ? const LiteralExpression._('const')
-            : BinaryExpression._(
-                const LiteralExpression._('const'),
-                type.expression,
-                '',
-              ),
-        this,
-        '$name =',
-        isConst: true,
-      );
+    type == null
+        ? const LiteralExpression._('const')
+        : BinaryExpression._(
+          const LiteralExpression._('const'),
+          type.expression,
+          '',
+        ),
+    this,
+    '$name =',
+    isConst: true,
+  );
 
   /// Call this expression as a method.
   Expression call(
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      InvokeExpression._(
-        this,
-        positionalArguments.toList(),
-        namedArguments,
-        typeArguments,
-      );
+  ]) => InvokeExpression._(
+    this,
+    positionalArguments.toList(),
+    namedArguments,
+    typeArguments,
+  );
 
   /// Returns an expression accessing `.<name>` on this expression.
-  Expression property(String name) => BinaryExpression._(
-        this,
-        LiteralExpression._(name),
-        '.',
-        addSpace: false,
-      );
+  Expression property(String name) =>
+      BinaryExpression._(this, LiteralExpression._(name), '.', addSpace: false);
 
   /// Returns an expression accessing `..<name>` on this expression.
   Expression cascade(String name) => BinaryExpression._(
-        this,
-        LiteralExpression._(name),
-        '..',
-        addSpace: false,
-      );
+    this,
+    LiteralExpression._(name),
+    '..',
+    addSpace: false,
+  );
 
   /// Returns an expression accessing `?.<name>` on this expression.
   Expression nullSafeProperty(String name) => BinaryExpression._(
-        this,
-        LiteralExpression._(name),
-        '?.',
-        addSpace: false,
-      );
+    this,
+    LiteralExpression._(name),
+    '?.',
+    addSpace: false,
+  );
 
   /// Applies the null check operator on this expression, returning `this` `!`.
   ///
   /// Please note that this is only valid when emitting code with the null
   /// safety syntax enabled.
   Expression get nullChecked => BinaryExpression._(
-        this,
-        const LiteralExpression._('!'),
-        '',
-        addSpace: false,
-      );
+    this,
+    const LiteralExpression._('!'),
+    '',
+    addSpace: false,
+  );
 
   /// This expression preceded by `return`.
-  Expression get returned => BinaryExpression._(
-        const LiteralExpression._('return'),
-        this,
-        '',
-      );
+  Expression get returned =>
+      BinaryExpression._(const LiteralExpression._('return'), this, '');
 
   /// This expression preceded by the spread operator `...`.
   Expression get spread => BinaryExpression._(
-        const LiteralExpression._('...'),
-        this,
-        '',
-        addSpace: false,
-      );
+    const LiteralExpression._('...'),
+    this,
+    '',
+    addSpace: false,
+  );
 
   /// This expression preceded by the null safe spread operator `?...`.
   Expression get nullSafeSpread => BinaryExpression._(
-        const LiteralExpression._('...?'),
-        this,
-        '',
-        addSpace: false,
-      );
+    const LiteralExpression._('...?'),
+    this,
+    '',
+    addSpace: false,
+  );
 
   /// This expression preceded by `throw`.
-  Expression get thrown => BinaryExpression._(
-        const LiteralExpression._('throw'),
-        this,
-        '',
-      );
+  Expression get thrown =>
+      BinaryExpression._(const LiteralExpression._('throw'), this, '');
 
   /// May be overridden to support other types implementing [Expression].
   @visibleForOverriding
@@ -443,49 +371,63 @@ abstract class Expression implements Spec {
 /// Returns `const {variableName}`, or `const {type} {variableName}`.
 Expression declareConst(String variableName, {Reference? type}) =>
     BinaryExpression._(
-        const LiteralExpression._('const'),
-        type == null
-            ? LiteralExpression._(variableName)
-            : _typedVar(variableName, type),
-        '',
-        isConst: true);
+      const LiteralExpression._('const'),
+      type == null
+          ? LiteralExpression._(variableName)
+          : _typedVar(variableName, type),
+      '',
+      isConst: true,
+    );
 
 /// Declare a final variable named [variableName].
 ///
 /// Returns `final {variableName}`, or `final {type} {variableName}`.
 /// If [late] is true the declaration is prefixed with `late`.
-Expression declareFinal(String variableName,
-        {Reference? type, bool late = false}) =>
-    _late(
-        late,
-        type == null
-            ? LiteralExpression._('final $variableName')
-            : BinaryExpression._(const LiteralExpression._('final'),
-                _typedVar(variableName, type), ''));
+Expression declareFinal(
+  String variableName, {
+  Reference? type,
+  bool late = false,
+}) => _late(
+  late,
+  type == null
+      ? LiteralExpression._('final $variableName')
+      : BinaryExpression._(
+        const LiteralExpression._('final'),
+        _typedVar(variableName, type),
+        '',
+      ),
+);
 
 /// Declare a variable named [variableName].
 ///
 /// Returns `var {variableName}`, or `{type} {variableName}`.
 /// If [late] is true the declaration is prefixed with `late`.
-Expression declareVar(String variableName,
-        {Reference? type, bool late = false}) =>
-    _late(
-        late,
-        type == null
-            ? LiteralExpression._('var $variableName')
-            : _typedVar(variableName, type));
+Expression declareVar(
+  String variableName, {
+  Reference? type,
+  bool late = false,
+}) => _late(
+  late,
+  type == null
+      ? LiteralExpression._('var $variableName')
+      : _typedVar(variableName, type),
+);
 
 Expression _typedVar(String variableName, Reference type) =>
     BinaryExpression._(type.expression, LiteralExpression._(variableName), '');
 
-Expression _late(bool late, Expression expression) => late
-    ? BinaryExpression._(const LiteralExpression._('late'), expression, '')
-    : expression;
+Expression _late(bool late, Expression expression) =>
+    late
+        ? BinaryExpression._(const LiteralExpression._('late'), expression, '')
+        : expression;
 
 /// Creates `typedef {name} =`.
-Code createTypeDef(String name, FunctionType type) => BinaryExpression._(
-        LiteralExpression._('typedef $name'), type.expression, '=')
-    .statement;
+Code createTypeDef(String name, FunctionType type) =>
+    BinaryExpression._(
+      LiteralExpression._('typedef $name'),
+      type.expression,
+      '=',
+    ).statement;
 
 class ToCodeExpression implements Code {
   final Expression code;
@@ -517,10 +459,14 @@ abstract class ExpressionVisitor<T> implements SpecVisitor<T> {
   T visitLiteralListExpression(LiteralListExpression expression, [T? context]);
   T visitLiteralSetExpression(LiteralSetExpression expression, [T? context]);
   T visitLiteralMapExpression(LiteralMapExpression expression, [T? context]);
-  T visitLiteralRecordExpression(LiteralRecordExpression expression,
-      [T? context]);
-  T visitParenthesizedExpression(ParenthesizedExpression expression,
-      [T? context]);
+  T visitLiteralRecordExpression(
+    LiteralRecordExpression expression, [
+    T? context,
+  ]);
+  T visitParenthesizedExpression(
+    ParenthesizedExpression expression, [
+    T? context,
+  ]);
 }
 
 /// Knowledge of how to write valid Dart code from [ExpressionVisitor].
@@ -529,8 +475,10 @@ abstract class ExpressionVisitor<T> implements SpecVisitor<T> {
 abstract mixin class ExpressionEmitter
     implements ExpressionVisitor<StringSink> {
   @override
-  StringSink visitToCodeExpression(ToCodeExpression expression,
-      [StringSink? output]) {
+  StringSink visitToCodeExpression(
+    ToCodeExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     expression.code.accept(this, output);
     if (expression.isStatement) {
@@ -540,8 +488,10 @@ abstract mixin class ExpressionEmitter
   }
 
   @override
-  StringSink visitBinaryExpression(BinaryExpression expression,
-      [StringSink? output]) {
+  StringSink visitBinaryExpression(
+    BinaryExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     expression.left.accept(this, output);
     if (expression.addSpace) {
@@ -558,23 +508,29 @@ abstract mixin class ExpressionEmitter
   }
 
   @override
-  StringSink visitClosureExpression(ClosureExpression expression,
-      [StringSink? output]) {
+  StringSink visitClosureExpression(
+    ClosureExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     return expression.method.accept(this, output);
   }
 
   @override
-  StringSink visitCodeExpression(CodeExpression expression,
-      [StringSink? output]) {
+  StringSink visitCodeExpression(
+    CodeExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     final visitor = this as CodeVisitor<StringSink>;
     return expression.code.accept(visitor, output);
   }
 
   @override
-  StringSink visitInvokeExpression(InvokeExpression expression,
-      [StringSink? output]) {
+  StringSink visitInvokeExpression(
+    InvokeExpression expression, [
+    StringSink? output,
+  ]) {
     final out = output ??= StringBuffer();
     return _writeConstExpression(out, expression.isConst, () {
       expression.target.accept(this, out);
@@ -604,7 +560,8 @@ abstract mixin class ExpressionEmitter
           ..write(': ');
         expression.namedArguments[name]!.accept(this, out);
       });
-      final argumentCount = expression.positionalArguments.length +
+      final argumentCount =
+          expression.positionalArguments.length +
           expression.namedArguments.length;
       if (argumentCount > 1) {
         out.write(', ');
@@ -614,8 +571,10 @@ abstract mixin class ExpressionEmitter
   }
 
   @override
-  StringSink visitLiteralExpression(LiteralExpression expression,
-      [StringSink? output]) {
+  StringSink visitLiteralExpression(
+    LiteralExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     return output..write(expression.literal);
   }
@@ -731,10 +690,13 @@ abstract mixin class ExpressionEmitter
         out.write(',');
       }
       visitAll<MapEntry<String, Object?>>(
-          expression.namedFieldValues.entries, out, (entry) {
-        out.write('${entry.key}: ');
-        _acceptLiteral(entry.value, out);
-      });
+        expression.namedFieldValues.entries,
+        out,
+        (entry) {
+          out.write('${entry.key}: ');
+          _acceptLiteral(entry.value, out);
+        },
+      );
       return out..write(')');
     });
   }
@@ -756,10 +718,7 @@ abstract mixin class ExpressionEmitter
   ///
   /// This allows constant expressions to omit the `const` keyword if they
   /// are already within a constant expression.
-  void startConstCode(
-    bool isConst,
-    Null Function() visit,
-  ) {
+  void startConstCode(bool isConst, Null Function() visit) {
     final previousConstContext = _withInConstExpression;
     if (isConst) {
       _withInConstExpression = true;

@@ -21,46 +21,58 @@ abstract class Directive
     String? as,
     List<String> show = const [],
     List<String> hide = const [],
-  }) =>
-      Directive((builder) => builder
-        ..as = as
-        ..type = DirectiveType.import
-        ..url = url
-        ..show.addAll(show)
-        ..hide.addAll(hide));
+  }) => Directive(
+    (builder) =>
+        builder
+          ..as = as
+          ..type = DirectiveType.import
+          ..url = url
+          ..show.addAll(show)
+          ..hide.addAll(hide),
+  );
 
   factory Directive.importDeferredAs(
     String url,
     String as, {
     List<String> show = const [],
     List<String> hide = const [],
-  }) =>
-      Directive((builder) => builder
-        ..as = as
-        ..type = DirectiveType.import
-        ..url = url
-        ..deferred = true
-        ..show.addAll(show)
-        ..hide.addAll(hide));
+  }) => Directive(
+    (builder) =>
+        builder
+          ..as = as
+          ..type = DirectiveType.import
+          ..url = url
+          ..deferred = true
+          ..show.addAll(show)
+          ..hide.addAll(hide),
+  );
 
   factory Directive.export(
     String url, {
     List<String> show = const [],
     List<String> hide = const [],
-  }) =>
-      Directive((builder) => builder
-        ..type = DirectiveType.export
-        ..url = url
-        ..show.addAll(show)
-        ..hide.addAll(hide));
+  }) => Directive(
+    (builder) =>
+        builder
+          ..type = DirectiveType.export
+          ..url = url
+          ..show.addAll(show)
+          ..hide.addAll(hide),
+  );
 
-  factory Directive.part(String url) => Directive((builder) => builder
-    ..type = DirectiveType.part
-    ..url = url);
+  factory Directive.part(String url) => Directive(
+    (builder) =>
+        builder
+          ..type = DirectiveType.part
+          ..url = url,
+  );
 
-  factory Directive.partOf(String url) => Directive((builder) => builder
-    ..type = DirectiveType.partOf
-    ..url = url);
+  factory Directive.partOf(String url) => Directive(
+    (builder) =>
+        builder
+          ..type = DirectiveType.partOf
+          ..url = url,
+  );
 
   Directive._();
 
@@ -77,10 +89,7 @@ abstract class Directive
   bool get deferred;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitDirective(this, context);
 
   @override
@@ -106,12 +115,7 @@ abstract class DirectiveBuilder
   DirectiveType? type;
 }
 
-enum DirectiveType {
-  import,
-  export,
-  part,
-  partOf,
-}
+enum DirectiveType { import, export, part, partOf }
 
 /// Sort import URIs represented by [a] and [b] to honor the
 /// "Effective Dart" ordering rules which are enforced by the

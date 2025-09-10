@@ -19,9 +19,8 @@ part 'type_reference.g.dart';
 abstract class TypeReference extends Expression
     with HasGenerics
     implements Built<TypeReference, TypeReferenceBuilder>, Reference, Spec {
-  factory TypeReference([
-    void Function(TypeReferenceBuilder) updates,
-  ]) = _$TypeReference;
+  factory TypeReference([void Function(TypeReferenceBuilder) updates]) =
+      _$TypeReference;
 
   TypeReference._();
 
@@ -44,10 +43,7 @@ abstract class TypeReference extends Expression
   bool? get isNullable;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitType(this, context);
 
   @override
@@ -61,13 +57,12 @@ abstract class TypeReference extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      InvokeExpression.newOf(
-        this,
-        positionalArguments.toList(),
-        namedArguments,
-        typeArguments,
-      );
+  ]) => InvokeExpression.newOf(
+    this,
+    positionalArguments.toList(),
+    namedArguments,
+    typeArguments,
+  );
 
   @override
   Expression newInstanceNamed(
@@ -75,27 +70,25 @@ abstract class TypeReference extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      InvokeExpression.newOf(
-        this,
-        positionalArguments.toList(),
-        namedArguments,
-        typeArguments,
-        name,
-      );
+  ]) => InvokeExpression.newOf(
+    this,
+    positionalArguments.toList(),
+    namedArguments,
+    typeArguments,
+    name,
+  );
 
   @override
   Expression constInstance(
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      InvokeExpression.constOf(
-        this,
-        positionalArguments.toList(),
-        namedArguments,
-        typeArguments,
-      );
+  ]) => InvokeExpression.constOf(
+    this,
+    positionalArguments.toList(),
+    namedArguments,
+    typeArguments,
+  );
 
   @override
   Expression constInstanceNamed(
@@ -103,14 +96,13 @@ abstract class TypeReference extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      InvokeExpression.constOf(
-        this,
-        positionalArguments.toList(),
-        namedArguments,
-        typeArguments,
-        name,
-      );
+  ]) => InvokeExpression.constOf(
+    this,
+    positionalArguments.toList(),
+    namedArguments,
+    typeArguments,
+    name,
+  );
 }
 
 abstract class TypeReferenceBuilder extends Object

@@ -36,9 +36,7 @@ abstract class Code implements Spec {
   ///   return '${a.allocate(fooType)}()'
   /// });
   /// ```
-  const factory Code.scope(
-    String Function(Allocate) scope,
-  ) = ScopedCode._;
+  const factory Code.scope(String Function(Allocate) scope) = ScopedCode._;
 
   @override
   R accept<R>(covariant CodeVisitor<R> visitor, [R? context]);

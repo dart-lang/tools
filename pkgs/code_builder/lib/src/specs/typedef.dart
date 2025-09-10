@@ -33,10 +33,7 @@ abstract class TypeDef extends Object
   Expression get definition;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitTypeDef(this, context);
 }
 

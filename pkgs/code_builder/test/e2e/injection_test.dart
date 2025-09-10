@@ -16,25 +16,47 @@ void main() {
     final $Module = refer('Module', 'package:app/module.dart');
     final $Thing = refer('Thing', 'package:app/thing.dart');
 
-    final clazz = ClassBuilder()
-      ..name = 'Injector'
-      ..implements.add($App)
-      ..fields.add(Field((b) => b
-        ..modifier = FieldModifier.final$
-        ..name = '_module'
-        ..type = $Module.type))
-      ..constructors.add(Constructor((b) => b
-        ..requiredParameters.add(Parameter((b) => b
-          ..name = '_module'
-          ..toThis = true))))
-      ..methods.add(Method((b) => b
-        ..name = 'getThing'
-        ..body = $Thing.newInstance([
-          refer('_module').property('get1').call([]),
-          refer('_module').property('get2').call([]),
-        ]).code
-        ..returns = $Thing
-        ..annotations.add(refer('override'))));
+    final clazz =
+        ClassBuilder()
+          ..name = 'Injector'
+          ..implements.add($App)
+          ..fields.add(
+            Field(
+              (b) =>
+                  b
+                    ..modifier = FieldModifier.final$
+                    ..name = '_module'
+                    ..type = $Module.type,
+            ),
+          )
+          ..constructors.add(
+            Constructor(
+              (b) =>
+                  b
+                    ..requiredParameters.add(
+                      Parameter(
+                        (b) =>
+                            b
+                              ..name = '_module'
+                              ..toThis = true,
+                      ),
+                    ),
+            ),
+          )
+          ..methods.add(
+            Method(
+              (b) =>
+                  b
+                    ..name = 'getThing'
+                    ..body =
+                        $Thing.newInstance([
+                          refer('_module').property('get1').call([]),
+                          refer('_module').property('get2').call([]),
+                        ]).code
+                    ..returns = $Thing
+                    ..annotations.add(refer('override')),
+            ),
+          );
 
     expect(
       clazz.build(),
