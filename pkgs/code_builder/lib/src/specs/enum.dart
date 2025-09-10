@@ -6,11 +6,16 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:meta/meta.dart';
 
-import '../../code_builder.dart';
+import '../base.dart' show Spec;
 import '../mixins/annotations.dart';
 import '../mixins/dartdoc.dart';
 import '../mixins/generics.dart';
 import '../visitors.dart';
+import 'constructor.dart' show Constructor;
+import 'expression.dart' show Expression;
+import 'field.dart' show Field;
+import 'method.dart' show Method;
+import 'reference.dart' show Reference;
 
 part 'enum.g.dart';
 

@@ -1,5 +1,7 @@
-## 4.10.2
+## 4.11.0
 
+* Export `SpecVisitor`, `ClosureExpression`, `LiteralMapExpression`
+  `LiteralRecordExpression`, `LiteralSetExpression` types.
 * Support `Expression.newInstanceNamed` with empty name
 * Consistently add blank lines between `=>` in class-like definitions.
 * Fixed bug: Fields declared with `static` and `external` now produce code with
