@@ -1,9 +1,9 @@
-[![Build Status](https://github.com/dart-lang/tools/actions/workflows/mime.yml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/mime.yml)
+[![package:mime](https://github.com/dart-lang/tools/actions/workflows/mime.yaml/badge.svg)](https://github.com/dart-lang/tools/actions/workflows/mime.yaml)
 [![Pub Package](https://img.shields.io/pub/v/mime.svg)](https://pub.dev/packages/mime)
 [![package publisher](https://img.shields.io/pub/publisher/mime.svg)](https://pub.dev/packages/mime/publisher)
 
-Package for working with MIME type definitions and for processing
-streams of MIME multipart media types.
+Package for working with MIME type definitions and for processing streams of
+MIME multipart media types.
 
 ## Determining the MIME type for a file
 
