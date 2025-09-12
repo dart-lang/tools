@@ -12,10 +12,10 @@ import 'package:test/test.dart';
 
 import 'pub_utils.dart';
 
-const defaultPubspec = {
-  'name': 'sample',
-  'environment': {'sdk': '>=2.12.0 <3.0.0'},
-};
+Map defaultPubspec({String? languageVersion = '2.12'}) => {
+      'name': 'sample',
+      'environment': {'sdk': '^$languageVersion.0'},
+    };
 
 String _encodeJson(Object? input) =>
     const JsonEncoder.withIndent(' ').convert(input);
