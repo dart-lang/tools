@@ -1,3 +1,8 @@
+## 0.4.0
+
+- Add support for one-time set up and teardown in test classes via static
+  `setUpClass` and `tearDownClass` methods
+
 ## 0.3.0
 
 - Require Dart `^3.5.0`.
