@@ -5,7 +5,7 @@
 import 'dart:math' as math;
 
 import 'package:mime/mime.dart';
-import 'package:mime/src/magic_number.dart';
+import 'package:mime/src/magic_numbers.dart';
 import 'package:test/test.dart';
 
 void _expectMimeType(String path, String? expectedMimeType,

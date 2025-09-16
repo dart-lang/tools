@@ -1,7 +1,11 @@
+## 2.0.1-wip
+
 ## 2.0.0
 
-* **[Breaking]** `extensionFromMime(String mimeType)` returns `null` instead of `mimeType` for an unknown mime type.
-* Update `extensionFromMime` to return a default extension when a MIME type maps to multiple extensions.
+* **[Breaking]** `extensionFromMime(String mimeType)` returns `null` instead of
+  `mimeType` for an unknown mime type.
+* Update `extensionFromMime` to return a default extension when a MIME type maps
+  to multiple extensions.
 
 ## 1.0.6
 

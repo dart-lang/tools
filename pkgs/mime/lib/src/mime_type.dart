@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'default_extension_map.dart';
-import 'magic_number.dart';
+import 'magic_numbers.dart';
 
 final MimeTypeResolver _globalResolver = MimeTypeResolver();
 
@@ -90,7 +90,8 @@ class MimeTypeResolver {
     if (bytes.length > _magicNumbersMaxLength) {
       _magicNumbersMaxLength = bytes.length;
     }
-    _magicNumbers.add(MagicNumber(mimeType, bytes, mask: mask));
+    _magicNumbers.add(MagicNumber(mimeType, String.fromCharCodes(bytes),
+        mask == null ? null : String.fromCharCodes(mask)));
   }
 
   static String? _matchMagic(
