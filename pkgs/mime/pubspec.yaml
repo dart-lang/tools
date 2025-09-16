@@ -1,5 +1,5 @@
 name: mime
-version: 2.0.0-wip
+version: 2.0.1-wip
 description: >-
   Utilities for handling media (MIME) types, including determining a type from
   a file extension and file contents.
