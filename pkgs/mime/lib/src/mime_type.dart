@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'default_extension_map.dart';
-import 'magic_numbers.dart';
+import 'magic_number.dart';
 
 final MimeTypeResolver _globalResolver = MimeTypeResolver();
 
