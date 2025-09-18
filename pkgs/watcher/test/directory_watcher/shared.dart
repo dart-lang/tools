@@ -346,7 +346,7 @@ void sharedTests() {
       writeFile('dir/sub/a.txt', contents: 'a');
       writeFile('sibling/sub/b.txt', contents: '1');
       writeSymlink('dir/linked', target: 'sibling');
-      await startWatcher(path: 'dir', followLinks: false);
+      await startWatcher(path: 'dir');
 
       writeFile('sibling/sub/b.txt', contents: '2');
       // Ensure that any events for the first modification arrive before the
