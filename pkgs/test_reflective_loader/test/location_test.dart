@@ -40,6 +40,11 @@ void main() {
         // the source code to ensure the locations match up.
         name = name.split('|').last.trim();
 
+        // Skip "tearDownAll" or "setUpAll", it never has a location.
+        if (name case '(tearDownAll)' || '(setUpAll)') {
+          continue;
+        }
+
         // Expect locations for all remaining fields.
         var url = test['url'] as String;
         var line = test['line'] as int;
