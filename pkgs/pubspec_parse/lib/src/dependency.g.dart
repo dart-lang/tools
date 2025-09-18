@@ -21,19 +21,6 @@ SdkDependency _$SdkDependencyFromJson(Map json) => $checkedCreate(
       },
     );
 
-GitDependency _$GitDependencyFromJson(Map json) => $checkedCreate(
-      'GitDependency',
-      json,
-      ($checkedConvert) {
-        final val = GitDependency(
-          $checkedConvert('url', (v) => parseGitUri(v as String)),
-          ref: $checkedConvert('ref', (v) => v as String?),
-          path: $checkedConvert('path', (v) => v as String?),
-        );
-        return val;
-      },
-    );
-
 HostedDependency _$HostedDependencyFromJson(Map json) => $checkedCreate(
       'HostedDependency',
       json,
