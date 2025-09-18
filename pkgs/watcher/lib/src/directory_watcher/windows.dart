@@ -185,7 +185,7 @@ class _WindowsDirectoryWatcher
 
           if (_files.containsDir(path)) continue;
 
-          var stream = Directory(path).list(recursive: true);
+          var stream = Directory(path).list(recursive: true, followLinks: false);
           var subscription = stream.listen((entity) {
             if (entity is Directory) return;
             if (_files.contains(entity.path)) return;
@@ -435,7 +435,7 @@ class _WindowsDirectoryWatcher
 
     _files.clear();
     var completer = Completer<void>();
-    var stream = Directory(path).list(recursive: true);
+    var stream = Directory(path).list(recursive: true, followLinks: false);
     void handleEntity(FileSystemEntity entity) {
       if (entity is! Directory) _files.add(entity.path);
     }
