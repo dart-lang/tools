@@ -341,4 +341,19 @@ void sharedTests() {
       await inAnyOrder(events);
     });
   });
+  group('symlinks', () {
+    test('are not watched when not enabled', () async {
+      writeFile('dir/sub/a.txt', contents: 'a');
+      writeFile('sibling/sub/b.txt', contents: '1');
+      writeSymlink('dir/linked', target: 'sibling');
+      await startWatcher(path: 'dir', followLinks: false);
+
+      writeFile('sibling/sub/b.txt', contents: '2');
+      // Ensure that any events for the first modification arrive before the
+      // events for the second modification.
+      await pumpEventQueue();
+      writeFile('dir/sub/a.txt', contents: 'a');
+      await expectModifyEvent('dir/sub/a.txt');
+    });
+  });
 }

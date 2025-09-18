@@ -267,6 +267,19 @@ void renameDir(String from, String to) {
 void deleteDir(String path) {
   Directory(p.join(d.sandbox, path)).deleteSync(recursive: true);
 }
+ 
+/// Schedules writing a symlink in the sandbox at [path] that links to [target].
+void writeSymlink(String path, {required String target}) {
+  var fullPath = p.join(d.sandbox, path);
+
+  // Create any needed subdirectories.
+  var dir = Directory(p.dirname(fullPath));
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
+  }
+
+  Link(fullPath).createSync(target);
+}
 
 /// Runs [callback] with every permutation of non-negative numbers for each
 /// argument less than [limit].
