@@ -37,8 +37,8 @@ void main() {
   final buf = StringBuffer(prefix);
   buf.writeln();
   buf.write('''
-| MIME type | Default | Additional |
-| --- | --- | --- |
+| MIME type                                | Default     | Additional          |
+| ---                                      | ---         | ---                 |
 ''');
 
   for (final mime in mimeTypes) {
@@ -48,9 +48,11 @@ void main() {
     exts.remove(defaultExt);
     exts.sort();
 
-    final additional = exts.isEmpty ? ' ' : ' `${exts.join('`, `')}` ';
+    final additional = exts.join(', ');
 
-    buf.writeln('| `$mime` | `$defaultExt` |$additional|');
+    buf.writeln('| ${min(mime, 40)} | '
+        '${min(defaultExt, 11)} | '
+        '${min(additional, 19)} |');
   }
 
   buf.writeln();
@@ -58,3 +60,5 @@ void main() {
 
   file.writeAsStringSync('${buf.toString().trim()}\n');
 }
+
+String min(String str, int length) => str.padRight(length);
