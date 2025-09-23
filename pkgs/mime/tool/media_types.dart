@@ -50,9 +50,9 @@ void main() {
 
     final additional = exts.join(', ');
 
-    buf.writeln('| ${min(mime, 40)} | '
-        '${min(defaultExt, 11)} | '
-        '${min(additional, 19)} |');
+    buf.writeln('| ${mime.padRight(40)} | '
+        '${defaultExt.padRight(11)} | '
+        '${additional.padRight(19)} |');
   }
 
   buf.writeln();
@@ -60,5 +60,3 @@ void main() {
 
   file.writeAsStringSync('${buf.toString().trim()}\n');
 }
-
-String min(String str, int length) => str.padRight(length);
