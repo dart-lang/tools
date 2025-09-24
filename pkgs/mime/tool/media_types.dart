@@ -37,8 +37,8 @@ void main() {
   final buf = StringBuffer(prefix);
   buf.writeln();
   buf.write('''
-| MIME type | Default | Additional |
-| --- | --- | --- |
+| MIME type                                | Default     | Additional          |
+| ---------------------------------------- | ----------- | ------------------- |
 ''');
 
   for (final mime in mimeTypes) {
@@ -48,13 +48,27 @@ void main() {
     exts.remove(defaultExt);
     exts.sort();
 
-    final additional = exts.isEmpty ? ' ' : ' `${exts.join('`, `')}` ';
+    final additional = exts.join(', ');
 
-    buf.writeln('| `$mime` | `$defaultExt` |$additional|');
+    buf.writeln('| ${markdownEscape(mime).padRight(40)} | '
+        '${markdownEscape(defaultExt).padRight(11)} | '
+        '${markdownEscape(additional).padRight(19)} |');
   }
 
   buf.writeln();
   buf.write(suffix);
 
   file.writeAsStringSync('${buf.toString().trim()}\n');
+}
+
+String markdownEscape(String markdown) {
+  // See https://www.markdownguide.org/basic-syntax/#escaping-characters.
+
+  // Escape the escape character.
+  markdown = markdown.replaceAll(r'\', r'\\');
+
+  // Escape other special characters.
+  markdown = markdown.replaceAll('_', r'\_');
+
+  return markdown;
 }
