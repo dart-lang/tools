@@ -5,7 +5,7 @@ Supported media types and file extensions.
 <!-- start table -->
 
 | MIME type                                | Default     | Additional          |
-| ---                                      | ---         | ---                 |
+| ---------------------------------------- | ----------- | ------------------- |
 | application/andrew-inset                 | ez          |                     |
 | application/applixware                   | aw          |                     |
 | application/atom+xml                     | atom        |                     |
@@ -174,7 +174,7 @@ Supported media types and file extensions.
 | application/vnd.dece.ttml+xml            | uvvt        | uvt                 |
 | application/vnd.dece.unspecified         | uvx         | uvvx                |
 | application/vnd.dece.zip                 | uvz         | uvvz                |
-| application/vnd.denovo.fcselayout-link   | fe_launch   |                     |
+| application/vnd.denovo.fcselayout-link   | fe\_launch  |                     |
 | application/vnd.dna                      | dna         |                     |
 | application/vnd.dolby.mlp                | mlp         |                     |
 | application/vnd.dpgraph                  | dpg         |                     |
