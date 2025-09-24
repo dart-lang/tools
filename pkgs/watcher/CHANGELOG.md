@@ -1,3 +1,12 @@
+## 2.0.0
+
+- Changes the behavior of the `DirectoryWatcher` so that it no longer follows
+  symlinks. On Linux, but not on MacOS or Windows, it used to watch directories
+  to which there was a symlink within the directory being watched. It no longer
+  does that. Code that depends on that behavior will need to be updated so that
+  it independently traverses the root directory, locating and resolving
+  symlinks, and watching any directories being linked to.
+
 ## 1.1.3
 
 - Improve handling of

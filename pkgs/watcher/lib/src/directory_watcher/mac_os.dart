@@ -148,7 +148,7 @@ class _MacOSDirectoryWatcher
 
           if (_files.containsDir(path)) continue;
 
-          var stream = Directory(path).list(recursive: true);
+          var stream = Directory(path).list(recursive: true, followLinks: false);
           var subscription = stream.listen((entity) {
             if (entity is Directory) return;
             if (_files.contains(path)) return;
@@ -373,7 +373,7 @@ class _MacOSDirectoryWatcher
 
     _files.clear();
     var completer = Completer<void>();
-    var stream = Directory(path).list(recursive: true);
+    var stream = Directory(path).list(recursive: true, followLinks: false);
     _initialListSubscription = stream.listen((entity) {
       if (entity is! Directory) _files.add(entity.path);
     }, onError: _emitError, onDone: completer.complete, cancelOnError: true);
