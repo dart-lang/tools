@@ -6,12 +6,14 @@ import 'package:test/test.dart';
 
 import '../utils.dart';
 
-void sharedTests() {
+void fileTests() {
+  setUp(() {
+    writeFile('file.txt');
+  });
+
   test("doesn't notify if the file isn't modified", () async {
     await startWatcher(path: 'file.txt');
-    await pumpEventQueue();
-    deleteFile('file.txt');
-    await expectRemoveEvent('file.txt');
+    await expectNoEvents();
   });
 
   test('notifies when a file is modified', () async {

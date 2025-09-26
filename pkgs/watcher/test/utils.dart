@@ -63,8 +63,10 @@ Future<void> startWatcher({String? path}) async {
     final normalized = p.normalize(p.relative(path, from: d.sandbox));
 
     // Make sure we got a path in the sandbox.
-    assert(p.isRelative(normalized) && !normalized.startsWith('..'),
-        'Path is not in the sandbox: $path not in ${d.sandbox}');
+    assert(
+      p.isRelative(normalized) && !normalized.startsWith('..'),
+      'Path is not in the sandbox: $path not in ${d.sandbox}',
+    );
 
     var mtime = _mockFileModificationTimes[normalized];
     return mtime != null ? DateTime.fromMillisecondsSinceEpoch(mtime) : null;
@@ -142,8 +144,12 @@ Future inAnyOrder(Iterable matchers) {
 ///
 /// If both blocks match, the one that consumed more events will be used.
 Future allowEither(void Function() block1, void Function() block2) =>
-    _expectOrCollect(emitsAnyOf(
-        [_collectStreamMatcher(block1), _collectStreamMatcher(block2)]));
+    _expectOrCollect(
+      emitsAnyOf([
+        _collectStreamMatcher(block1),
+        _collectStreamMatcher(block2),
+      ]),
+    );
 
 /// Allows the expectations established in [block] to match the emitted events.
 ///
@@ -173,6 +179,19 @@ Matcher isModifyEvent(String path) => isWatchEvent(ChangeType.MODIFY, path);
 /// Returns a [Matcher] that matches a [WatchEvent] for a removal event for
 /// [path].
 Matcher isRemoveEvent(String path) => isWatchEvent(ChangeType.REMOVE, path);
+
+/// Expects that no events are omitted for [duration].
+Future expectNoEvents({Duration duration = const Duration(seconds: 1)}) async {
+  await Future<void>.delayed(duration);
+  try {
+    final event = await _watcherEvents.peek
+        .then<WatchEvent?>((e) => e)
+        .timeout(duration, onTimeout: null);
+    expect(event, null);
+  } on TimeoutException catch (_) {
+    // Expected.
+  }
+}
 
 /// Expects that the next event emitted will be for an add event for [path].
 Future expectAddEvent(String path) =>
@@ -225,6 +244,34 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
   }
 }
 
+/// Schedules writing a file in the sandbox at [link] pointing to [target].
+///
+/// If [updateModified] is `false`, the mock file modification time is not
+/// changed.
+void writeLink({
+  required String link,
+  required String target,
+  bool? updateModified,
+}) {
+  updateModified ??= true;
+
+  var fullPath = p.join(d.sandbox, link);
+
+  // Create any needed subdirectories.
+  var dir = Directory(p.dirname(fullPath));
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
+  }
+
+  Link(fullPath).createSync(target);
+
+  if (updateModified) {
+    link = p.normalize(link);
+
+    _mockFileModificationTimes[link] = _nextTimestamp++;
+  }
+}
+
 /// Schedules deleting a file in the sandbox at [path].
 void deleteFile(String path) {
   File(p.join(d.sandbox, path)).deleteSync();
@@ -239,8 +286,11 @@ void renameFile(String from, String to) {
   // Make sure we always use the same separator on Windows.
   to = p.normalize(to);
 
-  _mockFileModificationTimes.update(to, (value) => value + 1,
-      ifAbsent: () => 1);
+  _mockFileModificationTimes.update(
+    to,
+    (value) => value + 1,
+    ifAbsent: () => 1,
+  );
 }
 
 /// Schedules creating a directory in the sandbox at [path].
