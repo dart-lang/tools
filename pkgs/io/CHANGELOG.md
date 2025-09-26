@@ -1,6 +1,7 @@
 ## 1.1.0-wip
 
 * Add a `deepCopyLinks` argument to `copyPath` and `copyPathSync`.
+* Make ExitCode a real enum instead of a class with statics.
 
 ## 1.0.5
 
