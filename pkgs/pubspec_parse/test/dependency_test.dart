@@ -258,6 +258,25 @@ void _gitDependency() {
     expect(dep.toString(), 'GitDependency: url@url');
   });
 
+  test('tag_pattern works, and does not ignore version', () async {
+    final dep = await _dependency<GitDependency>(
+      {
+        'git': {
+          'url': 'url',
+          'tag_pattern': 'v{{version}}',
+        },
+        'version': '^1.2.3',
+      },
+      languageVersion: '3.9',
+    );
+    expect(dep.url.toString(), 'url');
+    expect(dep.path, isNull);
+    expect(dep.ref, isNull);
+    expect(dep.tagPattern, 'v{{version}}');
+    expect(dep.version.toString(), '^1.2.3');
+    expect(dep.toString(), 'GitDependency: url@url');
+  });
+
   test('string with user@ URL', () async {
     final skipTryParse = Platform.environment.containsKey('TRAVIS');
     if (skipTryParse) {
@@ -299,7 +318,7 @@ line 6, column 4: Unrecognized keys: [bob]; supported keys: [sdk, git, path, hos
     _expectThrows(
       {'git': null},
       r'''
-line 5, column 11: Unsupported value for "git". Must be a String or a Map.
+line 5, column 11: Unsupported value for "git". Must be a string or map.
   ╷
 5 │      "git": null
   │ ┌───────────^
@@ -313,7 +332,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
     _expectThrows(
       {'git': 42},
       r'''
-line 5, column 11: Unsupported value for "git". Must be a String or a Map.
+line 5, column 11: Unsupported value for "git". Must be a string or map.
   ╷
 5 │      "git": 42
   │ ┌───────────^
@@ -326,7 +345,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   test('git - empty map', () {
     _expectThrowsContaining(
       {'git': <String, dynamic>{}},
-      r"type 'Null' is not a subtype of type 'String'",
+      r'Missing key "url". Must be a String',
     );
   });
 
@@ -335,7 +354,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
       {
         'git': {'url': null},
       },
-      r"type 'Null' is not a subtype of type 'String'",
+      r'Missing key "url". Must be a String',
     );
   });
 
@@ -344,7 +363,7 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
       {
         'git': {'url': 42},
       },
-      r"type 'int' is not a subtype of type 'String'",
+      r'Missing key "url". Must be a String',
     );
   });
 }
@@ -428,10 +447,11 @@ void _expectThrowsContaining(Object content, String errorText) {
 Future<T> _dependency<T extends Dependency>(
   Object? content, {
   bool skipTryPub = false,
+  String languageVersion = '2.12',
 }) async {
   final value = await parse(
     {
-      ...defaultPubspec,
+      ...defaultPubspec(languageVersion: languageVersion),
       'dependencies': {'dep': content},
     },
     skipTryPub: skipTryPub,
