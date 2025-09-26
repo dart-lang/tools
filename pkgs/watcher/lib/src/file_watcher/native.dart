@@ -58,6 +58,14 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
       return;
     }
 
+    // There should not be any `create` events: the watch is on a file that
+    // already exists. On MacOS `File.watch` docs say "changes that occur
+    // shortly _before_ the `watch` method is called may ... appear", and this
+    // can cause a `create` event to be received. Ignore it.
+    if (batch.every((event) => event.type == FileSystemEvent.create)) {
+      return;
+    }
+
     _eventsController.add(WatchEvent(ChangeType.MODIFY, path));
   }
 

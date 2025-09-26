@@ -2,16 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:test/test.dart';
 
 import '../utils.dart';
 
-void sharedTests() {
+void fileTests({required bool isNative}) {
+  setUp(() async {
+    writeFile('file.txt');
+  });
+
   test("doesn't notify if the file isn't modified", () async {
     await startWatcher(path: 'file.txt');
-    await pumpEventQueue();
-    deleteFile('file.txt');
-    await expectRemoveEvent('file.txt');
+    await expectNoEvents();
   });
 
   test('notifies when a file is modified', () async {
@@ -69,5 +73,17 @@ void sharedTests() {
   test('ready completes even if file does not exist', () async {
     // startWatcher awaits 'ready'
     await startWatcher(path: 'foo/bar/baz');
+  });
+
+  test('throws if file does not exist', () async {
+    await startWatcher(path: 'other_file.txt');
+
+    if (isNative) {
+      expect(expectNoEvents, throwsA(isA<PathNotFoundException>()));
+    } else {
+      // TODO(davidmorgan): polling watcher should throw on missing file like
+      // the native watcher.
+      expect(await expectNoEvents(), null);
+    }
   });
 }
