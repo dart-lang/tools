@@ -78,15 +78,16 @@ void fileTests({required bool isNative}) {
   test('throws if file does not exist', () async {
     await startWatcher(path: 'other_file.txt');
 
-    if (isNative) {
+    if (isNative && Platform.isLinux) {
       expect(expectNoEvents, throwsA(isA<PathNotFoundException>()));
     } else {
-      // TODO(davidmorgan): polling watcher should throw on missing file like
-      // the native watcher.
+      // TODO(davidmorgan): polling watcher and MacOS watcher should throw on
+      // missing file like the native Linux watcher.
       expect(await expectNoEvents(), null);
-
       writeFile('other_file.txt');
       expect(await expectNoEvents(), null);
+      writeFile('other_file.txt');
+      await expectModifyEvent('other_file.txt');
     }
   });
 }
