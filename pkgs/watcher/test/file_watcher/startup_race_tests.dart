@@ -31,7 +31,7 @@ void startupRaceTests({required bool isNative}) {
     // TODO(davidmorgan): the MacOS watcher currently does get unwanted events,
     // fix it.
     if (isNative && Platform.isMacOS) {
-      expect(events, greaterThan(10));
+      expect(events, greaterThan(50));
     } else {
       expect(events, 0);
     }
