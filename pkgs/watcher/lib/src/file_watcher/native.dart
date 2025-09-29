@@ -34,6 +34,8 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
   final _readyCompleter = Completer<void>();
 
   StreamSubscription<List<FileSystemEvent>>? _subscription;
+  Future<bool>? _exists;
+  bool? _existsResult;
 
   _NativeFileWatcher(this.path) {
     _listen();
@@ -44,26 +46,33 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
   }
 
   void _listen() {
+    final file = File(path);
     // Batch the events together so that we can dedup them.
-    _subscription = File(path)
+    _subscription = file
         .watch()
         .batchEvents()
         .listen(_onBatch, onError: _eventsController.addError, onDone: _onDone);
+
+    // Differentiate creation before and after watch on MacOS.
+    if (Platform.isMacOS) _exists = file.exists();
   }
 
-  void _onBatch(List<FileSystemEvent> batch) {
+  void _onBatch(List<FileSystemEvent> batch) async {
     if (batch.any((event) => event.type == FileSystemEvent.delete)) {
       // If the file is deleted, the underlying stream will close. We handle
       // emitting our own REMOVE event in [_onDone].
       return;
     }
 
-    // There should not be any `create` events: the watch is on a file that
-    // already exists. On MacOS `File.watch` docs say "changes that occur
-    // shortly _before_ the `watch` method is called may ... appear", and this
-    // can cause a `create` event to be received. Ignore it.
-    if (batch.every((event) => event.type == FileSystemEvent.create)) {
-      return;
+    // On MacOS `File.watch` docs say "changes that occur shortly _before_ the
+    //`watch` method is called may ... appear", and this can cause a `create`
+    // event to be received. Even if the file already existed. Ignore it.
+    if (Platform.isMacOS) {
+      _existsResult ??= await _exists!;
+      if (!_existsResult! &&
+          batch.every((event) => event.type == FileSystemEvent.create)) {
+        return;
+      }
     }
 
     _eventsController.add(WatchEvent(ChangeType.MODIFY, path));
