@@ -69,7 +69,7 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     // event to be received. Even if the file already existed. Ignore it.
     if (Platform.isMacOS) {
       _existsResult ??= await _exists!;
-      if (!_existsResult! &&
+      if (_existsResult! &&
           batch.every((event) => event.type == FileSystemEvent.create)) {
         return;
       }
