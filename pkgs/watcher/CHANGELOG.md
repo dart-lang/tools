@@ -1,3 +1,10 @@
+## 1.1.5-wip
+
+- Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
+  the file was created immediately before the watcher was created. Now, if the
+  file exists when the watcher is created then this modify event is not sent.
+  This matches the Linux native and polling (Windows) watchers.
+
 ## 1.1.4
 
 - Improve handling of subdirectories: ignore `PathNotFoundException` due to

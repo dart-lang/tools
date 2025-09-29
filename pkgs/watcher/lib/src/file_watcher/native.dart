@@ -35,6 +35,9 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
 
   StreamSubscription<List<FileSystemEvent>>? _subscription;
 
+  /// On MacOS only, whether the file existed on startup.
+  bool? _existedAtStartup;
+
   _NativeFileWatcher(this.path) {
     _listen();
 
@@ -43,12 +46,23 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     _readyCompleter.complete();
   }
 
-  void _listen() {
-    // Batch the events together so that we can dedup them.
-    _subscription = File(path)
-        .watch()
-        .batchEvents()
-        .listen(_onBatch, onError: _eventsController.addError, onDone: _onDone);
+  void _listen() async {
+    var file = File(path);
+
+    // Batch the events together so that we can dedupe them.
+    var stream = file.watch().batchEvents();
+
+    if (Platform.isMacOS) {
+      var existedAtStartupFuture = file.exists();
+      // Delay processing watch events until the existence check finishes.
+      stream = stream.asyncMap((event) async {
+        _existedAtStartup ??= await existedAtStartupFuture;
+        return event;
+      });
+    }
+
+    _subscription = stream.listen(_onBatch,
+        onError: _eventsController.addError, onDone: _onDone);
   }
 
   void _onBatch(List<FileSystemEvent> batch) {
@@ -56,6 +70,16 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
       // If the file is deleted, the underlying stream will close. We handle
       // emitting our own REMOVE event in [_onDone].
       return;
+    }
+
+    if (Platform.isMacOS) {
+      // On MacOS, a spurious `create` event can be received for a file that is
+      // created just before the `watch`. If the file existed at startup then it
+      // should be ignored.
+      if (_existedAtStartup! &&
+          batch.every((event) => event.type == FileSystemEvent.create)) {
+        return;
+      }
     }
 
     _eventsController.add(WatchEvent(ChangeType.MODIFY, path));
