@@ -18,7 +18,7 @@ Renamed mime types:
 Removed mime types:
 - `model/vnd.mts`
 
-Mime types where the default file extnesion changed:
+Mime types where the default file extension changed:
 - `application/inkml+xml`, `inkml` => `ink`
 - `application/octet-stream`, `so` => `bin`
 - `application/onenote`, `onetoc2` => `onetoc`
