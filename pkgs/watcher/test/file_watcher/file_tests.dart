@@ -2,16 +2,24 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:test/test.dart';
 
 import '../utils.dart';
 
-void sharedTests() {
+void fileTests({required bool isNative}) {
+  setUp(() {
+    writeFile('file.txt');
+  });
+
   test("doesn't notify if the file isn't modified", () async {
+    // TODO(davidmorgan): fix startup race on MacOS.
+    if (isNative && Platform.isMacOS) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
     await startWatcher(path: 'file.txt');
-    await pumpEventQueue();
-    deleteFile('file.txt');
-    await expectRemoveEvent('file.txt');
+    await expectNoEvents();
   });
 
   test('notifies when a file is modified', () async {
@@ -69,5 +77,23 @@ void sharedTests() {
   test('ready completes even if file does not exist', () async {
     // startWatcher awaits 'ready'
     await startWatcher(path: 'foo/bar/baz');
+  });
+
+  test('throws if file does not exist', () async {
+    await startWatcher(path: 'other_file.txt');
+
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative && Platform.isLinux) {
+      expect(expectNoEvents, throwsA(isA<PathNotFoundException>()));
+    } else {
+      // The polling watcher and the MacOS watcher do not throw on missing file
+      // on watch. Instead, they report both creating and modification as
+      // modifications.
+      await expectNoEvents();
+      writeFile('other_file.txt');
+      await expectModifyEvent('other_file.txt');
+      writeFile('other_file.txt');
+      await expectModifyEvent('other_file.txt');
+    }
   });
 }
