@@ -84,6 +84,9 @@ void fileTests({required bool isNative}) {
       // TODO(davidmorgan): polling watcher should throw on missing file like
       // the native watcher.
       expect(await expectNoEvents(), null);
+
+      writeFile('other_file.txt');
+      expect(await expectNoEvents(), null);
     }
   });
 }
