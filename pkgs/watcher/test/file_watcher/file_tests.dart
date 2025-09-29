@@ -80,12 +80,20 @@ void fileTests({required bool isNative}) {
 
     if (isNative && Platform.isLinux) {
       expect(expectNoEvents, throwsA(isA<PathNotFoundException>()));
-    } else {
-      // TODO(davidmorgan): polling watcher and MacOS watcher should throw on
-      // missing file like the native Linux watcher.
-      expect(await expectNoEvents(), null);
+    } else if (isNative && Platform.isMacOS) {
+      // TODO(davidmorgan): MacOS watcher does not throw on watch of missing
+      // file, does not report creation, reports modification as modification.
+      await expectNoEvents();
       writeFile('other_file.txt');
-      expect(await expectNoEvents(), null);
+      await expectNoEvents();
+      writeFile('other_file.txt');
+      await expectModifyEvent('other_file.txt');
+    } else {
+      // TODO(davidmorgan): Polling watcher does not throw on watch of missing
+      // file, and reports creation and modification as modification.
+      await expectNoEvents();
+      writeFile('other_file.txt');
+      await expectModifyEvent('other_file.txt');
       writeFile('other_file.txt');
       await expectModifyEvent('other_file.txt');
     }
