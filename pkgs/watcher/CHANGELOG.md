@@ -1,3 +1,10 @@
+## 1.1.4-wip
+
+- Bug fix: with `FileWatcher` on MacOS, an incorrect modify event was sometimes
+  reported if the file was created immediately before the watcher was created.
+  Now, file creation is never reported as a modification. This makes the behavior on
+  MacOS consistent with other platforms and with the polling watcher.
+
 ## 1.1.3
 
 - Improve handling of

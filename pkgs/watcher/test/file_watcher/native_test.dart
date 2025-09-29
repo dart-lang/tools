@@ -9,14 +9,14 @@ import 'package:test/test.dart';
 import 'package:watcher/src/file_watcher/native.dart';
 
 import '../utils.dart';
-import 'shared.dart';
+import 'file_tests.dart';
+import 'link_tests.dart';
+import 'startup_race_tests.dart';
 
 void main() {
   watcherFactory = NativeFileWatcher.new;
 
-  setUp(() {
-    writeFile('file.txt');
-  });
-
-  sharedTests();
+  fileTests(isNative: true);
+  linkTests(isNative: true);
+  startupRaceTests();
 }
