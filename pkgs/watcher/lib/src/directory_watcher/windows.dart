@@ -405,33 +405,40 @@ class _WindowsDirectoryWatcher
 
   /// Start or restart the underlying [Directory.watch] stream.
   void _startWatch() {
-    // Note: "watcher closed" exceptions do not get sent over the stream
-    // returned by watch, and must be caught via a zone handler.
+    // Note: in older SDKs "watcher closed" exceptions might not get sent over
+    // the stream returned by watch, and must be caught via a zone handler.
     runZonedGuarded(
       () {
         var innerStream = Directory(path).watch(recursive: true);
         _watchSubscription = innerStream.listen(
           _onEvent,
-          onError: _eventsController.addError,
+          onError: _restartWatchOnOverflowOr(_eventsController.addError),
           onDone: _onDone,
         );
       },
-      (error, stackTrace) async {
-        if (error is FileSystemException &&
-            error.message.startsWith('Directory watcher closed unexpectedly')) {
-          // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
-          // Give the VM time to reset state after the error. See the issue for
-          // more discussion of the workaround.
-          await _watchSubscription?.cancel();
-          await Future<void>.delayed(const Duration(milliseconds: 1));
-          _eventsController.addError(error, stackTrace);
-          _startWatch();
-        } else {
-          // ignore: only_throw_errors
-          throw error;
-        }
-      },
+      _restartWatchOnOverflowOr((error, stackTrace) {
+        // ignore: only_throw_errors
+        throw error;
+      }),
     );
+  }
+
+  void Function(Object, StackTrace) _restartWatchOnOverflowOr(
+      void Function(Object, StackTrace) otherwise) {
+    return (Object error, StackTrace stackTrace) async {
+      if (error is FileSystemException &&
+          error.message.startsWith('Directory watcher closed unexpectedly')) {
+        // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
+        // Give the VM time to reset state after the error. See the issue for
+        // more discussion of the workaround.
+        await _watchSubscription?.cancel();
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+        _eventsController.addError(error, stackTrace);
+        _startWatch();
+      } else {
+        otherwise(error, stackTrace);
+      }
+    };
   }
 
   /// Starts or restarts listing the watched directory to get an initial picture

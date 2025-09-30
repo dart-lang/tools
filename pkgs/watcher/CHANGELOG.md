@@ -3,6 +3,9 @@
 - Improve handling of subdirectories: ignore `PathNotFoundException` due to
   subdirectory deletion racing with watcher internals, instead of raising
   it on the event stream.
+- Improve handling of watcher overflow on Windows: prepare for future versions
+  of SDK, which will properly forward `FileSystemException` into the stream
+  returned by the watcher.
 
 ## 1.1.3
 
