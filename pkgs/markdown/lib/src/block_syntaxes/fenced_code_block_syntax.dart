@@ -51,24 +51,6 @@ class FencedCodeBlockSyntax extends BlockSyntax {
     return Element('pre', [code]);
   }
 
-  static String _removeLeadingSpaces(String content, {required int upTo}) {
-    var indexAfterRemovedSpaces = 0;
-
-    // Find the index of the first non-space character
-    // or the first space after the maximum removed specified by 'upTo'.
-    while (indexAfterRemovedSpaces < upTo &&
-        indexAfterRemovedSpaces < content.length) {
-      // We can just check for space (` `) since fenced code blocks
-      // consider spaces before the opening code fence as the
-      // indentation that should be removed.
-      if (content.codeUnitAt(indexAfterRemovedSpaces) != $space) {
-        break;
-      }
-      indexAfterRemovedSpaces += 1;
-    }
-    return content.substring(indexAfterRemovedSpaces);
-  }
-
   @override
   List<Line> parseChildLines(
     BlockParser parser, [
@@ -108,6 +90,25 @@ class FencedCodeBlockSyntax extends BlockSyntax {
     }
 
     return childLines;
+  }
+
+  /// Removes the leading spaces (` `) from [content] up the given [upTo] count.
+  static String _removeLeadingSpaces(String content, {required int upTo}) {
+    var indexAfterRemovedSpaces = 0;
+
+    // Find the index of the first non-space character
+    // or the first space after the maximum removed specified by 'upTo'.
+    while (indexAfterRemovedSpaces < upTo &&
+        indexAfterRemovedSpaces < content.length) {
+      // We can just check for space (` `) since fenced code blocks
+      // consider spaces before the opening code fence as the
+      // indentation that should be removed.
+      if (content.codeUnitAt(indexAfterRemovedSpaces) != $space) {
+        break;
+      }
+      indexAfterRemovedSpaces += 1;
+    }
+    return content.substring(indexAfterRemovedSpaces);
   }
 }
 
