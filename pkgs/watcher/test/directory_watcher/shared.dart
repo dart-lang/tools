@@ -1,8 +1,11 @@
 // Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'dart:io' as io;
+import 'dart:isolate';
 
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
@@ -339,6 +342,32 @@ void sharedTests() {
           (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'));
       events.add(isRemoveEvent('dir/sub'));
       await inAnyOrder(events);
+    });
+
+    test('subdirectory watching is robust against races', () async {
+      // Make sandboxPath accessible to child isolates created by Isolate.run.
+      final sandboxPath = d.sandbox;
+      final dirNames = [for (var i = 0; i < 50; i++) 'dir$i'];
+      await startWatcher();
+
+      // Repeatedly create and delete subdirectories in attempt to trigger
+      // a race.
+      for (var i = 0; i < 10; i++) {
+        for (var dir in dirNames) {
+          createDir(dir);
+        }
+        await Isolate.run(() async {
+          await Future.wait([
+            for (var dir in dirNames)
+              io.Directory('$sandboxPath/$dir').delete(),
+          ]);
+        });
+      }
+
+      writeFile('a/b/c/d/file.txt');
+      await inAnyOrder([
+        isAddEvent('a/b/c/d/file.txt'),
+      ]);
     });
   });
 }

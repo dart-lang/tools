@@ -136,10 +136,17 @@ class _LinuxDirectoryWatcher
     // top-level clients such as barback as well, and could be implemented with
     // a wrapper similar to how listening/canceling works now.
 
-    // TODO(nweiz): Catch any errors here that indicate that the directory in
-    // question doesn't exist and silently stop watching it instead of
-    // propagating the errors.
-    var stream = Directory(path).watch();
+    var stream = Directory(path).watch().transform(
+        StreamTransformer<FileSystemEvent, FileSystemEvent>.fromHandlers(
+      handleError: (error, st, sink) {
+        // Directory might no longer exist at the point where we try to
+        // start the watcher. Simply ignore this error and let the stream
+        // close.
+        if (error is! PathNotFoundException) {
+          sink.addError(error, st);
+        }
+      },
+    ));
     _subdirStreams[path] = stream;
     _nativeEvents.add(stream);
   }

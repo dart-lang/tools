@@ -1,3 +1,9 @@
+## 1.1.4-wip
+
+- Improve handling of subdirectories on Linux: ignore `PathNotFoundException`
+  due to subdirectory deletion during watch setup, instead of raising it on the
+  event stream.
+
 ## 1.1.3
 
 - Improve handling of
@@ -6,7 +12,7 @@
   events. But, the restart would sometimes silently fail. Now, it is more
   reliable.
 - Improving handling of directories that are created then immediately deleted on
-  Windows. Previously, that could cause a `PathNotfoundException` to be thrown.
+  Windows. Previously, that could cause a `PathNotFoundException` to be thrown.
 
 ## 1.1.2
 
