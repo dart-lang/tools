@@ -375,8 +375,7 @@ class _MacOSDirectoryWatcher
 
     _files.clear();
     var completer = Completer<void>();
-    var stream =
-        Directory(path).list(recursive: true).ignoring<PathNotFoundException>();
+    var stream = Directory(path).listRecursivelyIgnoringErrors();
     _initialListSubscription = stream.listen((entity) {
       if (entity is! Directory) _files.add(entity.path);
     }, onError: _emitError, onDone: completer.complete, cancelOnError: true);

@@ -128,7 +128,8 @@ class _WindowsDirectoryWatcher
       if (FileSystemEntity.identicalSync(parent, path)) return;
     } on FileSystemException catch (_) {
       // Either parent or path or both might be gone due to concurrently
-      // occurring changes. Just ignore and continue.
+      // occurring changes. Just ignore and continue. If we fail to
+      // watch path we will report an error from _startWatch.
       return;
     }
     var parentStream = Directory(parent).watch(recursive: false);
@@ -441,8 +442,7 @@ class _WindowsDirectoryWatcher
 
     _files.clear();
     var completer = Completer<void>();
-    var stream =
-        Directory(path).list(recursive: true).ignoring<PathNotFoundException>();
+    var stream = Directory(path).listRecursivelyIgnoringErrors();
     void handleEntity(FileSystemEntity entity) {
       if (entity is! Directory) _files.add(entity.path);
     }

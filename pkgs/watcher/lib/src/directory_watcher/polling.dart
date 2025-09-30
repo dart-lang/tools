@@ -112,8 +112,7 @@ class _PollingDirectoryWatcher
       _filesToProcess.add(null);
     }
 
-    var stream =
-        Directory(path).list(recursive: true).ignoring<PathNotFoundException>();
+    var stream = Directory(path).listRecursivelyIgnoringErrors();
     _listSubscription = stream.listen((entity) {
       assert(!_events.isClosed);
 

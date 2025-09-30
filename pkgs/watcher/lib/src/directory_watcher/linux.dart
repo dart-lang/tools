@@ -92,7 +92,7 @@ class _LinuxDirectoryWatcher
     });
 
     _listen(
-      Directory(path).list(recursive: true).ignoring<PathNotFoundException>(),
+      Directory(path).listRecursivelyIgnoringErrors(),
       (FileSystemEntity entity) {
         if (entity is Directory) {
           _watchSubdir(entity.path);
