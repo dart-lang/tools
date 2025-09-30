@@ -63,9 +63,13 @@ Future<void> startWatcher({String? path}) async {
     final normalized = p.normalize(p.relative(path, from: d.sandbox));
 
     // Make sure we got a path in the sandbox.
-    assert(p.isRelative(normalized) && !normalized.startsWith('..'),
-        'Path is not in the sandbox: $path not in ${d.sandbox}');
-
+    if (!p.isRelative(normalized) || normalized.startsWith('..')) {
+      // The polling watcher can poll during test teardown, signal using an
+      // exception that it will ignore.
+      throw FileSystemException(
+        'Path is not in the sandbox: $path not in ${d.sandbox}',
+      );
+    }
     var mtime = _mockFileModificationTimes[normalized];
     return mtime != null ? DateTime.fromMillisecondsSinceEpoch(mtime) : null;
   });
@@ -173,6 +177,23 @@ Matcher isModifyEvent(String path) => isWatchEvent(ChangeType.MODIFY, path);
 /// Returns a [Matcher] that matches a [WatchEvent] for a removal event for
 /// [path].
 Matcher isRemoveEvent(String path) => isWatchEvent(ChangeType.REMOVE, path);
+
+/// Takes the first event emitted during [duration], or returns `null` if there
+/// is none.
+Future<WatchEvent?> waitForEvent({
+  Duration duration = const Duration(seconds: 1),
+}) async {
+  final result = await _watcherEvents.peek
+      .then<WatchEvent?>((e) => e)
+      .timeout(duration, onTimeout: () => null);
+  if (result != null) _watcherEvents.take(1).ignore();
+  return result;
+}
+
+/// Expects that no events are omitted for [duration].
+Future expectNoEvents({Duration duration = const Duration(seconds: 1)}) async {
+  expect(await waitForEvent(duration: duration), isNull);
+}
 
 /// Expects that the next event emitted will be for an add event for [path].
 Future expectAddEvent(String path) =>
