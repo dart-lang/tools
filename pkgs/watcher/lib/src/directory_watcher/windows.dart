@@ -123,8 +123,14 @@ class _WindowsDirectoryWatcher
   void _startParentWatcher() {
     var absoluteDir = p.absolute(path);
     var parent = p.dirname(absoluteDir);
-    // Check if [path] is already the root directory.
-    if (FileSystemEntity.identicalSync(parent, path)) return;
+    try {
+      // Check if [path] is already the root directory.
+      if (FileSystemEntity.identicalSync(parent, path)) return;
+    } on FileSystemException catch (_) {
+      // Either parent or path or both might be gone due to concurrently
+      // occurring changes. Just ignore and continue.
+      return;
+    }
     var parentStream = Directory(parent).watch(recursive: false);
     _parentWatchSubscription = parentStream.listen(
       (event) {
