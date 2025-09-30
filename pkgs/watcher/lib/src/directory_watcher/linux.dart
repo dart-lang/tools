@@ -92,7 +92,7 @@ class _LinuxDirectoryWatcher
     });
 
     _listen(
-      Directory(path).list(recursive: true),
+      Directory(path).list(recursive: true).ignoring<PathNotFoundException>(),
       (FileSystemEntity entity) {
         if (entity is Directory) {
           _watchSubdir(entity.path);
@@ -136,17 +136,10 @@ class _LinuxDirectoryWatcher
     // top-level clients such as barback as well, and could be implemented with
     // a wrapper similar to how listening/canceling works now.
 
-    var stream = Directory(path).watch().transform(
-        StreamTransformer<FileSystemEvent, FileSystemEvent>.fromHandlers(
-      handleError: (error, st, sink) {
-        // Directory might no longer exist at the point where we try to
-        // start the watcher. Simply ignore this error and let the stream
-        // close.
-        if (error is! PathNotFoundException) {
-          sink.addError(error, st);
-        }
-      },
-    ));
+    // Directory might no longer exist at the point where we try to
+    // start the watcher. Simply ignore this error and let the stream
+    // close.
+    var stream = Directory(path).watch().ignoring<PathNotFoundException>();
     _subdirStreams[path] = stream;
     _nativeEvents.add(stream);
   }
