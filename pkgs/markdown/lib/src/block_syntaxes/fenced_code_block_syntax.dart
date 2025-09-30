@@ -42,23 +42,27 @@ class FencedCodeBlockSyntax extends BlockSyntax {
 
     final code = Element.text('code', text);
     if (languageString != null) {
-      var language = decodeHtmlCharacters(languageString);
-      if (parser.document.encodeHtml) {
-        language = escapeHtmlAttribute(language);
-      }
-      code.attributes['class'] = 'language-$language';
+      final processedLanguage = _processAttribute(languageString,
+          encodeHtml: parser.document.encodeHtml);
+      code.attributes['class'] = 'language-$processedLanguage';
     }
 
     final pre = Element('pre', [code]);
     if (metadataString != null) {
-      var metadata = decodeHtmlCharacters(metadataString);
-      if (parser.document.encodeHtml) {
-        metadata = escapeHtmlAttribute(metadata);
-      }
-      pre.attributes['data-metadata'] = metadata;
+      final processedMetadata = _processAttribute(metadataString,
+          encodeHtml: parser.document.encodeHtml);
+      pre.attributes['data-metadata'] = processedMetadata;
     }
 
     return pre;
+  }
+
+  static String _processAttribute(String value, {bool encodeHtml = false}) {
+    final decodedValue = decodeHtmlCharacters(value);
+    if (encodeHtml) {
+      return escapeHtmlAttribute(decodedValue);
+    }
+    return decodedValue;
   }
 
   String _removeIndentation(String content, int length) {
