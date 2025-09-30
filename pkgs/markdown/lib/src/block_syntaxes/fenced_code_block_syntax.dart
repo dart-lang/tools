@@ -98,8 +98,7 @@ class FencedCodeBlockSyntax extends BlockSyntax {
 
     // Find the index of the first non-space character
     // or the first space after the maximum removed specified by 'upTo'.
-    while (leadingSpacesCount < upTo &&
-        leadingSpacesCount < content.length) {
+    while (leadingSpacesCount < upTo && leadingSpacesCount < content.length) {
       // We can just check for space (` `) since fenced code blocks
       // consider spaces before the opening code fence as the
       // indentation that should be removed.
