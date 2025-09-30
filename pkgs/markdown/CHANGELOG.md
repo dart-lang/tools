@@ -4,6 +4,7 @@
   (https://dart-lang.github.io/tools).
 * Update `package:web` API references in the example.
 * Fix performance and correctness of HTML comment parser.
+* Optimize indentation processing of fenced code blocks.
 * Require Dart `^3.4.0`.
 
 ## 7.3.0

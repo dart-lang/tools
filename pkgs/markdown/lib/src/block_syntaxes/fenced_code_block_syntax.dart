@@ -4,6 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
+import '../charcode.dart' show $space;
 import '../line.dart';
 import '../patterns.dart';
 import '../util.dart';
@@ -50,11 +51,6 @@ class FencedCodeBlockSyntax extends BlockSyntax {
     return Element('pre', [code]);
   }
 
-  String _removeIndentation(String content, int length) {
-    final text = content.replaceFirst(RegExp('^\\s{0,$length}'), '');
-    return content.substring(content.length - text.length);
-  }
-
   @override
   List<Line> parseChildLines(
     BlockParser parser, [
@@ -76,7 +72,7 @@ class FencedCodeBlockSyntax extends BlockSyntax {
           !closingFence.marker.startsWith(openingMarker) ||
           closingFence.hasInfo) {
         childLines.add(
-          Line(_removeIndentation(parser.current.content, indent)),
+          Line(_removeLeadingSpaces(parser.current.content, upTo: indent)),
         );
         parser.advance();
       } else {
@@ -94,6 +90,24 @@ class FencedCodeBlockSyntax extends BlockSyntax {
     }
 
     return childLines;
+  }
+
+  /// Removes the leading spaces (` `) from [content] up the given [upTo] count.
+  static String _removeLeadingSpaces(String content, {required int upTo}) {
+    var leadingSpacesCount = 0;
+
+    // Find the index of the first non-space character
+    // or the first space after the maximum removed specified by 'upTo'.
+    while (leadingSpacesCount < upTo && leadingSpacesCount < content.length) {
+      // We can just check for space (` `) since fenced code blocks
+      // consider spaces before the opening code fence as the
+      // indentation that should be removed.
+      if (content.codeUnitAt(leadingSpacesCount) != $space) {
+        break;
+      }
+      leadingSpacesCount += 1;
+    }
+    return content.substring(leadingSpacesCount);
   }
 }
 
