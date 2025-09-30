@@ -50,3 +50,30 @@ extension BatchEvents<T> on Stream<T> {
     }).bind(this);
   }
 }
+
+extension IgnoringError<T> on Stream<T> {
+  /// Ignore all errors of type [E] emitted by the given stream.
+  ///
+  /// Everything else gets forwarded through as-is.
+  Stream<T> ignoring<E>() {
+    return transform(StreamTransformer<T, T>.fromHandlers(
+      handleError: (error, st, sink) {
+        if (error is! E) {
+          sink.addError(error, st);
+        }
+      },
+    ));
+  }
+}
+
+extension DirectoryRobustRecursiveListing on Directory {
+  /// List the given directory recursively but ignore not-found or access
+  /// errors.
+  ///
+  /// Theses can arise from concurrent file-system modification.
+  Stream<FileSystemEntity> listRecursivelyIgnoringErrors() {
+    return list(recursive: true)
+        .ignoring<PathNotFoundException>()
+        .ignoring<PathAccessException>();
+  }
+}

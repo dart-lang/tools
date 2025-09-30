@@ -347,7 +347,7 @@ void sharedTests() {
     test('subdirectory watching is robust against races', () async {
       // Make sandboxPath accessible to child isolates created by Isolate.run.
       final sandboxPath = d.sandbox;
-      final dirNames = [for (var i = 0; i < 50; i++) 'dir$i'];
+      final dirNames = [for (var i = 0; i < 500; i++) 'dir$i'];
       await startWatcher();
 
       // Repeatedly create and delete subdirectories in attempt to trigger

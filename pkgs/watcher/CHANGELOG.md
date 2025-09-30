@@ -1,8 +1,8 @@
 ## 1.1.4-wip
 
-- Improve handling of subdirectories on Linux: ignore `PathNotFoundException`
-  due to subdirectory deletion during watch setup, instead of raising it on the
-  event stream.
+- Improve handling of subdirectories: ignore `PathNotFoundException` due to
+  subdirectory deletion racing with watcher internals, instead of raising
+  it on the event stream.
 
 ## 1.1.3
 
