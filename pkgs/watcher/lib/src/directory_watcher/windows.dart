@@ -123,8 +123,15 @@ class _WindowsDirectoryWatcher
   void _startParentWatcher() {
     var absoluteDir = p.absolute(path);
     var parent = p.dirname(absoluteDir);
-    // Check if [path] is already the root directory.
-    if (FileSystemEntity.identicalSync(parent, path)) return;
+    try {
+      // Check if [path] is already the root directory.
+      if (FileSystemEntity.identicalSync(parent, path)) return;
+    } on FileSystemException catch (_) {
+      // Either parent or path or both might be gone due to concurrently
+      // occurring changes. Just ignore and continue. If we fail to
+      // watch path we will report an error from _startWatch.
+      return;
+    }
     var parentStream = Directory(parent).watch(recursive: false);
     _parentWatchSubscription = parentStream.listen(
       (event) {
@@ -185,7 +192,14 @@ class _WindowsDirectoryWatcher
 
           if (_files.containsDir(path)) continue;
 
-          var stream = Directory(path).list(recursive: true);
+          // "Path not found" can be caused by creating then quickly removing
+          // a directory: continue without reporting an error. Nested files
+          // that get removed during the `list` are already ignored by `list`
+          // itself, so there are no other types of "path not found" that
+          // might need different handling here.
+          var stream = Directory(path)
+              .list(recursive: true)
+              .ignoring<PathNotFoundException>();
           var subscription = stream.listen((entity) {
             if (entity is Directory) return;
             if (_files.contains(entity.path)) return;
@@ -198,14 +212,7 @@ class _WindowsDirectoryWatcher
           });
           subscription.onError((Object e, StackTrace stackTrace) {
             _listSubscriptions.remove(subscription);
-            // "Path not found" can be caused by creating then quickly removing
-            // a directory: continue without reporting an error. Nested files
-            // that get removed during the `list` are already ignored by `list`
-            // itself, so there are no other types of "path not found" that
-            // might need different handling here.
-            if (e is! PathNotFoundException) {
-              _emitError(e, stackTrace);
-            }
+            _emitError(e, stackTrace);
           });
           _listSubscriptions.add(subscription);
         } else if (event is FileSystemModifyEvent) {
@@ -435,7 +442,7 @@ class _WindowsDirectoryWatcher
 
     _files.clear();
     var completer = Completer<void>();
-    var stream = Directory(path).list(recursive: true);
+    var stream = Directory(path).listRecursivelyIgnoringErrors();
     void handleEntity(FileSystemEntity entity) {
       if (entity is! Directory) _files.add(entity.path);
     }
