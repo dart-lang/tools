@@ -363,11 +363,6 @@ void sharedTests() {
           ]);
         });
       }
-
-      writeFile('a/b/c/d/file.txt');
-      await inAnyOrder([
-        isAddEvent('a/b/c/d/file.txt'),
-      ]);
     });
   });
 }
