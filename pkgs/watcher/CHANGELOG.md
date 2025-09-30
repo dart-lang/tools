@@ -1,4 +1,4 @@
-## 1.1.4-wip
+## 1.1.4
 
 - Improve handling of subdirectories: ignore `PathNotFoundException` due to
   subdirectory deletion racing with watcher internals, instead of raising
