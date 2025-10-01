@@ -10,11 +10,13 @@ import 'package:watcher/src/file_watcher/native.dart';
 
 import '../utils.dart';
 import 'file_tests.dart';
+import 'link_tests.dart';
 import 'startup_race_tests.dart';
 
 void main() {
   watcherFactory = NativeFileWatcher.new;
 
   fileTests(isNative: true);
+  linkTests(isNative: true);
   startupRaceTests(isNative: true);
 }
