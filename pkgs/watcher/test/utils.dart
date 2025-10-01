@@ -246,6 +246,34 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
   }
 }
 
+/// Schedules writing a file in the sandbox at [link] pointing to [target].
+///
+/// If [updateModified] is `false`, the mock file modification time is not
+/// changed.
+void writeLink({
+  required String link,
+  required String target,
+  bool? updateModified,
+}) {
+  updateModified ??= true;
+
+  var fullPath = p.join(d.sandbox, link);
+
+  // Create any needed subdirectories.
+  var dir = Directory(p.dirname(fullPath));
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
+  }
+
+  Link(fullPath).createSync(target);
+
+  if (updateModified) {
+    link = p.normalize(link);
+
+    _mockFileModificationTimes[link] = _nextTimestamp++;
+  }
+}
+
 /// Schedules deleting a file in the sandbox at [path].
 void deleteFile(String path) {
   File(p.join(d.sandbox, path)).deleteSync();
