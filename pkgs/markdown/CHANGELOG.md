@@ -6,6 +6,7 @@
 * Fix performance and correctness of HTML comment parser.
 * Optimize indentation processing of fenced code blocks.
 * Require Dart `^3.4.0`.
+* Fix an issue with nested list structure when indented by tabs (#2172).
 
 ## 7.3.0
 
