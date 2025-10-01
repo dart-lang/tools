@@ -211,7 +211,9 @@ abstract class ListSyntax extends BlockSyntax {
           // any indentation past the required whitespace character.
           indent = precedingWhitespaces;
         } else {
-          indent = precedingWhitespaces + contentWhitespances;
+          indent = precedingWhitespaces +
+              contentWhitespances +
+              (parser.current.tabRemaining ?? 0);
         }
 
         taskListItemState = null;
