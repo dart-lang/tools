@@ -292,6 +292,20 @@ void renameFile(String from, String to) {
       ifAbsent: () => 1);
 }
 
+/// Schedules renaming a link in the sandbox from [from] to [to].
+///
+/// On MacOS and Linux links can also be named with `renameFile`. On Windows,
+/// however, a link must be renamed with this method.
+void renameLink(String from, String to) {
+  Link(p.join(d.sandbox, from)).renameSync(p.join(d.sandbox, to));
+
+  // Make sure we always use the same separator on Windows.
+  to = p.normalize(to);
+
+  _mockFileModificationTimes.update(to, (value) => value + 1,
+      ifAbsent: () => 1);
+}
+
 /// Schedules creating a directory in the sandbox at [path].
 void createDir(String path) {
   Directory(p.join(d.sandbox, path)).createSync();
