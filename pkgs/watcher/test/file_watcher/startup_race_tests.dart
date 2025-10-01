@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -27,13 +25,6 @@ void startupRaceTests({required bool isNative}) {
       );
     }
     await Future.wait(futures);
-
-    // TODO(davidmorgan): the MacOS watcher currently does get unwanted events,
-    // fix it.
-    if (isNative && Platform.isMacOS) {
-      expect(events, greaterThan(10));
-    } else {
-      expect(events, 0);
-    }
+    expect(events, 0);
   });
 }
