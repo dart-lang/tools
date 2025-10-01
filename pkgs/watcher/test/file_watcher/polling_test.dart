@@ -6,6 +6,7 @@ import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
 import 'file_tests.dart';
+import 'link_tests.dart';
 import 'startup_race_tests.dart';
 
 void main() {
@@ -13,5 +14,6 @@ void main() {
       PollingFileWatcher(file, pollingDelay: const Duration(milliseconds: 100));
 
   fileTests(isNative: false);
+  linkTests(isNative: false);
   startupRaceTests(isNative: false);
 }

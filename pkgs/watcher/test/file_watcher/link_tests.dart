@@ -98,7 +98,7 @@ void linkTests({required bool isNative}) {
 
   test('notifies when a link is moved away', () async {
     await startWatcher(path: 'link.txt');
-    renameFile('link.txt', 'new.txt');
+    renameLink('link.txt', 'new.txt');
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
