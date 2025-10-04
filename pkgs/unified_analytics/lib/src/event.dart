@@ -104,6 +104,20 @@ final class Event {
         );
 
   /// Event that is emitted periodically to report the performance of the
+  /// analyzer.
+  ///
+  /// [workingDuration] - json encoded percentile values indicating how long
+  ///     the analysis status was "working".
+  Event.analysisStatistics({
+    required String workingDuration,
+  }) : this._(
+          eventName: DashEvent.analysisStatistics,
+          eventData: {
+            'workingDuration': workingDuration,
+          },
+        );
+
+  /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of request from the client.
   ///
   /// [duration] - json encoded percentile values indicating how long it took
