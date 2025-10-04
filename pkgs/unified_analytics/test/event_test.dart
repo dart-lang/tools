@@ -10,6 +10,18 @@ import 'package:unified_analytics/src/event.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
+  test('Event.analysisStatistics constructed', () {
+    Event generateEvent() =>
+        Event.analysisStatistics(workingDuration: 'workingDuration');
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.analysisStatistics);
+    expect(constructedEvent.eventData['workingDuration'], 'workingDuration');
+    expect(constructedEvent.eventData.length, 1);
+  });
+
   test('Event.analyticsCollectionEnabled constructed', () {
     Event generateEvent() => Event.analyticsCollectionEnabled(status: false);
 
@@ -729,7 +741,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 30;
+    final eventsAccountedForInTests = 31;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
