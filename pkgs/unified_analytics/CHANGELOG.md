@@ -1,3 +1,6 @@
+## 8.0.6
+- Added `Event.analysisStatistics` for events from Dart Analysis Server, about analysis.
+
 ## 8.0.5
 - Fix `Event.flutterWasmDryRun` fields.
 
