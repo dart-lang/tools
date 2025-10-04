@@ -126,6 +126,10 @@ enum DashEvent {
 
   // Events for language_server below
 
+  analysisStatistics(
+    label: 'analysis_statistics',
+    description: 'Dart analyzer statistics',
+  ),
   clientNotification(
     label: 'client_notification',
     description: 'Notifications sent from the client',
