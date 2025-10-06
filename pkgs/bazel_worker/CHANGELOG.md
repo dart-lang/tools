@@ -1,3 +1,8 @@
+## 1.1.4
+
+* Require Dart SDK `^3.9.0`.
+* Widen `package:protobuf` constraint to allow 5.0.0 and requiring minimum 4.0.0.
+
 ## 1.1.3
 
 * Require Dart SDK `^3.4.0`.

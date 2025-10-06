@@ -34,7 +34,17 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
       - run: dart pub get
-      - run: "dart format --output=none --set-exit-if-changed ."
+
+      - run: dart format --output=none --set-exit-if-changed .
         if: ${{ matrix.sdk == 'dev' }}
-      - name: Test
-        run: ./tool/travis.sh
+
+      - run: dart analyze --fatal-infos
+
+      - run: dart run benchmark/benchmark.dart
+
+      - run: dart test
+
+      - name: dart test e2e_test
+        run: |
+            cd e2e_test
+            dart test
