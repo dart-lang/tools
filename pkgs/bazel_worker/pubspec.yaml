@@ -9,7 +9,7 @@ workspace:
   - e2e_test
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.9.0
 
 dependencies:
   async: ^2.5.0
