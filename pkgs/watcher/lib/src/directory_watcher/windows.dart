@@ -266,12 +266,16 @@ class _WindowsDirectoryWatcher
 
     for (var event in batch) {
       if (event is FileSystemMoveEvent) {
+        addEvent(
+            event.path, FileSystemDeleteEvent(event.path, event.isDirectory));
         var destination = event.destination;
         if (destination != null) {
-          addEvent(destination, event);
+          addEvent(destination,
+              FileSystemCreateEvent(event.path, event.isDirectory));
         }
+      } else {
+        addEvent(event.path, event);
       }
-      addEvent(event.path, event);
     }
 
     return eventsForPaths;
@@ -279,6 +283,9 @@ class _WindowsDirectoryWatcher
 
   /// Returns the canonical event from a batch of events on the same path, if
   /// one exists.
+  ///
+  /// The batch must be an output of [_sortEvents] which guarantees it contains
+  /// no [FileSystemMoveEvent]s.
   ///
   /// If [batch] doesn't contain any contradictory events (e.g. DELETE and
   /// CREATE, or events with different values for `isDirectory`), this returns a
@@ -306,9 +313,7 @@ class _WindowsDirectoryWatcher
       // (respectively) that will be contradictory.
       if (event is FileSystemModifyEvent) continue;
       assert(
-        event is FileSystemCreateEvent ||
-            event is FileSystemDeleteEvent ||
-            event is FileSystemMoveEvent,
+        event is FileSystemCreateEvent || event is FileSystemDeleteEvent,
       );
 
       // If we previously thought this was a MODIFY, we now consider it to be a
@@ -320,9 +325,7 @@ class _WindowsDirectoryWatcher
 
       // A CREATE event contradicts a REMOVE event and vice versa.
       assert(
-        type == FileSystemEvent.create ||
-            type == FileSystemEvent.delete ||
-            type == FileSystemEvent.move,
+        type == FileSystemEvent.create || type == FileSystemEvent.delete,
       );
       if (type != event.type) return null;
     }
@@ -334,8 +337,6 @@ class _WindowsDirectoryWatcher
         return FileSystemDeleteEvent(batch.first.path, isDir);
       case FileSystemEvent.modify:
         return FileSystemModifyEvent(batch.first.path, isDir, false);
-      case FileSystemEvent.move:
-        return null;
       default:
         throw StateError('unreachable');
     }

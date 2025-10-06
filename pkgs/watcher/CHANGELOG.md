@@ -4,6 +4,9 @@
   the file was created immediately before the watcher was created. Now, if the
   file exists when the watcher is created then this modify event is not sent.
   This matches the Linux native and polling (Windows) watchers.
+- Bug fix: fix a spurious modify event with `DirectoryWatcher` on Windows that
+  was reported when a file or directory was renamed then another file or
+  directory was immediately renamed to its old name.
 
 ## 1.1.4
 
