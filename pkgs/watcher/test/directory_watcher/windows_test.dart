@@ -169,7 +169,12 @@ void main() {
         }
 
         // Events only happen when there is an async gap, wait for such a gap.
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+        // The event usually arrives in under 10ms, try for 100ms.
+        var tries = 0;
+        while (errorsSeen == 0 && eventsSeen == 0 && tries < 10) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          ++tries;
+        }
 
         // If everything is going well, there should have been either one event
         // seen or one error seen.
