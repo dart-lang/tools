@@ -83,7 +83,8 @@ void runTests<T extends TestWorkerConnection>(
     expect(
       printMessages,
       isEmpty,
-      reason: 'The worker loop should hide all print calls from the parent '
+      reason:
+          'The worker loop should hide all print calls from the parent '
           'zone.',
     );
 
