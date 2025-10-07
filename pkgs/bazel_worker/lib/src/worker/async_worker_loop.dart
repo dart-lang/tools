@@ -16,7 +16,7 @@ abstract class AsyncWorkerLoop implements WorkerLoop {
   final AsyncWorkerConnection connection;
 
   AsyncWorkerLoop({AsyncWorkerConnection? connection})
-      : connection = connection ?? StdAsyncWorkerConnection();
+    : connection = connection ?? StdAsyncWorkerConnection();
 
   /// Perform a single [WorkRequest], and return a [WorkResponse].
   @override
