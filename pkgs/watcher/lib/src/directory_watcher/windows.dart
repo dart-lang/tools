@@ -255,7 +255,8 @@ class _WindowsDirectoryWatcher
       batch.map((event) {
         if (event.type == EventType.createDirectory ||
             event.type == EventType.moveDirectory) {
-          return event.paths;
+          final destination = event.destination;
+          return {event.path, if (destination != null) destination};
         }
         return const <String>{};
       }),
@@ -273,8 +274,10 @@ class _WindowsDirectoryWatcher
       if (event.type == EventType.modifyDirectory) {
         continue;
       }
-      for (final path in event.paths) {
-        addEvent(path, event);
+      addEvent(path, event);
+      final destination = event.destination;
+      if (destination != null) {
+        addEvent(destination, event);
       }
     }
 
@@ -292,57 +295,27 @@ class _WindowsDirectoryWatcher
   /// indicate that the state of the path on the filesystem should be checked to
   /// determine what occurred.
   Event? _canonicalEvent(Set<Event> batch) {
-    // An empty batch indicates that we've learned earlier that the batch is
-    // contradictory (e.g. because of a move).
     if (batch.isEmpty) return null;
+    var types = batch.map((e) => e.type).toSet();
 
-    var type = batch.first.type;
-    var isDirectory = batch.first.isDirectory;
-
-    for (var event in batch.skip(1)) {
-      // If one event reports that the file is a directory and another event
-      // doesn't, that's a contradiction.
-      if (isDirectory != event.isDirectory) return null;
-
-      // Modify events don't contradict either CREATE or REMOVE events. We can
-      // safely assume the file was modified after a CREATE or before the
-      // REMOVE; otherwise there will also be a REMOVE or CREATE event
-      // (respectively) that will be contradictory.
-      if (event.isModify) continue;
-      assert(
-        event.isCreate || event.isDelete || event.isMove,
-      );
-
-      // If we previously thought this was a MODIFY, we now consider it to be a
-      // CREATE or REMOVE event. This is safe for the same reason as above.
-      if (type == EventType.modifyFile) {
-        type = event.type;
-        continue;
-      }
-
-      // A CREATE event contradicts a REMOVE event and vice versa.
-      assert(type == EventType.createFile ||
-          type == EventType.createDirectory ||
-          type == EventType.delete ||
-          type == EventType.moveFile);
-      if (type != event.type) return null;
+    if (types.length == 2 &&
+        types.contains(EventType.modifyFile) &&
+        types.contains(EventType.createFile)) {
+      types.remove(EventType.modifyFile);
     }
 
-    switch (type) {
-      // Move events are always resolved by checking the filesystem state.
-      case EventType.moveFile:
-      case EventType.moveDirectory:
-        return null;
-
-      case EventType.createFile:
-      case EventType.createDirectory:
-      case EventType.delete:
-      case EventType.modifyFile:
-        return batch.firstWhere((e) => e.type == type);
-
-      case EventType.modifyDirectory:
-        throw StateError(EventType.modifyDirectory.name);
+    if (types.length != 1) {
+      return null;
     }
+
+    final type = types.first;
+
+    // Move events are always resolved by checking the filesystem state.
+    if (type == EventType.moveDirectory || type == EventType.moveFile) {
+      return null;
+    }
+
+    return batch.firstWhere((e) => e.type == type);
   }
 
   /// Returns zero or more events that describe the change between the last

@@ -76,19 +76,12 @@ extension type Event(FileSystemEvent event) {
   /// For other types of event, always `null`.
   String? get destination =>
       isMove ? (event as FileSystemMoveEvent).destination : null;
-
-  /// See [FileSystemEvent.isDirectory].
-  ///
-  /// For delete events, always `null`.
-  bool? get isDirectory => isDelete ? null : event.isDirectory;
-
-  /// All paths mentioned by the event.
-  ///
-  /// This is [path] plus, for move events, [destination] if it's not `null`.
-  Set<String> get paths => {event.path, if (destination != null) destination!};
 }
 
 /// See [FileSystemEvent.type].
+///
+/// This additionally encodes [FileSystemEvent.isDirectory], which is specified
+/// for all event types except deletes.
 enum EventType {
   delete,
   createFile,

@@ -205,7 +205,7 @@ class _MacOSDirectoryWatcher
     // as the directory's full content will be listed.
     var createdDirectories = unionAll(batch.map((event) {
       return event.type == EventType.createDirectory
-          ? event.paths
+          ? {event.path}
           : const <String>{};
     }));
 
@@ -241,73 +241,35 @@ class _MacOSDirectoryWatcher
   /// indicate that the state of the path on the filesystem should be checked to
   /// determine what occurred.
   Event? _canonicalEvent(Set<Event> batch) {
-    // An empty batch indicates that we've learned earlier that the batch is
-    // contradictory (e.g. because of a move).
     if (batch.isEmpty) return null;
 
-    var path = batch.first.path;
-    var type = batch.first.type;
-    var isDirectory = batch.first.isDirectory;
-    var hadModifyEvent = false;
+    var types = batch.map((e) => e.type).toSet();
 
-    for (var event in batch.skip(1)) {
-      // If one event reports that the file is a directory and another event
-      // doesn't, that's a contradiction.
-      if (isDirectory != event.isDirectory) return null;
-
-      // Modify events don't contradict either CREATE or REMOVE events. We can
-      // safely assume the file was modified after a CREATE or before the
-      // REMOVE; otherwise there will also be a REMOVE or CREATE event
-      // (respectively) that will be contradictory.
-      if (event.type == EventType.modifyFile) {
-        hadModifyEvent = true;
-        continue;
+    if (types.length == 2 &&
+        types.contains(EventType.modifyFile) &&
+        types.contains(EventType.createFile)) {
+      if (_files.contains(path)) {
+        types.remove(EventType.createFile);
+      } else {
+        types.remove(EventType.modifyFile);
       }
-      assert(event.isCreate || event.isDelete);
-
-      // If we previously thought this was a MODIFY, we now consider it to be a
-      // CREATE or REMOVE event. This is safe for the same reason as above.
-      if (type == EventType.modifyFile) {
-        type = event.type;
-        continue;
-      }
-
-      // A CREATE event contradicts a REMOVE event and vice versa.
-      assert(type == EventType.createFile ||
-          type == EventType.createDirectory ||
-          type == EventType.delete);
-      if (type != event.type) return null;
     }
 
-    // If we got a CREATE event for a file we already knew about, that comes
-    // from FSEvents reporting an add that happened prior to the watch
-    // beginning. If we also received a MODIFY event, we want to report that,
-    // but not the CREATE.
-    if (type == EventType.createFile &&
-        hadModifyEvent &&
-        _files.contains(path)) {
-      type = EventType.modifyFile;
+    if (types.length != 1) {
+      return null;
     }
 
-    switch (type) {
-      case EventType.createDirectory:
-        // Issue 16003 means that a CREATE event for a directory can indicate
-        // that the directory was moved and then re-created.
-        // [_eventsBasedOnFileSystem] will handle this correctly by producing a
-        // DELETE event followed by a CREATE event if the directory exists.
-        return null;
+    final type = types.first;
 
-      case EventType.createFile:
-      case EventType.delete:
-      case EventType.modifyFile:
-        return batch.firstWhere((e) => e.type == type);
-
-      // Guaranteed not present by `_sortEvents`.
-      case EventType.moveFile:
-      case EventType.moveDirectory:
-      case EventType.modifyDirectory:
-        throw StateError(type.name);
+    if (type == EventType.createDirectory) {
+      // Issue 16003 means that a CREATE event for a directory can indicate
+      // that the directory was moved and then re-created.
+      // [_eventsBasedOnFileSystem] will handle this correctly by producing a
+      // DELETE event followed by a CREATE event if the directory exists.
+      return null;
     }
+
+    return batch.firstWhere((e) => e.type == type);
   }
 
   /// Returns one or more events that describe the change between the last known
