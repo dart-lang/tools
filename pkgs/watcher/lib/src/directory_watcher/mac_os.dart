@@ -133,8 +133,8 @@ class _MacOSDirectoryWatcher
           : [canonicalEvent];
 
       for (var event in events) {
-        if (event.isCreate) {
-          if (!event.isDirectory!) {
+        switch (event.type) {
+          case EventType.createFile:
             // If we already know about the file, treat it like a modification.
             // This can happen if a file is copied on top of an existing one.
             // We'll see an ADD event for the latter file when from the user's
@@ -144,34 +144,39 @@ class _MacOSDirectoryWatcher
 
             _emitEvent(type, path);
             _files.add(path);
-            continue;
-          }
 
-          if (_files.containsDir(path)) continue;
+          case EventType.createDirectory:
+            if (_files.containsDir(path)) continue;
 
-          var stream = Directory(path)
-              .list(recursive: true)
-              .ignoring<PathNotFoundException>();
-          var subscription = stream.listen((entity) {
-            if (entity is Directory) return;
-            if (_files.contains(path)) return;
+            var stream = Directory(path)
+                .list(recursive: true)
+                .ignoring<PathNotFoundException>();
+            var subscription = stream.listen((entity) {
+              if (entity is Directory) return;
+              if (_files.contains(path)) return;
 
-            _emitEvent(ChangeType.ADD, entity.path);
-            _files.add(entity.path);
-          }, cancelOnError: true);
-          subscription.onDone(() {
-            _listSubscriptions.remove(subscription);
-          });
-          subscription.onError(_emitError);
-          _listSubscriptions.add(subscription);
-        } else if (event.isModify) {
-          assert(!event.isDirectory!);
-          _emitEvent(ChangeType.MODIFY, path);
-        } else {
-          assert(event.isDelete);
-          for (var removedPath in _files.remove(path)) {
-            _emitEvent(ChangeType.REMOVE, removedPath);
-          }
+              _emitEvent(ChangeType.ADD, entity.path);
+              _files.add(entity.path);
+            }, cancelOnError: true);
+            subscription.onDone(() {
+              _listSubscriptions.remove(subscription);
+            });
+            subscription.onError(_emitError);
+            _listSubscriptions.add(subscription);
+
+          case EventType.modifyFile:
+            _emitEvent(ChangeType.MODIFY, path);
+
+          case EventType.delete:
+            for (var removedPath in _files.remove(path)) {
+              _emitEvent(ChangeType.REMOVE, removedPath);
+            }
+
+          // Guaranteed not present by `_sortEvents`.
+          case EventType.moveFile:
+          case EventType.moveDirectory:
+          case EventType.modifyDirectory:
+            throw StateError(event.type.name);
         }
       }
     });
@@ -179,12 +184,15 @@ class _MacOSDirectoryWatcher
 
   /// Sort all the events in a batch into sets based on their path.
   ///
-  /// A single input event may result in multiple events in the returned map;
-  /// for example, a MOVE event becomes a DELETE event for the source and a
-  /// CREATE event for the destination.
+  /// Events for `path` are discarded.
   ///
-  /// The returned events won't contain any [FileSystemMoveEvent]s, nor will it
-  /// contain any events relating to [path].
+  /// Events under directories that are created or modified are discarded.
+  ///
+  /// Three event types are not expected on MacOS, if encountered they will be
+  /// dropped with an assert fail to signal in tests. The types are:
+  /// [EventType.moveFile], [EventType.moveDirectory] and
+  /// [EventType.modifyDirectory]. See
+  /// https://github.com/dart-lang/sdk/issues/14806.
   Map<String, Set<Event>> _sortEvents(List<Event> batch) {
     var eventsForPaths = <String, Set<Event>>{};
 
@@ -193,25 +201,29 @@ class _MacOSDirectoryWatcher
     // really deleted, that's handled by [_onDone].
     batch = batch.where((event) => event.path != path).toList();
 
-    // Events within directories that already have events are superfluous; the
-    // directory's full contents will be examined anyway, so we ignore such
-    // events. Emitting them could cause useless or out-of-order events.
-    var directories = unionAll(batch.map((event) {
-      if (event.isDelete || !event.isDirectory!) return <String>{};
-      return event.paths;
+    // Events within directories that already have create events are not needed
+    // as the directory's full content will be listed.
+    var createdDirectories = unionAll(batch.map((event) {
+      return event.type == EventType.createDirectory
+          ? event.paths
+          : const <String>{};
     }));
 
-    bool isInModifiedDirectory(String path) =>
-        directories.any((dir) => path != dir && p.isWithin(dir, path));
+    bool isInCreatedDirectory(String path) =>
+        createdDirectories.any((dir) => path != dir && p.isWithin(dir, path));
 
     void addEvent(String path, Event event) {
-      if (isInModifiedDirectory(path)) return;
+      if (isInCreatedDirectory(path)) return;
       eventsForPaths.putIfAbsent(path, () => <Event>{}).add(event);
     }
 
     for (var event in batch) {
-      // The Mac OS watcher doesn't emit move events. See issue 14806.
-      assert(!event.isMove);
+      if (event.type == EventType.moveFile ||
+          event.type == EventType.moveDirectory ||
+          event.type == EventType.modifyDirectory) {
+        assert(false);
+        continue;
+      }
       addEvent(event.path, event);
     }
 
@@ -233,6 +245,7 @@ class _MacOSDirectoryWatcher
     // contradictory (e.g. because of a move).
     if (batch.isEmpty) return null;
 
+    var path = batch.first.path;
     var type = batch.first.type;
     var isDirectory = batch.first.isDirectory;
     var hadModifyEvent = false;
@@ -246,7 +259,7 @@ class _MacOSDirectoryWatcher
       // safely assume the file was modified after a CREATE or before the
       // REMOVE; otherwise there will also be a REMOVE or CREATE event
       // (respectively) that will be contradictory.
-      if (event.isModify) {
+      if (event.type == EventType.modifyFile) {
         hadModifyEvent = true;
         continue;
       }
@@ -254,13 +267,15 @@ class _MacOSDirectoryWatcher
 
       // If we previously thought this was a MODIFY, we now consider it to be a
       // CREATE or REMOVE event. This is safe for the same reason as above.
-      if (type == EventType.modify) {
+      if (type == EventType.modifyFile) {
         type = event.type;
         continue;
       }
 
       // A CREATE event contradicts a REMOVE event and vice versa.
-      assert(type == EventType.create || type == EventType.delete);
+      assert(type == EventType.createFile ||
+          type == EventType.createDirectory ||
+          type == EventType.delete);
       if (type != event.type) return null;
     }
 
@@ -268,28 +283,30 @@ class _MacOSDirectoryWatcher
     // from FSEvents reporting an add that happened prior to the watch
     // beginning. If we also received a MODIFY event, we want to report that,
     // but not the CREATE.
-    if (type == EventType.create &&
+    if (type == EventType.createFile &&
         hadModifyEvent &&
-        _files.contains(batch.first.path)) {
-      type = EventType.modify;
+        _files.contains(path)) {
+      type = EventType.modifyFile;
     }
 
     switch (type) {
-      case EventType.create:
+      case EventType.createDirectory:
         // Issue 16003 means that a CREATE event for a directory can indicate
         // that the directory was moved and then re-created.
         // [_eventsBasedOnFileSystem] will handle this correctly by producing a
         // DELETE event followed by a CREATE event if the directory exists.
-        if (isDirectory!) return null;
-        return Event.createFile(batch.first.path);
+        return null;
+
+      case EventType.createFile:
       case EventType.delete:
-        return Event.delete(batch.first.path);
-      case EventType.modify:
-        return isDirectory!
-            ? Event.modifyDirectory(batch.first.path)
-            : Event.modifyFile(batch.first.path);
-      default:
-        throw StateError('unreachable');
+      case EventType.modifyFile:
+        return batch.firstWhere((e) => e.type == type);
+
+      // Guaranteed not present by `_sortEvents`.
+      case EventType.moveFile:
+      case EventType.moveDirectory:
+      case EventType.modifyDirectory:
+        throw StateError(type.name);
     }
   }
 

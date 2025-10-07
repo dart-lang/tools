@@ -182,49 +182,56 @@ class _WindowsDirectoryWatcher
           : [canonicalEvent];
 
       for (var event in events) {
-        if (event is FileSystemCreateEvent) {
-          if (!event.isDirectory!) {
+        switch (event.type) {
+          case EventType.createFile:
             if (_files.contains(path)) continue;
-
             _emitEvent(ChangeType.ADD, path);
             _files.add(path);
-            continue;
-          }
 
-          if (_files.containsDir(path)) continue;
+          case EventType.createDirectory:
+            if (_files.containsDir(path)) continue;
 
-          // "Path not found" can be caused by creating then quickly removing
-          // a directory: continue without reporting an error. Nested files
-          // that get removed during the `list` are already ignored by `list`
-          // itself, so there are no other types of "path not found" that
-          // might need different handling here.
-          var stream = Directory(path)
-              .list(recursive: true)
-              .ignoring<PathNotFoundException>();
-          var subscription = stream.listen((entity) {
-            if (entity is Directory) return;
-            if (_files.contains(entity.path)) return;
+            // "Path not found" can be caused by creating then quickly removing
+            // a directory: continue without reporting an error. Nested files
+            // that get removed during the `list` are already ignored by `list`
+            // itself, so there are no other types of "path not found" that
+            // might need different handling here.
+            var stream = Directory(path)
+                .list(recursive: true)
+                .ignoring<PathNotFoundException>();
+            var subscription = stream.listen((entity) {
+              if (entity is Directory) return;
+              if (_files.contains(entity.path)) return;
 
-            _emitEvent(ChangeType.ADD, entity.path);
-            _files.add(entity.path);
-          }, cancelOnError: true);
-          subscription.onDone(() {
-            _listSubscriptions.remove(subscription);
-          });
-          subscription.onError((Object e, StackTrace stackTrace) {
-            _listSubscriptions.remove(subscription);
-            _emitError(e, stackTrace);
-          });
-          _listSubscriptions.add(subscription);
-        } else if (event is FileSystemModifyEvent) {
-          if (!event.isDirectory!) {
+              _emitEvent(ChangeType.ADD, entity.path);
+              _files.add(entity.path);
+            }, cancelOnError: true);
+            subscription.onDone(() {
+              _listSubscriptions.remove(subscription);
+            });
+            subscription.onError((Object e, StackTrace stackTrace) {
+              _listSubscriptions.remove(subscription);
+              _emitError(e, stackTrace);
+            });
+            _listSubscriptions.add(subscription);
+
+          case EventType.modifyFile:
             _emitEvent(ChangeType.MODIFY, path);
-          }
-        } else {
-          assert(event is FileSystemDeleteEvent);
-          for (var removedPath in _files.remove(path)) {
-            _emitEvent(ChangeType.REMOVE, removedPath);
-          }
+
+          case EventType.delete:
+            for (var removedPath in _files.remove(path)) {
+              _emitEvent(ChangeType.REMOVE, removedPath);
+            }
+
+          // Move events are removed by `_canonicalEvent` and never returned by
+          // `_eventsBasedOnFileSystem`.
+          //
+          // [EventType.modifyDirectory] is guaranteed not present by
+          // `_sortEvents`.
+          case EventType.moveFile:
+          case EventType.moveDirectory:
+          case EventType.modifyDirectory:
+            throw StateError(event.type.name);
         }
       }
     });
@@ -236,24 +243,21 @@ class _WindowsDirectoryWatcher
   /// for example, a MOVE event becomes a DELETE event for the source and a
   /// CREATE event for the destination.
   ///
-  /// The returned events won't contain any [FileSystemMoveEvent]s, nor will it
-  /// contain any events relating to [path].
+  /// Events of type [EventType.modifyDirectory] are ignored and dropped because
+  /// they are always accompanied by either an [EventType.createDirectory] or an
+  /// [EventType.delete].
   Map<String, Set<Event>> _sortEvents(List<Event> batch) {
     var eventsForPaths = <String, Set<Event>>{};
 
-    // Events within directories that already have events are superfluous; the
-    // directory's full contents will be examined anyway, so we ignore such
-    // events. Emitting them could cause useless or out-of-order events.
+    // Events within created or moved directories are not needed as the
+    // directory's full contents will be listed.
     var directories = unionAll(
       batch.map((event) {
-        if (event.isDelete || !event.isDirectory!) return <String>{};
-        if (event is FileSystemMoveEvent) {
-          var destination = event.destination;
-          if (destination != null) {
-            return {event.path, destination};
-          }
+        if (event.type == EventType.createDirectory ||
+            event.type == EventType.moveDirectory) {
+          return event.paths;
         }
-        return {event.path};
+        return const <String>{};
       }),
     );
 
@@ -266,13 +270,12 @@ class _WindowsDirectoryWatcher
     }
 
     for (var event in batch) {
-      if (event.isMove) {
-        var destination = event.destination;
-        if (destination != null) {
-          addEvent(destination, event);
-        }
+      if (event.type == EventType.modifyDirectory) {
+        continue;
       }
-      addEvent(event.path, event);
+      for (final path in event.paths) {
+        addEvent(path, event);
+      }
     }
 
     return eventsForPaths;
@@ -312,33 +315,33 @@ class _WindowsDirectoryWatcher
 
       // If we previously thought this was a MODIFY, we now consider it to be a
       // CREATE or REMOVE event. This is safe for the same reason as above.
-      if (type == EventType.modify) {
+      if (type == EventType.modifyFile) {
         type = event.type;
         continue;
       }
 
       // A CREATE event contradicts a REMOVE event and vice versa.
-      assert(
-        type == EventType.create ||
-            type == EventType.delete ||
-            type == EventType.move,
-      );
+      assert(type == EventType.createFile ||
+          type == EventType.createDirectory ||
+          type == EventType.delete ||
+          type == EventType.moveFile);
       if (type != event.type) return null;
     }
 
     switch (type) {
-      case EventType.create:
-        return isDirectory!
-            ? Event.createDirectory(batch.first.path)
-            : Event.createFile(batch.first.path);
-      case EventType.delete:
-        return Event.delete(batch.first.path);
-      case EventType.modify:
-        return isDirectory!
-            ? Event.modifyDirectory(batch.first.path)
-            : Event.modifyFile(batch.first.path);
-      case EventType.move:
+      // Move events are always resolved by checking the filesystem state.
+      case EventType.moveFile:
+      case EventType.moveDirectory:
         return null;
+
+      case EventType.createFile:
+      case EventType.createDirectory:
+      case EventType.delete:
+      case EventType.modifyFile:
+        return batch.firstWhere((e) => e.type == type);
+
+      case EventType.modifyDirectory:
+        throw StateError(EventType.modifyDirectory.name);
     }
   }
 

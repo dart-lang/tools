@@ -55,13 +55,17 @@ extension type Event(FileSystemEvent event) {
   EventType get type {
     switch (event.type) {
       case FileSystemEvent.create:
-        return EventType.create;
+        return event.isDirectory
+            ? EventType.createDirectory
+            : EventType.createFile;
       case FileSystemEvent.delete:
         return EventType.delete;
       case FileSystemEvent.modify:
-        return EventType.modify;
+        return event.isDirectory
+            ? EventType.modifyDirectory
+            : EventType.modifyFile;
       case FileSystemEvent.move:
-        return EventType.move;
+        return event.isDirectory ? EventType.moveDirectory : EventType.moveFile;
       default:
         throw StateError('Invalid event type ${event.type}.');
     }
@@ -87,7 +91,10 @@ extension type Event(FileSystemEvent event) {
 /// See [FileSystemEvent.type].
 enum EventType {
   delete,
-  create,
-  modify,
-  move,
+  createFile,
+  createDirectory,
+  modifyFile,
+  modifyDirectory,
+  moveFile,
+  moveDirectory;
 }

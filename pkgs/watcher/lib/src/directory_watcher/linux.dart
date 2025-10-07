@@ -163,30 +163,35 @@ class _LinuxDirectoryWatcher
 
       changed.add(event.path);
 
-      if (event.isMove) {
-        files.remove(event.path);
-        dirs.remove(event.path);
-
-        var destination = event.destination;
-        if (destination == null) continue;
-
-        changed.add(destination);
-        if (event.isDirectory!) {
-          files.remove(destination);
-          dirs.add(destination);
-        } else {
+      switch (event.type) {
+        case EventType.moveFile:
+          files.remove(event.path);
+          var destination = event.destination;
+          if (destination == null) continue;
+          changed.add(destination);
           files.add(destination);
           dirs.remove(destination);
-        }
-      } else if (event is FileSystemDeleteEvent) {
-        files.remove(event.path);
-        dirs.remove(event.path);
-      } else if (event.isDirectory!) {
-        files.remove(event.path);
-        dirs.add(event.path);
-      } else {
-        files.add(event.path);
-        dirs.remove(event.path);
+
+        case EventType.moveDirectory:
+          dirs.remove(event.path);
+          var destination = event.destination;
+          if (destination == null) continue;
+          files.remove(destination);
+          dirs.add(destination);
+
+        case EventType.delete:
+          files.remove(event.path);
+          dirs.remove(event.path);
+
+        case EventType.createFile:
+        case EventType.modifyFile:
+          files.add(event.path);
+          dirs.remove(event.path);
+
+        case EventType.createDirectory:
+        case EventType.modifyDirectory:
+          files.remove(event.path);
+          dirs.add(event.path);
       }
     }
 
