@@ -5,6 +5,7 @@ description: >-
 repository: https://github.com/dart-lang/tools/tree/main/pkgs/bazel_worker
 issue_tracker: https://github.com/dart-lang/tools/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Abazel_worker
 
+# Using a workspace so the integration tests resolve to the local version of this package.
 workspace:
   - e2e_test
 
