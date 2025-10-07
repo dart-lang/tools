@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
+import 'event.dart';
+
 /// Returns `true` if [error] is a [FileSystemException] for a missing
 /// directory.
 bool isDirectoryNotFoundException(Object error) {
@@ -20,7 +22,7 @@ bool isDirectoryNotFoundException(Object error) {
 Set<T> unionAll<T>(Iterable<Set<T>> sets) =>
     sets.fold(<T>{}, (union, set) => union.union(set));
 
-extension BatchEvents<T> on Stream<T> {
+extension BatchEvents on Stream<FileSystemEvent> {
   /// Batches all events that are sent at the same time.
   ///
   /// When multiple events are synchronously added to a stream controller, the
@@ -28,11 +30,11 @@ extension BatchEvents<T> on Stream<T> {
   /// asynchronous firing of each event. In order to recreate the synchronous
   /// batches, this collates all the events that are received in "nearby"
   /// microtasks.
-  Stream<List<T>> batchEvents() {
-    var batch = Queue<T>();
-    return StreamTransformer<T, List<T>>.fromHandlers(
+  Stream<List<Event>> batchEvents() {
+    var batch = Queue<Event>();
+    return StreamTransformer<FileSystemEvent, List<Event>>.fromHandlers(
         handleData: (event, sink) {
-      batch.add(event);
+      batch.add(Event(event));
 
       // [Timer.run] schedules an event that runs after any microtasks that have
       // been scheduled.

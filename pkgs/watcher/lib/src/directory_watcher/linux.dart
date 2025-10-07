@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:async/async.dart';
 
 import '../directory_watcher.dart';
+import '../event.dart';
 import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
@@ -145,7 +146,7 @@ class _LinuxDirectoryWatcher
   }
 
   /// The callback that's run when a batch of changes comes in.
-  void _onBatch(List<FileSystemEvent> batch) {
+  void _onBatch(List<Event> batch) {
     var files = <String>{};
     var dirs = <String>{};
     var changed = <String>{};
@@ -162,7 +163,7 @@ class _LinuxDirectoryWatcher
 
       changed.add(event.path);
 
-      if (event is FileSystemMoveEvent) {
+      if (event.isMove) {
         files.remove(event.path);
         dirs.remove(event.path);
 
@@ -170,7 +171,7 @@ class _LinuxDirectoryWatcher
         if (destination == null) continue;
 
         changed.add(destination);
-        if (event.isDirectory) {
+        if (event.isDirectory!) {
           files.remove(destination);
           dirs.add(destination);
         } else {
@@ -180,7 +181,7 @@ class _LinuxDirectoryWatcher
       } else if (event is FileSystemDeleteEvent) {
         files.remove(event.path);
         dirs.remove(event.path);
-      } else if (event.isDirectory) {
+      } else if (event.isDirectory!) {
         files.remove(event.path);
         dirs.add(event.path);
       } else {

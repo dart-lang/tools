@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import '../directory_watcher.dart';
+import '../event.dart';
 import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
@@ -26,11 +27,11 @@ class WindowsDirectoryWatcher extends ResubscribableWatcher
 
 class _EventBatcher {
   static const Duration _batchDelay = Duration(milliseconds: 100);
-  final List<FileSystemEvent> events = [];
+  final List<Event> events = [];
   Timer? timer;
 
   void addEvent(FileSystemEvent event, void Function() callback) {
-    events.add(event);
+    events.add(Event(event));
     timer?.cancel();
     timer = Timer(_batchDelay, callback);
   }
@@ -173,7 +174,7 @@ class _WindowsDirectoryWatcher
   }
 
   /// The callback that's run when [Directory.watch] emits a batch of events.
-  void _onBatch(List<FileSystemEvent> batch) {
+  void _onBatch(List<Event> batch) {
     _sortEvents(batch).forEach((path, eventSet) {
       var canonicalEvent = _canonicalEvent(eventSet);
       var events = canonicalEvent == null
@@ -182,7 +183,7 @@ class _WindowsDirectoryWatcher
 
       for (var event in events) {
         if (event is FileSystemCreateEvent) {
-          if (!event.isDirectory) {
+          if (!event.isDirectory!) {
             if (_files.contains(path)) continue;
 
             _emitEvent(ChangeType.ADD, path);
@@ -216,7 +217,7 @@ class _WindowsDirectoryWatcher
           });
           _listSubscriptions.add(subscription);
         } else if (event is FileSystemModifyEvent) {
-          if (!event.isDirectory) {
+          if (!event.isDirectory!) {
             _emitEvent(ChangeType.MODIFY, path);
           }
         } else {
@@ -237,15 +238,15 @@ class _WindowsDirectoryWatcher
   ///
   /// The returned events won't contain any [FileSystemMoveEvent]s, nor will it
   /// contain any events relating to [path].
-  Map<String, Set<FileSystemEvent>> _sortEvents(List<FileSystemEvent> batch) {
-    var eventsForPaths = <String, Set<FileSystemEvent>>{};
+  Map<String, Set<Event>> _sortEvents(List<Event> batch) {
+    var eventsForPaths = <String, Set<Event>>{};
 
     // Events within directories that already have events are superfluous; the
     // directory's full contents will be examined anyway, so we ignore such
     // events. Emitting them could cause useless or out-of-order events.
     var directories = unionAll(
       batch.map((event) {
-        if (!event.isDirectory) return <String>{};
+        if (event.isDelete || !event.isDirectory!) return <String>{};
         if (event is FileSystemMoveEvent) {
           var destination = event.destination;
           if (destination != null) {
@@ -259,13 +260,13 @@ class _WindowsDirectoryWatcher
     bool isInModifiedDirectory(String path) =>
         directories.any((dir) => path != dir && p.isWithin(dir, path));
 
-    void addEvent(String path, FileSystemEvent event) {
+    void addEvent(String path, Event event) {
       if (isInModifiedDirectory(path)) return;
-      eventsForPaths.putIfAbsent(path, () => <FileSystemEvent>{}).add(event);
+      eventsForPaths.putIfAbsent(path, () => <Event>{}).add(event);
     }
 
     for (var event in batch) {
-      if (event is FileSystemMoveEvent) {
+      if (event.isMove) {
         var destination = event.destination;
         if (destination != null) {
           addEvent(destination, event);
@@ -287,57 +288,57 @@ class _WindowsDirectoryWatcher
   /// If [batch] does contain contradictory events, this returns `null` to
   /// indicate that the state of the path on the filesystem should be checked to
   /// determine what occurred.
-  FileSystemEvent? _canonicalEvent(Set<FileSystemEvent> batch) {
+  Event? _canonicalEvent(Set<Event> batch) {
     // An empty batch indicates that we've learned earlier that the batch is
     // contradictory (e.g. because of a move).
     if (batch.isEmpty) return null;
 
     var type = batch.first.type;
-    var isDir = batch.first.isDirectory;
+    var isDirectory = batch.first.isDirectory;
 
     for (var event in batch.skip(1)) {
       // If one event reports that the file is a directory and another event
       // doesn't, that's a contradiction.
-      if (isDir != event.isDirectory) return null;
+      if (isDirectory != event.isDirectory) return null;
 
       // Modify events don't contradict either CREATE or REMOVE events. We can
       // safely assume the file was modified after a CREATE or before the
       // REMOVE; otherwise there will also be a REMOVE or CREATE event
       // (respectively) that will be contradictory.
-      if (event is FileSystemModifyEvent) continue;
+      if (event.isModify) continue;
       assert(
-        event is FileSystemCreateEvent ||
-            event is FileSystemDeleteEvent ||
-            event is FileSystemMoveEvent,
+        event.isCreate || event.isDelete || event.isMove,
       );
 
       // If we previously thought this was a MODIFY, we now consider it to be a
       // CREATE or REMOVE event. This is safe for the same reason as above.
-      if (type == FileSystemEvent.modify) {
+      if (type == EventType.modify) {
         type = event.type;
         continue;
       }
 
       // A CREATE event contradicts a REMOVE event and vice versa.
       assert(
-        type == FileSystemEvent.create ||
-            type == FileSystemEvent.delete ||
-            type == FileSystemEvent.move,
+        type == EventType.create ||
+            type == EventType.delete ||
+            type == EventType.move,
       );
       if (type != event.type) return null;
     }
 
     switch (type) {
-      case FileSystemEvent.create:
-        return FileSystemCreateEvent(batch.first.path, isDir);
-      case FileSystemEvent.delete:
-        return FileSystemDeleteEvent(batch.first.path, isDir);
-      case FileSystemEvent.modify:
-        return FileSystemModifyEvent(batch.first.path, isDir, false);
-      case FileSystemEvent.move:
+      case EventType.create:
+        return isDirectory!
+            ? Event.createDirectory(batch.first.path)
+            : Event.createFile(batch.first.path);
+      case EventType.delete:
+        return Event.delete(batch.first.path);
+      case EventType.modify:
+        return isDirectory!
+            ? Event.modifyDirectory(batch.first.path)
+            : Event.modifyFile(batch.first.path);
+      case EventType.move:
         return null;
-      default:
-        throw StateError('unreachable');
     }
   }
 
@@ -348,7 +349,7 @@ class _WindowsDirectoryWatcher
   /// to the user, unlike the batched events from [Directory.watch]. The
   /// returned list may be empty, indicating that no changes occurred to [path]
   /// (probably indicating that it was created and then immediately deleted).
-  List<FileSystemEvent> _eventsBasedOnFileSystem(String path) {
+  List<Event> _eventsBasedOnFileSystem(String path) {
     var fileExisted = _files.contains(path);
     var dirExisted = _files.containsDir(path);
 
@@ -358,32 +359,32 @@ class _WindowsDirectoryWatcher
       fileExists = File(path).existsSync();
       dirExists = Directory(path).existsSync();
     } on FileSystemException {
-      return const <FileSystemEvent>[];
+      return const <Event>[];
     }
 
-    var events = <FileSystemEvent>[];
+    var events = <Event>[];
     if (fileExisted) {
       if (fileExists) {
-        events.add(FileSystemModifyEvent(path, false, false));
+        events.add(Event.modifyFile(path));
       } else {
-        events.add(FileSystemDeleteEvent(path, false));
+        events.add(Event.delete(path));
       }
     } else if (dirExisted) {
       if (dirExists) {
         // If we got contradictory events for a directory that used to exist and
         // still exists, we need to rescan the whole thing in case it was
         // replaced with a different directory.
-        events.add(FileSystemDeleteEvent(path, true));
-        events.add(FileSystemCreateEvent(path, true));
+        events.add(Event.delete(path));
+        events.add(Event.createDirectory(path));
       } else {
-        events.add(FileSystemDeleteEvent(path, true));
+        events.add(Event.delete(path));
       }
     }
 
     if (!fileExisted && fileExists) {
-      events.add(FileSystemCreateEvent(path, false));
+      events.add(Event.createFile(path));
     } else if (!dirExisted && dirExists) {
-      events.add(FileSystemCreateEvent(path, true));
+      events.add(Event.createDirectory(path));
     }
 
     return events;
