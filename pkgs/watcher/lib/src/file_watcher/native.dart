@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import '../event.dart';
 import '../file_watcher.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
@@ -33,7 +34,7 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
   Future<void> get ready => _readyCompleter.future;
   final _readyCompleter = Completer<void>();
 
-  StreamSubscription<List<FileSystemEvent>>? _subscription;
+  StreamSubscription<List<Event>>? _subscription;
 
   /// On MacOS only, whether the file existed on startup.
   bool? _existedAtStartup;
@@ -50,7 +51,7 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     var file = File(path);
 
     // Batch the events together so that we can dedupe them.
-    var stream = file.watch().batchEvents();
+    var stream = file.watch().map(Event.new).batchEvents();
 
     if (Platform.isMacOS) {
       var existedAtStartupFuture = file.exists();
@@ -65,8 +66,8 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
         onError: _eventsController.addError, onDone: _onDone);
   }
 
-  void _onBatch(List<FileSystemEvent> batch) {
-    if (batch.any((event) => event.type == FileSystemEvent.delete)) {
+  void _onBatch(List<Event> batch) {
+    if (batch.any((event) => event.type == EventType.delete)) {
       // If the file is deleted, the underlying stream will close. We handle
       // emitting our own REMOVE event in [_onDone].
       return;
@@ -77,7 +78,7 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
       // created just before the `watch`. If the file existed at startup then it
       // should be ignored.
       if (_existedAtStartup! &&
-          batch.every((event) => event.type == FileSystemEvent.create)) {
+          batch.every((event) => event.type == EventType.createFile)) {
         return;
       }
     }
