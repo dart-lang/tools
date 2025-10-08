@@ -51,7 +51,7 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     var file = File(path);
 
     // Batch the events together so that we can dedupe them.
-    var stream = file.watch().map(Event.new).batchEvents();
+    var stream = file.watch().batchAndConvertEvents();
 
     if (Platform.isMacOS) {
       var existedAtStartupFuture = file.exists();

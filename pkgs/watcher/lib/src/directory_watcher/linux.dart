@@ -82,7 +82,7 @@ class _LinuxDirectoryWatcher
     })));
 
     // Batch the inotify changes together so that we can dedup events.
-    var innerStream = _nativeEvents.stream.map(Event.new).batchEvents();
+    var innerStream = _nativeEvents.stream.batchAndConvertEvents();
     _listen(innerStream, _onBatch,
         onError: (Object error, StackTrace stackTrace) {
       // Guarantee that ready always completes.

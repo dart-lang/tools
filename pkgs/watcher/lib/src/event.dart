@@ -13,7 +13,47 @@ import 'dart:io';
 ///
 /// So, this extension type hides `isDirectory` and instead provides an
 /// [EventType] enum with the seven types of event actually used.
-extension type Event(FileSystemEvent event) {
+extension type Event._(FileSystemEvent event) {
+  /// Converts [event] to an [Event].
+  ///
+  /// Returns `null` and asserts `false` if [event] is unexpected on this
+  /// platform. So, it will cause tests to fail but real code can continue
+  /// ignoring the event.
+  static Event? checkAndConvert(FileSystemEvent event) {
+    var result = Event._(event);
+    if (Platform.isMacOS) {
+      if (result.type.isNeverReceivedOnMacOS) {
+        assert(false);
+        return null;
+      }
+    }
+    return result;
+  }
+
+  /// A create event for a file at [path].
+  static Event createFile(String path) =>
+      Event._(FileSystemCreateEvent(path, false));
+
+  /// A create event for a directory at [path].
+  static Event createDirectory(String path) =>
+      Event._(FileSystemCreateEvent(path, true));
+
+  /// A delete event for [path].
+  ///
+  /// Delete events do not specify whether they are for files or directories.
+  static Event delete(String path) => Event._(FileSystemDeleteEvent(
+      path,
+      // `FileSystemDeleteEvent` just discards `isDirectory`.
+      false /* isDirectory */));
+
+  /// A modify event for the file at [path].
+  static Event modifyFile(String path) => Event._(FileSystemModifyEvent(
+      path,
+      false /* isDirectory */,
+      // Don't set `contentChanged`, even pass through from the OS, as
+      // `package:watcher` never reads it.
+      false /* contentChanged */));
+
   /// See [FileSystemEvent.path].
   String get path => event.path;
 
@@ -56,4 +96,13 @@ enum EventType {
   modifyDirectory,
   moveFile,
   moveDirectory;
+
+  bool get isNeverReceivedOnMacOS {
+    // See https://github.com/dart-lang/sdk/issues/14806.
+    if (this == moveFile || this == moveDirectory) {
+      return true;
+    }
+    if (this == modifyDirectory) return true;
+    return false;
+  }
 }
