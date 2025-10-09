@@ -9,7 +9,8 @@ import 'package:test/test.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'shared.dart';
+import 'file_tests.dart';
+import 'link_tests.dart';
 
 void main() {
   // Use a short delay to make the tests run quickly.
@@ -20,7 +21,8 @@ void main() {
   group('with mock mtime', () {
     setUp(enableMockModificationTimes);
 
-    sharedTests();
+    fileTests();
+    linkTests(isNative: false);
 
     test('does not notify if the modification time did not change', () async {
       writeFile('a.txt', contents: 'before');
@@ -36,6 +38,7 @@ void main() {
   group('with real mtime', () {
     setUp(enableWaitingForDifferentModificationTimes);
 
-    sharedTests();
+    fileTests();
+    linkTests(isNative: false);
   });
 }

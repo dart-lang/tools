@@ -107,6 +107,11 @@ void enableMockModificationTimes() {
     if (link.existsSync()) {
       path = link.resolveSymbolicLinksSync();
     }
+    // Also resolve symbolic links in the enclosing directory.
+    final file = File(path);
+    if (file.existsSync()) {
+      path = file.resolveSymbolicLinksSync();
+    }
 
     var normalized = p.normalize(p.relative(path, from: d.sandbox));
 
@@ -324,6 +329,8 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
 
 /// Writes a file in the sandbox at [link] pointing to [target].
 ///
+/// [target] is relative to the sandbox, not to [link].
+///
 /// If [updateModified] is `false` and mock modification times are in use, the
 /// mock file modification time is not changed.
 void writeLink({
@@ -343,13 +350,12 @@ void writeLink({
     dir.createSync(recursive: true);
   }
 
-  Link(fullPath).createSync(target);
+  Link(fullPath).createSync(p.join(d.sandbox, target));
 
   if (updateModified) {
     link = p.normalize(link);
 
     final mockFileModificationTimes = _mockFileModificationTimes;
-
     if (mockFileModificationTimes != null) {
       mockFileModificationTimes[link] = _nextTimestamp++;
     }
@@ -358,7 +364,23 @@ void writeLink({
 
 /// Deletes a file in the sandbox at [path].
 void deleteFile(String path) {
-  File(p.join(d.sandbox, path)).deleteSync();
+  final fullPath = p.join(d.sandbox, path);
+  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
+      FileSystemEntityType.file);
+  File(fullPath).deleteSync();
+
+  final mockFileModificationTimes = _mockFileModificationTimes;
+  if (mockFileModificationTimes != null) {
+    mockFileModificationTimes.remove(path);
+  }
+}
+
+/// Deletes a link in the sandbox at [path].
+void deleteLink(String path) {
+  final fullPath = p.join(d.sandbox, path);
+  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
+      FileSystemEntityType.link);
+  Link(fullPath).deleteSync();
 
   final mockFileModificationTimes = _mockFileModificationTimes;
   if (mockFileModificationTimes != null) {
@@ -433,7 +455,10 @@ void renameDir(String from, String to) {
 
 /// Deletes a directory in the sandbox at [path].
 void deleteDir(String path) {
-  Directory(p.join(d.sandbox, path)).deleteSync(recursive: true);
+  final fullPath = p.join(d.sandbox, path);
+  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
+      FileSystemEntityType.directory);
+  Directory(fullPath).deleteSync(recursive: true);
 }
 
 /// Runs [callback] with every permutation of non-negative numbers for each
