@@ -13,17 +13,23 @@ import 'dart:io';
 ///
 /// So, this extension type hides `isDirectory` and instead provides an
 /// [EventType] enum with the seven types of event actually used.
-extension type Event._(FileSystemEvent event) {
+extension type Event._(FileSystemEvent _event) {
   /// Converts [event] to an [Event].
   ///
   /// Returns `null` and asserts `false` if [event] is unexpected on this
   /// platform. So, it will cause tests to fail but real code can continue
   /// ignoring the event.
+  ///
+  /// Returns `null` if [event] should be ignored on this platform.
   static Event? checkAndConvert(FileSystemEvent event) {
     var result = Event._(event);
     if (Platform.isMacOS) {
       if (result.type.isNeverReceivedOnMacOS) {
         assert(false);
+        return null;
+      }
+    } else if (Platform.isWindows) {
+      if (result.type.isIgnoredOnWindows) {
         return null;
       }
     }
@@ -55,32 +61,34 @@ extension type Event._(FileSystemEvent event) {
       false /* contentChanged */));
 
   /// See [FileSystemEvent.path].
-  String get path => event.path;
+  String get path => _event.path;
 
   EventType get type {
-    switch (event.type) {
+    switch (_event.type) {
       case FileSystemEvent.create:
-        return event.isDirectory
+        return _event.isDirectory
             ? EventType.createDirectory
             : EventType.createFile;
       case FileSystemEvent.delete:
         return EventType.delete;
       case FileSystemEvent.modify:
-        return event.isDirectory
+        return _event.isDirectory
             ? EventType.modifyDirectory
             : EventType.modifyFile;
       case FileSystemEvent.move:
-        return event.isDirectory ? EventType.moveDirectory : EventType.moveFile;
+        return _event.isDirectory
+            ? EventType.moveDirectory
+            : EventType.moveFile;
       default:
-        throw StateError('Invalid event type ${event.type}.');
+        throw StateError('Invalid event type ${_event.type}.');
     }
   }
 
   /// See [FileSystemMoveEvent.destination].
   ///
   /// For other types of event, always `null`.
-  String? get destination => event.type == FileSystemEvent.move
-      ? (event as FileSystemMoveEvent).destination
+  String? get destination => _event.type == FileSystemEvent.move
+      ? (_event as FileSystemMoveEvent).destination
       : null;
 }
 
@@ -104,5 +112,11 @@ enum EventType {
     }
     if (this == modifyDirectory) return true;
     return false;
+  }
+
+  bool get isIgnoredOnWindows {
+    // Ignore [modifyDirectory] because it's always accompanied by either
+    // [createDirectory] or [deleteDirectory].
+    return this == modifyDirectory;
   }
 }

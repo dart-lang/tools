@@ -172,6 +172,7 @@ class _MacOSDirectoryWatcher
               _emitEvent(ChangeType.REMOVE, removedPath);
             }
 
+          // Dropped by [Event.checkAndConvert].
           case EventType.moveFile:
           case EventType.moveDirectory:
           case EventType.modifyDirectory:
@@ -183,7 +184,7 @@ class _MacOSDirectoryWatcher
 
   /// Sort all the events in a batch into sets based on their path.
   ///
-  /// Events for `path` are discarded.
+  /// Events for [path] are discarded.
   ///
   /// Events under directories that are created are discarded.
   Map<String, Set<Event>> _sortEvents(List<Event> batch) {
