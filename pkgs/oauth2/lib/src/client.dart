@@ -73,7 +73,7 @@ class Client extends http.BaseClient {
   final bool _basicAuth;
 
   /// The underlying HTTP client.
-  http.Client? _httpClient;
+  final http.Client _httpClient;
 
   /// Creates a new client from a pre-existing set of credentials.
   ///
@@ -111,7 +111,7 @@ class Client extends http.BaseClient {
     }
 
     request.headers['authorization'] = 'Bearer ${credentials.accessToken}';
-    var response = await _httpClient!.send(request);
+    var response = await _httpClient.send(request);
 
     if (response.statusCode != 401) return response;
     if (!response.headers.containsKey('www-authenticate')) return response;
@@ -181,7 +181,6 @@ class Client extends http.BaseClient {
   /// Closes this client and its underlying HTTP client.
   @override
   void close() {
-    _httpClient?.close();
-    _httpClient = null;
+    _httpClient.close();
   }
 }
