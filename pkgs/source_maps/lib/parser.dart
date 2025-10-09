@@ -508,9 +508,9 @@ class SingleMapping extends Mapping {
   ///
   ///  [1]: https://tc39.es/ecma426/#sec-GetOriginalPositions
   TargetEntry? _findEntry(int line, int column) {
-    // To find the *last* TargetEntry, we scan backwards, starting from the first
-    // line after our target line, or the end of [lines].
-    int lineIndex = binarySearch(lines, (e) => e.line > line);
+    // To find the *last* TargetEntry, we scan backwards, starting from the
+    // first line after our target line, or the end of [lines].
+    var lineIndex = binarySearch(lines, (e) => e.line > line);
     while (--lineIndex >= 0) {
       final lineEntry = lines[lineIndex];
       final entries = lineEntry.entries;
