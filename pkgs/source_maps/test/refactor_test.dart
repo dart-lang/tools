@@ -128,7 +128,13 @@ void main() {
 
     // Lines added have no mapping (they should inherit the last mapping),
     // but the end of the edit region continues were we left off:
-    expect(_span(4, 1, map, file), isNull);
+    expect(
+        _span(4, 1, map, file),
+        'line 3, column 6: \n'
+        '  ,\n'
+        '3 | 01*3456789\n'
+        '  |      ^\n'
+        '  \'');
     expect(
         _span(4, 5, map, file),
         'line 3, column 8: \n'
