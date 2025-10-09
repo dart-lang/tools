@@ -10,12 +10,14 @@ import 'package:watcher/src/directory_watcher/linux.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'shared.dart';
+import 'file_tests.dart';
+import 'link_tests.dart';
 
 void main() {
   watcherFactory = LinuxDirectoryWatcher.new;
 
-  sharedTests();
+  fileTests();
+  linkTests(isNative: true);
 
   test('DirectoryWatcher creates a LinuxDirectoryWatcher on Linux', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<LinuxDirectoryWatcher>());

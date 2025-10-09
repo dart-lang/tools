@@ -9,14 +9,16 @@ import 'package:test/test.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'shared.dart';
+import 'file_tests.dart';
+import 'link_tests.dart';
 
 void main() {
   // Use a short delay to make the tests run quickly.
   watcherFactory = (dir) => PollingDirectoryWatcher(dir,
       pollingDelay: const Duration(milliseconds: 100));
 
-  sharedTests();
+  fileTests();
+  linkTests(isNative: false);
 
   test('does not notify if the modification time did not change', () async {
     writeFile('a.txt', contents: 'before');

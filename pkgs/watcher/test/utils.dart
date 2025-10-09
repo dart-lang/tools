@@ -265,7 +265,7 @@ void writeLink({
     dir.createSync(recursive: true);
   }
 
-  Link(fullPath).createSync(target);
+  Link(fullPath).createSync(p.join(d.sandbox, target));
 
   if (updateModified) {
     link = p.normalize(link);
@@ -277,6 +277,17 @@ void writeLink({
 /// Schedules deleting a file in the sandbox at [path].
 void deleteFile(String path) {
   File(p.join(d.sandbox, path)).deleteSync();
+
+  _mockFileModificationTimes.remove(path);
+}
+
+/// Schedules deleting a link in the sandbox at [path].
+///
+/// On Linux a link must be deleted with this method.
+/// TODO(davidmorgan): other platforms? Does this delete link or target?
+/// Check other delete links.
+void deleteLink(String path) {
+  Link(p.join(d.sandbox, path)).deleteSync();
 
   _mockFileModificationTimes.remove(path);
 }
