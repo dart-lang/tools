@@ -21,7 +21,7 @@ void main() {
     //
     // We can describe the mapping by an 'image' of the generated file, where
     // the positions marked as 'A' in the 'image' correspond to locations in the
-    // generated file that map to locations in source file file 'A'. Lines and
+    // generated file that map to locations in source file 'A'. Lines and
     // columns are zero-based.
     //
     //       0123456789
