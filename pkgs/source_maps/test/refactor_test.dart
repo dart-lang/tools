@@ -59,7 +59,6 @@ void main() {
     var printer = (txn.commit()..build(''));
     var output = printer.text;
     var map = parse(printer.map!);
-    print(printer.map);
     expect(output,
         '0123456789\n0*23456789\n01*34__\n    789\na___cdefghij\nabcd*fghij\n');
 

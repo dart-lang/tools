@@ -324,24 +324,20 @@ class SingleMapping extends Mapping {
       }
 
       var sourceUrl = sourceEntry.source.sourceUrl;
+      var urlId = urls.putIfAbsent(
+          sourceUrl == null ? '' : sourceUrl.toString(), () => urls.length);
+
+      if (sourceEntry.source is FileLocation) {
+        files.putIfAbsent(
+            urlId, () => (sourceEntry.source as FileLocation).file);
+      }
+
       var sourceEntryIdentifierName = sourceEntry.identifierName;
-      //if (sourceUrl == null && sourceEntryIdentifierName == null) {
-      //  targetEntries.add(TargetEntry(sourceEntry.target.column));
-      //} else {
-        var urlId = urls.putIfAbsent(
-            sourceUrl == null ? '' : sourceUrl.toString(), () => urls.length);
-
-        if (sourceEntry.source is FileLocation) {
-          files.putIfAbsent(
-              urlId, () => (sourceEntry.source as FileLocation).file);
-        }
-
-        var srcNameId = sourceEntryIdentifierName == null
-            ? null
-            : names.putIfAbsent(sourceEntryIdentifierName, () => names.length);
-        targetEntries.add(TargetEntry(sourceEntry.target.column, urlId,
-            sourceEntry.source.line, sourceEntry.source.column, srcNameId));
-      //}
+      var srcNameId = sourceEntryIdentifierName == null
+          ? null
+          : names.putIfAbsent(sourceEntryIdentifierName, () => names.length);
+      targetEntries.add(TargetEntry(sourceEntry.target.column, urlId,
+          sourceEntry.source.line, sourceEntry.source.column, srcNameId));
     }
     return SingleMapping._(fileUrl, urls.values.map((i) => files[i]).toList(),
         urls.keys.toList(), names.keys.toList(), lines);
