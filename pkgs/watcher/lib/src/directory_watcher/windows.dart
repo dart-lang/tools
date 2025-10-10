@@ -30,10 +30,8 @@ class _EventBatcher {
   final List<Event> events = [];
   Timer? timer;
 
-  void addEvent(FileSystemEvent event, void Function() callback) {
-    final convertedEvent = Event.checkAndConvert(event);
-    if (convertedEvent == null) return;
-    events.add(convertedEvent);
+  void addEvent(Event event, void Function() callback) {
+    events.add(event);
     timer?.cancel();
     timer = Timer(_batchDelay, callback);
   }
@@ -166,8 +164,28 @@ class _WindowsDirectoryWatcher
     );
   }
 
-  void _onEvent(FileSystemEvent event) {
+  void _onEvent(FileSystemEvent fileSystemEvent) {
     assert(isReady);
+    final event = Event.checkAndConvert(fileSystemEvent);
+    if (event == null) return;
+    if (event.type == EventType.moveFile) {
+      _batchEvent(Event.delete(event.path));
+      final destination = event.destination;
+      if (destination != null) {
+        _batchEvent(Event.createFile(destination));
+      }
+    } else if (event.type == EventType.moveDirectory) {
+      _batchEvent(Event.delete(event.path));
+      final destination = event.destination;
+      if (destination != null) {
+        _batchEvent(Event.createDirectory(destination));
+      }
+    } else {
+      _batchEvent(event);
+    }
+  }
+
+  void _batchEvent(Event event) {
     final batcher = _eventBatchers.putIfAbsent(event.path, _EventBatcher.new);
     batcher.addEvent(event, () {
       _eventBatchers.remove(event.path);
@@ -225,7 +243,7 @@ class _WindowsDirectoryWatcher
               _emitEvent(ChangeType.REMOVE, removedPath);
             }
 
-          // Move events are removed by `_canonicalEvent` and never returned by
+          // Move events are removed by `_onEvent` and never returned by
           // `_eventsBasedOnFileSystem`.
           case EventType.moveFile:
           case EventType.moveDirectory:
@@ -240,38 +258,27 @@ class _WindowsDirectoryWatcher
   }
 
   /// Sort all the events in a batch into sets based on their path.
-  ///
-  /// Events for [path] are discarded.
   Map<String, Set<Event>> _sortEvents(List<Event> batch) {
     var eventsForPaths = <String, Set<Event>>{};
 
-    // Events within created or moved directories are not needed as the
-    // directory's full contents will be listed.
-    var directories = unionAll(
-      batch.map((event) {
-        if (event.type == EventType.createDirectory ||
-            event.type == EventType.moveDirectory) {
-          final destination = event.destination;
-          return {event.path, if (destination != null) destination};
-        }
-        return const <String>{};
-      }),
-    );
+    // Events within directories that already have create events are not needed
+    // as the directory's full content will be listed.
+    var createdDirectories = unionAll(batch.map((event) {
+      return event.type == EventType.createDirectory
+          ? {event.path}
+          : const <String>{};
+    }));
 
-    bool isInModifiedDirectory(String path) =>
-        directories.any((dir) => path != dir && p.isWithin(dir, path));
+    bool isInCreatedDirectory(String path) =>
+        createdDirectories.any((dir) => path != dir && p.isWithin(dir, path));
 
     void addEvent(String path, Event event) {
-      if (isInModifiedDirectory(path)) return;
+      if (isInCreatedDirectory(path)) return;
       eventsForPaths.putIfAbsent(path, () => <Event>{}).add(event);
     }
 
     for (var event in batch) {
       addEvent(event.path, event);
-      final destination = event.destination;
-      if (destination != null) {
-        addEvent(destination, event);
-      }
     }
 
     return eventsForPaths;
@@ -297,11 +304,6 @@ class _WindowsDirectoryWatcher
       type = EventType.createFile;
     } else {
       // There are incompatible event types, check the filesystem.
-      return null;
-    }
-
-    // Move events are always resolved by checking the filesystem.
-    if (type == EventType.moveFile || type == EventType.moveDirectory) {
       return null;
     }
 

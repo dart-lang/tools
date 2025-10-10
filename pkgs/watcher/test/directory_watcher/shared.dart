@@ -137,8 +137,6 @@ void sharedTests() {
 
       renameFile('from.txt', 'to.txt');
       await inAnyOrder([isRemoveEvent('from.txt'), isModifyEvent('to.txt')]);
-    }, onPlatform: {
-      'windows': const Skip('https://github.com/dart-lang/watcher/issues/125')
     });
   });
 
@@ -280,8 +278,6 @@ void sharedTests() {
         isRemoveEvent('old'),
         isAddEvent('new')
       ]);
-    }, onPlatform: {
-      'windows': const Skip('https://github.com/dart-lang/watcher/issues/21')
     });
 
     test('emits events for many nested files added at once', () async {
