@@ -10,12 +10,14 @@ import 'package:watcher/src/directory_watcher/mac_os.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'shared.dart';
+import 'file_tests.dart';
+import 'link_tests.dart';
 
 void main() {
   watcherFactory = MacOSDirectoryWatcher.new;
 
-  sharedTests();
+  fileTests();
+  linkTests(isNative: true);
 
   test('DirectoryWatcher creates a MacOSDirectoryWatcher on Mac OS', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<MacOSDirectoryWatcher>());
