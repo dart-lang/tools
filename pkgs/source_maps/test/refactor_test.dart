@@ -59,6 +59,7 @@ void main() {
     var printer = (txn.commit()..build(''));
     var output = printer.text;
     var map = parse(printer.map!);
+    print(printer.map);
     expect(output,
         '0123456789\n0*23456789\n01*34__\n    789\na___cdefghij\nabcd*fghij\n');
 
@@ -126,8 +127,9 @@ void main() {
         '  |      ^\n'
         "  '");
 
-    // Lines added have no mapping (they should inherit the last mapping),
-    // but the end of the edit region continues were we left off:
+    // Newly added lines had no additional mapping, so they inherit the last
+    // position on the previously mapped line. The end of the region continues
+    // where the previous mapping left off.
     expect(
         _span(4, 1, map, file),
         'line 3, column 6: \n'

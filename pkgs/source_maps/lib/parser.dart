@@ -324,20 +324,24 @@ class SingleMapping extends Mapping {
       }
 
       var sourceUrl = sourceEntry.source.sourceUrl;
-      var urlId = urls.putIfAbsent(
-          sourceUrl == null ? '' : sourceUrl.toString(), () => urls.length);
-
-      if (sourceEntry.source is FileLocation) {
-        files.putIfAbsent(
-            urlId, () => (sourceEntry.source as FileLocation).file);
-      }
-
       var sourceEntryIdentifierName = sourceEntry.identifierName;
-      var srcNameId = sourceEntryIdentifierName == null
-          ? null
-          : names.putIfAbsent(sourceEntryIdentifierName, () => names.length);
-      targetEntries.add(TargetEntry(sourceEntry.target.column, urlId,
-          sourceEntry.source.line, sourceEntry.source.column, srcNameId));
+      //if (sourceUrl == null && sourceEntryIdentifierName == null) {
+      //  targetEntries.add(TargetEntry(sourceEntry.target.column));
+      //} else {
+        var urlId = urls.putIfAbsent(
+            sourceUrl == null ? '' : sourceUrl.toString(), () => urls.length);
+
+        if (sourceEntry.source is FileLocation) {
+          files.putIfAbsent(
+              urlId, () => (sourceEntry.source as FileLocation).file);
+        }
+
+        var srcNameId = sourceEntryIdentifierName == null
+            ? null
+            : names.putIfAbsent(sourceEntryIdentifierName, () => names.length);
+        targetEntries.add(TargetEntry(sourceEntry.target.column, urlId,
+            sourceEntry.source.line, sourceEntry.source.column, srcNameId));
+      //}
     }
     return SingleMapping._(fileUrl, urls.values.map((i) => files[i]).toList(),
         urls.keys.toList(), names.keys.toList(), lines);
@@ -520,6 +524,9 @@ class SingleMapping extends Mapping {
       if (lineEntry.line != line) return entries.last;
       final index = binarySearch(entries, (e) => e.column > column);
       if (index > 0) return entries[index - 1];
+      // We get here when the line has entries, but they are all after the
+      // column. When this happens, the line and column correspond to the
+      // previous entry, usually the last entry at the previous `lineIndex`.
     }
     return null;
   }

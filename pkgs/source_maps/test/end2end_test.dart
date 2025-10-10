@@ -104,6 +104,39 @@ void main() {
     check(outputExpr, mapping, inputExpr, true);
   });
 
+  test('build + parse - continued entries', () {
+    final uriA = Uri.parse('A');
+    final uriB = Uri.parse('B');
+    final uriM = Uri.parse('output.map');
+
+    SourceLocation location(Uri? uri, int line, int column) {
+      final offset = line * 10 + column;
+      return SourceLocation(offset, sourceUrl: uri, line: line, column: column);
+    }
+
+    final location1 = location(uriM, 3, 3);
+    final location2 = location(uriM, 6, 5);
+    final location3 = location(uriM, 8, 7);
+
+    final json = (SourceMapBuilder()
+          ..addLocation(SourceLocation(0, sourceUrl: uriA), location1, null)
+          ..addLocation(SourceLocation(0, sourceUrl: uriB), location2, null)
+          ..addLocation(SourceLocation(0), location3, null))
+        .build(uriM.toString());
+
+    final mapping = parseJson(json);
+
+    for (var line = 0; line < 10; line++) {
+      for (var column = 0; column < 10; column++) {
+        final span = mapping.spanFor(line, column);
+        if (span == null)
+
+        print('$line $column\t$span');
+      }
+    }
+    print(json);
+  });
+
   test('printer projecting marks + parse', () {
     var out = inputContent.replaceAll('long', '_s');
     var file = SourceFile.fromString(out, url: 'output2.dart');
