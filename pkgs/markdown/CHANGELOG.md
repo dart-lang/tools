@@ -1,5 +1,7 @@
 ## 7.3.1-wip
 
+* Preserve metadata passed to fenced code blocks as
+  `data-metadata` on the created `pre` element.
 * Update the README link to the markdown playground
   (https://dart-lang.github.io/tools).
 * Update `package:web` API references in the example.

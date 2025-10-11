@@ -22,9 +22,9 @@ class FencedCodeBlockSyntax extends BlockSyntax {
 
   @override
   Node parse(BlockParser parser) {
-    final openingFence = _FenceMatch.fromMatch(pattern.firstMatch(
-      escapePunctuation(parser.current.content),
-    )!);
+    final openingFence = _FenceMatch.fromMatch(
+      pattern.firstMatch(escapePunctuation(parser.current.content))!,
+    );
 
     var text = parseChildLines(
       parser,
@@ -39,16 +39,31 @@ class FencedCodeBlockSyntax extends BlockSyntax {
       text = '$text\n';
     }
 
+    final (languageString, metadataString) = openingFence.languageAndMetadata;
+
     final code = Element.text('code', text);
-    if (openingFence.hasLanguage) {
-      var language = decodeHtmlCharacters(openingFence.language);
-      if (parser.document.encodeHtml) {
-        language = escapeHtmlAttribute(language);
-      }
-      code.attributes['class'] = 'language-$language';
+    if (languageString != null) {
+      final processedLanguage = _processAttribute(languageString,
+          encodeHtml: parser.document.encodeHtml);
+      code.attributes['class'] = 'language-$processedLanguage';
     }
 
-    return Element('pre', [code]);
+    final pre = Element('pre', [code]);
+    if (metadataString != null) {
+      final processedMetadata = _processAttribute(metadataString,
+          encodeHtml: parser.document.encodeHtml);
+      pre.attributes['data-metadata'] = processedMetadata;
+    }
+
+    return pre;
+  }
+
+  static String _processAttribute(String value, {bool encodeHtml = false}) {
+    final decodedValue = decodeHtmlCharacters(value);
+    if (encodeHtml) {
+      return escapeHtmlAttribute(decodedValue);
+    }
+    return decodedValue;
   }
 
   @override
@@ -144,12 +159,30 @@ class _FenceMatch {
   // https://spec.commonmark.org/0.30/#info-string.
   final String info;
 
-  // The first word of the info string is typically used to specify the language
-  // of the code sample,
-  // https://spec.commonmark.org/0.30/#example-143.
-  String get language => info.split(' ').first;
+  /// Returns the language and remaining metadata from the [info] string.
+  ///
+  /// The language is the first word of the info string,
+  /// to match the (unspecified, but typical) behavior of CommonMark parsers,
+  /// as suggested in https://spec.commonmark.org/0.30/#example-143.
+  ///
+  /// The metadata is any remaining part of the info string after the language.
+  (String? language, String? metadata) get languageAndMetadata {
+    if (info.isEmpty) {
+      return (null, null);
+    }
+
+    // We assume the info string is trimmed already.
+    final firstSpaceIndex = info.indexOf(' ');
+    if (firstSpaceIndex == -1) {
+      // If there is no space, the whole string is the language.
+      return (info, null);
+    }
+
+    return (
+      info.substring(0, firstSpaceIndex),
+      info.substring(firstSpaceIndex + 1),
+    );
+  }
 
   bool get hasInfo => info.isNotEmpty;
-
-  bool get hasLanguage => language.isNotEmpty;
 }
