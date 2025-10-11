@@ -13,7 +13,7 @@ import 'link.dart';
 
 /// A generic representation of a file system.
 ///
-/// Note that this class uses `dart:io` only inasmuch as it deals in the types
+/// Note that this class uses `dart:io` only in as much as it deals in the types
 /// exposed by the `dart:io` library. Subclasses should document their level of
 /// dependence on the library (and the associated implications of using that
 /// implementation in the browser).
