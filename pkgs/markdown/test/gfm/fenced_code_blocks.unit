@@ -214,7 +214,7 @@ def foo(x)
 end
 ~~~~~~~
 <<<
-<pre><code class="language-ruby">def foo(x)
+<pre data-metadata="startline=3 $%@#$"><code class="language-ruby">def foo(x)
   return 3
 end
 </code></pre>
@@ -234,7 +234,7 @@ foo</p>
 foo
 ~~~
 <<<
-<pre><code class="language-aa">foo
+<pre data-metadata="``` ~~~"><code class="language-aa">foo
 </code></pre>
 >>> Fenced code blocks - 117
 ```
