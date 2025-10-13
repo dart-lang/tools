@@ -1,8 +1,7 @@
-## 2.0.5
+## 2.0.4
 
-* Updated README
+* Updated README with example for Flutter Web.
 
-## 2.0.4-wip
 
 * Require Dart 3.4
 
