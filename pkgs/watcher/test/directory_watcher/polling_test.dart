@@ -16,14 +16,26 @@ void main() {
   watcherFactory = (dir) => PollingDirectoryWatcher(dir,
       pollingDelay: const Duration(milliseconds: 100));
 
-  sharedTests();
+  // Filesystem modification times can be low resolution, mock them.
+  group('with mock mtime', () {
+    setUp(enableMockModificationTimes);
 
-  test('does not notify if the modification time did not change', () async {
-    writeFile('a.txt', contents: 'before');
-    writeFile('b.txt', contents: 'before');
-    await startWatcher();
-    writeFile('a.txt', contents: 'after', updateModified: false);
-    writeFile('b.txt', contents: 'after');
-    await expectModifyEvent('b.txt');
+    sharedTests();
+
+    test('does not notify if the modification time did not change', () async {
+      writeFile('a.txt', contents: 'before');
+      writeFile('b.txt', contents: 'before');
+      await startWatcher();
+      writeFile('a.txt', contents: 'after', updateModified: false);
+      writeFile('b.txt', contents: 'after');
+      await expectModifyEvent('b.txt');
+    });
+  });
+
+  // Also test with delayed writes and real mtimes.
+  group('with real mtime', () {
+    setUp(enableWaitingForDifferentModificationTimes);
+
+    sharedTests();
   });
 }

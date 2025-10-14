@@ -28,7 +28,11 @@ set watcherFactory(WatcherFactory factory) {
 ///
 /// Instead, we'll just mock that out. Each time a file is written, we manually
 /// increment the mod time for that file instantly.
-final _mockFileModificationTimes = <String, int>{};
+Map<String, int>? _mockFileModificationTimes;
+
+/// If real modification times are used, a directory where a test file will be
+/// updated to wait for a new modification time.
+Directory? _waitForModificationTimesDirectory;
 
 late WatcherFactory _watcherFactory;
 
@@ -54,13 +58,57 @@ late StreamQueue<WatchEvent> _watcherEvents;
 /// be done automatically via [addTearDown] in [startWatcher].
 var _hasClosedStream = true;
 
-/// Creates a new [Watcher] that watches a temporary file or directory and
-/// starts monitoring it for events.
+/// Enables waiting before writes to ensure a different modification time.
 ///
-/// If [path] is provided, watches a path in the sandbox with that name.
-Future<void> startWatcher({String? path}) async {
+/// This will allow polling watchers to notice all writes.
+///
+/// Resets at the end of the test.
+void enableWaitingForDifferentModificationTimes() {
+  if (_waitForModificationTimesDirectory != null) return;
+  _waitForModificationTimesDirectory =
+      Directory.systemTemp.createTempSync('dart_test_');
+  addTearDown(() {
+    _waitForModificationTimesDirectory!.deleteSync(recursive: true);
+    _waitForModificationTimesDirectory = null;
+  });
+}
+
+/// If [enableWaitingForDifferentModificationTimes] was called, sleeps until a
+/// modified file has a new modified timestamp.
+void _maybeWaitForDifferentModificationTime() {
+  if (_waitForModificationTimesDirectory == null) return;
+  var file = File(p.join(_waitForModificationTimesDirectory!.path, 'file'));
+  if (file.existsSync()) file.deleteSync();
+  file.createSync();
+  final time = file.statSync().modified;
+  while (true) {
+    file.deleteSync();
+    file.createSync();
+    final updatedTime = file.statSync().modified;
+    if (time != updatedTime) {
+      return;
+    }
+    sleep(const Duration(milliseconds: 1));
+  }
+}
+
+/// Enables mock modification times so that all writes set a different
+/// modification time.
+///
+/// This will allow polling watchers to notice all writes.
+///
+/// Resets at the end of the test.
+void enableMockModificationTimes() {
+  _mockFileModificationTimes = {};
   mockGetModificationTime((path) {
-    final normalized = p.normalize(p.relative(path, from: d.sandbox));
+    // Resolve symbolic links before looking up mtime to match documented
+    // behavior of `FileSystemEntity.stat`.
+    final link = Link(path);
+    if (link.existsSync()) {
+      path = link.resolveSymbolicLinksSync();
+    }
+
+    var normalized = p.normalize(p.relative(path, from: d.sandbox));
 
     // Make sure we got a path in the sandbox.
     if (!p.isRelative(normalized) || normalized.startsWith('..')) {
@@ -70,10 +118,21 @@ Future<void> startWatcher({String? path}) async {
         'Path is not in the sandbox: $path not in ${d.sandbox}',
       );
     }
-    var mtime = _mockFileModificationTimes[normalized];
+    final mockFileModificationTimes = _mockFileModificationTimes!;
+    var mtime = mockFileModificationTimes[normalized];
     return mtime != null ? DateTime.fromMillisecondsSinceEpoch(mtime) : null;
   });
+  addTearDown(() {
+    _mockFileModificationTimes = null;
+    mockGetModificationTime(null);
+  });
+}
 
+/// Creates a new [Watcher] that watches a temporary file or directory and
+/// starts monitoring it for events.
+///
+/// If [path] is provided, watches a path in the sandbox with that name.
+Future<void> startWatcher({String? path}) async {
   // We want to wait until we're ready *after* we subscribe to the watcher's
   // events.
   var watcher = createWatcher(path: path);
@@ -221,11 +280,18 @@ Future allowModifyEvent(String path) =>
 /// set back to a previously used value.
 int _nextTimestamp = 1;
 
-/// Schedules writing a file in the sandbox at [path] with [contents].
+/// Writes a file in the sandbox at [path] with [contents].
 ///
-/// If [contents] is omitted, creates an empty file. If [updateModified] is
-/// `false`, the mock file modification time is not changed.
+/// If [path] is currently a link it is deleted and a file is written in its
+/// place.
+///
+/// If [contents] is omitted, creates an empty file.
+///
+/// If [updateModified] is `false` and mock modification times are in use, the
+/// mock file modification time is not changed.
 void writeFile(String path, {String? contents, bool? updateModified}) {
+  _maybeWaitForDifferentModificationTime();
+
   contents ??= '';
   updateModified ??= true;
 
@@ -237,24 +303,36 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
     dir.createSync(recursive: true);
   }
 
-  File(fullPath).writeAsStringSync(contents);
+  var file = File(fullPath);
+  // `File.writeAsStringSync` would write through the link, so if there is a
+  // link then start by deleting it.
+  if (FileSystemEntity.typeSync(fullPath, followLinks: false) ==
+      FileSystemEntityType.link) {
+    file.deleteSync();
+  }
+  file.writeAsStringSync(contents);
+  // Check that `fullPath` now refers to a file, not a link.
+  expect(FileSystemEntity.typeSync(fullPath), FileSystemEntityType.file);
 
-  if (updateModified) {
+  final mockFileModificationTimes = _mockFileModificationTimes;
+  if (mockFileModificationTimes != null && updateModified) {
     path = p.normalize(path);
 
-    _mockFileModificationTimes[path] = _nextTimestamp++;
+    mockFileModificationTimes[path] = _nextTimestamp++;
   }
 }
 
-/// Schedules writing a file in the sandbox at [link] pointing to [target].
+/// Writes a file in the sandbox at [link] pointing to [target].
 ///
-/// If [updateModified] is `false`, the mock file modification time is not
-/// changed.
+/// If [updateModified] is `false` and mock modification times are in use, the
+/// mock file modification time is not changed.
 void writeLink({
   required String link,
   required String target,
   bool? updateModified,
 }) {
+  _maybeWaitForDifferentModificationTime();
+
   updateModified ??= true;
 
   var fullPath = p.join(d.sandbox, link);
@@ -270,63 +348,90 @@ void writeLink({
   if (updateModified) {
     link = p.normalize(link);
 
-    _mockFileModificationTimes[link] = _nextTimestamp++;
-  }
-}
+    final mockFileModificationTimes = _mockFileModificationTimes;
 
-/// Schedules deleting a file in the sandbox at [path].
-void deleteFile(String path) {
-  File(p.join(d.sandbox, path)).deleteSync();
-
-  _mockFileModificationTimes.remove(path);
-}
-
-/// Schedules renaming a file in the sandbox from [from] to [to].
-void renameFile(String from, String to) {
-  File(p.join(d.sandbox, from)).renameSync(p.join(d.sandbox, to));
-
-  // Make sure we always use the same separator on Windows.
-  to = p.normalize(to);
-
-  _mockFileModificationTimes.update(to, (value) => value + 1,
-      ifAbsent: () => 1);
-}
-
-/// Schedules renaming a link in the sandbox from [from] to [to].
-///
-/// On MacOS and Linux links can also be named with `renameFile`. On Windows,
-/// however, a link must be renamed with this method.
-void renameLink(String from, String to) {
-  Link(p.join(d.sandbox, from)).renameSync(p.join(d.sandbox, to));
-
-  // Make sure we always use the same separator on Windows.
-  to = p.normalize(to);
-
-  _mockFileModificationTimes.update(to, (value) => value + 1,
-      ifAbsent: () => 1);
-}
-
-/// Schedules creating a directory in the sandbox at [path].
-void createDir(String path) {
-  Directory(p.join(d.sandbox, path)).createSync();
-}
-
-/// Schedules renaming a directory in the sandbox from [from] to [to].
-void renameDir(String from, String to) {
-  Directory(p.join(d.sandbox, from)).renameSync(p.join(d.sandbox, to));
-
-  // Migrate timestamps for any files in this folder.
-  final knownFilePaths = _mockFileModificationTimes.keys.toList();
-  for (final filePath in knownFilePaths) {
-    if (p.isWithin(from, filePath)) {
-      _mockFileModificationTimes[filePath.replaceAll(from, to)] =
-          _mockFileModificationTimes[filePath]!;
-      _mockFileModificationTimes.remove(filePath);
+    if (mockFileModificationTimes != null) {
+      mockFileModificationTimes[link] = _nextTimestamp++;
     }
   }
 }
 
-/// Schedules deleting a directory in the sandbox at [path].
+/// Deletes a file in the sandbox at [path].
+void deleteFile(String path) {
+  File(p.join(d.sandbox, path)).deleteSync();
+
+  final mockFileModificationTimes = _mockFileModificationTimes;
+  if (mockFileModificationTimes != null) {
+    mockFileModificationTimes.remove(path);
+  }
+}
+
+/// Renames a file in the sandbox from [from] to [to].
+void renameFile(String from, String to) {
+  _maybeWaitForDifferentModificationTime();
+
+  var absoluteTo = p.join(d.sandbox, to);
+  File(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+      FileSystemEntityType.file);
+
+  final mockFileModificationTimes = _mockFileModificationTimes;
+  if (mockFileModificationTimes != null) {
+    // Make sure we always use the same separator on Windows.
+    to = p.normalize(to);
+    mockFileModificationTimes.update(to, (value) => value + 1,
+        ifAbsent: () => 1);
+  }
+}
+
+/// Renames a link in the sandbox from [from] to [to].
+///
+/// On MacOS and Linux links can also be named with `renameFile`. On Windows,
+/// however, a link must be renamed with this method.
+void renameLink(String from, String to) {
+  _maybeWaitForDifferentModificationTime();
+
+  var absoluteTo = p.join(d.sandbox, to);
+  Link(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+      FileSystemEntityType.link);
+
+  final mockFileModificationTimes = _mockFileModificationTimes;
+  if (mockFileModificationTimes != null) {
+    // Make sure we always use the same separator on Windows.
+    to = p.normalize(to);
+    mockFileModificationTimes.update(to, (value) => value + 1,
+        ifAbsent: () => 1);
+  }
+}
+
+/// Creates a directory in the sandbox at [path].
+void createDir(String path) {
+  Directory(p.join(d.sandbox, path)).createSync();
+}
+
+/// Renames a directory in the sandbox from [from] to [to].
+void renameDir(String from, String to) {
+  var absoluteTo = p.join(d.sandbox, to);
+  Directory(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+      FileSystemEntityType.directory);
+
+  final mockFileModificationTimes = _mockFileModificationTimes;
+  if (mockFileModificationTimes != null) {
+    // Migrate timestamps for any files in this folder.
+    final knownFilePaths = mockFileModificationTimes.keys.toList();
+    for (final filePath in knownFilePaths) {
+      if (p.isWithin(from, filePath)) {
+        mockFileModificationTimes[filePath.replaceAll(from, to)] =
+            mockFileModificationTimes[filePath]!;
+        mockFileModificationTimes.remove(filePath);
+      }
+    }
+  }
+}
+
+/// Deletes a directory in the sandbox at [path].
 void deleteDir(String path) {
   Directory(p.join(d.sandbox, path)).deleteSync(recursive: true);
 }

@@ -16,7 +16,7 @@ MockTimeCallback? _mockTimeCallback;
 /// The OS file modification time has pretty rough granularity (like a few
 /// seconds) which can make for slow tests that rely on modtime. This lets you
 /// replace it with something you control.
-void mockGetModificationTime(MockTimeCallback callback) {
+void mockGetModificationTime(MockTimeCallback? callback) {
   _mockTimeCallback = callback;
 }
 
