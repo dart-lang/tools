@@ -304,11 +304,14 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
   }
 
   var file = File(fullPath);
+  // `File.writeAsStringSync` would write through the link, so if there is a
+  // link then start by deleting it.
   if (FileSystemEntity.typeSync(fullPath, followLinks: false) ==
       FileSystemEntityType.link) {
     file.deleteSync();
   }
   file.writeAsStringSync(contents);
+  // Check that `fullPath` now refers to a file, not a link.
   expect(FileSystemEntity.typeSync(fullPath), FileSystemEntityType.file);
 
   final mockFileModificationTimes = _mockFileModificationTimes;
