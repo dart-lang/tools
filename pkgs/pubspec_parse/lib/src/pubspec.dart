@@ -126,8 +126,11 @@ class Pubspec {
     Map<String, Dependency>? dependencyOverrides,
     this.flutter,
     Map<String, String?>? executables,
-  }) : // ignore: deprecated_member_use_from_same_package
-       authors = _normalizeAuthors(author, authors),
+  }) : authors // ignore: deprecated_member_use_from_same_package
+       = _normalizeAuthors(
+         author,
+         authors,
+       ),
        environment = environment ?? const {},
        dependencies = dependencies ?? const {},
        devDependencies = devDependencies ?? const {},
