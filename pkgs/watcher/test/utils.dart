@@ -164,62 +164,18 @@ void startClosingEventStream() async {
   await _watcherEvents.cancel(immediate: true);
 }
 
-/// A list of [StreamMatcher]s that have been collected using
-/// [_collectStreamMatcher].
-List<StreamMatcher>? _collectedStreamMatchers;
-
-/// Collects all stream matchers that are registered within [block] into a
-/// single stream matcher.
-///
-/// The returned matcher will match each of the collected matchers in order.
-StreamMatcher _collectStreamMatcher(void Function() block) {
-  var oldStreamMatchers = _collectedStreamMatchers;
-  var collectedStreamMatchers = _collectedStreamMatchers = <StreamMatcher>[];
-  try {
-    block();
-    return emitsInOrder(collectedStreamMatchers);
-  } finally {
-    _collectedStreamMatchers = oldStreamMatchers;
-  }
-}
-
-/// Either add [streamMatcher] as an expectation to [_watcherEvents], or collect
-/// it with [_collectStreamMatcher].
+/// Add [streamMatcher] as an expectation to [_watcherEvents].
 ///
 /// [streamMatcher] can be a [StreamMatcher], a [Matcher], or a value.
-Future _expectOrCollect(Matcher streamMatcher) {
-  var collectedStreamMatchers = _collectedStreamMatchers;
-  if (collectedStreamMatchers != null) {
-    collectedStreamMatchers.add(emits(streamMatcher));
-    return Future.sync(() {});
-  } else {
-    return expectLater(_watcherEvents, emits(streamMatcher));
-  }
+Future _expect(Matcher streamMatcher) {
+  return expectLater(_watcherEvents, emits(streamMatcher));
 }
 
 /// Expects that [matchers] will match emitted events in any order.
 ///
 /// [matchers] may be [Matcher]s or values, but not [StreamMatcher]s.
-Future inAnyOrder(Iterable matchers) {
-  matchers = matchers.toSet();
-  return _expectOrCollect(emitsInAnyOrder(matchers));
-}
-
-/// Expects that the expectations established in either [block1] or [block2]
-/// will match the emitted events.
-///
-/// If both blocks match, the one that consumed more events will be used.
-Future allowEither(void Function() block1, void Function() block2) =>
-    _expectOrCollect(emitsAnyOf(
-        [_collectStreamMatcher(block1), _collectStreamMatcher(block2)]));
-
-/// Allows the expectations established in [block] to match the emitted events.
-///
-/// If the expectations in [block] don't match, no error will be raised and no
-/// events will be consumed. If this is used at the end of a test,
-/// [startClosingEventStream] should be called before it.
-Future allowEvents(void Function() block) =>
-    _expectOrCollect(mayEmit(_collectStreamMatcher(block)));
+Future inAnyOrder(Iterable matchers) =>
+    _expect(emitsInAnyOrder(matchers.toSet()));
 
 /// Returns a StreamMatcher that matches a [WatchEvent] with the given [type]
 /// and [path].
@@ -274,24 +230,16 @@ Future<List<WatchEvent>> takeEvents({required Duration duration}) async {
 
 /// Expects that the next event emitted will be for an add event for [path].
 Future expectAddEvent(String path) =>
-    _expectOrCollect(isWatchEvent(ChangeType.ADD, path));
+    _expect(isWatchEvent(ChangeType.ADD, path));
 
 /// Expects that the next event emitted will be for a modification event for
 /// [path].
 Future expectModifyEvent(String path) =>
-    _expectOrCollect(isWatchEvent(ChangeType.MODIFY, path));
+    _expect(isWatchEvent(ChangeType.MODIFY, path));
 
 /// Expects that the next event emitted will be for a removal event for [path].
 Future expectRemoveEvent(String path) =>
-    _expectOrCollect(isWatchEvent(ChangeType.REMOVE, path));
-
-/// Consumes a modification event for [path] if one is emitted at this point in
-/// the schedule, but doesn't throw an error if it isn't.
-///
-/// If this is used at the end of a test, [startClosingEventStream] should be
-/// called before it.
-Future allowModifyEvent(String path) =>
-    _expectOrCollect(mayEmit(isWatchEvent(ChangeType.MODIFY, path)));
+    _expect(isWatchEvent(ChangeType.REMOVE, path));
 
 /// Track a fake timestamp to be used when writing files. This always increases
 /// so that files that are deleted and re-created do not have their timestamp

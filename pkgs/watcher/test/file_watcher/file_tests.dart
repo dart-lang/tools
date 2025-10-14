@@ -14,10 +14,6 @@ void fileTests({required bool isNative}) {
   });
 
   test("doesn't notify if the file isn't modified", () async {
-    // TODO(davidmorgan): fix startup race on MacOS.
-    if (isNative && Platform.isMacOS) {
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    }
     await startWatcher(path: 'file.txt');
     await expectNoEvents();
   });

@@ -32,15 +32,9 @@ void main() {
     renameDir('dir/sub', 'sub');
     renameDir('sub', 'dir/sub');
 
-    await allowEither(() {
-      inAnyOrder(withPermutations(
-          (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-
-      inAnyOrder(withPermutations(
-          (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-    }, () {
-      inAnyOrder(withPermutations(
-          (i, j, k) => isModifyEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-    });
+    await inAnyOrder(withPermutations(
+        (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+    await inAnyOrder(withPermutations(
+        (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
   });
 }
