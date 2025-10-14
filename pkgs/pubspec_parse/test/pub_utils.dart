@@ -32,8 +32,9 @@ Future<ProcResult> tryPub(String content) async {
   );
 
   if (result.exitCode == 0) {
-    final lockContent =
-        File(p.join(d.sandbox, 'pubspec.lock')).readAsStringSync();
+    final lockContent = File(
+      p.join(d.sandbox, 'pubspec.lock'),
+    ).readAsStringSync();
 
     printOnFailure(
       [
