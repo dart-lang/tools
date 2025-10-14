@@ -1,3 +1,7 @@
+## 1.5.1-wip
+
+- Require Dart 3.8
+
 ## 1.5.0
 
 - Added fields to `Pubspec`: `executables`, `resolution`, `workspace`.

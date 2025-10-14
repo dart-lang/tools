@@ -1,3 +1,7 @@
+## 0.15.7-wip
+
+- Require Dart `3.6`
+
 ## 0.15.6
 
 - Performance improvements.
