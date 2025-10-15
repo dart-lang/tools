@@ -60,7 +60,7 @@ void linkTests({required bool isNative}) {
 
   test('notifies when a link is removed', () async {
     await startWatcher(path: 'link.txt');
-    deleteFile('link.txt');
+    deleteLink('link.txt');
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
