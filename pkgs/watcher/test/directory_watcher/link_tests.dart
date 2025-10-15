@@ -140,7 +140,7 @@ void linkTests({required bool isNative}) {
 
     writeFile('targets/a.targetdir/a.txt');
 
-// TODO(davidmorgan): reconcile differences.
+    // TODO(davidmorgan): reconcile differences.
     if (!isNative || Platform.isLinux) {
       await expectAddEvent('links/a.link/a.txt');
     } else {
