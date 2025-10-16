@@ -9,6 +9,8 @@
   moved onto `b`, it would be reported as three events: delete `a`, delete `b`,
   create `b`. Now it's reported as two events: delete `a`, modify `b`. This
   matches the behavior of the Linux and MacOS watchers.
+- Bug fix: with `PollingDirectoryWatcher`, fix spurious modify event emitted
+  because of a file delete during polling.
 
 ## 1.1.4
 
