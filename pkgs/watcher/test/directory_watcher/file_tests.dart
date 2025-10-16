@@ -12,6 +12,12 @@ import 'package:watcher/src/utils.dart';
 import '../utils.dart';
 
 void fileTests() {
+  for (var i = 0; i != runsPerTest; ++i) {
+    _fileTests();
+  }
+}
+
+void _fileTests() {
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');

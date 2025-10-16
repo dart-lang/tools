@@ -12,6 +12,9 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:watcher/src/stat.dart';
 import 'package:watcher/watcher.dart';
 
+/// Edit this to run fast-running tests many times.
+int runsPerTest = 1;
+
 typedef WatcherFactory = Watcher Function(String directory);
 
 /// Sets the function used to create the watcher.

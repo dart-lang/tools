@@ -13,6 +13,12 @@ void fileTests({required bool isNative}) {
     writeFile('file.txt');
   });
 
+  for (var i = 0; i != runsPerTest; ++i) {
+    _fileTests(isNative: isNative);
+  }
+}
+
+void _fileTests({required bool isNative}) {
   test("doesn't notify if the file isn't modified", () async {
     await startWatcher(path: 'file.txt');
     await expectNoEvents();
