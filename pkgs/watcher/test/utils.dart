@@ -254,9 +254,22 @@ Future<WatchEvent?> waitForEvent({
   return result;
 }
 
-/// Expects that no events are omitted for [duration].
+/// Expects that no events are emitted for [duration].
 Future expectNoEvents({Duration duration = const Duration(seconds: 1)}) async {
   expect(await waitForEvent(duration: duration), isNull);
+}
+
+/// Takes all events emitted for [duration].
+Future<List<WatchEvent>> takeEvents({required Duration duration}) async {
+  final result = <WatchEvent>[];
+  final stopwatch = Stopwatch()..start();
+  while (stopwatch.elapsed < duration) {
+    final event = await waitForEvent(duration: duration - stopwatch.elapsed);
+    if (event != null) {
+      result.add(event);
+    }
+  }
+  return result;
 }
 
 /// Expects that the next event emitted will be for an add event for [path].
@@ -445,7 +458,9 @@ void renameDir(String from, String to) {
     final knownFilePaths = mockFileModificationTimes.keys.toList();
     for (final filePath in knownFilePaths) {
       if (p.isWithin(from, filePath)) {
-        mockFileModificationTimes[filePath.replaceAll(from, to)] =
+        final movedPath =
+            p.normalize(p.join(to, filePath.substring(from.length + 1)));
+        mockFileModificationTimes[movedPath] =
             mockFileModificationTimes[filePath]!;
         mockFileModificationTimes.remove(filePath);
       }
