@@ -500,31 +500,37 @@ class SingleMapping extends Mapping {
       StateError('Invalid entry in sourcemap, expected 1, 4, or 5'
           ' values, but got $seen.\ntargeturl: $targetUrl, line: $line');
 
-  /// Returns [TargetLineEntry] which includes the location in the target [line]
-  /// number. In particular, the resulting entry is the last entry whose line
-  /// number is lower or equal to [line].
-  TargetLineEntry? _findLine(int line) {
-    var index = binarySearch(lines, (e) => e.line > line);
-    return (index <= 0) ? null : lines[index - 1];
-  }
-
-  /// Returns [TargetEntry] which includes the location denoted by
-  /// [line], [column]. If [lineEntry] corresponds to [line], then this will be
-  /// the last entry whose column is lower or equal than [column]. If
-  /// [lineEntry] corresponds to a line prior to [line], then the result will be
-  /// the very last entry on that line.
-  TargetEntry? _findColumn(int line, int column, TargetLineEntry? lineEntry) {
-    if (lineEntry == null || lineEntry.entries.isEmpty) return null;
-    if (lineEntry.line != line) return lineEntry.entries.last;
-    var entries = lineEntry.entries;
-    var index = binarySearch(entries, (e) => e.column > column);
-    return (index <= 0) ? null : entries[index - 1];
+  /// Returns the last [TargetEntry] which includes the location denoted by
+  /// [line], [column].
+  ///
+  /// This corresponds to the computation of _last_ in [GetOriginalPositions][1]
+  /// in the sourcemap specification.
+  ///
+  ///  [1]: https://tc39.es/ecma426/#sec-GetOriginalPositions
+  TargetEntry? _findEntry(int line, int column) {
+    // To find the *last* TargetEntry, we scan backwards, starting from the
+    // first line after our target line, or the end of [lines].
+    var lineIndex = binarySearch(lines, (e) => e.line > line);
+    while (--lineIndex >= 0) {
+      final lineEntry = lines[lineIndex];
+      final entries = lineEntry.entries;
+      if (entries.isEmpty) continue;
+      // If we scan to a line before the target line, the last entry extends to
+      // cover our search location.
+      if (lineEntry.line != line) return entries.last;
+      final index = binarySearch(entries, (e) => e.column > column);
+      if (index > 0) return entries[index - 1];
+      // We get here when the line has entries, but they are all after the
+      // column. When this happens, the line and column correspond to the
+      // previous entry, usually the last entry at the previous `lineIndex`.
+    }
+    return null;
   }
 
   @override
   SourceMapSpan? spanFor(int line, int column,
       {Map<String, SourceFile>? files, String? uri}) {
-    var entry = _findColumn(line, column, _findLine(line));
+    final entry = _findEntry(line, column);
     if (entry == null) return null;
 
     var sourceUrlId = entry.sourceUrlId;

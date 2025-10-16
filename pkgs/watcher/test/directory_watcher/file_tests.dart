@@ -1,6 +1,7 @@
 // Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+
 import 'dart:io' as io;
 import 'dart:isolate';
 
@@ -10,7 +11,7 @@ import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
 
-void sharedTests() {
+void fileTests() {
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
@@ -137,8 +138,6 @@ void sharedTests() {
 
       renameFile('from.txt', 'to.txt');
       await inAnyOrder([isRemoveEvent('from.txt'), isModifyEvent('to.txt')]);
-    }, onPlatform: {
-      'windows': const Skip('https://github.com/dart-lang/watcher/issues/125')
     });
   });
 
@@ -280,8 +279,6 @@ void sharedTests() {
         isRemoveEvent('old'),
         isAddEvent('new')
       ]);
-    }, onPlatform: {
-      'windows': const Skip('https://github.com/dart-lang/watcher/issues/21')
     });
 
     test('emits events for many nested files added at once', () async {

@@ -1,6 +1,7 @@
 ## 1.6.0-wip
 
 - Added `toJson` method to `Pubspec` to serialize the object back to a `Map`.
+- Require Dart 3.8
 
 ## 1.5.0
 

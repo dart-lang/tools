@@ -18,29 +18,23 @@ void main() {
 
   group('errors', () {
     test('List', () {
-      _expectThrows(
-        [],
-        r'''
+      _expectThrows([], r'''
 line 4, column 10: Unsupported value for "dep". Not a valid dependency value.
   ╷
 4 │   "dep": []
   │          ^^
-  ╵''',
-      );
+  ╵''');
     });
 
     test('int', () {
-      _expectThrows(
-        42,
-        r'''
+      _expectThrows(42, r'''
 line 4, column 10: Unsupported value for "dep". Not a valid dependency value.
   ╷
 4 │     "dep": 42
   │ ┌──────────^
 5 │ │  }
   │ └─^
-  ╵''',
-      );
+  ╵''');
     });
 
     test('map with too many keys', () {
@@ -91,15 +85,12 @@ void _hostedDependency() {
   });
 
   test('bad string version', () {
-    _expectThrows(
-      'not a version',
-      r'''
+    _expectThrows('not a version', r'''
 line 4, column 10: Unsupported value for "dep". Could not parse version "not a version". Unknown text at "not a version".
   ╷
 4 │   "dep": "not a version"
   │          ^^^^^^^^^^^^^^^
-  ╵''',
-    );
+  ╵''');
   });
 
   test('map w/ just version', () async {
@@ -216,26 +207,25 @@ void _sdkDependency() {
   });
 
   test('with version', () async {
-    final dep = await _dependency<SdkDependency>(
-      {'sdk': 'flutter', 'version': '>=1.2.3 <2.0.0'},
-    );
+    final dep = await _dependency<SdkDependency>({
+      'sdk': 'flutter',
+      'version': '>=1.2.3 <2.0.0',
+    });
     expect(dep.sdk, 'flutter');
     expect(dep.version.toString(), '>=1.2.3 <2.0.0');
     expect(dep.toString(), 'SdkDependency: flutter');
   });
 
   test('null content', () {
-    _expectThrowsContaining(
-      {'sdk': null},
-      r"type 'Null' is not a subtype of type 'String'",
-    );
+    _expectThrowsContaining({
+      'sdk': null,
+    }, r"type 'Null' is not a subtype of type 'String'");
   });
 
   test('number content', () {
-    _expectThrowsContaining(
-      {'sdk': 42},
-      r"type 'int' is not a subtype of type 'String'",
-    );
+    _expectThrowsContaining({
+      'sdk': 42,
+    }, r"type 'int' is not a subtype of type 'String'");
   });
 }
 
@@ -250,8 +240,10 @@ void _gitDependency() {
 
   test('string with version key is ignored', () async {
     // Regression test for https://github.com/dart-lang/pubspec_parse/issues/13
-    final dep =
-        await _dependency<GitDependency>({'git': 'url', 'version': '^1.2.3'});
+    final dep = await _dependency<GitDependency>({
+      'git': 'url',
+      'version': '^1.2.3',
+    });
     expect(dep.url.toString(), 'url');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
@@ -263,10 +255,9 @@ void _gitDependency() {
     if (skipTryParse) {
       print('FYI: not validating git@ URI on travis due to failure');
     }
-    final dep = await _dependency<GitDependency>(
-      {'git': 'git@localhost:dep.git'},
-      skipTryPub: skipTryParse,
-    );
+    final dep = await _dependency<GitDependency>({
+      'git': 'git@localhost:dep.git',
+    }, skipTryPub: skipTryParse);
     expect(dep.url.toString(), 'ssh://git@localhost/dep.git');
     expect(dep.path, isNull);
     expect(dep.ref, isNull);
@@ -324,28 +315,21 @@ line 5, column 11: Unsupported value for "git". Must be a String or a Map.
   });
 
   test('git - empty map', () {
-    _expectThrowsContaining(
-      {'git': <String, dynamic>{}},
-      r"type 'Null' is not a subtype of type 'String'",
-    );
+    _expectThrowsContaining({
+      'git': <String, dynamic>{},
+    }, r"type 'Null' is not a subtype of type 'String'");
   });
 
   test('git - null url', () {
-    _expectThrowsContaining(
-      {
-        'git': {'url': null},
-      },
-      r"type 'Null' is not a subtype of type 'String'",
-    );
+    _expectThrowsContaining({
+      'git': {'url': null},
+    }, r"type 'Null' is not a subtype of type 'String'");
   });
 
   test('git - int url', () {
-    _expectThrowsContaining(
-      {
-        'git': {'url': 42},
-      },
-      r"type 'int' is not a subtype of type 'String'",
-    );
+    _expectThrowsContaining({
+      'git': {'url': 42},
+    }, r"type 'int' is not a subtype of type 'String'");
   });
 }
 
@@ -357,9 +341,10 @@ void _pathDependency() {
   });
 
   test('valid with version key is ignored', () async {
-    final dep = await _dependency<PathDependency>(
-      {'path': '../path', 'version': '^1.2.3'},
-    );
+    final dep = await _dependency<PathDependency>({
+      'path': '../path',
+      'version': '^1.2.3',
+    });
     expect(dep.path, '../path');
     expect(dep.toString(), 'PathDependency: path@../path');
   });
@@ -406,36 +391,27 @@ line 5, column 12: Unsupported value for "path". Must be a String.
 }
 
 void _expectThrows(Object content, String expectedError) {
-  expectParseThrows(
-    {
-      'name': 'sample',
-      'dependencies': {'dep': content},
-    },
-    expectedError,
-  );
+  expectParseThrows({
+    'name': 'sample',
+    'dependencies': {'dep': content},
+  }, expectedError);
 }
 
 void _expectThrowsContaining(Object content, String errorText) {
-  expectParseThrowsContaining(
-    {
-      'name': 'sample',
-      'dependencies': {'dep': content},
-    },
-    errorText,
-  );
+  expectParseThrowsContaining({
+    'name': 'sample',
+    'dependencies': {'dep': content},
+  }, errorText);
 }
 
 Future<T> _dependency<T extends Dependency>(
   Object? content, {
   bool skipTryPub = false,
 }) async {
-  final value = await parse(
-    {
-      ...defaultPubspec,
-      'dependencies': {'dep': content},
-    },
-    skipTryPub: skipTryPub,
-  );
+  final value = await parse({
+    ...defaultPubspec,
+    'dependencies': {'dep': content},
+  }, skipTryPub: skipTryPub);
   expect(value.name, 'sample');
   expect(value.dependencies, hasLength(1));
 

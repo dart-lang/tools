@@ -160,8 +160,13 @@ class _PollingDirectoryWatcher
 
     if (_events.isClosed) return;
 
-    _lastModifieds[file] = modified;
     _polledFiles.add(file);
+    if (modified == null) {
+      // The file was in the directory listing but has been removed since then.
+      // Don't add to _lastModifieds, it will be reported as a REMOVE.
+      return;
+    }
+    _lastModifieds[file] = modified;
 
     // Only notify if we're ready to emit events.
     if (!isReady) return;

@@ -57,9 +57,7 @@ class Pubspec {
   /// If there is exactly 1 value in [authors], returns it.
   ///
   /// If there are 0 or more than 1, returns `null`.
-  @Deprecated(
-    'See https://dart.dev/tools/pub/pubspec#authorauthors',
-  )
+  @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
   String? get author {
     if (authors.length == 1) {
       return authors.single;
@@ -67,9 +65,7 @@ class Pubspec {
     return null;
   }
 
-  @Deprecated(
-    'See https://dart.dev/tools/pub/pubspec#authorauthors',
-  )
+  @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
   final List<String> authors;
   final String? documentation;
 
@@ -109,13 +105,9 @@ class Pubspec {
     this.name, {
     this.version,
     this.publishTo,
-    @Deprecated(
-      'See https://dart.dev/tools/pub/pubspec#authorauthors',
-    )
+    @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
     String? author,
-    @Deprecated(
-      'See https://dart.dev/tools/pub/pubspec#authorauthors',
-    )
+    @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
     List<String>? authors,
     Map<String, VersionConstraint?>? environment,
     this.homepage,
@@ -134,14 +126,16 @@ class Pubspec {
     Map<String, Dependency>? dependencyOverrides,
     this.flutter,
     Map<String, String?>? executables,
-  })  :
-        // ignore: deprecated_member_use_from_same_package
-        authors = _normalizeAuthors(author, authors),
-        environment = environment ?? const {},
-        dependencies = dependencies ?? const {},
-        devDependencies = devDependencies ?? const {},
-        executables = executables ?? const {},
-        dependencyOverrides = dependencyOverrides ?? const {} {
+  }) : authors // ignore: deprecated_member_use_from_same_package
+       = _normalizeAuthors(
+         author,
+         authors,
+       ),
+       environment = environment ?? const {},
+       dependencies = dependencies ?? const {},
+       devDependencies = devDependencies ?? const {},
+       executables = executables ?? const {},
+       dependencyOverrides = dependencyOverrides ?? const {} {
     if (name.isEmpty) {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }
@@ -192,10 +186,7 @@ class Pubspec {
       );
 
   static List<String> _normalizeAuthors(String? author, List<String>? authors) {
-    final value = <String>{
-      if (author != null) author,
-      ...?authors,
-    };
+    final value = <String>{if (author != null) author, ...?authors};
     return value.toList();
   }
 }
@@ -262,10 +253,7 @@ Map<String, String?> _executablesMap(Map? source) =>
 
 Map<String, String?> _serializeEnvironment(
   Map<String, VersionConstraint?> map,
-) =>
-    map.map(
-      (key, value) => MapEntry(key, value?.toString()),
-    );
+) => map.map((key, value) => MapEntry(key, value?.toString()));
 
 String? _versionToString(Version? version) => version?.toString();
 

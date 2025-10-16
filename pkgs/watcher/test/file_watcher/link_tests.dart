@@ -20,13 +20,25 @@ void linkTests({required bool isNative}) {
   test('notifies when a link is overwritten with an identical file', () async {
     await startWatcher(path: 'link.txt');
     writeFile('link.txt');
-    await expectModifyEvent('link.txt');
+
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative) {
+      await expectNoEvents();
+    } else {
+      await expectModifyEvent('link.txt');
+    }
   });
 
   test('notifies when a link is overwritten with a different file', () async {
     await startWatcher(path: 'link.txt');
     writeFile('link.txt', contents: 'modified');
-    await expectModifyEvent('link.txt');
+
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative) {
+      await expectNoEvents();
+    } else {
+      await expectModifyEvent('link.txt');
+    }
   });
 
   test(
@@ -35,12 +47,7 @@ void linkTests({required bool isNative}) {
       await startWatcher(path: 'link.txt');
       writeFile('target.txt');
 
-      // TODO(davidmorgan): reconcile differences.
-      if (isNative) {
-        await expectModifyEvent('link.txt');
-      } else {
-        await expectNoEvents();
-      }
+      await expectModifyEvent('link.txt');
     },
   );
 
@@ -48,17 +55,12 @@ void linkTests({required bool isNative}) {
     await startWatcher(path: 'link.txt');
     writeFile('target.txt', contents: 'modified');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative) {
-      await expectModifyEvent('link.txt');
-    } else {
-      await expectNoEvents();
-    }
+    await expectModifyEvent('link.txt');
   });
 
   test('notifies when a link is removed', () async {
     await startWatcher(path: 'link.txt');
-    deleteFile('link.txt');
+    deleteLink('link.txt');
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
@@ -79,21 +81,11 @@ void linkTests({required bool isNative}) {
 
     writeFile('target.txt', contents: 'modified');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative) {
-      await expectModifyEvent('link.txt');
-    } else {
-      await expectNoEvents();
-    }
+    await expectModifyEvent('link.txt');
 
     writeFile('target.txt', contents: 'modified again');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative) {
-      await expectModifyEvent('link.txt');
-    } else {
-      await expectNoEvents();
-    }
+    await expectModifyEvent('link.txt');
   });
 
   test('notifies when a link is moved away', () async {
@@ -145,12 +137,7 @@ void linkTests({required bool isNative}) {
     writeFile('old.txt');
     renameFile('old.txt', 'target.txt');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative) {
-      await expectModifyEvent('link.txt');
-    } else {
-      await expectNoEvents();
-    }
+    await expectModifyEvent('link.txt');
   });
 
   test('notifies when a different file is moved over the target', () async {
@@ -158,11 +145,6 @@ void linkTests({required bool isNative}) {
     writeFile('old.txt', contents: 'modified');
     renameFile('old.txt', 'target.txt');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative) {
-      await expectModifyEvent('link.txt');
-    } else {
-      await expectNoEvents();
-    }
+    await expectModifyEvent('link.txt');
   });
 }

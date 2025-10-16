@@ -41,36 +41,33 @@ void main() {
       final version = Version.parse('1.2.3');
       final sdkConstraint = VersionConstraint.parse('>=3.6.0 <4.0.0');
 
-      final value = await parse(
-        {
-          'name': 'sample',
-          'version': version.toString(),
-          'publish_to': 'none',
-          'author': 'name@example.com',
-          'environment': {'sdk': sdkConstraint.toString()},
-          'description': 'description',
-          'homepage': 'homepage',
-          'documentation': 'documentation',
-          'repository': 'https://github.com/example/repo',
-          'issue_tracker': 'https://github.com/example/repo/issues',
-          'funding': ['https://patreon.com/example'],
-          'topics': ['widget', 'button'],
-          'ignored_advisories': ['111', '222'],
-          'screenshots': [
-            {'description': 'my screenshot', 'path': 'path/to/screenshot'},
-          ],
-          'workspace': ['pkg1', 'pkg2'],
-          'resolution': 'workspace',
-          'executables': {
-            'my_script': 'bin/my_script.dart',
-            'my_script2': 'bin/my_script2.dart',
-          },
-          'dependencies': {'foo': '1.0.0'},
-          'dev_dependencies': {'bar': '2.0.0'},
-          'dependency_overrides': {'baz': '3.0.0'},
+      final value = await parse({
+        'name': 'sample',
+        'version': version.toString(),
+        'publish_to': 'none',
+        'author': 'name@example.com',
+        'environment': {'sdk': sdkConstraint.toString()},
+        'description': 'description',
+        'homepage': 'homepage',
+        'documentation': 'documentation',
+        'repository': 'https://github.com/example/repo',
+        'issue_tracker': 'https://github.com/example/repo/issues',
+        'funding': ['https://patreon.com/example'],
+        'topics': ['widget', 'button'],
+        'ignored_advisories': ['111', '222'],
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+        ],
+        'workspace': ['pkg1', 'pkg2'],
+        'resolution': 'workspace',
+        'executables': {
+          'my_script': 'bin/my_script.dart',
+          'my_script2': 'bin/my_script2.dart',
         },
-        skipTryPub: true,
-      );
+        'dependencies': {'foo': '1.0.0'},
+        'dev_dependencies': {'bar': '2.0.0'},
+        'dependency_overrides': {'baz': '3.0.0'},
+      }, skipTryPub: true);
 
       final jsonValue = value.toJson();
 
@@ -94,16 +91,12 @@ void main() {
       expect(jsonValue['dev_dependencies'], hasLength(1));
       expect(
         jsonValue['dev_dependencies'],
-        containsPair('bar', {
-          'version': '2.0.0',
-        }),
+        containsPair('bar', {'version': '2.0.0'}),
       );
       expect(jsonValue['dependency_overrides'], hasLength(1));
       expect(
         jsonValue['dependency_overrides'],
-        containsPair('baz', {
-          'version': '3.0.0',
-        }),
+        containsPair('baz', {'version': '3.0.0'}),
       );
       expect(jsonValue['repository'], 'https://github.com/example/repo');
       expect(
@@ -155,36 +148,33 @@ void main() {
     test('all fields set', () async {
       final version = Version.parse('1.2.3');
       final sdkConstraint = VersionConstraint.parse('>=3.6.0 <4.0.0');
-      final value = await parse(
-        {
-          'name': 'sample',
-          'version': version.toString(),
-          'publish_to': 'none',
-          'author': 'name@example.com',
-          'environment': {'sdk': sdkConstraint.toString()},
-          'description': 'description',
-          'homepage': 'homepage',
-          'documentation': 'documentation',
-          'repository': 'https://github.com/example/repo',
-          'issue_tracker': 'https://github.com/example/repo/issues',
-          'funding': ['https://patreon.com/example'],
-          'topics': ['widget', 'button'],
-          'ignored_advisories': ['111', '222'],
-          'screenshots': [
-            {'description': 'my screenshot', 'path': 'path/to/screenshot'},
-          ],
-          'workspace': ['pkg1', 'pkg2'],
-          'resolution': 'workspace',
-          'executables': {
-            'my_script': 'bin/my_script.dart',
-            'my_script2': 'bin/my_script2.dart',
-          },
-          'dependencies': {'foo': '1.0.0'},
-          'dev_dependencies': {'bar': '2.0.0'},
-          'dependency_overrides': {'baz': '3.0.0'},
+      final value = await parse({
+        'name': 'sample',
+        'version': version.toString(),
+        'publish_to': 'none',
+        'author': 'name@example.com',
+        'environment': {'sdk': sdkConstraint.toString()},
+        'description': 'description',
+        'homepage': 'homepage',
+        'documentation': 'documentation',
+        'repository': 'https://github.com/example/repo',
+        'issue_tracker': 'https://github.com/example/repo/issues',
+        'funding': ['https://patreon.com/example'],
+        'topics': ['widget', 'button'],
+        'ignored_advisories': ['111', '222'],
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+        ],
+        'workspace': ['pkg1', 'pkg2'],
+        'resolution': 'workspace',
+        'executables': {
+          'my_script': 'bin/my_script.dart',
+          'my_script2': 'bin/my_script2.dart',
         },
-        skipTryPub: true,
-      );
+        'dependencies': {'foo': '1.0.0'},
+        'dev_dependencies': {'bar': '2.0.0'},
+        'dependency_overrides': {'baz': '3.0.0'},
+      }, skipTryPub: true);
 
       final jsonValue = value.toJson();
 
@@ -217,45 +207,28 @@ void main() {
     });
 
     test('dependencies', () async {
-      final value = await parse(
-        {
-          ...defaultPubspec,
-          'dependencies': {
-            'flutter': {
-              'sdk': 'flutter',
-            },
-            'http': '^1.1.0',
-            'provider': {
-              'version': '^6.0.5',
-            },
-            'firebase_core': {
-              'hosted': {
-                'name': 'firebase_core',
-                'url': 'https://pub.dev',
-              },
-              'version': '^2.13.0',
-            },
-            'google_fonts': {
-              'sdk': 'flutter',
-              'version': '^4.0.3',
-            },
-            'flutter_bloc': {
-              'git': 'https://github.com/felangel/bloc.git',
-            },
-            'shared_preferences': {
-              'git': {
-                'url': 'https://github.com/flutter/plugins.git',
-                'ref': 'main',
-                'path': 'packages/shared_preferences/shared_preferences',
-              },
-            },
-            'local_utils': {
-              'path': '../local_utils',
+      final value = await parse({
+        ...defaultPubspec,
+        'dependencies': {
+          'flutter': {'sdk': 'flutter'},
+          'http': '^1.1.0',
+          'provider': {'version': '^6.0.5'},
+          'firebase_core': {
+            'hosted': {'name': 'firebase_core', 'url': 'https://pub.dev'},
+            'version': '^2.13.0',
+          },
+          'google_fonts': {'sdk': 'flutter', 'version': '^4.0.3'},
+          'flutter_bloc': {'git': 'https://github.com/felangel/bloc.git'},
+          'shared_preferences': {
+            'git': {
+              'url': 'https://github.com/flutter/plugins.git',
+              'ref': 'main',
+              'path': 'packages/shared_preferences/shared_preferences',
             },
           },
+          'local_utils': {'path': '../local_utils'},
         },
-        skipTryPub: true,
-      );
+      }, skipTryPub: true);
 
       final jsonValue = value.toJson();
 

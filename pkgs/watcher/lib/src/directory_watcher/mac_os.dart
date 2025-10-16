@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import '../directory_watcher.dart';
+import '../event.dart';
 import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
@@ -63,7 +64,7 @@ class _MacOSDirectoryWatcher
   ///
   /// This is separate from [_listSubscriptions] because this stream
   /// occasionally needs to be resubscribed in order to work around issue 14849.
-  StreamSubscription<List<FileSystemEvent>>? _watchSubscription;
+  StreamSubscription<List<Event>>? _watchSubscription;
 
   /// The subscription to the [Directory.list] call for the initial listing of
   /// the directory to determine its initial state.
@@ -109,7 +110,7 @@ class _MacOSDirectoryWatcher
   }
 
   /// The callback that's run when [Directory.watch] emits a batch of events.
-  void _onBatch(List<FileSystemEvent> batch) {
+  void _onBatch(List<Event> batch) {
     // If we get a batch of events before we're ready to begin emitting events,
     // it's probable that it's a batch of pre-watcher events (see issue 14373).
     // Ignore those events and re-list the directory.
@@ -132,8 +133,8 @@ class _MacOSDirectoryWatcher
           : [canonicalEvent];
 
       for (var event in events) {
-        if (event is FileSystemCreateEvent) {
-          if (!event.isDirectory) {
+        switch (event.type) {
+          case EventType.createFile:
             // If we already know about the file, treat it like a modification.
             // This can happen if a file is copied on top of an existing one.
             // We'll see an ADD event for the latter file when from the user's
@@ -143,34 +144,39 @@ class _MacOSDirectoryWatcher
 
             _emitEvent(type, path);
             _files.add(path);
-            continue;
-          }
 
-          if (_files.containsDir(path)) continue;
+          case EventType.createDirectory:
+            if (_files.containsDir(path)) continue;
 
-          var stream = Directory(path)
-              .list(recursive: true)
-              .ignoring<PathNotFoundException>();
-          var subscription = stream.listen((entity) {
-            if (entity is Directory) return;
-            if (_files.contains(path)) return;
+            var stream = Directory(path)
+                .list(recursive: true)
+                .ignoring<PathNotFoundException>();
+            var subscription = stream.listen((entity) {
+              if (entity is Directory) return;
+              if (_files.contains(path)) return;
 
-            _emitEvent(ChangeType.ADD, entity.path);
-            _files.add(entity.path);
-          }, cancelOnError: true);
-          subscription.onDone(() {
-            _listSubscriptions.remove(subscription);
-          });
-          subscription.onError(_emitError);
-          _listSubscriptions.add(subscription);
-        } else if (event is FileSystemModifyEvent) {
-          assert(!event.isDirectory);
-          _emitEvent(ChangeType.MODIFY, path);
-        } else {
-          assert(event is FileSystemDeleteEvent);
-          for (var removedPath in _files.remove(path)) {
-            _emitEvent(ChangeType.REMOVE, removedPath);
-          }
+              _emitEvent(ChangeType.ADD, entity.path);
+              _files.add(entity.path);
+            }, cancelOnError: true);
+            subscription.onDone(() {
+              _listSubscriptions.remove(subscription);
+            });
+            subscription.onError(_emitError);
+            _listSubscriptions.add(subscription);
+
+          case EventType.modifyFile:
+            _emitEvent(ChangeType.MODIFY, path);
+
+          case EventType.delete:
+            for (var removedPath in _files.remove(path)) {
+              _emitEvent(ChangeType.REMOVE, removedPath);
+            }
+
+          // Dropped by [Event.checkAndConvert].
+          case EventType.moveFile:
+          case EventType.moveDirectory:
+          case EventType.modifyDirectory:
+            assert(event.type.isNeverReceivedOnMacOS);
         }
       }
     });
@@ -178,122 +184,78 @@ class _MacOSDirectoryWatcher
 
   /// Sort all the events in a batch into sets based on their path.
   ///
-  /// A single input event may result in multiple events in the returned map;
-  /// for example, a MOVE event becomes a DELETE event for the source and a
-  /// CREATE event for the destination.
+  /// Events for [path] are discarded.
   ///
-  /// The returned events won't contain any [FileSystemMoveEvent]s, nor will it
-  /// contain any events relating to [path].
-  Map<String, Set<FileSystemEvent>> _sortEvents(List<FileSystemEvent> batch) {
-    var eventsForPaths = <String, Set<FileSystemEvent>>{};
+  /// Events under directories that are created are discarded.
+  Map<String, Set<Event>> _sortEvents(List<Event> batch) {
+    var eventsForPaths = <String, Set<Event>>{};
 
     // FSEvents can report past events, including events on the root directory
     // such as it being created. We want to ignore these. If the directory is
     // really deleted, that's handled by [_onDone].
     batch = batch.where((event) => event.path != path).toList();
 
-    // Events within directories that already have events are superfluous; the
-    // directory's full contents will be examined anyway, so we ignore such
-    // events. Emitting them could cause useless or out-of-order events.
-    var directories = unionAll(batch.map((event) {
-      if (!event.isDirectory) return <String>{};
-      if (event is FileSystemMoveEvent) {
-        var destination = event.destination;
-        if (destination != null) {
-          return {event.path, destination};
-        }
-      }
-      return {event.path};
+    // Events within directories that already have create events are not needed
+    // as the directory's full content will be listed.
+    var createdDirectories = unionAll(batch.map((event) {
+      return event.type == EventType.createDirectory
+          ? {event.path}
+          : const <String>{};
     }));
 
-    bool isInModifiedDirectory(String path) =>
-        directories.any((dir) => path != dir && p.isWithin(dir, path));
+    bool isInCreatedDirectory(String path) =>
+        createdDirectories.any((dir) => path != dir && p.isWithin(dir, path));
 
-    void addEvent(String path, FileSystemEvent event) {
-      if (isInModifiedDirectory(path)) return;
-      eventsForPaths.putIfAbsent(path, () => <FileSystemEvent>{}).add(event);
+    void addEvent(String path, Event event) {
+      if (isInCreatedDirectory(path)) return;
+      eventsForPaths.putIfAbsent(path, () => <Event>{}).add(event);
     }
 
     for (var event in batch) {
-      // The Mac OS watcher doesn't emit move events. See issue 14806.
-      assert(event is! FileSystemMoveEvent);
       addEvent(event.path, event);
     }
 
     return eventsForPaths;
   }
 
-  /// Returns the canonical event from a batch of events on the same path, if
-  /// one exists.
-  ///
-  /// If [batch] doesn't contain any contradictory events (e.g. DELETE and
-  /// CREATE, or events with different values for `isDirectory`), this returns a
-  /// single event that describes what happened to the path in question.
-  ///
-  /// If [batch] does contain contradictory events, this returns `null` to
-  /// indicate that the state of the path on the filesystem should be checked to
-  /// determine what occurred.
-  FileSystemEvent? _canonicalEvent(Set<FileSystemEvent> batch) {
-    // An empty batch indicates that we've learned earlier that the batch is
-    // contradictory (e.g. because of a move).
+  /// Returns the canonical event from a batch of events on the same path, or
+  /// `null` to indicate that the filesystem should be checked.
+  Event? _canonicalEvent(Set<Event> batch) {
+    // If the batch is empty, return `null`.
     if (batch.isEmpty) return null;
 
-    var type = batch.first.type;
-    var isDir = batch.first.isDirectory;
-    var hadModifyEvent = false;
-
-    for (var event in batch.skip(1)) {
-      // If one event reports that the file is a directory and another event
-      // doesn't, that's a contradiction.
-      if (isDir != event.isDirectory) return null;
-
-      // Modify events don't contradict either CREATE or REMOVE events. We can
-      // safely assume the file was modified after a CREATE or before the
-      // REMOVE; otherwise there will also be a REMOVE or CREATE event
-      // (respectively) that will be contradictory.
-      if (event is FileSystemModifyEvent) {
-        hadModifyEvent = true;
-        continue;
+    // Resolve the event type for the batch.
+    var types = batch.map((e) => e.type).toSet();
+    EventType type;
+    if (types.length == 1) {
+      // There's only one event.
+      type = types.single;
+    } else if (types.length == 2 &&
+        types.contains(EventType.modifyFile) &&
+        types.contains(EventType.createFile)) {
+      // Combine events of type [EventType.modifyFile] and
+      // [EventType.createFile] to one event.
+      if (_files.contains(batch.first.path)) {
+        // The file already existed: this can happen due to a create from
+        // before the watcher started being reported.
+        type = EventType.modifyFile;
+      } else {
+        type = EventType.createFile;
       }
-      assert(event is FileSystemCreateEvent || event is FileSystemDeleteEvent);
-
-      // If we previously thought this was a MODIFY, we now consider it to be a
-      // CREATE or REMOVE event. This is safe for the same reason as above.
-      if (type == FileSystemEvent.modify) {
-        type = event.type;
-        continue;
-      }
-
-      // A CREATE event contradicts a REMOVE event and vice versa.
-      assert(type == FileSystemEvent.create || type == FileSystemEvent.delete);
-      if (type != event.type) return null;
+    } else {
+      // There are incompatible event types, check the filesystem.
+      return null;
     }
 
-    // If we got a CREATE event for a file we already knew about, that comes
-    // from FSEvents reporting an add that happened prior to the watch
-    // beginning. If we also received a MODIFY event, we want to report that,
-    // but not the CREATE.
-    if (type == FileSystemEvent.create &&
-        hadModifyEvent &&
-        _files.contains(batch.first.path)) {
-      type = FileSystemEvent.modify;
+    // Issue 16003 means that a CREATE event for a directory can indicate
+    // that the directory was moved and then re-created.
+    // [_eventsBasedOnFileSystem] will handle this correctly by producing a
+    // DELETE event followed by a CREATE event if the directory exists.
+    if (type == EventType.createDirectory) {
+      return null;
     }
 
-    switch (type) {
-      case FileSystemEvent.create:
-        // Issue 16003 means that a CREATE event for a directory can indicate
-        // that the directory was moved and then re-created.
-        // [_eventsBasedOnFileSystem] will handle this correctly by producing a
-        // DELETE event followed by a CREATE event if the directory exists.
-        if (isDir) return null;
-        return FileSystemCreateEvent(batch.first.path, false);
-      case FileSystemEvent.delete:
-        return FileSystemDeleteEvent(batch.first.path, isDir);
-      case FileSystemEvent.modify:
-        return FileSystemModifyEvent(batch.first.path, isDir, false);
-      default:
-        throw StateError('unreachable');
-    }
+    return batch.firstWhere((e) => e.type == type);
   }
 
   /// Returns one or more events that describe the change between the last known
@@ -303,35 +265,35 @@ class _MacOSDirectoryWatcher
   /// to the user, unlike the batched events from [Directory.watch]. The
   /// returned list may be empty, indicating that no changes occurred to [path]
   /// (probably indicating that it was created and then immediately deleted).
-  List<FileSystemEvent> _eventsBasedOnFileSystem(String path) {
+  List<Event> _eventsBasedOnFileSystem(String path) {
     var fileExisted = _files.contains(path);
     var dirExisted = _files.containsDir(path);
     var fileExists = File(path).existsSync();
     var dirExists = Directory(path).existsSync();
 
-    var events = <FileSystemEvent>[];
+    var events = <Event>[];
     if (fileExisted) {
       if (fileExists) {
-        events.add(FileSystemModifyEvent(path, false, false));
+        events.add(Event.modifyFile(path));
       } else {
-        events.add(FileSystemDeleteEvent(path, false));
+        events.add(Event.delete(path));
       }
     } else if (dirExisted) {
       if (dirExists) {
         // If we got contradictory events for a directory that used to exist and
         // still exists, we need to rescan the whole thing in case it was
         // replaced with a different directory.
-        events.add(FileSystemDeleteEvent(path, true));
-        events.add(FileSystemCreateEvent(path, true));
+        events.add(Event.delete(path));
+        events.add(Event.createDirectory(path));
       } else {
-        events.add(FileSystemDeleteEvent(path, true));
+        events.add(Event.delete(path));
       }
     }
 
     if (!fileExisted && fileExists) {
-      events.add(FileSystemCreateEvent(path, false));
+      events.add(Event.createFile(path));
     } else if (!dirExisted && dirExists) {
-      events.add(FileSystemCreateEvent(path, true));
+      events.add(Event.createDirectory(path));
     }
 
     return events;
@@ -362,7 +324,8 @@ class _MacOSDirectoryWatcher
   /// Start or restart the underlying [Directory.watch] stream.
   void _startWatch() {
     // Batch the FSEvent changes together so that we can dedup events.
-    var innerStream = Directory(path).watch(recursive: true).batchEvents();
+    var innerStream =
+        Directory(path).watch(recursive: true).batchAndConvertEvents();
     _watchSubscription = innerStream.listen(_onBatch,
         onError: _eventsController.addError, onDone: _onDone);
   }
