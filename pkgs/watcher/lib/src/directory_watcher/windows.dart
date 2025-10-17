@@ -217,7 +217,7 @@ class _WindowsDirectoryWatcher
             // itself, so there are no other types of "path not found" that
             // might need different handling here.
             var stream = Directory(path)
-                .list(recursive: true)
+                .list(recursive: true, followLinks: false)
                 .ignoring<PathNotFoundException>();
             var subscription = stream.listen((entity) {
               if (entity is Directory) return;

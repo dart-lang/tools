@@ -149,7 +149,7 @@ class _MacOSDirectoryWatcher
             if (_files.containsDir(path)) continue;
 
             var stream = Directory(path)
-                .list(recursive: true)
+                .list(recursive: true, followLinks: false)
                 .ignoring<PathNotFoundException>();
             var subscription = stream.listen((entity) {
               if (entity is Directory) return;

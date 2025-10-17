@@ -239,7 +239,8 @@ class _LinuxDirectoryWatcher
 
   /// Emits [ChangeType.ADD] events for the recursive contents of [path].
   void _addSubdir(String path) {
-    _listen(Directory(path).list(recursive: true), (FileSystemEntity entity) {
+    _listen(Directory(path).list(recursive: true, followLinks: false),
+        (FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubdir(entity.path);
       } else {
