@@ -90,7 +90,8 @@ class MimeTypeResolver {
     if (bytes.length > _magicNumbersMaxLength) {
       _magicNumbersMaxLength = bytes.length;
     }
-    _magicNumbers.add(MagicNumber(mimeType, bytes, mask: mask));
+    _magicNumbers.add(MagicNumber(mimeType, String.fromCharCodes(bytes),
+        mask == null ? null : String.fromCharCodes(mask)));
   }
 
   static String? _matchMagic(
