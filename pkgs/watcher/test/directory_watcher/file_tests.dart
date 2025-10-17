@@ -11,13 +11,13 @@ import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
 
-void fileTests() {
+void fileTests({required bool isNative}) {
   for (var i = 0; i != runsPerTest; ++i) {
-    _fileTests();
+    _fileTests(isNative: isNative);
   }
 }
 
-void _fileTests() {
+void _fileTests({required bool isNative}) {
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
@@ -298,6 +298,29 @@ void _fileTests() {
     });
 
     test(
+        'emits events for many nested files moved out then immediately back in',
+        () async {
+      withPermutations(
+          (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'));
+
+      await startWatcher(path: 'dir');
+
+      renameDir('dir/sub', 'sub');
+      renameDir('sub', 'dir/sub');
+
+      if (isNative) {
+        await inAnyOrder(withPermutations(
+            (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+        await inAnyOrder(withPermutations(
+            (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+      } else {
+        // Polling watchers can't detect this as directory contents mtimes
+        // aren't updated when the directory is moved.
+        await expectNoEvents();
+      }
+    });
+
+    test(
         'emits events for many files added at once in a subdirectory with the '
         'same name as a removed file', () async {
       writeFile('dir/sub');
@@ -333,5 +356,33 @@ void _fileTests() {
         });
       }
     });
+  });
+
+  test(
+      'does not notify about the watched directory being deleted and '
+      'recreated immediately before watching', () async {
+    createDir('dir');
+    writeFile('dir/old.txt');
+    deleteDir('dir');
+    createDir('dir');
+
+    await startWatcher(path: 'dir');
+    writeFile('dir/newer.txt');
+    await expectAddEvent('dir/newer.txt');
+  });
+
+  test('does not suppress files with the same prefix as a directory', () async {
+    // Regression test for https://github.com/dart-lang/watcher/issues/83
+    writeFile('some_name.txt');
+
+    await startWatcher();
+
+    writeFile('some_name/some_name.txt');
+    deleteFile('some_name.txt');
+
+    await inAnyOrder([
+      isAddEvent('some_name/some_name.txt'),
+      isRemoveEvent('some_name.txt')
+    ]);
   });
 }

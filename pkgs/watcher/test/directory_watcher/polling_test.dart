@@ -21,7 +21,7 @@ void main() {
   group('with mock mtime', () {
     setUp(enableMockModificationTimes);
 
-    fileTests();
+    fileTests(isNative: false);
     linkTests(isNative: false);
 
     test('does not notify if the modification time did not change', () async {
@@ -71,7 +71,7 @@ void main() {
   group('with real mtime', () {
     setUp(enableWaitingForDifferentModificationTimes);
 
-    fileTests();
+    fileTests(isNative: false);
     linkTests(isNative: false);
   });
 }
