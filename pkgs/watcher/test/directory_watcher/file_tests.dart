@@ -12,6 +12,12 @@ import 'package:watcher/src/utils.dart';
 import '../utils.dart';
 
 void fileTests() {
+  for (var i = 0; i != runsPerTest; ++i) {
+    _fileTests();
+  }
+}
+
+void _fileTests() {
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
@@ -141,13 +147,6 @@ void fileTests() {
     });
   });
 
-  // Most of the time, when multiple filesystem actions happen in sequence,
-  // they'll be batched together and the watcher will see them all at once.
-  // These tests verify that the watcher normalizes and combine these events
-  // properly. However, very occasionally the events will be reported in
-  // separate batches, and the watcher will report them as though they occurred
-  // far apart in time, so each of these tests has a "backup case" to allow for
-  // that as well.
   group('clustered changes', () {
     test("doesn't notify when a file is created and then immediately removed",
         () async {
@@ -155,13 +154,6 @@ void fileTests() {
       await startWatcher();
       writeFile('file.txt');
       deleteFile('file.txt');
-
-      // Backup case.
-      startClosingEventStream();
-      await allowEvents(() {
-        expectAddEvent('file.txt');
-        expectRemoveEvent('file.txt');
-      });
     });
 
     test(
@@ -173,13 +165,7 @@ void fileTests() {
       deleteFile('file.txt');
       writeFile('file.txt', contents: 're-created');
 
-      await allowEither(() {
-        expectModifyEvent('file.txt');
-      }, () {
-        // Backup case.
-        expectRemoveEvent('file.txt');
-        expectAddEvent('file.txt');
-      });
+      await expectModifyEvent('file.txt');
     });
 
     test(
@@ -191,14 +177,7 @@ void fileTests() {
       renameFile('old.txt', 'new.txt');
       writeFile('old.txt', contents: 're-created');
 
-      await allowEither(() {
-        inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
-      }, () {
-        // Backup case.
-        expectRemoveEvent('old.txt');
-        expectAddEvent('new.txt');
-        expectAddEvent('old.txt');
-      });
+      await inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
     });
 
     test(
@@ -209,9 +188,6 @@ void fileTests() {
 
       writeFile('file.txt', contents: 'modified');
       deleteFile('file.txt');
-
-      // Backup case.
-      await allowModifyEvent('file.txt');
 
       await expectRemoveEvent('file.txt');
     });
@@ -224,10 +200,6 @@ void fileTests() {
       writeFile('file.txt', contents: 'modified');
 
       await expectAddEvent('file.txt');
-
-      // Backup case.
-      startClosingEventStream();
-      await allowModifyEvent('file.txt');
     });
   });
 

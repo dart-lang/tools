@@ -12,6 +12,12 @@ void linkTests({required bool isNative}) {
     writeLink(link: 'link.txt', target: 'target.txt');
   });
 
+  for (var i = 0; i != runsPerTest; ++i) {
+    _linkTests(isNative: isNative);
+  }
+}
+
+void _linkTests({required bool isNative}) {
   test("doesn't notify if nothing is modified", () async {
     await startWatcher(path: 'link.txt');
     await expectNoEvents();
