@@ -94,7 +94,9 @@ Dependency? _fromJson(Object? data, String name) {
   return null;
 }
 
-sealed class Dependency {}
+sealed class Dependency {
+  Map<String, dynamic> toJson();
+}
 
 @JsonSerializable()
 class SdkDependency extends Dependency {
@@ -114,6 +116,9 @@ class SdkDependency extends Dependency {
 
   @override
   String toString() => 'SdkDependency: $sdk';
+
+  @override
+  Map<String, dynamic> toJson() => {'sdk': sdk, 'version': version.toString()};
 }
 
 @JsonSerializable()
@@ -149,6 +154,15 @@ class GitDependency extends Dependency {
 
   @override
   String toString() => 'GitDependency: url@$url';
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'git': {
+      'url': url.toString(),
+      if (ref != null) 'ref': ref,
+      if (path != null) 'path': path,
+    },
+  };
 }
 
 Uri? parseGitUriOrNull(String? value) =>
@@ -208,6 +222,9 @@ class PathDependency extends Dependency {
 
   @override
   String toString() => 'PathDependency: path@$path';
+
+  @override
+  Map<String, dynamic> toJson() => {'path': path};
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -232,6 +249,12 @@ class HostedDependency extends Dependency {
 
   @override
   String toString() => 'HostedDependency: $version';
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'version': version.toString(),
+    if (hosted != null) 'hosted': hosted!.toJson(),
+  };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -275,7 +298,15 @@ class HostedDetails {
 
   @override
   int get hashCode => Object.hash(name, url);
+
+  Map<String, dynamic> toJson() => {
+    if (declaredName != null) 'name': declaredName,
+    'url': url.toString(),
+  };
 }
 
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
+
+Map<String, dynamic> serializeDeps(Map<String, Dependency> input) =>
+    input.map((k, v) => MapEntry(k, v.toJson()));
