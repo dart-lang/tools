@@ -13,11 +13,6 @@ const String _validPackageNameCharacters =
     r"                                 !  $ &'()*+,-. 0123456789 ; =  "
     r'@ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz   ~ ';
 
-/// Tests whether something is a valid Dart package name.
-bool isValidPackageName(String string) {
-  return checkPackageName(string) < 0;
-}
-
 /// Check if a string is a valid package name.
 ///
 /// Valid package names contain only characters in [_validPackageNameCharacters]
@@ -52,12 +47,18 @@ String checkValidPackageUri(Uri packageUri, String name) {
   }
   if (packageUri.hasAuthority) {
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package URIs must not have a host part');
+      packageUri,
+      name,
+      'Package URIs must not have a host part',
+    );
   }
   if (packageUri.hasQuery) {
     // A query makes no sense if resolved to a file: URI.
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package URIs must not have a query part');
+      packageUri,
+      name,
+      'Package URIs must not have a query part',
+    );
   }
   if (packageUri.hasFragment) {
     // We could leave the fragment after the URL when resolving,
@@ -65,27 +66,42 @@ String checkValidPackageUri(Uri packageUri, String name) {
     // "package:foo/foo.dart#2" were considered different libraries.
     // Keep the syntax open in case we ever get multiple libraries in one file.
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package URIs must not have a fragment part');
+      packageUri,
+      name,
+      'Package URIs must not have a fragment part',
+    );
   }
   if (packageUri.path.startsWith('/')) {
     throw PackageConfigArgumentError(
-        packageUri, name, "Package URIs must not start with a '/'");
+      packageUri,
+      name,
+      "Package URIs must not start with a '/'",
+    );
   }
   var firstSlash = packageUri.path.indexOf('/');
   if (firstSlash == -1) {
-    throw PackageConfigArgumentError(packageUri, name,
-        "Package URIs must start with the package name followed by a '/'");
+    throw PackageConfigArgumentError(
+      packageUri,
+      name,
+      "Package URIs must start with the package name followed by a '/'",
+    );
   }
   var packageName = packageUri.path.substring(0, firstSlash);
   var badIndex = checkPackageName(packageName);
   if (badIndex >= 0) {
     if (packageName.isEmpty) {
       throw PackageConfigArgumentError(
-          packageUri, name, 'Package names mus be non-empty');
+        packageUri,
+        name,
+        'Package names mus be non-empty',
+      );
     }
     if (badIndex == packageName.length) {
-      throw PackageConfigArgumentError(packageUri, name,
-          "Package names must contain at least one non-'.' character");
+      throw PackageConfigArgumentError(
+        packageUri,
+        name,
+        "Package names must contain at least one non-'.' character",
+      );
     }
     assert(badIndex < packageName.length);
     var badCharCode = packageName.codeUnitAt(badIndex);
@@ -95,7 +111,10 @@ String checkValidPackageUri(Uri packageUri, String name) {
       badChar = "'${packageName[badIndex]}' ($badChar)";
     }
     throw PackageConfigArgumentError(
-        packageUri, name, 'Package names must not contain $badChar');
+      packageUri,
+      name,
+      'Package names must not contain $badChar',
+    );
   }
   return packageName;
 }
@@ -124,20 +143,7 @@ bool isUriPrefix(Uri prefix, Uri path) {
   return path.toString().startsWith(prefix.toString());
 }
 
-/// Finds the first non-JSON-whitespace character in a file.
-///
-/// Used to heuristically detect whether a file is a JSON file or an .ini file.
-int firstNonWhitespaceChar(List<int> bytes) {
-  for (var i = 0; i < bytes.length; i++) {
-    var char = bytes[i];
-    if (char != 0x20 && char != 0x09 && char != 0x0a && char != 0x0d) {
-      return char;
-    }
-  }
-  return -1;
-}
-
-/// Appends a trailing `/` if the path doesn't end with one.
+/// Appends a trailing `/` if the [path] ends in a non-`/` character.
 String trailingSlash(String path) {
   if (path.isEmpty || path.endsWith('/')) return path;
   return '$path/';
@@ -173,11 +179,12 @@ Uri? relativizeUri(Uri? uri, Uri? baseUri) {
   assert(baseUri.isAbsolute);
   if (uri!.hasQuery || uri.hasFragment) {
     uri = Uri(
-        scheme: uri.scheme,
-        userInfo: uri.hasAuthority ? uri.userInfo : null,
-        host: uri.hasAuthority ? uri.host : null,
-        port: uri.hasAuthority ? uri.port : null,
-        path: uri.path);
+      scheme: uri.scheme,
+      userInfo: uri.hasAuthority ? uri.userInfo : null,
+      host: uri.hasAuthority ? uri.host : null,
+      port: uri.hasAuthority ? uri.port : null,
+      path: uri.path,
+    );
   }
 
   // Already relative. We assume the caller knows what they are doing.
@@ -228,26 +235,8 @@ Uri? relativizeUri(Uri? uri, Uri? baseUri) {
 }
 
 // Character constants used by this package.
-/// "Line feed" control character.
-const int $lf = 0x0a;
-
-/// "Carriage return" control character.
-const int $cr = 0x0d;
-
 /// Space character.
 const int $space = 0x20;
 
-/// Character `#`.
-const int $hash = 0x23;
-
 /// Character `.`.
 const int $dot = 0x2e;
-
-/// Character `:`.
-const int $colon = 0x3a;
-
-/// Character `?`.
-const int $question = 0x3f;
-
-/// Character `{`.
-const int $lbrace = 0x7b;

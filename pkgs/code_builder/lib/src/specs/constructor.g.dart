@@ -35,29 +35,41 @@ class _$Constructor extends Constructor {
   factory _$Constructor([void Function(ConstructorBuilder)? updates]) =>
       (new ConstructorBuilder()..update(updates)).build() as _$Constructor;
 
-  _$Constructor._(
-      {required this.annotations,
-      required this.docs,
-      required this.optionalParameters,
-      required this.requiredParameters,
-      required this.initializers,
-      this.body,
-      required this.external,
-      required this.constant,
-      required this.factory,
-      this.lambda,
-      this.name,
-      this.redirect})
-      : super._() {
+  _$Constructor._({
+    required this.annotations,
+    required this.docs,
+    required this.optionalParameters,
+    required this.requiredParameters,
+    required this.initializers,
+    this.body,
+    required this.external,
+    required this.constant,
+    required this.factory,
+    this.lambda,
+    this.name,
+    this.redirect,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Constructor', 'annotations');
+      annotations,
+      r'Constructor',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(docs, r'Constructor', 'docs');
     BuiltValueNullFieldError.checkNotNull(
-        optionalParameters, r'Constructor', 'optionalParameters');
+      optionalParameters,
+      r'Constructor',
+      'optionalParameters',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        requiredParameters, r'Constructor', 'requiredParameters');
+      requiredParameters,
+      r'Constructor',
+      'requiredParameters',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        initializers, r'Constructor', 'initializers');
+      initializers,
+      r'Constructor',
+      'initializers',
+    );
     BuiltValueNullFieldError.checkNotNull(external, r'Constructor', 'external');
     BuiltValueNullFieldError.checkNotNull(constant, r'Constructor', 'constant');
     BuiltValueNullFieldError.checkNotNull(factory, r'Constructor', 'factory');
@@ -312,23 +324,34 @@ class _$ConstructorBuilder extends ConstructorBuilder {
   _$Constructor _build() {
     _$Constructor _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Constructor._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              optionalParameters: optionalParameters.build(),
-              requiredParameters: requiredParameters.build(),
-              initializers: initializers.build(),
-              body: body,
-              external: BuiltValueNullFieldError.checkNotNull(
-                  external, r'Constructor', 'external'),
-              constant: BuiltValueNullFieldError.checkNotNull(
-                  constant, r'Constructor', 'constant'),
-              factory: BuiltValueNullFieldError.checkNotNull(
-                  factory, r'Constructor', 'factory'),
-              lambda: lambda,
-              name: name,
-              redirect: redirect);
+            annotations: annotations.build(),
+            docs: docs.build(),
+            optionalParameters: optionalParameters.build(),
+            requiredParameters: requiredParameters.build(),
+            initializers: initializers.build(),
+            body: body,
+            external: BuiltValueNullFieldError.checkNotNull(
+              external,
+              r'Constructor',
+              'external',
+            ),
+            constant: BuiltValueNullFieldError.checkNotNull(
+              constant,
+              r'Constructor',
+              'constant',
+            ),
+            factory: BuiltValueNullFieldError.checkNotNull(
+              factory,
+              r'Constructor',
+              'factory',
+            ),
+            lambda: lambda,
+            name: name,
+            redirect: redirect,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -344,7 +367,10 @@ class _$ConstructorBuilder extends ConstructorBuilder {
         initializers.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Constructor', _$failedField, e.toString());
+          r'Constructor',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

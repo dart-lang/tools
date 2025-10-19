@@ -1,0 +1,16 @@
+# See https://github.com/dart-lang/build/tree/master/build_web_compilers#configuration
+targets:
+  $default:
+    builders:
+      build_web_compilers|entrypoint:
+        generate_for:
+          - example/**.dart
+        options:
+          compilers:
+            dart2wasm:
+              args:
+                - -O4
+                - --no-strip-wasm
+            dart2js:
+              args:
+                - -O4

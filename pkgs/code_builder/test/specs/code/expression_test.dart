@@ -45,14 +45,19 @@ void main() {
     });
     test('uses `onError` for unhandled types', () {
       expect(
-          literal(Uri.https('google.com'), onError: (value) {
+        literal(
+          Uri.https('google.com'),
+          onError: (value) {
             if (value is Uri) {
-              return refer('Uri')
-                  .newInstanceNamed('parse', [literalString(value.toString())]);
+              return refer(
+                'Uri',
+              ).newInstanceNamed('parse', [literalString(value.toString())]);
             }
             throw UnsupportedError('Not supported: $value');
-          }),
-          equalsDart("Uri.parse('https://google.com')"));
+          },
+        ),
+        equalsDart("Uri.parse('https://google.com')"),
+      );
     });
   });
 
@@ -162,7 +167,7 @@ void main() {
         Set<dynamic>(),
         true,
         null,
-        refer('Map').newInstance([])
+        refer('Map').newInstance([]),
       ]),
       equalsDart('[[], {}, true, null, Map(), ]'),
     );
@@ -174,14 +179,13 @@ void main() {
 
   test('should emit a set of other literals and expressions', () {
     expect(
-      // ignore: prefer_collection_literals
       literalSet([
         <dynamic>[],
         // ignore: prefer_collection_literals
         Set<dynamic>(),
         true,
         null,
-        refer('Map').newInstance([])
+        refer('Map').newInstance([]),
       ]),
       equalsDart('{[], {}, true, null, Map(), }'),
     );
@@ -204,25 +208,29 @@ void main() {
   });
 
   test('should emit a record with only named fields', () {
-    expect(literalRecord([], {'named': 1, 'other': []}),
-        equalsDart('(named: 1, other: [])'));
+    expect(
+      literalRecord([], {'named': 1, 'other': []}),
+      equalsDart('(named: 1, other: [])'),
+    );
   });
 
   test('should emit a record with both positional and named fields', () {
-    expect(literalRecord([0], {'x': true, 'y': 0}),
-        equalsDart('(0, x: true, y: 0)'));
+    expect(
+      literalRecord([0], {'x': true, 'y': 0}),
+      equalsDart('(0, x: true, y: 0)'),
+    );
   });
 
   test('should emit a record of other literals and expressions', () {
     expect(
-        literalRecord([
-          1,
-          refer('one'),
-          'one'
-        ], {
-          'named': refer('Foo').newInstance([literalNum(1)])
-        }),
-        equalsDart("(1, one, 'one', named: Foo(1))"));
+      literalRecord(
+        [1, refer('one'), 'one'],
+        {
+          'named': refer('Foo').newInstance([literalNum(1)]),
+        },
+      ),
+      equalsDart("(1, one, 'one', named: Foo(1))"),
+    );
   });
 
   test('should emit a type as an expression', () {
@@ -233,29 +241,26 @@ void main() {
     expect(
       refer('Foo', 'package:foo/foo.dart'),
       equalsDart(
-          '_i1.Foo', DartEmitter(allocator: Allocator.simplePrefixing())),
+        '_i1.Foo',
+        DartEmitter(allocator: Allocator.simplePrefixing()),
+      ),
     );
   });
 
   test('should emit invoking Type()', () {
-    expect(
-      refer('Map').newInstance([]),
-      equalsDart('Map()'),
-    );
+    expect(refer('Map').newInstance([]), equalsDart('Map()'));
   });
 
   test('should emit invoking named constructor', () {
-    expect(
-      refer('Foo').newInstanceNamed('bar', []),
-      equalsDart('Foo.bar()'),
-    );
+    expect(refer('Foo').newInstanceNamed('bar', []), equalsDart('Foo.bar()'));
+  });
+
+  test('should emit invoking unnamed constructor when name is empty', () {
+    expect(refer('Foo').newInstanceNamed('', []), equalsDart('Foo()'));
   });
 
   test('should emit invoking const Type()', () {
-    expect(
-      refer('Object').constInstance([]),
-      equalsDart('const Object()'),
-    );
+    expect(refer('Object').constInstance([]), equalsDart('const Object()'));
   });
 
   test('should emit invoking a property accessor', () {
@@ -271,79 +276,47 @@ void main() {
   });
 
   test('should emit invoking a method with a single positional argument', () {
-    expect(
-      refer('foo').call([
-        literal(1),
-      ]),
-      equalsDart('foo(1)'),
-    );
+    expect(refer('foo').call([literal(1)]), equalsDart('foo(1)'));
   });
 
   test('should emit invoking a method with positional arguments', () {
     expect(
-      refer('foo').call([
-        literal(1),
-        literal(2),
-        literal(3),
-      ]),
+      refer('foo').call([literal(1), literal(2), literal(3)]),
       equalsDart('foo(1, 2, 3, )'),
     );
   });
 
   test('should emit invoking a method with a single named argument', () {
     expect(
-      refer('foo').call([], {
-        'bar': literal(1),
-      }),
+      refer('foo').call([], {'bar': literal(1)}),
       equalsDart('foo(bar: 1)'),
     );
   });
 
   test('should emit invoking a method with named arguments', () {
     expect(
-      refer('foo').call([], {
-        'bar': literal(1),
-        'baz': literal(2),
-      }),
+      refer('foo').call([], {'bar': literal(1), 'baz': literal(2)}),
       equalsDart('foo(bar: 1, baz: 2, )'),
     );
   });
 
   test('should emit invoking a method with positional and named arguments', () {
     expect(
-      refer('foo').call([
-        literal(1)
-      ], {
-        'bar': literal(2),
-        'baz': literal(3),
-      }),
+      refer('foo').call([literal(1)], {'bar': literal(2), 'baz': literal(3)}),
       equalsDart('foo(1, bar: 2, baz: 3, )'),
     );
   });
 
   test('should emit invoking a method with a single type argument', () {
     expect(
-      refer('foo').call(
-        [],
-        {},
-        [
-          refer('String'),
-        ],
-      ),
+      refer('foo').call([], {}, [refer('String')]),
       equalsDart('foo<String>()'),
     );
   });
 
   test('should emit invoking a method with type arguments', () {
     expect(
-      refer('foo').call(
-        [],
-        {},
-        [
-          refer('String'),
-          refer('int'),
-        ],
-      ),
+      refer('foo').call([], {}, [refer('String'), refer('int')]),
       equalsDart('foo<String, int>()'),
     );
   });
@@ -364,9 +337,12 @@ void main() {
 
   test('should emit a function type with type parameters', () {
     expect(
-      FunctionType((b) => b
-        ..returnType = refer('T')
-        ..types.add(refer('T'))),
+      FunctionType(
+        (b) =>
+            b
+              ..returnType = refer('T')
+              ..types.add(refer('T')),
+      ),
       equalsDart('T Function<T>()'),
     );
   });
@@ -380,46 +356,51 @@ void main() {
 
   test('should emit a function type with parameters', () {
     expect(
-      FunctionType((b) => b
-        ..requiredParameters.add(refer('String'))
-        ..optionalParameters.add(refer('int'))),
+      FunctionType(
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..optionalParameters.add(refer('int')),
+      ),
       equalsDart('Function(String, [int, ])'),
     );
   });
 
   test('should emit a function type with named parameters', () {
     expect(
-      FunctionType((b) => b
-        ..namedParameters.addAll({
-          'x': refer('int'),
-          'y': refer('int'),
-        })),
+      FunctionType(
+        (b) =>
+            b..namedParameters.addAll({'x': refer('int'), 'y': refer('int')}),
+      ),
       equalsDart('Function({int x, int y, })'),
     );
   });
 
   test(
-      'should emit a function type with named required and optional parameters',
-      () {
-    expect(
-      FunctionType((b) => b
-        ..namedRequiredParameters.addAll({
-          'x': refer('int'),
-        })
-        ..namedParameters.addAll({
-          'y': refer('int'),
-        })),
-      equalsDart('Function({required int x, int y, })'),
-    );
-  });
+    'should emit a function type with named required and optional parameters',
+    () {
+      expect(
+        FunctionType(
+          (b) =>
+              b
+                ..namedRequiredParameters.addAll({'x': refer('int')})
+                ..namedParameters.addAll({'y': refer('int')}),
+        ),
+        equalsDart('Function({required int x, int y, })'),
+      );
+    },
+  );
 
   test('should emit a function type with named required parameters', () {
     expect(
-      FunctionType((b) => b
-        ..namedRequiredParameters.addAll({
-          'x': refer('int'),
-          'y': refer('int'),
-        })),
+      FunctionType(
+        (b) =>
+            b
+              ..namedRequiredParameters.addAll({
+                'x': refer('int'),
+                'y': refer('int'),
+              }),
+      ),
       equalsDart('Function({required int x, required int y, })'),
     );
   });
@@ -427,18 +408,24 @@ void main() {
   test('should emit a nullable function type in a Null Safety library', () {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
-      FunctionType((b) => b
-        ..requiredParameters.add(refer('String'))
-        ..isNullable = true),
+      FunctionType(
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..isNullable = true,
+      ),
       equalsDart('Function(String)?', emitter),
     );
   });
 
   test('should emit a nullable function type in pre-Null Safety library', () {
     expect(
-      FunctionType((b) => b
-        ..requiredParameters.add(refer('String'))
-        ..isNullable = true),
+      FunctionType(
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..isNullable = true,
+      ),
       equalsDart('Function(String)'),
     );
   });
@@ -446,22 +433,30 @@ void main() {
   test('should emit a non-nullable function type in a Null Safety library', () {
     final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
     expect(
-      FunctionType((b) => b
-        ..requiredParameters.add(refer('String'))
-        ..isNullable = false),
+      FunctionType(
+        (b) =>
+            b
+              ..requiredParameters.add(refer('String'))
+              ..isNullable = false,
+      ),
       equalsDart('Function(String)', emitter),
     );
   });
 
-  test('should emit a non-nullable function type in pre-Null Safety library',
-      () {
-    expect(
-      FunctionType((b) => b
-        ..requiredParameters.add(refer('String'))
-        ..isNullable = false),
-      equalsDart('Function(String)'),
-    );
-  });
+  test(
+    'should emit a non-nullable function type in pre-Null Safety library',
+    () {
+      expect(
+        FunctionType(
+          (b) =>
+              b
+                ..requiredParameters.add(refer('String'))
+                ..isNullable = false,
+        ),
+        equalsDart('Function(String)'),
+      );
+    },
+  );
 
   test('should emit a closure', () {
     expect(
@@ -477,26 +472,23 @@ void main() {
     expect(
       refer('map').property('putIfAbsent').call([
         literalString('foo'),
-        Method((b) => b
-          ..types.add(refer('T'))
-          ..body = literalTrue.code).genericClosure,
+        Method(
+          (b) =>
+              b
+                ..types.add(refer('T'))
+                ..body = literalTrue.code,
+        ).genericClosure,
       ]),
       equalsDart("map.putIfAbsent('foo', <T>() => true, )"),
     );
   });
 
   test('should emit an assignment', () {
-    expect(
-      refer('foo').assign(literalTrue),
-      equalsDart('foo = true'),
-    );
+    expect(refer('foo').assign(literalTrue), equalsDart('foo = true'));
   });
 
   test('should emit an if null assignment', () {
-    expect(
-      refer('foo').ifNullThen(literalTrue),
-      equalsDart('foo ?? true'),
-    );
+    expect(refer('foo').ifNullThen(literalTrue), equalsDart('foo ?? true'));
   });
 
   test('should emit a null check', () {
@@ -587,38 +579,23 @@ void main() {
   });
 
   test('should emit await', () {
-    expect(
-      refer('future').awaited,
-      equalsDart('await future'),
-    );
+    expect(refer('future').awaited, equalsDart('await future'));
   });
 
   test('should emit return', () {
-    expect(
-      literalNull.returned,
-      equalsDart('return null'),
-    );
+    expect(literalNull.returned, equalsDart('return null'));
   });
 
   test('should emit spread', () {
-    expect(
-      refer('foo').spread,
-      equalsDart('...foo'),
-    );
+    expect(refer('foo').spread, equalsDart('...foo'));
   });
 
   test('should emit null safe spread', () {
-    expect(
-      refer('foo').nullSafeSpread,
-      equalsDart('...?foo'),
-    );
+    expect(refer('foo').nullSafeSpread, equalsDart('...?foo'));
   });
 
   test('should emit throw', () {
-    expect(
-      literalNull.thrown,
-      equalsDart('throw null'),
-    );
+    expect(literalNull.thrown, equalsDart('throw null'));
   });
 
   test('should emit an explicit cast', () {
@@ -629,17 +606,11 @@ void main() {
   });
 
   test('should emit an is check', () {
-    expect(
-      refer('foo').isA(refer('String')),
-      equalsDart('foo is String'),
-    );
+    expect(refer('foo').isA(refer('String')), equalsDart('foo is String'));
   });
 
   test('should emit an is! check', () {
-    expect(
-      refer('foo').isNotA(refer('String')),
-      equalsDart('foo is! String'),
-    );
+    expect(refer('foo').isNotA(refer('String')), equalsDart('foo is! String'));
   });
 
   test('should emit an equality check', () {
@@ -696,9 +667,11 @@ void main() {
   });
 
   test('should emit an operator subtract call', () {
-    // ignore: deprecated_member_use_from_same_package
-    expect(refer('foo').operatorSubstract(refer('foo2')),
-        equalsDart('foo - foo2'));
+    expect(
+      // ignore: deprecated_member_use_from_same_package
+      refer('foo').operatorSubstract(refer('foo2')),
+      equalsDart('foo - foo2'),
+    );
 
     expect(
       refer('foo').operatorSubtract(refer('foo2')),
@@ -708,17 +681,23 @@ void main() {
 
   test('should emit an operator divide call', () {
     expect(
-        refer('foo').operatorDivide(refer('foo2')), equalsDart('foo / foo2'));
+      refer('foo').operatorDivide(refer('foo2')),
+      equalsDart('foo / foo2'),
+    );
   });
 
   test('should emit an operator multiply call', () {
     expect(
-        refer('foo').operatorMultiply(refer('foo2')), equalsDart('foo * foo2'));
+      refer('foo').operatorMultiply(refer('foo2')),
+      equalsDart('foo * foo2'),
+    );
   });
 
   test('should emit an euclidean modulo operator call', () {
-    expect(refer('foo').operatorEuclideanModulo(refer('foo2')),
-        equalsDart('foo % foo2'));
+    expect(
+      refer('foo').operatorEuclideanModulo(refer('foo2')),
+      equalsDart('foo % foo2'),
+    );
   });
 
   test('should emit an operator int divide call', () {
@@ -770,10 +749,7 @@ void main() {
   });
 
   test('should emit a unary bitwise complement operator call', () {
-    expect(
-      refer('foo').operatorUnaryBitwiseComplement(),
-      equalsDart('~foo'),
-    );
+    expect(refer('foo').operatorUnaryBitwiseComplement(), equalsDart('~foo'));
   });
 
   test('should emit a shift left operator call', () {
@@ -798,45 +774,69 @@ void main() {
   });
 
   test('should emit a const variable declaration', () {
-    expect(declareConst('foo').assign(refer('bar')),
-        equalsDart('const foo = bar'));
+    expect(
+      declareConst('foo').assign(refer('bar')),
+      equalsDart('const foo = bar'),
+    );
   });
 
   test('should emit a typed const variable declaration', () {
-    expect(declareConst('foo', type: refer('String')).assign(refer('bar')),
-        equalsDart('const String foo = bar'));
+    expect(
+      declareConst('foo', type: refer('String')).assign(refer('bar')),
+      equalsDart('const String foo = bar'),
+    );
   });
 
   test('should emit a final variable declaration', () {
-    expect(declareFinal('foo').assign(refer('bar')),
-        equalsDart('final foo = bar'));
+    expect(
+      declareFinal('foo').assign(refer('bar')),
+      equalsDart('final foo = bar'),
+    );
   });
 
   test('should emit a typed final variable declaration', () {
-    expect(declareFinal('foo', type: refer('String')).assign(refer('bar')),
-        equalsDart('final String foo = bar'));
+    expect(
+      declareFinal('foo', type: refer('String')).assign(refer('bar')),
+      equalsDart('final String foo = bar'),
+    );
   });
 
-  test('should emit a nullable typed final variable declaration', () {
-    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
-    expect(
-        declareFinal('foo',
-            type: TypeReference((b) => b
-              ..symbol = 'String'
-              ..isNullable = true)).assign(refer('bar')),
-        equalsDart('final String? foo = bar', emitter));
-  }, skip: 'https://github.com/dart-lang/code_builder/issues/315');
+  test(
+    'should emit a nullable typed final variable declaration',
+    () {
+      final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+      expect(
+        declareFinal(
+          'foo',
+          type: TypeReference(
+            (b) =>
+                b
+                  ..symbol = 'String'
+                  ..isNullable = true,
+          ),
+        ).assign(refer('bar')),
+        equalsDart('final String? foo = bar', emitter),
+      );
+    },
+    skip: 'https://github.com/dart-lang/code_builder/issues/315',
+  );
 
   test('should emit a late final variable declaration', () {
-    expect(declareFinal('foo', late: true).assign(refer('bar')),
-        equalsDart('late final foo = bar'));
+    expect(
+      declareFinal('foo', late: true).assign(refer('bar')),
+      equalsDart('late final foo = bar'),
+    );
   });
 
   test('should emit a late typed final variable declaration', () {
     expect(
-        declareFinal('foo', type: refer('String'), late: true)
-            .assign(refer('bar')),
-        equalsDart('late final String foo = bar'));
+      declareFinal(
+        'foo',
+        type: refer('String'),
+        late: true,
+      ).assign(refer('bar')),
+      equalsDart('late final String foo = bar'),
+    );
   });
 
   test('should emit a variable declaration', () {
@@ -844,57 +844,51 @@ void main() {
   });
 
   test('should emit a typed variable declaration', () {
-    expect(declareVar('foo', type: refer('String')).assign(refer('bar')),
-        equalsDart('String foo = bar'));
+    expect(
+      declareVar('foo', type: refer('String')).assign(refer('bar')),
+      equalsDart('String foo = bar'),
+    );
   });
 
   test('should emit a late variable declaration', () {
-    expect(declareVar('foo', late: true).assign(refer('bar')),
-        equalsDart('late var foo = bar'));
+    expect(
+      declareVar('foo', late: true).assign(refer('bar')),
+      equalsDart('late var foo = bar'),
+    );
   });
 
   test('should emit a late typed variable declaration', () {
     expect(
-        declareVar('foo', type: refer('String'), late: true)
-            .assign(refer('bar')),
-        equalsDart('late String foo = bar'));
+      declareVar('foo', type: refer('String'), late: true).assign(refer('bar')),
+      equalsDart('late String foo = bar'),
+    );
   });
 
   test('should emit a perenthesized epression', () {
     expect(
-        refer('foo').ifNullThen(refer('FormatException')
-            .newInstance([literalString('missing foo')])
-            .thrown
-            .parenthesized),
-        equalsDart('foo ?? (throw FormatException(\'missing foo\'))'));
+      refer('foo').ifNullThen(
+        refer(
+          'FormatException',
+        ).newInstance([literalString('missing foo')]).thrown.parenthesized,
+      ),
+      equalsDart('foo ?? (throw FormatException(\'missing foo\'))'),
+    );
   });
 
   test('should emit an addition assigment expression', () {
-    expect(
-      refer('foo').addAssign(refer('bar')),
-      equalsDart('foo += bar'),
-    );
+    expect(refer('foo').addAssign(refer('bar')), equalsDart('foo += bar'));
   });
 
   test('should emit a subtraction assigment expression', () {
-    expect(
-      refer('foo').subtractAssign(refer('bar')),
-      equalsDart('foo -= bar'),
-    );
+    expect(refer('foo').subtractAssign(refer('bar')), equalsDart('foo -= bar'));
   });
 
   test('should emit a multiplication assigment expression', () {
-    expect(
-      refer('foo').multiplyAssign(refer('bar')),
-      equalsDart('foo *= bar'),
-    );
+    expect(refer('foo').multiplyAssign(refer('bar')), equalsDart('foo *= bar'));
   });
 
   test('should emit a division assigment expression', () {
-    expect(
-      refer('foo').divideAssign(refer('bar')),
-      equalsDart('foo /= bar'),
-    );
+    expect(refer('foo').divideAssign(refer('bar')), equalsDart('foo /= bar'));
   });
 
   test('should emit an int division assigment expression', () {

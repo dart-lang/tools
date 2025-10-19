@@ -6,9 +6,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:coverage/src/util.dart'
-    show StandardOutExtension, extractVMServiceUri;
-import 'package:package_config/package_config.dart';
+import 'package:coverage/src/coverage_options.dart';
+import 'package:coverage/src/util.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
 import 'collect_coverage.dart' as collect_coverage;
@@ -17,101 +17,111 @@ import 'format_coverage.dart' as format_coverage;
 final _allProcesses = <Process>[];
 
 Future<void> _dartRun(List<String> args,
-    {void Function(String)? onStdout, String? workingDir}) async {
-  final process = await Process.start(
-    Platform.executable,
-    args,
-    workingDirectory: workingDir,
-  );
+    {required void Function(String) onStdout,
+    required void Function(String) onStderr}) async {
+  final process = await Process.start(Platform.executable, args);
   _allProcesses.add(process);
-  final broadStdout = process.stdout.asBroadcastStream();
-  broadStdout.listen(stdout.add);
-  if (onStdout != null) {
-    broadStdout.lines().listen(onStdout);
+
+  void listen(
+      Stream<List<int>> stream, IOSink sink, void Function(String) onLine) {
+    final broadStream = stream.asBroadcastStream();
+    broadStream.listen(sink.add);
+    broadStream.lines().listen(onLine);
   }
-  process.stderr.listen(stderr.add);
+
+  listen(process.stdout, stdout, onStdout);
+  listen(process.stderr, stderr, onStderr);
+
   final result = await process.exitCode;
   if (result != 0) {
     throw ProcessException(Platform.executable, args, '', result);
   }
 }
 
-Future<String?> _packageNameFromConfig(String packageDir) async {
-  final config = await findPackageConfig(Directory(packageDir));
-  return config?.packageOf(Uri.directory(packageDir))?.name;
+void _killSubprocessesAndExit(ProcessSignal signal) {
+  for (final process in _allProcesses) {
+    process.kill(signal);
+  }
+  exit(1);
 }
 
 void _watchExitSignal(ProcessSignal signal) {
-  signal.watch().listen((sig) {
-    for (final process in _allProcesses) {
-      process.kill(sig);
-    }
-    exit(1);
-  });
+  signal.watch().listen(_killSubprocessesAndExit);
 }
 
-ArgParser _createArgParser() => ArgParser()
+ArgParser _createArgParser(CoverageOptions defaultOptions) => ArgParser()
   ..addOption(
     'package',
     help: 'Root directory of the package to test.',
-    defaultsTo: '.',
+    defaultsTo: defaultOptions.packageDirectory,
   )
   ..addOption(
     'package-name',
     help: 'Name of the package to test. '
-        'Deduced from --package if not provided.',
+        'Deduced from --package if not provided. '
+        'DEPRECATED: use --scope-output',
   )
-  ..addOption('port', help: 'VM service port.', defaultsTo: '8181')
+  ..addOption('port', help: 'VM service port. Defaults to using any free port.')
   ..addOption(
     'out',
+    defaultsTo: defaultOptions.outputDirectory,
     abbr: 'o',
     help: 'Output directory. Defaults to <package-dir>/coverage.',
   )
-  ..addOption('test', help: 'Test script to run.', defaultsTo: 'test')
+  ..addOption('test',
+      help: 'Test script to run.', defaultsTo: defaultOptions.testScript)
   ..addFlag(
     'function-coverage',
     abbr: 'f',
-    defaultsTo: false,
+    defaultsTo: defaultOptions.functionCoverage,
     help: 'Collect function coverage info.',
   )
   ..addFlag(
     'branch-coverage',
     abbr: 'b',
-    defaultsTo: false,
+    defaultsTo: defaultOptions.branchCoverage,
     help: 'Collect branch coverage info.',
   )
+  ..addOption(
+    'fail-under',
+    help: 'Fail if coverage is less than the given percentage (0-100)',
+  )
   ..addMultiOption('scope-output',
+      defaultsTo: defaultOptions.scopeOutput,
       help: 'restrict coverage results so that only scripts that start with '
           'the provided package path are considered. Defaults to the name of '
-          'the package under test.')
+          'the current package (including all subpackages, if this is a '
+          'workspace).')
   ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
 class Flags {
   Flags(
     this.packageDir,
-    this.packageName,
     this.outDir,
     this.port,
     this.testScript,
     this.functionCoverage,
     this.branchCoverage,
-    this.scopeOutput, {
+    this.scopeOutput,
+    this.failUnder, {
     required this.rest,
   });
 
   final String packageDir;
-  final String packageName;
   final String outDir;
   final String port;
   final String testScript;
   final bool functionCoverage;
   final bool branchCoverage;
   final List<String> scopeOutput;
+  final String? failUnder;
   final List<String> rest;
 }
 
-Future<Flags> _parseArgs(List<String> arguments) async {
-  final parser = _createArgParser();
+@visibleForTesting
+Future<Flags> parseArgs(
+    List<String> arguments, CoverageOptions defaultOptions) async {
+  final parser = _createArgParser(defaultOptions);
   final args = parser.parse(arguments);
 
   void printUsage() {
@@ -138,35 +148,35 @@ ${parser.usage}
     exit(0);
   }
 
-  final packageDir = path.canonicalize(args['package'] as String);
+  final packageDir = path.normalize(path.absolute(args['package'] as String));
   if (!FileSystemEntity.isDirectorySync(packageDir)) {
     fail('--package is not a valid directory.');
   }
 
-  final packageName = (args['package-name'] as String?) ??
-      await _packageNameFromConfig(packageDir);
-  if (packageName == null) {
+  final pubspecPath = getPubspecPath(packageDir);
+  if (!File(pubspecPath).existsSync()) {
     fail(
-      "Couldn't figure out package name from --package. Make sure this is a "
-      'package directory, or try passing --package-name explicitly.',
+      "Couldn't find $pubspecPath. Make sure this command is run in a "
+      'package directory, or pass --package to explicitly set the directory.',
     );
   }
 
   return Flags(
     packageDir,
-    packageName,
-    (args['out'] as String?) ?? path.join(packageDir, 'coverage'),
-    args['port'] as String,
-    args['test'] as String,
-    args['function-coverage'] as bool,
-    args['branch-coverage'] as bool,
-    args['scope-output'] as List<String>,
+    args.option('out') ?? path.join(packageDir, 'coverage'),
+    args.option('port') ?? '0',
+    args.option('test')!,
+    args.flag('function-coverage'),
+    args.flag('branch-coverage'),
+    args.multiOption('scope-output'),
+    args.option('fail-under'),
     rest: args.rest,
   );
 }
 
 Future<void> main(List<String> arguments) async {
-  final flags = await _parseArgs(arguments);
+  final defaultOptions = CoverageOptionsProvider().coverageOptions;
+  final flags = await parseArgs(arguments, defaultOptions);
   final outJson = path.join(flags.outDir, 'coverage.json');
   final outLcov = path.join(flags.outDir, 'lcov.info');
 
@@ -199,11 +209,19 @@ Future<void> main(List<String> arguments) async {
         }
       }
     },
+    onStderr: (line) {
+      if (!serviceUriCompleter.isCompleted) {
+        if (line.contains('Could not start the VM service')) {
+          _killSubprocessesAndExit(ProcessSignal.sigkill);
+        }
+      }
+    },
   );
   final serviceUri = await serviceUriCompleter.future;
 
-  final scopes =
-      flags.scopeOutput.isEmpty ? [flags.packageName] : flags.scopeOutput;
+  final scopes = flags.scopeOutput.isEmpty
+      ? getAllWorkspaceNames(flags.packageDir)
+      : flags.scopeOutput;
   await collect_coverage.main([
     '--wait-paused',
     '--resume-isolates',
@@ -224,6 +242,7 @@ Future<void> main(List<String> arguments) async {
     outJson,
     '-o',
     outLcov,
+    if (flags.failUnder != null) '--fail-under=${flags.failUnder}',
   ]);
   exit(0);
 }

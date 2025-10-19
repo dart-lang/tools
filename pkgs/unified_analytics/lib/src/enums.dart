@@ -55,6 +55,11 @@ enum DashEvent {
     description: 'Pub package resolution details',
     toolOwner: DashTool.dartTool,
   ),
+  dartMCPEvent(
+    label: 'dart_mcp_server',
+    description: 'Information for a Dart MCP server event',
+    toolOwner: DashTool.dartTool,
+  ),
 
   // Events for Flutter devtools
 
@@ -74,7 +79,7 @@ enum DashEvent {
   ),
   codeSizeAnalysis(
     label: 'code_size_analysis',
-    description: 'Indicates when the "--analyize-size" command is run',
+    description: 'Indicates when the "--analyze-size" command is run',
     toolOwner: DashTool.flutterTool,
   ),
   commandUsageValues(
@@ -98,6 +103,16 @@ enum DashEvent {
     description: 'Provides information about flutter commands that ran',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterWasmDryRun(
+    label: 'wasm_dry_run',
+    description: 'Information for a dart2wasm dry run invoked from Flutter',
+    toolOwner: DashTool.flutterTool,
+  ),
+  flutterInjectDarwinPlugins(
+    label: 'flutter_inject_darwin_plugins',
+    description: 'Information on plugins injected into an iOS/macOS project',
+    toolOwner: DashTool.flutterTool,
+  ),
   hotReloadTime(
     label: 'hot_reload_time',
     description: 'Hot reload duration',
@@ -111,6 +126,10 @@ enum DashEvent {
 
   // Events for language_server below
 
+  analysisStatistics(
+    label: 'analysis_statistics',
+    description: 'Dart analyzer statistics',
+  ),
   clientNotification(
     label: 'client_notification',
     description: 'Notifications sent from the client',

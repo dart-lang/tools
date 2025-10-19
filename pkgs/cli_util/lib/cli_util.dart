@@ -10,6 +10,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 
+export 'src/base_directories.dart';
+
 /// The path to the current Dart SDK.
 String get sdkPath => path.dirname(path.dirname(Platform.resolvedExecutable));
 
@@ -41,6 +43,7 @@ String getSdkPath() => sdkPath;
 ///
 /// [1]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 /// [2]: https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html#//apple_ref/doc/uid/TP40010672-CH2-SW1
+@Deprecated('Use BaseDirectories(tool: productName).configHome() instead.')
 String applicationConfigHome(String productName) =>
     path.join(_configHome, productName);
 
@@ -73,8 +76,8 @@ String _requireEnv(String name) =>
 
 /// Exception thrown if a required environment entry does not exist.
 ///
-/// Thrown by [applicationConfigHome] if an expected and required
-/// platform specific environment entry is not available.
+/// Thrown if an expected and required platform specific environment entry is
+/// not available.
 class EnvironmentNotFoundException implements Exception {
   /// Name of environment entry which was needed, but not found.
   final String entryName;

@@ -16,10 +16,7 @@ String _dart(Spec spec, DartEmitter emitter) =>
 /// Both [source] and the result emitted from the compared [Spec] are formatted
 /// with [EqualsDart.format]. A plain [DartEmitter] is used by default and may
 /// be overridden with [emitter].
-Matcher equalsDart(
-  String source, [
-  DartEmitter? emitter,
-]) =>
+Matcher equalsDart(String source, [DartEmitter? emitter]) =>
     EqualsDart._(EqualsDart._format(source), emitter ?? DartEmitter());
 
 /// Implementation detail of using the [equalsDart] matcher.
@@ -59,12 +56,9 @@ class EqualsDart extends Matcher {
     bool verbose,
   ) {
     final actualSource = _dart(item, _emitter);
-    return equals(_expectedSource).describeMismatch(
-      actualSource,
-      mismatchDescription,
-      matchState,
-      verbose,
-    );
+    return equals(
+      _expectedSource,
+    ).describeMismatch(actualSource, mismatchDescription, matchState, verbose);
   }
 
   @override

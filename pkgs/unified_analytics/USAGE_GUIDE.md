@@ -200,3 +200,9 @@ Explanation of the each key above
 - toolCount: count of the Dart and Flutter tools sending analytics
 - recordCount: count of the total number of events in the log file
 - eventCount: counts each unique event and how many times they occurred in the log file
+
+Note: You can test any changes to the `LogFileStats` during development by running:
+
+```shell
+dart run example/log_stats.dart
+```

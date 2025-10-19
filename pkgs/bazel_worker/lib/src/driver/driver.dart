@@ -49,9 +49,9 @@ class BazelWorkerDriver {
     int? maxIdleWorkers,
     int? maxWorkers,
     int? maxRetries,
-  })  : _maxIdleWorkers = maxIdleWorkers ?? 4,
-        _maxWorkers = maxWorkers ?? 4,
-        _maxRetries = maxRetries ?? 4;
+  }) : _maxIdleWorkers = maxIdleWorkers ?? 4,
+       _maxWorkers = maxWorkers ?? 4,
+       _maxRetries = maxRetries ?? 4;
 
   /// Waits for an available worker, and then sends [WorkRequest] to it.
   ///
@@ -111,29 +111,31 @@ class BazelWorkerDriver {
       // work queue.
       var futureWorker = _spawnWorker();
       _spawningWorkers.add(futureWorker);
-      futureWorker.then((worker) {
-        _spawningWorkers.remove(futureWorker);
-        _readyWorkers.add(worker);
-        var connection = StdDriverConnection.forWorker(worker);
-        _workerConnections[worker] = connection;
-        _runWorker(worker, attempt);
+      futureWorker
+          .then((worker) {
+            _spawningWorkers.remove(futureWorker);
+            _readyWorkers.add(worker);
+            var connection = StdDriverConnection.forWorker(worker);
+            _workerConnections[worker] = connection;
+            _runWorker(worker, attempt);
 
-        // When the worker exits we should retry running the work queue in case
-        // there is more work to be done. This is primarily just a defensive
-        // thing but is cheap to do.
-        //
-        // We don't use `exitCode` because it is null for detached processes (
-        // which is common for workers).
-        connection.done.then((_) {
-          _idleWorkers.remove(worker);
-          _readyWorkers.remove(worker);
-          _runWorkQueue();
-        });
-      }).onError<Object>((e, s) {
-        _spawningWorkers.remove(futureWorker);
-        if (attempt.responseCompleter.isCompleted) return;
-        attempt.responseCompleter.completeError(e, s);
-      });
+            // When the worker exits we should retry running the work queue in case
+            // there is more work to be done. This is primarily just a defensive
+            // thing but is cheap to do.
+            //
+            // We don't use `exitCode` because it is null for detached processes (
+            // which is common for workers).
+            connection.done.then((_) {
+              _idleWorkers.remove(worker);
+              _readyWorkers.remove(worker);
+              _runWorkQueue();
+            });
+          })
+          .onError<Object>((e, s) {
+            _spawningWorkers.remove(futureWorker);
+            if (attempt.responseCompleter.isCompleted) return;
+            attempt.responseCompleter.completeError(e, s);
+          });
     }
     // Recursively calls itself until one of the bail out conditions are met.
     _runWorkQueue();

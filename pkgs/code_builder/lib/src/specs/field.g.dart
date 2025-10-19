@@ -29,17 +29,17 @@ class _$Field extends Field {
   factory _$Field([void Function(FieldBuilder)? updates]) =>
       (new FieldBuilder()..update(updates)).build() as _$Field;
 
-  _$Field._(
-      {required this.annotations,
-      required this.docs,
-      this.assignment,
-      required this.static,
-      required this.late,
-      required this.external,
-      required this.name,
-      this.type,
-      required this.modifier})
-      : super._() {
+  _$Field._({
+    required this.annotations,
+    required this.docs,
+    this.assignment,
+    required this.static,
+    required this.late,
+    required this.external,
+    required this.name,
+    this.type,
+    required this.modifier,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(annotations, r'Field', 'annotations');
     BuiltValueNullFieldError.checkNotNull(docs, r'Field', 'docs');
     BuiltValueNullFieldError.checkNotNull(static, r'Field', 'static');
@@ -250,22 +250,31 @@ class _$FieldBuilder extends FieldBuilder {
   _$Field _build() {
     _$Field _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Field._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              assignment: assignment,
-              static: BuiltValueNullFieldError.checkNotNull(
-                  static, r'Field', 'static'),
-              late:
-                  BuiltValueNullFieldError.checkNotNull(late, r'Field', 'late'),
-              external: BuiltValueNullFieldError.checkNotNull(
-                  external, r'Field', 'external'),
-              name:
-                  BuiltValueNullFieldError.checkNotNull(name, r'Field', 'name'),
-              type: type,
-              modifier: BuiltValueNullFieldError.checkNotNull(
-                  modifier, r'Field', 'modifier'));
+            annotations: annotations.build(),
+            docs: docs.build(),
+            assignment: assignment,
+            static: BuiltValueNullFieldError.checkNotNull(
+              static,
+              r'Field',
+              'static',
+            ),
+            late: BuiltValueNullFieldError.checkNotNull(late, r'Field', 'late'),
+            external: BuiltValueNullFieldError.checkNotNull(
+              external,
+              r'Field',
+              'external',
+            ),
+            name: BuiltValueNullFieldError.checkNotNull(name, r'Field', 'name'),
+            type: type,
+            modifier: BuiltValueNullFieldError.checkNotNull(
+              modifier,
+              r'Field',
+              'modifier',
+            ),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -275,7 +284,10 @@ class _$FieldBuilder extends FieldBuilder {
         docs.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Field', _$failedField, e.toString());
+          r'Field',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

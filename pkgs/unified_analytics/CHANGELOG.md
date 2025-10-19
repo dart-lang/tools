@@ -1,3 +1,28 @@
+## 8.0.6
+- Added `Event.analysisStatistics` for events from Dart Analysis Server, about analysis.
+
+## 8.0.5
+- Fix `Event.flutterWasmDryRun` fields.
+
+## 8.0.4
+- Changed `Event.flutterWasmDryRun` to track dart2wasm dry run metrics from Flutter.
+
+## 8.0.3
+- Changed `Event.contextStructure` to make optional data that's no longer being
+  collected and to add data about the size of library cycles.
+
+## 8.0.2
+- Added `Event.dartMCPEvent` for events from the `dart mcp-server` command.
+
+## 8.0.1
+- Added `Event.flutterInjectDarwinPlugins` event for plugins injected into an iOS/macOS project.
+
+## 8.0.0
+- Send `enabled_features` as an event parameter in all events rather than as a user property.
+
+## 7.0.2
+- Allow `LogStatsFile` to contain more granular event types (specifically `property_editor` events).
+
 ## 7.0.1
 - Fixed `UnsupportedError` thrown when Event.exception is called without providing a value for `args`.
 

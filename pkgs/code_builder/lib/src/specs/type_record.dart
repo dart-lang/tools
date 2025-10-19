@@ -16,17 +16,12 @@ part 'type_record.g.dart';
 @immutable
 abstract class RecordType extends Expression
     implements Built<RecordType, RecordTypeBuilder>, Reference, Spec {
-  factory RecordType([
-    void Function(RecordTypeBuilder) updates,
-  ]) = _$RecordType;
+  factory RecordType([void Function(RecordTypeBuilder) updates]) = _$RecordType;
 
   RecordType._();
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitRecordType(this, context);
 
   BuiltList<Reference> get positionalFieldTypes;
@@ -50,8 +45,7 @@ abstract class RecordType extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot instantiate a record type.');
+  ]) => throw UnsupportedError('Cannot instantiate a record type.');
 
   @override
   Expression newInstanceNamed(
@@ -59,16 +53,14 @@ abstract class RecordType extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot instantiate a record type.');
+  ]) => throw UnsupportedError('Cannot instantiate a record type.');
 
   @override
   Expression constInstance(
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot "const" a record type.');
+  ]) => throw UnsupportedError('Cannot "const" a record type.');
 
   @override
   Expression constInstanceNamed(
@@ -76,8 +68,7 @@ abstract class RecordType extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot "const" a record type.');
+  ]) => throw UnsupportedError('Cannot "const" a record type.');
 }
 
 abstract class RecordTypeBuilder extends Object

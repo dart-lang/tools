@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@Tags(['integration'])
+library;
+
 import 'dart:async';
 
 import 'package:coverage/coverage.dart';
@@ -140,10 +143,8 @@ Future<Map<String, dynamic>> _collectCoverage(
     bool functionCoverage = false,
     bool branchCoverage = false,
     Map<String, Set<int>>? coverableLineCache}) async {
-  final openPort = await getOpenPort();
-
   // run the sample app, with the right flags
-  final sampleProcess = await runTestApp(openPort);
+  final sampleProcess = await runTestApp();
 
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());
   final isolateIdSet = isolateIds ? <String>{} : null;

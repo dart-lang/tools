@@ -87,7 +87,8 @@ void defineReflectiveTests(Type type) {
   {
     var isSolo = _hasAnnotationInstance(classMirror, soloTest);
     var className = MirrorSystem.getName(classMirror.simpleName);
-    group = _Group(isSolo, _combineNames(_currentSuiteName, className));
+    group = _Group(
+        isSolo, _combineNames(_currentSuiteName, className), classMirror);
     _currentGroups.add(group);
   }
 
@@ -104,7 +105,7 @@ void defineReflectiveTests(Type type) {
     // test_
     if (memberName.startsWith('test_')) {
       if (_hasSkippedTestAnnotation(memberMirror)) {
-        group.addSkippedTest(memberName);
+        group.addSkippedTest(memberName, memberMirror.testLocation);
       } else {
         group.addTest(isSolo, memberName, memberMirror, () {
           if (_hasFailingTestAnnotation(memberMirror) ||
@@ -137,7 +138,7 @@ void defineReflectiveTests(Type type) {
     }
     // skip_test_
     if (memberName.startsWith('skip_test_')) {
-      group.addSkippedTest(memberName);
+      group.addSkippedTest(memberName, memberMirror.testLocation);
     }
   });
 
@@ -150,11 +151,27 @@ void _addTestsIfTopLevelSuite() {
   if (_currentSuiteLevel == 0) {
     void runTests({required bool allGroups, required bool allTests}) {
       for (var group in _currentGroups) {
+        var runTestCount = 0;
         if (allGroups || group.isSolo) {
           for (var test in group.tests) {
             if (allTests || test.isSolo) {
-              test_package.test(test.name, test.function,
-                  timeout: test.timeout, skip: test.isSkipped);
+              if (!test.isSkipped) {
+                runTestCount += 1;
+              }
+              test_package.test(test.name, () async {
+                await group.ensureSetUpClass();
+                try {
+                  await test.function();
+                } finally {
+                  runTestCount -= 1;
+                  if (runTestCount == 0) {
+                    group.tearDownClass();
+                  }
+                }
+              },
+                  timeout: test.timeout,
+                  skip: test.isSkipped,
+                  location: test.location);
             }
           }
         }
@@ -207,14 +224,14 @@ bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
 Future<Object?> _invokeSymbolIfExists(
-    InstanceMirror instanceMirror, Symbol symbol) {
+    ObjectMirror objectMirror, Symbol symbol) {
   Object? invocationResult;
   InstanceMirror? closure;
   try {
-    closure = instanceMirror.getField(symbol);
+    closure = objectMirror.getField(symbol);
     // ignore: avoid_catching_errors
   } on NoSuchMethodError {
-    // ignore
+    // ignore: empty_catches
   }
 
   if (closure is ClosureMirror) {
@@ -306,13 +323,17 @@ class _Group {
   final String name;
   final List<_Test> tests = <_Test>[];
 
-  _Group(this.isSolo, this.name);
+  /// For static group-wide operations eg `setUpClass` and `tearDownClass`.
+  final ClassMirror _classMirror;
+  Future<Object?>? _setUpCompletion;
+
+  _Group(this.isSolo, this.name, this._classMirror);
 
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
-  void addSkippedTest(String name) {
+  void addSkippedTest(String name, test_package.TestLocation? location) {
     var fullName = _combineNames(this.name, name);
-    tests.add(_Test.skipped(isSolo, fullName));
+    tests.add(_Test.skipped(isSolo, fullName, location));
   }
 
   void addTest(bool isSolo, String name, MethodMirror memberMirror,
@@ -320,8 +341,22 @@ class _Group {
     var fullName = _combineNames(this.name, name);
     var timeout =
         _getAnnotationInstance(memberMirror, TestTimeout) as TestTimeout?;
-    tests.add(_Test(isSolo, fullName, function, timeout?._timeout));
+    tests.add(_Test(isSolo, fullName, function, timeout?._timeout,
+        memberMirror.testLocation));
   }
+
+  /// Runs group-wide setup if it has not been started yet,
+  /// ensuring it only runs once for a group. Set up runs and
+  /// completes before any test of the group runs
+  Future<Object?> ensureSetUpClass() =>
+      _setUpCompletion ??= _invokeSymbolIfExists(_classMirror, #setUpClass);
+
+  /// Runs group-wide tear down iff [ensureSetUpClass] was called at least once.
+  /// Must be called once and only called after all tests of the group have
+  /// completed
+  void tearDownClass() => _setUpCompletion != null
+      ? _invokeSymbolIfExists(_classMirror, #tearDownClass)
+      : null;
 }
 
 /// A marker annotation used to instruct dart2js to keep reflection information
@@ -341,14 +376,26 @@ class _Test {
   final String name;
   final _TestFunction function;
   final test_package.Timeout? timeout;
+  final test_package.TestLocation? location;
 
   final bool isSkipped;
 
-  _Test(this.isSolo, this.name, this.function, this.timeout)
+  _Test(this.isSolo, this.name, this.function, this.timeout, this.location)
       : isSkipped = false;
 
-  _Test.skipped(this.isSolo, this.name)
+  _Test.skipped(this.isSolo, this.name, this.location)
       : isSkipped = true,
         function = (() {}),
         timeout = null;
+}
+
+extension on DeclarationMirror {
+  test_package.TestLocation? get testLocation {
+    if (location case var location?) {
+      return test_package.TestLocation(
+          location.sourceUri, location.line, location.column);
+    } else {
+      return null;
+    }
+  }
 }

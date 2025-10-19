@@ -25,17 +25,20 @@ class _$Extension extends Extension {
   factory _$Extension([void Function(ExtensionBuilder)? updates]) =>
       (new ExtensionBuilder()..update(updates)).build() as _$Extension;
 
-  _$Extension._(
-      {required this.annotations,
-      required this.docs,
-      this.on,
-      required this.types,
-      required this.methods,
-      required this.fields,
-      this.name})
-      : super._() {
+  _$Extension._({
+    required this.annotations,
+    required this.docs,
+    this.on,
+    required this.types,
+    required this.methods,
+    required this.fields,
+    this.name,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(
-        annotations, r'Extension', 'annotations');
+      annotations,
+      r'Extension',
+      'annotations',
+    );
     BuiltValueNullFieldError.checkNotNull(docs, r'Extension', 'docs');
     BuiltValueNullFieldError.checkNotNull(types, r'Extension', 'types');
     BuiltValueNullFieldError.checkNotNull(methods, r'Extension', 'methods');
@@ -211,15 +214,17 @@ class _$ExtensionBuilder extends ExtensionBuilder {
   _$Extension _build() {
     _$Extension _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Extension._(
-              annotations: annotations.build(),
-              docs: docs.build(),
-              on: on,
-              types: types.build(),
-              methods: methods.build(),
-              fields: fields.build(),
-              name: name);
+            annotations: annotations.build(),
+            docs: docs.build(),
+            on: on,
+            types: types.build(),
+            methods: methods.build(),
+            fields: fields.build(),
+            name: name,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -236,7 +241,10 @@ class _$ExtensionBuilder extends ExtensionBuilder {
         fields.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Extension', _$failedField, e.toString());
+          r'Extension',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

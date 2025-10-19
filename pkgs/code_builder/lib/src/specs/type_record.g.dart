@@ -17,15 +17,21 @@ class _$RecordType extends RecordType {
   factory _$RecordType([void Function(RecordTypeBuilder)? updates]) =>
       (new RecordTypeBuilder()..update(updates)).build() as _$RecordType;
 
-  _$RecordType._(
-      {required this.positionalFieldTypes,
-      required this.namedFieldTypes,
-      this.isNullable})
-      : super._() {
+  _$RecordType._({
+    required this.positionalFieldTypes,
+    required this.namedFieldTypes,
+    this.isNullable,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(
-        positionalFieldTypes, r'RecordType', 'positionalFieldTypes');
+      positionalFieldTypes,
+      r'RecordType',
+      'positionalFieldTypes',
+    );
     BuiltValueNullFieldError.checkNotNull(
-        namedFieldTypes, r'RecordType', 'namedFieldTypes');
+      namedFieldTypes,
+      r'RecordType',
+      'namedFieldTypes',
+    );
   }
 
   @override
@@ -133,11 +139,13 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
   _$RecordType _build() {
     _$RecordType _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$RecordType._(
-              positionalFieldTypes: positionalFieldTypes.build(),
-              namedFieldTypes: namedFieldTypes.build(),
-              isNullable: isNullable);
+            positionalFieldTypes: positionalFieldTypes.build(),
+            namedFieldTypes: namedFieldTypes.build(),
+            isNullable: isNullable,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -147,7 +155,10 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
         namedFieldTypes.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'RecordType', _$failedField, e.toString());
+          r'RecordType',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -1,3 +1,18 @@
+## 4.11.0
+
+* Export `SpecVisitor`, `ClosureExpression`, `LiteralMapExpression`
+  `LiteralRecordExpression`, `LiteralSetExpression` types.
+* Support `Expression.newInstanceNamed` with empty name
+* Consistently add blank lines between `=>` in class-like definitions.
+* Fixed bug: Fields declared with `static` and `external` now produce code with
+  correct order
+* Require `built_collection: ^5.1.1`
+* Require `built_value: ^8.10.1`
+* Require `collection: ^1.19.0`
+* Require `matcher: ^0.12.16+1`
+* Require `meta: ^1.16.0`
+* Require `sdk: ^3.7.0`
+
 ## 4.10.1
 
 * Require Dart `^3.5.0`

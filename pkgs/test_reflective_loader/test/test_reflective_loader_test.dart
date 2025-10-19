@@ -11,14 +11,53 @@ import 'package:test_reflective_loader/test_reflective_loader.dart';
 
 void main() {
   defineReflectiveSuite(() {
+    // ensure set-ups and tear-downs are not prematurely called ie before any
+    // tests actually execute
+    setUpAll(() {
+      expect(TestReflectiveLoaderTest.didSetUpClass, false);
+      expect(TestReflectiveLoaderTest.didTearDownClass, false);
+      expect(SecondTest.didSetUpClass, false);
+      expect(SecondTest.didTearDownClass, false);
+    });
     defineReflectiveTests(TestReflectiveLoaderTest);
+    defineReflectiveTests(SecondTest);
+    tearDownAll(() {
+      expect(TestReflectiveLoaderTest.didSetUpClass, true);
+      expect(TestReflectiveLoaderTest.didTearDownClass, true);
+      expect(SecondTest.didSetUpClass, true);
+      expect(SecondTest.didTearDownClass, true);
+    });
   });
 }
 
 @reflectiveTest
 class TestReflectiveLoaderTest {
-  void test_passes() {
-    expect(true, true);
+  static bool didSetUpClass = false;
+  static bool didTearDownClass = false;
+
+  // TODO(scheglov): Linter was updated to automatically ignore
+  // this but needs time before it is actually used. Remove this
+  // ignore and others like it in this file once the linter
+  // change is active in this project:
+  // ignore: unreachable_from_main
+  static void setUpClass() {
+    expect(didSetUpClass, false);
+    didSetUpClass = true;
+    expect(didTearDownClass, false);
+  }
+
+  // TODO(scheglov): See comment directly above
+  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
+  // ignore: unreachable_from_main
+  static void tearDownClass() {
+    expect(didSetUpClass, true);
+    expect(didTearDownClass, false);
+    didTearDownClass = true;
+  }
+
+  void test_classwide_state() {
+    expect(didSetUpClass, true);
+    expect(didTearDownClass, false);
   }
 
   @failingTest
@@ -26,8 +65,8 @@ class TestReflectiveLoaderTest {
     expect(false, true);
   }
 
-  @failingTest
-  void test_fails_throws_sync() {
+  @skippedTest
+  void test_fails_but_skipped() {
     throw StateError('foo');
   }
 
@@ -36,13 +75,46 @@ class TestReflectiveLoaderTest {
     return Future.error('foo');
   }
 
-  @skippedTest
-  void test_fails_but_skipped() {
+  @failingTest
+  void test_fails_throws_sync() {
     throw StateError('foo');
+  }
+
+  void test_passes() {
+    expect(true, true);
   }
 
   @skippedTest
   void test_times_out_but_skipped() {
     while (true) {}
+  }
+}
+
+@reflectiveTest
+class SecondTest {
+  static bool didSetUpClass = false;
+  static bool didTearDownClass = false;
+
+  // TODO(scheglov): See comment directly above
+  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
+  // ignore: unreachable_from_main
+  static void setUpClass() {
+    expect(didSetUpClass, false);
+    didSetUpClass = true;
+    expect(didTearDownClass, false);
+  }
+
+  // TODO(scheglov): See comment directly above
+  // "TestReflectiveLoaderTest.setUpClass" for info about this ignore:
+  // ignore: unreachable_from_main
+  static void tearDownClass() {
+    expect(didSetUpClass, true);
+    expect(didTearDownClass, false);
+    didTearDownClass = true;
+  }
+
+  void test_classwide_state() {
+    expect(didSetUpClass, true);
+    expect(didTearDownClass, false);
   }
 }

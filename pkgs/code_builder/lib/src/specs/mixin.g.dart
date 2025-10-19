@@ -29,17 +29,17 @@ class _$Mixin extends Mixin {
   factory _$Mixin([void Function(MixinBuilder)? updates]) =>
       (new MixinBuilder()..update(updates)).build() as _$Mixin;
 
-  _$Mixin._(
-      {required this.base,
-      required this.annotations,
-      required this.docs,
-      this.on,
-      required this.implements,
-      required this.types,
-      required this.methods,
-      required this.fields,
-      required this.name})
-      : super._() {
+  _$Mixin._({
+    required this.base,
+    required this.annotations,
+    required this.docs,
+    this.on,
+    required this.implements,
+    required this.types,
+    required this.methods,
+    required this.fields,
+    required this.name,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base');
     BuiltValueNullFieldError.checkNotNull(annotations, r'Mixin', 'annotations');
     BuiltValueNullFieldError.checkNotNull(docs, r'Mixin', 'docs');
@@ -251,19 +251,19 @@ class _$MixinBuilder extends MixinBuilder {
   _$Mixin _build() {
     _$Mixin _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$Mixin._(
-              base:
-                  BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base'),
-              annotations: annotations.build(),
-              docs: docs.build(),
-              on: on,
-              implements: implements.build(),
-              types: types.build(),
-              methods: methods.build(),
-              fields: fields.build(),
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'Mixin', 'name'));
+            base: BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base'),
+            annotations: annotations.build(),
+            docs: docs.build(),
+            on: on,
+            implements: implements.build(),
+            types: types.build(),
+            methods: methods.build(),
+            fields: fields.build(),
+            name: BuiltValueNullFieldError.checkNotNull(name, r'Mixin', 'name'),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -282,7 +282,10 @@ class _$MixinBuilder extends MixinBuilder {
         fields.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Mixin', _$failedField, e.toString());
+          r'Mixin',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

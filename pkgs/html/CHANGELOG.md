@@ -1,6 +1,17 @@
+## 0.15.7-wip
+
+- Require Dart `3.6`
+- Fix a bug in DOM parsing where `<br>` tags does not create a new line when html is converted to text.
+
+## 0.15.6
+
+- Performance improvements.
+- No longer generate any error spans if generateSpans is false.
+- Fixed a TypeError in nth-child with non numeric value (e.g. `nth-child(even)`)
+
 ## 0.15.5+1
 
-- Fix a bug in DOM parsing where `<br>` tags does not create a new line when html is converted to text.
+- Support "ambiguous ampersand" in attribute values.
 
 ## 0.15.5
 

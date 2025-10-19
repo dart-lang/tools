@@ -41,8 +41,7 @@ class _$Block extends Block {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Block')
-          ..add('statements', statements))
-        .toString();
+      ..add('statements', statements)).toString();
   }
 }
 
@@ -97,7 +96,10 @@ class _$BlockBuilder extends BlockBuilder {
         statements.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'Block', _$failedField, e.toString());
+          r'Block',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

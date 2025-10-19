@@ -5,6 +5,7 @@
 // ignore_for_file: only_throw_errors
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:coverage/src/util.dart';
 import 'package:test/test.dart';
@@ -232,27 +233,23 @@ void main() {
     });
 
     test(
-        'returns [[0,lines.length]] when the annotations are not '
+        'returns null when the annotations are not '
         'balanced but the whole file is ignored', () {
       for (final content in invalidSources) {
         final lines = content.split('\n');
         lines.add(' // coverage:ignore-file');
-        expect(getIgnoredLines('', lines), [
-          [0, lines.length]
-        ]);
+        expect(getIgnoredLines('', lines), null);
       }
     });
 
-    test('returns [[0,lines.length]] when the whole file is ignored', () {
+    test('returns null when the whole file is ignored', () {
       final lines = '''final str = ''; // coverage:ignore-start
       final str = ''; // coverage:ignore-end
       final str = ''; // coverage:ignore-file
       '''
           .split('\n');
 
-      expect(getIgnoredLines('', lines), [
-        [0, lines.length]
-      ]);
+      expect(getIgnoredLines('', lines), null);
     });
 
     test('return the correct range of lines ignored', () {
@@ -354,5 +351,48 @@ void main() {
         [5, 6],
       ]);
     });
+  });
+
+  test('getAllWorkspaceNames', () {
+    // Uses the workspace_names directory:
+    // workspace_names
+    // └── pkgs
+    //     ├── foo
+    //     │   └── foo_example  // Not part of foo's workspace.
+    //     └── bar
+    //         └── bar_example  // Part of bar's workspace.
+    expect(
+        getAllWorkspaceNames('test/workspace_names'),
+        unorderedEquals([
+          'workspace_names',
+          'foo',
+          'bar',
+          'bar_example',
+        ]));
+  });
+
+  test('IgnoredLinesContains', () {
+    (List<List<int>>, int) createRandomRanges(int len) {
+      final ranges = <List<int>>[];
+      var line = 0;
+      final rand = Random();
+      while (ranges.length < len) {
+        final start = line += 1 + rand.nextInt(5);
+        final end = line += rand.nextInt(5);
+        ranges.add([start, end]);
+      }
+      return (ranges, line);
+    }
+
+    bool naiveIgnoredContains(List<List<int>> ranges, int line) =>
+        ranges.any((range) => range[0] <= line && range[1] >= line);
+
+    for (final len in [0, 1, 2, 3, 10, 100, 1000]) {
+      final (ranges, end) = createRandomRanges(len);
+      for (var line = 0; line < end + 3; ++line) {
+        expect(
+            ranges.ignoredContains(line), naiveIgnoredContains(ranges, line));
+      }
+    }
   });
 }

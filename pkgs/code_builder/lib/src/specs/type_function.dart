@@ -19,17 +19,13 @@ part 'type_function.g.dart';
 abstract class FunctionType extends Expression
     with HasGenerics
     implements Built<FunctionType, FunctionTypeBuilder>, Reference, Spec {
-  factory FunctionType([
-    void Function(FunctionTypeBuilder) updates,
-  ]) = _$FunctionType;
+  factory FunctionType([void Function(FunctionTypeBuilder) updates]) =
+      _$FunctionType;
 
   FunctionType._();
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitFunctionType(this, context);
 
   /// Return type.
@@ -70,8 +66,7 @@ abstract class FunctionType extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot instantiate a function type.');
+  ]) => throw UnsupportedError('Cannot instantiate a function type.');
 
   @override
   Expression newInstanceNamed(
@@ -79,16 +74,14 @@ abstract class FunctionType extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot instantiate a function type.');
+  ]) => throw UnsupportedError('Cannot instantiate a function type.');
 
   @override
   Expression constInstance(
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot "const" a function type.');
+  ]) => throw UnsupportedError('Cannot "const" a function type.');
 
   @override
   Expression constInstanceNamed(
@@ -96,8 +89,7 @@ abstract class FunctionType extends Expression
     Iterable<Expression> positionalArguments, [
     Map<String, Expression> namedArguments = const {},
     List<Reference> typeArguments = const [],
-  ]) =>
-      throw UnsupportedError('Cannot "const" a function type.');
+  ]) => throw UnsupportedError('Cannot "const" a function type.');
 
   /// A typedef assignment to this type.
   Code toTypeDef(String name) => createTypeDef(name, this);

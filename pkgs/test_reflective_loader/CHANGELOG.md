@@ -1,3 +1,15 @@
+## 0.4.0
+
+- Add support for one-time set up and teardown in test classes via static
+  `setUpClass` and `tearDownClass` methods
+
+## 0.3.0
+
+- Require Dart `^3.5.0`.
+- Update to `package:test` 1.26.1.
+- Pass locations of groups/tests to `package:test` to improve locations reported
+  in the JSON reporter that may be used for navigation in IDEs.
+
 ## 0.2.3
 
 - Require Dart `^3.1.0`.

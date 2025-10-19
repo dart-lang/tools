@@ -19,10 +19,11 @@ void main() {
     });
 
     test('should collect import URLs', () {
-      allocator = Allocator()
-        ..allocate(refer('List', 'dart:core'))
-        ..allocate(refer('LinkedHashMap', 'dart:collection'))
-        ..allocate(refer('someSymbol'));
+      allocator =
+          Allocator()
+            ..allocate(refer('List', 'dart:core'))
+            ..allocate(refer('LinkedHashMap', 'dart:collection'))
+            ..allocate(refer('someSymbol'));
       expect(allocator.imports.map((d) => d.url), [
         'dart:core',
         'dart:collection',
@@ -37,10 +38,7 @@ void main() {
 
     test('.simplePrefixing should add import prefixes', () {
       allocator = Allocator.simplePrefixing();
-      expect(
-        allocator.allocate(refer('List', 'dart:core')),
-        'List',
-      );
+      expect(allocator.allocate(refer('List', 'dart:core')), 'List');
       expect(
         allocator.allocate(refer('LinkedHashMap', 'dart:collection')),
         '_i1.LinkedHashMap',

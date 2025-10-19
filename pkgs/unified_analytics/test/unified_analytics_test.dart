@@ -498,7 +498,7 @@ void main() {
 # All other lines are configuration lines. They have
 # the form "name=value". If multiple lines contain
 # the same configuration name with different values,
-# the parser will default to a conservative value. 
+# the parser will default to a conservative value.
 
 # DISABLING TELEMETRY REPORTING
 #
@@ -548,7 +548,7 @@ reporting=1
 # All other lines are configuration lines. They have
 # the form "name=value". If multiple lines contain
 # the same configuration name with different values,
-# the parser will default to a conservative value. 
+# the parser will default to a conservative value.
 
 # DISABLING TELEMETRY REPORTING
 #
@@ -632,7 +632,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     );
   });
 
-  test('Check that UserProperty class has all the necessary keys', () {
+  test('The UserProperty class has all the necessary keys', () {
     const userPropertyKeys = <String>[
       'session_id',
       'flutter_channel',
@@ -645,7 +645,6 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       'host_os_version',
       'locale',
       'client_ide',
-      'enabled_features',
     ];
     expect(analytics.userPropertyMap.keys.length, userPropertyKeys.length,
         reason: 'There should only be ${userPropertyKeys.length} keys');
@@ -826,6 +825,7 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
       eventName: DashEvent.hotReloadTime,
       eventData: eventData,
       userProperty: analytics.userProperty,
+      enabledFeatures: 'enable-native-assets',
     );
 
     // Checks for the top level keys
@@ -833,8 +833,6 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
         reason: '"client_id" is required at the top level');
     expect(body.containsKey('events'), true,
         reason: '"events" is required at the top level');
-    expect(body.containsKey('user_properties'), true,
-        reason: '"user_properties" is required at the top level');
 
     // Regex for the client id
     final clientIdPattern = RegExp(
@@ -846,12 +844,34 @@ ${initialTool.label}=$dateStamp,$toolsMessageVersion
     expect(clientIdPattern.hasMatch(body['client_id'] as String), true,
         reason: 'The client id is not properly formatted, ie '
             '46cc0ba6-f604-4fd9-aa2f-8a20beb24cd4');
-    expect(
-        (body['events'][0] as Map<String, dynamic>).containsKey('name'), true,
+    expect(body['events'][0] as Map<String, Object?>, contains('name'),
         reason: 'Each event in the events array needs a name');
-    expect(
-        (body['events'][0] as Map<String, dynamic>).containsKey('params'), true,
+    expect(body['events'][0] as Map<String, Object?>, contains('params'),
         reason: 'Each event in the events array needs a params key');
+  });
+
+  test(
+      'The list of enabled features is included as an event parameter in every sent event',
+      () {
+    final eventData = <String, dynamic>{
+      'time': 5,
+      'command': 'run',
+    };
+
+    final Map<String, dynamic> body = generateRequestBody(
+      clientId: Uuid().generateV4(),
+      eventName: DashEvent.hotReloadTime,
+      eventData: eventData,
+      userProperty: analytics.userProperty,
+      enabledFeatures: 'enable-native-assets',
+    );
+
+    expect((body['events'][0] as Map<String, Object?>)['params'],
+        contains('enabled_features'));
+    expect(
+        (body['events'][0] as Map<String, dynamic>)['params']
+            ['enabled_features'],
+        'enable-native-assets');
   });
 
   test('Check that log file is correctly persisting events sent', () {

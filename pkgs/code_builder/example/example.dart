@@ -23,12 +23,20 @@ void main() {
 /// }
 /// ```
 String animalClass() {
-  final animal = Class((b) => b
-    ..name = 'Animal'
-    ..extend = refer('Organism')
-    ..methods.add(Method.returnsVoid((b) => b
-      ..name = 'eat'
-      ..body = refer('print').call([literalString('Yum!')]).code)));
+  final animal = Class(
+    (b) =>
+        b
+          ..name = 'Animal'
+          ..extend = refer('Organism')
+          ..methods.add(
+            Method.returnsVoid(
+              (b) =>
+                  b
+                    ..name = 'eat'
+                    ..body = refer('print').call([literalString('Yum!')]).code,
+            ),
+          ),
+  );
   return _dartfmt.format('${animal.accept(DartEmitter())}');
 }
 
@@ -43,14 +51,20 @@ String animalClass() {
 /// ```
 String scopedLibrary() {
   final methods = [
-    Method((b) => b
-      ..body = const Code('')
-      ..name = 'doThing'
-      ..returns = refer('Thing', 'package:a/a.dart')),
-    Method((b) => b
-      ..body = const Code('')
-      ..name = 'doOther'
-      ..returns = refer('Other', 'package:b/b.dart')),
+    Method(
+      (b) =>
+          b
+            ..body = const Code('')
+            ..name = 'doThing'
+            ..returns = refer('Thing', 'package:a/a.dart'),
+    ),
+    Method(
+      (b) =>
+          b
+            ..body = const Code('')
+            ..name = 'doOther'
+            ..returns = refer('Other', 'package:b/b.dart'),
+    ),
   ];
   final library = Library((b) => b.body.addAll(methods));
   return _dartfmt.format('${library.accept(DartEmitter.scoped())}');
@@ -68,19 +82,28 @@ String scopedLibrary() {
 /// ```
 String jsonEnum() {
   final values = <EnumValue>[
-    EnumValue((b) => b
-      ..name = 'metric'
-      ..annotations.addAll([
-        refer('JsonKey').call([literalString('m')])
-      ])),
-    EnumValue((b) => b
-      ..name = 'imperial'
-      ..annotations.addAll([
-        refer('JsonKey').call([literalString('i')])
-      ])),
+    EnumValue(
+      (b) =>
+          b
+            ..name = 'metric'
+            ..annotations.addAll([
+              refer('JsonKey').call([literalString('m')]),
+            ]),
+    ),
+    EnumValue(
+      (b) =>
+          b
+            ..name = 'imperial'
+            ..annotations.addAll([
+              refer('JsonKey').call([literalString('i')]),
+            ]),
+    ),
   ];
-  final e = Enum((b) => b
-    ..name = 'Unit'
-    ..values.addAll(values));
+  final e = Enum(
+    (b) =>
+        b
+          ..name = 'Unit'
+          ..values.addAll(values),
+  );
   return _dartfmt.format('${e.accept(DartEmitter())}');
 }

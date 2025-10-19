@@ -57,9 +57,7 @@ class Pubspec {
   /// If there is exactly 1 value in [authors], returns it.
   ///
   /// If there are 0 or more than 1, returns `null`.
-  @Deprecated(
-    'See https://dart.dev/tools/pub/pubspec#authorauthors',
-  )
+  @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
   String? get author {
     if (authors.length == 1) {
       return authors.single;
@@ -67,9 +65,7 @@ class Pubspec {
     return null;
   }
 
-  @Deprecated(
-    'See https://dart.dev/tools/pub/pubspec#authorauthors',
-  )
+  @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
   final List<String> authors;
   final String? documentation;
 
@@ -93,19 +89,25 @@ class Pubspec {
   /// and other settings.
   final Map<String, dynamic>? flutter;
 
+  /// Optional field to specify executables
+  @JsonKey(fromJson: _executablesMap)
+  final Map<String, String?> executables;
+
+  /// If this package is a Pub Workspace, this field lists the sub-packages.
+  final List<String>? workspace;
+
+  /// Specifies how to resolve dependencies with the surrounding Pub Workspace.
+  final String? resolution;
+
   /// If [author] and [authors] are both provided, their values are combined
   /// with duplicates eliminated.
   Pubspec(
     this.name, {
     this.version,
     this.publishTo,
-    @Deprecated(
-      'See https://dart.dev/tools/pub/pubspec#authorauthors',
-    )
+    @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
     String? author,
-    @Deprecated(
-      'See https://dart.dev/tools/pub/pubspec#authorauthors',
-    )
+    @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
     List<String>? authors,
     Map<String, VersionConstraint?>? environment,
     this.homepage,
@@ -117,17 +119,23 @@ class Pubspec {
     this.screenshots,
     this.documentation,
     this.description,
+    this.workspace,
+    this.resolution,
     Map<String, Dependency>? dependencies,
     Map<String, Dependency>? devDependencies,
     Map<String, Dependency>? dependencyOverrides,
     this.flutter,
-  })  :
-        // ignore: deprecated_member_use_from_same_package
-        authors = _normalizeAuthors(author, authors),
-        environment = environment ?? const {},
-        dependencies = dependencies ?? const {},
-        devDependencies = devDependencies ?? const {},
-        dependencyOverrides = dependencyOverrides ?? const {} {
+    Map<String, String?>? executables,
+  }) : authors // ignore: deprecated_member_use_from_same_package
+       = _normalizeAuthors(
+         author,
+         authors,
+       ),
+       environment = environment ?? const {},
+       dependencies = dependencies ?? const {},
+       devDependencies = devDependencies ?? const {},
+       executables = executables ?? const {},
+       dependencyOverrides = dependencyOverrides ?? const {} {
     if (name.isEmpty) {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }
@@ -175,10 +183,7 @@ class Pubspec {
       );
 
   static List<String> _normalizeAuthors(String? author, List<String>? authors) {
-    final value = <String>{
-      if (author != null) author,
-      ...?authors,
-    };
+    final value = <String>{if (author != null) author, ...?authors};
     return value.toList();
   }
 }
@@ -222,5 +227,23 @@ Map<String, VersionConstraint?> _environmentMap(Map? source) =>
       }
 
       return MapEntry(key, constraint);
+    }) ??
+    {};
+
+Map<String, String?> _executablesMap(Map? source) =>
+    source?.map((k, value) {
+      final key = k as String;
+      if (value == null) {
+        return MapEntry(key, null);
+      } else if (value is String) {
+        return MapEntry(key, value);
+      } else {
+        throw CheckedFromJsonException(
+          source,
+          key,
+          'String',
+          '`$value` is not a String.',
+        );
+      }
     }) ??
     {};

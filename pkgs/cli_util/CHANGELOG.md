@@ -1,3 +1,7 @@
+## 0.5.0-wip
+
+- Add `BaseDirectories` class and deprecate `applicationConfigHome`.
+
 ## 0.4.2
 
 - Add `sdkPath` getter, deprecate `getSdkPath` function.

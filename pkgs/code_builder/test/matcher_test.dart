@@ -23,8 +23,14 @@ void main() {
 extension on Matcher {
   void expectMismatch(dynamic actual, String mismatch) {
     expect(
-        () => expect(actual, this),
-        throwsA(isA<TestFailure>().having(
-            (e) => e.message, 'message', equalsIgnoringWhitespace(mismatch))));
+      () => expect(actual, this),
+      throwsA(
+        isA<TestFailure>().having(
+          (e) => e.message,
+          'message',
+          equalsIgnoringWhitespace(mismatch),
+        ),
+      ),
+    );
   }
 }

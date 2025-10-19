@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Retry(3)
+@Tags(['integration'])
 library;
 
 import 'dart:async';
@@ -133,24 +133,25 @@ void main() {
       39: 1,
       41: 1,
       42: 4,
-      43: 1,
-      44: 3,
-      45: 1,
-      48: 1,
+      43: 2,
+      44: 1,
+      45: 3,
+      46: 1,
       49: 1,
-      51: 1,
-      54: 1,
+      50: 1,
+      52: 1,
       55: 1,
       56: 1,
-      59: 1,
+      57: 1,
       60: 1,
-      62: 1,
+      61: 1,
       63: 1,
       64: 1,
-      66: 1,
+      65: 1,
       67: 1,
       68: 1,
-      71: 3,
+      69: 1,
+      72: 3,
     };
     expect(isolateFile?.lineHits, expectedHits);
     expect(isolateFile?.funcHits, {11: 1, 19: 1, 23: 1, 28: 1, 38: 1});
@@ -174,7 +175,7 @@ void main() {
         32: 0,
         38: 1,
         42: 1,
-        71: 1,
+        72: 1,
       },
     );
   });
@@ -293,10 +294,8 @@ Future<String> _collectCoverage(
     bool functionCoverage, bool branchCoverage) async {
   expect(FileSystemEntity.isFileSync(testAppPath), isTrue);
 
-  final openPort = await getOpenPort();
-
   // Run the sample app with the right flags.
-  final sampleProcess = await runTestApp(openPort);
+  final sampleProcess = await runTestApp();
 
   // Capture the VM service URI.
   final serviceUri = await serviceUriFromProcess(sampleProcess.stdoutStream());

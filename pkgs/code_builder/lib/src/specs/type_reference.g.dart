@@ -21,13 +21,13 @@ class _$TypeReference extends TypeReference {
   factory _$TypeReference([void Function(TypeReferenceBuilder)? updates]) =>
       (new TypeReferenceBuilder()..update(updates)).build() as _$TypeReference;
 
-  _$TypeReference._(
-      {required this.symbol,
-      this.url,
-      this.bound,
-      required this.types,
-      this.isNullable})
-      : super._() {
+  _$TypeReference._({
+    required this.symbol,
+    this.url,
+    this.bound,
+    required this.types,
+    this.isNullable,
+  }) : super._() {
     BuiltValueNullFieldError.checkNotNull(symbol, r'TypeReference', 'symbol');
     BuiltValueNullFieldError.checkNotNull(types, r'TypeReference', 'types');
   }
@@ -170,14 +170,19 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
   _$TypeReference _build() {
     _$TypeReference _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           new _$TypeReference._(
-              symbol: BuiltValueNullFieldError.checkNotNull(
-                  symbol, r'TypeReference', 'symbol'),
-              url: url,
-              bound: bound,
-              types: types.build(),
-              isNullable: isNullable);
+            symbol: BuiltValueNullFieldError.checkNotNull(
+              symbol,
+              r'TypeReference',
+              'symbol',
+            ),
+            url: url,
+            bound: bound,
+            types: types.build(),
+            isNullable: isNullable,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -185,7 +190,10 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
         types.build();
       } catch (e) {
         throw new BuiltValueNestedFieldError(
-            r'TypeReference', _$failedField, e.toString());
+          r'TypeReference',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

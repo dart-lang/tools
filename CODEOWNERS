@@ -1,5 +1,0 @@
-# The CODEOWNERS file helps to define individuals or teams that responsible
-# for code within the repository
-# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-
-/pkgs/unified_analytics/ @andrewkolos

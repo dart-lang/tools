@@ -10,6 +10,18 @@ import 'package:unified_analytics/src/event.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
+  test('Event.analysisStatistics constructed', () {
+    Event generateEvent() =>
+        Event.analysisStatistics(workingDuration: 'workingDuration');
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.analysisStatistics);
+    expect(constructedEvent.eventData['workingDuration'], 'workingDuration');
+    expect(constructedEvent.eventData.length, 1);
+  });
+
   test('Event.analyticsCollectionEnabled constructed', () {
     Event generateEvent() => Event.analyticsCollectionEnabled(status: false);
 
@@ -85,35 +97,35 @@ void main() {
 
   test('Event.contextStructure constructed', () {
     Event generateEvent() => Event.contextStructure(
-          contextsFromBothFiles: 1,
-          contextsFromOptionsFiles: 2,
-          contextsFromPackagesFiles: 3,
-          contextsWithoutFiles: 4,
-          immediateFileCount: 5,
-          immediateFileLineCount: 6,
-          numberOfContexts: 7,
-          transitiveFileCount: 8,
-          transitiveFileLineCount: 9,
-          transitiveFileUniqueCount: 10,
-          transitiveFileUniqueLineCount: 11,
+          immediateFileCount: 1,
+          immediateFileLineCount: 2,
+          numberOfContexts: 3,
+          transitiveFileCount: 4,
+          transitiveFileLineCount: 5,
+          transitiveFileUniqueCount: 6,
+          transitiveFileUniqueLineCount: 7,
+          libraryCycleLibraryCounts: 'a',
+          libraryCycleLineCounts: 'b',
         );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.contextStructure);
-    expect(constructedEvent.eventData['contextsFromBothFiles'], 1);
-    expect(constructedEvent.eventData['contextsFromOptionsFiles'], 2);
-    expect(constructedEvent.eventData['contextsFromPackagesFiles'], 3);
-    expect(constructedEvent.eventData['contextsWithoutFiles'], 4);
-    expect(constructedEvent.eventData['immediateFileCount'], 5);
-    expect(constructedEvent.eventData['immediateFileLineCount'], 6);
-    expect(constructedEvent.eventData['numberOfContexts'], 7);
-    expect(constructedEvent.eventData['transitiveFileCount'], 8);
-    expect(constructedEvent.eventData['transitiveFileLineCount'], 9);
-    expect(constructedEvent.eventData['transitiveFileUniqueCount'], 10);
-    expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 11);
-    expect(constructedEvent.eventData.length, 11);
+    expect(constructedEvent.eventData['immediateFileCount'], 1);
+    expect(constructedEvent.eventData['immediateFileLineCount'], 2);
+    expect(constructedEvent.eventData['numberOfContexts'], 3);
+    expect(constructedEvent.eventData['transitiveFileCount'], 4);
+    expect(constructedEvent.eventData['transitiveFileLineCount'], 5);
+    expect(constructedEvent.eventData['transitiveFileUniqueCount'], 6);
+    expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 7);
+    expect(constructedEvent.eventData['libraryCycleLibraryCounts'], 'a');
+    expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
+    expect(constructedEvent.eventData['contextsFromBothFiles'], 0);
+    expect(constructedEvent.eventData['contextsFromOptionsFiles'], 0);
+    expect(constructedEvent.eventData['contextsFromPackagesFiles'], 0);
+    expect(constructedEvent.eventData['contextsWithoutFiles'], 0);
+    expect(constructedEvent.eventData.length, 13);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
@@ -400,6 +412,80 @@ void main() {
     expect(constructedEvent.eventData.length, 4);
   });
 
+  test('Event.flutterWasmDryRun constructed', () {
+    Event generateEventNoFindings() => Event.flutterWasmDryRun(
+          result: 'success',
+          exitCode: 123,
+        );
+
+    final constructedEvent1 = generateEventNoFindings();
+
+    expect(generateEventNoFindings, returnsNormally);
+    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
+    expect(constructedEvent1.eventData['result'], 'success');
+    expect(constructedEvent1.eventData['exitCode'], 123);
+    expect(constructedEvent1.eventData.length, 2);
+  });
+  test('Event.flutterWasmDryRun constructed', () {
+    Event generateEventNoFindings() => Event.flutterWasmDryRun(
+          result: 'success',
+          exitCode: 123,
+        );
+
+    final constructedEvent1 = generateEventNoFindings();
+
+    expect(generateEventNoFindings, returnsNormally);
+    expect(constructedEvent1.eventName, DashEvent.flutterWasmDryRun);
+    expect(constructedEvent1.eventData['result'], 'success');
+    expect(constructedEvent1.eventData['exitCode'], 123);
+    expect(constructedEvent1.eventData.length, 2);
+
+    Event generateEventFindings() => Event.flutterWasmDryRun(
+        result: 'success', exitCode: 123, findingsSummary: '1,2,3');
+
+    final constructedEvent2 = generateEventFindings();
+
+    expect(generateEventFindings, returnsNormally);
+    expect(constructedEvent2.eventName, DashEvent.flutterWasmDryRun);
+    expect(constructedEvent2.eventData['result'], 'success');
+    expect(constructedEvent2.eventData['exitCode'], 123);
+    expect(constructedEvent2.eventData['findings'], '1,2,3');
+    expect(constructedEvent2.eventData.length, 3);
+  });
+
+  test('Event.flutterInjectDarwinPlugins constructed', () {
+    Event generateEvent() => Event.flutterInjectDarwinPlugins(
+          platform: 'ios',
+          isModule: true,
+          swiftPackageManagerUsable: true,
+          swiftPackageManagerFeatureEnabled: true,
+          projectDisabledSwiftPackageManager: false,
+          projectHasSwiftPackageManagerIntegration: true,
+          pluginCount: 123,
+          swiftPackageCount: 456,
+          podCount: 678,
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.flutterInjectDarwinPlugins);
+    expect(constructedEvent.eventData['platform'], 'ios');
+    expect(constructedEvent.eventData['isModule'], isTrue);
+    expect(constructedEvent.eventData['swiftPackageManagerUsable'], isTrue);
+    expect(constructedEvent.eventData['swiftPackageManagerFeatureEnabled'],
+        isTrue);
+    expect(constructedEvent.eventData['projectDisabledSwiftPackageManager'],
+        isFalse);
+    expect(
+        constructedEvent.eventData['projectHasSwiftPackageManagerIntegration'],
+        isTrue);
+    expect(constructedEvent.eventData['pluginCount'], 123);
+    expect(constructedEvent.eventData['swiftPackageCount'], 456);
+    expect(constructedEvent.eventData['podCount'], 678);
+    expect(constructedEvent.eventData.length, 9);
+  });
+
   test('Event.codeSizeAnalysis constructed', () {
     Event generateEvent() => Event.codeSizeAnalysis(platform: 'platform');
 
@@ -622,6 +708,27 @@ void main() {
     expect(constructedEvent.eventData.length, 20);
   });
 
+  test('Event.dartMCPEvent constructed', () {
+    final event = Event.dartMCPEvent(
+        client: 'test client',
+        clientVersion: '1.0.0',
+        serverVersion: '1.1.0',
+        type: 'some_event',
+        additionalData:
+            _TestMetrics(boolField: true, stringField: 'hello', intField: 1));
+    expect(
+        event.eventData,
+        equals({
+          'client': 'test client',
+          'clientVersion': '1.0.0',
+          'serverVersion': '1.1.0',
+          'type': 'some_event',
+          'boolField': true,
+          'stringField': 'hello',
+          'intField': 1,
+        }));
+  });
+
   test('Confirm all constructors were checked', () {
     var constructorCount = 0;
     for (final declaration in reflectClass(Event).declarations.keys) {
@@ -634,7 +741,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 27;
+    final eventsAccountedForInTests = 31;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

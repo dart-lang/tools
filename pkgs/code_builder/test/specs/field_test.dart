@@ -21,9 +21,12 @@ void main() {
 
   test('should create a typed field', () {
     expect(
-      Field((b) => b
-        ..name = 'foo'
-        ..type = refer('String')),
+      Field(
+        (b) =>
+            b
+              ..name = 'foo'
+              ..type = refer('String'),
+      ),
       equalsDart(r'''
         String foo;
       '''),
@@ -32,9 +35,12 @@ void main() {
 
   test('should create a final field', () {
     expect(
-      Field((b) => b
-        ..name = 'foo'
-        ..modifier = FieldModifier.final$),
+      Field(
+        (b) =>
+            b
+              ..name = 'foo'
+              ..modifier = FieldModifier.final$,
+      ),
       equalsDart(r'''
         final foo;
       '''),
@@ -43,9 +49,12 @@ void main() {
 
   test('should create a constant field', () {
     expect(
-      Field((b) => b
-        ..name = 'foo'
-        ..modifier = FieldModifier.constant),
+      Field(
+        (b) =>
+            b
+              ..name = 'foo'
+              ..modifier = FieldModifier.constant,
+      ),
       equalsDart(r'''
         const foo;
       '''),
@@ -54,9 +63,12 @@ void main() {
 
   test('should create a late field if using null-safety', () {
     expect(
-      Field((b) => b
-        ..late = true
-        ..name = 'foo'),
+      Field(
+        (b) =>
+            b
+              ..late = true
+              ..name = 'foo',
+      ),
       equalsDart(r'''
         late var foo;
       ''', DartEmitter(useNullSafetySyntax: true)),
@@ -65,9 +77,12 @@ void main() {
 
   test('should not create a late field if not using null-safety', () {
     expect(
-      Field((b) => b
-        ..late = true
-        ..name = 'foo'),
+      Field(
+        (b) =>
+            b
+              ..late = true
+              ..name = 'foo',
+      ),
       equalsDart(r'''
         var foo;
       '''),
@@ -76,10 +91,13 @@ void main() {
 
   test('should create a static late field', () {
     expect(
-      Field((b) => b
-        ..static = true
-        ..late = true
-        ..name = 'foo'),
+      Field(
+        (b) =>
+            b
+              ..static = true
+              ..late = true
+              ..name = 'foo',
+      ),
       equalsDart(r'''
         static late var foo;
       ''', DartEmitter(useNullSafetySyntax: true)),
@@ -88,9 +106,12 @@ void main() {
 
   test('should create a field with an assignment', () {
     expect(
-      Field((b) => b
-        ..name = 'foo'
-        ..assignment = const Code('1')),
+      Field(
+        (b) =>
+            b
+              ..name = 'foo'
+              ..assignment = const Code('1'),
+      ),
       equalsDart(r'''
         var foo = 1;
       '''),
@@ -99,14 +120,53 @@ void main() {
 
   test('should create a external field', () {
     expect(
-      Field((b) => b
-        ..name = 'value'
-        ..external = true
-        ..type = refer('double')
-        ..annotations.addAll([refer('Float').call([])])),
+      Field(
+        (b) =>
+            b
+              ..name = 'value'
+              ..external = true
+              ..type = refer('double')
+              ..annotations.addAll([refer('Float').call([])]),
+      ),
       equalsDart(r'''
         @Float()
         external double value;
+      '''),
+    );
+  });
+
+  test('should create a late static field', () {
+    expect(
+      Field(
+        (b) =>
+            b
+              ..name = 'value'
+              ..static = true
+              ..late = true
+              ..type = refer('String')
+              ..annotations.addAll([refer('JS').call([])]),
+      ),
+      equalsDart(r'''
+        @JS()
+        static late String value;
+      ''', DartEmitter(useNullSafetySyntax: true)),
+    );
+  });
+
+  test('should create an external static field', () {
+    expect(
+      Field(
+        (b) =>
+            b
+              ..name = 'value'
+              ..external = true
+              ..static = true
+              ..type = refer('double')
+              ..annotations.addAll([refer('JS').call([])]),
+      ),
+      equalsDart(r'''
+        @JS()
+        external static double value;
       '''),
     );
   });

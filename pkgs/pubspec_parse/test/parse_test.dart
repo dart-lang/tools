@@ -20,10 +20,9 @@ void main() {
     expect(value.homepage, isNull);
     expect(value.author, isNull);
     expect(value.authors, isEmpty);
-    expect(
-      value.environment,
-      {'sdk': VersionConstraint.parse('>=2.12.0 <3.0.0')},
-    );
+    expect(value.environment, {
+      'sdk': VersionConstraint.parse('>=2.12.0 <3.0.0'),
+    });
     expect(value.documentation, isNull);
     expect(value.dependencies, isEmpty);
     expect(value.devDependencies, isEmpty);
@@ -32,11 +31,14 @@ void main() {
     expect(value.repository, isNull);
     expect(value.issueTracker, isNull);
     expect(value.screenshots, isEmpty);
+    expect(value.workspace, isNull);
+    expect(value.resolution, isNull);
+    expect(value.executables, isEmpty);
   });
 
   test('all fields set', () async {
     final version = Version.parse('1.2.3');
-    final sdkConstraint = VersionConstraint.parse('>=2.12.0 <3.0.0');
+    final sdkConstraint = VersionConstraint.parse('>=3.6.0 <4.0.0');
     final value = await parse({
       'name': 'sample',
       'version': version.toString(),
@@ -48,15 +50,19 @@ void main() {
       'documentation': 'documentation',
       'repository': 'https://github.com/example/repo',
       'issue_tracker': 'https://github.com/example/repo/issues',
-      'funding': [
-        'https://patreon.com/example',
-      ],
+      'funding': ['https://patreon.com/example'],
       'topics': ['widget', 'button'],
       'ignored_advisories': ['111', '222'],
       'screenshots': [
         {'description': 'my screenshot', 'path': 'path/to/screenshot'},
       ],
-    });
+      'workspace': ['pkg1', 'pkg2'],
+      'resolution': 'workspace',
+      'executables': {
+        'my_script': 'bin/my_script.dart',
+        'my_script2': 'bin/my_script2.dart',
+      },
+    }, skipTryPub: true);
     expect(value.name, 'sample');
     expect(value.version, version);
     expect(value.publishTo, 'none');
@@ -86,19 +92,22 @@ void main() {
     expect(value.screenshots, hasLength(1));
     expect(value.screenshots!.first.description, 'my screenshot');
     expect(value.screenshots!.first.path, 'path/to/screenshot');
+    expect(value.executables, hasLength(2));
+    expect(value.executables.keys, contains('my_script'));
+    expect(value.executables.keys, contains('my_script2'));
+    expect(value.executables['my_script'], 'bin/my_script.dart');
+    expect(value.executables['my_script2'], 'bin/my_script2.dart');
+    expect(value.workspace, hasLength(2));
+    expect(value.workspace!.first, 'pkg1');
+    expect(value.workspace!.last, 'pkg2');
+    expect(value.resolution, 'workspace');
   });
 
   test('environment values can be null', () async {
-    final value = await parse(
-      {
-        'name': 'sample',
-        'environment': {
-          'sdk': '>=2.12.0 <3.0.0',
-          'bob': null,
-        },
-      },
-      skipTryPub: true,
-    );
+    final value = await parse({
+      'name': 'sample',
+      'environment': {'sdk': '>=2.12.0 <3.0.0', 'bob': null},
+    }, skipTryPub: true);
     expect(value.name, 'sample');
     expect(value.environment, hasLength(2));
     expect(value.environment, containsPair('bob', isNull));
@@ -208,39 +217,77 @@ line 3, column 16: Unsupported value for "publish_to". Must be an http or https 
     });
   });
 
+  group('executables', () {
+    test('one executable', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'executables': {'my_script': 'bin/my_script.dart'},
+      });
+      expect(value.executables, hasLength(1));
+      expect(value.executables.keys, contains('my_script'));
+      expect(value.executables['my_script'], 'bin/my_script.dart');
+    });
+
+    test('many executables', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'executables': {
+          'my_script': 'bin/my_script.dart',
+          'my_script2': 'bin/my_script2.dart',
+        },
+      });
+      expect(value.executables, hasLength(2));
+      expect(value.executables.keys, contains('my_script'));
+      expect(value.executables.keys, contains('my_script2'));
+      expect(value.executables['my_script'], 'bin/my_script.dart');
+      expect(value.executables['my_script2'], 'bin/my_script2.dart');
+    });
+
+    test('invalid value', () async {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'executables': {'script': 32},
+        },
+        'Unsupported value for "script". `32` is not a String.',
+        skipTryPub: true,
+      );
+    });
+
+    test('invalid executable - lenient', () async {
+      final value = await parse({
+        ...defaultPubspec,
+        'executables': 'Invalid value',
+      }, lenient: true);
+      expect(value.name, 'sample');
+      expect(value.executables, isEmpty);
+    });
+  });
+
   group('invalid', () {
     test('null', () {
-      expectParseThrows(
-        null,
-        r'''
+      expectParseThrows(null, r'''
 line 1, column 1: Not a map
   ╷
 1 │ null
   │ ^^^^
-  ╵''',
-      );
+  ╵''');
     });
     test('empty string', () {
-      expectParseThrows(
-        '',
-        r'''
+      expectParseThrows('', r'''
 line 1, column 1: Not a map
   ╷
 1 │ ""
   │ ^^
-  ╵''',
-      );
+  ╵''');
     });
     test('array', () {
-      expectParseThrows(
-        [],
-        r'''
+      expectParseThrows([], r'''
 line 1, column 1: Not a map
   ╷
 1 │ []
   │ ^^
-  ╵''',
-      );
+  ╵''');
     });
 
     test('missing name', () {
@@ -354,10 +401,7 @@ line 4, column 10: Unsupported value for "sdk". Could not parse version "silly".
   group('funding', () {
     test('not a list', () {
       expectParseThrowsContaining(
-        {
-          ...defaultPubspec,
-          'funding': 1,
-        },
+        {...defaultPubspec, 'funding': 1},
         "Unsupported value for \"funding\". type 'int' is not a subtype of type 'List<dynamic>?'",
         skipTryPub: true,
       );
@@ -395,10 +439,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
   group('topics', () {
     test('not a list', () {
       expectParseThrowsContaining(
-        {
-          ...defaultPubspec,
-          'topics': 1,
-        },
+        {...defaultPubspec, 'topics': 1},
         "Unsupported value for \"topics\". type 'int' is not a subtype of type 'List<dynamic>?'",
         skipTryPub: true,
       );
@@ -432,10 +473,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
   group('ignored_advisories', () {
     test('not a list', () {
       expectParseThrowsContaining(
-        {
-          ...defaultPubspec,
-          'ignored_advisories': 1,
-        },
+        {...defaultPubspec, 'ignored_advisories': 1},
         "Unsupported value for \"ignored_advisories\". type 'int' is not a subtype of type 'List<dynamic>?'",
         skipTryPub: true,
       );
@@ -518,10 +556,7 @@ line 6, column 13: Unsupported value for "funding". Illegal scheme character at 
     test('invalid entries', () async {
       final value = await parse({
         ...defaultPubspec,
-        'screenshots': [
-          42,
-          'not a screenshot',
-        ],
+        'screenshots': [42, 'not a screenshot'],
       });
       expect(value.screenshots, isEmpty);
     });
@@ -589,10 +624,7 @@ line 8, column 19: Unsupported value for "description". `42` is not a String
         {
           ...defaultPubspec,
           'screenshots': [
-            {
-              'description': '',
-              'path': 42,
-            },
+            {'description': '', 'path': 42},
           ],
         },
         r'''
@@ -608,13 +640,10 @@ line 9, column 12: Unsupported value for "path". `42` is not a String
     });
 
     test('invalid screenshot - lenient', () async {
-      final value = await parse(
-        {
-          ...defaultPubspec,
-          'screenshots': 'Invalid value',
-        },
-        lenient: true,
-      );
+      final value = await parse({
+        ...defaultPubspec,
+        'screenshots': 'Invalid value',
+      }, lenient: true);
       expect(value.name, 'sample');
       expect(value.screenshots, isEmpty);
     });
@@ -622,29 +651,21 @@ line 9, column 12: Unsupported value for "path". `42` is not a String
 
   group('lenient', () {
     test('null', () {
-      expectParseThrows(
-        null,
-        r'''
+      expectParseThrows(null, r'''
 line 1, column 1: Not a map
   ╷
 1 │ null
   │ ^^^^
-  ╵''',
-        lenient: true,
-      );
+  ╵''', lenient: true);
     });
 
     test('empty string', () {
-      expectParseThrows(
-        '',
-        r'''
+      expectParseThrows('', r'''
 line 1, column 1: Not a map
   ╷
 1 │ ""
   │ ^^
-  ╵''',
-        lenient: true,
-      );
+  ╵''', lenient: true);
     });
 
     test('name cannot be empty', () {
@@ -656,38 +677,29 @@ line 1, column 1: Not a map
     });
 
     test('bad repository url', () async {
-      final value = await parse(
-        {
-          ...defaultPubspec,
-          'repository': {'x': 'y'},
-        },
-        lenient: true,
-      );
+      final value = await parse({
+        ...defaultPubspec,
+        'repository': {'x': 'y'},
+      }, lenient: true);
       expect(value.name, 'sample');
       expect(value.repository, isNull);
     });
 
     test('bad issue_tracker url', () async {
-      final value = await parse(
-        {
-          ...defaultPubspec,
-          'issue_tracker': {'x': 'y'},
-        },
-        lenient: true,
-      );
+      final value = await parse({
+        ...defaultPubspec,
+        'issue_tracker': {'x': 'y'},
+      }, lenient: true);
       expect(value.name, 'sample');
       expect(value.issueTracker, isNull);
     });
 
     test('multiple bad values', () async {
-      final value = await parse(
-        {
-          ...defaultPubspec,
-          'repository': {'x': 'y'},
-          'issue_tracker': {'x': 'y'},
-        },
-        lenient: true,
-      );
+      final value = await parse({
+        ...defaultPubspec,
+        'repository': {'x': 'y'},
+        'issue_tracker': {'x': 'y'},
+      }, lenient: true);
       expect(value.name, 'sample');
       expect(value.repository, isNull);
       expect(value.issueTracker, isNull);
@@ -709,6 +721,39 @@ line 1, column 1: Not a map
           lenient: true,
         ),
         throwsException,
+      );
+    });
+  });
+
+  group('workspaces', () {
+    test('workspace key must be a list', () {
+      expectParseThrowsContaining(
+        {...defaultPubspec, 'workspace': 42},
+        'Unsupported value for "workspace". type \'int\' is not a subtype of type \'List<dynamic>?\' in type cast',
+        skipTryPub: true,
+      );
+    });
+
+    test('workspace key must be a list of strings', () {
+      expectParseThrowsContaining(
+        {
+          ...defaultPubspec,
+          'workspace': [42],
+        },
+        'Unsupported value for "workspace". type \'int\' is not a subtype of type \'String\' in type cast',
+        skipTryPub: true,
+      );
+    });
+
+    test('resolution key must be a string', () {
+      expectParseThrowsContaining(
+        {
+          'name': 'sample',
+          'environment': {'sdk': '^3.6.0'},
+          'resolution': 42,
+        },
+        'Unsupported value for "resolution". type \'int\' is not a subtype of type \'String?\' in type cast',
+        skipTryPub: true,
       );
     });
   });
