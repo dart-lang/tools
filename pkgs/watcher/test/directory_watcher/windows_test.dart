@@ -21,7 +21,7 @@ import 'link_tests.dart';
 void main() {
   watcherFactory = WindowsDirectoryWatcher.new;
 
-  fileTests(isNative: true);
+  fileTests();
   linkTests(isNative: true);
 
   test('DirectoryWatcher creates a WindowsDirectoryWatcher on Windows', () {

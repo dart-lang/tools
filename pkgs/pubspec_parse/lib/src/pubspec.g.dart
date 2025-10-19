@@ -92,3 +92,28 @@ Pubspec _$PubspecFromJson(Map json) => $checkedCreate(
     'dependencyOverrides': 'dependency_overrides',
   },
 );
+
+Map<String, dynamic> _$PubspecToJson(Pubspec instance) => <String, dynamic>{
+  'name': instance.name,
+  'version': _versionToString(instance.version),
+  'description': instance.description,
+  'homepage': instance.homepage,
+  'publish_to': instance.publishTo,
+  'repository': instance.repository?.toString(),
+  'issue_tracker': instance.issueTracker?.toString(),
+  'funding': instance.funding?.map((e) => e.toString()).toList(),
+  'topics': instance.topics,
+  'ignored_advisories': instance.ignoredAdvisories,
+  'screenshots': serializeScreenshots(instance.screenshots),
+  'author': instance.author,
+  'authors': instance.authors,
+  'documentation': instance.documentation,
+  'environment': _serializeEnvironment(instance.environment),
+  'dependencies': serializeDeps(instance.dependencies),
+  'dev_dependencies': serializeDeps(instance.devDependencies),
+  'dependency_overrides': serializeDeps(instance.dependencyOverrides),
+  'flutter': instance.flutter,
+  'executables': _serializeExecutables(instance.executables),
+  'workspace': instance.workspace,
+  'resolution': instance.resolution,
+};

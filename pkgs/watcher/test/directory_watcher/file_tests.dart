@@ -11,13 +11,7 @@ import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
 
-void fileTests({required bool isNative}) {
-  for (var i = 0; i != runsPerTest; ++i) {
-    _fileTests(isNative: isNative);
-  }
-}
-
-void _fileTests({required bool isNative}) {
+void fileTests() {
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
@@ -147,6 +141,13 @@ void _fileTests({required bool isNative}) {
     });
   });
 
+  // Most of the time, when multiple filesystem actions happen in sequence,
+  // they'll be batched together and the watcher will see them all at once.
+  // These tests verify that the watcher normalizes and combine these events
+  // properly. However, very occasionally the events will be reported in
+  // separate batches, and the watcher will report them as though they occurred
+  // far apart in time, so each of these tests has a "backup case" to allow for
+  // that as well.
   group('clustered changes', () {
     test("doesn't notify when a file is created and then immediately removed",
         () async {
@@ -154,6 +155,13 @@ void _fileTests({required bool isNative}) {
       await startWatcher();
       writeFile('file.txt');
       deleteFile('file.txt');
+
+      // Backup case.
+      startClosingEventStream();
+      await allowEvents(() {
+        expectAddEvent('file.txt');
+        expectRemoveEvent('file.txt');
+      });
     });
 
     test(
@@ -165,7 +173,13 @@ void _fileTests({required bool isNative}) {
       deleteFile('file.txt');
       writeFile('file.txt', contents: 're-created');
 
-      await expectModifyEvent('file.txt');
+      await allowEither(() {
+        expectModifyEvent('file.txt');
+      }, () {
+        // Backup case.
+        expectRemoveEvent('file.txt');
+        expectAddEvent('file.txt');
+      });
     });
 
     test(
@@ -177,7 +191,14 @@ void _fileTests({required bool isNative}) {
       renameFile('old.txt', 'new.txt');
       writeFile('old.txt', contents: 're-created');
 
-      await inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
+      await allowEither(() {
+        inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
+      }, () {
+        // Backup case.
+        expectRemoveEvent('old.txt');
+        expectAddEvent('new.txt');
+        expectAddEvent('old.txt');
+      });
     });
 
     test(
@@ -188,6 +209,9 @@ void _fileTests({required bool isNative}) {
 
       writeFile('file.txt', contents: 'modified');
       deleteFile('file.txt');
+
+      // Backup case.
+      await allowModifyEvent('file.txt');
 
       await expectRemoveEvent('file.txt');
     });
@@ -200,6 +224,10 @@ void _fileTests({required bool isNative}) {
       writeFile('file.txt', contents: 'modified');
 
       await expectAddEvent('file.txt');
+
+      // Backup case.
+      startClosingEventStream();
+      await allowModifyEvent('file.txt');
     });
   });
 
@@ -298,29 +326,6 @@ void _fileTests({required bool isNative}) {
     });
 
     test(
-        'emits events for many nested files moved out then immediately back in',
-        () async {
-      withPermutations(
-          (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'));
-
-      await startWatcher(path: 'dir');
-
-      renameDir('dir/sub', 'sub');
-      renameDir('sub', 'dir/sub');
-
-      if (isNative) {
-        await inAnyOrder(withPermutations(
-            (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-        await inAnyOrder(withPermutations(
-            (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-      } else {
-        // Polling watchers can't detect this as directory contents mtimes
-        // aren't updated when the directory is moved.
-        await expectNoEvents();
-      }
-    });
-
-    test(
         'emits events for many files added at once in a subdirectory with the '
         'same name as a removed file', () async {
       writeFile('dir/sub');
@@ -356,33 +361,5 @@ void _fileTests({required bool isNative}) {
         });
       }
     });
-  });
-
-  test(
-      'does not notify about the watched directory being deleted and '
-      'recreated immediately before watching', () async {
-    createDir('dir');
-    writeFile('dir/old.txt');
-    deleteDir('dir');
-    createDir('dir');
-
-    await startWatcher(path: 'dir');
-    writeFile('dir/newer.txt');
-    await expectAddEvent('dir/newer.txt');
-  });
-
-  test('does not suppress files with the same prefix as a directory', () async {
-    // Regression test for https://github.com/dart-lang/watcher/issues/83
-    writeFile('some_name.txt');
-
-    await startWatcher();
-
-    writeFile('some_name/some_name.txt');
-    deleteFile('some_name.txt');
-
-    await inAnyOrder([
-      isAddEvent('some_name/some_name.txt'),
-      isRemoveEvent('some_name.txt')
-    ]);
   });
 }

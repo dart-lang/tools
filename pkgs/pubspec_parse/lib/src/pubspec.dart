@@ -11,13 +11,13 @@ import 'screenshot.dart';
 
 part 'pubspec.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(createToJson: true)
 class Pubspec {
   // TODO: executables
 
   final String name;
 
-  @JsonKey(fromJson: _versionFromString)
+  @JsonKey(fromJson: _versionFromString, toJson: _versionToString)
   final Version? version;
 
   final String? description;
@@ -51,7 +51,7 @@ class Pubspec {
   final List<String>? ignoredAdvisories;
 
   /// Optional field for specifying included screenshot files.
-  @JsonKey(fromJson: parseScreenshots)
+  @JsonKey(fromJson: parseScreenshots, toJson: serializeScreenshots)
   final List<Screenshot>? screenshots;
 
   /// If there is exactly 1 value in [authors], returns it.
@@ -69,16 +69,16 @@ class Pubspec {
   final List<String> authors;
   final String? documentation;
 
-  @JsonKey(fromJson: _environmentMap)
+  @JsonKey(fromJson: _environmentMap, toJson: _serializeEnvironment)
   final Map<String, VersionConstraint?> environment;
 
-  @JsonKey(fromJson: parseDeps)
+  @JsonKey(fromJson: parseDeps, toJson: serializeDeps)
   final Map<String, Dependency> dependencies;
 
-  @JsonKey(fromJson: parseDeps)
+  @JsonKey(fromJson: parseDeps, toJson: serializeDeps)
   final Map<String, Dependency> devDependencies;
 
-  @JsonKey(fromJson: parseDeps)
+  @JsonKey(fromJson: parseDeps, toJson: serializeDeps)
   final Map<String, Dependency> dependencyOverrides;
 
   /// Optional configuration specific to [Flutter](https://flutter.io/)
@@ -90,7 +90,7 @@ class Pubspec {
   final Map<String, dynamic>? flutter;
 
   /// Optional field to specify executables
-  @JsonKey(fromJson: _executablesMap)
+  @JsonKey(fromJson: _executablesMap, toJson: _serializeExecutables)
   final Map<String, String?> executables;
 
   /// If this package is a Pub Workspace, this field lists the sub-packages.
@@ -171,6 +171,9 @@ class Pubspec {
     return _$PubspecFromJson(json);
   }
 
+  // Returns a JSON-serializable map for this instance.
+  Map<String, dynamic> toJson() => _$PubspecToJson(this);
+
   /// Parses source [yaml] into [Pubspec].
   ///
   /// When [lenient] is set, top-level property-parsing or type cast errors are
@@ -247,3 +250,12 @@ Map<String, String?> _executablesMap(Map? source) =>
       }
     }) ??
     {};
+
+Map<String, String?> _serializeEnvironment(
+  Map<String, VersionConstraint?> map,
+) => map.map((key, value) => MapEntry(key, value?.toString()));
+
+String? _versionToString(Version? version) => version?.toString();
+
+Map<String, String?> _serializeExecutables(Map<String, String?>? map) =>
+    map?.map(MapEntry.new) ?? {};
