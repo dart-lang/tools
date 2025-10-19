@@ -651,21 +651,27 @@ line 9, column 12: Unsupported value for "path". `42` is not a String
 
   group('lenient', () {
     test('null', () {
-      expectParseThrows(null, r'''
+      expectParseThrows(
+          null,
+          r'''
 line 1, column 1: Not a map
   ╷
 1 │ null
   │ ^^^^
-  ╵''', lenient: true);
+  ╵''',
+          lenient: true);
     });
 
     test('empty string', () {
-      expectParseThrows('', r'''
+      expectParseThrows(
+          '',
+          r'''
 line 1, column 1: Not a map
   ╷
 1 │ ""
   │ ^^
-  ╵''', lenient: true);
+  ╵''',
+          lenient: true);
     });
 
     test('name cannot be empty', () {

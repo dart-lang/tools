@@ -46,10 +46,8 @@ Dependency? _fromJson(Object? data, String name) {
   }
 
   if (data is Map) {
-    final matchedKeys = data.keys
-        .cast<String>()
-        .where((key) => key != 'version')
-        .toList();
+    final matchedKeys =
+        data.keys.cast<String>().where((key) => key != 'version').toList();
 
     if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
       return _$HostedDependencyFromJson(data);
@@ -82,8 +80,8 @@ Dependency? _fromJson(Object? data, String name) {
           'path' => PathDependency.fromData(data[key]),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
-            data,
-          )..hosted?._nameOfPackage = name,
+              data,
+            )..hosted?._nameOfPackage = name,
           _ => throw StateError('There is a bug in pubspec_parse.'),
         };
       });
@@ -105,7 +103,7 @@ class SdkDependency extends Dependency {
   final VersionConstraint version;
 
   SdkDependency(this.sdk, {VersionConstraint? version})
-    : version = version ?? VersionConstraint.any;
+      : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -157,12 +155,12 @@ class GitDependency extends Dependency {
 
   @override
   Map<String, dynamic> toJson() => {
-    'git': {
-      'url': url.toString(),
-      if (ref != null) 'ref': ref,
-      if (path != null) 'path': path,
-    },
-  };
+        'git': {
+          'url': url.toString(),
+          if (ref != null) 'ref': ref,
+          if (path != null) 'path': path,
+        },
+      };
 }
 
 Uri? parseGitUriOrNull(String? value) =>
@@ -236,7 +234,7 @@ class HostedDependency extends Dependency {
   final HostedDetails? hosted;
 
   HostedDependency({VersionConstraint? version, this.hosted})
-    : version = version ?? VersionConstraint.any;
+      : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -252,9 +250,9 @@ class HostedDependency extends Dependency {
 
   @override
   Map<String, dynamic> toJson() => {
-    'version': version.toString(),
-    if (hosted != null) 'hosted': hosted!.toJson(),
-  };
+        'version': version.toString(),
+        if (hosted != null) 'hosted': hosted!.toJson(),
+      };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -300,9 +298,9 @@ class HostedDetails {
   int get hashCode => Object.hash(name, url);
 
   Map<String, dynamic> toJson() => {
-    if (declaredName != null) 'name': declaredName,
-    'url': url.toString(),
-  };
+        if (declaredName != null) 'name': declaredName,
+        'url': url.toString(),
+      };
 }
 
 VersionConstraint _constraintFromString(String? input) =>

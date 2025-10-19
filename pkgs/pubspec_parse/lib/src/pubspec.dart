@@ -126,16 +126,16 @@ class Pubspec {
     Map<String, Dependency>? dependencyOverrides,
     this.flutter,
     Map<String, String?>? executables,
-  }) : authors // ignore: deprecated_member_use_from_same_package
-       = _normalizeAuthors(
-         author,
-         authors,
-       ),
-       environment = environment ?? const {},
-       dependencies = dependencies ?? const {},
-       devDependencies = devDependencies ?? const {},
-       executables = executables ?? const {},
-       dependencyOverrides = dependencyOverrides ?? const {} {
+  })  : authors // ignore: deprecated_member_use_from_same_package
+            = _normalizeAuthors(
+          author,
+          authors,
+        ),
+        environment = environment ?? const {},
+        dependencies = dependencies ?? const {},
+        devDependencies = devDependencies ?? const {},
+        executables = executables ?? const {},
+        dependencyOverrides = dependencyOverrides ?? const {} {
     if (name.isEmpty) {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }
@@ -253,7 +253,8 @@ Map<String, String?> _executablesMap(Map? source) =>
 
 Map<String, String?> _serializeEnvironment(
   Map<String, VersionConstraint?> map,
-) => map.map((key, value) => MapEntry(key, value?.toString()));
+) =>
+    map.map((key, value) => MapEntry(key, value?.toString()));
 
 String? _versionToString(Version? version) => version?.toString();
 
