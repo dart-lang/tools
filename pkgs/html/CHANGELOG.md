@@ -1,6 +1,7 @@
 ## 0.15.7-wip
 
 - Require Dart `3.6`
+- Fix a bug in DOM parsing where `<br>` tags does not create a new line when html is converted to text.
 
 ## 0.15.6
 
