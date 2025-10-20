@@ -71,12 +71,12 @@ class TestReflectiveLoaderTest {
   }
 
   @failingTest
-  Future test_fails_throws_async() {
+  Future<void> test_fails_throws_async() {
     return Future.error('foo');
   }
 
   @failingTest
-  Future test_fails_throws_outOfBand() async {
+  Future<void> test_fails_throws_outOfBand() async {
     var completer = Completer<void>();
     // This exception occurs during the test run but isn't directly awaited so
     // this method doesn't not itself complete with an error.
