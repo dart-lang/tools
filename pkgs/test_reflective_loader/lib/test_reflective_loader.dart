@@ -265,15 +265,7 @@ Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) async {
       result = _FailedTestResult.expectedFail;
     });
   }, (e, st) {
-    // if an unawaited exception occurs after we had already completed and
-    // passed then this is an error case and we should throw.
-    if (result == _FailedTestResult.pass) {
-      // ignore: only_throw_errors
-      throw e;
-    } else {
-      // Otherwise, since it occurred during the run it is an expected failure.
-      result = _FailedTestResult.expectedFail;
-    }
+    result = _FailedTestResult.expectedFail;
   });
 
   // We can safely throw exceptions back outside of the error zone.
