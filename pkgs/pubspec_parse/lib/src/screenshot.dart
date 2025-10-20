@@ -12,54 +12,28 @@ class Screenshot {
   Screenshot(this.description, this.path);
 }
 
-List<Screenshot> parseScreenshots(List? input) {
-  final res = <Screenshot>[];
-  if (input == null) {
-    return res;
+List<Screenshot> parseScreenshots(List? input) => [
+  if (input != null)
+    for (final e in input)
+      if (e is Map)
+        Screenshot(_readString(e, 'description'), _readString(e, 'path')),
+];
+
+String _readString(Map input, String entryName) {
+  final value = input[entryName];
+  if (value is String) return value;
+  if (value == null) {
+    throw CheckedFromJsonException(
+      input,
+      entryName,
+      'Screenshot',
+      'Missing required key `$entryName`',
+    );
   }
-
-  for (final e in input) {
-    if (e is! Map) continue;
-
-    final description = e['description'];
-    if (description == null) {
-      throw CheckedFromJsonException(
-        e,
-        'description',
-        'Screenshot',
-        'Missing required key `description`',
-      );
-    }
-
-    if (description is! String) {
-      throw CheckedFromJsonException(
-        e,
-        'description',
-        'Screenshot',
-        '`$description` is not a String',
-      );
-    }
-
-    final path = e['path'];
-    if (path == null) {
-      throw CheckedFromJsonException(
-        e,
-        'path',
-        'Screenshot',
-        'Missing required key `path`',
-      );
-    }
-
-    if (path is! String) {
-      throw CheckedFromJsonException(
-        e,
-        'path',
-        'Screenshot',
-        '`$path` is not a String',
-      );
-    }
-
-    res.add(Screenshot(description, path));
-  }
-  return res;
+  throw CheckedFromJsonException(
+    input,
+    entryName,
+    'Screenshot',
+    '`$value` is not a String',
+  );
 }
