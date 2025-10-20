@@ -248,17 +248,24 @@ Future<Object?> _invokeSymbolIfExists(
 /// - An exception is thrown to the zone handler from a timer task.
 Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
   var passed = false;
+  var failed = false;
   return runZonedGuarded(() {
     // ignore: void_checks
     return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
-      passed = true;
-      test_package.fail('Test passed - expected to fail.');
+      // Only consider a passed test (and therefore something we should fail) if
+      // this completed without another failure (such as an out-of-band
+      // exception) occurring during the run.
+      if (!failed) {
+        passed = true;
+        test_package.fail('Test passed - expected to fail.');
+      }
     }).catchError((Object e) {
       // if passed, and we call fail(), rethrow this exception
       if (passed) {
         // ignore: only_throw_errors
         throw e;
       }
+      failed = true;
       // otherwise, an exception is not a failure for _runFailingTest
     });
   }, (e, st) {
@@ -267,6 +274,7 @@ Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
       // ignore: only_throw_errors
       throw e;
     }
+    failed = true;
     // otherwise, an exception is not a failure for _runFailingTest
   });
 }
