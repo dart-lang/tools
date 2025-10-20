@@ -246,37 +246,40 @@ Future<Object?> _invokeSymbolIfExists(
 /// - The test fails by throwing an exception
 /// - The test returns a future which completes with an error.
 /// - An exception is thrown to the zone handler from a timer task.
-Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
-  var passed = false;
-  var failed = false;
-  return runZonedGuarded(() {
+Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) async {
+  _FailedTestResult? result;
+
+  await runZonedGuarded(() {
     // ignore: void_checks
     return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
-      // Only consider a passed test (and therefore something we should fail) if
-      // this completed without another failure (such as an out-of-band
-      // exception) occurring during the run.
-      if (!failed) {
-        passed = true;
-        test_package.fail('Test passed - expected to fail.');
-      }
+      // We can't throw async exceptions inside here because `runZoneGuarded`
+      // will never complete (see docs on `runZonedGuarded`), so we need to
+      // capture this state and throw later if there wasn't otherwise an
+      // exception.
+
+      // If we didn't already have a failure (eg. an unawaited exception) then
+      // this successful completion is an unexpected pass state.
+      result ??= _FailedTestResult.pass;
     }).catchError((Object e) {
-      // if passed, and we call fail(), rethrow this exception
-      if (passed) {
-        // ignore: only_throw_errors
-        throw e;
-      }
-      failed = true;
-      // otherwise, an exception is not a failure for _runFailingTest
+      // an awaited exception is always expected failure.
+      result = _FailedTestResult.expectedFail;
     });
   }, (e, st) {
-    // if passed, and we call fail(), rethrow this exception
-    if (passed) {
+    // if an unawaited exception occurs after we had already completed and
+    // passed then this is an error case and we should throw.
+    if (result == _FailedTestResult.pass) {
       // ignore: only_throw_errors
       throw e;
+    } else {
+      // Otherwise, since it occurred during the run it is an expected failure.
+      result = _FailedTestResult.expectedFail;
     }
-    failed = true;
-    // otherwise, an exception is not a failure for _runFailingTest
   });
+
+  // We can safely throw exceptions back outside of the error zone.
+  if (result == _FailedTestResult.pass) {
+    throw test_package.TestFailure('Test passed - expected to fail.');
+  }
 }
 
 Future<void> _runTest(ClassMirror classMirror, Symbol symbol) async {
@@ -395,6 +398,15 @@ class _Test {
       : isSkipped = true,
         function = (() {}),
         timeout = null;
+}
+
+/// The result of a test that was expected to fail.
+enum _FailedTestResult {
+  /// The test (unexpectedly) passed.
+  pass,
+
+  /// The test failed as expected.
+  expectedFail,
 }
 
 extension on DeclarationMirror {
