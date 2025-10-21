@@ -21,17 +21,17 @@ String _encodeJson(Object? input) =>
     const JsonEncoder.withIndent(' ').convert(input);
 
 Matcher _throwsParsedYamlException(String prettyValue) => throwsA(
-  const TypeMatcher<ParsedYamlException>().having(
-    (e) {
-      final message = e.formattedMessage;
-      printOnFailure("Actual error format:\nr'''\n$message'''");
-      _printDebugParsedYamlException(e);
-      return message;
-    },
-    'formattedMessage',
-    prettyValue,
-  ),
-);
+      const TypeMatcher<ParsedYamlException>().having(
+        (e) {
+          final message = e.formattedMessage;
+          printOnFailure("Actual error format:\nr'''\n$message'''");
+          _printDebugParsedYamlException(e);
+          return message;
+        },
+        'formattedMessage',
+        prettyValue,
+      ),
+    );
 
 void _printDebugParsedYamlException(ParsedYamlException e) {
   var innerError = e.innerError;
@@ -113,15 +113,16 @@ void expectParseThrows(
   String expectedError, {
   bool skipTryPub = false,
   bool lenient = false,
-}) => expect(
-  () => parse(
-    content,
-    lenient: lenient,
-    quietOnError: true,
-    skipTryPub: skipTryPub,
-  ),
-  _throwsParsedYamlException(expectedError),
-);
+}) =>
+    expect(
+      () => parse(
+        content,
+        lenient: lenient,
+        quietOnError: true,
+        skipTryPub: skipTryPub,
+      ),
+      _throwsParsedYamlException(expectedError),
+    );
 
 void expectParseThrowsContaining(
   Object? content,

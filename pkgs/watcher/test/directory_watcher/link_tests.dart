@@ -9,12 +9,6 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void linkTests({required bool isNative}) {
-  for (var i = 0; i != runsPerTest; ++i) {
-    _linkTests(isNative: isNative);
-  }
-}
-
-void _linkTests({required bool isNative}) {
   test('notifies when a link is added', () async {
     createDir('targets');
     createDir('links');
