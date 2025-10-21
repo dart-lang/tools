@@ -11,7 +11,6 @@ import 'package:async/async.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:watcher/src/utils.dart';
-import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
 
@@ -108,6 +107,16 @@ void _fileTests({required bool isNative}) {
     final queue3HasNext = queue3.hasNext;
     await queue3.cancel(immediate: true);
     expect(await queue3HasNext, false);
+  });
+
+  test('unsubscribe then resubscribe', () async {
+    final watcher = createWatcher();
+
+    await watcher.events.listen((_) {}).cancel();
+
+    final event = watcher.events.first;
+    writeFile('a.txt');
+    expect(await event, isAddEvent('a.txt'));
   });
 
   test('does not notify for files that already exist when started', () async {
