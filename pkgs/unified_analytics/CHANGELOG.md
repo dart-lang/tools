@@ -1,3 +1,6 @@
+## 8.0.7
+- More data for `Event.analysisStatistics` for events from Dart Analysis Server.
+
 ## 8.0.6
 - Added `Event.analysisStatistics` for events from Dart Analysis Server, about analysis.
 
