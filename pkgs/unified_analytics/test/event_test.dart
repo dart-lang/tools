@@ -11,15 +11,53 @@ import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
   test('Event.analysisStatistics constructed', () {
-    Event generateEvent() =>
-        Event.analysisStatistics(workingDuration: 'workingDuration');
+    Event generateEvent() => Event.analysisStatistics(
+          workingDuration: 'workingDuration',
+          withFineDependencies: false,
+          changedFileEventCount: 1,
+          removedFileEventCount: 2,
+          changedFileUniqueCount: 3,
+          removedFileUniqueCount: 4,
+          immediateFileCountPercentiles: 'immediateFileCountPercentiles',
+          immediateFileLineCountPercentiles:
+              'immediateFileLineCountPercentiles',
+          transitiveFileCountPercentiles: 'transitiveFileCountPercentiles',
+          transitiveFileLineCountPercentiles:
+              'transitiveFileLineCountPercentiles',
+          produceErrorsPotentialFileCount: 10,
+          produceErrorsPotentialFileLineCount: 11,
+          produceErrorsActualFileCount: 12,
+          produceErrorsActualFileLineCount: 13,
+          produceErrorsDurationMs: 14,
+          produceErrorsElementsDurationMs: 15,
+        );
 
     final constructedEvent = generateEvent();
 
     expect(generateEvent, returnsNormally);
     expect(constructedEvent.eventName, DashEvent.analysisStatistics);
     expect(constructedEvent.eventData['workingDuration'], 'workingDuration');
-    expect(constructedEvent.eventData.length, 1);
+    expect(constructedEvent.eventData['withFineDependencies'], false);
+    expect(constructedEvent.eventData['changedFileEventCount'], 1);
+    expect(constructedEvent.eventData['removedFileEventCount'], 2);
+    expect(constructedEvent.eventData['changedFileUniqueCount'], 3);
+    expect(constructedEvent.eventData['removedFileUniqueCount'], 4);
+    expect(constructedEvent.eventData['immediateFileCountPercentiles'],
+        'immediateFileCountPercentiles');
+    expect(constructedEvent.eventData['immediateFileLineCountPercentiles'],
+        'immediateFileLineCountPercentiles');
+    expect(constructedEvent.eventData['transitiveFileCountPercentiles'],
+        'transitiveFileCountPercentiles');
+    expect(constructedEvent.eventData['transitiveFileLineCountPercentiles'],
+        'transitiveFileLineCountPercentiles');
+    expect(constructedEvent.eventData['produceErrorsPotentialFileCount'], 10);
+    expect(
+        constructedEvent.eventData['produceErrorsPotentialFileLineCount'], 11);
+    expect(constructedEvent.eventData['produceErrorsActualFileCount'], 12);
+    expect(constructedEvent.eventData['produceErrorsActualFileLineCount'], 13);
+    expect(constructedEvent.eventData['produceErrorsDurationMs'], 14);
+    expect(constructedEvent.eventData['produceErrorsElementsDurationMs'], 15);
+    expect(constructedEvent.eventData.length, 16);
   });
 
   test('Event.analyticsCollectionEnabled constructed', () {
