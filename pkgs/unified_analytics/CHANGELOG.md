@@ -1,3 +1,6 @@
+## 8.0.8
+- More data for `Event.analysisStatistics` for events from Dart Analysis Server.
+
 ## 8.0.7
 - Added optional fields `contextWorkspaceType` and `numberOfPackagesInWorkspace`
   to `Event.contextStructure` for workspace and packages distribution from the 
