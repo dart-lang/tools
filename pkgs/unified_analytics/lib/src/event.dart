@@ -350,17 +350,14 @@ final class Event {
   /// [libraryCycleLineCounts] - json encoded percentile values indicating the
   ///     number of lines of code in all of the files in a single library cycle.
   ///
-  /// [contextsFromBothFiles] - the number of contexts that were created because
-  ///     of both a package config and an analysis options file.
+  /// [contextWorkspaceType] - json encoded list with the total number of
+  ///     workspaces of each type for all of the contexts:
+  ///     - index 0: Blaze, GN or other workspace count
+  ///     - index 1: Package workspace count
+  ///     - index 2: Pub workspace count
   ///
-  /// [contextsFromOptionsFiles] - the number of contexts that were created
-  ///     because of an analysis options file.
-  ///
-  /// [contextsFromPackagesFiles] - the number of contexts that were created
-  ///     because of a package config file.
-  ///
-  /// [contextsWithoutFiles] - the number of contexts that were created because
-  ///     of the lack of either a package config or an analysis options file.
+  /// [numberOfPackagesInWorkspace] - json encoded percentile values for the
+  ///     number of packages in the Pub workspaces.
   Event.contextStructure({
     required int immediateFileCount,
     required int immediateFileLineCount,
@@ -371,10 +368,8 @@ final class Event {
     required int transitiveFileUniqueLineCount,
     String libraryCycleLibraryCounts = '',
     String libraryCycleLineCounts = '',
-    int contextsFromBothFiles = 0,
-    int contextsFromOptionsFiles = 0,
-    int contextsFromPackagesFiles = 0,
-    int contextsWithoutFiles = 0,
+    String contextWorkspaceType = '',
+    String numberOfPackagesInWorkspace = '',
   }) : this._(
           eventName: DashEvent.contextStructure,
           eventData: {
@@ -387,10 +382,8 @@ final class Event {
             'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
             'libraryCycleLibraryCounts': libraryCycleLibraryCounts,
             'libraryCycleLineCounts': libraryCycleLineCounts,
-            'contextsFromBothFiles': contextsFromBothFiles,
-            'contextsFromOptionsFiles': contextsFromOptionsFiles,
-            'contextsFromPackagesFiles': contextsFromPackagesFiles,
-            'contextsWithoutFiles': contextsWithoutFiles,
+            'contextWorkspaceType': contextWorkspaceType,
+            'numberOfPackagesInWorkspace': numberOfPackagesInWorkspace,
           },
         );
 

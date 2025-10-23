@@ -106,6 +106,8 @@ void main() {
           transitiveFileUniqueLineCount: 7,
           libraryCycleLibraryCounts: 'a',
           libraryCycleLineCounts: 'b',
+          contextWorkspaceType: '[0,1,2]',
+          numberOfPackagesInWorkspace: '32',
         );
 
     final constructedEvent = generateEvent();
@@ -121,11 +123,9 @@ void main() {
     expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 7);
     expect(constructedEvent.eventData['libraryCycleLibraryCounts'], 'a');
     expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
-    expect(constructedEvent.eventData['contextsFromBothFiles'], 0);
-    expect(constructedEvent.eventData['contextsFromOptionsFiles'], 0);
-    expect(constructedEvent.eventData['contextsFromPackagesFiles'], 0);
-    expect(constructedEvent.eventData['contextsWithoutFiles'], 0);
-    expect(constructedEvent.eventData.length, 13);
+    expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
+    expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
+    expect(constructedEvent.eventData.length, 11);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
