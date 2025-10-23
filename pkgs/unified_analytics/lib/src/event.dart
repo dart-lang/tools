@@ -351,10 +351,10 @@ final class Event {
   ///     number of lines of code in all of the files in a single library cycle.
   ///
   /// [contextWorkspaceType] - json encoded list with the total number of
-  ///     workspaces of each type for all of the contexts.
-  ///     index 0 - Blaze, GN or other workspace count
-  ///     index 1 - Package workspace count
-  ///     index 2 - Pub workspace count
+  ///     workspaces of each type for all of the contexts:
+  ///     - index 0: Blaze, GN or other workspace count
+  ///     - index 1: Package workspace count
+  ///     - index 2: Pub workspace count
   ///
   /// [numberOfPackagesInWorkspace] - json encoded percentile values for the
   ///     number of packages in the Pub workspaces.
