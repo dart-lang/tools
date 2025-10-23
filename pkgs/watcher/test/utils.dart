@@ -9,7 +9,6 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:watcher/src/stat.dart';
 import 'package:watcher/watcher.dart';
 
 /// Edit this to run fast-running tests many times.
@@ -22,19 +21,8 @@ set watcherFactory(WatcherFactory factory) {
   _watcherFactory = factory;
 }
 
-/// The mock modification times (in milliseconds since epoch) for each file.
-///
-/// The actual file system has pretty coarse granularity for file modification
-/// times. This means using the real file system requires us to put delays in
-/// the tests to ensure we wait long enough between operations for the mod time
-/// to be different.
-///
-/// Instead, we'll just mock that out. Each time a file is written, we manually
-/// increment the mod time for that file instantly.
-Map<String, int>? _mockFileModificationTimes;
-
-/// If real modification times are used, a directory where a test file will be
-/// updated to wait for a new modification time.
+/// A directory where a test file will be updated to wait for a new modification
+/// time.
 Directory? _waitForModificationTimesDirectory;
 
 late WatcherFactory _watcherFactory;
@@ -61,12 +49,26 @@ late StreamQueue<WatchEvent> _watcherEvents;
 /// be done automatically via [addTearDown] in [startWatcher].
 var _hasClosedStream = true;
 
-/// Enables waiting before writes to ensure a different modification time.
-///
-/// This will allow polling watchers to notice all writes.
+/// Enables [sleepUntilNewModificationTime].
 ///
 /// Resets at the end of the test.
-void enableWaitingForDifferentModificationTimes() {
+///
+/// IMPORTANT NOTE about "polling" watchers and tests:
+///
+/// The polling watchers can notice changes if the "last modified" time of a
+/// file changed or if its size changed.
+///
+/// Most tests that make changes also change the size of a file, so they do not
+/// have to care about whether the timing works out for the modification time to
+/// be different.
+///
+/// Tests that intentionally write to a file _without_ changing its contents
+/// must also call [sleepUntilNewModificationTime] if testing a polling
+/// watcher. That ensures that the write causes a new modification time.
+///
+/// At the time of writing in 2025, Windows "last modified" time is much coarser
+/// than other platforms, at 1s.
+void enableSleepUntilNewModificationTime() {
   if (_waitForModificationTimesDirectory != null) return;
   _waitForModificationTimesDirectory =
       Directory.systemTemp.createTempSync('dart_test_');
@@ -76,10 +78,12 @@ void enableWaitingForDifferentModificationTimes() {
   });
 }
 
-/// If [enableWaitingForDifferentModificationTimes] was called, sleeps until a
-/// modified file has a new modified timestamp.
-void _maybeWaitForDifferentModificationTime() {
-  if (_waitForModificationTimesDirectory == null) return;
+/// Sleeps the until a new modification time is available from the platform.
+///
+/// This ensures that the next write can be detected by polling watches based on
+/// its "last modified" time, whatever the contents.
+void sleepUntilNewModificationTime() {
+  _waitForModificationTimesDirectory ??= Directory.systemTemp.createTempSync();
   var file = File(p.join(_waitForModificationTimesDirectory!.path, 'file'));
   if (file.existsSync()) file.deleteSync();
   file.createSync();
@@ -93,47 +97,6 @@ void _maybeWaitForDifferentModificationTime() {
     }
     sleep(const Duration(milliseconds: 1));
   }
-}
-
-/// Enables mock modification times so that all writes set a different
-/// modification time.
-///
-/// This will allow polling watchers to notice all writes.
-///
-/// Resets at the end of the test.
-void enableMockModificationTimes() {
-  _mockFileModificationTimes = {};
-  mockGetModificationTime((path) {
-    // Resolve symbolic links before looking up mtime to match documented
-    // behavior of `FileSystemEntity.stat`.
-    final link = Link(path);
-    if (link.existsSync()) {
-      path = link.resolveSymbolicLinksSync();
-    }
-    // Also resolve symbolic links in the enclosing directory.
-    final file = File(path);
-    if (file.existsSync()) {
-      path = file.resolveSymbolicLinksSync();
-    }
-
-    var normalized = p.normalize(p.relative(path, from: d.sandbox));
-
-    // Make sure we got a path in the sandbox.
-    if (!p.isRelative(normalized) || normalized.startsWith('..')) {
-      // The polling watcher can poll during test teardown, signal using an
-      // exception that it will ignore.
-      throw FileSystemException(
-        'Path is not in the sandbox: $path not in ${d.sandbox}',
-      );
-    }
-    final mockFileModificationTimes = _mockFileModificationTimes!;
-    var mtime = mockFileModificationTimes[normalized];
-    return mtime != null ? DateTime.fromMillisecondsSinceEpoch(mtime) : null;
-  });
-  addTearDown(() {
-    _mockFileModificationTimes = null;
-    mockGetModificationTime(null);
-  });
 }
 
 /// Creates a new [Watcher] that watches a temporary file or directory and
@@ -244,25 +207,14 @@ Future expectModifyEvent(String path) =>
 Future expectRemoveEvent(String path) =>
     _expect(isWatchEvent(ChangeType.REMOVE, path));
 
-/// Track a fake timestamp to be used when writing files. This always increases
-/// so that files that are deleted and re-created do not have their timestamp
-/// set back to a previously used value.
-int _nextTimestamp = 1;
-
 /// Writes a file in the sandbox at [path] with [contents].
 ///
 /// If [path] is currently a link it is deleted and a file is written in its
 /// place.
 ///
 /// If [contents] is omitted, creates an empty file.
-///
-/// If [updateModified] is `false` and mock modification times are in use, the
-/// mock file modification time is not changed.
-void writeFile(String path, {String? contents, bool? updateModified}) {
-  _maybeWaitForDifferentModificationTime();
-
+void writeFile(String path, {String? contents}) {
   contents ??= '';
-  updateModified ??= true;
 
   var fullPath = p.join(d.sandbox, path);
 
@@ -282,30 +234,15 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
   file.writeAsStringSync(contents);
   // Check that `fullPath` now refers to a file, not a link.
   expect(FileSystemEntity.typeSync(fullPath), FileSystemEntityType.file);
-
-  final mockFileModificationTimes = _mockFileModificationTimes;
-  if (mockFileModificationTimes != null && updateModified) {
-    path = p.normalize(path);
-
-    mockFileModificationTimes[path] = _nextTimestamp++;
-  }
 }
 
 /// Writes a file in the sandbox at [link] pointing to [target].
 ///
 /// [target] is relative to the sandbox, not to [link].
-///
-/// If [updateModified] is `false` and mock modification times are in use, the
-/// mock file modification time is not changed.
 void writeLink({
   required String link,
   required String target,
-  bool? updateModified,
 }) {
-  _maybeWaitForDifferentModificationTime();
-
-  updateModified ??= true;
-
   var fullPath = p.join(d.sandbox, link);
 
   // Create any needed subdirectories.
@@ -315,15 +252,6 @@ void writeLink({
   }
 
   Link(fullPath).createSync(p.join(d.sandbox, target));
-
-  if (updateModified) {
-    link = p.normalize(link);
-
-    final mockFileModificationTimes = _mockFileModificationTimes;
-    if (mockFileModificationTimes != null) {
-      mockFileModificationTimes[link] = _nextTimestamp++;
-    }
-  }
 }
 
 /// Deletes a file in the sandbox at [path].
@@ -332,11 +260,6 @@ void deleteFile(String path) {
   expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
       FileSystemEntityType.file);
   File(fullPath).deleteSync();
-
-  final mockFileModificationTimes = _mockFileModificationTimes;
-  if (mockFileModificationTimes != null) {
-    mockFileModificationTimes.remove(path);
-  }
 }
 
 /// Deletes a link in the sandbox at [path].
@@ -345,29 +268,14 @@ void deleteLink(String path) {
   expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
       FileSystemEntityType.link);
   Link(fullPath).deleteSync();
-
-  final mockFileModificationTimes = _mockFileModificationTimes;
-  if (mockFileModificationTimes != null) {
-    mockFileModificationTimes.remove(path);
-  }
 }
 
 /// Renames a file in the sandbox from [from] to [to].
 void renameFile(String from, String to) {
-  _maybeWaitForDifferentModificationTime();
-
   var absoluteTo = p.join(d.sandbox, to);
   File(p.join(d.sandbox, from)).renameSync(absoluteTo);
   expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
       FileSystemEntityType.file);
-
-  final mockFileModificationTimes = _mockFileModificationTimes;
-  if (mockFileModificationTimes != null) {
-    // Make sure we always use the same separator on Windows.
-    to = p.normalize(to);
-    mockFileModificationTimes.update(to, (value) => value + 1,
-        ifAbsent: () => 1);
-  }
 }
 
 /// Renames a link in the sandbox from [from] to [to].
@@ -375,20 +283,10 @@ void renameFile(String from, String to) {
 /// On MacOS and Linux links can also be named with `renameFile`. On Windows,
 /// however, a link must be renamed with this method.
 void renameLink(String from, String to) {
-  _maybeWaitForDifferentModificationTime();
-
   var absoluteTo = p.join(d.sandbox, to);
   Link(p.join(d.sandbox, from)).renameSync(absoluteTo);
   expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
       FileSystemEntityType.link);
-
-  final mockFileModificationTimes = _mockFileModificationTimes;
-  if (mockFileModificationTimes != null) {
-    // Make sure we always use the same separator on Windows.
-    to = p.normalize(to);
-    mockFileModificationTimes.update(to, (value) => value + 1,
-        ifAbsent: () => 1);
-  }
 }
 
 /// Creates a directory in the sandbox at [path].
@@ -402,21 +300,6 @@ void renameDir(String from, String to) {
   Directory(p.join(d.sandbox, from)).renameSync(absoluteTo);
   expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
       FileSystemEntityType.directory);
-
-  final mockFileModificationTimes = _mockFileModificationTimes;
-  if (mockFileModificationTimes != null) {
-    // Migrate timestamps for any files in this folder.
-    final knownFilePaths = mockFileModificationTimes.keys.toList();
-    for (final filePath in knownFilePaths) {
-      if (p.isWithin(from, filePath)) {
-        final movedPath =
-            p.normalize(p.join(to, filePath.substring(from.length + 1)));
-        mockFileModificationTimes[movedPath] =
-            mockFileModificationTimes[filePath]!;
-        mockFileModificationTimes.remove(filePath);
-      }
-    }
-  }
 }
 
 /// Deletes a directory in the sandbox at [path].

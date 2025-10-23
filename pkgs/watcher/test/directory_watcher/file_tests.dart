@@ -67,6 +67,7 @@ void _fileTests({required bool isNative}) {
     writeFile('b.txt', contents: 'before');
     await startWatcher();
 
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('a.txt', contents: 'same');
     writeFile('b.txt', contents: 'after');
     await inAnyOrder([isModifyEvent('a.txt'), isModifyEvent('b.txt')]);
@@ -139,7 +140,7 @@ void _fileTests({required bool isNative}) {
 
     test('notifies when a file is moved onto an existing one', () async {
       writeFile('from.txt');
-      writeFile('to.txt');
+      writeFile('to.txt', contents: 'different');
       await startWatcher();
 
       renameFile('from.txt', 'to.txt');
