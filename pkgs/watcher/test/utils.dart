@@ -239,9 +239,14 @@ void writeFile(String path, {String? contents}) {
 /// Writes a file in the sandbox at [link] pointing to [target].
 ///
 /// [target] is relative to the sandbox, not to [link].
+///
+/// If [unawaitedAsync], the link is written asynchronously and not awaited.
+/// Otherwise, it's synchronous. See the note in `windows.dart` for issue 61797
+/// for why this is needed for testing on Windows.
 void writeLink({
   required String link,
   required String target,
+  bool unawaitedAsync = false,
 }) {
   var fullPath = p.join(d.sandbox, link);
 
@@ -251,7 +256,11 @@ void writeLink({
     dir.createSync(recursive: true);
   }
 
-  Link(fullPath).createSync(p.join(d.sandbox, target));
+  if (unawaitedAsync) {
+    unawaited(Link(fullPath).create(p.join(d.sandbox, target)));
+  } else {
+    Link(fullPath).createSync(p.join(d.sandbox, target));
+  }
 }
 
 /// Deletes a file in the sandbox at [path].

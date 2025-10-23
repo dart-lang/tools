@@ -21,7 +21,8 @@ void _linkTests({required bool isNative}) {
     writeFile('targets/a.target');
     await startWatcher(path: 'links');
 
-    writeLink(link: 'links/a.link', target: 'targets/a.target');
+    writeLink(
+        link: 'links/a.link', target: 'targets/a.target', unawaitedAsync: true);
 
     await expectAddEvent('links/a.link');
   });
@@ -109,7 +110,10 @@ void _linkTests({required bool isNative}) {
     createDir('targets/a.targetdir');
     await startWatcher(path: 'links');
 
-    writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
+    writeLink(
+        link: 'links/a.link',
+        target: 'targets/a.targetdir',
+        unawaitedAsync: true);
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
@@ -128,7 +132,10 @@ void _linkTests({required bool isNative}) {
     writeFile('targets/a.targetdir/a.target');
     await startWatcher(path: 'links');
 
-    writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
+    writeLink(
+        link: 'links/a.link',
+        target: 'targets/a.targetdir',
+        unawaitedAsync: true);
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
