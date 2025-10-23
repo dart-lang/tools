@@ -1,6 +1,6 @@
 ## 1.12.2-dev
 
-* Relax parsing of V8 traces to allow a missing initial desription.
+* Relax parsing of V8 traces to allow a missing initial description.
 
 ## 1.12.1
 
