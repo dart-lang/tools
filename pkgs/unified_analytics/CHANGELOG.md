@@ -1,7 +1,7 @@
 ## 8.0.7
 - Added optional fields `contextWorkspaceType` and `numberOfPackagesInWorkspace`
   to `Event.contextStructure` for workspace and packages distribution from the 
-  Dart Analysis Server.  
+  Dart Analysis Server.
 - Removed `Event.contextStructure` optional fields `contextsFromBothFiles`, 
   `contextsFromOptionsFiles`,`contextsFromPackagesFiles`,`contextsWithoutFiles`.
 
