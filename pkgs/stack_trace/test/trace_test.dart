@@ -90,6 +90,22 @@ void main() {
       expect(
           trace.frames[2].uri, equals(Uri.parse('https://pub.dev/thing.js')));
       expect(trace.frames[2].member, equals('<fn>.zip.zap'));
+
+      // Missing description line
+      trace = Trace.parse(
+          '    at Foo._bar (https://example.com/stuff.js:42:21)\n'
+          '    at https://example.com/stuff.js:0:2\n'
+          '    at (anonymous function).zip.zap '
+          '(https://pub.dev/thing.js:1:100)');
+
+      expect(trace.frames[0].uri,
+          equals(Uri.parse('https://example.com/stuff.js')));
+      expect(trace.frames[1].uri,
+          equals(Uri.parse('https://example.com/stuff.js')));
+      expect(trace.frames[1].member, equals('<fn>'));
+      expect(
+          trace.frames[2].uri, equals(Uri.parse('https://pub.dev/thing.js')));
+      expect(trace.frames[2].member, equals('<fn>.zip.zap'));
     });
 
     // JavaScriptCore traces are just like V8, except that it doesn't have a
