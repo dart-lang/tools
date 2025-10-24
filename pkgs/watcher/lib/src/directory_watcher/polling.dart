@@ -7,12 +7,15 @@ import 'dart:io';
 
 import '../async_queue.dart';
 import '../directory_watcher.dart';
+import '../polling.dart';
 import '../resubscribable.dart';
-import '../stat.dart';
 import '../utils.dart';
 import '../watch_event.dart';
 
 /// Periodically polls a directory for changes.
+///
+/// Changes are noticed if the "last modified" time of a file changes or if its
+/// size changes.
 class PollingDirectoryWatcher extends ResubscribableWatcher
     implements DirectoryWatcher {
   @override
@@ -53,10 +56,7 @@ class _PollingDirectoryWatcher
   /// directory contents.
   final Duration _pollingDelay;
 
-  /// The previous modification times of the files in the directory.
-  ///
-  /// Used to tell which files have been modified.
-  final _lastModifieds = <String, DateTime?>{};
+  final _previousPollResults = <String, PollResult>{};
 
   /// The subscription used while [directory] is being listed.
   ///
@@ -78,7 +78,8 @@ class _PollingDirectoryWatcher
   /// The set of files that have been seen in the current directory listing.
   ///
   /// Used to tell which files have been removed: files that are in
-  /// [_lastModifieds] but not in here when a poll completes have been removed.
+  /// [_previousPollResults] but not in here when a poll completes have been
+  /// removed.
   final _polledFiles = <String>{};
 
   _PollingDirectoryWatcher(this.path, this._pollingDelay) {
@@ -95,7 +96,7 @@ class _PollingDirectoryWatcher
     // Don't process any remaining files.
     _filesToProcess.clear();
     _polledFiles.clear();
-    _lastModifieds.clear();
+    _previousPollResults.clear();
   }
 
   /// Scans the contents of the directory once to see which files have been
@@ -145,14 +146,14 @@ class _PollingDirectoryWatcher
       return;
     }
 
-    final modified = await modificationTime(file);
+    final pollResult = await PollResult.poll(file);
 
     if (_events.isClosed) return;
 
-    var lastModified = _lastModifieds[file];
+    var previousPollResult = _previousPollResults[file];
 
     // If its modification time hasn't changed, assume the file is unchanged.
-    if (lastModified != null && lastModified == modified) {
+    if (previousPollResult != null && previousPollResult == pollResult) {
       // The file is still here.
       _polledFiles.add(file);
       return;
@@ -161,17 +162,17 @@ class _PollingDirectoryWatcher
     if (_events.isClosed) return;
 
     _polledFiles.add(file);
-    if (modified == null) {
+    if (!pollResult.fileExists) {
       // The file was in the directory listing but has been removed since then.
-      // Don't add to _lastModifieds, it will be reported as a REMOVE.
+      // Don't add to _previousPollResults, it will be reported as a REMOVE.
       return;
     }
-    _lastModifieds[file] = modified;
+    _previousPollResults[file] = pollResult;
 
     // Only notify if we're ready to emit events.
     if (!isReady) return;
 
-    var type = lastModified == null ? ChangeType.ADD : ChangeType.MODIFY;
+    var type = previousPollResult == null ? ChangeType.ADD : ChangeType.MODIFY;
     _events.add(WatchEvent(type, file));
   }
 
@@ -180,10 +181,11 @@ class _PollingDirectoryWatcher
   Future<void> _completePoll() async {
     // Any files that were not seen in the last poll but that we have a
     // status for must have been removed.
-    var removedFiles = _lastModifieds.keys.toSet().difference(_polledFiles);
+    var removedFiles =
+        _previousPollResults.keys.toSet().difference(_polledFiles);
     for (var removed in removedFiles) {
       if (isReady) _events.add(WatchEvent(ChangeType.REMOVE, removed));
-      _lastModifieds.remove(removed);
+      _previousPollResults.remove(removed);
     }
 
     if (!isReady) _readyCompleter.complete();
