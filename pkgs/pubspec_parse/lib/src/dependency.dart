@@ -39,15 +39,19 @@ Map<String, Dependency> parseDeps(Map? source) =>
 
 const _sourceKeys = ['sdk', 'git', 'path', 'hosted'];
 
-/// Returns `null` if the data could not be parsed.
+/// Converts [data] into a [Dependency] object.
+/// If [data] is not a valid representation of a dependency,
+/// returns null so that the parent logic can throw the proper error.
 Dependency? _fromJson(Object? data, String name) {
   if (data is String || data == null) {
     return _$HostedDependencyFromJson({'version': data});
   }
 
   if (data is Map) {
-    final matchedKeys =
-        data.keys.cast<String>().where((key) => key != 'version').toList();
+    final matchedKeys = data.keys
+        .cast<String>()
+        .where((key) => key != 'version')
+        .toList();
 
     if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
       return _$HostedDependencyFromJson(data);
@@ -80,15 +84,14 @@ Dependency? _fromJson(Object? data, String name) {
           'path' => PathDependency.fromData(data[key]),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
-              data,
-            )..hosted?._nameOfPackage = name,
+            data,
+          )..hosted?._nameOfPackage = name,
           _ => throw StateError('There is a bug in pubspec_parse.'),
         };
       });
     }
   }
 
-  // Not a String or a Map – return null so parent logic can throw proper error
   return null;
 }
 
@@ -103,7 +106,7 @@ class SdkDependency extends Dependency {
   final VersionConstraint version;
 
   SdkDependency(this.sdk, {VersionConstraint? version})
-      : version = version ?? VersionConstraint.any;
+    : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -155,12 +158,8 @@ class GitDependency extends Dependency {
 
   @override
   Map<String, dynamic> toJson() => {
-        'git': {
-          'url': url.toString(),
-          if (ref != null) 'ref': ref,
-          if (path != null) 'path': path,
-        },
-      };
+    'git': {'url': url.toString(), 'ref': ?ref, 'path': ?path},
+  };
 }
 
 Uri? parseGitUriOrNull(String? value) =>
@@ -234,7 +233,7 @@ class HostedDependency extends Dependency {
   final HostedDetails? hosted;
 
   HostedDependency({VersionConstraint? version, this.hosted})
-      : version = version ?? VersionConstraint.any;
+    : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -250,9 +249,9 @@ class HostedDependency extends Dependency {
 
   @override
   Map<String, dynamic> toJson() => {
-        'version': version.toString(),
-        if (hosted != null) 'hosted': hosted!.toJson(),
-      };
+    'version': version.toString(),
+    if (hosted != null) 'hosted': hosted!.toJson(),
+  };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -298,13 +297,10 @@ class HostedDetails {
   int get hashCode => Object.hash(name, url);
 
   Map<String, dynamic> toJson() => {
-        if (declaredName != null) 'name': declaredName,
-        'url': url.toString(),
-      };
+    if (declaredName != null) 'name': declaredName,
+    'url': url.toString(),
+  };
 }
 
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
-
-Map<String, dynamic> serializeDeps(Map<String, Dependency> input) =>
-    input.map((k, v) => MapEntry(k, v.toJson()));

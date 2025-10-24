@@ -72,13 +72,13 @@ class Pubspec {
   @JsonKey(fromJson: _environmentMap, toJson: _serializeEnvironment)
   final Map<String, VersionConstraint?> environment;
 
-  @JsonKey(fromJson: parseDeps, toJson: serializeDeps)
+  @JsonKey(fromJson: parseDeps, toJson: _serializeDeps)
   final Map<String, Dependency> dependencies;
 
-  @JsonKey(fromJson: parseDeps, toJson: serializeDeps)
+  @JsonKey(fromJson: parseDeps, toJson: _serializeDeps)
   final Map<String, Dependency> devDependencies;
 
-  @JsonKey(fromJson: parseDeps, toJson: serializeDeps)
+  @JsonKey(fromJson: parseDeps, toJson: _serializeDeps)
   final Map<String, Dependency> dependencyOverrides;
 
   /// Optional configuration specific to [Flutter](https://flutter.io/)
@@ -126,16 +126,16 @@ class Pubspec {
     Map<String, Dependency>? dependencyOverrides,
     this.flutter,
     Map<String, String?>? executables,
-  })  : authors // ignore: deprecated_member_use_from_same_package
-            = _normalizeAuthors(
-          author,
-          authors,
-        ),
-        environment = environment ?? const {},
-        dependencies = dependencies ?? const {},
-        devDependencies = devDependencies ?? const {},
-        executables = executables ?? const {},
-        dependencyOverrides = dependencyOverrides ?? const {} {
+  }) : authors // ignore: deprecated_member_use_from_same_package
+       = _normalizeAuthors(
+         author,
+         authors,
+       ),
+       environment = environment ?? const {},
+       dependencies = dependencies ?? const {},
+       devDependencies = devDependencies ?? const {},
+       executables = executables ?? const {},
+       dependencyOverrides = dependencyOverrides ?? const {} {
     if (name.isEmpty) {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }
@@ -253,10 +253,14 @@ Map<String, String?> _executablesMap(Map? source) =>
 
 Map<String, String?> _serializeEnvironment(
   Map<String, VersionConstraint?> map,
-) =>
-    map.map((key, value) => MapEntry(key, value?.toString()));
+) => map.map((key, value) => MapEntry(key, value?.toString()));
 
 String? _versionToString(Version? version) => version?.toString();
 
-Map<String, String?> _serializeExecutables(Map<String, String?>? map) =>
-    map?.map(MapEntry.new) ?? {};
+Map<String, String?> _serializeExecutables(Map<String, String?>? map) => {
+  ...?map,
+};
+
+Map<String, dynamic> _serializeDeps(Map<String, Dependency> input) => {
+  for (final MapEntry(:key, :value) in input.entries) key: value.toJson(),
+};

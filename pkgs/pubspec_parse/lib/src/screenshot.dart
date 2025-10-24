@@ -64,10 +64,7 @@ List<Screenshot> parseScreenshots(List? input) {
   return res;
 }
 
-List<Map<String, String>> serializeScreenshots(List<Screenshot>? input) =>
-    input
-        ?.map(
-          (e) => <String, String>{'description': e.description, 'path': e.path},
-        )
-        .toList() ??
-    [];
+List<Map<String, String>> serializeScreenshots(List<Screenshot>? input) => [
+  if (input != null)
+    for (var e in input) {'description': e.description, 'path': e.path},
+];
