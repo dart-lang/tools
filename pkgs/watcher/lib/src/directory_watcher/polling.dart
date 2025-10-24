@@ -164,7 +164,7 @@ class _PollingDirectoryWatcher
     _polledFiles.add(file);
     if (!pollResult.fileExists) {
       // The file was in the directory listing but has been removed since then.
-      // Don't add to _lastModifieds, it will be reported as a REMOVE.
+      // Don't add to _previousPollResults, it will be reported as a REMOVE.
       return;
     }
     _previousPollResults[file] = pollResult;
