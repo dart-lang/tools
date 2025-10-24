@@ -39,15 +39,16 @@ class WindowsIsolateDirectoryWatcher implements ManuallyClosedWatcher {
   void _receiveFromIsolate(_Event event) {
     if (event.isSendPort()) {
       _sendPort = event.sendPort;
-      return;
-    }
-    if (event.isReady()) {
+    } else if (event.isReady()) {
       _readyCompleter.complete();
-      return;
-    }
-    if (event.isWatchEvent()) {
+    } else if (event.isWatchEvent()) {
       _eventsController.add(event.watchEvent);
-      return;
+    } else if (event.isClose()) {
+      _eventsController.close();
+    } else if (event.isError()) {
+      _eventsController.addError(event.error, event.stackTrace);
+    } else {
+      throw ArgumentError.value(event, 'event');
     }
   }
 
@@ -86,7 +87,7 @@ class _WatcherIsolate {
       : watcher = WindowsManuallyClosedDirectoryWatcher(path) {
     final receivePort = ReceivePort();
 
-    // Three types of event are sent to the host.
+    // Six types of event are sent to the host.
 
     // `_Event.sendPort` on startup.
     sendPort.send(_Event.sendPort(receivePort.sendPort));
@@ -96,10 +97,15 @@ class _WatcherIsolate {
       sendPort.send(_Event.ready());
     });
 
-    // `_Event.watchEvent` on any event.
-    // TODO: what about errors?
     watcher.events.listen((event) {
+      // `_Event.watchEvent` on any event.
       sendPort.send(_Event.watchEvent(event));
+    }, onDone: () {
+      // `_Event.close` if the event stream closes.
+      sendPort.send(_Event.close());
+    }, onError: (Object e, StackTrace s) {
+      // `_Event.error` on error.
+      sendPort.send(_Event.error(e, s));
     });
 
     receivePort.listen((event) {
@@ -113,7 +119,7 @@ class _WatcherIsolate {
 /// Event sent from the isolate to the host.
 extension type _Event._(Object? _object) {
   factory _Event.sendPort(SendPort sendPort) => _Event._(sendPort);
-  factory _Event.ready() => _Event._(null);
+  factory _Event.ready() => _Event._('ready');
   factory _Event.watchEvent(WatchEvent event) {
     final typeNumber = switch (event.type) {
       ChangeType.ADD => 0,
@@ -123,16 +129,23 @@ extension type _Event._(Object? _object) {
     };
     return _Event._([typeNumber, event.path]);
   }
+  factory _Event.close() => _Event._('close');
+  factory _Event.error(Object error, StackTrace stackTrace) =>
+      _Event._([error, stackTrace, null]);
 
   factory _Event.fromObject(Object? object) {
     if (object == null) return _Event.ready();
-    if (object is List || object is SendPort) return _Event._(object);
+    if (object is String || object is List || object is SendPort) {
+      return _Event._(object);
+    }
     throw ArgumentError.value(object, 'object');
   }
 
   bool isSendPort() => _object is SendPort;
-  bool isReady() => _object == null;
-  bool isWatchEvent() => _object is List;
+  bool isReady() => _object == 'ready';
+  bool isWatchEvent() => _object is List && _object.length == 2;
+  bool isClose() => _object == 'close';
+  bool isError() => _object is List && _object.length == 3;
 
   SendPort get sendPort => _object as SendPort;
 
@@ -148,4 +161,7 @@ extension type _Event._(Object? _object) {
     final path = _object[1] as String;
     return WatchEvent(type, path);
   }
+
+  Object get error => (_object as List)[0] as Object;
+  StackTrace get stackTrace => (_object as List)[1] as StackTrace;
 }
