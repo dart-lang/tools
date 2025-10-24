@@ -96,6 +96,7 @@ Dependency? _fromJson(Object? data, String name) {
 }
 
 sealed class Dependency {
+  /// Creates a JSON representation of the data of this object.
   Map<String, dynamic> toJson();
 }
 
