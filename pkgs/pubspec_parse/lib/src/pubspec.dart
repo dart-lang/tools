@@ -60,7 +60,7 @@ class Pubspec {
   @Deprecated('See https://dart.dev/tools/pub/pubspec#authorauthors')
   String? get author {
     if (authors.length == 1) {
-      return authors.single;
+      return authors.first;
     }
     return null;
   }
@@ -140,9 +140,9 @@ class Pubspec {
       throw ArgumentError.value(name, 'name', '"name" cannot be empty.');
     }
 
-    if (publishTo != null && publishTo != 'none') {
+    if (publishTo case final publishTo? when publishTo != 'none') {
       try {
-        final targetUri = Uri.parse(publishTo!);
+        final targetUri = Uri.parse(publishTo);
         if (!(targetUri.isScheme('http') || targetUri.isScheme('https'))) {
           throw const FormatException('Must be an http or https URL.');
         }
@@ -160,10 +160,10 @@ class Pubspec {
           return _$PubspecFromJson(json);
         } on CheckedFromJsonException catch (e) {
           if (e.map == json && json.containsKey(e.key)) {
-            json = Map.from(json)..remove(e.key);
-            continue;
+            json = {...json}..remove(e.key);
+          } else {
+            rethrow;
           }
-          rethrow;
         }
       }
     }
@@ -183,67 +183,63 @@ class Pubspec {
       );
 
   static List<String> _normalizeAuthors(String? author, List<String>? authors) {
-    final value = <String>{if (author != null) author, ...?authors};
-    return value.toList();
+    if (author == null) return authors ?? const [];
+    return [
+      author,
+      if (authors != null)
+        for (var otherAuthor in authors)
+          if (author != otherAuthor) otherAuthor,
+    ];
   }
 }
 
 Version? _versionFromString(String? input) =>
     input == null ? null : Version.parse(input);
 
-Map<String, VersionConstraint?> _environmentMap(Map? source) =>
-    source?.map((k, value) {
-      final key = k as String;
-      if (key == 'dart') {
-        // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
-        // 'dart' is not allowed as a key!
-        throw CheckedFromJsonException(
-          source,
-          'dart',
-          'VersionConstraint',
-          'Use "sdk" to for Dart SDK constraints.',
-          badKey: true,
-        );
+Map<String, VersionConstraint?> _environmentMap(Map? source) {
+  if (source == null) return {};
+  return source.map((k, value) {
+    final key = k as String;
+    if (key == 'dart') {
+      // github.com/dart-lang/pub/blob/d84173eeb03c3/lib/src/pubspec.dart#L342
+      // 'dart' is not allowed as a key!
+      throw CheckedFromJsonException(
+        source,
+        'dart',
+        'VersionConstraint',
+        'Use "sdk" to for Dart SDK constraints.',
+        badKey: true,
+      );
+    }
+
+    VersionConstraint? constraint;
+    if (value is String) {
+      try {
+        constraint = VersionConstraint.parse(value);
+      } on FormatException catch (e) {
+        throw CheckedFromJsonException(source, key, 'Pubspec', e.message);
       }
+    } else if (value != null) {
+      throw CheckedFromJsonException(
+        source,
+        key,
+        'VersionConstraint',
+        '`$value` is not a String.',
+      );
+    }
+    return MapEntry(key, constraint);
+  });
+}
 
-      VersionConstraint? constraint;
-      if (value == null) {
-        constraint = null;
-      } else if (value is String) {
-        try {
-          constraint = VersionConstraint.parse(value);
-        } on FormatException catch (e) {
-          throw CheckedFromJsonException(source, key, 'Pubspec', e.message);
-        }
-
-        return MapEntry(key, constraint);
-      } else {
-        throw CheckedFromJsonException(
-          source,
-          key,
-          'VersionConstraint',
-          '`$value` is not a String.',
-        );
-      }
-
-      return MapEntry(key, constraint);
-    }) ??
-    {};
-
-Map<String, String?> _executablesMap(Map? source) =>
-    source?.map((k, value) {
-      final key = k as String;
-      if (value == null) {
-        return MapEntry(key, null);
-      } else if (value is String) {
-        return MapEntry(key, value);
-      } else {
-        throw CheckedFromJsonException(
-          source,
-          key,
-          'String',
-          '`$value` is not a String.',
-        );
-      }
-    }) ??
-    {};
+Map<String, String?> _executablesMap(Map? source) => {
+  if (source != null)
+    for (final MapEntry(:key as String, :value) in source.entries)
+      key: (value is String?)
+          ? value
+          : (throw CheckedFromJsonException(
+              source,
+              key,
+              'String',
+              '`$value` is not a String.',
+            )),
+};
