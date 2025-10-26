@@ -261,6 +261,27 @@ class _WindowsDirectoryWatcher
   Map<String, Set<Event>> _sortEvents(List<Event> batch) {
     var eventsForPaths = <String, Set<Event>>{};
 
+    // On Windows new links to directories are sometimes reported by
+    // Directory.watch as directories. On all other platforms it reports them
+    // consistently as files. See https://github.com/dart-lang/sdk/issues/61797.
+    //
+    // The wrong type is because Windows creates links to directories as actual
+    // directories, then converts them to links. Directory.watch sometimes
+    // checks the type too early and gets the wrong result.
+    //
+    // The batch delay is plenty for the link to be fully created, so verify the
+    // file system entity type for all createDirectory` events, converting to
+    // `createFile` when needed.
+    for (var i = 0; i != batch.length; ++i) {
+      final event = batch[i];
+      if (event.type == EventType.createDirectory) {
+        if (FileSystemEntity.typeSync(event.path, followLinks: false) ==
+            FileSystemEntityType.link) {
+          batch[i] = Event.createFile(event.path);
+        }
+      }
+    }
+
     // Events within directories that already have create events are not needed
     // as the directory's full content will be listed.
     var createdDirectories = unionAll(batch.map((event) {

@@ -25,6 +25,7 @@ void _linkTests({required bool isNative}) {
 
   test('notifies when a link is overwritten with an identical file', () async {
     await startWatcher(path: 'link.txt');
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('link.txt');
 
     // TODO(davidmorgan): reconcile differences.
@@ -51,6 +52,7 @@ void _linkTests({required bool isNative}) {
     'notifies when a link target is overwritten with an identical file',
     () async {
       await startWatcher(path: 'link.txt');
+      if (!isNative) sleepUntilNewModificationTime();
       writeFile('target.txt');
 
       await expectModifyEvent('link.txt');
@@ -114,6 +116,7 @@ void _linkTests({required bool isNative}) {
 
   test('notifies when an identical file is moved over the link', () async {
     await startWatcher(path: 'link.txt');
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('old.txt');
     renameFile('old.txt', 'link.txt');
 
@@ -140,6 +143,7 @@ void _linkTests({required bool isNative}) {
 
   test('notifies when an identical file is moved over the target', () async {
     await startWatcher(path: 'link.txt');
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('old.txt');
     renameFile('old.txt', 'target.txt');
 
