@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io' as io;
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:test/test.dart';
@@ -18,6 +19,21 @@ void fileTests({required bool isNative}) {
 }
 
 void _fileTests({required bool isNative}) {
+  test('error reported if directory does not exist', () async {
+    await startWatcher(path: 'missing_path');
+
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative && !Platform.isMacOS) {
+      expect(expectNoEvents, throwsA(isA<PathNotFoundException>()));
+    } else {
+      // The polling watcher and the MacOS watcher do not throw on missing file
+      // on watch.
+      await expectNoEvents();
+      writeFile('missing_path/file.txt');
+      await expectAddEvent('missing_path/file.txt');
+    }
+  });
+
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
