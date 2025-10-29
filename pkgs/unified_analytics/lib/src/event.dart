@@ -135,16 +135,16 @@ final class Event {
   /// over the reported period.
   ///
   /// The background analysis group includes:
-  /// * [produceErrorsPotentialFileCount] - the total number of files that could
-  ///   potentially produce errors during background analysis.
+  /// * [produceErrorsPotentialFileCount] - the total number of files for which
+  ///   the reported diagnostics could potentially change.
   /// * [produceErrorsPotentialFileLineCount] - the total number of lines in
-  ///   files that could potentially produce errors during background analysis.
+  ///   files for which the reported diagnostics could potentially change.
   /// * [produceErrorsActualFileCount] - the total number of files that actually
-  ///   produced errors during background analysis.
+  ///   were analyzed during background analysis.
   /// * [produceErrorsActualFileLineCount] - the total number of lines in files
-  ///   that actually produced errors during background analysis.
+  ///   that actually were analyzed during background analysis.
   /// * [produceErrorsDurationMs] - the total duration in milliseconds for
-  ///   producing errors.
+  ///   producing diagnostics.
   /// * [produceErrorsElementsDurationMs] - the total duration in milliseconds
   ///   for preparing elements before analysis.
   ///
