@@ -794,6 +794,22 @@ final class Event {
           },
         );
 
+  /// Event that is sent from an IDE plugin.
+  ///
+  /// [name] - the name of the event.
+  ///
+  /// [ide] - the reporting [IDE].
+  ///
+  /// [additionalData] - any additional data.
+  Event.idePluginEvent({
+    required String name,
+    required IDE ide,
+    CustomMetrics? additionalData,
+  }) : this._(eventName: ide.event, eventData: {
+          'name': name,
+          if (additionalData != null) ...additionalData.toMap(),
+        });
+
   /// Event that is emitted periodically to report the number of times each lint
   /// has been enabled.
   ///
