@@ -1,4 +1,5 @@
 ## 8.0.8
+- Added `Event.idePluginEvent` for events reported by IDE plugins.
 - More data for `Event.analysisStatistics` for events from Dart Analysis Server.
 
 ## 8.0.7

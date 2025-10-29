@@ -69,6 +69,20 @@ enum DashEvent {
     toolOwner: DashTool.devtools,
   ),
 
+  // Events for IDE plugins
+
+  intellijPluginEvent(
+    label: 'intellij_event',
+    description: 'Information for Intellij Plugin events',
+    toolOwner: DashTool.intellijPlugins,
+  ),
+
+  vsCodePluginEvent(
+    label: 'vscode_event',
+    description: 'Information for VSCode Plugin events',
+    toolOwner: DashTool.vscodePlugins,
+  ),
+
   // Events for the Flutter CLI
 
   appleUsageEvent(
@@ -250,4 +264,14 @@ enum DevicePlatform {
 
   final String label;
   const DevicePlatform(this.label);
+}
+
+/// Supported IDEs.
+enum IDE {
+  intellij(DashEvent.intellijPluginEvent),
+  vscode(DashEvent.vsCodePluginEvent),
+  ;
+
+  final DashEvent event;
+  const IDE(this.event);
 }

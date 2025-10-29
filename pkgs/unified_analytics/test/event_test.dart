@@ -216,6 +216,29 @@ void main() {
     expect(constructedEvent.eventData.length, 1);
   });
 
+  test('Event.idePluginEvent constructed', () {
+    Event generateEvent() => Event.idePluginEvent(
+          name: 'ide.command',
+          ide: IDE.intellij,
+          additionalData: _TestMetrics(
+            stringField: 'test',
+            intField: 100,
+            boolField: false,
+          ),
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.intellijPluginEvent);
+
+    expect(constructedEvent.eventData['stringField'], 'test');
+    expect(constructedEvent.eventData['intField'], 100);
+    expect(constructedEvent.eventData['boolField'], false);
+    expect(constructedEvent.eventData.containsKey('nullableField'), false);
+    expect(constructedEvent.eventData.length, 4);
+  });
+
   test('Event.lintUsageCount constructed', () {
     Event generateEvent() => Event.lintUsageCount(
           count: 5,
