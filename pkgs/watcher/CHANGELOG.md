@@ -1,5 +1,8 @@
 ## 1.1.5-wip
 
+- Polling watchers now check file sizes as well as "last modified" times, so
+  they are less likely to miss changes on platforms with low resolution
+  timestamps.
 - Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
   the file was created immediately before the watcher was created. Now, if the
   file exists when the watcher is created then this modify event is not sent.
@@ -9,6 +12,9 @@
   moved onto `b`, it would be reported as three events: delete `a`, delete `b`,
   create `b`. Now it's reported as two events: delete `a`, modify `b`. This
   matches the behavior of the Linux and MacOS watchers.
+- Bug fix: with `DirectoryWatcher` on Windows, new links to direcories were
+  sometimes incorrectly handled as actual directories. Now they are reported
+  as files, matching the behavior of the Linux and MacOS watchers.
 - Bug fix: with `PollingDirectoryWatcher`, fix spurious modify event emitted
   because of a file delete during polling.
 

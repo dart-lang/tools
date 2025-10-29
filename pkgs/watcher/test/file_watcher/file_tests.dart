@@ -13,11 +13,13 @@ void fileTests({required bool isNative}) {
     writeFile('file.txt');
   });
 
+  for (var i = 0; i != runsPerTest; ++i) {
+    _fileTests(isNative: isNative);
+  }
+}
+
+void _fileTests({required bool isNative}) {
   test("doesn't notify if the file isn't modified", () async {
-    // TODO(davidmorgan): fix startup race on MacOS.
-    if (isNative && Platform.isMacOS) {
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    }
     await startWatcher(path: 'file.txt');
     await expectNoEvents();
   });
@@ -44,6 +46,7 @@ void fileTests({required bool isNative}) {
 
   test('notifies even if the file contents are unchanged', () async {
     await startWatcher(path: 'file.txt');
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('file.txt');
     await expectModifyEvent('file.txt');
   });
@@ -57,7 +60,7 @@ void fileTests({required bool isNative}) {
   test(
       'emits a modify event when another file is moved on top of the watched '
       'file', () async {
-    writeFile('old.txt');
+    writeFile('old.txt', contents: 'different');
     await startWatcher(path: 'file.txt');
     renameFile('old.txt', 'file.txt');
     await expectModifyEvent('file.txt');
@@ -92,7 +95,7 @@ void fileTests({required bool isNative}) {
       await expectNoEvents();
       writeFile('other_file.txt');
       await expectModifyEvent('other_file.txt');
-      writeFile('other_file.txt');
+      writeFile('other_file.txt', contents: 'different');
       await expectModifyEvent('other_file.txt');
     }
   });

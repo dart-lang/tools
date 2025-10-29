@@ -9,13 +9,20 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void linkTests({required bool isNative}) {
+  for (var i = 0; i != runsPerTest; ++i) {
+    _linkTests(isNative: isNative);
+  }
+}
+
+void _linkTests({required bool isNative}) {
   test('notifies when a link is added', () async {
     createDir('targets');
     createDir('links');
     writeFile('targets/a.target');
     await startWatcher(path: 'links');
 
-    writeLink(link: 'links/a.link', target: 'targets/a.target');
+    writeLink(
+        link: 'links/a.link', target: 'targets/a.target', unawaitedAsync: true);
 
     await expectAddEvent('links/a.link');
   });
@@ -26,6 +33,7 @@ void linkTests({required bool isNative}) {
     createDir('targets');
     createDir('links');
     writeFile('targets/a.target');
+    sleepUntilNewModificationTime();
     writeFile('targets/b.target');
     writeLink(link: 'links/a.link', target: 'targets/a.target');
     await startWatcher(path: 'links');
@@ -40,7 +48,7 @@ void linkTests({required bool isNative}) {
       'notifies when a link is replaced with a link to a different target '
       'with different contents', () async {
     writeFile('targets/a.target', contents: 'a');
-    writeFile('targets/b.target', contents: 'b');
+    writeFile('targets/b.target', contents: 'ab');
     writeLink(link: 'links/a.link', target: 'targets/a.target');
     await startWatcher(path: 'links');
 
@@ -102,7 +110,10 @@ void linkTests({required bool isNative}) {
     createDir('targets/a.targetdir');
     await startWatcher(path: 'links');
 
-    writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
+    writeLink(
+        link: 'links/a.link',
+        target: 'targets/a.targetdir',
+        unawaitedAsync: true);
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
@@ -121,7 +132,10 @@ void linkTests({required bool isNative}) {
     writeFile('targets/a.targetdir/a.target');
     await startWatcher(path: 'links');
 
-    writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
+    writeLink(
+        link: 'links/a.link',
+        target: 'targets/a.targetdir',
+        unawaitedAsync: true);
 
     // TODO(davidmorgan): reconcile differences.
     if (isNative) {
