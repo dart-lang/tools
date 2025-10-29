@@ -1,15 +1,11 @@
-## 8.0.8
+## 9.0.0
 - Added `Event.idePluginEvent` for events reported by IDE plugins.
 - More data for `Event.analysisStatistics` for events from Dart Analysis Server.
-
-## 8.0.7
 - Added optional fields `contextWorkspaceType` and `numberOfPackagesInWorkspace`
   to `Event.contextStructure` for workspace and packages distribution from the 
   Dart Analysis Server.
 - Removed `Event.contextStructure` optional fields `contextsFromBothFiles`, 
   `contextsFromOptionsFiles`,`contextsFromPackagesFiles`,`contextsWithoutFiles`.
-
-## 8.0.6
 - Added `Event.analysisStatistics` for events from Dart Analysis Server, about analysis.
 
 ## 8.0.5
