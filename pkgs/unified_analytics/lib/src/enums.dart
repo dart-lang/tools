@@ -73,7 +73,7 @@ enum DashEvent {
 
   intellijPluginEvent(
     label: 'intellij_event',
-    description: 'Information for Intellij Plugin events',
+    description: 'Information for IntelliJ Plugin events',
     toolOwner: DashTool.intellijPlugins,
   ),
 
