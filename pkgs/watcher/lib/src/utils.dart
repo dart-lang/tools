@@ -79,7 +79,7 @@ extension DirectoryRobustRecursiveListing on Directory {
   ///
   /// Theses can arise from concurrent file-system modification.
   Stream<FileSystemEntity> listRecursivelyIgnoringErrors() {
-    return list(recursive: true)
+    return list(recursive: true, followLinks: false)
         .ignoring<PathNotFoundException>()
         .ignoring<PathAccessException>();
   }
