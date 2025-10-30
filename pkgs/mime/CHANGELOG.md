@@ -1,3 +1,6 @@
+## 2.0.1
+* Add `image/x-canon-cr2` mimeType lookup by extension and header bytes.
+
 ## 2.0.0
 
 * **[Breaking]** `extensionFromMime(String mimeType)` returns `null` instead of `mimeType` for an unknown mime type.
