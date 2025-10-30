@@ -1,3 +1,9 @@
+## 4.0.0-tentative
+
+* Enable tests for Web-platforms.
+* Added a test for peer failure in "like a client" scenario. Without this fix, `peer.sendRequest()` never completes and the test times out.
+* The fix consists in forwarding errors to both the client and the server.
+
 ## 4.0.0
 
 * Add custom ID generator option to clients, which allows for `String` ids.

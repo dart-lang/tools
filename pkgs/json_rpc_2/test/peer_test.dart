@@ -45,6 +45,27 @@ void main() {
           peer.sendRequest('foo', {'bar': 'baz'}), completion(equals('qux')));
     });
 
+    test('can send a message and receive an error', () {
+      expect(outgoing.first.then((request) {
+        expect(
+            request,
+            equals({
+              'jsonrpc': '2.0',
+              'method': 'foo',
+              'params': {'bar': 'baz'},
+              'id': 0
+            }));
+        incoming.addError(Exception('failure'));
+      }), completes);
+
+      peer.listen().ignore();
+
+      expect(
+          peer.sendRequest('foo', {'bar': 'baz'}),
+          throwsA(isA<StateError>().having(($) => $.message, 'message',
+              contains('client closed with pending request "foo"'))));
+    });
+
     test('can send a batch of messages and receive a batch of responses', () {
       expect(outgoing.first.then((request) {
         expect(
