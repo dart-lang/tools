@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 
-/// Define additions to the base apache/httpd mime set.
+/// Additions to the base apache/httpd mime set.
 const Map<String, List<String>> mimeAdditions = {
   'application/dicom': ['dcm'],
   'application/manifest+json': ['webmanifest'],
@@ -19,7 +19,7 @@ const Map<String, List<String>> mimeAdditions = {
   'text/x-dart': ['dart'],
 };
 
-/// Define preferred extensions for mime types.
+/// Preferred extensions for mime types.
 const Map<String, String> preferredExtensions = {
   // For continuity with package:mime 2.0.0.
   'application/mathematica': 'nb',
@@ -38,7 +38,7 @@ const Map<String, String> preferredExtensions = {
   'video/quicktime': 'mov',
 };
 
-/// Define mime type renames.
+/// Mime type renames.
 ///
 /// Generally these are places where the mime.types table differs from
 /// https://www.iana.org/assignments/media-types/media-types.xhtml.
