@@ -1,5 +1,9 @@
 ## 0.10.14-wip
 
+* Fix `SingleMapping.spanFor` to use the entry from a previous line as specified
+  by the sourcemap specification
+  (https://tc39.es/ecma426/#sec-GetOriginalPositions),
+
 ## 0.10.13
 
 * Require Dart 3.3

@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
+import 'event.dart';
+
 /// Returns `true` if [error] is a [FileSystemException] for a missing
 /// directory.
 bool isDirectoryNotFoundException(Object error) {
@@ -20,7 +22,7 @@ bool isDirectoryNotFoundException(Object error) {
 Set<T> unionAll<T>(Iterable<Set<T>> sets) =>
     sets.fold(<T>{}, (union, set) => union.union(set));
 
-extension BatchEvents<T> on Stream<T> {
+extension BatchEvents on Stream<FileSystemEvent> {
   /// Batches all events that are sent at the same time.
   ///
   /// When multiple events are synchronously added to a stream controller, the
@@ -28,11 +30,16 @@ extension BatchEvents<T> on Stream<T> {
   /// asynchronous firing of each event. In order to recreate the synchronous
   /// batches, this collates all the events that are received in "nearby"
   /// microtasks.
-  Stream<List<T>> batchEvents() {
-    var batch = Queue<T>();
-    return StreamTransformer<T, List<T>>.fromHandlers(
+  ///
+  /// Converts to [Event] using [Event.checkAndConvert], discarding events for
+  /// which it returns `null`.
+  Stream<List<Event>> batchAndConvertEvents() {
+    var batch = Queue<Event>();
+    return StreamTransformer<FileSystemEvent, List<Event>>.fromHandlers(
         handleData: (event, sink) {
-      batch.add(event);
+      var convertedEvent = Event.checkAndConvert(event);
+      if (convertedEvent == null) return;
+      batch.add(convertedEvent);
 
       // [Timer.run] schedules an event that runs after any microtasks that have
       // been scheduled.
@@ -48,5 +55,32 @@ extension BatchEvents<T> on Stream<T> {
       }
       sink.close();
     }).bind(this);
+  }
+}
+
+extension IgnoringError<T> on Stream<T> {
+  /// Ignore all errors of type [E] emitted by the given stream.
+  ///
+  /// Everything else gets forwarded through as-is.
+  Stream<T> ignoring<E>() {
+    return transform(StreamTransformer<T, T>.fromHandlers(
+      handleError: (error, st, sink) {
+        if (error is! E) {
+          sink.addError(error, st);
+        }
+      },
+    ));
+  }
+}
+
+extension DirectoryRobustRecursiveListing on Directory {
+  /// List the given directory recursively but ignore not-found or access
+  /// errors.
+  ///
+  /// Theses can arise from concurrent file-system modification.
+  Stream<FileSystemEntity> listRecursivelyIgnoringErrors() {
+    return list(recursive: true)
+        .ignoring<PathNotFoundException>()
+        .ignoring<PathAccessException>();
   }
 }

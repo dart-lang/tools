@@ -131,6 +131,26 @@ two</li>
 <p>two</p>
 </li>
 </ul>
+>>> can nest lists by tabs
+* one
+	* nested one
+	* nested two
+
+* two
+
+<<<
+<ul>
+<li>
+<p>one</p>
+<ul>
+<li>nested one</li>
+<li>nested two</li>
+</ul>
+</li>
+<li>
+<p>two</p>
+</li>
+</ul>
 >>> list item allows lazy continuations
 - list
 item
@@ -149,3 +169,58 @@ item</li>
 <li>list</li>
 </ul>
 <hr />
+>>> can nest multiple levels with tabs.
+- Level 1, 1
+- Level 1, 2
+	- Level 2, 1
+	- Level 2, 2
+		- Level 3, 1
+		- Level 3, 2
+		- Level 3, 3
+			- Level 4, 1
+			- Level 4, 2
+			- Level 4, 3
+				- Level 5, 1
+				- Level 5, 2
+				- Level 5, 3
+				- Level 5, 4
+					- Level 6, 1
+					- Level 6, 2
+					- Level 6, 3
+- Level 1, 4
+<<<
+<ul>
+<li>Level 1, 1</li>
+<li>Level 1, 2
+<ul>
+<li>Level 2, 1</li>
+<li>Level 2, 2
+<ul>
+<li>Level 3, 1</li>
+<li>Level 3, 2</li>
+<li>Level 3, 3
+<ul>
+<li>Level 4, 1</li>
+<li>Level 4, 2</li>
+<li>Level 4, 3
+<ul>
+<li>Level 5, 1</li>
+<li>Level 5, 2</li>
+<li>Level 5, 3</li>
+<li>Level 5, 4
+<ul>
+<li>Level 6, 1</li>
+<li>Level 6, 2</li>
+<li>Level 6, 3</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Level 1, 4</li>
+</ul>

@@ -6,8 +6,8 @@ import 'dart:async';
 import 'dart:io';
 
 import '../file_watcher.dart';
+import '../polling.dart';
 import '../resubscribable.dart';
-import '../stat.dart';
 import '../watch_event.dart';
 
 /// Periodically polls a file for changes.
@@ -37,10 +37,7 @@ class _PollingFileWatcher implements FileWatcher, ManuallyClosedWatcher {
   /// The timer that controls polling.
   late final Timer _timer;
 
-  /// The previous modification time of the file.
-  ///
-  /// `null` indicates the file does not (or did not on the last poll) exist.
-  DateTime? _lastModified;
+  PollResult _previousPollResult = PollResult.notAFile();
 
   _PollingFileWatcher(this.path, Duration pollingDelay) {
     _timer = Timer.periodic(pollingDelay, (_) => _poll());
@@ -55,22 +52,23 @@ class _PollingFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     var pathExists = await File(path).exists();
     if (_eventsController.isClosed) return;
 
-    if (_lastModified != null && !pathExists) {
+    if (_previousPollResult.fileExists && !pathExists) {
       _flagReady();
       _eventsController.add(WatchEvent(ChangeType.REMOVE, path));
       unawaited(close());
       return;
     }
 
-    DateTime? modified;
+    PollResult pollResult;
     try {
-      modified = await modificationTime(path);
+      pollResult = await PollResult.poll(path);
     } on FileSystemException catch (error, stackTrace) {
       if (!_eventsController.isClosed) {
         _flagReady();
         _eventsController.addError(error, stackTrace);
         await close();
       }
+      return;
     }
     if (_eventsController.isClosed) {
       _flagReady();
@@ -78,16 +76,16 @@ class _PollingFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     }
 
     if (!isReady) {
-      // If this is the first poll, don't emit an event, just set the last mtime
-      // and complete the completer.
-      _lastModified = modified;
+      // If this is the first poll, don't emit an event, just set the poll
+      // result and complete the completer.
+      _previousPollResult = pollResult;
       _flagReady();
       return;
     }
 
-    if (_lastModified == modified) return;
+    if (_previousPollResult == pollResult) return;
 
-    _lastModified = modified;
+    _previousPollResult = pollResult;
     _eventsController.add(WatchEvent(ChangeType.MODIFY, path));
   }
 

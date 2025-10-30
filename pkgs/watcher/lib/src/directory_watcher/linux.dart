@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:async/async.dart';
 
 import '../directory_watcher.dart';
+import '../event.dart';
 import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
@@ -81,7 +82,7 @@ class _LinuxDirectoryWatcher
     })));
 
     // Batch the inotify changes together so that we can dedup events.
-    var innerStream = _nativeEvents.stream.batchEvents();
+    var innerStream = _nativeEvents.stream.batchAndConvertEvents();
     _listen(innerStream, _onBatch,
         onError: (Object error, StackTrace stackTrace) {
       // Guarantee that ready always completes.
@@ -92,7 +93,7 @@ class _LinuxDirectoryWatcher
     });
 
     _listen(
-      Directory(path).list(recursive: true),
+      Directory(path).listRecursivelyIgnoringErrors(),
       (FileSystemEntity entity) {
         if (entity is Directory) {
           _watchSubdir(entity.path);
@@ -136,16 +137,16 @@ class _LinuxDirectoryWatcher
     // top-level clients such as barback as well, and could be implemented with
     // a wrapper similar to how listening/canceling works now.
 
-    // TODO(nweiz): Catch any errors here that indicate that the directory in
-    // question doesn't exist and silently stop watching it instead of
-    // propagating the errors.
-    var stream = Directory(path).watch();
+    // Directory might no longer exist at the point where we try to
+    // start the watcher. Simply ignore this error and let the stream
+    // close.
+    var stream = Directory(path).watch().ignoring<PathNotFoundException>();
     _subdirStreams[path] = stream;
     _nativeEvents.add(stream);
   }
 
   /// The callback that's run when a batch of changes comes in.
-  void _onBatch(List<FileSystemEvent> batch) {
+  void _onBatch(List<Event> batch) {
     var files = <String>{};
     var dirs = <String>{};
     var changed = <String>{};
@@ -162,30 +163,40 @@ class _LinuxDirectoryWatcher
 
       changed.add(event.path);
 
-      if (event is FileSystemMoveEvent) {
-        files.remove(event.path);
-        dirs.remove(event.path);
+      switch (event.type) {
+        case EventType.moveFile:
+          files.remove(event.path);
+          dirs.remove(event.path);
+          var destination = event.destination;
+          if (destination != null) {
+            changed.add(destination);
+            files.add(destination);
+            dirs.remove(destination);
+          }
 
-        var destination = event.destination;
-        if (destination == null) continue;
+        case EventType.moveDirectory:
+          files.remove(event.path);
+          dirs.remove(event.path);
+          var destination = event.destination;
+          if (destination != null) {
+            changed.add(destination);
+            files.remove(destination);
+            dirs.add(destination);
+          }
 
-        changed.add(destination);
-        if (event.isDirectory) {
-          files.remove(destination);
-          dirs.add(destination);
-        } else {
-          files.add(destination);
-          dirs.remove(destination);
-        }
-      } else if (event is FileSystemDeleteEvent) {
-        files.remove(event.path);
-        dirs.remove(event.path);
-      } else if (event.isDirectory) {
-        files.remove(event.path);
-        dirs.add(event.path);
-      } else {
-        files.add(event.path);
-        dirs.remove(event.path);
+        case EventType.delete:
+          files.remove(event.path);
+          dirs.remove(event.path);
+
+        case EventType.createDirectory:
+        case EventType.modifyDirectory:
+          files.remove(event.path);
+          dirs.add(event.path);
+
+        case EventType.createFile:
+        case EventType.modifyFile:
+          files.add(event.path);
+          dirs.remove(event.path);
       }
     }
 

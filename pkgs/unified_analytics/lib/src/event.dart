@@ -104,6 +104,100 @@ final class Event {
         );
 
   /// Event that is emitted periodically to report the performance of the
+  /// analyzer.
+  ///
+  /// [workingDuration] - json encoded percentile values indicating how long
+  ///     the analysis status was "working".
+  /// [withFineDependencies] - whether the fine-grained feature is enabled.
+  ///
+  /// Then there are three groups of measurements:
+  /// * file modifications
+  /// * workspace shape
+  /// * background analysis
+  ///
+  /// The file modifications group includes:
+  /// [changedFileEventCount] - the number of file change events received.
+  /// [removedFileEventCount] - the number of file removal events received.
+  /// [changedFileUniqueCount] - the number of unique files that were changed.
+  /// [removedFileUniqueCount] - the number of unique files that were removed.
+  ///
+  /// The workspace shape group includes:
+  /// * [immediateFileCountPercentiles] - json encoded percentile values for the
+  ///  number of files in the immediate workspace.
+  /// * [immediateFileLineCountPercentiles] - json encoded percentile values for
+  ///   the number of lines in the immediate workspace files.
+  /// * [transitiveFileCountPercentiles] - json encoded percentile values for
+  ///   the number of files in the transitive workspace.
+  /// * [transitiveFileLineCountPercentiles] - json encoded percentile values
+  ///   for the number of lines in the transitive workspace files.
+  ///
+  /// This allows us to understand how big is the workspace, and how it changed
+  /// over the reported period.
+  ///
+  /// The background analysis group includes:
+  /// * [produceErrorsPotentialFileCount] - the total number of files for which
+  ///   the reported diagnostics could potentially change.
+  /// * [produceErrorsPotentialFileLineCount] - the total number of lines in
+  ///   files for which the reported diagnostics could potentially change.
+  /// * [produceErrorsActualFileCount] - the total number of files that actually
+  ///   were analyzed during background analysis.
+  /// * [produceErrorsActualFileLineCount] - the total number of lines in files
+  ///   that actually were analyzed during background analysis.
+  /// * [produceErrorsDurationMs] - the total duration in milliseconds for
+  ///   producing diagnostics.
+  /// * [produceErrorsElementsDurationMs] - the total duration in milliseconds
+  ///   for preparing elements before analysis.
+  ///
+  /// This allows us to understand how many files were scheduled for analysis,
+  /// and how many of these files are served from the cache, because we
+  /// determined that the change that caused them to be scheduled for analysis
+  /// actually does not affect resolution and the set of diagnostics, e.g.
+  /// because the change was in a method body, or to an API that does not
+  /// affect this specific file (if fine-grained dependencies enabled).
+  Event.analysisStatistics({
+    required String workingDuration,
+    required bool withFineDependencies,
+    required int changedFileEventCount,
+    required int removedFileEventCount,
+    required int changedFileUniqueCount,
+    required int removedFileUniqueCount,
+    required String immediateFileCountPercentiles,
+    required String immediateFileLineCountPercentiles,
+    required String transitiveFileCountPercentiles,
+    required String transitiveFileLineCountPercentiles,
+    required int produceErrorsPotentialFileCount,
+    required int produceErrorsPotentialFileLineCount,
+    required int produceErrorsActualFileCount,
+    required int produceErrorsActualFileLineCount,
+    required int produceErrorsDurationMs,
+    required int produceErrorsElementsDurationMs,
+  }) : this._(
+          eventName: DashEvent.analysisStatistics,
+          eventData: {
+            'workingDuration': workingDuration,
+            'withFineDependencies': withFineDependencies,
+            'changedFileUniqueCount': changedFileUniqueCount,
+            'removedFileUniqueCount': removedFileUniqueCount,
+            'changedFileEventCount': changedFileEventCount,
+            'removedFileEventCount': removedFileEventCount,
+            'immediateFileCountPercentiles': immediateFileCountPercentiles,
+            'immediateFileLineCountPercentiles':
+                immediateFileLineCountPercentiles,
+            'transitiveFileCountPercentiles': transitiveFileCountPercentiles,
+            'transitiveFileLineCountPercentiles':
+                transitiveFileLineCountPercentiles,
+            'produceErrorsPotentialFileCount': produceErrorsPotentialFileCount,
+            'produceErrorsPotentialFileLineCount':
+                produceErrorsPotentialFileLineCount,
+            'produceErrorsActualFileCount': produceErrorsActualFileCount,
+            'produceErrorsActualFileLineCount':
+                produceErrorsActualFileLineCount,
+            'produceErrorsDurationMs': produceErrorsDurationMs,
+            'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
+          },
+        );
+
+  /// Event that is emitted periodically to report the performance of the
   /// analysis server's handling of a specific kind of request from the client.
   ///
   /// [duration] - json encoded percentile values indicating how long it took
@@ -336,17 +430,14 @@ final class Event {
   /// [libraryCycleLineCounts] - json encoded percentile values indicating the
   ///     number of lines of code in all of the files in a single library cycle.
   ///
-  /// [contextsFromBothFiles] - the number of contexts that were created because
-  ///     of both a package config and an analysis options file.
+  /// [contextWorkspaceType] - json encoded list with the total number of
+  ///     workspaces of each type for all of the contexts:
+  ///     - index 0: Blaze, GN or other workspace count
+  ///     - index 1: Package workspace count
+  ///     - index 2: Pub workspace count
   ///
-  /// [contextsFromOptionsFiles] - the number of contexts that were created
-  ///     because of an analysis options file.
-  ///
-  /// [contextsFromPackagesFiles] - the number of contexts that were created
-  ///     because of a package config file.
-  ///
-  /// [contextsWithoutFiles] - the number of contexts that were created because
-  ///     of the lack of either a package config or an analysis options file.
+  /// [numberOfPackagesInWorkspace] - json encoded percentile values for the
+  ///     number of packages in the Pub workspaces.
   Event.contextStructure({
     required int immediateFileCount,
     required int immediateFileLineCount,
@@ -357,10 +448,8 @@ final class Event {
     required int transitiveFileUniqueLineCount,
     String libraryCycleLibraryCounts = '',
     String libraryCycleLineCounts = '',
-    int contextsFromBothFiles = 0,
-    int contextsFromOptionsFiles = 0,
-    int contextsFromPackagesFiles = 0,
-    int contextsWithoutFiles = 0,
+    String contextWorkspaceType = '',
+    String numberOfPackagesInWorkspace = '',
   }) : this._(
           eventName: DashEvent.contextStructure,
           eventData: {
@@ -373,10 +462,8 @@ final class Event {
             'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
             'libraryCycleLibraryCounts': libraryCycleLibraryCounts,
             'libraryCycleLineCounts': libraryCycleLineCounts,
-            'contextsFromBothFiles': contextsFromBothFiles,
-            'contextsFromOptionsFiles': contextsFromOptionsFiles,
-            'contextsFromPackagesFiles': contextsFromPackagesFiles,
-            'contextsWithoutFiles': contextsWithoutFiles,
+            'contextWorkspaceType': contextWorkspaceType,
+            'numberOfPackagesInWorkspace': numberOfPackagesInWorkspace,
           },
         );
 

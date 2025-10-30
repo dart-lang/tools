@@ -10,6 +10,56 @@ import 'package:unified_analytics/src/event.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 void main() {
+  test('Event.analysisStatistics constructed', () {
+    Event generateEvent() => Event.analysisStatistics(
+          workingDuration: 'workingDuration',
+          withFineDependencies: false,
+          changedFileEventCount: 1,
+          removedFileEventCount: 2,
+          changedFileUniqueCount: 3,
+          removedFileUniqueCount: 4,
+          immediateFileCountPercentiles: 'immediateFileCountPercentiles',
+          immediateFileLineCountPercentiles:
+              'immediateFileLineCountPercentiles',
+          transitiveFileCountPercentiles: 'transitiveFileCountPercentiles',
+          transitiveFileLineCountPercentiles:
+              'transitiveFileLineCountPercentiles',
+          produceErrorsPotentialFileCount: 10,
+          produceErrorsPotentialFileLineCount: 11,
+          produceErrorsActualFileCount: 12,
+          produceErrorsActualFileLineCount: 13,
+          produceErrorsDurationMs: 14,
+          produceErrorsElementsDurationMs: 15,
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.analysisStatistics);
+    expect(constructedEvent.eventData['workingDuration'], 'workingDuration');
+    expect(constructedEvent.eventData['withFineDependencies'], false);
+    expect(constructedEvent.eventData['changedFileEventCount'], 1);
+    expect(constructedEvent.eventData['removedFileEventCount'], 2);
+    expect(constructedEvent.eventData['changedFileUniqueCount'], 3);
+    expect(constructedEvent.eventData['removedFileUniqueCount'], 4);
+    expect(constructedEvent.eventData['immediateFileCountPercentiles'],
+        'immediateFileCountPercentiles');
+    expect(constructedEvent.eventData['immediateFileLineCountPercentiles'],
+        'immediateFileLineCountPercentiles');
+    expect(constructedEvent.eventData['transitiveFileCountPercentiles'],
+        'transitiveFileCountPercentiles');
+    expect(constructedEvent.eventData['transitiveFileLineCountPercentiles'],
+        'transitiveFileLineCountPercentiles');
+    expect(constructedEvent.eventData['produceErrorsPotentialFileCount'], 10);
+    expect(
+        constructedEvent.eventData['produceErrorsPotentialFileLineCount'], 11);
+    expect(constructedEvent.eventData['produceErrorsActualFileCount'], 12);
+    expect(constructedEvent.eventData['produceErrorsActualFileLineCount'], 13);
+    expect(constructedEvent.eventData['produceErrorsDurationMs'], 14);
+    expect(constructedEvent.eventData['produceErrorsElementsDurationMs'], 15);
+    expect(constructedEvent.eventData.length, 16);
+  });
+
   test('Event.analyticsCollectionEnabled constructed', () {
     Event generateEvent() => Event.analyticsCollectionEnabled(status: false);
 
@@ -94,6 +144,8 @@ void main() {
           transitiveFileUniqueLineCount: 7,
           libraryCycleLibraryCounts: 'a',
           libraryCycleLineCounts: 'b',
+          contextWorkspaceType: '[0,1,2]',
+          numberOfPackagesInWorkspace: '32',
         );
 
     final constructedEvent = generateEvent();
@@ -109,11 +161,9 @@ void main() {
     expect(constructedEvent.eventData['transitiveFileUniqueLineCount'], 7);
     expect(constructedEvent.eventData['libraryCycleLibraryCounts'], 'a');
     expect(constructedEvent.eventData['libraryCycleLineCounts'], 'b');
-    expect(constructedEvent.eventData['contextsFromBothFiles'], 0);
-    expect(constructedEvent.eventData['contextsFromOptionsFiles'], 0);
-    expect(constructedEvent.eventData['contextsFromPackagesFiles'], 0);
-    expect(constructedEvent.eventData['contextsWithoutFiles'], 0);
-    expect(constructedEvent.eventData.length, 13);
+    expect(constructedEvent.eventData['contextWorkspaceType'], '[0,1,2]');
+    expect(constructedEvent.eventData['numberOfPackagesInWorkspace'], '32');
+    expect(constructedEvent.eventData.length, 11);
   });
 
   test('Event.dartCliCommandExecuted constructed', () {
@@ -729,7 +779,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 30;
+    final eventsAccountedForInTests = 31;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '

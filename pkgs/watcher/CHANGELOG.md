@@ -1,3 +1,32 @@
+## 1.1.5-wip
+
+- Polling watchers now check file sizes as well as "last modified" times, so
+  they are less likely to miss changes on platforms with low resolution
+  timestamps.
+- Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
+  the file was created immediately before the watcher was created. Now, if the
+  file exists when the watcher is created then this modify event is not sent.
+  This matches the Linux native and polling (Windows) watchers.
+- Bug fix: with `DirectoryWatcher` on Windows, a move over an existing file was
+  reported incorrectly. For example, if `a` and `b` already exist, then `a` is
+  moved onto `b`, it would be reported as three events: delete `a`, delete `b`,
+  create `b`. Now it's reported as two events: delete `a`, modify `b`. This
+  matches the behavior of the Linux and MacOS watchers.
+- Bug fix: with `DirectoryWatcher` on Windows, new links to direcories were
+  sometimes incorrectly handled as actual directories. Now they are reported
+  as files, matching the behavior of the Linux and MacOS watchers.
+- Bug fix: with `PollingDirectoryWatcher`, fix spurious modify event emitted
+  because of a file delete during polling.
+
+## 1.1.4
+
+- Improve handling of subdirectories: ignore `PathNotFoundException` due to
+  subdirectory deletion racing with watcher internals, instead of raising
+  it on the event stream.
+- Improve handling of watcher overflow on Windows: prepare for future versions
+  of SDK, which will properly forward `FileSystemException` into the stream
+  returned by the watcher.
+
 ## 1.1.3
 
 - Improve handling of
@@ -6,7 +35,7 @@
   events. But, the restart would sometimes silently fail. Now, it is more
   reliable.
 - Improving handling of directories that are created then immediately deleted on
-  Windows. Previously, that could cause a `PathNotfoundException` to be thrown.
+  Windows. Previously, that could cause a `PathNotFoundException` to be thrown.
 
 ## 1.1.2
 

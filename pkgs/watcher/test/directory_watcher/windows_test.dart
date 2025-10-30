@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('windows')
+@Timeout.factor(2)
 library;
 
 import 'dart:async';
@@ -14,12 +15,14 @@ import 'package:watcher/src/directory_watcher/windows.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'shared.dart';
+import 'file_tests.dart';
+import 'link_tests.dart';
 
 void main() {
   watcherFactory = WindowsDirectoryWatcher.new;
 
-  group('Shared Tests:', sharedTests);
+  fileTests(isNative: true);
+  linkTests(isNative: true);
 
   test('DirectoryWatcher creates a WindowsDirectoryWatcher on Windows', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<WindowsDirectoryWatcher>());
@@ -169,7 +172,12 @@ void main() {
         }
 
         // Events only happen when there is an async gap, wait for such a gap.
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+        // The event usually arrives in under 10ms, try for 100ms.
+        var tries = 0;
+        while (errorsSeen == 0 && eventsSeen == 0 && tries < 10) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          ++tries;
+        }
 
         // If everything is going well, there should have been either one event
         // seen or one error seen.

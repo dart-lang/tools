@@ -1,12 +1,13 @@
 name: e2e_test
 publish_to: none
 
+resolution: workspace
+
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.9.0
 
 dependencies:
-  bazel_worker:
-    path: ../
+  bazel_worker: any
 
 dev_dependencies:
   cli_util: ^0.4.2

@@ -71,8 +71,22 @@ class TestReflectiveLoaderTest {
   }
 
   @failingTest
-  Future test_fails_throws_async() {
+  Future<void> test_fails_throws_async() {
     return Future.error('foo');
+  }
+
+  @failingTest
+  Future<void> test_fails_throws_async_unawaitedFuture() async {
+    var completer = Completer<void>();
+    // This exception occurs during the test run but isn't directly awaited so
+    // this method doesn't not itself complete with an error.
+    //
+    // This is a legit test failure and will be marked as such without
+    // the `@failingTest` annotation.
+    unawaited(Future<void>.value()
+        .then((_) => throw UnimplementedError('foo'))
+        .whenComplete(completer.complete));
+    await completer.future;
   }
 
   @failingTest
