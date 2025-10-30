@@ -1,5 +1,9 @@
 ## 1.1.5-wip
 
+- `DirectoryWatcher` on Windows watches in a separate Isolate to make buffer
+  exhaustion, "Directory watcher closed unexpectedly", much less likely. The old
+  implementation which does not use a separate Isolate is available as
+  `DirectoryWatcher(path, runInIsolateOnWindows: false)`.
 - Polling watchers now check file sizes as well as "last modified" times, so
   they are less likely to miss changes on platforms with low resolution
   timestamps.
