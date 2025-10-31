@@ -15,6 +15,7 @@ import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
 import '../watch_event.dart';
+import 'directory_list.dart';
 
 class WindowsDirectoryWatcher extends ResubscribableWatcher
     implements DirectoryWatcher {
@@ -216,9 +217,7 @@ class _WindowsDirectoryWatcher
             // that get removed during the `list` are already ignored by `list`
             // itself, so there are no other types of "path not found" that
             // might need different handling here.
-            var stream = Directory(path)
-                .list(recursive: true)
-                .ignoring<PathNotFoundException>();
+            var stream = Directory(path).listRecursivelyIgnoringErrors();
             var subscription = stream.listen((entity) {
               if (entity is Directory) return;
               if (_files.contains(entity.path)) return;

@@ -193,33 +193,8 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative && (Platform.isLinux || Platform.isMacOS)) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link/cycle.link'),
-      ]);
-      await expectNoEvents();
-    } else if (isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link'),
-      ]);
-      await expectNoEvents();
-    } else if (!isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-      ]);
-      await expectNoEvents();
-    } else {
-      assert(!isNative);
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle.link/a.txt'),
-      ]);
-      await expectNoEvents();
-    }
+    await expectAddEvent('watched/links/a.link/a.txt');
+    await expectNoEvents();
   });
 
   test(
@@ -239,44 +214,22 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative && (Platform.isLinux || Platform.isMacOS)) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/cycle2.link'),
-        isAddEvent('watched/links/a.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/cycle2.link'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle2.link'),
-      ]);
-      await expectNoEvents();
-    } else if (isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link'),
-        isAddEvent('watched/links/a.link/cycle2.link'),
-      ]);
-      await expectNoEvents();
-    } else if (!isNative && Platform.isWindows) {
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-      ]);
-      await expectNoEvents();
-    } else {
-      assert(!isNative);
-      await inAnyOrder([
-        isAddEvent('watched/links/a.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle1.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/a.txt'),
-        isAddEvent('watched/links/a.link/cycle2.link/cycle1.link/a.txt'),
-      ]);
-      await expectNoEvents();
-    }
+    await expectAddEvent('watched/links/a.link/a.txt');
+    await expectNoEvents();
+  });
+
+  test('is not slow in a directory with many link loops', () async {
+    createDir('links');
+    writeLink(link: 'links/a/cycle1.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle2.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle3.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle4.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle5.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle6.link', target: 'links/a');
+    writeLink(link: 'links/a/cycle7.link', target: 'links/a');
+
+    final stopwatch = Stopwatch()..start();
+    await startWatcher(path: 'links');
+    expect(stopwatch.elapsedMilliseconds, lessThan(500));
   });
 }
