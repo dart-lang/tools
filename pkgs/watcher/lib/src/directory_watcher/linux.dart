@@ -13,6 +13,7 @@ import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
 import '../watch_event.dart';
+import 'directory_list.dart';
 
 /// Uses the inotify subsystem to watch for filesystem events.
 ///
@@ -239,7 +240,7 @@ class _LinuxDirectoryWatcher
 
   /// Emits [ChangeType.ADD] events for the recursive contents of [path].
   void _addSubdir(String path) {
-    _listen(Directory(path).list(recursive: true), (FileSystemEntity entity) {
+    _listen(Directory(path).listRecursively(), (FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubdir(entity.path);
       } else {
