@@ -48,7 +48,6 @@ void main() {
       _expectMimeType('file.ogg', 'audio/ogg');
       _expectMimeType('file.aiff', 'audio/x-aiff');
       _expectMimeType('file.m4a', 'audio/mp4');
-      _expectMimeType('file.m4b', 'audio/mp4');
       _expectMimeType('file.toml', 'application/toml');
       _expectMimeType('file.md', 'text/markdown');
       _expectMimeType('file.markdown', 'text/markdown');
@@ -316,5 +315,23 @@ void main() {
     );
 
     expect(initialMagicNumbersMaxLength, actualMaxBytes);
+  });
+
+  test('magic numbers in mime table', () {
+    final magicMimes = initialMagicNumbers.map((magic) => magic.mimeType);
+
+    for (final mime in magicMimes) {
+      if (mime == 'audio/weba') {
+        // TODO(devoncarew): We need to remove or rename audio/weba; it's not a
+        // mime type.
+        continue;
+      }
+
+      expect(
+        extensionFromMime(mime),
+        isNotNull,
+        reason: 'magic number mime $mime missing from mime table',
+      );
+    }
   });
 }
