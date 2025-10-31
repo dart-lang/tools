@@ -13,6 +13,7 @@ import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
 import '../watch_event.dart';
+import 'directory_list.dart';
 
 /// Uses the FSEvents subsystem to watch for filesystem events.
 ///
@@ -149,7 +150,7 @@ class _MacOSDirectoryWatcher
             if (_files.containsDir(path)) continue;
 
             var stream = Directory(path)
-                .list(recursive: true)
+                .listRecursively()
                 .ignoring<PathNotFoundException>();
             var subscription = stream.listen((entity) {
               if (entity is Directory) return;

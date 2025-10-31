@@ -72,15 +72,3 @@ extension IgnoringError<T> on Stream<T> {
     ));
   }
 }
-
-extension DirectoryRobustRecursiveListing on Directory {
-  /// List the given directory recursively but ignore not-found or access
-  /// errors.
-  ///
-  /// Theses can arise from concurrent file-system modification.
-  Stream<FileSystemEntity> listRecursivelyIgnoringErrors() {
-    return list(recursive: true)
-        .ignoring<PathNotFoundException>()
-        .ignoring<PathAccessException>();
-  }
-}

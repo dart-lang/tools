@@ -11,6 +11,7 @@ import '../polling.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
 import '../watch_event.dart';
+import 'directory_list.dart';
 
 /// Periodically polls a directory for changes.
 ///

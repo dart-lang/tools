@@ -15,6 +15,7 @@ import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
 import '../watch_event.dart';
+import 'directory_list.dart';
 
 class WindowsDirectoryWatcher extends ResubscribableWatcher
     implements DirectoryWatcher {
@@ -217,7 +218,7 @@ class _WindowsDirectoryWatcher
             // itself, so there are no other types of "path not found" that
             // might need different handling here.
             var stream = Directory(path)
-                .list(recursive: true)
+                .listRecursively()
                 .ignoring<PathNotFoundException>();
             var subscription = stream.listen((entity) {
               if (entity is Directory) return;
