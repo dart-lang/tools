@@ -63,7 +63,7 @@ jobs:
           sdk: ${{ matrix.sdk }}
       # Node 22 has wasmGC enabled, which allows the wasm tests to run!
       - name: Setup Node.js 22
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 22
       - id: install
