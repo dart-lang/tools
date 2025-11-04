@@ -3,6 +3,9 @@
 - Polling watchers now check file sizes as well as "last modified" times, so
   they are less likely to miss changes on platforms with low resolution
   timestamps.
+- Bug fix: while listing directories skip symlinks that lead to a directory
+  that has already been listed. This prevents a severe performance regression on
+  MacOS and Linux when there are more than a few symlink loops.
 - Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
   the file was created immediately before the watcher was created. Now, if the
   file exists when the watcher is created then this modify event is not sent.
