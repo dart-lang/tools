@@ -8,13 +8,15 @@
 /// Programming errors and I/O exceptions are not covered.
 abstract interface class PackageConfigError {}
 
-class PackageConfigArgumentError(
+class PackageConfigArgumentError extends ArgumentError
+  implements PackageConfigError {
+ 
+  new( // Cannot be primary, `.from` cannot redirect to these types.
     Object? super.value,
     String super.name,
     String super.message,
-) extends ArgumentError.value()
-  implements PackageConfigError {
-
+  ) : super.value(); 
+    
   new from(ArgumentError error)
     : super.value(error.invalidValue, error.name, error.message);
 }
@@ -27,7 +29,7 @@ class PackageConfigFormatException(
      implements PackageConfigError {
 
   new from(FormatException exception)
-    : super(exception.message, exception.source, exception.offset);
+    : this(exception.message, exception.source, exception.offset);
 }
 
 /// The default `onError` handler.
