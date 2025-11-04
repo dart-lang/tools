@@ -29,7 +29,7 @@ class PackageConfigFormatException(
      implements PackageConfigError {
 
   new from(FormatException exception)
-    : this(exception.message, exception.source, exception.offset);
+    : super.value(exception.message, exception.source, exception.offset);
 }
 
 /// The default `onError` handler.
