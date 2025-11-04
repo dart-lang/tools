@@ -12,7 +12,8 @@ class PackageConfigArgumentError(
     Object? super.value,
     String super.name,
     String super.message,
-) extends ArgumentError.value() {
+) extends ArgumentError.value()
+  implements PackageConfigError {
 
   new from(ArgumentError error)
     : super.value(error.invalidValue, error.name, error.message);
@@ -22,7 +23,8 @@ class PackageConfigFormatException(
     super.message,
     Object? super.source, [
     super.offset,
-  ]) extends FormatException {
+  ]) extends FormatException
+     implements PackageConfigError {
 
   new from(FormatException exception)
     : super(exception.message, exception.source, exception.offset);
