@@ -31,6 +31,8 @@ extension DirectoryRobustRecursiveListing on Directory {
   /// A link to a directory is only followed if the link target is not currently
   /// being traversed. For this check, directories are compared using their
   /// symlink-resolved paths.
+  ///
+  /// Skipped links to directories are not mentioned in the directory listing.
   Stream<FileSystemEntity> listRecursively() =>
       _DirectoryTraversal(this).listRecursively();
 }
