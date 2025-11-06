@@ -195,6 +195,9 @@ class _WindowsDirectoryWatcher
   }
 
   /// The callback that's run when [Directory.watch] emits a batch of events.
+  ///
+  /// This method must be fully synchronous or there will be races with ongoing
+  /// newdirectory lists updating `_files`.
   void _onBatch(List<Event> batch) {
     _sortEvents(batch).forEach((path, eventSet) {
       var canonicalEvent = _canonicalEvent(eventSet);
