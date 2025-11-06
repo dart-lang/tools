@@ -10,6 +10,9 @@
   the file was created immediately before the watcher was created. Now, if the
   file exists when the watcher is created then this modify event is not sent.
   This matches the Linux native and polling (Windows) watchers.
+- Bug fix: with `DirectoryWatcher` on Windows, the last of a rapid sequence of
+  modifications in a newly-created directory was sometimes dropped. Make it
+  reliably report the last modification.
 - Bug fix: with `DirectoryWatcher` on Windows, a move over an existing file was
   reported incorrectly. For example, if `a` and `b` already exist, then `a` is
   moved onto `b`, it would be reported as three events: delete `a`, delete `b`,

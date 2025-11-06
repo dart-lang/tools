@@ -321,7 +321,16 @@ class _WindowsDirectoryWatcher
         types.contains(EventType.createFile)) {
       // Combine events of type [EventType.modifyFile] and
       // [EventType.createFile] to one event.
-      type = EventType.createFile;
+
+      // The file can be already in `_files` if it's in a recently-created
+      // directory, the directory list finds it and adds it. In that case a pair
+      // of "create"+"modify" should be reported as "modify".
+      //
+      // Otherwise, it's a new file, "create"+"modify" should be reported as
+      // "create".
+      type = _files.contains(batch.first.path)
+          ? EventType.modifyFile
+          : EventType.createFile;
     } else {
       // There are incompatible event types, check the filesystem.
       return null;
