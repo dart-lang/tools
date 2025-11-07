@@ -57,10 +57,6 @@ void endToEndTests({required bool isNative}) {
           print('Ignoring expected failure for Linux native watcher.');
           return;
         }
-        if (Platform.isWindows && isNative) {
-          print('Ignoring expected failure for Windows native watcher.');
-          return;
-        }
 
         // Write the file operations before the failure to a log, fail the test.
         final logTemp = Directory.systemTemp.createTempSync();
