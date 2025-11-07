@@ -91,6 +91,20 @@ YamlNode getKeyNode(YamlMap map, Object? key) {
   return map.nodes.keys.firstWhere((node) => deepEquals(node, key)) as YamlNode;
 }
 
+/// Returns the entry associated with a [mapKey] and its index in the [map].
+({int index, YamlNode keyNode, YamlNode valueNode}) getYamlMapEntry(
+  YamlMap map,
+  Object? mapKey,
+) {
+  for (final (index, MapEntry(:key, :value)) in map.nodes.entries.indexed) {
+    if (deepEquals(key, mapKey)) {
+      return (index: index, keyNode: key, valueNode: value);
+    }
+  }
+
+  throw YamlException('$mapKey not found in map', map.span);
+}
+
 /// Returns the [YamlNode] after the [YamlNode] corresponding to the provided
 /// [key].
 YamlNode? getNextKeyNode(YamlMap map, Object? key) {

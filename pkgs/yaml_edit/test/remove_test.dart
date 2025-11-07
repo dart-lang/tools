@@ -241,6 +241,25 @@ dev_dependencies:
   retry:''');
       doc.remove(['dev_dependencies', 'retry']);
     });
+
+    test('Removes node with preceding block scalar', () {
+      final doc = YamlEditor('''
+key: >+
+  folded with keep chomping
+
+target-key: value # Comment
+                    # Comment
+next: value
+''');
+
+      doc.remove(['target-key']);
+      expect(doc.toString(), '''
+key: >+
+  folded with keep chomping
+
+next: value
+''');
+    });
   });
 
   group('flow map', () {
@@ -563,6 +582,65 @@ b:
           'c': 'd'
         }
       ]);
+    });
+
+    test('Removes comments that may interfere with block scalar', () {
+      final doc = YamlEditor('''
+- >+
+  folded keep chomp
+
+- - - |+ # Nested
+        literal keep chomp
+
+  - value # May interfere
+            # With block node
+
+- top # With
+          # Funky
+
+      # Comments
+
+      # Comment
+''');
+
+      doc.remove([1, 1]);
+
+      expect(doc.toString(), '''
+- >+
+  folded keep chomp
+
+- - - |+ # Nested
+        literal keep chomp
+
+- top # With
+          # Funky
+
+      # Comments
+
+      # Comment
+''');
+
+      doc.remove([1]);
+
+      expect(doc.toString(), '''
+- >+
+  folded keep chomp
+
+- top # With
+          # Funky
+
+      # Comments
+
+      # Comment
+''');
+
+      doc.remove([1]);
+
+      expect(doc.toString(), '''
+- >+
+  folded keep chomp
+
+''');
     });
   });
 

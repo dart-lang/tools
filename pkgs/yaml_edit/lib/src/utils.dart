@@ -2,10 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math';
+
 import 'package:source_span/source_span.dart';
 import 'package:yaml/yaml.dart';
 
 import 'editor.dart';
+import 'source_edit.dart';
 import 'wrap.dart';
 
 /// Invoke [fn] while setting [yamlWarningCallback] to [warn], and restore
@@ -271,6 +274,312 @@ String getLineEnding(String yaml) {
   }
 
   return windowsNewlines > unixNewlines ? '\r\n' : '\n';
+}
+
+final _nonSpaceMatch = RegExp(r'[^ \t]');
+
+/// Skip empty lines and returns the offset of the last possible line ending
+/// only if the [offset] is a valid offset within the [yaml] string that
+/// points to first line ending.
+int indexOfLastLineEnding(String yaml, int offset) {
+  if (yaml.isEmpty || offset == -1) return yaml.length;
+
+  final lastOffset = yaml.length - 1;
+  var currentOffset = min(offset, lastOffset);
+
+  if (yaml[currentOffset] case '\r' || '\n') {
+    var lineEndingIndex = currentOffset;
+    ++currentOffset;
+
+    scanner:
+    while (currentOffset <= lastOffset) {
+      switch (yaml[currentOffset]) {
+        case ' ' || '\t':
+          {
+            currentOffset = yaml.indexOf(_nonSpaceMatch, currentOffset);
+
+            // We scanned till the end of the string and found nothing.
+            if (currentOffset == -1) {
+              lineEndingIndex = lastOffset;
+              break scanner;
+            }
+          }
+
+        case '\r' || '\n':
+          {
+            lineEndingIndex = currentOffset;
+            ++currentOffset;
+          }
+
+        default:
+          break scanner;
+      }
+    }
+
+    return lineEndingIndex;
+  }
+
+  return currentOffset;
+}
+
+/// Backtracks from the [start] offset and looks for the nearest character
+/// that is not a separation space (tab/space) that can be used to declare a
+/// nested compact block map
+///
+/// ```yaml
+/// # In a block list
+/// - key: value
+///   next: value
+///
+/// ---
+/// # In an explicit key and its value
+///
+/// ? key: value
+///   next: value
+/// : key: value
+///   next: value
+/// ```
+///
+/// If a line feed `\n` is encountered first then `compactCharOffset` defaults
+/// to -1. Otherwise, only returns a non-negative `compactCharOffset` if
+/// `?`, `-` or `:` were seen.
+({int compactCharOffset, int lineEndingIndex}) indexOfCompactChar(
+  String yaml,
+  int start,
+) {
+  var startOffset = max(0, start - 1);
+
+  scanner:
+  while (true) {
+    switch (yaml[startOffset]) {
+      // This is either indent or separation space
+      case ' ' || '\t':
+        {
+          startOffset = yaml.lastIndexOf(_nonSpaceMatch, startOffset);
+          if (startOffset == -1) break scanner;
+        }
+
+      case '\r' || '\n':
+        return (compactCharOffset: -1, lineEndingIndex: startOffset);
+
+      /// Block sequences and explicit keys/values can be used to declare block
+      /// maps in a compact-inline notation.
+      ///
+      /// - a: b
+      ///   c: d
+      ///
+      /// OR as an explicit key with its explicit value
+      ///
+      /// ? a: b
+      ///   c: d
+      /// : e: f
+      ///   g: h
+      ///
+      /// See "Example 8.19 Compact Block Mappings" at
+      /// https://yaml.org/spec/1.2.2/#822-block-mappings
+      case '-' || '?' || ':':
+        return (compactCharOffset: startOffset, lineEndingIndex: -1);
+
+      default:
+        break scanner;
+    }
+  }
+
+  return (compactCharOffset: -1, lineEndingIndex: -1);
+}
+
+typedef NextBlockNodeInfo = ({int nearestLineEnding, int nextNodeColStart});
+typedef BlockNodeOffset = ({int start, int end});
+
+/// Removes a block entry and its line ending from a [blockCollection] using the
+/// [nodeToRemoveOffset] provided. Any trailing comments are also removed.
+///
+/// If [blockCollection] is a [YamlMap], the chunk removed corresponds to the
+/// key-value pair represented by the offset. If [blockCollection] is a
+/// [YamlList], the chunk represents a single element within the list.
+///
+/// [nextBlockNodeInfo] is only called if the [blockCollection] has at least
+/// 2 entries and the entry being removed is not the last entry in the
+/// collection.
+SourceEdit removeBlockCollectionEntry(
+  String yaml, {
+  required YamlNode blockCollection,
+  required bool isFirstEntry,
+  required bool isSingleEntry,
+  required bool isLastEntry,
+  required BlockNodeOffset nodeToRemoveOffset,
+  required String lineEnding,
+  required NextBlockNodeInfo Function() nextBlockNodeInfo,
+}) {
+  final isBlockList = blockCollection is YamlList;
+
+  assert(
+    isBlockList || blockCollection is YamlMap,
+    'Expected a block map/list',
+  );
+
+  var makeNextNodeCompact = false;
+  var (:start, :end) = nodeToRemoveOffset;
+
+  if (start != 0 && !isSingleEntry) {
+    /// Try making it compact in case the collection's parent is a:
+    ///   - block sequence
+    ///   - explicit key
+    ///   - explicit key's explicit value.
+    if (isFirstEntry) {
+      final (:compactCharOffset, :lineEndingIndex) = indexOfCompactChar(
+        yaml,
+        start,
+      );
+
+      if (compactCharOffset != -1) {
+        start = compactCharOffset + 2; // Skip separation space.
+        makeNextNodeCompact = true;
+      } else {
+        start = lineEndingIndex + 1;
+      }
+    } else {
+      /// If not possible, just consume this node's indent. This prevents this
+      /// node from interfering with the next node.
+      start = yaml.lastIndexOf('\n', start) + 1;
+    }
+  }
+
+  var replacement = '';
+
+  // Skip empty lines to the last line break
+  end = indexOfLastLineEnding(yaml, yaml.indexOf('\n', end - 1));
+  end = min(++end, yaml.length); // Mark it for removal
+
+  if (isSingleEntry) {
+    /// Take back the last line ending even if multiple were skipped. This node
+    /// is sandwiched between other elements not in this map.
+    if (end < yaml.length - 1) {
+      end -= lineEnding == '\r\n' ? 2 : 1;
+    }
+
+    replacement = isBlockList ? '[]' : '{}';
+  } else if (!isLastEntry) {
+    final (:nearestLineEnding, :nextNodeColStart) = nextBlockNodeInfo();
+    final trueEndOffset = end - 1;
+
+    /// Make compact only if we are pointing to same line break from different
+    /// node extremes. This can only be true if we are removing the first
+    /// entry.
+    ///
+    /// ** For block lists **
+    ///
+    /// [*] Before:
+    ///
+    /// - - value
+    ///   - next
+    ///
+    /// [*] After:
+    ///
+    /// - - next
+    ///
+    /// ** For block maps **
+    ///
+    /// [*] Before:
+    ///
+    /// - key: value
+    ///   next: value
+    ///
+    /// [*] After:
+    ///
+    /// - next: value
+    if (makeNextNodeCompact) {
+      /// Leaving comments here has no effect since we are removing the first
+      /// entry of the collection. The next node will be the first. However, the
+      /// inline comment hugging the outermost node in the current line will be
+      /// consumed.
+      ///
+      /// ** For Block Lists **
+      ///
+      /// [*] Before:
+      ///
+      /// - - value # Comment
+      ///             # Next Comment
+      ///   - next
+      ///
+      /// [*] After:
+      ///
+      /// -           # Next Comment
+      ///   - next
+      ///
+      /// ** For Block Maps **
+      ///
+      /// [*] Before:
+      ///
+      /// - key: value # Comment
+      ///                 # Next Comment
+      ///   next: value
+      ///
+      /// [*] After:
+      ///
+      /// -               # Next Comment
+      ///   next-key: value
+      end = nearestLineEnding == trueEndOffset ? end + nextNodeColStart : end;
+    } else if (nearestLineEnding != trueEndOffset) {
+      /// We shouldn't assume the string will always have a flow node. Edits
+      /// may be made to a YAML string which declared block scalars initially.
+      /// Better safe than sorry.
+      ///
+      /// Truncate any dangling comments which may change the structure of
+      /// existing nodes. We must point to the same offset after every empty
+      /// line has been skipped. Mimic (intelligently) what the parser does
+      /// with lexing.
+      ///
+      /// ** For Block Lists **
+      ///
+      /// [*] Before:
+      ///
+      ///   - >+
+      ///     folded keep
+      ///
+      ///   - target # Comment
+      ///              # Next Comment
+      ///                # Another Comment
+      ///   - next
+      ///
+      /// [*] After:
+      ///
+      ///   - >+
+      ///     folded keep
+      ///
+      ///   - next
+      ///
+      /// ** For Block Maps **
+      ///
+      /// [*] Before:
+      ///
+      ///   key: >+
+      ///     value
+      ///
+      ///   target-key: value # Comment
+      ///                       # Next Comment
+      ///                         # Another Comment
+      ///
+      ///   next: here
+      ///
+      /// [*] After:
+      ///
+      ///   key: >+
+      ///     value
+      ///
+      ///   next: here
+      ///
+      /// We preserved the string's meaning without much effort.
+      end = nearestLineEnding + 1;
+    }
+  } else {
+    end = max(
+      yaml.lastIndexOf('\n', blockCollection.span.end.offset) + 1,
+      end,
+    );
+  }
+
+  return SourceEdit(start, end - start, replacement);
 }
 
 extension YamlNodeExtension on YamlNode {
