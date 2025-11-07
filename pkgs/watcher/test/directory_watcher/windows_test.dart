@@ -15,6 +15,7 @@ import 'package:watcher/src/directory_watcher/windows.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
+import 'end_to_end_tests.dart';
 import 'file_tests.dart';
 import 'link_tests.dart';
 
@@ -23,6 +24,7 @@ void main() {
 
   fileTests(isNative: true);
   linkTests(isNative: true);
+  endToEndTests(isNative: true);
 
   test('DirectoryWatcher creates a WindowsDirectoryWatcher on Windows', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<WindowsDirectoryWatcher>());
