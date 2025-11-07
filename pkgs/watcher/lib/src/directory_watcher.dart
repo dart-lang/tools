@@ -8,7 +8,7 @@ import '../watcher.dart';
 import 'custom_watcher_factory.dart';
 import 'directory_watcher/linux.dart';
 import 'directory_watcher/mac_os.dart';
-import 'directory_watcher/windows.dart';
+import 'directory_watcher/windows_resubscribable_watcher.dart';
 
 /// Watches the contents of a directory and emits [WatchEvent]s when something
 /// in the directory has changed.
@@ -20,6 +20,8 @@ import 'directory_watcher/windows.dart';
 /// the message "Directory watcher closed unexpectedly" on the event stream. The
 /// code using the watcher needs to do additional work to account for the
 /// dropped events, for example by recomputing interesting files from scratch.
+/// By default, the watcher is started in a separate isolate to make this less
+/// likely. Pass `runInIsolateOnWindows = false` to not launch an isolate.
 ///
 /// On Linux, the underlying SDK `Directory.watch` fails if the system limit on
 /// watchers has been reached. If this happens the SDK exception is thrown, it
@@ -40,7 +42,11 @@ abstract class DirectoryWatcher implements Watcher {
   /// shorter will give more immediate feedback at the expense of doing more IO
   /// and higher CPU usage. Defaults to one second. Ignored for non-polling
   /// watchers.
-  factory DirectoryWatcher(String directory, {Duration? pollingDelay}) {
+  ///
+  /// On Windows, pass [runInIsolateOnWindows] `false` to not run the watcher
+  /// in a separate isolate to reduce buffer exhaustion failures.
+  factory DirectoryWatcher(String directory,
+      {Duration? pollingDelay, bool runInIsolateOnWindows = true}) {
     if (FileSystemEntity.isWatchSupported) {
       var customWatcher = createCustomDirectoryWatcher(
         directory,
@@ -49,7 +55,10 @@ abstract class DirectoryWatcher implements Watcher {
       if (customWatcher != null) return customWatcher;
       if (Platform.isLinux) return LinuxDirectoryWatcher(directory);
       if (Platform.isMacOS) return MacOSDirectoryWatcher(directory);
-      if (Platform.isWindows) return WindowsDirectoryWatcher(directory);
+      if (Platform.isWindows) {
+        return WindowsDirectoryWatcher(directory,
+            runInIsolate: runInIsolateOnWindows);
+      }
     }
     return PollingDirectoryWatcher(directory, pollingDelay: pollingDelay);
   }
