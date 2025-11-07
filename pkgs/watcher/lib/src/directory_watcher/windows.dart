@@ -13,7 +13,6 @@ import '../directory_watcher.dart';
 import '../event.dart';
 import '../path_set.dart';
 import '../resubscribable.dart';
-import '../utils.dart';
 import '../watch_event.dart';
 import 'directory_list.dart';
 
@@ -26,22 +25,29 @@ class WindowsDirectoryWatcher extends ResubscribableWatcher
       : super(directory, () => _WindowsDirectoryWatcher(directory));
 }
 
-class _EventBatcher {
-  static const Duration _batchDelay = Duration(milliseconds: 100);
-  final List<Event> events = [];
-  Timer? timer;
-
-  void addEvent(Event event, void Function() callback) {
-    events.add(event);
-    timer?.cancel();
-    timer = Timer(_batchDelay, callback);
-  }
-
-  void cancelTimer() {
-    timer?.cancel();
-  }
-}
-
+/// Windows directory watcher.
+///
+/// On Windows the OS file change notifications do not include whether the
+/// file system entity is a directory. So, the Dart VM checks the filesystem
+/// after the event is received to get the type. This leads to the `isDirectory`
+/// value being unreliable in two important ways.
+///
+/// 1. If the event is about a filesystem entity that gets deleted immediately
+/// after the event then the Dart VM finds nothing and just reports
+/// `false` for `isDirectory`.
+///
+/// 2. If the event is about a newly-created link to a directory then the file
+/// system entity type changes during creation from directory to link. The Dart
+/// VM entity type check races with this, and the VM reports a random value for
+/// `isDirectory`. See: https://github.com/dart-lang/sdk/issues/61797
+///
+/// To deal with both, `isDirectory` is discarded and the filesystem is checked
+/// again after a sufficient delay to allow directory symlink creation to
+/// finish.
+///
+/// On my machine, the test failure rate due to the type drops from 150/1000
+/// at 900us to 0/10000 at 1000us. So, 1000us = 1ms is sufficient. Use 5ms to
+/// give a margin for error for different machine performance and load.
 class _WindowsDirectoryWatcher
     implements DirectoryWatcher, ManuallyClosedWatcher {
   @override
@@ -60,8 +66,8 @@ class _WindowsDirectoryWatcher
   Future<void> get ready => _readyCompleter.future;
   final _readyCompleter = Completer<void>();
 
-  final Map<String, _EventBatcher> _eventBatchers =
-      HashMap<String, _EventBatcher>();
+  final Map<String, _PendingPoll> _pendingPolls =
+      HashMap<String, _PendingPoll>();
 
   /// The set of files that are known to exist recursively within the watched
   /// directory.
@@ -108,10 +114,10 @@ class _WindowsDirectoryWatcher
       sub.cancel();
     }
     _listSubscriptions.clear();
-    for (var batcher in _eventBatchers.values) {
-      batcher.cancelTimer();
+    for (var pendingPoll in _pendingPolls.values) {
+      pendingPoll.cancelTimer();
     }
-    _eventBatchers.clear();
+    _pendingPolls.clear();
     _watchSubscription = null;
     _parentWatchSubscription = null;
     _initialListSubscription = null;
@@ -167,194 +173,111 @@ class _WindowsDirectoryWatcher
 
   void _onEvent(FileSystemEvent fileSystemEvent) {
     assert(isReady);
-    final event = Event.checkAndConvert(fileSystemEvent);
+    var event = Event.checkAndConvert(fileSystemEvent);
     if (event == null) return;
-    if (event.type == EventType.moveFile) {
-      _batchEvent(Event.delete(event.path));
-      final destination = event.destination;
-      if (destination != null) {
-        _batchEvent(Event.createFile(destination));
-      }
-    } else if (event.type == EventType.moveDirectory) {
-      _batchEvent(Event.delete(event.path));
-      final destination = event.destination;
-      if (destination != null) {
-        _batchEvent(Event.createDirectory(destination));
-      }
-    } else {
-      _batchEvent(event);
+
+    _schedulePoll(event.path,
+        created: event.type == EventType.createFile ||
+            event.type == EventType.createDirectory,
+        modified: event.type == EventType.modifyFile ||
+            event.type == EventType.modifyDirectory,
+        deleted: event.type == EventType.delete,
+        movedOnto: false);
+    final destination = event.destination;
+    if (destination != null) {
+      _schedulePoll(destination,
+          created: false, modified: false, deleted: false, movedOnto: true);
     }
   }
 
-  void _batchEvent(Event event) {
-    final batcher = _eventBatchers.putIfAbsent(event.path, _EventBatcher.new);
-    batcher.addEvent(event, () {
-      _eventBatchers.remove(event.path);
-      _onBatch(batcher.events);
-    });
+  void _schedulePoll(String path,
+      {required bool created,
+      required bool modified,
+      required bool deleted,
+      required bool movedOnto}) {
+    final pendingPoll =
+        _pendingPolls.putIfAbsent(path, () => _PendingPoll(path));
+    pendingPoll.startOrReset(() => _poll(pendingPoll),
+        created: created,
+        modified: modified,
+        deleted: deleted,
+        movedOnto: movedOnto);
   }
 
-  /// The callback that's run when [Directory.watch] emits a batch of events.
-  void _onBatch(List<Event> batch) {
-    _sortEvents(batch).forEach((path, eventSet) {
-      var canonicalEvent = _canonicalEvent(eventSet);
-      var events = canonicalEvent == null
-          ? _eventsBasedOnFileSystem(path)
-          : [canonicalEvent];
+  /// Polls for the path specified by [poll] and emits events for any changes.
+  void _poll(_PendingPoll poll) {
+    final path = poll.path;
+    final events = _eventsBasedOnFileSystem(path,
+        // A modification can be reported due to a modification event, a
+        // create+delete together, or if the path is a move destination.
+        // The important case where the file is present, an event arrives
+        // for the file and a modification is _not_ reported is when the file
+        // was already discovered by listing a new directory, then the "add"
+        // event for it is processed afterwards.
+        reportNoChangeAsModification:
+            poll.modified || (poll.created && poll.deleted) || poll.movedOnto);
 
-      for (var event in events) {
-        switch (event.type) {
-          case EventType.createFile:
-            if (_files.contains(path)) continue;
-            _emitEvent(ChangeType.ADD, path);
-            _files.add(path);
+    for (final event in events) {
+      switch (event.type) {
+        case EventType.createFile:
+          _emitEvent(ChangeType.ADD, path);
+          _files.add(path);
 
-          case EventType.createDirectory:
-            if (_files.containsDir(path)) continue;
+        case EventType.createDirectory:
+          final stream = Directory(path).listRecursivelyIgnoringErrors();
+          final subscription = stream.listen((entity) {
+            if (entity is Directory) return;
+            if (_files.contains(entity.path)) return;
 
-            // "Path not found" can be caused by creating then quickly removing
-            // a directory: continue without reporting an error. Nested files
-            // that get removed during the `list` are already ignored by `list`
-            // itself, so there are no other types of "path not found" that
-            // might need different handling here.
-            var stream = Directory(path).listRecursivelyIgnoringErrors();
-            var subscription = stream.listen((entity) {
-              if (entity is Directory) return;
-              if (_files.contains(entity.path)) return;
+            _emitEvent(ChangeType.ADD, entity.path);
+            _files.add(entity.path);
+          }, cancelOnError: true);
+          subscription.onDone(() {
+            _listSubscriptions.remove(subscription);
+          });
+          subscription.onError((Object e, StackTrace stackTrace) {
+            _listSubscriptions.remove(subscription);
+            _emitError(e, stackTrace);
+          });
+          _listSubscriptions.add(subscription);
 
-              _emitEvent(ChangeType.ADD, entity.path);
-              _files.add(entity.path);
-            }, cancelOnError: true);
-            subscription.onDone(() {
-              _listSubscriptions.remove(subscription);
-            });
-            subscription.onError((Object e, StackTrace stackTrace) {
-              _listSubscriptions.remove(subscription);
-              _emitError(e, stackTrace);
-            });
-            _listSubscriptions.add(subscription);
+        case EventType.modifyFile:
+          _emitEvent(ChangeType.MODIFY, path);
 
-          case EventType.modifyFile:
-            _emitEvent(ChangeType.MODIFY, path);
+        case EventType.delete:
+          for (final removedPath in _files.remove(path)) {
+            _emitEvent(ChangeType.REMOVE, removedPath);
+          }
 
-          case EventType.delete:
-            for (var removedPath in _files.remove(path)) {
-              _emitEvent(ChangeType.REMOVE, removedPath);
-            }
-
-          // Move events are removed by `_onEvent` and never returned by
-          // `_eventsBasedOnFileSystem`.
-          case EventType.moveFile:
-          case EventType.moveDirectory:
-            throw StateError(event.type.name);
-
-          // Dropped by [Event.checkAndConvert].
-          case EventType.modifyDirectory:
-            assert(event.type.isIgnoredOnWindows);
-        }
-      }
-    });
-  }
-
-  /// Sort all the events in a batch into sets based on their path.
-  Map<String, Set<Event>> _sortEvents(List<Event> batch) {
-    var eventsForPaths = <String, Set<Event>>{};
-
-    // On Windows new links to directories are sometimes reported by
-    // Directory.watch as directories. On all other platforms it reports them
-    // consistently as files. See https://github.com/dart-lang/sdk/issues/61797.
-    //
-    // The wrong type is because Windows creates links to directories as actual
-    // directories, then converts them to links. Directory.watch sometimes
-    // checks the type too early and gets the wrong result.
-    //
-    // The batch delay is plenty for the link to be fully created, so verify the
-    // file system entity type for all createDirectory` events, converting to
-    // `createFile` when needed.
-    for (var i = 0; i != batch.length; ++i) {
-      final event = batch[i];
-      if (event.type == EventType.createDirectory) {
-        if (FileSystemEntity.typeSync(event.path, followLinks: false) ==
-            FileSystemEntityType.link) {
-          batch[i] = Event.createFile(event.path);
-        }
+        // Never returned by `_eventsBasedOnFileSystem`.
+        case EventType.moveFile:
+        case EventType.moveDirectory:
+        case EventType.modifyDirectory:
+          throw StateError(event.type.name);
       }
     }
-
-    // Events within directories that already have create events are not needed
-    // as the directory's full content will be listed.
-    var createdDirectories = unionAll(batch.map((event) {
-      return event.type == EventType.createDirectory
-          ? {event.path}
-          : const <String>{};
-    }));
-
-    bool isInCreatedDirectory(String path) =>
-        createdDirectories.any((dir) => path != dir && p.isWithin(dir, path));
-
-    void addEvent(String path, Event event) {
-      if (isInCreatedDirectory(path)) return;
-      eventsForPaths.putIfAbsent(path, () => <Event>{}).add(event);
-    }
-
-    for (var event in batch) {
-      addEvent(event.path, event);
-    }
-
-    return eventsForPaths;
-  }
-
-  /// Returns the canonical event from a batch of events on the same path, or
-  /// `null` to indicate that the filesystem should be checked.
-  Event? _canonicalEvent(Set<Event> batch) {
-    // If the batch is empty, return `null`.
-    if (batch.isEmpty) return null;
-
-    // Resolve the event type for the batch.
-    var types = batch.map((e) => e.type).toSet();
-    EventType type;
-    if (types.length == 1) {
-      // There's only one event.
-      type = types.single;
-    } else if (types.length == 2 &&
-        types.contains(EventType.modifyFile) &&
-        types.contains(EventType.createFile)) {
-      // Combine events of type [EventType.modifyFile] and
-      // [EventType.createFile] to one event.
-
-      // The file can be already in `_files` if it's in a recently-created
-      // directory, the directory list finds it and adds it. In that case a pair
-      // of "create"+"modify" should be reported as "modify".
-      //
-      // Otherwise, it's a new file, "create"+"modify" should be reported as
-      // "create".
-      type = _files.contains(batch.first.path)
-          ? EventType.modifyFile
-          : EventType.createFile;
-    } else {
-      // There are incompatible event types, check the filesystem.
-      return null;
-    }
-
-    return batch.firstWhere((e) => e.type == type);
   }
 
   /// Returns zero or more events that describe the change between the last
   /// known state of [path] and its current state on the filesystem.
   ///
   /// This returns a list whose order should be reflected in the events emitted
-  /// to the user, unlike the batched events from [Directory.watch]. The
-  /// returned list may be empty, indicating that no changes occurred to [path]
-  /// (probably indicating that it was created and then immediately deleted).
-  List<Event> _eventsBasedOnFileSystem(String path) {
+  /// to the user, unlike the batched events from [Directory.watch].
+  ///
+  /// [reportNoChangeAsModification] determines whether to report a modification
+  /// if there was a file at [path] and there is still a file at [path].
+  List<Event> _eventsBasedOnFileSystem(String path,
+      {required bool reportNoChangeAsModification}) {
     var fileExisted = _files.contains(path);
     var dirExisted = _files.containsDir(path);
 
     bool fileExists;
     bool dirExists;
     try {
-      fileExists = File(path).existsSync();
-      dirExists = Directory(path).existsSync();
+      final type = FileSystemEntity.typeSync(path, followLinks: false);
+      fileExists = type == FileSystemEntityType.file ||
+          type == FileSystemEntityType.link;
+      dirExists = type == FileSystemEntityType.directory;
     } on FileSystemException {
       return const <Event>[];
     }
@@ -362,7 +285,7 @@ class _WindowsDirectoryWatcher
     var events = <Event>[];
     if (fileExisted) {
       if (fileExists) {
-        events.add(Event.modifyFile(path));
+        if (reportNoChangeAsModification) events.add(Event.modifyFile(path));
       } else {
         events.add(Event.delete(path));
       }
@@ -414,10 +337,7 @@ class _WindowsDirectoryWatcher
           onDone: _onDone,
         );
       },
-      _restartWatchOnOverflowOr((error, stackTrace) {
-        // ignore: only_throw_errors
-        throw error;
-      }),
+      _restartWatchOnOverflowOr(Error.throwWithStackTrace),
     );
   }
 
@@ -476,5 +396,47 @@ class _WindowsDirectoryWatcher
     }
     _eventsController.addError(error, stackTrace);
     close();
+  }
+}
+
+/// A pending poll of a path.
+///
+/// Holds the union of the types of events that were received for the path while
+/// waiting to do the poll.
+class _PendingPoll {
+  // See _WindowsDirectoryWatcher class comment for why 5ms.
+  static const Duration _batchDelay = Duration(milliseconds: 5);
+
+  final String path;
+  bool created = false;
+  bool modified = false;
+  bool deleted = false;
+  bool movedOnto = false;
+
+  Timer? timer;
+
+  _PendingPoll(this.path);
+
+  /// Starts or resets the poll timer.
+  ///
+  /// [function] will be called if the timer completes.
+  ///
+  /// ORs [created], [modified], [deleted] and [movedOnto] into the poll
+  /// state.
+  void startOrReset(void Function() function,
+      {required bool created,
+      required bool modified,
+      required bool deleted,
+      required bool movedOnto}) {
+    this.created |= created;
+    this.modified |= modified;
+    this.deleted |= deleted;
+    this.movedOnto |= movedOnto;
+    timer?.cancel();
+    timer = Timer(_batchDelay, function);
+  }
+
+  void cancelTimer() {
+    timer?.cancel();
   }
 }
