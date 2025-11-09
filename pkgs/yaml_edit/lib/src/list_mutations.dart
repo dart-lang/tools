@@ -332,7 +332,7 @@ SourceEdit _removeFromBlockList(
 
       final hyphenOffset = yaml.lastIndexOf(
         '-',
-        span.length == 0 ? offset : offset - 1,
+        nextNodeSpan.length == 0 ? offset : offset - 1,
       );
 
       final nearestLineEnding = yaml.lastIndexOf('\n', hyphenOffset);
