@@ -212,9 +212,6 @@ class _LinuxDirectoryWatcher
   /// [files] and [dirs].
   void _applyChanges(Set<String> files, Set<String> dirs, Set<String> changed) {
     for (var path in changed) {
-      var stream = _subdirStreams.remove(path);
-      if (stream != null) _nativeEvents.add(stream);
-
       // Unless [path] was a file and still is, emit REMOVE events for it or its
       // contents,
       if (files.contains(path) && _files.contains(path)) continue;
