@@ -20,6 +20,11 @@ import 'directory_watcher/windows.dart';
 /// the message "Directory watcher closed unexpectedly" on the event stream. The
 /// code using the watcher needs to do additional work to account for the
 /// dropped events, for example by recomputing interesting files from scratch.
+///
+/// On Linux, the underlying SDK `Directory.watch` fails if the system limit on
+/// watchers has been reached. If this happens the SDK exception is thrown, it
+/// is a `FileSystemException` with message `Failed to watch path` and
+/// OSError `No space left on device`, `errno = 28`.
 abstract class DirectoryWatcher implements Watcher {
   /// The directory whose contents are being monitored.
   @Deprecated('Expires in 1.0.0. Use DirectoryWatcher.path instead.')

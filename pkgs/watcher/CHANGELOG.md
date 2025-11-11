@@ -26,6 +26,7 @@
   as files, matching the behavior of the Linux and MacOS watchers.
 - Bug fix: with `PollingDirectoryWatcher`, fix spurious modify event emitted
   because of a file delete during polling.
+- Document behavior on Linux if the system watcher limit is hit.
 
 ## 1.1.4
 
