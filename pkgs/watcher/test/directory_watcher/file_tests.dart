@@ -360,11 +360,12 @@ void _fileTests({required bool isNative}) {
       await expectAddEvent('a/b/file.txt');
 
       renameDir('a', 'c');
-      await expectRemoveEvent('a/b/file.txt');
-      await expectAddEvent('c/b/file.txt');
+      await inAnyOrder(
+          [isRemoveEvent('a/b/file.txt'), isAddEvent('c/b/file.txt')]);
 
-      writeFile('a/c/file2.txt');
-      await expectAddEvent('a/c/file2.txt');
+      writeFile('c/b/file2.txt');
+      await expectAddEvent('c/b/file2.txt');
+      await expectNoEvents();
     });
 
     test('subdirectory watching is robust against races', () async {

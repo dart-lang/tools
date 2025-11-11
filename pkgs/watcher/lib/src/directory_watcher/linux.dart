@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
 
 import '../directory_watcher.dart';
 import '../event.dart';
@@ -73,6 +74,7 @@ class _LinuxDirectoryWatcher
   _LinuxDirectoryWatcher(String path) : _files = PathSet(path) {
     _nativeEvents.add(Directory(path)
         .watch()
+        .fix(path)
         .transform(StreamTransformer.fromHandlers(handleDone: (sink) {
       // Handle the done event here rather than in the call to [_listen] because
       // [innerStream] won't close until we close the [StreamGroup]. However, if
@@ -141,7 +143,8 @@ class _LinuxDirectoryWatcher
     // Directory might no longer exist at the point where we try to
     // start the watcher. Simply ignore this error and let the stream
     // close.
-    var stream = Directory(path).watch().ignoring<PathNotFoundException>();
+    var stream =
+        Directory(path).watch().fix(path).ignoring<PathNotFoundException>();
     _subdirStreams[path] = stream;
     _nativeEvents.add(stream);
   }
@@ -300,5 +303,77 @@ class _LinuxDirectoryWatcher
       onDone?.call();
     }, cancelOnError: cancelOnError);
     _subscriptions.add(subscription);
+  }
+}
+
+final watcherPaths = <String, List<WatcherPath>>{};
+
+class WatcherPath {
+  void Function() kill;
+
+  WatcherPath(this.kill);
+}
+
+extension _FixStreamExtension on Stream<FileSystemEvent> {
+  Stream<FileSystemEvent> fix(String path) {
+    var killed = false;
+    watcherPaths.putIfAbsent(path, () => []);
+    watcherPaths[path]!.add(WatcherPath(() {
+      killed = true;
+    }));
+
+    return StreamTransformer<FileSystemEvent, FileSystemEvent>.fromHandlers(
+        handleData: (event, sink) {
+      if (killed) {
+        sink.close();
+        return;
+      }
+      // print('$event --> $path');
+      //print('Fix $event ${watcherPath.path}');
+      event = event.fixDirectory(path);
+
+      if (event is FileSystemDeleteEvent ||
+          (event.isDirectory && event is FileSystemMoveEvent)) {
+        final from = '${event.path}/';
+        for (final dir in watcherPaths.keys.toList()) {
+          if (dir == event.path || dir.startsWith(from)) {
+            final watcherPathses = watcherPaths.remove(dir)!;
+            //print('Kill $path');
+            for (final watcherPath in watcherPathses) {
+              watcherPath.kill();
+            }
+          }
+        }
+      }
+
+      sink.add(event.fixDirectory(path));
+    }, handleDone: (sink) {
+      sink.close();
+    }).bind(this);
+  }
+}
+
+extension _FixPathExtension on FileSystemEvent {
+  FileSystemEvent fixDirectory(String directory) {
+    final dirname = p.dirname(this.path);
+    if (dirname == directory) return this;
+
+    final basename = p.basename(this.path);
+    final path = p.join(directory, basename);
+
+    switch (type) {
+      case FileSystemEvent.create:
+        return FileSystemCreateEvent(path, isDirectory);
+      case FileSystemEvent.modify:
+        return FileSystemModifyEvent(
+            path, isDirectory, (this as FileSystemModifyEvent).contentChanged);
+      case FileSystemEvent.delete:
+        return FileSystemDeleteEvent(path, isDirectory);
+      case FileSystemEvent.move:
+        return FileSystemMoveEvent(
+            path, isDirectory, (this as FileSystemMoveEvent).destination);
+      default:
+        throw UnsupportedError('Unknown type $type');
+    }
   }
 }

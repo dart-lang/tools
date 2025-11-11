@@ -53,11 +53,6 @@ void endToEndTests({required bool isNative}) {
 
       // Verify for real and fail the test if still not consistent.
       if (!client.verify(log: true)) {
-        if (Platform.isLinux && isNative) {
-          print('Ignoring expected failure for Linux native watcher.');
-          return;
-        }
-
         // Write the file operations before the failure to a log, fail the test.
         final logTemp = Directory.systemTemp.createTempSync();
         final fileChangesLogPath = p.join(logTemp.path, 'changes.txt');
@@ -72,10 +67,5 @@ Files changes: $fileChangesLogPath
 Client log: $clientLogPath''');
       }
     }
-
-    if (Platform.isLinux && isNative) {
-      fail('Expected Linux native watcher failure, but test passed!');
-    }
-    // Can't expect the Windows failure as it does sometimes succeed.
   });
 }
