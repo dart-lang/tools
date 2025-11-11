@@ -497,12 +497,9 @@ void main() {
 
   test('should emit an if null index operator set', () {
     expect(
-      refer('bar')
-          .index(literalTrue)
-          .ifNullThen(literalFalse)
-          // ignore: deprecated_member_use_from_same_package
-          .assignVar('foo')
-          .statement,
+      refer(
+        'bar',
+      ).index(literalTrue).ifNullThen(literalFalse).assignVar('foo').statement,
       equalsDart('var foo = bar[true] ?? false;'),
     );
   });
@@ -516,7 +513,6 @@ void main() {
 
   test('should emit an index operator', () {
     expect(
-      // ignore: deprecated_member_use_from_same_package
       refer('bar').index(literalString('key')).assignVar('foo').statement,
       equalsDart("var foo = bar['key'];"),
     );
@@ -527,7 +523,6 @@ void main() {
       refer('bar')
           .index(literalString('key'))
           .assign(literalFalse)
-          // ignore: deprecated_member_use_from_same_package
           .assignVar('foo')
           .statement,
       equalsDart("var foo = bar['key'] = false;"),
@@ -539,7 +534,6 @@ void main() {
       refer('bar')
           .index(literalTrue)
           .assignNullAware(literalFalse)
-          // ignore: deprecated_member_use_from_same_package
           .assignVar('foo')
           .statement,
       equalsDart('var foo = bar[true] ??= false;'),
@@ -547,35 +541,22 @@ void main() {
   });
 
   test('should emit assigning to a var', () {
-    expect(
-      // ignore: deprecated_member_use_from_same_package
-      literalTrue.assignVar('foo'),
-      equalsDart('var foo = true'),
-    );
+    expect(literalTrue.assignVar('foo'), equalsDart('var foo = true'));
   });
 
   test('should emit assigning to a type', () {
     expect(
-      // ignore: deprecated_member_use_from_same_package
       literalTrue.assignVar('foo', refer('bool')),
       equalsDart('bool foo = true'),
     );
   });
 
   test('should emit assigning to a final', () {
-    expect(
-      // ignore: deprecated_member_use_from_same_package
-      literalTrue.assignFinal('foo'),
-      equalsDart('final foo = true'),
-    );
+    expect(literalTrue.assignFinal('foo'), equalsDart('final foo = true'));
   });
 
   test('should emit assigning to a const', () {
-    expect(
-      // ignore: deprecated_member_use_from_same_package
-      literalTrue.assignConst('foo'),
-      equalsDart('const foo = true'),
-    );
+    expect(literalTrue.assignConst('foo'), equalsDart('const foo = true'));
   });
 
   test('should emit await', () {
@@ -668,7 +649,6 @@ void main() {
 
   test('should emit an operator subtract call', () {
     expect(
-      // ignore: deprecated_member_use_from_same_package
       refer('foo').operatorSubstract(refer('foo2')),
       equalsDart('foo - foo2'),
     );
