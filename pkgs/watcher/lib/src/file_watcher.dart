@@ -20,7 +20,7 @@ import 'file_watcher/native.dart';
 /// On Linux, the underlying SDK `File.watch` fails if the system limit on
 /// watchers has been reached. If this happens the SDK exception is thrown, it
 /// is a `FileSystemException` with message `Failed to watch path` and
-/// OSError `No space left on device`, `errno = 28`.
+/// OSError `No space left on device`, `errorCode = 28`.
 abstract class FileWatcher implements Watcher {
   /// Creates a new [FileWatcher] monitoring [file].
   ///
