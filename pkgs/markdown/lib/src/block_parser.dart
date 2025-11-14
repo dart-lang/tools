@@ -59,7 +59,7 @@ class BlockParser {
   // TODO(kevmoo): this should be static const and private!
   // The fact that it's mutable is a BUG!
   @Deprecated('Implementation member. '
-      'Will be removed make static in the next release.')
+      'Will be removed or make static in the next release.')
   final List<BlockSyntax> standardBlockSyntaxes = [
     const EmptyBlockSyntax(),
     const HtmlBlockSyntax(),
