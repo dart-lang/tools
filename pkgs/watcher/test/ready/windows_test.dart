@@ -6,7 +6,7 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/windows.dart';
+import 'package:watcher/src/directory_watcher/windows_resubscribable_watcher.dart';
 
 import '../utils.dart';
 import 'shared.dart';
