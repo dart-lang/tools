@@ -11,7 +11,9 @@ import 'delimiter_syntax.dart';
 import 'footnote_ref_syntax.dart';
 
 /// A helper class holds params of link context.
-/// Footnote creation needs other info in [_tryCreateReferenceLink].
+// Footnote creation needs other info in [LinkSyntax._tryCreateReferenceLink].
+// TODO(kevmoo): this type should be private. Ideally a Record.
+@Deprecated('Implementation class that should not be used directly.')
 class LinkContext {
   final InlineParser parser;
   final SimpleDelimiter opener;
@@ -202,8 +204,8 @@ class LinkSyntax extends DelimiterSyntax {
 
   /// Parse a reference link label at the current position.
   ///
-  /// Specifically, [parser.pos] is expected to be pointing at the `[` which
-  /// opens the link label.
+  /// Specifically, [InlineParser.pos] is expected to be pointing at the
+  /// `[` which opens the link label.
   ///
   /// Returns the label if it could be parsed, or `null` if not.
   String? _parseReferenceLinkLabel(InlineParser parser) {
@@ -245,7 +247,8 @@ class LinkSyntax extends DelimiterSyntax {
   /// Parse an inline [InlineLink] at the current position.
   ///
   /// At this point, we have parsed a link's (or image's) opening `[`, and then
-  /// a matching closing `]`, and [parser.pos] is pointing at an opening `(`.
+  /// a matching closing `]`, and [InlineParser.pos] is pointing at an opening
+  /// `(`.
   /// This method will then attempt to parse a link destination wrapped in `<>`,
   /// such as `(<http://url>)`, or a bare link destination, such as
   /// `(http://url)`, or a link destination with a title, such as
