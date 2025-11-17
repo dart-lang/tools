@@ -431,6 +431,21 @@ void _fileTests({required bool isNative}) {
       await inAnyOrder(events);
     });
 
+    test('are still watched after move', () async {
+      await startWatcher();
+
+      writeFile('a/b/file.txt');
+      await expectAddEvent('a/b/file.txt');
+
+      renameDir('a', 'c');
+      await inAnyOrder(
+          [isRemoveEvent('a/b/file.txt'), isAddEvent('c/b/file.txt')]);
+
+      writeFile('c/b/file2.txt');
+      await expectAddEvent('c/b/file2.txt');
+      await expectNoEvents();
+    });
+
     test('subdirectory watching is robust against races', () async {
       // Make sandboxPath accessible to child isolates created by Isolate.run.
       final sandboxPath = d.sandbox;
