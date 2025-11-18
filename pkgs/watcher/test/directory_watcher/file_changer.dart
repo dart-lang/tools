@@ -133,6 +133,7 @@ class FileChanger {
   /// Returns the path to an already-created file, or `null` if none exists.
   String? _randomExistingFilePath() =>
       (Directory(path).listSync(recursive: true).whereType<File>().toList()
+            ..sort((a, b) => a.path.compareTo(b.path))
             ..shuffle(_random))
           .firstOrNull
           ?.path;
@@ -142,6 +143,7 @@ class FileChanger {
   String? _randomExistingDirectoryPath() => (Directory(
         path,
       ).listSync(recursive: true).whereType<Directory>().toList()
+            ..sort((a, b) => a.path.compareTo(b.path))
             ..shuffle(_random))
           .firstOrNull
           ?.path;
