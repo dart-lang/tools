@@ -69,11 +69,10 @@ class Peer implements Client, Server {
     bool strictProtocolChecks = true,
     Object Function()? idGenerator,
   }) : this.withoutJson(
-          jsonDocument.bind(channel).transform(respondToFormatExceptions),
-          onUnhandledError: onUnhandledError,
-          strictProtocolChecks: strictProtocolChecks,
-          idGenerator: idGenerator,
-        );
+            jsonDocument.bind(channel).transform(respondToFormatExceptions),
+            onUnhandledError: onUnhandledError,
+            strictProtocolChecks: strictProtocolChecks,
+            idGenerator: idGenerator);
 
   /// Creates a [Peer] that communicates using decoded messages over [_channel].
   ///
@@ -94,21 +93,20 @@ class Peer implements Client, Server {
   /// If [idGenerator] is passed, it will be called to generate an ID for each
   /// request. Defaults to an auto-incrementing `int`. The value returned must
   /// be either an `int` or `String`.
-  Peer.withoutJson(
-    this._channel, {
-    ErrorCallback? onUnhandledError,
-    bool strictProtocolChecks = true,
-    Object Function()? idGenerator,
-  }) {
+  Peer.withoutJson(this._channel,
+      {ErrorCallback? onUnhandledError,
+      bool strictProtocolChecks = true,
+      Object Function()? idGenerator}) {
     _server = Server.withoutJson(
-      StreamChannel(_serverIncomingForwarder.stream, _channel.sink),
-      onUnhandledError: onUnhandledError,
-      strictProtocolChecks: strictProtocolChecks,
-    );
+        StreamChannel(_serverIncomingForwarder.stream, _channel.sink),
+        onUnhandledError: onUnhandledError,
+        strictProtocolChecks: strictProtocolChecks);
     _client = Client.withoutJson(
-      StreamChannel(_clientIncomingForwarder.stream, _channel.sink),
-      idGenerator: idGenerator,
-    );
+        StreamChannel(
+          _clientIncomingForwarder.stream,
+          _channel.sink,
+        ),
+        idGenerator: idGenerator);
   }
 
   // Client methods.
@@ -140,35 +138,31 @@ class Peer implements Client, Server {
   Future listen() {
     _client.listen();
     _server.listen();
-    _channel.stream.listen(
-      (message) {
-        if (message is Map) {
-          if (message.containsKey('result') || message.containsKey('error')) {
-            _clientIncomingForwarder.add(message);
-          } else {
-            _serverIncomingForwarder.add(message);
-          }
-        } else if (message is List &&
-            message.isNotEmpty &&
-            message.first is Map) {
-          if (message.first.containsKey('result') ||
-              message.first.containsKey('error')) {
-            _clientIncomingForwarder.add(message);
-          } else {
-            _serverIncomingForwarder.add(message);
-          }
+    _channel.stream.listen((message) {
+      if (message is Map) {
+        if (message.containsKey('result') || message.containsKey('error')) {
+          _clientIncomingForwarder.add(message);
         } else {
-          // Non-Map and -List messages are ill-formed, so we pass them to the
-          // server since it knows how to send error responses.
           _serverIncomingForwarder.add(message);
         }
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        _serverIncomingForwarder.addError(error, stackTrace);
-        _clientIncomingForwarder.addError(error, stackTrace);
-      },
-      onDone: close,
-    );
+      } else if (message is List &&
+          message.isNotEmpty &&
+          message.first is Map) {
+        if (message.first.containsKey('result') ||
+            message.first.containsKey('error')) {
+          _clientIncomingForwarder.add(message);
+        } else {
+          _serverIncomingForwarder.add(message);
+        }
+      } else {
+        // Non-Map and -List messages are ill-formed, so we pass them to the
+        // server since it knows how to send error responses.
+        _serverIncomingForwarder.add(message);
+      }
+    }, onError: (Object error, StackTrace stackTrace) {
+      _serverIncomingForwarder.addError(error, stackTrace);
+      _clientIncomingForwarder.addError(error, stackTrace);
+    }, onDone: close);
     return done;
   }
 
