@@ -1,8 +1,6 @@
-## 4.0.0-tentative
+## 4.1.0-wip
 
-* Enable tests for Web-platforms.
-* Added a test for peer failure in "like a client" scenario. Without this fix, `peer.sendRequest()` never completes and the test times out.
-* The fix consists in forwarding errors to both the client and the server.
+* Forward errors within `Peer` when it is acting as a client.
 
 ## 4.0.0
 
