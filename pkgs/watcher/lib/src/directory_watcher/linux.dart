@@ -13,6 +13,7 @@ import '../path_set.dart';
 import '../resubscribable.dart';
 import '../utils.dart';
 import '../watch_event.dart';
+import 'directory_list.dart';
 
 /// Uses the inotify subsystem to watch for filesystem events.
 ///
@@ -58,10 +59,12 @@ class _LinuxDirectoryWatcher
   /// All known files recursively within [path].
   final PathSet _files;
 
-  /// [Directory.watch] streams for [path]'s subdirectories, indexed by name.
-  ///
-  /// A stream is in this map if and only if it's also in [_nativeEvents].
-  final _subdirStreams = <String, Stream<FileSystemEvent>>{};
+  /// Watches by directory.
+  final Map<String, _Watch> _watches = {};
+
+  /// Keys of [_watches] as a [PathSet] so they can be quickly retrieved by
+  /// parent directory.
+  final PathSet _directoriesWatched;
 
   /// A set of all subscriptions that this watcher subscribes to.
   ///
@@ -69,9 +72,11 @@ class _LinuxDirectoryWatcher
   /// watcher is closed.
   final _subscriptions = <StreamSubscription>{};
 
-  _LinuxDirectoryWatcher(String path) : _files = PathSet(path) {
-    _nativeEvents.add(Directory(path)
-        .watch()
+  _LinuxDirectoryWatcher(String path)
+      : _files = PathSet(path),
+        _directoriesWatched = PathSet(path) {
+    _nativeEvents.add(_watch(path)
+        .events
         .transform(StreamTransformer.fromHandlers(handleDone: (sink) {
       // Handle the done event here rather than in the call to [_listen] because
       // [innerStream] won't close until we close the [StreamGroup]. However, if
@@ -118,7 +123,6 @@ class _LinuxDirectoryWatcher
     }
 
     _subscriptions.clear();
-    _subdirStreams.clear();
     _files.clear();
     _nativeEvents.close();
     _eventsController.close();
@@ -140,8 +144,7 @@ class _LinuxDirectoryWatcher
     // Directory might no longer exist at the point where we try to
     // start the watcher. Simply ignore this error and let the stream
     // close.
-    var stream = Directory(path).watch().ignoring<PathNotFoundException>();
-    _subdirStreams[path] = stream;
+    var stream = _watch(path).events.ignoring<PathNotFoundException>();
     _nativeEvents.add(stream);
   }
 
@@ -211,9 +214,6 @@ class _LinuxDirectoryWatcher
   /// [files] and [dirs].
   void _applyChanges(Set<String> files, Set<String> dirs, Set<String> changed) {
     for (var path in changed) {
-      var stream = _subdirStreams.remove(path);
-      if (stream != null) _nativeEvents.add(stream);
-
       // Unless [path] was a file and still is, emit REMOVE events for it or its
       // contents,
       if (files.contains(path) && _files.contains(path)) continue;
@@ -239,7 +239,8 @@ class _LinuxDirectoryWatcher
 
   /// Emits [ChangeType.ADD] events for the recursive contents of [path].
   void _addSubdir(String path) {
-    _listen(Directory(path).list(recursive: true), (FileSystemEntity entity) {
+    _listen(Directory(path).listRecursivelyIgnoringErrors(),
+        (FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubdir(entity.path);
       } else {
@@ -301,5 +302,76 @@ class _LinuxDirectoryWatcher
       onDone?.call();
     }, cancelOnError: cancelOnError);
     _subscriptions.add(subscription);
+  }
+
+  /// Watches [path].
+  ///
+  /// See [_Watch] class comment.
+  _Watch _watch(String path) {
+    _watches[path]?.cancel();
+    final result = _Watch(path, _cancelWatchesUnderPath);
+    _watches[path] = result;
+
+    // If [path] is the root watch directory do nothing, that's handled when the
+    // stream closes and does not need tracking.
+    if (path != this.path) {
+      _directoriesWatched.add(path);
+    }
+    return result;
+  }
+
+  /// Cancels all watches under path [path].
+  void _cancelWatchesUnderPath(String path) {
+    // If [path] is the root watch directory do nothing, that's handled when the
+    // stream closes.
+    if (path == this.path) return;
+
+    for (final dir in _directoriesWatched.remove(path)) {
+      _watches.remove(dir)!.cancel();
+    }
+  }
+}
+
+/// Watches [path].
+///
+/// Workaround for issue with watches on Linux following renames
+/// https://github.com/dart-lang/sdk/issues/61861.
+///
+/// Tracks watches. When a delete or move event indicates that a watch has
+/// been removed it is immediately cancelled. This prevents incorrect events
+/// if the new location of the directory is also watched.
+///
+/// Note that the SDK reports "directory deleted" for a move to outside the
+/// watched directory, so actually the most important moves are "deletes".
+class _Watch {
+  final String path;
+  final void Function(String) _cancelWatchesUnderPath;
+  final StreamController<FileSystemEvent> _controller =
+      StreamController<FileSystemEvent>();
+  late final StreamSubscription<FileSystemEvent> _subscription;
+  Stream<FileSystemEvent> get events => _controller.stream;
+
+  _Watch(this.path, this._cancelWatchesUnderPath) {
+    _subscription = _listen(path, _controller);
+  }
+
+  StreamSubscription<FileSystemEvent> _listen(
+      String path, StreamController<FileSystemEvent> controller) {
+    return Directory(path).watch().listen(
+      (event) {
+        if (event is FileSystemDeleteEvent ||
+            (event.isDirectory && event is FileSystemMoveEvent)) {
+          _cancelWatchesUnderPath(event.path);
+        }
+
+        controller.add(event);
+      },
+      onError: controller.addError,
+      onDone: controller.close,
+    );
+  }
+
+  void cancel() {
+    _subscription.cancel();
   }
 }
