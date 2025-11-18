@@ -142,16 +142,12 @@ class _ResolvedDirectory {
     } on FileSystemException catch (e, s) {
       // The first operation on a directory is to resolve symbolic links, which
       // fails with a general FileSystemException if the file is not found.
-      // Convert that into a PathNotFoundException or PathAccessException
-      // as that makes more sense to the caller, who didn't ask for anything to
-      // do with symbolic links.
+      // See https://github.com/dart-lang/sdk/issues/61946. Use a copy of the
+      // SDK codepath that should convert it to a more specific type.
       if (e.message.contains('Cannot resolve symbolic links')) {
-        if (e.osError?.errorCode == 2) {
-          throw Error.throwWithStackTrace(
-              PathNotFoundException(directory.path, e.osError!), s);
-        } else if (e.osError?.errorCode == 5) {
-          throw Error.throwWithStackTrace(
-              PathAccessException(directory.path, e.osError!), s);
+        if (e.osError != null && e.path != null) {
+          Error.throwWithStackTrace(
+              _fromOSError(e.osError!, e.message, e.path!), s);
         }
       }
       rethrow;
@@ -160,3 +156,74 @@ class _ResolvedDirectory {
 
   bool get isCanonical => canonicalPath == directory.path;
 }
+
+// Copied from sdk/lib/io/file.dart.
+FileSystemException _fromOSError(OSError err, String message, String path) {
+  if (Platform.isWindows) {
+    switch (err.errorCode) {
+      case _errorAccessDenied:
+      case _errorCurrentDirectory:
+      case _errorWriteProtect:
+      case _errorBadLength:
+      case _errorSharingViolation:
+      case _errorLockViolation:
+      case _errorNetworkAccessDenied:
+      case _errorDriveLocked:
+        return PathAccessException(path, err, message);
+      case _errorFileExists:
+      case _errorAlreadyExists:
+        return PathExistsException(path, err, message);
+      case _errorFileNotFound:
+      case _errorPathNotFound:
+      case _errorInvalidDrive:
+      case _errorInvalidName:
+      case _errorNoMoreFiles:
+      case _errorBadNetpath:
+      case _errorBadNetName:
+      case _errorBadPathName:
+      case _errorFilenameExedRange:
+        return PathNotFoundException(path, err, message);
+      default:
+        return FileSystemException(message, path, err);
+    }
+  } else {
+    switch (err.errorCode) {
+      case _ePerm:
+      case _eAccess:
+        return PathAccessException(path, err, message);
+      case _eExist:
+        return PathExistsException(path, err, message);
+      case _eNoEnt:
+        return PathNotFoundException(path, err, message);
+      default:
+        return FileSystemException(message, path, err);
+    }
+  }
+}
+
+// Copied from sdk/lib/io/common.dart. POSIX.
+const _ePerm = 1;
+const _eNoEnt = 2;
+const _eAccess = 13;
+const _eExist = 17;
+
+// Copied from sdk/lib/io/common.dart. Windows.
+const _errorFileNotFound = 2;
+const _errorPathNotFound = 3;
+const _errorAccessDenied = 5;
+const _errorInvalidDrive = 15;
+const _errorCurrentDirectory = 16;
+const _errorNoMoreFiles = 18;
+const _errorWriteProtect = 19;
+const _errorBadLength = 24;
+const _errorSharingViolation = 32;
+const _errorLockViolation = 33;
+const _errorBadNetpath = 53;
+const _errorNetworkAccessDenied = 65;
+const _errorBadNetName = 67;
+const _errorFileExists = 80;
+const _errorDriveLocked = 108;
+const _errorInvalidName = 123;
+const _errorBadPathName = 161;
+const _errorAlreadyExists = 183;
+const _errorFilenameExedRange = 206;

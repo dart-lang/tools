@@ -27,10 +27,6 @@ void endToEndTests({required bool isNative}) {
     final temp = Directory.systemTemp.createTempSync();
     addTearDown(() => temp.deleteSync(recursive: true));
 
-    // Start with some files.
-    final changer = FileChanger(temp.path);
-    await changer.changeFiles(times: 100);
-
     // Create the watcher and [ClientSimulator].
     final watcher = createWatcher(path: temp.path);
     final client = await ClientSimulator.watch(watcher);
@@ -38,9 +34,13 @@ void endToEndTests({required bool isNative}) {
 
     // 20 iterations of making changes, waiting for events to settle, and
     // checking for consistency.
-    for (var i = 0; i != 20; ++i) {
+    final changer = FileChanger(temp.path);
+    for (var i = 0; i != 40; ++i) {
+      for (final entity in temp.listSync()) {
+        entity.deleteSync(recursive: true);
+      }
       // File changes.
-      final messages = await changer.changeFiles(times: 100);
+      final messages = await changer.changeFiles(times: 200);
 
       // Give time for events to arrive. To allow tests to run quickly when the
       // events are handled quickly, poll and continue if verification passes.

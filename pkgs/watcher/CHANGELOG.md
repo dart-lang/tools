@@ -10,15 +10,16 @@
   exhaustion, "Directory watcher closed unexpectedly", much less likely. The old
   implementation which does not use a separate Isolate is available as
   `DirectoryWatcher(path, runInIsolateOnWindows: false)`.
-- Bug fix: fix tracking failure on Linux. Before the fix, renaming a directory
-  would cause subdirectories of that directory to no longer be tracked.
-- Bug fix: while listing directories skip symlinks that lead to a directory
-  that has already been listed. This prevents a severe performance regression on
-  MacOS and Linux when there are more than a few symlink loops.
-- Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
-  the file was created immediately before the watcher was created. Now, if the
-  file exists when the watcher is created then this modify event is not sent.
-  This matches the Linux native and polling (Windows) watchers.
+- Bug fix: fix `DirectoryWatcher` tracking failure on Linux. Before the fix,
+  renaming a directory would cause subdirectories of that directory to no
+  longer be tracked.
+- Bug fix: fix `DirectoryWatcher` incorrect events on Linux when a file or
+  directory is moved between directories then immediately modified or deleted.
+- Bug fix: fix `DirectoryWatcher` duplicate ADD events on Linux when a file
+  is created in a recently moved or created directory.
+- Bug fix: in `DirectoryWatcher` while listing directories skip symlinks that
+  lead to a directory that has already been listed. This prevents a severe
+  performance regression on MacOS and Linux when there are more than a few symlink loops.
 - Bug fix: with `DirectoryWatcher` on Windows, the last of a rapid sequence of
   modifications in a newly-created directory was sometimes dropped. Make it
   reliably report the last modification.
@@ -30,8 +31,14 @@
 - Bug fix: with `DirectoryWatcher` on Windows, new links to direcories were
   sometimes incorrectly handled as actual directories. Now they are reported
   as files, matching the behavior of the Linux and MacOS watchers.
+- Bug fix: with `DirectoryWatcher` on MacOS, fix events for changes in new
+  directories: don't emit duplicate ADD, don't emit MODIFY without ADD.
 - Bug fix: with `PollingDirectoryWatcher`, fix spurious modify event emitted
   because of a file delete during polling.
+- Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
+  the file was created immediately before the watcher was created. Now, if the
+  file exists when the watcher is created then this modify event is not sent.
+  This matches the Linux native and polling (Windows) watchers.
 - Document behavior on Linux if the system watcher limit is hit.
 
 ## 1.1.4
