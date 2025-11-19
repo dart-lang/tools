@@ -1,3 +1,6 @@
+/// @docImport 'link_syntax.dart';
+library;
+
 import '../ast.dart' show Element, Node, Text;
 import '../charcode.dart';
 import 'link_syntax.dart' show LinkContext;

@@ -36,6 +36,12 @@
 ///   - Creating a new [ExtensionSet] from one of the existing flavors
 ///     and adding your syntaxes.
 ///   - Passing your syntaxes to [Document] or [markdownToHtml] as parameters.
+/// @docImport 'src/ast.dart';
+/// @docImport 'src/block_syntaxes/block_syntax.dart';
+/// @docImport 'src/document.dart';
+/// @docImport 'src/extension_set.dart';
+/// @docImport 'src/html_renderer.dart';
+/// @docImport 'src/inline_syntaxes/inline_syntax.dart';
 library;
 
 import 'src/version.dart';

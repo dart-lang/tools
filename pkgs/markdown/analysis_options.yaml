@@ -11,13 +11,9 @@ analyzer:
     # The example app explicitly takes a String of user-generated HTML and
     # inserts it straight into a <div> using innerHtml.
     unsafe_html: ignore
-    # Waiting on a couple of bug fixes and new features before this should be enabled
-    comment_references: ignore
 
 linter:
   rules:
-    # https://github.com/dart-lang/linter/issues/574
-    #- comment_references
     - avoid_private_typedef_functions
     - avoid_redundant_argument_values
     - avoid_unused_constructor_parameters
