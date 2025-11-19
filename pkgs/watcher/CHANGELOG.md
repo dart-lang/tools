@@ -1,3 +1,48 @@
+## 1.1.5-wip
+
+- Polling watchers now check file sizes as well as "last modified" times, so
+  they are less likely to miss changes on platforms with low resolution
+  timestamps.
+- `DirectoryWatcher` on Windows performance: reduce 100ms buffering of events
+  before reporting to 5ms, the larger buffer isn't needed for correctness after
+  the various fixes.
+- `DirectoryWatcher` on Windows watches in a separate Isolate to make buffer
+  exhaustion, "Directory watcher closed unexpectedly", much less likely. The old
+  implementation which does not use a separate Isolate is available as
+  `DirectoryWatcher(path, runInIsolateOnWindows: false)`.
+- Bug fix: fix tracking failure on Linux. Before the fix, renaming a directory
+  would cause subdirectories of that directory to no longer be tracked.
+- Bug fix: while listing directories skip symlinks that lead to a directory
+  that has already been listed. This prevents a severe performance regression on
+  MacOS and Linux when there are more than a few symlink loops.
+- Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
+  the file was created immediately before the watcher was created. Now, if the
+  file exists when the watcher is created then this modify event is not sent.
+  This matches the Linux native and polling (Windows) watchers.
+- Bug fix: with `DirectoryWatcher` on Windows, the last of a rapid sequence of
+  modifications in a newly-created directory was sometimes dropped. Make it
+  reliably report the last modification.
+- Bug fix: with `DirectoryWatcher` on Windows, a move over an existing file was
+  reported incorrectly. For example, if `a` and `b` already exist, then `a` is
+  moved onto `b`, it would be reported as three events: delete `a`, delete `b`,
+  create `b`. Now it's reported as two events: delete `a`, modify `b`. This
+  matches the behavior of the Linux and MacOS watchers.
+- Bug fix: with `DirectoryWatcher` on Windows, new links to direcories were
+  sometimes incorrectly handled as actual directories. Now they are reported
+  as files, matching the behavior of the Linux and MacOS watchers.
+- Bug fix: with `PollingDirectoryWatcher`, fix spurious modify event emitted
+  because of a file delete during polling.
+- Document behavior on Linux if the system watcher limit is hit.
+
+## 1.1.4
+
+- Improve handling of subdirectories: ignore `PathNotFoundException` due to
+  subdirectory deletion racing with watcher internals, instead of raising
+  it on the event stream.
+- Improve handling of watcher overflow on Windows: prepare for future versions
+  of SDK, which will properly forward `FileSystemException` into the stream
+  returned by the watcher.
+
 ## 1.1.3
 
 - Improve handling of
@@ -6,7 +51,7 @@
   events. But, the restart would sometimes silently fail. Now, it is more
   reliable.
 - Improving handling of directories that are created then immediately deleted on
-  Windows. Previously, that could cause a `PathNotfoundException` to be thrown.
+  Windows. Previously, that could cause a `PathNotFoundException` to be thrown.
 
 ## 1.1.2
 

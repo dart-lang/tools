@@ -19,7 +19,10 @@ final _terseRegExp = RegExp(r'(-patch)?([/\\].*)?$');
 /// description of the exception that occurred. That description can be multiple
 /// lines, so we just look for any line other than the first that begins with
 /// three or four spaces and "at".
-final _v8Trace = RegExp(r'\n    ?at ');
+///
+/// Sometimes the first line is empty, and sometimes the empty line gets
+/// trimmed, so also accept a missing description line.
+final _v8Trace = RegExp(r'(?:^|\n)    ?at ');
 
 /// A RegExp to match indidual lines of V8's stack traces.
 ///
@@ -175,7 +178,6 @@ class Trace implements StackTrace {
       : this(
             trace
                 .split('\n')
-                .skip(1)
                 // It's possible that an Exception's description contains a line
                 // that looks like a V8 trace line, which will screw this up.
                 // Unfortunately, that's impossible to detect.

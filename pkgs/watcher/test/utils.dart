@@ -9,8 +9,10 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:watcher/src/stat.dart';
 import 'package:watcher/watcher.dart';
+
+/// Edit this to run fast-running tests many times.
+int runsPerTest = 1;
 
 typedef WatcherFactory = Watcher Function(String directory);
 
@@ -19,16 +21,9 @@ set watcherFactory(WatcherFactory factory) {
   _watcherFactory = factory;
 }
 
-/// The mock modification times (in milliseconds since epoch) for each file.
-///
-/// The actual file system has pretty coarse granularity for file modification
-/// times. This means using the real file system requires us to put delays in
-/// the tests to ensure we wait long enough between operations for the mod time
-/// to be different.
-///
-/// Instead, we'll just mock that out. Each time a file is written, we manually
-/// increment the mod time for that file instantly.
-final _mockFileModificationTimes = <String, int>{};
+/// A directory where a test file will be updated to wait for a new modification
+/// time.
+Directory? _waitForModificationTimesDirectory;
 
 late WatcherFactory _watcherFactory;
 
@@ -54,22 +49,61 @@ late StreamQueue<WatchEvent> _watcherEvents;
 /// be done automatically via [addTearDown] in [startWatcher].
 var _hasClosedStream = true;
 
+/// Enables [sleepUntilNewModificationTime].
+///
+/// Resets at the end of the test.
+///
+/// IMPORTANT NOTE about "polling" watchers and tests:
+///
+/// The polling watchers can notice changes if the "last modified" time of a
+/// file changed or if its size changed.
+///
+/// Most tests that make changes also change the size of a file, so they do not
+/// have to care about whether the timing works out for the modification time to
+/// be different.
+///
+/// Tests that intentionally write to a file _without_ changing its contents
+/// must also call [sleepUntilNewModificationTime] if testing a polling
+/// watcher. That ensures that the write causes a new modification time.
+///
+/// At the time of writing in 2025, Windows "last modified" time is much coarser
+/// than other platforms, at 1s.
+void enableSleepUntilNewModificationTime() {
+  if (_waitForModificationTimesDirectory != null) return;
+  _waitForModificationTimesDirectory =
+      Directory.systemTemp.createTempSync('dart_test_');
+  addTearDown(() {
+    _waitForModificationTimesDirectory!.deleteSync(recursive: true);
+    _waitForModificationTimesDirectory = null;
+  });
+}
+
+/// Sleeps the until a new modification time is available from the platform.
+///
+/// This ensures that the next write can be detected by polling watches based on
+/// its "last modified" time, whatever the contents.
+void sleepUntilNewModificationTime() {
+  _waitForModificationTimesDirectory ??= Directory.systemTemp.createTempSync();
+  var file = File(p.join(_waitForModificationTimesDirectory!.path, 'file'));
+  if (file.existsSync()) file.deleteSync();
+  file.createSync();
+  final time = file.statSync().modified;
+  while (true) {
+    file.deleteSync();
+    file.createSync();
+    final updatedTime = file.statSync().modified;
+    if (time != updatedTime) {
+      return;
+    }
+    sleep(const Duration(milliseconds: 1));
+  }
+}
+
 /// Creates a new [Watcher] that watches a temporary file or directory and
 /// starts monitoring it for events.
 ///
 /// If [path] is provided, watches a path in the sandbox with that name.
 Future<void> startWatcher({String? path}) async {
-  mockGetModificationTime((path) {
-    final normalized = p.normalize(p.relative(path, from: d.sandbox));
-
-    // Make sure we got a path in the sandbox.
-    assert(p.isRelative(normalized) && !normalized.startsWith('..'),
-        'Path is not in the sandbox: $path not in ${d.sandbox}');
-
-    var mtime = _mockFileModificationTimes[normalized];
-    return mtime != null ? DateTime.fromMillisecondsSinceEpoch(mtime) : null;
-  });
-
   // We want to wait until we're ready *after* we subscribe to the watcher's
   // events.
   var watcher = createWatcher(path: path);
@@ -96,62 +130,18 @@ void startClosingEventStream() async {
   await _watcherEvents.cancel(immediate: true);
 }
 
-/// A list of [StreamMatcher]s that have been collected using
-/// [_collectStreamMatcher].
-List<StreamMatcher>? _collectedStreamMatchers;
-
-/// Collects all stream matchers that are registered within [block] into a
-/// single stream matcher.
-///
-/// The returned matcher will match each of the collected matchers in order.
-StreamMatcher _collectStreamMatcher(void Function() block) {
-  var oldStreamMatchers = _collectedStreamMatchers;
-  var collectedStreamMatchers = _collectedStreamMatchers = <StreamMatcher>[];
-  try {
-    block();
-    return emitsInOrder(collectedStreamMatchers);
-  } finally {
-    _collectedStreamMatchers = oldStreamMatchers;
-  }
-}
-
-/// Either add [streamMatcher] as an expectation to [_watcherEvents], or collect
-/// it with [_collectStreamMatcher].
+/// Add [streamMatcher] as an expectation to [_watcherEvents].
 ///
 /// [streamMatcher] can be a [StreamMatcher], a [Matcher], or a value.
-Future _expectOrCollect(Matcher streamMatcher) {
-  var collectedStreamMatchers = _collectedStreamMatchers;
-  if (collectedStreamMatchers != null) {
-    collectedStreamMatchers.add(emits(streamMatcher));
-    return Future.sync(() {});
-  } else {
-    return expectLater(_watcherEvents, emits(streamMatcher));
-  }
+Future _expect(Matcher streamMatcher) {
+  return expectLater(_watcherEvents, emits(streamMatcher));
 }
 
 /// Expects that [matchers] will match emitted events in any order.
 ///
 /// [matchers] may be [Matcher]s or values, but not [StreamMatcher]s.
-Future inAnyOrder(Iterable matchers) {
-  matchers = matchers.toSet();
-  return _expectOrCollect(emitsInAnyOrder(matchers));
-}
-
-/// Expects that the expectations established in either [block1] or [block2]
-/// will match the emitted events.
-///
-/// If both blocks match, the one that consumed more events will be used.
-Future allowEither(void Function() block1, void Function() block2) =>
-    _expectOrCollect(emitsAnyOf(
-        [_collectStreamMatcher(block1), _collectStreamMatcher(block2)]));
-
-/// Allows the expectations established in [block] to match the emitted events.
-///
-/// If the expectations in [block] don't match, no error will be raised and no
-/// events will be consumed. If this is used at the end of a test,
-/// [startClosingEventStream] should be called before it.
-Future allowEvents(void Function() block) =>
-    _expectOrCollect(mayEmit(_collectStreamMatcher(block)));
+Future inAnyOrder(Iterable matchers) =>
+    _expect(emitsInAnyOrder(matchers.toSet()));
 
 /// Returns a StreamMatcher that matches a [WatchEvent] with the given [type]
 /// and [path].
@@ -174,39 +164,57 @@ Matcher isModifyEvent(String path) => isWatchEvent(ChangeType.MODIFY, path);
 /// [path].
 Matcher isRemoveEvent(String path) => isWatchEvent(ChangeType.REMOVE, path);
 
+/// Takes the first event emitted during [duration], or returns `null` if there
+/// is none.
+Future<WatchEvent?> waitForEvent({
+  Duration duration = const Duration(seconds: 1),
+}) async {
+  final result = await _watcherEvents.peek
+      .then<WatchEvent?>((e) => e)
+      .timeout(duration, onTimeout: () => null);
+  if (result != null) _watcherEvents.take(1).ignore();
+  return result;
+}
+
+/// Expects that no events are emitted for [duration].
+Future expectNoEvents({Duration duration = const Duration(seconds: 1)}) async {
+  expect(await waitForEvent(duration: duration), isNull);
+}
+
+/// Takes all events emitted for [duration].
+Future<List<WatchEvent>> takeEvents({required Duration duration}) async {
+  final result = <WatchEvent>[];
+  final stopwatch = Stopwatch()..start();
+  while (stopwatch.elapsed < duration) {
+    final event = await waitForEvent(duration: duration - stopwatch.elapsed);
+    if (event != null) {
+      result.add(event);
+    }
+  }
+  return result;
+}
+
 /// Expects that the next event emitted will be for an add event for [path].
 Future expectAddEvent(String path) =>
-    _expectOrCollect(isWatchEvent(ChangeType.ADD, path));
+    _expect(isWatchEvent(ChangeType.ADD, path));
 
 /// Expects that the next event emitted will be for a modification event for
 /// [path].
 Future expectModifyEvent(String path) =>
-    _expectOrCollect(isWatchEvent(ChangeType.MODIFY, path));
+    _expect(isWatchEvent(ChangeType.MODIFY, path));
 
 /// Expects that the next event emitted will be for a removal event for [path].
 Future expectRemoveEvent(String path) =>
-    _expectOrCollect(isWatchEvent(ChangeType.REMOVE, path));
+    _expect(isWatchEvent(ChangeType.REMOVE, path));
 
-/// Consumes a modification event for [path] if one is emitted at this point in
-/// the schedule, but doesn't throw an error if it isn't.
+/// Writes a file in the sandbox at [path] with [contents].
 ///
-/// If this is used at the end of a test, [startClosingEventStream] should be
-/// called before it.
-Future allowModifyEvent(String path) =>
-    _expectOrCollect(mayEmit(isWatchEvent(ChangeType.MODIFY, path)));
-
-/// Track a fake timestamp to be used when writing files. This always increases
-/// so that files that are deleted and re-created do not have their timestamp
-/// set back to a previously used value.
-int _nextTimestamp = 1;
-
-/// Schedules writing a file in the sandbox at [path] with [contents].
+/// If [path] is currently a link it is deleted and a file is written in its
+/// place.
 ///
-/// If [contents] is omitted, creates an empty file. If [updateModified] is
-/// `false`, the mock file modification time is not changed.
-void writeFile(String path, {String? contents, bool? updateModified}) {
+/// If [contents] is omitted, creates an empty file.
+void writeFile(String path, {String? contents}) {
   contents ??= '';
-  updateModified ??= true;
 
   var fullPath = p.join(d.sandbox, path);
 
@@ -216,56 +224,99 @@ void writeFile(String path, {String? contents, bool? updateModified}) {
     dir.createSync(recursive: true);
   }
 
-  File(fullPath).writeAsStringSync(contents);
+  var file = File(fullPath);
+  // `File.writeAsStringSync` would write through the link, so if there is a
+  // link then start by deleting it.
+  if (FileSystemEntity.typeSync(fullPath, followLinks: false) ==
+      FileSystemEntityType.link) {
+    file.deleteSync();
+  }
+  file.writeAsStringSync(contents);
+  // Check that `fullPath` now refers to a file, not a link.
+  expect(FileSystemEntity.typeSync(fullPath), FileSystemEntityType.file);
+}
 
-  if (updateModified) {
-    path = p.normalize(path);
+/// Writes a file in the sandbox at [link] pointing to [target].
+///
+/// [target] is relative to the sandbox, not to [link].
+///
+/// If [unawaitedAsync], the link is written asynchronously and not awaited.
+/// Otherwise, it's synchronous. See the note in `windows.dart` for issue 61797
+/// for why this is needed for testing on Windows.
+void writeLink({
+  required String link,
+  required String target,
+  bool unawaitedAsync = false,
+}) {
+  var fullPath = p.join(d.sandbox, link);
 
-    _mockFileModificationTimes[path] = _nextTimestamp++;
+  // Create any needed subdirectories.
+  var dir = Directory(p.dirname(fullPath));
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
+  }
+
+  if (unawaitedAsync) {
+    unawaited(Link(fullPath).create(p.join(d.sandbox, target)));
+  } else {
+    Link(fullPath).createSync(p.join(d.sandbox, target));
   }
 }
 
-/// Schedules deleting a file in the sandbox at [path].
+/// Deletes a file in the sandbox at [path].
 void deleteFile(String path) {
-  File(p.join(d.sandbox, path)).deleteSync();
-
-  _mockFileModificationTimes.remove(path);
+  final fullPath = p.join(d.sandbox, path);
+  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
+      FileSystemEntityType.file);
+  File(fullPath).deleteSync();
 }
 
-/// Schedules renaming a file in the sandbox from [from] to [to].
+/// Deletes a link in the sandbox at [path].
+void deleteLink(String path) {
+  final fullPath = p.join(d.sandbox, path);
+  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
+      FileSystemEntityType.link);
+  Link(fullPath).deleteSync();
+}
+
+/// Renames a file in the sandbox from [from] to [to].
 void renameFile(String from, String to) {
-  File(p.join(d.sandbox, from)).renameSync(p.join(d.sandbox, to));
-
-  // Make sure we always use the same separator on Windows.
-  to = p.normalize(to);
-
-  _mockFileModificationTimes.update(to, (value) => value + 1,
-      ifAbsent: () => 1);
+  var absoluteTo = p.join(d.sandbox, to);
+  File(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+      FileSystemEntityType.file);
 }
 
-/// Schedules creating a directory in the sandbox at [path].
+/// Renames a link in the sandbox from [from] to [to].
+///
+/// On MacOS and Linux links can also be named with `renameFile`. On Windows,
+/// however, a link must be renamed with this method.
+void renameLink(String from, String to) {
+  var absoluteTo = p.join(d.sandbox, to);
+  Link(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+      FileSystemEntityType.link);
+}
+
+/// Creates a directory in the sandbox at [path].
 void createDir(String path) {
   Directory(p.join(d.sandbox, path)).createSync();
 }
 
-/// Schedules renaming a directory in the sandbox from [from] to [to].
+/// Renames a directory in the sandbox from [from] to [to].
 void renameDir(String from, String to) {
-  Directory(p.join(d.sandbox, from)).renameSync(p.join(d.sandbox, to));
-
-  // Migrate timestamps for any files in this folder.
-  final knownFilePaths = _mockFileModificationTimes.keys.toList();
-  for (final filePath in knownFilePaths) {
-    if (p.isWithin(from, filePath)) {
-      _mockFileModificationTimes[filePath.replaceAll(from, to)] =
-          _mockFileModificationTimes[filePath]!;
-      _mockFileModificationTimes.remove(filePath);
-    }
-  }
+  var absoluteTo = p.join(d.sandbox, to);
+  Directory(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
+      FileSystemEntityType.directory);
 }
 
-/// Schedules deleting a directory in the sandbox at [path].
+/// Deletes a directory in the sandbox at [path].
 void deleteDir(String path) {
-  Directory(p.join(d.sandbox, path)).deleteSync(recursive: true);
+  final fullPath = p.join(d.sandbox, path);
+  expect(FileSystemEntity.typeSync(fullPath, followLinks: false),
+      FileSystemEntityType.directory);
+  Directory(fullPath).deleteSync(recursive: true);
 }
 
 /// Runs [callback] with every permutation of non-negative numbers for each

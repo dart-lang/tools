@@ -2,12 +2,116 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+import 'dart:io' as io;
+import 'dart:io';
+import 'dart:isolate';
+
+import 'package:async/async.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
 
-void sharedTests() {
+void fileTests({required bool isNative}) {
+  for (var i = 0; i != runsPerTest; ++i) {
+    _fileTests(isNative: isNative);
+  }
+}
+
+void _fileTests({required bool isNative}) {
+  test('error reported if directory does not exist', () async {
+    await startWatcher(path: 'missing_path');
+
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative && !Platform.isMacOS) {
+      expect(expectNoEvents, throwsA(isA<PathNotFoundException>()));
+    } else {
+      // The polling watcher and the MacOS watcher do not throw on missing file
+      // on watch.
+      await expectNoEvents();
+      writeFile('missing_path/file.txt');
+      await expectAddEvent('missing_path/file.txt');
+    }
+  });
+
+  // ResubscribableWatcher wraps all the directory watchers to add handling of
+  // multiple subscribers. The underlying watcher is created when there is at
+  // least one subscriber and closed when there are zero subscribers. So,
+  // exercise that behavior in various ways.
+  test('ResubscribableWatcher handles multiple subscriptions ', () async {
+    final watcher = createWatcher();
+
+    // One subscription, one event, close the subscription.
+    final queue1 = StreamQueue(watcher.events);
+    final event1 = queue1.next;
+    await watcher.ready;
+    writeFile('a.txt');
+    expect(await event1, isAddEvent('a.txt'));
+    await queue1.cancel(immediate: true);
+
+    // Open before "ready", cancel before event.
+    final queue2a = StreamQueue(watcher.events);
+    // Open before "ready", cancel after one event.
+    final queue2b = StreamQueue(watcher.events);
+    // Open before "ready", cancel after two events.
+    final queue2c = StreamQueue(watcher.events);
+
+    final queue2aHasNext = queue2a.hasNext;
+    unawaited(queue2a.cancel(immediate: true));
+    expect(await queue2aHasNext, false);
+
+    await watcher.ready;
+
+    // Open after "ready", cancel before event.
+    final queue2d = StreamQueue(watcher.events);
+
+    // Open after "ready", cancel after one event.
+    final queue2e = StreamQueue(watcher.events);
+
+    // Open after "ready", cancel after two events.
+    final queue2f = StreamQueue(watcher.events);
+
+    final queue2dHasNext = queue2d.hasNext;
+    unawaited(queue2d.cancel(immediate: true));
+    expect(await queue2dHasNext, false);
+
+    writeFile('b.txt');
+
+    expect(await queue2b.next, isAddEvent('b.txt'));
+    expect(await queue2c.next, isAddEvent('b.txt'));
+    expect(await queue2e.next, isAddEvent('b.txt'));
+    expect(await queue2f.next, isAddEvent('b.txt'));
+    final queue2bHasNext = queue2b.hasNext;
+    await queue2b.cancel(immediate: true);
+    expect(await queue2bHasNext, false);
+    final queue2eHasNext = queue2e.hasNext;
+    await queue2e.cancel(immediate: true);
+    expect(await queue2eHasNext, false);
+
+    // Remaining subscriptions still get events.
+    writeFile('c.txt');
+    expect(await queue2c.next, isAddEvent('c.txt'));
+    expect(await queue2f.next, isAddEvent('c.txt'));
+    final queue2cHasNext = queue2c.hasNext;
+    await queue2c.cancel(immediate: true);
+    expect(await queue2cHasNext, false);
+    final queue2fHasNext = queue2f.hasNext;
+    await queue2f.cancel(immediate: true);
+    expect(await queue2fHasNext, false);
+
+    // Repeat the first simple test: one subscription, one event, close the
+    // subscription.
+    final queue3 = StreamQueue(watcher.events);
+    await watcher.ready;
+    writeFile('d.txt');
+    expect(await queue3.next, isAddEvent('d.txt'));
+    final queue3HasNext = queue3.hasNext;
+    await queue3.cancel(immediate: true);
+    expect(await queue3HasNext, false);
+  });
+
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
@@ -57,6 +161,7 @@ void sharedTests() {
     writeFile('b.txt', contents: 'before');
     await startWatcher();
 
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('a.txt', contents: 'same');
     writeFile('b.txt', contents: 'after');
     await inAnyOrder([isModifyEvent('a.txt'), isModifyEvent('b.txt')]);
@@ -129,23 +234,14 @@ void sharedTests() {
 
     test('notifies when a file is moved onto an existing one', () async {
       writeFile('from.txt');
-      writeFile('to.txt');
+      writeFile('to.txt', contents: 'different');
       await startWatcher();
 
       renameFile('from.txt', 'to.txt');
       await inAnyOrder([isRemoveEvent('from.txt'), isModifyEvent('to.txt')]);
-    }, onPlatform: {
-      'windows': const Skip('https://github.com/dart-lang/watcher/issues/125')
     });
   });
 
-  // Most of the time, when multiple filesystem actions happen in sequence,
-  // they'll be batched together and the watcher will see them all at once.
-  // These tests verify that the watcher normalizes and combine these events
-  // properly. However, very occasionally the events will be reported in
-  // separate batches, and the watcher will report them as though they occurred
-  // far apart in time, so each of these tests has a "backup case" to allow for
-  // that as well.
   group('clustered changes', () {
     test("doesn't notify when a file is created and then immediately removed",
         () async {
@@ -153,13 +249,6 @@ void sharedTests() {
       await startWatcher();
       writeFile('file.txt');
       deleteFile('file.txt');
-
-      // Backup case.
-      startClosingEventStream();
-      await allowEvents(() {
-        expectAddEvent('file.txt');
-        expectRemoveEvent('file.txt');
-      });
     });
 
     test(
@@ -171,13 +260,7 @@ void sharedTests() {
       deleteFile('file.txt');
       writeFile('file.txt', contents: 're-created');
 
-      await allowEither(() {
-        expectModifyEvent('file.txt');
-      }, () {
-        // Backup case.
-        expectRemoveEvent('file.txt');
-        expectAddEvent('file.txt');
-      });
+      await expectModifyEvent('file.txt');
     });
 
     test(
@@ -189,14 +272,7 @@ void sharedTests() {
       renameFile('old.txt', 'new.txt');
       writeFile('old.txt', contents: 're-created');
 
-      await allowEither(() {
-        inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
-      }, () {
-        // Backup case.
-        expectRemoveEvent('old.txt');
-        expectAddEvent('new.txt');
-        expectAddEvent('old.txt');
-      });
+      await inAnyOrder([isModifyEvent('old.txt'), isAddEvent('new.txt')]);
     });
 
     test(
@@ -207,9 +283,6 @@ void sharedTests() {
 
       writeFile('file.txt', contents: 'modified');
       deleteFile('file.txt');
-
-      // Backup case.
-      await allowModifyEvent('file.txt');
 
       await expectRemoveEvent('file.txt');
     });
@@ -222,10 +295,6 @@ void sharedTests() {
       writeFile('file.txt', contents: 'modified');
 
       await expectAddEvent('file.txt');
-
-      // Backup case.
-      startClosingEventStream();
-      await allowModifyEvent('file.txt');
     });
   });
 
@@ -277,8 +346,6 @@ void sharedTests() {
         isRemoveEvent('old'),
         isAddEvent('new')
       ]);
-    }, onPlatform: {
-      'windows': const Skip('https://github.com/dart-lang/watcher/issues/21')
     });
 
     test('emits events for many nested files added at once', () async {
@@ -326,6 +393,29 @@ void sharedTests() {
     });
 
     test(
+        'emits events for many nested files moved out then immediately back in',
+        () async {
+      withPermutations(
+          (i, j, k) => writeFile('dir/sub/sub-$i/sub-$j/file-$k.txt'));
+
+      await startWatcher(path: 'dir');
+
+      renameDir('dir/sub', 'sub');
+      renameDir('sub', 'dir/sub');
+
+      if (isNative) {
+        await inAnyOrder(withPermutations(
+            (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+        await inAnyOrder(withPermutations(
+            (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+      } else {
+        // Polling watchers can't detect this as directory contents mtimes
+        // aren't updated when the directory is moved.
+        await expectNoEvents();
+      }
+    });
+
+    test(
         'emits events for many files added at once in a subdirectory with the '
         'same name as a removed file', () async {
       writeFile('dir/sub');
@@ -340,5 +430,69 @@ void sharedTests() {
       events.add(isRemoveEvent('dir/sub'));
       await inAnyOrder(events);
     });
+
+    test('are still watched after move', () async {
+      await startWatcher();
+
+      writeFile('a/b/file.txt');
+      await expectAddEvent('a/b/file.txt');
+
+      renameDir('a', 'c');
+      await inAnyOrder(
+          [isRemoveEvent('a/b/file.txt'), isAddEvent('c/b/file.txt')]);
+
+      writeFile('c/b/file2.txt');
+      await expectAddEvent('c/b/file2.txt');
+      await expectNoEvents();
+    });
+
+    test('subdirectory watching is robust against races', () async {
+      // Make sandboxPath accessible to child isolates created by Isolate.run.
+      final sandboxPath = d.sandbox;
+      final dirNames = [for (var i = 0; i < 500; i++) 'dir$i'];
+      await startWatcher();
+
+      // Repeatedly create and delete subdirectories in attempt to trigger
+      // a race.
+      for (var i = 0; i < 10; i++) {
+        for (var dir in dirNames) {
+          createDir(dir);
+        }
+        await Isolate.run(() async {
+          await Future.wait([
+            for (var dir in dirNames)
+              io.Directory('$sandboxPath/$dir').delete(),
+          ]);
+        });
+      }
+    });
+  });
+
+  test(
+      'does not notify about the watched directory being deleted and '
+      'recreated immediately before watching', () async {
+    createDir('dir');
+    writeFile('dir/old.txt');
+    deleteDir('dir');
+    createDir('dir');
+
+    await startWatcher(path: 'dir');
+    writeFile('dir/newer.txt');
+    await expectAddEvent('dir/newer.txt');
+  });
+
+  test('does not suppress files with the same prefix as a directory', () async {
+    // Regression test for https://github.com/dart-lang/watcher/issues/83
+    writeFile('some_name.txt');
+
+    await startWatcher();
+
+    writeFile('some_name/some_name.txt');
+    deleteFile('some_name.txt');
+
+    await inAnyOrder([
+      isAddEvent('some_name/some_name.txt'),
+      isRemoveEvent('some_name.txt')
+    ]);
   });
 }

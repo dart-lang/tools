@@ -87,8 +87,8 @@ void defineReflectiveTests(Type type) {
   {
     var isSolo = _hasAnnotationInstance(classMirror, soloTest);
     var className = MirrorSystem.getName(classMirror.simpleName);
-    group = _Group(isSolo, _combineNames(_currentSuiteName, className),
-        classMirror.testLocation);
+    group = _Group(
+        isSolo, _combineNames(_currentSuiteName, className), classMirror);
     _currentGroups.add(group);
   }
 
@@ -151,10 +151,24 @@ void _addTestsIfTopLevelSuite() {
   if (_currentSuiteLevel == 0) {
     void runTests({required bool allGroups, required bool allTests}) {
       for (var group in _currentGroups) {
+        var runTestCount = 0;
         if (allGroups || group.isSolo) {
           for (var test in group.tests) {
             if (allTests || test.isSolo) {
-              test_package.test(test.name, test.function,
+              if (!test.isSkipped) {
+                runTestCount += 1;
+              }
+              test_package.test(test.name, () async {
+                await group.ensureSetUpClass();
+                try {
+                  await test.function();
+                } finally {
+                  runTestCount -= 1;
+                  if (runTestCount == 0) {
+                    group.tearDownClass();
+                  }
+                }
+              },
                   timeout: test.timeout,
                   skip: test.isSkipped,
                   location: test.location);
@@ -210,14 +224,14 @@ bool _hasSkippedTestAnnotation(MethodMirror method) =>
     _hasAnnotationInstance(method, skippedTest);
 
 Future<Object?> _invokeSymbolIfExists(
-    InstanceMirror instanceMirror, Symbol symbol) {
+    ObjectMirror objectMirror, Symbol symbol) {
   Object? invocationResult;
   InstanceMirror? closure;
   try {
-    closure = instanceMirror.getField(symbol);
+    closure = objectMirror.getField(symbol);
     // ignore: avoid_catching_errors
   } on NoSuchMethodError {
-    // ignore
+    // ignore: empty_catches
   }
 
   if (closure is ClosureMirror) {
@@ -232,29 +246,32 @@ Future<Object?> _invokeSymbolIfExists(
 /// - The test fails by throwing an exception
 /// - The test returns a future which completes with an error.
 /// - An exception is thrown to the zone handler from a timer task.
-Future<Object?>? _runFailingTest(ClassMirror classMirror, Symbol symbol) {
-  var passed = false;
-  return runZonedGuarded(() {
+Future<void> _runFailingTest(ClassMirror classMirror, Symbol symbol) async {
+  _FailedTestResult? result;
+
+  await runZonedGuarded(() {
     // ignore: void_checks
     return Future.sync(() => _runTest(classMirror, symbol)).then<void>((_) {
-      passed = true;
-      test_package.fail('Test passed - expected to fail.');
+      // We can't throw async exceptions inside here because `runZoneGuarded`
+      // will never complete (see docs on `runZonedGuarded`), so we need to
+      // capture this state and throw later if there wasn't otherwise an
+      // exception.
+
+      // If we didn't already have a failure (eg. an unawaited exception) then
+      // this successful completion is an unexpected pass state.
+      result ??= _FailedTestResult.pass;
     }).catchError((Object e) {
-      // if passed, and we call fail(), rethrow this exception
-      if (passed) {
-        // ignore: only_throw_errors
-        throw e;
-      }
-      // otherwise, an exception is not a failure for _runFailingTest
+      // an awaited exception is always expected failure.
+      result = _FailedTestResult.expectedFail;
     });
   }, (e, st) {
-    // if passed, and we call fail(), rethrow this exception
-    if (passed) {
-      // ignore: only_throw_errors
-      throw e;
-    }
-    // otherwise, an exception is not a failure for _runFailingTest
+    result = _FailedTestResult.expectedFail;
   });
+
+  // We can safely throw exceptions back outside of the error zone.
+  if (result == _FailedTestResult.pass) {
+    throw test_package.TestFailure('Test passed - expected to fail.');
+  }
 }
 
 Future<void> _runTest(ClassMirror classMirror, Symbol symbol) async {
@@ -307,10 +324,13 @@ class _AssertFailingTest {
 class _Group {
   final bool isSolo;
   final String name;
-  final test_package.TestLocation? location;
   final List<_Test> tests = <_Test>[];
 
-  _Group(this.isSolo, this.name, this.location);
+  /// For static group-wide operations eg `setUpClass` and `tearDownClass`.
+  final ClassMirror _classMirror;
+  Future<Object?>? _setUpCompletion;
+
+  _Group(this.isSolo, this.name, this._classMirror);
 
   bool get hasSoloTest => tests.any((test) => test.isSolo);
 
@@ -327,6 +347,19 @@ class _Group {
     tests.add(_Test(isSolo, fullName, function, timeout?._timeout,
         memberMirror.testLocation));
   }
+
+  /// Runs group-wide setup if it has not been started yet,
+  /// ensuring it only runs once for a group. Set up runs and
+  /// completes before any test of the group runs
+  Future<Object?> ensureSetUpClass() =>
+      _setUpCompletion ??= _invokeSymbolIfExists(_classMirror, #setUpClass);
+
+  /// Runs group-wide tear down iff [ensureSetUpClass] was called at least once.
+  /// Must be called once and only called after all tests of the group have
+  /// completed
+  void tearDownClass() => _setUpCompletion != null
+      ? _invokeSymbolIfExists(_classMirror, #tearDownClass)
+      : null;
 }
 
 /// A marker annotation used to instruct dart2js to keep reflection information
@@ -357,6 +390,15 @@ class _Test {
       : isSkipped = true,
         function = (() {}),
         timeout = null;
+}
+
+/// The result of a test that was expected to fail.
+enum _FailedTestResult {
+  /// The test (unexpectedly) passed.
+  pass,
+
+  /// The test failed as expected.
+  expectedFail,
 }
 
 extension on DeclarationMirror {
