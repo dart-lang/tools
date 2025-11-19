@@ -1,3 +1,6 @@
+## 8.0.9
+- Added `libraryDiagnosticsBundleFailures` to `Event.analysisStatistics`.
+
 ## 8.0.8
 - More data for `Event.analysisStatistics` for events from Dart Analysis Server.
 
