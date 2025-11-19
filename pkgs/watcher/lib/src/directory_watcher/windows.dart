@@ -22,7 +22,8 @@ class WindowsDirectoryWatcher extends ResubscribableWatcher
   String get directory => path;
 
   WindowsDirectoryWatcher(String directory)
-      : super(directory, () => _WindowsDirectoryWatcher(directory));
+      : super(
+            directory, () => WindowsManuallyClosedDirectoryWatcher(directory));
 }
 
 /// Windows directory watcher.
@@ -48,7 +49,7 @@ class WindowsDirectoryWatcher extends ResubscribableWatcher
 /// On my machine, the test failure rate due to the type drops from 150/1000
 /// at 900us to 0/10000 at 1000us. So, 1000us = 1ms is sufficient. Use 5ms to
 /// give a margin for error for different machine performance and load.
-class _WindowsDirectoryWatcher
+class WindowsManuallyClosedDirectoryWatcher
     implements DirectoryWatcher, ManuallyClosedWatcher {
   @override
   String get directory => path;
@@ -94,7 +95,7 @@ class _WindowsDirectoryWatcher
   final Set<StreamSubscription<FileSystemEntity>> _listSubscriptions =
       HashSet<StreamSubscription<FileSystemEntity>>();
 
-  _WindowsDirectoryWatcher(this.path) : _files = PathSet(path) {
+  WindowsManuallyClosedDirectoryWatcher(this.path) : _files = PathSet(path) {
     // Before we're ready to emit events, wait for [_listDir] to complete.
     _listDir().then((_) {
       _startWatch();
@@ -181,7 +182,9 @@ class _WindowsDirectoryWatcher
             event.type == EventType.createDirectory,
         modified: event.type == EventType.modifyFile ||
             event.type == EventType.modifyDirectory,
-        deleted: event.type == EventType.delete,
+        deleted: event.type == EventType.delete ||
+            event.type == EventType.moveFile ||
+            event.type == EventType.moveDirectory,
         movedOnto: false);
     final destination = event.destination;
     if (destination != null) {
@@ -208,13 +211,15 @@ class _WindowsDirectoryWatcher
   void _poll(_PendingPoll poll) {
     final path = poll.path;
     final events = _eventsBasedOnFileSystem(path,
+        reportCreate: poll.created || poll.movedOnto,
+        reportDelete: poll.deleted,
         // A modification can be reported due to a modification event, a
         // create+delete together, or if the path is a move destination.
         // The important case where the file is present, an event arrives
         // for the file and a modification is _not_ reported is when the file
         // was already discovered by listing a new directory, then the "add"
         // event for it is processed afterwards.
-        reportNoChangeAsModification:
+        reportModification:
             poll.modified || (poll.created && poll.deleted) || poll.movedOnto);
 
     for (final event in events) {
@@ -264,10 +269,13 @@ class _WindowsDirectoryWatcher
   /// This returns a list whose order should be reflected in the events emitted
   /// to the user, unlike the batched events from [Directory.watch].
   ///
-  /// [reportNoChangeAsModification] determines whether to report a modification
-  /// if there was a file at [path] and there is still a file at [path].
+  ///
+  /// [reportCreate], [reportModification] and [reportDelete] restrict the types
+  /// of events that can be emitted.
   List<Event> _eventsBasedOnFileSystem(String path,
-      {required bool reportNoChangeAsModification}) {
+      {required bool reportCreate,
+      required bool reportModification,
+      required bool reportDelete}) {
     var fileExisted = _files.contains(path);
     var dirExisted = _files.containsDir(path);
 
@@ -285,26 +293,26 @@ class _WindowsDirectoryWatcher
     var events = <Event>[];
     if (fileExisted) {
       if (fileExists) {
-        if (reportNoChangeAsModification) events.add(Event.modifyFile(path));
+        if (reportModification) events.add(Event.modifyFile(path));
       } else {
-        events.add(Event.delete(path));
+        if (reportDelete) events.add(Event.delete(path));
       }
     } else if (dirExisted) {
       if (dirExists) {
         // If we got contradictory events for a directory that used to exist and
         // still exists, we need to rescan the whole thing in case it was
         // replaced with a different directory.
-        events.add(Event.delete(path));
-        events.add(Event.createDirectory(path));
+        if (reportDelete) events.add(Event.delete(path));
+        if (reportCreate) events.add(Event.createDirectory(path));
       } else {
-        events.add(Event.delete(path));
+        if (reportDelete) events.add(Event.delete(path));
       }
     }
 
     if (!fileExisted && fileExists) {
-      events.add(Event.createFile(path));
+      if (reportCreate) events.add(Event.createFile(path));
     } else if (!dirExisted && dirExists) {
-      events.add(Event.createDirectory(path));
+      if (reportCreate) events.add(Event.createDirectory(path));
     }
 
     return events;

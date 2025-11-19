@@ -2,10 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io' as io;
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:watcher/src/utils.dart';
@@ -32,6 +34,82 @@ void _fileTests({required bool isNative}) {
       writeFile('missing_path/file.txt');
       await expectAddEvent('missing_path/file.txt');
     }
+  });
+
+  // ResubscribableWatcher wraps all the directory watchers to add handling of
+  // multiple subscribers. The underlying watcher is created when there is at
+  // least one subscriber and closed when there are zero subscribers. So,
+  // exercise that behavior in various ways.
+  test('ResubscribableWatcher handles multiple subscriptions ', () async {
+    final watcher = createWatcher();
+
+    // One subscription, one event, close the subscription.
+    final queue1 = StreamQueue(watcher.events);
+    final event1 = queue1.next;
+    await watcher.ready;
+    writeFile('a.txt');
+    expect(await event1, isAddEvent('a.txt'));
+    await queue1.cancel(immediate: true);
+
+    // Open before "ready", cancel before event.
+    final queue2a = StreamQueue(watcher.events);
+    // Open before "ready", cancel after one event.
+    final queue2b = StreamQueue(watcher.events);
+    // Open before "ready", cancel after two events.
+    final queue2c = StreamQueue(watcher.events);
+
+    final queue2aHasNext = queue2a.hasNext;
+    unawaited(queue2a.cancel(immediate: true));
+    expect(await queue2aHasNext, false);
+
+    await watcher.ready;
+
+    // Open after "ready", cancel before event.
+    final queue2d = StreamQueue(watcher.events);
+
+    // Open after "ready", cancel after one event.
+    final queue2e = StreamQueue(watcher.events);
+
+    // Open after "ready", cancel after two events.
+    final queue2f = StreamQueue(watcher.events);
+
+    final queue2dHasNext = queue2d.hasNext;
+    unawaited(queue2d.cancel(immediate: true));
+    expect(await queue2dHasNext, false);
+
+    writeFile('b.txt');
+
+    expect(await queue2b.next, isAddEvent('b.txt'));
+    expect(await queue2c.next, isAddEvent('b.txt'));
+    expect(await queue2e.next, isAddEvent('b.txt'));
+    expect(await queue2f.next, isAddEvent('b.txt'));
+    final queue2bHasNext = queue2b.hasNext;
+    await queue2b.cancel(immediate: true);
+    expect(await queue2bHasNext, false);
+    final queue2eHasNext = queue2e.hasNext;
+    await queue2e.cancel(immediate: true);
+    expect(await queue2eHasNext, false);
+
+    // Remaining subscriptions still get events.
+    writeFile('c.txt');
+    expect(await queue2c.next, isAddEvent('c.txt'));
+    expect(await queue2f.next, isAddEvent('c.txt'));
+    final queue2cHasNext = queue2c.hasNext;
+    await queue2c.cancel(immediate: true);
+    expect(await queue2cHasNext, false);
+    final queue2fHasNext = queue2f.hasNext;
+    await queue2f.cancel(immediate: true);
+    expect(await queue2fHasNext, false);
+
+    // Repeat the first simple test: one subscription, one event, close the
+    // subscription.
+    final queue3 = StreamQueue(watcher.events);
+    await watcher.ready;
+    writeFile('d.txt');
+    expect(await queue3.next, isAddEvent('d.txt'));
+    final queue3HasNext = queue3.hasNext;
+    await queue3.cancel(immediate: true);
+    expect(await queue3HasNext, false);
   });
 
   test('does not notify for files that already exist when started', () async {
@@ -351,6 +429,21 @@ void _fileTests({required bool isNative}) {
           (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt'));
       events.add(isRemoveEvent('dir/sub'));
       await inAnyOrder(events);
+    });
+
+    test('are still watched after move', () async {
+      await startWatcher();
+
+      writeFile('a/b/file.txt');
+      await expectAddEvent('a/b/file.txt');
+
+      renameDir('a', 'c');
+      await inAnyOrder(
+          [isRemoveEvent('a/b/file.txt'), isAddEvent('c/b/file.txt')]);
+
+      writeFile('c/b/file2.txt');
+      await expectAddEvent('c/b/file2.txt');
+      await expectNoEvents();
     });
 
     test('subdirectory watching is robust against races', () async {

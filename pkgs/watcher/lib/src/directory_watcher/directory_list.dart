@@ -142,12 +142,17 @@ class _ResolvedDirectory {
     } on FileSystemException catch (e, s) {
       // The first operation on a directory is to resolve symbolic links, which
       // fails with a general FileSystemException if the file is not found.
-      // Convert that into a PathNotFoundException as that makes more sense
-      // to the caller, who didn't ask for anything to do with symbolic links.
-      if (e.message.contains('Cannot resolve symbolic links') &&
-          e.osError?.errorCode == 2) {
-        throw Error.throwWithStackTrace(
-            PathNotFoundException(directory.path, e.osError!), s);
+      // Convert that into a PathNotFoundException or PathAccessException
+      // as that makes more sense to the caller, who didn't ask for anything to
+      // do with symbolic links.
+      if (e.message.contains('Cannot resolve symbolic links')) {
+        if (e.osError?.errorCode == 2) {
+          throw Error.throwWithStackTrace(
+              PathNotFoundException(directory.path, e.osError!), s);
+        } else if (e.osError?.errorCode == 5) {
+          throw Error.throwWithStackTrace(
+              PathAccessException(directory.path, e.osError!), s);
+        }
       }
       rethrow;
     }

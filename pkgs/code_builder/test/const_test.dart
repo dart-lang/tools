@@ -25,7 +25,6 @@ void main() {
 
   test('assignConst', () {
     expect(
-      // ignore: deprecated_member_use_from_same_package
       constMap.assignConst('constField'),
       equalsDart(
         r'''

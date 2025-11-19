@@ -6,6 +6,12 @@
 - `DirectoryWatcher` on Windows performance: reduce 100ms buffering of events
   before reporting to 5ms, the larger buffer isn't needed for correctness after
   the various fixes.
+- `DirectoryWatcher` on Windows watches in a separate Isolate to make buffer
+  exhaustion, "Directory watcher closed unexpectedly", much less likely. The old
+  implementation which does not use a separate Isolate is available as
+  `DirectoryWatcher(path, runInIsolateOnWindows: false)`.
+- Bug fix: fix tracking failure on Linux. Before the fix, renaming a directory
+  would cause subdirectories of that directory to no longer be tracked.
 - Bug fix: while listing directories skip symlinks that lead to a directory
   that has already been listed. This prevents a severe performance regression on
   MacOS and Linux when there are more than a few symlink loops.
