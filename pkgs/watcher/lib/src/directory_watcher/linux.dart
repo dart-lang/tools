@@ -350,8 +350,12 @@ class _LinuxDirectoryWatcher
   _Watch _watch(String path) {
     logForTesting?.call('_Watch._watch,$path');
 
-    _watches[path]?.cancel();
+    // There can be an existing watch due to race between directory list and
+    // event. Add the replacement watch before closing the old one, so the
+    // underlying VM watch will be reused if it's actually the same directory.
+    final previousWatch = _watches[path];
     final result = _Watch(path, _cancelWatchesUnderPath);
+    if (previousWatch != null) previousWatch.cancel();
     _watches[path] = result;
 
     // If [path] is the root watch directory do nothing, that's handled when the
