@@ -32,8 +32,8 @@ class LinkSyntax extends DelimiterSyntax {
     Resolver? linkResolver,
     String pattern = r'\[',
     int startCharacter = $lbracket,
-  })  : linkResolver = (linkResolver ?? ((String _, [String? __]) => null)),
-        super(pattern, startCharacter: startCharacter);
+  }) : linkResolver = (linkResolver ?? ((String _, [String? _]) => null)),
+       super(pattern, startCharacter: startCharacter);
 
   @override
   Iterable<Node>? close(
@@ -65,11 +65,7 @@ class LinkSyntax extends DelimiterSyntax {
       final inlineLink = _parseInlineLink(parser);
       if (inlineLink != null) {
         return [
-          _tryCreateInlineLink(
-            parser,
-            inlineLink,
-            getChildren: getChildren,
-          ),
+          _tryCreateInlineLink(parser, inlineLink, getChildren: getChildren),
         ];
       }
       // At this point, we've matched `[...](`, but that `(` did not pan out to
@@ -136,10 +132,12 @@ class LinkSyntax extends DelimiterSyntax {
       // Normally, label text does not get parsed as inline Markdown. However,
       // for the benefit of the link resolver, we need to at least escape
       // brackets, so that, e.g. a link resolver can receive `[\[\]]` as `[]`.
-      final resolved = linkResolver(label
-          .replaceAll(r'\\', r'\')
-          .replaceAll(r'\[', '[')
-          .replaceAll(r'\]', ']'));
+      final resolved = linkResolver(
+        label
+            .replaceAll(r'\\', r'\')
+            .replaceAll(r'\[', '[')
+            .replaceAll(r'\]', ']'),
+      );
       if (resolved != null) {
         getChildren();
       }

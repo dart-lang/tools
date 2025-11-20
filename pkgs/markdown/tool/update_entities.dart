@@ -22,11 +22,11 @@ void main() {
   }
 
   final outputPath = '${p.current}/lib/src/assets/html_entities.dart';
-  final stringMap = const JsonEncoder.withIndent('  ')
-      .convert(result)
-      .replaceAll(r'"$"', r'r"$"')
-      .replaceAll(r'"\\"', r'r"\"');
-  final output = '''
+  final stringMap = const JsonEncoder.withIndent(
+    '  ',
+  ).convert(result).replaceAll(r'"$"', r'r"$"').replaceAll(r'"\\"', r'r"\"');
+  final output =
+      '''
 // Generated file. do not edit.
 //
 // Source: tool/entities.json

@@ -10,7 +10,7 @@
 * Fix an issue with nested list structure when indented by tabs (#2172).
 * Deprecated `LinkContext` and `BlockParser.standardBlockSyntaxes`.
   Implementation members that should never have been made public.
-* Require Dart `^3.4.0`.
+* Require Dart `^3.9.0`.
 
 ## 7.3.0
 

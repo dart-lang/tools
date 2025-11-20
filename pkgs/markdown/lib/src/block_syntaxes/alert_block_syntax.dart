@@ -57,8 +57,9 @@ class AlertBlockSyntax extends BlockSyntax {
       // a Setext header.
       // Because indented code blocks cannot interrupt paragraphs, a line
       // matched CodeBlockSyntax is also paragraph continuation text.
-      final otherMatched =
-          parser.blockSyntaxes.firstWhere((s) => s.canParse(parser));
+      final otherMatched = parser.blockSyntaxes.firstWhere(
+        (s) => s.canParse(parser),
+      );
       if ((otherMatched is ParagraphSyntax &&
               !lastLine.isBlankLine &&
               !codeFencePattern.hasMatch(lastLine.content)) ||
@@ -78,8 +79,10 @@ class AlertBlockSyntax extends BlockSyntax {
   @override
   Node parse(BlockParser parser) {
     // Parse the alert type from the first line.
-    final type =
-        pattern.firstMatch(parser.current.content)!.group(1)!.toLowerCase();
+    final type = pattern
+        .firstMatch(parser.current.content)!
+        .group(1)!
+        .toLowerCase();
     parser.advance();
     final childLines = parseChildLines(parser);
     // Recursively parse the contents of the alert.

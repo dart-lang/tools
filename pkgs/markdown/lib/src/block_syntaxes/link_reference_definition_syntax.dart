@@ -53,11 +53,8 @@ class LinkReferenceDefinitionSyntax extends BlockSyntax {
 
     parser.document.linkReferences.putIfAbsent(
       labelString,
-      () => LinkReference(
-        labelString,
-        linkParser.destination!,
-        linkParser.title,
-      ),
+      () =>
+          LinkReference(labelString, linkParser.destination!, linkParser.title),
     );
 
     return true;
