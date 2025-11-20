@@ -15,27 +15,22 @@ import 'package:watcher/watcher.dart';
 /// lengths on disk.
 class ClientSimulator {
   final Watcher watcher;
-  final void Function(String) printOnFailure;
-
-  /// Events and actions, for logging on failure.
-  final List<String> messages = [];
+  final void Function(String) log;
 
   final Map<String, int> _trackedFileLengths = {};
 
   StreamSubscription<WatchEvent>? _subscription;
   DateTime _lastEventAt = DateTime.now();
 
-  ClientSimulator._({required this.watcher, required this.printOnFailure});
+  ClientSimulator._({required this.watcher, required this.log});
 
   /// Creates a `ClientSimulator` watching with [watcher].
   ///
   /// When returned, it has already read the filesystem state and started
   /// tracking file lengths using watcher events.
   static Future<ClientSimulator> watch(
-      {required Watcher watcher,
-      required void Function(String) printOnFailure}) async {
-    final result =
-        ClientSimulator._(watcher: watcher, printOnFailure: printOnFailure);
+      {required Watcher watcher, required void Function(String) log}) async {
+    final result = ClientSimulator._(watcher: watcher, log: log);
     result._initialRead();
     result._subscription = watcher.events.listen(result._handleEvent);
     await watcher.ready;
@@ -93,7 +88,7 @@ class ClientSimulator {
         if (_trackedFileLengths.containsKey(event.path)) {
           // This happens sometimes, so investigation+fix would be needed
           // if we want to make it an error.
-          printOnFailure('Warning: ADD for tracked path,${event.path}');
+          log('Warning: ADD for tracked path,${event.path}');
         }
         _readFile(event.path);
         break;
@@ -106,7 +101,7 @@ class ClientSimulator {
         if (!_trackedFileLengths.containsKey(event.path)) {
           // This happens sometimes, so investigation+fix would be needed
           // if we want to make it an error.
-          printOnFailure('Warning: REMOVE untracked path: ${event.path}');
+          log('Warning: REMOVE untracked path: ${event.path}');
         }
         _trackedFileLengths.remove(event.path);
         break;
@@ -182,6 +177,6 @@ class ClientSimulator {
     // Remove the tmp folder from the message.
     message =
         message.replaceAll('${watcher.path}${Platform.pathSeparator}', '');
-    messages.add(message);
+    log(message);
   }
 }

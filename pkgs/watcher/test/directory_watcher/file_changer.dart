@@ -9,6 +9,7 @@ import 'dart:math';
 import 'package:path/path.dart' as p;
 
 import '../utils.dart';
+import 'end_to_end_tests.dart';
 
 /// Changes files randomly.
 ///
@@ -26,22 +27,24 @@ class FileChanger {
   final String path;
 
   Random _random = Random(0);
-  final List<String> _messages = [];
+  final List<LogEntry> _messages = [];
 
   FileChanger(this.path);
 
   /// Changes files under [path], [times] times.
   ///
+  /// Changes are randomized with [seed], pass the same value to get the same
+  /// changes.
+  ///
   /// Returns a log of the changes made.
-  Future<List<String>> changeFiles({required int times}) async {
+  Future<List<LogEntry>> changeFiles(
+      {required int times, required int seed}) async {
+    _random = Random(seed);
     final result = await Isolate.run(() => _changeFiles(times: times));
-    // The `Random` instance gets copied to the isolate on every run, so by
-    // default it will produce the same numbers. Update it to get new numbers.
-    _random = Random(_random.nextInt(0xffffffff));
     return result;
   }
 
-  Future<List<String>> _changeFiles({required int times}) async {
+  Future<List<LogEntry>> _changeFiles({required int times}) async {
     _messages.clear();
     for (var i = 0; i != times; ++i) {
       await _changeFilesOnce();
@@ -163,6 +166,6 @@ class FileChanger {
   void _log(String message) {
     // Remove the tmp folder from the message.
     message = message.replaceAll(',$path${Platform.pathSeparator}', ',');
-    _messages.add(message);
+    _messages.add(LogEntry('F $message'));
   }
 }
