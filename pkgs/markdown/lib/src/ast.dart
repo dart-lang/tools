@@ -25,19 +25,15 @@ class Element implements Node {
   Element(this.tag, this.children) : attributes = {};
 
   /// Instantiates an empty, self-closing [tag] Element.
-  Element.empty(this.tag)
-      : children = null,
-        attributes = {};
+  Element.empty(this.tag) : children = null, attributes = {};
 
   /// Instantiates a [tag] Element with no [children].
-  Element.withTag(this.tag)
-      : children = const [],
-        attributes = {};
+  Element.withTag(this.tag) : children = const [], attributes = {};
 
   /// Instantiates a [tag] Element with a single Text child.
   Element.text(this.tag, String text)
-      : children = [Text(text)],
-        attributes = {};
+    : children = [Text(text)],
+      attributes = {};
 
   /// Whether this element is self-closing.
   bool get isEmpty => children == null;

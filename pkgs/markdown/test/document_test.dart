@@ -22,8 +22,9 @@ void main() {
       final document = Document();
 
       test('encodes HTML in an inline code snippet', () {
-        final result =
-            document.parseInline('``<p>Hello <em>Markdown</em></p>``');
+        final result = document.parseInline(
+          '``<p>Hello <em>Markdown</em></p>``',
+        );
         final codeSnippet = result.single as Element;
         expect(
           codeSnippet.textContent,
@@ -60,29 +61,32 @@ void main() {
         expect(result, '<p>\n</p>\n<pre>\n A\n B\n</pre>');
       });
 
-      test('encode double quotes, greater than, and less than when escaped',
-          () {
-        const contents = r'\>\"\< Hello';
-        final document = Document();
-        final nodes = document.parseInline(contents);
-        expect(nodes, hasLength(1));
-        expect(
-          nodes.single,
-          const TypeMatcher<Text>().having(
-            (e) => e.text,
-            'text',
-            '&gt;&quot;&lt; Hello',
-          ),
-        );
-      });
+      test(
+        'encode double quotes, greater than, and less than when escaped',
+        () {
+          const contents = r'\>\"\< Hello';
+          final document = Document();
+          final nodes = document.parseInline(contents);
+          expect(nodes, hasLength(1));
+          expect(
+            nodes.single,
+            const TypeMatcher<Text>().having(
+              (e) => e.text,
+              'text',
+              '&gt;&quot;&lt; Hello',
+            ),
+          );
+        },
+      );
     });
 
     group('with encodeHtml disabled', () {
       final document = Document(encodeHtml: false);
 
       test('leaves HTML alone, in a code snippet', () {
-        final result =
-            document.parseInline('```<p>Hello <em>Markdown</em></p>```');
+        final result = document.parseInline(
+          '```<p>Hello <em>Markdown</em></p>```',
+        );
         final codeSnippet = result.single as Element;
         expect(
           codeSnippet.textContent,

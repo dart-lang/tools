@@ -68,11 +68,13 @@ class ColorSwatchSyntax extends InlineSyntax {
 
     if (parser.encodeHtml) code = escapeHtml(code);
 
-    parser.addNode(Element('code', [
-      Text(code),
-      Element.withTag('span')..attributes['style'] = 'background-color:$code;',
-    ])
-      ..attributes['class'] = 'gfm-color_chip');
+    parser.addNode(
+      Element('code', [
+        Text(code),
+        Element.withTag('span')
+          ..attributes['style'] = 'background-color:$code;',
+      ])..attributes['class'] = 'gfm-color_chip',
+    );
 
     return true;
   }

@@ -16,23 +16,19 @@ class AutolinkExtensionSyntax extends InlineSyntax {
       // Note: Disable this piece for now, as Safari does not support
       // lookarounds. Consider re-enabling later.
       // r'(?<=^|[\s*_~(>])'
-
       // An extended url autolink will be recognised when one of the schemes
       // http://, or https://, followed by a valid domain. See
       // https://github.github.com/gfm/#extended-url-autolink.
       r'(?:(?:https?|ftp):\/\/|www\.)'
-
       // A valid domain consists of segments of alphanumeric characters,
       // underscores (_) and hyphens (-) separated by periods (.). There must
       // be at least one period, and no underscores may be present in the last
       // two segments of the domain. See
       // https://github.github.com/gfm/#valid-domain.
       r'(?:[-_a-z0-9]+\.)*(?:[-a-z0-9]+\.[-a-z0-9]+)'
-
       // After a valid domain, zero or more non-space non-< characters may
       // follow.
       r'[^\s<]*'
-
       // Trailing punctuation (specifically, ?, !, ., ,, :, *, _, and ~) will
       // not be considered part of the autolink, though they may be included in
       // the interior of the link. See
@@ -47,10 +43,7 @@ class AutolinkExtensionSyntax extends InlineSyntax {
       r'[-_.+a-z0-9]+@(?:[-_a-z0-9]+\.)+[-_a-z0-9]*[a-z0-9]';
 
   AutolinkExtensionSyntax()
-      : super(
-          '($_linkPattern)|($_emailPattern)',
-          caseSensitive: false,
-        );
+    : super('($_linkPattern)|($_emailPattern)', caseSensitive: false);
 
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {
