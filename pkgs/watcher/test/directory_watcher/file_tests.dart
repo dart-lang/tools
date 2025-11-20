@@ -251,6 +251,31 @@ void _fileTests({required bool isNative}) {
       deleteFile('file.txt');
     });
 
+    test('reports when a file is moved between directories then deleted',
+        () async {
+      writeFile('a/test.txt');
+      createDir('b');
+      await startWatcher(path: 'b');
+
+      renameFile('a/test.txt', 'b/test.txt');
+      deleteFile('b/test.txt');
+
+      final events =
+          await takeEvents(duration: const Duration(milliseconds: 500));
+
+      // It's correct to report either nothing or an add+remove.
+      expect(
+          events,
+          anyOf([
+            isEmpty,
+            containsAll([
+              isAddEvent('b/test.txt'),
+              isRemoveEvent('b/test.txt'),
+            ]),
+          ]));
+      expect(events, isNot(contains(isModifyEvent('b/test.txt'))));
+    });
+
     test(
         'reports a modification when a file is deleted and then immediately '
         'recreated', () async {
