@@ -66,6 +66,8 @@ class _LinuxDirectoryWatcher
   /// parent directory.
   final PathSet _directoriesWatched;
 
+  final Set<_InterruptableDirectoryListing> _listings = Set.identity();
+
   /// A set of all subscriptions that this watcher subscribes to.
   ///
   /// These are gathered together so that they may all be canceled when the
@@ -97,8 +99,11 @@ class _LinuxDirectoryWatcher
       _eventsController.addError(error, stackTrace);
     });
 
+    final listing = _InterruptableDirectoryListing(
+        Directory(path).listRecursivelyIgnoringErrors());
+    _listings.add(listing);
     _listen(
-      Directory(path).listRecursivelyIgnoringErrors(),
+      listing.stream,
       (FileSystemEntity entity) {
         if (entity is Directory) {
           _watchSubdir(entity.path);
@@ -108,6 +113,7 @@ class _LinuxDirectoryWatcher
       },
       onError: _emitError,
       onDone: () {
+        _listings.remove(listing);
         if (!isReady) {
           _readyCompleter.complete();
         }
@@ -252,8 +258,16 @@ class _LinuxDirectoryWatcher
       // Unless [path] was a file and still is, emit REMOVE events for it or its
       // contents,
       if (files.contains(path) && _files.contains(path)) continue;
-      for (var file in _files.remove(path)) {
-        _emitEvent(ChangeType.REMOVE, file);
+
+      final filesToRemove = _files.remove(path);
+      if (filesToRemove.isEmpty) {
+        for (final listing in _listings) {
+          listing.ignore(path);
+        }
+      } else {
+        for (var file in filesToRemove) {
+          _emitEvent(ChangeType.REMOVE, file);
+        }
       }
     }
 
@@ -274,8 +288,10 @@ class _LinuxDirectoryWatcher
 
   /// Emits [ChangeType.ADD] events for the recursive contents of [path].
   void _addSubdir(String path) {
-    _listen(Directory(path).listRecursivelyIgnoringErrors(),
-        (FileSystemEntity entity) {
+    final listing = _InterruptableDirectoryListing(
+        Directory(path).listRecursivelyIgnoringErrors());
+    _listings.add(listing);
+    _listen(listing.stream, (FileSystemEntity entity) {
       if (entity is Directory) {
         _watchSubdir(entity.path);
       } else {
@@ -287,6 +303,8 @@ class _LinuxDirectoryWatcher
           _emitEvent(ChangeType.ADD, entity.path);
         }
       }
+    }, onDone: () {
+      _listings.remove(listing);
     }, onError: (Object error, StackTrace stackTrace) {
       // Ignore an exception caused by the dir not existing. It's fine if it
       // was added and then quickly removed.
@@ -377,6 +395,27 @@ class _LinuxDirectoryWatcher
     for (final dir in _directoriesWatched.remove(path)) {
       _watches.remove(dir)!.cancel();
     }
+  }
+}
+
+class _InterruptableDirectoryListing {
+  late final Stream<FileSystemEntity> stream;
+
+  final Set<String> ignores = {};
+
+  _InterruptableDirectoryListing(Stream<FileSystemEntity> stream) {
+    this.stream = stream
+        .transform(StreamTransformer.fromHandlers(handleData: _handleData));
+  }
+
+  void _handleData(FileSystemEntity entity, EventSink<FileSystemEntity> sink) {
+    if (!ignores.contains(entity.path)) {
+      sink.add(entity);
+    }
+  }
+
+  void ignore(String path) {
+    ignores.add(path);
   }
 }
 
