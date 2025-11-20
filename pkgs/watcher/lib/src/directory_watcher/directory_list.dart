@@ -40,7 +40,8 @@ extension DirectoryRobustRecursiveListing on Directory {
 /// A recursive directory listing algorithm that follows symlinks carefully.
 class _DirectoryTraversal {
   final Directory root;
-  final StreamController<FileSystemEntity> _result = StreamController();
+  final StreamController<FileSystemEntity> _result =
+      StreamController(sync: true);
 
   /// The directories currently being traversed.
   ///
@@ -72,10 +73,11 @@ class _DirectoryTraversal {
   /// A subdirectory is only listed if its canonical path is not already in
   /// [_traversing].
   Future<void> _listAndRecurseOrThrow(_ResolvedDirectory directory) async {
+    await Future<void>.delayed(Duration.zero);
     final subdirectories = <_ResolvedDirectory>[];
 
-    await for (var entity
-        in directory.directory.list(recursive: false, followLinks: false)) {
+    for (var entity
+        in directory.directory.listSync(recursive: false, followLinks: false)) {
       // Handle links.
       if (entity is Link) {
         // Look up their target and target type.
