@@ -87,16 +87,25 @@ Future<void> _runTest({
 
     // Fail the test if still not consistent.
     if (!succeeded) {
-      if (endlessMode) print('');
+      // Sort the log entries by timestamp.
+      final displayedLog = (log..sort()).map((m) => '$m\n').join('');
+
+      if (endlessMode) {
+        print('');
+      } else {
+        printOnFailure('''
+===
+$displayedLog
+===
+''');
+      }
+
       client.verify(printOnFailure: printOnFailure);
       // Write the file operations before the failure to a log, fail the test.
       final logTemp = Directory.systemTemp.createTempSync();
       final logPath = p.join(logTemp.path, 'log.txt');
 
-      // Sort the log entries by timestamp.
-      log.sort();
-
-      File(logPath).writeAsStringSync(log.map((m) => '$m\n').join(''));
+      File(logPath).writeAsStringSync(displayedLog);
       fail('''
 Failed on run $i, seed $runSeed. Run in a loop with that seed using:
 

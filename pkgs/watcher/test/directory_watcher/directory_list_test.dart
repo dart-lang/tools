@@ -216,19 +216,16 @@ Future<Set<String>> list(String directory) async {
     return path.substring(directory.length + 1).replaceAll('\\', '/');
   }
 
-  final fileSystemEntities =
-      await Directory(directory).listRecursively().toList();
+  final directoryLists = await Directory(directory).listRecursively().toList();
   final result = <String>[];
-  for (final entity in fileSystemEntities) {
-    final path = normalizePath(entity.path);
-    if (entity is File) {
+  for (final directoryList in directoryLists) {
+    for (final file in directoryList.files) {
+      final path = normalizePath(file);
       result.add('f:$path');
-    } else if (entity is Directory) {
+    }
+    for (final directory in directoryList.directories) {
+      final path = normalizePath(directory);
       result.add('d:$path');
-    } else if (entity is Link) {
-      result.add('l:$path');
-    } else {
-      fail('Unexpected entity type: $entity');
     }
   }
 

@@ -15,7 +15,7 @@ extension DirectoryRobustRecursiveListing on Directory {
   /// These can arise from concurrent file-system modification.
   ///
   /// See [listRecursively] for how symlinks are handled.
-  Stream<FileSystemEntity> listRecursivelyIgnoringErrors() {
+  Stream<DirectoryList> listRecursivelyIgnoringErrors() {
     return listRecursively()
         .ignoring<PathNotFoundException>()
         .ignoring<PathAccessException>();
@@ -33,14 +33,22 @@ extension DirectoryRobustRecursiveListing on Directory {
   /// symlink-resolved paths.
   ///
   /// Skipped links to directories are not mentioned in the directory listing.
-  Stream<FileSystemEntity> listRecursively() =>
+  Stream<DirectoryList> listRecursively() =>
       _DirectoryTraversal(this).listRecursively();
+}
+
+class DirectoryList {
+  final Directory directory;
+  final Set<String> files = {};
+  final Set<String> directories = {};
+  final Set<String> ignores = {};
+  DirectoryList(this.directory);
 }
 
 /// A recursive directory listing algorithm that follows symlinks carefully.
 class _DirectoryTraversal {
   final Directory root;
-  final StreamController<FileSystemEntity> _result = StreamController();
+  final StreamController<DirectoryList> _result = StreamController();
 
   /// The directories currently being traversed.
   ///
@@ -49,7 +57,7 @@ class _DirectoryTraversal {
 
   _DirectoryTraversal(this.root);
 
-  Stream<FileSystemEntity> listRecursively() {
+  Stream<DirectoryList> listRecursively() {
     unawaited(_listAndRecurse());
     return _result.stream;
   }
@@ -72,10 +80,12 @@ class _DirectoryTraversal {
   /// A subdirectory is only listed if its canonical path is not already in
   /// [_traversing].
   Future<void> _listAndRecurseOrThrow(_ResolvedDirectory directory) async {
-    final subdirectories = <_ResolvedDirectory>[];
+    await Future<void>.delayed(Duration.zero);
 
-    await for (var entity
-        in directory.directory.list(recursive: false, followLinks: false)) {
+    final subdirectories = <_ResolvedDirectory>[];
+    final directoryList = DirectoryList(directory.directory);
+    for (var entity
+        in directory.directory.listSync(recursive: false, followLinks: false)) {
       // Handle links.
       if (entity is Link) {
         // Look up their target and target type.
@@ -83,15 +93,20 @@ class _DirectoryTraversal {
         final targetType = FileSystemEntity.typeSync(target);
 
         if (targetType == FileSystemEntityType.directory) {
+          // Skip if they currently being traversed.
+          if (_traversing.contains(target)) continue;
+
           // Add links to directories with their target to [subdirectories].
-          subdirectories.add(_ResolvedDirectory(
-              directory: Directory(entity.path), canonicalPath: target));
+          final resolvedDirectory = _ResolvedDirectory(
+              directory: Directory(entity.path), canonicalPath: target);
+          subdirectories.add(resolvedDirectory);
+          directoryList.directories.add(entity.path);
         } else if (targetType == FileSystemEntityType.file) {
           // Output files.
-          _result.add(File(entity.path));
+          directoryList.files.add(entity.path);
         } else {
           // Anything else. Broken links get output with type `Link`.
-          _result.add(entity);
+          directoryList.files.add(entity.path);
         }
         continue;
       }
@@ -107,22 +122,26 @@ class _DirectoryTraversal {
         final resolvedDirectory = directory.isCanonical
             ? entity.path
             : p.join(directory.canonicalPath, p.basename(entity.path));
+
+        // Skip if currently being traversed.
+        if (_traversing.contains(resolvedDirectory)) continue;
+
         subdirectories.add(_ResolvedDirectory(
             directory: entity, canonicalPath: resolvedDirectory));
+        directoryList.directories.add(entity.path);
         continue;
       }
 
       // Files and anything else.
-      _result.add(entity);
+      directoryList.files.add(entity.path);
     }
+    _result.add(directoryList);
 
     // Recurse into subdirectories that are not already being traversed.
     for (final directory in subdirectories) {
-      if (_traversing.add(directory.canonicalPath)) {
-        _result.add(directory.directory);
-        await _listAndRecurseOrThrow(directory);
-        _traversing.remove(directory.canonicalPath);
-      }
+      _traversing.add(directory.canonicalPath);
+      await _listAndRecurseOrThrow(directory);
+      _traversing.remove(directory.canonicalPath);
     }
   }
 }

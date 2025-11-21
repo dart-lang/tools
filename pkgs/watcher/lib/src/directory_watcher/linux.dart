@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
 
 import '../directory_watcher.dart';
 import '../event.dart';
@@ -66,6 +67,8 @@ class _LinuxDirectoryWatcher
   /// parent directory.
   final PathSet _directoriesWatched;
 
+  final Set<_InterruptableDirectoryListing> _listings = Set.identity();
+
   /// A set of all subscriptions that this watcher subscribes to.
   ///
   /// These are gathered together so that they may all be canceled when the
@@ -75,7 +78,7 @@ class _LinuxDirectoryWatcher
   _LinuxDirectoryWatcher(String path)
       : _files = PathSet(path),
         _directoriesWatched = PathSet(path) {
-    _nativeEvents.add(_watch(path)
+    _nativeEvents.add(_watch(path, watchUntilCancelled: false)
         .events
         .transform(StreamTransformer.fromHandlers(handleDone: (sink) {
       // Handle the done event here rather than in the call to [_listen] because
@@ -97,17 +100,22 @@ class _LinuxDirectoryWatcher
       _eventsController.addError(error, stackTrace);
     });
 
+    final listing = _InterruptableDirectoryListing(
+        Directory(path).listRecursivelyIgnoringErrors());
+    _listings.add(listing);
     _listen(
-      Directory(path).listRecursivelyIgnoringErrors(),
-      (FileSystemEntity entity) {
-        if (entity is Directory) {
-          _watchSubdir(entity.path);
-        } else {
-          _files.add(entity.path);
+      listing.stream,
+      (DirectoryList directoryList) {
+        for (final directory in directoryList.directories) {
+          _watchSubdir(directory);
+        }
+        for (final file in directoryList.files) {
+          _files.add(file);
         }
       },
       onError: _emitError,
       onDone: () {
+        _listings.remove(listing);
         if (!isReady) {
           _readyCompleter.complete();
         }
@@ -130,21 +138,9 @@ class _LinuxDirectoryWatcher
 
   /// Watch a subdirectory of [directory] for changes.
   void _watchSubdir(String path) {
-    // TODO(nweiz): Right now it's possible for the watcher to emit an event for
-    // a file before the directory list is complete. This could lead to the user
-    // seeing a MODIFY or REMOVE event for a file before they see an ADD event,
-    // which is bad. We should handle that.
-    //
-    // One possibility is to provide a general means (e.g.
-    // `DirectoryWatcher.eventsAndExistingFiles`) to tell a watcher to emit
-    // events for all the files that already exist. This would be useful for
-    // top-level clients such as barback as well, and could be implemented with
-    // a wrapper similar to how listening/canceling works now.
-
-    // Directory might no longer exist at the point where we try to
-    // start the watcher. Simply ignore this error and let the stream
-    // close.
-    var stream = _watch(path).events.ignoring<PathNotFoundException>();
+    var stream = _watch(path, watchUntilCancelled: true)
+        .events
+        .ignoring<PathNotFoundException>();
     _nativeEvents.add(stream);
   }
 
@@ -161,7 +157,7 @@ class _LinuxDirectoryWatcher
     // end of the batch. Catch these cases in order to do a check on the actual
     // filesystem state.
     var deletes = <String>{};
-    var creates = <String>{};
+    var creates = PathSet(path);
 
     for (var event in batch) {
       // If the watched directory is deleted or moved, we'll get a deletion
@@ -208,7 +204,7 @@ class _LinuxDirectoryWatcher
 
         case EventType.modifyDirectory:
           files.remove(event.path);
-          dirs.add(event.path);
+          if (dirs.add(event.path)) creates.add(event.path);
 
         case EventType.createFile:
           creates.add(event.path);
@@ -216,25 +212,35 @@ class _LinuxDirectoryWatcher
           dirs.remove(event.path);
 
         case EventType.modifyFile:
-          files.add(event.path);
+          if (files.add(event.path)) creates.add(event.path);
           dirs.remove(event.path);
       }
     }
 
     // Check paths that might have been affected by out-of-order events, set
     // the correct state in [files] and [dirs].
-    for (final path in deletes.intersection(creates)) {
-      final type = FileSystemEntity.typeSync(path, followLinks: false);
-      if (type == FileSystemEntityType.file ||
-          type == FileSystemEntityType.link) {
-        files.add(path);
-        dirs.remove(path);
-      } else if (type == FileSystemEntityType.directory) {
-        dirs.add(path);
-        files.remove(path);
-      } else {
-        files.remove(path);
-        dirs.remove(path);
+    //
+    // If a delete is a directory, it makes all the creates in the directory
+    // ambiguous. `creates` is a `PathSet` so it `remove` matches files under
+    // removed directories.
+    for (final delete in deletes) {
+      for (final path in creates.remove(delete)) {
+        logForTesting?.call('ambiguous, recheck $path');
+        final type = FileSystemEntity.typeSync(path, followLinks: false);
+        if (type == FileSystemEntityType.file ||
+            type == FileSystemEntityType.link) {
+          logForTesting?.call('ambiguous, recheck $path: file');
+          files.add(path);
+          dirs.remove(path);
+        } else if (type == FileSystemEntityType.directory) {
+          logForTesting?.call('ambiguous, recheck $path: directory');
+          dirs.add(path);
+          files.remove(path);
+        } else {
+          logForTesting?.call('ambiguous, recheck $path: missing');
+          files.remove(path);
+          dirs.remove(path);
+        }
       }
     }
 
@@ -252,8 +258,16 @@ class _LinuxDirectoryWatcher
       // Unless [path] was a file and still is, emit REMOVE events for it or its
       // contents,
       if (files.contains(path) && _files.contains(path)) continue;
-      for (var file in _files.remove(path)) {
-        _emitEvent(ChangeType.REMOVE, file);
+
+      final filesToRemove = _files.remove(path);
+      if (filesToRemove.isEmpty) {
+        for (final listing in _listings) {
+          listing.ignore(path);
+        }
+      } else {
+        for (var file in filesToRemove) {
+          _emitEvent(ChangeType.REMOVE, file);
+        }
       }
     }
 
@@ -262,31 +276,58 @@ class _LinuxDirectoryWatcher
         _emitEvent(ChangeType.MODIFY, file);
       } else {
         _emitEvent(ChangeType.ADD, file);
+        for (final listing in _listings) {
+          listing.ignore(file);
+        }
         _files.add(file);
       }
     }
 
     for (var dir in dirs) {
       _watchSubdir(dir);
+    }
+    for (var dir in dirs) {
       _addSubdir(dir);
     }
   }
 
   /// Emits [ChangeType.ADD] events for the recursive contents of [path].
   void _addSubdir(String path) {
-    _listen(Directory(path).listRecursivelyIgnoringErrors(),
-        (FileSystemEntity entity) {
-      if (entity is Directory) {
-        _watchSubdir(entity.path);
-      } else {
+    logForTesting?.call('_addSubdir,$path');
+    final listing = _InterruptableDirectoryListing(
+        Directory(path).listRecursivelyIgnoringErrors());
+    _listings.add(listing);
+    _listen(listing.stream, (DirectoryList directoryList) {
+      for (final directory in directoryList.directories) {
+        _watchSubdir(directory);
+      }
+      for (final file in directoryList.files) {
         // Only emit ADD if it hasn't already been emitted due to the file being
         // modified or added after the directory was added.
-        if (!_files.contains(entity.path)) {
-          logForTesting?.call('_addSubdir,$path,$entity');
-          _files.add(entity.path);
-          _emitEvent(ChangeType.ADD, entity.path);
+        if (!_files.contains(file)) {
+          if (!directoryList.ignores.contains(file)) {
+            logForTesting?.call('_addSubdir,$path,$file');
+            _files.add(file);
+            _emitEvent(ChangeType.ADD, file);
+          }
         }
       }
+
+      // DO NOT SUBMIT make this fast
+      for (final file in _files.paths) {
+        if (p.dirname(file) == directoryList.directory.path) {
+          if (!directoryList.files.contains(file)) {
+            if (!directoryList.ignores.contains(file)) {
+              logForTesting?.call(
+                  '_addSubdir,remove,$path,$file,${directoryList.files}}');
+              _emitEvent(ChangeType.REMOVE, file);
+              _files.remove(file);
+            }
+          }
+        }
+      }
+    }, onDone: () {
+      _listings.remove(listing);
     }, onError: (Object error, StackTrace stackTrace) {
       // Ignore an exception caused by the dir not existing. It's fine if it
       // was added and then quickly removed.
@@ -347,11 +388,16 @@ class _LinuxDirectoryWatcher
   /// Watches [path].
   ///
   /// See [_Watch] class comment.
-  _Watch _watch(String path) {
+  _Watch _watch(String path, {required bool watchUntilCancelled}) {
     logForTesting?.call('_Watch._watch,$path');
 
-    _watches[path]?.cancel();
-    final result = _Watch(path, _cancelWatchesUnderPath);
+    // There can be an existing watch due to race between directory list and
+    // event. Add the replacement watch before closing the old one, so the
+    // underlying VM watch will be reused if it's actually the same directory.
+    final previousWatch = _watches[path];
+    final result = _Watch(path, _cancelWatchesUnderPath,
+        watchUntilCancelled: watchUntilCancelled);
+    if (previousWatch != null) previousWatch.cancel();
     _watches[path] = result;
 
     // If [path] is the root watch directory do nothing, that's handled when the
@@ -376,6 +422,26 @@ class _LinuxDirectoryWatcher
   }
 }
 
+class _InterruptableDirectoryListing {
+  late final Stream<DirectoryList> stream;
+
+  final Set<String> ignores = {};
+
+  _InterruptableDirectoryListing(Stream<DirectoryList> stream) {
+    this.stream = stream
+        .transform(StreamTransformer.fromHandlers(handleData: _handleData));
+  }
+
+  void _handleData(DirectoryList directoryList, EventSink<DirectoryList> sink) {
+    directoryList.ignores.addAll(ignores);
+    sink.add(directoryList);
+  }
+
+  void ignore(String path) {
+    ignores.add(path);
+  }
+}
+
 /// Watches [path].
 ///
 /// Workaround for issue with watches on Linux following renames
@@ -392,10 +458,18 @@ class _Watch {
   final void Function(String) _cancelWatchesUnderPath;
   final StreamController<FileSystemEvent> _controller =
       StreamController<FileSystemEvent>();
-  late final StreamSubscription<FileSystemEvent> _subscription;
+  late StreamSubscription<FileSystemEvent> _subscription;
   Stream<FileSystemEvent> get events => _controller.stream;
+  final bool _watchUntilCancelled;
+  bool closing = false;
 
-  _Watch(this.path, this._cancelWatchesUnderPath) {
+  _Watch(this.path, this._cancelWatchesUnderPath,
+      {required bool watchUntilCancelled})
+      : _watchUntilCancelled = watchUntilCancelled {
+    _startListening();
+  }
+
+  void _startListening() {
     _subscription = _listen(path, _controller);
   }
 
@@ -404,6 +478,11 @@ class _Watch {
     return Directory(path).watch().listen(
       (event) {
         logForTesting?.call('_Watch._listen,$path,$event');
+
+        if (event.path != path && !event.path.startsWith(path)) {
+          event = event.fixDirectory(path);
+        }
+
         if (event is FileSystemDeleteEvent ||
             (event.isDirectory && event is FileSystemMoveEvent)) {
           _cancelWatchesUnderPath(event.path);
@@ -411,13 +490,51 @@ class _Watch {
 
         controller.add(event);
       },
-      onError: controller.addError,
-      onDone: controller.close,
+      onError: (Object e, StackTrace s) {
+        logForTesting?.call('_Watch._listen,error,$path');
+
+        controller.addError(e, s);
+        closing = true;
+      },
+      onDone: () {
+        logForTesting?.call('_Watch._listen,close,$path');
+        // TODO(davidmorgan): link to SDK issue.
+        if (_watchUntilCancelled) {
+          _subscription.cancel();
+          if (!closing) {
+            _startListening();
+          }
+        } else {
+          controller.close();
+        }
+      },
     );
   }
 
   void cancel() {
     logForTesting?.call('_Watch.cancel,$path');
     _subscription.cancel();
+  }
+}
+
+extension _FileSystemEventExtensions on FileSystemEvent {
+  FileSystemEvent fixDirectory(String directory) {
+    final basename = p.basename(path);
+    final newPath = p.join(directory, basename);
+
+    switch (type) {
+      case FileSystemEvent.create:
+        return FileSystemCreateEvent(newPath, isDirectory);
+      case FileSystemEvent.modify:
+        return FileSystemModifyEvent(newPath, isDirectory,
+            (this as FileSystemModifyEvent).contentChanged);
+      case FileSystemEvent.delete:
+        return FileSystemDeleteEvent(newPath, isDirectory);
+      case FileSystemEvent.move:
+        return FileSystemMoveEvent(
+            newPath, isDirectory, (this as FileSystemMoveEvent).destination);
+      default:
+        throw StateError('Unexpected type $type');
+    }
   }
 }

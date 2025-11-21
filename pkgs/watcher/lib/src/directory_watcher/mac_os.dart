@@ -69,11 +69,11 @@ class _MacOSDirectoryWatcher
 
   /// The subscription to the [Directory.list] call for the initial listing of
   /// the directory to determine its initial state.
-  StreamSubscription<FileSystemEntity>? _initialListSubscription;
+  StreamSubscription<DirectoryList>? _initialListSubscription;
 
   /// The subscriptions to [Directory.list] calls for listing the contents of a
   /// subdirectory that was moved into the watched directory.
-  final _listSubscriptions = <StreamSubscription<FileSystemEntity>>{};
+  final _listSubscriptions = <StreamSubscription<DirectoryList>>{};
 
   /// The timer for tracking how long we wait for an initial batch of bogus
   /// events (see issue 14373).
@@ -152,12 +152,13 @@ class _MacOSDirectoryWatcher
             if (_files.containsDir(path)) continue;
 
             var stream = Directory(path).listRecursivelyIgnoringErrors();
-            var subscription = stream.listen((entity) {
-              if (entity is Directory) return;
-              if (_files.contains(entity.path)) return;
+            var subscription = stream.listen((directoryList) {
+              for (final file in directoryList.files) {
+                if (_files.contains(file)) continue;
 
-              _emitEvent(ChangeType.ADD, entity.path);
-              _files.add(entity.path);
+                _emitEvent(ChangeType.ADD, file);
+                _files.add(file);
+              }
             }, cancelOnError: true);
             subscription.onDone(() {
               _listSubscriptions.remove(subscription);
@@ -337,8 +338,10 @@ class _MacOSDirectoryWatcher
     _files.clear();
     var completer = Completer<void>();
     var stream = Directory(path).listRecursivelyIgnoringErrors();
-    _initialListSubscription = stream.listen((entity) {
-      if (entity is! Directory) _files.add(entity.path);
+    _initialListSubscription = stream.listen((directoryList) {
+      for (final file in directoryList.files) {
+        _files.add(file);
+      }
     }, onError: _emitError, onDone: completer.complete, cancelOnError: true);
     return completer.future;
   }
