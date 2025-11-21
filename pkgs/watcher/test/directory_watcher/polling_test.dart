@@ -24,7 +24,7 @@ void main() {
 
   fileTests(isNative: false);
   linkTests(isNative: false);
-  endToEndTests(isNative: false);
+  endToEndTests();
 
   // A poll does an async directory list that runs "stat" on each file. Check
   // handling of a file that is deleted between the two.
