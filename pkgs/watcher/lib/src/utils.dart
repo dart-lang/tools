@@ -72,3 +72,6 @@ extension IgnoringError<T> on Stream<T> {
     ));
   }
 }
+
+/// Set to log watcher internals for testing.
+void Function(String)? logForTesting;

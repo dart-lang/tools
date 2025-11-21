@@ -112,6 +112,8 @@ class _MacOSDirectoryWatcher
 
   /// The callback that's run when [Directory.watch] emits a batch of events.
   void _onBatch(List<Event> batch) {
+    logForTesting?.call('onBatch: $batch');
+
     // If we get a batch of events before we're ready to begin emitting events,
     // it's probable that it's a batch of pre-watcher events (see issue 14373).
     // Ignore those events and re-list the directory.

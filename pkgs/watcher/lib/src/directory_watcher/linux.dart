@@ -150,6 +150,7 @@ class _LinuxDirectoryWatcher
 
   /// The callback that's run when a batch of changes comes in.
   void _onBatch(List<Event> batch) {
+    logForTesting?.call('_onBatch,$batch');
     var files = <String>{};
     var dirs = <String>{};
     var changed = <String>{};
@@ -281,6 +282,7 @@ class _LinuxDirectoryWatcher
         // Only emit ADD if it hasn't already been emitted due to the file being
         // modified or added after the directory was added.
         if (!_files.contains(entity.path)) {
+          logForTesting?.call('_addSubdir,$path,$entity');
           _files.add(entity.path);
           _emitEvent(ChangeType.ADD, entity.path);
         }
@@ -346,6 +348,8 @@ class _LinuxDirectoryWatcher
   ///
   /// See [_Watch] class comment.
   _Watch _watch(String path) {
+    logForTesting?.call('_Watch._watch,$path');
+
     _watches[path]?.cancel();
     final result = _Watch(path, _cancelWatchesUnderPath);
     _watches[path] = result;
@@ -360,6 +364,8 @@ class _LinuxDirectoryWatcher
 
   /// Cancels all watches under path [path].
   void _cancelWatchesUnderPath(String path) {
+    logForTesting?.call('_Watch.cancelWatchesUnderPath,$path');
+
     // If [path] is the root watch directory do nothing, that's handled when the
     // stream closes.
     if (path == this.path) return;
@@ -397,6 +403,7 @@ class _Watch {
       String path, StreamController<FileSystemEvent> controller) {
     return Directory(path).watch().listen(
       (event) {
+        logForTesting?.call('_Watch._listen,$path,$event');
         if (event is FileSystemDeleteEvent ||
             (event.isDirectory && event is FileSystemMoveEvent)) {
           _cancelWatchesUnderPath(event.path);
@@ -410,6 +417,7 @@ class _Watch {
   }
 
   void cancel() {
+    logForTesting?.call('_Watch.cancel,$path');
     _subscription.cancel();
   }
 }
