@@ -88,12 +88,12 @@ class WindowsManuallyClosedDirectoryWatcher
 
   /// The subscription to the [Directory.list] call for the initial listing of
   /// the directory to determine its initial state.
-  StreamSubscription<FileSystemEntity>? _initialListSubscription;
+  StreamSubscription<DirectoryList>? _initialListSubscription;
 
   /// The subscriptions to the [Directory.list] calls for listing the contents
   /// of subdirectories that were moved into the watched directory.
-  final Set<StreamSubscription<FileSystemEntity>> _listSubscriptions =
-      HashSet<StreamSubscription<FileSystemEntity>>();
+  final Set<StreamSubscription<DirectoryList>> _listSubscriptions =
+      HashSet<StreamSubscription<DirectoryList>>();
 
   WindowsManuallyClosedDirectoryWatcher(this.path) : _files = PathSet(path) {
     // Before we're ready to emit events, wait for [_listDir] to complete.
@@ -230,12 +230,14 @@ class WindowsManuallyClosedDirectoryWatcher
 
         case EventType.createDirectory:
           final stream = Directory(path).listRecursivelyIgnoringErrors();
-          final subscription = stream.listen((entity) {
-            if (entity is Directory) return;
-            if (_files.contains(entity.path)) return;
+          final subscription = stream.listen((directoryList) {
+            for (final entity in directoryList.entities) {
+              if (entity is Directory) return;
+              if (_files.contains(entity.path)) return;
 
-            _emitEvent(ChangeType.ADD, entity.path);
-            _files.add(entity.path);
+              _emitEvent(ChangeType.ADD, entity.path);
+              _files.add(entity.path);
+            }
           }, cancelOnError: true);
           subscription.onDone(() {
             _listSubscriptions.remove(subscription);
@@ -376,8 +378,10 @@ class WindowsManuallyClosedDirectoryWatcher
     _files.clear();
     var completer = Completer<void>();
     var stream = Directory(path).listRecursivelyIgnoringErrors();
-    void handleEntity(FileSystemEntity entity) {
-      if (entity is! Directory) _files.add(entity.path);
+    void handleEntity(DirectoryList directoryList) {
+      for (final entity in directoryList.entities) {
+        if (entity is! Directory) _files.add(entity.path);
+      }
     }
 
     _initialListSubscription = stream.listen(

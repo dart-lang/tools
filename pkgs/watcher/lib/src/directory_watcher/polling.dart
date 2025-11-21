@@ -62,7 +62,7 @@ class _PollingDirectoryWatcher
   /// The subscription used while [directory] is being listed.
   ///
   /// Will be `null` if a list is not currently happening.
-  StreamSubscription<FileSystemEntity>? _listSubscription;
+  StreamSubscription<DirectoryList>? _listSubscription;
 
   /// The queue of files waiting to be processed to see if they have been
   /// modified.
@@ -115,11 +115,14 @@ class _PollingDirectoryWatcher
     }
 
     var stream = Directory(path).listRecursivelyIgnoringErrors();
-    _listSubscription = stream.listen((entity) {
+    _listSubscription = stream.listen((directoryList) {
       assert(!_events.isClosed);
 
-      if (entity is! File) return;
-      _filesToProcess.add(entity.path);
+      for (final entity in directoryList.entities) {
+        if (entity is File) {
+          _filesToProcess.add(entity.path);
+        }
+      }
     }, onError: (Object error, StackTrace stackTrace) {
       // Guarantee that ready always completes.
       if (!isReady) {

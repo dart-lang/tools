@@ -105,11 +105,13 @@ class _LinuxDirectoryWatcher
     _listings.add(listing);
     _listen(
       listing.stream,
-      (FileSystemEntity entity) {
-        if (entity is Directory) {
-          _watchSubdir(entity.path);
-        } else {
-          _files.add(entity.path);
+      (DirectoryList directoryList) {
+        for (final entity in directoryList.entities) {
+          if (entity is Directory) {
+            _watchSubdir(entity.path);
+          } else {
+            _files.add(entity.path);
+          }
         }
       },
       onError: _emitError,
@@ -293,16 +295,28 @@ class _LinuxDirectoryWatcher
     final listing = _InterruptableDirectoryListing(
         Directory(path).listRecursivelyIgnoringErrors());
     _listings.add(listing);
-    _listen(listing.stream, (FileSystemEntity entity) {
-      if (entity is Directory) {
-        _watchSubdir(entity.path);
-      } else {
-        // Only emit ADD if it hasn't already been emitted due to the file being
-        // modified or added after the directory was added.
-        if (!_files.contains(entity.path)) {
-          logForTesting?.call('_addSubdir,$path,$entity');
-          _files.add(entity.path);
-          _emitEvent(ChangeType.ADD, entity.path);
+    _listen(listing.stream, (DirectoryList directoryList) {
+      for (final directory in directoryList.directories) {
+          _watchSubdir(entity.directory);
+      }
+        for (final file in directoryList.files) {
+          // Only emit ADD if it hasn't already been emitted due to the file being
+          // modified or added after the directory was added.
+          if (!_files.contains(entity.path)) {
+            logForTesting?.call('_addSubdir,$path,$entity');
+            _files.add(entity.path);
+            _emitEvent(ChangeType.ADD, entity.path);
+          }
+        }
+
+        // DO NOT SUBMIT make this fast
+        for (final file in _files.paths) {
+          if (p.basename(file) == path) {
+            if (!directoryList.files.contains(file)) {
+              _emitEvent(ChangeType.REMOVE, file);
+              _files.remove(file);
+            }
+          }
         }
       }
     }, onDone: () {
@@ -402,19 +416,18 @@ class _LinuxDirectoryWatcher
 }
 
 class _InterruptableDirectoryListing {
-  late final Stream<FileSystemEntity> stream;
+  late final Stream<DirectoryList> stream;
 
   final Set<String> ignores = {};
 
-  _InterruptableDirectoryListing(Stream<FileSystemEntity> stream) {
+  _InterruptableDirectoryListing(Stream<DirectoryList> stream) {
     this.stream = stream
         .transform(StreamTransformer.fromHandlers(handleData: _handleData));
   }
 
-  void _handleData(FileSystemEntity entity, EventSink<FileSystemEntity> sink) {
-    if (!ignores.contains(entity.path)) {
-      sink.add(entity);
-    }
+  void _handleData(DirectoryList directoryList, EventSink<DirectoryList> sink) {
+    directoryList.entities.removeAll(ignores);
+    sink.add(directoryList);
   }
 
   void ignore(String path) {
