@@ -118,10 +118,8 @@ class _PollingDirectoryWatcher
     _listSubscription = stream.listen((directoryList) {
       assert(!_events.isClosed);
 
-      for (final entity in directoryList.entities) {
-        if (entity is File) {
-          _filesToProcess.add(entity.path);
-        }
+      for (final file in directoryList.files) {
+        _filesToProcess.add(file);
       }
     }, onError: (Object error, StackTrace stackTrace) {
       // Guarantee that ready always completes.

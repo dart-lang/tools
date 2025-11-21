@@ -153,12 +153,11 @@ class _MacOSDirectoryWatcher
 
             var stream = Directory(path).listRecursivelyIgnoringErrors();
             var subscription = stream.listen((directoryList) {
-              for (final entity in directoryList.entities) {
-                if (entity is Directory) continue;
-                if (_files.contains(entity.path)) continue;
+              for (final file in directoryList.files) {
+                if (_files.contains(file)) continue;
 
-                _emitEvent(ChangeType.ADD, entity.path);
-                _files.add(entity.path);
+                _emitEvent(ChangeType.ADD, file);
+                _files.add(file);
               }
             }, cancelOnError: true);
             subscription.onDone(() {
@@ -340,8 +339,8 @@ class _MacOSDirectoryWatcher
     var completer = Completer<void>();
     var stream = Directory(path).listRecursivelyIgnoringErrors();
     _initialListSubscription = stream.listen((directoryList) {
-      for (final entity in directoryList.entities) {
-        if (entity is! Directory) _files.add(entity.path);
+      for (final file in directoryList.files) {
+        _files.add(file);
       }
     }, onError: _emitError, onDone: completer.complete, cancelOnError: true);
     return completer.future;

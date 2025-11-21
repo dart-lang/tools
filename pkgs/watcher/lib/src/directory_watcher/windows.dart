@@ -231,12 +231,11 @@ class WindowsManuallyClosedDirectoryWatcher
         case EventType.createDirectory:
           final stream = Directory(path).listRecursivelyIgnoringErrors();
           final subscription = stream.listen((directoryList) {
-            for (final entity in directoryList.entities) {
-              if (entity is Directory) return;
-              if (_files.contains(entity.path)) return;
+            for (final file in directoryList.files) {
+              if (_files.contains(file)) return;
 
-              _emitEvent(ChangeType.ADD, entity.path);
-              _files.add(entity.path);
+              _emitEvent(ChangeType.ADD, file);
+              _files.add(file);
             }
           }, cancelOnError: true);
           subscription.onDone(() {
@@ -379,8 +378,8 @@ class WindowsManuallyClosedDirectoryWatcher
     var completer = Completer<void>();
     var stream = Directory(path).listRecursivelyIgnoringErrors();
     void handleEntity(DirectoryList directoryList) {
-      for (final entity in directoryList.entities) {
-        if (entity is! Directory) _files.add(entity.path);
+      for (final file in directoryList.files) {
+        _files.add(file);
       }
     }
 

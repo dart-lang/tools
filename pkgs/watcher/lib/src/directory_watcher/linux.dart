@@ -106,12 +106,11 @@ class _LinuxDirectoryWatcher
     _listen(
       listing.stream,
       (DirectoryList directoryList) {
-        for (final entity in directoryList.entities) {
-          if (entity is Directory) {
-            _watchSubdir(entity.path);
-          } else {
-            _files.add(entity.path);
-          }
+        for (final directory in directoryList.directories) {
+          _watchSubdir(directory);
+        }
+        for (final file in directoryList.files) {
+          _files.add(file);
         }
       },
       onError: _emitError,
@@ -277,6 +276,9 @@ class _LinuxDirectoryWatcher
         _emitEvent(ChangeType.MODIFY, file);
       } else {
         _emitEvent(ChangeType.ADD, file);
+        for (final listing in _listings) {
+          listing.ignore(file);
+        }
         _files.add(file);
       }
     }
@@ -297,22 +299,27 @@ class _LinuxDirectoryWatcher
     _listings.add(listing);
     _listen(listing.stream, (DirectoryList directoryList) {
       for (final directory in directoryList.directories) {
-          _watchSubdir(entity.directory);
+        _watchSubdir(directory);
       }
-        for (final file in directoryList.files) {
-          // Only emit ADD if it hasn't already been emitted due to the file being
-          // modified or added after the directory was added.
-          if (!_files.contains(entity.path)) {
-            logForTesting?.call('_addSubdir,$path,$entity');
-            _files.add(entity.path);
-            _emitEvent(ChangeType.ADD, entity.path);
+      for (final file in directoryList.files) {
+        // Only emit ADD if it hasn't already been emitted due to the file being
+        // modified or added after the directory was added.
+        if (!_files.contains(file)) {
+          if (!directoryList.ignores.contains(file)) {
+            logForTesting?.call('_addSubdir,$path,$file');
+            _files.add(file);
+            _emitEvent(ChangeType.ADD, file);
           }
         }
+      }
 
-        // DO NOT SUBMIT make this fast
-        for (final file in _files.paths) {
-          if (p.basename(file) == path) {
-            if (!directoryList.files.contains(file)) {
+      // DO NOT SUBMIT make this fast
+      for (final file in _files.paths) {
+        if (p.dirname(file) == directoryList.directory.path) {
+          if (!directoryList.files.contains(file)) {
+            if (!directoryList.ignores.contains(file)) {
+              logForTesting?.call(
+                  '_addSubdir,remove,$path,$file,${directoryList.files}}');
               _emitEvent(ChangeType.REMOVE, file);
               _files.remove(file);
             }
@@ -426,7 +433,7 @@ class _InterruptableDirectoryListing {
   }
 
   void _handleData(DirectoryList directoryList, EventSink<DirectoryList> sink) {
-    directoryList.entities.removeAll(ignores);
+    directoryList.ignores.addAll(ignores);
     sink.add(directoryList);
   }
 

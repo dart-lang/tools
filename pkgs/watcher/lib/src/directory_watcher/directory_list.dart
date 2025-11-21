@@ -41,6 +41,7 @@ class DirectoryList {
   final Directory directory;
   final Set<String> files = {};
   final Set<String> directories = {};
+  final Set<String> ignores = {};
   DirectoryList(this.directory);
 }
 

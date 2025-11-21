@@ -65,7 +65,7 @@ Future<void> _runTest({
   // checking for consistency.
   final changer = FileChanger(temp.path);
   for (var i = 0; endlessMode || i != 40; ++i) {
-    final runSeed = 6; // seed ?? i; DO NOT SUBMIT
+    final runSeed = seed ?? i;
     log.clear();
     if (endlessMode) stdout.write('.');
     for (final entity in temp.listSync()) {
