@@ -26,9 +26,7 @@ void main() {
         withDefaultInlineSyntaxes: false,
         encodeHtml: false,
         blockSyntaxes: [const HorizontalRuleSyntax()],
-        inlineSyntaxes: [
-          EmphasisSyntax.asterisk(),
-        ],
+        inlineSyntaxes: [EmphasisSyntax.asterisk()],
       );
 
       expect(
@@ -44,10 +42,7 @@ void main() {
         encodeHtml: false,
       );
 
-      expect(
-        result,
-        equals('<h1>Hello **Markdown<em>!</em>**</h1>\n<hr />\n'),
-      );
+      expect(result, equals('<h1>Hello **Markdown<em>!</em>**</h1>\n<hr />\n'));
     });
 
     test('with only default inline syntaxes', () {
@@ -104,7 +99,7 @@ void main() {
 
 class _BreakSyntax extends InlineSyntax {
   _BreakSyntax(bool caseSensitive)
-      : super('break', caseSensitive: caseSensitive);
+    : super('break', caseSensitive: caseSensitive);
 
   @override
   bool onMatch(InlineParser parser, Match match) {

@@ -2129,5 +2129,5 @@ const htmlEntitiesMap = {
   "&zopf;": "𝕫",
   "&zscr;": "𝓏",
   "&zwj;": "‍",
-  "&zwnj;": "‌"
+  "&zwnj;": "‌",
 };

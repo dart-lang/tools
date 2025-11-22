@@ -19,7 +19,7 @@ void main() {
 
   fileTests(isNative: true);
   linkTests(isNative: true);
-  endToEndTests(isNative: true);
+  endToEndTests();
 
   test('DirectoryWatcher creates a MacOSDirectoryWatcher on Mac OS', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<MacOSDirectoryWatcher>());

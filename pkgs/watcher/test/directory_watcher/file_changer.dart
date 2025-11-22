@@ -8,6 +8,9 @@ import 'dart:math';
 
 import 'package:path/path.dart' as p;
 
+import '../utils.dart';
+import 'end_to_end_tests.dart';
+
 /// Changes files randomly.
 ///
 /// Writes are done in an isolate so as to not block the watcher code being
@@ -23,18 +26,25 @@ import 'package:path/path.dart' as p;
 class FileChanger {
   final String path;
 
-  final Random _random = Random(0);
-  final List<String> _messages = [];
+  Random _random = Random(0);
+  final List<LogEntry> _messages = [];
 
   FileChanger(this.path);
 
   /// Changes files under [path], [times] times.
   ///
+  /// Changes are randomized with [seed], pass the same value to get the same
+  /// changes.
+  ///
   /// Returns a log of the changes made.
-  Future<List<String>> changeFiles({required int times}) async =>
-      await Isolate.run(() => _changeFiles(times: times));
+  Future<List<LogEntry>> changeFiles(
+      {required int times, required int seed}) async {
+    _random = Random(seed);
+    final result = await Isolate.run(() => _changeFiles(times: times));
+    return result;
+  }
 
-  Future<List<String>> _changeFiles({required int times}) async {
+  Future<List<LogEntry>> _changeFiles({required int times}) async {
     _messages.clear();
     for (var i = 0; i != times; ++i) {
       await _changeFilesOnce();
@@ -82,7 +92,7 @@ class FileChanger {
         final existingPath2 = _randomExistingFilePath()!;
         _log('move file over file,$existingPath,$existingPath2');
         // Fails sometimes on Windows, so guard+retry.
-        _retryForPathAccessException(
+        retryForPathAccessException(
             () => File(existingPath).renameSync(existingPath2));
 
       case 6:
@@ -94,7 +104,7 @@ class FileChanger {
         _ensureParent(newDirectory);
         _log('move directory to new,$existingDirectory,$newDirectory');
         // Fails sometimes on Windows, so guard+retry.
-        _retryForPathAccessException(
+        retryForPathAccessException(
             () => Directory(existingDirectory).renameSync(newDirectory));
 
       case 7:
@@ -133,6 +143,7 @@ class FileChanger {
   /// Returns the path to an already-created file, or `null` if none exists.
   String? _randomExistingFilePath() =>
       (Directory(path).listSync(recursive: true).whereType<File>().toList()
+            ..sort((a, b) => a.path.compareTo(b.path))
             ..shuffle(_random))
           .firstOrNull
           ?.path;
@@ -142,6 +153,7 @@ class FileChanger {
   String? _randomExistingDirectoryPath() => (Directory(
         path,
       ).listSync(recursive: true).whereType<Directory>().toList()
+            ..sort((a, b) => a.path.compareTo(b.path))
             ..shuffle(_random))
           .firstOrNull
           ?.path;
@@ -154,18 +166,6 @@ class FileChanger {
   void _log(String message) {
     // Remove the tmp folder from the message.
     message = message.replaceAll(',$path${Platform.pathSeparator}', ',');
-    _messages.add(message);
-  }
-
-  /// Retries [action] until it does not throw [PathAccessException].
-  void _retryForPathAccessException(void Function() action) {
-    while (true) {
-      try {
-        action();
-        return;
-      } on PathAccessException catch (e) {
-        print('Temporary failure, retrying: $e');
-      }
-    }
+    _messages.add(LogEntry('F $message'));
   }
 }

@@ -175,7 +175,7 @@ class TableSyntax extends BlockSyntax {
     }
     parser.advance();
     final row = [
-      for (final cell in cells) Element(cellType, [UnparsedContent(cell)])
+      for (final cell in cells) Element(cellType, [UnparsedContent(cell)]),
     ];
 
     for (var i = 0; i < row.length && i < alignments.length; i++) {

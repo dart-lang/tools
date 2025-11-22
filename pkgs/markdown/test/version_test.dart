@@ -19,7 +19,8 @@ void main() {
     expect(
       result.exitCode,
       0,
-      reason: 'Exit code expected: 0; actual: ${result.exitCode}\n\n'
+      reason:
+          'Exit code expected: 0; actual: ${result.exitCode}\n\n'
           'stdout: ${result.stdout}\n\n'
           'stderr: ${result.stderr}',
     );
@@ -34,7 +35,8 @@ void main() {
     expect(
       binVersion,
       pubspecContent['version'],
-      reason: 'The version reported by bin/markdown.dart should match the '
+      reason:
+          'The version reported by bin/markdown.dart should match the '
           'version in pubspec. Run `dart run build_runner build` to update.',
     );
   });

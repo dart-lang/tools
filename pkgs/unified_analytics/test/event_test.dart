@@ -30,6 +30,7 @@ void main() {
           produceErrorsActualFileLineCount: 13,
           produceErrorsDurationMs: 14,
           produceErrorsElementsDurationMs: 15,
+          libraryDiagnosticsBundleFailures: 'id1:1,id2:2',
         );
 
     final constructedEvent = generateEvent();
@@ -57,7 +58,11 @@ void main() {
     expect(constructedEvent.eventData['produceErrorsActualFileLineCount'], 13);
     expect(constructedEvent.eventData['produceErrorsDurationMs'], 14);
     expect(constructedEvent.eventData['produceErrorsElementsDurationMs'], 15);
-    expect(constructedEvent.eventData.length, 16);
+    expect(
+      constructedEvent.eventData['libraryDiagnosticsBundleFailures'],
+      'id1:1,id2:2',
+    );
+    expect(constructedEvent.eventData.length, 17);
   });
 
   test('Event.analyticsCollectionEnabled constructed', () {

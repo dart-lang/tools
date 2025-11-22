@@ -11,8 +11,9 @@ import 'package:markdown/src/legacy_emojis.dart' as legacy;
 import 'update_shared.dart';
 
 /// Regular expression to parse unicode from GitHub emoji API output filenames.
-RegExp gitHubEmojiUnicodeFromFilenamePattern =
-    RegExp(r'.*unicode\/([A-Fa-f0-9\-]+)\.png');
+RegExp gitHubEmojiUnicodeFromFilenamePattern = RegExp(
+  r'.*unicode\/([A-Fa-f0-9\-]+)\.png',
+);
 
 /// URL for GitHub's emoji API.  We reconcile with our legacy emoji so that
 /// we don't change or break anything.
@@ -182,34 +183,45 @@ String parseGitHubFilenameIntoUnicodeString(String emojiFilename) {
     return String.fromCharCodes(codePointsHex);
   } catch (e) {
     print(
-        'Invalid/Non-Conformant emoji filename encountered "$emojiFilename"!');
+      'Invalid/Non-Conformant emoji filename encountered "$emojiFilename"!',
+    );
     return errorSpecialReplacement;
   }
 }
 
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
-    ..addFlag('help',
-        abbr: 'h', negatable: false, help: 'Print help text and exit.')
-    ..addFlag('useGitHubUnicodes',
-        abbr: 'g',
-        negatable: false,
-        help: 'Use the GitHub Unicode sequences instead of legacy sequences.')
-    ..addFlag('visualizeDifferentUnicodes',
-        abbr: 'v',
-        negatable: false,
-        help: 'Visualize any Unicode sequence differences.')
-    ..addOption('dumpMarkdownShortCodes',
-        abbr: 's',
-        defaultsTo: 'missing',
-        allowed: ['plain', 'tooltip'],
-        allowedHelp: {
-          'plain': 'just shortcode',
-          'tooltip':
-              '(shortcode with a link to provide emoji name in tooltips)',
-        },
-        help: 'Outputs all emoji shortcodes to stdout which can be used '
-            'in markdown to show and tests all emoji.');
+    ..addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Print help text and exit.',
+    )
+    ..addFlag(
+      'useGitHubUnicodes',
+      abbr: 'g',
+      negatable: false,
+      help: 'Use the GitHub Unicode sequences instead of legacy sequences.',
+    )
+    ..addFlag(
+      'visualizeDifferentUnicodes',
+      abbr: 'v',
+      negatable: false,
+      help: 'Visualize any Unicode sequence differences.',
+    )
+    ..addOption(
+      'dumpMarkdownShortCodes',
+      abbr: 's',
+      defaultsTo: 'missing',
+      allowed: ['plain', 'tooltip'],
+      allowedHelp: {
+        'plain': 'just shortcode',
+        'tooltip': '(shortcode with a link to provide emoji name in tooltips)',
+      },
+      help:
+          'Outputs all emoji shortcodes to stdout which can be used '
+          'in markdown to show and tests all emoji.',
+    );
   late final ArgResults results;
 
   try {
@@ -229,8 +241,8 @@ Future<void> main(List<String> args) async {
   final useLegacyUnicodeSequences = !(results['useGitHubUnicodes'] as bool);
   final visualizeUnicodeDiffs = results['visualizeDifferentUnicodes'] as bool;
 
-  final shortCodes =
-      (results['dumpMarkdownShortCodes'] as String).toLowerCase();
+  final shortCodes = (results['dumpMarkdownShortCodes'] as String)
+      .toLowerCase();
   final dumpMarkdownShortCodes = shortCodes == 'plain';
   final dumpMarkdownToolTipShortCodes = shortCodes == 'tooltip';
 
@@ -247,11 +259,11 @@ Future<void> main(List<String> args) async {
   }
   final shortcodeToEmoji =
       (await downloadJson(_emojisJsonRawUrl) as Map<String, dynamic>).map(
-    (String alias, dynamic filename) => MapEntry(
-      alias,
-      parseGitHubFilenameIntoUnicodeString(filename as String),
-    ),
-  );
+        (String alias, dynamic filename) => MapEntry(
+          alias,
+          parseGitHubFilenameIntoUnicodeString(filename as String),
+        ),
+      );
 
   // Now before we proceed we need to 'mix in' any legacy emoji alias shortcodes
   // that are missing from the GitHub emoji list.
@@ -281,8 +293,8 @@ Future<void> main(List<String> args) async {
         legacyEmojis.containsKey(shortCodeAlias) &&
         shortCodeAlias != 'cricket' &&
         shortCodeAlias != 'beetle') {
-      emojiUnicode = legacyEmojis[
-          shortCodeAlias]!; // Use legacy Unicode string if available.
+      // Use legacy Unicode string if available.
+      emojiUnicode = legacyEmojis[shortCodeAlias]!;
     }
     if (legacyEmojis.containsKey(shortCodeAlias) &&
         emojiUnicode != legacyEmojis[shortCodeAlias]) {

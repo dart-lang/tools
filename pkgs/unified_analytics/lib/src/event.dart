@@ -147,6 +147,9 @@ final class Event {
   ///   producing diagnostics.
   /// * [produceErrorsElementsDurationMs] - the total duration in milliseconds
   ///   for preparing elements before analysis.
+  /// * [libraryDiagnosticsBundleFailures] - the counts of requirement failures
+  ///   for library diagnostics bundles. The key is the `kindId` of the
+  ///   `RequirementFailure`.
   ///
   /// This allows us to understand how many files were scheduled for analysis,
   /// and how many of these files are served from the cache, because we
@@ -171,6 +174,7 @@ final class Event {
     required int produceErrorsActualFileLineCount,
     required int produceErrorsDurationMs,
     required int produceErrorsElementsDurationMs,
+    required String libraryDiagnosticsBundleFailures,
   }) : this._(
           eventName: DashEvent.analysisStatistics,
           eventData: {
@@ -194,6 +198,8 @@ final class Event {
                 produceErrorsActualFileLineCount,
             'produceErrorsDurationMs': produceErrorsDurationMs,
             'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
+            'libraryDiagnosticsBundleFailures':
+                libraryDiagnosticsBundleFailures,
           },
         );
 

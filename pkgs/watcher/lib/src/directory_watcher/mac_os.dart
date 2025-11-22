@@ -112,6 +112,8 @@ class _MacOSDirectoryWatcher
 
   /// The callback that's run when [Directory.watch] emits a batch of events.
   void _onBatch(List<Event> batch) {
+    logForTesting?.call('onBatch: $batch');
+
     // If we get a batch of events before we're ready to begin emitting events,
     // it's probable that it's a batch of pre-watcher events (see issue 14373).
     // Ignore those events and re-list the directory.
@@ -136,10 +138,10 @@ class _MacOSDirectoryWatcher
       for (var event in events) {
         switch (event.type) {
           case EventType.createFile:
-            // If we already know about the file, treat it like a modification.
-            // This can happen if a file is copied on top of an existing one.
-            // We'll see an ADD event for the latter file when from the user's
-            // perspective, the file's contents just changed.
+          case EventType.modifyFile:
+            // The type can be incorrect due to a race with listing a new
+            // directory or due to a file being copied over an existing one.
+            // Choose the type to emit based on the previous emitted state.
             var type =
                 _files.contains(path) ? ChangeType.MODIFY : ChangeType.ADD;
 
@@ -152,7 +154,7 @@ class _MacOSDirectoryWatcher
             var stream = Directory(path).listRecursivelyIgnoringErrors();
             var subscription = stream.listen((entity) {
               if (entity is Directory) return;
-              if (_files.contains(path)) return;
+              if (_files.contains(entity.path)) return;
 
               _emitEvent(ChangeType.ADD, entity.path);
               _files.add(entity.path);
@@ -162,9 +164,6 @@ class _MacOSDirectoryWatcher
             });
             subscription.onError(_emitError);
             _listSubscriptions.add(subscription);
-
-          case EventType.modifyFile:
-            _emitEvent(ChangeType.MODIFY, path);
 
           case EventType.delete:
             for (var removedPath in _files.remove(path)) {

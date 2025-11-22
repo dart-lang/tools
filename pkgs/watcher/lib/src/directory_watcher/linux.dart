@@ -150,14 +150,19 @@ class _LinuxDirectoryWatcher
 
   /// The callback that's run when a batch of changes comes in.
   void _onBatch(List<Event> batch) {
+    logForTesting?.call('_onBatch,$batch');
     var files = <String>{};
     var dirs = <String>{};
     var changed = <String>{};
 
-    // inotify event batches are ordered by occurrence, so we treat them as a
-    // log of what happened to a file. We only emit events based on the
-    // difference between the state before the batch and the state after it, not
-    // the intermediate state.
+    // Inotify events are usually ordered by occurrence. But,
+    // https://github.com/dart-lang/sdk/issues/62014 means that moves between
+    // directories cause create/delete events to be placed out of order at the
+    // end of the batch. Catch these cases in order to do a check on the actual
+    // filesystem state.
+    var deletes = <String>{};
+    var creates = <String>{};
+
     for (var event in batch) {
       // If the watched directory is deleted or moved, we'll get a deletion
       // event for it. Ignore it; we handle closing [this] when the underlying
@@ -168,38 +173,68 @@ class _LinuxDirectoryWatcher
 
       switch (event.type) {
         case EventType.moveFile:
+          deletes.add(event.path);
           files.remove(event.path);
           dirs.remove(event.path);
           var destination = event.destination;
           if (destination != null) {
+            creates.add(destination);
             changed.add(destination);
             files.add(destination);
             dirs.remove(destination);
           }
 
         case EventType.moveDirectory:
+          deletes.add(event.path);
           files.remove(event.path);
           dirs.remove(event.path);
           var destination = event.destination;
           if (destination != null) {
+            creates.add(destination);
             changed.add(destination);
             files.remove(destination);
             dirs.add(destination);
           }
 
         case EventType.delete:
+          deletes.add(event.path);
           files.remove(event.path);
           dirs.remove(event.path);
 
         case EventType.createDirectory:
+          creates.add(event.path);
+          files.remove(event.path);
+          dirs.add(event.path);
+
         case EventType.modifyDirectory:
           files.remove(event.path);
           dirs.add(event.path);
 
         case EventType.createFile:
+          creates.add(event.path);
+          files.add(event.path);
+          dirs.remove(event.path);
+
         case EventType.modifyFile:
           files.add(event.path);
           dirs.remove(event.path);
+      }
+    }
+
+    // Check paths that might have been affected by out-of-order events, set
+    // the correct state in [files] and [dirs].
+    for (final path in deletes.intersection(creates)) {
+      final type = FileSystemEntity.typeSync(path, followLinks: false);
+      if (type == FileSystemEntityType.file ||
+          type == FileSystemEntityType.link) {
+        files.add(path);
+        dirs.remove(path);
+      } else if (type == FileSystemEntityType.directory) {
+        dirs.add(path);
+        files.remove(path);
+      } else {
+        files.remove(path);
+        dirs.remove(path);
       }
     }
 
@@ -244,8 +279,13 @@ class _LinuxDirectoryWatcher
       if (entity is Directory) {
         _watchSubdir(entity.path);
       } else {
-        _files.add(entity.path);
-        _emitEvent(ChangeType.ADD, entity.path);
+        // Only emit ADD if it hasn't already been emitted due to the file being
+        // modified or added after the directory was added.
+        if (!_files.contains(entity.path)) {
+          logForTesting?.call('_addSubdir,$path,$entity');
+          _files.add(entity.path);
+          _emitEvent(ChangeType.ADD, entity.path);
+        }
       }
     }, onError: (Object error, StackTrace stackTrace) {
       // Ignore an exception caused by the dir not existing. It's fine if it
@@ -308,6 +348,8 @@ class _LinuxDirectoryWatcher
   ///
   /// See [_Watch] class comment.
   _Watch _watch(String path) {
+    logForTesting?.call('_Watch._watch,$path');
+
     _watches[path]?.cancel();
     final result = _Watch(path, _cancelWatchesUnderPath);
     _watches[path] = result;
@@ -322,6 +364,8 @@ class _LinuxDirectoryWatcher
 
   /// Cancels all watches under path [path].
   void _cancelWatchesUnderPath(String path) {
+    logForTesting?.call('_Watch.cancelWatchesUnderPath,$path');
+
     // If [path] is the root watch directory do nothing, that's handled when the
     // stream closes.
     if (path == this.path) return;
@@ -359,6 +403,7 @@ class _Watch {
       String path, StreamController<FileSystemEvent> controller) {
     return Directory(path).watch().listen(
       (event) {
+        logForTesting?.call('_Watch._listen,$path,$event');
         if (event is FileSystemDeleteEvent ||
             (event.isDirectory && event is FileSystemMoveEvent)) {
           _cancelWatchesUnderPath(event.path);
@@ -372,6 +417,7 @@ class _Watch {
   }
 
   void cancel() {
+    logForTesting?.call('_Watch.cancel,$path');
     _subscription.cancel();
   }
 }

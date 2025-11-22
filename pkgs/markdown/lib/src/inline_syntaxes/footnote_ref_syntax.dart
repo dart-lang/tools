@@ -1,3 +1,6 @@
+/// @docImport 'link_syntax.dart';
+library;
+
 import '../ast.dart' show Element, Node, Text;
 import '../charcode.dart';
 import 'link_syntax.dart' show LinkContext;
@@ -31,8 +34,10 @@ class FootnoteRefSyntax {
     final key = _footnoteLabel(text);
     final refs = parser.document.footnoteReferences;
     // `label` is what footnoteReferences stored, it is case sensitive.
-    final label =
-        refs.keys.firstWhere((k) => k.toLowerCase() == key, orElse: () => '');
+    final label = refs.keys.firstWhere(
+      (k) => k.toLowerCase() == key,
+      orElse: () => '',
+    );
     // `count != null` means footnote was valid.
     var count = refs[label];
     // And then check if footnote was matched.

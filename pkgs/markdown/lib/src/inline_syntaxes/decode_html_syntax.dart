@@ -14,8 +14,11 @@ import 'inline_syntax.dart';
 // https://spec.commonmark.org/0.30/#entity-and-numeric-character-references
 class DecodeHtmlSyntax extends InlineSyntax {
   DecodeHtmlSyntax()
-      : super(htmlCharactersPattern.pattern,
-            caseSensitive: false, startCharacter: $ampersand);
+    : super(
+        htmlCharactersPattern.pattern,
+        caseSensitive: false,
+        startCharacter: $ampersand,
+      );
 
   @override
   bool tryMatch(InlineParser parser, [int? startMatchPos]) {

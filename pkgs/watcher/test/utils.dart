@@ -306,7 +306,9 @@ void createDir(String path) {
 /// Renames a directory in the sandbox from [from] to [to].
 void renameDir(String from, String to) {
   var absoluteTo = p.join(d.sandbox, to);
-  Directory(p.join(d.sandbox, from)).renameSync(absoluteTo);
+  // Fails sometimes on Windows, so guard+retry.
+  retryForPathAccessException(
+      () => Directory(p.join(d.sandbox, from)).renameSync(absoluteTo));
   expect(FileSystemEntity.typeSync(absoluteTo, followLinks: false),
       FileSystemEntityType.directory);
 }
@@ -336,4 +338,16 @@ Set<S> withPermutations<S>(S Function(int, int, int) callback, {int? limit}) {
     }
   }
   return results;
+}
+
+/// Retries [action] until it does not throw [PathAccessException].
+void retryForPathAccessException(void Function() action) {
+  while (true) {
+    try {
+      action();
+      return;
+    } on PathAccessException catch (e) {
+      print('Temporary failure, retrying: $e');
+    }
+  }
 }

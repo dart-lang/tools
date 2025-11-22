@@ -40,8 +40,6 @@ class Line {
   // https://spec.commonmark.org/0.30/#blank-line
   final bool isBlankLine;
 
-  Line(
-    this.content, {
-    this.tabRemaining,
-  }) : isBlankLine = emptyPattern.hasMatch(content);
+  Line(this.content, {this.tabRemaining})
+    : isBlankLine = emptyPattern.hasMatch(content);
 }

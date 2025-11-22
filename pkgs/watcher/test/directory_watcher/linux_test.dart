@@ -19,7 +19,7 @@ void main() {
 
   fileTests(isNative: true);
   linkTests(isNative: true);
-  endToEndTests(isNative: true);
+  endToEndTests();
 
   test('DirectoryWatcher creates a LinuxDirectoryWatcher on Linux', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<LinuxDirectoryWatcher>());

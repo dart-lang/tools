@@ -24,7 +24,7 @@ void main() {
 
   fileTests(isNative: true);
   linkTests(isNative: true);
-  endToEndTests(isNative: true);
+  endToEndTests();
 
   test('DirectoryWatcher creates a WindowsDirectoryWatcher on Windows', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<WindowsDirectoryWatcher>());
