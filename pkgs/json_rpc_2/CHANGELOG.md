@@ -1,3 +1,7 @@
+## 4.1.0-wip
+
+* Forward errors within `Peer` when it is acting as a client.
+
 ## 4.0.0
 
 * Add custom ID generator option to clients, which allows for `String` ids.
