@@ -7,7 +7,8 @@ import 'package:args/args.dart';
 enum RuntimeFlavor {
   aot(help: 'Compile and run as a native binary.'),
   jit(
-    help: 'Run as-is without compilation, '
+    help:
+        'Run as-is without compilation, '
         'using the just-in-time (JIT) runtime.',
   ),
   js(help: 'Compile to JavaScript and run on node.'),
@@ -36,13 +37,17 @@ class BenchOptions {
     final result = _parserForBenchOptions.parse(args);
 
     if (result.rest.isNotEmpty) {
-      throw FormatException('All arguments must be provided via `--` options. '
-          'Not sure what to do with "${result.rest.join()}".');
+      throw FormatException(
+        'All arguments must be provided via `--` options. '
+        'Not sure what to do with "${result.rest.join()}".',
+      );
     }
 
     return BenchOptions(
-      flavor:
-          result.multiOption('flavor').map(RuntimeFlavor.values.byName).toSet(),
+      flavor: result
+          .multiOption('flavor')
+          .map(RuntimeFlavor.values.byName)
+          .toSet(),
       target: result.option('target')!,
       help: result.flag('help'),
       verbose: result.flag('verbose'),
@@ -60,23 +65,31 @@ class BenchOptions {
   static String get usage => _parserForBenchOptions.usage;
 
   static final _parserForBenchOptions = ArgParser()
-    ..addMultiOption('flavor',
-        abbr: 'f',
-        allowed: RuntimeFlavor.values.map((e) => e.name),
-        allowedHelp: {
-          for (final flavor in RuntimeFlavor.values) flavor.name: flavor.help
-        })
-    ..addOption('target',
-        defaultsTo: 'benchmark/benchmark.dart',
-        help: 'The target script to compile and run.')
-    ..addFlag('help',
-        defaultsTo: false,
-        negatable: false,
-        help: 'Print usage information and quit.',
-        abbr: 'h')
-    ..addFlag('verbose',
-        defaultsTo: false,
-        negatable: false,
-        help: 'Print the full stack trace if an exception is thrown.',
-        abbr: 'v');
+    ..addMultiOption(
+      'flavor',
+      abbr: 'f',
+      allowed: RuntimeFlavor.values.map((e) => e.name),
+      allowedHelp: {
+        for (final flavor in RuntimeFlavor.values) flavor.name: flavor.help,
+      },
+    )
+    ..addOption(
+      'target',
+      defaultsTo: 'benchmark/benchmark.dart',
+      help: 'The target script to compile and run.',
+    )
+    ..addFlag(
+      'help',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Print usage information and quit.',
+      abbr: 'h',
+    )
+    ..addFlag(
+      'verbose',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Print the full stack trace if an exception is thrown.',
+      abbr: 'v',
+    );
 }

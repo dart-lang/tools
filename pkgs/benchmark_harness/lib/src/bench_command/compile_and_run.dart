@@ -39,7 +39,7 @@ enum _Stage { compile, run }
 /// Base class for runtime-specific runners.
 abstract class _Runner {
   _Runner._({required this.target, required this.flavor})
-      : assert(FileSystemEntity.isFileSync(target), '$target is not a file');
+    : assert(FileSystemEntity.isFileSync(target), '$target is not a file');
 
   factory _Runner({required RuntimeFlavor flavor, required String target}) {
     return (switch (flavor) {
@@ -58,8 +58,9 @@ abstract class _Runner {
   ///
   /// Takes care of creating and deleting the corresponding temp directory.
   Future<void> run() async {
-    _tempDirectory = Directory.systemTemp
-        .createTempSync('bench_${DateTime.now().millisecondsSinceEpoch}_');
+    _tempDirectory = Directory.systemTemp.createTempSync(
+      'bench_${DateTime.now().millisecondsSinceEpoch}_',
+    );
     try {
       await _runImpl();
     } finally {
@@ -75,14 +76,20 @@ abstract class _Runner {
   /// Also prints out a nice message before execution denoting the [flavor] and
   /// the [stage].
   Future<void> _runProc(
-      _Stage stage, String executable, List<String> args) async {
+    _Stage stage,
+    String executable,
+    List<String> args,
+  ) async {
     print('''
 \n${flavor.name.toUpperCase()} - ${stage.name.toUpperCase()}
 $executable ${args.join(' ')}
 ''');
 
-    final proc = await Process.start(executable, args,
-        mode: ProcessStartMode.inheritStdio);
+    final proc = await Process.start(
+      executable,
+      args,
+      mode: ProcessStartMode.inheritStdio,
+    );
 
     final exitCode = await proc.exitCode;
 
@@ -156,14 +163,16 @@ class _WasmRunner extends _Runner {
       outFile,
     ]);
 
-    final jsFile =
-        File.fromUri(_tempDirectory.uri.resolve('$_outputFileRoot.js'));
+    final jsFile = File.fromUri(
+      _tempDirectory.uri.resolve('$_outputFileRoot.js'),
+    );
     jsFile.writeAsStringSync(_wasmInvokeScript);
 
     await _runProc(_Stage.run, 'node', [jsFile.path]);
   }
 
-  static const _wasmInvokeScript = '''
+  static const _wasmInvokeScript =
+      '''
 import { readFile } from 'node:fs/promises'; // For async file reading
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
