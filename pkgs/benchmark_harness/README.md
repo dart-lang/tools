@@ -108,12 +108,12 @@ void main() {
 ### Output
 
 ```console
-Template(RunTime): 0.1568472448997197 µs.
+Template(RunTime): 0.1568472448997197 us.
 ```
 
 This is the average amount of time it takes to run `run()` 10 times for
 `BenchmarkBase` and once for `AsyncBenchmarkBase`.
-> µs is an abbreviation for microseconds.
+> `us` is an abbreviation for microseconds.
 
 ## `bench` command
 
