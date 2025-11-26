@@ -9,7 +9,7 @@ import 'dart:math';
 import 'package:path/path.dart' as p;
 
 import '../utils.dart';
-import 'end_to_end_tests.dart';
+import 'end_to_end_test_runner.dart';
 
 /// Changes files randomly.
 ///
@@ -37,11 +37,17 @@ class FileChanger {
   /// changes.
   ///
   /// Returns a log of the changes made.
-  Future<List<LogEntry>> changeFiles(
-      {required int times, required int seed}) async {
+  Future<List<LogEntry>> changeFiles({required int times, int? seed}) async {
     _random = Random(seed);
     final result = await Isolate.run(() => _changeFiles(times: times));
     return result;
+  }
+
+  /// Changes files under [path], replaying the log in [log].
+  ///
+  /// Returns a new log of the changes made.
+  Future<List<LogEntry>> replayLog(String log) async {
+    return await Isolate.run(() => _replayLog(log));
   }
 
   Future<List<LogEntry>> _changeFiles({required int times}) async {
@@ -160,12 +166,83 @@ class FileChanger {
 
   void _ensureParent(String path) {
     final directory = Directory(p.dirname(path));
-    if (!directory.existsSync()) directory.createSync(recursive: true);
+    if (!directory.existsSync()) {
+      _log('create directory,${directory.path}');
+      directory.createSync(recursive: true);
+    }
   }
 
   void _log(String message) {
     // Remove the tmp folder from the message.
     message = message.replaceAll(',$path${Platform.pathSeparator}', ',');
     _messages.add(LogEntry('F $message'));
+  }
+
+  Future<List<LogEntry>> _replayLog(String log) async {
+    _messages.clear();
+    for (var line in log.split('\n')) {
+      // Check for and strip off the log prefix for file changer lines.
+      if (!line.startsWith('F ')) continue;
+      line = line.substring(2);
+      await _replayLine(line);
+    }
+    return _messages.toList();
+  }
+
+  Future<void> _replayLine(String line) async {
+    final items = line.split(',');
+    final action = items[0];
+    final parameters = items.skip(1).toList();
+
+    switch (action) {
+      case 'create':
+        final filePath = p.join(path, parameters[0]);
+        final content = ' ' * int.parse(parameters[1]);
+        _log('create,$filePath,${content.length}');
+        File(filePath).writeAsStringSync(content, flush: true);
+
+      case 'create directory':
+        final newDirectory = p.join(path, parameters[0]);
+        _log('create directory,$newDirectory');
+        Directory(newDirectory).createSync(recursive: true);
+
+      case 'modify':
+        final filePath = p.join(path, parameters[0]);
+        final content = ' ' * int.parse(parameters[1]);
+        _log('modify,$filePath,${content.length}');
+        File(filePath).writeAsStringSync(content, flush: true);
+
+      case 'move file to new':
+        final existingPath = p.join(path, parameters[0]);
+        final filePath = p.join(path, parameters[1]);
+        _log('move file to new,$existingPath,$filePath');
+        File(existingPath).renameSync(filePath);
+
+      case 'move file over file':
+        final existingPath = p.join(path, parameters[0]);
+        final existingPath2 = p.join(path, parameters[1]);
+        _log('move file over file,$existingPath,$existingPath2');
+        retryForPathAccessException(
+            () => File(existingPath).renameSync(existingPath2));
+
+      case 'move directory to new':
+        final existingDirectory = p.join(path, parameters[0]);
+        final newDirectory = p.join(path, parameters[1]);
+        _log('move directory to new,$existingDirectory,$newDirectory');
+        retryForPathAccessException(
+            () => Directory(existingDirectory).renameSync(newDirectory));
+
+      case 'delete':
+        final existingPath = p.join(path, parameters[0]);
+        _log('delete,$existingPath');
+        File(existingPath).deleteSync();
+
+      case 'wait':
+        _log('wait');
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+
+      default:
+        throw ArgumentError('Failed to parse log line: $line');
+    }
   }
 }
