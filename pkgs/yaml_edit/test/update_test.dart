@@ -748,10 +748,10 @@ d: 4
 b: 2
 ''');
           doc.update(['a'], 1);
-          expect(doc.toString(), equals('''
+          expect(doc.toString(), '''
 a: 1
 b: 2
-'''));
+''');
           expectYamlBuilderValue(doc, {'a': 1, 'b': 2});
         }
         {
@@ -759,10 +759,10 @@ b: 2
 a: 1
 ''');
           doc.update(['b'], 2);
-          expect(doc.toString(), equals('''
+          expect(doc.toString(), '''
 a: 1
 b: 2
-'''));
+''');
           expectYamlBuilderValue(doc, {'a': 1, 'b': 2});
         }
       });
