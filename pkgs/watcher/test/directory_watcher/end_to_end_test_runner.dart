@@ -45,7 +45,8 @@ Future<void> runTest({
 
   // Turn on logging of the watchers.
   final log = <LogEntry>[];
-  logForTesting = (message) => log.add(LogEntry('W $message'));
+  logForTesting = (message) =>
+      log.add(LogEntry('W ${message.replaceAll('${temp.path}/', '')}'));
 
   // Create the watcher and [ClientSimulator].
   final watcher = createWatcher(path: temp.path);
@@ -125,13 +126,14 @@ Changes/watcher/client log: $logPath
 /// Pass `seed <number>` to fix the seed.
 ///
 /// Pass `replay` to run endlessly with hardcoded test cases from
-/// `end_to_end_tests.dart`.
+/// `end_to_end_tests.dart`. Optionally, `replay <name>`.
 ///
 /// Exits on failure, or runs forever.
 Future<void> main(List<String> arguments) async {
   final command = arguments.isEmpty ? null : arguments[0];
   final fixSeed = command == 'seed' ? int.parse(arguments[1]) : null;
   final replay = command == 'replay';
+  final specifiedName = replay && arguments.length == 2 ? arguments[1] : null;
 
   final teardowns = <void Function()>[];
   try {
@@ -139,6 +141,9 @@ Future<void> main(List<String> arguments) async {
       while (true) {
         stdout.write('.');
         for (final testCase in testCases) {
+          if (specifiedName != null && specifiedName != testCase.name) {
+            continue;
+          }
           await runTest(
             name: testCase.name,
             addTearDown: teardowns.add,
@@ -154,6 +159,10 @@ Future<void> main(List<String> arguments) async {
             replayLog: testCase.log,
           );
         }
+        for (final teardown in teardowns) {
+          teardown();
+        }
+        teardowns.clear();
       }
     } else {
       await runTest(

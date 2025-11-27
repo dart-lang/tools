@@ -184,7 +184,18 @@ class FileChanger {
       // Check for and strip off the log prefix for file changer lines.
       if (!line.startsWith('F ')) continue;
       line = line.substring(2);
-      await _replayLine(line);
+      // There might be exceptions if the log has been edited so some operations
+      // are no longer possible, for example if a file or directory does not
+      // exist. Skip the operation and skip logging it so the new log is
+      // correct.
+      final messagesLength = _messages.length;
+      try {
+        await _replayLine(line);
+      } catch (_) {
+        while (_messages.length > messagesLength) {
+          _messages.removeLast();
+        }
+      }
     }
     return _messages.toList();
   }
@@ -193,7 +204,6 @@ class FileChanger {
     final items = line.split(',');
     final action = items[0];
     final parameters = items.skip(1).toList();
-
     switch (action) {
       case 'create':
         final filePath = p.join(path, parameters[0]);
