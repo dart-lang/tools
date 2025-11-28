@@ -10,13 +10,10 @@
   exhaustion, "Directory watcher closed unexpectedly", much less likely. The old
   implementation which does not use a separate Isolate is available as
   `DirectoryWatcher(path, runInIsolateOnWindows: false)`.
-- Bug fix: fix `DirectoryWatcher` tracking failure on Linux. Before the fix,
-  renaming a directory would cause subdirectories of that directory to no
-  longer be tracked.
-- Bug fix: fix `DirectoryWatcher` incorrect events on Linux when a file or
-  directory is moved between directories then immediately modified or deleted.
-- Bug fix: fix `DirectoryWatcher` duplicate ADD events on Linux when a file
-  is created in a recently moved or created directory.
+- Bug fix: new `DirectoryWatcher` implementation on Linux that fixes various
+  issues: tracking failure following subdirectory move, incorrect events when
+  there are changes in a recently-moved subdirectory, incorrect events due to
+  various situations involving subdirectory moves.
 - Bug fix: in `DirectoryWatcher` while listing directories skip symlinks that
   lead to a directory that has already been listed. This prevents a severe
   performance regression on MacOS and Linux when there are more than a few symlink loops.

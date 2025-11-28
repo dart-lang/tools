@@ -154,8 +154,7 @@ void _linkTests({required bool isNative}) {
 
     writeFile('targets/a.targetdir/a.txt');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (!isNative || Platform.isLinux) {
+    if (!isNative) {
       await expectAddEvent('links/a.link/a.txt');
     } else {
       await expectNoEvents();
@@ -175,7 +174,12 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    await expectAddEvent('watched/links/a.link/a.txt');
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative && Platform.isLinux) {
+      await expectAddEvent('watched/links/a.link');
+    } else {
+      await expectAddEvent('watched/links/a.link/a.txt');
+    }
   });
 
   test(
@@ -193,7 +197,12 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    await expectAddEvent('watched/links/a.link/a.txt');
+    // TODO(davidmorgan): reconcile differences.
+    if (isNative && Platform.isLinux) {
+      await expectAddEvent('watched/links/a.link');
+    } else {
+      await expectAddEvent('watched/links/a.link/a.txt');
+    }
     await expectNoEvents();
   });
 
@@ -214,7 +223,12 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    await expectAddEvent('watched/links/a.link/a.txt');
+    // TODO(davidmorgan): reconcile diffences.
+    if (isNative && Platform.isLinux) {
+      await expectAddEvent('watched/links/a.link');
+    } else {
+      await expectAddEvent('watched/links/a.link/a.txt');
+    }
     await expectNoEvents();
   });
 
