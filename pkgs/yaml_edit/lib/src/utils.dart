@@ -148,11 +148,7 @@ bool isFlowYamlCollectionNode(Object value) =>
 int getMapInsertionIndex(YamlMap map, Object newKey) {
   final keys = map.nodes.keys.map((k) => k.toString()).toList();
 
-  // We can't deduce ordering if list is empty, so then we just we just append
-  if (keys.length <= 1) {
-    return map.length;
-  }
-
+  // Detect if the keys are not already sorted, append new entry to the end
   for (var i = 1; i < keys.length; i++) {
     if (keys[i].compareTo(keys[i - 1]) < 0) {
       return map.length;

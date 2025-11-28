@@ -29,9 +29,11 @@ void main() {
 
       expect(yamlEditor.edits, [
         SourceEdit(5, 5, " YAML Ain't Markup Language"),
-        SourceEdit(32, 0, '\nXML: Extensible Markup Language\n'),
-        SourceEdit(0, 33, '')
+        SourceEdit(0, 0, 'XML: Extensible Markup Language\n'),
+        SourceEdit(32, 32, '')
       ]);
+      expect(
+          yamlEditor.toString(), equals('XML: Extensible Markup Language\n'));
     });
 
     test('that do not automatically update with internal list', () {
@@ -48,9 +50,10 @@ void main() {
       expect(firstEdits, [SourceEdit(5, 5, " YAML Ain't Markup Language")]);
       expect(yamlEditor.edits, [
         SourceEdit(5, 5, " YAML Ain't Markup Language"),
-        SourceEdit(32, 0, '\nXML: Extensible Markup Language\n'),
-        SourceEdit(0, 33, '')
+        SourceEdit(0, 0, 'XML: Extensible Markup Language\n'),
+        SourceEdit(32, 32, '')
       ]);
+      expect(yamlEditor.toString(), 'XML: Extensible Markup Language\n');
     });
   });
 }

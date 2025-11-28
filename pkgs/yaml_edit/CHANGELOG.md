@@ -1,3 +1,8 @@
+## 2.2.3
+
+- Fix alphabetical ordering when inserting into a single-element maps.
+  ([#2258](https://github.com/dart-lang/tools/issues/2258))
+
 ## 2.2.2
 
 - Suppress warnings previously printed to `stdout` when parsing YAML internally.
