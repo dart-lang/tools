@@ -39,6 +39,8 @@
   various situations involving subdirectory moves.
 - Bug fix: with `DirectoryWatcher` on MacOS, fix events for changes in new
   directories: don't emit duplicate ADD, don't emit MODIFY without ADD.
+- Bug fix: with `DirectoryWatcher` on MacOS, fix handling of repeated deletes
+  of a directory with the same name in a short space of time.
 - Bug fix: with `FileWatcher` on MacOS, a modify event was sometimes reported if
   the file was created immediately before the watcher was created. Now, if the
   file exists when the watcher is created then this modify event is not sent.
