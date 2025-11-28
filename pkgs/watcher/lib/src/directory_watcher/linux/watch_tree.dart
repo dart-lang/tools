@@ -292,8 +292,15 @@ class WatchTree {
     _directories.remove(directory)?._emitDeleteTree();
     _directories[directory] = WatchTree(
         emitEvent: _emitEvent,
-        // Ignore exceptions from subdirectories.
-        onError: (Object e, StackTrace s) {},
+        onError: (Object e, StackTrace s) {
+          // Ignore exceptions from subdirectories except "out of watchers"
+          // which is an unrecoverable error.
+          if (e is FileSystemException &&
+              e.message.contains('Failed to watch path') &&
+              e.osError?.errorCode == 28) {
+            _onError(e, s);
+          }
+        },
         watchedDirectoryWasDeleted: () {
           _emitDeleteDirectory(directory);
         },
