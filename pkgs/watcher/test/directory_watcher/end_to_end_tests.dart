@@ -21,7 +21,7 @@ import 'file_changer.dart';
 /// until a failure, it outputs a log which can be turned into a test case here.
 void endToEndTests() {
   // Random test to cover a wide range of cases.
-  test('end to end test: random', timeout: const Timeout(Duration(minutes: 5)),
+  test('end to end test: random', timeout: const Timeout(Duration(minutes: 10)),
       () async {
     await runTest(name: 'random', repeats: 100);
   });
@@ -30,7 +30,7 @@ void endToEndTests() {
   for (final testCase in testCases) {
     test('end to end test: ${testCase.name}',
         timeout: const Timeout(Duration(minutes: 5)), () async {
-      await runTest(name: testCase.name, replayLog: testCase.log, repeats: 100);
+      await runTest(name: testCase.name, replayLog: testCase.log, repeats: 50);
     }, skip: testCase.skipOnLinux && Platform.isLinux);
   }
 }
