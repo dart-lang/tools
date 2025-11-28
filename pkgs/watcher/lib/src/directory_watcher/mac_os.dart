@@ -195,18 +195,23 @@ class _MacOSDirectoryWatcher
     batch = batch.where((event) => event.path != path).toList();
 
     // Events within directories that already have create events are not needed
-    // as the directory's full content will be listed.
-    var createdDirectories = unionAll(batch.map((event) {
-      return event.type == EventType.createDirectory
+    // as the directory's full content will be listed. And, events that are
+    // under direcory deletes are not needed as all files are removed.
+    var ignoredPaths = unionAll(batch.map((event) {
+      return event.type == EventType.createDirectory ||
+              // Events don't distinguish file deletes from directory deletes,
+              // but that doesn't matter here as deleted files will not match
+              // as the parent directory of any file.
+              event.type == EventType.delete
           ? {event.path}
           : const <String>{};
     }));
 
-    bool isInCreatedDirectory(String path) =>
-        createdDirectories.any((dir) => path != dir && p.isWithin(dir, path));
+    bool isUnderDeleteOrDirectoryCreate(String path) =>
+        ignoredPaths.any((dir) => path != dir && p.isWithin(dir, path));
 
     void addEvent(String path, Event event) {
-      if (isInCreatedDirectory(path)) return;
+      if (isUnderDeleteOrDirectoryCreate(path)) return;
       eventsForPaths.putIfAbsent(path, () => <Event>{}).add(event);
     }
 

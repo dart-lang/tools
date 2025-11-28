@@ -471,6 +471,25 @@ void _fileTests({required bool isNative}) {
       await expectNoEvents();
     });
 
+    test('multiple deletes order is respected', () async {
+      createDir('watched');
+      writeFile('a/1');
+      writeFile('b/1');
+
+      await startWatcher(path: 'watched');
+
+      renameDir('a', 'watched/x');
+      renameDir('watched/x', 'a');
+      renameDir('b', 'watched/x');
+      writeFile('watched/x/1', contents: 'updated');
+      // This is a "duplicate" delete of x, but it's not the same delete and the
+      // watcher needs to notice that it happens after the update to x/1 so
+      // there is no file left behind.
+      renameDir('watched/x', 'b');
+
+      await expectNoEvents();
+    });
+
     test('subdirectory watching is robust against races', () async {
       // Make sandboxPath accessible to child isolates created by Isolate.run.
       final sandboxPath = d.sandbox;
