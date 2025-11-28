@@ -15,16 +15,19 @@ extension DirectoryRobustRecursiveListing on Directory {
   /// These can arise from concurrent file-system modification.
   ///
   /// See [listRecursively] for how symlinks are handled.
-  Stream<FileSystemEntity> listRecursivelyIgnoringErrors() {
-    return listRecursively()
+  Stream<FileSystemEntity> listRecursivelyIgnoringErrors(
+      {bool followLinks = true}) {
+    return listRecursively(followLinks: followLinks)
         .ignoring<PathNotFoundException>()
         .ignoring<PathAccessException>();
   }
 
   /// Lists the directory recursively.
   ///
-  /// This is like `Directory.list(recursive: true)`, but handles symlinks like
-  /// `find -L` to avoid a performance issue with symbolic link cycles.
+  /// If you pass `followLinks: false` then this exactly calls
+  /// `Directory.list(recursive: true, followLinks: false)`. If not, it is like
+  ///  `Directory.list(recursive: true)`, but handles symlinks like `find -L` to
+  /// avoid a performance issue with symbolic link cycles.
   ///
   /// See: https://github.com/dart-lang/sdk/issues/61407.
   ///
@@ -33,8 +36,11 @@ extension DirectoryRobustRecursiveListing on Directory {
   /// symlink-resolved paths.
   ///
   /// Skipped links to directories are not mentioned in the directory listing.
-  Stream<FileSystemEntity> listRecursively() =>
-      _DirectoryTraversal(this).listRecursively();
+  Stream<FileSystemEntity> listRecursively({bool followLinks = true}) {
+    return followLinks
+        ? _DirectoryTraversal(this).listRecursively()
+        : list(recursive: true, followLinks: false);
+  }
 }
 
 /// A recursive directory listing algorithm that follows symlinks carefully.

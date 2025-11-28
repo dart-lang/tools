@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -66,7 +64,7 @@ void _linkTests({required bool isNative}) {
     await startWatcher(path: 'links');
     writeFile('targets/a.target', contents: 'modified');
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectNoEvents();
     } else {
@@ -83,7 +81,7 @@ void _linkTests({required bool isNative}) {
 
     deleteFile('targets/a.target');
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectNoEvents();
     } else {
@@ -115,7 +113,7 @@ void _linkTests({required bool isNative}) {
         target: 'targets/a.targetdir',
         unawaitedAsync: true);
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectAddEvent('links/a.link');
     } else {
@@ -137,7 +135,7 @@ void _linkTests({required bool isNative}) {
         target: 'targets/a.targetdir',
         unawaitedAsync: true);
 
-    // TODO(davidmorgan): reconcile differences.
+    // Native watchers treat links as files, polling watcher polls through them.
     if (isNative) {
       await expectAddEvent('links/a.link');
     } else {
@@ -154,10 +152,28 @@ void _linkTests({required bool isNative}) {
 
     writeFile('targets/a.targetdir/a.txt');
 
-    if (!isNative) {
-      await expectAddEvent('links/a.link/a.txt');
-    } else {
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
       await expectNoEvents();
+    } else {
+      await expectAddEvent('links/a.link/a.txt');
+    }
+  });
+
+  test('notifies when a file is added to a newly linked directory', () async {
+    createDir('targets');
+    createDir('links');
+    createDir('targets/a.targetdir');
+    await startWatcher(path: 'links');
+
+    writeLink(link: 'links/a.link', target: 'targets/a.targetdir');
+    writeFile('targets/a.targetdir/a.txt');
+
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
+      await expectAddEvent('links/a.link');
+    } else {
+      await expectAddEvent('links/a.link/a.txt');
     }
   });
 
@@ -174,8 +190,8 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative && Platform.isLinux) {
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
       await expectAddEvent('watched/links/a.link');
     } else {
       await expectAddEvent('watched/links/a.link/a.txt');
@@ -197,8 +213,8 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile differences.
-    if (isNative && Platform.isLinux) {
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
       await expectAddEvent('watched/links/a.link');
     } else {
       await expectAddEvent('watched/links/a.link/a.txt');
@@ -223,8 +239,8 @@ void _linkTests({required bool isNative}) {
 
     renameDir('links', 'watched/links');
 
-    // TODO(davidmorgan): reconcile diffences.
-    if (isNative && Platform.isLinux) {
+    // Native watchers treat links as files, polling watcher polls through them.
+    if (isNative) {
       await expectAddEvent('watched/links/a.link');
     } else {
       await expectAddEvent('watched/links/a.link/a.txt');
