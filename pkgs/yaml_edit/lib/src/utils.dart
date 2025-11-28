@@ -347,45 +347,41 @@ int indexOfLastLineEnding(String yaml, int offset) {
   String yaml,
   int start,
 ) {
-  var startOffset = max(0, start - 1);
+  /// Look back past the indent/separation space.
+  final startOffset = max(
+    0,
+    yaml.lastIndexOf(_nonSpaceMatch, max(0, start - 1)),
+  );
 
-  scanner:
-  while (true) {
-    switch (yaml[startOffset]) {
-      // This is either indent or separation space
-      case ' ' || '\t':
-        {
-          startOffset = yaml.lastIndexOf(_nonSpaceMatch, startOffset);
-          if (startOffset == -1) break scanner;
-        }
+  return switch (yaml[startOffset]) {
+    '\r' || '\n' => (compactCharOffset: -1, lineEndingIndex: startOffset),
 
-      case '\r' || '\n':
-        return (compactCharOffset: -1, lineEndingIndex: startOffset);
-
-      /// Block sequences and explicit keys/values can be used to declare block
-      /// maps in a compact-inline notation.
-      ///
-      /// - a: b
-      ///   c: d
-      ///
-      /// OR as an explicit key with its explicit value
-      ///
-      /// ? a: b
-      ///   c: d
-      /// : e: f
-      ///   g: h
-      ///
-      /// See "Example 8.19 Compact Block Mappings" at
-      /// https://yaml.org/spec/1.2.2/#822-block-mappings
-      case '-' || '?' || ':':
-        return (compactCharOffset: startOffset, lineEndingIndex: -1);
-
-      default:
-        break scanner;
-    }
-  }
-
-  return (compactCharOffset: -1, lineEndingIndex: -1);
+    /// Block sequences and explicit keys/values can be used to declare block
+    /// maps/sequences in a compact-inline notation.
+    ///
+    /// - a: b
+    ///   c: d
+    ///
+    /// - - a
+    ///   - b
+    ///
+    /// OR as an explicit key with its explicit value
+    ///
+    /// ? a: b
+    ///   c: d
+    /// : e: f
+    ///   g: h
+    ///
+    /// ? - sequence
+    ///   - as key
+    /// : - sequence
+    ///   - as value
+    ///
+    /// See "Example 8.19 Compact Block Mappings" at
+    /// https://yaml.org/spec/1.2.2/#822-block-mappings
+    '-' || '?' || ':' => (compactCharOffset: startOffset, lineEndingIndex: -1),
+    _ => (compactCharOffset: -1, lineEndingIndex: -1)
+  };
 }
 
 typedef NextBlockNodeInfo = ({int nearestLineEnding, int nextNodeColStart});
