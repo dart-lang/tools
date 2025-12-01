@@ -918,18 +918,37 @@ class Scanner {
   ///
   ///      %TAG    !yaml!  tag:yaml.org,2002:  \n
   ///          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ///
+  ///   OR
+  ///
+  ///      %TAG    !yaml!  !dart  \n
+  ///          ^^^^^^^^^^^^^^^^^
+  ///
   Token _scanTagDirectiveValue(LineScannerState start) {
     _skipBlanks();
 
-    var handle = _scanTagHandle(directive: true);
+    final handle = _scanTagHandle(directive: true);
     if (!_isBlank) {
       throw YamlException('Expected whitespace.', _scanner.emptySpan);
     }
 
     _skipBlanks();
 
-    var prefix = _scanTagUri();
-    if (!_isBlankOrEnd) {
+    /// Both tag uri and local tags can be used as prefixes.
+    ///
+    /// See: https://yaml.org/spec/1.2.2/#6822-tag-prefixes
+    var prefix = _scanner.peekChar() == EXCLAMATION
+        ? _scanTagHandle(directive: true, isPrefix: true)
+        : '';
+
+    prefix += _scanTagUri(); // Readability's sake
+
+    if (prefix.isEmpty) {
+      throw YamlException(
+        'Expected a non-empty global tag prefix',
+        _scanner.emptySpan,
+      );
+    } else if (!_isBlankOrEnd) {
       throw YamlException('Expected whitespace.', _scanner.emptySpan);
     }
 
