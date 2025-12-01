@@ -1018,26 +1018,55 @@ class Scanner {
   }
 
   /// Scans a tag handle.
-  String _scanTagHandle({bool directive = false}) {
+  ///
+  /// If [isPrefix] is `true`, the handle can never be a secondary or named
+  /// tag handle. Such handles cannot be used in a global tag's local tag
+  /// prefix.
+  ///
+  /// See: https://yaml.org/spec/1.2/spec.html#id2783273
+  String _scanTagHandle({bool directive = false, bool isPrefix = false}) {
+    final start = _scanner.state;
     _scanner.expect('!');
 
-    var buffer = StringBuffer('!');
-
-    // libyaml only allows word characters in tags, but the spec disagrees:
-    // http://yaml.org/spec/1.2/spec.html#ns-tag-char.
-    var start = _scanner.position;
-    while (_isTagChar) {
-      _scanner.readChar();
-    }
-    buffer.write(_scanner.substring(start));
+    final buffer = StringBuffer('!');
 
     if (_scanner.peekChar() == EXCLAMATION) {
-      buffer.writeCharCode(_scanner.readCodePoint());
+      // TODO: Do we really need this highlighted?
+      final char = _scanner.readCodePoint();
+
+      if (isPrefix) {
+        throw YamlException(
+          'A local tag used as a global tag prefix cannot have a secondary tag'
+          ' handle',
+          _scanner.spanFrom(start),
+        );
+      }
+
+      buffer.writeCharCode(char);
     } else {
-      // It's either the '!' tag or not really a tag handle. If it's a %TAG
-      // directive, it's an error. If it's a tag token, it must be part of a
-      // URI.
-      if (directive && buffer.toString() != '!') _scanner.expect('!');
+      // Both %TAG and tag shorthands can have named handles.
+      buffer.write(_scanTagUri(flowSeparators: false));
+
+      /// For directives, expect the "!" for a named tag. No other handle can
+      /// have a tag uri here. For a tag shorthand anywhere else, this needs to
+      /// be a separation space (tab included) or line break or nothing.
+      if (buffer.length > 1 && !_isBlankOrEnd) {
+        _scanner.expect('!');
+
+        /// A tag directive doesn't allow a local tag with a named handle as a
+        /// local tag prefix.
+        ///
+        /// See: https://yaml.org/spec/1.2/spec.html#id2783273
+        if (directive && isPrefix) {
+          throw YamlException(
+            'A local tag used as a global tag prefix cannot have a named tag'
+            ' handle',
+            _scanner.spanFrom(start),
+          );
+        }
+
+        buffer.write('!');
+      }
     }
 
     return buffer.toString();
