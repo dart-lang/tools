@@ -1049,13 +1049,12 @@ class Scanner {
   /// [flowSeparators] indicates whether the tag URI can contain flow
   /// separators.
   String _scanTagUri({String? head, bool flowSeparators = true}) {
-    var length = head == null ? 0 : head.length;
-    var buffer = StringBuffer();
+    final buffer = StringBuffer();
 
     // Copy the head if needed.
     //
     // Note that we don't copy the leading '!' character.
-    if (length > 1) buffer.write(head!.substring(1));
+    if ((head?.length ?? 0) > 1) buffer.write(head!.substring(1));
 
     // The set of characters that may appear in URI is as follows:
     //
@@ -1075,7 +1074,7 @@ class Scanner {
     }
 
     // libyaml manually decodes the URL, but we don't have to do that.
-    return Uri.decodeFull(_scanner.substring(start));
+    return buffer.toString() + Uri.decodeFull(_scanner.substring(start));
   }
 
   /// Scans a block scalar.
