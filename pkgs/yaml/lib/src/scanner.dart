@@ -1007,10 +1007,10 @@ class Scanner {
     String? handle = tagHandle;
     var suffix = '';
 
-    if (isNamed) {
+    if (isNamed || tagHandle == '!!') {
       suffix = _scanTagUri(flowSeparators: false);
 
-      /// Named tag handles cannot have an empty tag suffix.
+      /// Secondary and named tag handles cannot have an empty tag suffix.
       ///
       ///   c-ns-shorthand-tag ::=
       ///       c-tag-handle
