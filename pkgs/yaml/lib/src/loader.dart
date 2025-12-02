@@ -12,6 +12,7 @@ import 'equality.dart';
 import 'error_listener.dart';
 import 'event.dart';
 import 'parser.dart';
+import 'utils.dart';
 import 'yaml_document.dart';
 import 'yaml_exception.dart';
 import 'yaml_node.dart';
@@ -125,9 +126,7 @@ class Loader {
 
   /// Composes a sequence node.
   YamlNode _loadSequence(SequenceStartEvent firstEvent) {
-    if (firstEvent.tag != '!' &&
-        firstEvent.tag != null &&
-        firstEvent.tag != 'tag:yaml.org,2002:seq') {
+    if (!isResolvedYamlTag(firstEvent.tag, 'seq')) {
       throw YamlException('Invalid tag for sequence.', firstEvent.span);
     }
 
@@ -147,9 +146,7 @@ class Loader {
 
   /// Composes a mapping node.
   YamlNode _loadMapping(MappingStartEvent firstEvent) {
-    if (firstEvent.tag != '!' &&
-        firstEvent.tag != null &&
-        firstEvent.tag != 'tag:yaml.org,2002:map') {
+    if (!isResolvedYamlTag(firstEvent.tag, 'map')) {
       throw YamlException('Invalid tag for mapping.', firstEvent.span);
     }
 
@@ -192,10 +189,22 @@ class Loader {
         var result = _parseNumber(scalar, allowInt: false);
         if (result != null) return result;
         throw YamlException('Invalid float scalar.', scalar.span);
-      case 'tag:yaml.org,2002:str':
-        return YamlScalar.internal(scalar.value, scalar);
-      default:
-        throw YamlException('Undefined tag: ${scalar.tag}.', scalar.span);
+
+      /// Represent partially as a string when custom tags are present. Any
+      /// other yaml tag must be `!!str`.
+      ///
+      /// See: https://yaml.org/spec/1.2/spec.html#id2768011
+      /// (PS: This is the YAML version this parser is based on)
+      case String? tag:
+        {
+          // Intentionally (quirky and) verbose. We want this condition to leak
+          // for non-schema tags.
+          if (!isResolvedYamlTag(tag, 'str')) {
+            throw YamlException('Undefined tag: ${scalar.tag}.', scalar.span);
+          }
+
+          return YamlScalar.internal(scalar.value, scalar);
+        }
     }
   }
 
