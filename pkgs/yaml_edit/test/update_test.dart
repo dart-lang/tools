@@ -715,12 +715,9 @@ c: 3
         doc.update(['XML'], 'Extensible Markup Language');
 
         expect(
-          doc.toString(),
-          equals(
-            "{YAML: YAML Ain't Markup Language, "
-            'XML: Extensible Markup Language}',
-          ),
-        );
+            doc.toString(),
+            '{XML: Extensible Markup Language, '
+            "YAML: YAML Ain't Markup Language}");
         expectYamlBuilderValue(doc, {
           'XML': 'Extensible Markup Language',
           'YAML': "YAML Ain't Markup Language",
@@ -743,6 +740,31 @@ c: 3
 d: 4
 '''));
         expectYamlBuilderValue(doc, {'a': 1, 'b': 2, 'c': 3, 'd': 4});
+      });
+
+      test('Preserves alphabetical order single', () {
+        {
+          final doc = YamlEditor('''
+b: 2
+''');
+          doc.update(['a'], 1);
+          expect(doc.toString(), '''
+a: 1
+b: 2
+''');
+          expectYamlBuilderValue(doc, {'a': 1, 'b': 2});
+        }
+        {
+          final doc = YamlEditor('''
+a: 1
+''');
+          doc.update(['b'], 2);
+          expect(doc.toString(), '''
+a: 1
+b: 2
+''');
+          expectYamlBuilderValue(doc, {'a': 1, 'b': 2});
+        }
       });
 
       // Regression testing to ensure it works without leading whitespace
