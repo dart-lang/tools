@@ -290,16 +290,23 @@ class Parser {
     }
 
     String? tag;
-    if (tagToken != null) {
-      if (tagToken!.handle == null) {
-        tag = tagToken!.suffix;
+    if (tagToken
+        case TagToken(:final handle, :final suffix, :final isVerbatim)) {
+      /// Verbatim tags cannot be resolved as global tags.
+      ///
+      /// See: https://yaml.org/spec/1.2.2/#691-node-tags
+      ///   - Verbatim tags section
+      ///   - All 1.2.* versions behave this way
+      if (handle == null || isVerbatim) {
+        tag = suffix;
       } else {
-        var tagDirective = _tagDirectives[tagToken!.handle];
+        final tagDirective = _tagDirectives[handle];
+
         if (tagDirective == null) {
           throw YamlException('Undefined tag handle.', tagToken!.span);
         }
 
-        tag = tagDirective.prefix + (tagToken?.suffix ?? '');
+        tag = tagDirective.prefix + suffix;
       }
     }
 
