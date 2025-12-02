@@ -49,4 +49,4 @@ bool isLowSurrogate(int codeUnit) => codeUnit >>> 10 == 0x37;
 bool isResolvedYamlTag(String? tag, String canonicalSuffix) =>
     tag == null ||
     !tag.startsWith('tag:yaml.org,2002:') || // Leaky prefix condition.
-    !tag.endsWith(canonicalSuffix);
+    tag.endsWith(canonicalSuffix);
