@@ -927,7 +927,7 @@ class Scanner {
   Token _scanTagDirectiveValue(LineScannerState start) {
     _skipBlanks();
 
-    final handle = _scanTagHandle(directive: true);
+    final handle = _scanTagHandle(directive: true).tagHandle;
     if (!_isBlank) {
       throw YamlException('Expected whitespace.', _scanner.emptySpan);
     }
@@ -938,7 +938,7 @@ class Scanner {
     ///
     /// See: https://yaml.org/spec/1.2.2/#6822-tag-prefixes
     var prefix = _scanner.peekChar() == EXCLAMATION
-        ? _scanTagHandle(directive: true, isPrefix: true)
+        ? _scanTagHandle(directive: true, isGlobalTagPrefix: true).tagHandle
         : '';
 
     prefix += _scanTagUri(); // Readability's sake
@@ -994,56 +994,121 @@ class Scanner {
 
   /// Scans a [TokenType.tag] token.
   Token _scanTag() {
-    String? handle;
-    String suffix;
-    var start = _scanner.state;
+    final start = _scanner.state;
 
     // Check if the tag is in the canonical form.
-    if (_scanner.peekChar(1) == LEFT_ANGLE) {
-      // Eat '!<'.
-      _scanner.readChar();
-      _scanner.readChar();
+    if (_scanner.peekChar(1) == LEFT_ANGLE) return _scanVerbatimTag(start);
 
-      handle = '';
-      suffix = _scanTagUri();
+    // The tag has either the '!suffix' or the '!handle!suffix' form.
 
-      _scanner.expect('>');
+    // First, try to scan a handle.
+    final (:tagHandle, :isNamed) = _scanTagHandle();
+
+    String? handle = tagHandle;
+    var suffix = '';
+
+    if (isNamed) {
+      suffix = _scanTagUri(flowSeparators: false);
+
+      /// Named tag handles cannot have an empty tag suffix.
+      ///
+      ///   c-ns-shorthand-tag ::=
+      ///       c-tag-handle
+      ///       ns-tag-char+
+      ///
+      /// See: https://yaml.org/spec/1.2.2/#691-node-tags
+      if (suffix.isEmpty) {
+        throw YamlException(
+          'Expected a non-empty shorthand suffix',
+          _scanner.spanFrom(start),
+        );
+      }
     } else {
-      // The tag has either the '!suffix' or the '!handle!suffix' form.
+      suffix = _scanTagUri(head: handle, flowSeparators: false);
 
-      // First, try to scan a handle.
-      handle = _scanTagHandle();
-
-      if (handle.length > 1 && handle.startsWith('!') && handle.endsWith('!')) {
-        suffix = _scanTagUri(flowSeparators: false);
+      // There was no explicit handle.
+      if (suffix.isEmpty) {
+        // This is the special '!' tag.
+        handle = null;
+        suffix = '!';
       } else {
-        suffix = _scanTagUri(head: handle, flowSeparators: false);
-
-        // There was no explicit handle.
-        if (suffix.isEmpty) {
-          // This is the special '!' tag.
-          handle = null;
-          suffix = '!';
-        } else {
-          handle = '!';
-        }
+        handle = '!'; // Not named.
       }
     }
 
     // libyaml insists on whitespace after a tag, but example 7.2 indicates
     // that it's not required: http://yaml.org/spec/1.2/spec.html#id2786720.
-
-    return TagToken(_scanner.spanFrom(start), handle, suffix);
+    return TagToken(
+      _scanner.spanFrom(start),
+      handle,
+      suffix,
+      isVerbatim: false,
+    );
   }
 
-  /// Scans a tag handle.
+  /// Scans a canonical [TokenType.tag] token whose [start] position is
+  /// provided by [_scanTag].
+  TagToken _scanVerbatimTag(LineScannerState start) {
+    // Eat '!<'.
+    final buffer = StringBuffer()
+      ..writeCharCode(_scanner.readChar())
+      ..writeCharCode(_scanner.readChar());
+
+    var tagUri = '';
+
+    if (_scanner.peekChar() == EXCLAMATION) {
+      tagUri = _scanTagHandle(isVerbatimTag: true).tagHandle; // !<!foo>
+
+      if (tagUri == '!') {
+        throw YamlException(
+          'A non-specific tag cannot be declared as a verbatim tag',
+          _scanner.spanFrom(start),
+        );
+      }
+    } else {
+      tagUri = _scanTagUri(); // !<foo:uri>
+
+      // Expect !<foo:uri> to be !<tag:yaml.org,2002:*>
+      switch (tagUri.replaceFirst('tag:yaml.org,2002:', '')) {
+        case 'map' || 'seq' || 'str' || 'null' || 'bool' || 'int' || 'float':
+          break;
+
+        default:
+          throw YamlException(
+            'Invalid tag uri used as a verbatim tag',
+            _scanner.spanFrom(start),
+          );
+      }
+    }
+
+    _scanner.expect('>');
+    buffer.write('$tagUri>');
+
+    return TagToken(
+      _scanner.spanFrom(start),
+      '',
+      buffer.toString(),
+      isVerbatim: true,
+    );
+  }
+
+  /// Scans a tag handle and explicitly indicates if the handle was a named
+  /// tag handle.
   ///
-  /// If [isPrefix] is `true`, the handle can never be a secondary or named
-  /// tag handle. Such handles cannot be used in a global tag's local tag
+  /// If [isGlobalTagPrefix] is `true`, the handle can never be a secondary or
+  /// named tag handle. Such handles cannot be used in a global tag's local tag
   /// prefix.
   ///
+  /// If [isVerbatimTag] is `true`, `isNamed` will always be `false`. Verbatim
+  /// tags expect the next non-uri char to be `>`.
+  ///
   /// See: https://yaml.org/spec/1.2/spec.html#id2783273
-  String _scanTagHandle({bool directive = false, bool isPrefix = false}) {
+  ({bool isNamed, String tagHandle}) _scanTagHandle({
+    bool directive = false,
+    bool isGlobalTagPrefix = false,
+    bool isVerbatimTag = false,
+  }) {
+    var named = false;
     final start = _scanner.state;
     _scanner.expect('!');
 
@@ -1053,7 +1118,7 @@ class Scanner {
       // TODO: Do we really need this highlighted?
       final char = _scanner.readCodePoint();
 
-      if (isPrefix) {
+      if (isGlobalTagPrefix) {
         throw YamlException(
           'A local tag used as a global tag prefix cannot have a secondary tag'
           ' handle',
@@ -1069,14 +1134,16 @@ class Scanner {
       /// For directives, expect the "!" for a named tag. No other handle can
       /// have a tag uri here. For a tag shorthand anywhere else, this needs to
       /// be a separation space (tab included) or line break or nothing.
-      if (buffer.length > 1 && !_isBlankOrEnd) {
+      ///
+      /// Verbatim tags expect '>'.
+      if (!isVerbatimTag && buffer.length > 1 && !_isBlankOrEnd) {
         _scanner.expect('!');
 
         /// A tag directive doesn't allow a local tag with a named handle as a
         /// local tag prefix.
         ///
         /// See: https://yaml.org/spec/1.2/spec.html#id2783273
-        if (directive && isPrefix) {
+        if (directive && isGlobalTagPrefix) {
           throw YamlException(
             'A local tag used as a global tag prefix cannot have a named tag'
             ' handle',
@@ -1085,10 +1152,11 @@ class Scanner {
         }
 
         buffer.write('!');
+        named = true;
       }
     }
 
-    return buffer.toString();
+    return (isNamed: named, tagHandle: buffer.toString());
   }
 
   /// Scans a tag URI.
