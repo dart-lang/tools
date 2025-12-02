@@ -1068,16 +1068,14 @@ class Scanner {
     } else {
       tagUri = _scanTagUri(); // !<foo:uri>
 
-      // Expect !<foo:uri> to be !<tag:yaml.org,2002:*>
-      switch (tagUri.replaceFirst('tag:yaml.org,2002:', '')) {
-        case 'map' || 'seq' || 'str' || 'null' || 'bool' || 'int' || 'float':
-          break;
-
-        default:
-          throw YamlException(
-            'Invalid tag uri used as a verbatim tag',
-            _scanner.spanFrom(start),
-          );
+      /// Expect !<foo:uri> to be !<tag:*> (a global tag)
+      ///
+      /// See: https://yaml.org/spec/1.2.2/#3212-tags
+      if (!tagUri.startsWith('tag:') || tagUri.substring(4).isEmpty) {
+        throw YamlException(
+          'Invalid tag uri used as a verbatim tag',
+          _scanner.spanFrom(start),
+        );
       }
     }
 

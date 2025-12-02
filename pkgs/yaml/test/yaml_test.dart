@@ -1140,6 +1140,8 @@ void main() {
     test('[Example 6.25]', () {
       expectYamlFails('- !<!> foo');
       expectYamlFails('- !<\$:?> foo');
+      expectYamlFails('- !<tag:>'); // Incomplete verbatim tag uri
+      expectYamlFails('- !<improvised:tag>');
     });
 
     test('[Example 6.26]', () {
