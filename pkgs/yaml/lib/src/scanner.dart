@@ -927,8 +927,15 @@ class Scanner {
   Token _scanTagDirectiveValue(LineScannerState start) {
     _skipBlanks();
 
-    final handle = _scanTagHandle(directive: true).tagHandle;
-    if (!_isBlank) {
+    final (:tagHandle, :isNamed) = _scanTagHandle(directive: true);
+
+    // !yaml! or ! or !!. Throw for !yaml
+    if (!isNamed && tagHandle != '!' && tagHandle != '!!') {
+      throw YamlException(
+        'Invalid global tag handle',
+        _scanner.spanFrom(start),
+      );
+    } else if (!_isBlank) {
       throw YamlException('Expected whitespace.', _scanner.emptySpan);
     }
 
@@ -959,7 +966,7 @@ class Scanner {
       throw YamlException('Expected whitespace.', _scanner.emptySpan);
     }
 
-    return TagDirectiveToken(_scanner.spanFrom(start), handle, prefix);
+    return TagDirectiveToken(_scanner.spanFrom(start), tagHandle, prefix);
   }
 
   /// Scans a [TokenType.anchor] token.

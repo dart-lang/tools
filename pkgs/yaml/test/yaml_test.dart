@@ -1127,6 +1127,11 @@ void main() {
 
       expectYamlLoads(['bar'], source.asIndented());
     });
+
+    test('Throws for invalid global tag handles', () {
+      expectYamlFails('%TAG !not-allowed !birdbox');
+      expectYamlFails('%TAG uri:not-allowed !birdbox');
+    });
   });
 
   group('6.9: Node Properties', () {
