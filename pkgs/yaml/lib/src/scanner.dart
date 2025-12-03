@@ -1120,8 +1120,7 @@ class Scanner {
     final buffer = StringBuffer('!');
 
     if (_scanner.peekChar() == EXCLAMATION) {
-      // TODO: Do we really need this highlighted?
-      final char = _scanner.readCodePoint();
+      buffer.writeCharCode(_scanner.readChar());
 
       if (isGlobalTagPrefix) {
         throw YamlException(
@@ -1130,8 +1129,6 @@ class Scanner {
           _scanner.spanFrom(start),
         );
       }
-
-      buffer.writeCharCode(char);
     } else {
       // Both %TAG and tag shorthands can have named handles.
       buffer.write(_scanTagUri(flowSeparators: false));
