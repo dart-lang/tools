@@ -429,10 +429,16 @@ void _fileTests({required bool isNative}) {
       renameDir('sub', 'dir/sub');
 
       if (isNative) {
-        await inAnyOrder(withPermutations(
-            (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
-        await inAnyOrder(withPermutations(
-            (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+        if (Platform.isMacOS) {
+          // MacOS watcher reports as "modify" instead of remove then add.
+          await inAnyOrder(withPermutations(
+              (i, j, k) => isModifyEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+        } else {
+          await inAnyOrder(withPermutations(
+              (i, j, k) => isRemoveEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+          await inAnyOrder(withPermutations(
+              (i, j, k) => isAddEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
+        }
       } else {
         // Polling watchers can't detect this as directory contents mtimes
         // aren't updated when the directory is moved.
@@ -468,6 +474,25 @@ void _fileTests({required bool isNative}) {
 
       writeFile('c/b/file2.txt');
       await expectAddEvent('c/b/file2.txt');
+      await expectNoEvents();
+    });
+
+    test('multiple deletes order is respected', () async {
+      createDir('watched');
+      writeFile('a/1');
+      writeFile('b/1');
+
+      await startWatcher(path: 'watched');
+
+      renameDir('a', 'watched/x');
+      renameDir('watched/x', 'a');
+      renameDir('b', 'watched/x');
+      writeFile('watched/x/1', contents: 'updated');
+      // This is a "duplicate" delete of x, but it's not the same delete and the
+      // watcher needs to notice that it happens after the update to x/1 so
+      // there is no file left behind.
+      renameDir('watched/x', 'b');
+
       await expectNoEvents();
     });
 

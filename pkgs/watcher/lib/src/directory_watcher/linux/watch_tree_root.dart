@@ -4,9 +4,9 @@
 
 import 'dart:async';
 
+import '../../unix_paths.dart';
 import '../../utils.dart';
 import '../../watch_event.dart';
-import 'paths.dart';
 import 'watch_tree.dart';
 
 /// Linux directory watcher using a [WatchTree].

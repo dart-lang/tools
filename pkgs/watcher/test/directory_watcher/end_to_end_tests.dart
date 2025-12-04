@@ -36,6 +36,60 @@ void endToEndTests() {
 }
 
 final testCases = [
+  TestCase('many directories, move directory to recently moved directory', '''
+F create directory,f/a
+F create,f/a/78670,387
+F create directory,g/f
+F create directory,b/c
+F create directory,g/j
+F create directory,f/d
+F create directory,i
+F create directory,h/i
+F create directory,c/h
+F create directory,g/c
+F create directory,g/a
+F create directory,e/c
+F move directory to new,f/d,b/h
+F create directory,j/c
+F move directory to new,b/h,d/h
+F create directory,d/i
+F move directory to new,b/g,g/h
+F create,j/c/73241,207
+F move file to new,42776,61386
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F wait
+F create directory,d/b
+F create,d/b/56283,667
+F create directory,g
+F move directory to new,g,d/a
+F create directory,j/j
+F move file to new,i/63276,j/j/66963
+F modify,f/8110,250
+F create,52267,858
+F move directory to new,f,g
+'''),
+  TestCase(
+    'moves and modifies',
+    '''
+F create directory,1
+F create,1/1,1
+${_movesAndModifies()}
+''',
+  ),
   TestCase(
     'move directory in, move file over',
     '''
@@ -79,3 +133,12 @@ F delete,a/63090
 ''',
   ),
 ];
+
+String _movesAndModifies() {
+  final result = StringBuffer();
+  for (var i = 1; i != 50; ++i) {
+    result.writeln('F move directory to new,$i,${i + 1}');
+    result.writeln('F modify,${i + 1}/1,$i');
+  }
+  return result.toString();
+}

@@ -5,10 +5,10 @@
 import 'dart:io';
 
 import '../../event.dart';
+import '../../unix_paths.dart';
 import '../../utils.dart';
 import '../../watch_event.dart';
 import 'native_watch.dart';
-import 'paths.dart';
 
 /// Linux directory watcher.
 ///
@@ -148,9 +148,9 @@ class WatchTree {
   /// needs to be watched again.
   void _poll(RelativePath path) {
     logForTesting?.call('Watch,$watchedDirectory,_poll,$path');
-    final stat = watchedDirectory.append(path).statSync();
-    if (stat.type == FileSystemEntityType.file ||
-        stat.type == FileSystemEntityType.link) {
+    final type = watchedDirectory.append(path).typeSync();
+    if (type == FileSystemEntityType.file ||
+        type == FileSystemEntityType.link) {
       logForTesting?.call('Watch,$watchedDirectory,poll,$path,file');
       if (_directories.containsKey(path)) {
         _emitDeleteDirectory(path);
@@ -160,7 +160,7 @@ class WatchTree {
       } else {
         _addFile(path);
       }
-    } else if (stat.type == FileSystemEntityType.directory) {
+    } else if (type == FileSystemEntityType.directory) {
       logForTesting?.call('Watch,$watchedDirectory,poll,$path,directory');
       if (_files.contains(path)) {
         _emitDeleteFile(path);
