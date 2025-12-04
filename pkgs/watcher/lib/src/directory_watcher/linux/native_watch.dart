@@ -6,8 +6,8 @@ import 'dart:async';
 import 'dart:io';
 
 import '../../event.dart';
+import '../../unix_paths.dart';
 import '../../utils.dart';
-import 'paths.dart';
 
 /// Watches a directory with the native Linux watcher.
 ///
@@ -104,8 +104,7 @@ class NativeWatch {
         // watched directory was deleted. But, it might be an incorrect event
         // that is the deletion event for the old location in a move. So, check
         // if the directory is actually now missing.
-        if (watchedDirectory.statSync().type ==
-            FileSystemEntityType.directory) {
+        if (watchedDirectory.typeSync() == FileSystemEntityType.directory) {
           // The directory is still present, indicating either a watch failure
           // or that the directoy has been replaced with a new one. Either way,
           // restart watching.

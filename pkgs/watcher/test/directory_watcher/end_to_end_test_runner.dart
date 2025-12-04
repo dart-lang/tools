@@ -45,8 +45,10 @@ Future<void> runTest({
 
   // Turn on logging of the watchers.
   final log = <LogEntry>[];
-  logForTesting = (message) =>
-      log.add(LogEntry('W ${message.replaceAll('${temp.path}/', '')}'));
+  logForTesting = (message) {
+    message = message.replaceAll('${temp.path}/', '').replaceAll(temp.path, '');
+    log.add(LogEntry('W $message'));
+  };
 
   // Create the watcher and [ClientSimulator].
   final watcher = createWatcher(path: temp.path);
@@ -71,6 +73,9 @@ Future<void> runTest({
     } else {
       log.addAll(await changer.replayLog(replayLog));
     }
+
+    // Short fixed delay so tester file reads don't race with writes.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
 
     // Give time for events to arrive. To allow tests to run quickly when the
     // events are handled quickly, poll and continue if verification passes.
@@ -138,12 +143,17 @@ Future<void> main(List<String> arguments) async {
   final teardowns = <void Function()>[];
   try {
     if (replay) {
+      final filteredTestCases = testCases;
+      if (specifiedName != null) {
+        filteredTestCases
+            .retainWhere((testCase) => testCase.name == specifiedName);
+      }
+      if (filteredTestCases.isEmpty) {
+        throw ArgumentError('No test case matching `$specifiedName`.');
+      }
       while (true) {
         stdout.write('.');
-        for (final testCase in testCases) {
-          if (specifiedName != null && specifiedName != testCase.name) {
-            continue;
-          }
+        for (final testCase in filteredTestCases) {
           await runTest(
             name: testCase.name,
             addTearDown: teardowns.add,

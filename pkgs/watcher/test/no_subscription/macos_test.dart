@@ -6,13 +6,13 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/mac_os.dart';
+import 'package:watcher/src/directory_watcher/macos.dart';
 
 import '../utils.dart';
 import 'shared.dart';
 
 void main() {
-  watcherFactory = MacOSDirectoryWatcher.new;
+  watcherFactory = MacosDirectoryWatcher.new;
 
   sharedTests();
 }

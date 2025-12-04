@@ -6,8 +6,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../../event.dart';
-import '../../watch_event.dart';
+import 'event.dart';
+import 'watch_event.dart';
 
 /// An absolute file path.
 extension type AbsolutePath(String _string) {
@@ -20,9 +20,23 @@ extension type AbsolutePath(String _string) {
   ///
   /// Otherwise, throws if this path does not start with [root].
   RelativePath relativeTo(AbsolutePath root) {
-    if (!_string.startsWith(root._string)) throw ArgumentError(root);
+    if (!_string.startsWith(root._string)) {
+      throw ArgumentError('$this relativeTo $root');
+    }
     if (_string == root._string) return RelativePath('');
     return RelativePath(_string.substring(root._string.length + 1));
+  }
+
+  /// This path relative to [root] as a single segment.
+  ///
+  /// Throws if this path is not a single segment under [root].
+  PathSegment segmentRelativeTo(AbsolutePath root) {
+    if (!_string.startsWith(root._string)) {
+      throw ArgumentError('$this segmentRelativeTo $root');
+    }
+    if (_string == root._string) throw ArgumentError(root);
+    final result = _string.substring(root._string.length + 1);
+    return PathSegment(result);
   }
 
   /// The last path segment of this path.
@@ -33,10 +47,12 @@ extension type AbsolutePath(String _string) {
       Directory(_string).listSync(followLinks: false);
 
   /// Watches the directory at this path.
-  Stream<FileSystemEvent> watch() => Directory(_string).watch();
+  Stream<FileSystemEvent> watch({bool recursive = false}) =>
+      Directory(_string).watch(recursive: recursive);
 
-  /// Gets the [FileStat] for this path.
-  FileStat statSync() => FileStat.statSync(_string);
+  /// Gets the [FileSystemEntityType] for this path.
+  FileSystemEntityType typeSync() =>
+      FileSystemEntity.typeSync(_string, followLinks: false);
 
   /// Returns this path followed by [path].
   AbsolutePath append(RelativePath path) =>
@@ -58,6 +74,12 @@ extension FileSystemEntityExtensions on FileSystemEntity {
   /// Throws if not under [root].
   RelativePath pathRelativeTo(AbsolutePath root) =>
       AbsolutePath(path).relativeTo(root);
+
+  /// The path segment under [root].
+  ///
+  /// Throws if not a single path segment under [root].
+  PathSegment pathSegmentRelativeTo(AbsolutePath root) =>
+      AbsolutePath(path).segmentRelativeTo(root);
 }
 
 extension EventExtensions on Event {
@@ -73,4 +95,19 @@ extension EventExtensions on Event {
 }
 
 /// A relative file path.
-extension type RelativePath(String _string) {}
+extension type RelativePath(String _string) {
+  List<PathSegment> get segments => _string.isEmpty
+      ? const <PathSegment>[]
+      : _string.split('/') as List<PathSegment>;
+}
+
+/// A path segment.
+extension type PathSegment._(String _string) implements RelativePath {
+  factory PathSegment(String segment) {
+    if (segment.isEmpty) throw ArgumentError('Segment cannot be empty.');
+    if (segment.contains('/')) {
+      throw ArgumentError('Segment cannot contain `/`.', segment);
+    }
+    return PathSegment._(segment);
+  }
+}
