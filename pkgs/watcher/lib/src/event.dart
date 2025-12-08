@@ -36,6 +36,20 @@ extension type Event._(FileSystemEvent _event) {
     return result;
   }
 
+  /// As [checkAndConvert] but also splits up move events.
+  static List<Event> checkAndConvertAndSplitMoves(FileSystemEvent event) {
+    final result = checkAndConvert(event);
+    if (result == null) return [];
+    final destination = result.destination;
+    if (destination == null) return [result];
+    return [
+      Event._(FileSystemCreateEvent(
+          destination, result.type == EventType.moveDirectory)),
+      Event._(FileSystemDeleteEvent(
+          result.path, result.type == EventType.moveDirectory)),
+    ];
+  }
+
   /// A create event for a file at [path].
   static Event createFile(String path) =>
       Event._(FileSystemCreateEvent(path, false));

@@ -30,8 +30,12 @@ late WatcherFactory _watcherFactory;
 /// Creates a new [Watcher] that watches a temporary file or directory.
 ///
 /// If [path] is provided, watches a subdirectory in the sandbox with that name.
-Watcher createWatcher({String? path}) {
-  if (path == null) {
+/// Or, pass [exactPath] to watch an exact relative or absolute path without
+/// modifying it to add the sandbox path.
+Watcher createWatcher({String? exactPath, String? path}) {
+  if (exactPath != null) {
+    path = exactPath;
+  } else if (path == null) {
     path = d.sandbox;
   } else {
     path = p.join(d.sandbox, path);
@@ -103,10 +107,11 @@ void sleepUntilNewModificationTime() {
 /// starts monitoring it for events.
 ///
 /// If [path] is provided, watches a path in the sandbox with that name.
-Future<void> startWatcher({String? path}) async {
+/// /// Or, pass [exactPath] to watch an exact path irrespective of the sandbox.
+Future<void> startWatcher({String? exactPath, String? path}) async {
   // We want to wait until we're ready *after* we subscribe to the watcher's
   // events.
-  var watcher = createWatcher(path: path);
+  var watcher = createWatcher(exactPath: exactPath, path: path);
   _watcherEvents = StreamQueue(watcher.events);
   // Forces a subscription to the underlying stream.
   unawaited(_watcherEvents.hasNext);
@@ -145,24 +150,30 @@ Future inAnyOrder(Iterable matchers) =>
 
 /// Returns a StreamMatcher that matches a [WatchEvent] with the given [type]
 /// and [path].
-Matcher isWatchEvent(ChangeType type, String path) {
+Matcher isWatchEvent(ChangeType type, String path, {bool ignoreCase = false}) {
+  var normalizedPath = p.join(d.sandbox, p.normalize(path));
+  if (ignoreCase) normalizedPath = normalizedPath.toLowerCase();
   return predicate((e) {
-    return e is WatchEvent &&
-        e.type == type &&
-        e.path == p.join(d.sandbox, p.normalize(path));
+    if (e is! WatchEvent) return false;
+    var eventPath = e.path;
+    if (ignoreCase) eventPath = eventPath.toLowerCase();
+    return e.type == type && eventPath == normalizedPath;
   }, 'is $type $path');
 }
 
 /// Returns a [Matcher] that matches a [WatchEvent] for an add event for [path].
-Matcher isAddEvent(String path) => isWatchEvent(ChangeType.ADD, path);
+Matcher isAddEvent(String path, {bool ignoreCase = false}) =>
+    isWatchEvent(ChangeType.ADD, path, ignoreCase: ignoreCase);
 
 /// Returns a [Matcher] that matches a [WatchEvent] for a modification event for
 /// [path].
-Matcher isModifyEvent(String path) => isWatchEvent(ChangeType.MODIFY, path);
+Matcher isModifyEvent(String path, {bool ignoreCase = false}) =>
+    isWatchEvent(ChangeType.MODIFY, path, ignoreCase: ignoreCase);
 
 /// Returns a [Matcher] that matches a [WatchEvent] for a removal event for
 /// [path].
-Matcher isRemoveEvent(String path) => isWatchEvent(ChangeType.REMOVE, path);
+Matcher isRemoveEvent(String path, {bool ignoreCase = false}) =>
+    isWatchEvent(ChangeType.REMOVE, path, ignoreCase: ignoreCase);
 
 /// Takes the first event emitted during [duration], or returns `null` if there
 /// is none.
@@ -347,7 +358,11 @@ void retryForPathAccessException(void Function() action) {
       action();
       return;
     } on PathAccessException catch (e) {
-      print('Temporary failure, retrying: $e');
+      stderr.writeln('Temporary failure, retrying: $e');
     }
   }
 }
+
+/// Returns the union of all elements in each set in [sets].
+Set<T> unionAll<T>(Iterable<Set<T>> sets) =>
+    sets.fold(<T>{}, (union, set) => union.union(set));

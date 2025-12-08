@@ -7,9 +7,9 @@ import 'dart:isolate';
 import 'dart:math';
 
 import 'package:path/path.dart' as p;
+import 'package:watcher/src/testing.dart';
 
 import '../utils.dart';
-import 'end_to_end_test_runner.dart';
 
 /// Changes files randomly.
 ///

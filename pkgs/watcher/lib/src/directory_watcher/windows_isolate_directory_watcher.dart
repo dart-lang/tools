@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import '../resubscribable.dart';
+import '../testing.dart';
 import '../watch_event.dart';
 import 'windows.dart';
 
@@ -30,8 +31,11 @@ class WindowsIsolateDirectoryWatcher implements ManuallyClosedWatcher {
       StreamController.broadcast();
   final Completer<void> _readyCompleter = Completer();
 
-  WindowsIsolateDirectoryWatcher(this.path) {
-    _startIsolate(path, _receivePort.sendPort);
+  final void Function(LogEntry)? _log;
+
+  WindowsIsolateDirectoryWatcher(this.path)
+      : _log = logSeparateIsolateForTesting {
+    _startIsolate(path, _receivePort.sendPort, log: _log != null);
     _receivePort.listen((event) => _receiveFromIsolate(event as Event));
   }
 
@@ -48,6 +52,8 @@ class WindowsIsolateDirectoryWatcher implements ManuallyClosedWatcher {
         _receivePort.close();
       case EventType.error:
         _eventsController.addError(event.error!, event.stackTrace);
+      case EventType.log:
+        _log?.call(event.logEntry!);
     }
   }
 
@@ -72,22 +78,29 @@ class WindowsIsolateDirectoryWatcher implements ManuallyClosedWatcher {
 ///
 /// [sendPort] is the port from isolate to host, see `_WatcherIsolate`
 /// constructor implementation for the events that will be sent.
-void _startIsolate(String path, SendPort sendPort) async {
-  unawaited(
-      Isolate.run(() async => await _WatcherIsolate(path, sendPort).closed));
+///
+/// [log] is whether to send test log messages from the isolate.
+void _startIsolate(String path, SendPort sendPort, {required bool log}) async {
+  unawaited(Isolate.run(
+      () async => await _WatcherIsolate(path, sendPort, log: log).closed));
 }
 
 class _WatcherIsolate {
   final String path;
   final WindowsManuallyClosedDirectoryWatcher watcher;
   final SendPort sendPort;
+  final bool log;
 
   // The isolate stays open until this future completes.
   Future<void> get closed => _closeCompleter.future;
   final Completer<void> _closeCompleter = Completer();
 
-  _WatcherIsolate(this.path, this.sendPort)
+  _WatcherIsolate(this.path, this.sendPort, {required this.log})
       : watcher = WindowsManuallyClosedDirectoryWatcher(path) {
+    if (log) {
+      logForTesting = (message) => sendPort.send(Event.log(message));
+    }
+
     final receivePort = ReceivePort();
 
     // Six types of event are sent to the host.
@@ -128,37 +141,51 @@ class Event {
   final WatchEvent? watchEvent;
   final Object? error;
   final StackTrace? stackTrace;
+  final LogEntry? logEntry;
 
   Event.sendPort(this.sendPort)
       : type = EventType.sendPort,
         watchEvent = null,
         error = null,
-        stackTrace = null;
+        stackTrace = null,
+        logEntry = null;
 
   Event.ready()
       : type = EventType.ready,
         sendPort = null,
         watchEvent = null,
         error = null,
-        stackTrace = null;
+        stackTrace = null,
+        logEntry = null;
 
   Event.watchEvent(this.watchEvent)
       : type = EventType.watchEvent,
         sendPort = null,
         error = null,
-        stackTrace = null;
+        stackTrace = null,
+        logEntry = null;
 
   Event.close()
       : type = EventType.close,
         sendPort = null,
         watchEvent = null,
         error = null,
-        stackTrace = null;
+        stackTrace = null,
+        logEntry = null;
 
   Event.error(this.error, this.stackTrace)
       : type = EventType.error,
         sendPort = null,
-        watchEvent = null;
+        watchEvent = null,
+        logEntry = null;
+
+  Event.log(String message)
+      : type = EventType.log,
+        sendPort = null,
+        watchEvent = null,
+        error = null,
+        stackTrace = null,
+        logEntry = LogEntry(message);
 }
 
 enum EventType {
@@ -166,5 +193,6 @@ enum EventType {
   ready,
   watchEvent,
   close,
-  error;
+  error,
+  log;
 }

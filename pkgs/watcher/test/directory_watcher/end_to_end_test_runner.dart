@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart' as package_test;
-import 'package:watcher/src/utils.dart';
+import 'package:watcher/src/testing.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart' as utils;
@@ -48,6 +48,11 @@ Future<void> runTest({
   logForTesting = (message) {
     message = message.replaceAll('${temp.path}/', '').replaceAll(temp.path, '');
     log.add(LogEntry('W $message'));
+  };
+  logSeparateIsolateForTesting = (entry) {
+    final message =
+        entry.message.replaceAll('${temp.path}/', '').replaceAll(temp.path, '');
+    log.add(entry.withMessage('W $message'));
   };
 
   // Create the watcher and [ClientSimulator].
@@ -193,23 +198,6 @@ Future<void> main(List<String> arguments) async {
       teardown();
     }
   }
-}
-
-/// Log entry with timestamp.
-///
-/// Because file events happen on a different isolate the merged log uses
-/// timestamps to put entries in the correct order.
-class LogEntry implements Comparable<LogEntry> {
-  final DateTime timestamp;
-  final String message;
-
-  LogEntry(this.message) : timestamp = DateTime.now();
-
-  @override
-  int compareTo(LogEntry other) => timestamp.compareTo(other.timestamp);
-
-  @override
-  String toString() => message;
 }
 
 /// Test case using log replay.

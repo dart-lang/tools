@@ -4,24 +4,45 @@
 
 import 'dart:async';
 
-import '../../unix_paths.dart';
-import '../../utils.dart';
+import '../../paths.dart';
+import '../../testing.dart';
 import '../../watch_event.dart';
+import '../event_tree.dart';
 import 'directory_tree.dart';
-import 'event_tree.dart';
 import 'native_watch.dart';
 
-/// MacOS directory watcher using a [DirectoryTree].
+/// MacOS or Windows directory watcher using a [DirectoryTree].
+///
+/// Various platform-specific issues are worked around.
 ///
 /// MacOS events from a native watcher can arrive out of order, including in
 /// different batches. For example, a modification of `a/1` followed by a
 /// move of `a` can be reported as a delete of `a` then in a later batch of
 /// events a modification of `a/1`.
 ///
+/// MacOS events can carry incorrect information because some of it comes
+/// from polling the filesystem instead of arriving with the OS file change
+/// event. For example, a create event can be sent as a "delete" if the file
+/// system entity no longer exists when the VM polls the entity.
+///
+/// Windows events can similarly arrive out of order, and can similarly carry
+/// incorrect information.
+///
 /// `WatchedDirectoryTree` reports correct events by polling based on event
 /// path to determine and report the actual current state. If a directory is
 /// mentioned then the whole directory is polled, if a file is mentioned then
 /// just the file is polled.
+///
+/// On Windows only, the file system might not be done updating when the event
+/// is received. This shows if a link to a directory is created: the creation
+/// takes place in two steps, and the file system entity type changes from
+/// "directory" to "link" after the second step.
+///
+/// On Windows only, events are buffered by path to introduce a minimum delay
+/// before polling so that the filesystem has finished updating.
+///
+/// On Windows only, there is code to recover from watcher failure if the OS
+/// buffer is exhausted.
 class WatchedDirectoryTree {
   final AbsolutePath watchedDirectory;
   final StreamController<WatchEvent> _eventsController;
@@ -66,7 +87,9 @@ class WatchedDirectoryTree {
     logForTesting?.call('WatchedDirectoryTree,$watchedDirectory,stopWatching');
     _ready();
     nativeWatch.close();
-    _eventsController.close();
+    if (!_eventsController.isClosed) {
+      _eventsController.close();
+    }
   }
 
   /// Handler for when [watchedDirectory] is recreated.
@@ -97,7 +120,7 @@ class WatchedDirectoryTree {
     }
   }
 
-  /// Emits [e] with stack trace [s] on the event stream.
+  /// Emits [e] with stack trace [s] on the event stream, closes the watcher.
   void _emitError(Object e, StackTrace s) {
     logForTesting?.call('WatchedDirectoryTree,$watchedDirectory,_emitError,$e');
     _ready();

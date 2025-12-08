@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import '../../unix_paths.dart';
-import '../../utils.dart';
+import '../../paths.dart';
+import '../../testing.dart';
 import '../../watch_event.dart';
 import 'watch_tree.dart';
 

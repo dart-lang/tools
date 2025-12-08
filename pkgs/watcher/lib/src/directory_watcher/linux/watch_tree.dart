@@ -5,8 +5,8 @@
 import 'dart:io';
 
 import '../../event.dart';
-import '../../unix_paths.dart';
-import '../../utils.dart';
+import '../../paths.dart';
+import '../../testing.dart';
 import '../../watch_event.dart';
 import 'native_watch.dart';
 

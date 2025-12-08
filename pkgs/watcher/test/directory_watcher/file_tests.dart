@@ -8,9 +8,9 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
 
@@ -429,8 +429,8 @@ void _fileTests({required bool isNative}) {
       renameDir('sub', 'dir/sub');
 
       if (isNative) {
-        if (Platform.isMacOS) {
-          // MacOS watcher reports as "modify" instead of remove then add.
+        if (Platform.isMacOS || Platform.isWindows) {
+          // MacOS/Windows watcher reports as "modify" instead of remove then add.
           await inAnyOrder(withPermutations(
               (i, j, k) => isModifyEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
         } else {
@@ -544,5 +544,133 @@ void _fileTests({required bool isNative}) {
       isAddEvent('some_name/some_name.txt'),
       isRemoveEvent('some_name.txt')
     ]);
+  });
+
+  // Watching a relative path is not a great idea because the meaning of the
+  // path changes if `Directory.current` changes, leading to surprising and
+  // undefined behavior. But released `package:watcher` allows it so at least
+  // check basic functionality works.
+  test('watch relative directory', () async {
+    // Testing with relative paths is hard! There's only one current directory
+    // across the whole VM, tests can run in different isolates, and this test
+    // runs twice: once with the native watcher and once with the polling one.
+    // Use the current directory name as a check to ensure both don't run at
+    // the same time. All other tests must use absolute paths.
+    final testDirectory = Directory(p.join(d.sandbox, 'for_relative_test'));
+    testDirectory.createSync();
+    while (Directory.current.path.contains('for_relative_test')) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+    }
+    final oldDirectory = Directory.current;
+    try {
+      Directory.current = testDirectory;
+
+      writeFile('for_relative_test/dir/a.txt');
+      writeFile('for_relative_test/dir/b.txt');
+      writeFile('for_relative_test/dir/c.txt');
+
+      await startWatcher(exactPath: 'dir');
+
+      writeFile('for_relative_test/dir/a.txt', contents: 'modified');
+      renameFile('for_relative_test/dir/b.txt', 'for_relative_test/dir/e.txt');
+      deleteFile('for_relative_test/dir/c.txt');
+      writeFile('for_relative_test/dir/d.txt');
+
+      final events =
+          await takeEvents(duration: const Duration(milliseconds: 100));
+
+      expect(events.map((e) => e.toString()).toSet(), {
+        'modify ${p.join('dir', 'a.txt')}',
+        'remove ${p.join('dir', 'b.txt')}',
+        'add ${p.join('dir', 'e.txt')}',
+        'remove ${p.join('dir', 'c.txt')}',
+        'add ${p.join('dir', 'd.txt')}',
+      });
+    } finally {
+      Directory.current = oldDirectory;
+    }
+  });
+
+  group('on case-insensitive filesystem', () {
+    /// Whether the test filesystem is case sensitive.
+    bool filesystemIsCaseSensitive() {
+      writeFile('a');
+      final result = !File(p.join(d.sandbox, 'A')).existsSync();
+      deleteFile('a');
+      return result;
+    }
+
+    test('events with case-only changes', () async {
+      if (filesystemIsCaseSensitive()) return;
+
+      writeFile('A.txt');
+      writeFile('B.txt');
+      writeFile('C.txt');
+
+      await startWatcher();
+
+      writeFile('A.TXT', contents: 'modified');
+      deleteFile('B.TXT');
+      renameFile('C.txt', 'C.TXT');
+
+      if (isNative && Platform.isWindows) {
+        // On Windows events arrive with case the files were created with, not
+        // the case that was used when modifying them. So the delete of `B.txt`
+        // as `B.TXT` is picked up. But, the watcher does not correctly handle
+        // the "remove" of `C.txt` from the rename, and sends an incorrect
+        // "modify". TODO(davidmorgan): fix it.
+        // See: https://github.com/dart-lang/tools/issues/2271.
+        await inAnyOrder([
+          isModifyEvent('A.txt'),
+          isRemoveEvent('B.txt'),
+          isModifyEvent('C.txt'),
+          isAddEvent('C.TXT'),
+        ]);
+      } else if (isNative && Platform.isMacOS) {
+        // On MacOS the delete event arrives with case used to operate on the
+        // file, so the delete of `B.txt` as `B.TXT` is not picked up. It has
+        // the same problem as Windows with the move of `C.txt`.
+        // See: https://github.com/dart-lang/tools/issues/2271.
+        await inAnyOrder([
+          isModifyEvent('A.txt'),
+          isModifyEvent('C.txt'),
+          isAddEvent('C.TXT'),
+        ]);
+      } else {
+        await inAnyOrder([
+          isModifyEvent('A.txt'),
+          isRemoveEvent('B.txt'),
+          isRemoveEvent('C.txt'),
+          isAddEvent('C.TXT'),
+        ]);
+      }
+
+      await expectNoEvents();
+    });
+
+    test('works when watch root is specified with case-only changes', () async {
+      if (filesystemIsCaseSensitive()) return;
+
+      writeFile('a');
+      writeFile('b');
+      writeFile('c');
+
+      final sandboxPathWithDifferentCase = d.sandbox.toUpperCase();
+      expect(sandboxPathWithDifferentCase, isNot(d.sandbox));
+      await startWatcher(exactPath: sandboxPathWithDifferentCase);
+
+      writeFile('a', contents: 'modified');
+      deleteFile('b');
+      renameFile('c', 'e');
+      writeFile('d');
+
+      await inAnyOrder([
+        isModifyEvent('a', ignoreCase: true),
+        isRemoveEvent('b', ignoreCase: true),
+        isRemoveEvent('c', ignoreCase: true),
+        isAddEvent('e', ignoreCase: true),
+        isAddEvent('d', ignoreCase: true),
+      ]);
+    });
   });
 }

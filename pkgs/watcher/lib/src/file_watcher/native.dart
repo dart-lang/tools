@@ -6,9 +6,9 @@ import 'dart:async';
 import 'dart:io';
 
 import '../event.dart';
+import '../event_batching.dart';
 import '../file_watcher.dart';
 import '../resubscribable.dart';
-import '../utils.dart';
 import '../watch_event.dart';
 
 /// Uses the native file system notifications to watch for filesystem events.
@@ -51,7 +51,7 @@ class _NativeFileWatcher implements FileWatcher, ManuallyClosedWatcher {
     var file = File(path);
 
     // Batch the events together so that we can dedupe them.
-    var stream = file.watch().batchAndConvertEvents();
+    var stream = file.watch().batchNearbyMicrotasksAndConvertEvents();
 
     if (Platform.isMacOS) {
       var existedAtStartupFuture = file.exists();

@@ -6,8 +6,9 @@ import 'dart:async';
 import 'dart:io';
 
 import '../../event.dart';
-import '../../unix_paths.dart';
-import '../../utils.dart';
+import '../../event_batching.dart';
+import '../../paths.dart';
+import '../../testing.dart';
 
 /// Watches a directory with the native Linux watcher.
 ///
@@ -88,7 +89,7 @@ class NativeWatch {
     logForTesting?.call('NativeWatch(),$watchedDirectory');
     _subscription = watchedDirectory
         .watch()
-        .batchAndConvertEvents()
+        .batchNearbyMicrotasksAndConvertEvents()
         .listen(_onData, onError: _onError);
   }
 

@@ -15,13 +15,11 @@ import 'directory_watcher/windows_resubscribable_watcher.dart';
 ///
 /// On Windows, the underlying SDK `Directory.watch` fails if too many events
 /// are received while Dart is busy, for example during a long-running
-/// synchronous operation. When this happens, some events are dropped.
-/// `DirectoryWatcher` restarts the watch and sends a `FileSystemException` with
-/// the message "Directory watcher closed unexpectedly" on the event stream. The
-/// code using the watcher needs to do additional work to account for the
-/// dropped events, for example by recomputing interesting files from scratch.
-/// By default, the watcher is started in a separate isolate to make this less
-/// likely. Pass `runInIsolateOnWindows = false` to not launch an isolate.
+/// synchronous operation. When this happens, watching is re-established and a
+/// "modify" event is emitted for any file still present that lost tracking, in
+/// case it changed. By default, the watcher is started in a separate isolate to
+/// make this less likely. Pass `runInIsolateOnWindows = false` to not launch an
+/// isolate.
 ///
 /// On Linux, the underlying SDK `Directory.watch` fails if the system limit on
 /// watchers has been reached. If this happens the SDK exception is thrown, it
