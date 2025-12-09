@@ -37,11 +37,8 @@ extension type AbsolutePath(String _string) {
   ///
   /// Otherwise, throws if this path does not start with [root].
   RelativePath relativeTo(AbsolutePath root) {
-    final result = tryRelativeTo(root);
-    if (result == null) {
-      throw ArgumentError('$this relativeTo $root');
-    }
-    return result;
+    return tryRelativeTo(root) ??
+        (throw ArgumentError('$this relativeTo $root'));
   }
 
   /// This path relative to [root] as a single segment.

@@ -36,18 +36,19 @@ extension type Event._(FileSystemEvent _event) {
     return result;
   }
 
-  /// As [checkAndConvert] but also splits up move events.
-  static List<Event> checkAndConvertAndSplitMoves(FileSystemEvent event) {
-    final result = checkAndConvert(event);
-    if (result == null) return [];
-    final destination = result.destination;
-    if (destination == null) return [result];
-    return [
-      Event._(FileSystemCreateEvent(
-          destination, result.type == EventType.moveDirectory)),
-      Event._(FileSystemDeleteEvent(
-          result.path, result.type == EventType.moveDirectory)),
-    ];
+  /// Returns an iterable containing this event, split to a "create" and a
+  /// "delete" event if it's a move event.
+  Iterable<Event> splitIfMove() sync* {
+    if (type != EventType.moveFile && type != EventType.moveDirectory) {
+      yield this;
+      return;
+    }
+    final destination = this.destination;
+    yield Event._(FileSystemDeleteEvent(path, type == EventType.moveDirectory));
+    if (destination != null) {
+      yield Event._(
+          FileSystemCreateEvent(destination, type == EventType.moveDirectory));
+    }
   }
 
   /// A create event for a file at [path].

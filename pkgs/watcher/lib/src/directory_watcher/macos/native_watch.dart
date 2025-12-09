@@ -92,7 +92,7 @@ class NativeWatch {
       (event) {
         // Only look at events for [watchedDirectory].
         final eventPath = AbsolutePath(event.path);
-        if (AbsolutePath(event.path).basename != watchedDirectory.basename) {
+        if (eventPath.basename != watchedDirectory.basename) {
           return;
         }
         // The directory was deleted if there is an event saying it was deleted,
@@ -173,6 +173,9 @@ class NativeWatch {
         // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
         // Give the VM time to reset state after the error. See the issue for
         // more discussion of the workaround.
+        // TODO(davidmorgan): remove the wait once min SDK version is 3.10.
+        // The recovery test in `windows_isolate_test.dart` will continue to
+        // pass if it's no longer needed.
         await _subscription?.cancel();
         await Future<void>.delayed(const Duration(milliseconds: 1));
         _watch();

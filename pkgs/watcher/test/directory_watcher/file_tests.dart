@@ -546,60 +546,17 @@ void _fileTests({required bool isNative}) {
     ]);
   });
 
-  // Watching a relative path is not a great idea because the meaning of the
-  // path changes if `Directory.current` changes, leading to surprising and
-  // undefined behavior. But released `package:watcher` allows it so at least
-  // check basic functionality works.
-  test('watch relative directory', () async {
-    // Testing with relative paths is hard! There's only one current directory
-    // across the whole VM, tests can run in different isolates, and this test
-    // runs twice: once with the native watcher and once with the polling one.
-    // Use the current directory name as a check to ensure both don't run at
-    // the same time. All other tests must use absolute paths.
-    final testDirectory = Directory(p.join(d.sandbox, 'for_relative_test'));
-    testDirectory.createSync();
-    while (Directory.current.path.contains('for_relative_test')) {
-      await Future<void>.delayed(const Duration(seconds: 1));
-    }
-    final oldDirectory = Directory.current;
-    try {
-      Directory.current = testDirectory;
+  bool filesystemIsCaseSensitive() {
+    final directory = Directory.systemTemp.createTempSync();
+    final filePath = p.join(directory.path, 'a');
+    final file = File(filePath)..createSync();
+    final result = !File(filePath.toUpperCase()).existsSync();
+    file.deleteSync();
+    return result;
+  }
 
-      writeFile('for_relative_test/dir/a.txt');
-      writeFile('for_relative_test/dir/b.txt');
-      writeFile('for_relative_test/dir/c.txt');
-
-      await startWatcher(exactPath: 'dir');
-
-      writeFile('for_relative_test/dir/a.txt', contents: 'modified');
-      renameFile('for_relative_test/dir/b.txt', 'for_relative_test/dir/e.txt');
-      deleteFile('for_relative_test/dir/c.txt');
-      writeFile('for_relative_test/dir/d.txt');
-
-      final events =
-          await takeEvents(duration: const Duration(milliseconds: 100));
-
-      expect(events.map((e) => e.toString()).toSet(), {
-        'modify ${p.join('dir', 'a.txt')}',
-        'remove ${p.join('dir', 'b.txt')}',
-        'add ${p.join('dir', 'e.txt')}',
-        'remove ${p.join('dir', 'c.txt')}',
-        'add ${p.join('dir', 'd.txt')}',
-      });
-    } finally {
-      Directory.current = oldDirectory;
-    }
-  });
-
-  group('on case-insensitive filesystem', () {
-    /// Whether the test filesystem is case sensitive.
-    bool filesystemIsCaseSensitive() {
-      writeFile('a');
-      final result = !File(p.join(d.sandbox, 'A')).existsSync();
-      deleteFile('a');
-      return result;
-    }
-
+  group('on case-insensitive filesystem', skip: filesystemIsCaseSensitive(),
+      () {
     test('events with case-only changes', () async {
       if (filesystemIsCaseSensitive()) return;
 

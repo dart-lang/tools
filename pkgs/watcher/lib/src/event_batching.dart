@@ -74,10 +74,12 @@ class _PathBufferedBatcher {
   /// Calls [maybeScheduleCheckAndEmit] to schedule a [checkAndEmit] if none is
   /// already pending.
   void handleData(FileSystemEvent event, Sink<List<Event>> sink) {
-    for (final convertedEvent in Event.checkAndConvertAndSplitMoves(event)) {
+    final convertedEvent = Event.checkAndConvert(event);
+    if (convertedEvent == null) return;
+    for (final splitEvent in convertedEvent.splitIfMove()) {
       bufferedEvents
-          .putIfAbsent(convertedEvent.absolutePath, _BufferedEvents.new)
-          .add(convertedEvent);
+          .putIfAbsent(splitEvent.absolutePath, _BufferedEvents.new)
+          .add(splitEvent);
     }
     maybeScheduleCheckAndEmit(sink);
   }
@@ -123,17 +125,15 @@ class _PathBufferedBatcher {
 }
 
 class _BufferedEvents {
-  final List<Event> _events = [];
+  final List<Event> events = [];
   DateTime _lastUpdated;
 
   _BufferedEvents() : _lastUpdated = overridableDateTimeNow();
 
   void add(Event event) {
-    _events.add(event);
+    events.add(event);
     _lastUpdated = overridableDateTimeNow();
   }
 
   DateTime get lastUpdated => _lastUpdated;
-
-  List<Event> get events => _events;
 }
