@@ -32,6 +32,10 @@ extension type Event._(FileSystemEvent _event) {
       if (result.type.isIgnoredOnWindows) {
         return null;
       }
+    } else if (Platform.isLinux) {
+      if (result.type.isIgnoredOnLinux) {
+        return null;
+      }
     }
     return result;
   }
@@ -117,6 +121,12 @@ enum EventType {
   bool get isIgnoredOnWindows {
     // Ignore [modifyDirectory] because it's always accompanied by either
     // [createDirectory] or [deleteDirectory].
+    return this == modifyDirectory;
+  }
+
+  bool get isIgnoredOnLinux {
+    // Ignore [modifyDirectory], it arrives when the directory attributes
+    // changed which is not useful.
     return this == modifyDirectory;
   }
 }
