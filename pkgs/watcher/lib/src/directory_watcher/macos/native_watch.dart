@@ -167,7 +167,7 @@ class NativeWatch {
   /// is deleted.
   void Function(Object, StackTrace) _restartWatchOnOverflowOr(
       void Function(Object, StackTrace) otherwise) {
-    return (Object error, StackTrace stackTrace) async {
+    return (error, stackTrace) async {
       if (error is FileSystemException &&
           error.message.startsWith('Directory watcher closed unexpectedly')) {
         // Wait to work around https://github.com/dart-lang/sdk/issues/61378.
