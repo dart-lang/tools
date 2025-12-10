@@ -6,9 +6,8 @@ import 'dart:io';
 
 import '../watcher.dart';
 import 'custom_watcher_factory.dart';
-import 'directory_watcher/linux.dart';
-import 'directory_watcher/macos.dart';
-import 'directory_watcher/windows_resubscribable_watcher.dart';
+import 'directory_watcher/linux/linux_directory_watcher.dart';
+import 'directory_watcher/recursive/recursive_directory_watcher.dart';
 
 /// Watches the contents of a directory and emits [WatchEvent]s when something
 /// in the directory has changed.
@@ -52,9 +51,11 @@ abstract class DirectoryWatcher implements Watcher {
       );
       if (customWatcher != null) return customWatcher;
       if (Platform.isLinux) return LinuxDirectoryWatcher(directory);
-      if (Platform.isMacOS) return MacosDirectoryWatcher(directory);
+      if (Platform.isMacOS) {
+        return RecursiveDirectoryWatcher(directory, runInIsolate: false);
+      }
       if (Platform.isWindows) {
-        return WindowsDirectoryWatcher(directory,
+        return RecursiveDirectoryWatcher(directory,
             runInIsolate: runInIsolateOnWindows);
       }
     }

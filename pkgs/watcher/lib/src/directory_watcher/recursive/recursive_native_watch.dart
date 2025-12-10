@@ -9,9 +9,10 @@ import '../../event.dart';
 import '../../event_batching.dart';
 import '../../paths.dart';
 import '../../testing.dart';
-import '../event_tree.dart';
+import 'event_tree.dart';
 
-/// Recursively watches a directory with `Directory.watch` on MacOS or Windows.
+/// Watches a directory with `Directory.watch(recursive: true)` on MacOS or
+/// Windows.
 ///
 /// Handles incorrect closure of the watch due to a delete event from before
 /// the watch started, by re-opening the watch if the directory still exists.
@@ -19,7 +20,7 @@ import '../event_tree.dart';
 ///
 /// Handles deletion of the watched directory on Windows by watching the parent
 /// directory.
-class NativeWatch {
+class RecursiveNativeWatch {
   final AbsolutePath watchedDirectory;
 
   /// Called when [watchedDirectory] is recreated.
@@ -43,7 +44,7 @@ class NativeWatch {
   /// Watches [watchedDirectory].
   ///
   /// Pass [watchedDirectoryWasDeleted], [onEvents] and [onError] handlers.
-  NativeWatch({
+  RecursiveNativeWatch({
     required this.watchedDirectory,
     required void Function() watchedDirectoryWasRecreated,
     required void Function() watchedDirectoryWasDeleted,

@@ -7,9 +7,9 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:watcher/src/directory_watcher/directory_list.dart';
+import 'package:watcher/src/directory_watcher/polling/directory_list.dart';
 
-import '../utils.dart';
+import '../../utils.dart';
 
 void main() {
   group('directory list', () {

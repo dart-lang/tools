@@ -7,7 +7,7 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/windows_resubscribable_watcher.dart';
+import 'package:watcher/src/directory_watcher/recursive/recursive_directory_watcher.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
@@ -16,13 +16,15 @@ import 'file_tests.dart';
 import 'link_tests.dart';
 
 void main() {
-  watcherFactory = WindowsDirectoryWatcher.new;
+  watcherFactory =
+      (directory) => RecursiveDirectoryWatcher(directory, runInIsolate: true);
 
   fileTests(isNative: true);
   linkTests(isNative: true);
   endToEndTests();
 
-  test('DirectoryWatcher creates a WindowsDirectoryWatcher on Windows', () {
-    expect(DirectoryWatcher('.'), const TypeMatcher<WindowsDirectoryWatcher>());
+  test('DirectoryWatcher creates a RecursiveDirectoryWatcher on Windows', () {
+    expect(
+        DirectoryWatcher('.'), const TypeMatcher<RecursiveDirectoryWatcher>());
   });
 }

@@ -5,11 +5,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import '../async_queue.dart';
-import '../directory_watcher.dart';
-import '../polling.dart';
-import '../resubscribable.dart';
-import '../watch_event.dart';
+import '../../async_queue.dart';
+import '../../directory_watcher.dart';
+import '../../polling.dart';
+import '../../resubscribable.dart';
+import '../../watch_event.dart';
 import 'directory_list.dart';
 
 /// Periodically polls a directory for changes.
