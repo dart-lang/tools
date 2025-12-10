@@ -4,12 +4,12 @@
 
 import 'dart:io';
 
-import '../../unix_paths.dart';
-import '../../utils.dart';
+import '../../paths.dart';
+import '../../testing.dart';
 import '../../watch_event.dart';
-import 'event_tree.dart';
+import '../event_tree.dart';
 
-/// MacOS directory tree.
+/// MacOS or Windows directory tree.
 ///
 /// Tracks state for a single directory and maintains child [DirectoryTree]
 /// instances for subdirectories.

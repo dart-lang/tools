@@ -9,7 +9,6 @@ import '../async_queue.dart';
 import '../directory_watcher.dart';
 import '../polling.dart';
 import '../resubscribable.dart';
-import '../utils.dart';
 import '../watch_event.dart';
 import 'directory_list.dart';
 
@@ -196,4 +195,14 @@ class _PollingDirectoryWatcher
     if (_events.isClosed) return;
     _poll();
   }
+}
+
+/// Returns `true` if [error] is a [FileSystemException] for a missing
+/// directory.
+bool isDirectoryNotFoundException(Object error) {
+  if (error is! FileSystemException) return false;
+
+  // See dartbug.com/12461 and tests/standalone/io/directory_error_test.dart.
+  var notFoundCode = Platform.operatingSystem == 'windows' ? 3 : 2;
+  return error.osError?.errorCode == notFoundCode;
 }

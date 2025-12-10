@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import '../../unix_paths.dart';
+import '../paths.dart';
 
 /// Tree of event paths relative to the watched path.
 ///

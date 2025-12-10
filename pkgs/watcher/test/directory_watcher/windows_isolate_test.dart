@@ -22,23 +22,27 @@ void main() {
     late StreamSubscription<Object> subscription;
     late Directory temp;
     late int eventsSeen;
-    late int errorsSeen;
-    late int totalErrorsSeen;
+    late int recoveriesSeen;
+    late int totalRecoveriesSeen;
 
     setUp(() async {
       temp = Directory.systemTemp.createTempSync();
       final watcher =
           DirectoryWatcher(temp.path, runInIsolateOnWindows: runInIsolate);
+      // To recover from an error "modify" is sent for files that still exist,
+      // so any event on this file indicates a recovery.
+      File('${temp.path}\\recovery.txt').writeAsStringSync('');
 
       eventsSeen = 0;
-      errorsSeen = 0;
-      totalErrorsSeen = 0;
+      recoveriesSeen = 0;
+      totalRecoveriesSeen = 0;
       subscription = watcher.events.listen(
         (e) {
-          ++eventsSeen;
-        },
-        onError: (_, __) {
-          ++errorsSeen;
+          if (e.path.contains('recovery.txt')) {
+            ++recoveriesSeen;
+          } else {
+            ++eventsSeen;
+          }
         },
       );
       await watcher.ready;
@@ -59,10 +63,10 @@ void main() {
       // Repeatedly trigger buffer exhaustion, to check that recovery is
       // reliable.
       for (var times = 0; times != 200; ++times) {
-        errorsSeen = 0;
+        recoveriesSeen = 0;
         eventsSeen = 0;
 
-        // Syncronously trigger 100 events. Because this is a sync block, the VM
+        // Syncronously trigger 200 events. Because this is a sync block, the VM
         // won't handle the events, so this has a very high chance of triggering
         // a buffer exhaustion.
         //
@@ -79,16 +83,16 @@ void main() {
         // Events only happen when there is an async gap, wait for such a gap.
         // The event usually arrives in under 10ms, try for 100ms.
         var tries = 0;
-        while (errorsSeen == 0 && eventsSeen == 0 && tries < 10) {
+        while (recoveriesSeen == 0 && eventsSeen == 0 && tries < 10) {
           await Future<void>.delayed(const Duration(milliseconds: 10));
           ++tries;
         }
 
-        totalErrorsSeen += errorsSeen;
+        totalRecoveriesSeen += recoveriesSeen;
 
         // If everything is going well, there should have been either one event
         // seen or one error seen.
-        if (errorsSeen == 0 && eventsSeen == 0) {
+        if (recoveriesSeen == 0 && eventsSeen == 0) {
           // It looks like the watcher is now broken: there were file changes
           // but no event and no error. Do some non-sync writes to confirm
           // whether the watcher really is now broken.
@@ -98,7 +102,7 @@ void main() {
           await Future<void>.delayed(const Duration(milliseconds: 10));
           fail(
             'On attempt ${times + 1}, watcher registered nothing. '
-            'On retry, it registered: $errorsSeen error(s), $eventsSeen '
+            'On retry, it registered: $recoveriesSeen recoveries, $eventsSeen '
             'event(s).',
           );
         }
@@ -106,9 +110,9 @@ void main() {
 
       // Buffer exhaustion is likely without the isolate but not guaranteed.
       if (runInIsolate) {
-        expect(totalErrorsSeen, 0);
+        expect(totalRecoveriesSeen, 0);
       } else {
-        expect(totalErrorsSeen, greaterThan(150));
+        expect(totalRecoveriesSeen, greaterThan(150));
       }
     });
   }

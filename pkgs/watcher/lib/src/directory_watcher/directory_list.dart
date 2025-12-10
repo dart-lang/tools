@@ -7,8 +7,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../utils.dart';
-
 extension DirectoryRobustRecursiveListing on Directory {
   /// Lists the given directory recursively ignoring not-found or access errors.
   ///
@@ -233,3 +231,18 @@ const _errorInvalidName = 123;
 const _errorBadPathName = 161;
 const _errorAlreadyExists = 183;
 const _errorFilenameExedRange = 206;
+
+extension IgnoringError<T> on Stream<T> {
+  /// Ignore all errors of type [E] emitted by the given stream.
+  ///
+  /// Everything else gets forwarded through as-is.
+  Stream<T> ignoring<E>() {
+    return transform(StreamTransformer<T, T>.fromHandlers(
+      handleError: (error, st, sink) {
+        if (error is! E) {
+          sink.addError(error, st);
+        }
+      },
+    ));
+  }
+}

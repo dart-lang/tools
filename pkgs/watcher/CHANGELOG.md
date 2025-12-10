@@ -10,7 +10,10 @@
   exhaustion, "Directory watcher closed unexpectedly", much less likely. The old
   implementation which does not use a separate Isolate is available as
   `DirectoryWatcher(path, runInIsolateOnWindows: false)`.
+- `DirectoryWatcher` on Windows: if buffer exhaustion does happen, emit a
+  "modify" event for all know files instead of an exception.
 - Document behavior on Linux if the system watcher limit is hit.
+- Require Dart SDK `^3.4.0`.
 - Bug fix: native `DirectoryWatcher` implementations now consistently handle
   links as files, instead of sometimes reading through them and sometimes
   reporting them as files. The polling `DirectoryWatcher` still reads through
@@ -33,6 +36,8 @@
 - Bug fix: with `DirectoryWatcher` on Windows, new links to directories were
   sometimes incorrectly handled as actual directories. Now they are reported
   as files, matching the behavior of the Linux and MacOS watchers.
+- Bug fix: unify `DirectoryWatcher` implementation on Windows with the MacOS
+  implementation, addressing various race conditions around directory renames.
 - Bug fix: new `DirectoryWatcher` implementation on Linux that fixes various
   issues: tracking failure following subdirectory move, incorrect events when
   there are changes in a recently-moved subdirectory, incorrect events due to

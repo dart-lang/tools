@@ -8,9 +8,9 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:watcher/src/utils.dart';
 
 import '../utils.dart';
 
@@ -429,8 +429,8 @@ void _fileTests({required bool isNative}) {
       renameDir('sub', 'dir/sub');
 
       if (isNative) {
-        if (Platform.isMacOS) {
-          // MacOS watcher reports as "modify" instead of remove then add.
+        if (Platform.isMacOS || Platform.isWindows) {
+          // MacOS/Windows watcher reports as "modify" instead of remove then add.
           await inAnyOrder(withPermutations(
               (i, j, k) => isModifyEvent('dir/sub/sub-$i/sub-$j/file-$k.txt')));
         } else {
@@ -544,5 +544,90 @@ void _fileTests({required bool isNative}) {
       isAddEvent('some_name/some_name.txt'),
       isRemoveEvent('some_name.txt')
     ]);
+  });
+
+  bool filesystemIsCaseSensitive() {
+    final directory = Directory.systemTemp.createTempSync();
+    final filePath = p.join(directory.path, 'a');
+    final file = File(filePath)..createSync();
+    final result = !File(filePath.toUpperCase()).existsSync();
+    file.deleteSync();
+    return result;
+  }
+
+  group('on case-insensitive filesystem', skip: filesystemIsCaseSensitive(),
+      () {
+    test('events with case-only changes', () async {
+      if (filesystemIsCaseSensitive()) return;
+
+      writeFile('A.txt');
+      writeFile('B.txt');
+      writeFile('C.txt');
+
+      await startWatcher();
+
+      writeFile('A.TXT', contents: 'modified');
+      deleteFile('B.TXT');
+      renameFile('C.txt', 'C.TXT');
+
+      if (isNative && Platform.isWindows) {
+        // On Windows events arrive with case the files were created with, not
+        // the case that was used when modifying them. So the delete of `B.txt`
+        // as `B.TXT` is picked up. But, the watcher does not correctly handle
+        // the "remove" of `C.txt` from the rename, and sends an incorrect
+        // "modify". TODO(davidmorgan): fix it.
+        // See: https://github.com/dart-lang/tools/issues/2271.
+        await inAnyOrder([
+          isModifyEvent('A.txt'),
+          isRemoveEvent('B.txt'),
+          isModifyEvent('C.txt'),
+          isAddEvent('C.TXT'),
+        ]);
+      } else if (isNative && Platform.isMacOS) {
+        // On MacOS the delete event arrives with case used to operate on the
+        // file, so the delete of `B.txt` as `B.TXT` is not picked up. It has
+        // the same problem as Windows with the move of `C.txt`.
+        // See: https://github.com/dart-lang/tools/issues/2271.
+        await inAnyOrder([
+          isModifyEvent('A.txt'),
+          isModifyEvent('C.txt'),
+          isAddEvent('C.TXT'),
+        ]);
+      } else {
+        await inAnyOrder([
+          isModifyEvent('A.txt'),
+          isRemoveEvent('B.txt'),
+          isRemoveEvent('C.txt'),
+          isAddEvent('C.TXT'),
+        ]);
+      }
+
+      await expectNoEvents();
+    });
+
+    test('works when watch root is specified with case-only changes', () async {
+      if (filesystemIsCaseSensitive()) return;
+
+      writeFile('a');
+      writeFile('b');
+      writeFile('c');
+
+      final sandboxPathWithDifferentCase = d.sandbox.toUpperCase();
+      expect(sandboxPathWithDifferentCase, isNot(d.sandbox));
+      await startWatcher(exactPath: sandboxPathWithDifferentCase);
+
+      writeFile('a', contents: 'modified');
+      deleteFile('b');
+      renameFile('c', 'e');
+      writeFile('d');
+
+      await inAnyOrder([
+        isModifyEvent('a', ignoreCase: true),
+        isRemoveEvent('b', ignoreCase: true),
+        isRemoveEvent('c', ignoreCase: true),
+        isAddEvent('e', ignoreCase: true),
+        isAddEvent('d', ignoreCase: true),
+      ]);
+    });
   });
 }

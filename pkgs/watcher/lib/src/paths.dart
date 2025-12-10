@@ -14,17 +14,31 @@ extension type AbsolutePath(String _string) {
   /// Whether this immediate parent directory of this path is [directory].
   bool isIn(AbsolutePath directory) => p.dirname(_string) == directory._string;
 
+  AbsolutePath get parent => AbsolutePath(p.dirname(_string));
+
+  /// This path relative to [root].
+  ///
+  /// Returns the empty string if this path is [root].
+  ///
+  /// Otherwise, return null if this path does not start with [root].
+  RelativePath? tryRelativeTo(AbsolutePath root) {
+    if (!_string.startsWith(root._string)) return null;
+    if (_string == root._string) return RelativePath('');
+    if (_string.substring(root._string.length, root._string.length + 1) !=
+        Platform.pathSeparator) {
+      return null;
+    }
+    return RelativePath(_string.substring(root._string.length + 1));
+  }
+
   /// This path relative to [root].
   ///
   /// Returns the empty string if this path is [root].
   ///
   /// Otherwise, throws if this path does not start with [root].
   RelativePath relativeTo(AbsolutePath root) {
-    if (!_string.startsWith(root._string)) {
-      throw ArgumentError('$this relativeTo $root');
-    }
-    if (_string == root._string) return RelativePath('');
-    return RelativePath(_string.substring(root._string.length + 1));
+    return tryRelativeTo(root) ??
+        (throw ArgumentError('$this relativeTo $root'));
   }
 
   /// This path relative to [root] as a single segment.
@@ -56,7 +70,7 @@ extension type AbsolutePath(String _string) {
 
   /// Returns this path followed by [path].
   AbsolutePath append(RelativePath path) =>
-      AbsolutePath('$_string/${path._string}');
+      AbsolutePath('$_string${Platform.pathSeparator}${path._string}');
 
   /// Add event for this path.
   WatchEvent get addEvent => WatchEvent(ChangeType.ADD, _string);
@@ -98,15 +112,16 @@ extension EventExtensions on Event {
 extension type RelativePath(String _string) {
   List<PathSegment> get segments => _string.isEmpty
       ? const <PathSegment>[]
-      : _string.split('/') as List<PathSegment>;
+      : _string.split(Platform.pathSeparator) as List<PathSegment>;
 }
 
 /// A path segment.
 extension type PathSegment._(String _string) implements RelativePath {
   factory PathSegment(String segment) {
     if (segment.isEmpty) throw ArgumentError('Segment cannot be empty.');
-    if (segment.contains('/')) {
-      throw ArgumentError('Segment cannot contain `/`.', segment);
+    if (segment.contains(Platform.pathSeparator)) {
+      throw ArgumentError(
+          'Segment cannot contain `${Platform.pathSeparator}`.', segment);
     }
     return PathSegment._(segment);
   }
