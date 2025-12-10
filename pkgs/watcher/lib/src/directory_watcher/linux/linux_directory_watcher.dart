@@ -4,13 +4,24 @@
 
 import 'dart:async';
 
-import '../directory_watcher.dart';
-import '../resubscribable.dart';
-import '../watch_event.dart';
-import 'macos/watched_directory_tree.dart';
+import '../../directory_watcher.dart';
+import '../../resubscribable.dart';
+import '../../watch_event.dart';
+import 'watch_tree_root.dart';
 
-/// Windows directory watcher that watches using [WatchedDirectoryTree].
-class WindowsManuallyClosedDirectoryWatcher
+/// Resubscribable Linux directory watcher that watches using
+/// [_LinuxDirectoryWatcher].
+class LinuxDirectoryWatcher extends ResubscribableWatcher
+    implements DirectoryWatcher {
+  @override
+  String get directory => path;
+
+  LinuxDirectoryWatcher(String directory)
+      : super(directory, () => _LinuxDirectoryWatcher(directory));
+}
+
+/// Linux directory watcher that watches using [WatchTreeRoot].
+class _LinuxDirectoryWatcher
     implements DirectoryWatcher, ManuallyClosedWatcher {
   @override
   final String path;
@@ -28,10 +39,10 @@ class WindowsManuallyClosedDirectoryWatcher
   Future<void> get ready => _readyCompleter.future;
   final _readyCompleter = Completer<void>();
 
-  late final WatchedDirectoryTree _watchTree;
+  late final WatchTreeRoot _watchTree;
 
-  WindowsManuallyClosedDirectoryWatcher(this.path) {
-    _watchTree = WatchedDirectoryTree(
+  _LinuxDirectoryWatcher(this.path) {
+    _watchTree = WatchTreeRoot(
         watchedDirectory: path,
         eventsController: _eventsController,
         readyCompleter: _readyCompleter);

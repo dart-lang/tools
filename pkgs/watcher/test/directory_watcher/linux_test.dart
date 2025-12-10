@@ -6,7 +6,7 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/linux.dart';
+import 'package:watcher/src/directory_watcher/linux/linux_directory_watcher.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';

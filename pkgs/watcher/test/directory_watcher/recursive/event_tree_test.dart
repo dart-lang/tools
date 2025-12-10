@@ -5,7 +5,7 @@
 import 'dart:io';
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/event_tree.dart';
+import 'package:watcher/src/directory_watcher/recursive/event_tree.dart';
 import 'package:watcher/src/paths.dart';
 
 final separator = Platform.pathSeparator;

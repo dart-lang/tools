@@ -5,12 +5,12 @@
 import 'dart:async';
 import 'dart:isolate';
 
-import '../resubscribable.dart';
-import '../testing.dart';
-import '../watch_event.dart';
-import 'windows.dart';
+import '../../resubscribable.dart';
+import '../../testing.dart';
+import '../../watch_event.dart';
+import 'recursive_directory_watcher.dart';
 
-/// Runs [WindowsManuallyClosedDirectoryWatcher] in an isolate to work around
+/// Runs [ManuallyClosedRecursiveDirectoryWatcher] in an isolate to work around
 /// a platform limitation.
 ///
 /// On Windows, Directory.watch fails if too many events arrive without being
@@ -21,7 +21,7 @@ import 'windows.dart';
 /// Running the watcher in an isolate makes buffer exhaustion much less likely
 /// as there is no unrelated work happening in the isolate that would block
 /// processing of events.
-class WindowsIsolateDirectoryWatcher implements ManuallyClosedWatcher {
+class IsolateRecursiveDirectoryWatcher implements ManuallyClosedWatcher {
   @override
   final String path;
   final ReceivePort _receivePort = ReceivePort();
@@ -33,7 +33,7 @@ class WindowsIsolateDirectoryWatcher implements ManuallyClosedWatcher {
 
   final void Function(LogEntry)? _log;
 
-  WindowsIsolateDirectoryWatcher(this.path)
+  IsolateRecursiveDirectoryWatcher(this.path)
       : _log = logSeparateIsolateForTesting {
     _startIsolate(path, _receivePort.sendPort, log: _log != null);
     _receivePort.listen((event) => _receiveFromIsolate(event as Event));
@@ -87,7 +87,7 @@ void _startIsolate(String path, SendPort sendPort, {required bool log}) async {
 
 class _WatcherIsolate {
   final String path;
-  final WindowsManuallyClosedDirectoryWatcher watcher;
+  final ManuallyClosedRecursiveDirectoryWatcher watcher;
   final SendPort sendPort;
   final bool log;
 
@@ -96,7 +96,7 @@ class _WatcherIsolate {
   final Completer<void> _closeCompleter = Completer();
 
   _WatcherIsolate(this.path, this.sendPort, {required this.log})
-      : watcher = WindowsManuallyClosedDirectoryWatcher(path) {
+      : watcher = ManuallyClosedRecursiveDirectoryWatcher(path) {
     if (log) {
       logForTesting = (message) => sendPort.send(Event.log(message));
     }

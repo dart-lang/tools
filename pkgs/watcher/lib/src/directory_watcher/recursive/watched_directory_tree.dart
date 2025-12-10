@@ -7,13 +7,15 @@ import 'dart:async';
 import '../../paths.dart';
 import '../../testing.dart';
 import '../../watch_event.dart';
-import '../event_tree.dart';
 import 'directory_tree.dart';
-import 'native_watch.dart';
+import 'event_tree.dart';
+import 'recursive_native_watch.dart';
 
-/// MacOS or Windows directory watcher using a [DirectoryTree].
+/// Directory watcher using `Directory.watch(recursive: true)` and
+/// [DirectoryTree].
 ///
-/// Various platform-specific issues are worked around.
+/// Recursive watch is available on MacOS and Windows; contains
+/// platform-specific workarounds for both.
 ///
 /// MacOS events from a native watcher can arrive out of order, including in
 /// different batches. For example, a modification of `a/1` followed by a
@@ -48,7 +50,7 @@ class WatchedDirectoryTree {
   final StreamController<WatchEvent> _eventsController;
   final Completer<void> _readyCompleter;
 
-  late final NativeWatch nativeWatch;
+  late final RecursiveNativeWatch nativeWatch;
   late final DirectoryTree directoryTree;
 
   WatchedDirectoryTree(
@@ -63,7 +65,7 @@ class WatchedDirectoryTree {
   }
 
   void _watch() async {
-    nativeWatch = NativeWatch(
+    nativeWatch = RecursiveNativeWatch(
       watchedDirectory: watchedDirectory,
       watchedDirectoryWasRecreated: _watchedDirectoryWasRecreated,
       watchedDirectoryWasDeleted: _watchedDirectoryWasDeleted,

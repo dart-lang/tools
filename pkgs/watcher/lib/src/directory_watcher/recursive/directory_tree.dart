@@ -7,7 +7,7 @@ import 'dart:io';
 import '../../paths.dart';
 import '../../testing.dart';
 import '../../watch_event.dart';
-import '../event_tree.dart';
+import 'event_tree.dart';
 
 /// MacOS or Windows directory tree.
 ///

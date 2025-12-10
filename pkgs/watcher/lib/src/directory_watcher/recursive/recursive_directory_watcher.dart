@@ -4,24 +4,34 @@
 
 import 'dart:async';
 
-import '../directory_watcher.dart';
-import '../resubscribable.dart';
-import '../watch_event.dart';
-import 'macos/watched_directory_tree.dart';
+import '../../directory_watcher.dart';
+import '../../resubscribable.dart';
+import '../../watch_event.dart';
+import 'isolate_recursive_directory_watcher.dart';
+import 'watched_directory_tree.dart';
 
-/// Resubscribable MacOS directory watcher that watches using
-/// [_MacosDirectoryWatcher].
-class MacosDirectoryWatcher extends ResubscribableWatcher
+/// Directory watcher that watches using [WatchedDirectoryTree].
+///
+/// Optionally, runs the watcher in a new isolate.
+class RecursiveDirectoryWatcher extends ResubscribableWatcher
     implements DirectoryWatcher {
   @override
   String get directory => path;
 
-  MacosDirectoryWatcher(String directory)
-      : super(directory, () => _MacosDirectoryWatcher(directory));
+  /// Watches [directory].
+  ///
+  /// If [runInIsolate], runs the watcher in an isolate to reduce the chance of
+  /// hitting the Windows-specific buffer exhaustion failure.
+  RecursiveDirectoryWatcher(String directory, {required bool runInIsolate})
+      : super(
+            directory,
+            () => runInIsolate
+                ? IsolateRecursiveDirectoryWatcher(directory)
+                : ManuallyClosedRecursiveDirectoryWatcher(directory));
 }
 
-/// Macos directory watcher that watches using [WatchedDirectoryTree].
-class _MacosDirectoryWatcher
+/// Manually closed directory watcher that watches using [WatchedDirectoryTree].
+class ManuallyClosedRecursiveDirectoryWatcher
     implements DirectoryWatcher, ManuallyClosedWatcher {
   @override
   final String path;
@@ -41,7 +51,7 @@ class _MacosDirectoryWatcher
 
   late final WatchedDirectoryTree _watchTree;
 
-  _MacosDirectoryWatcher(this.path) {
+  ManuallyClosedRecursiveDirectoryWatcher(this.path) {
     _watchTree = WatchedDirectoryTree(
         watchedDirectory: path,
         eventsController: _eventsController,
