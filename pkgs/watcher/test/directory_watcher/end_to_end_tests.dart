@@ -19,6 +19,8 @@ import 'file_changer.dart';
 ///
 /// `end_to_end_test_runner` can be run as a binary to try random file changes
 /// until a failure, it outputs a log which can be turned into a test case here.
+///
+/// See `README.md` for more detail.
 void endToEndTests() {
   // Random test to cover a wide range of cases.
   test('end to end test: random', timeout: const Timeout(Duration(minutes: 10)),
