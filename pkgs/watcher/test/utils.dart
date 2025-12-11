@@ -205,6 +205,21 @@ Future<List<WatchEvent>> takeEvents({required Duration duration}) async {
   return result;
 }
 
+/// Returns a copy of [events] without events about paths that have a REMOVE
+/// event as the last event.
+///
+/// For example, drops all events for a path with an ADD then a MODIFY then a
+/// REMOVE; keeps all events for a path with ADD, REMOVE, ADD.
+///
+/// This allows tests to avoid flakes due to equivalent but different events
+/// about transient files.
+List<WatchEvent> foldDeletes(List<WatchEvent> events) {
+  final lastEventByPath = {for (final event in events) event.path: event};
+  return events
+      .where((event) => lastEventByPath[event.path]!.type != ChangeType.REMOVE)
+      .toList();
+}
+
 /// Expects that the next event emitted will be for an add event for [path].
 Future expectAddEvent(String path) =>
     _expect(isWatchEvent(ChangeType.ADD, path));

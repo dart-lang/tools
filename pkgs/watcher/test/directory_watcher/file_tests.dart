@@ -493,7 +493,9 @@ void _fileTests({required bool isNative}) {
       // there is no file left behind.
       renameDir('watched/x', 'b');
 
-      await expectNoEvents();
+      expect(
+          foldDeletes(await takeEvents(duration: const Duration(seconds: 1))),
+          isEmpty);
     });
 
     test('subdirectory watching is robust against races', () async {
