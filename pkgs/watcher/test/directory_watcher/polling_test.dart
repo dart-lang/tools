@@ -9,7 +9,6 @@ import 'package:test/test.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'end_to_end_tests.dart';
 import 'file_tests.dart';
 import 'link_tests.dart';
 
@@ -24,7 +23,6 @@ void main() {
 
   fileTests(isNative: false);
   linkTests(isNative: false);
-  endToEndTests();
 
   // A poll does an async directory list that runs "stat" on each file. Check
   // handling of a file that is deleted between the two.

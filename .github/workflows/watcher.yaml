@@ -46,7 +46,7 @@ jobs:
 
   # Run tests on a matrix consisting of two dimensions:
   # 1. OS: ubuntu-latest, macos-latest, windows-latest
-  # 2. release channel: dev
+  # 2. release channel: 3.10, dev
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -63,6 +63,9 @@ jobs:
       - id: install
         name: Install dependencies
         run: dart pub get
-      - name: Run VM tests
-        run: dart test --platform vm
+      - name: Unit tests
+        run: dart test --platform vm --exclude-tags exclusive
+        if: always() && steps.install.outcome == 'success'
+      - name: Exclusive tests
+        run: dart test --platform vm --tags exclusive --concurrency=1
         if: always() && steps.install.outcome == 'success'

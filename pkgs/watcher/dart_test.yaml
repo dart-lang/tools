@@ -1,0 +1,3 @@
+tags:
+  # Tests that run with `--concurrency=1`.
+  exclusive: {}

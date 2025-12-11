@@ -3,9 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 // ignore_for_file: unreachable_from_main
 
+@Tags(['exclusive'])
+library;
+
 import 'dart:io';
 
 import 'package:test/test.dart';
+import 'package:watcher/watcher.dart';
 
 import 'client_simulator.dart';
 import 'end_to_end_test_runner.dart';
@@ -19,19 +23,35 @@ import 'file_changer.dart';
 ///
 /// `end_to_end_test_runner` can be run as a binary to try random file changes
 /// until a failure, it outputs a log which can be turned into a test case here.
-void endToEndTests() {
-  // Random test to cover a wide range of cases.
-  test('end to end test: random', timeout: const Timeout(Duration(minutes: 10)),
-      () async {
-    await runTest(name: 'random', repeats: 100);
-  });
+void main() {
+  for (final watcher in ['native', 'polling']) {
+    group('$watcher watcher', () {
+      Watcher createWatcher({required String path}) {
+        return watcher == 'native'
+            ? DirectoryWatcher(path)
+            : PollingDirectoryWatcher(path,
+                pollingDelay: const Duration(milliseconds: 100));
+      }
 
-  // Specific test cases that have caught bugs.
-  for (final testCase in testCases) {
-    test('end to end test: ${testCase.name}',
-        timeout: const Timeout(Duration(minutes: 5)), () async {
-      await runTest(name: testCase.name, replayLog: testCase.log, repeats: 50);
-    }, skip: testCase.skipOnLinux && Platform.isLinux);
+      // Random test to cover a wide range of cases.
+      test('end to end test: random',
+          timeout: const Timeout(Duration(minutes: 10)), () async {
+        await runTest(
+            name: 'random', createWatcher: createWatcher, repeats: 100);
+      });
+
+      // Specific test cases that have caught bugs.
+      for (final testCase in testCases) {
+        test('end to end test: ${testCase.name}',
+            timeout: const Timeout(Duration(minutes: 5)), () async {
+          await runTest(
+              name: testCase.name,
+              createWatcher: createWatcher,
+              replayLog: testCase.log,
+              repeats: 50);
+        }, skip: testCase.skipOnLinux && Platform.isLinux);
+      }
+    });
   }
 }
 

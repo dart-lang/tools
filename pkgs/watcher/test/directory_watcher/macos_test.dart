@@ -10,7 +10,6 @@ import 'package:watcher/src/directory_watcher/recursive/recursive_directory_watc
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
-import 'end_to_end_tests.dart';
 import 'file_tests.dart';
 import 'link_tests.dart';
 
@@ -20,7 +19,6 @@ void main() {
 
   fileTests(isNative: true);
   linkTests(isNative: true);
-  endToEndTests();
 
   test('DirectoryWatcher creates a RecursiveDirectoryWatcher on Mac OS', () {
     expect(

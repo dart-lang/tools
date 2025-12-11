@@ -12,7 +12,7 @@ import 'package:watcher/watcher.dart';
 
 import '../utils.dart' as utils;
 import 'client_simulator.dart';
-import 'end_to_end_tests.dart';
+import 'end_to_end_test.dart';
 import 'file_changer.dart';
 
 /// Runs the test with [name] for logging.
