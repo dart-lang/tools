@@ -1,4 +1,4 @@
-## 1.1.5-wip
+## 1.2.0
 
 - Polling watchers now check file sizes as well as "last modified" times, so
   they are less likely to miss changes on platforms with low resolution
