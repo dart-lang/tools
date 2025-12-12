@@ -1,4 +1,9 @@
-## 4.11.1-wip
+## 4.11.1
+
+* Convert imports of implementation libraries under `package:fixnum/src/*` into
+  imports of `package:fixnum/fixnum.dart` to prevent issues when version 1.2.0
+  is released with platform-specific implementation libraries that generated
+  code should not import directly.
 
 ## 4.11.0
 
