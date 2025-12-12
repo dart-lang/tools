@@ -30,6 +30,15 @@ void main() {
       ]);
     });
 
+    test('.simple replaces fixnum internal URIs', () {
+      allocator =
+          Allocator()
+            ..allocate(refer('Int64', 'package:fixnum/src/int64_native.dart'));
+      expect(allocator.imports.map((d) => d.url), [
+        'package:fixnum/fixnum.dart',
+      ]);
+    });
+
     test('.none should do nothing', () {
       allocator = Allocator.none;
       expect(allocator.allocate(refer('Foo', 'package:foo')), 'Foo');
@@ -45,6 +54,15 @@ void main() {
       );
       expect(allocator.imports.map((d) => '${d.url} as ${d.as}'), [
         'dart:collection as _i1',
+      ]);
+    });
+
+    test('.simplePrefixing replaces fixnum internal URIs', () {
+      allocator =
+          Allocator.simplePrefixing()
+            ..allocate(refer('Int64', 'package:fixnum/src/int64_native.dart'));
+      expect(allocator.imports.map((d) => d.url), [
+        'package:fixnum/fixnum.dart',
       ]);
     });
   });
