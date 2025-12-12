@@ -680,9 +680,9 @@ final class Event {
   ///
   /// [exitCode] - the exit code of the dry run.
   ///
-  /// [findingsInfo] - findings for the dry run keyed on finding index,
-  ///   value is a comma separated string of package name and version. Prefixed
-  ///   with '-ph' summarizing private package or host app findings.
+  /// [findingsInfo] - findings for the dry run, keyed by finding index.
+  ///   The value is a comma-separated string containing flags and package
+  ///   information in `name:version` format, e.g., `'-ph,pkg1:1.2.3'`.
   Event.flutterWasmDryRunPackage({
     required String result,
     required int exitCode,
