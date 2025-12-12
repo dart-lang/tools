@@ -1,3 +1,7 @@
+## 8.0.10
+- Added `Event.flutterWasmDryRunPackage` to track dart2wasm dry run metrics from Flutter
+  including public package information.
+
 ## 8.0.9
 - Added `libraryDiagnosticsBundleFailures` to `Event.analysisStatistics`.
 
@@ -6,9 +10,9 @@
 
 ## 8.0.7
 - Added optional fields `contextWorkspaceType` and `numberOfPackagesInWorkspace`
-  to `Event.contextStructure` for workspace and packages distribution from the 
+  to `Event.contextStructure` for workspace and packages distribution from the
   Dart Analysis Server.
-- Removed `Event.contextStructure` optional fields `contextsFromBothFiles`, 
+- Removed `Event.contextStructure` optional fields `contextsFromBothFiles`,
   `contextsFromOptionsFiles`,`contextsFromPackagesFiles`,`contextsWithoutFiles`.
 
 ## 8.0.6
