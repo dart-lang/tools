@@ -673,6 +673,29 @@ final class Event {
           },
         );
 
+  /// Provides information about the results of a wasm dry run including public
+  /// package names and versions.
+  ///
+  /// [result] - dry run result summary
+  ///
+  /// [exitCode] - the exit code of the dry run.
+  ///
+  /// [findingsInfo] - findings for the dry run keyed on finding index,
+  ///   value is a comma separated string of package name and version. Prefixed
+  ///   with '-ph' summarizing private package or host app findings.
+  Event.flutterWasmDryRunPackage({
+    required String result,
+    required int exitCode,
+    required Map<String, String> findingsInfo,
+  }) : this._(
+          eventName: DashEvent.flutterWasmDryRunPackage,
+          eventData: {
+            'result': result,
+            'exitCode': exitCode,
+            ...findingsInfo,
+          },
+        );
+
   /// Provides information about the plugins injected into an iOS or macOS
   /// project.
   ///

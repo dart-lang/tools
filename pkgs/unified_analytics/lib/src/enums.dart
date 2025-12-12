@@ -108,6 +108,13 @@ enum DashEvent {
     description: 'Information for a dart2wasm dry run invoked from Flutter',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterWasmDryRunPackage(
+    label: 'wasm_dry_run_package',
+    description:
+        'Information for a dart2wasm dry run invoked from Flutter with package '
+        'info',
+    toolOwner: DashTool.flutterTool,
+  ),
   flutterInjectDarwinPlugins(
     label: 'flutter_inject_darwin_plugins',
     description: 'Information on plugins injected into an iOS/macOS project',
