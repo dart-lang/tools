@@ -1121,7 +1121,7 @@ String? _getTextContent(Node node, {bool convertBRsToNewlines = false}) {
 /// Returns true if the element is an HTML <br> element.
 /// Checks both the local name and namespace to ensure it's a proper HTML br element.
 /// Note: null namespace is treated as HTML namespace for elements created by the HTML parser.
-bool isElementBr(Element element) {
+bool _isElementBr(Element element) {
   if (element.localName != 'br') return false;
   final ns = element.namespaceUri;
   return ns == null || ns == Namespaces.html;
@@ -1154,7 +1154,7 @@ class _ConcatTextVisitor extends TreeVisitor {
 
   @override
   void visitElement(Element node) {
-    if (convertBRsToNewlines && isElementBr(node)) {
+    if (convertBRsToNewlines && _isElementBr(node)) {
       _str.write('\n');
       return;
     }
