@@ -16,25 +16,30 @@ void main() {
       final value = await parse(defaultPubspec);
       final jsonValue = value.toJson();
 
-      expect(jsonValue['name'], 'sample');
-      expect(jsonValue['version'], isNull);
-      expect(jsonValue['publishTo'], isNull);
-      expect(jsonValue['description'], isNull);
-      expect(jsonValue['homepage'], isNull);
-      expect(jsonValue['author'], isNull);
-      expect(jsonValue['authors'], isEmpty);
-      expect(jsonValue['environment'], {'sdk': '>=2.12.0 <3.0.0'});
-      expect(jsonValue['documentation'], isNull);
-      expect(jsonValue['dependencies'], isEmpty);
-      expect(jsonValue['dev_dependencies'], isEmpty);
-      expect(jsonValue['dependency_overrides'], isEmpty);
-      expect(jsonValue['flutter'], isNull);
-      expect(jsonValue['repository'], isNull);
-      expect(jsonValue['issue_tracker'], isNull);
-      expect(jsonValue['screenshots'], isEmpty);
-      expect(jsonValue['workspace'], isNull);
-      expect(jsonValue['resolution'], isNull);
-      expect(jsonValue['executables'], isEmpty);
+      expect(jsonValue, {
+        'name': 'sample',
+        'version': null,
+        'publish_to': null,
+        'description': null,
+        'homepage': null,
+        'author': null,
+        'authors': isA<List>(),
+        'environment': {'sdk': '>=2.12.0 <3.0.0'},
+        'documentation': null,
+        'dependencies': isA<Map<String, dynamic>>(),
+        'dev_dependencies': isA<Map<String, dynamic>>(),
+        'dependency_overrides': isA<Map<String, dynamic>>(),
+        'flutter': null,
+        'repository': null,
+        'issue_tracker': null,
+        'screenshots': isA<List>(),
+        'workspace': null,
+        'resolution': null,
+        'executables': isA<Map<String, dynamic>>(),
+        'funding': null,
+        'topics': null,
+        'ignored_advisories': null,
+      });
     });
 
     test('all fields set', () async {
@@ -71,49 +76,40 @@ void main() {
 
       final jsonValue = value.toJson();
 
-      expect(jsonValue['name'], 'sample');
-      expect(jsonValue['version'], version.toString());
-      expect(jsonValue['publish_to'], 'none');
-      expect(jsonValue['description'], 'description');
-      expect(jsonValue['homepage'], 'homepage');
-      expect(jsonValue['author'], 'name@example.com');
-      expect(jsonValue['authors'], ['name@example.com']);
-      expect(
-        jsonValue['environment'],
-        containsPair('sdk', sdkConstraint.toString()),
-      );
-      expect(jsonValue['documentation'], 'documentation');
-      expect(jsonValue['dependencies'], hasLength(1));
-      expect(
-        jsonValue['dependencies'],
-        containsPair('foo', {'version': '1.0.0'}),
-      );
-      expect(jsonValue['dev_dependencies'], hasLength(1));
-      expect(
-        jsonValue['dev_dependencies'],
-        containsPair('bar', {'version': '2.0.0'}),
-      );
-      expect(jsonValue['dependency_overrides'], hasLength(1));
-      expect(
-        jsonValue['dependency_overrides'],
-        containsPair('baz', {'version': '3.0.0'}),
-      );
-      expect(jsonValue['repository'], 'https://github.com/example/repo');
-      expect(
-        jsonValue['issue_tracker'],
-        'https://github.com/example/repo/issues',
-      );
-      expect(jsonValue['funding'], ['https://patreon.com/example']);
-      expect(jsonValue['topics'], ['widget', 'button']);
-      expect(jsonValue['ignored_advisories'], ['111', '222']);
-      expect(jsonValue['screenshots'], [
-        {'description': 'my screenshot', 'path': 'path/to/screenshot'},
-      ]);
-      expect(jsonValue['workspace'], ['pkg1', 'pkg2']);
-      expect(jsonValue['resolution'], 'workspace');
-      expect(jsonValue['executables'], {
-        'my_script': 'bin/my_script.dart',
-        'my_script2': 'bin/my_script2.dart',
+      expect(jsonValue, {
+        'name': 'sample',
+        'version': version.toString(),
+        'publish_to': 'none',
+        'description': 'description',
+        'homepage': 'homepage',
+        'author': 'name@example.com',
+        'authors': ['name@example.com'],
+        'environment': {'sdk': sdkConstraint.toString()},
+        'documentation': 'documentation',
+        'dependencies': {
+          'foo': {'version': '1.0.0'},
+        },
+        'dev_dependencies': {
+          'bar': {'version': '2.0.0'},
+        },
+        'dependency_overrides': {
+          'baz': {'version': '3.0.0'},
+        },
+        'flutter': null,
+        'repository': 'https://github.com/example/repo',
+        'issue_tracker': 'https://github.com/example/repo/issues',
+        'screenshots': [
+          {'description': 'my screenshot', 'path': 'path/to/screenshot'},
+        ],
+        'funding': ['https://patreon.com/example'],
+        'topics': ['widget', 'button'],
+        'ignored_advisories': ['111', '222'],
+        'workspace': ['pkg1', 'pkg2'],
+        'resolution': 'workspace',
+        'executables': {
+          'my_script': 'bin/my_script.dart',
+          'my_script2': 'bin/my_script2.dart',
+        },
       });
     });
   });
@@ -235,14 +231,16 @@ void main() {
       final newValue = await parse(jsonValue, skipTryPub: true);
 
       expect(value.dependencies, hasLength(8));
-      expect(value.dependencies['flutter'], isA<SdkDependency>());
-      expect(value.dependencies['http'], isA<HostedDependency>());
-      expect(value.dependencies['provider'], isA<HostedDependency>());
-      expect(value.dependencies['firebase_core'], isA<HostedDependency>());
-      expect(value.dependencies['google_fonts'], isA<SdkDependency>());
-      expect(value.dependencies['flutter_bloc'], isA<GitDependency>());
-      expect(value.dependencies['shared_preferences'], isA<GitDependency>());
-      expect(value.dependencies['local_utils'], isA<PathDependency>());
+      expect(value.dependencies, {
+        'flutter': isA<SdkDependency>(),
+        'http': isA<HostedDependency>(),
+        'provider': isA<HostedDependency>(),
+        'firebase_core': isA<HostedDependency>(),
+        'google_fonts': isA<SdkDependency>(),
+        'flutter_bloc': isA<GitDependency>(),
+        'shared_preferences': isA<GitDependency>(),
+        'local_utils': isA<PathDependency>(),
+      });
 
       expect(
         value.dependencies['flutter']?.toJson(),
