@@ -171,7 +171,7 @@ class Pubspec {
     return _$PubspecFromJson(json);
   }
 
-  // Returns a JSON-serializable map for this instance.
+  /// Creates a JSON-serializable map for this instance.
   Map<String, dynamic> toJson() => _$PubspecToJson(this);
 
   /// Parses source [yaml] into [Pubspec].

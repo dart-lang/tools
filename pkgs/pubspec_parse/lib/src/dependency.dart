@@ -40,7 +40,7 @@ Map<String, Dependency> parseDeps(Map? source) =>
 const _sourceKeys = ['sdk', 'git', 'path', 'hosted'];
 
 /// Converts [data] into a [Dependency] object.
-/// 
+///
 /// If [data] is not a valid representation of a dependency,
 /// returns null so that the parent logic can throw the proper error.
 Dependency? _fromJson(Object? data, String name) {
@@ -298,6 +298,7 @@ class HostedDetails {
   @override
   int get hashCode => Object.hash(name, url);
 
+  /// Creates a JSON representation of the data of this object.
   Map<String, dynamic> toJson() => {
     if (declaredName != null) 'name': declaredName,
     'url': url.toString(),
