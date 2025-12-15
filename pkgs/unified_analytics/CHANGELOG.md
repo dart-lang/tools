@@ -1,3 +1,6 @@
+## 8.0.11
+- Added `DashEvent.ideEvent` to track IDE reported events.
+
 ## 8.0.10
 - Added `Event.flutterWasmDryRunPackage` to track dart2wasm dry run metrics from Flutter
   including public package information.
