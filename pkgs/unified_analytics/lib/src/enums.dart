@@ -131,6 +131,13 @@ enum DashEvent {
     toolOwner: DashTool.flutterTool,
   ),
 
+  // Events for IDEs (intellij and vscode)
+
+  ideEvent(
+    label: 'ide_event',
+    description: 'Information for various IDE events',
+  ),
+
   // Events for language_server below
 
   analysisStatistics(
