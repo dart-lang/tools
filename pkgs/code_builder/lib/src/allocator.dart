@@ -102,6 +102,8 @@ class _PrefixedAllocator implements Allocator {
 }
 
 /// Applies hardcoded fixes to [url].
+///
+/// See [Allocator.imports] for explanations.
 String _fixUrl(String url) {
   if (url.startsWith('package:fixnum/src/')) {
     return 'package:fixnum/fixnum.dart';
