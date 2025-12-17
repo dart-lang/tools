@@ -19,21 +19,12 @@ List<Screenshot> parseScreenshots(List? input) => [
         Screenshot(_readString(e, 'description'), _readString(e, 'path')),
 ];
 
-String _readString(Map input, String entryName) {
-  final value = input[entryName];
-  if (value is String) return value;
-  if (value == null) {
-    throw CheckedFromJsonException(
-      input,
-      entryName,
-      'Screenshot',
-      'Missing required key `$entryName`',
-    );
-  }
-  throw CheckedFromJsonException(
+String _readString(Map input, String entryName) => switch (input[entryName]) {
+  final String value => value,
+  final value => throw CheckedFromJsonException(
     input,
     entryName,
     'Screenshot',
-    '`$value` is not a String',
-  );
-}
+    value == null ? 'Missing required key `$entryName`' : '`$value` is not a String', 
+  ),
+};
