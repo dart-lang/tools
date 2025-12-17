@@ -268,17 +268,13 @@ class HostedDetails {
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
 
-/// The `value` if it is a `Map`, or `{'uri': value}` if it is a `String`.
+/// The `value` if it is a `Map`, or `{'url': value}` if `calue` is a `String`.
 ///
-/// Must be one or the other.
-/// The [name] is used as parameter name in the thrown error.
-Map _mapOrStringUri(Object? value, String name) {
-  if (value is! Map) {
-    if (value is String) {
-      value = {'url': value};
-    } else {
-      throw ArgumentError.value(value, name, 'Must be a String or a Map.');
-    }
-  }
-  return value;
-}
+/// The `value` must be iether a map or a string.
+/// The [name] is used as the parameter name in an error if the value
+/// is not one of the allowed types.
+Map _mapOrStringUri(Object? value, String name) => switch (value) {
+  Map() => value,
+  String() => {'url': value},
+  _ => throw ArgumentError.value(value, name, 'Must be a String or a Map.'),
+};
