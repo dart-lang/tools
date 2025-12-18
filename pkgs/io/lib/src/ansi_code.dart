@@ -122,12 +122,8 @@ class AnsiRgbCode extends AnsiCode {
   /// The blue value (0-255).
   final int blue;
 
-  @override
-  // ignore: overridden_fields
-  final AnsiCodeType type;
-
   /// Creates an RGB [AnsiCode] for the given [type].
-  AnsiRgbCode._(this.red, this.green, this.blue, this.type)
+  AnsiRgbCode._(this.red, this.green, this.blue, AnsiCodeType type)
       : super._('rgb($red,$green,$blue)', type, -1, resetAll);
 
   int get _prefix => type == AnsiCodeType.background ? 48 : 38;
