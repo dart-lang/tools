@@ -1,0 +1,15 @@
+# Initial comment
+{
+  "string": "hello world", # Great message
+  "map": {
+    "foo": 42, # Fantastic number
+    "bar": "baz"
+  },
+  "list": [
+    1, # This is a good list
+    2, # This comment is good
+        # But this?
+          # Or this?
+    3
+  ]
+}
