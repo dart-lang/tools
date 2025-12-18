@@ -218,8 +218,8 @@ final class Event {
   /// If the method is `workspace/didChangeWorkspaceFolders`, then the following
   /// parameters should be included:
   ///
-  /// * [added] - JSON-encoded percentile values indicating the number of folders
-  ///   that were added.
+  /// * [added] - JSON-encoded percentile values indicating the number of
+  ///   folders that were added.
   ///
   /// * [removed] - JSON-encoded percentile values indicating the number of
   ///   folders that were removed.
@@ -244,7 +244,6 @@ final class Event {
   ///
   /// * [files] - JSON-encoded percentile values indicating the number of
   ///   priority files.
-  ///
   Event.clientRequest({
     required String duration,
     required String latency,
