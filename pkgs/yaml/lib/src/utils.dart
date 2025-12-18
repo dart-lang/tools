@@ -38,3 +38,15 @@ bool isHighSurrogate(int codeUnit) => codeUnit >>> 10 == 0x36;
 
 /// Whether [codeUnit] is a UTF-16 low surrogate.
 bool isLowSurrogate(int codeUnit) => codeUnit >>> 10 == 0x37;
+
+/// Whether a tag is a valid tag based on its [canonicalSuffix] as defined in
+/// the yaml spec. Always returns `true` if the caller has a custom tag and can
+/// be partially composed/represented (synthetic node).
+///
+///  - `seq` - for sequence
+///  - `map` - for map
+///  - `str` - for scalar
+bool isResolvedYamlTag(String? tag, String canonicalSuffix) =>
+    tag == null ||
+    !tag.startsWith('tag:yaml.org,2002:') || // Leaky prefix condition.
+    tag.endsWith(canonicalSuffix);
