@@ -734,7 +734,7 @@ final class Event {
   ///   CocoaPods to inject plugins.
   ///
   /// * [podCount] - the number of plugins compatible with CocoaPods. This is
-  ///   less than or equal to [podCount].
+  ///   less than or equal to [pluginCount].
   Event.flutterInjectDarwinPlugins({
     required String platform,
     required bool isModule,
