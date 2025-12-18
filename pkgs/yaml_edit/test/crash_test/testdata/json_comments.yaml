@@ -7,7 +7,9 @@
   },
   "list": [
     1, # This is a good list
-    2,
+    2, # This comment is good
+        # But this?
+          # Or this?
     3
   ]
 }
