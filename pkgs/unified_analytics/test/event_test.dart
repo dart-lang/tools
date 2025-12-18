@@ -270,6 +270,28 @@ void main() {
     expect(constructedEvent.eventData.length, 3);
   });
 
+  test('Event.plugins constructed', () {
+    Event generateEvent() => Event.plugins(
+          count: 5,
+          lintRuleCounts: 'lintRuleCounts',
+          warningRuleCounts: 'warningRuleCounts',
+          fixCounts: 'fixCounts',
+          assistCounts: 'assistCounts',
+        );
+
+    final constructedEvent = generateEvent();
+
+    expect(generateEvent, returnsNormally);
+    expect(constructedEvent.eventName, DashEvent.plugins);
+    expect(constructedEvent.eventData['count'], 5);
+    expect(constructedEvent.eventData['lintRuleCounts'], 'lintRuleCounts');
+    expect(
+        constructedEvent.eventData['warningRuleCounts'], 'warningRuleCounts');
+    expect(constructedEvent.eventData['fixCounts'], 'fixCounts');
+    expect(constructedEvent.eventData['assistCounts'], 'assistCounts');
+    expect(constructedEvent.eventData, hasLength(5));
+  });
+
   test('Event.pluginUse constructed', () {
     Event generateEvent() => Event.pluginUse(
           count: 5,
@@ -804,7 +826,7 @@ void main() {
 
     // Change this integer below if your PR either adds or removes
     // an Event constructor
-    final eventsAccountedForInTests = 32;
+    final eventsAccountedForInTests = 33;
     expect(eventsAccountedForInTests, constructorCount,
         reason: 'If you added or removed an event constructor, '
             'ensure you have updated '
