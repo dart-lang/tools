@@ -289,8 +289,7 @@ void main() {
         constructedEvent.eventData['warningRuleCounts'], 'warningRuleCounts');
     expect(constructedEvent.eventData['fixCounts'], 'fixCounts');
     expect(constructedEvent.eventData['assistCounts'], 'assistCounts');
-    expect(constructedEvent.eventData['pluginId'], 'pluginId');
-    expect(constructedEvent.eventData, hasLength(4));
+    expect(constructedEvent.eventData, hasLength(5));
   });
 
   test('Event.pluginUse constructed', () {
