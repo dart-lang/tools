@@ -104,6 +104,42 @@ class AnsiCode {
   String toString() => '$name ${type._name} ($code)';
 }
 
+/// An ANSI escape code for RGB colours.
+///
+/// Represents a true colour (24-bit RGB) escape sequence that can be used for
+/// both foreground and background colours.
+///
+/// Use [rgb] to create an instance of this class.
+///
+/// [See also](https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit)
+class AnsiRgbCode extends AnsiCode {
+  /// The red value (0-255).
+  final int red;
+
+  /// The green value (0-255).
+  final int green;
+
+  /// The blue value (0-255).
+  final int blue;
+
+  @override
+  // ignore: overridden_fields
+  final AnsiCodeType type;
+
+  /// Creates an RGB [AnsiCode] for the given [type].
+  AnsiRgbCode._(this.red, this.green, this.blue, this.type)
+      : super._('rgb($red,$green,$blue)', type, -1, resetAll);
+
+  int get _prefix => type == AnsiCodeType.background ? 48 : 38;
+
+  @override
+  String get escape => '$_ansiEscapeLiteral[$_prefix;2;$red;$green;${blue}m';
+
+  @override
+  String get escapeForScript =>
+      '$_ansiEscapeForScript[$_prefix;2;$red;$green;${blue}m';
+}
+
 /// Returns a [String] formatted with [codes].
 ///
 /// If [forScript] is `true`, the return value is an unescaped literal. The
@@ -127,6 +163,8 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
     return value;
   }
 
+  final codeParts = <String>[];
+
   var foreground = 0, background = 0;
   for (var code in myCodes) {
     switch (code.type) {
@@ -149,13 +187,56 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
         // Ignore.
         break;
     }
+
+    if (code is! AnsiRgbCode && code.code != -1) {
+      codeParts.add(code.code.toString());
+    }
   }
 
-  final sortedCodes = myCodes.map((ac) => ac.code).toList()..sort();
+  codeParts.sort();
+
+  for (var code in myCodes) {
+    if (code is AnsiRgbCode) {
+      final prefix = code.type == AnsiCodeType.background ? '48' : '38';
+      codeParts.add('$prefix;2;${code.red};${code.green};${code.blue}');
+    }
+  }
+
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
 
-  return "$escapeValue[${sortedCodes.join(';')}m$value"
+  return "$escapeValue[${codeParts.join(';')}m$value"
       '${resetAll._escapeValue(forScript: forScript)}';
+}
+
+/// Creates an [AnsiRgbCode] with the given RGB colour values.
+///
+/// The [red], [green], and [blue] parameters must be between 0 and 255.
+///
+/// By default, it creates a foreground colour. Pass [type] as
+/// [AnsiCodeType.background] to create a background colour.
+///
+/// Throws an [ArgumentError] if any colour value is outside the 0-255 range or
+/// if [type] is neither foreground nor background.
+AnsiCode rgb(
+  int red,
+  int green,
+  int blue, {
+  AnsiCodeType type = AnsiCodeType.foreground,
+}) {
+  if (red < 0 || red > 255) {
+    throw ArgumentError.value(red, 'red', 'Must be between 0 and 255.');
+  }
+  if (green < 0 || green > 255) {
+    throw ArgumentError.value(green, 'green', 'Must be between 0 and 255.');
+  }
+  if (blue < 0 || blue > 255) {
+    throw ArgumentError.value(blue, 'blue', 'Must be between 0 and 255.');
+  }
+  if (type != AnsiCodeType.foreground && type != AnsiCodeType.background) {
+    throw ArgumentError.value(
+        type, 'type', 'Must be either foreground or background.');
+  }
+  return AnsiRgbCode._(red, green, blue, type);
 }
 
 //
