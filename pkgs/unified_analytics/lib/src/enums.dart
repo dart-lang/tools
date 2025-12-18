@@ -175,7 +175,7 @@ enum DashEvent {
   ),
   plugins(
     label: 'plugins',
-    description: 'Information about how _new_ analyzer plugins were used',
+    description: 'Information about how often _new_ analyzer plugins were used',
   ),
   pluginUse(
     label: 'plugin_use',
