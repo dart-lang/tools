@@ -123,19 +123,14 @@ void _testJsonPath(
       for (final style in _scalarStyles) {
         test('$editorName.insertIntoList($path, $i, \'foo\\nbar\') as $style',
             () {
-          try {
-            final editor = YamlEditor(input);
-            editor.insertIntoList(
-                path,
-                i,
-                YamlScalar.wrap(
-                  'foo\nbar',
-                  style: style,
-                ));
-          } catch (e) {
-            print(e.runtimeType);
-            rethrow;
-          }
+          final editor = YamlEditor(input);
+          editor.insertIntoList(
+              path,
+              i,
+              YamlScalar.wrap(
+                'foo\nbar',
+                style: style,
+              ));
         });
       }
     }
