@@ -1,0 +1,41 @@
+block-strings:     # annoying comment (maybe)
+ - folded:
+    - clip: >
+        first line
+
+        skipped line
+
+
+# This is a comment
+  # this too!
+       # And this one
+    - strip: >+  # We can have comments here
+        first line
+
+        skipped line
+
+
+    - keep:  >-
+        first line
+
+        skipped line
+       # comment why not!
+             # and again
+ - literal:
+    - clip: |
+        first line
+
+        skipped line
+
+
+    - strip: |+
+        first line
+
+        skipped line
+
+
+    - keep:  |-
+        first line
+
+        skipped line
+
