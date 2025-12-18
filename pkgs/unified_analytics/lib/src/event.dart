@@ -866,16 +866,16 @@ final class Event {
           },
         );
 
-  /// Event that is emitted periodically to report the performance of plugins
-  /// when handling requests.
+  /// Event that is emitted periodically to report the performance of analyzer
+  /// plugins when handling requests.
   ///
-  /// [duration] - json encoded percentile values indicating how long it took
+  /// [duration] - JSON-encoded percentile values indicating how long it took
   ///     from the time the request was sent to the plugin until the response
   ///     was processed by the server.
   ///
   /// [method] - the name of the request sent to the plugin.
   ///
-  /// [pluginId] - the id of the plugin whose performance is being reported.
+  /// [pluginId] - the ID of the plugin whose performance is being reported.
   Event.pluginRequest({
     required String duration,
     required String method,
@@ -889,16 +889,45 @@ final class Event {
           },
         );
 
+  /// Event that is emitted periodically to report information about how _new_
+  /// analyzer plugins are used.
+  ///
+  /// - [count] - the number of new plugins that were configured.
+  /// - [lintRuleCounts] - JSON-encoded percentile values indicating the number
+  ///   of enabled lint rules for each plugin.
+  /// - [warningRuleCounts] - JSON-encoded percentile values indicating the
+  ///   number of enabled warning rules for each plugin.
+  /// - [fixCounts] - JSON-encoded percentile values indicating the number of
+  ///   fixes provided by each plugin.
+  /// - [assistCounts] - JSON-encoded percentile values indicating the number of
+  ///   assists provided by each plugin.
+  Event.plugins({
+    required int count,
+    required String lintRuleCounts,
+    required String warningRuleCounts,
+    required String fixCounts,
+    required String assistCounts,
+  }) : this._(
+          eventName: DashEvent.plugins,
+          eventData: {
+            'count': count,
+            'lintRuleCounts': lintRuleCounts,
+            'warningRuleCounts': warningRuleCounts,
+            'fixCounts': fixCounts,
+            'assistCounts': assistCounts,
+          },
+        );
+
   /// Event that is emitted periodically to report the frequency with which a
-  /// given plugin has been used.
+  /// given _legacy_ analyzer plugin has been used.
   ///
   /// [count] - the number of times plugins usage was changed, which will always
   ///     be at least one.
   ///
-  /// [enabled] - json encoded percentile values indicating the number of
-  ///     contexts for which the plugin was enabled.
+  /// [enabled] - JSON-encoded percentile values indicating the number of
+  ///     analysis contexts for which the plugin was enabled.
   ///
-  /// [pluginId] - the id of the plugin associated with the data.
+  /// [pluginId] - the ID of the plugin associated with the data.
   Event.pluginUse({
     required int count,
     required String enabled,

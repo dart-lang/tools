@@ -170,11 +170,17 @@ enum DashEvent {
   ),
   pluginRequest(
     label: 'plugin_request',
-    description: 'Request responses from plugins',
+    description:
+        'Analyzer plugin performance information regarding server requests',
+  ),
+  plugins(
+    label: 'plugins',
+    description: 'Information about how _new_ analyzer plugins were used',
   ),
   pluginUse(
     label: 'plugin_use',
-    description: 'Information about how often a plugin was used',
+    description:
+        'Information about how often a _legacy_ analyzer plugin was used',
   ),
   serverSession(
     label: 'server_session',
