@@ -163,7 +163,8 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
     return value;
   }
 
-  final codeParts = <String>[];
+  final numericCodes = <int>[];
+  AnsiRgbCode? ansiRgbCode;
 
   var foreground = 0, background = 0;
   for (var code in myCodes) {
@@ -188,18 +189,22 @@ String? wrapWith(String? value, Iterable<AnsiCode> codes,
         break;
     }
 
-    if (code is! AnsiRgbCode && code.code != -1) {
-      codeParts.add(code.code.toString());
+    if (code is AnsiRgbCode) {
+      ansiRgbCode = code;
+    } else if (code.code != -1) {
+      numericCodes.add(code.code);
     }
   }
 
-  codeParts.sort();
+  numericCodes.sort();
+  final codeParts = numericCodes.map((c) => c.toString()).toList();
 
-  for (var code in myCodes) {
-    if (code is AnsiRgbCode) {
-      final prefix = code.type == AnsiCodeType.background ? '48' : '38';
-      codeParts.add('$prefix;2;${code.red};${code.green};${code.blue}');
-    }
+  if (ansiRgbCode != null) {
+    final prefix = ansiRgbCode.type == AnsiCodeType.background ? 48 : 38;
+    codeParts.add(
+      '$prefix;2;${ansiRgbCode.red};'
+      '${ansiRgbCode.green};${ansiRgbCode.blue}',
+    );
   }
 
   final escapeValue = forScript ? _ansiEscapeForScript : _ansiEscapeLiteral;
