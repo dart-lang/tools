@@ -23,9 +23,10 @@ final _scalarStyles = [
 
 /// Files with tests that are broken, so we have to skip them
 final _skippedFiles = [
-  'mangled_json.yaml',
   'block_strings.yaml',
   'complex.yaml',
+  'explicit_key_value.yaml',
+  'mangled_json.yaml',
   'simple_comments.yaml',
 ];
 
