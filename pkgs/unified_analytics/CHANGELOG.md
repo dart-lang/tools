@@ -1,3 +1,6 @@
+## 8.0.12
+- Added `Event.plugins` to track new analyzer plugins
+
 ## 8.0.11
 - Added `DashEvent.ideEvent` to track IDE reported events.
 
