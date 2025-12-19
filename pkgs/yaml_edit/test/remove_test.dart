@@ -183,7 +183,7 @@ b: 2
 a: 1
 ''');
       doc.remove(['a']);
-      expect(doc.toString(), equals('{}'));
+      expect(doc.toString(), equals('{}\n'));
     });
 
     test('last element should return flow empty map (2)', () {
@@ -247,7 +247,7 @@ key: >+
 target-key: value # Comment
                     # Comment
  # Indented, removed
- 
+
 # Not indented, kept
 next: value
 ''');
@@ -332,7 +332,7 @@ next: value
 - 0
 ''');
       doc.remove([0]);
-      expect(doc.toString(), equals('[]'));
+      expect(doc.toString(), equals('[]\n'));
     });
 
     test('last element should return flow empty list (2)', () {
