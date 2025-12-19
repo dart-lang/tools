@@ -503,9 +503,11 @@ SourceEdit removeBlockCollectionEntry(
   end = min(++end, yaml.length); // Mark it for removal
 
   if (isSingleEntry) {
-    // Take back the last line ending even if multiple were skipped. This node
-    // is sandwiched between other elements not in this map.
-    end = end >= yaml.length - 1 ? end : (end - (lineEnding == '\r\n' ? 2 : 1));
+    // Preserve when sandwiched or if an EOF line ending was present.
+    if (end < yaml.length || yaml.endsWith('\n')) {
+      end -= lineEnding == '\r\n' ? 2 : 1;
+    }
+
     return SourceEdit(start, end - start, isBlockList ? '[]' : '{}');
   } else if (isLastEntry) {
     start = yaml.lastIndexOf('\n', start) + 1;
