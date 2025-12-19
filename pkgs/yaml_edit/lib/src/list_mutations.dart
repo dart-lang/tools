@@ -312,6 +312,9 @@ SourceEdit _removeFromBlockList(
   final yaml = yamlEdit.toString();
   final span = nodeToRemove.span;
 
+  final isEmptySpan = span.length == 0; // Just the '-'
+  final end = getContentSensitiveEnd(nodeToRemove);
+
   return removeBlockCollectionEntry(
     yaml,
     blockCollection: list,
@@ -320,10 +323,11 @@ SourceEdit _removeFromBlockList(
     isSingleEntry: listSize == 1,
     isLastEntry: index >= listSize - 1,
     nodeToRemoveOffset: (
-      start: span.length == 0
-          ? span.start.offset
-          : yaml.lastIndexOf('-', span.start.offset - 1),
-      end: getContentSensitiveEnd(nodeToRemove)
+      start: yaml.lastIndexOf(
+        '-',
+        isEmptySpan ? span.start.offset : span.start.offset - 1,
+      ),
+      end: isEmptySpan ? end + 1 : end,
     ),
     lineEnding: getLineEnding(yaml),
     nextBlockNodeInfo: () {
