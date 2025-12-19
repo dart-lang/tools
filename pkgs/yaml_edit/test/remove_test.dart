@@ -246,6 +246,9 @@ key: >+
 
 target-key: value # Comment
                     # Comment
+ # Indented, removed
+ 
+# Not indented, kept
 next: value
 ''');
 
@@ -254,6 +257,7 @@ next: value
 key: >+
   folded with keep chomping
 
+# Not indented, kept
 next: value
 ''');
     });
