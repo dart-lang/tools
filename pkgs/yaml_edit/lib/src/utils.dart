@@ -281,45 +281,120 @@ final _nonSpaceMatch = RegExp(r'[^ \t]');
 /// Skip empty lines and returns the offset of the last possible line ending
 /// only if the [offset] is a valid offset within the [yaml] string that
 /// points to first line ending.
-int indexOfLastLineEnding(String yaml, int offset) {
+///
+/// The [blockIndent] is used to truncate any comments more indented than the
+/// parent collection that may affect other block entries within the collection
+/// that may have block scalars.
+int indexOfLastLineEnding(
+  String yaml, {
+  required int offset,
+  required int blockIndent,
+}) {
   if (yaml.isEmpty || offset == -1) return yaml.length;
 
   final lastOffset = yaml.length - 1;
   var currentOffset = min(offset, lastOffset);
 
-  if (yaml[currentOffset] case '\r' || '\n') {
-    var lineEndingIndex = currentOffset;
-    ++currentOffset;
+  // Unsafe. Cannot start our scanner state machine in an unguarded state.
+  if (yaml[currentOffset] != '\r' && yaml[currentOffset] != '\n') {
+    return currentOffset;
+  }
 
-    scanner:
-    while (currentOffset <= lastOffset) {
-      switch (yaml[currentOffset]) {
-        case ' ' || '\t':
-          {
-            currentOffset = yaml.indexOf(_nonSpaceMatch, currentOffset);
+  var lineEndingIndex = currentOffset;
 
-            // We scanned till the end of the string and found nothing.
-            if (currentOffset == -1) {
-              lineEndingIndex = lastOffset;
-              break scanner;
-            }
-          }
-
-        case '\r' || '\n':
-          {
-            lineEndingIndex = currentOffset;
+  // Skip empty lines and any comments indented more than the block entry. Such
+  // comments are hazardous to block scalars.
+  scanner:
+  while (currentOffset <= lastOffset) {
+    switch (yaml[currentOffset]) {
+      case '\r':
+        {
+          // Skip carriage return if possible. No use to us if we have a line
+          // feed after.
+          if (currentOffset < lastOffset && yaml[currentOffset + 1] == '\n') {
             ++currentOffset;
           }
 
-        default:
-          break scanner;
-      }
-    }
+          continue indentChecker;
+        }
 
-    return lineEndingIndex;
+      indentChecker:
+      case '\n':
+        {
+          lineEndingIndex = currentOffset;
+          ++currentOffset;
+
+          if (currentOffset >= lastOffset) {
+            lineEndingIndex = lastOffset;
+            break scanner;
+          }
+
+          final offsetAfterIndent = yaml.indexOf(RegExp('[^ ]'), currentOffset);
+
+          // No more characters!
+          if (offsetAfterIndent == -1) {
+            lineEndingIndex = lastOffset;
+            break scanner;
+          }
+
+          final indent = offsetAfterIndent - currentOffset;
+          currentOffset = offsetAfterIndent;
+          final charAfterIndent = yaml[currentOffset];
+
+          if (charAfterIndent case '\r' || '\n') {
+            continue scanner;
+          } else if (indent > blockIndent) {
+            // If more indented than the entry, always attempt to truncate the
+            // comment or skip it as an empty line.
+            if (charAfterIndent == '\t') {
+              continue skipIfEmpty;
+            } else if (charAfterIndent == '#') {
+              continue truncateComment;
+            }
+          }
+
+          break scanner;
+        }
+
+      // Guarded by indentChecker. Force tabs to be associated with empty lines
+      // if seen past the indent.
+      skipIfEmpty:
+      case '\t':
+        {
+          final nonSpace = yaml.indexOf(_nonSpaceMatch, currentOffset);
+
+          if (nonSpace == -1) {
+            lineEndingIndex = lastOffset;
+          } else if (yaml[nonSpace] case '\r' || '\n') {
+            currentOffset = nonSpace;
+            continue scanner;
+          }
+
+          break scanner;
+        }
+
+      // Guarded by indentChecker. This ensures we only skip comments indented
+      // more than the entry itself.
+      truncateComment:
+      case '#':
+        {
+          final lineFeedOffset = yaml.indexOf('\n', currentOffset);
+
+          if (lineFeedOffset == -1) {
+            lineEndingIndex = lastOffset;
+            break scanner;
+          }
+
+          currentOffset = lineFeedOffset;
+          continue indentChecker;
+        }
+
+      default:
+        break scanner;
+    }
   }
 
-  return currentOffset;
+  return lineEndingIndex;
 }
 
 /// Backtracks from the [start] offset and looks for the nearest character
