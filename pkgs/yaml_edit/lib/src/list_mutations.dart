@@ -315,6 +315,7 @@ SourceEdit _removeFromBlockList(
   return removeBlockCollectionEntry(
     yaml,
     blockCollection: list,
+    collectionIndent: getListIndentation(yaml, list),
     isFirstEntry: index == 0,
     isSingleEntry: listSize == 1,
     isLastEntry: index >= listSize - 1,

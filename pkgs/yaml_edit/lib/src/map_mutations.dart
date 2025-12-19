@@ -178,6 +178,7 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
   return removeBlockCollectionEntry(
     yaml,
     blockCollection: map,
+    collectionIndent: getMapIndentation(yaml, map),
     isFirstEntry: entryIndex == 0,
     isSingleEntry: mapSize == 1,
     isLastEntry: entryIndex >= mapSize - 1,
