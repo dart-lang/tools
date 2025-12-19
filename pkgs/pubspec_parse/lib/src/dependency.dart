@@ -39,7 +39,10 @@ Map<String, Dependency> parseDeps(Map? source) =>
 
 const _sourceKeys = ['sdk', 'git', 'path', 'hosted'];
 
-/// Returns `null` if the data could not be parsed.
+/// Converts [data] into a [Dependency] object.
+///
+/// If [data] is not a valid representation of a dependency,
+/// returns null so that the parent logic can throw the proper error.
 Dependency? _fromJson(Object? data, String name) {
   if (data is String || data == null) {
     return _$HostedDependencyFromJson({'version': data});
@@ -90,11 +93,13 @@ Dependency? _fromJson(Object? data, String name) {
     }
   }
 
-  // Not a String or a Map – return null so parent logic can throw proper error
   return null;
 }
 
-sealed class Dependency {}
+sealed class Dependency {
+  /// Creates a JSON representation of the data of this object.
+  Map<String, dynamic> toJson();
+}
 
 @JsonSerializable()
 class SdkDependency extends Dependency {
@@ -114,6 +119,9 @@ class SdkDependency extends Dependency {
 
   @override
   String toString() => 'SdkDependency: $sdk';
+
+  @override
+  Map<String, dynamic> toJson() => {'sdk': sdk, 'version': version.toString()};
 }
 
 @JsonSerializable()
@@ -149,6 +157,11 @@ class GitDependency extends Dependency {
 
   @override
   String toString() => 'GitDependency: url@$url';
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'git': {'url': url.toString(), 'ref': ?ref, 'path': ?path},
+  };
 }
 
 Uri? parseGitUriOrNull(String? value) =>
@@ -208,6 +221,9 @@ class PathDependency extends Dependency {
 
   @override
   String toString() => 'PathDependency: path@$path';
+
+  @override
+  Map<String, dynamic> toJson() => {'path': path};
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -232,6 +248,12 @@ class HostedDependency extends Dependency {
 
   @override
   String toString() => 'HostedDependency: $version';
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'version': version.toString(),
+    if (hosted != null) 'hosted': hosted!.toJson(),
+  };
 }
 
 @JsonSerializable(disallowUnrecognizedKeys: true)
@@ -275,6 +297,12 @@ class HostedDetails {
 
   @override
   int get hashCode => Object.hash(name, url);
+
+  /// Creates a JSON representation of the data of this object.
+  Map<String, dynamic> toJson() => {
+    if (declaredName != null) 'name': declaredName,
+    'url': url.toString(),
+  };
 }
 
 VersionConstraint _constraintFromString(String? input) =>
