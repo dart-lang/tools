@@ -131,7 +131,6 @@ c: 3
       doc.remove([0, 'b']);
       expect(doc.toString(), equals('''
 - a: 1
-
   c: 3
 '''));
     });
@@ -184,9 +183,7 @@ b: 2
 a: 1
 ''');
       doc.remove(['a']);
-      expect(doc.toString(), equals('''
-{}
-'''));
+      expect(doc.toString(), equals('{}'));
     });
 
     test('last element should return flow empty map (2)', () {
@@ -331,9 +328,7 @@ next: value
 - 0
 ''');
       doc.remove([0]);
-      expect(doc.toString(), equals('''
-[]
-'''));
+      expect(doc.toString(), equals('[]'));
     });
 
     test('last element should return flow empty list (2)', () {
