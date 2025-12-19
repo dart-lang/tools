@@ -183,7 +183,8 @@ SourceEdit _removeFromBlockMap(YamlEditor yamlEdit, YamlMap map, Object? key) {
     isSingleEntry: mapSize == 1,
     isLastEntry: entryIndex >= mapSize - 1,
     nodeToRemoveOffset: (
-      start: keySpan.start.offset,
+      // A block map only exists because of its first key.
+      start: entryIndex == 0 ? map.span.start.offset : keySpan.start.offset,
       end: valueNode.span.length == 0
           ? keySpan.end.offset + 2 // Null value have no span. Skip ":".
           : getContentSensitiveEnd(valueNode),
