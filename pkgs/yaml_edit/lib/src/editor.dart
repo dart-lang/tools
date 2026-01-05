@@ -560,41 +560,30 @@ class YamlEditor {
   /// tree is equal to our expectations by deep equality of values. Throws an
   /// [AssertionError] if the two trees do not match.
   void _performEdit(
-    SourceEdit edit,
-    Iterable<Object?> path,
-    YamlNode expectedNode,
-  ) {
+      SourceEdit edit, Iterable<Object?> path, YamlNode expectedNode) {
     final expectedTree = _deepModify(_contents, path, [], expectedNode);
     final initialYaml = _yaml;
-    final updatedYaml = edit.apply(_yaml);
+    _yaml = edit.apply(_yaml);
 
-    // Check that the edit does actually parse
-    final YamlNode actualTree;
     try {
-      actualTree = withYamlWarningCallback(() => loadYamlNode(updatedYaml));
+      _initialize();
     } on YamlException {
       throw createAssertionError(
-        'Failed to produce valid YAML after modification.',
-        initialYaml,
-        updatedYaml,
-      );
+          'Failed to produce valid YAML after modification.',
+          initialYaml,
+          _yaml);
     }
 
-    // Check that the edit is semantically correct
+    final actualTree = withYamlWarningCallback(() => loadYamlNode(_yaml));
     if (!deepEquals(actualTree, expectedTree)) {
       throw createAssertionError(
-        'Modification did not result in expected result.',
-        initialYaml,
-        updatedYaml,
-      );
+          'Modification did not result in expected result.',
+          initialYaml,
+          _yaml);
     }
 
-    // Update state of YamlEditor, when we've validated that the edit was
-    // semantically correct!
-    _yaml = updatedYaml;
     _contents = actualTree;
     _edits.add(edit);
-    _initialize(); // update tracking of aliases
   }
 
   /// Utility method to produce an updated YAML tree equivalent to converting
