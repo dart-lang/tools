@@ -17,7 +17,7 @@ class LinuxDirectoryWatcher extends ResubscribableWatcher
   String get directory => path;
 
   LinuxDirectoryWatcher(String directory)
-      : super(directory, () => _LinuxDirectoryWatcher(directory));
+      : super(directory, _LinuxDirectoryWatcher.new);
 }
 
 /// Linux directory watcher that watches using [WatchTreeRoot].

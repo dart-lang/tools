@@ -25,9 +25,9 @@ class RecursiveDirectoryWatcher extends ResubscribableWatcher
   RecursiveDirectoryWatcher(String directory, {required bool runInIsolate})
       : super(
             directory,
-            () => runInIsolate
-                ? IsolateRecursiveDirectoryWatcher(directory)
-                : ManuallyClosedRecursiveDirectoryWatcher(directory));
+            (path) => runInIsolate
+                ? IsolateRecursiveDirectoryWatcher(path)
+                : ManuallyClosedRecursiveDirectoryWatcher(path));
 }
 
 /// Manually closed directory watcher that watches using [WatchedDirectoryTree].

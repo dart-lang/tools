@@ -1,3 +1,12 @@
+## 1.2.1
+
+- Bug fix: versions before 1.2.0 would allow and ignore a trailing path
+  separator passed to `DirectoryWatcher` or `FileWatcher` constructors, restore
+  that behavior.
+- In paths passed to `DirectoryWatcher` or `FileWatcher` constructors, remove
+  multiple adjacent separators and `.` and `..`, so they will not be returned in
+  events.
+
 ## 1.2.0
 
 - Polling watchers now check file sizes as well as "last modified" times, so

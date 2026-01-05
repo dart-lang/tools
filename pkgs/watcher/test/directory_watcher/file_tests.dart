@@ -112,6 +112,25 @@ void _fileTests({required bool isNative}) {
     expect(await queue3HasNext, false);
   });
 
+  // Regression test for https://github.com/dart-lang/tools/issues/2293.
+  test('works with trailing path separator', () async {
+    await startWatcher(exactPath: '${d.sandbox}${Platform.pathSeparator}');
+
+    writeFile('a.txt');
+    await expectAddEvent('a.txt');
+  });
+
+  test('normalizes adjacent separators and ..', () async {
+    createDir('a');
+    final separator = Platform.pathSeparator;
+    await startWatcher(
+        exactPath:
+            '${d.sandbox}${separator}a$separator${separator}b$separator..');
+
+    writeFile('a/a.txt');
+    await expectAddEvent('a/a.txt');
+  });
+
   test('does not notify for files that already exist when started', () async {
     // Make some pre-existing files.
     writeFile('a.txt');
