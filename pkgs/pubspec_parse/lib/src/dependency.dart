@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
@@ -46,18 +45,24 @@ Dependency? _fromJson(Object? data, String name) {
   }
 
   if (data is Map) {
-    final matchedKeys = data.keys
-        .cast<String>()
-        .where((key) => key != 'version')
-        .toList();
+    String? matchedKey;
+    String? secondMatchedKey;
+    String? firstUnrecognizedKey;
+    for (final (key as String) in data.keys) {
+      if (key == 'version') continue;
+      if (matchedKey == null) {
+        matchedKey = key;
+      } else {
+        secondMatchedKey ??= key;
+      }
+      if (!_sourceKeys.contains(key)) {
+        firstUnrecognizedKey ??= key;
+      }
+    }
 
-    if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
+    if (matchedKey == null) {
       return _$HostedDependencyFromJson(data);
     } else {
-      final firstUnrecognizedKey = matchedKeys.firstWhereOrNull(
-        (k) => !_sourceKeys.contains(k),
-      );
-
       return $checkedNew<Dependency>('Dependency', data, () {
         if (firstUnrecognizedKey != null) {
           throw UnrecognizedKeysException(
@@ -66,20 +71,18 @@ Dependency? _fromJson(Object? data, String name) {
             _sourceKeys,
           );
         }
-        if (matchedKeys.length > 1) {
+        if (secondMatchedKey != null) {
           throw CheckedFromJsonException(
             data,
-            matchedKeys[1],
+            secondMatchedKey,
             'Dependency',
             'A dependency may only have one source.',
           );
         }
 
-        final key = matchedKeys.single;
-
-        return switch (key) {
-          'git' => GitDependency.fromData(data[key]),
-          'path' => PathDependency.fromData(data[key]),
+        return switch (matchedKey) {
+          'git' => GitDependency.fromData(data[matchedKey]),
+          'path' => PathDependency.fromData(data[matchedKey]),
           'sdk' => _$SdkDependencyFromJson(data),
           'hosted' => _$HostedDependencyFromJson(
             data,
@@ -125,17 +128,8 @@ class GitDependency extends Dependency {
 
   GitDependency(this.url, {this.ref, this.path});
 
-  factory GitDependency.fromData(Object? data) {
-    if (data is String) {
-      data = {'url': data};
-    }
-
-    if (data is Map) {
-      return _$GitDependencyFromJson(data);
-    }
-
-    throw ArgumentError.value(data, 'git', 'Must be a String or a Map.');
-  }
+  factory GitDependency.fromData(Object? data) =>
+      _$GitDependencyFromJson(_mapOrStringUri(data, 'git'));
 
   @override
   bool operator ==(Object other) =>
@@ -156,34 +150,37 @@ Uri? parseGitUriOrNull(String? value) =>
 
 Uri parseGitUri(String value) => _tryParseScpUri(value) ?? Uri.parse(value);
 
-/// Supports URIs like `[user@]host.xz:path/to/repo.git/`
+/// Parses URIs like `[user@]host.xz:path/to/repo.git/`.
 /// See https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a
 Uri? _tryParseScpUri(String value) {
-  final colonIndex = value.indexOf(':');
+  // Find first `:`. Remember `@` before it, reject if `/` before it.
+  const slashChar = 0x2F, colonChar = 0x3A, atChar = 0x40;
+  var atIndex = -1;
+  for (var i = 0; i < value.length; i++) {
+    final char = value.codeUnitAt(i);
+    if (char == slashChar) {
+      // Per docs: This syntax is only recognized if there are no slashes
+      // before the first colon. This helps differentiate a local path that
+      // contains a colon. For example the local path foo:bar could
+      // be specified as an absolute path or ./foo:bar to avoid being
+      // misinterpreted as an SSH URL
+      break;
+    } else if (char == atChar) {
+      atIndex = i;
+    } else if (char == colonChar) {
+      final colonIndex = i;
 
-  if (colonIndex < 0) {
-    return null;
-  } else if (colonIndex == value.indexOf('://')) {
-    // If the first colon is part of a scheme, it's not an scp-like URI
-    return null;
-  }
-  final slashIndex = value.indexOf('/');
+      // Assume a `://` means it's a real URI scheme and authority,
+      // not an SCP-like URI.
+      if (value.startsWith('//', colonIndex + 1)) return null;
 
-  if (slashIndex >= 0 && slashIndex < colonIndex) {
-    // Per docs: This syntax is only recognized if there are no slashes before
-    // the first colon. This helps differentiate a local path that contains a
-    // colon. For example the local path foo:bar could be specified as an
-    // absolute path or ./foo:bar to avoid being misinterpreted as an ssh url.
-    return null;
+      final user = atIndex >= 0 ? value.substring(0, atIndex) : null;
+      final host = value.substring(atIndex + 1, colonIndex);
+      final path = value.substring(colonIndex + 1);
+      return Uri(scheme: 'ssh', userInfo: user, host: host, path: path);
+    }
   }
-
-  final atIndex = value.indexOf('@');
-  if (colonIndex > atIndex) {
-    final user = atIndex >= 0 ? value.substring(0, atIndex) : null;
-    final host = value.substring(atIndex + 1, colonIndex);
-    final path = value.substring(colonIndex + 1);
-    return Uri(scheme: 'ssh', userInfo: user, host: host, path: path);
-  }
+  // No colon in value, or not before a slash.
   return null;
 }
 
@@ -257,17 +254,8 @@ class HostedDetails {
 
   HostedDetails(this.declaredName, this.url);
 
-  factory HostedDetails.fromJson(Object data) {
-    if (data is String) {
-      data = {'url': data};
-    }
-
-    if (data is Map) {
-      return _$HostedDetailsFromJson(data);
-    }
-
-    throw ArgumentError.value(data, 'hosted', 'Must be a Map or String.');
-  }
+  factory HostedDetails.fromJson(Object data) =>
+      _$HostedDetailsFromJson(_mapOrStringUri(data, 'hosted'));
 
   @override
   bool operator ==(Object other) =>
@@ -279,3 +267,14 @@ class HostedDetails {
 
 VersionConstraint _constraintFromString(String? input) =>
     input == null ? VersionConstraint.any : VersionConstraint.parse(input);
+
+/// The `value` if it is a `Map`, or `{'url': value}` if `calue` is a `String`.
+///
+/// The `value` must be iether a map or a string.
+/// The [name] is used as the parameter name in an error if the value
+/// is not one of the allowed types.
+Map _mapOrStringUri(Object? value, String name) => switch (value) {
+  Map() => value,
+  String() => {'url': value},
+  _ => throw ArgumentError.value(value, name, 'Must be a String or a Map.'),
+};
