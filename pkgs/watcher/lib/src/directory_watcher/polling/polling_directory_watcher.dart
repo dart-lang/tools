@@ -28,9 +28,9 @@ class PollingDirectoryWatcher extends ResubscribableWatcher
   /// shorter will give more immediate feedback at the expense of doing more IO
   /// and higher CPU usage. Defaults to one second.
   PollingDirectoryWatcher(String directory, {Duration? pollingDelay})
-      : super(directory, () {
+      : super(directory, (path) {
           return _PollingDirectoryWatcher(
-              directory, pollingDelay ?? const Duration(seconds: 1));
+              path, pollingDelay ?? const Duration(seconds: 1));
         });
 }
 
