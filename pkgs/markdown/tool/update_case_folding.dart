@@ -23,8 +23,9 @@ void main() {
     }
 
     final content = line.substring(0, line.indexOf('#'));
-    final match =
-        RegExp(r'([0-9A-F]{1,6});\s+[CF];\s+(.+);').firstMatch(content);
+    final match = RegExp(
+      r'([0-9A-F]{1,6});\s+[CF];\s+(.+);',
+    ).firstMatch(content);
     if (match == null) {
       continue;
     }
@@ -38,7 +39,8 @@ void main() {
 
   final outputPath = '${p.current}/lib/src/assets/case_folding.dart';
   final stringMap = const JsonEncoder.withIndent('  ').convert(result);
-  final output = '''
+  final output =
+      '''
 // Generated file. do not edit.
 //
 // Source: tool/case_folding.txt

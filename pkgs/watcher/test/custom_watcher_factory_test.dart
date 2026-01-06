@@ -36,16 +36,16 @@ void main() {
   });
 
   test('notifies for directories', () async {
-    var watcher = DirectoryWatcher('dir');
+    var watcher = DirectoryWatcher('/dir');
 
     var completer = Completer<WatchEvent>();
     watcher.events.listen((event) => completer.complete(event));
     await watcher.ready;
-    memFs.add('dir');
+    memFs.add('/dir');
     var event = await completer.future;
 
     expect(event.type, ChangeType.ADD);
-    expect(event.path, 'dir');
+    expect(event.path, '/dir');
   });
 
   test('registering twice throws', () async {
@@ -65,7 +65,7 @@ void main() {
     registerCustomWatcher('Different id', watcherFactory.createDirectoryWatcher,
         watcherFactory.createFileWatcher);
     expect(() => FileWatcher('file.txt'), throwsA(isA<StateError>()));
-    expect(() => DirectoryWatcher('dir'), throwsA(isA<StateError>()));
+    expect(() => DirectoryWatcher('/dir'), throwsA(isA<StateError>()));
   });
 }
 

@@ -11,10 +11,7 @@ import 'link_syntax.dart';
 /// `![alternate text][label]`.
 class ImageSyntax extends LinkSyntax {
   ImageSyntax({super.linkResolver})
-      : super(
-          pattern: r'!\[',
-          startCharacter: $exclamation,
-        );
+    : super(pattern: r'!\[', startCharacter: $exclamation);
 
   @override
   Element createNode(

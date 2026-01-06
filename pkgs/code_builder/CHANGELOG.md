@@ -1,3 +1,11 @@
+## 4.11.1
+
+* Convert imports of implementation libraries under `package:fixnum/src/*` into
+  imports of `package:fixnum/fixnum.dart` to prevent issues when version 1.2.0
+  is released with platform-specific implementation libraries that generated
+  code should not import directly. This is a temporary workaround, it will be
+  replaced by a new way of managing imports in a future major version release.
+
 ## 4.11.0
 
 * Export `SpecVisitor`, `ClosureExpression`, `LiteralMapExpression`

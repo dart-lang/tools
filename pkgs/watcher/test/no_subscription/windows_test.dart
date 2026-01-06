@@ -6,13 +6,14 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/windows.dart';
+import 'package:watcher/src/directory_watcher/recursive/recursive_directory_watcher.dart';
 
 import '../utils.dart';
 import 'shared.dart';
 
 void main() {
-  watcherFactory = WindowsDirectoryWatcher.new;
+  watcherFactory =
+      (directory) => RecursiveDirectoryWatcher(directory, runInIsolate: true);
 
   sharedTests();
 }

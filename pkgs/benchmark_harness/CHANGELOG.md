@@ -1,6 +1,7 @@
-## 2.4.0-wip
+## 2.4.0
 
 - Added a `bench` command.
+- Require `sdk: ^3.10.0`.
 
 ## 2.3.1
 

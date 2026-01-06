@@ -46,6 +46,7 @@ void _fileTests({required bool isNative}) {
 
   test('notifies even if the file contents are unchanged', () async {
     await startWatcher(path: 'file.txt');
+    if (!isNative) sleepUntilNewModificationTime();
     writeFile('file.txt');
     await expectModifyEvent('file.txt');
   });
@@ -59,7 +60,7 @@ void _fileTests({required bool isNative}) {
   test(
       'emits a modify event when another file is moved on top of the watched '
       'file', () async {
-    writeFile('old.txt');
+    writeFile('old.txt', contents: 'different');
     await startWatcher(path: 'file.txt');
     renameFile('old.txt', 'file.txt');
     await expectModifyEvent('file.txt');
@@ -94,7 +95,7 @@ void _fileTests({required bool isNative}) {
       await expectNoEvents();
       writeFile('other_file.txt');
       await expectModifyEvent('other_file.txt');
-      writeFile('other_file.txt');
+      writeFile('other_file.txt', contents: 'different');
       await expectModifyEvent('other_file.txt');
     }
   });

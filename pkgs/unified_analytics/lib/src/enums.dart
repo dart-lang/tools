@@ -108,6 +108,13 @@ enum DashEvent {
     description: 'Information for a dart2wasm dry run invoked from Flutter',
     toolOwner: DashTool.flutterTool,
   ),
+  flutterWasmDryRunPackage(
+    label: 'wasm_dry_run_package',
+    description:
+        'Information for a dart2wasm dry run invoked from Flutter with package '
+        'info',
+    toolOwner: DashTool.flutterTool,
+  ),
   flutterInjectDarwinPlugins(
     label: 'flutter_inject_darwin_plugins',
     description: 'Information on plugins injected into an iOS/macOS project',
@@ -122,6 +129,13 @@ enum DashEvent {
     label: 'hot_runner_info',
     description: 'Information related to the Flutter hot runner',
     toolOwner: DashTool.flutterTool,
+  ),
+
+  // Events for IDEs (intellij and vscode)
+
+  ideEvent(
+    label: 'ide_event',
+    description: 'Information for various IDE events',
   ),
 
   // Events for language_server below
@@ -156,11 +170,17 @@ enum DashEvent {
   ),
   pluginRequest(
     label: 'plugin_request',
-    description: 'Request responses from plugins',
+    description:
+        'Analyzer plugin performance information regarding server requests',
+  ),
+  plugins(
+    label: 'plugins',
+    description: 'Information about how often _new_ analyzer plugins were used',
   ),
   pluginUse(
     label: 'plugin_use',
-    description: 'Information about how often a plugin was used',
+    description:
+        'Information about how often a _legacy_ analyzer plugin was used',
   ),
   serverSession(
     label: 'server_session',

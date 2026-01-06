@@ -21,9 +21,8 @@ abstract class InlineSyntax {
   /// If [caseSensitive] is disabled, then case is ignored when matching
   /// the [pattern].
   InlineSyntax(String pattern, {int? startCharacter, bool caseSensitive = true})
-      : pattern =
-            RegExp(pattern, multiLine: true, caseSensitive: caseSensitive),
-        _startCharacter = startCharacter;
+    : pattern = RegExp(pattern, multiLine: true, caseSensitive: caseSensitive),
+      _startCharacter = startCharacter;
 
   /// Tries to match at the parser's current position.
   ///

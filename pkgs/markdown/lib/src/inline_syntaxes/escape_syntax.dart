@@ -15,7 +15,7 @@ import 'inline_syntax.dart';
 // See https://spec.commonmark.org/0.30/#backslash-escapes.
 class EscapeSyntax extends InlineSyntax {
   EscapeSyntax()
-      : super('\\\\([$asciiPunctuationEscaped])', startCharacter: $backslash);
+    : super('\\\\([$asciiPunctuationEscaped])', startCharacter: $backslash);
 
   @override
   bool onMatch(InlineParser parser, Match match) {

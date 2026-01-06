@@ -1,0 +1,93 @@
+  # Start comment
+? string
+     # why not here too!
+: hello world
+# top-level comment
+   # comment again
+? block-strings     # annoying comment (maybe)
+: - folded:
+    - clip: >
+        first line
+
+        skipped line
+
+
+# This is a comment
+  # this too!
+       # And this one
+    - strip: >+  # We can have comments here
+        first line
+
+        skipped line
+
+
+    - keep:  >-
+        first line
+
+        skipped line
+       # comment why not!
+             # and again
+  - literal:
+    - clip: |
+        first line
+
+        skipped line
+
+
+    - strip: |+
+        first line
+
+        skipped line
+
+
+    - keep:  |-
+        first line
+
+        skipped line
+
+
+? key
+: value # Note: this works
+          # This too ?
+? map
+: k1: 1
+  k2: 2
+  k3: 3
+? list
+: - 1
+  - 2
+  - 3
+? inlineMap
+: {k1: 1, k2: 2, k3: 3}
+? inlineList
+: [1, 2, 3]
+? complex-object
+:   foo: 42
+    bar:
+     - 'test test'
+     - |
+         hello world
+     - "test string"
+     - {
+    a: 1,
+    b:
+   'hello world'
+  }
+? json-with-comments
+: {
+  "key": "value",
+  'string with newline': 'hello
+  world'
+  , 32      : 42
+,   list :
+[ # We can make multi-line strings inline!
+  'foo
+
+
+bar' # comment before comma
+,  -32.4
+   # Comment again.
+, # Comment on the comma!
+# trailing comma, why not
+]
+}

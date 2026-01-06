@@ -1,3 +1,10 @@
+## 0.5.0
+
+- Unawaited asynchronous exceptions in tests marked with `@FailingTest()` are
+  now handled correctly and will allow the test to pass.
+- Tests marked with `@FailingTest()` but passing no longer run until the
+  timeout.
+
 ## 0.4.0
 
 - Add support for one-time set up and teardown in test classes via static

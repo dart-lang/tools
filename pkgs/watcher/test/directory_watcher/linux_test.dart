@@ -6,10 +6,11 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:watcher/src/directory_watcher/linux.dart';
+import 'package:watcher/src/directory_watcher/linux/linux_directory_watcher.dart';
 import 'package:watcher/watcher.dart';
 
 import '../utils.dart';
+import 'end_to_end_tests.dart';
 import 'file_tests.dart';
 import 'link_tests.dart';
 
@@ -18,6 +19,7 @@ void main() {
 
   fileTests(isNative: true);
   linkTests(isNative: true);
+  endToEndTests();
 
   test('DirectoryWatcher creates a LinuxDirectoryWatcher on Linux', () {
     expect(DirectoryWatcher('.'), const TypeMatcher<LinuxDirectoryWatcher>());

@@ -108,12 +108,98 @@ final class Event {
   ///
   /// [workingDuration] - json encoded percentile values indicating how long
   ///     the analysis status was "working".
+  /// [withFineDependencies] - whether the fine-grained feature is enabled.
+  ///
+  /// Then there are three groups of measurements:
+  /// * file modifications
+  /// * workspace shape
+  /// * background analysis
+  ///
+  /// The file modifications group includes:
+  /// [changedFileEventCount] - the number of file change events received.
+  /// [removedFileEventCount] - the number of file removal events received.
+  /// [changedFileUniqueCount] - the number of unique files that were changed.
+  /// [removedFileUniqueCount] - the number of unique files that were removed.
+  ///
+  /// The workspace shape group includes:
+  /// * [immediateFileCountPercentiles] - json encoded percentile values for the
+  ///  number of files in the immediate workspace.
+  /// * [immediateFileLineCountPercentiles] - json encoded percentile values for
+  ///   the number of lines in the immediate workspace files.
+  /// * [transitiveFileCountPercentiles] - json encoded percentile values for
+  ///   the number of files in the transitive workspace.
+  /// * [transitiveFileLineCountPercentiles] - json encoded percentile values
+  ///   for the number of lines in the transitive workspace files.
+  ///
+  /// This allows us to understand how big is the workspace, and how it changed
+  /// over the reported period.
+  ///
+  /// The background analysis group includes:
+  /// * [produceErrorsPotentialFileCount] - the total number of files for which
+  ///   the reported diagnostics could potentially change.
+  /// * [produceErrorsPotentialFileLineCount] - the total number of lines in
+  ///   files for which the reported diagnostics could potentially change.
+  /// * [produceErrorsActualFileCount] - the total number of files that actually
+  ///   were analyzed during background analysis.
+  /// * [produceErrorsActualFileLineCount] - the total number of lines in files
+  ///   that actually were analyzed during background analysis.
+  /// * [produceErrorsDurationMs] - the total duration in milliseconds for
+  ///   producing diagnostics.
+  /// * [produceErrorsElementsDurationMs] - the total duration in milliseconds
+  ///   for preparing elements before analysis.
+  /// * [libraryDiagnosticsBundleFailures] - the counts of requirement failures
+  ///   for library diagnostics bundles. The key is the `kindId` of the
+  ///   `RequirementFailure`.
+  ///
+  /// This allows us to understand how many files were scheduled for analysis,
+  /// and how many of these files are served from the cache, because we
+  /// determined that the change that caused them to be scheduled for analysis
+  /// actually does not affect resolution and the set of diagnostics, e.g.
+  /// because the change was in a method body, or to an API that does not
+  /// affect this specific file (if fine-grained dependencies enabled).
   Event.analysisStatistics({
     required String workingDuration,
+    required bool withFineDependencies,
+    required int changedFileEventCount,
+    required int removedFileEventCount,
+    required int changedFileUniqueCount,
+    required int removedFileUniqueCount,
+    required String immediateFileCountPercentiles,
+    required String immediateFileLineCountPercentiles,
+    required String transitiveFileCountPercentiles,
+    required String transitiveFileLineCountPercentiles,
+    required int produceErrorsPotentialFileCount,
+    required int produceErrorsPotentialFileLineCount,
+    required int produceErrorsActualFileCount,
+    required int produceErrorsActualFileLineCount,
+    required int produceErrorsDurationMs,
+    required int produceErrorsElementsDurationMs,
+    required String libraryDiagnosticsBundleFailures,
   }) : this._(
           eventName: DashEvent.analysisStatistics,
           eventData: {
             'workingDuration': workingDuration,
+            'withFineDependencies': withFineDependencies,
+            'changedFileUniqueCount': changedFileUniqueCount,
+            'removedFileUniqueCount': removedFileUniqueCount,
+            'changedFileEventCount': changedFileEventCount,
+            'removedFileEventCount': removedFileEventCount,
+            'immediateFileCountPercentiles': immediateFileCountPercentiles,
+            'immediateFileLineCountPercentiles':
+                immediateFileLineCountPercentiles,
+            'transitiveFileCountPercentiles': transitiveFileCountPercentiles,
+            'transitiveFileLineCountPercentiles':
+                transitiveFileLineCountPercentiles,
+            'produceErrorsPotentialFileCount': produceErrorsPotentialFileCount,
+            'produceErrorsPotentialFileLineCount':
+                produceErrorsPotentialFileLineCount,
+            'produceErrorsActualFileCount': produceErrorsActualFileCount,
+            'produceErrorsActualFileLineCount':
+                produceErrorsActualFileLineCount,
+            'produceErrorsDurationMs': produceErrorsDurationMs,
+            'produceErrorsElementsDurationMs': produceErrorsElementsDurationMs,
+            'libraryDiagnosticsBundleFailures':
+                libraryDiagnosticsBundleFailures,
           },
         );
 
@@ -350,17 +436,14 @@ final class Event {
   /// [libraryCycleLineCounts] - json encoded percentile values indicating the
   ///     number of lines of code in all of the files in a single library cycle.
   ///
-  /// [contextsFromBothFiles] - the number of contexts that were created because
-  ///     of both a package config and an analysis options file.
+  /// [contextWorkspaceType] - json encoded list with the total number of
+  ///     workspaces of each type for all of the contexts:
+  ///     - index 0: Blaze, GN or other workspace count
+  ///     - index 1: Package workspace count
+  ///     - index 2: Pub workspace count
   ///
-  /// [contextsFromOptionsFiles] - the number of contexts that were created
-  ///     because of an analysis options file.
-  ///
-  /// [contextsFromPackagesFiles] - the number of contexts that were created
-  ///     because of a package config file.
-  ///
-  /// [contextsWithoutFiles] - the number of contexts that were created because
-  ///     of the lack of either a package config or an analysis options file.
+  /// [numberOfPackagesInWorkspace] - json encoded percentile values for the
+  ///     number of packages in the Pub workspaces.
   Event.contextStructure({
     required int immediateFileCount,
     required int immediateFileLineCount,
@@ -371,10 +454,8 @@ final class Event {
     required int transitiveFileUniqueLineCount,
     String libraryCycleLibraryCounts = '',
     String libraryCycleLineCounts = '',
-    int contextsFromBothFiles = 0,
-    int contextsFromOptionsFiles = 0,
-    int contextsFromPackagesFiles = 0,
-    int contextsWithoutFiles = 0,
+    String contextWorkspaceType = '',
+    String numberOfPackagesInWorkspace = '',
   }) : this._(
           eventName: DashEvent.contextStructure,
           eventData: {
@@ -387,10 +468,8 @@ final class Event {
             'transitiveFileUniqueLineCount': transitiveFileUniqueLineCount,
             'libraryCycleLibraryCounts': libraryCycleLibraryCounts,
             'libraryCycleLineCounts': libraryCycleLineCounts,
-            'contextsFromBothFiles': contextsFromBothFiles,
-            'contextsFromOptionsFiles': contextsFromOptionsFiles,
-            'contextsFromPackagesFiles': contextsFromPackagesFiles,
-            'contextsWithoutFiles': contextsWithoutFiles,
+            'contextWorkspaceType': contextWorkspaceType,
+            'numberOfPackagesInWorkspace': numberOfPackagesInWorkspace,
           },
         );
 
@@ -594,6 +673,29 @@ final class Event {
           },
         );
 
+  /// Provides information about the results of a wasm dry run including public
+  /// package names and versions.
+  ///
+  /// [result] - dry run result summary
+  ///
+  /// [exitCode] - the exit code of the dry run.
+  ///
+  /// [findingsInfo] - findings for the dry run, keyed by finding index.
+  ///   The value is a comma-separated string containing flags and package
+  ///   information in `name:version` format, e.g., `'-ph,pkg1:1.2.3'`.
+  Event.flutterWasmDryRunPackage({
+    required String result,
+    required int exitCode,
+    required Map<String, String> findingsInfo,
+  }) : this._(
+          eventName: DashEvent.flutterWasmDryRunPackage,
+          eventData: {
+            'result': result,
+            'exitCode': exitCode,
+            ...findingsInfo,
+          },
+        );
+
   /// Provides information about the plugins injected into an iOS or macOS
   /// project.
   ///
@@ -764,16 +866,16 @@ final class Event {
           },
         );
 
-  /// Event that is emitted periodically to report the performance of plugins
-  /// when handling requests.
+  /// Event that is emitted periodically to report the performance of analyzer
+  /// plugins when handling requests.
   ///
-  /// [duration] - json encoded percentile values indicating how long it took
+  /// [duration] - JSON-encoded percentile values indicating how long it took
   ///     from the time the request was sent to the plugin until the response
   ///     was processed by the server.
   ///
   /// [method] - the name of the request sent to the plugin.
   ///
-  /// [pluginId] - the id of the plugin whose performance is being reported.
+  /// [pluginId] - the ID of the plugin whose performance is being reported.
   Event.pluginRequest({
     required String duration,
     required String method,
@@ -787,16 +889,45 @@ final class Event {
           },
         );
 
+  /// Event that is emitted periodically to report information about how _new_
+  /// analyzer plugins are used.
+  ///
+  /// - [count] - the number of new plugins that were configured.
+  /// - [lintRuleCounts] - JSON-encoded percentile values indicating the number
+  ///   of enabled lint rules for each plugin.
+  /// - [warningRuleCounts] - JSON-encoded percentile values indicating the
+  ///   number of enabled warning rules for each plugin.
+  /// - [fixCounts] - JSON-encoded percentile values indicating the number of
+  ///   fixes provided by each plugin.
+  /// - [assistCounts] - JSON-encoded percentile values indicating the number of
+  ///   assists provided by each plugin.
+  Event.plugins({
+    required int count,
+    required String lintRuleCounts,
+    required String warningRuleCounts,
+    required String fixCounts,
+    required String assistCounts,
+  }) : this._(
+          eventName: DashEvent.plugins,
+          eventData: {
+            'count': count,
+            'lintRuleCounts': lintRuleCounts,
+            'warningRuleCounts': warningRuleCounts,
+            'fixCounts': fixCounts,
+            'assistCounts': assistCounts,
+          },
+        );
+
   /// Event that is emitted periodically to report the frequency with which a
-  /// given plugin has been used.
+  /// given _legacy_ analyzer plugin has been used.
   ///
   /// [count] - the number of times plugins usage was changed, which will always
   ///     be at least one.
   ///
-  /// [enabled] - json encoded percentile values indicating the number of
-  ///     contexts for which the plugin was enabled.
+  /// [enabled] - JSON-encoded percentile values indicating the number of
+  ///     analysis contexts for which the plugin was enabled.
   ///
-  /// [pluginId] - the id of the plugin associated with the data.
+  /// [pluginId] - the ID of the plugin associated with the data.
   Event.pluginUse({
     required int count,
     required String enabled,

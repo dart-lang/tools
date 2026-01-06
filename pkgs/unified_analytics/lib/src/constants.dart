@@ -87,7 +87,7 @@ const int kMaxLogFileSize = 25 * (1 << 20);
 const String kLogFileName = 'dart-flutter-telemetry.log';
 
 /// The current version of the package, should be in line with pubspec version.
-const String kPackageVersion = '8.0.6';
+const String kPackageVersion = '8.0.12';
 
 /// The minimum length for a session.
 const int kSessionDurationMinutes = 30;

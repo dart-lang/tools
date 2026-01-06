@@ -15,11 +15,11 @@ const _emojisJsonRawUrl =
 const _emojisFilePath = 'lib/src/legacy_emojis.dart';
 
 Future<void> main() async {
-  final json =
-      (await downloadJson(_emojisJsonRawUrl) as Map<String, dynamic>).map(
-    (String alias, dynamic info) =>
-        MapEntry(alias, info as Map<String, dynamic>),
-  );
+  final json = (await downloadJson(_emojisJsonRawUrl) as Map<String, dynamic>)
+      .map(
+        (String alias, dynamic info) =>
+            MapEntry(alias, info as Map<String, dynamic>),
+      );
   final emojisContent = StringBuffer('''
 // GENERATED FILE. DO NOT EDIT.
 //

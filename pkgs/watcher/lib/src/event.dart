@@ -23,17 +23,27 @@ extension type Event._(FileSystemEvent _event) {
   /// Returns `null` if [event] should be ignored on this platform.
   static Event? checkAndConvert(FileSystemEvent event) {
     var result = Event._(event);
-    if (Platform.isMacOS) {
-      if (result.type.isNeverReceivedOnMacOS) {
-        assert(false);
-        return null;
-      }
-    } else if (Platform.isWindows) {
-      if (result.type.isIgnoredOnWindows) {
-        return null;
-      }
+    if (result.type.isIgnored) return null;
+    if (Platform.isMacOS && result.type.isNeverReceivedOnMacOS) {
+      assert(false);
+      return null;
     }
     return result;
+  }
+
+  /// Returns an iterable containing this event, split to a "create" and a
+  /// "delete" event if it's a move event.
+  Iterable<Event> splitIfMove() sync* {
+    if (type != EventType.moveFile && type != EventType.moveDirectory) {
+      yield this;
+      return;
+    }
+    final destination = this.destination;
+    yield Event._(FileSystemDeleteEvent(path, type == EventType.moveDirectory));
+    if (destination != null) {
+      yield Event._(
+          FileSystemCreateEvent(destination, type == EventType.moveDirectory));
+    }
   }
 
   /// A create event for a file at [path].
@@ -107,16 +117,19 @@ enum EventType {
 
   bool get isNeverReceivedOnMacOS {
     // See https://github.com/dart-lang/sdk/issues/14806.
-    if (this == moveFile || this == moveDirectory) {
-      return true;
-    }
-    if (this == modifyDirectory) return true;
-    return false;
+    return this == moveFile || this == moveDirectory;
   }
 
-  bool get isIgnoredOnWindows {
-    // Ignore [modifyDirectory] because it's always accompanied by either
-    // [createDirectory] or [deleteDirectory].
+  bool get isIgnored {
+    // On Windows, `modifyDirectory` is always accompanied by either
+    // `createDirectory` or `deleteDirectory`, so it's not needed.
+    //
+    // On Linux, `modifyDirectory` means the directory attributes such as
+    // permissions changed, so it's not a useful event.
+    //
+    // `modifyDirectory` on Mac also relates to directory attributes but is
+    // harder to repro, using `unzip` works. It's not a useful event. See
+    // https://github.com/dart-lang/tools/issues/2283.
     return this == modifyDirectory;
   }
 }

@@ -19,8 +19,10 @@ class PerfBenchmarkBase extends BenchmarkBase {
   late final Process perfProcess;
   late final List<String> perfProcessArgs;
 
-  PerfBenchmarkBase(super.name,
-      {ScoreEmitterV2 super.emitter = const PrintEmitterV2()});
+  PerfBenchmarkBase(
+    super.name, {
+    ScoreEmitterV2 super.emitter = const PrintEmitterV2(),
+  });
 
   ScoreEmitterV2 get _emitterV2 => emitter as ScoreEmitterV2;
 
@@ -30,8 +32,12 @@ class PerfBenchmarkBase extends BenchmarkBase {
     for (final path in [perfControlFifo, perfControlAck]) {
       final fifoResult = await Process.run('mkfifo', [path]);
       if (fifoResult.exitCode != 0) {
-        throw ProcessException('mkfifo', [path],
-            'Cannot create fifo: ${fifoResult.stderr}', fifoResult.exitCode);
+        throw ProcessException(
+          'mkfifo',
+          [path],
+          'Cannot create fifo: ${fifoResult.stderr}',
+          fifoResult.exitCode,
+        );
       }
     }
   }
@@ -70,27 +76,33 @@ class PerfBenchmarkBase extends BenchmarkBase {
     // Exit code from perf is -SIGINT when terminated with SIGINT.
     if (exitCode != 0 && exitCode != -ProcessSignal.sigint.signalNumber) {
       throw ProcessException(
-          'perf', perfProcessArgs, lines.join('\n'), exitCode);
+        'perf',
+        perfProcessArgs,
+        lines.join('\n'),
+        exitCode,
+      );
     }
 
-    const metrics = {
-      'cycles': 'CpuCycles',
-      'page-faults': 'MajorPageFaults',
-    };
+    const metrics = {'cycles': 'CpuCycles', 'page-faults': 'MajorPageFaults'};
     for (final line in lines) {
-      if (line.split('\t')
-          case [
-            String counter,
-            _,
-            String event && ('cycles' || 'page-faults'),
-            ...
-          ]) {
-        _emitterV2.emit(name, double.parse(counter) / totalIterations,
-            metric: metrics[event]!);
+      if (line.split('\t') case [
+        String counter,
+        _,
+        String event && ('cycles' || 'page-faults'),
+        ...,
+      ]) {
+        _emitterV2.emit(
+          name,
+          double.parse(counter) / totalIterations,
+          metric: metrics[event]!,
+        );
       }
     }
-    _emitterV2.emit('$name.totalIterations', totalIterations.toDouble(),
-        metric: 'Count');
+    _emitterV2.emit(
+      '$name.totalIterations',
+      totalIterations.toDouble(),
+      metric: 'Count',
+    );
   }
 
   /// Measures the score for the benchmark and returns it.

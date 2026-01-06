@@ -1,3 +1,7 @@
+## 2.0.5
+
+* Make underlying HTTP client non-nullable to inherit its close behavior.
+
 ## 2.0.4
 
 * Updated README with example for Flutter Web.

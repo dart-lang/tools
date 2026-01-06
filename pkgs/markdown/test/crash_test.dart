@@ -79,76 +79,86 @@ void main() async {
       var count = 0;
       final pool = Pool(50);
       final packageVersions = <PackageVersion>[];
-      await Future.wait(packages.map((package) async {
-        await pool.withResource(() async {
-          final response = await getJson(
-            'https://pub.dev/api/packages/$package',
-          );
-          final entry = response?['latest'] as Map?;
-          if (entry != null) {
-            packageVersions.add(PackageVersion(
-              package: package,
-              version: entry['version'] as String,
-              archiveUrl: entry['archive_url'] as String,
-            ));
-          }
-          count++;
-          status(
-            () => 'Listed versions for $count / ${packages.length} packages',
-          );
-        });
-      }));
+      await Future.wait(
+        packages.map((package) async {
+          await pool.withResource(() async {
+            final response = await getJson(
+              'https://pub.dev/api/packages/$package',
+            );
+            final entry = response?['latest'] as Map?;
+            if (entry != null) {
+              packageVersions.add(
+                PackageVersion(
+                  package: package,
+                  version: entry['version'] as String,
+                  archiveUrl: entry['archive_url'] as String,
+                ),
+              );
+            }
+            count++;
+            status(
+              () => 'Listed versions for $count / ${packages.length} packages',
+            );
+          });
+        }),
+      );
 
       print('## Found ${packageVersions.length} package versions to scan');
 
       count = 0;
       final errors = <String>[];
       var skipped = 0;
-      await Future.wait(packageVersions.map((pv) async {
-        await pool.withResource(() async {
-          final archiveUrl = Uri.tryParse(pv.archiveUrl);
-          if (archiveUrl == null) {
-            skipped++;
-            return;
-          }
-          late List<int> archive;
-          try {
-            archive = await c.readBytes(archiveUrl);
-          } on http.ClientException {
-            skipped++;
-            return;
-          } on IOException {
-            skipped++;
-            return;
-          }
+      await Future.wait(
+        packageVersions.map((pv) async {
+          await pool.withResource(() async {
+            final archiveUrl = Uri.tryParse(pv.archiveUrl);
+            if (archiveUrl == null) {
+              skipped++;
+              return;
+            }
+            late List<int> archive;
+            try {
+              archive = await c.readBytes(archiveUrl);
+            } on http.ClientException {
+              skipped++;
+              return;
+            } on IOException {
+              skipped++;
+              return;
+            }
 
-          final result = await _findMarkdownIssues(
-            pv.package,
-            pv.version,
-            archive,
+            final result = await _findMarkdownIssues(
+              pv.package,
+              pv.version,
+              archive,
+            );
+
+            // If tar decoding fails.
+            if (result == null) {
+              skipped++;
+              return;
+            }
+
+            errors.addAll(result);
+            result.forEach(print);
+          });
+          count++;
+          status(
+            () =>
+                'Scanned $count / ${packageVersions.length} (skipped $skipped),'
+                ' found ${errors.length} issues',
           );
-
-          // If tar decoding fails.
-          if (result == null) {
-            skipped++;
-            return;
-          }
-
-          errors.addAll(result);
-          result.forEach(print);
-        });
-        count++;
-        status(() =>
-            'Scanned $count / ${packageVersions.length} (skipped $skipped),'
-            ' found ${errors.length} issues');
-      }));
+        }),
+      );
 
       await pool.close();
       c.close();
 
       print('## Finished scanning');
-      print('Scanned ${packageVersions.length} package versions in '
-          '${DateTime.now().difference(started)}');
+      print(
+        'Scanned ${packageVersions.length} package versions in '
+        '${DateTime.now().difference(started)}',
+      );
 
       if (errors.isNotEmpty) {
         print('Found issues:');
@@ -201,18 +211,17 @@ Future<List<String>?> _findMarkdownIssues(
           }
           final start = DateTime.now();
           try {
-            markdownToHtml(
-              contents,
-              extensionSet: ExtensionSet.gitHubWeb,
-            );
+            markdownToHtml(contents, extensionSet: ExtensionSet.gitHubWeb);
           } catch (err, st) {
             issues.add(
-                'package:$package-$version/${entry.name}, throws: $err\n$st');
+              'package:$package-$version/${entry.name}, throws: $err\n$st',
+            );
           }
           final time = DateTime.now().difference(start);
           if (time.inSeconds > 30) {
             issues.add(
-                'package:$package-$version/${entry.name} took $time to process');
+              'package:$package-$version/${entry.name} took $time to process',
+            );
           }
         }
       });
@@ -220,7 +229,10 @@ Future<List<String>?> _findMarkdownIssues(
     } on FormatException {
       return null;
     }
-  }).timeout(const Duration(minutes: 2), onTimeout: () {
-    return ['package:$package-$version failed to be processed in 2 minutes'];
-  });
+  }).timeout(
+    const Duration(minutes: 2),
+    onTimeout: () {
+      return ['package:$package-$version failed to be processed in 2 minutes'];
+    },
+  );
 }

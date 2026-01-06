@@ -14,22 +14,21 @@ import 'package:test/test.dart';
 
 void main() {
   test('readme', () async {
-    final output =
-        await Process.run(Platform.executable, ['bin/bench.dart', '--help']);
+    final output = await Process.run(Platform.executable, [
+      'bin/bench.dart',
+      '--help',
+    ]);
 
     expect(output.exitCode, 0);
     // Sadly, the help output likes to include trailing spaces that don't
     // copy paste nicely or consistently into the README.
-    final trimmed = LineSplitter.split(output.stdout as String)
-        .map((e) => e.trimRight())
-        .join('\n');
+    final trimmed = LineSplitter.split(
+      output.stdout as String,
+    ).map((e) => e.trimRight()).join('\n');
 
     final readmeFile = File('README.md').readAsStringSync();
 
-    expect(
-      readmeFile,
-      contains(trimmed),
-    );
+    expect(readmeFile, contains(trimmed));
   });
 
   group('invoke the command', () {
@@ -50,9 +49,12 @@ void main() {
 
     group('BenchOptions.fromArgs', () {
       test('options parsing', () async {
-        final options = BenchOptions.fromArgs(
-          ['--flavor', 'aot,jit', '--target', testFilePath],
-        );
+        final options = BenchOptions.fromArgs([
+          '--flavor',
+          'aot,jit',
+          '--target',
+          testFilePath,
+        ]);
 
         await expectLater(
           () => compileAndRun(options),
@@ -70,9 +72,7 @@ void main() {
 
       test('rest args not supported', () async {
         expect(
-          () => BenchOptions.fromArgs(
-            ['--flavor', 'aot,jit', testFilePath],
-          ),
+          () => BenchOptions.fromArgs(['--flavor', 'aot,jit', testFilePath]),
           throwsFormatException,
         );
       });
@@ -82,17 +82,16 @@ void main() {
       test('$bench', () async {
         await expectLater(
           () => compileAndRun(
-              BenchOptions(flavor: {bench}, target: testFilePath)),
+            BenchOptions(flavor: {bench}, target: testFilePath),
+          ),
           prints(
-            stringContainsInOrder(
-              [
-                if (bench != RuntimeFlavor.jit) ...[
-                  '${bench.name.toUpperCase()} - COMPILE',
-                  testFilePath,
-                ],
-                '${bench.name.toUpperCase()} - RUN'
+            stringContainsInOrder([
+              if (bench != RuntimeFlavor.jit) ...[
+                '${bench.name.toUpperCase()} - COMPILE',
+                testFilePath,
               ],
-            ),
+              '${bench.name.toUpperCase()} - RUN',
+            ]),
           ),
         );
       }, skip: _skipWasm(bench));
