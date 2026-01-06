@@ -1,4 +1,4 @@
-## 1.2.1
+## 1.2.1-wip
 
 - Bug fix: versions before 1.2.0 would allow and ignore a trailing path
   separator passed to `DirectoryWatcher` or `FileWatcher` constructors, restore

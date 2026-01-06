@@ -120,12 +120,12 @@ void _fileTests({required bool isNative}) {
     await expectAddEvent('a.txt');
   });
 
-  test('normalizes adjacent separators and ..', () async {
+  test('normalizes many adjacent separators and ..', () async {
     createDir('a');
     final separator = Platform.pathSeparator;
     await startWatcher(
         exactPath:
-            '${d.sandbox}${separator}a$separator${separator}b$separator..');
+            '${d.sandbox}${separator * 5}a${separator * 4}b${separator * 3}..');
 
     writeFile('a/a.txt');
     await expectAddEvent('a/a.txt');
