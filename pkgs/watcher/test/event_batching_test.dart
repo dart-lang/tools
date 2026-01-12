@@ -25,8 +25,8 @@ void main() {
         var expectationsRan = false;
         fakeAsync((async) {
           final controller = StreamController<FileSystemEvent>();
-          final stream =
-              controller.stream.batchNearbyMicrotasksAndConvertEvents();
+          final stream = controller.stream
+              .batchNearbyMicrotasksAndConvertEvents();
           final batchesFuture = stream.toList();
 
           // Send events in ten batches of size 1, 2, 3, ..., 10.
@@ -65,7 +65,8 @@ void main() {
         fakeAsync((async) {
           final controller = StreamController<FileSystemEvent>();
           final stream = controller.stream.batchBufferedByPathAndConvertEvents(
-              duration: const Duration(milliseconds: 10));
+            duration: const Duration(milliseconds: 10),
+          );
           final batchesFuture = stream.toList();
 
           controller.add(FileSystemCreateEvent('1', true));
@@ -122,7 +123,8 @@ void main() {
         fakeAsync((async) {
           final controller = StreamController<FileSystemEvent>();
           final stream = controller.stream.batchBufferedByPathAndConvertEvents(
-              duration: const Duration(milliseconds: 5));
+            duration: const Duration(milliseconds: 5),
+          );
           final batchesFuture = stream.toList();
 
           controller.add(FileSystemCreateEvent('1', true));
@@ -152,34 +154,40 @@ void main() {
         expect(expectationsRan, true);
       });
 
-      test('converts moves into separate create and delete',
-          // Move events aren't used on MacOS, so the `Event` conversion rejects
-          // them.
-          skip: Platform.isMacOS, () {
-        var expectationsRan = false;
+      test(
+        'converts moves into separate create and delete',
+        // Move events aren't used on MacOS, so the `Event` conversion rejects
+        // them.
+        skip: Platform.isMacOS,
+        () {
+          var expectationsRan = false;
 
-        fakeAsync((async) {
-          final controller = StreamController<FileSystemEvent>();
-          final stream = controller.stream.batchBufferedByPathAndConvertEvents(
-              duration: const Duration(milliseconds: 50));
-          final batchesFuture = stream.toList();
+          fakeAsync((async) {
+            final controller = StreamController<FileSystemEvent>();
+            final stream = controller.stream
+                .batchBufferedByPathAndConvertEvents(
+                  duration: const Duration(milliseconds: 50),
+                );
+            final batchesFuture = stream.toList();
 
-          // Delete of a, delete of b, create of b, create of c should end up in
-          // one batch.
-          controller.add(FileSystemMoveEvent('a', false, 'b'));
-          async.elapse(const Duration(milliseconds: 1));
-          controller.add(FileSystemMoveEvent('b', false, 'c'));
+            // Delete of a, delete of b, create of b, create of c should end up
+            // in one batch.
+            controller.add(FileSystemMoveEvent('a', false, 'b'));
+            async.elapse(const Duration(milliseconds: 1));
+            controller.add(FileSystemMoveEvent('b', false, 'c'));
 
-          // Then a second batch with delete of c, create of d.
-          async.elapse(const Duration(milliseconds: 100));
-          controller.add(FileSystemMoveEvent('c', false, 'd'));
+            // Then a second batch with delete of c, create of d.
+            async.elapse(const Duration(milliseconds: 100));
+            controller.add(FileSystemMoveEvent('c', false, 'd'));
 
-          controller.close();
-          batchesFuture.then((batches) {
-            expect(
+            controller.close();
+            batchesFuture.then((batches) {
+              expect(
                 batches
-                    .map((b) =>
-                        b.map((e) => '${e.runtimeType} ${e.path}').toList())
+                    .map(
+                      (b) =>
+                          b.map((e) => '${e.runtimeType} ${e.path}').toList(),
+                    )
                     .toList(),
                 [
                   {
@@ -188,22 +196,21 @@ void main() {
                     'FileSystemDeleteEvent a',
                     'FileSystemDeleteEvent b',
                   },
-                  {
-                    'FileSystemCreateEvent d',
-                    'FileSystemDeleteEvent c',
-                  },
-                ]);
-            expectationsRan = true;
+                  {'FileSystemCreateEvent d', 'FileSystemDeleteEvent c'},
+                ],
+              );
+              expectationsRan = true;
+            });
+
+            // Cause `batchesFuture` to complete.
+            async.flushMicrotasks();
           });
 
-          // Cause `batchesFuture` to complete.
-          async.flushMicrotasks();
-        });
-
-        // Expectations are at the end of a fake async future, check it actually
-        // completed.
-        expect(expectationsRan, true);
-      });
+          // Expectations are at the end of a fake async future, check it
+          // actually completed.
+          expect(expectationsRan, true);
+        },
+      );
     });
   });
 }

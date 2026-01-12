@@ -50,15 +50,18 @@ Future<void> runTest({
     log.add(LogEntry('W $message'));
   };
   logSeparateIsolateForTesting = (entry) {
-    final message =
-        entry.message.replaceAll('${temp.path}/', '').replaceAll(temp.path, '');
+    final message = entry.message
+        .replaceAll('${temp.path}/', '')
+        .replaceAll(temp.path, '');
     log.add(entry.withMessage('W $message'));
   };
 
   // Create the watcher and [ClientSimulator].
   final watcher = createWatcher(path: temp.path);
   final client = await ClientSimulator.watch(
-      watcher: watcher, log: (message) => log.add(LogEntry('C $message')));
+    watcher: watcher,
+    log: (message) => log.add(LogEntry('C $message')),
+  );
   addTearDown(client.close);
 
   // Making changes, waiting for events to settle, check for consistency.
@@ -150,8 +153,9 @@ Future<void> main(List<String> arguments) async {
     if (replay) {
       final filteredTestCases = testCases;
       if (specifiedName != null) {
-        filteredTestCases
-            .retainWhere((testCase) => testCase.name == specifiedName);
+        filteredTestCases.retainWhere(
+          (testCase) => testCase.name == specifiedName,
+        );
       }
       if (filteredTestCases.isEmpty) {
         throw ArgumentError('No test case matching `$specifiedName`.');

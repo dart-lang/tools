@@ -42,7 +42,8 @@ extension type Event._(FileSystemEvent _event) {
     yield Event._(FileSystemDeleteEvent(path, type == EventType.moveDirectory));
     if (destination != null) {
       yield Event._(
-          FileSystemCreateEvent(destination, type == EventType.moveDirectory));
+        FileSystemCreateEvent(destination, type == EventType.moveDirectory),
+      );
     }
   }
 
@@ -57,18 +58,24 @@ extension type Event._(FileSystemEvent _event) {
   /// A delete event for [path].
   ///
   /// Delete events do not specify whether they are for files or directories.
-  static Event delete(String path) => Event._(FileSystemDeleteEvent(
+  static Event delete(String path) => Event._(
+    FileSystemDeleteEvent(
       path,
       // `FileSystemDeleteEvent` just discards `isDirectory`.
-      false /* isDirectory */));
+      false /* isDirectory */,
+    ),
+  );
 
   /// A modify event for the file at [path].
-  static Event modifyFile(String path) => Event._(FileSystemModifyEvent(
+  static Event modifyFile(String path) => Event._(
+    FileSystemModifyEvent(
       path,
       false /* isDirectory */,
       // Don't set `contentChanged`, even pass through from the OS, as
       // `package:watcher` never reads it.
-      false /* contentChanged */));
+      false /* contentChanged */,
+    ),
+  );
 
   /// See [FileSystemEvent.path].
   String get path => _event.path;
