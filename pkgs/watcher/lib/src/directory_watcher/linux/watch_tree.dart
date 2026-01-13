@@ -47,9 +47,9 @@ class WatchTree {
     required void Function(WatchEvent) emitEvent,
     required void Function(Object, StackTrace) onError,
     required void Function() watchedDirectoryWasDeleted,
-  })  : _emitEvent = emitEvent,
-        _onError = onError,
-        _watchedDirectoryWasDeleted = watchedDirectoryWasDeleted {
+  }) : _emitEvent = emitEvent,
+       _onError = onError,
+       _watchedDirectoryWasDeleted = watchedDirectoryWasDeleted {
     logForTesting?.call('WatchTree(),$watchedDirectory');
     _watch(starting: starting, recovering: false);
   }
@@ -74,20 +74,22 @@ class WatchTree {
   /// for files that have disappeared, and "modify" for files that are still
   /// present.
   void _watch({required bool starting, required bool recovering}) {
-    logForTesting
-        ?.call('WatchTree,$watchedDirectory,_watch,$starting,$recovering');
+    logForTesting?.call(
+      'WatchTree,$watchedDirectory,_watch,$starting,$recovering',
+    );
     _nativeWatch?.close();
     _nativeWatch = NativeWatch(
-        watchedDirectory: watchedDirectory,
-        restartWatching: () {
-          _watch(starting: false, recovering: true);
-        },
-        watchedDirectoryWasDeleted: () {
-          _emitDeleteTree();
-          _watchedDirectoryWasDeleted();
-        },
-        onError: _onError,
-        onEvents: _onEvents);
+      watchedDirectory: watchedDirectory,
+      restartWatching: () {
+        _watch(starting: false, recovering: true);
+      },
+      watchedDirectoryWasDeleted: () {
+        _emitDeleteTree();
+        _watchedDirectoryWasDeleted();
+      },
+      onError: _onError,
+      onEvents: _onEvents,
+    );
 
     final listedFiles = <RelativePath>{};
     final listedDirectories = <RelativePath>{};
@@ -103,8 +105,10 @@ class WatchTree {
       // Nothing found, use empty sets so everything is handled as deleted.
     }
 
-    logForTesting?.call('Watch,$watchedDirectory,list,'
-        'files=$listedFiles,directories=$listedDirectories');
+    logForTesting?.call(
+      'Watch,$watchedDirectory,list,'
+      'files=$listedFiles,directories=$listedDirectories',
+    );
     if (recovering) {
       // Emit deletes for missing files.
       for (final file in _files.toList()) {
@@ -210,12 +214,14 @@ class WatchTree {
       final eventTypesSet = eventTypes.toSet();
 
       // Path needs polling if it had both a delete and a create.
-      final needsPolling = eventTypesSet.contains(EventType.delete) &&
+      final needsPolling =
+          eventTypesSet.contains(EventType.delete) &&
           (eventTypesSet.contains(EventType.createFile) ||
               eventTypesSet.contains(EventType.createDirectory));
       if (needsPolling) {
-        logForTesting
-            ?.call('Watch,$watchedDirectory,onEvents,$eventPath,ambiguous');
+        logForTesting?.call(
+          'Watch,$watchedDirectory,onEvents,$eventPath,ambiguous',
+        );
         pathsToPoll.add(eventPath);
         continue;
       }
@@ -291,21 +297,22 @@ class WatchTree {
     logForTesting?.call('Watch,$watchedDirectory,createDirectory,$directory');
     _directories.remove(directory)?._emitDeleteTree();
     _directories[directory] = WatchTree(
-        emitEvent: _emitEvent,
-        onError: (Object e, StackTrace s) {
-          // Ignore exceptions from subdirectories except "out of watchers"
-          // which is an unrecoverable error.
-          if (e is FileSystemException &&
-              e.message.contains('Failed to watch path') &&
-              e.osError?.errorCode == 28) {
-            _onError(e, s);
-          }
-        },
-        watchedDirectoryWasDeleted: () {
-          _emitDeleteDirectory(directory);
-        },
-        watchedDirectory: watchedDirectory.append(directory),
-        starting: starting);
+      emitEvent: _emitEvent,
+      onError: (Object e, StackTrace s) {
+        // Ignore exceptions from subdirectories except "out of watchers"
+        // which is an unrecoverable error.
+        if (e is FileSystemException &&
+            e.message.contains('Failed to watch path') &&
+            e.osError?.errorCode == 28) {
+          _onError(e, s);
+        }
+      },
+      watchedDirectoryWasDeleted: () {
+        _emitDeleteDirectory(directory);
+      },
+      watchedDirectory: watchedDirectory.append(directory),
+      starting: starting,
+    );
   }
 
   /// Adds [file] to known [_files].

@@ -28,8 +28,10 @@ class ClientSimulator {
   ///
   /// When returned, it has already read the filesystem state and started
   /// tracking file lengths using watcher events.
-  static Future<ClientSimulator> watch(
-      {required Watcher watcher, required void Function(String) log}) async {
+  static Future<ClientSimulator> watch({
+    required Watcher watcher,
+    required void Function(String) log,
+  }) async {
     final result = ClientSimulator._(watcher: watcher, log: log);
     result._initialRead();
     result._subscription = watcher.events.listen(result._handleEvent);
@@ -126,26 +128,30 @@ class ClientSimulator {
 
     var result = true;
 
-    final unexpectedFiles =
-        fileLengths.keys.toSet().difference(_trackedFileLengths.keys.toSet());
+    final unexpectedFiles = fileLengths.keys.toSet().difference(
+      _trackedFileLengths.keys.toSet(),
+    );
     if (unexpectedFiles.isNotEmpty) {
       result = false;
 
       if (printOnFailure != null) {
         printOnFailure('Failed, on disk but not tracked:');
         printOnFailure(
-            unexpectedFiles.map((path) => path.padLeft(4)).join('\n'));
+          unexpectedFiles.map((path) => path.padLeft(4)).join('\n'),
+        );
       }
     }
 
-    final missingExpectedFiles =
-        _trackedFileLengths.keys.toSet().difference(fileLengths.keys.toSet());
+    final missingExpectedFiles = _trackedFileLengths.keys.toSet().difference(
+      fileLengths.keys.toSet(),
+    );
     if (missingExpectedFiles.isNotEmpty) {
       result = false;
       if (printOnFailure != null) {
         printOnFailure('Failed, tracked but not on disk:');
         printOnFailure(
-            missingExpectedFiles.map((path) => path.padLeft(4)).join('\n'));
+          missingExpectedFiles.map((path) => path.padLeft(4)).join('\n'),
+        );
       }
     }
 
@@ -175,8 +181,10 @@ class ClientSimulator {
 
   void _log(String message) {
     // Remove the tmp folder from the message.
-    message =
-        message.replaceAll('${watcher.path}${Platform.pathSeparator}', '');
+    message = message.replaceAll(
+      '${watcher.path}${Platform.pathSeparator}',
+      '',
+    );
     log(message);
   }
 }

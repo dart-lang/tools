@@ -121,7 +121,9 @@ extension type PathSegment._(String _string) implements RelativePath {
     if (segment.isEmpty) throw ArgumentError('Segment cannot be empty.');
     if (segment.contains(Platform.pathSeparator)) {
       throw ArgumentError(
-          'Segment cannot contain `${Platform.pathSeparator}`.', segment);
+        'Segment cannot contain `${Platform.pathSeparator}`.',
+        segment,
+      );
     }
     return PathSegment._(segment);
   }

@@ -99,7 +99,8 @@ class FileChanger {
         _log('move file over file,$existingPath,$existingPath2');
         // Fails sometimes on Windows, so guard+retry.
         retryForPathAccessException(
-            () => File(existingPath).renameSync(existingPath2));
+          () => File(existingPath).renameSync(existingPath2),
+        );
 
       case 6:
         final existingDirectory = _randomExistingDirectoryPath();
@@ -111,7 +112,8 @@ class FileChanger {
         _log('move directory to new,$existingDirectory,$newDirectory');
         // Fails sometimes on Windows, so guard+retry.
         retryForPathAccessException(
-            () => Directory(existingDirectory).renameSync(newDirectory));
+          () => Directory(existingDirectory).renameSync(newDirectory),
+        );
 
       case 7:
         final existingPath = _randomExistingFilePath();
@@ -156,9 +158,8 @@ class FileChanger {
 
   /// Returns the path to an already-created directory, or `null` if none
   /// exists.
-  String? _randomExistingDirectoryPath() => (Directory(
-        path,
-      ).listSync(recursive: true).whereType<Directory>().toList()
+  String? _randomExistingDirectoryPath() =>
+      (Directory(path).listSync(recursive: true).whereType<Directory>().toList()
             ..sort((a, b) => a.path.compareTo(b.path))
             ..shuffle(_random))
           .firstOrNull
@@ -233,14 +234,16 @@ class FileChanger {
         final existingPath2 = p.join(path, parameters[1]);
         _log('move file over file,$existingPath,$existingPath2');
         retryForPathAccessException(
-            () => File(existingPath).renameSync(existingPath2));
+          () => File(existingPath).renameSync(existingPath2),
+        );
 
       case 'move directory to new':
         final existingDirectory = p.join(path, parameters[0]);
         final newDirectory = p.join(path, parameters[1]);
         _log('move directory to new,$existingDirectory,$newDirectory');
         retryForPathAccessException(
-            () => Directory(existingDirectory).renameSync(newDirectory));
+          () => Directory(existingDirectory).renameSync(newDirectory),
+        );
 
       case 'delete':
         final existingPath = p.join(path, parameters[0]);
