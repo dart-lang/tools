@@ -53,13 +53,13 @@ class WatchedDirectoryTree {
   late final RecursiveNativeWatch nativeWatch;
   late final DirectoryTree directoryTree;
 
-  WatchedDirectoryTree(
-      {required String watchedDirectory,
-      required Completer<void> readyCompleter,
-      required StreamController<WatchEvent> eventsController})
-      : _readyCompleter = readyCompleter,
-        _eventsController = eventsController,
-        watchedDirectory = AbsolutePath(watchedDirectory) {
+  WatchedDirectoryTree({
+    required String watchedDirectory,
+    required Completer<void> readyCompleter,
+    required StreamController<WatchEvent> eventsController,
+  }) : _readyCompleter = readyCompleter,
+       _eventsController = eventsController,
+       watchedDirectory = AbsolutePath(watchedDirectory) {
     logForTesting?.call('WatchedDirectoryTree(),$watchedDirectory');
     _watch();
   }
@@ -72,8 +72,10 @@ class WatchedDirectoryTree {
       onEvents: _onEvents,
       onError: _emitError,
     );
-    directoryTree =
-        DirectoryTree(watchedDirectory: watchedDirectory, emitEvent: _emit);
+    directoryTree = DirectoryTree(
+      watchedDirectory: watchedDirectory,
+      emitEvent: _emit,
+    );
 
     // The native watcher can emit events from before the watch started. Add
     // a delay before marking "ready" to allow those events to arrive and be
@@ -97,7 +99,8 @@ class WatchedDirectoryTree {
   /// Handler for when [watchedDirectory] is recreated.
   void _watchedDirectoryWasRecreated() {
     logForTesting?.call(
-        'WatchedDirectoryTree,$watchedDirectory,_watchedDirectoryWasRecreated');
+      'WatchedDirectoryTree,$watchedDirectory,_watchedDirectoryWasRecreated',
+    );
     // Poll the whole directory and emit events.
     directoryTree.poll(EventTree.singleEvent());
   }
@@ -105,7 +108,8 @@ class WatchedDirectoryTree {
   /// Handler for when [watchedDirectory] is deleted.
   void _watchedDirectoryWasDeleted() {
     logForTesting?.call(
-        'WatchedDirectoryTree,$watchedDirectory,_watchedDirectoryWasDeleted');
+      'WatchedDirectoryTree,$watchedDirectory,_watchedDirectoryWasDeleted',
+    );
     _ready();
     nativeWatch.close();
     directoryTree.emitDeleteTree();

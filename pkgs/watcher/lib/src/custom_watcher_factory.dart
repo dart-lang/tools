@@ -8,12 +8,15 @@ import '../watcher.dart';
 class _CustomWatcherFactory {
   final String id;
   final DirectoryWatcher? Function(String path, {Duration? pollingDelay})
-      createDirectoryWatcher;
+  createDirectoryWatcher;
   final FileWatcher? Function(String path, {Duration? pollingDelay})
-      createFileWatcher;
+  createFileWatcher;
 
   _CustomWatcherFactory(
-      this.id, this.createDirectoryWatcher, this.createFileWatcher);
+    this.id,
+    this.createDirectoryWatcher,
+    this.createFileWatcher,
+  );
 }
 
 /// Registers a custom watcher.
@@ -32,35 +35,44 @@ class _CustomWatcherFactory {
 void registerCustomWatcher(
   String id,
   DirectoryWatcher? Function(String path, {Duration? pollingDelay})?
-      createDirectoryWatcher,
+  createDirectoryWatcher,
   FileWatcher? Function(String path, {Duration? pollingDelay})?
-      createFileWatcher,
+  createFileWatcher,
 ) {
   if (_customWatcherFactories.containsKey(id)) {
-    throw ArgumentError('A custom watcher with id `$id` '
-        'has already been registered');
+    throw ArgumentError(
+      'A custom watcher with id `$id` '
+      'has already been registered',
+    );
   }
   _customWatcherFactories[id] = _CustomWatcherFactory(
-      id,
-      createDirectoryWatcher ?? (_, {pollingDelay}) => null,
-      createFileWatcher ?? (_, {pollingDelay}) => null);
+    id,
+    createDirectoryWatcher ?? (_, {pollingDelay}) => null,
+    createFileWatcher ?? (_, {pollingDelay}) => null,
+  );
 }
 
 /// Tries to create a custom [DirectoryWatcher] and returns it.
 ///
 /// Returns `null` if no custom watcher was applicable and throws a [StateError]
 /// if more than one was.
-DirectoryWatcher? createCustomDirectoryWatcher(String path,
-    {Duration? pollingDelay}) {
+DirectoryWatcher? createCustomDirectoryWatcher(
+  String path, {
+  Duration? pollingDelay,
+}) {
   DirectoryWatcher? customWatcher;
   String? customFactoryId;
   for (var watcherFactory in _customWatcherFactories.values) {
     if (customWatcher != null) {
-      throw StateError('Two `CustomWatcherFactory`s applicable: '
-          '`$customFactoryId` and `${watcherFactory.id}` for `$path`');
+      throw StateError(
+        'Two `CustomWatcherFactory`s applicable: '
+        '`$customFactoryId` and `${watcherFactory.id}` for `$path`',
+      );
     }
-    customWatcher =
-        watcherFactory.createDirectoryWatcher(path, pollingDelay: pollingDelay);
+    customWatcher = watcherFactory.createDirectoryWatcher(
+      path,
+      pollingDelay: pollingDelay,
+    );
     customFactoryId = watcherFactory.id;
   }
   return customWatcher;
@@ -75,11 +87,15 @@ FileWatcher? createCustomFileWatcher(String path, {Duration? pollingDelay}) {
   String? customFactoryId;
   for (var watcherFactory in _customWatcherFactories.values) {
     if (customWatcher != null) {
-      throw StateError('Two `CustomWatcherFactory`s applicable: '
-          '`$customFactoryId` and `${watcherFactory.id}` for `$path`');
+      throw StateError(
+        'Two `CustomWatcherFactory`s applicable: '
+        '`$customFactoryId` and `${watcherFactory.id}` for `$path`',
+      );
     }
-    customWatcher =
-        watcherFactory.createFileWatcher(path, pollingDelay: pollingDelay);
+    customWatcher = watcherFactory.createFileWatcher(
+      path,
+      pollingDelay: pollingDelay,
+    );
     customFactoryId = watcherFactory.id;
   }
   return customWatcher;
