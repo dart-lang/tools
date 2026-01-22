@@ -23307,7 +23307,7 @@
       zone.run$1$1(new U.Invoker__handleError_closure0(_this), type$.void);
       t2 = _this._invoker$_controller._liveTest._live_test_controller$_controller;
       if (t2._test.metadata._chainStackTraces === false)
-        C.JSArray_methods.add$1(_this._printsOnFailure, "Consider enabling the flag chain-stack-traces to receive more detailed exceptions.\nFor example, 'pub run test --chain-stack-traces'.");
+        C.JSArray_methods.add$1(_this._printsOnFailure, "Consider enabling the flag chain-stack-traces to receive more detailed exceptions.\nFor example, 'dart run test --chain-stack-traces'.");
       t2 = _this._printsOnFailure;
       if (t2.length !== 0) {
         P.print(C.JSArray_methods.join$1(t2, "\n\n"));

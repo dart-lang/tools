@@ -53,7 +53,7 @@ Testing is done in two strategies: Unit testing (`/test/editor_test.dart`) and
 Golden testing (`/test/golden_test.dart`). More information on Golden testing
 and the input/output format can be found at `/test/testdata/README.md`.
 
-These tests are automatically run with `pub run test`.
+These tests are automatically run with `dart run test`.
 
 ## Limitations
 
