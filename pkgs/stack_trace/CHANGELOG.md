@@ -365,8 +365,3 @@
 * Add a `Chain.foldFrames` method that parallels `Trace.foldFrames`.
 
 * Record anonymous method frames in IE10 as "<fn>".
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

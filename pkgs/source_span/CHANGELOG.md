@@ -238,8 +238,3 @@ API has many differences. Among them:
 * `SourceFileSegment` has been removed. This class wasn't widely used and was
   inconsistent in its choice of which parameters were considered relative and
   which absolute.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

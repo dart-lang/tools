@@ -187,8 +187,3 @@
   - `buffer`: Collects events in a `List` until a `trigger` stream fires.
   - `debounce`, `debounceBuffer`: Collect or drop events which occur closer in
     time than a given duration.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

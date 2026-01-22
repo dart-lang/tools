@@ -194,8 +194,3 @@ Mime types where the default file extension changed:
 ## 0.9.1
 
 * Handle parsing of MIME multipart content with no parts.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

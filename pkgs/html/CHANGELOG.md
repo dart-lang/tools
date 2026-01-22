@@ -161,8 +161,3 @@
   * deprecate Node.$dom_nodeType
   * added querySelector/querySelectorAll, deprecated query/queryAll.
     This matches the current APIs in dart:html.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

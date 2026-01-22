@@ -54,8 +54,3 @@ backwards-compatible with the old version of the `clock` package.
   current time as a `DateTime` instead of its old arguments.
 
 * `Clock.now()` is now a method rather than a getter.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

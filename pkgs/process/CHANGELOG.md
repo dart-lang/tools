@@ -212,8 +212,3 @@ begin otherwise, the file name is ambiguous on Windows.
 ## 1.0.0
 
 * Initial version
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

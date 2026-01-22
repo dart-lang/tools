@@ -135,8 +135,3 @@
 * Support unmapped areas in source maps.
 
 * Increase the readability of location messages.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

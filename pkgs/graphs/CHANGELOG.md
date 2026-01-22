@@ -75,8 +75,3 @@
 
 - Initial release with an implementation of `stronglyConnectedComponents` and
   `crawlAsync`.
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-

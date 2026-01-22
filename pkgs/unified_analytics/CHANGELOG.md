@@ -234,8 +234,3 @@ from the `Event.devtoolsEvent` constructor.
 ## 0.1.0
 
 - Initial version
-
-## 1.0.0-next
-
-- Replaced deprecated `pub run` with `dart run` in documentation.
-
