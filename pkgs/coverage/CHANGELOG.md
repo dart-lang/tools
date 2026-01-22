@@ -545,3 +545,8 @@
   1.9.0, coverage collection is no longer done over the remote debugging port,
   but via the observatory port emitted on stdout. Backward compatibility with
   SDKs back to 1.5.x is provided.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

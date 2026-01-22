@@ -231,3 +231,8 @@
 ## 0.11.0
 
 * Switch from `source_maps`' `Span` class to `source_span`'s `SourceSpan` class.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

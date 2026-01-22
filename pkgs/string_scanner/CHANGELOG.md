@@ -173,3 +173,8 @@ than 1.0.0. For example, `string_scanner: ">=0.1.5 <2.0.0"`.
   [source map][] `Span` objects.
 
 [source_map]: https://pub.dev/packages/source_maps
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

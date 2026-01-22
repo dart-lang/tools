@@ -113,3 +113,8 @@ provides the old methods as extensions, and automatically passes a
 - Fix several analyzer warnings.
 
 - Fix the tests on Windows.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

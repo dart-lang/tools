@@ -140,3 +140,8 @@
 * Expand the dependency on the HTTP package to include 0.10.x.
 
 * Add a README file.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

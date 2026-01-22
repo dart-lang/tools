@@ -121,3 +121,8 @@ main() {
    - `ProcessManager` and `Spawn`
    - `sharedStdIn` and `SharedStdIn`
    - `ansi.dart` library with support for formatting terminal output
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

@@ -197,3 +197,8 @@
 * The `YamlMap` class is deprecated. In a future version, maps returned by
   `loadYaml` and `loadYamlStream` will be Dart `HashMap`s with a custom equality
   operation.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

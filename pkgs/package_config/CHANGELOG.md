@@ -135,3 +135,8 @@
 ## 0.1.0
 
 - Initial implementation.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

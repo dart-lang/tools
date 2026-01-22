@@ -53,3 +53,8 @@ for `run` methods which are small themselves.
 ## 1.0.5
 
 - Updates to support Dart 2.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+

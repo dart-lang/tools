@@ -160,3 +160,8 @@
 ## 0.0.2+2
 
 * Fix error response to include data from `RpcException` when not a map.
+
+## 1.0.0-next
+
+- Replaced deprecated `pub run` with `dart run` in documentation.
+
