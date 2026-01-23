@@ -51,4 +51,4 @@ jobs:
           sdk: ${{ matrix.sdk }}
 
       - run: dart pub get
-      - run: dart run test -j1
+      - run: dart test -j1

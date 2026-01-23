@@ -64,10 +64,10 @@ void main() {
 }
 </code></pre>
 <h2>Running Tests</h2>
-<p>A single test file can be run just using <code>pub run test:test path/to/test.dart</code>
-(on Dart 1.10, this can be shortened to <code>pub run test path/to/test.dart</code>).</p>
+<p>A single test file can be run just using <code>dart test:test path/to/test.dart</code>
+(on Dart 1.10, this can be shortened to <code>dart test path/to/test.dart</code>).</p>
 <p><img src="https://raw.githubusercontent.com/dart-lang/test/master/image/test1.gif" alt="Single file being run via pub run&quot;" /></p>
-<p>Many tests can be run at a time using <code>pub run test:test path/to/dir</code>.</p>
+<p>Many tests can be run at a time using <code>dart test:test path/to/dir</code>.</p>
 <p><img src="https://raw.githubusercontent.com/dart-lang/test/master/image/test2.gif" alt="Directory being run via &quot;pub run&quot;." /></p>
 <p>It's also possible to run a test on the Dart VM only by invoking it using <code>dart path/to/test.dart</code>, but this doesn't load the full test runner and will be
 missing some features.</p>
@@ -75,10 +75,10 @@ missing some features.</p>
 file. If you don't pass any paths, it will run all the test files in your
 <code>test/</code> directory, making it easy to test your entire application at once.</p>
 <p>By default, tests are run in the Dart VM, but you can run them in the browser as
-well by passing <code>pub run test:test -p chrome path/to/test.dart</code>.
+well by passing <code>dart test:test -p chrome path/to/test.dart</code>.
 <code>test</code> will take care of starting the browser and loading the tests, and all
 the results will be reported on the command line just like for VM tests. In
-fact, you can even run tests on both platforms with a single command: <code>pub run test:test -p &quot;chrome,vm&quot; path/to/test.dart</code>.</p>
+fact, you can even run tests on both platforms with a single command: <code>dart test:test -p &quot;chrome,vm&quot; path/to/test.dart</code>.</p>
 <h3>Restricting Tests to Certain Platforms</h3>
 <p>Some test files only make sense to run on particular platforms. They may use
 <code>dart:html</code> or <code>dart:io</code>, they might test Windows' particular filesystem
