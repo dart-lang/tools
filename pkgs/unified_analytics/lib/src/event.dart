@@ -660,6 +660,7 @@ final class Event {
           },
         );
 
+  @Deprecated("Use 'flutterWasmDryRunPackage' instead.")
   Event.flutterWasmDryRun({
     required String result,
     required int exitCode,

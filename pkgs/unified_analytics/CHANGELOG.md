@@ -1,3 +1,6 @@
+## 8.0.13
+- Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
+
 ## 8.0.12
 - Added `Event.plugins` to track new analyzer plugins
 
