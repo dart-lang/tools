@@ -103,6 +103,8 @@ enum DashEvent {
     description: 'Provides information about flutter commands that ran',
     toolOwner: DashTool.flutterTool,
   ),
+  @Deprecated("Use 'flutterWasmDryRunPackage' instead. This will be removed in "
+      'a future version.')
   flutterWasmDryRun(
     label: 'wasm_dry_run',
     description: 'Information for a dart2wasm dry run invoked from Flutter',
