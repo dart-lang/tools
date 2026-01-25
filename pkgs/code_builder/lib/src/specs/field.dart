@@ -52,18 +52,11 @@ abstract class Field extends Object
   FieldModifier get modifier;
 
   @override
-  R accept<R>(
-    SpecVisitor<R> visitor, [
-    R? context,
-  ]) =>
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) =>
       visitor.visitField(this, context);
 }
 
-enum FieldModifier {
-  var$,
-  final$,
-  constant,
-}
+enum FieldModifier { var$, final$, constant }
 
 abstract class FieldBuilder extends Object
     with HasAnnotationsBuilder, HasDartDocsBuilder

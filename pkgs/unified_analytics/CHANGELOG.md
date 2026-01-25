@@ -1,3 +1,32 @@
+## 8.0.13
+- Deprecated `Event.flutterWasmDryRun` in favor of `Event.flutterWasmDryRunPackage`.
+
+## 8.0.12
+- Added `Event.plugins` to track new analyzer plugins
+
+## 8.0.11
+- Added `DashEvent.ideEvent` to track IDE reported events.
+
+## 8.0.10
+- Added `Event.flutterWasmDryRunPackage` to track dart2wasm dry run metrics from Flutter
+  including public package information.
+
+## 8.0.9
+- Added `libraryDiagnosticsBundleFailures` to `Event.analysisStatistics`.
+
+## 8.0.8
+- More data for `Event.analysisStatistics` for events from Dart Analysis Server.
+
+## 8.0.7
+- Added optional fields `contextWorkspaceType` and `numberOfPackagesInWorkspace`
+  to `Event.contextStructure` for workspace and packages distribution from the
+  Dart Analysis Server.
+- Removed `Event.contextStructure` optional fields `contextsFromBothFiles`,
+  `contextsFromOptionsFiles`,`contextsFromPackagesFiles`,`contextsWithoutFiles`.
+
+## 8.0.6
+- Added `Event.analysisStatistics` for events from Dart Analysis Server, about analysis.
+
 ## 8.0.5
 - Fix `Event.flutterWasmDryRun` fields.
 

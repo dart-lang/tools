@@ -67,16 +67,19 @@ Iterable<DataCase> _dataCases({
   String extension = 'unit',
   bool recursive = true,
 }) {
-  final entries =
-      Directory(directory).listSync(recursive: recursive, followLinks: false);
+  final entries = Directory(
+    directory,
+  ).listSync(recursive: recursive, followLinks: false);
   final results = <DataCase>[];
   for (final entry in entries) {
     if (!entry.path.endsWith(extension)) {
       continue;
     }
 
-    final relativeDir =
-        p.relative(p.dirname(entry.path), from: p.dirname(directory));
+    final relativeDir = p.relative(
+      p.dirname(entry.path),
+      from: p.dirname(directory),
+    );
 
     results.addAll(dataCasesInFile(path: entry.path, baseDir: relativeDir));
   }

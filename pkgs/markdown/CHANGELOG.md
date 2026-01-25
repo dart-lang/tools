@@ -1,10 +1,16 @@
 ## 7.3.1-wip
 
+* Preserve metadata passed to fenced code blocks as
+  `data-metadata` on the created `pre` element.
 * Update the README link to the markdown playground
   (https://dart-lang.github.io/tools).
 * Update `package:web` API references in the example.
 * Fix performance and correctness of HTML comment parser.
-* Require Dart `^3.4.0`.
+* Optimize indentation processing of fenced code blocks.
+* Fix an issue with nested list structure when indented by tabs (#2172).
+* Deprecated `LinkContext` and `BlockParser.standardBlockSyntaxes`.
+  Implementation members that should never have been made public.
+* Require Dart `^3.9.0`.
 
 ## 7.3.0
 

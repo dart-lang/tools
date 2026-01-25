@@ -13,10 +13,7 @@ void main() {
       final lines = text.toLines();
 
       expect(lines.map((e) => e.toMap()), [
-        {
-          'content': 'Foo',
-          'isBlankLine': false,
-        }
+        {'content': 'Foo', 'isBlankLine': false},
       ]);
     });
 
@@ -25,10 +22,7 @@ void main() {
       final lines = text.toLines();
 
       expect(lines.map((e) => e.toMap()), [
-        {
-          'content': 'Foo',
-          'isBlankLine': false,
-        },
+        {'content': 'Foo', 'isBlankLine': false},
       ]);
     });
 
@@ -37,18 +31,9 @@ void main() {
       final lines = text.toLines();
 
       expect(lines.map((e) => e.toMap()), [
-        {
-          'content': 'Foo',
-          'isBlankLine': false,
-        },
-        {
-          'content': '',
-          'isBlankLine': true,
-        },
-        {
-          'content': 'Bar',
-          'isBlankLine': false,
-        }
+        {'content': 'Foo', 'isBlankLine': false},
+        {'content': '', 'isBlankLine': true},
+        {'content': 'Bar', 'isBlankLine': false},
       ]);
     });
   });
@@ -79,8 +64,8 @@ void main() {
 
 extension on Line {
   Map<String, dynamic> toMap() => {
-        'content': content,
-        'isBlankLine': isBlankLine,
-        if (tabRemaining != null) 'tabRemaining': tabRemaining,
-      };
+    'content': content,
+    'isBlankLine': isBlankLine,
+    if (tabRemaining != null) 'tabRemaining': tabRemaining,
+  };
 }

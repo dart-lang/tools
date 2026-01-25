@@ -161,6 +161,7 @@ class Peer implements Client, Server {
       }
     }, onError: (Object error, StackTrace stackTrace) {
       _serverIncomingForwarder.addError(error, stackTrace);
+      _clientIncomingForwarder.addError(error, stackTrace);
     }, onDone: close);
     return done;
   }

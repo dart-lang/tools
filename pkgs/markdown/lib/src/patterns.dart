@@ -12,8 +12,9 @@ final setextPattern = RegExp(r'^[ ]{0,3}(=+|-+)\s*$');
 ///
 /// Starts with 1-6 unescaped `#` characters which must not be followed by a
 /// non-space character. Line may end with any number of `#` characters,.
-final headerPattern =
-    RegExp(r'^ {0,3}(#{1,6})(?:[ \x09\x0b\x0c].*?)?(?:\s(#*)\s*)?$');
+final headerPattern = RegExp(
+  r'^ {0,3}(#{1,6})(?:[ \x09\x0b\x0c].*?)?(?:\s(#*)\s*)?$',
+);
 
 /// The line starts with `>` with one optional space after.
 final blockquotePattern = RegExp(r'^[ ]{0,3}>[ \t]?.*$');
@@ -44,12 +45,14 @@ final hrPattern = RegExp(r'^ {0,3}([-*_])[ \t]*\1[ \t]*\1(?:\1|[ \t])*$');
 ///
 /// A line starting with a number like `123.`. May have up to three leading
 /// spaces before the marker and any number of spaces or tabs after.
-final listPattern =
-    RegExp(r'^[ ]{0,3}(?:(\d{1,9})[\.)]|[*+-])(?:[ \t]+(.*))?$');
+final listPattern = RegExp(
+  r'^[ ]{0,3}(?:(\d{1,9})[\.)]|[*+-])(?:[ \t]+(.*))?$',
+);
 
 /// A line of hyphens separated by at least one pipe.
 final tablePattern = RegExp(
-    r'^[ ]{0,3}\|?([ \t]*:?\-+:?[ \t]*\|[ \t]*)+([ \t]|[ \t]*:?\-+:?[ \t]*)?$');
+  r'^[ ]{0,3}\|?([ \t]*:?\-+:?[ \t]*\|[ \t]*)+([ \t]|[ \t]*:?\-+:?[ \t]*)?$',
+);
 
 /// A line starting with `[^` and contains with `]:`, but without special chars
 /// (`\] \r\n\x00\t`) between. Same as [GFM](cmark-gfm/src/scanners.re:318).
@@ -63,37 +66,28 @@ final dummyPattern = RegExp('');
 const namedTagDefinition =
     // Opening tag begins.
     '<'
-
     // Tag name.
     '[a-zA-Z][a-zA-Z0-9-]*'
-
     // Attribute begins, see
     // https://spec.commonmark.org/0.30/#attribute.
     r'(?:\s+'
-
     // Attribute name, see
     // https://spec.commonmark.org/0.30/#attribute-name.
     '[a-zA-Z_:][a-zA-Z0-9._:-]*'
-
     //
     '(?:'
     // Attribute value specification, see
     // https://spec.commonmark.org/0.30/#attribute-value-specification.
     r'\s*=\s*'
-
     // Attribute value, see
     // https://spec.commonmark.org/0.30/#unquoted-attribute-value.
     r'''(?:[^\s"'=<>`]+?|'[^']*?'|"[^"]*?")'''
-
     // Attribute ends.
     ')?)*'
-
     // Opening tag ends.
     r'\s*/?>'
-
     // Or
     '|'
-
     // Closing tag, see
     // https://spec.commonmark.org/0.30/#closing-tag.
     r'</[a-zA-Z][a-zA-Z0-9-]*\s*>';
@@ -123,7 +117,6 @@ final htmlBlockPattern = RegExp(
   'thead|title|tr|track|ul)'
   r'(?:\s|>|/>|$)'
   '|'
-
   // Here we are more restrictive than the Commonmark definition (Rule #7).
   // Otherwise some raw HTML test cases will fail, for example:
   // https://spec.commonmark.org/0.30/#example-618.

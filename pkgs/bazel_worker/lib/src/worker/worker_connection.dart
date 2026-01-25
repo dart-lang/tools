@@ -33,13 +33,12 @@ abstract class AsyncWorkerConnection implements WorkerConnection {
     Stream<List<int>>? inputStream,
     StreamSink<List<int>>? outputStream,
     SendPort? sendPort,
-  }) =>
-      sendPort == null
-          ? StdAsyncWorkerConnection(
-              inputStream: inputStream,
-              outputStream: outputStream,
-            )
-          : SendPortAsyncWorkerConnection(sendPort);
+  }) => sendPort == null
+      ? StdAsyncWorkerConnection(
+          inputStream: inputStream,
+          outputStream: outputStream,
+        )
+      : SendPortAsyncWorkerConnection(sendPort);
 
   @override
   Future<WorkRequest?> readRequest();
@@ -59,8 +58,8 @@ class StdAsyncWorkerConnection implements AsyncWorkerConnection {
   StdAsyncWorkerConnection({
     Stream<List<int>>? inputStream,
     StreamSink<List<int>>? outputStream,
-  })  : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
-        _outputStream = outputStream ?? stdout;
+  }) : _messageGrouper = AsyncMessageGrouper(inputStream ?? stdin),
+       _outputStream = outputStream ?? stdout;
 
   @override
   Future<WorkRequest?> readRequest() async {
@@ -89,7 +88,7 @@ class SendPortAsyncWorkerConnection implements AsyncWorkerConnection {
   }
 
   SendPortAsyncWorkerConnection._(this.receivePort, this.sendPort)
-      : receivePortIterator = StreamIterator(receivePort.cast());
+    : receivePortIterator = StreamIterator(receivePort.cast());
 
   @override
   Future<WorkRequest?> readRequest() async {
@@ -110,8 +109,8 @@ class StdSyncWorkerConnection implements SyncWorkerConnection {
   final Stdout _stdoutStream;
 
   StdSyncWorkerConnection({Stdin? stdinStream, Stdout? stdoutStream})
-      : _messageGrouper = SyncMessageGrouper(stdinStream ?? stdin),
-        _stdoutStream = stdoutStream ?? stdout;
+    : _messageGrouper = SyncMessageGrouper(stdinStream ?? stdin),
+      _stdoutStream = stdoutStream ?? stdout;
 
   @override
   WorkRequest? readRequest() {

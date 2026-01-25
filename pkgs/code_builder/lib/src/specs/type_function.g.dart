@@ -153,7 +153,8 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
 
   @override
   set namedRequiredParameters(
-      MapBuilder<String, Reference> namedRequiredParameters) {
+    MapBuilder<String, Reference> namedRequiredParameters,
+  ) {
     _$this;
     super.namedRequiredParameters = namedRequiredParameters;
   }

@@ -25,11 +25,7 @@ Future<void> main(List<String> args) async {
       'section',
       help: 'Restrict tests to one section, provided after the option.',
     )
-    ..addFlag(
-      'raw',
-      help: 'raw JSON format',
-      negatable: false,
-    )
+    ..addFlag('raw', help: 'raw JSON format', negatable: false)
     ..addFlag(
       'update-files',
       help: 'Update stats files in $toolDir',
@@ -82,8 +78,9 @@ Future<void> main(List<String> args) async {
     testPrefix = _configs.first.prefix;
   }
 
-  final testPrefixes =
-      testPrefix == null ? _configs.map((c) => c.prefix) : <String>[testPrefix];
+  final testPrefixes = testPrefix == null
+      ? _configs.map((c) => c.prefix)
+      : <String>[testPrefix];
 
   for (final testPrefix in testPrefixes) {
     await _processConfig(
@@ -99,10 +96,15 @@ Future<void> main(List<String> args) async {
 
 final _sectionNameReplace = RegExp(r'[ \)\(]+');
 
-String _unitOutput(Iterable<DataCase> cases) => cases.map((dataCase) => '''
+String _unitOutput(Iterable<DataCase> cases) => cases
+    .map(
+      (dataCase) =>
+          '''
 >>> ${dataCase.front_matter}
 ${dataCase.input}<<<
-${dataCase.expectedOutput}''').join();
+${dataCase.expectedOutput}''',
+    )
+    .join();
 
 /// Set this to `true` and rerun `--update-files` to ease finding easy strict
 /// fixes.
@@ -121,7 +123,8 @@ Future<void> _processConfig(
   final sections = loadCommonMarkSections(testPrefix);
 
   final scores = SplayTreeMap<String, SplayTreeMap<int, CompareLevel>>(
-      compareAsciiLowerCaseNatural);
+    compareAsciiLowerCaseNatural,
+  );
 
   for (final entry in sections.entries) {
     if (specifiedSection != null && entry.key != specifiedSection) {
@@ -139,14 +142,16 @@ Future<void> _processConfig(
         extensions: e.extensions,
       );
 
-      units.add(DataCase(
-        front_matter: result.testCase.toString(),
-        input: result.testCase.markdown,
-        expectedOutput:
-            (_improveStrict && result.compareLevel == CompareLevel.loose)
-                ? result.testCase.html
-                : result.result!,
-      ));
+      units.add(
+        DataCase(
+          front_matter: result.testCase.toString(),
+          input: result.testCase.markdown,
+          expectedOutput:
+              (_improveStrict && result.compareLevel == CompareLevel.loose)
+              ? result.testCase.html
+              : result.result!,
+        ),
+      );
 
       final nestedMap = scores.putIfAbsent(
         entry.key,
@@ -156,8 +161,10 @@ Future<void> _processConfig(
     }
 
     if (updateFiles && units.isNotEmpty) {
-      var fileName =
-          entry.key.toLowerCase().replaceAll(_sectionNameReplace, '_');
+      var fileName = entry.key.toLowerCase().replaceAll(
+        _sectionNameReplace,
+        '_',
+      );
       while (fileName.endsWith('_')) {
         fileName = fileName.substring(0, fileName.length - 1);
       }
@@ -182,8 +189,9 @@ Object? _convert(Object? obj) {
     return obj.name;
   }
   if (obj is Map) {
-    return obj
-        .map<String, Object?>((key, value) => MapEntry(key.toString(), value));
+    return obj.map<String, Object?>(
+      (key, value) => MapEntry(key.toString(), value),
+    );
   }
   return obj;
 }
@@ -244,11 +252,13 @@ Future<void> _printFriendly(
     final total = map.values.length;
     totalExamples += total;
 
-    final sectionStrictCount =
-        map.values.where((val) => val == CompareLevel.strict).length;
+    final sectionStrictCount = map.values
+        .where((val) => val == CompareLevel.strict)
+        .length;
 
-    final sectionLooseCount =
-        map.values.where((val) => val == CompareLevel.loose).length;
+    final sectionLooseCount = map.values
+        .where((val) => val == CompareLevel.loose)
+        .length;
 
     final sectionValidCount = sectionStrictCount + sectionLooseCount;
 

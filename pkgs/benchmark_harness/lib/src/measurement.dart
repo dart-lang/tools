@@ -12,8 +12,9 @@ Measurement measureForImpl(void Function() f, int minimumMillis) {
   final minimumMicros = minimumMillis * 1000;
   // If running a long measurement permit some amount of measurement jitter
   // to avoid discarding results that are almost good, but not quite there.
-  final allowedJitter =
-      minimumMillis < 1000 ? 0 : (minimumMicros * 0.1).floor();
+  final allowedJitter = minimumMillis < 1000
+      ? 0
+      : (minimumMicros * 0.1).floor();
   var iter = 2;
   var totalIterations = iter;
   final watch = Stopwatch()..start();
@@ -29,7 +30,8 @@ Measurement measureForImpl(void Function() f, int minimumMillis) {
     }
 
     iter = measurement.estimateIterationsNeededToReach(
-        minimumMicros: minimumMicros);
+      minimumMicros: minimumMicros,
+    );
     totalIterations += iter;
   }
 }

@@ -43,8 +43,9 @@ class FootnoteDefSyntax extends BlockSyntax {
     final children = <String>[];
     // As one empty line should not split footnote definition, use this flag.
     var shouldBeBlock = false;
-    late final syntaxList = parser.blockSyntaxes
-        .where((s) => !_excludingPattern.contains(s.pattern));
+    late final syntaxList = parser.blockSyntaxes.where(
+      (s) => !_excludingPattern.contains(s.pattern),
+    );
 
     // Every line is footnote's children util two blank lines or a block.
     while (!parser.isDone) {
@@ -69,10 +70,7 @@ class FootnoteDefSyntax extends BlockSyntax {
   }
 
   /// Patterns that would be used to decide if one line is a block.
-  static final _excludingPattern = {
-    emptyPattern,
-    dummyPattern,
-  };
+  static final _excludingPattern = {emptyPattern, dummyPattern};
 
   /// Whether this line is any kind of block.
   /// If `true`, the footnote block should end.

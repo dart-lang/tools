@@ -90,19 +90,21 @@ class DartEmitter extends Object
   /// May specify an [Allocator] to use for references and imports,
   /// otherwise uses [Allocator.none] which never prefixes references and will
   /// not automatically emit import directives.
-  DartEmitter(
-      {this.allocator = Allocator.none,
-      this.orderDirectives = false,
-      bool useNullSafetySyntax = false})
-      : _useNullSafetySyntax = useNullSafetySyntax;
+  DartEmitter({
+    this.allocator = Allocator.none,
+    this.orderDirectives = false,
+    bool useNullSafetySyntax = false,
+  }) : _useNullSafetySyntax = useNullSafetySyntax;
 
   /// Creates a new instance of [DartEmitter] with simple automatic imports.
-  factory DartEmitter.scoped(
-          {bool orderDirectives = false, bool useNullSafetySyntax = false}) =>
-      DartEmitter(
-          allocator: Allocator.simplePrefixing(),
-          orderDirectives: orderDirectives,
-          useNullSafetySyntax: useNullSafetySyntax);
+  factory DartEmitter.scoped({
+    bool orderDirectives = false,
+    bool useNullSafetySyntax = false,
+  }) => DartEmitter(
+    allocator: Allocator.simplePrefixing(),
+    orderDirectives: orderDirectives,
+    useNullSafetySyntax: useNullSafetySyntax,
+  );
 
   static bool _isLambdaBody(Code? code) =>
       code is ToCodeExpression && !code.isStatement;
@@ -159,13 +161,17 @@ class DartEmitter extends Object
       out
         ..write(' with ')
         ..writeAll(
-            spec.mixins.map<StringSink>((m) => m.type.accept(this)), ',');
+          spec.mixins.map<StringSink>((m) => m.type.accept(this)),
+          ',',
+        );
     }
     if (spec.implements.isNotEmpty) {
       out
         ..write(' implements ')
         ..writeAll(
-            spec.implements.map<StringSink>((m) => m.type.accept(this)), ',');
+          spec.implements.map<StringSink>((m) => m.type.accept(this)),
+          ',',
+        );
     }
     out.write(' {');
     for (var c in spec.constructors) {
@@ -202,7 +208,9 @@ class DartEmitter extends Object
       out
         ..write(' implements ')
         ..writeAll(
-            spec.implements.map<StringSink>((m) => m.type.accept(this)), ',');
+          spec.implements.map<StringSink>((m) => m.type.accept(this)),
+          ',',
+        );
     }
     out.write('  {');
     for (var f in spec.fields) {
@@ -215,8 +223,11 @@ class DartEmitter extends Object
   }
 
   @override
-  StringSink visitConstructor(Constructor spec, String clazz,
-      [StringSink? output]) {
+  StringSink visitConstructor(
+    Constructor spec,
+    String clazz, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     spec.docs.forEach(output.writeln);
     for (var a in spec.annotations) {
@@ -356,7 +367,9 @@ class DartEmitter extends Object
       out
         ..write(' implements ')
         ..writeAll(
-            spec.implements.map<StringSink>((m) => m.type.accept(this)), ',');
+          spec.implements.map<StringSink>((m) => m.type.accept(this)),
+          ',',
+        );
     }
 
     out.writeln(' {');
@@ -374,7 +387,9 @@ class DartEmitter extends Object
   }
 
   void _visitRepresentationDeclaration(
-      RepresentationDeclaration spec, StringSink out) {
+    RepresentationDeclaration spec,
+    StringSink out,
+  ) {
     spec.docs.forEach(out.writeln);
     for (var a in spec.annotations) {
       visitAnnotation(a, out);
@@ -523,7 +538,8 @@ class DartEmitter extends Object
     Directive? previous;
     if (directives.any((d) => d.as?.startsWith('_') ?? false)) {
       output.writeln(
-          '// ignore_for_file: no_leading_underscores_for_library_prefixes');
+        '// ignore_for_file: no_leading_underscores_for_library_prefixes',
+      );
     }
     for (final directive in directives) {
       if (_newLineBetween(orderDirectives, previous, directive)) {
@@ -557,7 +573,8 @@ class DartEmitter extends Object
       out.write('>');
     }
     out.write('(');
-    final needsTrailingComma = spec.requiredParameters.length +
+    final needsTrailingComma =
+        spec.requiredParameters.length +
             spec.optionalParameters.length +
             spec.namedRequiredParameters.length +
             spec.namedParameters.length >
@@ -565,7 +582,8 @@ class DartEmitter extends Object
     visitAll<Reference>(spec.requiredParameters, out, (spec) {
       spec.accept(this, out);
     });
-    final hasNamedParameters = spec.namedRequiredParameters.isNotEmpty ||
+    final hasNamedParameters =
+        spec.namedRequiredParameters.isNotEmpty ||
         spec.namedParameters.isNotEmpty;
     if (spec.requiredParameters.isNotEmpty &&
         (needsTrailingComma ||
@@ -624,8 +642,9 @@ class DartEmitter extends Object
         out.write(', ');
       }
       out.write('{');
-      visitAll<MapEntry<String, Reference>>(spec.namedFieldTypes.entries, out,
-          (entry) {
+      visitAll<MapEntry<String, Reference>>(spec.namedFieldTypes.entries, out, (
+        entry,
+      ) {
         entry.value.accept(this, out);
         out.write(' ${entry.key}');
       });
@@ -825,8 +844,10 @@ class DartEmitter extends Object
   }
 
   @override
-  StringSink visitTypeParameters(Iterable<Reference> specs,
-      [StringSink? output]) {
+  StringSink visitTypeParameters(
+    Iterable<Reference> specs, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     if (specs.isNotEmpty) {
       output
@@ -850,13 +871,17 @@ class DartEmitter extends Object
       out
         ..write(' with ')
         ..writeAll(
-            spec.mixins.map<StringSink>((m) => m.type.accept(this)), ', ');
+          spec.mixins.map<StringSink>((m) => m.type.accept(this)),
+          ', ',
+        );
     }
     if (spec.implements.isNotEmpty) {
       out
         ..write(' implements ')
         ..writeAll(
-            spec.implements.map<StringSink>((m) => m.type.accept(this)), ', ');
+          spec.implements.map<StringSink>((m) => m.type.accept(this)),
+          ', ',
+        );
     }
     out.write(' { ');
     for (var v in spec.values) {
@@ -869,7 +894,8 @@ class DartEmitter extends Object
         out.write('.${v.constructorName}');
       }
       visitTypeParameters(v.types.map((r) => r.type), out);
-      final takesArguments = v.constructorName != null ||
+      final takesArguments =
+          v.constructorName != null ||
           v.arguments.isNotEmpty ||
           v.namedArguments.isNotEmpty;
       if (takesArguments) {
@@ -877,7 +903,9 @@ class DartEmitter extends Object
       }
       if (v.arguments.isNotEmpty) {
         out.writeAll(
-            v.arguments.map<StringSink>((arg) => arg.accept(this)), ', ');
+          v.arguments.map<StringSink>((arg) => arg.accept(this)),
+          ', ',
+        );
       }
       if (v.arguments.isNotEmpty && v.namedArguments.isNotEmpty) {
         out.write(', ');

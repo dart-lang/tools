@@ -14,10 +14,7 @@ import 'ordered_list_with_checkbox_syntax.dart';
 import 'unordered_list_with_checkbox_syntax.dart';
 
 class ListItem {
-  const ListItem(
-    this.lines, {
-    this.taskListItemState,
-  });
+  const ListItem(this.lines, {this.taskListItemState});
 
   final List<Line> lines;
   final TaskListItemState? taskListItemState;
@@ -78,7 +75,8 @@ abstract class ListSyntax extends BlockSyntax {
     final match = pattern.firstMatch(parser.current.content);
     final ordered = match![1] != null;
 
-    final taskListParserEnabled = this is UnorderedListWithCheckboxSyntax ||
+    final taskListParserEnabled =
+        this is UnorderedListWithCheckboxSyntax ||
         this is OrderedListWithCheckboxSyntax;
     final items = <ListItem>[];
     var childLines = <Line>[];
@@ -123,7 +121,8 @@ abstract class ListSyntax extends BlockSyntax {
     int? blankLines;
 
     while (!parser.isDone) {
-      final currentIndent = parser.current.content.indentation() +
+      final currentIndent =
+          parser.current.content.indentation() +
           (parser.current.tabRemaining ?? 0);
 
       if (parser.current.isBlankLine) {
@@ -141,12 +140,14 @@ abstract class ListSyntax extends BlockSyntax {
 
         final indentedLine = parser.current.content.dedent(indent);
 
-        childLines.add(Line(
-          blankLines == null
-              ? indentedLine.text
-              : parseTaskListItem(indentedLine.text),
-          tabRemaining: indentedLine.tabRemaining,
-        ));
+        childLines.add(
+          Line(
+            blankLines == null
+                ? indentedLine.text
+                : parseTaskListItem(indentedLine.text),
+            tabRemaining: indentedLine.tabRemaining,
+          ),
+        );
       } else if (tryMatch(hrPattern)) {
         // Horizontal rule takes precedence to a new list item.
         break;
@@ -164,10 +165,7 @@ abstract class ListSyntax extends BlockSyntax {
         textParser.advance();
 
         // See https://spec.commonmark.org/0.30/#ordered-list-marker
-        final marker = textParser.substring(
-          markerStart,
-          textParser.pos,
-        );
+        final marker = textParser.substring(markerStart, textParser.pos);
 
         var isBlank = true;
         var contentWhitespances = 0;
@@ -211,7 +209,10 @@ abstract class ListSyntax extends BlockSyntax {
           // any indentation past the required whitespace character.
           indent = precedingWhitespaces;
         } else {
-          indent = precedingWhitespaces + contentWhitespances;
+          indent =
+              precedingWhitespaces +
+              contentWhitespances +
+              (parser.current.tabRemaining ?? 0);
         }
 
         taskListItemState = null;
@@ -223,10 +224,7 @@ abstract class ListSyntax extends BlockSyntax {
           content = content.prependSpace(2);
         }
 
-        childLines.add(Line(
-          content,
-          tabRemaining: containsTab ? 2 : null,
-        ));
+        childLines.add(Line(content, tabRemaining: containsTab ? 2 : null));
       } else if (BlockSyntax.isAtBlockEnd(parser)) {
         // Done with the list.
         break;
@@ -269,7 +267,7 @@ abstract class ListSyntax extends BlockSyntax {
       final itemElement = checkboxToInsert == null
           ? Element('li', children)
           : (Element('li', _addCheckbox(children, checkboxToInsert))
-            ..attributes['class'] = taskListClass);
+              ..attributes['class'] = taskListClass);
 
       itemNodes.add(itemElement);
       anyEmptyLinesBetweenBlocks =

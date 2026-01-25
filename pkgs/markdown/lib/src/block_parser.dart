@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// @docImport 'block_syntaxes/setext_header_syntax.dart';
+library;
+
 import 'ast.dart';
 import 'block_syntaxes/block_syntax.dart';
 import 'block_syntaxes/blockquote_syntax.dart';
@@ -53,6 +56,12 @@ class BlockParser {
   bool encounteredBlankLine = false;
 
   /// The collection of built-in block parsers.
+  // TODO(kevmoo): this should be static const and private!
+  // The fact that it's mutable is a BUG!
+  @Deprecated(
+    'Implementation member. '
+    'Will be removed or make static in the next release.',
+  )
   final List<BlockSyntax> standardBlockSyntaxes = [
     const EmptyBlockSyntax(),
     const HtmlBlockSyntax(),
@@ -64,7 +73,7 @@ class BlockParser {
     const UnorderedListSyntax(),
     const OrderedListSyntax(),
     const LinkReferenceDefinitionSyntax(),
-    const ParagraphSyntax()
+    const ParagraphSyntax(),
   ];
 
   BlockParser(this.lines, this.document) {
@@ -135,7 +144,7 @@ class BlockParser {
   BlockSyntax? get parentSyntax => _parentSyntax;
   BlockSyntax? _parentSyntax;
 
-  /// Whether the [SetextHeadingSyntax] is disabled temporarily.
+  /// Whether the [SetextHeaderSyntax] is disabled temporarily.
   bool get setextHeadingDisabled => _setextHeadingDisabled;
   bool _setextHeadingDisabled = false;
 

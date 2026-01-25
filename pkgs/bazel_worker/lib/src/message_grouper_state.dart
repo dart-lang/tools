@@ -109,9 +109,9 @@ class _MessageReader {
   int _numMessageBytesReceived = 0;
 
   _MessageReader(int length)
-      : _message = Uint8List(length),
-        _length = length,
-        _done = length == 0;
+    : _message = Uint8List(length),
+      _length = length,
+      _done = length == 0;
 
   /// Reads [byte] into [_message].
   void readByte(int byte) {

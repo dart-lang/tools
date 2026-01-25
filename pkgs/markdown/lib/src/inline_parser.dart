@@ -23,8 +23,8 @@ import 'inline_syntaxes/text_syntax.dart';
 /// Maintains the internal state needed to parse inline span elements in
 /// Markdown.
 class InlineParser {
-  static final List<InlineSyntax> _defaultSyntaxes =
-      List<InlineSyntax>.unmodifiable(<InlineSyntax>[
+  static final List<InlineSyntax>
+  _defaultSyntaxes = List<InlineSyntax>.unmodifiable(<InlineSyntax>[
     EmailAutolinkSyntax(),
     AutolinkSyntax(),
     LineBreakSyntax(),
@@ -80,7 +80,7 @@ class InlineParser {
         EscapeSyntax(),
         DecodeHtmlSyntax(),
         LinkSyntax(linkResolver: document.linkResolver),
-        ImageSyntax(linkResolver: document.imageLinkResolver)
+        ImageSyntax(linkResolver: document.imageLinkResolver),
       ]);
 
       syntaxes.addAll(_defaultSyntaxes);
@@ -127,8 +127,9 @@ class InlineParser {
   /// This is the "look for link or image" routine from the CommonMark spec:
   /// https://spec.commonmark.org/0.30/#look-for-link-or-image.
   void _linkOrImage() {
-    final index = _delimiterStack
-        .lastIndexWhere((d) => d.char == $lbracket || d.char == $exclamation);
+    final index = _delimiterStack.lastIndexWhere(
+      (d) => d.char == $lbracket || d.char == $exclamation,
+    );
     if (index == -1) {
       // Never found a possible open bracket. This is just a literal "]".
       addNode(Text(']'));
@@ -147,14 +148,19 @@ class InlineParser {
     final syntax = delimiter.syntax;
     if (syntax is LinkSyntax && syntaxes.any((e) => e is LinkSyntax)) {
       final nodeIndex = _tree.lastIndexWhere((n) => n == delimiter.node);
-      final linkNodes = syntax.close(this, delimiter, null, getChildren: () {
-        _processDelimiterRun(index);
-        // All of the nodes which lie past [index] are children of this
-        // link/image.
-        final children = _tree.sublist(nodeIndex + 1, _tree.length);
-        _tree.removeRange(nodeIndex + 1, _tree.length);
-        return children;
-      });
+      final linkNodes = syntax.close(
+        this,
+        delimiter,
+        null,
+        getChildren: () {
+          _processDelimiterRun(index);
+          // All of the nodes which lie past [index] are children of this
+          // link/image.
+          final children = _tree.sublist(nodeIndex + 1, _tree.length);
+          _tree.removeRange(nodeIndex + 1, _tree.length);
+          return children;
+        },
+      );
       if (linkNodes != null) {
         _delimiterStack.removeAt(index);
         if (delimiter.char == $lbracket) {
@@ -171,8 +177,10 @@ class InlineParser {
         advanceBy(1);
       }
     } else {
-      throw StateError('Non-link syntax delimiter found with character '
-          '"${delimiter.char}"');
+      throw StateError(
+        'Non-link syntax delimiter found with character '
+        '"${delimiter.char}"',
+      );
     }
   }
 
@@ -209,9 +217,10 @@ class InlineParser {
       final openersBottomPerCloserLength = openersBottom[closer.char]!;
       final openerBottom = openersBottomPerCloserLength[closer.length % 3];
       final openerIndex = _delimiterStack.lastIndexWhere(
-          (d) =>
-              d.char == closer.char && d.canOpen && _canFormEmphasis(d, closer),
-          currentIndex - 1);
+        (d) =>
+            d.char == closer.char && d.canOpen && _canFormEmphasis(d, closer),
+        currentIndex - 1,
+      );
       if (openerIndex > bottomIndex && openerIndex > openerBottom) {
         // Found an opener for [closer].
         final opener = _delimiterStack[openerIndex];
@@ -219,9 +228,11 @@ class InlineParser {
           currentIndex++;
           continue;
         }
-        final matchedTagIndex = opener.tags.lastIndexWhere((e) =>
-            opener.length >= e.indicatorLength &&
-            closer.length >= e.indicatorLength);
+        final matchedTagIndex = opener.tags.lastIndexWhere(
+          (e) =>
+              opener.length >= e.indicatorLength &&
+              closer.length >= e.indicatorLength,
+        );
         if (matchedTagIndex == -1) {
           currentIndex++;
           continue;
@@ -237,10 +248,8 @@ class InlineParser {
           opener,
           closer,
           tag: matchedTag.tag,
-          getChildren: () => _tree.sublist(
-            openerTextNodeIndex + 1,
-            closerTextNodeIndex,
-          ),
+          getChildren: () =>
+              _tree.sublist(openerTextNodeIndex + 1, closerTextNodeIndex),
         );
         // Replace all of the nodes between the opener and the closer (which
         // are now the new emphasis node's children) with the emphasis node.
@@ -265,8 +274,9 @@ class InlineParser {
           currentIndex--;
           closerTextNodeIndex--;
         } else {
-          final newOpenerTextNode =
-              Text(openerTextNode.text.substring(indicatorLength));
+          final newOpenerTextNode = Text(
+            openerTextNode.text.substring(indicatorLength),
+          );
           _tree[openerTextNodeIndex] = newOpenerTextNode;
           opener.node = newOpenerTextNode;
         }
@@ -277,8 +287,9 @@ class InlineParser {
           // [currentIndex] has just moved to point at the next delimiter;
           // leave it.
         } else {
-          final newCloserTextNode =
-              Text(closerTextNode.text.substring(indicatorLength));
+          final newCloserTextNode = Text(
+            closerTextNode.text.substring(indicatorLength),
+          );
           _tree[closerTextNodeIndex] = newCloserTextNode;
           closer.node = newCloserTextNode;
           // [currentIndex] needs to be considered again; leave it.
@@ -308,8 +319,9 @@ class InlineParser {
         continue;
       }
       if (node is Text && nodes[i + 1] is Text) {
-        final buffer =
-            StringBuffer('${node.textContent}${nodes[i + 1].textContent}');
+        final buffer = StringBuffer(
+          '${node.textContent}${nodes[i + 1].textContent}',
+        );
         var j = i + 2;
         while (j < nodes.length && nodes[j] is Text) {
           buffer.write(nodes[j].textContent);

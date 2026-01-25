@@ -46,14 +46,17 @@ Dependency? _fromJson(Object? data, String name) {
   }
 
   if (data is Map) {
-    final matchedKeys =
-        data.keys.cast<String>().where((key) => key != 'version').toList();
+    final matchedKeys = data.keys
+        .cast<String>()
+        .where((key) => key != 'version')
+        .toList();
 
     if (data.isEmpty || (matchedKeys.isEmpty && data.containsKey('version'))) {
       return _$HostedDependencyFromJson(data);
     } else {
-      final firstUnrecognizedKey =
-          matchedKeys.firstWhereOrNull((k) => !_sourceKeys.contains(k));
+      final firstUnrecognizedKey = matchedKeys.firstWhereOrNull(
+        (k) => !_sourceKeys.contains(k),
+      );
 
       return $checkedNew<Dependency>('Dependency', data, () {
         if (firstUnrecognizedKey != null) {
@@ -78,8 +81,9 @@ Dependency? _fromJson(Object? data, String name) {
           'git' => GitDependency.fromData(data[key]),
           'path' => PathDependency.fromData(data[key]),
           'sdk' => _$SdkDependencyFromJson(data),
-          'hosted' => _$HostedDependencyFromJson(data)
-            ..hosted?._nameOfPackage = name,
+          'hosted' => _$HostedDependencyFromJson(
+            data,
+          )..hosted?._nameOfPackage = name,
           _ => throw StateError('There is a bug in pubspec_parse.'),
         };
       });
@@ -99,7 +103,7 @@ class SdkDependency extends Dependency {
   final VersionConstraint version;
 
   SdkDependency(this.sdk, {VersionConstraint? version})
-      : version = version ?? VersionConstraint.any;
+    : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>
@@ -215,7 +219,7 @@ class HostedDependency extends Dependency {
   final HostedDetails? hosted;
 
   HostedDependency({VersionConstraint? version, this.hosted})
-      : version = version ?? VersionConstraint.any;
+    : version = version ?? VersionConstraint.any;
 
   @override
   bool operator ==(Object other) =>

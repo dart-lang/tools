@@ -13,13 +13,15 @@ void main() {
     var memFsWatcherFactory = _MemFsWatcherFactory(memFs);
     var noOpWatcherFactory = _NoOpWatcherFactory();
     registerCustomWatcher(
-        noOpFactoryId,
-        noOpWatcherFactory.createDirectoryWatcher,
-        noOpWatcherFactory.createFileWatcher);
+      noOpFactoryId,
+      noOpWatcherFactory.createDirectoryWatcher,
+      noOpWatcherFactory.createFileWatcher,
+    );
     registerCustomWatcher(
-        memFsFactoryId,
-        memFsWatcherFactory.createDirectoryWatcher,
-        memFsWatcherFactory.createFileWatcher);
+      memFsFactoryId,
+      memFsWatcherFactory.createDirectoryWatcher,
+      memFsWatcherFactory.createFileWatcher,
+    );
   });
 
   test('notifies for files', () async {
@@ -36,24 +38,25 @@ void main() {
   });
 
   test('notifies for directories', () async {
-    var watcher = DirectoryWatcher('dir');
+    var watcher = DirectoryWatcher('/dir');
 
     var completer = Completer<WatchEvent>();
     watcher.events.listen((event) => completer.complete(event));
     await watcher.ready;
-    memFs.add('dir');
+    memFs.add('/dir');
     var event = await completer.future;
 
     expect(event.type, ChangeType.ADD);
-    expect(event.path, 'dir');
+    expect(event.path, '/dir');
   });
 
   test('registering twice throws', () async {
     expect(
       () => registerCustomWatcher(
-          memFsFactoryId,
-          (_, {pollingDelay}) => throw UnimplementedError(),
-          (_, {pollingDelay}) => throw UnimplementedError()),
+        memFsFactoryId,
+        (_, {pollingDelay}) => throw UnimplementedError(),
+        (_, {pollingDelay}) => throw UnimplementedError(),
+      ),
       throwsA(isA<ArgumentError>()),
     );
   });
@@ -62,10 +65,13 @@ void main() {
     // Note that _MemFsWatcherFactory always returns a watcher, so having two
     // will always produce a conflict.
     var watcherFactory = _MemFsWatcherFactory(memFs);
-    registerCustomWatcher('Different id', watcherFactory.createDirectoryWatcher,
-        watcherFactory.createFileWatcher);
+    registerCustomWatcher(
+      'Different id',
+      watcherFactory.createDirectoryWatcher,
+      watcherFactory.createFileWatcher,
+    );
     expect(() => FileWatcher('file.txt'), throwsA(isA<StateError>()));
-    expect(() => DirectoryWatcher('dir'), throwsA(isA<StateError>()));
+    expect(() => DirectoryWatcher('/dir'), throwsA(isA<StateError>()));
   });
 }
 
@@ -125,18 +131,20 @@ class _MemFsWatcherFactory {
   final _MemFs _memFs;
   _MemFsWatcherFactory(this._memFs);
 
-  DirectoryWatcher? createDirectoryWatcher(String path,
-          {Duration? pollingDelay}) =>
-      _MemFsWatcher(path, _memFs.watchStream(path));
+  DirectoryWatcher? createDirectoryWatcher(
+    String path, {
+    Duration? pollingDelay,
+  }) => _MemFsWatcher(path, _memFs.watchStream(path));
 
   FileWatcher? createFileWatcher(String path, {Duration? pollingDelay}) =>
       _MemFsWatcher(path, _memFs.watchStream(path));
 }
 
 class _NoOpWatcherFactory {
-  DirectoryWatcher? createDirectoryWatcher(String path,
-          {Duration? pollingDelay}) =>
-      null;
+  DirectoryWatcher? createDirectoryWatcher(
+    String path, {
+    Duration? pollingDelay,
+  }) => null;
 
   FileWatcher? createFileWatcher(String path, {Duration? pollingDelay}) => null;
 }

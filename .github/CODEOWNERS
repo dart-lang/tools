@@ -23,7 +23,7 @@ pkgs/graphs                     @natebosch
 pkgs/html                       @HosseinYousefi
 pkgs/io                         @dart-lang/dart-bat
 pkgs/json_rpc_2                 @dart-lang/dart-ecosystem-team
-pkgs/markdown                   @dart-lang/dart-model-team @dart-lang/dash-developer-services
+pkgs/markdown                   @srawlins
 pkgs/mime                       @lrhn
 pkgs/oauth2                     @dart-lang/dart-pub-team
 pkgs/package_config             @dart-lang/dart-ecosystem-team
@@ -43,6 +43,6 @@ pkgs/term_glyph                 @dart-lang/dart-bat
 pkgs/test_reflective_loader     @scheglov
 pkgs/timing                     @dart-lang/dart-bat
 pkgs/unified_analytics          @bkonyi @dart-lang/dash-developer-services
-pkgs/watcher                    @dart-lang/dart-ecosystem-team
+pkgs/watcher                    @davidmorgan @dart-lang/dart-model-team
 pkgs/yaml                       @dart-lang/dart-pub-team
 pkgs/yaml_edit                  @dart-lang/dart-pub-team

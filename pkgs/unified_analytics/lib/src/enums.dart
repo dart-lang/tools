@@ -103,9 +103,18 @@ enum DashEvent {
     description: 'Provides information about flutter commands that ran',
     toolOwner: DashTool.flutterTool,
   ),
+  @Deprecated("Use 'flutterWasmDryRunPackage' instead. This will be removed in "
+      'a future version.')
   flutterWasmDryRun(
     label: 'wasm_dry_run',
     description: 'Information for a dart2wasm dry run invoked from Flutter',
+    toolOwner: DashTool.flutterTool,
+  ),
+  flutterWasmDryRunPackage(
+    label: 'wasm_dry_run_package',
+    description:
+        'Information for a dart2wasm dry run invoked from Flutter with package '
+        'info',
     toolOwner: DashTool.flutterTool,
   ),
   flutterInjectDarwinPlugins(
@@ -124,8 +133,19 @@ enum DashEvent {
     toolOwner: DashTool.flutterTool,
   ),
 
+  // Events for IDEs (intellij and vscode)
+
+  ideEvent(
+    label: 'ide_event',
+    description: 'Information for various IDE events',
+  ),
+
   // Events for language_server below
 
+  analysisStatistics(
+    label: 'analysis_statistics',
+    description: 'Dart analyzer statistics',
+  ),
   clientNotification(
     label: 'client_notification',
     description: 'Notifications sent from the client',
@@ -152,11 +172,17 @@ enum DashEvent {
   ),
   pluginRequest(
     label: 'plugin_request',
-    description: 'Request responses from plugins',
+    description:
+        'Analyzer plugin performance information regarding server requests',
+  ),
+  plugins(
+    label: 'plugins',
+    description: 'Information about how often _new_ analyzer plugins were used',
   ),
   pluginUse(
     label: 'plugin_use',
-    description: 'Information about how often a plugin was used',
+    description:
+        'Information about how often a _legacy_ analyzer plugin was used',
   ),
   serverSession(
     label: 'server_session',

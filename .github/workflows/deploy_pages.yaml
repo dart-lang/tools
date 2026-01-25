@@ -23,7 +23,7 @@ jobs:
       url: ${{steps.deployment.outputs.page_url}}
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
       
       # Build the markdown playground.
@@ -38,7 +38,7 @@ jobs:
 
       # Deploy to GitHub Pages.
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
       - uses: actions/deploy-pages@v4

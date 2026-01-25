@@ -131,9 +131,7 @@ void _switchFlavor(Event e) {
 }
 
 extension on NodeList {
-  List<Node> get items => [
-        for (var i = 0; i < length; i++) item(i)!,
-      ];
+  List<Node> get items => [for (var i = 0; i < length; i++) item(i)!];
 }
 
 extension on NamedNodeMap {

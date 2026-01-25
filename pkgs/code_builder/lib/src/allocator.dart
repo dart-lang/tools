@@ -42,6 +42,11 @@ abstract class Allocator {
   String allocate(Reference reference);
 
   /// All imports that have so far been added implicitly via [allocate].
+  ///
+  /// As a special case, imports of `package:fixnum/src/*` are changed to refer
+  /// to the public `package:fixnum/fixnum.dart`. Version 1.2.0 of the package
+  /// introduces platform-specific implementation libraries that must not be
+  /// imported directly.
   Iterable<Directive> get imports;
 }
 
@@ -50,8 +55,9 @@ class _Allocator implements Allocator {
 
   @override
   String allocate(Reference reference) {
-    final url = reference.url;
+    var url = reference.url;
     if (url != null) {
+      url = _fixUrl(url);
       _imports.add(url);
     }
     return reference.symbol!;
@@ -80,17 +86,27 @@ class _PrefixedAllocator implements Allocator {
   @override
   String allocate(Reference reference) {
     final symbol = reference.symbol;
-    final url = reference.url;
+    var url = reference.url;
     if (url == null || _doNotPrefix.contains(url)) {
       return symbol!;
     }
+    url = _fixUrl(url);
     return '_i${_imports.putIfAbsent(url, _nextKey)}.$symbol';
   }
 
   int _nextKey() => _keys++;
 
   @override
-  Iterable<Directive> get imports => _imports.keys.map(
-        (u) => Directive.import(u, as: '_i${_imports[u]}'),
-      );
+  Iterable<Directive> get imports =>
+      _imports.keys.map((u) => Directive.import(u, as: '_i${_imports[u]}'));
+}
+
+/// Applies hardcoded fixes to [url].
+///
+/// See [Allocator.imports] for explanations.
+String _fixUrl(String url) {
+  if (url.startsWith('package:fixnum/src/')) {
+    return 'package:fixnum/fixnum.dart';
+  }
+  return url;
 }

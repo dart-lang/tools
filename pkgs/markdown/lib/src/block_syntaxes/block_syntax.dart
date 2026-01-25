@@ -50,15 +50,18 @@ abstract class BlockSyntax {
   /// Gets whether or not [parser]'s current line should end the previous block.
   static bool isAtBlockEnd(BlockParser parser) {
     if (parser.isDone) return true;
-    return parser.blockSyntaxes
-        .any((s) => s.canParse(parser) && s.canEndBlock(parser));
+    return parser.blockSyntaxes.any(
+      (s) => s.canParse(parser) && s.canEndBlock(parser),
+    );
   }
 
   /// Generates a valid HTML anchor from the inner text of [element].
-  static String generateAnchorHash(Element element) =>
-      element.children!.first.textContent
-          .toLowerCase()
-          .trim()
-          .replaceAll(RegExp('[^a-z0-9 _-]'), '')
-          .replaceAll(RegExp(r'\s'), '-');
+  static String generateAnchorHash(Element element) => element
+      .children!
+      .first
+      .textContent
+      .toLowerCase()
+      .trim()
+      .replaceAll(RegExp('[^a-z0-9 _-]'), '')
+      .replaceAll(RegExp(r'\s'), '-');
 }

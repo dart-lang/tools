@@ -189,7 +189,8 @@ class _$ExtensionTypeBuilder extends ExtensionTypeBuilder {
 
   @override
   set representationDeclaration(
-      RepresentationDeclaration? representationDeclaration) {
+    RepresentationDeclaration? representationDeclaration,
+  ) {
     _$this;
     super.representationDeclaration = representationDeclaration;
   }
@@ -354,8 +355,8 @@ class _$RepresentationDeclaration extends RepresentationDeclaration {
       : super._();
   @override
   RepresentationDeclaration rebuild(
-          void Function(RepresentationDeclarationBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(RepresentationDeclarationBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   _$RepresentationDeclarationBuilder toBuilder() =>

@@ -4,6 +4,7 @@
 
 import '../ast.dart';
 import '../block_parser.dart';
+import '../charcode.dart' show $space;
 import '../line.dart';
 import '../patterns.dart';
 import '../util.dart';
@@ -21,9 +22,9 @@ class FencedCodeBlockSyntax extends BlockSyntax {
 
   @override
   Node parse(BlockParser parser) {
-    final openingFence = _FenceMatch.fromMatch(pattern.firstMatch(
-      escapePunctuation(parser.current.content),
-    )!);
+    final openingFence = _FenceMatch.fromMatch(
+      pattern.firstMatch(escapePunctuation(parser.current.content))!,
+    );
 
     var text = parseChildLines(
       parser,
@@ -38,21 +39,35 @@ class FencedCodeBlockSyntax extends BlockSyntax {
       text = '$text\n';
     }
 
+    final (languageString, metadataString) = openingFence.languageAndMetadata;
+
     final code = Element.text('code', text);
-    if (openingFence.hasLanguage) {
-      var language = decodeHtmlCharacters(openingFence.language);
-      if (parser.document.encodeHtml) {
-        language = escapeHtmlAttribute(language);
-      }
-      code.attributes['class'] = 'language-$language';
+    if (languageString != null) {
+      final processedLanguage = _processAttribute(
+        languageString,
+        encodeHtml: parser.document.encodeHtml,
+      );
+      code.attributes['class'] = 'language-$processedLanguage';
     }
 
-    return Element('pre', [code]);
+    final pre = Element('pre', [code]);
+    if (metadataString != null) {
+      final processedMetadata = _processAttribute(
+        metadataString,
+        encodeHtml: parser.document.encodeHtml,
+      );
+      pre.attributes['data-metadata'] = processedMetadata;
+    }
+
+    return pre;
   }
 
-  String _removeIndentation(String content, int length) {
-    final text = content.replaceFirst(RegExp('^\\s{0,$length}'), '');
-    return content.substring(content.length - text.length);
+  static String _processAttribute(String value, {bool encodeHtml = false}) {
+    final decodedValue = decodeHtmlCharacters(value);
+    if (encodeHtml) {
+      return escapeHtmlAttribute(decodedValue);
+    }
+    return decodedValue;
   }
 
   @override
@@ -76,7 +91,7 @@ class FencedCodeBlockSyntax extends BlockSyntax {
           !closingFence.marker.startsWith(openingMarker) ||
           closingFence.hasInfo) {
         childLines.add(
-          Line(_removeIndentation(parser.current.content, indent)),
+          Line(_removeLeadingSpaces(parser.current.content, upTo: indent)),
         );
         parser.advance();
       } else {
@@ -94,6 +109,24 @@ class FencedCodeBlockSyntax extends BlockSyntax {
     }
 
     return childLines;
+  }
+
+  /// Removes the leading spaces (` `) from [content] up the given [upTo] count.
+  static String _removeLeadingSpaces(String content, {required int upTo}) {
+    var leadingSpacesCount = 0;
+
+    // Find the index of the first non-space character
+    // or the first space after the maximum removed specified by 'upTo'.
+    while (leadingSpacesCount < upTo && leadingSpacesCount < content.length) {
+      // We can just check for space (` `) since fenced code blocks
+      // consider spaces before the opening code fence as the
+      // indentation that should be removed.
+      if (content.codeUnitAt(leadingSpacesCount) != $space) {
+        break;
+      }
+      leadingSpacesCount += 1;
+    }
+    return content.substring(leadingSpacesCount);
   }
 }
 
@@ -130,12 +163,30 @@ class _FenceMatch {
   // https://spec.commonmark.org/0.30/#info-string.
   final String info;
 
-  // The first word of the info string is typically used to specify the language
-  // of the code sample,
-  // https://spec.commonmark.org/0.30/#example-143.
-  String get language => info.split(' ').first;
+  /// Returns the language and remaining metadata from the [info] string.
+  ///
+  /// The language is the first word of the info string,
+  /// to match the (unspecified, but typical) behavior of CommonMark parsers,
+  /// as suggested in https://spec.commonmark.org/0.30/#example-143.
+  ///
+  /// The metadata is any remaining part of the info string after the language.
+  (String? language, String? metadata) get languageAndMetadata {
+    if (info.isEmpty) {
+      return (null, null);
+    }
+
+    // We assume the info string is trimmed already.
+    final firstSpaceIndex = info.indexOf(' ');
+    if (firstSpaceIndex == -1) {
+      // If there is no space, the whole string is the language.
+      return (info, null);
+    }
+
+    return (
+      info.substring(0, firstSpaceIndex),
+      info.substring(firstSpaceIndex + 1),
+    );
+  }
 
   bool get hasInfo => info.isNotEmpty;
-
-  bool get hasLanguage => language.isNotEmpty;
 }

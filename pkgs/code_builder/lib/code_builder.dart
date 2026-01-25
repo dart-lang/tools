@@ -38,6 +38,7 @@ export 'src/specs/enum.dart'
 export 'src/specs/expression.dart'
     show
         BinaryExpression,
+        ClosureExpression,
         CodeExpression,
         ControlFlow,
         Expression,
@@ -47,6 +48,9 @@ export 'src/specs/expression.dart'
         InvokeExpressionType,
         LiteralExpression,
         LiteralListExpression,
+        LiteralMapExpression,
+        LiteralRecordExpression,
+        LiteralSetExpression,
         ParenthesizedExpression,
         ToCodeExpression,
         declareConst,
@@ -92,3 +96,4 @@ export 'src/specs/type_function.dart' show FunctionType, FunctionTypeBuilder;
 export 'src/specs/type_record.dart' show RecordType, RecordTypeBuilder;
 export 'src/specs/type_reference.dart' show TypeReference, TypeReferenceBuilder;
 export 'src/specs/typedef.dart' show TypeDef, TypeDefBuilder;
+export 'src/visitors.dart' show SpecVisitor;

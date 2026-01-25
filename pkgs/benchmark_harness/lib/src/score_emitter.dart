@@ -20,8 +20,12 @@ class PrintEmitter implements ScoreEmitter {
 /// be deprecated and removed.  That release will be a breaking change.
 abstract class ScoreEmitterV2 implements ScoreEmitter {
   @override
-  void emit(String testName, double value,
-      {String metric = 'RunTime', String unit});
+  void emit(
+    String testName,
+    double value, {
+    String metric = 'RunTime',
+    String unit,
+  });
 }
 
 /// New implementation of [PrintEmitter] implementing the [ScoreEmitterV2]
@@ -31,8 +35,12 @@ class PrintEmitterV2 implements ScoreEmitterV2 {
   const PrintEmitterV2();
 
   @override
-  void emit(String testName, double value,
-      {String metric = 'RunTime', String unit = ''}) {
+  void emit(
+    String testName,
+    double value, {
+    String metric = 'RunTime',
+    String unit = '',
+  }) {
     print(['$testName($metric):', value, if (unit.isNotEmpty) unit].join(' '));
   }
 }
