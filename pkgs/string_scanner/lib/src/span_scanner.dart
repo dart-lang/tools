@@ -73,7 +73,7 @@ class SpanScanner extends StringScanner implements LineScanner {
   /// itself and its `LineScannerState` are eagerly computed. To limit their
   /// memory footprint, returned spans and locations will still lazily compute
   /// their line and column numbers.
-  factory SpanScanner.eager(String string, {sourceUrl, int? position}) =
+  factory SpanScanner.eager(String string, {Object? sourceUrl, int? position}) =
       EagerSpanScanner;
 
   /// Creates a new [SpanScanner] that scans within [span].
