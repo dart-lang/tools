@@ -21,13 +21,13 @@ class _$TypeReference extends TypeReference {
   factory _$TypeReference([void Function(TypeReferenceBuilder)? updates]) =>
       (TypeReferenceBuilder()..update(updates)).build() as _$TypeReference;
 
-  _$TypeReference._(
-      {required this.symbol,
-      this.url,
-      this.bound,
-      required this.types,
-      this.isNullable})
-      : super._();
+  _$TypeReference._({
+    required this.symbol,
+    this.url,
+    this.bound,
+    required this.types,
+    this.isNullable,
+  }) : super._();
   @override
   TypeReference rebuild(void Function(TypeReferenceBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -164,10 +164,14 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
   _$TypeReference _build() {
     _$TypeReference _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$TypeReference._(
             symbol: BuiltValueNullFieldError.checkNotNull(
-                symbol, r'TypeReference', 'symbol'),
+              symbol,
+              r'TypeReference',
+              'symbol',
+            ),
             url: url,
             bound: bound,
             types: types.build(),
@@ -180,7 +184,10 @@ class _$TypeReferenceBuilder extends TypeReferenceBuilder {
         types.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'TypeReference', _$failedField, e.toString());
+          r'TypeReference',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

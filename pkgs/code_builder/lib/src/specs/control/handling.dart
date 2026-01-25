@@ -78,9 +78,10 @@ class TryBlock with ControlBlock {
   const TryBlock._finally(this.body) : isFinally = true;
 
   @override
-  ControlExpression get _expression => isFinally
-      ? ControlExpression.finallyStatement
-      : ControlExpression.tryStatement;
+  ControlExpression get _expression =>
+      isFinally
+          ? ControlExpression.finallyStatement
+          : ControlExpression.tryStatement;
 }
 
 /// Represents a `try`/`catch` block.
@@ -127,7 +128,9 @@ abstract class TryCatch
   static void _build(TryCatchBuilder builder) =>
       builder.handlers.isNotEmpty ||
       (throw ArgumentError(
-          'One or more `catch` clauses must be specified.', 'handlers'));
+        'One or more `catch` clauses must be specified.',
+        'handlers',
+      ));
 }
 
 /// Builds a [TryCatch] block.

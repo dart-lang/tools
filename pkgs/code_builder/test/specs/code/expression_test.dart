@@ -856,31 +856,19 @@ void main() {
   });
 
   test('should emit an addition assignment expression', () {
-    expect(
-      refer('foo').addAssign(refer('bar')),
-      equalsDart('foo += bar'),
-    );
+    expect(refer('foo').addAssign(refer('bar')), equalsDart('foo += bar'));
   });
 
   test('should emit a subtraction assignment expression', () {
-    expect(
-      refer('foo').subtractAssign(refer('bar')),
-      equalsDart('foo -= bar'),
-    );
+    expect(refer('foo').subtractAssign(refer('bar')), equalsDart('foo -= bar'));
   });
 
   test('should emit a multiplication assignment expression', () {
-    expect(
-      refer('foo').multiplyAssign(refer('bar')),
-      equalsDart('foo *= bar'),
-    );
+    expect(refer('foo').multiplyAssign(refer('bar')), equalsDart('foo *= bar'));
   });
 
   test('should emit a division assignment expression', () {
-    expect(
-      refer('foo').divideAssign(refer('bar')),
-      equalsDart('foo /= bar'),
-    );
+    expect(refer('foo').divideAssign(refer('bar')), equalsDart('foo /= bar'));
   });
 
   test('should emit an int division assignment expression', () {
@@ -947,10 +935,7 @@ void main() {
     expect(refer('foo').yieldStarred, equalsDart('yield* foo'));
   });
 
-  test(
-    'should emit a wildcard expression',
-    () {
-      expect(Expression.wildcard, equalsDart('_'));
-    },
-  );
+  test('should emit a wildcard expression', () {
+    expect(Expression.wildcard, equalsDart('_'));
+  });
 }

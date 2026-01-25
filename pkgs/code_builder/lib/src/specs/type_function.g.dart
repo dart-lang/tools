@@ -25,15 +25,15 @@ class _$FunctionType extends FunctionType {
   factory _$FunctionType([void Function(FunctionTypeBuilder)? updates]) =>
       (FunctionTypeBuilder()..update(updates)).build() as _$FunctionType;
 
-  _$FunctionType._(
-      {this.returnType,
-      required this.types,
-      required this.requiredParameters,
-      required this.optionalParameters,
-      required this.namedParameters,
-      required this.namedRequiredParameters,
-      this.isNullable})
-      : super._();
+  _$FunctionType._({
+    this.returnType,
+    required this.types,
+    required this.requiredParameters,
+    required this.optionalParameters,
+    required this.namedParameters,
+    required this.namedRequiredParameters,
+    this.isNullable,
+  }) : super._();
   @override
   FunctionType rebuild(void Function(FunctionTypeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -204,7 +204,8 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
   _$FunctionType _build() {
     _$FunctionType _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$FunctionType._(
             returnType: returnType,
             types: types.build(),
@@ -229,7 +230,10 @@ class _$FunctionTypeBuilder extends FunctionTypeBuilder {
         namedRequiredParameters.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'FunctionType', _$failedField, e.toString());
+          r'FunctionType',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

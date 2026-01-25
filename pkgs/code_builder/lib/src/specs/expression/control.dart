@@ -42,8 +42,12 @@ class ControlExpression extends Expression {
   final bool parenthesised;
 
   @visibleForTesting
-  const ControlExpression(this.control,
-      {this.body, this.separator, this.parenthesised = true});
+  const ControlExpression(
+    this.control, {
+    this.body,
+    this.separator,
+    this.parenthesised = true,
+  });
 
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>
@@ -53,23 +57,39 @@ class ControlExpression extends Expression {
       ControlExpression('if', body: [condition]);
 
   factory ControlExpression.elseStatement(Expression? condition) =>
-      ControlExpression('else',
-          body: condition != null ? [condition] : null, parenthesised: false);
+      ControlExpression(
+        'else',
+        body: condition != null ? [condition] : null,
+        parenthesised: false,
+      );
 
   factory ControlExpression.forLoop(
-          Expression? initialize, Expression? condition, Expression? advance) =>
-      ControlExpression('for',
-          body: [initialize, condition, advance], separator: ';');
+    Expression? initialize,
+    Expression? condition,
+    Expression? advance,
+  ) => ControlExpression(
+    'for',
+    body: [initialize, condition, advance],
+    separator: ';',
+  );
 
   factory ControlExpression.forInLoop(
-          Expression identifier, Expression expression) =>
-      ControlExpression('for',
-          body: [identifier, expression], separator: ' in');
+    Expression identifier,
+    Expression expression,
+  ) => ControlExpression(
+    'for',
+    body: [identifier, expression],
+    separator: ' in',
+  );
 
   factory ControlExpression.awaitForLoop(
-          Expression identifier, Expression expression) =>
-      ControlExpression('await for',
-          body: [identifier, expression], separator: ' in');
+    Expression identifier,
+    Expression expression,
+  ) => ControlExpression(
+    'await for',
+    body: [identifier, expression],
+    separator: ' in',
+  );
 
   factory ControlExpression.whileLoop(Expression condition) =>
       ControlExpression('while', body: [condition]);
@@ -78,18 +98,24 @@ class ControlExpression extends Expression {
 
   static const tryStatement = ControlExpression('try');
 
-  factory ControlExpression.catchStatement(String error,
-          [String? stacktrace]) =>
-      ControlExpression('catch',
-          body: [refer(error), if (stacktrace != null) refer(stacktrace)],
-          separator: ',');
+  factory ControlExpression.catchStatement(
+    String error, [
+    String? stacktrace,
+  ]) => ControlExpression(
+    'catch',
+    body: [refer(error), if (stacktrace != null) refer(stacktrace)],
+    separator: ',',
+  );
 
-  factory ControlExpression.onStatement(Reference type,
-          [ControlExpression? statement]) =>
-      ControlExpression('on',
-          body: [type, if (statement != null) statement],
-          parenthesised: false,
-          separator: '');
+  factory ControlExpression.onStatement(
+    Reference type, [
+    ControlExpression? statement,
+  ]) => ControlExpression(
+    'on',
+    body: [type, if (statement != null) statement],
+    parenthesised: false,
+    separator: '',
+  );
 
   static const finallyStatement = ControlExpression('finally');
 
@@ -142,10 +168,12 @@ extension ControlFlow on Expression {
   ///   body
   /// }
   /// ```
-  WhileLoop loopWhile(void Function(BlockBuilder block) builder) =>
-      WhileLoop((loop) => loop
-        ..condition = this
-        ..body.update(builder));
+  WhileLoop loopWhile(void Function(BlockBuilder block) builder) => WhileLoop(
+    (loop) =>
+        loop
+          ..condition = this
+          ..body.update(builder),
+  );
 
   /// Build a `do-while` loop from this expression.
   ///
@@ -154,11 +182,13 @@ extension ControlFlow on Expression {
   ///   body
   /// } while (this);
   /// ```
-  WhileLoop loopDoWhile(void Function(BlockBuilder block) builder) =>
-      WhileLoop((loop) => loop
-        ..doWhile = true
-        ..condition = this
-        ..body.update(builder));
+  WhileLoop loopDoWhile(void Function(BlockBuilder block) builder) => WhileLoop(
+    (loop) =>
+        loop
+          ..doWhile = true
+          ..condition = this
+          ..body.update(builder),
+  );
 
   /// Build a `for-in` loop from this expression in [object].
   ///
@@ -168,11 +198,15 @@ extension ControlFlow on Expression {
   /// }
   /// ```
   ForInLoop loopForIn(
-          Expression object, void Function(BlockBuilder block) builder) =>
-      ForInLoop((loop) => loop
-        ..object = object
-        ..variable = this
-        ..body.update(builder));
+    Expression object,
+    void Function(BlockBuilder block) builder,
+  ) => ForInLoop(
+    (loop) =>
+        loop
+          ..object = object
+          ..variable = this
+          ..body.update(builder),
+  );
 
   /// Build this expression into a [Conditional]
   ///
@@ -212,19 +246,21 @@ extension ControlFlow on Expression {
   /// }
   /// ```
   Conditional ifThen(void Function(BlockBuilder body) builder) => Conditional(
-        (tree) => tree
-          ..add(
-            (branch) => branch
-              ..condition = this
-              ..body.update(builder),
-          ),
-      );
+    (tree) =>
+        tree..add(
+          (branch) =>
+              branch
+                ..condition = this
+                ..body.update(builder),
+        ),
+  );
 
   /// Returns `if (this) return value`
   Expression ifThenReturn([Expression? value]) => BinaryExpression._(
-      ControlExpression.ifStatement(this),
-      value == null ? ControlFlow.returnVoid : value.returned,
-      '');
+    ControlExpression.ifStatement(this),
+    value == null ? ControlFlow.returnVoid : value.returned,
+    '',
+  );
 
   /// `return`
   static const returnVoid = LiteralExpression._('return');
@@ -271,10 +307,11 @@ extension ControlFlow on Expression {
   /// ```
   ///
   /// See https://dart.dev/language/branches#if-case
-  static Expression ifCase(
-      {required Expression object,
-      required Expression pattern,
-      Expression? guard}) {
+  static Expression ifCase({
+    required Expression object,
+    required Expression pattern,
+    Expression? guard,
+  }) {
     final first = BinaryExpression._(object, pattern, 'case');
     if (guard == null) return first;
     return BinaryExpression._(first, guard, 'when');
@@ -315,11 +352,11 @@ extension ControlFlow on Expression {
   static Expression collectionIf({
     required Expression condition,
     required Expression value,
-  }) =>
-      CollectionExpression._(
-          chainTarget: true,
-          control: ControlExpression.ifStatement(condition),
-          value: value);
+  }) => CollectionExpression._(
+    chainTarget: true,
+    control: ControlExpression.ifStatement(condition),
+    value: value,
+  );
 
   /// Returns a collection-`else` expression.
   ///
@@ -334,15 +371,15 @@ extension ControlFlow on Expression {
   static Expression collectionElse({
     Expression? condition,
     required Expression value,
-  }) =>
-      CollectionExpression._(
-          chain: true,
-          chainTarget: condition != null,
-          // only chainable if this is an else-if statement
-          control: ControlExpression.elseStatement(condition == null
-              ? null
-              : ControlExpression.ifStatement(condition)),
-          value: value);
+  }) => CollectionExpression._(
+    chain: true,
+    chainTarget: condition != null,
+    // only chainable if this is an else-if statement
+    control: ControlExpression.elseStatement(
+      condition == null ? null : ControlExpression.ifStatement(condition),
+    ),
+    value: value,
+  );
 
   /// Returns a collection-`for` expression.
   ///
@@ -377,15 +414,16 @@ extension ControlFlow on Expression {
   /// }
   /// ```
   /// {@endtemplate}
-  static Expression collectionFor(
-          {Expression? initialize,
-          Expression? condition,
-          Expression? advance,
-          required Expression value}) =>
-      CollectionExpression._(
-          chainTarget: true,
-          control: ControlExpression.forLoop(initialize, condition, advance),
-          value: value);
+  static Expression collectionFor({
+    Expression? initialize,
+    Expression? condition,
+    Expression? advance,
+    required Expression value,
+  }) => CollectionExpression._(
+    chainTarget: true,
+    control: ControlExpression.forLoop(initialize, condition, advance),
+    value: value,
+  );
 
   /// Returns a collection-`for-in` expression
   ///
@@ -398,9 +436,9 @@ extension ControlFlow on Expression {
     required Expression identifier,
     required Expression expression,
     required Expression value,
-  }) =>
-      CollectionExpression._(
-          chainTarget: value is CollectionExpression && value.chainTarget,
-          control: ControlExpression.forInLoop(identifier, expression),
-          value: value);
+  }) => CollectionExpression._(
+    chainTarget: value is CollectionExpression && value.chainTarget,
+    control: ControlExpression.forInLoop(identifier, expression),
+    value: value,
+  );
 }

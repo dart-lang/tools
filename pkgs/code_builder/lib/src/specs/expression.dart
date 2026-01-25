@@ -456,19 +456,17 @@ extension on Iterable<dynamic> {
   /// [CollectionExpression]s as a single item.
   int get adjustedLength {
     var chain = false;
-    return where(
-      (element) {
-        if (element is! CollectionExpression) {
-          chain = false;
-          return true;
-        }
+    return where((element) {
+      if (element is! CollectionExpression) {
+        chain = false;
+        return true;
+      }
 
-        final skip = element.chain && chain;
-        chain = element.chainTarget;
+      final skip = element.chain && chain;
+      chain = element.chainTarget;
 
-        return !skip;
-      },
-    ).length;
+      return !skip;
+    }).length;
   }
 }
 

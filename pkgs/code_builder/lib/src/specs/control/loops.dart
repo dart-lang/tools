@@ -76,9 +76,10 @@ abstract class ForInLoop
   Expression get object;
 
   @override
-  ControlExpression get _expression => async == true
-      ? ControlExpression.awaitForLoop(variable, object)
-      : ControlExpression.forInLoop(variable, object);
+  ControlExpression get _expression =>
+      async == true
+          ? ControlExpression.awaitForLoop(variable, object)
+          : ControlExpression.forInLoop(variable, object);
 }
 
 /// Represents a `while` loop.

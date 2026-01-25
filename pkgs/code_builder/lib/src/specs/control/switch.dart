@@ -86,7 +86,7 @@ abstract class Case<T> implements Built<Case<T>, CaseBuilder<T>> {
 @internal
 class DefaultCase<T> extends _$Case<T> {
   DefaultCase._(T body, {super.label})
-      : super._(body: body, pattern: Expression.wildcard);
+    : super._(body: body, pattern: Expression.wildcard);
 
   @override
   bool get _default => true;
@@ -99,11 +99,12 @@ class CaseStatement extends _$Case<Code?> implements Code {
   final Case<Code?> item;
 
   CaseStatement._(this.item)
-      : super._(
-            pattern: item.pattern,
-            body: item.body,
-            guard: item.guard,
-            label: item.label);
+    : super._(
+        pattern: item.pattern,
+        body: item.body,
+        guard: item.guard,
+        label: item.label,
+      );
 
   @override
   bool get _default => item._default;
@@ -121,14 +122,17 @@ class CaseExpression extends _$Case<Expression> implements Code {
   // (case/switch expressions don't support the `default` keyword)
 
   CaseExpression._(Case<Expression> item)
-      : super._(
-            pattern: item.pattern,
-            body: item.body ??
-                (throw ArgumentError(
-                    'Cases in `switch` expressions must provide '
-                        'a non-null body.',
-                    'body')),
-            guard: item.guard);
+    : super._(
+        pattern: item.pattern,
+        body:
+            item.body ??
+            (throw ArgumentError(
+              'Cases in `switch` expressions must provide '
+                  'a non-null body.',
+              'body',
+            )),
+        guard: item.guard,
+      );
 
   @override
   R accept<R>(covariant ControlBlockVisitor<R> visitor, [R? context]) =>

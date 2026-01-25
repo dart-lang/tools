@@ -84,10 +84,7 @@ class _$BlockBuilder extends BlockBuilder {
   _$Block _build() {
     _$Block _$result;
     try {
-      _$result = _$v ??
-          _$Block._(
-            statements: statements.build(),
-          );
+      _$result = _$v ?? _$Block._(statements: statements.build());
     } catch (_) {
       late String _$failedField;
       try {

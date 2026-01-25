@@ -29,17 +29,17 @@ class _$Field extends Field {
   factory _$Field([void Function(FieldBuilder)? updates]) =>
       (FieldBuilder()..update(updates)).build() as _$Field;
 
-  _$Field._(
-      {required this.annotations,
-      required this.docs,
-      this.assignment,
-      required this.static,
-      required this.late,
-      required this.external,
-      required this.name,
-      this.type,
-      required this.modifier})
-      : super._();
+  _$Field._({
+    required this.annotations,
+    required this.docs,
+    this.assignment,
+    required this.static,
+    required this.late,
+    required this.external,
+    required this.name,
+    this.type,
+    required this.modifier,
+  }) : super._();
   @override
   Field rebuild(void Function(FieldBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -240,20 +240,30 @@ class _$FieldBuilder extends FieldBuilder {
   _$Field _build() {
     _$Field _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Field._(
             annotations: annotations.build(),
             docs: docs.build(),
             assignment: assignment,
             static: BuiltValueNullFieldError.checkNotNull(
-                static, r'Field', 'static'),
+              static,
+              r'Field',
+              'static',
+            ),
             late: BuiltValueNullFieldError.checkNotNull(late, r'Field', 'late'),
             external: BuiltValueNullFieldError.checkNotNull(
-                external, r'Field', 'external'),
+              external,
+              r'Field',
+              'external',
+            ),
             name: BuiltValueNullFieldError.checkNotNull(name, r'Field', 'name'),
             type: type,
             modifier: BuiltValueNullFieldError.checkNotNull(
-                modifier, r'Field', 'modifier'),
+              modifier,
+              r'Field',
+              'modifier',
+            ),
           );
     } catch (_) {
       late String _$failedField;

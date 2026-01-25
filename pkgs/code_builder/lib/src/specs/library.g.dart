@@ -27,16 +27,16 @@ class _$Library extends Library {
   factory _$Library([void Function(LibraryBuilder)? updates]) =>
       (LibraryBuilder()..update(updates)).build() as _$Library;
 
-  _$Library._(
-      {required this.annotations,
-      required this.docs,
-      required this.directives,
-      required this.body,
-      required this.comments,
-      this.generatedByComment,
-      required this.ignoreForFile,
-      this.name})
-      : super._();
+  _$Library._({
+    required this.annotations,
+    required this.docs,
+    required this.directives,
+    required this.body,
+    required this.comments,
+    this.generatedByComment,
+    required this.ignoreForFile,
+    this.name,
+  }) : super._();
   @override
   Library rebuild(void Function(LibraryBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -221,7 +221,8 @@ class _$LibraryBuilder extends LibraryBuilder {
   _$Library _build() {
     _$Library _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Library._(
             annotations: annotations.build(),
             docs: docs.build(),
@@ -250,7 +251,10 @@ class _$LibraryBuilder extends LibraryBuilder {
         ignoreForFile.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Library', _$failedField, e.toString());
+          r'Library',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

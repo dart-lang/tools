@@ -35,20 +35,20 @@ class _$Constructor extends Constructor {
   factory _$Constructor([void Function(ConstructorBuilder)? updates]) =>
       (ConstructorBuilder()..update(updates)).build() as _$Constructor;
 
-  _$Constructor._(
-      {required this.annotations,
-      required this.docs,
-      required this.optionalParameters,
-      required this.requiredParameters,
-      required this.initializers,
-      this.body,
-      required this.external,
-      required this.constant,
-      required this.factory,
-      this.lambda,
-      this.name,
-      this.redirect})
-      : super._();
+  _$Constructor._({
+    required this.annotations,
+    required this.docs,
+    required this.optionalParameters,
+    required this.requiredParameters,
+    required this.initializers,
+    this.body,
+    required this.external,
+    required this.constant,
+    required this.factory,
+    this.lambda,
+    this.name,
+    this.redirect,
+  }) : super._();
   @override
   Constructor rebuild(void Function(ConstructorBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -297,7 +297,8 @@ class _$ConstructorBuilder extends ConstructorBuilder {
   _$Constructor _build() {
     _$Constructor _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Constructor._(
             annotations: annotations.build(),
             docs: docs.build(),
@@ -306,11 +307,20 @@ class _$ConstructorBuilder extends ConstructorBuilder {
             initializers: initializers.build(),
             body: body,
             external: BuiltValueNullFieldError.checkNotNull(
-                external, r'Constructor', 'external'),
+              external,
+              r'Constructor',
+              'external',
+            ),
             constant: BuiltValueNullFieldError.checkNotNull(
-                constant, r'Constructor', 'constant'),
+              constant,
+              r'Constructor',
+              'constant',
+            ),
             factory: BuiltValueNullFieldError.checkNotNull(
-                factory, r'Constructor', 'factory'),
+              factory,
+              r'Constructor',
+              'factory',
+            ),
             lambda: lambda,
             name: name,
             redirect: redirect,
@@ -330,7 +340,10 @@ class _$ConstructorBuilder extends ConstructorBuilder {
         initializers.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Constructor', _$failedField, e.toString());
+          r'Constructor',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

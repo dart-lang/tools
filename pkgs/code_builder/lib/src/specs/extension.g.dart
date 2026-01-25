@@ -25,15 +25,15 @@ class _$Extension extends Extension {
   factory _$Extension([void Function(ExtensionBuilder)? updates]) =>
       (ExtensionBuilder()..update(updates)).build() as _$Extension;
 
-  _$Extension._(
-      {required this.annotations,
-      required this.docs,
-      this.on,
-      required this.types,
-      required this.methods,
-      required this.fields,
-      this.name})
-      : super._();
+  _$Extension._({
+    required this.annotations,
+    required this.docs,
+    this.on,
+    required this.types,
+    required this.methods,
+    required this.fields,
+    this.name,
+  }) : super._();
   @override
   Extension rebuild(void Function(ExtensionBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -202,7 +202,8 @@ class _$ExtensionBuilder extends ExtensionBuilder {
   _$Extension _build() {
     _$Extension _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Extension._(
             annotations: annotations.build(),
             docs: docs.build(),
@@ -228,7 +229,10 @@ class _$ExtensionBuilder extends ExtensionBuilder {
         fields.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Extension', _$failedField, e.toString());
+          r'Extension',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -1,48 +1,22 @@
 ## 4.12.0-wip
 
-* Add `ControlFlow` extension on `Expression` to support control-flow helper functions.
-  * Add `Expression.yielded` (via ext.)
-  * Add `Expression.yieldStarred` (via ext.)
-  * Add `Expression.ifThen` (via ext.)
-  * Add `Expression.ifThenReturn` (via ext.)
-  * Add `Expression.loopWhile` (via ext.)
-  * Add `Expression.loopDoWhile` (via ext.)
-  * Add `Expression.loopForIn` (via ext.)
+* Add `ForLoop`, `ForInLoop`, and `WhileLoop` classes to support control-flow loops.
 
-* Add static keyword helper functions to `ControlFlow`.
-  * Add `ControlFlow.breakVoid`
-  * Add `ControlFlow.breakLabel`
-  * Add `ControlFlow.continueVoid`
-  * Add `ControlFlow.continueLabel`
-  * Add `ControlFlow.returnVoid`
-  * Add `ControlFlow.rethrowVoid`
+* Add `Conditional` and `BranchBuilder` classes to support `if` statements and trees.
 
-* Support emitting collection control-flow expressions via static methods on `ControlFlow`.
-  * Add `ControlFlow.collectionIf`
-  * Add `ControlFlow.collectionElse`
-  * Add `ControlFlow.collectionFor`
-  * Add `ControlFlow.collectionForIn`
-  * Add `ControlFlow.ifCase`
-  * Update literal collection visitors to support chaining.
+* Add `TryCatch` and `CatchBlock` classes to support `try`/`catch` blocks.
 
-* Support emitting control-flow loops.
-  * Add `ForLoop` and `ForLoopBuilder` for traditional `for` loops.
-  * Add `ForInLoop` and `ForInLoopBuilder` for `for-in` and `await-for` loops.
-  * Add `WhileLoop` and `WhileLoopBuilder` for `while` and `do-while` loops.
+* Add `Case`, `SwitchExpression`, and `SwitchStatement` classes to support `switch`
+  expressions/statements.
 
-* Support emitting `if` statements and `if`/`else if`/`else` trees.
-  * Add `Conditional` and `ConditionalBuilder` for conditional trees.
-  * Add `BranchBuilder` for building `Conditional` branches.
+* Add `yielded`, `yieldStarred`, `ifThen`, `ifThenReturn`, `loopWhile`, `loopDoWhile`,
+  and `loopForIn` methods to `Expression` via `ControlFlow` extension.
 
-* Support emitting `try`/`catch`/`finally` blocks.
-  * Add `CatchBlock` and `CatchBlockBuilder` for catch clauses.
-  * Add `TryCatch` and `TryCatchBuilder` for try/catch blocks.
+* Add static constants `breakVoid`, `continueVoid`, `returnVoid`, and `rethrowVoid`
+  (on `ControlFlow`) and `wildcard` (on `Expression`).
 
-* Support emitting `switch` statements and expressions.
-  * Add `Case` and `CaseBuilder` for creating `switch` cases.
-  * Add `SwitchExpression` and `SwitchExpressionBuilder` for `switch` expressions.
-  * Add `SwitchStatement` and `SwitchStatementBuilder` for `switch` statements.
-  * Add `Expression.wildcard` static constant for wildcard (`_`) expressions.
+* Add static methods `breakLabel`, `continueLabel`, `collectionIf`, `collectionElse`,
+  `collectionFor`, `collectionForIn`, and `ifCase` to `ControlFlow`.
 
 * Simplify usage examples on the README.
 

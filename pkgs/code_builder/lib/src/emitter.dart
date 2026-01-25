@@ -51,7 +51,8 @@ StringSink visitAll<T>(
   while (iterator.moveNext()) {
     final curr = iterator.current;
 
-    final chain = prev is CollectionExpression &&
+    final chain =
+        prev is CollectionExpression &&
         curr is CollectionExpression &&
         prev.chainTarget &&
         curr.chain;

@@ -21,13 +21,13 @@ class _$TypeDef extends TypeDef {
   factory _$TypeDef([void Function(TypeDefBuilder)? updates]) =>
       (TypeDefBuilder()..update(updates)).build() as _$TypeDef;
 
-  _$TypeDef._(
-      {required this.name,
-      required this.definition,
-      required this.annotations,
-      required this.docs,
-      required this.types})
-      : super._();
+  _$TypeDef._({
+    required this.name,
+    required this.definition,
+    required this.annotations,
+    required this.docs,
+    required this.types,
+  }) : super._();
   @override
   TypeDef rebuild(void Function(TypeDefBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -164,12 +164,19 @@ class _$TypeDefBuilder extends TypeDefBuilder {
   _$TypeDef _build() {
     _$TypeDef _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$TypeDef._(
-            name:
-                BuiltValueNullFieldError.checkNotNull(name, r'TypeDef', 'name'),
+            name: BuiltValueNullFieldError.checkNotNull(
+              name,
+              r'TypeDef',
+              'name',
+            ),
             definition: BuiltValueNullFieldError.checkNotNull(
-                definition, r'TypeDef', 'definition'),
+              definition,
+              r'TypeDef',
+              'definition',
+            ),
             annotations: annotations.build(),
             docs: docs.build(),
             types: types.build(),
@@ -185,7 +192,10 @@ class _$TypeDefBuilder extends TypeDefBuilder {
         types.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'TypeDef', _$failedField, e.toString());
+          r'TypeDef',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

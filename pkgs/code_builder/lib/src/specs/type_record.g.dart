@@ -17,11 +17,11 @@ class _$RecordType extends RecordType {
   factory _$RecordType([void Function(RecordTypeBuilder)? updates]) =>
       (RecordTypeBuilder()..update(updates)).build() as _$RecordType;
 
-  _$RecordType._(
-      {required this.positionalFieldTypes,
-      required this.namedFieldTypes,
-      this.isNullable})
-      : super._();
+  _$RecordType._({
+    required this.positionalFieldTypes,
+    required this.namedFieldTypes,
+    this.isNullable,
+  }) : super._();
   @override
   RecordType rebuild(void Function(RecordTypeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -126,7 +126,8 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
   _$RecordType _build() {
     _$RecordType _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$RecordType._(
             positionalFieldTypes: positionalFieldTypes.build(),
             namedFieldTypes: namedFieldTypes.build(),
@@ -141,7 +142,10 @@ class _$RecordTypeBuilder extends RecordTypeBuilder {
         namedFieldTypes.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'RecordType', _$failedField, e.toString());
+          r'RecordType',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

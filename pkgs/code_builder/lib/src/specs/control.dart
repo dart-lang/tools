@@ -57,8 +57,10 @@ abstract mixin class ControlBlockEmitter
   }
 
   @override
-  StringSink visitLabeledBlock(LabeledControlBlock block,
-      [StringSink? output]) {
+  StringSink visitLabeledBlock(
+    LabeledControlBlock block, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     if (block.label != null) {
       output.writeln('${block.label!}:');
@@ -93,8 +95,10 @@ abstract mixin class ControlBlockEmitter
   }
 
   @override
-  StringSink visitControlExpression(ControlExpression expression,
-      [StringSink? output]) {
+  StringSink visitControlExpression(
+    ControlExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
 
     output.write(expression.control);
@@ -121,9 +125,10 @@ abstract mixin class ControlBlockEmitter
 
     if (expression.separator == null) {
       throw ArgumentError(
-          'A separator must be provided when body contains '
-              'multiple expressions.',
-          'separator');
+        'A separator must be provided when body contains '
+            'multiple expressions.',
+        'separator',
+      );
     }
 
     final separator = expression.separator!; // convenience
@@ -153,15 +158,19 @@ abstract mixin class ControlBlockEmitter
   StringSink visitSwitch(Switch statement, [StringSink? output]) {
     output ??= StringBuffer();
 
-    final buildable =
-        BuildableSwitch(value: statement.value, cases: statement._cases);
+    final buildable = BuildableSwitch(
+      value: statement.value,
+      cases: statement._cases,
+    );
 
     return visitControlBlock(buildable, output);
   }
 
   @override
-  StringSink _visitCaseStatement(CaseStatement statement,
-      [StringSink? output]) {
+  StringSink _visitCaseStatement(
+    CaseStatement statement, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
 
     if (statement.label case final String label) {
@@ -190,8 +199,10 @@ abstract mixin class ControlBlockEmitter
   }
 
   @override
-  StringSink _visitCaseExpression(CaseExpression expression,
-      [StringSink? output]) {
+  StringSink _visitCaseExpression(
+    CaseExpression expression, [
+    StringSink? output,
+  ]) {
     output ??= StringBuffer();
     expression.pattern.accept(this, output);
 

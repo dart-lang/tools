@@ -37,21 +37,21 @@ class _$Method extends Method {
   factory _$Method([void Function(MethodBuilder)? updates]) =>
       (MethodBuilder()..update(updates)).build() as _$Method;
 
-  _$Method._(
-      {required this.annotations,
-      required this.docs,
-      required this.types,
-      required this.optionalParameters,
-      required this.requiredParameters,
-      this.body,
-      required this.external,
-      this.lambda,
-      required this.static,
-      this.name,
-      this.type,
-      this.modifier,
-      this.returns})
-      : super._();
+  _$Method._({
+    required this.annotations,
+    required this.docs,
+    required this.types,
+    required this.optionalParameters,
+    required this.requiredParameters,
+    this.body,
+    required this.external,
+    this.lambda,
+    required this.static,
+    this.name,
+    this.type,
+    this.modifier,
+    this.returns,
+  }) : super._();
   @override
   Method rebuild(void Function(MethodBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -316,7 +316,8 @@ class _$MethodBuilder extends MethodBuilder {
   _$Method _build() {
     _$Method _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Method._(
             annotations: annotations.build(),
             docs: docs.build(),
@@ -325,10 +326,16 @@ class _$MethodBuilder extends MethodBuilder {
             requiredParameters: requiredParameters.build(),
             body: body,
             external: BuiltValueNullFieldError.checkNotNull(
-                external, r'Method', 'external'),
+              external,
+              r'Method',
+              'external',
+            ),
             lambda: lambda,
             static: BuiltValueNullFieldError.checkNotNull(
-                static, r'Method', 'static'),
+              static,
+              r'Method',
+              'static',
+            ),
             name: name,
             type: type,
             modifier: modifier,
@@ -349,7 +356,10 @@ class _$MethodBuilder extends MethodBuilder {
         requiredParameters.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Method', _$failedField, e.toString());
+          r'Method',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -385,19 +395,19 @@ class _$Parameter extends Parameter {
   factory _$Parameter([void Function(ParameterBuilder)? updates]) =>
       (ParameterBuilder()..update(updates)).build() as _$Parameter;
 
-  _$Parameter._(
-      {this.defaultTo,
-      required this.name,
-      required this.named,
-      required this.toThis,
-      required this.toSuper,
-      required this.annotations,
-      required this.docs,
-      required this.types,
-      this.type,
-      required this.required,
-      required this.covariant})
-      : super._();
+  _$Parameter._({
+    this.defaultTo,
+    required this.name,
+    required this.named,
+    required this.toThis,
+    required this.toSuper,
+    required this.annotations,
+    required this.docs,
+    required this.types,
+    this.type,
+    required this.required,
+    required this.covariant,
+  }) : super._();
   @override
   Parameter rebuild(void Function(ParameterBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -630,25 +640,44 @@ class _$ParameterBuilder extends ParameterBuilder {
   _$Parameter _build() {
     _$Parameter _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Parameter._(
             defaultTo: defaultTo,
             name: BuiltValueNullFieldError.checkNotNull(
-                name, r'Parameter', 'name'),
+              name,
+              r'Parameter',
+              'name',
+            ),
             named: BuiltValueNullFieldError.checkNotNull(
-                named, r'Parameter', 'named'),
+              named,
+              r'Parameter',
+              'named',
+            ),
             toThis: BuiltValueNullFieldError.checkNotNull(
-                toThis, r'Parameter', 'toThis'),
+              toThis,
+              r'Parameter',
+              'toThis',
+            ),
             toSuper: BuiltValueNullFieldError.checkNotNull(
-                toSuper, r'Parameter', 'toSuper'),
+              toSuper,
+              r'Parameter',
+              'toSuper',
+            ),
             annotations: annotations.build(),
             docs: docs.build(),
             types: types.build(),
             type: type,
             required: BuiltValueNullFieldError.checkNotNull(
-                required, r'Parameter', 'required'),
+              required,
+              r'Parameter',
+              'required',
+            ),
             covariant: BuiltValueNullFieldError.checkNotNull(
-                covariant, r'Parameter', 'covariant'),
+              covariant,
+              r'Parameter',
+              'covariant',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -661,7 +690,10 @@ class _$ParameterBuilder extends ParameterBuilder {
         types.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Parameter', _$failedField, e.toString());
+          r'Parameter',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

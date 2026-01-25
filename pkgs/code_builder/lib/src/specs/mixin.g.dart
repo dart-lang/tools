@@ -29,17 +29,17 @@ class _$Mixin extends Mixin {
   factory _$Mixin([void Function(MixinBuilder)? updates]) =>
       (MixinBuilder()..update(updates)).build() as _$Mixin;
 
-  _$Mixin._(
-      {required this.base,
-      required this.annotations,
-      required this.docs,
-      this.on,
-      required this.implements,
-      required this.types,
-      required this.methods,
-      required this.fields,
-      required this.name})
-      : super._();
+  _$Mixin._({
+    required this.base,
+    required this.annotations,
+    required this.docs,
+    this.on,
+    required this.implements,
+    required this.types,
+    required this.methods,
+    required this.fields,
+    required this.name,
+  }) : super._();
   @override
   Mixin rebuild(void Function(MixinBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -240,7 +240,8 @@ class _$MixinBuilder extends MixinBuilder {
   _$Mixin _build() {
     _$Mixin _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Mixin._(
             base: BuiltValueNullFieldError.checkNotNull(base, r'Mixin', 'base'),
             annotations: annotations.build(),

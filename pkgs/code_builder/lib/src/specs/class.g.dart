@@ -39,22 +39,22 @@ class _$Class extends Class {
   factory _$Class([void Function(ClassBuilder)? updates]) =>
       (ClassBuilder()..update(updates)).build() as _$Class;
 
-  _$Class._(
-      {required this.abstract,
-      required this.sealed,
-      required this.mixin,
-      this.modifier,
-      required this.annotations,
-      required this.docs,
-      this.extend,
-      required this.implements,
-      required this.mixins,
-      required this.types,
-      required this.constructors,
-      required this.methods,
-      required this.fields,
-      required this.name})
-      : super._();
+  _$Class._({
+    required this.abstract,
+    required this.sealed,
+    required this.mixin,
+    this.modifier,
+    required this.annotations,
+    required this.docs,
+    this.extend,
+    required this.implements,
+    required this.mixins,
+    required this.types,
+    required this.constructors,
+    required this.methods,
+    required this.fields,
+    required this.name,
+  }) : super._();
   @override
   Class rebuild(void Function(ClassBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -335,14 +335,24 @@ class _$ClassBuilder extends ClassBuilder {
   _$Class _build() {
     _$Class _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Class._(
             abstract: BuiltValueNullFieldError.checkNotNull(
-                abstract, r'Class', 'abstract'),
+              abstract,
+              r'Class',
+              'abstract',
+            ),
             sealed: BuiltValueNullFieldError.checkNotNull(
-                sealed, r'Class', 'sealed'),
-            mixin:
-                BuiltValueNullFieldError.checkNotNull(mixin, r'Class', 'mixin'),
+              sealed,
+              r'Class',
+              'sealed',
+            ),
+            mixin: BuiltValueNullFieldError.checkNotNull(
+              mixin,
+              r'Class',
+              'mixin',
+            ),
             modifier: modifier,
             annotations: annotations.build(),
             docs: docs.build(),

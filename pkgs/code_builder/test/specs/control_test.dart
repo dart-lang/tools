@@ -20,10 +20,7 @@ void main() {
           ..body.addExpression(refer('print').call([refer('i')]));
       });
 
-      expect(
-        loop,
-        equalsDart('for (int i = 0; i < 5; i++) {\n  print(i);\n}'),
-      );
+      expect(loop, equalsDart('for (int i = 0; i < 5; i++) {\n  print(i);\n}'));
     });
 
     test('should emit a for loop with only init', () {
@@ -117,15 +114,10 @@ void main() {
         b
           ..doWhile = true
           ..condition = refer('keepGoing')
-          ..body.addExpression(
-            refer('process').call([]),
-          );
+          ..body.addExpression(refer('process').call([]));
       });
 
-      expect(
-        loop,
-        equalsDart('do {\n  process();\n} while (keepGoing);'),
-      );
+      expect(loop, equalsDart('do {\n  process();\n} while (keepGoing);'));
     });
 
     test('should emit a labeled do-while loop', () {
@@ -134,9 +126,7 @@ void main() {
           ..doWhile = true
           ..label = 'mainLoop'
           ..condition = refer('keepGoing')
-          ..body.addExpression(
-            refer('process').call([]),
-          );
+          ..body.addExpression(refer('process').call([]));
       });
 
       expect(
@@ -148,36 +138,46 @@ void main() {
 
   group('conditional', () {
     test('should emit a single if block', () {
-      final tree = Conditional((tree) => tree.add((b) => b
-        ..condition = refer('x').equalTo(literal(1))
-        ..body.addExpression(refer('print').call([literal('one')]))));
-
-      expect(
-        tree,
-        equalsDart('if (x == 1) {\n  print(\'one\');\n}'),
+      final tree = Conditional(
+        (tree) => tree.add(
+          (b) =>
+              b
+                ..condition = refer('x').equalTo(literal(1))
+                ..body.addExpression(refer('print').call([literal('one')])),
+        ),
       );
+
+      expect(tree, equalsDart('if (x == 1) {\n  print(\'one\');\n}'));
     });
 
     test('should emit a single if-case block', () {
-      final tree = Conditional((tree) => tree.add((b) => b
-        ..ifCase(object: refer('x'), pattern: refer('y'))
-        ..body.addExpression(ControlFlow.returnVoid)));
-
-      expect(
-        tree,
-        equalsDart('if (x case y) {\n  return;\n}'),
+      final tree = Conditional(
+        (tree) => tree.add(
+          (b) =>
+              b
+                ..ifCase(object: refer('x'), pattern: refer('y'))
+                ..body.addExpression(ControlFlow.returnVoid),
+        ),
       );
+
+      expect(tree, equalsDart('if (x case y) {\n  return;\n}'));
     });
 
     test('should emit a single if-case block with guard', () {
-      final tree = Conditional((tree) => tree.add((b) => b
-        ..ifCase(object: refer('x'), pattern: refer('y'), guard: refer('z'))
-        ..body.addExpression(ControlFlow.returnVoid)));
-
-      expect(
-        tree,
-        equalsDart('if (x case y when z) {\n  return;\n}'),
+      final tree = Conditional(
+        (tree) => tree.add(
+          (b) =>
+              b
+                ..ifCase(
+                  object: refer('x'),
+                  pattern: refer('y'),
+                  guard: refer('z'),
+                )
+                ..body.addExpression(ControlFlow.returnVoid),
+        ),
       );
+
+      expect(tree, equalsDart('if (x case y when z) {\n  return;\n}'));
     });
 
     test('should emit if-else if-else chain', () {
@@ -257,18 +257,11 @@ if (ready) {
       );
     });
 
-    test(
-      'should throw an argument error',
-      () {
-        final tree = Conditional(
-          (tree) => tree.add(
-            (branch) {},
-          ),
-        );
+    test('should throw an argument error', () {
+      final tree = Conditional((tree) => tree.add((branch) {}));
 
-        expect(() => tree.accept(DartEmitter()), throwsArgumentError);
-      },
-    );
+      expect(() => tree.accept(DartEmitter()), throwsArgumentError);
+    });
   });
 
   group('catch block', () {
@@ -278,35 +271,44 @@ if (ready) {
     });
 
     test('should emit catch with custom exception name', () {
-      final catchBlock = CatchBlock((b) => b
-        ..exception = 'err'
-        ..body.addExpression(literal(2)));
+      final catchBlock = CatchBlock(
+        (b) =>
+            b
+              ..exception = 'err'
+              ..body.addExpression(literal(2)),
+      );
       expect(catchBlock, equalsDart('catch (err) {\n  2;\n}'));
     });
 
     test('should emit catch with exception and stacktrace', () {
-      final catchBlock = CatchBlock((b) => b
-        ..exception = 'e'
-        ..stacktrace = 's'
-        ..body.addExpression(refer('log').call([refer('s')])));
+      final catchBlock = CatchBlock(
+        (b) =>
+            b
+              ..exception = 'e'
+              ..stacktrace = 's'
+              ..body.addExpression(refer('log').call([refer('s')])),
+      );
       expect(catchBlock, equalsDart('catch (e, s) {\n  log(s);\n}'));
     });
 
     test('should emit an on block', () {
-      final catchBlock = CatchBlock((b) => b
-        ..type = refer('FormatException')
-        ..body.addExpression(refer('print').call([refer('e')])));
-      expect(
-        catchBlock,
-        equalsDart('on FormatException {\n  print(e);\n}'),
+      final catchBlock = CatchBlock(
+        (b) =>
+            b
+              ..type = refer('FormatException')
+              ..body.addExpression(refer('print').call([refer('e')])),
       );
+      expect(catchBlock, equalsDart('on FormatException {\n  print(e);\n}'));
     });
 
     test('should emit on-type catch block', () {
-      final catchBlock = CatchBlock((b) => b
-        ..type = refer('FormatException')
-        ..stacktrace = 's'
-        ..body.addExpression(refer('print').call([refer('e')])));
+      final catchBlock = CatchBlock(
+        (b) =>
+            b
+              ..type = refer('FormatException')
+              ..stacktrace = 's'
+              ..body.addExpression(refer('print').call([refer('e')])),
+      );
       expect(
         catchBlock,
         equalsDart('on FormatException catch (_, s) {\n  print(e);\n}'),
@@ -316,15 +318,18 @@ if (ready) {
 
   group('try-catch', () {
     test('should throw if no catch handlers are defined', () {
-      expect(() => TryCatch((b) => b.body.addExpression(literal(1))),
-          throwsArgumentError);
+      expect(
+        () => TryCatch((b) => b.body.addExpression(literal(1))),
+        throwsArgumentError,
+      );
     });
 
     test('should emit try/catch block', () {
       final block = TryCatch((b) {
         b.body.addExpression(refer('mightFail').call([]));
         b.addCatch(
-            (cb) => cb.body.addExpression(refer('handleError').call([])));
+          (cb) => cb.body.addExpression(refer('handleError').call([])),
+        );
       });
 
       expect(
@@ -339,32 +344,42 @@ try {
     });
 
     test('should emit an on block', () {
-      final block = TryCatch((b) => b
-        ..body.addExpression(refer('mightFail').call([]))
-        ..addCatch(
-          (c) => c
-            ..type = refer('HttpException')
-            ..body.addExpression(ControlFlow.rethrowVoid),
-        ));
+      final block = TryCatch(
+        (b) =>
+            b
+              ..body.addExpression(refer('mightFail').call([]))
+              ..addCatch(
+                (c) =>
+                    c
+                      ..type = refer('HttpException')
+                      ..body.addExpression(ControlFlow.rethrowVoid),
+              ),
+      );
 
-      expect(block, equalsDart('''
+      expect(
+        block,
+        equalsDart('''
 try {
   mightFail();
 } on HttpException {
   rethrow;
 }
-'''));
+'''),
+      );
     });
 
     test('should emit try/on-type/catch with finally', () {
       final block = TryCatch((b) {
         b.body.addExpression(refer('mightFail').call([]));
         b
-          ..addCatch((cb) => cb
-            ..type = refer('HttpException')
-            ..exception = 'e'
-            ..stacktrace = 's'
-            ..body.addExpression(refer('print').call([refer('s')])))
+          ..addCatch(
+            (cb) =>
+                cb
+                  ..type = refer('HttpException')
+                  ..exception = 'e'
+                  ..stacktrace = 's'
+                  ..body.addExpression(refer('print').call([refer('s')])),
+          )
           ..addFinally((fb) => fb.addExpression(refer('cleanup').call([])));
       });
 
@@ -385,17 +400,21 @@ try {
       final block = TryCatch((b) {
         b
           ..body.addExpression(refer('foo').call([]))
-          ..addCatch((cb) => cb
-            ..type = refer('FormatException')
-            ..exception = 'e1'
-            ..body.addExpression(refer('handleFormat').call([])))
-          ..addCatch((cb) => cb
-            ..type = refer('SocketException')
-            ..exception = 'e2'
-            ..body.addExpression(refer('handleSocket').call([])))
           ..addCatch(
-            (cb) => cb.body.addExpression(ControlFlow.rethrowVoid),
-          );
+            (cb) =>
+                cb
+                  ..type = refer('FormatException')
+                  ..exception = 'e1'
+                  ..body.addExpression(refer('handleFormat').call([])),
+          )
+          ..addCatch(
+            (cb) =>
+                cb
+                  ..type = refer('SocketException')
+                  ..exception = 'e2'
+                  ..body.addExpression(refer('handleSocket').call([])),
+          )
+          ..addCatch((cb) => cb.body.addExpression(ControlFlow.rethrowVoid));
       });
 
       expect(
@@ -422,24 +441,30 @@ try {
 
       final result = builder.build();
       expect(result.handlers, hasLength(1));
-      expect(result, equalsDart('''
+      expect(
+        result,
+        equalsDart('''
 try {
   0;
 } catch (_) {
   1;
 }
-'''));
+'''),
+      );
     });
 
     test('addFinally should update handleAll', () {
-      final builder = TryCatchBuilder()
-        ..body.addExpression(literal(0))
-        ..addCatch((cb) => cb.body.addExpression(literal(1)))
-        ..addFinally((fb) => fb.addExpression(refer('done')));
+      final builder =
+          TryCatchBuilder()
+            ..body.addExpression(literal(0))
+            ..addCatch((cb) => cb.body.addExpression(literal(1)))
+            ..addFinally((fb) => fb.addExpression(refer('done')));
 
       final result = builder.build();
       expect(result.handleAll, isNotNull);
-      expect(result, equalsDart('''
+      expect(
+        result,
+        equalsDart('''
 try {
   0;
 } catch (_) {
@@ -447,7 +472,8 @@ try {
 } finally {
   done;
 }
-'''));
+'''),
+      );
     });
   });
 
@@ -455,11 +481,13 @@ try {
     test('should emit basic case with single statement body', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('x');
-        b.cases.add(Case((cb) {
-          cb
-            ..pattern = literal(1)
-            ..body = refer('print').call([literal('one')]).statement;
-        }));
+        b.cases.add(
+          Case((cb) {
+            cb
+              ..pattern = literal(1)
+              ..body = refer('print').call([literal('one')]).statement;
+          }),
+        );
       });
 
       expect(
@@ -475,15 +503,17 @@ switch (x) {
     test('should emit multiline case', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('x');
-        b.cases.add(Case((cb) {
-          cb
-            ..pattern = literal(1)
-            ..body = Block.of([
-              refer('print').call([literal('one')]).statement,
-              refer('print').call([literal('two')]).statement,
-              ControlFlow.breakVoid.statement,
-            ]);
-        }));
+        b.cases.add(
+          Case((cb) {
+            cb
+              ..pattern = literal(1)
+              ..body = Block.of([
+                refer('print').call([literal('one')]).statement,
+                refer('print').call([literal('two')]).statement,
+                ControlFlow.breakVoid.statement,
+              ]);
+          }),
+        );
       });
 
       expect(
@@ -502,12 +532,18 @@ switch (x) {
       final stmt = SwitchStatement((b) {
         b.value = refer('val');
         b.cases.addAll([
-          Case((cb) => cb
-            ..pattern = literal(1)
-            ..body = refer('print').call([literal('first')]).statement),
-          Case((cb) => cb
-            ..pattern = literal(2)
-            ..body = refer('print').call([literal('second')]).statement),
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = literal(1)
+                  ..body = refer('print').call([literal('first')]).statement,
+          ),
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = literal(2)
+                  ..body = refer('print').call([literal('second')]).statement,
+          ),
         ]);
       });
 
@@ -527,12 +563,18 @@ switch (val) {
       final stmt = SwitchStatement((b) {
         b.value = refer('foo');
         b.cases.addAll([
-          Case((cb) => cb
-            ..pattern = literal(0)
-            ..body = null),
-          Case((cb) => cb
-            ..pattern = literal(1)
-            ..body = refer('handleOne').call([]).statement),
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = literal(0)
+                  ..body = null,
+          ),
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = literal(1)
+                  ..body = refer('handleOne').call([]).statement,
+          ),
         ]);
       });
 
@@ -550,10 +592,15 @@ switch (foo) {
     test('should emit case with guard clause', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('value');
-        b.cases.add(Case((cb) => cb
-          ..pattern = literal(5)
-          ..guard = refer('value').greaterThan(literal(2))
-          ..body = refer('print').call([literal('guarded')]).statement));
+        b.cases.add(
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = literal(5)
+                  ..guard = refer('value').greaterThan(literal(2))
+                  ..body = refer('print').call([literal('guarded')]).statement,
+          ),
+        );
       });
 
       expect(
@@ -569,10 +616,15 @@ switch (value) {
     test('should emit case with label and body', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('n');
-        b.cases.add(Case((cb) => cb
-          ..label = 'start'
-          ..pattern = literal(0)
-          ..body = refer('begin').call([]).statement));
+        b.cases.add(
+          Case(
+            (cb) =>
+                cb
+                  ..label = 'start'
+                  ..pattern = literal(0)
+                  ..body = refer('begin').call([]).statement,
+          ),
+        );
       });
 
       expect(
@@ -590,13 +642,19 @@ switch (n) {
       final stmt = SwitchStatement((b) {
         b.value = refer('step');
         b.cases.addAll([
-          Case((cb) => cb
-            ..label = 'init'
-            ..pattern = literal('A')
-            ..body = null),
-          Case((cb) => cb
-            ..pattern = literal('B')
-            ..body = refer('continueProcess').call([]).statement),
+          Case(
+            (cb) =>
+                cb
+                  ..label = 'init'
+                  ..pattern = literal('A')
+                  ..body = null,
+          ),
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = literal('B')
+                  ..body = refer('continueProcess').call([]).statement,
+          ),
         ]);
       });
 
@@ -615,8 +673,9 @@ switch (step) {
     test('should emit default case', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('cmd');
-        b.cases
-            .add(Case.any(refer('log').call([literal('default')]).statement));
+        b.cases.add(
+          Case.any(refer('log').call([literal('default')]).statement),
+        );
       });
 
       expect(
@@ -632,8 +691,12 @@ switch (cmd) {
     test('should emit labeled default case', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('cmd');
-        b.cases.add(Case.any(refer('log').call([literal('default')]).statement,
-            label: 'label'));
+        b.cases.add(
+          Case.any(
+            refer('log').call([literal('default')]).statement,
+            label: 'label',
+          ),
+        );
       });
 
       expect(
@@ -650,9 +713,14 @@ switch (cmd) {
     test('should emit wildcard case', () {
       final stmt = SwitchStatement((b) {
         b.value = refer('cmd');
-        b.cases.add(Case((cb) => cb
-          ..pattern = Expression.wildcard
-          ..body = refer('log').call([literal('wildcard')]).statement));
+        b.cases.add(
+          Case(
+            (cb) =>
+                cb
+                  ..pattern = Expression.wildcard
+                  ..body = refer('log').call([literal('wildcard')]).statement,
+          ),
+        );
       });
 
       expect(
@@ -665,33 +733,43 @@ switch (cmd) {
       );
     });
 
-    test('should emit full mixed case block with guard, label, and default',
-        () {
-      final stmt = SwitchStatement((b) {
-        b.value = refer('x');
-        b.cases.addAll([
-          Case((cb) => cb..pattern = literal(-1)),
-          Case((cb) => cb
-            ..pattern = literal(0)
-            ..body = ControlFlow.continueLabel('other').statement),
-          Case((cb) => cb
-            ..pattern = literal(1)
-            ..guard = refer('x').equalTo(literal(1))
-            ..body = refer('handleOne').call([]).statement),
-          Case((cb) => cb
-            ..pattern = literal(2)
-            ..label = 'other'
-            ..body = Block.of([
-              refer('printWarning').call([]).statement,
-              refer('handleNotOne').call([]).statement,
-            ])),
-          Case.any(refer('defaultCase').call([]).statement),
-        ]);
-      });
+    test(
+      'should emit full mixed case block with guard, label, and default',
+      () {
+        final stmt = SwitchStatement((b) {
+          b.value = refer('x');
+          b.cases.addAll([
+            Case((cb) => cb..pattern = literal(-1)),
+            Case(
+              (cb) =>
+                  cb
+                    ..pattern = literal(0)
+                    ..body = ControlFlow.continueLabel('other').statement,
+            ),
+            Case(
+              (cb) =>
+                  cb
+                    ..pattern = literal(1)
+                    ..guard = refer('x').equalTo(literal(1))
+                    ..body = refer('handleOne').call([]).statement,
+            ),
+            Case(
+              (cb) =>
+                  cb
+                    ..pattern = literal(2)
+                    ..label = 'other'
+                    ..body = Block.of([
+                      refer('printWarning').call([]).statement,
+                      refer('handleNotOne').call([]).statement,
+                    ]),
+            ),
+            Case.any(refer('defaultCase').call([]).statement),
+          ]);
+        });
 
-      expect(
-        stmt,
-        equalsDart('''
+        expect(
+          stmt,
+          equalsDart('''
 switch (x) {
   case -1:
   case 0:
@@ -705,19 +783,28 @@ switch (x) {
   default:
     defaultCase();
 }'''),
-      );
-    });
+        );
+      },
+    );
   });
 
   group('switch expression', () {
     final matchValue = refer('value');
 
     test('should generate a single-case switch expression', () {
-      final expr = SwitchExpression((b) => b
-        ..value = matchValue
-        ..cases.add(Case((b) => b
-          ..pattern = refer('1')
-          ..body = refer("'one'"))));
+      final expr = SwitchExpression(
+        (b) =>
+            b
+              ..value = matchValue
+              ..cases.add(
+                Case(
+                  (b) =>
+                      b
+                        ..pattern = refer('1')
+                        ..body = refer("'one'"),
+                ),
+              ),
+      );
 
       expect(
         expr,
@@ -730,12 +817,20 @@ switch (x) {
     });
 
     test('should support guard expressions in cases', () {
-      final expr = SwitchExpression((b) => b
-        ..value = matchValue
-        ..cases.add(Case((b) => b
-          ..pattern = refer('x')
-          ..guard = refer('x > 5')
-          ..body = refer("'greater than 5'"))));
+      final expr = SwitchExpression(
+        (b) =>
+            b
+              ..value = matchValue
+              ..cases.add(
+                Case(
+                  (b) =>
+                      b
+                        ..pattern = refer('x')
+                        ..guard = refer('x > 5')
+                        ..body = refer("'greater than 5'"),
+                ),
+              ),
+      );
 
       expect(
         expr,
@@ -748,12 +843,20 @@ switch (x) {
     });
 
     test('should ignore label in switch expressions', () {
-      final expr = SwitchExpression((b) => b
-        ..value = matchValue
-        ..cases.add(Case((b) => b
-          ..pattern = refer('2')
-          ..label = 'ignoredLabel'
-          ..body = refer("'two'"))));
+      final expr = SwitchExpression(
+        (b) =>
+            b
+              ..value = matchValue
+              ..cases.add(
+                Case(
+                  (b) =>
+                      b
+                        ..pattern = refer('2')
+                        ..label = 'ignoredLabel'
+                        ..body = refer("'two'"),
+                ),
+              ),
+      );
 
       expect(
         expr,
@@ -766,9 +869,12 @@ switch (x) {
     });
 
     test('should generate wildcard case using Case.any', () {
-      final expr = SwitchExpression((b) => b
-        ..value = matchValue
-        ..cases.add(Case.any(refer("'default'"))));
+      final expr = SwitchExpression(
+        (b) =>
+            b
+              ..value = matchValue
+              ..cases.add(Case.any(refer("'default'"))),
+      );
 
       expect(
         expr,
@@ -782,27 +888,38 @@ switch (x) {
 
     test('should throw if case body is null', () {
       expect(
-        () => SwitchExpression((b) => b
-              ..value = matchValue
-              ..cases.add(Case((b) => b..pattern = refer('1'))))
-            .accept(DartEmitter()),
+        () => SwitchExpression(
+          (b) =>
+              b
+                ..value = matchValue
+                ..cases.add(Case((b) => b..pattern = refer('1'))),
+        ).accept(DartEmitter()),
         throwsArgumentError,
       );
     });
 
     test('should generate multiple cases with mixed guards and default', () {
-      final expr = SwitchExpression((b) => b
-        ..value = matchValue
-        ..cases.addAll([
-          Case((b) => b
-            ..pattern = refer('1')
-            ..body = refer("'one'")),
-          Case((b) => b
-            ..pattern = refer('2')
-            ..guard = refer('checkTwo()')
-            ..body = refer("'two'")),
-          Case.any(refer("'fallback'")),
-        ]));
+      final expr = SwitchExpression(
+        (b) =>
+            b
+              ..value = matchValue
+              ..cases.addAll([
+                Case(
+                  (b) =>
+                      b
+                        ..pattern = refer('1')
+                        ..body = refer("'one'"),
+                ),
+                Case(
+                  (b) =>
+                      b
+                        ..pattern = refer('2')
+                        ..guard = refer('checkTwo()')
+                        ..body = refer("'two'"),
+                ),
+                Case.any(refer("'fallback'")),
+              ]),
+      );
 
       expect(
         expr,
@@ -816,34 +933,40 @@ switch (x) {
       );
     });
 
-    test(
-      'should work as an expression',
-      () {
-        final expr = SwitchExpression(
-          (b) => b
-            ..value = refer('otherValue')
-            ..cases.addAll([
-              Case((c) => c
-                ..pattern = refer('Enum').property('someType')
-                ..body = refer('someFunction').call([])),
-              Case((c) => c
-                ..pattern = refer('Enum').property('otherType')
-                ..body = refer('otherFunction').call([]))
-            ]),
-        );
+    test('should work as an expression', () {
+      final expr = SwitchExpression(
+        (b) =>
+            b
+              ..value = refer('otherValue')
+              ..cases.addAll([
+                Case(
+                  (c) =>
+                      c
+                        ..pattern = refer('Enum').property('someType')
+                        ..body = refer('someFunction').call([]),
+                ),
+                Case(
+                  (c) =>
+                      c
+                        ..pattern = refer('Enum').property('otherType')
+                        ..body = refer('otherFunction').call([]),
+                ),
+              ]),
+      );
 
-        final variable = declareFinal('variable').assign(expr);
-        final parenthesized = expr.parenthesized;
-        final operation = expr.operatorAdd(refer('otherResult'));
+      final variable = declareFinal('variable').assign(expr);
+      final parenthesized = expr.parenthesized;
+      final operation = expr.operatorAdd(refer('otherResult'));
 
-        expect(
-            Block(
-              (b) => b
+      expect(
+        Block(
+          (b) =>
+              b
                 ..addExpression(variable)
                 ..addExpression(parenthesized)
                 ..addExpression(operation),
-            ),
-            equalsDart('''
+        ),
+        equalsDart('''
 final variable = switch (otherValue) {
   Enum.someType => someFunction(),
   Enum.otherType => otherFunction(),
@@ -856,8 +979,8 @@ switch (otherValue) {
   Enum.someType => someFunction(),
   Enum.otherType => otherFunction(),
 } + otherResult;
-'''));
-      },
-    );
+'''),
+      );
+    });
   });
 }

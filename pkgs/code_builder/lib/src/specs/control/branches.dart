@@ -51,8 +51,11 @@ abstract class BranchBuilder implements Builder<Branch, BranchBuilder> {
     required Expression pattern,
     Expression? guard,
   }) =>
-      condition =
-          ControlFlow.ifCase(object: object, pattern: pattern, guard: guard);
+      condition = ControlFlow.ifCase(
+        object: object,
+        pattern: pattern,
+        guard: guard,
+      );
 }
 
 /// Buildable version of [Branch]
@@ -60,20 +63,22 @@ class _Branch extends _$Branch with ControlBlock {
   final bool isElse;
 
   _Branch({required super.condition, required super.body, required this.isElse})
-      : super._();
+    : super._();
 
   ControlExpression? get _condition =>
       condition == null ? null : ControlExpression.ifStatement(condition!);
 
   @override
-  ControlExpression get _expression => isElse
-      ? ControlExpression.elseStatement(_condition)
-      : (_condition ?? throwError);
+  ControlExpression get _expression =>
+      isElse
+          ? ControlExpression.elseStatement(_condition)
+          : (_condition ?? throwError);
 
   Never get throwError {
     throw ArgumentError(
-        'The first branch in a conditional must specify a condition',
-        'condition');
+      'The first branch in a conditional must specify a condition',
+      'condition',
+    );
   }
 }
 
@@ -97,11 +102,12 @@ abstract class Conditional
   BuiltList<BranchBuilder> get branches;
 
   @override
-  List<ControlBlock> get _blocks => branches
-      .mapIndexed(
-        (index, element) => element.build()._buildable(index != 0),
-      )
-      .toList();
+  List<ControlBlock> get _blocks =>
+      branches
+          .mapIndexed(
+            (index, element) => element.build()._buildable(index != 0),
+          )
+          .toList();
 
   /// Builds a branch with [builder] and returns
   /// a new [Conditional] with it added to the tree.
