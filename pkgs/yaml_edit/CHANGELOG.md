@@ -1,4 +1,4 @@
-## 2.3.0
+## 2.2.4
 
 -  Removes comments associated with a node when `remove` is called.
     - `v2.2.3` and earlier.
@@ -38,7 +38,7 @@
         - next
       ```
 
-    - `v2.3.0` and later (same string as above)
+    - `v2.2.4` and later (same string as above)
 
       ```yaml
       # After edit:
